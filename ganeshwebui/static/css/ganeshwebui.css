@@ -1,0 +1,25 @@
+#canvas-memory-holder{
+	width:250px;
+}
+#canvas-cpu-holder{
+	width:250px;
+}
+#canvas-hitratio-holder{
+	width:250px;
+}
+#canvas-loadaverage-holder{
+	width:250px;
+}
+#canvas-buffers-holder{
+	width:250px;
+}
+#canvas-backends-holder{
+	width:250px;
+}
+#canvas-tps-holder{
+	width:250px;
+}
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}

@@ -1,0 +1,165 @@
+{% extends base.html %}
+
+{% block title %}[{{ ganeshd_host }}] - Dashboard{% end %}
+
+{% block content %}
+		<script>
+		$('#liNavDashboard').attr('class','active');
+		$('#srNavDashboard').html('(current)');
+		</script>
+		<script src="/js/Chart.js"></script>
+		<script src="/js/ganesh.js"></script>
+		<div class="row">
+			<div class="col-md-4">
+				<table class="table table-condensed table-striped">
+				<tr>
+					<th colspan="2">System</th>
+				</tr>
+				<tr>
+					<td class="col-md-3">Hostname</td><td><b><span id="hostname">{{ hostname }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">OS</td><td><b><span id="os_version">{{ os_version }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">CPU</td><td><b><span id="cpu">{{ n_cpu }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Memory (kB)</td><td><b><span id="memory">{{ memory['total'] }}</span></b></td>
+				</tr>
+				</table>
+			</div>
+			<div class="col-md-4">
+				<table class="table table-condensed table-striped">
+				<tr>
+					<th colspan="2">PostgreSQL</th>
+				</tr>
+				<tr>
+					<td class="col-md-3">Version</td><td><b><span id="pg_version">{{ pg_version }}</b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Size</td><td><b><span id="size">{{ size }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Databases</td><td><b><span id="nb_db">{{ nb_db }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Time</td><td><b><span id="time">{{ time }}</span></b></td>
+				</tr>
+				</table>
+			</div>
+			<div class="col-md-4">
+				<h3>TPS <span id="tps_commit" class="small"></span><span class="small">/</span><span id="tps_rollback" class="small"></span></h3>
+				<div id="canvas-tps-holder">
+					<canvas id="chart-tps" width="250" height="125"/>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4">
+				<h3>Memory usage</h3>
+				<div id="canvas-memory-holder">
+					<canvas id="chart-memory" width="250" height="250"/>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<h3>CPU usage</h3>
+				<div id="canvas-cpu-holder">
+					<canvas id="chart-cpu" width="250" height="250"/>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<h3>Cache Hit ratio</h3>
+				<div id="canvas-hitratio-holder">
+					<canvas id="chart-hitratio" width="250" height="250"/>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4">
+				<h3>Loadaverage <span id="loadaverage" class="small">{{loadaverage}}</span></h3>
+				<div id="canvas-loadaverage-holder">
+					<canvas id="chart-loadaverage" width="250" height="125"/>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<h3>Buffers <span id="buffers_delta" class="small">{{buffers_delta}}</span></h3>
+				<div id="canvas-buffers-holder">
+					<canvas id="chart-buffers" width="250" height="125"/>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<h3>Active backends <span id="backends" class="small">{{backends}}</span></h3>
+				<div id="canvas-backends-holder">
+					<canvas id="chart-backends" width="250" height="125"/>
+				</div>
+			</div>
+		</div>
+		<script>
+		var memorydata = [
+				{
+					value: {{ memory['active'] }},
+					label: "Active",
+					color: "#ff0000"
+				},
+				{
+					value: {{ memory['cached'] }},
+					label: "Cached",
+					color: "#00ff65"
+				},
+				{
+					value: {{ memory['free'] }},
+					label: "Free",
+					color: "#eeeeee"
+				}
+			];
+
+		var cpudata = [
+				{
+					value: {{ cpu['iowait'] }},
+					label: "IO Wait",
+					color: "#ff0000"
+				},
+				{
+					value: {{ cpu['steal'] }},
+					label: "Steal",
+					color: "#cbff00"
+				},
+				{
+					value: {{ cpu['user'] }},
+					label: "User",
+					color: "#00ff65"
+				},
+				{
+					value: {{ cpu['system'] }},
+					label: "System",
+					color: "#cbff00"
+				},
+				{
+					value: {{ cpu['idle'] }},
+					label: "IDLE",
+					color: "#eeeeee"
+				}
+
+			];
+
+			var hitratiodata = [
+				{
+					value: {{ hitratio }},
+					label: "Hit",
+					color: "#00ff65"
+				},
+				{
+					value: {{ readratio }},
+					label: "Read",
+					color: "#ff0000"
+				}
+	
+			];
+
+			var xsession = "{{xsession}}";
+			var ganeshdhost = "{{ganeshd_host}}";
+			var ganeshdport = "{{ganeshd_port}}";
+			window.setInterval(function () {refresh_dashboard(ganeshdhost, ganeshdport, xsession)}, 2000);
+		</script>
+{% end %}
