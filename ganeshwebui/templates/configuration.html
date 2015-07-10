@@ -1,0 +1,196 @@
+{% extends base2.html %}
+
+{% block title %}[{{ ganeshd_host }}] - Administration / Configuration{% end %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-8">
+		<h1><i class="fa fa-wrench fa-fw"></i> PostgreSQL configuration</h1>
+	</div>
+	<div class="col-md-4"></div>
+</div>
+{% try %}
+{% if ret_post and len(ret_post['settings']) > 0%}
+<div class="row">
+	<div class="col-md-8">
+		<div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
+			<p>The following changes have been applied:</p>
+			<table class="table table-condensed">			
+			<tr>
+				<th width="30%">Name</th>
+				<th width="30%">Prev. value</th>
+				<th width="40%">New value</th>
+			</tr>
+			{% for setting in ret_post['settings'] %}
+			<tr>
+				<td>{{ setting['name'] }}</td>
+				<td>{{ setting['previous_setting'] }}</td>
+				<td><b>{{ setting['setting'] }}</b></td>
+			</tr>
+			{% end %}
+			</table>
+		</div>
+	</div>
+	<div class="col-md-4"></div>
+</div>
+{% end %}
+{% except %}
+{% end %}
+{% try %}
+{% if error_code > 0%}
+<div class="row">
+	<div class="col-md-8">
+		<div id="error-configuration" class="alert alert-danger" role="alert">
+			<h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
+			<p>{{error_code}}: {{error_message}}</p>
+		</div>
+	</div>
+	<div class="col-md-4"></div>
+</div>
+{% end %}
+{% except %}
+{% end %}
+{% if configuration_status['reload_pending'] is True or configuration_status['restart_pending'] is True %}
+<div class="row">
+	<div class="col-md-8">
+		<div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
+			{% if configuration_status['restart_pending'] %}
+			<p> Some changes are pending and PostgreSQL should be restarted:</p>
+			<table class="table table-condensed">
+				<tr>
+					<th width="30%">Name</th>
+					<th width="30%">Current value</th>
+					<th width="30%">Pending value</th>
+					<th width="10%">Unit</th>
+				</tr>
+				{% for change in configuration_status['restart_changes'] %}
+				<tr>
+					<td>{{change['name']}}</td>
+					<td>{{change['setting']}}</td>
+					<td><b>{{change['pending_val']}}</b></td>
+					<td>{{change['unit']}}</td>
+				</tr>
+				{% end %}
+			</table>
+			<div class="row">
+				<div class="col-md-2"></div>
+				<div class="col-md-8"><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#restartModal">Restart PostgreSQL</button></div>
+				<div class="col-md-2"></div>
+			</div>
+			{% end %}
+			{% if configuration_status['reload_pending'] %}
+			<p> Some changes are pending and PostgreSQL configuration should be reloaded:</p>
+			<table class="table table-condensed">
+				<tr>
+					<th width="30%">Name</th>
+					<th width="30%">Current value</th>
+					<th width="30%">Pending value</th>
+					<th width="10%">Unit</th>
+				</tr>
+				{% for change in configuration_status['reload_changes'] %}
+				<tr>
+					<td>{{change['name']}}</td>
+					<td>{{change['setting']}}</td>
+					<td><b>{{change['pending_val']}}</b></td>
+					<td>{{change['unit']}}</td>
+				</tr>
+				{% end %}
+			</table>
+			<div class="row">
+				<div class="col-md-2"></div>
+				<div class="col-md-8"><button type="button" class="btn btn-warning">Reload configuration</button></div>
+				<div class="col-md-2"></div>
+			</div>
+			{% end %}
+		</div>
+	</div>
+	<div class="col-md-4"></div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="restartModal" tabindex="-1" role="dialog" aria-labelledby="restartModallLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    			<h4 class="modal-title" id="restartModalLabel">Are you sure you want to restart PostgreSQL ?</h4>
+    		</div>
+    		<div class="modal-body" id="restartModalBody">
+      		</div>
+      		<div class="modal-footer" id="restartModalFooter">
+        		<button type="button" class="btn btn-primary" data-dismiss="modal">No thanks, please close this window</button>
+        		<button type="button" class="btn btn-danger" id="restartYesButton">Yes</button>
+      		</div>
+    	</div>
+  	</div>
+</div>
+<script src="/js/ganesh.administration.js"></script>
+<script>
+$('#restartYesButton').on('click', function(event) { event.preventDefault(); administration_control('{{ganeshd_host}}', '{{ganeshd_port}}', '{{xsession}}', 'restart'); }); 
+</script>
+{% end %}
+<div class="row" id="configuration-row">
+	<div class="col-md-8">
+   	<form class="form-inline navbar-form" id="formChangeConfCat" role="confcat">
+		<label class="sr-only" for="selectConfCat">Category</label>
+		<div class="input-group">
+			<div class="input-group-addon">Category</div>
+			<select class="form-control" id="selectConfCat">{% for cat in configuration_categories['categories'] %}<option value="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration/category/{{url_escape(cat)}}"{% if current_cat == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>{% end %}</select>
+		</div>
+		<button type="submit" class="btn btn-primary" id="buttonChangeConfCat">Change</button>
+	</form>
+	</div>
+	<div class="col-md-4"></div>
+</div>
+<script>
+$('#formChangeConfCat').on('submit', function(event) {
+	event.preventDefault();
+	window.location.replace($('#selectConfCat').find(':selected').attr('value'));
+});
+</script>
+<div class="container-fluid">
+	{% for setting_group in data %}
+	<div class="row">
+		<div class="col-md-8">
+			<div class="panel panel-default">
+				<div class="panel-heading">{{setting_group['category']}}</div>
+				<div class="panel-body">
+					<form role="form" method="post">
+					<table class="table table-condensed table-striped">
+					{% for setting_row in setting_group['rows'] %}
+						<tr>
+							<td class="col-md-4 small vert-align">{{setting_row['name']}}</td>
+							<td class="col-md-6">
+								{% if setting_row['vartype'] == 'bool' %}
+								<select class="form-control input-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in ['on', 'off'] %}<option value="{{v}}" {% if setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
+								{% elif setting_row['vartype'] == 'enum' %}
+								<select class="form-control input-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in setting_row['enumvals'][1:-1].split(',') %}<option value="{{v}}" {% if (v.startswith('"') and v.endswith('"') and setting_row['setting'] == v[1:-1]) or setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
+								{% else %}
+		 						<input type="text" class="form-control input-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting']}}{%end%}">
+								{% end %}
+							</td>
+							<td class="col-md-2 vert-align">
+								<button type="button" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="<p>{{setting_row['desc']}}</p><table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" class="btn btn-default btn-xs" aria-label="Help">
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+								</button>
+							</td>
+						</tr>
+					{% end %}
+					</table>
+					<div class="row">
+						<div class="col-md-2 col-md-offset-5">
+							<button type="submit" class="btn btn-sm btn-primary">Save and reload configuration</button>
+						</div>
+					</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4"></div>
+	</div>
+	{% end %}
+</div>
+{% end %}

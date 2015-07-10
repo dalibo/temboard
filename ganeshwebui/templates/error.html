@@ -1,5 +1,11 @@
-<html>
-	<body>
-		<h3 style="color:red;">Error {{ code }}:{{ message }}</h1>
-	</body>
-</html>
+{% extends base2.html %}
+
+{% block title %}Error{% end %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-4 col-md-offset-2">
+		<div class="alert alert-danger" role="alert"><h1>ERROR</h1> <p>{{ code }}:{{ message }}</p></div>
+	</div>
+</div>
+{% end %}

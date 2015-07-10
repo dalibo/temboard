@@ -1,165 +1,249 @@
-{% extends base.html %}
+{% extends base2.html %}
 
 {% block title %}[{{ ganeshd_host }}] - Dashboard{% end %}
 
 {% block content %}
-		<script>
-		$('#liNavDashboard').attr('class','active');
-		$('#srNavDashboard').html('(current)');
-		</script>
-		<script src="/js/Chart.js"></script>
-		<script src="/js/ganesh.js"></script>
-		<div class="row">
-			<div class="col-md-4">
+<script>
+	$('#liNavDashboard').attr('class','active');
+	$('#srNavDashboard').html('(current)');
+</script>
+<script src="/js/Chart.js"></script>
+<script src="/js/ganesh.dashboard.js"></script>
+<div class="row">
+	<div class="col-md-12">
+		<h1><i class="fa fa-dashboard fa-fw"></i> Dashboard</h1>
+	</div>
+</div>
+<div class="row row-dashboard">
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+			<div class="panel-heading">
+		    	System
+		    </div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<table class="table table-condensed table-striped">
 				<tr>
-					<th colspan="2">System</th>
+					<td class="col-md-3">Hostname</td>
+					<td><b><span id="hostname">{{ dashboard['hostname'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">Hostname</td><td><b><span id="hostname">{{ hostname }}</span></b></td>
+					<td class="col-md-3">OS</td>
+					<td><b><span id="os_version">{{ dashboard['os_version'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">OS</td><td><b><span id="os_version">{{ os_version }}</span></b></td>
+					<td class="col-md-3">CPU</td>
+					<td><b><span id="cpu">{{ dashboard['n_cpu'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">CPU</td><td><b><span id="cpu">{{ n_cpu }}</span></b></td>
-				</tr>
-				<tr>
-					<td class="col-md-3">Memory (kB)</td><td><b><span id="memory">{{ memory['total'] }}</span></b></td>
+					<td class="col-md-3">Memory (kB)</td>
+					<td><b><span id="memory">{{ dashboard['memory']['total'] }}</span></b></td>
 				</tr>
 				</table>
 			</div>
-			<div class="col-md-4">
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				PostgreSQL
+		    </div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<table class="table table-condensed table-striped">
 				<tr>
-					<th colspan="2">PostgreSQL</th>
+					<td class="col-md-3">Version</td>
+					<td><b><span id="pg_version">{{ dashboard['pg_version'] }}</b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">Version</td><td><b><span id="pg_version">{{ pg_version }}</b></td>
+					<td class="col-md-3">Data</td>
+					<td><b><span id="pg_data">{{ dashboard['pg_data'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">Size</td><td><b><span id="size">{{ size }}</span></b></td>
+					<td class="col-md-3">Port</td>
+					<td><b><span id="pg_port">{{ dashboard['pg_port'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">Databases</td><td><b><span id="nb_db">{{ nb_db }}</span></b></td>
+					<td class="col-md-3">Size</td>
+					<td><b><span id="size">{{ dashboard['databases']['total_size'] }}</span></b></td>
 				</tr>
 				<tr>
-					<td class="col-md-3">Time</td><td><b><span id="time">{{ time }}</span></b></td>
+					<td class="col-md-3">Databases</td>
+					<td><b><span id="nb_db">{{ dashboard['databases']['databases'] }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Uptime</td>
+					<td><b><span id="pg_uptime">{{ dashboard['pg_uptime'] }}</span></b></td>
+				</tr>
+				<tr>
+					<td class="col-md-3">Time</td>
+					<td><b><span id="time">{{ dashboard['databases']['time'] }}</span></b></td>
 				</tr>
 				</table>
 			</div>
-			<div class="col-md-4">
-				<h3>TPS <span id="tps_commit" class="small"></span><span class="small">/</span><span id="tps_rollback" class="small"></span></h3>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				TPS <span id="tps_commit" class="small"></span><span class="small">/</span><span id="tps_rollback" class="small"></span>
+		    </div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<div id="canvas-tps-holder">
-					<canvas id="chart-tps" width="250" height="125"/>
+					<canvas id="chart-tps" />
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-md-4">
-				<h3>Memory usage</h3>
+	</div>
+</div>
+<div class="row row-dashboard">
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				Memory usage
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<div id="canvas-memory-holder">
-					<canvas id="chart-memory" width="250" height="250"/>
+					<canvas id="chart-memory" />
 				</div>
 			</div>
-			<div class="col-md-4">
-				<h3>CPU usage</h3>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				CPU usage
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<div id="canvas-cpu-holder">
-					<canvas id="chart-cpu" width="250" height="250"/>
+					<canvas id="chart-cpu" />
 				</div>
 			</div>
-			<div class="col-md-4">
-				<h3>Cache Hit ratio</h3>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				Cache Hit ratio
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<div id="canvas-hitratio-holder">
-					<canvas id="chart-hitratio" width="250" height="250"/>
+					<canvas id="chart-hitratio" />
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-md-4">
-				<h3>Loadaverage <span id="loadaverage" class="small">{{loadaverage}}</span></h3>
+	</div>
+</div>
+<div class="row row-dashboard">
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				Loadaverage <span id="loadaverage" class="small">{{dashboard['loadaverage']}}</span>
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
 				<div id="canvas-loadaverage-holder">
-					<canvas id="chart-loadaverage" width="250" height="125"/>
-				</div>
-			</div>
-			<div class="col-md-4">
-				<h3>Buffers <span id="buffers_delta" class="small">{{buffers_delta}}</span></h3>
-				<div id="canvas-buffers-holder">
-					<canvas id="chart-buffers" width="250" height="125"/>
-				</div>
-			</div>
-			<div class="col-md-4">
-				<h3>Active backends <span id="backends" class="small">{{backends}}</span></h3>
-				<div id="canvas-backends-holder">
-					<canvas id="chart-backends" width="250" height="125"/>
+					<canvas id="chart-loadaverage" />
 				</div>
 			</div>
 		</div>
-		<script>
-		var memorydata = [
-				{
-					value: {{ memory['active'] }},
-					label: "Active",
-					color: "#ff0000"
-				},
-				{
-					value: {{ memory['cached'] }},
-					label: "Cached",
-					color: "#00ff65"
-				},
-				{
-					value: {{ memory['free'] }},
-					label: "Free",
-					color: "#eeeeee"
-				}
-			];
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				Buffers <span id="buffers_delta" class="small">{{buffers_delta}}</span>
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
+				<div id="canvas-buffers-holder">
+					<canvas id="chart-buffers" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="panel panel-default panel-dashboard">
+		    <div class="panel-heading">
+				Active backends <span id="backends" class="small">{{dashboard['active_backends']['nb']}}</span>
+			</div>
+		    <!-- /.panel-heading -->
+		    <div class="panel-body">
+				<div id="canvas-backends-holder">
+					<canvas id="chart-backends" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+var memorydata = [
+		{
+			value: {{ dashboard['memory']['active'] }},
+			label: "Active",
+			color: "#ff0000"
+		},
+		{
+			value: {{ dashboard['memory']['cached'] }},
+			label: "Cached",
+			color: "#00ff65"
+		},
+		{
+			value: {{ dashboard['memory']['free'] }},
+			label: "Free",
+			color: "#eeeeee"
+		}
+	];
 
-		var cpudata = [
-				{
-					value: {{ cpu['iowait'] }},
-					label: "IO Wait",
-					color: "#ff0000"
-				},
-				{
-					value: {{ cpu['steal'] }},
-					label: "Steal",
-					color: "#cbff00"
-				},
-				{
-					value: {{ cpu['user'] }},
-					label: "User",
-					color: "#00ff65"
-				},
-				{
-					value: {{ cpu['system'] }},
-					label: "System",
-					color: "#cbff00"
-				},
-				{
-					value: {{ cpu['idle'] }},
-					label: "IDLE",
-					color: "#eeeeee"
-				}
+var cpudata = [
+		{
+			value: {{ dashboard['cpu']['iowait'] }},
+			label: "IO Wait",
+			color: "#ff0000"
+		},
+		{
+			value: {{ dashboard['cpu']['steal'] }},
+			label: "Steal",
+			color: "#cbff00"
+		},
+		{
+			value: {{ dashboard['cpu']['user'] }},
+			label: "User",
+			color: "#00ff65"
+		},
+		{
+			value: {{ dashboard['cpu']['system'] }},
+			label: "System",
+			color: "#cbff00"
+		},
+		{
+			value: {{ dashboard['cpu']['idle'] }},
+			label: "IDLE",
+			color: "#eeeeee"
+		}
 
-			];
+	];
 
-			var hitratiodata = [
-				{
-					value: {{ hitratio }},
-					label: "Hit",
-					color: "#00ff65"
-				},
-				{
-					value: {{ readratio }},
-					label: "Read",
-					color: "#ff0000"
-				}
+	var hitratiodata = [
+		{
+			value: {{ dashboard['hitratio'] }},
+			label: "Hit",
+			color: "#00ff65"
+		},
+		{
+			value: {{ readratio }},
+			label: "Read",
+			color: "#ff0000"
+		}
 	
-			];
+	];
 
-			var xsession = "{{xsession}}";
-			var ganeshdhost = "{{ganeshd_host}}";
-			var ganeshdport = "{{ganeshd_port}}";
-			window.setInterval(function () {refresh_dashboard(ganeshdhost, ganeshdport, xsession)}, 2000);
-		</script>
+	var xsession = "{{xsession}}";
+	var ganeshdhost = "{{ganeshd_host}}";
+	var ganeshdport = "{{ganeshd_port}}";
+	window.setInterval(function () {refresh_dashboard(ganeshdhost, ganeshdport, xsession)}, 2000);
+</script>
 {% end %}

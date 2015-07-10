@@ -1,25 +1,195 @@
 #canvas-memory-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-cpu-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-hitratio-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-loadaverage-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-buffers-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-backends-holder{
-	width:250px;
+	width:100%;
 }
 #canvas-tps-holder{
-	width:250px;
+	width:100%;
 }
 .row {
   margin-left: 0px;
   margin-right: 0px;
+}
+
+.panel-dashboard {
+	margin: 0px 0px 0px 0px;
+}
+
+.row-dashboard {
+	margin: 10px 0px 0px 30px;
+	padding: 0px;
+}
+.row-dashboard .col-md-4 {
+	margin:0px;
+	padding: 0px 10px 0px 0px;
+}
+
+.row-dashboard table tr {
+	font-size: 12px;
+}
+
+.popover-title {
+    font-size: 12px;
+	font-weight: bold;
+	min-width: 200px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.popover-content {
+    font-size: 11px;
+	min-width: 200px;
+}
+
+.popover-content table {
+	width: 100%;
+	padding: 5px;
+}
+
+#formChangeServer {
+	margin-right: 20px;
+}
+
+.table tbody>tr>td.vert-align {
+    vertical-align: middle;
+}
+
+#page-wrapper {
+	background-color: #fff;
+	padding: 0px;
+}
+
+#page-wrapper h1 {
+	font-size: 20px;
+	color: #337AB7;
+	margin-left: 15px;
+	margin-bottom: 0px;
+	margin-top: 10px;
+}
+
+#page-wrapper h1 i {
+	color: #333;
+}
+.panel-heading {
+	padding: 5px;
+}
+
+.sidebar .nav-third-level li a {
+	padding: 5px;
+	font-size: 12px;
+}
+
+select.form-control {
+	font-size: 12px;
+}
+
+#alert-configuration {
+	padding: 0px 20px 20px 20px;
+	margin: 20px 5px 0px 15px;
+	font-size: 12px;
+}
+
+#alert-configuration p {
+	padding-top: 0px;
+}
+
+#alert-configuration h2 {
+	font-size: 18px;
+	padding: 0px;
+	margin-top: 10px;
+}
+
+#alert-configuration .close {
+	margin-right: 5px;
+}
+
+#alert-configuration .modal .close {
+	margin-right: 20px;
+}
+
+#error-configuration {
+	padding: 0px 20px 20px 20px;
+	margin: 20px 5px 0px 15px;
+	font-size: 12px;
+}
+
+#error-configuration p {
+	padding-top: 0px;
+}
+
+#error-configuration h2 {
+	font-size: 18px;
+	padding: 0px;
+	margin-top: 10px;
+}
+
+
+#ok-configuration {
+	padding: 0px 20px 20px 20px;
+	margin: 20px 5px 0px 15px;
+	font-size: 12px;
+}
+
+#ok-configuration p {
+	padding-top: 0px;
+}
+
+#ok-configuration h2 {
+	font-size: 18px;
+	padding: 0px;
+	margin-top: 10px;
+}
+
+#ok-configuration table {
+	margin: 0px;
+}
+
+#ok-configuration .close {
+	margin-right: 5px;
+}
+
+#configuration-row {
+	margin-top: 20px;
+}
+
+.navbar .navbar-left table tr td {
+	color: #666;
+}
+
+#divHeaderInfo {
+	width: 50%;
+}
+
+#tableHeaderInfo {
+	font-size: 11px;
+	width: 100%;
+	margin-left:20px;
+	margin-bottom: 0px;
+	border: 0px;
+}
+
+#tableHeaderInfo tr td {
+	border:0px;
+	padding:2px;
+}
+
+.sidebar .sidebar-nav .nav li a i {
+	color: #333;
+}
+
+#panelLogin {
+	margin-top: 20px;
+	font-size: 12px;
 }

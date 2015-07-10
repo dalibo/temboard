@@ -32,8 +32,15 @@
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-						<li id="liNavLogin"><a href="login">Login <span class="sr-only" id="srLogin"></span></a></li>
-						<li id="liNavDashboard"><a href="dashboard">Dashboard <span class="sr-only" id="srNavDashboard"></span></a></li>
+						<li id="liNavLogin"><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/login">Login <span class="sr-only" id="srLogin"></span></a></li>
+						<li id="liNavDashboard"><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/dashboard">Dashboard <span class="sr-only" id="srNavDashboard"></span></a></li>
+        				<li class="dropdown">
+          					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings<span class="caret"></span></a>
+          					<ul class="dropdown-menu">
+								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration">Configuration</a></li>
+ 								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/hba">Host Base Authentication</a></li>
+          					</ul>
+        				</li>
 					</ul>
 		
 					<div class="nav navbar-nav navbar-right">
@@ -54,6 +61,10 @@
 			event.preventDefault();
 			window.location.replace($('#selectServer').find(':selected').attr('value'));
 		});
+		// Popover activation
+		$(function () {
+  			$('[data-toggle="popover"]').popover()
+		})
 		</script>
 
 	{% block content %} {% end %}
