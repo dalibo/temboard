@@ -1,0 +1,86 @@
+{% extends base2.html %}
+
+{% block title %}[{{ ganeshd_host }}] - Activity{% end %}
+
+{% block content %}
+<script src="/js/ganesh.activity.js"></script>
+<div class="row">
+	<div class="col-md-4">
+		<h1><i class="fa fa-bars fa-fw"></i> Activity</h1>
+	</div>
+	<div class="col-md-6 navActivity">
+		<button type="button" class="btn btn-primary btn-xs" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
+		<button type="button" class="btn btn-primary btn-xs" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
+	</div>
+	<div class="col-md-2"></div>
+</div>
+<div class="row" id="configuration-row">
+	<div class="col-md-12"></div>
+</div>
+<script>
+$('#pauseButton').on(
+	'click',
+	function(event) {
+		event.preventDefault();
+		pause_activity();
+	}
+); 
+$('#resumeButton').on(
+	'click',
+	function(event) {
+		event.preventDefault();
+		resume_activity();
+	}
+); 
+</script>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<form role="form" method="post">
+				<table id="tableActivity" class="table table-condensed table-striped table-activity">
+					<tr>
+						<th class="xs"></th>
+						<th class="sm">PID</th>
+						<th class="med">Database</th>
+						<th class="med">User</th>
+						<th class="sm">%CPU</th>
+						<th class="sm">%mem</th>
+						<th class="med">Read/s</th>
+						<th class="med">Write/s</th>
+						<th class="xs">IOW</th>
+						<th class="xs">W</th>
+						<th class="med">State</th>
+						<th class="med">Duration</th>
+						<th class="query">Query</th>
+					</tr>
+					{% for row in activities['rows'] %}
+					<tr>
+						<td><input type="checkbox" class="input-xs"/></td>
+						<td>{{row['pid']}}</td>
+						<td>{{row['database']}}</td>
+						<td>{{row['user']}}</td>
+						<td class="cpu">{{row['cpu']}}</td>
+						<td class="mem">{{row['memory']}}</td>
+						<td class="read">{{row['read_s']}}</td>
+						<td class="write">{{row['write_s']}}</td>
+						<td class="{% if row['iow'] == 'Y'%}yes{%else%}no{%end%}">{{row['iow']}}</td>
+						<td class="{% if row['wait'] == 'Y'%}yes{%else%}no{%end%}">{{row['wait']}}</td>
+						<td>{{row['state']}}</td>
+						<td>{{row['duration']}}</td>
+						<td class="query">{{row['query']}}</td>
+					</tr>
+					{% end %}
+				</table>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+	var xsession = "{{xsession}}";
+	var ganeshdhost = "{{ganeshd_host}}";
+	var ganeshdport = "{{ganeshd_port}}";
+	window.setInterval(function () {refresh_activity(ganeshdhost, ganeshdport, xsession)}, 1000);
+</script>
+
+{% end %}

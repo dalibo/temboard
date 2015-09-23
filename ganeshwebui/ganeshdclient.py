@@ -40,12 +40,14 @@ def ganeshd_dashboard(hostname, port, xsession):
     else:
         raise GaneshdError(response.status, json.loads(data)['error'])
 
-def ganeshd_get_configuration(hostname, port, xsession, enc_category = None):
+def ganeshd_get_configuration(hostname, port, xsession, enc_category = None, query_filter = None):
     params = None
     headers = {"X-Session": xsession}
     try:
         conn = httplib.HTTPConnection(hostname, port)
-        if enc_category:
+        if query_filter:
+            conn.request("GET", "/administration/configuration?filter="+query_filter, params, headers)
+        elif enc_category:
             conn.request("GET", "/administration/configuration/category/"+enc_category, params, headers)
         else:
             conn.request("GET", "/administration/configuration", params, headers)
@@ -127,6 +129,61 @@ def ganeshd_dashboard_info(hostname, port, xsession):
     try:
         conn = httplib.HTTPConnection(hostname, port)
         conn.request("GET", "/dashboard/info", params, headers)
+        response = conn.getresponse()
+        conn.close()
+        data = response.read()
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+    if response.status == 200:
+        return json.loads(data)
+    else:
+        raise GaneshdError(response.status, json.loads(data)['error'])
+
+def ganeshd_get_file_content(file_type, hostname, port, xsession):
+    params = None
+    headers = {"X-Session": xsession}
+    file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    try:
+        conn = httplib.HTTPConnection(hostname, port)
+        conn.request("GET", file_types[file_type], params, headers)
+        response = conn.getresponse()
+        conn.close()
+        data = response.read()
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+    if response.status == 200:
+        return json.loads(data)
+    else:
+        raise GaneshdError(response.status, json.loads(data)['error'])
+
+def ganeshd_post_file_content(file_type, hostname, port, xsession, hba_content):
+    params = None
+    headers = {"X-Session": xsession}
+    file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    try:
+        params = json.dumps({'content': hba_content})
+        conn = httplib.HTTPConnection(hostname, port)
+        conn.request("POST", file_types[file_type], params, headers)
+        response = conn.getresponse()
+        conn.close()
+        data = response.read()
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+    if response.status == 200:
+        return json.loads(data)
+    else:
+        raise GaneshdError(response.status, json.loads(data)['error'])
+
+def ganeshd_activity(hostname, port, xsession):
+    params = None
+    headers = {"X-Session": xsession}
+    try:
+        conn = httplib.HTTPConnection(hostname, port)
+        conn.request("GET", "/activity", params, headers)
         response = conn.getresponse()
         conn.close()
         data = response.read()

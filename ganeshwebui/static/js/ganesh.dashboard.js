@@ -172,7 +172,7 @@ var options = {
 }
 
 /*
- * Call ganeshd /dashboard API and update the dashboard on success through
+ * Call ganeshd /dashboard API and update the dashboard view through
  * update_dashboard() callback.
  */
 function refresh_dashboard(ghost, gport, xsession)

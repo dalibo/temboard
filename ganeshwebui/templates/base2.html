@@ -30,6 +30,18 @@
    		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
    	<![endif]-->
    	<link href="/css/ganeshwebui.css" rel="stylesheet">
+	<!-- CodeMirror -->
+	<script src="/codemirror/lib/codemirror.js"></script>
+	<link rel="stylesheet" href="/codemirror/lib/codemirror.css">
+	<script src="/codemirror/mode/javascript/javascript.js"></script>
+	<script src="/codemirror/addon/selection/active-line.js"></script>
+	<style type="text/css">
+      .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+		font-size: 12px;
+      }
+    </style>
 </head>
 <body>
 	<div id="modalError" /></div>
@@ -43,57 +55,65 @@
 		<script src="/js/sb-admin-2.js"></script>
 
 	<!-- Navigation -->
-		<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-			<div class="navbar-header">
+		<nav class="navbar navbar-default navbar-static-top" role="navigation" id="topNav">
+			<div class="navbar-header" id="divHeaderLogo">
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 					<span class="sr-only">Toggle navigation</span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="/">OPM3</a>
 			</div>
-			<div class="navbar-left" id="divHeaderInfo">
-				{% try %}
-				{% if info %}
-				<table class="table table-condensed" id="tableHeaderInfo">
-				<tr>
-					<td>Hostname: <b>{{ info['hostname'] }}</b></td>
-					<td>PG Version: <b>{{ info['pg_version'] }}</b></td>
-					<td>PG data: <b>{{info['pg_data']}}</b></td>
-				</tr>
-				<tr>
-					<td>Host: <b>{{ ganeshd_host }}</b></td>
-					<td>PG Port: <b>{{ info['pg_port'] }}</b></td>
-					<td>OS: <b>{{ info['os_version'] }}</b></td>
-					<td></td>
-				</tr>
-				</table>
-				{% end %}
-				{% except %}
-				{% end %}
-			</div>
-			<!-- Collect the nav links, forms, and other content for toggling -->
-   			<form class="form-inline navbar-form navbar-right" id="formChangeServer"  role="server">
-				<label class="sr-only" for="selectServer">Server</label>
-				<div class="input-group">
-					<div class="input-group-addon">Server</div>
-					<select class="form-control" id="selectServer">{% for server in servers %}<option value="/server/{{server['host']}}/{{server['port']}}/{{current_page}}"{% if ganeshd_host == server['host'] and ganeshd_port == server['port'] %} selected="selected" {% end %}>{{server['hostname']}} ({{server['host']}}:{{server['port']}})</option>{% end %}</select>
-				</div>
-				<button type="submit" class="btn btn-primary" id="buttonChangeServer">Change</button>
-	  		</form>
 			<div class="navbar-default sidebar" role="navigation">
 				<div class="sidebar-nav navbar-collapse">
 					<ul class="nav" id="side-menu">
+						<li><h1 id="logo">Ganesh</h1></li>
+						<li>
+   							<form class="form" id="formChangeServer"  role="server">
+								<label class="sr-only" for="selectServer">Server</label>
+								<div class="input-group">
+									<select class="form-control input-sm" id="selectServer">{% for server in servers %}<option value="/server/{{server['host']}}/{{server['port']}}/{{current_page}}"{% if ganeshd_host == server['host'] and ganeshd_port == server['port'] %} selected="selected" {% end %}>{{server['hostname']}} ({{server['host']}}:{{server['port']}})</option>{% end %}</select>
+									<span class="input-group-btn">
+										<button type="submit" class="btn btn-sm btn-primary" id="buttonChangeServer">Go</button>
+      								</span>
+								</div>
+	  						</form>
+						</li>
+				{% try %}
+				{% if info %}
+						<li>
+							<table id="tableHeaderInfo">
+								<tr><td>Hostname: </td><td class="pull-right"><b>{{ info['hostname'] }}</b></td></tr>
+								<tr><td>Host: </td><td class="pull-right"><b>{{ ganeshd_host }}</b></td></tr>
+								<tr><td>PG data: </td><td class="pull-right"><b>{{info['pg_data']}}</b></td></tr>
+								<tr><td>PG Port: </td><td class="pull-right"><b>{{ info['pg_port'] }}</b></td></tr>
+							</table>
+						</li>
+				{% end %}
+				{% except %}
+				{% end %}
 						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/login"><i class="fa fa-user fa-fw"></i> Login</a></li>
 						{% try %}
 						{% if xsession and info %}
 						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
+						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/activity"><i class="fa fa-bars fa-fw"></i> Activity</a></li>
 						<li>
-		  					<a href="#"><i class="fa fa-wrench fa-fw"></i> Settings<span class="fa arrow"></span></a>
-							<ul class="nav nav-second-level">
-								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration">Configuration</a></li>
- 								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/hba">Host Base Authentication</a></li>
+		  					<a href="#"><i class="fa fa-wrench fa-fw"></i> Administration<span class="fa arrow"></span></a>
+							<ul class="nav nav-second-level in">
+								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration">PostgreSQL Settings</a></li>
+ 								<li>
+		   							<form method="get" action="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration" class="form" id="formSearchSettings"  role="search">
+										<label class="sr-only" for="selectServer">Search</label>
+										<div class="input-group">
+											<input class="form-control input-sm" id="inputSearchSettings" name="filter" placeholder="Find in settings"/>
+											<span class="input-group-btn">
+												<button type="submit" class="btn btn-sm btn-primary" id="buttonSearchSettings"><i class="glyphicon glyphicon-search"></i></button>
+      										</span>
+										</div>
+	  								</form>
+								</li>
+								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/hba">Host Base Authentication</a></li>
+								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/pg_ident">User Name Maps</a></li>
 		  					</ul>
 						</li>
 						{% end %}

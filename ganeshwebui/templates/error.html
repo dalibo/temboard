@@ -1,11 +1,15 @@
 {% extends base2.html %}
 
-{% block title %}Error{% end %}
+{% block title %}[{{ ganeshd_host }}] - Error{% end %}
 
 {% block content %}
 <div class="row">
-	<div class="col-md-4 col-md-offset-2">
-		<div class="alert alert-danger" role="alert"><h1>ERROR</h1> <p>{{ code }}:{{ message }}</p></div>
+	<div class="col-md-10">
+		<div id="error-configuration" class="alert alert-danger" role="alert">
+			<h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
+			<p>{{ code }}:{{ message }}</p>
+		</div>
 	</div>
+	<div class="col-md-2"></div>
 </div>
 {% end %}

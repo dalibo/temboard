@@ -1,20 +1,16 @@
 /*
- * Call ganeshd /administration/control API and update the dashboard on success through
- * update_dashboard() callback.
+ * ganeshd API calls in modal box confirmation context.
  */
-function administration_control(ghost, gport, xsession, req_action)
+function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal_id, json_params)
 {
-	var key = 'action';
-	var json_params = {};
-	json_params[key] = req_action;
 	$.ajax({ 
-		url: '/proxy/'+ghost+'/'+gport+'/administration/control',
-		type: 'POST',
+		url: '/proxy/'+api_host+'/'+api_port+api_url,
+		type: api_method,
 		data: JSON.stringify(json_params),
 		beforeSend: function(xhr){
-			$('#restartModalLabel').html('Restarting PostgreSQL, please wait...');
-			$('#restartModalBody').html('<div class="row"><div class="col-md-4"></div><div class="col-md-4"><img src="/imgs/ajax-loader.gif" /></div><div class="col-md-4"></div></div>');
-			$('#restartModalFooter').html('<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>');
+			$('#'+modal_id+'Label').html('Processing, please wait...');
+			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4"></div><div class="col-md-4"><img src="/imgs/ajax-loader.gif" /></div><div class="col-md-4"></div></div>');
+			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>');
 			xhr.setRequestHeader('X-Session', xsession);
 		},
 		async: true,
@@ -22,20 +18,18 @@ function administration_control(ghost, gport, xsession, req_action)
 		dataType: "json",
 		
 		success: function (data) {
-			$('#restartModalBody').html('Done.');
-			$('#restartModalFooter').html('<button type="button" class="btn btn-primary" id="restartClose">Close</button><script>$("#restartClose").click(function(){var url = window.location.href;window.location.replace(url);});</script>');
+			$('#'+modal_id+'Body').html('Done.');
+			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-primary" id="'+modal_id+'Close">Close</button><script>$("#'+modal_id+'Close").click(function(){var url = window.location.href;window.location.replace(url);});</script>');
 		},
 		error: function(xhr) {
 			if (xhr.status == 401)
 			{
-				$('#restartModalBody').html('<div class="alert alert-danger" role="alert">Session expired. <a class="btn btn-danger" id="ConfirmOK" href="/server/'+ghost+'/'+gport+'/login">Back to login page</a></div>');
+				$('#'+modal_id+'Body').html('<div class="alert alert-danger" role="alert">Session expired. <a class="btn btn-danger" id="ConfirmOK" href="/server/'+ghost+'/'+gport+'/login">Back to login page</a></div>');
 			}
 			else
 			{
-				$('#restartModalBody').html('<div class="alert alert-danger" role="alert">ERROR '+xhr.status+':'+JSON.parse(xhr.responseText).error+'</div>');
+				$('#'+modal_id+'Body').html('<div class="alert alert-danger" role="alert">ERROR '+xhr.status+':'+JSON.parse(xhr.responseText).error+'</div>');
 			}
 		}
 	});
 }
-
-
