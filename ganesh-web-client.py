@@ -18,6 +18,7 @@ application = tornado.web.Application([
         (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler),
         (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler),
         (r"/proxy/(.*)/([0-9]{1,5})/activity", ActivityProxyHandler),
+        (r"/proxy/(.*)/([0-9]{1,5})/activity/kill", ActivityKillProxyHandler),
         (r"/proxy/(.*)/([0-9]{1,5})/administration/control", AdminControlProxyHandler),
         (r"/proxy/(.*)/([0-9]{1,5})/administration/configuration", AdminConfigurationProxyHandler),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': 'ganeshwebui/static/css'}),

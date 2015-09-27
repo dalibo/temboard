@@ -50,3 +50,15 @@ class ActivityProxyHandler(JsonHandler):
             self.write(data)
         except GaneshdError as e:
             raise HTTPError(e.code, reason = e.message)
+
+class ActivityKillProxyHandler(JsonHandler):
+    def get(self, ganeshd_host, ganeshd_port):
+        ganeshd = get_ganeshd_server(ganeshd_host, ganeshd_port)
+        xsession = self.request.headers.get('X-Session')
+        if not xsession:
+            raise HTTPError(401, reason = 'X-Session header missing')
+        try:
+            data = ganeshd_activity_kill(ganeshd['host'], ganeshd['port'], xsession, tornado.escape.json_decode(self.request.body))
+            self.write(data)
+        except GaneshdError as e:
+            raise HTTPError(e.code, reason = e.message)
