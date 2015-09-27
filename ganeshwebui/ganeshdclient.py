@@ -3,6 +3,7 @@ import urllib2
 import ssl
 import socket
 import json
+from tools import *
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     def connect(self):
@@ -47,8 +48,6 @@ def ganeshd_request(method, url, headers = None, data = None):
     response = handle.read()
     handle.close()
     return response
-
-CA_CERT_FILE = "/etc/ganesh/ssl/ca_certs.pem"
 
 class GaneshdError(Exception):
     def __init__(self, code, message):

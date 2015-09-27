@@ -13,6 +13,8 @@ GANESHD_SERVERS = [
     }
 ]
 
+CA_CERT_FILE = "/etc/ganesh/ssl/ca_certs.pem"
+
 def get_ganeshd_server(p_ganeshd_host, p_ganeshd_port):
     for server in GANESHD_SERVERS:
         if server['host'] == p_ganeshd_host and server['port'] == int(p_ganeshd_port):
