@@ -200,6 +200,25 @@ def ganeshd_get_file_content(file_type, hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
+def ganeshd_post_file_content(file_type, hostname, port, xsession, content):
+    file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    try:
+        res = ganeshd_request(
+                method = 'POST',
+                url = 'https://%s:%s%s' % (hostname, port, file_types[file_type]),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                },
+                data = content)
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
 def ganeshd_activity(hostname, port, xsession):
     try:
         res = ganeshd_request(

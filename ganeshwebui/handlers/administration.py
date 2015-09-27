@@ -181,7 +181,7 @@ class AdminConfigurationFileHandler(BaseHandler):
         ret_post = None
         try:
             try:
-                ret_post = ganeshd_post_file_content(self.file_type, ganeshd['host'], ganeshd['port'], xsession, self.request.arguments['content'])
+                ret_post = ganeshd_post_file_content(self.file_type, ganeshd['host'], ganeshd['port'], xsession, {'content': self.request.arguments['content']})
                 ret_post = ganeshd_post_administration_control(ganeshd['host'], ganeshd['port'], xsession, {'action': 'reload'})
             except GaneshdError as e:
                 error_code = e.code
