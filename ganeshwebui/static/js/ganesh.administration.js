@@ -33,3 +33,14 @@ function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal
 		}
 	});
 }
+
+/* Image preloader */
+function preload(arrayOfImages) {
+    $(arrayOfImages).each(function(){
+        $('<img/>')[0].src = this;
+    });
+}
+
+preload([
+    '/imgs/ajax-loader.gif'
+]);
