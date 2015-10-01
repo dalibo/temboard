@@ -33,7 +33,9 @@ class RequestWithMethod(urllib2.Request):
     def get_method(self):
         return self._method if self._method else super(RequestWithMethod, self).get_method()
 
-def ganeshd_request(method, url, headers = None, data = None):
+def ganeshd_request(in_ca_cert_file, method, url, headers = None, data = None):
+    global CA_CERT_FILE
+    CA_CERT_FILE = in_ca_cert_file
     https_handler = VerifiedHTTPSHandler()
     url_opener = urllib2.build_opener(https_handler)
     headers_list = []
@@ -55,9 +57,10 @@ class GaneshdError(Exception):
         self.code = code
         self.message = message
 
-def ganeshd_login(hostname, port, username, password):
+def ganeshd_login(in_ca_cert_file, hostname, port, username, password):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'POST',
                 url = 'https://%s:%s/login' % (hostname, port),
                 headers = {"Content-type": "application/json"},
@@ -68,9 +71,10 @@ def ganeshd_login(hostname, port, username, password):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_dashboard(hostname, port, xsession):
+def ganeshd_dashboard(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s/dashboard' % (hostname, port),
                 headers = {
@@ -83,9 +87,10 @@ def ganeshd_dashboard(hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_dashboard_info(hostname, port, xsession):
+def ganeshd_dashboard_info(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s/dashboard/info' % (hostname, port),
                 headers = {
@@ -98,7 +103,7 @@ def ganeshd_dashboard_info(hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_get_configuration(hostname, port, xsession, enc_category = None, query_filter = None):
+def ganeshd_get_configuration(in_ca_cert_file, hostname, port, xsession, enc_category = None, query_filter = None):
     try:
         if query_filter:
             path = "/administration/configuration?filter="+query_filter
@@ -107,6 +112,7 @@ def ganeshd_get_configuration(hostname, port, xsession, enc_category = None, que
         else:
             path = "/administration/configuration"
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s%s' % (hostname, port, path),
                 headers = {
@@ -119,9 +125,10 @@ def ganeshd_get_configuration(hostname, port, xsession, enc_category = None, que
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_post_configuration(hostname, port, xsession, settings):
+def ganeshd_post_configuration(in_ca_cert_file, hostname, port, xsession, settings):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'POST',
                 url = 'https://%s:%s/administration/configuration' % (hostname, port),
                 headers = {
@@ -135,9 +142,10 @@ def ganeshd_post_configuration(hostname, port, xsession, settings):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_get_configuration_categories(hostname, port, xsession):
+def ganeshd_get_configuration_categories(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s/administration/configuration/categories' % (hostname, port),
                 headers = {
@@ -150,9 +158,10 @@ def ganeshd_get_configuration_categories(hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_get_configuration_status(hostname, port, xsession):
+def ganeshd_get_configuration_status(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s/administration/configuration/status' % (hostname, port),
                 headers = {
@@ -165,9 +174,10 @@ def ganeshd_get_configuration_status(hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_post_administration_control(hostname, port, xsession, action):
+def ganeshd_post_administration_control(in_ca_cert_file, hostname, port, xsession, action):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'POST',
                 url = 'https://%s:%s/administration/control' % (hostname, port),
                 headers = {
@@ -181,12 +191,13 @@ def ganeshd_post_administration_control(hostname, port, xsession, action):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_get_file_content(file_type, hostname, port, xsession):
+def ganeshd_get_file_content(in_ca_cert_file, file_type, hostname, port, xsession):
     file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s%s' % (hostname, port, file_types[file_type]),
                 headers = {
@@ -199,12 +210,13 @@ def ganeshd_get_file_content(file_type, hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_post_file_content(file_type, hostname, port, xsession, content):
+def ganeshd_post_file_content(in_ca_cert_file, file_type, hostname, port, xsession, content):
     file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'POST',
                 url = 'https://%s:%s%s' % (hostname, port, file_types[file_type]),
                 headers = {
@@ -218,9 +230,10 @@ def ganeshd_post_file_content(file_type, hostname, port, xsession, content):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_activity(hostname, port, xsession):
+def ganeshd_activity(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'GET',
                 url = 'https://%s:%s/activity' % (hostname, port),
                 headers = {
@@ -233,9 +246,10 @@ def ganeshd_activity(hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
-def ganeshd_activity_kill(hostname, port, xsession, pids):
+def ganeshd_activity_kill(in_ca_cert_file, hostname, port, xsession, pids):
     try:
         res = ganeshd_request(
+                in_ca_cert_file,
                 method = 'POST',
                 url = 'https://%s:%s/activity/kill' % (hostname, port),
                 headers = {

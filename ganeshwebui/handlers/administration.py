@@ -12,7 +12,7 @@ class AdminControlProxyHandler(JsonHandler):
         if not xsession:
             raise HTTPError(401, reason = 'X-Session header missing')
         try:
-            data = ganeshd_post_administration_control(ganeshd['host'], ganeshd['port'], xsession, tornado.escape.json_decode(self.request.body))
+            data = ganeshd_post_administration_control(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, tornado.escape.json_decode(self.request.body))
             self.write(data)
         except GaneshdError as e:
             raise HTTPError(e.code, reason = e.message)
@@ -24,7 +24,7 @@ class AdminConfigurationProxyHandler(JsonHandler):
         if not xsession:
             raise HTTPError(401, reason = 'X-Session header missing')
         try:
-            data = ganeshd_post_configuration(ganeshd['host'], ganeshd['port'], xsession, tornado.escape.json_decode(self.request.body))
+            data = ganeshd_post_configuration(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, tornado.escape.json_decode(self.request.body))
             self.write(data)
         except GaneshdError as e:
             raise HTTPError(e.code, reason = e.message)
@@ -38,13 +38,13 @@ class AdminConfigurationHandler(BaseHandler):
             return
         info = None
         try:
-            info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
-            configuration_status = ganeshd_get_configuration_status(ganeshd['host'], ganeshd['port'], xsession)
-            configuration_cat = ganeshd_get_configuration_categories(ganeshd['host'], ganeshd['port'], xsession)
+            info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            configuration_status = ganeshd_get_configuration_status(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            configuration_cat = ganeshd_get_configuration_categories(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
             query_filter = self.get_argument('filter', None, True)
             if category == None:
                 category = tornado.escape.url_escape(configuration_cat['categories'][0]) 
-            data = ganeshd_get_configuration(ganeshd['host'], ganeshd['port'], xsession, tornado.escape.url_escape(tornado.escape.url_unescape(category)), query_filter)
+            data = ganeshd_get_configuration(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, tornado.escape.url_escape(tornado.escape.url_unescape(category)), query_filter)
             self.render("configuration.html",
                 info = info,
                 data = data,
@@ -92,16 +92,16 @@ class AdminConfigurationHandler(BaseHandler):
                     continue
                 settings['settings'].append({'name': setting_name, 'setting': setting_value[0]})
             try:
-                ret_post = ganeshd_post_configuration(ganeshd['host'], ganeshd['port'], xsession, settings)
+                ret_post = ganeshd_post_configuration(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, settings)
             except GaneshdError as e:
                 error_code = e.code
                 error_message = e.message    
-            configuration_status = ganeshd_get_configuration_status(ganeshd['host'], ganeshd['port'], xsession)
-            configuration_cat = ganeshd_get_configuration_categories(ganeshd['host'], ganeshd['port'], xsession)
-            info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
+            configuration_status = ganeshd_get_configuration_status(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            configuration_cat = ganeshd_get_configuration_categories(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
             if category == None:
                 category = tornado.escape.url_escape(configuration_cat['categories'][0]) 
-            data = ganeshd_get_configuration(ganeshd['host'], ganeshd['port'], xsession, tornado.escape.url_escape(tornado.escape.url_unescape(category)), query_filter)
+            data = ganeshd_get_configuration(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, tornado.escape.url_escape(tornado.escape.url_unescape(category)), query_filter)
             self.render("configuration.html",
                 info = info,
                 data = data,
@@ -142,8 +142,8 @@ class AdminConfigurationFileHandler(BaseHandler):
             return
         info = None
         try:
-            info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
-            file_content = ganeshd_get_file_content(self.file_type, ganeshd['host'], ganeshd['port'], xsession)
+            info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            file_content = ganeshd_get_file_content(self.ssl_ca_cert_file, self.file_type, ganeshd['host'], ganeshd['port'], xsession)
             self.render("edit_file.html",
                 file_type = self.file_type,
                 info = info,
@@ -181,13 +181,13 @@ class AdminConfigurationFileHandler(BaseHandler):
         ret_post = None
         try:
             try:
-                ret_post = ganeshd_post_file_content(self.file_type, ganeshd['host'], ganeshd['port'], xsession, {'content': self.request.arguments['content']})
-                ret_post = ganeshd_post_administration_control(ganeshd['host'], ganeshd['port'], xsession, {'action': 'reload'})
+                ret_post = ganeshd_post_file_content(self.ssl_ca_cert_file, self.file_type, ganeshd['host'], ganeshd['port'], xsession, {'content': self.request.arguments['content']})
+                ret_post = ganeshd_post_administration_control(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession, {'action': 'reload'})
             except GaneshdError as e:
                 error_code = e.code
                 error_message = e.message    
-            info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
-            file_content = ganeshd_get_file_content(self.file_type, ganeshd['host'], ganeshd['port'], xsession)
+            info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            file_content = ganeshd_get_file_content(self.ssl_ca_cert_file, self.file_type, ganeshd['host'], ganeshd['port'], xsession)
             self.render("edit_file.html",
                 file_type = self.file_type,
                 info = info,

@@ -9,7 +9,7 @@ class LoginHandler(BaseHandler):
         info = None
         if xsession:
             try:
-                info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
+                info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
             except GaneshdError as e:
                 pass
         self.render("login.html",
@@ -23,7 +23,7 @@ class LoginHandler(BaseHandler):
     def post(self, ganeshd_host, ganeshd_port):
         ganeshd = get_ganeshd_server(ganeshd_host, ganeshd_port)
         try:
-            xsession = ganeshd_login(ganeshd['host'], ganeshd['port'], self.get_argument("username"), self.get_argument("password"))
+            xsession = ganeshd_login(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], self.get_argument("username"), self.get_argument("password"))
             self.set_secure_cookie("ganesh_"+ganeshd['host']+"_"+str(ganeshd['port']), xsession)
             self.redirect("dashboard")
         except GaneshdError as e:
@@ -31,7 +31,7 @@ class LoginHandler(BaseHandler):
             info = None
             if xsession:
                 try:
-                    info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
+                    info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
                 except GaneshdError as e:
                     pass
             self.render("login.html",

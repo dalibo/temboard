@@ -5,6 +5,8 @@ from ganeshwebui.tools import *
 from ganeshwebui.ganeshdclient import *
 
 class BaseHandler(tornado.web.RequestHandler):
+    def initialize(self, ssl_ca_cert_file):
+        self.ssl_ca_cert_file = ssl_ca_cert_file
     
     def write_error(self, status_code, **kwargs):
         self.write('Error %s' % status_code)

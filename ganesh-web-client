@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys, signal, os
+import ssl
+
+import tornado.ioloop
+import tornado.web
+
+from ganeshwebui.handlers.base import *
+from ganeshwebui.handlers.user import *
+from ganeshwebui.handlers.dashboard import *
+from ganeshwebui.handlers.administration import *
+from ganeshwebui.handlers.activity import *
+
+from ganeshwebui.options import ganeshOptions
+from ganeshwebui.configuration import Configuration
+from ganeshwebui.errors import ConfigurationError, CLIError
+from ganeshwebui.logger import get_logger, set_logger_name
+from ganeshwebui.daemon import daemonize, httpd_sigterm_handler
+
+class CustomTornadoWebApp(tornado.web.Application):
+
+    def set_config(self, config):
+        self.config = config
+
+    def log_request(self, handler):
+        logger = get_logger(self.config)
+        request_time = 1000.0 * handler.request.request_time()
+        log_message = '%d %s %.2fms' % (handler.get_status(), handler._request_summary(), request_time)
+        logger.info(log_message)
+
+def main():
+    optparser = ganeshOptions(description = "Ganesh web client.")
+    (options, _) = optparser.parse_args()
+    # Load configuration from the configuration file.
+    try:
+        config =  Configuration(options.configfile)
+        set_logger_name("ganesh")
+        logger = get_logger(config)
+        logger.info("Starting main process.")
+    except (ConfigurationError, ImportError) as e:
+        try:
+            logger.error(str(e))
+        except Exception:
+            pass
+        sys.stderr.write("FATAL: %s\n" % str(e))
+        exit(1)
+    # Run ganesh as a background daemon.
+    if (options.daemon):
+        daemonize(options.pidfile)
+    # Dirty way for getting static/ and templates/ directories absolute path.
+    import ganeshwebui
+    base_path = os.path.dirname(ganeshwebui.__file__)
+    del ganeshwebui
+
+    ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_ctx.load_cert_chain(config.ganesh['ssl_cert_file'], config.ganesh['ssl_key_file'])
+    application = CustomTornadoWebApp(
+        [
+            (r"/", BaseHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/administration/configuration$", AdminConfigurationHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/administration/configuration/category/(.+)$", AdminConfigurationHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/administration/hba", AdminHBAHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/administration/pg_ident", AdminPGIdentHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/activity", ActivityHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/login", LoginHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/proxy/(.*)/([0-9]{1,5})/activity", ActivityProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/proxy/(.*)/([0-9]{1,5})/activity/kill", ActivityKillProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/proxy/(.*)/([0-9]{1,5})/administration/control", AdminControlProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/proxy/(.*)/([0-9]{1,5})/administration/configuration", AdminConfigurationProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/css'}),
+            (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/codemirror'}),
+            (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/js'}),
+            (r"/imgs/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/imgs'}),
+            (r"/fonts/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/fonts'})
+        ],
+        cookie_secret = config.ganesh['cookie_secret'],
+        template_path = base_path+"/templates"
+    )
+    application.set_config(config)
+
+    # Add signal handlers on SIGTERM.
+    signal.signal(signal.SIGTERM, httpd_sigterm_handler)
+    application.listen(config.ganesh['port'], address = config.ganesh['address'], ssl_options = ssl_ctx)
+    tornado.ioloop.IOLoop.instance().start()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        sys.stderr.write("FATAL: %s\n" % str(e))
+        exit(1)

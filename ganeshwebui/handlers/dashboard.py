@@ -13,8 +13,8 @@ class DashboardHandler(BaseHandler):
             return
         info = None
         try:
-            data = ganeshd_dashboard(ganeshd['host'], ganeshd['port'], xsession)
-            info = ganeshd_dashboard_info(ganeshd['host'], ganeshd['port'], xsession)
+            data = ganeshd_dashboard(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
             self.render("dashboard.html",
                 info = info,
                 ganeshd_host = ganeshd['host'],
@@ -48,7 +48,7 @@ class DashboardProxyHandler(JsonHandler):
         if not xsession:
             raise HTTPError(401, reason = 'X-Session header missing')
         try:
-            data = ganeshd_dashboard(ganeshd['host'], ganeshd['port'], xsession)
+            data = ganeshd_dashboard(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
             self.write(data)
         except GaneshdError as e:
             raise HTTPError(e.code, reason = e.message)
