@@ -1,0 +1,7 @@
+CONFIGDIR='/etc/ganesh'
+LOGDIR='/var/log/ganesh'
+RUNDIR='/var/run/ganesh'
+
+/bin/rm -rf $CONFIGDIR
+/bin/rm -rf $LOGDIR
+/bin/rm -rf $RUNDIR
