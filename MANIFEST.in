@@ -1,0 +1,2 @@
+graft ganeshwebui/static
+graft ganeshwebui/templates
