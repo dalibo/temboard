@@ -1,3 +1,9 @@
+ganesh (0.0.1-2) unstable; urgency=low
+
+  * Lot of work.
+
+ -- Julien Tachoires <julien.tachoires@dalibo.com>  Fri, 30 Oct 2015 18:46:25 +0100
+
 ganesh (0.0.1-1) unstable; urgency=low
 
   * source package automatically created by stdeb 0.8.2

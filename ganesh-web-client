@@ -7,28 +7,57 @@ import ssl
 import tornado.ioloop
 import tornado.web
 
+from sqlalchemy import create_engine
+
 from ganeshwebui.handlers.base import *
 from ganeshwebui.handlers.user import *
-from ganeshwebui.handlers.dashboard import *
-from ganeshwebui.handlers.administration import *
-from ganeshwebui.handlers.activity import *
 
 from ganeshwebui.options import ganeshOptions
 from ganeshwebui.configuration import Configuration
 from ganeshwebui.errors import ConfigurationError, CLIError
 from ganeshwebui.logger import get_logger, set_logger_name
 from ganeshwebui.daemon import daemonize, httpd_sigterm_handler
+from ganeshwebui.pluginsmgmt import load_plugins, plugins_bind_metadata
 
 class CustomTornadoWebApp(tornado.web.Application):
 
     def set_config(self, config):
         self.config = config
 
+    def load_plugins(self, plugin_names):
+        plugins = load_plugins(plugin_names, self.config)
+        plugins_conf = dict()
+        for key, val in plugins.iteritems():
+            self.add_handlers(r'.*', val['routes'])
+            plugins_conf[key] = val['configuration']
+        return plugins_conf
+
     def log_request(self, handler):
         logger = get_logger(self.config)
         request_time = 1000.0 * handler.request.request_time()
         log_message = '%d %s %.2fms' % (handler.get_status(), handler._request_summary(), request_time)
         logger.info(log_message)
+
+    def create_db_engine(self,):
+        dburi = "postgresql://%s:%s@%s:%s/%s" % (
+            self.config.postgresql['user'],
+            self.config.postgresql['password'],
+            self.config.postgresql['host'],
+            self.config.postgresql['port'],
+            self.config.postgresql['dbname']
+        )
+        self.engine = create_engine(dburi)
+        logger = get_logger(self.config)
+        try:
+            conn = self.engine.connect()
+        except Exception as e:
+            logger.error("Connection to the database failed for the following reason:")
+            logger.error("\t%s" % e.message)
+            logger.error("Please check your configuration.")
+            sys.stderr.write("FATAL: %s\n" % e.message)
+            exit(1)
+        else:
+            conn.close()
 
 def main():
     optparser = ganeshOptions(description = "Ganesh web client.")
@@ -41,10 +70,10 @@ def main():
         logger.info("Starting main process.")
     except (ConfigurationError, ImportError) as e:
         try:
-            logger.error(str(e))
+            logger.error(e.message)
         except Exception:
             pass
-        sys.stderr.write("FATAL: %s\n" % str(e))
+        sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
     # Run ganesh as a background daemon.
     if (options.daemon):
@@ -54,23 +83,16 @@ def main():
     base_path = os.path.dirname(ganeshwebui.__file__)
     del ganeshwebui
 
+    # TODO: compatibility with older python version
+    # http://www.tornadoweb.org/en/stable/_modules/tornado/httpserver.html
+    # http://stackoverflow.com/questions/28228214/ssl-module-object-has-no-attribute-sslcontext
     ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     ssl_ctx.load_cert_chain(config.ganesh['ssl_cert_file'], config.ganesh['ssl_key_file'])
+    handler_conf = {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file'], 'template_path': None}
     application = CustomTornadoWebApp(
         [
-            (r"/", BaseHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/administration/configuration$", AdminConfigurationHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/administration/configuration/category/(.+)$", AdminConfigurationHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/administration/hba", AdminHBAHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/administration/pg_ident", AdminPGIdentHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/activity", ActivityHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/login", LoginHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/proxy/(.*)/([0-9]{1,5})/activity", ActivityProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/proxy/(.*)/([0-9]{1,5})/activity/kill", ActivityKillProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/proxy/(.*)/([0-9]{1,5})/administration/control", AdminControlProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
-            (r"/proxy/(.*)/([0-9]{1,5})/administration/configuration", AdminConfigurationProxyHandler, {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file']}),
+            (r"/", BaseHandler, handler_conf),
+            (r"/server/(.*)/([0-9]{1,5})/login", LoginHandler, handler_conf),
             (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/css'}),
             (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/codemirror'}),
             (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/js'}),
@@ -81,7 +103,9 @@ def main():
         template_path = base_path+"/templates"
     )
     application.set_config(config)
-
+    config.plugins = application.load_plugins(config.ganesh['plugins'])
+    application.create_db_engine()
+    plugins_bind_metadata(application.engine, config.ganesh['plugins_orm_engine'])
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     application.listen(config.ganesh['port'], address = config.ganesh['address'], ssl_options = ssl_ctx)
@@ -91,5 +115,8 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        sys.stderr.write("FATAL: %s\n" % str(e))
+        sys.stderr.write("FATAL: %s\n" % e.message)
+        import traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback)
         exit(1)

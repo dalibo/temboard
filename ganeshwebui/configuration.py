@@ -23,7 +23,9 @@ class Configuration(configparser.ConfigParser):
             'ssl_cert_file': '/etc/ganesh/ssl/ganesh_CHANGEME.pem',
             'ssl_key_file': '/etc/ganesh/ssl/ganesh_CHANGEME.key',
             'ssl_ca_cert_file': '/etc/ganesh/ssl/ca_certs.pem',
-            'cookie_secret': 'MY_S3CR3T_C4K3'
+            'cookie_secret': 'MY_S3CR3T_C4K3',
+            'plugins': [],
+            'plugins_orm_engine': []
         }
         self.logging = {
             'method': 'syslog',
@@ -116,6 +118,36 @@ class Configuration(configparser.ConfigParser):
                     % (self.configfile))
         except configparser.NoOptionError as e:
            pass
+
+        try:
+            plugins = json.loads(self.get('ganesh', 'plugins'))
+            if not type(plugins) == list:
+                raise ValueError()
+            for plugin in plugins:
+                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
+                    raise ValueError
+            self.ganesh['plugins'] = plugins
+        except configparser.NoOptionError as e:
+           pass
+        except ValueError as e:
+            raise ConfigurationError("'plugins' option must be a list of string"
+                    " (alphanum only) in %s"
+                    % (self.configfile))
+
+        try:
+            plugins = json.loads(self.get('ganesh', 'plugins_orm_engine'))
+            if not type(plugins) == list:
+                raise ValueError()
+            for plugin in plugins:
+                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
+                    raise ValueError
+            self.ganesh['plugins_orm_engine'] = plugins
+        except configparser.NoOptionError as e:
+           pass
+        except ValueError as e:
+            raise ConfigurationError("'plugins_orm_engine' option must be a list of string"
+                    " (alphanum only) in %s"
+                    % (self.configfile))
 
 
         # Test if 'logging' section exists.
