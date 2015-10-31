@@ -25,15 +25,19 @@ class BaseHandler(tornado.web.RequestHandler):
             return
         if async_result.http_code in (302, 401) and async_result.redirection is not None:
             self.redirect(async_result.redirection)
+            return
         if async_result.http_code == 200:
             if async_result.template_path is not None:
                 self.loader = Loader(async_result.template_path)
                 self.write(self.loader.load(async_result.template_file).generate(**async_result.data))
                 self.finish()
+                return
             else:
                 self.render(async_result.template_file, **async_result.data)
+                return
         else:
             self.render(async_result.template_file, **async_result.data)
+            return
 
 class JsonHandler(BaseHandler):
     """Request handler where requests and responses speak JSON."""
