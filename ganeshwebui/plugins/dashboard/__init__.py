@@ -28,7 +28,6 @@ class DashboardHandler(BaseHandler):
         dashboard_info = None
         ganeshd = get_ganeshd_server(ganeshd_host, ganeshd_port)
         xsession = self.get_secure_cookie("ganesh_"+ganeshd['host']+"_"+str(ganeshd['port']))
-
         if not xsession:
             return HTMLAsyncResult(http_code = 401, redirection = "/server/"+ganeshd['host']+"/"+str(ganeshd['port'])+"/login")
         try:
@@ -50,19 +49,22 @@ class DashboardHandler(BaseHandler):
                     'current_page': 'dashboard'
                 })
         except GaneshdError as e:
-            return HTMLAsyncResult(
-                http_code = e.code,
-                template_file = 'error.html',
-                data = {
-                    'code': str(e.code),
-                    'message': str(e.message),
-                    'info': dahsboard_info,
-                    'ganeshd_host': ganeshd['host'],
-                    'ganeshd_port': ganeshd['port'],
-                    'xsession': xsession,
-                    'servers': GANESHD_SERVERS,
-                    'current_page': 'dashboard'
-                })
+            if e.code == 401:
+                return HTMLAsyncResult(http_code = 401, redirection = "/server/"+ganeshd['host']+"/"+str(ganeshd['port'])+"/login")
+            else:
+                return HTMLAsyncResult(
+                    http_code = e.code,
+                    template_file = 'error.html',
+                    data = {
+                        'code': str(e.code),
+                        'message': str(e.message),
+                        'info': dashboard_info,
+                        'ganeshd_host': ganeshd['host'],
+                        'ganeshd_port': ganeshd['port'],
+                        'xsession': xsession,
+                        'servers': GANESHD_SERVERS,
+                        'current_page': 'dashboard'
+                    })
 
     @tornado.web.asynchronous
     def get(self, ganeshd_host, ganeshd_port):
