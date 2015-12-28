@@ -4,7 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, mapper
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.inspection import inspect
-from passlib.apps import custom_app_context as pwd_ctx
 
 class ModelMixin(object):
     """

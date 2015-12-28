@@ -1,7 +1,7 @@
 graft ganeshwebui/static
 graft ganeshwebui/templates
-graft ganeshwebui/plugins/administration/static
-graft ganeshwebui/plugins/administration/templates
+graft ganeshwebui/plugins/settings/static
+graft ganeshwebui/plugins/settings/templates
 graft ganeshwebui/plugins/activity/static
 graft ganeshwebui/plugins/activity/templates
 graft ganeshwebui/plugins/dashboard/static

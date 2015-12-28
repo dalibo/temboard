@@ -1,16 +1,21 @@
-import os
+from os import path
 import tornado.web
-from tornado.template import Loader
+import json
+from sqlalchemy.exc import *
+
 from ganeshwebui.handlers.base import JsonHandler, BaseHandler
 from ganeshwebui.tools import *
 from ganeshwebui.ganeshdclient import *
 from ganeshwebui.async import *
+from ganeshwebui.errors import GaneshError
+from ganeshwebui.application import get_instance
+from ganeshwebui.ganeshdclient import GaneshdError
 
 def configuration(config):
     return {}
 
 def get_routes(config):
-    plugin_path = os.path.dirname(os.path.realpath(__file__))
+    plugin_path = path.dirname(path.realpath(__file__))
     handler_conf = {
         'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file'],
         'template_path':  plugin_path + "/templates"
@@ -24,65 +29,120 @@ def get_routes(config):
 
 class DashboardHandler(BaseHandler):
 
-    def get_dashboard(self, ganeshd_host, ganeshd_port):
-        dashboard_info = None
-        ganeshd = get_ganeshd_server(ganeshd_host, ganeshd_port)
-        xsession = self.get_secure_cookie("ganesh_"+ganeshd['host']+"_"+str(ganeshd['port']))
-        if not xsession:
-            return HTMLAsyncResult(http_code = 401, redirection = "/server/"+ganeshd['host']+"/"+str(ganeshd['port'])+"/login")
+    def get_dashboard(self, agent_address, agent_port):
         try:
-            dashboard_data = ganeshd_dashboard(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
-            dashboard_info = ganeshd_dashboard_info(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            instance = None
+            role = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise GaneshError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise GaneshError(404, "Instance not found.")
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+
+            xsession = self.get_secure_cookie("ganesh_%s_%s" % (instance.agent_address, instance.agent_port))
+            if not xsession:
+                raise GaneshError(401, "Authentication cookie is missing.")
+
+            dashboard_history = ganeshd_dashboard_history(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            if dashboard_history and isinstance(dashboard_history, list) and len(dashboard_history) > 0:
+                last_data = dashboard_history[-1]
+                history = json.dumps(dashboard_history)
+            else:
+                # If dashboard history is empty, let's try to get data from the fresh data source.
+                last_data = ganeshd_dashboard_live(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+                history = ''
             return HTMLAsyncResult(
                 http_code = 200,
                 template_file = 'dashboard.html',
                 template_path = self.template_path,
                 data = {
-                    'info': dashboard_info,
-                    'ganeshd_host' : ganeshd['host'],
-                    'ganeshd_port' : ganeshd['port'],
-                    'dashboard' : dashboard_data,
+                    'nav': True,
+                    'role': role,
+                    'instance': instance,
+                    'dashboard' : last_data,
+                    'history': history,
                     'buffers_delta' : 0,
-                    'readratio': (100 - dashboard_data['hitratio']),
-                    'xsession': xsession,
-                    'servers': GANESHD_SERVERS,
-                    'current_page': 'dashboard'
+                    'readratio': (100 - last_data['hitratio']),
+                    'xsession': xsession
                 })
-        except GaneshdError as e:
-            if e.code == 401:
-                return HTMLAsyncResult(http_code = 401, redirection = "/server/"+ganeshd['host']+"/"+str(ganeshd['port'])+"/login")
+        except (GaneshError, GaneshdError, Exception) as e:
+            self.logger.error(e.message)
+            try:
+                self.db_session.expunge_all()
+                self.db_session.rollback()
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, GaneshError) or isinstance(e, GaneshdError)):
+                if e.code == 401:
+                    return HTMLAsyncResult(http_code = 401, redirection = "/server/%s/%s/login" % (agent_address, agent_port))
+                elif e.code == 302:
+                    self.logger.error(".....")
+                    return HTMLAsyncResult(http_code = 401, redirection = "/login")
+                code = e.code
             else:
-                return HTMLAsyncResult(
-                    http_code = e.code,
-                    template_file = 'error.html',
-                    data = {
-                        'code': str(e.code),
-                        'message': str(e.message),
-                        'info': dashboard_info,
-                        'ganeshd_host': ganeshd['host'],
-                        'ganeshd_port': ganeshd['port'],
-                        'xsession': xsession,
-                        'servers': GANESHD_SERVERS,
-                        'current_page': 'dashboard'
-                    })
+                code = 500
+            return HTMLAsyncResult(
+                        http_code = code,
+                        template_file = 'error.html',
+                        data = {
+                            'nav': True,
+                            'role': role,
+                            'instance': instance,
+                            'code': e.code,
+                            'error': e.message
+                        })
 
     @tornado.web.asynchronous
-    def get(self, ganeshd_host, ganeshd_port):
-        run_background(self.get_dashboard, self.async_callback, (ganeshd_host, ganeshd_port))
+    def get(self, agent_address, agent_port):
+        run_background(self.get_dashboard, self.async_callback, (agent_address, agent_port))
 
 class DashboardProxyHandler(JsonHandler):
 
-    def get_dashboard(self, ganeshd_host, ganeshd_port):
-        ganeshd = get_ganeshd_server(ganeshd_host, ganeshd_port)
-        xsession = self.request.headers.get('X-Session')
-        if not xsession:
-            return JSONAsyncResult(http_code = 401, data = {'error': 'X-Session header missing'})
+    def get_dashboard(self, agent_address, agent_port):
         try:
-            dashboard_data = ganeshd_dashboard(self.ssl_ca_cert_file, ganeshd['host'], ganeshd['port'], xsession)
+            role = None
+            instance = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise GaneshError(302, "Current role unknown.")
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise GaneshError(404, "Instance not found.")
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+
+            xsession = self.request.headers.get('X-Session')
+            if not xsession:
+                raise GaneshError(401, 'X-Session header missing')
+
+            dashboard_data = ganeshd_dashboard(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
             return JSONAsyncResult(http_code = 200, data = dashboard_data)
-        except GaneshdError as e:
-            return JSONAsyncResult(http_code = e.code, data = {'error': e.message})
+        except (GaneshError, GaneshdError, Exception) as e:
+            self.logger.error(e.message)
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, GaneshError) or isinstance(e, GaneshdError)):
+                return JSONAsyncResult(http_code = e.code, data = {'error': e.message})
+            else:
+                return JSONAsyncResult(http_code = 500, data = {'error': e.message})
 
     @tornado.web.asynchronous
-    def get(self, ganeshd_host, ganeshd_port):
-        run_background(self.get_dashboard, self.async_callback, (ganeshd_host, ganeshd_port))
+    def get(self, agent_address, agent_port):
+        run_background(self.get_dashboard, self.async_callback, (agent_address, agent_port))

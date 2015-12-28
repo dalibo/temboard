@@ -112,12 +112,18 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})
         except IntegrityError as e:
-            thread_session.rollback()
-            thread_session.close()
+            try:
+                thread_session.rollback()
+                thread_session.close()
+            except Exception:
+                pass
             return JSONAsyncResult(http_code = 409, data = {'error': e.message})
         except Exception as e:
-            thread_session.rollback()
-            thread_session.close()
+            try:
+                thread_session.rollback()
+                thread_session.close()
+            except Exception:
+                pass
             return JSONAsyncResult(http_code = 500, data = {'error': e.message})
 
     @tornado.web.asynchronous

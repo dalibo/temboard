@@ -11,6 +11,10 @@ from sqlalchemy import create_engine
 
 from ganeshwebui.handlers.base import *
 from ganeshwebui.handlers.user import *
+from ganeshwebui.handlers.home import *
+from ganeshwebui.handlers.manage.user import *
+from ganeshwebui.handlers.manage.group import *
+from ganeshwebui.handlers.manage.instance import *
 
 from ganeshwebui.options import ganeshOptions
 from ganeshwebui.configuration import Configuration
@@ -20,6 +24,9 @@ from ganeshwebui.daemon import daemonize, httpd_sigterm_handler
 from ganeshwebui.pluginsmgmt import load_plugins, plugins_bind_metadata
 
 class CustomTornadoWebApp(tornado.web.Application):
+
+    def set_logger(self, logger):
+        self.logger = logger
 
     def set_config(self, config):
         self.config = config
@@ -33,10 +40,9 @@ class CustomTornadoWebApp(tornado.web.Application):
         return plugins_conf
 
     def log_request(self, handler):
-        logger = get_logger(self.config)
         request_time = 1000.0 * handler.request.request_time()
         log_message = '%d %s %.2fms' % (handler.get_status(), handler._request_summary(), request_time)
-        logger.info(log_message)
+        self.logger.info(log_message)
 
     def create_db_engine(self,):
         dburi = "postgresql://%s:%s@%s:%s/%s" % (
@@ -47,13 +53,12 @@ class CustomTornadoWebApp(tornado.web.Application):
             self.config.postgresql['dbname']
         )
         self.engine = create_engine(dburi)
-        logger = get_logger(self.config)
         try:
             conn = self.engine.connect()
         except Exception as e:
-            logger.error("Connection to the database failed for the following reason:")
-            logger.error("\t%s" % e.message)
-            logger.error("Please check your configuration.")
+            self.logger.error("Connection to the database failed for the following reason:")
+            self.logger.error("\t%s" % e.message)
+            self.logger.error("Please check your configuration.")
             sys.stderr.write("FATAL: %s\n" % e.message)
             exit(1)
         else:
@@ -78,7 +83,7 @@ def main():
     # Run ganesh as a background daemon.
     if (options.daemon):
         daemonize(options.pidfile)
-    # Dirty way for getting static/ and templates/ directories absolute path.
+    # Dirty way for getting static/ and templates/ absolute paths.
     import ganeshwebui
     base_path = os.path.dirname(ganeshwebui.__file__)
     del ganeshwebui
@@ -92,17 +97,40 @@ def main():
     application = CustomTornadoWebApp(
         [
             (r"/", BaseHandler, handler_conf),
-            (r"/server/(.*)/([0-9]{1,5})/login", LoginHandler, handler_conf),
+            (r"/home", HomeHandler, handler_conf),
+            (r"/login", LoginHandler, handler_conf),
+            (r"/logout", LogoutHandler, handler_conf),
+            # Manage users
+            (r"/manage/users", ManageUserHandler, handler_conf),
+            (r"/json/manage/user$", ManageUserJsonHandler, handler_conf),
+            (r"/json/manage/user/([0-9a-z\-_\.]{3,16})$", ManageUserJsonHandler, handler_conf),
+            (r"/json/manage/delete/user$", ManageDeleteUserJsonHandler, handler_conf),
+            (r"/json/manage/all/group/(role|instance)$", ManageGroupAllJsonHandler, handler_conf),
+            # Manage groups (users & instances)
+            (r"/manage/groups/(role|instance)$", ManageGroupHandler, handler_conf),
+            (r"/json/manage/group/(role|instance)$", ManageGroupJsonHandler, handler_conf),
+            (r"/json/manage/group/(role|instance)/([0-9a-z\-_\.]{3,16})$", ManageGroupJsonHandler, handler_conf),
+            (r"/json/manage/delete/group/(role|instance)$", ManageDeleteGroupJsonHandler, handler_conf),
+            # Manage instances
+            (r"/manage/instances", ManageInstanceHandler, handler_conf),
+            (r"/json/manage/instance$", ManageInstanceJsonHandler, handler_conf),
+            (r"/json/manage/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", ManageInstanceJsonHandler, handler_conf),
+            (r"/json/manage/delete/instance$", ManageDeleteInstanceJsonHandler, handler_conf),
+            # Discover
+            (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", DiscoverInstanceJsonHandler, handler_conf),
+            (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler, handler_conf),
             (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/css'}),
             (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/codemirror'}),
             (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/js'}),
-            (r"/imgs/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/imgs'}),
+            (r"/images/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/images'}),
             (r"/fonts/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/fonts'})
         ],
         cookie_secret = config.ganesh['cookie_secret'],
-        template_path = base_path+"/templates"
+        template_path = base_path+"/templates",
+        default_handler_class = Error404Handler
     )
     application.set_config(config)
+    application.set_logger(logger)
     config.plugins = application.load_plugins(config.ganesh['plugins'])
     application.create_db_engine()
     plugins_bind_metadata(application.engine, config.ganesh['plugins_orm_engine'])

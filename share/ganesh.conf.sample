@@ -12,7 +12,7 @@ ssl_ca_cert_file = /etc/ganesh/ssl/ca_certs.pem
 # Cookie secret key
 cookie_secret = "7ee98be2cbea98a466739f3130955655d4a60e3bc6dc5c34a28acae8346f02c"
 # Plugins
-plugins = ["dashboard", "administration", "activity", "supervision"]
+plugins = ["dashboard", "settings", "activity", "supervision"]
 plugins_orm_engine = ["supervision"]
 
 [postgresql]

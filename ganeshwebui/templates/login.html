@@ -1,37 +1,34 @@
-{% extends base2.html %}
+{% extends base.html %}
 
-{% block title %}[{{ ganeshd_host }}] - Login{% end %}
+{% block title %}Ganesh - Login{% end %}
 
 {% block content %}
 <div class="row">
-	<div class="col-md-8">
-		<h1><i class="fa fa-user fa-fw"></i> Login</h1>
-	</div>
-	<div class="col-md-4"></div>
-</div>
-<div class="row">
-	<div class="col-md-4 col-md-offset-2">
+	<div class="col-md-4 col-md-offset-4">
 		<div class="panel panel-default" id="panelLogin">
 			<div class="panel-heading">
-				Please sign in ({{ganeshd_host}}:{{ganeshd_port}}):
+				<h4>Ganesh - Please login.</h4>
 			</div>
 			<div class="panel-body">
 				{% try %}{% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% end %}{% except %}{% end %}
-				<form role="form" action="login" method="post">
-					<fieldset>
-						<div class="form-group">
+				<form role="form" action="/login" method="post">
+					<div class="row">
+						<div class="form-group col-sm-8 col-sm-offset-2">
+							<label for="inputUsername" class="control-label">Username</label>
 							<input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
 						</div>
-						<div class="form-group">
+					</div>
+					<div class="row">
+						<div class="form-group col-sm-8 col-sm-offset-2">
+							<label for="inputPassword" class="control-label">Password</label>
 							<input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
 						</div>
-						<div class="checkbox">
-							<label>
-								<input name="remember" type="checkbox" value="Remember Me">Remember Me
-							</label>
+					</div>
+					<div class="row">
+						<div class="col-sm-12 text-center">
+							<button type="submit" class="btn btn-lg btn-primary">Login</button>
 						</div>
-						<button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
-					</fieldset>
+					</div>
 				</form>
 			</div>
 		</div>

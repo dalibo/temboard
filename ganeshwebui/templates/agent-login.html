@@ -1,0 +1,44 @@
+{% extends base.html %}
+
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Login{% end %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<h1><i class="glyphicon glyphicon-log-in"></i> Login: <span class="label label-default">{{instance.agent_address}}:{{instance.agent_port}}</span></h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			<div class="panel panel-default" id="panelLogin">
+				<div class="panel-heading">
+					Please login
+				</div>
+				<div class="panel-body">
+				{% try %}{% if error %}<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: {{ error }}</div></div></div>{% end %}{% except %}{% end %}
+				<form role="form" action="login" method="post">
+					<div class="row">
+						<div class="form-group col-md-8 col-md-offset-2">
+							<label for="inputUsername" class="control-label">Username</label>
+							<input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-8 col-md-offset-2">
+							<label for="inputPassword" class="control-label">Password</label>
+							<input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12 text-center">
+							<button type="submit" class="btn btn-primary">Login</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-3"></div>
+</div>
+{% end %}

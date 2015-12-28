@@ -87,6 +87,39 @@ def ganeshd_dashboard(in_ca_cert_file, hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
+def ganeshd_dashboard_history(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/dashboard/history' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_dashboard_live(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/dashboard/live' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+
 def ganeshd_dashboard_info(in_ca_cert_file, hostname, port, xsession):
     try:
         res = ganeshd_request(
@@ -106,11 +139,11 @@ def ganeshd_dashboard_info(in_ca_cert_file, hostname, port, xsession):
 def ganeshd_get_configuration(in_ca_cert_file, hostname, port, xsession, enc_category = None, query_filter = None):
     try:
         if query_filter:
-            path = "/administration/configuration?filter="+query_filter
+            path = "/settings/configuration?filter="+query_filter
         elif enc_category:
-            path = "/administration/configuration/category/"+enc_category
+            path = "/settings/configuration/category/"+enc_category
         else:
-            path = "/administration/configuration"
+            path = "/settings/configuration"
         res = ganeshd_request(
                 in_ca_cert_file,
                 method = 'GET',
@@ -130,7 +163,7 @@ def ganeshd_post_configuration(in_ca_cert_file, hostname, port, xsession, settin
         res = ganeshd_request(
                 in_ca_cert_file,
                 method = 'POST',
-                url = 'https://%s:%s/administration/configuration' % (hostname, port),
+                url = 'https://%s:%s/settings/configuration' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -147,7 +180,7 @@ def ganeshd_get_configuration_categories(in_ca_cert_file, hostname, port, xsessi
         res = ganeshd_request(
                 in_ca_cert_file,
                 method = 'GET',
-                url = 'https://%s:%s/administration/configuration/categories' % (hostname, port),
+                url = 'https://%s:%s/settings/configuration/categories' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -163,7 +196,7 @@ def ganeshd_get_configuration_status(in_ca_cert_file, hostname, port, xsession):
         res = ganeshd_request(
                 in_ca_cert_file,
                 method = 'GET',
-                url = 'https://%s:%s/administration/configuration/status' % (hostname, port),
+                url = 'https://%s:%s/settings/configuration/status' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -192,7 +225,7 @@ def ganeshd_post_administration_control(in_ca_cert_file, hostname, port, xsessio
         raise GaneshdError(500, str(e))
 
 def ganeshd_get_file_content(in_ca_cert_file, file_type, hostname, port, xsession):
-    file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
+    file_types = { 'hba': '/settings/hba', 'pg_ident': '/settings/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
@@ -211,7 +244,7 @@ def ganeshd_get_file_content(in_ca_cert_file, file_type, hostname, port, xsessio
         raise GaneshdError(500, str(e))
 
 def ganeshd_post_file_content(in_ca_cert_file, file_type, hostname, port, xsession, content):
-    file_types = { 'hba': '/administration/hba', 'pg_ident': '/administration/pg_ident'}
+    file_types = { 'hba': '/settings/hba', 'pg_ident': '/settings/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
@@ -257,6 +290,22 @@ def ganeshd_activity_kill(in_ca_cert_file, hostname, port, xsession, pids):
                     "X-Session": xsession
                 },
                 data = pids)
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+
+def ganeshd_discover(in_ca_cert_file, hostname, port):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/discover' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json"
+                })
         return json.loads(res)
     except urllib2.HTTPError as e:
         raise GaneshdError(e.code, json.loads(e.read())['error'])

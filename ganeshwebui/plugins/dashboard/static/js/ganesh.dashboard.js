@@ -1,8 +1,8 @@
 /*
  * Loadaverage line chart options.
- */ 
+ */
 var loadaverageoptions = {
-	responsive : true, 
+	responsive : true,
 	animation: false,
 	scaleBeginAtZero: true,
 	bezierCurve : true,
@@ -18,9 +18,9 @@ var loadaverageoptions = {
 
 /*
  * Buffers line chart options.
- */ 
+ */
 var buffersoptions = {
-	responsive : true, 
+	responsive : true,
 	animation: false,
 	scaleBeginAtZero: true,
 	bezierCurve : true,
@@ -36,9 +36,9 @@ var buffersoptions = {
 
 /*
  * Active Backends line chart options.
- */ 
+ */
 var backendsoptions = {
-	responsive : true, 
+	responsive : true,
 	animation: false,
 	scaleBeginAtZero: true,
 	bezierCurve : true,
@@ -54,9 +54,9 @@ var backendsoptions = {
 
 /*
  * TPS line chart options.
- */ 
+ */
 var tpsoptions = {
-	responsive : true, 
+	responsive : true,
 	animation: false,
 	scaleBeginAtZero: true,
 	bezierCurve : true,
@@ -144,14 +144,15 @@ var loadaverage_values = loadaveragedata.datasets[0].data;
 var buffers_values = buffersdata.datasets[0].data;
 var backends_values = backendsdata.datasets[0].data;
 var tps_values = tpsdata.datasets[0].data;
+var last_update_timestamp = 0;
 
 /*
  * CPU & Memory usage donut charts options.
  */
 var options = {
 	tooltipTemplate: "<%= label %>: <%= value %>%",
-	responsive : true, 
-	animation: false, 
+	responsive : true,
+	animation: false,
 	onAnimationComplete: function()
 	{
 		/** Force the display of tooltips. **/
@@ -171,39 +172,72 @@ var options = {
 	showTooltips: true
 }
 
+function html_error_modal(code, error)
+{
+	var error_html = '';
+	error_html += '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
+	error_html += '		<div class="modal-dialog">';
+	error_html += '			<div class="modal-content">';
+	error_html += '				<div class="modal-header">';
+	error_html += '					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+	error_html += '					<h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
+	error_html += '				</div>';
+	error_html += '				<div class="modal-body">';
+	error_html += '					<div class="alert alert-danger" role="alert">'+error+'</div>';
+	error_html += '				</div>';
+	error_html += '				<div class="modal-footer" id="ErrorModalFooter">';
+	error_html += '					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+	error_html += '				</div>';
+	error_html += '			</div>';
+	error_html += '		</div>';
+	error_html += '</div>';
+	return error_html;
+}
+
 /*
- * Call ganeshd /dashboard API and update the dashboard view through
+ * Call agent's dashboard API and update the view through
  * update_dashboard() callback.
  */
-function refresh_dashboard(ghost, gport, xsession)
+function refresh_dashboard(agent_address, agent_port, xsession)
 {
-	$.ajax({ 
-		// url: 'http://'+ghost+':'+gport+'/dashboard',
-		url: '/proxy/'+ghost+'/'+gport+'/dashboard',
+	$.ajax({
+		url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
 		type: 'GET',
 		beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
 		async: true,
 		contentType: "application/json",
 		success: function (data) {
-			update_dashboard(data);
-			update_tps(data);
-			update_loadaverage(data);
-			update_buffers(data);
-			update_backends(data);
+			if (data['databases']['timestamp'] != last_update_timestamp)
+			{
+				$('#ErrorModal').modal('hide');
+				last_update_timestamp = data['databases']['timestamp'];
+				update_dashboard(data, true);
+				update_tps(data, true);
+				update_loadaverage(data, true);
+				update_buffers(data, true);
+				update_backends(data, true);
+			}
 		},
 		error: function(xhr) {
 			if (xhr.status == 401)
 			{
-				$('#myModal').modal('hide');
-				$('#modalError').html('<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="myModalLabel">ERROR</h4></div><div class="modal-body"><div class="alert alert-danger" role="alert">Session expired.</div></div><div class="modal-footer"><a class="btn btn-primary" id="ConfirmOK">Back to login page</a></div></div></div></div>');
-				$('#ConfirmOK').attr('href', '/server/'+ghost+'/'+gport+'/login');
-				$('#myModal').modal({show:true});
+				$('#ErrorModal').modal('hide');
+				$('#modalError').html(html_error_modal(401, 'Session expired'));
+				$('#ErrorModalFooter').html('<a class="btn btn-default" id="aBackLogin">Back to login page</a>');
+				$('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
+				$('#ErrorModal').modal('show');
 			}
 			else
 			{
-				$('#myModal').modal('hide');
-				$('#modalError').html('<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="myModalLabel">ERROR '+xhr.status+'</h4></div><div class="modal-body"><div class="alert alert-danger" role="alert">'+JSON.parse(xhr.responseText).error+'</div></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-				$('#myModal').modal({show:true});
+				$('#ErrorModal').modal('hide');
+				var code = xhr.status;
+				var error = 'Internal error.';
+				if (code > 0)
+				{
+					error = escapeHtml(JSON.parse(xhr.responseText).error);
+				}
+				$('#modalError').html(html_error_modal(code, error));
+				$('#ErrorModal').modal('show');
 			}
 		}
 	});
@@ -224,6 +258,7 @@ function update_dashboard(data)
 	$('#pg_port').html(data['pg_port']);
 	$('#pg_uptime').html(data['pg_uptime']);
 	/** Update memory usage chart **/
+	
 	window.memorychart.segments[0].value = data['memory']['active'];
 	window.memorychart.segments[1].value = data['memory']['cached'];
 	window.memorychart.segments[2].value = data['memory']['free'];
@@ -241,42 +276,51 @@ function update_dashboard(data)
 	window.hitratiochart.update();
 }
 
-function update_loadaverage(data)
+function update_loadaverage(data, update_chart)
 {
-	$('#loadaverage').html(data['loadaverage']);
+	if (!("loadaveragechart" in window))
+	{
+		var loadaveragecontext = $('#chart-loadaverage').get(0).getContext('2d');
+		window.loadaveragechart = new Chart(loadaveragecontext).Line(loadaveragedata, loadaverageoptions);
+	}
 	/** Add the very new loadaverage value to the chart dataset ... **/
 	window.loadaveragechart.addData([data['loadaverage']], "");
 	/** ... and to the global array loadaverage_values **/
 	loadaverage_values.push(data['loadaverage']);
-	/** If we have more than 20 points, let's remove the oldest one. **/
-	if (loadaverage_values.length > 20)
+	window.loadaveragechart.removeData();
+	loadaverage_values.shift();
+	if (update_chart)
 	{
-		window.loadaveragechart.removeData();
-		loadaverage_values.shift();
-	}
-	var max_val = 0;
-	for (var i=0; i < loadaverage_values.length; i++)
-	{
-		if (loadaverage_values[i] > max_val)
+		$('#loadaverage').html(data['loadaverage']);
+		var max_val = 0;
+		for (var i=0; i < loadaverage_values.length; i++)
 		{
-			max_val = loadaverage_values[i]; 
+			if (loadaverage_values[i] > max_val)
+			{
+				max_val = loadaverage_values[i];
+			}
 		}
+		while (Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth) < max_val)
+		{
+			window.loadaveragechart.options.scaleStepWidth *= 2;
+			window.loadaveragechart.buildScale(loadaveragedata.labels);
+		}
+		while ((window.loadaveragechart.options.scaleStepWidth > 0.5) && max_val < Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth / 2))
+		{
+			window.loadaveragechart.options.scaleStepWidth /= 2;
+			window.loadaveragechart.buildScale(loadaveragedata.labels);
+		}
+		window.loadaveragechart.update();
 	}
-	while (Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth) < max_val)
-	{
-		window.loadaveragechart.options.scaleStepWidth *= 2;
-		window.loadaveragechart.buildScale(loadaveragedata.labels);
-	}
-	while ((window.loadaveragechart.options.scaleStepWidth > 0.5) && max_val < Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth / 2))
-	{
-		window.loadaveragechart.options.scaleStepWidth /= 2;
-		window.loadaveragechart.buildScale(loadaveragedata.labels);
-	} 
-	window.loadaveragechart.update();
 }
 
-function update_buffers(data)
+function update_buffers(data, update_chart)
 {
+	if (!("bufferschart" in window))
+	{
+		var bufferscontext = $('#chart-buffers').get(0).getContext('2d');
+		window.bufferschart = new Chart(bufferscontext).Line(buffersdata, buffersoptions);
+	}
 	/** Re-process delta calculation **/
 	if (buffers_values.length > 0)
 	{
@@ -285,81 +329,88 @@ function update_buffers(data)
 		{
 			delta = data['buffers']['nb'] - buffers_values[p]['nb'];
 		} else {
-			delta = null;
+			delta = 0;
 		}
 	} else {
-		delta = null;
+		delta = 0;
 	}
 
-	$('#buffers_delta').html(delta);
 	window.bufferschart.addData([delta], "");
 	/** We need to store delta value. **/
 	data['buffers']['delta'] = delta;
 	buffers_values.push(data['buffers']);
-	/** If we have more than 20 points, let's remove the oldest one. **/
-	if (buffers_values.length > 20)
+	window.bufferschart.removeData();
+	buffers_values.shift();
+	if (update_chart)
 	{
-		window.bufferschart.removeData();
-		buffers_values.shift();
-	}
-	var max_val = 0;
-	for (var i=0; i < buffers_values.length; i++)
-	{
-		if (buffers_values[i] != null && buffers_values[i]['delta'] > max_val)
+		$('#buffers_delta').html(delta);
+		var max_val = 0;
+		for (var i=0; i < buffers_values.length; i++)
 		{
-			max_val = buffers_values[i]['delta']; 
+			if (buffers_values[i] != null && buffers_values[i]['delta'] > max_val)
+			{
+				max_val = buffers_values[i]['delta'];
+			}
 		}
+		while (Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth) < max_val)
+		{
+			window.bufferschart.options.scaleStepWidth *= 2;
+			window.bufferschart.buildScale(buffersdata.labels);
+		}
+		while ((window.bufferschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth / 2))
+		{
+			window.bufferschart.options.scaleStepWidth /= 2;
+			window.bufferschart.buildScale(buffersdata.labels);
+		}
+		window.bufferschart.update();
 	}
-	while (Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth) < max_val)
-	{
-		window.bufferschart.options.scaleStepWidth *= 2;
-		window.bufferschart.buildScale(buffersdata.labels);
-	}
-	while ((window.bufferschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth / 2))
-	{
-		window.bufferschart.options.scaleStepWidth /= 2;
-		window.bufferschart.buildScale(buffersdata.labels);
-	} 
-	window.bufferschart.update();
 }
 
-function update_backends(data)
+function update_backends(data, update_chart)
 {
-	$('#backends').html(data['active_backends']['nb']);
+	if (!("backendschart" in window))
+	{
+		var backendscontext = $('#chart-backends').get(0).getContext('2d');
+		window.backendschart = new Chart(backendscontext).Line(backendsdata, backendsoptions);
+	}
 	/** Add the very new backends value to the chart dataset ... **/
 	window.backendschart.addData([data['active_backends']['nb']], "");
 	/** ... and to the global array backends_values **/
 	backends_values.push(data['active_backends']['nb']);
-	/** If we have more than 20 points, let's remove the oldest one. **/
-	if (backends_values.length > 20)
+	window.backendschart.removeData();
+	backends_values.shift();
+	if (update_chart)
 	{
-		window.backendschart.removeData();
-		backends_values.shift();
-	}
-	var max_val = 0;
-	for (var i=0; i < backends_values.length; i++)
-	{
-		if (backends_values[i] > max_val)
+		$('#backends').html(data['active_backends']['nb']);
+		var max_val = 0;
+		for (var i=0; i < backends_values.length; i++)
 		{
-			max_val = backends_values[i]; 
+			if (backends_values[i] > max_val)
+			{
+				max_val = backends_values[i];
+			}
 		}
+		while (Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth) < max_val)
+		{
+			window.backendschart.options.scaleStepWidth *= 2;
+			window.backendschart.buildScale(backendsdata.labels);
+		}
+		while ((window.backendschart.options.scaleStepWidth > 1) && max_val < Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth / 2))
+		{
+			window.backendschart.options.scaleStepWidth /= 2;
+			window.backendschart.buildScale(backendsdata.labels);
+		}
+		window.backendschart.update();
 	}
-	while (Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth) < max_val)
-	{
-		window.backendschart.options.scaleStepWidth *= 2;
-		window.backendschart.buildScale(backendsdata.labels);
-	}
-	while ((window.backendschart.options.scaleStepWidth > 1) && max_val < Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth / 2))
-	{
-		window.backendschart.options.scaleStepWidth /= 2;
-		window.backendschart.buildScale(backendsdata.labels);
-	} 
-	window.backendschart.update();
 }
 
-function update_tps(data)
+function update_tps(data, update_chart)
 {
-	/** Re-process delta calculation **/
+	if (!("tpschart" in window))
+	{
+		window.tpschart = new Chart($('#chart-tps').get(0).getContext('2d')).Line(tpsdata, tpsoptions);
+	}
+	/** Proceed with delta calculation **/
 	if (tps_values.length > 0)
 	{
 		var p = tps_values.length - 1;
@@ -368,68 +419,74 @@ function update_tps(data)
 			delta_commit = Math.ceil((data['databases']['total_commit'] - tps_values[p]['total_commit']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
 			delta_rollback = Math.ceil((data['databases']['total_rollback'] - tps_values[p]['total_rollback']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
 		} else {
-			delta_commit = null;
-			delta_rollback = null;
+			delta_commit = 0;
+			delta_rollback = 0;
 		}
 	} else {
-		delta_commit = null;
-		delta_rollback = null;
+		delta_commit = 0;
+		delta_rollback = 0;
 	}
 
-	$('#tps_commit').html(delta_commit);
-	$('#tps_rollback').html(delta_rollback);
 	window.tpschart.addData([delta_commit, delta_rollback], "");
 	/** We need to store delta value. **/
 	data['databases']['delta_commit'] = delta_commit;
 	data['databases']['delta_rollback'] = delta_rollback;
 	tps_values.push(data['databases']);
-	/** If we have more than 20 points, let's remove the oldest one. **/
-	if (tps_values.length > 20)
+	window.tpschart.removeData();
+	tps_values.shift();
+	if (update_chart)
 	{
-		window.tpschart.removeData();
-		tps_values.shift();
-	}
-	var max_val = 0;
-	for (var i=0; i < tps_values.length; i++)
-	{
-		if (tps_values[i] != null)
+		$('#tps_commit').html(delta_commit);
+		$('#tps_rollback').html(delta_rollback);
+		var max_val = 0;
+		for (var i=0; i < tps_values.length; i++)
 		{
-			if (tps_values[i]['delta_commit'] > max_val)
+			if (tps_values[i] != null)
 			{
-				max_val = tps_values[i]['delta_commit']; 
-			}
-			if (tps_values[i]['delta_rollback'] > max_val)
-			{
-				max_val = tps_values[i]['delta_rollback']; 
+				if (tps_values[i]['delta_commit'] > max_val)
+				{
+					max_val = tps_values[i]['delta_commit'];
+				}
+				if (tps_values[i]['delta_rollback'] > max_val)
+				{
+					max_val = tps_values[i]['delta_rollback'];
+				}
 			}
 		}
+		while (Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth) < max_val)
+		{
+			window.tpschart.options.scaleStepWidth *= 2;
+			window.tpschart.buildScale(tpsdata.labels);
+		}
+		while ((window.tpschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth / 2))
+		{
+			window.tpschart.options.scaleStepWidth /= 2;
+			window.tpschart.buildScale(tpsdata.labels);
+		}
+		window.tpschart.update();
 	}
-	while (Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth) < max_val)
-	{
-		window.tpschart.options.scaleStepWidth *= 2;
-		window.tpschart.buildScale(tpsdata.labels);
-	}
-	while ((window.tpschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth / 2))
-	{
-		window.tpschart.options.scaleStepWidth /= 2;
-		window.tpschart.buildScale(tpsdata.labels);
-	} 
-	window.tpschart.update();
 }
 
 window.onload = function(){
-	var tpscontext = $('#chart-tps').get(0).getContext('2d');
-	window.tpschart = new Chart(tpscontext).Line(tpsdata, tpsoptions);      
 	var memorycontext = $('#chart-memory').get(0).getContext('2d');
-	window.memorychart = new Chart(memorycontext).Doughnut(memorydata, options);      
+	window.memorychart = new Chart(memorycontext).Doughnut(memorydata, options);
 	var cpucontext = $('#chart-cpu').get(0).getContext('2d');
-	window.cpuchart = new Chart(cpucontext).Doughnut(cpudata, options);      
+	window.cpuchart = new Chart(cpucontext).Doughnut(cpudata, options);
 	var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
-	window.hitratiochart = new Chart(hitratiocontext).Doughnut(hitratiodata, options);      
-	var loadaveragecontext = $('#chart-loadaverage').get(0).getContext('2d');
-	window.loadaveragechart = new Chart(loadaveragecontext).Line(loadaveragedata, loadaverageoptions);      
-	var bufferscontext = $('#chart-buffers').get(0).getContext('2d');
-	window.bufferschart = new Chart(bufferscontext).Line(buffersdata, buffersoptions);      
-	var backendscontext = $('#chart-backends').get(0).getContext('2d');
-	window.backendschart = new Chart(backendscontext).Line(backendsdata, backendsoptions);      
+	window.hitratiochart = new Chart(hitratiocontext).Doughnut(hitratiodata, options);
 };
+
+var entityMap = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': '&quot;',
+	"'": '&#39;',
+	"/": '&#x2F;'
+};
+
+function escapeHtml(string) {
+	return String(string).replace(/[&<>"'\/]/g, function (s) {
+		return entityMap[s];
+	});
+}

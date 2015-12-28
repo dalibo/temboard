@@ -6,8 +6,8 @@ setup(
     name = 'ganesh',
     version = '0.0.1',
     author = 'Julien Tachoires',
-    license = 'Postgresql',
-    packages = ['ganeshwebui', 'ganeshwebui.handlers', 'ganeshwebui.plugins.dashboard', 'ganeshwebui.plugins.supervision', 'ganeshwebui.plugins.administration', 'ganeshwebui.plugins.activity'],
+    license = 'PostgreSQL',
+    packages = ['ganeshwebui', 'ganeshwebui.handlers', 'ganeshwebui.plugins.dashboard', 'ganeshwebui.plugins.supervision', 'ganeshwebui.plugins.settings', 'ganeshwebui.plugins.activity'],
     scripts = ['ganesh-web-client'],
     include_package_data=True,
     zip_safe=False,
@@ -17,6 +17,7 @@ setup(
             'share/ganesh.conf.sample',
             'share/ssl/ganesh_CHANGEME.pem',
             'share/ssl/ganesh_CHANGEME.key',
-            'share/ssl/ca_certs.pem']
+            'share/ssl/ca_certs.pem',
+            'share/sql/application.sql']
     )]
 )

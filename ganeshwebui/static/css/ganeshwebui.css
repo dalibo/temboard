@@ -31,39 +31,50 @@
 }
 
 .panel-dashboard {
-	margin: 0px 0px 0px 0px;
+	margin: 0px 10px 10px 0px;
+	width: 330px;
+	float: left;
 }
 
 .row-dashboard {
-	margin: 0px 0px 0px 30px;
-	padding: 0px;
-}
-.row-dashboard .col-md-5 {
-	margin: 10px 0px 0px 0px;
-	padding: 0px 10px 0px 0px;
+	margin-left: 15px;
+	padding: 0;
 }
 
-.row-dashboard .col-md-10 {
-	margin: 10px 0px 0px 0px;
-	padding: 0px 10px 0px 0px;
+.row-dashboard .col-md-6 {
+	margin: 0 0 10px 0;
+	padding: 0 10px 0 0;
 }
 
-.row-dashboard .col-md-10 table {
-	float: left;
-	width: 49%;
-	margin-right: 1%;
+.row-dashboard .col-md-4 {
+	margin: 0 0 10px 0;
+	padding: 0 10px 0 0;
+}
+
+.row-dashboard .col-md-12 {
+	margin: 0 0 10px 0;
+	padding: 0 10px 0 0;
+}
+
+.row-dashboard .col-md-12 table {
+	width: 100%;
 	margin-bottom: 0px;
+	border: 0;
 }
 
-.row-dashboard table tr td b span {
-	color:#337AB7;
-}
-.row-dashboard table tr {
+.row-dashboard table tr td {
+	border: 0;
 	font-size: 11px;
 }
 
+.dashboard-info-val {
+	color:#337AB7;
+}
+.row-dashboard table tr {
+}
+
 .row-dashboard .panel {
-	height: 100%;
+	height: 210px;
 }
 
 .popover-title {
@@ -86,21 +97,15 @@
 #formChangeServer select.form-control {
 }
 
-.table tbody>tr>td.vert-align {
-    vertical-align: middle;
-}
-
 #page-wrapper {
 	background-color: #fff;
-	padding: 0px;
+	padding: 10px 0 0 0;
 }
 
 #page-wrapper h1 {
 	font-size: 20px;
 	color: #337AB7;
-	margin-left: 15px;
-	margin-bottom: 0px;
-	margin-top: 10px;
+	margin: 0 0 10px 0;
 }
 
 #page-wrapper h1 i {
@@ -121,8 +126,8 @@ select.form-control {
 
 #alert-configuration {
 	padding: 0px 20px 20px 20px;
-	margin: 20px 10px 0px 15px;
 	font-size: 12px;
+	width: 500px;
 }
 
 #alert-configuration p {
@@ -145,8 +150,8 @@ select.form-control {
 
 #error-configuration {
 	padding: 0px 20px 20px 20px;
-	margin: 20px 10px 0px 15px;
 	font-size: 12px;
+	width: 500px;
 }
 
 #error-configuration p {
@@ -162,8 +167,8 @@ select.form-control {
 
 #ok-configuration {
 	padding: 0px 20px 20px 20px;
-	margin: 20px 10px 0px 15px;
 	font-size: 12px;
+	width: 500px;
 }
 
 #ok-configuration p {
@@ -188,6 +193,11 @@ select.form-control {
 	margin-top: 20px;
 }
 
+.change-cat {
+	width: 500px;
+	margin-bottom: 20px;
+}
+
 .navbar {
 	height: 0;
 	border: 0;
@@ -205,17 +215,19 @@ select.form-control {
 }
 
 #tableHeaderInfo {
-	margin-left: 20px;
 	border: 0;
+	background-color: #fff;
+	width: 100%;
 }
 
 #tableHeaderInfo tr td {
-	font-size: 10px;
 	border:0px;
 	color: #111;
+	padding: 0 5px 0px 5px;
+	font-size: 11px;
 }
 
-#tableHeaderInfo tr td b {
+#tableHeaderInfo tr td.pull-right {
 	color:#337AB7;
 }
 
@@ -248,33 +260,6 @@ select.form-control {
 	font-size: 11px;
 }
 
-.table-activity tr td.cpu {
-	text-align: right;
-}
-
-.table-activity tr td.mem {
-	text-align: right;
-}
-
-.table-activity tr td.yes {
-	text-align: center;
-	color: red;
-	font-weight: bold;
-}
-
-.table-activity tr td.no {
-	text-align: center;
-	color: green;
-	font-weight: bold;
-}
-
-.table-activity > tbody > tr > td.read {
-	text-align: right;
-}
-
-.table-activity > tbody > tr > td.write {
-	text-align: right;
-}
 
 .table-activity tr th.xs {
 	width: 20px;
@@ -285,8 +270,13 @@ select.form-control {
 }
 
 .table-activity tr th.med {
-	width: 50px;
+	width: 70px;
 }
+
+.table-activity tr th.lg {
+	width: 110px;
+}
+
 
 .table-activity > tbody > tr > td, .table-activity > tbody > tr > th {
 	padding: 1px;
@@ -303,9 +293,60 @@ select.form-control {
 
 .table-activity td.query {
 	color:#337AB7;
-	font-weight: bold;
 }
 
 .navActivity {
 	padding: 10px 0px 0px 0px;
+}
+
+.alert-restricted {
+	margin-top: 10px;
+	padding: 10px;
+}
+
+table tbody tr td span {
+	margin: 2px;
+	line-height: 2.2em;
+}
+
+.no-sort::after { display: none!important; }
+
+.no-sort {
+	pointer-events: none!important;
+	cursor: default!important;
+}
+
+td {
+	font-size: 12px;
+}
+
+.modal-header {
+	background-color: #f6f6f6;
+}
+
+.modal-body {
+	padding-bottom: 0px;
+}
+
+
+.panel-settings {
+	display: inline-block;
+	column-break-inside: avoid;
+	width: 500px;
+}
+
+.multi-col {
+	-webkit-column-width: 500px;
+	-moz-column-width: 500px;
+	column-width: 500px;
+}
+
+.panel-settings table tr td.action-setting {
+	width: 40px;
+}
+.panel-settings table tr td.label-setting {
+	width: 200px;
+}
+.panel-settings table tr td.input-setting {
+	width: 260px;
 }

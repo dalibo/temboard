@@ -24,12 +24,16 @@
    	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
    	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-   	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
    	<!--[if lt IE 9]>
-   		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-   		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+   		<script src="/js/html5shiv.js"></script>
+   		<script src="/js/respond.min.js"></script>
    	<![endif]-->
-   	<link href="/css/ganeshwebui.css" rel="stylesheet">
+	<!-- DataTables CSS -->
+	<link href="/css/dataTables.bootstrap.min.css" rel="stylesheet">
+	<!-- Multiselect -->
+	<link href="/css/bootstrap-multiselect.css" rel="stylesheet">
+	<!-- DataTables Responsive CSS -->
+	<link href="/css/ganeshwebui.css" rel="stylesheet">
 	<!-- CodeMirror -->
 	<script src="/codemirror/lib/codemirror.js"></script>
 	<link rel="stylesheet" href="/codemirror/lib/codemirror.css">
@@ -50,11 +54,10 @@
 		<script src="/js/bootstrap.min.js"></script>
 		<!-- Metis Menu Plugin JavaScript -->
 		<script src="/js/metisMenu.min.js"></script>
-
 		<!-- Custom Theme JavaScript -->
 		<script src="/js/sb-admin-2.js"></script>
-
-	<!-- Navigation -->
+		{% if nav %}
+		<!-- Navigation -->
 		<nav class="navbar navbar-default navbar-static-top" role="navigation" id="topNav">
 			<div class="navbar-header" id="divHeaderLogo">
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -68,41 +71,27 @@
 				<div class="sidebar-nav navbar-collapse">
 					<ul class="nav" id="side-menu">
 						<li><h1 id="logo">Ganesh</h1></li>
-						<li>
-   							<form class="form" id="formChangeServer"  role="server">
-								<label class="sr-only" for="selectServer">Server</label>
-								<div class="input-group">
-									<select class="form-control input-sm" id="selectServer">{% for server in servers %}<option value="/server/{{server['host']}}/{{server['port']}}/{{current_page}}"{% if ganeshd_host == server['host'] and ganeshd_port == server['port'] %} selected="selected" {% end %}>{{server['hostname']}} ({{server['host']}}:{{server['port']}})</option>{% end %}</select>
-									<span class="input-group-btn">
-										<button type="submit" class="btn btn-sm btn-primary" id="buttonChangeServer">Go</button>
-      								</span>
-								</div>
-	  						</form>
-						</li>
-				{% try %}
-				{% if info %}
+						<li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
+						{% try %}
+						{% if instance %}
 						<li>
 							<table id="tableHeaderInfo">
-								<tr><td>Hostname: </td><td class="pull-right"><b>{{ info['hostname'] }}</b></td></tr>
-								<tr><td>Host: </td><td class="pull-right"><b>{{ ganeshd_host }}</b></td></tr>
-								<tr><td>PG data: </td><td class="pull-right"><b>{{info['pg_data']}}</b></td></tr>
-								<tr><td>PG Port: </td><td class="pull-right"><b>{{ info['pg_port'] }}</b></td></tr>
+								<tr><td>Hostname: </td><td class="pull-right">{{instance.hostname}}</td></tr>
+								<tr><td>Groups: </td><td class="pull-right">{% for group in instance.groups %} {{group.group_name}}{% end %}</td></tr>
+								<tr><td>Host: </td><td class="pull-right">{{instance.agent_address}}</td></tr>
+								<tr><td>PG data: </td><td class="pull-right">{{instance.pg_data}}</td></tr>
+								<tr><td>PG Port: </td><td class="pull-right">{{instance.pg_port}}</td></tr>
+								<tr><td>PG Version: </td><td class="pull-right">{{instance.pg_version}}</td></tr>
 							</table>
 						</li>
-				{% end %}
-				{% except %}
-				{% end %}
-						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/login"><i class="fa fa-user fa-fw"></i> Login</a></li>
-						{% try %}
-						{% if xsession and info %}
-						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
-						<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/activity"><i class="fa fa-bars fa-fw"></i> Activity</a></li>
+						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
+						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"><i class="fa fa-bars fa-fw"></i> Activity</a></li>
 						<li>
-		  					<a href="#"><i class="fa fa-wrench fa-fw"></i> Administration<span class="fa arrow"></span></a>
-							<ul class="nav nav-second-level in">
-								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration">PostgreSQL Settings</a></li>
+		  					<a href="#"><i class="fa fa-cog"></i> Settings<span class="fa arrow"></span></a>
+							<ul class="nav nav-second-level">
+								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">Configuration</a></li>
  								<li>
-		   							<form method="get" action="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/configuration" class="form" id="formSearchSettings"  role="search">
+		   							<form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration" class="form" id="formSearchSettings"  role="search">
 										<label class="sr-only" for="selectServer">Search</label>
 										<div class="input-group">
 											<input class="form-control input-sm" id="inputSearchSettings" name="filter" placeholder="Find in settings"/>
@@ -112,9 +101,24 @@
 										</div>
 	  								</form>
 								</li>
-								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/hba">Host Base Authentication</a></li>
-								<li><a href="/server/{{ganeshd_host}}/{{ganeshd_port}}/administration/pg_ident">User Name Maps</a></li>
+								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/hba">Host Base Authentication</a></li>
+								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/pg_ident">User Name Maps</a></li>
 		  					</ul>
+						</li>
+						{% end %} 
+						{% except %}
+						{% end %} 
+						<li><a href="/logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+						{% try %}
+						{% if role.is_admin %}
+						<li>
+		  					<a href="#"><i class="fa fa-wrench fa-fw"></i> Manage<span class="fa arrow"></span></a>
+							<ul class="nav nav-second-level">
+								<li><a href="/manage/users">User list</a></li>
+								<li><a href="/manage/groups/role">User groups</a></li>
+								<li><a href="/manage/instances">Instance list</a></li>
+								<li><a href="/manage/groups/instance">Instance groups</a></li>
+							</ul>
 						</li>
 						{% end %}
 						{% except %}
@@ -125,18 +129,19 @@
 			</div>
 			<!-- /.navbar-static-side -->
 		</nav>
-
 		<script>
-		$('#formChangeServer').on('submit', function(event) {
-			event.preventDefault();
-			window.location.replace($('#selectServer').find(':selected').attr('value'));
-		});
 		// Popover activation
 		$(function () {
   			$('[data-toggle="popover"]').popover()
 		})
+		$(function () {
+  			$('[data-toggle="tooltip"]').tooltip()
+		})
 		</script>
 		<div id="page-wrapper">
+		{% else %}
+		<div>
+		{% end %}
 			{% block content %} {% end %}
 		</div>
 	</div>
