@@ -3,7 +3,6 @@ import tornado.web
 from sqlalchemy.exc import *
 
 from ganeshwebui.handlers.base import JsonHandler, BaseHandler
-from ganeshwebui.tools import *
 from ganeshwebui.ganeshdclient import *
 from ganeshwebui.async import *
 from ganeshwebui.errors import GaneshError

@@ -9,7 +9,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
 
 from ganeshwebui.handlers.base import JsonHandler, BaseHandler
-from ganeshwebui.tools import *
 from ganeshwebui.plugins.supervision.model.orm import *
 from ganeshwebui.plugins.supervision.model.tables import *
 from ganeshwebui.async import *

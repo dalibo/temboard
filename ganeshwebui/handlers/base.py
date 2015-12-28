@@ -3,7 +3,6 @@ import json
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
 
-from ganeshwebui.tools import *
 from ganeshwebui.errors import GaneshError
 from ganeshwebui.ganeshdclient import *
 from tornado.template import Loader

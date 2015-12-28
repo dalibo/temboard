@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
 
 from ganeshwebui.handlers.base import BaseHandler
-from ganeshwebui.tools import *
 from ganeshwebui.ganeshdclient import *
 from ganeshwebui.async import *
 from ganeshwebui.application import hash_password, get_role_by_auth, gen_cookie, get_instance

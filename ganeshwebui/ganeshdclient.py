@@ -3,7 +3,6 @@ import urllib2
 import ssl
 import socket
 import json
-from tools import *
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     def connect(self):
