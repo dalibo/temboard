@@ -25,7 +25,7 @@ function html_error_modal(code, error)
  */
 function refresh_activity(agent_address, agent_port, xsession)
 {
-	.ajax({
+	$.ajax({
 		url: '/proxy/'+agent_address+'/'+agent_port+'/activity',
 		type: 'GET',
 		beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
