@@ -1,5 +1,7 @@
 import os
 import json
+import datetime
+from datetime import timedelta
 
 import tornado.web
 import tornado.escape
@@ -8,10 +10,13 @@ from tornado.template import Loader
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
 
-from ganeshwebui.handlers.base import JsonHandler, BaseHandler
+from ganeshwebui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from ganeshwebui.plugins.supervision.model.orm import *
 from ganeshwebui.plugins.supervision.model.tables import *
+from ganeshwebui.plugins.supervision.chartdata import *
 from ganeshwebui.async import *
+from ganeshwebui.errors import GaneshError
+from ganeshwebui.application import get_instance
 
 def configuration(config):
     return {}
@@ -23,7 +28,10 @@ def get_routes(config):
         'template_path':  plugin_path + "/templates"
     }
     routes = [
+        (r"/server/(.*)/([0-9]{1,5})/supervision/(day|week|month||year)$", SupervisionHTMLHandler, handler_conf),
         (r"/supervision/collector", SupervisionCollectorHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/supervision/data/([a-z\-_.0-9]{1,64})$", SupervisionDataProbeHandler, handler_conf),
+        (r"/js/supervision/(.*)", tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
     ]
     return routes
 
@@ -46,6 +54,16 @@ def merge_agent_info(session, host_info, instances_info):
             inst = Instance.from_dict(instance_info)
             session.merge(inst)
     return host
+
+def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
+    result = session.execute("SELECT agent_key FROM application.instances WHERE hostname = :hostname AND pg_data = :pgdata AND pg_port = :pgport LIMIT 1", {"hostname": hostname, "pgdata": pg_data, "pgport": pg_port})
+    try:
+        row = result.fetchone()
+        if row[0] == agent_key:
+            return
+    except Exception as e:
+        raise Exception("Can't find the target instance in application.instances table.")
+    raise Exception("Can't check agent's key.")
 
 def insert_metrics(session, host, agent_data):
     for metric in agent_data.keys():
@@ -81,10 +99,9 @@ class SupervisionCollectorHandler(JsonHandler):
     def push_data(self,):
         key = self.request.headers.get('X-Key')
         if not key:
-            return JSONAsyncResult(http_code = 401, data = {'error': 'X-Session header missing'})
+            return JSONAsyncResult(http_code = 401, data = {'error': 'X-Key header missing'})
         try:
             data = tornado.escape.json_decode(self.request.body)
-            data['instances'][0]['agent_key'] = key
             # Insert data in an other thread.
         except Exception as e:
             return JSONAsyncResult(http_code = 500, data = {'error': e.message})
@@ -94,6 +111,9 @@ class SupervisionCollectorHandler(JsonHandler):
             session_factory = sessionmaker(bind=self.engine)
             Session = scoped_session(session_factory)
             thread_session = Session()
+
+            # Check the key
+            check_agent_key(thread_session, data['hostinfo']['hostname'], data['instances'][0]['data_directory'], data['instances'][0]['port'], key)
 
             # Update the inventory
             host = merge_agent_info(thread_session,
@@ -111,6 +131,7 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})
         except IntegrityError as e:
+            self.logger.error(e.message)
             try:
                 thread_session.rollback()
                 thread_session.close()
@@ -118,6 +139,7 @@ class SupervisionCollectorHandler(JsonHandler):
                 pass
             return JSONAsyncResult(http_code = 409, data = {'error': e.message})
         except Exception as e:
+            self.logger.error(e.message)
             try:
                 thread_session.rollback()
                 thread_session.close()
@@ -128,3 +150,158 @@ class SupervisionCollectorHandler(JsonHandler):
     @tornado.web.asynchronous
     def post(self,):
         run_background(self.push_data, self.async_callback)
+
+
+class SupervisionDataProbeHandler(CsvHandler):
+
+    def get_data_probe(self, agent_address, agent_port, probe_name):
+        try:
+            instance = None
+            role = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise GaneshError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise GaneshError(404, "Instance not found.")
+            self.db_session.expunge_all()
+
+            dbname = self.get_argument('dbname', default=None)
+            start = self.get_argument('start', default=None)
+            end = self.get_argument('end', default=None)
+            start_time = None
+            end_time = None
+            if start:
+                try:
+                    start_time = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+                except ValueError as e:
+                    raise GaneshError(406, 'Datetime not valid.')
+            if end:
+                try:
+                    end_time = datetime.datetime.strptime(end, '%Y-%m-%dT%H:%M:%S')
+                except ValueError as e:
+                    raise GaneshError(406, 'Datetime not valid.')
+
+            if probe_name == 'loadavg':
+                data = get_loadaverage(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'db_size':
+                data = get_db_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'cpu':
+                data = get_cpu(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'tps':
+                data = get_tps(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'memory':
+                data = get_memory(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'swap':
+                data = get_swap(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'sessions':
+                data = get_sessions(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'blocks':
+                data = get_blocks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'hitreadratio':
+                data = get_hitreadratio(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'checkpoints':
+                data = get_checkpoints(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'w_buffers':
+                data = get_written_buffers(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            else:
+                raise GaneshError(404, 'Unknown probe.')
+
+            self.db_session.commit()
+            self.db_session.close()
+
+            return CSVAsyncResult(http_code = 200, data = data)
+        except (GaneshError, Exception) as e:
+            self.logger.error(e.message)
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, GaneshError)):
+                return CSVAsyncResult(http_code = e.code, data = {'error': e.message})
+            else:
+                return CSVAsyncResult(http_code = 500, data = {'error': e.message})
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port, probe_name):
+        run_background(self.get_data_probe, self.async_callback, (agent_address, agent_port, probe_name))
+
+class SupervisionHTMLHandler(BaseHandler):
+    def get_index(self, agent_address, agent_port, period):
+        try:
+            instance = None
+            role = None
+            delta = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise GaneshError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise GaneshError(404, "Instance not found.")
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+
+            if period == 'day':
+                delta = timedelta(hours=24)
+            elif period == 'week':
+                delta = timedelta(days=7)
+            elif period == 'month':
+                delta = timedelta(days=31)
+            elif period == 'year':
+                delta = timedelta(days=365)
+            else:
+                raise GaneshError(500, "Unknown period.")
+            start_date = datetime.datetime.now() - delta
+            end_date = datetime.datetime.now()
+            return HTMLAsyncResult(
+                    http_code = 200,
+                    template_path = self.template_path,
+                    template_file = 'index.html',
+                    data = {
+                        'nav': True,
+                        'role': role,
+                        'instance': instance,
+                        'period': period,
+                        'start_date': start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+                        'end_date': end_date.strftime('%Y-%m-%dT%H:%M:%S')
+                    })
+
+        except (GaneshError, Exception) as e:
+            self.logger.error(e.message)
+            try:
+                self.db_session.expunge_all()
+                self.db_session.rollback()
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, GaneshError)):
+                if e.code == 302:
+                    return HTMLAsyncResult(http_code = 401, redirection = "/login")
+                code = e.code
+            else:
+                code = 500
+            return HTMLAsyncResult(
+                        http_code = code,
+                        template_file = 'error.html',
+                        data = {
+                            'nav': True,
+                            'role': role,
+                            'instance': instance,
+                            'code': e.code,
+                            'error': e.message
+                        })
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port, period):
+        run_background(self.get_index, self.async_callback, (agent_address, agent_port, period))

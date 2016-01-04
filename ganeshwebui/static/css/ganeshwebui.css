@@ -115,11 +115,6 @@
 	padding: 5px;
 }
 
-.sidebar .nav-third-level li a {
-	padding: 5px;
-	font-size: 12px;
-}
-
 select.form-control {
 	font-size: 12px;
 }
@@ -349,4 +344,9 @@ td {
 }
 .panel-settings table tr td.input-setting {
 	width: 260px;
+}
+
+.supervision-chart {
+	width: 100%;
+	height: 300px;
 }

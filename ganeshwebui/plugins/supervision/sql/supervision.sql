@@ -22,7 +22,6 @@ create table hosts (
 create table instances (
   hostname text not null references hosts (hostname),
   port integer not null,
-  agent_key text,
   local_name text not null, -- name of the instance inside the agent configuration
   version text not null, -- dotted minor version
   version_num integer not null, -- for comparisons (e.g. 90401)
@@ -281,100 +280,6 @@ create table metric_replication (
   replay_location text not null
 );
 
-CREATE MATERIALIZED VIEW mv_metric_loadavg_h(datetime, hostname, load1, load5, load15, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, SUM(load1)/COUNT(*) AS load1, SUM(load5)/COUNT(*) AS load5, SUM(load15)/COUNT(*) AS load15, COUNT(*) FROM metric_loadavg GROUP BY date_trunc('hour', datetime), hostname ORDER BY date_trunc('hour', datetime);
-
-
-CREATE UNIQUE INDEX i_mv_metric_loadavg_h_datetime_hostname ON mv_metric_loadavg_h (datetime, hostname);
-
-CREATE MATERIALIZED VIEW mv_metric_loadavg_d(datetime, hostname, load1, load5, load15, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, SUM(load1)/SUM(w) AS load1, SUM(load5)/SUM(w) AS load5, SUM(load15)/SUM(w) AS load15, SUM(w) AS w FROM (SELECT datetime, hostname, load1*w AS load1, load5*w AS load5, load15*w AS load15, w FROM mv_metric_loadavg_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname;
-
-CREATE UNIQUE INDEX i_mv_metric_loadavg_d_datetime_hostname ON mv_metric_loadavg_d (datetime, hostname);
-
-CREATE MATERIALIZED VIEW mv_metric_sessions_h(datetime, hostname, port, dbname, active, waiting, idle, idle_in_xact, idle_in_xact_aborted, fastpath, disabled, no_priv, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, port, dbname, SUM(active)/COUNT(*) AS active, SUM(waiting)/COUNT(*) AS waiting, SUM(idle)/COUNT(*) AS idle, SUM(idle_in_xact)/COUNT(*) AS idle_in_xact, SUM(idle_in_xact_aborted)/COUNT(*) AS idle_in_xact_aborted, SUM(fastpath)/COUNT(*) AS fastpath, SUM(disabled)/COUNT(*) AS disabled, SUM(no_priv)/COUNT(*) AS no_priv, COUNT(*) FROM metric_sessions GROUP BY date_trunc('hour', datetime), hostname, port, dbname ORDER BY date_trunc('hour', datetime);
-
-CREATE UNIQUE INDEX i_mv_metric_session_h_datetime_hostname_port_dbname ON mv_metric_sessions_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_sessions_d(datetime, hostname, port, dbname, active, waiting, idle, idle_in_xact, idle_in_xact_aborted, fastpath, disabled, no_priv, w) AS  SELECT date_trunc('day', datetime) AS datetime, hostname, port, dbname, (SUM(active)/SUM(w))::BIGINT AS active, (SUM(waiting)/SUM(w))::BIGINT AS waiting, (SUM(idle)/SUM(w))::BIGINT AS idle, (SUM(idle_in_xact)/SUM(w))::BIGINT AS idle_in_xact, (SUM(idle_in_xact_aborted)/SUM(w))::BIGINT AS idle_in_xact_aborted, (SUM(fastpath)/SUM(w))::BIGINT AS fastpath, (SUM(disabled)/SUM(w))::BIGINT AS disabled, (SUM(no_priv)/SUM(w))::BIGINT AS no_priv, SUM(w) AS w FROM (SELECT datetime, hostname, port, dbname, active*w AS active, waiting*w AS waiting, idle*w AS idle, idle_in_xact*w AS idle_in_xact, idle_in_xact_aborted*w AS idle_in_xact_aborted, fastpath*w AS fastpath, disabled*w AS disabled, no_priv*w AS no_priv, w FROM mv_metric_sessions_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_session_d_datetime_hostname_port_dbname ON mv_metric_sessions_d(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_blocks_h(datetime, hostname, port, dbname, measure_interval, blks_read, blks_hit, hitmiss_ratio, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(blks_read) AS blks_read, SUM(blks_hit) AS blks_hit, SUM(hitmiss_ratio)/COUNT(*) AS hitmiss_ratio, COUNT(*) AS w FROM metric_blocks GROUP BY date_trunc('hour', datetime), hostname, port, dbname ORDER BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_blocks_h_datetime_hostname_port_dbname ON mv_metric_blocks_h(datetime, hostname, port, dbname);
-
-
-CREATE MATERIALIZED VIEW mv_metric_blocks_d(datetime, hostname, port, dbname, measure_interval, blks_read, blks_hit, hitmiss_ratio, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(blks_read) AS blks_read, SUM(blks_hit) AS blks_hit, SUM(hitmiss_ratio)/SUM(w) AS hitmiss_ratio, SUM(w) AS w FROM (SELECT datetime, hostname, port, dbname, measure_interval, blks_read, blks_hit, hitmiss_ratio*w AS hitmiss_ratio, w FROM mv_metric_blocks_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_blocks_d_datetime_hostname_port_dbname ON mv_metric_blocks_d(datetime, hostname, port, dbname);
-
-
-CREATE MATERIALIZED VIEW mv_metric_xacts_h(datetime, hostname, port, dbname, measure_interval, n_commit, n_rollback, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_commit) AS n_commit, SUM(n_rollback) AS n_rollback, COUNT(*) AS w FROM metric_xacts GROUP BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_xacts_h_datetime_hostname_port_dbname ON mv_metric_xacts_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_xacts_d(datetime, hostname, port, dbname, measure_interval, n_commit, n_rollback, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_commit) AS n_commit, SUM(n_rollback) AS n_rollback, SUM(w) AS w FROM mv_metric_xacts_h GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_xacts_d_datetime_hostname_port_dbname ON mv_metric_xacts_d(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_locks_h(datetime, hostname, port, dbname, access_share, row_share, row_exclusive, share_update_exclusive, share, share_row_exclusive, exclusive, access_exclusive, siread, waiting_access_share, waiting_row_share, waiting_row_exclusive, waiting_share_update_exclusive, waiting_share, waiting_share_row_exclusive, waiting_exclusive, waiting_access_exclusive, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, port, dbname, (SUM(access_share)/COUNT(*))::BIGINT AS access_share, (SUM(row_share)/COUNT(*))::BIGINT AS row_share, (SUM(row_exclusive)/COUNT(*))::BIGINT AS row_exclusive, (SUM(share_update_exclusive)/COUNT(*))::BIGINT AS share_update_exclusive, (SUM(share)/COUNT(*))::BIGINT AS share, (SUM(share_row_exclusive)/COUNT(*))::BIGINT AS share_row_exclusive, (SUM(exclusive)/COUNT(*))::BIGINT AS exclusive, (SUM(access_exclusive)/COUNT(*))::BIGINT AS access_exclusive, (SUM(siread)/COUNT(*))::BIGINT AS siread, (SUM(waiting_access_share)/COUNT(*))::BIGINT AS waiting_access_share, (SUM(waiting_row_share)/COUNT(*))::BIGINT AS waiting_row_share, (SUM(waiting_row_exclusive)/COUNT(*))::BIGINT AS waiting_row_exclusive, (SUM(waiting_share_update_exclusive)/COUNT(*))::BIGINT AS waiting_share_update_exclusive, (SUM(waiting_share)/COUNT(*))::BIGINT AS waiting_share, (SUM(waiting_share_row_exclusive)/COUNT(*))::BIGINT AS waiting_share_row_exclusive, (SUM(waiting_exclusive)/COUNT(*))::BIGINT AS waiting_exclusive, (SUM(waiting_access_exclusive)/COUNT(*))::BIGINT AS waiting_access_exclusive, COUNT(*) AS w FROM metric_locks GROUP BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_locks_h_datetime_hostname_port_dbname ON mv_metric_locks_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_locks_d(datetime, hostname, port, dbname, access_share, row_share, row_exclusive, share_update_exclusive, share, share_row_exclusive, exclusive, access_exclusive, siread, waiting_access_share, waiting_row_share, waiting_row_exclusive, waiting_share_update_exclusive, waiting_share, waiting_share_row_exclusive, waiting_exclusive, waiting_access_exclusive, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, port, dbname, (SUM(access_share)/SUM(w))::BIGINT AS access_share, (SUM(row_share)/SUM(w))::BIGINT AS row_share, (SUM(row_exclusive)/SUM(w))::BIGINT AS row_exclusive, (SUM(share_update_exclusive)/SUM(w))::BIGINT AS share_update_exclusive, (SUM(share)/SUM(w))::BIGINT AS share, (SUM(share_row_exclusive)/SUM(w))::BIGINT AS share_row_exclusive, (SUM(exclusive)/SUM(w))::BIGINT AS exclusive, (SUM(access_exclusive)/SUM(w))::BIGINT AS access_exclusive, (SUM(siread)/SUM(w))::BIGINT AS siread, (SUM(waiting_access_share)/SUM(w))::BIGINT AS waiting_access_share, (SUM(waiting_row_share)/SUM(w))::BIGINT AS waiting_row_share, (SUM(waiting_row_exclusive)/SUM(w))::BIGINT AS waiting_row_exclusive, (SUM(waiting_share_update_exclusive)/SUM(w))::BIGINT AS waiting_share_update_exclusive, (SUM(waiting_share)/SUM(w))::BIGINT AS waiting_share, (SUM(waiting_share_row_exclusive)/SUM(w))::BIGINT AS waiting_share_row_exclusive, (SUM(waiting_exclusive)/SUM(w))::BIGINT AS waiting_exclusive, (SUM(waiting_access_exclusive)/SUM(w))::BIGINT AS waiting_access_exclusive, SUM(w) AS w FROM (SELECT datetime, hostname, port, dbname, access_share*w AS access_share, row_share*w AS row_share, row_exclusive*w AS row_exclusive, share_update_exclusive*w AS share_update_exclusive, share*w AS share, share_row_exclusive*w AS share_row_exclusive, exclusive*w AS exclusive, access_exclusive*w AS access_exclusive, siread*w AS siread, waiting_access_share*w AS waiting_access_share, waiting_row_share*w AS waiting_row_share, waiting_row_exclusive*w AS waiting_row_exclusive, waiting_share_update_exclusive*w AS waiting_share_update_exclusive, waiting_share*w AS waiting_share, waiting_share_row_exclusive*w AS waiting_share_row_exclusive, waiting_exclusive*w AS waiting_exclusive, waiting_access_exclusive*w AS waiting_access_exclusive, w FROM mv_metric_locks_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_locks_d_datetime_hostname_port_dbname ON mv_metric_locks_d(datetime, hostname, port, dbname);
-
-
-CREATE MATERIALIZED VIEW mv_metric_bgwriter_h (datetime, hostname, port, measure_interval, checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time, buffers_checkpoint, buffers_clean, maxwritten_clean, buffers_backend, buffers_backend_fsync, buffers_alloc) AS SELECT date_trunc('hour', datetime), hostname, port, SUM(measure_interval) AS measure_interval, SUM(checkpoints_timed) AS checkpoints_timed, SUM(checkpoints_req) AS checkpoints_req, SUM(checkpoint_write_time) AS checkpoint_write_time, SUM(checkpoint_sync_time) AS checkpoint_sync_time, SUM(buffers_checkpoint) AS buffers_checkpoint, SUM(buffers_clean) AS buffers_clean, SUM(maxwritten_clean) AS maxwritten_clean, SUM(buffers_backend) AS buffers_backend, SUM(buffers_backend_fsync) AS buffers_backend_fsync, SUM(buffers_alloc) AS buffers_alloc FROM metric_bgwriter GROUP BY date_trunc('hour', datetime), hostname, port;
-
-CREATE UNIQUE INDEX i_mv_metric_bgwriter_h_datetime_hostname_port ON mv_metric_bgwriter_h(datetime, hostname, port);
-
-CREATE MATERIALIZED VIEW mv_metric_bgwriter_d (datetime, hostname, port, measure_interval, checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time, buffers_checkpoint, buffers_clean, maxwritten_clean, buffers_backend, buffers_backend_fsync, buffers_alloc) AS SELECT date_trunc('day', datetime), hostname, port, SUM(measure_interval) AS measure_interval, SUM(checkpoints_timed) AS checkpoints_timed, SUM(checkpoints_req) AS checkpoints_req, SUM(checkpoint_write_time) AS checkpoint_write_time, SUM(checkpoint_sync_time) AS checkpoint_sync_time, SUM(buffers_checkpoint) AS buffers_checkpoint, SUM(buffers_clean) AS buffers_clean, SUM(maxwritten_clean) AS maxwritten_clean, SUM(buffers_backend) AS buffers_backend, SUM(buffers_backend_fsync) AS buffers_backend_fsync, SUM(buffers_alloc) AS buffers_alloc FROM mv_metric_bgwriter_h GROUP BY date_trunc('day', datetime), hostname, port;
-
-CREATE UNIQUE INDEX i_mv_metric_bgwriter_d_datetime_hostname_port ON mv_metric_bgwriter_d(datetime, hostname, port);
-
-CREATE MATERIALIZED VIEW mv_metric_db_size_h(datetime, hostname, port, dbname, size, w) AS SELECT date_trunc('hour', datetime), hostname, port, dbname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM metric_db_size GROUP BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_db_size_h_datetime_hostname_port_dbname ON mv_metric_db_size_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_db_size_d(datetime, hostname, port, dbname, size, w) AS SELECT date_trunc('day', datetime), hostname, port, dbname, (SUM(size)/SUM(w))::BIGINT AS size, SUM(w) AS w FROM (SELECT datetime, hostname, port, dbname, size*w AS size, w FROM mv_metric_db_size_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_db_size_d_datetime_hostname_port_dbname ON mv_metric_db_size_d(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_tblspc_size_h(datetime, hostname, port, spcname, size, w) AS SELECT date_trunc('hour', datetime), hostname, port, spcname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM metric_tblspc_size GROUP BY date_trunc('hour', datetime), hostname, port, spcname;
-
-CREATE UNIQUE INDEX i_mv_metric_tblspc_size_h_datetime_hostname_port_spcname ON mv_metric_tblspc_size_h(datetime, hostname, port, spcname);
-
-CREATE MATERIALIZED VIEW mv_metric_tblspc_size_d(datetime, hostname, port, spcname, size, w) AS SELECT date_trunc('day', datetime), hostname, port, spcname, (SUM(size)/SUM(w))::BIGINT AS size, SUM(w) AS w FROM (SELECT datetime, hostname, port, spcname, size*w AS size, w FROM mv_metric_tblspc_size_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, spcname;
-
-CREATE UNIQUE INDEX i_mv_metric_tblspc_size_d_datetime_hostname_port_spcname ON mv_metric_tblspc_size_d(datetime, hostname, port, spcname);
-
-CREATE MATERIALIZED VIEW mv_metric_filesystems_size_h(datetime, hostname, mount_point, used, total, w) AS SELECT date_trunc('hour', datetime), hostname, mount_point, (SUM(used)/COUNT(*))::BIGINT AS used, (SUM(total)/COUNT(*))::BIGINT AS total,  COUNT(*) AS w FROM metric_filesystems_size GROUP BY date_trunc('hour', datetime), hostname, mount_point;
-
-CREATE UNIQUE INDEX i_mv_metric_filesystems_size_h_datetime_hostname_mount_point ON mv_metric_filesystems_size_h(datetime, hostname, mount_point);
-
-CREATE MATERIALIZED VIEW mv_metric_filesystems_size_d(datetime, hostname, mount_point, used, total, w) AS SELECT date_trunc('day', datetime), hostname, mount_point, (SUM(used)/SUM(w))::BIGINT AS used, (SUM(total)/SUM(w))::BIGINT AS total, SUM(w) AS w FROM (SELECT datetime, hostname, mount_point, used*w AS used, total*w AS total, w FROM mv_metric_filesystems_size_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, mount_point;
-
-CREATE UNIQUE INDEX i_mv_metric_filesystems_size_d_datetime_hostname_mount_point ON mv_metric_filesystems_size_d(datetime, hostname, mount_point);
-
-
-CREATE MATERIALIZED VIEW mv_metric_temp_files_size_tblspc_h(datetime, hostname, port, spcname, size, w) AS SELECT date_trunc('hour', datetime), hostname, port, spcname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM metric_temp_files_size_tblspc GROUP BY date_trunc('hour', datetime), hostname, port, spcname;
-
-CREATE UNIQUE INDEX i_mv_metric_temp_files_size_tblspc_h_datetime_hostname_port_spcname ON mv_metric_temp_files_size_tblspc_h(datetime, hostname, port, spcname);
-
-CREATE MATERIALIZED VIEW mv_metric_temp_files_size_tblspc_d(datetime, hostname, port, spcname, size, w) AS SELECT date_trunc('day', datetime), hostname, port, spcname, (SUM(size)/SUM(w))::BIGINT AS size, SUM(w) AS w FROM (SELECT datetime, hostname, port, spcname, size*w AS size, w FROM mv_metric_temp_files_size_tblspc_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, spcname;
-
-CREATE UNIQUE INDEX i_mv_metric_temp_files_size_tblspc_d_datetime_hostname_port_spcname ON mv_metric_temp_files_size_tblspc_d(datetime, hostname, port, spcname);
-
-CREATE MATERIALIZED VIEW mv_metric_temp_files_size_db_h(datetime, hostname, port, dbname, size, w) AS SELECT date_trunc('hour', datetime), hostname, port, dbname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM metric_temp_files_size_db GROUP BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_temp_files_size_db_h_datetime_hostname_port_dbname ON mv_metric_temp_files_size_db_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_temp_files_size_db_d(datetime, hostname, port, dbname, size, w) AS SELECT date_trunc('day', datetime), hostname, port, dbname, (SUM(size)/SUM(w))::BIGINT AS size, SUM(w) AS w FROM (SELECT datetime, hostname, port, dbname, size*w AS size, w FROM mv_metric_temp_files_size_db_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_temp_files_size_db_d_datetime_hostname_port_dbname ON mv_metric_temp_files_size_db_d(datetime, hostname, port, dbname);
-
-
 CREATE OR REPLACE FUNCTION pg_lsn_smaller(in_pg_lsn1 pg_lsn, in_pg_lsn2 pg_lsn) RETURNS pg_lsn
 LANGUAGE plpgsql
 AS $$
@@ -391,63 +296,198 @@ $$;
 
 CREATE AGGREGATE min (pg_lsn) ( SFUNC = pg_lsn_smaller, STYPE = pg_lsn, SORTOP = <);
 
-CREATE MATERIALIZED VIEW mv_metric_wal_files_h(datetime, hostname, port, measure_interval, written_size, total, archive_ready, total_size, current_location) AS SELECT date_trunc('hour', datetime), hostname, port, SUM(measure_interval) AS measure_interval, SUM(written_size) AS written_size, SUM(total) AS total, SUM(archive_ready) AS archive_ready, SUM(total_size) AS total_size, MIN(current_location::pg_lsn)::TEXT AS current_location  FROM metric_wal_files GROUP BY date_trunc('hour', datetime), hostname, port;
+CREATE OR REPLACE FUNCTION metric_configuration() RETURNS TABLE(tablename TEXT, agg_query TEXT, insert_agg_query TEXT)
+LANGUAGE plpgsql AS $$
+DECLARE
+BEGIN
+	RETURN QUERY SELECT
+					'metric_db_size'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET size = EXCLUDED.size, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_loadavg'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, round(avg(load1)::numeric, 2) AS load1, round(avg(load5)::numeric, 2) AS load5, round(avg(load15)::numeric, 2) AS load15, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET load1 = EXCLUDED.load1, load5 = EXCLUDED.load5, load15 = EXCLUDED.load15, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
 
-CREATE UNIQUE INDEX i_mv_metric_wal_files_h_datetime_hostname_port ON mv_metric_wal_files_h(datetime, hostname, port);
+	RETURN QUERY SELECT
+					'metric_bgwriter'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, SUM(checkpoints_timed) AS checkpoints_timed, SUM(checkpoints_req) AS checkpoints_req, SUM(checkpoint_write_time) AS checkpoint_write_time, SUM(checkpoint_sync_time) AS checkpoint_sync_time, SUM(buffers_checkpoint) AS buffers_checkpoint, SUM(buffers_clean) AS buffers_clean, SUM(maxwritten_clean) AS maxwritten_clean, SUM(buffers_backend) AS buffers_backend, SUM(buffers_backend_fsync) AS buffers_backend_fsync, SUM(buffers_alloc) AS buffers_alloc FROM #tablename# #where# GROUP BY 1, 2, 3 ORDER BY 1,2,3'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, checkpoints_timed = EXCLUDED.checkpoints_timed, checkpoints_req = EXCLUDED.checkpoints_req, checkpoint_write_time = EXCLUDED.checkpoint_write_time, checkpoint_sync_time = EXCLUDED.checkpoint_sync_time, buffers_checkpoint = EXCLUDED.buffers_checkpoint, buffers_clean = EXCLUDED.buffers_clean, maxwritten_clean = EXCLUDED.maxwritten_clean, buffers_backend = EXCLUDED.buffers_backend, buffers_backend_fsync = EXCLUDED.buffers_backend_fsync, buffers_alloc = EXCLUDED.buffers_alloc WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
 
-CREATE MATERIALIZED VIEW mv_metric_wal_files_d(datetime, hostname, port, measure_interval, written_size, total, archive_ready, total_size, current_location) AS SELECT date_trunc('day', datetime), hostname, port, SUM(measure_interval) AS measure_interval, SUM(written_size) AS written_size, SUM(total) AS total, SUM(archive_ready) AS archive_ready, SUM(total_size) AS total_size, MIN(current_location::pg_lsn)::TEXT AS current_location  FROM mv_metric_wal_files_h GROUP BY date_trunc('day', datetime), hostname, port;
+	RETURN QUERY SELECT
+					'metric_blocks'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(blks_read) AS blks_read, SUM(blks_hit) AS blks_hit, SUM(hitmiss_ratio)/COUNT(*) AS hitmiss_ratio, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, blks_read = EXCLUDED.blks_read, blks_hit = EXCLUDED.blks_hit, hitmiss_ratio = EXCLUDED.hitmiss_ratio WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
 
-CREATE UNIQUE INDEX i_mv_metric_wal_files_d_datetime_hostname_port ON mv_metric_wal_files_d(datetime, hostname, port);
+	RETURN QUERY SELECT
+					'metric_cpu'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, cpu, SUM(measure_interval) AS measure_interval, SUM(time_user) AS time_user, SUM(time_system) AS time_system, SUM(time_idle) AS time_idle, SUM(time_iowait) AS time_iowait, SUM(time_steal) AS time_steal FROM #tablename# #where# GROUP BY 1,2,3'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, cpu) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, time_user = EXCLUDED.time_user, time_system = EXCLUDED.time_system, time_iowait = EXCLUDED.time_iowait, time_steal = EXCLUDED.time_steal WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
 
+	RETURN QUERY SELECT
+					'metric_sessions'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(active)/COUNT(*) AS active, SUM(waiting)/COUNT(*) AS waiting, SUM(idle)/COUNT(*) AS idle, SUM(idle_in_xact)/COUNT(*) AS idle_in_xact, SUM(idle_in_xact_aborted)/COUNT(*) AS idle_in_xact_aborted, SUM(fastpath)/COUNT(*) AS fastpath, SUM(disabled)/COUNT(*) AS disabled, SUM(no_priv)/COUNT(*) AS no_priv, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, active = EXCLUDED.active, waiting = EXCLUDED.waiting, idle = EXCLUDED.idle, idle_in_xact = EXCLUDED.idle_in_xact, idle_in_xact_aborted = EXCLUDED.idle_in_xact_aborted, fastpath = EXCLUDED.fastpath, disabled = EXCLUDED.disabled, no_priv = EXCLUDED.no_priv WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_xacts'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_commit) AS n_commit, SUM(n_rollback) AS n_rollback, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, measure_interval = EXCLUDED.measure_interval, n_commit = EXCLUDED.n_commit, n_rollback = EXCLUDED.n_rollback WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_locks'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, avg(access_share) AS access_share, avg(row_share) AS row_share, avg(row_exclusive) AS row_exclusive, avg(share_update_exclusive) AS share_update_exclusive, avg(share) AS share, avg(share_row_exclusive) AS share_row_exclusive, avg(exclusive) AS exclusive, avg(access_exclusive) AS access_exclusive, avg(siread) AS siread, avg(waiting_access_share) AS waiting_access_share, avg(waiting_row_share) AS waiting_row_share, avg(waiting_row_exclusive) AS waiting_row_exclusive, avg(waiting_share_update_exclusive) AS waiting_share_update_exclusive, avg(waiting_share) AS waiting_share, avg(waiting_share_row_exclusive) AS waiting_share_row_exclusive, avg(waiting_exclusive) AS waiting_exclusive, avg(waiting_access_exclusive) AS waiting_access_exclusive, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, access_share = EXCLUDED.access_share, row_share = EXCLUDED.row_share, row_exclusive = EXCLUDED.row_exclusive, share_update_exclusive = EXCLUDED.share_update_exclusive, share = EXCLUDED.share, share_row_exclusive = EXCLUDED.share_row_exclusive, exclusive = EXCLUDED.exclusive, access_exclusive = EXCLUDED.access_exclusive, siread = EXCLUDED.siread, waiting_access_share = EXCLUDED.waiting_access_share, waiting_row_share = EXCLUDED.waiting_row_share, waiting_row_exclusive = EXCLUDED.waiting_row_exclusive, waiting_share_update_exclusive = EXCLUDED.waiting_share_update_exclusive, waiting_share = EXCLUDED.waiting_share, waiting_share_row_exclusive = EXCLUDED.waiting_share_row_exclusive, waiting_exclusive = EXCLUDED.waiting_exclusive, waiting_access_exclusive = EXCLUDED.waiting_access_exclusive  WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_tblspc_size'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, spcname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, spcname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_filesystems_size'::TEXT,
+					'SELECT #trunc_function#(datetime), hostname, mount_point, avg(used) AS used, avg(total) AS total, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, mount_point) DO UPDATE SET w = EXCLUDED.w, used = EXCLUDED.used, total = EXCLUDED.total WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_temp_files_size_tblspc'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, spcname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, spcname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_temp_files_size_db'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_wal_files'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, SUM(written_size) AS written_size, MIN(current_location::pg_lsn)::TEXT AS current_location, SUM(total) AS total, SUM(archive_ready) AS archive_ready, SUM(total_size) AS total_size FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, written_size = EXCLUDED.written_size, total = EXCLUDED.total, archive_ready = EXCLUDED.archive_ready, total_size = EXCLUDED.total_size, current_location = EXCLUDED.current_location WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+	RETURN QUERY SELECT
+					'metric_process'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, SUM(measure_interval) AS measure_interval, SUM(context_switches) AS context_switches, SUM(forks) AS forks, avg(procs_running) AS procs_running, avg(procs_blocked) AS procs_blocked, avg(procs_total) AS procs_total, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1,2'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, context_switches = EXCLUDED.context_switches, forks = EXCLUDED.forks, procs_running = EXCLUDED.procs_running, procs_blocked = EXCLUDED.procs_blocked, procs_total = EXCLUDED.procs_total, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_memory'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, avg(mem_total) AS mem_total, avg(mem_used) AS mem_used, avg(mem_free) AS mem_free, avg(mem_buffers) AS mem_buffers, avg(mem_cached) AS mem_cached, avg(swap_total) AS swap_total, avg(swap_used) AS swap_used, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1,2'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET mem_total = EXCLUDED.mem_total, mem_used = EXCLUDED.mem_used, mem_free = EXCLUDED.mem_free, mem_buffers = EXCLUDED.mem_buffers, mem_cached = EXCLUDED.mem_cached, swap_total = EXCLUDED.swap_total, swap_used = EXCLUDED.swap_used, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+	RETURN QUERY SELECT
+					'metric_vacuum_analyze'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_vacuum) AS n_vacuum, SUM(n_analyze) AS n_analyze, SUM(n_autovacuum) AS n_autovacuum, SUM(n_autoanalyze) AS n_autoanalyze FROM #tablename# #where# GROUP BY 1,2,3,4'::TEXT,
+					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, n_vacuum = EXCLUDED.n_vacuum, n_analyze = EXCLUDED.n_analyze, n_autovacuum = EXCLUDED.n_autovacuum, n_autoanalyze = EXCLUDED.n_autoanalyze WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+END;
+$$;
 
-CREATE MATERIALIZED VIEW mv_metric_cpu_h(datetime, hostname, cpu, measure_interval, time_user, time_system, time_idle, time_iowait, time_steal) AS SELECT date_trunc('hour', datetime), hostname, cpu, SUM(measure_interval) AS measure_interval, SUM(time_user) AS time_user, SUM(time_system) AS time_system, SUM(time_idle) AS time_idle, SUM(time_iowait) AS time_iowait, SUM(time_steal) AS time_steal FROM metric_cpu GROUP BY date_trunc('hour', datetime), hostname, cpu;
-
-CREATE UNIQUE INDEX i_mv_metric_cpu_h_datetime_hostname_cpu ON mv_metric_cpu_h(datetime, hostname, cpu);
-
-CREATE MATERIALIZED VIEW mv_metric_cpu_d(datetime, hostname, cpu, measure_interval, time_user, time_system, time_idle, time_iowait, time_steal) AS SELECT date_trunc('day', datetime), hostname, cpu, SUM(measure_interval) AS measure_interval, SUM(time_user) AS time_user, SUM(time_system) AS time_system, SUM(time_idle) AS time_idle, SUM(time_iowait) AS time_iowait, SUM(time_steal) AS time_steal FROM mv_metric_cpu_h GROUP BY date_trunc('day', datetime), hostname, cpu;
-
-CREATE UNIQUE INDEX i_mv_metric_cpu_d_datetime_hostname_cpu ON mv_metric_cpu_d(datetime, hostname, cpu);
-
-CREATE MATERIALIZED VIEW mv_metric_process_h (datetime, hostname, measure_interval, context_switches, forks, procs_running, procs_blocked, procs_total, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, SUM(measure_interval) AS measure_interval, SUM(context_switches) AS context_switches, SUM(forks) AS forks, (SUM(procs_running)/COUNT(*))::INT AS procs_running, (SUM(procs_blocked)/COUNT(*))::INT AS procs_blocked, (SUM(procs_total)/COUNT(*))::INT AS procs_total, COUNT(*) AS w FROM metric_process GROUP BY date_trunc('hour', datetime), hostname;
-
-CREATE UNIQUE INDEX i_mv_metric_process_h_datetime_hostname ON mv_metric_process_h(datetime, hostname);
-
-CREATE MATERIALIZED VIEW mv_metric_process_d (datetime, hostname, measure_interval, context_switches, forks, procs_running, procs_blocked, procs_total, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, SUM(measure_interval) AS measure_interval, SUM(context_switches) AS context_switches, SUM(forks) AS forks, (SUM(procs_running)/SUM(w))::INT AS procs_running, (SUM(procs_blocked)/SUM(w))::INT AS procs_blocked, (SUM(procs_total)/SUM(w))::INT AS procs_total, SUM(w) AS w FROM (SELECT datetime, hostname, measure_interval, context_switches, forks, procs_running*w AS procs_running, procs_blocked*w AS procs_blocked, procs_total*w AS procs_total, w FROM mv_metric_process_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname;
-
-CREATE UNIQUE INDEX i_mv_metric_process_d_datetime_hostname ON mv_metric_process_d(datetime, hostname);
-
-CREATE MATERIALIZED VIEW mv_metric_memory_h (datetime, hostname, mem_total, mem_used, mem_free, mem_buffers, mem_cached, swap_total, swap_used, w) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, (SUM(mem_total)/COUNT(*))::BIGINT AS mem_total, (SUM(mem_used)/COUNT(*))::BIGINT AS mem_used, (SUM(mem_free)/COUNT(*))::BIGINT AS mem_free, (SUM(mem_buffers)/COUNT(*))::BIGINT AS mem_buffers, (SUM(mem_cached)/COUNT(*))::BIGINT AS mem_cached, (SUM(swap_total)/COUNT(*))::BIGINT AS swap_total, (SUM(swap_used)/COUNT(*))::BIGINT AS swap_used, COUNT(*) AS w FROM metric_memory GROUP BY date_trunc('hour', datetime), hostname;
-
-CREATE UNIQUE INDEX i_mv_metric_memory_h_datetime_hostname ON mv_metric_memory_h(datetime, hostname);
-
-CREATE MATERIALIZED VIEW mv_metric_memory_d (datetime, hostname, mem_total, mem_used, mem_free, mem_buffers, mem_cached, swap_total, swap_used, w) AS SELECT date_trunc('day', datetime) AS datetime, hostname, (SUM(mem_total)/SUM(w))::BIGINT AS mem_total, (SUM(mem_used)/SUM(w))::BIGINT AS mem_used, (SUM(mem_free)/SUM(w))::BIGINT AS mem_free, (SUM(mem_buffers)/SUM(w))::BIGINT AS mem_buffers, (SUM(mem_cached)/SUM(w))::BIGINT AS mem_cached, (SUM(swap_total)/SUM(w))::BIGINT AS swap_total, (SUM(swap_used)/SUM(w))::BIGINT AS swap_used, SUM(w) AS w FROM (SELECT datetime, hostname, mem_total*w AS mem_total, mem_used*w AS mem_used, mem_free*w AS mem_free, mem_buffers*w AS mem_buffers, mem_cached*w AS mem_cached, swap_total*w AS swap_total, swap_used*w AS swap_used, w FROM mv_metric_memory_h) AS sq1 GROUP BY date_trunc('day', datetime), hostname;
-
-CREATE UNIQUE INDEX i_mv_metric_memory_d_datetime_hostname ON mv_metric_memory_d(datetime, hostname);
- 
-CREATE MATERIALIZED VIEW mv_metric_vacuum_analyze_h (datetime, hostname, port, dbname, measure_interval, n_vacuum, n_analyze, n_autovacuum, n_autoanalyze) AS SELECT date_trunc('hour', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_vacuum) AS n_vacuum, SUM(n_analyze) AS n_analyze, SUM(n_autovacuum) AS n_autovacuum, SUM(n_autoanalyze) AS n_autoanalyze FROM metric_vacuum_analyze GROUP BY date_trunc('hour', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_vacuum_analyze_h ON mv_metric_vacuum_analyze_h(datetime, hostname, port, dbname);
-
-CREATE MATERIALIZED VIEW mv_metric_vacuum_analyze_d (datetime, hostname, port, dbname, measure_interval, n_vacuum, n_analyze, n_autovacuum, n_autoanalyze) AS SELECT date_trunc('day', datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_vacuum) AS n_vacuum, SUM(n_analyze) AS n_analyze, SUM(n_autovacuum) AS n_autovacuum, SUM(n_autoanalyze) AS n_autoanalyze FROM mv_metric_vacuum_analyze_h GROUP BY date_trunc('day', datetime), hostname, port, dbname;
-
-CREATE UNIQUE INDEX i_mv_metric_vacuum_analyze_d ON mv_metric_vacuum_analyze_d(datetime, hostname, port, dbname);
-
-CREATE OR REPLACE FUNCTION refresh_all_matviews() RETURNS BOOLEAN
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE FUNCTION metric_create_agg_tables() RETURNS TABLE(created_table TEXT)
+LANGUAGE plpgsql AS $$
 
 DECLARE
-	v_relname TEXT;
+	i_tablename TEXT;
+	v_tablename_agg TEXT;
+	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
+	i_period TEXT;
 BEGIN
-	FOR v_relname IN SELECT relname FROM pg_class WHERE relname LIKE 'mv\_metric\_%\_h' AND relkind = 'm' LOOP
-		RAISE NOTICE 'Refreshing MV: %', v_relname;
-		EXECUTE 'REFRESH MATERIALIZED VIEW CONCURRENTLY '||v_relname;
+	FOR i_tablename IN SELECT tablename FROM metric_configuration() ORDER BY tablename LOOP
+		FOREACH i_period IN ARRAY v_agg_periods LOOP
+			v_tablename_agg := i_tablename||'_'||i_period;
+			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
+			IF NOT FOUND THEN
+				EXECUTE 'CREATE TABLE '||v_tablename_agg||' (LIKE '||i_tablename||' INCLUDING ALL)';
+				EXECUTE 'ALTER TABLE '||v_tablename_agg||' ADD COLUMN w INTEGER DEFAULT 1';
+				RETURN QUERY SELECT v_tablename_agg;
+			END IF;
+		END LOOP;
 	END LOOP;
-	FOR v_relname IN SELECT relname FROM pg_class WHERE relname LIKE 'mv\_metric\_%\_d' AND relkind = 'm' LOOP
-		RAISE NOTICE 'Refreshing MV: %', v_relname;
-		EXECUTE 'REFRESH MATERIALIZED VIEW CONCURRENTLY '||v_relname;
-	END LOOP;
-	RETURN true;
 END;
 
 $$;
+
+CREATE OR REPLACE FUNCTION metric_truncate_agg_tables() RETURNS TABLE(created_table TEXT)
+LANGUAGE plpgsql AS $$
+
+DECLARE
+	i_tablename TEXT;
+	v_tablename_agg TEXT;
+	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
+	i_period TEXT;
+BEGIN
+	FOR i_tablename IN SELECT tablename FROM metric_configuration() ORDER BY tablename LOOP
+		FOREACH i_period IN ARRAY v_agg_periods LOOP
+			v_tablename_agg := i_tablename||'_'||i_period;
+			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
+			IF FOUND THEN
+				EXECUTE 'TRUNCATE '||v_tablename_agg;
+				RETURN QUERY SELECT v_tablename_agg;
+			END IF;
+		END LOOP;
+	END LOOP;
+END;
+
+$$;
+
+
+CREATE OR REPLACE FUNCTION metric_populate_agg_tables() RETURNS TABLE(agg_tablename TEXT, nb_insert BIGINT)
+LANGUAGE plpgsql AS $$
+
+DECLARE
+	v_last_datetime TIMESTAMP WITH TIME ZONE;
+	i_tablename TEXT;
+	i_agg_query TEXT;
+	v_agg_query TEXT;
+	i_insert_agg_query TEXT;
+	v_insert_agg_query TEXT;
+	v_tablename_agg TEXT;
+	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
+	v_interval TEXT;
+	i_period TEXT;
+	v_nb_insert BIGINT := 0;
+	rec RECORD;
+BEGIN
+	PERFORM metric_create_agg_tables();
+	FOR i_tablename, i_agg_query, i_insert_agg_query IN SELECT * FROM metric_configuration() ORDER BY tablename LOOP
+		FOREACH i_period IN ARRAY v_agg_periods LOOP
+			v_tablename_agg := i_tablename||'_'||i_period;
+			IF i_period = '10m' THEN
+				v_interval := '10 minutes';
+			ELSIF i_period = '30m' THEN
+				v_interval := '30 minutes';
+			ELSE
+				v_interval := '4 hours';
+			END IF;
+			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
+			IF NOT FOUND THEN
+				RAISE NOTICE 'Table % not found.', v_tablename_agg;
+				CONTINUE;
+			END IF;
+			v_agg_query := replace(i_agg_query, '#trunc_function#', 'trunc_time_'||i_period);
+			v_agg_query := replace(v_agg_query, '#tablename#', i_tablename);
+			v_nb_insert := 0;
+
+			RAISE NOTICE 'Populating % ...', v_tablename_agg;
+			EXECUTE 'SELECT MAX(datetime) FROM '||v_tablename_agg INTO v_last_datetime ;
+			IF v_last_datetime IS NULL THEN
+				v_agg_query := replace(v_agg_query, '#where#', '');
+			ELSE
+				v_agg_query := replace(v_agg_query, '#where#', 'WHERE datetime >= ('''||v_last_datetime||'''::TIMESTAMP WITH TIME ZONE - INTERVAL '''||v_interval||''')');
+			END IF;
+			v_insert_agg_query := replace(i_insert_agg_query, '#tablename#', v_tablename_agg);
+			v_insert_agg_query := replace(v_insert_agg_query, '#agg_query#', v_agg_query);
+			RAISE DEBUG '%', v_insert_agg_query;
+			EXECUTE v_insert_agg_query;
+			IF FOUND THEN
+				GET DIAGNOSTICS v_nb_insert = ROW_COUNT;
+			END IF;
+			RETURN QUERY SELECT v_tablename_agg, v_nb_insert;
+
+		END LOOP;
+	END LOOP;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION trunc_time_10m(TIMESTAMP WITH TIME ZONE)
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+  SELECT date_trunc('hour', $1) + INTERVAL '10 min' * TRUNC(date_part('minute', $1) / 10)
+$$ LANGUAGE SQL IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION trunc_time_30m(TIMESTAMP WITH TIME ZONE)
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+  SELECT date_trunc('hour', $1) + INTERVAL '30 min' * TRUNC(date_part('minute', $1) / 30)
+$$ LANGUAGE SQL IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION trunc_time_4h(TIMESTAMP WITH TIME ZONE)
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+  SELECT date_trunc('day', $1) + INTERVAL '4 hours' * TRUNC(date_part('hours', $1) / 4)
+$$ LANGUAGE SQL IMMUTABLE;

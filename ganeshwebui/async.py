@@ -26,3 +26,7 @@ class HTMLAsyncResult(AsyncResult):
 class JSONAsyncResult(AsyncResult):
     def __init__(self, http_code = 0, data = {}):
         super(JSONAsyncResult, self).__init__(http_code = http_code, content_type = "application/json", data = data)
+
+class CSVAsyncResult(AsyncResult):
+    def __init__(self, http_code = 0, data = {}):
+        super(CSVAsyncResult, self).__init__(http_code = http_code, content_type = "text/csv", data = data)

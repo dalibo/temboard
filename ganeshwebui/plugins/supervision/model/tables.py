@@ -35,7 +35,6 @@ instances = Table(
            primary_key=True,
            ),
     Column('port', Integer, primary_key=True),
-    Column('agent_key', UnicodeText),
     Column('local_name', UnicodeText, nullable=False,),
     Column('version', UnicodeText, nullable=False,),
     Column('version_num', Integer, nullable=False,),

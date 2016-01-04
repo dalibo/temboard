@@ -87,6 +87,17 @@
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"><i class="fa fa-bars fa-fw"></i> Activity</a></li>
 						<li>
+							<a href="#"><i class="fa fa-bar-chart-o"></i> Supervision<span class="fa arrow"></span></a>
+							<ul class="nav nav-second-level">
+								<li>
+									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">Charts - Last day</a></li>
+									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/week">Charts - Last week</a></li>
+									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/month">Charts - Last month</a></li>
+									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/year">Charts - Last year</a></li>
+								</li>
+							</ul>
+						</li>
+						<li>
 		  					<a href="#"><i class="fa fa-cog"></i> Settings<span class="fa arrow"></span></a>
 							<ul class="nav nav-second-level">
 								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">Configuration</a></li>

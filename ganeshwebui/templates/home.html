@@ -28,6 +28,7 @@
 							<th class="no-sort"></th>
 							<th class="no-sort"></th>
 							<th class="no-sort"></th>
+							<th class="no-sort"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -44,6 +45,9 @@
 							</td>
 							<td class="text-center">
 								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>
+							</td>
+							<td class="text-center">
+								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>
 							</td>
 							<td class="text-center">
 								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>
@@ -79,6 +83,11 @@ $(document).ready(function() {
 		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity');
 	});
 	
+	$('[data-action=supervision]').click(function () {
+		$('[data-toggle=popover]').popover('hide');
+		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/supervision/day');
+	});
+
 	$('[data-action=settings]').click(function () {
 		$('[data-toggle=popover]').popover('hide');
 		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/settings/configuration');

@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+from sqlalchemy import create_engine
+from ganeshwebui.options import CLIOptions
+from ganeshwebui.configuration import Configuration
+from ganeshwebui.errors import ConfigurationError, CLIError
+from ganeshwebui.logger import get_logger, set_logger_name
+
+def create_db_engine(logger, user, password, host, port, dbname):
+    dburi = "postgresql://%s:%s@%s:%s/%s" % (
+            user,
+            password,
+            host,
+            port,
+            dbname
+    )
+    engine = create_engine(dburi)
+    try:
+        conn = engine.connect()
+    except Exception as e:
+        logger.error("Connection to the database failed for the following reason:")
+        logger.error("\t%s" % e.message)
+        logger.error("Please check your configuration.")
+        sys.stderr.write("FATAL: %s\n" % e.message)
+        exit(1)
+    else:
+        conn.close()
+    return engine
+
+def main():
+    optparser = CLIOptions(description = "Ganesh - Supervision plugin metric aggregator.")
+    (options, _) = optparser.parse_args()
+    try:
+        config =  Configuration(options.configfile)
+        set_logger_name("metric-aggregator")
+        logger = get_logger(config)
+        engine = create_db_engine(logger, **config.postgresql)
+        with engine.connect() as conn:
+            conn.execute("SET search_path TO supervision")
+            res = conn.execute("SELECT * FROM metric_populate_agg_tables()")
+            for row in res.fetchall():
+                logger.info("table=%s insert=%s" % (row['agg_tablename'], row['nb_insert']))
+            conn.execute("COMMIT")
+            exit(0)
+    except (ConfigurationError, ImportError, Exception) as e:
+        try:
+            logger.error(e.message)
+            conn.execute("ROLLBACK")
+        except Exception:
+            pass
+        sys.stderr.write("FATAL: %s\n" % e.message)
+        exit(1)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        sys.stderr.write("FATAL: %s\n" % e.message)
+        import traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback)
+        exit(1)

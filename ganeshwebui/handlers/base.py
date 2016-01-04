@@ -92,7 +92,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class Error404Handler(tornado.web.RequestHandler):
     def prepare(self,):
-        raise HTTPError(404)
+        raise tornado.web.HTTPError(404)
 
     def write_error(self, status_code, **kwargs):
         if "Content-Type" in self.request.headers and \
@@ -143,4 +143,17 @@ class JsonHandler(BaseHandler):
             self.set_status(async_result.http_code)
             self.set_header("Content-Type", "application/json")
             self.write(json.dumps({'error': async_result.data['error']}))
+        self.finish()
+
+class CsvHandler(BaseHandler):
+    def async_callback(self, async_result):
+        self.set_header('Content-Type', async_result.content_type)
+        if not isinstance(async_result, CSVAsyncResult):
+            self.finish()
+            return
+        if async_result.http_code == 200:
+            self.write(async_result.data)
+        else:
+            self.set_status(async_result.http_code)
+            self.write(async_result.data['error'])
         self.finish()
