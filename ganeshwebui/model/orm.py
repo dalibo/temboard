@@ -91,8 +91,20 @@ class Instances(Model):
                 cascade="save-update, merge, delete, delete-orphan"
             )
 
+    plugins = relationship(
+                "Plugins",
+                order_by="Plugins.plugin_name",
+                backref="instances",
+                cascade="save-update, merge, delete, delete-orphan"
+            )
+
+
+class Plugins(Model):
+    __table__ = tables.plugins
+
 class InstanceGroups(Model):
     __table__ = tables.instance_groups
+
 class RoleGroups(Model):
     __table__ = tables.role_groups
 

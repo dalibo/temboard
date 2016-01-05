@@ -55,7 +55,9 @@ class ManageInstanceJsonHandler(JsonHandler):
                         'pg_version': instance.pg_version,
                         'pg_data': instance.pg_data,
                         'in_groups': [group.group_name for group in instance.groups],
-                        'groups': [{'name': group.group_name, 'description': group.group_description} for group in groups]
+                        'enabled_plugins': [plugin.plugin_name for plugin in instance.plugins],
+                        'groups': [{'name': group.group_name, 'description': group.group_description} for group in groups],
+                        'loaded_plugins': self.application.loaded_plugins
                     }
                 )
         except (GaneshError, Exception) as e:
@@ -119,6 +121,9 @@ class ManageInstanceJsonHandler(JsonHandler):
                 if instance_groups:
                     for instance_group in instance_groups:
                         delete_instance_from_group(self.db_session, instance.agent_address, instance.agent_port, instance_group.group_name)
+                # Remove plugins
+                purge_instance_plugins(self.db_session, instance.agent_address, instance.agent_port)
+
                 instance = update_instance(self.db_session,
                             instance.agent_address,
                             instance.agent_port,
@@ -148,7 +153,13 @@ class ManageInstanceJsonHandler(JsonHandler):
             if data['groups']:
                 for group_name in data['groups']:
                     add_instance_in_group(self.db_session, instance.agent_address, instance.agent_port, group_name)
-
+            # Add each selected plugin.
+            if data['plugins']:
+                for plugin_name in data['plugins']:
+                    if plugin_name in self.application.loaded_plugins:
+                        add_instance_plugin(self.db_session, instance.agent_address, instance.agent_port, plugin_name)
+                    else:
+                        raise GaneshError(404, "Unknown plugin.")
             self.db_session.commit()
             return JSONAsyncResult(200, {'ok': True})
 

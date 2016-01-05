@@ -39,6 +39,16 @@ instances = Table(
     Column('pg_data', UnicodeText),
     schema = "application")
 
+plugins = Table(
+    'plugins', metadata,
+    Column('agent_address', UnicodeText, nullable=False, primary_key=True),
+    Column('agent_port', Integer, nullable=False, primary_key=True),
+    Column('plugin_name', UnicodeText, nullable=False, primary_key=True),
+    ForeignKeyConstraint(['agent_address', 'agent_port'],
+                         ['application.instances.agent_address', 'application.instances.agent_port'],
+                         ondelete="CASCADE", onupdate="CASCADE"),
+    schema = "application")
+
 instance_groups = Table(
     'instance_groups', metadata,
     Column('agent_address', UnicodeText, nullable=False, primary_key=True),

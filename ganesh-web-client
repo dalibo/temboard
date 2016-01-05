@@ -24,6 +24,9 @@ from ganeshwebui.daemon import daemonize, httpd_sigterm_handler
 from ganeshwebui.pluginsmgmt import load_plugins, plugins_bind_metadata
 
 class CustomTornadoWebApp(tornado.web.Application):
+    logger = None
+    config = None
+    loaded_plugins = []
 
     def set_logger(self, logger):
         self.logger = logger
@@ -34,9 +37,12 @@ class CustomTornadoWebApp(tornado.web.Application):
     def load_plugins(self, plugin_names):
         plugins = load_plugins(plugin_names, self.config)
         plugins_conf = dict()
+        self.loaded_plugins = []
         for key, val in plugins.iteritems():
             self.add_handlers(r'.*', val['routes'])
             plugins_conf[key] = val['configuration']
+            if key not in self.loaded_plugins:
+                self.loaded_plugins.append(key)
         return plugins_conf
 
     def log_request(self, handler):

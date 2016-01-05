@@ -31,6 +31,14 @@ CREATE TABLE instances (
 	PRIMARY KEY (agent_address, agent_port)
 );
 
+CREATE TABLE plugins (
+	agent_address TEXT NOT NULL,
+	agent_port INTEGER NOT NULL,
+	plugin_name TEXT NOT NULL,
+	PRIMARY KEY (agent_address, agent_port, plugin_name),
+	FOREIGN KEY (agent_address, agent_port) REFERENCES instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE instance_groups (
 	agent_address TEXT NOT NULL,
 	agent_port INTEGER NOT NULL,
@@ -60,10 +68,5 @@ CREATE TABLE access_role_instance (
 	FOREIGN KEY (instance_group_name, instance_group_kind) REFERENCES groups (group_name, group_kind) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-INSERT INTO roles VALUES ('julien', 'toto', 'julmon@gmail.com', true, true);
-INSERT INTO groups VALUES ('dalibo', 'Dalibo DBA group.', 'role');
-INSERT INTO role_groups(role_name, group_name) VALUES ('julien', 'dalibo');
-INSERT INTO instances VALUES ('https://192.168.1.19', 2345, 'secret key', 'main', 'localhost', 4, 8 * 1024 * 2014, 5432, '9.4.5');
-INSERT INTO groups VALUES ('client1', 'Client 1 instances.', 'instance');
-INSERT INTO instance_groups(agent_address, agent_port, group_name) VALUES ('https://192.168.1.19', 2345, 'client1');
-INSERT INTO access_role_instance(role_group_name, instance_group_name) VALUES ('dalibo', 'client1');
+-- Default administrator: admin/admin
+INSERT INTO roles VALUES ('admin', 'xiet7KLumux50Q2dmV/FBue2zqtexElavkVAKnEYN/rw2YLIn51TQsXb3u8FPm4wiuHUTtEjjvBIrtBPAgRMsA==', 'admin@change.me', true, true);

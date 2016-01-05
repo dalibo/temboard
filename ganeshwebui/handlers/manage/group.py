@@ -29,7 +29,8 @@ class ManageGroupAllJsonHandler(JsonHandler):
             return JSONAsyncResult(
                     200,
                     {
-                        'groups': [{'name': group.group_name, 'kind': group.group_kind, 'description': group.group_description} for group in groups]
+                        'groups': [{'name': group.group_name, 'kind': group.group_kind, 'description': group.group_description} for group in groups],
+                        'loaded_plugins': self.application.loaded_plugins
                     }
                 )
         except (GaneshError, Exception) as e:

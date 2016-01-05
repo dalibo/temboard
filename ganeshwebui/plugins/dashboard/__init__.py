@@ -43,6 +43,8 @@ class DashboardHandler(BaseHandler):
             instance = get_instance(self.db_session, agent_address, agent_port)
             if not instance:
                 raise GaneshError(404, "Instance not found.")
+            if __name__ not in [plugin.plugin_name for plugin in instance.plugins]:
+                raise GaneshError(408, "Plugin not active.")
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
@@ -121,6 +123,8 @@ class DashboardProxyHandler(JsonHandler):
             instance = get_instance(self.db_session, agent_address, agent_port)
             if not instance:
                 raise GaneshError(404, "Instance not found.")
+            if __name__ not in [plugin.plugin_name for plugin in instance.plugins]:
+                raise GaneshError(408, "Plugin not active.")
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()

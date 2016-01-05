@@ -79,24 +79,24 @@ $(document).ready(function() {
 	$('#tableInstances').DataTable({
 		stateSave: true
 	});
-});
 
-$('#buttonLoadAddInstanceForm').click(function () {
-	$('#InstanceModal').modal('show');  
-	$('[data-toggle=popover]').popover('hide');
-	load_add_instance_form('InstanceModal');
-});
+	$('#buttonLoadAddInstanceForm').click(function () {
+		$('#InstanceModal').modal('show');
+		$('[data-toggle=popover]').popover('hide');
+		load_add_instance_form('InstanceModal');
+	});
 
-$('[data-action=edit]').click(function () {
-	$('#InstanceModal').modal('show');  
-	$('[data-toggle=popover]').popover('hide');
-	load_update_instance_form('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
-});
+	$('[data-action=edit]').click(function () {
+		$('#InstanceModal').modal('show');
+		$('[data-toggle=popover]').popover('hide');
+		load_update_instance_form('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+	});
 
-$('[data-action=delete]').click(function () {
-	$('#InstanceModal').modal('show');  
-	$('[data-toggle=popover]').popover('hide');
-	load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+	$('[data-action=delete]').click(function () {
+		$('#InstanceModal').modal('show');
+		$('[data-toggle=popover]').popover('hide');
+		load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+	});
 });
 
 </script>

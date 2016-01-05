@@ -251,7 +251,7 @@ def add_instance(session,
 
 def get_instance(session, agent_address, agent_port):
     try:
-        return session.query(Instances).options(joinedload(Instances.groups)).filter_by(agent_address = unicode(agent_address), agent_port = agent_port).first()
+        return session.query(Instances).options(joinedload(Instances.groups), joinedload(Instances.plugins)).filter_by(agent_address = unicode(agent_address), agent_port = agent_port).first()
     except AttributeError as e:
         raise GaneshError(400, "Instance entry '%s:%s' not found." % (agent_address, agent_port))
     except Exception as e:
@@ -335,8 +335,37 @@ def add_instance_in_group(session, agent_address, agent_port, group_name):
     except Exception as e:
         raise GaneshError(400, e.message)
 
+def purge_instance_plugins(session, agent_address, agent_port):
+    try:
+        plugins = session.query(Plugins).filter(
+                            Plugins.agent_address == unicode(agent_address),
+                            Plugins.agent_port == agent_port).all()
+        for plugin in plugins:
+            session.delete(plugin)
+    except Exception as e:
+        raise GaneshError(400, e.message)
+
+def add_instance_plugin(session, agent_address, agent_port, plugin_name):
+    try:
+        plugin = Plugins(
+            agent_address = unicode(agent_address),
+            agent_port = agent_port,
+            plugin_name = unicode(plugin_name)
+        )
+        session.add(plugin)
+        session.flush()
+    except IntegrityError as e:
+        if e.message.find('plugins_pkey') > 0:
+            raise GaneshError(400, "Plugin '%s' was already activated for this instance." % (plugin_name))
+        elif e.message.find('plugins_agent_address_fkey') > 0:
+            raise GaneshError(400, "Instance '%s:%s' does not exist." % (agent_address, agent_port))
+        else:
+            raise GaneshError(400, e.message)
+    except Exception as e:
+        raise GaneshError(400, e.message)
+
 def get_instance_list(session,):
-    return session.query(Instances).options(joinedload(Instances.groups)).order_by(Instances.hostname).all()
+    return session.query(Instances).options(joinedload(Instances.groups),joinedload(Instances.plugins)).order_by(Instances.hostname).all()
 
 def delete_instance_from_group(session, agent_address, agent_port, group_name):
     try:
@@ -393,11 +422,13 @@ def delete_role_group_from_instance_group(session, role_group_name, instance_gro
 
 
 def get_instances_by_role_name(session, role_name):
-    return session.query(Instances).options(joinedload(Instances.groups)).filter(
+    return session.query(Instances).options(joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
             Instances.agent_address == InstanceGroups.agent_address, 
             Instances.agent_port == InstanceGroups.agent_port, 
             InstanceGroups.group_name == AccessRoleInstance.instance_group_name,
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
+            Plugins.agent_address == Instances.agent_address,
+            Plugins.agent_port == Instances.agent_port,
             RoleGroups.role_name == unicode(role_name)).order_by('instance_groups.group_name asc').all()
 
 def role_name_can_access_instance(session, role_name, agent_address, agent_port):

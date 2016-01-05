@@ -40,7 +40,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			body_html += '		</div>';
 			body_html += '	</div>';
 			body_html += '	<div class="row">';
-			body_html += '		<div class="form-group col-sm-12">';
+			body_html += '		<div class="form-group col-sm-6">';
 			body_html += '			<label for="selectGroups" class="control-label">Groups</label><br />';
 			body_html += '			<select id="selectGroups" multiple="multiple">';
 			var descriptions = {};
@@ -54,6 +54,21 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 				}
   				body_html += '			<option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
 				descriptions[group['name']] = group['description'];
+			}
+			body_html += '			</select>';
+			body_html += '		</div>';
+			body_html += '		<div class="form-group col-sm-6">';
+			body_html += '			<label for="selectPlugins" class="control-label">Activated plugins</label><br />';
+			body_html += '			<select id="selectPlugins" multiple="multiple">';
+			var selected = '';
+			for (var plugin_name of data['loaded_plugins'])
+			{
+				selected = '';
+				if (data['enabled_plugins'].indexOf(plugin_name) > -1)
+				{
+					selected = 'selected';
+				}
+				body_html += '			<option value="'+plugin_name+'" '+selected+'>'+plugin_name+'</option>';
 			}
 			body_html += '			</select>';
 			body_html += '		</div>';
@@ -108,6 +123,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			});
 			// Activate multiselect plugin for group selecting.
 			$('#selectGroups').multiselect();
+			$('#selectPlugins').multiselect();
 			// Add group's description as a tooltip.
 			$('.multiselect-container li').not('.filter, .group').tooltip({
     			placement: 'right',
@@ -175,7 +191,9 @@ function send_update_instance_form(modal_id, agent_address, agent_port)
 			'pg_data': $('#inputPgData').val(),
 			'pg_port': $('#inputPgPort').val(),
 			'pg_version': $('#inputPgVersion').val(),
-			'groups': $('#selectGroups').val()}),
+			'groups': $('#selectGroups').val(),
+			'plugins': $('#selectPlugins').val()
+			}),
 		async: true,
 		contentType: "application/json",
 		dataType: "json",
@@ -294,7 +312,7 @@ function load_add_instance_form(modal_id)
 			body_html += '		</div>';
 			body_html += '	</div>';
 			body_html += '	<div class="row">';
-			body_html += '		<div class="form-group col-sm-12">';
+			body_html += '		<div class="form-group col-sm-6">';
 			body_html += '			<label for="selectGroups" class="control-label">Groups</label><br />';
 			body_html += '			<select id="selectGroups" multiple="multiple">';
 			var descriptions = {};
@@ -302,6 +320,16 @@ function load_add_instance_form(modal_id)
 			{
   				body_html += '			<option value="'+group['name']+'">'+group['name']+'</option>';
 				descriptions[group['name']] = group['description'];
+			}
+			body_html += '			</select>';
+			body_html += '		</div>';
+			body_html += '		<div class="form-group col-sm-6">';
+			body_html += '			<label for="selectPlugins" class="control-label">Activated plugins</label><br />';
+			body_html += '			<select id="selectPlugins" multiple="multiple">';
+			var selected = '';
+			for (var plugin_name of data['loaded_plugins'])
+			{
+				body_html += '			<option value="'+plugin_name+'" selected>'+plugin_name+'</option>';
 			}
 			body_html += '			</select>';
 			body_html += '		</div>';
@@ -354,6 +382,7 @@ function load_add_instance_form(modal_id)
 			});
 			// Activate multiselect plugin for group selecting.
 			$('#selectGroups').multiselect();
+			$('#selectPlugins').multiselect();
 			// Add group's description as a tooltip.
 			$('.multiselect-container li').not('.filter, .group').tooltip({
     			placement: 'right',
@@ -421,6 +450,7 @@ function send_add_instance_form(modal_id)
 			'pg_data': $('#inputPgData').val(),
 			'pg_port': $('#inputPgPort').val(),
 			'pg_version': $('#inputPgVersion').val(),
+			'plugins': $('#selectPlugins').val(),
 			'groups': $('#selectGroups').val()}),
 		async: true,
 		contentType: "application/json",

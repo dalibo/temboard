@@ -33,24 +33,25 @@
 					</thead>
 					<tbody>
 					{% for instance in instance_list %}
+						{% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
 						<tr>
 							<td><strong>{{instance.hostname}}</strong></td>
-							<td>{% for group in instance.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
+							<td>{% for group in instance.groups %} <span class="label label-success">{{group.group_name}}</span>{% end %}</td>
 							<td>{{instance.cpu}}</td>
 							<td data-type="size" data-memory_size="{{instance.memory_size}}">{{instance.memory_size}}</td>
 							<td>{{instance.pg_version}}</td>
 							<td>{{instance.pg_port}}</td>
 							<td class="text-center">
-								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Dashboard" data-action="dashboard" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-dashboard fa-fw"></i></button>
+								{% if 'dashboard' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Dashboard" data-action="dashboard" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-dashboard fa-fw"></i></button>{% end %}
 							</td>
 							<td class="text-center">
-								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>
+								{% if 'activity' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>{% end %}
 							</td>
 							<td class="text-center">
-								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>
+								{% if 'supervision' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
 							</td>
 							<td class="text-center">
-								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>
+								{% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
 							</td>
 						</tr>
 					{% end %}
@@ -70,7 +71,8 @@ $(document).ready(function() {
 	});
 
 	$('[data-type=size]').each(function(){
-		$(this).html(filesize($(this).html()));
+		if ($(this).html() != 'None')
+			$(this).html(filesize($(this).html()));
 	});
 
 	$('[data-action=dashboard]').click(function () {
