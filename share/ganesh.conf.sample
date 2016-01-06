@@ -1,6 +1,6 @@
 [ganesh]
 # Bind port
-port = 443
+port = 8888
 # Bind address
 address = 0.0.0.0
 # SSL: certificat file path (.pem)
@@ -11,7 +11,7 @@ ssl_key_file = /etc/ganesh/ssl/ganesh_CHANGEME.key
 # This file must contains SSL cert of each agent that the UI can establish a connexion to.
 ssl_ca_cert_file = /etc/ganesh/ssl/ganesh_ca_certs_CHANGEME.pem
 # Cookie secret key
-cookie_secret = "7ee98be2cbea98a466739f3130955655d4a60e3bc6dc5c34a28acae8346f02c"
+cookie_secret = SECRETKEYTOBECHANGED
 # Plugins
 plugins = ["dashboard", "settings", "activity", "supervision"]
 # Array of plugins requiring a PG connexion to the repository.
