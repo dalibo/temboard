@@ -20,10 +20,10 @@ class Configuration(configparser.ConfigParser):
         self.ganesh = {
             'port': 443,
             'address': '0.0.0.0',
-            'ssl_cert_file': '/etc/ganesh/ssl/ganesh_CHANGEME.pem',
-            'ssl_key_file': '/etc/ganesh/ssl/ganesh_CHANGEME.key',
-            'ssl_ca_cert_file': '/etc/ganesh/ssl/ca_certs.pem',
-            'cookie_secret': 'MY_S3CR3T_C4K3',
+            'ssl_cert_file': None,
+            'ssl_key_file': None,
+            'ssl_ca_cert_file': None,
+            'cookie_secret': None,
             'plugins': [],
             'plugins_orm_engine': []
         }
@@ -33,7 +33,7 @@ class Configuration(configparser.ConfigParser):
             'destination': '/dev/log',
             'level': 'INFO'
         }
-        self.postgresql = {
+        self.repository = {
             'host': '/var/run/postgresql',
             'user': 'ganesh',
             'port': 5432,
@@ -184,37 +184,37 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError as e:
            pass
 
-        # Test if 'postgresql' section exists.
-        self.check_section('postgresql')
+        # Test if 'repository' section exists.
+        self.check_section('repository')
         try:
-            self.postgresql['host'] = self.get('postgresql', 'host')
+            self.repository['host'] = self.get('repository', 'host')
         except configparser.NoOptionError as e:
            pass
 
         try:
-            self.postgresql['user'] = self.get('postgresql', 'user')
+            self.repository['user'] = self.get('repository', 'user')
         except configparser.NoOptionError as e:
            pass
  
         try:
-            if not (self.getint('postgresql', 'port') >= 0
-                    and self.getint('postgresql', 'port') <= 65535):
+            if not (self.getint('repository', 'port') >= 0
+                    and self.getint('repository', 'port') <= 65535):
                 raise ValueError()
-            self.postgresql['port'] = self.getint('postgresql', 'port')
+            self.repository['port'] = self.getint('repository', 'port')
         except ValueError as e:
             raise ConfigurationError("'port' option must be an integer "
-                    "[0-65535] in 'postgresql' section in %s."
+                    "[0-65535] in 'repository' section in %s."
                     % (self.configfile))
         except configparser.NoOptionError as e:
            pass
 
         try:
-            self.postgresql['password'] = self.get('postgresql', 'password')
+            self.repository['password'] = self.get('repository', 'password')
         except configparser.NoOptionError as e:
            pass
 
         try:
-            self.postgresql['dbname'] = self.get('postgresql', 'dbname')
+            self.repository['dbname'] = self.get('repository', 'dbname')
         except configparser.NoOptionError as e:
            pass
 

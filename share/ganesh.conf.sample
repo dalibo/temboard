@@ -1,6 +1,6 @@
 [ganesh]
 # Bind port
-port = 8888
+port = 443
 # Bind address
 address = 0.0.0.0
 # SSL: certificat file path (.pem)
@@ -8,14 +8,14 @@ ssl_cert_file = /etc/ganesh/ssl/ganesh_CHANGEME.pem
 # SSL: private key file path (.key)
 ssl_key_file = /etc/ganesh/ssl/ganesh_CHANGEME.key
 # SSL: CA cert file
-ssl_ca_cert_file = /etc/ganesh/ssl/ca_certs.pem
+ssl_ca_cert_file = /etc/ganesh/ssl/ganesh_ca_certs_CHANGEME.pem
 # Cookie secret key
 cookie_secret = "7ee98be2cbea98a466739f3130955655d4a60e3bc6dc5c34a28acae8346f02c"
 # Plugins
 plugins = ["dashboard", "settings", "activity", "supervision"]
 plugins_orm_engine = ["supervision"]
 
-[postgresql]
+[repository]
 # Unix socket path.
 host = localhost
 # PG port number.

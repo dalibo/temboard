@@ -36,7 +36,7 @@ def main():
         config =  Configuration(options.configfile)
         set_logger_name("metric-aggregator")
         logger = get_logger(config)
-        engine = create_db_engine(logger, **config.postgresql)
+        engine = create_db_engine(logger, **config.repository)
         with engine.connect() as conn:
             conn.execute("SET search_path TO supervision")
             res = conn.execute("SELECT * FROM metric_populate_agg_tables()")

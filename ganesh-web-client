@@ -52,11 +52,11 @@ class CustomTornadoWebApp(tornado.web.Application):
 
     def create_db_engine(self,):
         dburi = "postgresql://%s:%s@%s:%s/%s" % (
-            self.config.postgresql['user'],
-            self.config.postgresql['password'],
-            self.config.postgresql['host'],
-            self.config.postgresql['port'],
-            self.config.postgresql['dbname']
+            self.config.repository['user'],
+            self.config.repository['password'],
+            self.config.repository['host'],
+            self.config.repository['port'],
+            self.config.repository['dbname']
         )
         self.engine = create_engine(dburi)
         try:
