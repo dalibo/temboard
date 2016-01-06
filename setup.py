@@ -17,7 +17,7 @@ setup(
             'share/ganesh.conf.sample',
             'share/ssl/ganesh_CHANGEME.pem',
             'share/ssl/ganesh_CHANGEME.key',
-            'share/ssl/ca_certs.pem',
+            'share/ssl/ganesh_ca_certs_CHANGEME.pem',
             'share/sql/application.sql']
     )]
 )
