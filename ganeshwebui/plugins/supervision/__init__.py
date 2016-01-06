@@ -65,6 +65,16 @@ def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
         raise Exception("Can't find the target instance in application.instances table.")
     raise Exception("Can't check agent's key.")
 
+def check_host_key(session, hostname, agent_key):
+    result = session.execute("SELECT agent_key FROM application.instances WHERE hostname = :hostname", {"hostname": hostname})
+    try:
+        for row in result.fetchall():
+            if row[0] == agent_key:
+                return
+    except Exception as e:
+        raise Exception("Can't find the target instance in application.instances table.")
+    raise Exception("Can't check agent's key.")
+
 def insert_metrics(session, host, agent_data):
     for metric in agent_data.keys():
         # Do not try to insert empty lines
@@ -113,8 +123,11 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session = Session()
 
             # Check the key
-            check_agent_key(thread_session, data['hostinfo']['hostname'], data['instances'][0]['data_directory'], data['instances'][0]['port'], key)
-
+            if data['instances'][0]['available']:
+                check_agent_key(thread_session, data['hostinfo']['hostname'], data['instances'][0]['data_directory'], data['instances'][0]['port'], key)
+            else:
+                # Case when PostgreSQL instance is not started.
+                check_host_key(thread_session, data['hostinfo']['hostname'], key)
             # Update the inventory
             host = merge_agent_info(thread_session,
                     data['hostinfo'],
