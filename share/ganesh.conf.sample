@@ -8,11 +8,13 @@ ssl_cert_file = /etc/ganesh/ssl/ganesh_CHANGEME.pem
 # SSL: private key file path (.key)
 ssl_key_file = /etc/ganesh/ssl/ganesh_CHANGEME.key
 # SSL: CA cert file
+# This file must contains SSL cert of each agent that the UI can establish a connexion to.
 ssl_ca_cert_file = /etc/ganesh/ssl/ganesh_ca_certs_CHANGEME.pem
 # Cookie secret key
 cookie_secret = "7ee98be2cbea98a466739f3130955655d4a60e3bc6dc5c34a28acae8346f02c"
 # Plugins
 plugins = ["dashboard", "settings", "activity", "supervision"]
+# Array of plugins requiring a PG connexion to the repository.
 plugins_orm_engine = ["supervision"]
 
 [repository]
@@ -31,9 +33,9 @@ dbname = ganesh
 # Available methods for logging: syslog or file
 method = file
 # Syslog facility.
-facility = local0
+# facility = local0
 # Log destination, should be /dev/log for syslog on Linux.
 # When using file logging method, this is referencing the log file path.
 destination = /var/log/ganesh/ganesh.log
 # Default log level.
-level = INFO
+# level = INFO
