@@ -16,6 +16,7 @@ from ganeshwebui.handlers.manage.user import *
 from ganeshwebui.handlers.manage.group import *
 from ganeshwebui.handlers.manage.instance import *
 
+from ganeshwebui.async import new_worker_pool
 from ganeshwebui.options import ganeshOptions
 from ganeshwebui.configuration import Configuration
 from ganeshwebui.errors import ConfigurationError, CLIError
@@ -93,6 +94,9 @@ def main():
     import ganeshwebui
     base_path = os.path.dirname(ganeshwebui.__file__)
     del ganeshwebui
+
+    # Worker pool creation.
+    new_worker_pool(12)
 
     # TODO: compatibility with older python version
     # http://www.tornadoweb.org/en/stable/_modules/tornado/httpserver.html

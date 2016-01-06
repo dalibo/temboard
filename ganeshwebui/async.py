@@ -1,12 +1,15 @@
 from tornado.ioloop import IOLoop
 from multiprocessing.pool import ThreadPool
 
-_workers = ThreadPool(12)
+_worker = None
+
+def new_worker_pool(nb):
+    global _workers
+    _workers = ThreadPool(nb)
 
 def run_background(func, callback, args=(), kwds={}):
     def _callback(result):
         IOLoop.instance().add_callback(lambda: callback(result))
-    
     _workers.apply_async(func, args, kwds, _callback)
 
 class AsyncResult(object):
