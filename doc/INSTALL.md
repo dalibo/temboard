@@ -48,13 +48,10 @@ Copy dummies self-signed SSL key and cacerts files:
 $ sudo cp /usr/share/ganesh/ganesh_* /etc/ganesh/ssl/.
 ```
 
-## Users
+## User
 
 ```
 sudo useradd -M -r ganesh
-```
-
-```
 sudo chown -R ganesh.ganesh /etc/ganesh/
 sudo chown -R ganesh.ganesh /var/log/ganesh/
 sudo chmod 600 /etc/ganesh/ssl/*
