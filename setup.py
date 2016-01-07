@@ -12,6 +12,7 @@ setup(
             'ganeshwebui.handlers',
             'ganeshwebui.handlers.manage',
             'ganeshwebui.model',
+            'ganeshwebui.plugins',
             'ganeshwebui.plugins.dashboard',
             'ganeshwebui.plugins.supervision',
             'ganeshwebui.plugins.supervision.model',
