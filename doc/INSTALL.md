@@ -76,5 +76,5 @@ sudo -u postgres createuser ganesh -l -P
 sudo -u postgres createdb -O ganesh ganesh
 psql -U ganesh -1 -v'ON_ERROR_STOP=on' -f /usr/share/ganesh/application.sql ganesh
 sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" ganesh
-psql -U ganesh -1 -v'ON_ERROR_STOP=on' -f /usr/share/ganesh/application.sql ganesh
+psql -U ganesh -1 -v'ON_ERROR_STOP=on' -f /usr/share/ganesh/supervision.sql ganesh
 ```
