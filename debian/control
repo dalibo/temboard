@@ -7,6 +7,6 @@ Standards-Version: 3.9.1
 
 Package: ganesh
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-tornado (>= 3.2.0)
+Depends: ${misc:Depends}, ${python:Depends}, python-tornado (>= 3.2.0), python-sqlalchemy (>=0.9.8), python-psycopg2 (>=2.5.4)
 Description: PostgreSQL Administration & Monitoring web client.
 

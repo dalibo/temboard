@@ -1,1 +1,2 @@
 /usr/share/ganesh/ganesh-web-client /usr/bin/ganesh
+/usr/share/ganesh/metric-aggregator /usr/bin/ganesh-metric-aggregator

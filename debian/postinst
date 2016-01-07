@@ -27,7 +27,7 @@ fi
 /usr/bin/install -m 0600 /usr/share/ganesh/ganesh.conf.sample $CONFIGFILE
 /usr/bin/install -m 0600 /usr/share/ganesh/ganesh_CHANGEME.pem $CONFIGDIRSSL/ganesh_CHANGEME.pem
 /usr/bin/install -m 0600 /usr/share/ganesh/ganesh_CHANGEME.key $CONFIGDIRSSL/ganesh_CHANGEME.key
-/usr/bin/install -m 0600 /usr/share/ganesh/ca_certs.pem $CONFIGDIRSSL/ca_certs.pem
+/usr/bin/install -m 0600 /usr/share/ganesh/ganesh_ca_certs_CHANGEME.pem $CONFIGDIRSSL/ganesh_ca_certs_CHANGEME.pem
 
 if ! [ -d $LOGDIR ]; then
         /bin/mkdir $LOGDIR
@@ -37,7 +37,7 @@ if ! [ -f $LOGFILE ]; then
         /usr/bin/touch $LOGFILE
 fi
 
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ca_certs.pem
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_ca_certs_CHANGEME.pem
 /bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_CHANGEME.key
 /bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_CHANGEME.pem
 /bin/chown $PGUSER.$PGGROUP $CONFIGFILE
