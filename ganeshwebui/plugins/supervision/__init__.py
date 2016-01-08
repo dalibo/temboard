@@ -224,6 +224,8 @@ class SupervisionDataProbeHandler(CsvHandler):
                 data = get_checkpoints(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             elif probe_name == 'w_buffers':
                 data = get_written_buffers(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'instance_size':
+                data = get_instance_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             else:
                 raise GaneshError(404, 'Unknown probe.')
 

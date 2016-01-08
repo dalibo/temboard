@@ -72,11 +72,11 @@
 	</div>
 	<div class="row">
 		<div class="col-md-12">
-			<h4>Database size</h4>
-			<div id="legendDBSize"></div>
-			<div id="chartDBSize" class="supervision-chart"></div>
-      		<div id="visibilityDBSize"></div>
-			<div class="pull-right"><button class="btn btn-primary" id="buttonExportDBSize">Export as PNG</button></div>
+			<h4>Instance size</h4>
+			<div id="legendInstanceSize"></div>
+			<div id="chartInstanceSize" class="supervision-chart"></div>
+			<div id="visibilityInstanceSize"></div>
+			<div class="pull-right"><button class="btn btn-primary" id="buttonExportInstanceSize">Export as PNG</button></div>
 		</div>
 	</div>
 	<div class="row">
@@ -287,28 +287,29 @@ $(document).ready(function() {
 		}
 	);
 	
-	var c_dbs = new Dygraph(
-	    document.getElementById("chartDBSize"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/db_size?start={{escape(start_date)}}&end={{escape(end_date)}}",
+	var c_is = new Dygraph(
+	    document.getElementById("chartInstanceSize"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/instance_size?start={{escape(start_date)}}&end={{escape(end_date)}}",
 		{
 			ylabel: "Size",
 			axisLabelFontSize: 10,
 			yLabelWidth: 14,
 			legend: "always",
 			stackedGraph: true,
+			colors: ['#2d7fbf'],
 			labelsKMG2: true,
-			labelsDiv: "legendDBSize",
+			labelsDiv: "legendInstanceSize",
 			drawCallback: function(g, is_initial) {
 				if (is_initial)
 				{
 					orig_xAxisRange = g.xAxisRange();
 				}
-				add_visibility_cb("DBSize", g, is_initial);
-				add_export_button_callback("DBSize", g, is_initial, "Database size");
+				add_visibility_cb("InstanceSize", g, is_initial);
+				add_export_button_callback("InstanceSize", g, is_initial, "Instance size");
 			},
 			
 			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'db_size');
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'instance_size');
 				if (this.isZoomed())
 					sync_dateWindow(this, this.xAxisRange());
 				else
@@ -485,7 +486,7 @@ $(document).ready(function() {
 		{'dygraph': c_memory, 'data': 'memory'},
 		{'dygraph': c_swap, 'data': 'swap'},
 		{'dygraph': c_tps, 'data': 'tps'},
-		{'dygraph': c_dbs, 'data': 'db_size'},
+		{'dygraph': c_is, 'data': 'instance_size'},
 		{'dygraph': c_sessions, 'data': 'sessions'},
 		{'dygraph': c_blocks, 'data': 'blocks'},
 		{'dygraph': c_hrr, 'data': 'hitreadratio'},

@@ -112,6 +112,30 @@ def get_db_size(session, hostname, port, start, end):
     data_buffer.close()
     return data
 
+def get_instance_size(session, hostname, port, start, end):
+    col = '';
+    col_type = ''
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_db_size'
+    elif zoom == 1:
+        tablename = 'metric_db_size_10m'
+    elif zoom == 2:
+        tablename = 'metric_db_size_30m'
+    else:
+        tablename = 'metric_db_size_4h'
+
+    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date, SUM(size) AS Size FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime, hostname, port ORDER BY datetime ASC) TO STDOUT WITH CSV HEADER"
+    cur = session.connection().connection.cursor()
+    str_start_date = start.strftime('%Y-%m-%dT%H:%M:%S')
+    str_end_date = end.strftime('%Y-%m-%dT%H:%M:%S')
+    cur.copy_expert(q_copy % (tablename, hostname, port, str_start_date, str_end_date), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
 def get_memory(session, hostname, start, end):
     data_buffer = cStringIO.StringIO()
     zoom = zoom_level(start, end)
