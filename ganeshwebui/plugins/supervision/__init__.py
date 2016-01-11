@@ -230,6 +230,10 @@ class SupervisionDataProbeHandler(CsvHandler):
                 data = get_locks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             elif probe_name == 'waiting_locks':
                 data = get_waiting_locks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'fs_size':
+                data = get_fs_size(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'fs_usage':
+                data = get_fs_usage(self.db_session, instance.hostname, start_time, end_time)
             else:
                 raise GaneshError(404, 'Unknown probe.')
 

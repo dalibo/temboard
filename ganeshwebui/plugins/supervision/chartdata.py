@@ -80,7 +80,6 @@ def get_tps(session, hostname, port, start, end):
     data_buffer.close()
     return data
 
-
 def get_db_size(session, hostname, port, start, end):
     col = '';
     col_type = ''
@@ -320,6 +319,68 @@ def get_waiting_locks(session, hostname, port, start, end):
 
     cur = session.connection().connection.cursor()
     cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
+def get_fs_size(session, hostname, start, end):
+    col = '';
+    col_type = ''
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_filesystems_size'
+    elif zoom == 1:
+        tablename = 'metric_filesystems_size_10m'
+    elif zoom == 2:
+        tablename = 'metric_filesystems_size_30m'
+    else:
+        tablename = 'metric_filesystems_size_4h'
+
+    q_header = "SELECT DISTINCT(mount_point) FROM supervision."+tablename+" WHERE hostname = :hostname AND datetime >= :start AND datetime <= :end ORDER BY mount_point"
+    result = session.execute(q_header, {"hostname": hostname, "start": start.strftime('%Y-%m-%dT%H:%M:%S'), "end": end.strftime('%Y-%m-%dT%H:%M:%S')})
+
+    for row in result.fetchall():
+        col += ", COALESCE(\"%s\",0) AS \"%s\"" % (row[0], row[0])
+        col_type += ", \"%s\" BIGINT" % (row[0])
+
+    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date %s FROM crosstab('SELECT datetime, mount_point, used FROM supervision.%s WHERE hostname = ''%s'' AND datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY 1,2 ASC', 'SELECT DISTINCT(mount_point) FROM supervision.%s WHERE datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY mount_point') AS ct(datetime timestamp with time zone %s)) TO STDOUT WITH CSV HEADER"
+    cur = session.connection().connection.cursor()
+    str_start_date = start.strftime('%Y-%m-%dT%H:%M:%S')
+    str_end_date = end.strftime('%Y-%m-%dT%H:%M:%S')
+    cur.copy_expert(q_copy % (col, tablename, hostname, str_start_date, str_end_date, tablename, str_start_date, str_end_date, col_type), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
+def get_fs_usage(session, hostname, start, end):
+    col = '';
+    col_type = ''
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_filesystems_size'
+    elif zoom == 1:
+        tablename = 'metric_filesystems_size_10m'
+    elif zoom == 2:
+        tablename = 'metric_filesystems_size_30m'
+    else:
+        tablename = 'metric_filesystems_size_4h'
+
+    q_header = "SELECT DISTINCT(mount_point) FROM supervision."+tablename+" WHERE hostname = :hostname AND datetime >= :start AND datetime <= :end ORDER BY mount_point"
+    result = session.execute(q_header, {"hostname": hostname, "start": start.strftime('%Y-%m-%dT%H:%M:%S'), "end": end.strftime('%Y-%m-%dT%H:%M:%S')})
+
+    for row in result.fetchall():
+        col += ", COALESCE(\"%s\",0) AS \"%s\"" % (row[0], row[0])
+        col_type += ", \"%s\" FLOAT" % (row[0])
+
+    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date %s FROM crosstab('SELECT datetime, mount_point, round(((used::FLOAT/total::FLOAT)*100)::numeric, 1) AS usage FROM supervision.%s WHERE hostname = ''%s'' AND datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY 1,2 ASC', 'SELECT DISTINCT(mount_point) FROM supervision.%s WHERE datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY mount_point') AS ct(datetime timestamp with time zone %s)) TO STDOUT WITH CSV HEADER"
+    cur = session.connection().connection.cursor()
+    str_start_date = start.strftime('%Y-%m-%dT%H:%M:%S')
+    str_end_date = end.strftime('%Y-%m-%dT%H:%M:%S')
+    cur.copy_expert(q_copy % (col, tablename, hostname, str_start_date, str_end_date, tablename, str_start_date, str_end_date, col_type), data_buffer)
     cur.close()
     data = data_buffer.getvalue()
     data_buffer.close()

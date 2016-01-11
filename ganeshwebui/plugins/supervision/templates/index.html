@@ -89,6 +89,36 @@
 		<div class="col-md-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
+					Filesystems size
+					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportFsSize">Export as PNG</button></div>
+				</div>
+				<div class="panel-body">
+					<div id="legendFsSize"></div>
+					<div id="chartFsSize" class="supervision-chart"></div>
+					<div id="visibilityFsSize"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Filesystems usage
+					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportFsUsage">Export as PNG</button></div>
+				</div>
+				<div class="panel-body">
+					<div id="legendFsUsage"></div>
+					<div id="chartFsUsage" class="supervision-chart"></div>
+					<div id="visibilityFsUsage"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
 					Transactions per second
 					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportTPS">Export as PNG</button></div>
 				</div>
@@ -269,7 +299,6 @@ $(document).ready(function() {
 			yLabelWidth: 14,
 			legend: "always",
 			stackedGraph: true,
-			labelsKMG2: true,
 			labelsDiv: "legendCPU",
 			drawCallback: function(g, is_initial) {
 				if (is_initial)
@@ -289,7 +318,7 @@ $(document).ready(function() {
 			}
 		}
 	);
-	
+
 	var c_memory = new Dygraph(
 	    document.getElementById("chartMemory"),
 	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/memory?start={{escape(start_date)}}&end={{escape(end_date)}}",
@@ -320,7 +349,65 @@ $(document).ready(function() {
 			}
 		}
 	);
-	
+
+	var c_fs_size = new Dygraph(
+	    document.getElementById("chartFsSize"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/fs_size?start={{escape(start_date)}}&end={{escape(end_date)}}",
+		{
+			ylabel: "Size",
+			axisLabelFontSize: 10,
+			yLabelWidth: 14,
+			legend: "always",
+			labelsDiv: "legendFsSize",
+			labelsKMG2: true,
+			drawCallback: function(g, is_initial) {
+				if (is_initial)
+				{
+					orig_xAxisRange = g.xAxisRange();
+				}
+				add_visibility_cb("FsSize", g, is_initial);
+				add_export_button_callback("FsSize", g, is_initial, "Filesystems size");
+			},
+			zoomCallback: function(minDate, maxDate, yRanges) {
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'fs_size');
+				if (this.isZoomed())
+					sync_dateWindow(this, this.xAxisRange());
+				else
+					sync_dateWindow(this, orig_xAxisRange);
+				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
+			}
+		}
+	);
+
+	var c_fs_usage = new Dygraph(
+	    document.getElementById("chartFsUsage"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/fs_usage?start={{escape(start_date)}}&end={{escape(end_date)}}",
+		{
+			ylabel: "Usage (%)",
+			axisLabelFontSize: 10,
+			yLabelWidth: 14,
+			legend: "always",
+			labelsDiv: "legendFsUsage",
+			drawCallback: function(g, is_initial) {
+				if (is_initial)
+				{
+					orig_xAxisRange = g.xAxisRange();
+				}
+				add_visibility_cb("FsUsage", g, is_initial);
+				add_export_button_callback("FsUsage", g, is_initial, "Filesystems usage");
+			},
+			zoomCallback: function(minDate, maxDate, yRanges) {
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'fs_usage');
+				if (this.isZoomed())
+					sync_dateWindow(this, this.xAxisRange());
+				else
+					sync_dateWindow(this, orig_xAxisRange);
+				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
+			}
+		}
+	);
+
+
 	var c_swap = new Dygraph(
 	    document.getElementById("chartSwap"),
 	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/swap?start={{escape(start_date)}}&end={{escape(end_date)}}",
@@ -635,6 +722,8 @@ $(document).ready(function() {
 		{'dygraph': c_lvg, 'data': 'loadavg'},
 		{'dygraph': c_cpu, 'data': 'cpu'},
 		{'dygraph': c_memory, 'data': 'memory'},
+		{'dygraph': c_fs_size, 'data': 'fs_size'},
+		{'dygraph': c_fs_usage, 'data': 'fs_usage'},
 		{'dygraph': c_swap, 'data': 'swap'},
 		{'dygraph': c_tps, 'data': 'tps'},
 		{'dygraph': c_is, 'data': 'instance_size'},
