@@ -325,15 +325,7 @@ td {
 
 
 .panel-settings {
-	display: inline-block;
-	column-break-inside: avoid;
 	width: 500px;
-}
-
-.multi-col {
-	-webkit-column-width: 500px;
-	-moz-column-width: 500px;
-	column-width: 500px;
 }
 
 .panel-settings table tr td.action-setting {
