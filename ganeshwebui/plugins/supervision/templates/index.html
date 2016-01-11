@@ -190,6 +190,36 @@
 			</div>
 		</div>
 	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Locks
+					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportLocks">Export as PNG</button></div>
+				</div>
+				<div class="panel-body">
+					<div id="legendLocks"></div>
+					<div id="chartLocks" class="supervision-chart"></div>
+					<div id="visibilityLocks"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Waiting Locks
+					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportWLocks">Export as PNG</button></div>
+				</div>
+				<div class="panel-body">
+					<div id="legendWLocks"></div>
+					<div id="chartWLocks" class="supervision-chart"></div>
+					<div id="visibilityWLocks"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script src="/js/dygraph-combined.js"></script>
@@ -545,7 +575,62 @@ $(document).ready(function() {
 		}
 	);
 	
-	
+	var c_locks = new Dygraph(
+	    document.getElementById("chartLocks"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/locks?start={{escape(start_date)}}&end={{escape(end_date)}}",
+		{
+			ylabel: "Locks",
+			axisLabelFontSize: 10,
+			yLabelWidth: 14,
+			legend: "always",
+			labelsDiv: "legendLocks",
+			drawCallback: function(g, is_initial) {
+				if (is_initial)
+				{
+					orig_xAxisRange = g.xAxisRange();
+				}
+				add_visibility_cb("Locks", g, is_initial);
+				add_export_button_callback("Locks", g, is_initial, "Locks");
+			},
+			zoomCallback: function(minDate, maxDate, yRanges) {
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'locks');
+				if (this.isZoomed())
+					sync_dateWindow(this, this.xAxisRange());
+				else
+					sync_dateWindow(this, orig_xAxisRange);
+				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
+			}
+		}
+	);
+
+	var c_w_locks = new Dygraph(
+	    document.getElementById("chartWLocks"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/waiting_locks?start={{escape(start_date)}}&end={{escape(end_date)}}",
+		{
+			ylabel: "Waiting Locks",
+			axisLabelFontSize: 10,
+			yLabelWidth: 14,
+			legend: "always",
+			labelsDiv: "legendWLocks",
+			drawCallback: function(g, is_initial) {
+				if (is_initial)
+				{
+					orig_xAxisRange = g.xAxisRange();
+				}
+				add_visibility_cb("WLocks", g, is_initial);
+				add_export_button_callback("WLocks", g, is_initial, "Waiting Locks");
+			},
+			zoomCallback: function(minDate, maxDate, yRanges) {
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'waiting_locks');
+				if (this.isZoomed())
+					sync_dateWindow(this, this.xAxisRange());
+				else
+					sync_dateWindow(this, orig_xAxisRange);
+				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
+			}
+		}
+	);
+
 	sync_graphs = [
 		{'dygraph': c_lvg, 'data': 'loadavg'},
 		{'dygraph': c_cpu, 'data': 'cpu'},
@@ -557,7 +642,9 @@ $(document).ready(function() {
 		{'dygraph': c_blocks, 'data': 'blocks'},
 		{'dygraph': c_hrr, 'data': 'hitreadratio'},
 		{'dygraph': c_checkpoints, 'data': 'checkpoints'},
-		{'dygraph': c_w_buffers, 'data': 'w_buffers'}
+		{'dygraph': c_w_buffers, 'data': 'w_buffers'},
+		{'dygraph': c_locks, 'data': 'locks'},
+		{'dygraph': c_w_locks, 'data': 'w_locks'}
 	];
 /* end of customizable part */
 });

@@ -282,3 +282,45 @@ def get_written_buffers(session, hostname, port, start, end):
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
+def get_locks(session, hostname, port, start, end):
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_locks'
+    elif zoom == 1:
+        tablename = 'metric_locks_10m'
+    elif zoom == 2:
+        tablename = 'metric_locks_30m'
+    else:
+        tablename = 'metric_locks_4h'
+
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, SUM(access_share) AS access_share, SUM(row_share) AS row_share, SUM(row_exclusive) AS row_exclusive, SUM(share_update_exclusive) AS share_update_exclusive, SUM(share) AS share, SUM(share_row_exclusive) AS share_row_exclusive, SUM(exclusive) AS exclusive, SUM(access_exclusive) AS access_exclusive, SUM(siread) AS siread FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime, hostname, port ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+
+    cur = session.connection().connection.cursor()
+    cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
+def get_waiting_locks(session, hostname, port, start, end):
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_locks'
+    elif zoom == 1:
+        tablename = 'metric_locks_10m'
+    elif zoom == 2:
+        tablename = 'metric_locks_30m'
+    else:
+        tablename = 'metric_locks_4h'
+
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, SUM(waiting_access_share) AS access_share, SUM(waiting_row_share) AS row_share, SUM(waiting_row_exclusive) AS row_exclusive, SUM(waiting_share_update_exclusive) AS share_update_exclusive, SUM(waiting_share) AS share, SUM(waiting_share_row_exclusive) AS share_row_exclusive, SUM(waiting_exclusive) AS exclusive, SUM(waiting_access_exclusive) AS access_exclusive FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime, hostname, port ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+
+    cur = session.connection().connection.cursor()
+    cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
