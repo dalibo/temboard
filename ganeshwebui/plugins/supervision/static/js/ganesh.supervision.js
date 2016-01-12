@@ -9,13 +9,12 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
 	html_chart_panel += '		</div>';
 	html_chart_panel += '	</div>';
 	html_chart_panel += '	<div class="panel-body">';
-	html_chart_panel += '		<div id="legend'+id+'"></div>';
+	html_chart_panel += '		<div id="legend'+id+'"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
 	html_chart_panel += '		<div id="chart'+id+'" class="supervision-chart"></div>';
 	html_chart_panel += '		<div id="visibility'+id+'"></div>';
 	html_chart_panel += '	</div>';
 	html_chart_panel += '</div>';
 	$('#'+id).html(html_chart_panel);
-
 	var default_options = {
 			axisLabelFontSize: 10,
 			yLabelWidth: 14,
@@ -44,11 +43,12 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
 	{
 		default_options[attrname] = options[attrname];
 	}
-	return new Dygraph(
+	var g = new Dygraph(
 		document.getElementById("chart"+id),
 		api_url+"/"+api+"?start="+start_date+"&end="+end_date,
 		default_options
 	);
+	return g;
 }
 
 function epoch2pgtimestamp(epoch_ms)
