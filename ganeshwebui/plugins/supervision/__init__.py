@@ -214,6 +214,8 @@ class SupervisionDataProbeHandler(CsvHandler):
                 data = get_memory(self.db_session, instance.hostname, start_time, end_time)
             elif probe_name == 'swap':
                 data = get_swap(self.db_session, instance.hostname, start_time, end_time)
+            elif probe_name == 'ctxforks':
+                data = get_ctxforks(self.db_session, instance.hostname, start_time, end_time)
             elif probe_name == 'sessions':
                 data = get_sessions(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             elif probe_name == 'blocks':

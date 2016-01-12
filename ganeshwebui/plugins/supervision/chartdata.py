@@ -385,3 +385,24 @@ def get_fs_usage(session, hostname, start, end):
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
+def get_ctxforks(session, hostname, start, end):
+    data_buffer = cStringIO.StringIO()
+    zoom = zoom_level(start, end)
+    if zoom == 0:
+        tablename = 'metric_process'
+    elif zoom == 1:
+        tablename = 'metric_process_10m'
+    elif zoom == 2:
+        tablename = 'metric_process_30m'
+    else:
+        tablename = 'metric_process_4h'
+
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, round(SUM(context_switches)/(extract('epoch' from MIN(measure_interval)))) AS context_switches_s, round(SUM(forks)/(extract('epoch' from MIN(measure_interval)))) AS forks_s FROM supervision.%s WHERE hostname = '%s' AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+
+    cur = session.connection().connection.cursor()
+    cur.copy_expert(query % (tablename, hostname, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data

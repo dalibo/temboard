@@ -89,6 +89,21 @@
 		<div class="col-md-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
+					Context switches and forks per second
+					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportCtxForks">Export as PNG</button></div>
+				</div>
+				<div class="panel-body">
+					<div id="legendCtxForks"></div>
+					<div id="chartCtxForks" class="supervision-chart"></div>
+					<div id="visibilityCtxForks"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
 					Filesystems size
 					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportFsSize">Export as PNG</button></div>
 				</div>
@@ -439,7 +454,38 @@ $(document).ready(function() {
 		}
 	);
 	
-	
+	var c_ctxforks = new Dygraph(
+	    document.getElementById("chartCtxForks"),
+	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/ctxforks?start={{escape(start_date)}}&end={{escape(end_date)}}",
+		{
+			// colors: ['#2d7fbf', '#bf562d', '#2dbf4c'],
+			// colors: ['#aaaaaa', '#2dbf4c', '#2d7fbf', '#223cbf'],
+			colors: ['#2d7fbf', '#223cbf'],
+			ylabel: "",
+			axisLabelFontSize: 10,
+			yLabelWidth: 14,
+			legend: "always",
+			labelsDiv: "legendCtxForks",
+			labelsKMB: true,
+			drawCallback: function(g, is_initial) {
+				if (is_initial)
+				{
+					orig_xAxisRange = g.xAxisRange();
+				}
+				add_visibility_cb("CtxForks", g, is_initial);
+				add_export_button_callback("CtxForks", g, is_initial, "Context switches and forks per second");
+			},
+			zoomCallback: function(minDate, maxDate, yRanges) {
+				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'ctxforks');
+				if (this.isZoomed())
+					sync_dateWindow(this, this.xAxisRange());
+				else
+					sync_dateWindow(this, orig_xAxisRange);
+				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
+			}
+		}
+	);
+
 	var c_tps = new Dygraph(
 	    document.getElementById("chartTPS"),
 	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/tps?start={{escape(start_date)}}&end={{escape(end_date)}}",
@@ -725,6 +771,7 @@ $(document).ready(function() {
 		{'dygraph': c_fs_size, 'data': 'fs_size'},
 		{'dygraph': c_fs_usage, 'data': 'fs_usage'},
 		{'dygraph': c_swap, 'data': 'swap'},
+		{'dygraph': c_ctxforks, 'data': 'ctxforks'},
 		{'dygraph': c_tps, 'data': 'tps'},
 		{'dygraph': c_is, 'data': 'instance_size'},
 		{'dygraph': c_sessions, 'data': 'sessions'},
