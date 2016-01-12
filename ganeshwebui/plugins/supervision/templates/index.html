@@ -26,872 +26,96 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Loadaverage
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportLoadavg">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendLoadavg"></div>
-					<div id="chartLoadavg" class="supervision-chart"></div>
-					<div id="visibilityLoadavg"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Loadavg"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					CPU Usage
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportCPU">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendCPU"></div>
-					<div id="chartCPU" class="supervision-chart"></div>
-					<div id="visibilityCPU"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="CPU"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Memory Usage
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportMemory">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendMemory"></div>
-					<div id="chartMemory" class="supervision-chart"></div>
-					<div id="visibilityMemory"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="CtxForks"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Swap Usage
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportSwap">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendSwap"></div>
-					<div id="chartSwap" class="supervision-chart"></div>
-					<div id="visibilitySwap"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Memory"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Context switches and forks per second
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportCtxForks">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendCtxForks"></div>
-					<div id="chartCtxForks" class="supervision-chart"></div>
-					<div id="visibilityCtxForks"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Swap"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Filesystems size
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportFsSize">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendFsSize"></div>
-					<div id="chartFsSize" class="supervision-chart"></div>
-					<div id="visibilityFsSize"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="FsSize"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Filesystems usage
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportFsUsage">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendFsUsage"></div>
-					<div id="chartFsUsage" class="supervision-chart"></div>
-					<div id="visibilityFsUsage"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="FsUsage"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Transactions per second
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportTPS">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendTPS"></div>
-					<div id="chartTPS" class="supervision-chart"></div>
-					<div id="visibilityTPS"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="TPS"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Instance size
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportInstanceSize">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendInstanceSize"></div>
-					<div id="chartInstanceSize" class="supervision-chart"></div>
-					<div id="visibilityInstanceSize"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="InstanceSize"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Sessions
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportSessions">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendSessions"></div>
-					<div id="chartSessions" class="supervision-chart"></div>
-					<div id="visibilitySessions"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Sessions"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Blocks Hit vs Read per second
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportBlocks">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendBlocks"></div>
-					<div id="chartBlocks" class="supervision-chart"></div>
-					<div id="visibilityBlocks"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Blocks"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Blocks Hit vs Read ratio
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportHRR">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendHRR"></div>
-					<div id="chartHRR" class="supervision-chart"></div>
-					<div id="visibilityHRR"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="HRR"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Checkpoints
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportCheckpoints">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendCheckpoints"></div>
-					<div id="chartCheckpoints" class="supervision-chart"></div>
-					<div id="visibilityCheckpoints"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Checkpoints"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Written buffers
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportWBuffers">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendWBuffers"></div>
-					<div id="chartWBuffers" class="supervision-chart"></div>
-					<div id="visibilityWBuffers"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="WBuffers"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Locks
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportLocks">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendLocks"></div>
-					<div id="chartLocks" class="supervision-chart"></div>
-					<div id="visibilityLocks"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="Locks"></div>
 	</div>
 	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Waiting Locks
-					<div class="pull-right"><button class="btn btn-primary btn-xs" id="buttonExportWLocks">Export as PNG</button></div>
-				</div>
-				<div class="panel-body">
-					<div id="legendWLocks"></div>
-					<div id="chartWLocks" class="supervision-chart"></div>
-					<div id="visibilityWLocks"></div>
-				</div>
-			</div>
-		</div>
+		<div class="col-md-12" id="WLocks"></div>
 	</div>
 </div>
 
 <script src="/js/dygraph-combined.js"></script>
 <script src="/js/dygraph-extra.js"></script>
+<script src="/js/supervision/ganesh.supervision.js"></script>
 <script>
-var sync_graphs = null;
+sync_graphs = [];
+api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data";
+start_date = "{{escape(start_date)}}";
+end_date = "{{escape(end_date)}}";
+orig_xAxisRange = null;
 
 $(document).ready(function() {
-
-	var orig_xAxisRange = null;
-	var c_lvg = new Dygraph(
-	    document.getElementById("chartLoadavg"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/loadavg?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#2d7fbf', '#bf562d', '#2dbf4c'],
-			ylabel: "Loadaverage",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendLoadavg",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Loadavg", g, is_initial);
-				add_export_button_callback("Loadavg", g, is_initial, "Loadaverage");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'loadavg');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_cpu = new Dygraph(
-	    document.getElementById("chartCPU"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/cpu?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#2d7fbf', '#2dbf4c', '#bf562d', '#666666'],
-			ylabel: "%",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendCPU",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("CPU", g, is_initial);
-				add_export_button_callback("CPU", g, is_initial, "CPU Usage");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'cpu');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	var c_memory = new Dygraph(
-	    document.getElementById("chartMemory"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/memory?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#aaaaaa', '#2dbf4c', '#2d7fbf', '#223cbf'],
-			ylabel: "Memory",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendMemory",
-			labelsKMG2: true,
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Memory", g, is_initial);
-				add_export_button_callback("Memory", g, is_initial, "Memory usage");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'memory');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	var c_fs_size = new Dygraph(
-	    document.getElementById("chartFsSize"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/fs_size?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Size",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendFsSize",
-			labelsKMG2: true,
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("FsSize", g, is_initial);
-				add_export_button_callback("FsSize", g, is_initial, "Filesystems size");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'fs_size');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	var c_fs_usage = new Dygraph(
-	    document.getElementById("chartFsUsage"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/fs_usage?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Usage (%)",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendFsUsage",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("FsUsage", g, is_initial);
-				add_export_button_callback("FsUsage", g, is_initial, "Filesystems usage");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'fs_usage');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-
-	var c_swap = new Dygraph(
-	    document.getElementById("chartSwap"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/swap?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#bf562d'],
-			ylabel: "Memory",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendSwap",
-			labelsKMG2: true,
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Swap", g, is_initial);
-				add_export_button_callback("Swap", g, is_initial, "Swap usage");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'swap');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_ctxforks = new Dygraph(
-	    document.getElementById("chartCtxForks"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/ctxforks?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			// colors: ['#2d7fbf', '#bf562d', '#2dbf4c'],
-			// colors: ['#aaaaaa', '#2dbf4c', '#2d7fbf', '#223cbf'],
-			colors: ['#2d7fbf', '#223cbf'],
-			ylabel: "",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendCtxForks",
-			labelsKMB: true,
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("CtxForks", g, is_initial);
-				add_export_button_callback("CtxForks", g, is_initial, "Context switches and forks per second");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'ctxforks');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	var c_tps = new Dygraph(
-	    document.getElementById("chartTPS"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/tps?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#2dbf4c', '#bf562d'],
-			ylabel: "Transactions",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendTPS",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("TPS", g, is_initial);
-				add_export_button_callback("TPS", g, is_initial, "Transactions per second");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'tps');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_is = new Dygraph(
-	    document.getElementById("chartInstanceSize"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/instance_size?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Size",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			colors: ['#2d7fbf'],
-			labelsKMG2: true,
-			labelsDiv: "legendInstanceSize",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("InstanceSize", g, is_initial);
-				add_export_button_callback("InstanceSize", g, is_initial, "Instance size");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'instance_size');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_sessions = new Dygraph(
-	    document.getElementById("chartSessions"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/sessions?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Sessions",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendSessions",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Sessions", g, is_initial);
-				add_export_button_callback("Sessions", g, is_initial, "Sessions");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'sessions');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_blocks = new Dygraph(
-	    document.getElementById("chartBlocks"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/blocks?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#bf562d', '#2dbf4c'],
-			ylabel: "Blocks",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendBlocks",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Blocks", g, is_initial);
-				add_export_button_callback("Blocks", g, is_initial, "Blocks Hit vs Read per second");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'blocks');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_hrr = new Dygraph(
-	    document.getElementById("chartHRR"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/hitreadratio?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			colors: ['#2d7fbf'],
-			ylabel: "%",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendHRR",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("HRR", g, is_initial);
-				add_export_button_callback("HRR", g, is_initial, "Blocks Hit vs Read ratio");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'hitreadratio');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_checkpoints = new Dygraph(
-	    document.getElementById("chartCheckpoints"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/checkpoints?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ],
-			ylabel: "Checkpoints",
-			y2label: "Duration",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			y2LabelWidth: 14,
-			legend: "always",
-	        series: {
-	              'write_time': {
-	                axis: 'y2'
-	              },
-	              'sync_time': {
-	                axis: 'y2'
-	              },
-	            },
-			labelsDiv: "legendCheckpoints",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Checkpoints", g, is_initial);
-				add_export_button_callback("Checkpoints", g, is_initial, "Checkpoints");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'checkpoints');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_w_buffers = new Dygraph(
-	    document.getElementById("chartWBuffers"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/w_buffers?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Written buffers",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			stackedGraph: true,
-			labelsDiv: "legendWBuffers",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("WBuffers", g, is_initial);
-				add_export_button_callback("WBuffers", g, is_initial, "Written buffers");
-			},
-			
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'w_buffers');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-	
-	var c_locks = new Dygraph(
-	    document.getElementById("chartLocks"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/locks?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Locks",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendLocks",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("Locks", g, is_initial);
-				add_export_button_callback("Locks", g, is_initial, "Locks");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'locks');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	var c_w_locks = new Dygraph(
-	    document.getElementById("chartWLocks"),
-	    "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/waiting_locks?start={{escape(start_date)}}&end={{escape(end_date)}}",
-		{
-			ylabel: "Waiting Locks",
-			axisLabelFontSize: 10,
-			yLabelWidth: 14,
-			legend: "always",
-			labelsDiv: "legendWLocks",
-			drawCallback: function(g, is_initial) {
-				if (is_initial)
-				{
-					orig_xAxisRange = g.xAxisRange();
-				}
-				add_visibility_cb("WLocks", g, is_initial);
-				add_export_button_callback("WLocks", g, is_initial, "Waiting Locks");
-			},
-			zoomCallback: function(minDate, maxDate, yRanges) {
-				zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, 'waiting_locks');
-				if (this.isZoomed())
-					sync_dateWindow(this, this.xAxisRange());
-				else
-					sync_dateWindow(this, orig_xAxisRange);
-				synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this);
-			}
-		}
-	);
-
-	sync_graphs = [
-		{'dygraph': c_lvg, 'data': 'loadavg'},
-		{'dygraph': c_cpu, 'data': 'cpu'},
-		{'dygraph': c_memory, 'data': 'memory'},
-		{'dygraph': c_fs_size, 'data': 'fs_size'},
-		{'dygraph': c_fs_usage, 'data': 'fs_usage'},
-		{'dygraph': c_swap, 'data': 'swap'},
-		{'dygraph': c_ctxforks, 'data': 'ctxforks'},
-		{'dygraph': c_tps, 'data': 'tps'},
-		{'dygraph': c_is, 'data': 'instance_size'},
-		{'dygraph': c_sessions, 'data': 'sessions'},
-		{'dygraph': c_blocks, 'data': 'blocks'},
-		{'dygraph': c_hrr, 'data': 'hitreadratio'},
-		{'dygraph': c_checkpoints, 'data': 'checkpoints'},
-		{'dygraph': c_w_buffers, 'data': 'w_buffers'},
-		{'dygraph': c_locks, 'data': 'locks'},
-		{'dygraph': c_w_locks, 'data': 'w_locks'}
+	var graphs = [
+		// System
+		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: ['#2d7fbf', '#bf562d', '#2dbf4c'], ylabel: "Loadaverage"}},
+		{id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: ['#2d7fbf', '#2dbf4c', '#bf562d', '#666666'], ylabel: "%", stackedGraph: true}},
+		{id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: ['#2d7fbf', '#223cbf']}},
+		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: ['#aaaaaa', '#2dbf4c', '#2d7fbf', '#223cbf'], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
+		{id: "Swap",title: "Swap usage",api: "swap",options: {colors: ['#bf562d'], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
+		{id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMG2: true}},
+		{id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
+		// PostgreSQL
+		{id: "TPS",title: "Transactions per second",api: "tps",options: {colors: ['#2dbf4c', '#bf562d'], ylabel: "Transactions", stackedGraph: true}},
+		{id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: ['#2d7fbf'], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
+		{id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
+		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: ['#bf562d', '#2dbf4c'], ylabel: "Blocks"}},
+		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: ['#2d7fbf'], ylabel: "%"}},
+		{id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ], ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
+		{id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
+		{id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
+		{id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
 	];
-/* end of customizable part */
+
+	for (var graph of graphs)
+	{
+		sync_graphs.push({
+			dygraph: new_graph(graph.id, graph.title, graph.api, api_url, graph.options, start_date, end_date),
+			api: graph.api
+		});
+	}
 });
 
-function epoch2pgtimestamp(epoch_ms)
-{
-	var ndate = new Date(epoch_ms);
-	var hh = (h=ndate.getHours())<10?('0'+h):h;
-	var mm = (m=ndate.getMinutes())<10?('0'+m):m;
-	var ss = (s=ndate.getSeconds())<10?('0'+s):s;
-	return ndate.getFullYear()+'-'+(ndate.getMonth()+1)+'-'+ndate.getDate()+'T'+hh+':'+mm+':'+ss;
-}
-
-
-function add_visibility_cb(chart_id, g, is_initial)
-{
-	if (!is_initial)
-		return;
-	
-	var nb_legend_item = 0;
-	var visibility_html = ''
-	var cb_ids = [];
-	$('#legend'+chart_id).children('span').each(function() {
-		visibility_html += '<input type="checkbox" id="'+chart_id+'CB'+nb_legend_item+'" checked>';
-		visibility_html += '<label for="'+chart_id+'CB'+nb_legend_item+'" style="'+$(this).attr('style')+'"> '+$(this).text()+'</label>  ';
-		cb_ids.push(chart_id+'CB'+nb_legend_item);
-		nb_legend_item += 1;
-	});
-	$('#visibility'+chart_id).html(visibility_html);
-	var nb = 0;
-	for(var cb_id of cb_ids) {
-		$('#'+cb_id).change(function() {
-			g.setVisibility(parseInt($(this).attr('id').replace(chart_id+'CB', '')), $(this).is(':checked'));
-		});
-		nb += 1;
-	}
-}
-
-function zoom(is_zoomed, start_date, end_date, g, data)
-{
-	var orig_start_date = '{{start_date}}';
-	var orig_end_date = '{{end_date}}';
-	var url_base = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/";
-	if (!is_zoomed)
-	{
-		start_date = orig_start_date;
-		end_date = orig_end_date;
-	}
-	g.updateOptions({
-		file: url_base+data+"?start="+start_date+"&end="+end_date,
-	}, false);
-}
-
-function synchronize_zoom(is_zoomed, start_date, end_date, g)
-{
-	var orig_start_date = '{{start_date}}';
-	var orig_end_date = '{{end_date}}';
-	var url_base = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data/";
-	var xaxisrange = null;
-	for(var graph of sync_graphs)
-	{
-		if (graph['dygraph'] != g)
-		{
-			if (!is_zoomed)
-			{
-				start_date = orig_start_date;
-				end_date = orig_end_date;
-			}
-			graph['dygraph'].updateOptions({
-					file: url_base+graph['data']+"?start="+start_date+"&end="+end_date
-				}, false);
-		}
-	}
-}
-
-function sync_dateWindow(g, xaxisrange)
-{
-	for(var graph of sync_graphs)
-	{
-		if (graph['dygraph'].toString() != g.toString())
-		{
-			graph['dygraph'].updateOptions({
-				dateWindow: xaxisrange,
-				isZoomedIgnoreProgrammaticZoom: false,
-			}, true);
-		}
-	}
-}
-
-function add_export_button_callback(chart_id, g, is_initial, label)
-{
-	if (!is_initial)
-		return;
-	$('#buttonExport'+chart_id).click(function(){
-		var options = {
-			titleFont: "bold 18px verdana",
-			titleFontColor: "black",
-			axisLabelFont: "bold 14px verdana",
-			axisLabelFontColor: "black",
-			labelFont: "normal 12px verdana",
-			labelFontColor: "black",
-			legendFont: "bold 12px verdana",
-			legendFontColor: "black",
-			legendHeight: 20
-		}; 
-		var img = document.getElementById('imageModal');
-		Dygraph.Export.asPNG(g, img, options);
-		$('#ModalLabel').html(label);
-		$('#Modal').modal('show');
-	});
-}
 </script>
 
 {% end %}
