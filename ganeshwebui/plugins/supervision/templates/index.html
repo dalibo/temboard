@@ -68,6 +68,9 @@
 		<div class="col-md-12" id="Checkpoints"></div>
 	</div>
 	<div class="row">
+		<div class="col-md-12" id="WalFilesSize"></div>
+	</div>
+	<div class="row">
 		<div class="col-md-12" id="WBuffers"></div>
 	</div>
 	<div class="row">
@@ -106,9 +109,11 @@ $(document).ready(function() {
 		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: ['#bf562d', '#2dbf4c'], ylabel: "Blocks"}},
 		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: ['#2d7fbf'], ylabel: "%"}},
 		{id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ], ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
+		{id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: ['#2d7fbf', '#223cbf'], labelsKMG2: true, ylabel: "Size"}},
 		{id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
 		{id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
 		{id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
+
 	];
 
 	for (var graph of graphs)
