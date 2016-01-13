@@ -53,6 +53,9 @@
 		<div class="col-md-12" id="InstanceSize"></div>
 	</div>
 	<div class="row">
+		<div class="col-md-12" id="TblspcSize"></div>
+	</div>
+	<div class="row">
 		<div class="col-md-12" id="Sessions"></div>
 	</div>
 	<div class="row">
@@ -98,6 +101,7 @@ $(document).ready(function() {
 		// PostgreSQL
 		{id: "TPS",title: "Transactions per second",api: "tps",options: {colors: ['#2dbf4c', '#bf562d'], ylabel: "Transactions", stackedGraph: true}},
 		{id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: ['#2d7fbf'], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
+		{id: "TblspcSize",title: "Tablespaces size",api: "tblspc_size",options: {ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
 		{id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
 		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: ['#bf562d', '#2dbf4c'], ylabel: "Blocks"}},
 		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: ['#2d7fbf'], ylabel: "%"}},

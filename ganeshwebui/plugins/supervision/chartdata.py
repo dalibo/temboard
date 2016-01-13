@@ -81,7 +81,7 @@ def get_db_size(session, hostname, port, start, end):
         col += ", COALESCE(%s,0) AS %s" % (row[0], row[0])
         col_type += ", %s BIGINT" % (row[0])
 
-    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date %s FROM crosstab('SELECT datetime, dbname, size FROM supervision.%s WHERE hostname = ''%s'' AND port = %s AND datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY 1,2 ASC', 'SELECT DISTINCT(dbname) FROM supervision.%s WHERE datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY datetime') AS ct(datetime timestamp with time zone %s)) TO STDOUT WITH CSV HEADER"
+    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date %s FROM crosstab('SELECT datetime, dbname, size FROM supervision.%s WHERE hostname = ''%s'' AND port = %s AND datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY 1,2 ASC', 'SELECT DISTINCT(dbname) FROM supervision.%s WHERE datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY dbname') AS ct(datetime timestamp with time zone %s)) TO STDOUT WITH CSV HEADER"
     cur = session.connection().connection.cursor()
     str_start_date = start.strftime('%Y-%m-%dT%H:%M:%S')
     str_end_date = end.strftime('%Y-%m-%dT%H:%M:%S')
@@ -278,6 +278,29 @@ def get_ctxforks(session, hostname, start, end):
 
     cur = session.connection().connection.cursor()
     cur.copy_expert(query % (tablename, hostname, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
+def get_tblspc_size(session, hostname, port, start, end):
+    col = '';
+    col_type = ''
+    data_buffer = cStringIO.StringIO()
+    tablename = get_tablename('tblspc_size', start, end)
+
+    q_header = "SELECT DISTINCT(spcname) FROM supervision."+tablename+" WHERE hostname = :hostname AND port = :port AND datetime >= :start AND datetime <= :end ORDER BY spcname"
+    result = session.execute(q_header, {"hostname": hostname, "start": start.strftime('%Y-%m-%dT%H:%M:%S'), "end": end.strftime('%Y-%m-%dT%H:%M:%S'), "port": port})
+
+    for row in result.fetchall():
+        col += ", COALESCE(%s,0) AS %s" % (row[0], row[0])
+        col_type += ", %s BIGINT" % (row[0])
+
+    q_copy = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS Date %s FROM crosstab('SELECT datetime, spcname, size FROM supervision.%s WHERE hostname = ''%s'' AND port = %s AND datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY 1,2 ASC', 'SELECT DISTINCT(spcname) FROM supervision.%s WHERE datetime >= ''%s'' AND datetime <= ''%s'' ORDER BY spcname') AS ct(datetime timestamp with time zone %s)) TO STDOUT WITH CSV HEADER"
+    cur = session.connection().connection.cursor()
+    str_start_date = start.strftime('%Y-%m-%dT%H:%M:%S')
+    str_end_date = end.strftime('%Y-%m-%dT%H:%M:%S')
+    cur.copy_expert(q_copy % (col, tablename, hostname, port, str_start_date, str_end_date, tablename, str_start_date, str_end_date, col_type), data_buffer)
     cur.close()
     data = data_buffer.getvalue()
     data_buffer.close()
