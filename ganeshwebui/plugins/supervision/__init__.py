@@ -240,6 +240,10 @@ class SupervisionDataProbeHandler(CsvHandler):
                 data = get_tblspc_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             elif probe_name == 'wal_files_size':
                 data = get_wal_files_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'wal_files_count':
+                data = get_wal_files_count(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+            elif probe_name == 'wal_files_rate':
+                data = get_wal_files_rate(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
             else:
                 raise GaneshError(404, 'Unknown probe.')
 

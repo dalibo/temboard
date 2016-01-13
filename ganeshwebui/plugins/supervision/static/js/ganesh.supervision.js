@@ -1,3 +1,12 @@
+colors = {
+	blue: "#2d7fbf",
+	blue2: "#226191",
+	green: "#2dbf4c",
+	red: "#bf562d",
+	gray: "#666666",
+	light_gray: "#aaaaaa"
+}
+
 function new_graph(id, title, api, api_url, options, start_date, end_date)
 {
 	var html_chart_panel = '';

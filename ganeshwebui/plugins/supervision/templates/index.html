@@ -71,6 +71,12 @@
 		<div class="col-md-12" id="WalFilesSize"></div>
 	</div>
 	<div class="row">
+		<div class="col-md-12" id="WalFilesCount"></div>
+	</div>
+	<div class="row">
+		<div class="col-md-12" id="WalFilesRate"></div>
+	</div>
+	<div class="row">
 		<div class="col-md-12" id="WBuffers"></div>
 	</div>
 	<div class="row">
@@ -94,22 +100,24 @@ orig_xAxisRange = null;
 $(document).ready(function() {
 	var graphs = [
 		// System
-		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: ['#2d7fbf', '#bf562d', '#2dbf4c'], ylabel: "Loadaverage"}},
-		{id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: ['#2d7fbf', '#2dbf4c', '#bf562d', '#666666'], ylabel: "%", stackedGraph: true}},
-		{id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: ['#2d7fbf', '#223cbf']}},
-		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: ['#aaaaaa', '#2dbf4c', '#2d7fbf', '#223cbf'], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
-		{id: "Swap",title: "Swap usage",api: "swap",options: {colors: ['#bf562d'], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
+		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.red, colors.green], ylabel: "Loadaverage"}},
+		{id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: [colors.blue, colors.green, colors.red, colors.gray], ylabel: "%", stackedGraph: true}},
+		{id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: [colors.blue, colors.green]}},
+		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.blue2], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
+		{id: "Swap",title: "Swap usage",api: "swap",options: {colors: [colors.red], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
 		{id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMG2: true}},
 		{id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
 		// PostgreSQL
-		{id: "TPS",title: "Transactions per second",api: "tps",options: {colors: ['#2dbf4c', '#bf562d'], ylabel: "Transactions", stackedGraph: true}},
-		{id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: ['#2d7fbf'], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
+		{id: "TPS",title: "Transactions per second",api: "tps",options: {colors: [colors.green, colors.red], ylabel: "Transactions", stackedGraph: true}},
+		{id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: [colors.blue], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
 		{id: "TblspcSize",title: "Tablespaces size",api: "tblspc_size",options: {ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
 		{id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
-		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: ['#bf562d', '#2dbf4c'], ylabel: "Blocks"}},
-		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: ['#2d7fbf'], ylabel: "%"}},
+		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: [colors.red, colors.green], ylabel: "Blocks"}},
+		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: [colors.blue], ylabel: "%"}},
 		{id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ], ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
-		{id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: ['#2d7fbf', '#223cbf'], labelsKMG2: true, ylabel: "Size"}},
+		{id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: [colors.blue, colors.blue2], labelsKMG2: true, ylabel: "Size"}},
+		{id: "WalFilesCount",title: "WAL Files",api: "wal_files_count",options: {colors: [colors.blue, colors.blue2], ylabel: "WAL files"}},
+		{id: "WalFilesRate",title: "WAL Files written rate",api: "wal_files_rate",options: {colors: [colors.blue], ylabel: "Byte per second", labelsKMG2: true, stackedGraph: true}},
 		{id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
 		{id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
 		{id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}

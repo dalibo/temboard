@@ -318,3 +318,29 @@ def get_wal_files_size(session, hostname, port, start, end):
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
+def get_wal_files_count(session, hostname, port, start, end):
+    data_buffer = cStringIO.StringIO()
+    tablename = get_tablename('wal_files', start, end)
+
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, archive_ready AS archive_ready, total AS total FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+
+    cur = session.connection().connection.cursor()
+    cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
+
+def get_wal_files_rate(session, hostname, port, start, end):
+    data_buffer = cStringIO.StringIO()
+    tablename = get_tablename('wal_files', start, end)
+
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, round(written_size/60) AS written_size_s FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+
+    cur = session.connection().connection.cursor()
+    cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    return data
