@@ -354,7 +354,7 @@ BEGIN
 					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
 	RETURN QUERY SELECT
 					'metric_wal_files'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, SUM(written_size) AS written_size, MIN(current_location::pg_lsn)::TEXT AS current_location, SUM(total) AS total, SUM(archive_ready) AS archive_ready, SUM(total_size) AS total_size FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
+					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, MAX(written_size) AS written_size, MIN(current_location::pg_lsn)::TEXT AS current_location, MAX(total) AS total, MAX(archive_ready) AS archive_ready, MAX(total_size) AS total_size FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
 					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, written_size = EXCLUDED.written_size, total = EXCLUDED.total, archive_ready = EXCLUDED.archive_ready, total_size = EXCLUDED.total_size, current_location = EXCLUDED.current_location WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
 	RETURN QUERY SELECT
 					'metric_process'::TEXT,
