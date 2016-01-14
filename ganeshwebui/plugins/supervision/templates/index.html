@@ -22,7 +22,7 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
-			<h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval <span class="label label-default">{{escape(start_date)}}</span> <small><i class="glyphicon glyphicon-arrow-right"></i></small> <span class="label label-default">{{escape(end_date)}}</span>{%end%}</h1>
+			<h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval{%end%}</h1>
 		</div>
 	</div>
 	<div class="row">
@@ -35,6 +35,7 @@
 							<span class="glyphicon glyphicon-calendar"></span>
 						</span>
 					</div>
+					<i class="glyphicon glyphicon-arrow-right"></i>
 					<div class='input-group date' id='DTP_end'>
 						<input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
 						<span class="input-group-addon">
