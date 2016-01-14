@@ -22,7 +22,32 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
-			<h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> Last {{period}}</h1>
+			<h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval <span class="label label-default">{{escape(start_date)}}</span> <small><i class="glyphicon glyphicon-arrow-right"></i></small> <span class="label label-default">{{escape(end_date)}}</span>{%end%}</h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="form-group">
+				<div class='input-group date' id='DTP_start'>
+					<input type='text' class="form-control" id="inputDTP_start" value="{{escape(start_date)}}"/>
+					<span class="input-group-addon">
+						<span class="glyphicon glyphicon-calendar"></span>
+					</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="form-group">
+				<div class='input-group date' id='DTP_end'>
+					<input type='text' class="form-control" id="inputDTP_end" value="{{escape(end_date)}}"/>
+					<span class="input-group-addon">
+						<span class="glyphicon glyphicon-calendar"></span>
+					</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<button id="buttonChangeInterval" class="btn btn-primary">Apply new datetime interval</button>
 		</div>
 	</div>
 	<div class="row">
@@ -89,15 +114,41 @@
 
 <script src="/js/dygraph-combined.js"></script>
 <script src="/js/dygraph-extra.js"></script>
+<script src="/js/moment.min.js"></script>
+<script src="/js/bootstrap-datetimepicker.min.js"></script>
 <script src="/js/supervision/ganesh.supervision.js"></script>
 <script>
-sync_graphs = [];
-api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/data";
+api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision"
 start_date = "{{escape(start_date)}}";
 end_date = "{{escape(end_date)}}";
+
+sync_graphs = [];
+data_api_url = api_url+"/data";
+interval_api_url = api_url+"/interval";
 orig_xAxisRange = null;
 
 $(document).ready(function() {
+
+	$(function () {
+		$('#DTP_start').datetimepicker({
+			format: "YYYY-MM-DDThh:mm:ss"
+		});
+		$('#DTP_end').datetimepicker({
+			format: "YYYY-MM-DDThh:mm:ss",
+			useCurrent: false
+		});
+		$("#DTP_start").on("dp.change", function (e) {
+			$('#DTP_end').data("DateTimePicker").minDate(e.date);
+		});
+		$("#DTP_end").on("dp.change", function (e) {
+			$('#DTP_start').data("DateTimePicker").maxDate(e.date);
+		});
+	});
+
+	$('#buttonChangeInterval').click(function() {
+		window.location.replace(interval_api_url+"?start="+$("#inputDTP_start").val()+"&end="+$("#inputDTP_end").val());
+	});
+
 	var graphs = [
 		// System
 		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.red, colors.green], ylabel: "Loadaverage"}},
@@ -127,7 +178,7 @@ $(document).ready(function() {
 	for (var graph of graphs)
 	{
 		sync_graphs.push({
-			dygraph: new_graph(graph.id, graph.title, graph.api, api_url, graph.options, start_date, end_date),
+			dygraph: new_graph(graph.id, graph.title, graph.api, data_api_url, graph.options, start_date, end_date),
 			api: graph.api
 		});
 	}

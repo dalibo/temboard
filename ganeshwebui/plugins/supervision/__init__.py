@@ -28,7 +28,7 @@ def get_routes(config):
         'template_path':  plugin_path + "/templates"
     }
     routes = [
-        (r"/server/(.*)/([0-9]{1,5})/supervision/(day|week|month||year)$", SupervisionHTMLHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/supervision/(day|week|month||year|interval)$", SupervisionHTMLHandler, handler_conf),
         (r"/supervision/collector", SupervisionCollectorHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/supervision/data/([a-z\-_.0-9]{1,64})$", SupervisionDataProbeHandler, handler_conf),
         (r"/js/supervision/(.*)", tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
@@ -297,10 +297,20 @@ class SupervisionHTMLHandler(BaseHandler):
                 delta = timedelta(days=31)
             elif period == 'year':
                 delta = timedelta(days=365)
+            elif period == 'interval':
+                start = self.get_argument('start', default=None)
+                end = self.get_argument('end', default=None)
+                try:
+                    start_date = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+                    end_date = datetime.datetime.strptime(end, '%Y-%m-%dT%H:%M:%S')
+                except Exception as e:
+                    raise GaneshError(406, 'Datetime not valid.')
             else:
                 raise GaneshError(500, "Unknown period.")
-            start_date = datetime.datetime.now() - delta
-            end_date = datetime.datetime.now()
+
+            if period != 'interval':
+                start_date = datetime.datetime.now() - delta
+                end_date = datetime.datetime.now()
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
