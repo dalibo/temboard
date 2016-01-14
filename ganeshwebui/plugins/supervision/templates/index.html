@@ -26,28 +26,24 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-4">
-			<div class="form-group">
-				<div class='input-group date' id='DTP_start'>
-					<input type='text' class="form-control" id="inputDTP_start" value="{{escape(start_date)}}"/>
-					<span class="input-group-addon">
-						<span class="glyphicon glyphicon-calendar"></span>
-					</span>
+		<div class="col-md-12" id="contDTP">
+			<div class="form-inline pull-right">
+				<div class="form-group">
+					<div class='input-group date' id='DTP_start'>
+						<input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
+						<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
+					<div class='input-group date' id='DTP_end'>
+						<input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
+						<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
 				</div>
+				<button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
 			</div>
-		</div>
-		<div class="col-md-4">
-			<div class="form-group">
-				<div class='input-group date' id='DTP_end'>
-					<input type='text' class="form-control" id="inputDTP_end" value="{{escape(end_date)}}"/>
-					<span class="input-group-addon">
-						<span class="glyphicon glyphicon-calendar"></span>
-					</span>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-4">
-			<button id="buttonChangeInterval" class="btn btn-primary">Apply new datetime interval</button>
 		</div>
 	</div>
 	<div class="row">
