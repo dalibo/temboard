@@ -172,11 +172,11 @@ $(document).ready(function() {
 
 	];
 
-	for (var graph of graphs)
+	for (var i in graphs)
 	{
 		sync_graphs.push({
-			dygraph: new_graph(graph.id, graph.title, graph.api, data_api_url, graph.options, start_date, end_date),
-			api: graph.api
+			dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start_date, end_date),
+			api: graphs[i].api
 		});
 	}
 });

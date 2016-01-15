@@ -86,8 +86,8 @@ function add_visibility_cb(chart_id, g, is_initial)
 	});
 	$('#visibility'+chart_id).html(visibility_html);
 	var nb = 0;
-	for(var cb_id of cb_ids) {
-		$('#'+cb_id).change(function() {
+	for(var i in cb_ids) {
+		$('#'+cb_ids[i]).change(function() {
 			g.setVisibility(parseInt($(this).attr('id').replace(chart_id+'CB', '')), $(this).is(':checked'));
 		});
 		nb += 1;
@@ -108,28 +108,28 @@ function zoom(is_zoomed, start_date, end_date, g, data, api_url, orig_start_date
 
 function synchronize_zoom(is_zoomed, start_date, end_date, g, api_url, orig_start_date, orig_end_date)
 {
-	for(var graph of sync_graphs)
+	for(var i in sync_graphs)
 	{
-		if (graph.dygraph != g)
+		if (sync_graphs[i].dygraph != g)
 		{
 			if (!is_zoomed)
 			{
 				start_date = orig_start_date;
 				end_date = orig_end_date;
 			}
-			graph.dygraph.updateOptions({
-					file: api_url+"/"+graph.api+"?start="+start_date+"&end="+end_date
+			sync_graphs[i].dygraph.updateOptions({
+					file: api_url+"/"+sync_graphs[i].api+"?start="+start_date+"&end="+end_date
 				}, false);
 		}
 	}
 }
 function sync_dateWindow(g, xaxisrange)
 {
-	for(var graph of sync_graphs)
+	for(var i in sync_graphs)
 	{
-		if (graph.dygraph != g)
+		if (sync_graphs[i].dygraph != g)
 		{
-			graph.dygraph.updateOptions({
+			sync_graphs[i].dygraph.updateOptions({
 				dateWindow: xaxisrange,
 				isZoomedIgnoreProgrammaticZoom: false,
 			}, true);
