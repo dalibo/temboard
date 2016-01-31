@@ -72,16 +72,15 @@
 				</button>
 			</div>
 			<div class="navbar-default sidebar" role="navigation">
+				<h1 id="logo">Ganesh</h1>
 				<div class="sidebar-nav navbar-collapse">
 					<ul class="nav" id="side-menu">
-						<li><h1 id="logo">Ganesh</h1></li>
-						<li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
 						{% try %}
 						{% if instance %}
 						{% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
 						<li>
 							<table id="tableHeaderInfo">
-								<tr><td>Hostname: </td><td class="pull-right">{{instance.hostname}}</td></tr>
+								<tr><td colspan="2" class="text-center"><h4><span class="label label-success">{{instance.hostname}}</span></h4></td></tr>
 								<tr><td>Groups: </td><td class="pull-right">{% for group in instance.groups %} {{group.group_name}}{% end %}</td></tr>
 								<tr><td>Host: </td><td class="pull-right">{{instance.agent_address}}</td></tr>
 								<tr><td>PG data: </td><td class="pull-right">{{instance.pg_data}}</td></tr>
@@ -89,6 +88,7 @@
 								<tr><td>PG Version: </td><td class="pull-right">{{instance.pg_version}}</td></tr>
 							</table>
 						</li>
+						<li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
 						{% if 'dashboard' in plugin_names %}
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
 						{% end %}
@@ -98,7 +98,7 @@
 						{% if 'supervision' in plugin_names %}
 						<li>
 							<a href="#"><i class="fa fa-bar-chart-o"></i> Supervision<span class="fa arrow"></span></a>
-							<ul class="nav nav-second-level">
+							<ul class="nav nav-second-level collapse">
 								<li>
 									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">Charts - Last day</a></li>
 									<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/week">Charts - Last week</a></li>
@@ -111,7 +111,7 @@
 						{% if 'settings' in plugin_names %}
 						<li>
 		  					<a href="#"><i class="fa fa-cog"></i> Settings<span class="fa arrow"></span></a>
-							<ul class="nav nav-second-level">
+							<ul class="nav nav-second-level collapse">
 								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">Configuration</a></li>
  								<li>
 		   							<form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration" class="form" id="formSearchSettings"  role="search">
@@ -137,7 +137,7 @@
 						{% if role.is_admin %}
 						<li>
 		  					<a href="#"><i class="fa fa-wrench fa-fw"></i> Manage<span class="fa arrow"></span></a>
-							<ul class="nav nav-second-level">
+							<ul class="nav nav-second-level collapse">
 								<li><a href="/manage/users">User list</a></li>
 								<li><a href="/manage/groups/role">User groups</a></li>
 								<li><a href="/manage/instances">Instance list</a></li>
@@ -154,13 +154,7 @@
 			<!-- /.navbar-static-side -->
 		</nav>
 		<script>
-		// Popover activation
-		$(function () {
-  			$('[data-toggle="popover"]').popover()
-		})
-		$(function () {
-  			$('[data-toggle="tooltip"]').tooltip()
-		})
+		$('#side-menu').metisMenu();
 		</script>
 		<div id="page-wrapper">
 		{% else %}
@@ -169,5 +163,16 @@
 			{% block content %} {% end %}
 		</div>
 	</div>
+	<script>
+	// Popover activation
+	$(document).ready(function() {
+		$(function () {
+			$('[data-toggle="popover"]').popover()
+		})
+		$(function () {
+			$('[data-toggle="tooltip"]').tooltip()
+		})
+	});
+	</script>
 </body>
 </html>

@@ -1,10 +1,11 @@
 colors = {
-	blue: "#2d7fbf",
+	blue: "#5DA5DA",
 	blue2: "#226191",
-	green: "#2dbf4c",
-	red: "#bf562d",
-	gray: "#666666",
-	light_gray: "#aaaaaa"
+	green: "#60BD68",
+	red: "#F15854",
+	gray: "#4D4D4D",
+	light_gray: "#AAAAAA",
+	orange: "#FAA43A",
 }
 
 function new_graph(id, title, api, api_url, options, start_date, end_date)
@@ -18,9 +19,9 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
 	html_chart_panel += '		</div>';
 	html_chart_panel += '	</div>';
 	html_chart_panel += '	<div class="panel-body">';
-	html_chart_panel += '		<div id="legend'+id+'"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
+	html_chart_panel += '		<div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
 	html_chart_panel += '		<div id="chart'+id+'" class="supervision-chart"></div>';
-	html_chart_panel += '		<div id="visibility'+id+'"></div>';
+	html_chart_panel += '		<div id="visibility'+id+'" class="visibility-chart"></div>';
 	html_chart_panel += '	</div>';
 	html_chart_panel += '</div>';
 	$('#'+id).html(html_chart_panel);

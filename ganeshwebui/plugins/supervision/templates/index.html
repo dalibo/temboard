@@ -148,10 +148,10 @@ $(document).ready(function() {
 
 	var graphs = [
 		// System
-		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.red, colors.green], ylabel: "Loadaverage"}},
+		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.orange, colors.green], ylabel: "Loadaverage"}},
 		{id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: [colors.blue, colors.green, colors.red, colors.gray], ylabel: "%", stackedGraph: true}},
 		{id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: [colors.blue, colors.green]}},
-		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.blue2], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
+		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.orange], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
 		{id: "Swap",title: "Swap usage",api: "swap",options: {colors: [colors.red], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
 		{id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMG2: true}},
 		{id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
