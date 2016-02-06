@@ -74,7 +74,8 @@ class BaseHandler(tornado.web.RequestHandler):
             return
         if async_result.secure_cookie != None and 'name' in async_result.secure_cookie and 'content' in async_result.secure_cookie:
             self.set_secure_cookie(async_result.secure_cookie['name'], async_result.secure_cookie['content'])
-        if async_result.http_code in (302, 401) and async_result.redirection is not None:
+        if async_result.http_code in (301, 302, 401) and async_result.redirection is not None:
+            self.set_secure_cookie('referer_uri', self.request.uri)
             self.redirect(async_result.redirection)
             return
         if async_result.http_code == 200:

@@ -32,7 +32,10 @@ class LoginHandler(BaseHandler):
         return HTMLAsyncResult(
             http_code = 200,
             template_file = 'login.html',
-            data = { 'nav': False })
+            data = {
+                'nav': False
+            }
+        )
 
     def post_login(self):
         try:
@@ -47,10 +50,9 @@ class LoginHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
             sleep(1)
-
             return HTMLAsyncResult(
                 http_code = 302,
-                redirection = '/home',
+                redirection = self.get_secure_cookie('referer_uri') if self.get_secure_cookie('referer_uri') is not None else '/home',
                 secure_cookie = { 'name': 'ganesh', 'content': gen_cookie(role.role_name, role_hash_password)})
         except (GaneshError, Exception) as e:
             try:
@@ -137,7 +139,11 @@ class AgentLoginHandler(BaseHandler):
 
             self.set_secure_cookie("ganesh_%s_%s" % (instance.agent_address, instance.agent_port), xsession)
 
-            return HTMLAsyncResult(http_code = 302, redirection = "/server/%s/%s/dashboard" % (instance.agent_address, instance.agent_port))
+            return HTMLAsyncResult(
+                        http_code = 302,
+                        redirection = self.get_secure_cookie('referer_uri') \
+                            if self.get_secure_cookie('referer_uri') is not None \
+                            else "/server/%s/%s/dashboard" % (instance.agent_address, instance.agent_port))
         except (GaneshdError, GaneshError, Exception) as e:
             self.logger.error(e.message)
             try:
