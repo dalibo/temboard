@@ -3,6 +3,7 @@ body {
 
 #wrapper {
     width: 100%;
+	min-width: 1000px;
 	min-height: 100vh;
 	background-color: #222;
 }
@@ -12,15 +13,9 @@ body {
 	height: 100%;
 	background-color: #fff;
 	min-height: 100vh;
-}
-
-@media(min-width:768px) {
-    #page-wrapper {
-        position: inherit;
-        margin: 0 0 0 250px;
-        padding: 0 30px;
-        border-left: 1px solid #e7e7e7;
-    }
+    margin: 0 0 0 250px;
+    padding: 0 30px;
+    border-left: 1px solid #e7e7e7;
 }
 
 #canvas-memory-holder{
@@ -210,7 +205,7 @@ select.form-control {
 }
 
 .change-cat {
-	width: 500px;
+	width: 700px;
 	margin-bottom: 20px;
 }
 
@@ -221,6 +216,10 @@ select.form-control {
 	padding: 0;
 	min-height: 0;
 	background-color: #222;
+}
+
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {
+	border: 0px;
 }
 
 .sidebar {
@@ -445,9 +444,20 @@ td {
 }
 
 #contDTP {
-	margin-bottom: 5px;
+	/*margin-bottom: 5px;*/
+	min-width: 500px; 
+}
+
+.row-chart {
+	margin-top: 10px;
 }
 
 .legend-chart, .visibility-chart {
 	font-size: 12px;
+}
+
+.form-date-picker {
+	min-width: 700px;
+	display: inline;
+	text-align: right;
 }

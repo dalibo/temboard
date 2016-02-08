@@ -27,8 +27,8 @@
 	</div>
 	<div class="row">
 		<div class="col-md-12" id="contDTP">
-			<div class="form-inline pull-right">
-				<div class="form-group">
+			<div class="form-date-picker pull-right">
+				<div class="form-inline">
 					<div class='input-group date' id='DTP_start'>
 						<input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
 						<span class="input-group-addon">
@@ -42,12 +42,12 @@
 							<span class="glyphicon glyphicon-calendar"></span>
 						</span>
 					</div>
+					<button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
 				</div>
-				<button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
 			</div>
 		</div>
 	</div>
-	<div class="row">
+	<div class="row row-chart">
 		<div class="col-md-12" id="Loadavg"></div>
 	</div>
 	<div class="row">
