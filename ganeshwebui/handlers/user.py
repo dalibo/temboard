@@ -29,6 +29,22 @@ class LoginHandler(BaseHandler):
         run_background(self.post_login, self.async_callback)
 
     def get_login(self):
+        role = None
+        try:
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+        except Exception as e:
+            pass
+        if role is not None:
+            return HTMLAsyncResult(
+                http_code = 302,
+                redirection = '/home'
+            )
         return HTMLAsyncResult(
             http_code = 200,
             template_file = 'login.html',
@@ -73,13 +89,32 @@ class AgentLoginHandler(BaseHandler):
     def get_login(self, agent_address, agent_port):
         try:
             instance = None
-            #self.load_auth_cookie()
+            role = None
+            agent_username = None
             self.start_db_session()
+            try:
+                self.load_auth_cookie()
+                role = self.current_user
+            except Exception as e:
+                pass
+            if role is None:
+                raise GaneshError(302, "Current role unknown.")
 
             instance = get_instance(self.db_session, agent_address, agent_port)
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            xsession = self.get_secure_cookie("ganesh_%s_%s" % (instance.agent_address, instance.agent_port))
+            if xsession:
+                try:
+                    data_profile = ganeshd_profile(self.ssl_ca_cert_file,
+                                    instance.agent_address,
+                                    instance.agent_port,
+                                    xsession)
+                    agent_username = data_profile['username']
+                    self.logger.error(agent_username)
+                except Exception as e:
+                    self.logger.error(e.message)
 
             return HTMLAsyncResult(
                 http_code = 200,
@@ -87,7 +122,8 @@ class AgentLoginHandler(BaseHandler):
                 data = {
                     'nav': True,
                     'instance': instance,
-                    'role': None
+                    'role': None,
+                    'username': agent_username
                 })
         except (GaneshError, GaneshdError, Exception) as e:
             self.logger.error(e.message)
@@ -97,6 +133,8 @@ class AgentLoginHandler(BaseHandler):
             except Exception as e:
                 pass
             if (isinstance(e, GaneshError) or isinstance(e, GaneshdError)):
+                if e.code == 302:
+                    return HTMLAsyncResult(http_code = 401, redirection = "/login")
                 code = e.code
             else:
                 code = 500
@@ -157,7 +195,8 @@ class AgentLoginHandler(BaseHandler):
                     data = {
                         'nav': True,
                         'error': e.message,
-                        'instance': instance
+                        'instance': instance,
+                        'username': None
                     })
 
     @tornado.web.asynchronous

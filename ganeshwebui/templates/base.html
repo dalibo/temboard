@@ -88,7 +88,12 @@
 								<tr><td>PG Version: </td><td class="pull-right">{{instance.pg_version}}</td></tr>
 							</table>
 						</li>
+						{% end %}
+						{% except %}
+						{% end %}
 						<li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
+						{% try %}
+						{% if instance %}
 						{% if 'dashboard' in plugin_names %}
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
 						{% end %}

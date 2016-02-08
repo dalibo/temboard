@@ -310,3 +310,19 @@ def ganeshd_discover(in_ca_cert_file, hostname, port):
         raise GaneshdError(e.code, json.loads(e.read())['error'])
     except Exception as e:
         raise GaneshdError(500, str(e))
+
+def ganeshd_profile(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/profile' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
