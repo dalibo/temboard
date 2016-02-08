@@ -143,7 +143,7 @@ select.form-control {
 #alert-configuration {
 	padding: 0px 20px 20px 20px;
 	font-size: 12px;
-	width: 500px;
+	width: 700px;
 }
 
 #alert-configuration p {
@@ -167,7 +167,7 @@ select.form-control {
 #error-configuration {
 	padding: 0px 20px 20px 20px;
 	font-size: 12px;
-	width: 500px;
+	width: 700px;
 }
 
 #error-configuration p {
@@ -184,7 +184,7 @@ select.form-control {
 #ok-configuration {
 	padding: 0px 20px 20px 20px;
 	font-size: 12px;
-	width: 500px;
+	width: 700px;
 }
 
 #ok-configuration p {
@@ -412,17 +412,31 @@ td {
 
 
 .panel-settings {
-	width: 500px;
+	width: 700px;
 }
 
 .panel-settings table tr td.action-setting {
 	width: 40px;
+	vertical-align: middle;
 }
 .panel-settings table tr td.label-setting {
-	width: 200px;
+	width: 400px;
 }
 .panel-settings table tr td.input-setting {
 	width: 260px;
+	vertical-align: middle;
+}
+
+.title-setting {
+	font-size: 12px;
+	font-weight: bold;
+	color: #000;
+}
+
+.desc-setting {
+	color: #555;
+	font-size: 12px;
+	text-align: justify;
 }
 
 .supervision-chart {
