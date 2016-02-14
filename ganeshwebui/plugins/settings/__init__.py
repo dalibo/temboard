@@ -450,7 +450,7 @@ class SettingsConfigurationFileHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession,
-                                {'content': self.request.arguments['content']})
+                                {'content': self.request.arguments['content'][0], 'new_version': True})
                 # .. and reload configuration.
                 ret_post = ganeshd_post_administration_control(
                                 self.ssl_ca_cert_file,

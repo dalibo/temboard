@@ -224,7 +224,7 @@ def ganeshd_post_administration_control(in_ca_cert_file, hostname, port, xsessio
         raise GaneshdError(500, str(e))
 
 def ganeshd_get_file_content(in_ca_cert_file, file_type, hostname, port, xsession):
-    file_types = { 'hba': '/settings/hba', 'pg_ident': '/settings/pg_ident'}
+    file_types = { 'hba': '/settings/hba/raw', 'pg_ident': '/settings/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
@@ -243,7 +243,7 @@ def ganeshd_get_file_content(in_ca_cert_file, file_type, hostname, port, xsessio
         raise GaneshdError(500, str(e))
 
 def ganeshd_post_file_content(in_ca_cert_file, file_type, hostname, port, xsession, content):
-    file_types = { 'hba': '/settings/hba', 'pg_ident': '/settings/pg_ident'}
+    file_types = { 'hba': '/settings/hba/raw', 'pg_ident': '/settings/pg_ident'}
     if file_type not in file_types:
         raise GaneshdError(404, 'Unknown file_type.')
     try:
@@ -260,7 +260,7 @@ def ganeshd_post_file_content(in_ca_cert_file, file_type, hostname, port, xsessi
     except urllib2.HTTPError as e:
         raise GaneshdError(e.code, json.loads(e.read())['error'])
     except Exception as e:
-        raise GaneshdError(500, str(e))
+        raise GaneshdError(500, e.message)
 
 def ganeshd_activity(in_ca_cert_file, hostname, port, xsession):
     try:
