@@ -126,12 +126,12 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			$('#selectPlugins').multiselect();
 			// Add group's description as a tooltip.
 			$('.multiselect-container li').not('.filter, .group').tooltip({
-    			placement: 'right',
-    			container: 'body',
-    			title: function () {
-        			var value = $(this).find('input').val();
-        			return descriptions[value];
-    			}
+			placement: 'right',
+			container: 'body',
+			title: function () {
+				var value = $(this).find('input').val();
+				return descriptions[value];
+				}
 			});
 			// Use multiselect style for Active & Admin selects.
 			$('#formUpdateInstance').submit(function( event ) {

@@ -9,17 +9,17 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    			<h4 class="modal-title" id="restartModalLabel">Reset parameter:</h4>
-    		</div>
-    		<div class="modal-body" id="resetModalBody">
+				<h4 class="modal-title" id="restartModalLabel">Reset parameter:</h4>
+			</div>
+			<div class="modal-body" id="resetModalBody">
 				<p><b><span id="resetParamName"></span></b> to <b><span id="resetParamValue"></span></b> ?</p>
-      		</div>
-      		<div class="modal-footer" id="resetModalFooter">
-        		<button type="button" class="btn btn-primary" id="resetYesButton">Yes</button>
-        		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-      		</div>
-    	</div>
-  	</div>
+			</div>
+			<div class="modal-footer" id="resetModalFooter">
+				<button type="button" class="btn btn-primary" id="resetYesButton">Yes</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <div class="container-fluid">
@@ -41,7 +41,7 @@
 				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
 				<p>The following changes have been applied:</p>
-				<table class="table table-condensed">			
+				<table class="table table-condensed">
 				<tr>
 					<th width="30%">Name</th>
 					<th width="30%">Prev. value</th>
@@ -115,20 +115,20 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	    			<h4 class="modal-title" id="restartModalLabel">Are you sure you want to restart PostgreSQL ?</h4>
-	    		</div>
-	    		<div class="modal-body" id="restartModalBody">
+					<h4 class="modal-title" id="restartModalLabel">Are you sure you want to restart PostgreSQL ?</h4>
+				</div>
+				<div class="modal-body" id="restartModalBody">
 					<div class="alert alert-warning" role="alert">
 						<h4><i class="fa fa-warning fa-fw"></i>WARNING</h4>
 						<p>PostgreSQL is going to be restarted, please confirm.</p>
 					</div>
-	      		</div>
-	      		<div class="modal-footer" id="restartModalFooter">
-	        		<button type="button" class="btn btn-danger" id="restartYesButton">Yes</button>
-	        		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-	      		</div>
-	    	</div>
-	  	</div>
+				</div>
+				<div class="modal-footer" id="restartModalFooter">
+					<button type="button" class="btn btn-danger" id="restartYesButton">Yes</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
 	</div>
 	<script>
 	$('#restartYesButton').on(
@@ -137,7 +137,7 @@
 			event.preventDefault();
 			modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/administration/control', 'post', '{{xsession}}', 'restartModal', {"action":"restart"});
 		}
-	); 
+	);
 	</script>
 	{% end %}
 	{% if configuration_status['reload_pending'] is True %}
@@ -175,20 +175,20 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	    			<h4 class="modal-title" id="reloadModalLabel">Are you sure you want to reload PostgreSQL configuration ?</h4>
-	    		</div>
-	    		<div class="modal-body" id="reloadModalBody">
+					<h4 class="modal-title" id="reloadModalLabel">Are you sure you want to reload PostgreSQL configuration ?</h4>
+				</div>
+				<div class="modal-body" id="reloadModalBody">
 					<div class="alert alert-warning" role="alert">
 						<h4><i class="fa fa-warning fa-fw"></i>WARNING</h4>
 						<p>PostgreSQL configuration is going to be reloaded, please confirm.</p>
 					</div>
-	      		</div>
-	      		<div class="modal-footer" id="reloadModalFooter">
-	        		<button type="button" class="btn btn-primary" id="reloadYesButton">Yes</button>
-	        		<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-	      		</div>
-	    	</div>
-	  	</div>
+				</div>
+				<div class="modal-footer" id="reloadModalFooter">
+					<button type="button" class="btn btn-primary" id="reloadYesButton">Yes</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
 	</div>
 	<script>
 	$('#reloadYesButton').on(
@@ -197,7 +197,7 @@
 			event.preventDefault();
 			modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/administration/control', 'post', '{{xsession}}', 'reloadModal', {"action":"reload"});
 		}
-	); 
+	);
 	</script>
 	{% end %}
 	{% if not query_filter %}
@@ -245,7 +245,7 @@
 								{% elif setting_row['vartype'] == 'enum' %}
 								<select class="form-control input-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in setting_row['enumvals'][1:-1].split(',') %}<option value="{{v}}" {% if (v.startswith('"') and v.endswith('"') and setting_row['setting'] == v[1:-1]) or setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
 								{% else %}
-		 						<input data-toggle="popover" data-trigger="hover" data-placement="auto top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control input-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting']}}{%end%}">
+								<input data-toggle="popover" data-trigger="hover" data-placement="auto top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control input-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting']}}{%end%}">
 								{% end %}
 							</td>
 							<td class="action-setting">
@@ -253,7 +253,7 @@
 								<button type="button" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val'] %} {{setting_row['boot_val']}} {% else %} {{setting_row['file_val']}} {% end %}'">
 									<span class="fa fa-undo" aria-hidden="true"></span>
 								</button>
-								{% end %}	
+								{% end %}
 							</td>
 						</tr>
 					{% end %}
@@ -290,8 +290,8 @@ $(document).ready(function() {
 {% if configuration_status['restart_pending'] is True %}
 	{% for change in configuration_status['restart_changes'] %}
 		$('#buttonReset_{{change['name']}}').click(function () {
-     		$('#resetModal').modal('show');  
-     		$('[data-toggle=popover]').popover('hide');
+			$('#resetModal').modal('show');
+			$('[data-toggle=popover]').popover('hide');
 			$('#resetParamName').html('{{change['name']}}');
 			$('#resetParamValue').html('{{change['setting']}}');
 			$('#resetYesButton').on(
@@ -300,7 +300,7 @@ $(document).ready(function() {
 					event.preventDefault();
 					modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{{change['setting']}}", "force": "true"}]});
 				}
-			); 
+			);
 		});
 	{% end %}
 {% end %}
@@ -308,8 +308,8 @@ $(document).ready(function() {
 	{% for setting_row in setting_group['rows'] %}
 		{% if setting_row['setting'] == setting_row['auto_val'] and ((setting_row['file_val'] and setting_row['setting'] != setting_row['file_val']) or (not setting_row['file_val'] and setting_row['setting'] != setting_row['boot_val']))%}
 		$('#buttonReset_{{setting_row['name']}}').click(function () {
-     		$('#resetModal').modal('show');  
-     		$('[data-toggle=popover]').popover('hide');
+			$('#resetModal').modal('show');
+			$('[data-toggle=popover]').popover('hide');
 			$('#resetParamName').html('{{setting_row['name']}}');
 			{% if not setting_row['file_val'] %}
 			$('#resetParamValue').html('{{setting_row['boot_val']}}');
@@ -324,7 +324,7 @@ $(document).ready(function() {
 				event.preventDefault();
 				modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{{setting_value}}"}]});
 	}
-); 
+);
 	});
 		{% end %}
 	{% end %}
