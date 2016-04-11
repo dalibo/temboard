@@ -2,20 +2,44 @@ body {
 }
 
 #wrapper {
-    width: 100%;
+	width: 100%;
 	min-width: 1000px;
+	height: auto;
+	/* background-color: #222; */
 	min-height: 100vh;
-	background-color: #222;
+	overflow: hidden;
 }
 
 #page-wrapper {
-    padding: 0 15px;
+	padding: 0 15px;
 	height: 100%;
 	background-color: #fff;
 	min-height: 100vh;
-    margin: 0 0 0 250px;
-    padding: 0 30px;
-    border-left: 1px solid #e7e7e7;
+	margin: 0 0 0 250px;
+	padding: 0 30px;
+	border-left: 1px solid #e7e7e7;
+}
+
+#page-wrapper {
+	background-color: #fff;
+	padding: 10px 0 0 0;
+}
+
+.navbar {
+	border: 0;
+	width: 250px;
+	min-height: 0;
+	margin-bottom: -50000px; /* any large number will do */
+	padding-bottom: 50000px;
+}
+
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {
+	border: 0px;
+}
+
+.sidebar {
+	background-color: #222;
+	min-height: 100%;
 }
 
 #canvas-memory-holder{
@@ -92,28 +116,20 @@ body {
 }
 
 .popover-title {
-    font-size: 12px;
+	font-size: 12px;
 	font-weight: bold;
 	min-width: 200px;
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
 .popover-content {
-    font-size: 11px;
+	font-size: 11px;
 	min-width: 200px;
 }
 
 .popover-content table {
 	width: 100%;
 	padding: 5px;
-}
-
-#formChangeServer select.form-control {
-}
-
-#page-wrapper {
-	background-color: #fff;
-	padding: 10px 0 0 0;
 }
 
 #page-wrapper h1 {
@@ -209,27 +225,9 @@ select.form-control {
 	margin-bottom: 20px;
 }
 
-.navbar {
-	height: 0;
-	border: 0;
-	margin: 0;
-	padding: 0;
-	min-height: 0;
-	background-color: #222;
-}
 
-.navbar-default .navbar-collapse, .navbar-default .navbar-form {
-	border: 0px;
-}
-
-.sidebar {
-	margin-top: 0;
-}
 .navbar .navbar-left table tr td {
 	color: #666;
-}
-.sidebar {
-	background-color: #222;
 }
 
 .sidebar-nav ul li {
@@ -261,7 +259,7 @@ select.form-control {
 	background-color: #222;
 }
 .sidebar-nav ul li ul li{
-    border-bottom: 1px solid #2d2d2d;
+	border-bottom: 1px solid #2d2d2d;
 	background-color: #393939;
 }
 .sidebar-nav ul li ul li a {
@@ -301,9 +299,6 @@ select.form-control {
 	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ff333333', endColorstr='#ff222222', GradientType=1);
 }
 
-#topNav {
-	margin: 0px 0px 0px 0px;
-}
 #tableHeaderInfo {
 	border: 0;
 	background-color: #393939;
@@ -460,4 +455,30 @@ td {
 	min-width: 700px;
 	display: inline;
 	text-align: right;
+}
+
+#HBATable > tbody > tr > td {
+	padding: 1px;
+}
+#HBATable > tbody > tr > td > span {
+	margin: 0px;
+	line-height: 1;
+}
+
+#HBATable > tbody > tr > td > button {
+	padding: 0px 5px 0px 5px;
+}
+
+#HBATable .comment {
+	color: red;
+	font-style: italic;
+}
+
+#HBATable .no {
+	font-weight: bold;
+	color: #999;
+}
+
+#HBATable .connection,.database,.user {
+	color: #337AB7;
 }

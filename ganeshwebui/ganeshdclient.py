@@ -326,3 +326,118 @@ def ganeshd_profile(in_ca_cert_file, hostname, port, xsession):
         raise GaneshdError(e.code, json.loads(e.read())['error'])
     except Exception as e:
         raise GaneshdError(500, str(e))
+
+def ganeshd_get_conf_file_versions(in_ca_cert_file, file_type, hostname, port, xsession):
+    file_types = { 'hba': '/settings/hba/versions' }
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s%s' % (hostname, port, file_types[file_type]),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_get_conf_file(in_ca_cert_file, file_type, version, hostname, port, xsession):
+    file_types = { 'hba': '/settings/hba' }
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    p_version = ''
+    if version is not None:
+        p_version = "?version=%s" % (version)
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s%s%s' % (hostname, port, file_types[file_type], p_version),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_get_conf_file_raw(in_ca_cert_file, file_type, version, hostname, port, xsession):
+    file_types = { 'hba': '/settings/hba/raw' }
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    p_version = ''
+    if version is not None:
+        p_version = "?version=%s" % (version)
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s%s%s' % (hostname, port, file_types[file_type], p_version),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_get_hba_options(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/settings/hba/options' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_post_conf_file(in_ca_cert_file, file_type, hostname, port, xsession, data):
+    file_types = { 'hba': '/settings/hba' }
+    if file_type not in file_types:
+        raise GaneshdError(404, 'Unknown file_type.')
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'POST',
+                url = 'https://%s:%s%s' % (hostname, port, file_types[file_type]),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                },
+                data = data)
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_delete_hba_version(in_ca_cert_file, hostname, port, xsession, version):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'DELETE',
+                url = 'https://%s:%s/settings/hba?version=%s' % (hostname, port, version),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
