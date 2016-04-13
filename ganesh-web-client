@@ -99,11 +99,10 @@ def main():
     # Worker pool creation.
     new_worker_pool(12)
 
-    # TODO: compatibility with older python versions
-    # http://www.tornadoweb.org/en/stable/_modules/tornado/httpserver.html
-    # http://stackoverflow.com/questions/28228214/ssl-module-object-has-no-attribute-sslcontext
-    ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_ctx.load_cert_chain(config.ganesh['ssl_cert_file'], config.ganesh['ssl_key_file'])
+    ssl_ctx = {
+        'certfile': config.ganesh['ssl_cert_file'],
+        'keyfile': config.ganesh['ssl_key_file']
+    }
     handler_conf = {'ssl_ca_cert_file': config.ganesh['ssl_ca_cert_file'], 'template_path': None}
     application = CustomTornadoWebApp(
         [
