@@ -847,8 +847,6 @@ class HBAProxyHandler(JsonHandler):
     def post(self, agent_address, agent_port):
         run_background(self.post_hba, self.async_callback, (agent_address, agent_port))
 
-        (r"/proxy/(.*)/([0-9]{1,5})/settings/hba/delete$", HBADeleteProxyHandler, handler_conf),
-
 class HBADeleteProxyHandler(JsonHandler):
     def delete_hba(self, agent_address, agent_port):
         try:
