@@ -12,6 +12,7 @@ from sqlalchemy import create_engine
 from ganeshwebui.handlers.base import *
 from ganeshwebui.handlers.user import *
 from ganeshwebui.handlers.home import *
+from ganeshwebui.handlers.notification import *
 from ganeshwebui.handlers.manage.user import *
 from ganeshwebui.handlers.manage.group import *
 from ganeshwebui.handlers.manage.instance import *
@@ -98,7 +99,7 @@ def main():
     # Worker pool creation.
     new_worker_pool(12)
 
-    # TODO: compatibility with older python version
+    # TODO: compatibility with older python versions
     # http://www.tornadoweb.org/en/stable/_modules/tornado/httpserver.html
     # http://stackoverflow.com/questions/28228214/ssl-module-object-has-no-attribute-sslcontext
     ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
@@ -128,7 +129,10 @@ def main():
             (r"/json/manage/delete/instance$", ManageDeleteInstanceJsonHandler, handler_conf),
             # Discover
             (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", DiscoverInstanceJsonHandler, handler_conf),
+            # Agent Login
             (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler, handler_conf),
+            # Notifications
+            (r"/server/(.*)/([0-9]{1,5})/notifications", NotificationsHandler, handler_conf),
             (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/css'}),
             (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/codemirror'}),
             (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/js'}),

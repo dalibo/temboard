@@ -89,14 +89,14 @@
 						{% end %}
 						<li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
 						{% try %}
-						{% if instance %}
-						{% if 'dashboard' in plugin_names %}
+							{% if instance %}
+								{% if 'dashboard' in plugin_names %}
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
-						{% end %}
-						{% if 'activity' in plugin_names %}
+								{% end %}
+								{% if 'activity' in plugin_names %}
 						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"><i class="fa fa-bars fa-fw"></i> Activity</a></li>
-						{% end %}
-						{% if 'supervision' in plugin_names %}
+								{% end %}
+								{% if 'supervision' in plugin_names %}
 						<li>
 							<a href="#"><i class="fa fa-bar-chart-o"></i> Supervision<span class="fa arrow"></span></a>
 							<ul class="nav nav-second-level collapse">
@@ -108,8 +108,8 @@
 								</li>
 							</ul>
 						</li>
-						{% end %}
-						{% if 'settings' in plugin_names %}
+								{% end %}
+								{% if 'settings' in plugin_names %}
 						<li>
 							<a href="#"><i class="fa fa-cog"></i> Settings<span class="fa arrow"></span></a>
 							<ul class="nav nav-second-level collapse">
@@ -129,8 +129,9 @@
 								<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/pg_ident">User Name Maps</a></li>
 							</ul>
 						</li>
-						{% end %}
-						{% end %} 
+								{% end %}
+						<li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"><i class="glyphicon glyphicon-envelope"></i> Notifications</a></li>
+							{% end %}
 						{% except %}
 						{% end %} 
 						<li><a href="/logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>

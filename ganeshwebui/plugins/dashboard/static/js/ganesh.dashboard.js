@@ -9,7 +9,7 @@ var loadaverageoptions = {
 	pointDot: false,
 	showTooltips: false,
 	scaleShowVerticalLines: false,
-    scaleIntegersOnly: true,
+	scaleIntegersOnly: true,
 	scaleStartValue: 0,
 	scaleOverride: true,
 	scaleSteps: 4,
@@ -27,7 +27,7 @@ var buffersoptions = {
 	pointDot: false,
 	showTooltips: false,
 	scaleShowVerticalLines: false,
-    scaleIntegersOnly: true,
+	scaleIntegersOnly: true,
 	scaleStartValue: 0,
 	scaleOverride: true,
 	scaleSteps: 4,
@@ -45,7 +45,7 @@ var backendsoptions = {
 	pointDot: false,
 	showTooltips: false,
 	scaleShowVerticalLines: false,
-    scaleIntegersOnly: true,
+	scaleIntegersOnly: true,
 	scaleStartValue: 0,
 	scaleOverride: true,
 	scaleSteps: 4,
@@ -63,7 +63,7 @@ var tpsoptions = {
 	pointDot: false,
 	showTooltips: false,
 	scaleShowVerticalLines: false,
-    scaleIntegersOnly: true,
+	scaleIntegersOnly: true,
 	scaleStartValue: 0,
 	scaleOverride: true,
 	scaleSteps: 4,
@@ -72,71 +72,71 @@ var tpsoptions = {
 var loadaveragedata = {
 	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
 	datasets : [
-        			{
-            			label: "Loadaverage",
-            			fillColor: "rgba(101,152,184,0.2)",
-            			strokeColor: "rgba(101,152,184,1)",
-            			pointColor: "rgba(101,152,184,1)",
-            			pointStrokeColor: "#fff",
-            			pointHighlightFill: "#fff",
-            			pointHighlightStroke: "rgba(101,152,184,1)",
-            			data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-        			}
+			{
+				label: "Loadaverage",
+				fillColor: "rgba(101,152,184,0.2)",
+				strokeColor: "rgba(101,152,184,1)",
+				pointColor: "rgba(101,152,184,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(101,152,184,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
 	]
 };
 var buffersdata = {
 	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
 	datasets : [
-        			{
-            			label: "Buffers",
-            			fillColor: "rgba(101,152,184,0.2)",
-            			strokeColor: "rgba(101,152,184,1)",
-            			pointColor: "rgba(101,152,184,1)",
-            			pointStrokeColor: "#fff",
-            			pointHighlightFill: "#fff",
-            			pointHighlightStroke: "rgba(101,152,184,1)",
-            			data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-        			}
+			{
+				label: "Buffers",
+				fillColor: "rgba(101,152,184,0.2)",
+				strokeColor: "rgba(101,152,184,1)",
+				pointColor: "rgba(101,152,184,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(101,152,184,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
 	]
 };
 var backendsdata = {
 	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
 	datasets : [
-        			{
-            			label: "Active Backends",
-            			fillColor: "rgba(101,152,184,0.2)",
-            			strokeColor: "rgba(101,152,184,1)",
-            			pointColor: "rgba(101,152,184,1)",
-            			pointStrokeColor: "#fff",
-            			pointHighlightFill: "#fff",
-            			pointHighlightStroke: "rgba(101,152,184,1)",
-            			data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-        			}
+			{
+				label: "Active Backends",
+				fillColor: "rgba(101,152,184,0.2)",
+				strokeColor: "rgba(101,152,184,1)",
+				pointColor: "rgba(101,152,184,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(101,152,184,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
 	]
 };
 var tpsdata = {
 	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
 	datasets : [
-        			{
-            			label: "Commit",
-            			fillColor: "rgba(0,188,18,0.2)",
-            			strokeColor: "rgba(0,188,18,1)",
-            			pointColor: "rgba(0,188,18,1)",
-            			pointStrokeColor: "#fff",
-            			pointHighlightFill: "#fff",
-            			pointHighlightStroke: "rgba(0,188,18,1)",
-            			data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-        			},
-        			{
-            			label: "Rollback",
-            			fillColor: "rgba(188,0,0,0.2)",
-            			strokeColor: "rgba(188,0,0,1)",
-            			pointColor: "rgba(188,0,0,1)",
-            			pointStrokeColor: "#fff",
-            			pointHighlightFill: "#fff",
-            			pointHighlightStroke: "rgba(188,0,0,1)",
-            			data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-        			}
+			{
+				label: "Commit",
+				fillColor: "rgba(0,188,18,0.2)",
+				strokeColor: "rgba(0,188,18,1)",
+				pointColor: "rgba(0,188,18,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(0,188,18,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			},
+			{
+				label: "Rollback",
+				fillColor: "rgba(188,0,0,0.2)",
+				strokeColor: "rgba(188,0,0,1)",
+				pointColor: "rgba(188,0,0,1)",
+				pointStrokeColor: "#fff",
+				pointHighlightFill: "#fff",
+				pointHighlightStroke: "rgba(188,0,0,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
 	]
 };
 
@@ -195,7 +195,7 @@ function html_error_modal(code, error)
 }
 
 /*
- * Call agent's dashboard API and update the view through
+ * Call the agent's dashboard API and update the view through
  * update_dashboard() callback.
  */
 function refresh_dashboard(agent_address, agent_port, xsession)
@@ -216,6 +216,7 @@ function refresh_dashboard(agent_address, agent_port, xsession)
 				update_loadaverage(data, true);
 				update_buffers(data, true);
 				update_backends(data, true);
+				update_notifications(data.notifications);
 			}
 		},
 		error: function(xhr) {
@@ -475,6 +476,17 @@ window.onload = function(){
 	var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
 	window.hitratiochart = new Chart(hitratiocontext).Doughnut(hitratiodata, options);
 };
+
+function update_notifications(data)
+{
+	var notif_html = '<ul class="notifications">';
+	for (var i in data)
+	{
+		notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="label label-success">'+data[i].username+'</span> '+data[i].message+'</li>';
+	}
+	notif_html += '</ul>';
+	$('#divNotif10').html(notif_html);
+}
 
 var entityMap = {
 	"&": "&amp;",

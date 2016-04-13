@@ -58,7 +58,7 @@ class DashboardHandler(BaseHandler):
                 last_data = dashboard_history[-1]
                 history = json.dumps(dashboard_history)
             else:
-                # If dashboard history is empty, let's try to get data from the fresh data source.
+                # If dashboard history is empty, let's try to get data from the live data source.
                 last_data = ganeshd_dashboard_live(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
                 history = ''
             return HTMLAsyncResult(

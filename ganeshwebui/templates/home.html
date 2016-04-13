@@ -29,6 +29,7 @@
 							<th class="no-sort"></th>
 							<th class="no-sort"></th>
 							<th class="no-sort"></th>
+							<th class="no-sort"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -52,6 +53,9 @@
 							</td>
 							<td class="text-center">
 								{% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
+							</td>
+							<td class="text-center">
+								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Notifications" data-action="notifications" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="glyphicon glyphicon-envelope"></i></button>
 							</td>
 						</tr>
 					{% end %}
@@ -93,6 +97,11 @@ $(document).ready(function() {
 	$('[data-action=settings]').click(function () {
 		$('[data-toggle=popover]').popover('hide');
 		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/settings/configuration');
+	});
+
+	$('[data-action=notifications]').click(function () {
+		$('[data-toggle=popover]').popover('hide');
+		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/notifications');
 	});
 
 });

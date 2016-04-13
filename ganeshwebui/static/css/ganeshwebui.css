@@ -482,3 +482,31 @@ td {
 #HBATable .connection,.database,.user {
 	color: #337AB7;
 }
+
+#divNotif10 {
+	margin-top: 2px;
+	width: 325px;
+	height: 168px;
+	overflow-y: scroll;
+}
+
+ul.notifications {
+	font-size: 11px;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+ul.notifications li {
+	width: 100%;
+	line-height: 1.8em;
+	color: #333;
+}
+
+ul.notifications > li > span.date-notification-db {
+	color: #337AB7;
+}
+
+td.date {
+	color: #337AB7;
+}
