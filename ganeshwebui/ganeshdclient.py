@@ -278,6 +278,38 @@ def ganeshd_activity(in_ca_cert_file, hostname, port, xsession):
     except Exception as e:
         raise GaneshdError(500, str(e))
 
+def ganeshd_activity_waiting(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/activity/waiting' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
+def ganeshd_activity_blocking(in_ca_cert_file, hostname, port, xsession):
+    try:
+        res = ganeshd_request(
+                in_ca_cert_file,
+                method = 'GET',
+                url = 'https://%s:%s/activity/blocking' % (hostname, port),
+                headers = {
+                    "Content-type": "application/json",
+                    "X-Session": xsession
+                })
+        return json.loads(res)
+    except urllib2.HTTPError as e:
+        raise GaneshdError(e.code, json.loads(e.read())['error'])
+    except Exception as e:
+        raise GaneshdError(500, str(e))
+
 def ganeshd_activity_kill(in_ca_cert_file, hostname, port, xsession, pids):
     try:
         res = ganeshd_request(

@@ -20,20 +20,30 @@ function html_error_modal(code, error)
 	return error_html;
 }
 /*
- * Call agent's activity API and update the query list on success through
+ * Call activity API and update the query list on success through
  * update_activity() callback.
  */
-function refresh_activity(agent_address, agent_port, xsession)
+function refresh_activity(agent_address, agent_port, xsession, mode)
 {
+	var url_end = '';
+	if (mode == 'waiting' || mode == 'blocking')
+		url_end = '/'+mode;
 	$.ajax({
-		url: '/proxy/'+agent_address+'/'+agent_port+'/activity',
+		url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
 		type: 'GET',
 		beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
 		async: true,
 		contentType: "application/json",
 		success: function (data) {
 			$('#ErrorModal').modal('hide');
-			update_activity(data['rows']);
+			switch (mode) {
+				case "waiting":
+				case "blocking":
+					update_activity_w_b(data['rows']);
+					break;
+				default:
+					update_activity(data['rows']);
+			}
 		},
 		error: function(xhr) {
 			if (xhr.status == 401)
@@ -117,7 +127,70 @@ function update_activity(data)
 		activity_html += '	<td><span class="label '+class_wait+'">'+data[i].wait+'</span></td>';
 		activity_html += '	<td class="text-center"><span class="label '+class_state+'">'+data[i].state+'</span></td>';
 		activity_html += '	<td class="text-right">'+data[i].duration+'</td>';
-		activity_html += '	<td class="query">'+data[i].query+'</td>';
+		activity_html += '	<td class="query">'+escapeHtml(data[i].query)+'</td>';
+		activity_html += '</tr>';
+		$("#tableActivity").append(activity_html);
+	}
+}
+
+function update_activity_w_b(data)
+{
+	if (!poll_activity)
+	{
+		return;
+	}
+	$("#tableActivity").html('<tr><th class="xs"></th><th class="sm">PID</th><th class="med">Database</th><th class="med">User</th><th class="sm">%CPU</th><th class="sm">%mem</th><th class="med">Read/s</th><th class="med">Write/s</th><th class="xs">IOW</th><th class="med">Lock Rel.</th><th class="med">Lock Mode</th><th class="med">Lock Type</th><th class="lg">State</th><th class="med">Duration (s)</th><th class="query">Query</th></tr>');
+	for (var i = 0; i < data.length; ++i)
+	{
+		var class_iow = 'label-success';
+		var class_wait = 'label-success';
+		var class_state = '';
+		if (data[i].iow == 'Y')
+		{
+			class_iow = 'label-danger';
+		}
+		if (data[i].wait == 'Y')
+		{
+			class_wait = 'label-danger';
+		}
+		switch(data[i]['state'])
+		{
+			case 'active':
+				class_state = 'label-success';
+				break;
+			case 'idle in transaction':
+			case 'idle in transaction (aborted)':
+				class_state = 'label-danger';
+				break;
+			default:
+				class_state = 'label-default';
+		}
+		var class_duration = 'none';
+		if (data[i].duration > 1)
+		{
+			var class_duration = 'warning';
+		}
+		if (data[i].duration > 5)
+		{
+			var class_duration = 'danger';
+		}
+		var activity_html = '';
+		activity_html += '<tr class="'+class_duration+'">';
+		activity_html += '	<td><input type="checkbox" class="input-xs" data-pid="'+data[i].pid+'" readonly disabled /></td>';
+		activity_html += '	<td>'+data[i].pid+'</td>';
+		activity_html += '	<td class="text-center">'+data[i].database+'</td>';
+		activity_html += '	<td class="text-center">'+data[i].user+'</td>';
+		activity_html += '	<td class="text-right">'+data[i].cpu+'</td>';
+		activity_html += '	<td class="text-right">'+data[i].memory+'</td>';
+		activity_html += '	<td class="text-right">'+data[i].read_s+'</td>';
+		activity_html += '	<td class="text-right">'+data[i].write_s+'</td>';
+		activity_html += '	<td><span class="label '+class_iow+'">'+data[i].iow+'</span></td>';
+		activity_html += '	<td>'+data[i].relation+'</td>';
+		activity_html += '	<td>'+data[i].mode+'</td>';
+		activity_html += '	<td>'+data[i].type+'</td>';
+		activity_html += '	<td class="text-center"><span class="label '+class_state+'">'+data[i].state+'</span></td>';
+		activity_html += '	<td class="text-right">'+data[i].duration+'</td>';
+		activity_html += '	<td class="query">'+escapeHtml(data[i].query)+'</td>';
 		activity_html += '</tr>';
 		$("#tableActivity").append(activity_html);
 	}

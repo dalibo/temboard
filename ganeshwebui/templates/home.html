@@ -86,7 +86,7 @@ $(document).ready(function() {
 
 	$('[data-action=activity]').click(function () {
 		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity');
+		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity/running');
 	});
 	
 	$('[data-action=supervision]').click(function () {
