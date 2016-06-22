@@ -1,4 +1,4 @@
-# Ganesh UI installation from sources
+# Temboard UI installation from sources
 
 ## Dependencies
 
@@ -18,10 +18,10 @@ sudo pip install psycopg2
 sudo pip install sqlalchemy
 ```
 
-Proceed with the UI installation:
+Proceed with the installation of the UI:
 
 ```
-$ cd ganesh-web-client/
+$ cd temboard-ui/
 $ sudo python setup.py install
 ```
 
@@ -29,36 +29,36 @@ $ sudo python setup.py install
 
 Creation of directories for the configuration file and SSL files:
 ```
-$ sudo mkdir /etc/ganesh
-$ sudo mkdir /etc/ganesh/ssl
+$ sudo mkdir /etc/temboard-ui
+$ sudo mkdir /etc/temboard-ui/ssl
 ```
 
 Logging directory:
 ```
-$ sudo mkdir /var/log/ganesh
+$ sudo mkdir /var/log/temboard-ui
 ```
 
 Copy the sample configuration file:
 ```
-$ sudo cp /usr/share/ganesh/ganesh.conf.sample /etc/ganesh/ganesh.conf
+$ sudo cp /usr/share/temboard-ui/temboard-ui.conf.sample /etc/temboard-ui/temboard-ui.conf
 ```
 
 Copy dummies self-signed SSL key and cacerts files:
 ```
-$ sudo cp /usr/share/ganesh/ganesh_* /etc/ganesh/ssl/.
+$ sudo cp /usr/share/temboard-ui/temboard-ui_* /etc/temboard-ui/ssl/.
 ```
 
 ## Users
 
 ```
-sudo useradd -M -r ganesh
+sudo useradd -M -r temboard
 ```
 
 ```
-sudo chown -R ganesh.ganesh /etc/ganesh/
-sudo chown -R ganesh.ganesh /var/log/ganesh/
-sudo chmod 600 /etc/ganesh/ssl/*
-sudo chmod 600 /etc/ganesh/ganesh.conf
+sudo chown -R temboard.temboard /etc/temboard-ui/
+sudo chown -R temboard.temboard /var/log/temboard-ui/
+sudo chmod 600 /etc//ssl/*
+sudo chmod 600 /etc/temboard-ui/temboard-ui.conf
 ```
 
 ## Repository
@@ -72,9 +72,9 @@ Repository is a PostgreSQL (>=9.5) database. It requires `tablefunc` extension.
 ### Setup
 
 ```
-sudo -u postgres createuser ganesh -l -P
-sudo -u postgres createdb -O ganesh ganesh
-psql -U ganesh -1 -v'ON_ERROR_STOP=on' -f /usr/share/ganesh/application.sql ganesh
-sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" ganesh
-psql -U ganesh -1 -v'ON_ERROR_STOP=on' -f /usr/share/ganesh/supervision.sql ganesh
+sudo -u postgres createuser temboard -l -P
+sudo -u postgres createdb -O temboard temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard-ui/application.sql temboard
+sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard-ui/supervision.sql temboard
 ```

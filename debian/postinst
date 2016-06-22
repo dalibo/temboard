@@ -1,11 +1,11 @@
-PGUSER='ganesh'
-PGGROUP='ganesh'
-CONFIGDIR='/etc/ganesh'
+PGUSER='temboard'
+PGGROUP='temboard'
+CONFIGDIR='/etc/temboard-ui'
 CONFIGDIRSSL=$CONFIGDIR'/ssl'
-CONFIGFILE=$CONFIGDIR'/ganesh.conf'
-RUNDIR='/var/run/ganesh'
-LOGDIR='/var/log/ganesh'
-LOGFILE='/var/log/ganesh/ganesh.log'
+CONFIGFILE=$CONFIGDIR'/temboard-ui.conf'
+RUNDIR='/var/run/temboard-ui'
+LOGDIR='/var/log/temboard-ui'
+LOGFILE='/var/log/temboard-ui/temboard-ui.log'
 
 [ $(/usr/bin/getent group $PGGROUP) ] || /usr/sbin/groupadd $PGGROUP
 if ! /usr/bin/id -u $PGUSER > /dev/null 2>&1; then
@@ -25,19 +25,19 @@ if ! [ -d $RUNDIR ]; then
 fi
 
 if ! [ -f $CONFIGFILE ]; then
-	/usr/bin/install -m 0600 /usr/share/ganesh/ganesh.conf.sample $CONFIGFILE
+	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui.conf.sample $CONFIGFILE
 fi
 
-if ! [ -f $CONFIGDIRSSL/ganesh_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/ganesh/ganesh_CHANGEME.pem $CONFIGDIRSSL/ganesh_CHANGEME.pem
+if ! [ -f $CONFIGDIRSSL/temboard-ui_CHANGEME.pem ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_CHANGEME.pem $CONFIGDIRSSL/temboard-ui_CHANGEME.pem
 fi
 
-if ! [ -f $CONFIGDIRSSL/ganesh_CHANGEME.key ]; then
-	/usr/bin/install -m 0600 /usr/share/ganesh/ganesh_CHANGEME.key $CONFIGDIRSSL/ganesh_CHANGEME.key
+if ! [ -f $CONFIGDIRSSL/temboard-ui_CHANGEME.key ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_CHANGEME.key $CONFIGDIRSSL/temboard-ui_CHANGEME.key
 fi
 
-if ! [ -f $CONFIGDIRSSL/ganesh_ca_certs_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/ganesh/ganesh_ca_certs_CHANGEME.pem $CONFIGDIRSSL/ganesh_ca_certs_CHANGEME.pem
+if ! [ -f $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_ca_certs_CHANGEME.pem $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem
 fi
 
 if ! [ -d $LOGDIR ]; then
@@ -48,9 +48,9 @@ if ! [ -f $LOGFILE ]; then
         /usr/bin/touch $LOGFILE
 fi
 
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_ca_certs_CHANGEME.pem
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_CHANGEME.key
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/ganesh_CHANGEME.pem
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_CHANGEME.key
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_CHANGEME.pem
 /bin/chown $PGUSER.$PGGROUP $CONFIGFILE
 /bin/chown -R $PGUSER.$PGGROUP $LOGDIR
 /bin/chown -R $PGUSER.$PGGROUP $RUNDIR

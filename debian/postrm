@@ -1,6 +1,6 @@
-CONFIGDIR='/etc/ganesh'
-LOGDIR='/var/log/ganesh'
-RUNDIR='/var/run/ganesh'
+CONFIGDIR='/etc/temboard-ui'
+LOGDIR='/var/log/temboard-ui'
+RUNDIR='/var/run/temboard-ui'
 
 /bin/rm -rf $CONFIGDIR
 /bin/rm -rf $LOGDIR
