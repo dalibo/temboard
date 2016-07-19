@@ -1,0 +1,17 @@
+--- temboard-agent-0.0.1/share/temboard-agent.conf.sample.orig	2016-07-07 14:55:30.523994834 +0200
++++ temboard-agent-0.0.1/share/temboard-agent.conf.sample	2016-07-07 14:56:18.536981631 +0200
+@@ -17,7 +17,7 @@
+ 
+ [postgresql]
+ # Unix socket path.
+-host = /var/run/postgresql
++host = /tmp
+ # PG port number.
+ port = 5432
+ # Super-user name.
+@@ -68,4 +68,4 @@
+ 
+ [administration]
+ # External command used for start/stop PostgreSQL.
+-pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %s 9.4'
++pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql-9.4 %s'
