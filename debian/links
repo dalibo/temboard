@@ -1,0 +1,3 @@
+/usr/share/temboard-agent/temboard-agent /usr/bin/temboard-agent
+/usr/share/temboard-agent/temboard-agent-password /usr/bin/temboard-agent-password
+/usr/share/temboard-agent/temboard-agent-adduser /usr/bin/temboard-agent-adduser

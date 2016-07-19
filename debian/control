@@ -1,0 +1,11 @@
+Source: temboard-agent
+Maintainer: Julien Tachoires <julien.tachoires@dalibo.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python (>= 2.6.6), debhelper (>= 9)
+Standards-Version: 3.9.1
+
+Package: temboard-agent
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Temboard agent.
