@@ -4,7 +4,7 @@ import imp
 import time
 from temboardagent.logger import get_logger
 from temboardagent.spc import connector, error
-from temboard.errors import HTTPError
+from temboardagent.errors import HTTPError
 
 def load_plugins_configurations(config):
     """
@@ -45,7 +45,8 @@ def load_plugins_configurations(config):
 
         # If we reach this point, PostgreSQL is not available, so we
         # wait 5 seconds and try again
-        time.sleep(5)
+        if pg_version == 0:
+            time.sleep(5)
 
     # Loop through each plugin listed in the configuration file.
     for plugin_name in config.temboard['plugins']:
