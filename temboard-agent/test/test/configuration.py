@@ -1,9 +1,9 @@
 WORK_PATH = '/tmp'
 
-# Debian / 9.4
-# PG_BIN = '/usr/lib/postgresql/9.4/bin'
+# Debian / 9.5
+PG_BIN = '/usr/lib/postgresql/9.5/bin'
 # Gentoo / 9.5
-PG_BIN = '/usr/lib64/postgresql-9.5/bin'
+# PG_BIN = '/usr/lib64/postgresql-9.5/bin'
 PG_PORT=5445
 PG_CONFIG = '/usr/bin/pg_config'
 PG_USER = 'temboard'
@@ -53,7 +53,7 @@ collector_url = http://localhost:8888/collector/
 ssl_ca_cert_file = %s
 
 [administration]
-pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.4'
+pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
 """
 
 SSL_CERT = """-----BEGIN CERTIFICATE-----
