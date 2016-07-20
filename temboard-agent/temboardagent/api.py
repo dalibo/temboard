@@ -90,7 +90,7 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
         [('username', T_USERNAME, False),
         ('password', T_PASSWORD, False)])
     logger.info("[login] Authenticating user: %s" % (post['username']))
-    auth_user(config.temboard-agent['users'], post['username'],
+    auth_user(config.temboard['users'], post['username'],
                 post['password'])
     try:
         session = sessions.get_by_username(post['username'])
@@ -232,7 +232,7 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
             'pg_port': discover.get_pg_port(conn),
             'pg_version': discover.get_pg_version(conn),
             'pg_data': discover.get_pg_data(conn),
-            'plugins': [plugin_name for plugin_name in config.temboard-agent['plugins']]
+            'plugins': [plugin_name for plugin_name in config.temboard['plugins']]
         }
         conn.close()
         return ret
