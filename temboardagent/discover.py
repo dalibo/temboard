@@ -1,6 +1,6 @@
 import re
 import socket
-from ganesh.command import exec_command
+from temboardagent.command import exec_command
 
 def get_pg_version(conn):
     query = "SELECT version() AS version"

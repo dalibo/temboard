@@ -14,7 +14,7 @@ setup(
                 'temboardagent.plugins.dashboard',
                 'temboardagent.plugins.administration',
                 'temboardagent.plugins.settings',
-                'temboard.plugins.activity'],
+                'temboardagent.plugins.activity'],
     scripts = [
                 'temboard-agent',
                 'temboard-agent-password',
