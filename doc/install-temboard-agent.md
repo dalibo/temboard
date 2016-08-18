@@ -111,9 +111,9 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `host`: Path to PostgreSQL unix socket. Default: `/var/run/postgresql`;
   - `port`: PostgreSQL port number. Default: `5432`;
   - `user`: PostgreSQL user, Must be a super-user. Default: `postgres`;
-  - `password`: User password. Default: ` ` (None);
-  - `dbname`: Database name for the connection;
-  - `instance`: Instance name.
+  - `password`: User password. Default: `None`;
+  - `dbname`: Database name for the connection. Default: `postgres`;
+  - `instance`: Instance name. Default: `main`.
 
 ### `[logging]`
   - `method`: Method used to send the logs: `syslog` or `file`. Default: `syslog`;
