@@ -1,4 +1,4 @@
-# Temboard agent installation and configuration
+# Temboard agent installation from sources and configuration
 
 ## Dependencies
 
@@ -12,11 +12,11 @@ To install Python `setuptools` with `pip`:
 $ sudo pip install setuptools
 ```
 
-Proceed with the installation og the agent:
-``
+Proceed with the installation of the agent:
+```
 $ cd temboard/temboard-agent/
 $ sudo python setup.py install
-``
+```
 
 
 ## Prepare directories and files
@@ -79,6 +79,8 @@ The plugin `supervision` sends periodically collected data to the collector (an 
 ```
 $ sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 ```
+
+`ssl_ca_cert_file` parameter in section `[supervision]` from the configuration file needs to be set to `/etc/temboard-agent/ssl/ca_certs_localhost.pem`.
 
 ### Restrictions on SSL files
 ```
