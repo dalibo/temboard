@@ -1,2 +1,2 @@
-/usr/share/temboard-ui/temboard-ui /usr/bin/temboard-ui
-/usr/share/temboard-ui/metric-aggregator /usr/bin/temboard-ui-metric-aggregator
+/usr/share/temboard/temboard /usr/bin/temboard
+/usr/share/temboard/metric-aggregator /usr/bin/temboard-metric-aggregator

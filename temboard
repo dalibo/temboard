@@ -78,7 +78,7 @@ def main():
     # Load configuration from the configuration file.
     try:
         config =  Configuration(options.configfile)
-        set_logger_name("temboard-ui")
+        set_logger_name("temboard")
         logger = get_logger(config)
         logger.info("Starting main process.")
     except (ConfigurationError, ImportError) as e:
@@ -88,7 +88,7 @@ def main():
             pass
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
-    # Run temboard-ui as a background daemon.
+    # Run temboard as a background daemon.
     if (options.daemon):
         daemonize(options.pidfile)
     # Dirty way for getting static/ and templates/ absolute paths.

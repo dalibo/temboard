@@ -25,7 +25,7 @@ def remove_pidfile(pidfile):
 
 def daemonize(pidfile):
     """
-    Run temboard-ui as a background daemon.
+    Run temboard as a background daemon.
     Inspired by:
     http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
     """
@@ -36,7 +36,7 @@ def daemonize(pidfile):
     except IOError:
         pid = None
 
-    # If pidfile exists, yet another temboard-ui is probably running.
+    # If pidfile exists, yet another temboard is probably running.
     if pid:
         sys.stderr.write("FATAL: pidfile %s already exist.\n" % pidfile)
         sys.exit(1)

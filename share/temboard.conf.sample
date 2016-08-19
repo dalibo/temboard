@@ -4,12 +4,12 @@ port = 8888
 # Bind address
 address = 0.0.0.0
 # SSL: certificat file path (.pem)
-ssl_cert_file = /etc/temboard-ui/ssl/temboard-ui_CHANGEME.pem
+ssl_cert_file = /etc/temboard/ssl/temboard_CHANGEME.pem
 # SSL: private key file path (.key)
-ssl_key_file = /etc/temboard-ui/ssl/temboard-ui_CHANGEME.key
+ssl_key_file = /etc/temboard/ssl/temboard_CHANGEME.key
 # SSL: CA cert file
 # This file must contains SSL cert of each agent that the UI can establish a connexion to.
-ssl_ca_cert_file = /etc/temboard-ui/ssl/temboard-ui_ca_certs_CHANGEME.pem
+ssl_ca_cert_file = /etc/temboard/ssl/temboard_ca_certs_CHANGEME.pem
 # Cookie secret key
 cookie_secret = SECRETKEYTOBECHANGED
 # Plugins
@@ -36,6 +36,6 @@ method = file
 # facility = local0
 # Log destination, should be /dev/log for syslog on Linux.
 # When using file logging method, this is referencing the log file path.
-destination = /var/log/temboard-ui/temboard-ui.log
+destination = /var/log/temboard/temboard.log
 # Default log level.
 # level = INFO

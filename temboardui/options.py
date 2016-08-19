@@ -7,15 +7,15 @@ class CLIOptions(OptionParser):
     def __init__(self, *args, **kwargs):
         OptionParser.__init__(self, *args, **kwargs)
         self.add_option("-c", "--config", dest="configfile",
-            help="Configuration file.", default="/etc/temboard-ui/temboard-ui.conf")
+            help="Configuration file.", default="/etc/temboard/temboard.conf")
 
 class temboarduiOptions(CLIOptions):
     """
-    temboard-ui options parser.
+    temboard options parser.
     """
     def __init__(self, *args, **kwargs):
         CLIOptions.__init__(self, *args, **kwargs)
         self.add_option("-d", "--daemon", dest="daemon", action="store_true",
             help="Run in background.", default=False)
         self.add_option("-p", "--pid-file", dest="pidfile",
-            help="PID file.", default="/run/temboard-ui.pid")
+            help="PID file.", default="/run/temboard.pid")

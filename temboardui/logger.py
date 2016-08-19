@@ -44,10 +44,10 @@ class Log(Logger):
     def __init__(self, config, name, *args, **kwargs):
         Logger.__init__(self, name, *args, **kwargs)
 
-        log_format = "temboard-ui[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
+        log_format = "temboard[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
         if config.logging['level'] == 'DEBUG':
             # Add extra informations when we are in DEBUG mode.
-            log_format = "temboard-ui[%(process)d]: [%(name)s] [%(funcName)s@"
+            log_format = "temboard[%(process)d]: [%(name)s] [%(funcName)s@"
             log_format += "%(pathname)s#L%(lineno)d] %(levelname)s: %(message)s"
 
         if config.logging['method'] == 'syslog':
@@ -73,7 +73,7 @@ class Log(Logger):
         lh.setFormatter(Formatter(log_format))
         self.addHandler(lh)
 
-LOGGER_NAME = 'temboard-ui'
+LOGGER_NAME = 'temboard'
 
 def set_logger_name(name):
     global LOGGER_NAME

@@ -1,11 +1,11 @@
 PGUSER='temboard'
 PGGROUP='temboard'
-CONFIGDIR='/etc/temboard-ui'
+CONFIGDIR='/etc/temboard'
 CONFIGDIRSSL=$CONFIGDIR'/ssl'
-CONFIGFILE=$CONFIGDIR'/temboard-ui.conf'
-RUNDIR='/var/run/temboard-ui'
-LOGDIR='/var/log/temboard-ui'
-LOGFILE='/var/log/temboard-ui/temboard-ui.log'
+CONFIGFILE=$CONFIGDIR'/temboard.conf'
+RUNDIR='/var/run/temboard'
+LOGDIR='/var/log/temboard'
+LOGFILE='/var/log/temboard/temboard.log'
 
 [ $(/usr/bin/getent group $PGGROUP) ] || /usr/sbin/groupadd $PGGROUP
 if ! /usr/bin/id -u $PGUSER > /dev/null 2>&1; then
@@ -25,19 +25,19 @@ if ! [ -d $RUNDIR ]; then
 fi
 
 if ! [ -f $CONFIGFILE ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui.conf.sample $CONFIGFILE
+	/usr/bin/install -m 0600 /usr/share/temboard/temboard.conf.sample $CONFIGFILE
 fi
 
-if ! [ -f $CONFIGDIRSSL/temboard-ui_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_CHANGEME.pem $CONFIGDIRSSL/temboard-ui_CHANGEME.pem
+if ! [ -f $CONFIGDIRSSL/temboard_CHANGEME.pem ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard/temboard_CHANGEME.pem $CONFIGDIRSSL/temboard_CHANGEME.pem
 fi
 
-if ! [ -f $CONFIGDIRSSL/temboard-ui_CHANGEME.key ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_CHANGEME.key $CONFIGDIRSSL/temboard-ui_CHANGEME.key
+if ! [ -f $CONFIGDIRSSL/temboard_CHANGEME.key ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard/temboard_CHANGEME.key $CONFIGDIRSSL/temboard_CHANGEME.key
 fi
 
-if ! [ -f $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard-ui/temboard-ui_ca_certs_CHANGEME.pem $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem
+if ! [ -f $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem ]; then
+	/usr/bin/install -m 0600 /usr/share/temboard/temboard_ca_certs_CHANGEME.pem $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem
 fi
 
 if ! [ -d $LOGDIR ]; then
@@ -48,9 +48,9 @@ if ! [ -f $LOGFILE ]; then
         /usr/bin/touch $LOGFILE
 fi
 
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_ca_certs_CHANGEME.pem
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_CHANGEME.key
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard-ui_CHANGEME.pem
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_CHANGEME.key
+/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_CHANGEME.pem
 /bin/chown $PGUSER.$PGGROUP $CONFIGFILE
 /bin/chown -R $PGUSER.$PGGROUP $LOGDIR
 /bin/chown -R $PGUSER.$PGGROUP $RUNDIR

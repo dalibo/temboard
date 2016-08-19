@@ -1,6 +1,6 @@
-CONFIGDIR='/etc/temboard-ui'
-LOGDIR='/var/log/temboard-ui'
-RUNDIR='/var/run/temboard-ui'
+CONFIGDIR='/etc/temboard'
+LOGDIR='/var/log/temboard'
+RUNDIR='/var/run/temboard'
 
 /bin/rm -rf $CONFIGDIR
 /bin/rm -rf $LOGDIR
