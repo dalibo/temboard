@@ -18,14 +18,14 @@ class Configuration(configparser.ConfigParser):
         self.configfile = configfile
         # Default configuration values
         self.temboard = {
-            'port': 443,
+            'port': 8888,
             'address': '0.0.0.0',
             'ssl_cert_file': None,
             'ssl_key_file': None,
             'ssl_ca_cert_file': None,
             'cookie_secret': None,
-            'plugins': [],
-            'plugins_orm_engine': []
+            'plugins': ["dashboard", "settings", "activity", "supervision"],
+            'plugins_orm_engine': ["supervision"]
         }
         self.logging = {
             'method': 'syslog',
@@ -34,7 +34,7 @@ class Configuration(configparser.ConfigParser):
             'level': 'INFO'
         }
         self.repository = {
-            'host': '/var/run/postgresql',
+            'host': 'localhost',
             'user': 'temboard',
             'port': 5432,
             'password': 'temboard',

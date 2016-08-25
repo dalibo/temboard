@@ -25,7 +25,7 @@ port = 5432
 # User name.
 user = temboard
 # User password.
-password = temboard
+# password = 
 # Database name.
 dbname = temboard
 
