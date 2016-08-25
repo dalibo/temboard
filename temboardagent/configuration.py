@@ -23,7 +23,7 @@ class Configuration(configparser.ConfigParser):
             'users': '/etc/temboard-agent/users',
             'ssl_cert_file': None,
             'ssl_key_file': None,
-            'plugins': [],
+            'plugins': ["supervision", "dashboard", "settings", "administration", "activity"],
             'home': '/var/lib/temboard-agent'
         }
         self.logging = {
