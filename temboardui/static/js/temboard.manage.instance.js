@@ -58,7 +58,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			body_html += '			</select>';
 			body_html += '		</div>';
 			body_html += '		<div class="form-group col-sm-6">';
-			body_html += '			<label for="selectPlugins" class="control-label">Activated plugins</label><br />';
+			body_html += '			<label for="selectPlugins" class="control-label">Active plugins</label><br />';
 			body_html += '			<select id="selectPlugins" multiple="multiple">';
 			var selected = '';
 			for (var plugin_name of data['loaded_plugins'])
@@ -324,7 +324,7 @@ function load_add_instance_form(modal_id)
 			body_html += '			</select>';
 			body_html += '		</div>';
 			body_html += '		<div class="form-group col-sm-6">';
-			body_html += '			<label for="selectPlugins" class="control-label">Activated plugins</label><br />';
+			body_html += '			<label for="selectPlugins" class="control-label">Active plugins</label><br />';
 			body_html += '			<select id="selectPlugins" multiple="multiple">';
 			var selected = '';
 			for (var plugin_name of data['loaded_plugins'])
