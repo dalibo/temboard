@@ -40,7 +40,11 @@ case "$1" in
     log_daemon_msg "Starting" $NAME
     test -d $PIDDIR || install -d -o temboard -g temboard -m 2775 $PIDDIR
     $SSD --exec $DAEMON --start --chuid $RUNASUSER --oknodo -- $OPTS 2> /dev/null
-    log_end_msg $?
+    sleep 1
+    $SSD --status
+    R=$?
+    log_end_msg $R
+    exit $R
     ;;
 
   stop)

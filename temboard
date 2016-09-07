@@ -22,7 +22,7 @@ from temboardui.options import temboarduiOptions
 from temboardui.configuration import Configuration
 from temboardui.errors import ConfigurationError, CLIError
 from temboardui.logger import get_logger, set_logger_name
-from temboardui.daemon import daemonize, httpd_sigterm_handler
+from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
 
 class CustomTornadoWebApp(tornado.web.Application):
@@ -52,7 +52,7 @@ class CustomTornadoWebApp(tornado.web.Application):
         log_message = '%d %s %.2fms' % (handler.get_status(), handler._request_summary(), request_time)
         self.logger.info(log_message)
 
-    def create_db_engine(self,):
+    def create_db_engine(self, pidfile):
         dburi = "postgresql://%s:%s@%s:%s/%s" % (
             self.config.repository['user'],
             self.config.repository['password'],
@@ -68,6 +68,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             self.logger.error("\t%s" % e.message)
             self.logger.error("Please check your configuration.")
             sys.stderr.write("FATAL: %s\n" % e.message)
+            remove_pidfile(pidfile)
             exit(1)
         else:
             conn.close()
@@ -145,7 +146,7 @@ def main():
     application.set_config(config)
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
-    application.create_db_engine()
+    application.create_db_engine(options.pidfile)
     plugins_bind_metadata(application.engine, config.temboard['plugins_orm_engine'])
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
