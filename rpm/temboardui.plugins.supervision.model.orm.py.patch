@@ -1,0 +1,17 @@
+--- temboard-ui-0.0.1/temboardui/plugins/supervision/model/orm.py.orig	2016-07-15 21:34:18.031001950 +0200
++++ temboard-ui-0.0.1/temboardui/plugins/supervision/model/orm.py	2016-07-15 21:32:34.014999055 +0200
+@@ -25,11 +25,11 @@
+             are included.
+         """
+         mapper = inspect(cls)
+-        columns_values = {
+-            key: value
++        columns_values = dict([
++            (key, value)
+             for key, value in dict_values.items()
+             if key in mapper.column_attrs
+-        }
++        ])
+         if recurse:
+             for key, relationship_property in mapper.relationships.items():
+                 target_cls = relationship_property.mapper.class_
