@@ -2,6 +2,8 @@ CONFIGDIR='/etc/temboard'
 LOGDIR='/var/log/temboard'
 RUNDIR='/var/run/temboard'
 
-/bin/rm -rf $CONFIGDIR
-/bin/rm -rf $LOGDIR
-/bin/rm -rf $RUNDIR
+if [ "$1" = "purge" ]; then
+	/bin/rm -rf $CONFIGDIR
+	/bin/rm -rf $LOGDIR
+	/bin/rm -rf $RUNDIR
+fi
