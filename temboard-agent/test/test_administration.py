@@ -55,7 +55,7 @@ class TestAdministration:
         )
         conn.connect()
         conn.execute("CREATE TABLE %s (id INTEGER)" % (tablename))
-        conn.execute("INSERT INTO %s SELECT generate_series(1, 100000)" % (tablename))
+        conn.execute("INSERT INTO %s SELECT generate_series(1, 500000)" % (tablename))
         conn.close()
 
     def _get_duration_since_last_vacuum(self, dbname, tablename):
