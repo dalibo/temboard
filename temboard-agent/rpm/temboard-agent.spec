@@ -1,4 +1,6 @@
 %global pkgname temboard-agent
+%{!?pkgversion: %global pkgversion 0.0.1}
+%{!?pkgrevision: %global pkgrevision 1}
 
 %if 0%{?rhel} == 5
 %define __python /usr/bin/python26
@@ -7,8 +9,8 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		%{pkgname}
-Version:        0.0.1
-Release:        1%{?dist}
+Version:        %{pkgversion}
+Release:        %{pkgrevision}%{?dist}
 Summary:	Temboard agent
 
 Group:		Applications/Databases
