@@ -769,7 +769,7 @@ class connector(object):
         if key == 'server_version':
             for num in value.split('.'):
                 snum = ''
-                num = str(num).replace("devel", "").replace("beta", "")
+                num = re.sub(r"devel|beta|rc", "", str(num))
                 if int(num) < 10:
                     snum += '0'
                 snum += str(num)
