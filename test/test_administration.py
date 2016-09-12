@@ -244,8 +244,8 @@ class TestAdministration:
         if d_data['state'] != 0 and d_data['state'] != 1:
             self._drop_dummy_db(dummy_dbname)
             assert False
-        # Sleep for 2 seconds, after that vacuum worker should be done.
-        time.sleep(2)
+        # Sleep for 5 seconds, after that vacuum worker should be done.
+        time.sleep(5)
         # Then let do a 2nd call, command's state must be set to 2 (COMMAND_DONE)
         status = 0
         try:
