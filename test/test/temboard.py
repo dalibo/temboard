@@ -131,58 +131,58 @@ def _mkdir(path):
     return path
 
 def init_env():
-    ext = str(int(time.time() * 1000))
-    pg_data = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/pg/data')
-    pg_sockdir = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/pg/run')
-    g_conf_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.conf'
-    g_pid_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.pid'
-    g_password_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/users'
-    g_log_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/logs')+'/temboard-agent.log'
-    pg_log_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/logs')+'/postgresql.log'
-    g_ssl_key_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.key'
-    g_ssl_cert_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.pem'
-    g_home = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent/home')
+    env = {
+        'pg_data': None,
+        'pg_sockdir': None,
+        'g_conf_file_path': None,
+        'g_pid_file_path': None,
+        'g_password_file_path': None,
+        'g_log_file_path': None,
+        'pg_sockdir': None,
+        'pg_log_file_path': None,
+        'g_ssl_cert_file_path': None,
+        'g_home': None}
+    try:
+        ext = str(int(time.time() * 1000))
+        env['pg_data'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/pg/data')
+        env['pg_sockdir'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/pg/run')
+        env['g_conf_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.conf'
+        env['g_pid_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.pid'
+        env['g_password_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/users'
+        env['g_log_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/logs')+'/temboard-agent.log'
+        env['pg_log_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/logs')+'/postgresql.log'
+        g_ssl_key_file_path = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.key'
+        env['g_ssl_cert_file_path'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent')+'/temboard-agent.pem'
+        env['g_home'] = _mkdir(cf.WORK_PATH+'/tests_temboard/'+ext+'/temboard-agent/home')
 
-    pg_init(cf.PG_BIN, pg_data)
-    pg_start(cf.PG_BIN, cf.PG_PORT, pg_sockdir, pg_data, pg_log_file_path)
-    pg_add_super_user(cf.PG_BIN, cf.PG_USER, pg_sockdir, str(cf.PG_PORT), cf.PG_PASSWORD)
-    g_add_user(g_password_file_path, cf.G_USER, cf.G_PASSWORD, python = sys.executable)
-    g_build_ssl_cert(g_ssl_key_file_path, cf.SSL_KEY, g_ssl_cert_file_path, cf.SSL_CERT)
-    """
-g_port,
-                                g_users,
-                                g_ssl_key_path,
-                                g_ssl_cert_path,
-                                g_home,
-                                pg_host,
-                                pg_port,
-                                pg_user,
-                                pg_password,
-                                g_log_file_path,
-                                g_ssl_ca_cert_path
-    """
-    g_write_conf(cf.G_CONFIG, g_conf_file_path,
+        pg_init(cf.PG_BIN, env['pg_data'])
+        pg_start(cf.PG_BIN, cf.PG_PORT, env['pg_sockdir'], env['pg_data'], env['pg_log_file_path'])
+        pg_add_super_user(cf.PG_BIN, cf.PG_USER, env['pg_sockdir'], str(cf.PG_PORT), cf.PG_PASSWORD)
+        g_add_user(env['g_password_file_path'], cf.G_USER, cf.G_PASSWORD, python = sys.executable)
+        g_build_ssl_cert(g_ssl_key_file_path, cf.SSL_KEY, env['g_ssl_cert_file_path'], cf.SSL_CERT)
+        g_write_conf(cf.G_CONFIG, env['g_conf_file_path'],
                     cf.G_PORT,
-                    g_password_file_path,
-                    g_ssl_key_file_path, g_ssl_cert_file_path, g_home,
-                    pg_sockdir, cf.PG_PORT, cf.PG_USER, cf.PG_PASSWORD,
-                    g_log_file_path, g_ssl_cert_file_path)
-    g_start(g_pid_file_path, g_conf_file_path, python = sys.executable)
-    return {'pg_data': pg_data, 'pg_sockdir': pg_sockdir,
-            'g_conf_file_path': g_conf_file_path,
-            'g_pid_file_path': g_pid_file_path,
-            'g_password_file_path': g_password_file_path,
-            'g_log_file_path': g_log_file_path,
-            'pg_sockdir': pg_sockdir,
-            'pg_log_file_path': pg_log_file_path,
-            'g_ssl_cert_file_path': g_ssl_cert_file_path,
-            'g_home': g_home}
+                    env['g_password_file_path'],
+                    g_ssl_key_file_path, env['g_ssl_cert_file_path'], env['g_home'],
+                    env['pg_sockdir'], cf.PG_PORT, cf.PG_USER, cf.PG_PASSWORD,
+                    env['g_log_file_path'], env['g_ssl_cert_file_path'])
+        g_start(env['g_pid_file_path'], env['g_conf_file_path'], python = sys.executable)
+        return env
+    except Exception as e:
+        drop_env(env)
+        raise Exception(e)
 
 def drop_env(env):
-    g_stop(env['g_pid_file_path'])
-    pg_stop(cf.PG_BIN, cf.PG_PORT, env['pg_sockdir'], env['pg_data'])
-    time.sleep(0.5)
-    pg_drop(env['pg_data'])
+    try:
+        g_stop(env['g_pid_file_path'])
+    except Exception as e:
+        pass
+    try:
+        pg_stop(cf.PG_BIN, cf.PG_PORT, env['pg_sockdir'], env['pg_data'])
+        time.sleep(1)
+        pg_drop(env['pg_data'])
+    except Exception as e:
+        pass
 
 def rand_string(n):
     return ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(n))
