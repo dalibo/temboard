@@ -50,6 +50,8 @@ You must be logged in with a user having administration privileges.
 
 To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ Add new instance group`.
 
+![Add instance group](sc/add-instance-group.png)
+
 ### Instance group attributes
 
   * `Group name`: Groupe name, must be unique;
@@ -59,6 +61,8 @@ To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ A
 ## Create a new instance
 
 Go to `Manage` -> `Instances`, then `+ Add new instance`.
+
+![Add instance](sc/add-instance.png)
 
 ### Instance attributes
 
