@@ -2,13 +2,14 @@
 
 Once `temboard` installed and running, it's time to try a first connection to the web interface with HTTPS on port `8888`: `https://localhost:8888/`
 
-.. image:: sc/login.png
+![Login](sc/login.png)
 
 You'd get a login box, default administration account is `admin`, password `admin`. Obviously, this password must be changed as soon as possible. To edit user's profile, please go to `Manage` -> `User list` -> `Edit` on the corresponding row.
 
+![Edit admin user](sc/edit-user-admin.png)
+
 Currently, when a logged in user changes its password, the error message `Restricted area...` is raised, this behaviour is due to the expiration of user session when the password is changed. Go back to the login page and fill the form with the new password.
 
-.. image:: sc/edit-user-admin.png
 
 # User and user group creation
 
@@ -19,7 +20,7 @@ You must be logged in with a user having administration privileges.
 
 Go to `Manage`-> `User groups`, then `+ Add new user group`. Please fill the form and `Save`.
 
-.. image:: sc/add-user-group.png
+![Add user group](sc/add-user-group.png)
 
 ### User group attributes
 
@@ -29,6 +30,8 @@ Go to `Manage`-> `User groups`, then `+ Add new user group`. Please fill the for
 ## User creation
 
 To add a new `user`, go to `Manage` -> `Users`, then `+ Add new user`.
+
+![Add user](sc/add-user.png)
 
 ### User attributes
 
