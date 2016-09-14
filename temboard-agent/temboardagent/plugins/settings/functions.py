@@ -297,12 +297,13 @@ def post_settings(conn, config, http_context):
                         if pg_config_item['vartype'] == u'enum':
                             # Enum handling.
                             if len(pg_config_item['enumvals']) > 0:
-                                enumvals = pg_config_item['enumvals'][1:-1].split(',')
-                                if setting['setting'] not in enumvals:
-                                    raise HTTPError(406, 'Invalid setting.')
+                                enumvals = [re.sub(r"^[\"\'](.+)[\"\ ']$", r"\1", enumval)
+                                                for enumval in pg_config_item['enumvals'][1:-1].split(',')]
                                 if ((setting['setting'].startswith("'") and setting['setting'].endswith("'")) or \
                                     (setting['setting'].startswith('"') and setting['setting'].endswith('"'))):
                                     setting['setting'] = setting['setting'][1:-1]
+                                if setting['setting'] not in enumvals:
+                                    raise HTTPError(406, 'Invalid setting: %s.' % (setting['setting']))
                                 checked = True
                         if pg_config_item['vartype'] == u'string':
                             # String handling.
