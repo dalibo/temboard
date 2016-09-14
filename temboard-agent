@@ -21,7 +21,7 @@ def main():
     Main function.
     """
     # Instanciate a new temboard-agent options parser.
-    optparser = temboardOptions(description = "Temboard agent.")
+    optparser = temboardOptions(description = "temBoard agent.")
     (options, _) = optparser.parse_args()
 
     # Load configuration from the configuration file.

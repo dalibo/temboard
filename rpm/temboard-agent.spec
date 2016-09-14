@@ -11,7 +11,7 @@
 Name:		%{pkgname}
 Version:        %{pkgversion}
 Release:        %{pkgrevision}%{?dist}
-Summary:	Temboard agent
+Summary:	temBoard agent
 
 Group:		Applications/Databases
 License:	BSD
