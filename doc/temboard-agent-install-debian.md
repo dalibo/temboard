@@ -1,4 +1,4 @@
-# Temboard agent installation from debian package (jessie)
+# temBoard agent installation from debian package (jessie)
 
 ## Package building
 

@@ -8,4 +8,4 @@ Standards-Version: 3.9.1
 Package: temboard-agent
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
-Description: Temboard agent.
+Description: temBoard agent.

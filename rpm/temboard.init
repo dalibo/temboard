@@ -3,7 +3,7 @@
 # temboard        This starts and stops temboard
 #
 # chkconfig: 2345 20 80
-# description: This starts the Temboard Web UI
+# description: This starts the temBoard Web UI
 #
 # processname: /usr/bin/temboard
 # config: /etc/sysconfig/temboard

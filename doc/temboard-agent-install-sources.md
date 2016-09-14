@@ -1,4 +1,4 @@
-# Temboard agent installation from sources and configuration
+# temBoard agent installation from sources and configuration
 
 ## Dependencies
 
@@ -75,7 +75,7 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard-agent.conf` f
 
 ### CA certificate file
 
-The plugin `supervision` sends periodically collected data to the collector (API served by the temboard UI web server) through HTTPS. To allow this data flow, the HTTPS client implemented by the agent needs to have the UI's SSL certifcate (.pem) stored in its CA certificate file. Temboard agent embeds a default CA cert. file containing default Temboard UI SSL certificate.
+The plugin `supervision` sends periodically collected data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, the HTTPS client implemented by the agent needs to have the UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
 ```
 $ sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 ```

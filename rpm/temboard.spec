@@ -8,7 +8,7 @@
 Name:		%{pkgname}
 Version:        %{pkgversion}
 Release:        %{pkgrevision}%{?dist}
-Summary:	Temboard Web Interface
+Summary:	temBoard Web Interface
 
 Group:		Applications/Databases
 License:	BSD
@@ -27,7 +27,7 @@ Requires:	python-sqlalchemy >= 0.9.8
 Requires:	python-psycopg2
 
 %description
-Temboard is a monitoring and remote control solution for PostgreSQL
+temBoard is a monitoring and remote control solution for PostgreSQL
 This packages holds the web user interface
 
 %prep
@@ -43,7 +43,7 @@ This packages holds the web user interface
 # We want a system user and group to run the tornado webapp
 groupadd -r temboard >/dev/null 2>&1 || :
 useradd -M -g temboard -r -d /var/empty/temboard -s /sbin/nologin \
-	-c "Temboard Web UI" temboard >/dev/null 2>&1 || :
+	-c "temBoard Web UI" temboard >/dev/null 2>&1 || :
 
 %post
 # first install: register init script / service file

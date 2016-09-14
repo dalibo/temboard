@@ -30,7 +30,7 @@ def create_db_engine(logger, user, password, host, port, dbname):
     return engine
 
 def main():
-    optparser = CLIOptions(description = "Temboard - Supervision plugin metric aggregator.")
+    optparser = CLIOptions(description = "temBoard - Supervision plugin metric aggregator.")
     (options, _) = optparser.parse_args()
     try:
         config =  Configuration(options.configfile)

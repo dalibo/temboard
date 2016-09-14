@@ -74,7 +74,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             conn.close()
 
 def main():
-    optparser = temboarduiOptions(description = "Temboard UI/web client.")
+    optparser = temboarduiOptions(description = "temBoard UI/web client.")
     (options, _) = optparser.parse_args()
     # Load configuration from the configuration file.
     try:

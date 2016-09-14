@@ -1,4 +1,4 @@
-# Temboard installation from debian package (jessie)
+# temBoard installation from debian package (jessie)
 
 ## Package building
 

@@ -8,7 +8,7 @@
 # http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F
 
 [Unit]
-Description=Temboard Web UI
+Description=temBoard Web UI
 After=network.target syslog.target
 
 [Service]

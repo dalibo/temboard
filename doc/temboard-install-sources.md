@@ -1,4 +1,4 @@
-# Temboard installation from sources
+# temBoard installation from sources
 
 ## Dependencies
 
@@ -88,7 +88,7 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file ne
 
 ### CA certificate file
 
-Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To allow this data flow, the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. Temboard embeds a default CA cert. file containing agent's default SSL certificate.
+Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To allow this data flow, the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. temBoard embeds a default CA cert. file containing agent's default SSL certificate.
 
 ```
 $ sudo cp /usr/share/temboard/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
