@@ -59,7 +59,7 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">File: <span class="label label-default">{{conf_file['filepath']}}</span>&nbsp;&nbsp;Version: <select name="version" id="selectHBAVersion"><option value="CURRENT">CURRENT</option>{% for version in file_versions['versions'] %}<option value="{{version}}" {% if version == conf_file['version'] %}selected{% end %}>{{version}}</option>{% end %}</select><div class="pull-right"><button class="btn btn-xs btn-primary add">+ Add new row</button></div></div>
+				<div class="panel-heading">File: <span class="label label-default">{{conf_file['filepath']}}</span>&nbsp;&nbsp;Version: <select name="version" id="selectHBAVersion"><option value="CURRENT">CURRENT</option>{% for version in file_versions['versions'] %}<option value="{{version}}" {% if version == conf_file['version'] %}selected{% end %}>{{version}}</option>{% end %}</select><div class="pull-right"><button class="btn btn-xs btn-primary add">+ Add a new row</button></div></div>
 				<div id="divtopHBA">
 				<div class="panel-body" id="divHBA">
 						<table id="HBATable" class="table table-bordered table-condensed table-hover">

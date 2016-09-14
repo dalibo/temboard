@@ -4,7 +4,7 @@ Once `temboard` is up and running, it's time to try a first connection to the we
 
 ![Login](sc/login.png)
 
-You should get a login box. The default administration account is `admin`, the password is `admin`. Obviously, this password *MUST* be changed as soon as possible. To edit user's profile, please login and go to `Manage` -> `User list` then `Edit` on the corresponding row.
+You should get a login box. The default administration account is `admin`, the password is `admin`. Obviously, this password **MUST** be changed as soon as possible. To edit user's profile, please login and go to `Manage` -> `User list` then `Edit` on the corresponding row.
 
 ![Edit admin user](sc/edit-user-admin.png)
 
@@ -13,12 +13,12 @@ Currently, when a logged in user changes its password, the error message `Restri
 
 # User and user group creation
 
-User acces controls to instances managed by `temboard` are based on `group` belonging. Each `instance` can belong to N `instance group`, each `user` can belong to N `user group`. Each `user group` is granted or not to acces an `instance group`.
+User acces controls to instances managed by `temboard` are based on `group` belonging. Each `instance` can belong to *N* `instance group`, each `user` can belong to *N* `user group`. Each `user group` is granted or not to acces an `instance group`.
 You must be logged in with a user having administration privileges to manage `users`.
 
 ## User group creation
 
-Go to `Manage`-> `User groups`, then `+ Add new user group`. Please fill the form and `Save`.
+Go to `Manage`-> `User groups`, then `+ Add a new user group`. Please fill the form and `Save`.
 
 ![Add user group](sc/add-user-group.png)
 
@@ -29,7 +29,7 @@ Go to `Manage`-> `User groups`, then `+ Add new user group`. Please fill the for
 
 ## User creation
 
-To add a new `user`, go to `Manage` -> `Users`, then `+ Add new user`.
+To add a new `user`, go to `Manage` -> `Users`, then `+ Add a new user`.
 
 ![Add user](sc/add-user.png)
 
@@ -48,7 +48,7 @@ You must be logged in with a user having administration privileges.
 
 ## Create a new instance group
 
-To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ Add new instance group`.
+To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ Add a new instance group`.
 
 ![Add instance group](sc/add-instance-group.png)
 
@@ -65,14 +65,16 @@ To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ A
 Before adding a new instance in `temboard` interface, you'd check that `temboard-agent` is up & running on the machine hosting the PostgreSQL instance.
 A quick smoke test can be done using `curl` from `temboard` machine:
 ```
-temboard$ curl https://<instance-address>:2345/discover
+temboard$ curl https://<temboard-agent-address>:2345/discover
 
 {"hostname": "debian-tbd-agent.local", "pg_data": "/var/lib/postgresql/9.5/main", "pg_port": 5432, "plugins": ["supervision", "dashboard", "settings", "administration", "activity"], "memory_size": 518451200, "pg_version": "PostgreSQL 9.5.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 4.9.2-10) 4.9.2, 64-bit", "cpu": 1}
 ```
 
-#### Supervision plugin
+#### `supervision` plugin
 
-
+The `supervision` plugin from `temboarg-agent` is in charge to collect system and PostgreSQL metrics about the host is running on. Periodicaly, these data (JSON object) are sent to `temboard` using an `https` API. To allow this data flow, a key must be built and shared between `temboard` and the `temboard-agent`.
+On the agent side, the key has to be set in `temboard-agent.conf` file, under the `[supervision]` section, the parameter is `agent-key`. Configuration must be reloaed.
+On `temboard` side, you have to edit the corresponding `instance` and set the same key in `Agent secret key` field.
 
 #### Agent users
 
@@ -93,9 +95,9 @@ temboard-agent$ curl -k -X POST --data '{"username": "john", "password": "xxxxx"
 {"session": "fe43c3973ec7ca0fc219c00588c97c39afc06fcf91ee1203d19a892466600dae"}
 ```
 
-### Add new instance
+### Add a new instance
 
-Go to `Manage` -> `Instances`, then `+ Add new instance`.
+Go to `Manage` -> `Instances`, then `+ Add a new instance`.
 
 ![Add instance](sc/add-instance.png)
 
@@ -111,7 +113,7 @@ Once `Agent address` and `Agent port` filled, if the `agent` is up & running, it
 
   * `Number of CPU`: Number of CPU/vCPU;
   * `Memory size`: Memory size in bytes;
-  * `Hostname`: Machine hostname, FQDN.
+  * `Hostname`: Machine hostname, FQDN. Must be unique.
   * `PostgreSQL data directory`
   * `PostgreSQL port`
   * `PostgreSQL version`

@@ -229,7 +229,7 @@ function load_add_user_form(modal_id)
 		contentType: "application/json",
 		dataType: "json",
 		success: function (data) {
-			$('#'+modal_id+'Label').html('Add new user');
+			$('#'+modal_id+'Label').html('Add a new user');
 			$('#'+modal_id+'Info').html('');
 			var body_html = '';
 			body_html += '<form id="formAddUser">';
@@ -303,7 +303,7 @@ function load_add_user_form(modal_id)
 			});
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Add new user');
+			$('#'+modal_id+'Label').html('Add a new user');
 			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 		}
 	});
@@ -336,7 +336,7 @@ function send_add_user_form(modal_id)
 			window.location.replace(url);
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Add new user');
+			$('#'+modal_id+'Label').html('Add a new user');
 			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 		}
 	});

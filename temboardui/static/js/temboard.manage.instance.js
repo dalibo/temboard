@@ -17,7 +17,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 		contentType: "application/json",
 		dataType: "json",
 		success: function (data) {
-			$('#'+modal_id+'Label').html('Update instance entry properties');
+			$('#'+modal_id+'Label').html('Update instance properties');
 			$('#'+modal_id+'Info').html('<h4 class="text-center">'+data['agent_address']+' <small>'+data['agent_port']+'</small></h4>');
 			var body_html = '';
 			body_html += '<form id="formUpdateInstance">';
@@ -155,18 +155,18 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 						$('#inputPgData').val(data['pg_data']);
 						$('#inputPgVersion').val(data['pg_version']);
 						$('#inputPgPort').val(data['pg_port']);
-						$('#'+modal_id+'Label').html('Update instance entry properties');
+						$('#'+modal_id+'Label').html('Update instance properties');
 						$('#'+modal_id+'Info').html('<h4 class="text-center">'+$('#inputNewAgentAddress').val()+' <small>'+$('#inputNewAgentPort').val()+'</small></h4>');
 					},
 					error: function(xhr) {
-						$('#'+modal_id+'Label').html('Update instance entry properties');
+						$('#'+modal_id+'Label').html('Update instance properties');
 						$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 					}
 				});
 			});
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Update instance entry properties');
+			$('#'+modal_id+'Label').html('Update instance properties');
 			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 		}
 	});
@@ -203,7 +203,7 @@ function send_update_instance_form(modal_id, agent_address, agent_port)
 			window.location.replace(url);
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Update instance entry properties');
+			$('#'+modal_id+'Label').html('Update instance properties');
 			$('#'+modal_id+'Info').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
 		}
 	});
@@ -225,9 +225,9 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 		dataType: "json",
 		success: function (data) {
 			var footer_html = '';
-			footer_html += '<button type="submit" id="buttonDeleteInstance" class="btn btn-danger">Yes, delete this instance entry</button>';
+			footer_html += '<button type="submit" id="buttonDeleteInstance" class="btn btn-danger">Yes, delete this instance</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
-			$('#'+modal_id+'Label').html('Delete instance entry confirmation');
+			$('#'+modal_id+'Label').html('Delete instance confirmation');
 			$('#'+modal_id+'Info').html('<h4 class="text-center">'+data['agent_address']+' <small>'+data['agent_port']+'</small></h4>');
 			$('#'+modal_id+'Body').html('');
 			$('#'+modal_id+'Footer').html(footer_html);
@@ -238,7 +238,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 			});
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Delete instance entry confirmation');
+			$('#'+modal_id+'Label').html('Delete instance confirmation');
 			$('#'+modal_id+'Info').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
 			$('#'+modal_id+'Body').html('');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
@@ -266,7 +266,7 @@ function send_delete_instance(modal_id, agent_address, agent_port)
 			window.location.replace(url);
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Delete instance entry confirmation');
+			$('#'+modal_id+'Label').html('Delete instance confirmation');
 			$('#'+modal_id+'Info').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
 			$('#'+modal_id+'Body').html('');
 		}
@@ -274,7 +274,7 @@ function send_delete_instance(modal_id, agent_address, agent_port)
 }
 
 /*
- *  Build the instance entry creation form.
+ *  Build the instance creation form.
  */
 function load_add_instance_form(modal_id)
 {
@@ -291,7 +291,7 @@ function load_add_instance_form(modal_id)
 		contentType: "application/json",
 		dataType: "json",
 		success: function (data) {
-			$('#'+modal_id+'Label').html('Add new instance entry');
+			$('#'+modal_id+'Label').html('Add a new instance');
 			$('#'+modal_id+'Info').html('');
 			var body_html = '';
 			body_html += '<form id="formAddInstance">';
@@ -414,18 +414,18 @@ function load_add_instance_form(modal_id)
 						$('#inputPgData').val(data['pg_data']);
 						$('#inputPgVersion').val(data['pg_version']);
 						$('#inputPgPort').val(data['pg_port']);
-						$('#'+modal_id+'Label').html('Add new instance entry');
+						$('#'+modal_id+'Label').html('Add a new instance');
 						$('#'+modal_id+'Info').html('');
 					},
 					error: function(xhr) {
-						$('#'+modal_id+'Label').html('Add new instance entry');
+						$('#'+modal_id+'Label').html('Add a new instance');
 						$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 					}
 				});
 			});
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Add new instance entry');
+			$('#'+modal_id+'Label').html('Add a new instance');
 			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 		}
 	});
@@ -461,7 +461,7 @@ function send_add_instance_form(modal_id)
 			window.location.replace(url);
 		},
 		error: function(xhr) {
-			$('#'+modal_id+'Label').html('Add new instance entry');
+			$('#'+modal_id+'Label').html('Add a new instance');
 			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
 		}
 	});
