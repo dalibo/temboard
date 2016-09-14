@@ -1,5 +1,6 @@
 import httplib
 import urllib2
+from urllib import quote
 import ssl
 import socket
 import json
@@ -138,7 +139,7 @@ def temboard_dashboard_info(in_ca_cert_file, hostname, port, xsession):
 def temboard_get_configuration(in_ca_cert_file, hostname, port, xsession, enc_category = None, query_filter = None):
     try:
         if query_filter:
-            path = "/settings/configuration?filter="+query_filter
+            path = "/settings/configuration?filter="+quote(query_filter)
         elif enc_category:
             path = "/settings/configuration/category/"+enc_category
         else:
