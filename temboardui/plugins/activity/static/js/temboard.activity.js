@@ -62,6 +62,8 @@ function refresh_activity(agent_address, agent_port, xsession, mode)
 				if (code > 0)
 				{
 					error = escapeHtml(JSON.parse(xhr.responseText).error);
+				} else {
+					code = '';
 				}
 				$('#modalError').html(html_error_modal(code, error));
 				$('#ErrorModal').modal('show');
