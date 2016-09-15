@@ -157,7 +157,7 @@ def init_env():
 
         pg_init(cf.PG_BIN, env['pg_data'])
         pg_start(cf.PG_BIN, cf.PG_PORT, env['pg_sockdir'], env['pg_data'], env['pg_log_file_path'])
-        sleep(1)
+        time.sleep(1)
         pg_add_super_user(cf.PG_BIN, cf.PG_USER, env['pg_sockdir'], str(cf.PG_PORT), cf.PG_PASSWORD)
         g_add_user(env['g_password_file_path'], cf.G_USER, cf.G_PASSWORD, python = sys.executable)
         g_build_ssl_cert(g_ssl_key_file_path, cf.SSL_KEY, env['g_ssl_cert_file_path'], cf.SSL_CERT)
