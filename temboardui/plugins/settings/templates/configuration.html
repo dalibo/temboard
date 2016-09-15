@@ -50,7 +50,7 @@
 				{% for setting in ret_post['settings'] %}
 				<tr>
 					<td>{{ setting['name'] }}</td>
-					<td>{{ setting['previous_setting'] }}</td>
+					<td>{% if setting['previous_setting'] %}{{setting['previous_setting']}}{% end %}</td>
 					<td><b>{{ setting['setting'] }}</b></td>
 				</tr>
 				{% end %}
@@ -93,9 +93,9 @@
 					{% for change in configuration_status['restart_changes'] %}
 					<tr>
 						<td>{{change['name']}}</td>
-						<td>{{change['setting']}}</td>
-						<td><b>{{change['pending_val']}}</b></td>
-						<td><button type="button" id="buttonReset_{{change['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{change['name']}}" data-html="true" data-content="Reset to: '{{change['setting']}}'">
+						<td>{% if change['setting'] %}{{change['setting']}}{% end %}</td>
+						<td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
+						<td><button type="button" id="buttonReset_{{change['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{change['name']}}" data-html="true" data-content="Reset to: '{% if change['setting'] %}{{change['setting']}}{% else %}{% end %}'">
 							<span class="fa fa-undo" aria-hidden="true"></span>
 						</button></td>
 					</tr>
@@ -156,8 +156,8 @@
 					{% for change in configuration_status['reload_changes'] %}
 					<tr>
 						<td>{{change['name']}}</td>
-						<td>{{change['setting']}}</td>
-						<td><b>{{change['pending_val']}}</b></td>
+						<td>{% if change['setting'] %}{{change['setting']}}{% end %}</td>
+						<td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
 					</tr>
 					{% end %}
 				</table>
@@ -250,7 +250,7 @@
 							</td>
 							<td class="action-setting">
 								{% if setting_row['setting'] == setting_row['auto_val'] and ((setting_row['file_val'] and setting_row['setting'] != setting_row['file_val']) or (not setting_row['file_val'] and setting_row['setting'] != setting_row['boot_val']))%}
-								<button type="button" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val'] %} {{setting_row['boot_val']}} {% else %} {{setting_row['file_val']}} {% end %}'">
+								<button type="button" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val'] %} {%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%} {% else %} {%if setting_row['file_val']%}{{setting_row['file_val']}}{%end%} {% end %}'">
 									<span class="fa fa-undo" aria-hidden="true"></span>
 								</button>
 								{% end %}
@@ -293,12 +293,12 @@ $(document).ready(function() {
 			$('#resetModal').modal('show');
 			$('[data-toggle=popover]').popover('hide');
 			$('#resetParamName').html('{{change['name']}}');
-			$('#resetParamValue').html('{{change['setting']}}');
+			$('#resetParamValue').html('{%if change['setting']%}{{change['setting']}}{%end%}');
 			$('#resetYesButton').on(
 				'click',
 				function(event) {
 					event.preventDefault();
-					modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{{change['setting']}}", "force": "true"}]});
+					modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting']}}{% end %}", "force": "true"}]});
 				}
 			);
 		});
@@ -312,17 +312,17 @@ $(document).ready(function() {
 			$('[data-toggle=popover]').popover('hide');
 			$('#resetParamName').html('{{setting_row['name']}}');
 			{% if not setting_row['file_val'] %}
-			$('#resetParamValue').html('{{setting_row['boot_val']}}');
+			$('#resetParamValue').html('{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}');
 				{% set setting_value = setting_row['boot_val'] %}
 			{% else %}
-			$('#resetParamValue').html('{{setting_row['file_val']}}');
+			$('#resetParamValue').html('{%if setting_row['file_val']%}{{setting_row['file_val']}}{%end%}');
 				{% set setting_value = setting_row['file_val'] %}
 			{% end %}
 			$('#resetYesButton').on(
 				'click',
 				function(event) {
 				event.preventDefault();
-				modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{{setting_value}}"}]});
+				modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
 	}
 );
 	});
