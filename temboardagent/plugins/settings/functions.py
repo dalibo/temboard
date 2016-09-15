@@ -256,7 +256,7 @@ def post_settings(conn, config, http_context):
     settings = http_context['post']['settings']
     ret = {'settings': []}
     do_not_check_names = [ 'unix_socket_permissions' , 'log_file_mode' ]
-
+    logger.debug(settings)
     for setting in settings:
         if 'name' not in setting \
             or 'setting' not in setting:
@@ -329,8 +329,13 @@ def post_settings(conn, config, http_context):
             (pg_config_item['vartype'] not in [ u'integer', u'real' ] and setting['setting'] != pg_config_item['setting'])) or \
             (setting['force'] == 'true'):
             # At this point, all incoming parameters have been checked.
-            query = "ALTER SYSTEM SET %s TO '%s'"
-            logger.debug(query % (setting['name'], setting['setting']))
+            if setting['setting']:
+                query = "ALTER SYSTEM SET %s TO '%s'" % (setting['name'], setting['setting'])
+            else:
+                query = "ALTER SYSTEM RESET %s;" % (setting['name'])
+
+            logger.debug(query)
+
 
             # Push a notification on setting change.
             try:
@@ -344,7 +349,7 @@ def post_settings(conn, config, http_context):
                 logger.error(e.message)
 
             try:
-                conn.execute(query % (setting['name'], setting['setting']))
+                conn.execute(query)
             except error as e:
                 raise HTTPError(408, "%s: %s" % (setting['name'], e.message))
             ret['settings'].append({
