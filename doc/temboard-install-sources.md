@@ -101,41 +101,9 @@ $ sudo cp /usr/share/temboard/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/c
 $ sudo chmod 0600 /etc/temboard/ssl/*
 ```
 
-
 ## Repository
 
-The `repository` is a PostgreSQL (>=9.5) database. Usage of plugin `supervision` requires `tablefunc` extension.
-
-### Configuration
-
-`work_mem` parameter should be set to `16MB`
-
-
-### Setup
-
-To acces the `repository`, `temboard` needs to have its own user and database. To create them:
-
-```
-repository# sudo -u postgres createuser temboard -l -P
-repository# sudo -u postgres createdb -O temboard temboard
-```
-
-### Authentication with password
-
-The PostgreSQL user `temboard` must be allowed to connect to the repository using password authentication (`md5`). The password of `temboard` user should be set in `temboard` configuration file, under section `[repository]`, parameter `password`.
-
-### Installation
-
-`temboard` SQL schema must be loaded:
-```
-repository# psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
-```
-
-If you plan to use the plugin `supervision`:
-```
-repository# sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
-repository# psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/supervision.sql temboard
-```
+The repository must be set up otherwise the temboard service will not start. See `doc/temboard-repository-setup.md`.
 
 ## Operating `temboard`
 
@@ -153,3 +121,8 @@ $ sudo kill $(cat /var/run/temboard/temboard.pid)
 ```
 $ sudo kill -HUP $(cat /var/run/temboard/temboard.pid)
 ```
+
+### Init scripts and systemd service file
+
+Init scripts and a systemd service file are available in the `rpm/` and `debian/` directories inside the source tree.
+
