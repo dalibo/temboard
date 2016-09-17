@@ -43,12 +43,15 @@ def get_pg_configuration(http_context, queue_in = None, config = None, sessions 
     @apiSuccess {Number}   response.rows.max_val Maximum allowed value of the parameter (null for non-numeric values).
     @apiSuccess {String}   response.rows.vartype Parameter type (bool, enum, integer, real, or string).
     @apiSuccess {String}   response.rows.auto_val Parameter value set in auto configuration file.
+    @apiSuccess {String}   response.rows.auto_val_raw Parameter value set in auto configuration file (raw).
     @apiSuccess {String}   response.rows.file_val Parameter value set in main postgresql.conf file.
+    @apiSuccess {String}   response.rows.file_val_raw Parameter value set in main postgresql.conf file (raw).
     @apiSuccess {String}   response.rows.boot_val Parameter value assumed at server startup if the parameter is not otherwise set.
     @apiSuccess {String}   response.rows.unit Implicit unit of the parameter.
     @apiSuccess {String}   response.rows.desc Parameter description.
     @apiSuccess {String}   response.rows.name Parameter name.
     @apiSuccess {String}   response.rows.setting Parameter value.
+    @apiSuccess {String}   response.rows.setting_raw Parameter value (raw).
 
     @apiExample {curl} Example usage:
         curl -k -H "X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e" \
@@ -70,13 +73,16 @@ def get_pg_configuration(http_context, queue_in = None, config = None, sessions 
                         "max_val": null,
                         "vartype": "bool",
                         "auto_val": "off",
+                        "auto_val_raw": "off",
                         "boot_val": "on",
                         "unit": null,
                         "desc": "Starts the autovacuum subprocess.",
                         "name": "autovacuum",
                         "min_val": null,
                         "setting": "off",
-                        "file_val": null
+                        "setting_raw": "off",
+                        "file_val": null,
+                        "file_val_raw": null
                     },
                     ...
                 ]
@@ -264,12 +270,15 @@ def get_pg_configuration_category(http_context, queue_in = None, config = None, 
     @apiSuccess {Number}   response.rows.max_val Maximum allowed value of the parameter (null for non-numeric values).
     @apiSuccess {String}   response.rows.vartype Parameter type (bool, enum, integer, real, or string).
     @apiSuccess {String}   response.rows.auto_val Parameter value set in auto configuration file.
+    @apiSuccess {String}   response.rows.auto_val_raw Parameter value set in auto configuration file (raw).
     @apiSuccess {String}   response.rows.file_val Parameter value set in main postgresql.conf file.
+    @apiSuccess {String}   response.rows.file_val_raw Parameter value set in main postgresql.conf file (raw).
     @apiSuccess {String}   response.rows.boot_val Parameter value assumed at server startup if the parameter is not otherwise set.
     @apiSuccess {String}   response.rows.unit Implicit unit of the parameter.
     @apiSuccess {String}   response.rows.desc Parameter description.
     @apiSuccess {String}   response.rows.name Parameter name.
     @apiSuccess {String}   response.rows.setting Parameter value.
+    @apiSuccess {String}   response.rows.setting_raw Parameter value (raw).
 
 
     @apiExample {curl} Example usage:
@@ -293,13 +302,16 @@ def get_pg_configuration_category(http_context, queue_in = None, config = None, 
                         "max_val": null,
                         "vartype": "bool",
                         "auto_val": "on",
+                        "auto_val_raw": "on",
                         "boot_val": "on",
                         "unit": null,
                         "desc": "Starts the autovacuum subprocess. ",
                         "name": "autovacuum",
                         "min_val": null,
                         "setting": "on",
-                        "file_val": null
+                        "setting_raw": "on",
+                        "file_val": null,
+                        "file_val_raw": null
                     },
                     ...
                 ]
@@ -349,12 +361,15 @@ def get_pg_configuration_status(http_context, queue_in = None, config = None, se
     @apiSuccess {Number}    response.restart_changes.max_val Maximum allowed value of the parameter (null for non-numeric values).
     @apiSuccess {String}    response.restart_changes.vartype Parameter type (bool, enum, integer, real, or string).
     @apiSuccess {String}    response.restart_changes.auto_val Parameter value set in auto configuration file.
+    @apiSuccess {String}    response.restart_changes.auto_val_raw Parameter value set in auto configuration file (raw).
     @apiSuccess {String}    response.restart_changes.file_val Parameter value set in main postgresql.conf file.
+    @apiSuccess {String}    response.restart_changes.file_val_raw Parameter value set in main postgresql.conf file (raw).
     @apiSuccess {String}    response.restart_changes.boot_val Parameter value assumed at server startup if the parameter is not otherwise set.
     @apiSuccess {String}    response.restart_changes.unit Implicit unit of the parameter.
     @apiSuccess {String}    response.restart_changes.desc Parameter description.
     @apiSuccess {String}    response.restart_changes.name Parameter name.
     @apiSuccess {String}    response.restart_changes.setting Parameter value.
+    @apiSuccess {String}    response.restart_changes.setting_raw Parameter value (raw).
     @apiSuccess {String}    response.restart_changes.pending_val Pending value.
     @apiSuccess {Boolean}   response.reload_pending Does PostgreSQL need to be reloaded ?
     @apiSuccess {Object[]}  response.reload_changes List of settings.
@@ -364,12 +379,15 @@ def get_pg_configuration_status(http_context, queue_in = None, config = None, se
     @apiSuccess {Number}    response.reload_changes.max_val Maximum allowed value of the parameter (null for non-numeric values).
     @apiSuccess {String}    response.reload_changes.vartype Parameter type (bool, enum, integer, real, or string).
     @apiSuccess {String}    response.reload_changes.auto_val Parameter value set in auto configuration file.
+    @apiSuccess {String}    response.reload_changes.auto_val_raw Parameter value set in auto configuration file (raw).
     @apiSuccess {String}    response.reload_changes.file_val Parameter value set in main postgresql.conf file.
+    @apiSuccess {String}    response.reload_changes.file_val_raw Parameter value set in main postgresql.conf file (raw).
     @apiSuccess {String}    response.reload_changes.boot_val Parameter value assumed at server startup if the parameter is not otherwise set.
     @apiSuccess {String}    response.reload_changes.unit Implicit unit of the parameter.
     @apiSuccess {String}    response.reload_changes.desc Parameter description.
     @apiSuccess {String}    response.reload_changes.name Parameter name.
     @apiSuccess {String}    response.reload_changes.setting Parameter value.
+    @apiSuccess {String}    response.reload_changes.setting_raw Parameter value (raw).
     @apiSuccess {String}    response.reload_changes.pending_val Pending value.
 
 
@@ -389,18 +407,21 @@ def get_pg_configuration_status(http_context, queue_in = None, config = None, se
             [
                 {
                     "context": "postmaster",
+                    "setting_raw": "128MB",
                     "enumvals": null,
                     "max_val": 1073741823,
                     "vartype": "integer",
-                    "auto_val": 131072,
+                    "auto_val": 32768,
+                    "file_val_raw": "128MB",
                     "boot_val": 1024,
                     "unit": "8kB",
                     "desc": "Sets the number of shared memory buffers used by the server. ",
                     "name": "shared_buffers",
+                    "auto_val_raw": "256MB",
                     "min_val": 16,
-                    "setting": 16382,
+                    "setting": 16384,
                     "file_val": 16384,
-                    "pending_val": 131072
+                    "pending_val": "256MB"
                 }
             ],
             "restart_pending": true,
