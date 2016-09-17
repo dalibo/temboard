@@ -2139,8 +2139,22 @@
             "group": "Success 200",
             "type": "String",
             "optional": false,
+            "field": "response.rows.auto_val_raw",
+            "description": "<p>Parameter value set in auto configuration file (raw).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
             "field": "response.rows.file_val",
             "description": "<p>Parameter value set in main postgresql.conf file.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.rows.file_val_raw",
+            "description": "<p>Parameter value set in main postgresql.conf file (raw).</p>"
           },
           {
             "group": "Success 200",
@@ -2176,13 +2190,20 @@
             "optional": false,
             "field": "response.rows.setting",
             "description": "<p>Parameter value.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.rows.setting_raw",
+            "description": "<p>Parameter value (raw).</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Reponse:",
-          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.8\nDate: Wed, 22 Apr 2015 09:57:52 GMT\nContent-type: application/json\n[\n    {\n        \"category\": \"Autovacuum\",\n        \"rows\":\n        [\n            {\n                \"context\": \"sighup\",\n                \"enumvals\": null,\n                \"max_val\": null,\n                \"vartype\": \"bool\",\n                \"auto_val\": \"off\",\n                \"boot_val\": \"on\",\n                \"unit\": null,\n                \"desc\": \"Starts the autovacuum subprocess.\",\n                \"name\": \"autovacuum\",\n                \"min_val\": null,\n                \"setting\": \"off\",\n                \"file_val\": null\n            },\n            ...\n        ]\n    },\n    ...\n]",
+          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.8\nDate: Wed, 22 Apr 2015 09:57:52 GMT\nContent-type: application/json\n[\n    {\n        \"category\": \"Autovacuum\",\n        \"rows\":\n        [\n            {\n                \"context\": \"sighup\",\n                \"enumvals\": null,\n                \"max_val\": null,\n                \"vartype\": \"bool\",\n                \"auto_val\": \"off\",\n                \"auto_val_raw\": \"off\",\n                \"boot_val\": \"on\",\n                \"unit\": null,\n                \"desc\": \"Starts the autovacuum subprocess.\",\n                \"name\": \"autovacuum\",\n                \"min_val\": null,\n                \"setting\": \"off\",\n                \"setting_raw\": \"off\",\n                \"file_val\": null,\n                \"file_val_raw\": null\n            },\n            ...\n        ]\n    },\n    ...\n]",
           "type": "json"
         }
       ]
@@ -2430,8 +2451,22 @@
             "group": "Success 200",
             "type": "String",
             "optional": false,
+            "field": "response.rows.auto_val_raw",
+            "description": "<p>Parameter value set in auto configuration file (raw).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
             "field": "response.rows.file_val",
             "description": "<p>Parameter value set in main postgresql.conf file.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.rows.file_val_raw",
+            "description": "<p>Parameter value set in main postgresql.conf file (raw).</p>"
           },
           {
             "group": "Success 200",
@@ -2467,13 +2502,20 @@
             "optional": false,
             "field": "response.rows.setting",
             "description": "<p>Parameter value.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.rows.setting_raw",
+            "description": "<p>Parameter value (raw).</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Reponse:",
-          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.9\nDate: Wed, 10 Feb 2016 09:56:30 GMT\nAccess-Control-Allow-Origin: *\nContent-type: application/json\n[\n    {\n        \"category\": \"Autovacuum\",\n        \"rows\":\n        [\n            {\n                \"context\": \"sighup\",\n                \"enumvals\": null,\n                \"max_val\": null,\n                \"vartype\": \"bool\",\n                \"auto_val\": \"on\",\n                \"boot_val\": \"on\",\n                \"unit\": null,\n                \"desc\": \"Starts the autovacuum subprocess. \",\n                \"name\": \"autovacuum\",\n                \"min_val\": null,\n                \"setting\": \"on\",\n                \"file_val\": null\n            },\n            ...\n        ]\n    }\n]",
+          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.9\nDate: Wed, 10 Feb 2016 09:56:30 GMT\nAccess-Control-Allow-Origin: *\nContent-type: application/json\n[\n    {\n        \"category\": \"Autovacuum\",\n        \"rows\":\n        [\n            {\n                \"context\": \"sighup\",\n                \"enumvals\": null,\n                \"max_val\": null,\n                \"vartype\": \"bool\",\n                \"auto_val\": \"on\",\n                \"auto_val_raw\": \"on\",\n                \"boot_val\": \"on\",\n                \"unit\": null,\n                \"desc\": \"Starts the autovacuum subprocess. \",\n                \"name\": \"autovacuum\",\n                \"min_val\": null,\n                \"setting\": \"on\",\n                \"setting_raw\": \"on\",\n                \"file_val\": null,\n                \"file_val_raw\": null\n            },\n            ...\n        ]\n    }\n]",
           "type": "json"
         }
       ]
@@ -2618,8 +2660,22 @@
             "group": "Success 200",
             "type": "String",
             "optional": false,
+            "field": "response.restart_changes.auto_val_raw",
+            "description": "<p>Parameter value set in auto configuration file (raw).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
             "field": "response.restart_changes.file_val",
             "description": "<p>Parameter value set in main postgresql.conf file.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.restart_changes.file_val_raw",
+            "description": "<p>Parameter value set in main postgresql.conf file (raw).</p>"
           },
           {
             "group": "Success 200",
@@ -2655,6 +2711,13 @@
             "optional": false,
             "field": "response.restart_changes.setting",
             "description": "<p>Parameter value.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.restart_changes.setting_raw",
+            "description": "<p>Parameter value (raw).</p>"
           },
           {
             "group": "Success 200",
@@ -2723,8 +2786,22 @@
             "group": "Success 200",
             "type": "String",
             "optional": false,
+            "field": "response.reload_changes.auto_val_raw",
+            "description": "<p>Parameter value set in auto configuration file (raw).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
             "field": "response.reload_changes.file_val",
             "description": "<p>Parameter value set in main postgresql.conf file.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "response.reload_changes.file_val_raw",
+            "description": "<p>Parameter value set in main postgresql.conf file (raw).</p>"
           },
           {
             "group": "Success 200",
@@ -2765,6 +2842,13 @@
             "group": "Success 200",
             "type": "String",
             "optional": false,
+            "field": "response.reload_changes.setting_raw",
+            "description": "<p>Parameter value (raw).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
             "field": "response.reload_changes.pending_val",
             "description": "<p>Pending value.</p>"
           }
@@ -2773,7 +2857,7 @@
       "examples": [
         {
           "title": "Success-Reponse:",
-          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.9\nDate: Wed, 10 Feb 2016 09:56:30 GMT\nAccess-Control-Allow-Origin: *\nContent-type: application/json\n{\n    \"restart_changes\":\n    [\n        {\n            \"context\": \"postmaster\",\n            \"enumvals\": null,\n            \"max_val\": 1073741823,\n            \"vartype\": \"integer\",\n            \"auto_val\": 131072,\n            \"boot_val\": 1024,\n            \"unit\": \"8kB\",\n            \"desc\": \"Sets the number of shared memory buffers used by the server. \",\n            \"name\": \"shared_buffers\",\n            \"min_val\": 16,\n            \"setting\": 16382,\n            \"file_val\": 16384,\n            \"pending_val\": 131072\n        }\n    ],\n    \"restart_pending\": true,\n    \"reload_pending\": false,\n    \"reload_changes\":\n    [\n    ]\n}",
+          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.9\nDate: Wed, 10 Feb 2016 09:56:30 GMT\nAccess-Control-Allow-Origin: *\nContent-type: application/json\n{\n    \"restart_changes\":\n    [\n        {\n            \"context\": \"postmaster\",\n            \"setting_raw\": \"128MB\",\n            \"enumvals\": null,\n            \"max_val\": 1073741823,\n            \"vartype\": \"integer\",\n            \"auto_val\": 32768,\n            \"file_val_raw\": \"128MB\",\n            \"boot_val\": 1024,\n            \"unit\": \"8kB\",\n            \"desc\": \"Sets the number of shared memory buffers used by the server. \",\n            \"name\": \"shared_buffers\",\n            \"auto_val_raw\": \"256MB\",\n            \"min_val\": 16,\n            \"setting\": 16384,\n            \"file_val\": 16384,\n            \"pending_val\": \"256MB\"\n        }\n    ],\n    \"restart_pending\": true,\n    \"reload_pending\": false,\n    \"reload_changes\":\n    [\n    ]\n}",
           "type": "json"
         }
       ]
@@ -4499,5 +4583,33 @@
     },
     "filename": "./temboardagent/api.py",
     "groupTitle": "User"
+  },
+  {
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "optional": false,
+            "field": "varname1",
+            "description": "<p>No type.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "varname2",
+            "description": "<p>With type.</p>"
+          }
+        ]
+      }
+    },
+    "type": "",
+    "url": "",
+    "version": "0.0.0",
+    "filename": "./doc/html/main.js",
+    "group": "_home_julien_Development_python_temboard_temboard_agent_doc_html_main_js",
+    "groupTitle": "_home_julien_Development_python_temboard_temboard_agent_doc_html_main_js",
+    "name": ""
   }
 ]

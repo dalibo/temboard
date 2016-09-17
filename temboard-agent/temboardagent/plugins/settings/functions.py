@@ -36,9 +36,21 @@ def get_settings(conn, config, http_context = None):
         ])
         filter_query = " WHERE name ILIKE '%%%s%%'" % (http_context['query']['filter'][0],)
     query = """
-SELECT name, setting, unit, vartype, min_val, max_val, enumvals, context,
-category, short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val FROM pg_settings %s ORDER BY
-category, name
+SELECT
+    name,
+    setting,
+    current_setting(name) AS current_setting,
+    CASE WHEN name IN ('max_wal_size', 'min_wal_size') THEN current_setting('wal_segment_size') ELSE unit END AS unit,
+    vartype,
+    min_val,
+    max_val,
+    enumvals,
+    context,
+    category,
+    short_desc||' '||coalesce(extra_desc, '') AS desc,
+    boot_val
+FROM pg_settings
+%s ORDER BY category, name
     """ % (filter_query)
     conn.execute(query)
     ret = []
@@ -64,13 +76,16 @@ category, name
         row_dict = {
             'name': row['name'],
             'setting': row['setting'],
+            'setting_raw': row['current_setting'],
             'unit': row['unit'],
             'vartype': row['vartype'],
             'min_val': row['min_val'],
             'max_val': row['max_val'],
             'boot_val': row['boot_val'],
             'auto_val': None,
+            'auto_val_raw': None,
             'file_val': None,
+            'file_val_raw': None,
             'enumvals': row['enumvals'],
             'context': row['context'],
             'desc': row['desc']
@@ -86,6 +101,7 @@ category, name
                 elif val == 'false':
                     val = 'off'
             row_dict['auto_val'] = val
+            row_dict['auto_val_raw'] = val
 
         if in_file_conf:
             val = file_conf[row['name']]
@@ -97,6 +113,7 @@ category, name
                 elif val == 'false':
                     val = 'off'
             row_dict['file_val'] = val
+            row_dict['file_val_raw'] = val
 
         if row['name'] not in do_not_format_names and row['vartype'] == u'integer':
             row_dict['setting'] = int(row_dict['setting'])
@@ -128,25 +145,25 @@ category, name
 
 def human_to_number(h_value, h_unit = None):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'YB', 'ZB']
-    re_unit = re.compile(r'([0-9.]+)\s*([KMGBTPEYZ]?B)$')
-    m_unit = re_unit.match(str(h_value))
-    height_k = False
-    if h_unit == '8kB':
-        height_k = True
-        h_unit = 'kB'
-    if m_unit:
-        p_num = m_unit.group(1)
-        p_unit = m_unit.group(2)
+    re_unit = re.compile(r'([0-9.]+)\s*([KMGBTPEYZ]?B)$', re.IGNORECASE)
+    m_value = re_unit.match(str(h_value))
+    factor = 1
+    if h_unit:
+        m_unit = re_unit.match(str(h_unit))
+        if m_unit:
+            factor = int(m_unit.group(1))
+            h_unit = str(m_unit.group(2))
+
+    if m_value:
+        p_num = m_value.group(1)
+        p_unit = m_value.group(2)
         e = 0
         m = 0
         for u in units:
             if h_unit and h_unit.lower() == u.lower():
                 m = 0
             if u.lower() == p_unit.lower():
-                if height_k:
-                    return (int(p_num) * (1024 ** m)/8)
-                else:
-                    return (int(p_num) * (1024 ** m))
+                return (int(p_num) * (1024 ** m))/factor
             else:
                 m += 1
 
@@ -169,7 +186,7 @@ def human_to_number(h_value, h_unit = None):
     if m_unit:
         p_num = m_unit.group(1)
         p_unit = m_unit.group(2)
-	if mult[p_unit] > 0:
+        if mult[p_unit] > 0:
             return (int(p_num) * mult[p_unit])
         else:
             return (int(p_num) / abs(mult[p_unit]))
@@ -225,10 +242,10 @@ def get_settings_status(conn, config, http_context):
             differ = False
             if row['auto_val'] is not None and row['auto_val'] != row['setting']:
                 differ = True
-                row['pending_val'] = row['auto_val']
+                row['pending_val'] = row['auto_val_raw']
             if row['auto_val'] is None and row['file_val'] and row['file_val'] != row['setting']:
                 differ = True
-                row['pending_val'] = row['file_val']
+                row['pending_val'] = row['file_val_raw']
             if differ:
                 if row['context'] in  ['backend', 'user', 'superuser', 'sighup']:
                     pending_reload = True
@@ -271,13 +288,18 @@ def post_settings(conn, config, http_context):
                             raise Exception()
                         if pg_config_item['vartype'] == u'integer':
                             # Integers handling.
-                            if pg_config_item['min_val'] and \
+                            if pg_config_item['min_val'] and pg_config_item['unit'] and \
                                 (int(human_to_number(setting['setting'], pg_config_item['unit'])) < int(pg_config_item['min_val'])):
                                 raise HTTPError(406, "%s: Invalid setting." % (pg_config_item['name']))
-                            if pg_config_item['max_val'] and \
+                            if pg_config_item['max_val'] and pg_config_item['unit'] and \
                                 (int(human_to_number(setting['setting'], pg_config_item['unit'])) > int(pg_config_item['max_val'])):
                                 raise HTTPError(406, "%s: Invalid setting." % (pg_config_item['name']))
-                            setting['setting'] = int(human_to_number(setting['setting'], pg_config_item['unit']))
+                            setting['setting'] = pg_escape(setting['setting'])
+                            if ((setting['setting'].startswith("'") and setting['setting'].endswith("'")) or \
+                                (setting['setting'].startswith('"') and setting['setting'].endswith('"'))):
+                                setting['setting'] = setting['setting'][1:-1]
+                            if setting['setting'] == '':
+                                setting['setting'] = None
                             checked = True
                         if pg_config_item['vartype'] == u'real':
                             # Real handling.
@@ -324,7 +346,7 @@ def post_settings(conn, config, http_context):
             raise HTTPError(406, 'Parameter %s can\'t be checked.' % (setting['name']))
         if 'force' not in setting:
             setting['force'] = 'false'
-        if ((pg_config_item['vartype'] == u'integer' and int(setting['setting']) != int(pg_config_item['setting'])) or \
+        if ((pg_config_item['vartype'] == u'integer' and setting['setting'] != pg_config_item['setting_raw']) or \
             (pg_config_item['vartype'] == u'real' and float(setting['setting']) != float(pg_config_item['setting'])) or \
             (pg_config_item['vartype'] not in [ u'integer', u'real' ] and setting['setting'] != pg_config_item['setting'])) or \
             (setting['force'] == 'true'):
@@ -355,7 +377,7 @@ def post_settings(conn, config, http_context):
             ret['settings'].append({
                 'name': pg_config_item['name'],
                 'setting': setting['setting'],
-                'previous_setting': pg_config_item['setting'],
+                'previous_setting': pg_config_item['setting_raw'],
                 'restart': True if pg_config_item['context'] in ['internal', 'postmaster'] else False
             })
     # Reload PG configuration.

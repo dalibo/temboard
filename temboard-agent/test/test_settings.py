@@ -107,14 +107,17 @@ class TestSettings(object):
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
         assert 'auto_val' in dict_data[0]['rows'][0]
+        assert 'auto_val_raw' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
         assert 'name' in dict_data[0]['rows'][0]
         assert 'min_val' in dict_data[0]['rows'][0]
         assert 'setting' in dict_data[0]['rows'][0]
+        assert 'setting_raw' in dict_data[0]['rows'][0]
         assert 'file_val' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 12
+        assert 'file_val_raw' in dict_data[0]['rows'][0]
+        assert len(dict_data[0]['rows'][0]) == 15
 
     def test_02_get_settings_configuration_ko_401(self):
         """
@@ -268,27 +271,35 @@ class TestSettings(object):
         assert 'max_val' in dict_data['restart_changes'][0]
         assert 'vartype' in dict_data['restart_changes'][0]
         assert 'auto_val' in dict_data['restart_changes'][0]
+        assert 'auto_val_raw' in dict_data['restart_changes'][0]
         assert 'boot_val' in dict_data['restart_changes'][0]
+        assert 'setting' in dict_data['restart_changes'][0]
+        assert 'setting_raw' in dict_data['restart_changes'][0]
         assert 'file_val' in dict_data['restart_changes'][0]
+        assert 'file_val_raw' in dict_data['restart_changes'][0]
         assert 'min_val' in dict_data['restart_changes'][0]
         assert 'pending_val' in dict_data['restart_changes'][0]
         assert 'unit' in dict_data['restart_changes'][0]
         assert 'desc' in dict_data['restart_changes'][0]
         assert 'name' in dict_data['restart_changes'][0]
-        assert len(dict_data['restart_changes'][0]) == 13
+        assert len(dict_data['restart_changes'][0]) == 16
         assert 'context' in dict_data['reload_changes'][0]
         assert 'enumvals' in dict_data['reload_changes'][0]
         assert 'max_val' in dict_data['reload_changes'][0]
         assert 'vartype' in dict_data['reload_changes'][0]
+        assert 'setting' in dict_data['restart_changes'][0]
+        assert 'setting_raw' in dict_data['restart_changes'][0]
         assert 'auto_val' in dict_data['reload_changes'][0]
+        assert 'auto_val_raw' in dict_data['reload_changes'][0]
         assert 'boot_val' in dict_data['reload_changes'][0]
         assert 'file_val' in dict_data['reload_changes'][0]
+        assert 'file_val_raw' in dict_data['reload_changes'][0]
         assert 'min_val' in dict_data['reload_changes'][0]
         assert 'pending_val' in dict_data['reload_changes'][0]
         assert 'unit' in dict_data['reload_changes'][0]
         assert 'desc' in dict_data['reload_changes'][0]
         assert 'name' in dict_data['reload_changes'][0]
-        assert len(dict_data['reload_changes'][0]) == 13
+        assert len(dict_data['reload_changes'][0]) == 16
 
     def test_09_get_settings_configuration_status_ko_406(self):
         """
@@ -396,14 +407,17 @@ class TestSettings(object):
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
         assert 'auto_val' in dict_data[0]['rows'][0]
+        assert 'auto_val_raw' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
         assert 'name' in dict_data[0]['rows'][0]
         assert 'min_val' in dict_data[0]['rows'][0]
         assert 'setting' in dict_data[0]['rows'][0]
+        assert 'setting_raw' in dict_data[0]['rows'][0]
         assert 'file_val' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 12
+        assert 'file_val_raw' in dict_data[0]['rows'][0]
+        assert len(dict_data[0]['rows'][0]) == 15
 
     def test_15_get_settings_configuration_category_ko_401(self):
         """

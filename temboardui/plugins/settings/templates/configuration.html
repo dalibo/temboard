@@ -93,9 +93,9 @@
 					{% for change in configuration_status['restart_changes'] %}
 					<tr>
 						<td>{{change['name']}}</td>
-						<td>{% if change['setting'] %}{{change['setting']}}{% end %}</td>
+						<td>{% if change['setting'] %}{{change['setting_raw']}}{% end %}</td>
 						<td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
-						<td><button type="button" id="buttonReset_{{change['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{change['name']}}" data-html="true" data-content="Reset to: '{% if change['setting'] %}{{change['setting']}}{% else %}{% end %}'">
+						<td><button type="button" id="buttonReset_{{change['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{change['name']}}" data-html="true" data-content="Reset to: '{% if change['setting'] %}{{change['setting_raw']}}{% else %}{% end %}'">
 							<span class="fa fa-undo" aria-hidden="true"></span>
 						</button></td>
 					</tr>
@@ -156,7 +156,7 @@
 					{% for change in configuration_status['reload_changes'] %}
 					<tr>
 						<td>{{change['name']}}</td>
-						<td>{% if change['setting'] %}{{change['setting']}}{% end %}</td>
+						<td>{% if change['setting'] %}{{change['setting_raw']}}{% end %}</td>
 						<td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
 					</tr>
 					{% end %}
@@ -245,12 +245,12 @@
 								{% elif setting_row['vartype'] == 'enum' %}
 								<select class="form-control input-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in setting_row['enumvals'][1:-1].split(',') %}<option value="{{v}}" {% if (v.startswith('"') and v.endswith('"') and setting_row['setting'] == v[1:-1]) or setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
 								{% else %}
-								<input data-toggle="popover" data-trigger="hover" data-placement="auto top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control input-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting']}}{%end%}">
+								<input data-toggle="popover" data-trigger="hover" data-placement="auto top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control input-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting_raw']}}{%end%}">
 								{% end %}
 							</td>
 							<td class="action-setting">
-								{% if setting_row['setting'] == setting_row['auto_val'] and ((setting_row['file_val'] and setting_row['setting'] != setting_row['file_val']) or (not setting_row['file_val'] and setting_row['setting'] != setting_row['boot_val']))%}
-								<button type="button" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val'] %} {%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%} {% else %} {%if setting_row['file_val']%}{{setting_row['file_val']}}{%end%} {% end %}'">
+								{% if setting_row['setting_raw'] == setting_row['auto_val_raw'] and ((setting_row['file_val_raw'] and setting_row['setting_raw'] != setting_row['file_val_raw']) or (not setting_row['file_val_raw'] and setting_row['setting'] != setting_row['boot_val']))%}
+								<button type="button" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="auto right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val_raw'] %} {%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%} {% else %} {%if setting_row['file_val_raw']%}{{setting_row['file_val_raw']}}{%end%} {% end %}'">
 									<span class="fa fa-undo" aria-hidden="true"></span>
 								</button>
 								{% end %}
@@ -293,12 +293,12 @@ $(document).ready(function() {
 			$('#resetModal').modal('show');
 			$('[data-toggle=popover]').popover('hide');
 			$('#resetParamName').html('{{change['name']}}');
-			$('#resetParamValue').html('{%if change['setting']%}{{change['setting']}}{%end%}');
+			$('#resetParamValue').html('{%if change['setting']%}{{change['setting_raw']}}{%end%}');
 			$('#resetYesButton').on(
 				'click',
 				function(event) {
 					event.preventDefault();
-					modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting']}}{% end %}", "force": "true"}]});
+					modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
 				}
 			);
 		});
@@ -315,8 +315,8 @@ $(document).ready(function() {
 			$('#resetParamValue').html('{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}');
 				{% set setting_value = setting_row['boot_val'] %}
 			{% else %}
-			$('#resetParamValue').html('{%if setting_row['file_val']%}{{setting_row['file_val']}}{%end%}');
-				{% set setting_value = setting_row['file_val'] %}
+			$('#resetParamValue').html('{%if setting_row['file_val_raw']%}{{setting_row['file_val_raw']}}{%end%}');
+				{% set setting_value = setting_row['file_val_raw'] %}
 			{% end %}
 			$('#resetYesButton').on(
 				'click',
