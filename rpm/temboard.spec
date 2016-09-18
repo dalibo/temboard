@@ -1,7 +1,7 @@
 %global pkgname temboard
 %global confdir %{_sysconfdir}/%{pkgname}
-%global pkgversion 0.0.1
-%global pkgrevision 1
+%{!?pkgversion: %global pkgversion 0.0.1}
+%{!?pkgrevision: %global pkgrevision 1}
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
