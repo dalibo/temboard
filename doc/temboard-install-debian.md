@@ -18,7 +18,7 @@ Add the GPG key of the repository and update the packages list:
 
 ```
 $ sudo apt-get install wget ca-certificates
-$ wget -q -O -- https://packages.temboard.io/apt/265B525B.asc | sudo apt-key add -
+$ wget -q -O - https://packages.temboard.io/apt/265B525B.asc | sudo apt-key add -
 $ sudo apt-get update
 ```
 
