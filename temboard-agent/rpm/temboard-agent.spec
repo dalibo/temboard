@@ -56,6 +56,8 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
 %{__install} -m 640 %{buildroot}/usr/share/temboard-agent/temboard-agent.conf.sample %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
+%{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
+%{__install} -m 644 %{buildroot}/usr/share/temboard-agent/temboard-agent.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard-agent
 # dummy ssl files
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent/ssl
 %{__install} -m 640 %{buildroot}/usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem %{buildroot}/%{_sysconfdir}/temboard-agent/ssl/temboard-agent_ca_certs_CHANGEME.pem
@@ -81,7 +83,7 @@ install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
-#%config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent/*
+%config(noreplace) %{_sysconfdir}/logrotate.d/temboard-agent
 %{python_sitelib}/*
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*

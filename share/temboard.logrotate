@@ -1,0 +1,11 @@
+/var/log/temboard/*.log
+{
+       daily
+       rotate 15
+       copytruncate
+       delaycompress
+       compress
+       notifempty
+       missingok
+       su root root
+}

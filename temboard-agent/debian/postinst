@@ -7,6 +7,7 @@ USERSFILE=$CONFIGDIR'/users'
 LOGDIR='/var/log/temboard-agent'
 LOGFILE='/var/log/temboard-agent/temboard-agent.log'
 HOMEDIR='/var/lib/temboard-agent'
+LOGROTATEFILE='/etc/logrotate.d/temboard-agent'
 
 [ $(/usr/bin/getent group $PGGROUP) ] || /usr/sbin/groupadd $PGGROUP
 if ! /usr/bin/id -u $PGUSER > /dev/null 2>&1; then
@@ -58,6 +59,10 @@ fi
 /bin/chown -R $PGUSER.$PGGROUP $LOGDIR
 if ! [ -f $LOGFILE ]; then
 	/usr/bin/touch $LOGFILE
+fi
+
+if ! [ -f $LOGROTATEFILE ]; then
+        /usr/bin/install -m 644 /usr/share/temboard-agent/temboard-agent.logrotate $LOGROTATEFILE
 fi
 
 /bin/chown $PGUSER.$PGGROUP $LOGFILE

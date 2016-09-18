@@ -29,6 +29,7 @@ setup(
             'share/ssl/temboard_CHANGEME.key',
             'share/ssl/temboard_ca_certs_CHANGEME.pem',
             'share/sql/application.sql',
-            'temboardui/plugins/supervision/sql/supervision.sql']
+            'temboardui/plugins/supervision/sql/supervision.sql',
+            'share/temboard.logrotate']
     )]
 )

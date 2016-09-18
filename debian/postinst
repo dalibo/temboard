@@ -6,6 +6,7 @@ CONFIGFILE=$CONFIGDIR'/temboard.conf'
 RUNDIR='/var/run/temboard'
 LOGDIR='/var/log/temboard'
 LOGFILE='/var/log/temboard/temboard.log'
+LOGROTATEFILE='/etc/logrotate.d/temboard'
 
 [ $(/usr/bin/getent group $PGGROUP) ] || /usr/sbin/groupadd $PGGROUP
 if ! /usr/bin/id -u $PGUSER > /dev/null 2>&1; then
@@ -46,6 +47,10 @@ fi
 
 if ! [ -f $LOGFILE ]; then
         /usr/bin/touch $LOGFILE
+fi
+
+if ! [ -f $LOGROTATEFILE ]; then
+	/usr/bin/install -m 644 /usr/share/temboard/temboard.logrotate $LOGROTATEFILE
 fi
 
 /bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem

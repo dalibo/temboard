@@ -79,6 +79,8 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
 %{__install} -m 640 %{buildroot}/usr/share/temboard/temboard.conf.sample %{buildroot}/%{confdir}/temboard.conf
+%{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
+%{__install} -m 644 %{buildroot}/usr/share/temboard/temboard.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard
 # dummy ssl files
 %{__install} -d -m 750 %{buildroot}/%{confdir}/ssl
 %{__install} -m 640 %{buildroot}/usr/share/temboard/temboard_ca_certs_CHANGEME.pem %{buildroot}/%{confdir}/ssl/temboard_ca_certs_CHANGEME.pem
@@ -101,6 +103,7 @@ install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard.service
 
 %files
 %config(noreplace) %attr(-,temboard,temboard) %{confdir}
+%config(noreplace) %{_sysconfdir}/logrotate.d/temboard
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard

@@ -43,6 +43,11 @@ Copy the sample configuration file:
 $ sudo cp /usr/share/temboard-agent/temboard-agent.conf.sample /etc/temboard-agent/temboard-agent.conf
 ```
 
+Copy the logrotate configuration file:
+```
+$ sudo cp /usr/share/temboard-agent/temboard-agent.logrotate /etc/logrotate.d/temboard-agent
+```
+
 Change owner and rights:
 ```
 $ sudo chown -R postgres.postgres /var/lib/temboard-agent

@@ -25,5 +25,6 @@ setup(
                                             'share/temboard-agent.conf.sample',
                                             'share/temboard-agent_CHANGEME.pem',
                                             'share/temboard-agent_CHANGEME.key',
-                                            'share/temboard-agent_ca_certs_CHANGEME.pem'])]
+                                            'share/temboard-agent_ca_certs_CHANGEME.pem',
+                                            'share/temboard-agent.logrotate'])]
 )

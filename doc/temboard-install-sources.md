@@ -53,6 +53,11 @@ Copy dummies self-signed SSL key and cacerts files:
 $ sudo cp /usr/share/temboard/temboard_* /etc/temboard/ssl/.
 ```
 
+Copy the logrotate configuration file:
+```
+$ sudo cp /usr/share/temboard/temboard.logrotate /etc/logrotate.d/temboard
+```
+
 ## Users
 
 ```
