@@ -14,7 +14,7 @@ Install the `packages.temboard.io` repository by creating the `/etc/yum.repos.d/
 
 ```
 [temboard]
-name=Temboard Packages for Enterprise Linux 6
+name=temBoard Packages for Enterprise Linux 6
 baseurl=https://packages.temboard.io/yum/rhel6/
 enabled=1
 gpgcheck=0
@@ -38,7 +38,7 @@ Install the `packages.temboard.io` repository by creating the `/etc/yum.repos.d/
 
 ```
 [temboard]
-name=Temboard Packages for Enterprise Linux 7
+name=temBoard Packages for Enterprise Linux 7
 baseurl=https://packages.temboard.io/yum/rhel7/
 enabled=1
 gpgcheck=0
@@ -138,7 +138,7 @@ On RHEL / CentOS 7:
 
 ### Stop
 
-n RHEL / CentOS 6:
+On RHEL / CentOS 6:
 
 ```
 # service temboard stop

@@ -1,4 +1,6 @@
-# First connection
+# temBoard UI howto
+
+## First connection
 
 Once `temboard` is up and running, it's time to try a first connection to the web interface with a web browser using `https` at the address `https://<temboard-host>:8888/`.
 
@@ -73,8 +75,12 @@ temboard$ curl https://<temboard-agent-address>:2345/discover
 #### `supervision` plugin
 
 The `supervision` plugin from `temboarg-agent` is in charge to collect system and PostgreSQL metrics about the host is running on. Periodicaly, these data (JSON object) are sent to `temboard` using an `https` API. To allow this data flow, a key must be built and shared between `temboard` and the `temboard-agent`.
+
 On the agent side, the key has to be set in `temboard-agent.conf` file, under the `[supervision]` section, the parameter is `agent-key`. Configuration must be reloaed.
+
 On `temboard` side, you have to edit the corresponding `instance` and set the same key in `Agent secret key` field.
+
+See `doc/temboard-agent-configuration.md` for more information.
 
 #### Agent users
 
