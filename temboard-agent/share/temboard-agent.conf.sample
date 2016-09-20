@@ -59,6 +59,8 @@ dbnames = *
 agent_key = SECRETKEYTOBECHANGED
 collector_url = https://COLLECTORADDRESS:COLLECTORPORT/supervision/collector
 # List of probes to run, comma separator, * for all.
+# Available probes: locks,process,db_size,tblspc_size,sessions,blocks,xacts,replication,loadavg,filesystems_size,cpu,bgwriter,memory,wal_files
+# when monitoring a standby server, 'wal_file' probe shouldn't be loaded.
 probes = *
 # Interval, in second, between each run of the process executing
 # the probes. Default: 60
