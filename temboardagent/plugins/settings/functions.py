@@ -496,8 +496,9 @@ def post_hba(conn, config, http_context):
 
     hba_file = get_setting(conn, 'hba_file')
     hba_entries = []
+    logger.debug(http_context['post']['entries'])
     for entry in http_context['post']['entries']:
-        if 'comment' in entry and len(entry['comment']) > 0:
+        if 'comment' in entry and len(entry['connection']) == 0:
             new_hba_entry = HBAComment()
             new_hba_entry.comment = entry['comment']
         else:
