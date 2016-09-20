@@ -18,7 +18,7 @@ def load_probes(options, home):
     r = re.compile(r'^probe_(\w+)$')
     for c in globals().keys():
         m = r.search(c)
-        if m is not None and issubclass(globals()[c], Probe):
+        if m is not None and issubclass(globals()[c], Probe) and m.group(1) in options['probes']:
             o = eval(c + "(options)")
             o.set_home(home)
             probes.append(o)
