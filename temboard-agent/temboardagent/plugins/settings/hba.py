@@ -95,7 +95,7 @@ class HBAEntry:
     def parse(cls, raw):
         raw = raw.strip()
         if raw.startswith('#'):
-            return HBAComment(raw.strip()[2:])
+            return HBAComment(raw.strip()[1:])
         if not raw.startswith('#') and len(raw) > 0:
             p_anything = r'([^\s]+(?<!\s))'
             p_anything_end = r'(\s*[^#]+)?(.*)$'
