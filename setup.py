@@ -1,6 +1,6 @@
 from setuptools import setup
 
-requires = [ 'tornado>=3.2', 'sqlalchemy>=0.9.8' ]
+requires = [ 'tornado>=3.2', 'sqlalchemy>=0.9.8', 'psycopg2>=2.5.4' ]
 
 setup(
     name = 'temboard',
