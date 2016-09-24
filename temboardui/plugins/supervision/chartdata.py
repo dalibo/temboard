@@ -163,7 +163,7 @@ def get_hitreadratio(session, hostname, port, start, end):
     data_buffer = cStringIO.StringIO()
     tablename = get_tablename('blocks', start, end)
 
-    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, ROUND((SUM(blks_hit)::FLOAT/(SUM(blks_hit) + SUM(blks_read)::FLOAT) * 100)::numeric, 2) AS hit_read_ratio FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime, hostname, port ORDER BY datetime) TO STDOUT WITH CSV HEADER"
+    query = "COPY (SELECT to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date, CASE WHEN (SUM(blks_hit) + SUM(blks_read)) > 0  THEN ROUND((SUM(blks_hit)::FLOAT/(SUM(blks_hit) + SUM(blks_read)::FLOAT) * 100)::numeric, 2) ELSE 100 END AS hit_read_ratio FROM supervision.%s WHERE hostname = '%s' AND port = %s AND datetime >= '%s' AND datetime <= '%s' GROUP BY datetime, hostname, port ORDER BY datetime) TO STDOUT WITH CSV HEADER"
 
     cur = session.connection().connection.cursor()
     cur.copy_expert(query % (tablename, hostname, port, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S')), data_buffer)
