@@ -75,7 +75,7 @@ def check_host_key(session, hostname, agent_key):
         raise Exception("Can't find the target instance in application.instances table.")
     raise Exception("Can't check agent's key.")
 
-def insert_metrics(session, host, agent_data):
+def insert_metrics(session, host, agent_data, logger):
     for metric in agent_data.keys():
         # Do not try to insert empty lines
         if len(agent_data[metric]) == 0:
@@ -93,8 +93,15 @@ def insert_metrics(session, host, agent_data):
         for line in agent_data[metric]:
             if 'measure_interval' in line:
                 line['measure_interval'] = str(line['measure_interval'])
-
-        session.execute(table.insert().values(agent_data[metric]))
+        try:
+            session.execute(table.insert().values(agent_data[metric]))
+            session.flush()
+            session.commit()
+        except Exception as e:
+            logger.info("Metric data not inserted in table '%s'" % (table.name))
+            logger.debug(agent_data[metric])
+            logger.error(str(e))
+            session.rollback()
 
 class SupervisionCollectorHandler(JsonHandler):
     def __init__(self, application, request, **kwargs):
@@ -137,10 +144,11 @@ class SupervisionCollectorHandler(JsonHandler):
             # metrics are inserted with queries not the orm. Tables must
             # be there.
             thread_session.flush()
+            thread_session.commit()
 
             # Insert metrics data
-            insert_metrics(thread_session, host, data['data'])
-            thread_session.commit()
+            insert_metrics(thread_session, host, data['data'], self.logger)
+            # Close the session
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})
         except IntegrityError as e:
