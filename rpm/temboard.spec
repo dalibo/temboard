@@ -16,6 +16,7 @@ URL:		http://tembord.io/
 Source0:	%{pkgname}-%{version}.tar.gz
 Source1:	temboard.init
 Source2:	temboard.service
+Source3:	temboard.cron
 Patch1:		temboardui.plugins.supervision.model.orm.py.patch
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -96,6 +97,9 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 install -d %{buildroot}%{_unitdir}
 install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard.service
 %endif
+# cron file
+%{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/cron.d
+%{__install} -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/cron.d/temboard
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard
 # pidfile directory
@@ -104,6 +108,7 @@ install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard.service
 %files
 %config(noreplace) %attr(-,temboard,temboard) %{confdir}
 %config(noreplace) %{_sysconfdir}/logrotate.d/temboard
+%config(noreplace) %{_sysconfdir}/cron.d/temboard
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard
