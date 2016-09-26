@@ -18,6 +18,7 @@ class perror(Exception):
     Protocol Error.
     """
     def __init__(self, message):
+        Exception.__init__(self, message)
         self.message = message
 
 class error(Exception):
@@ -25,6 +26,7 @@ class error(Exception):
     Connector Error.
     """
     def __init__(self, code, typ, message):
+        Exception.__init__(self, message)
         self.code = code
         self.typ = typ
         self.message = message
@@ -770,6 +772,7 @@ class connector(object):
             for num in value.split('.'):
                 snum = ''
                 num = re.sub(r"devel|beta|rc", "", str(num))
+                num = re.sub(r"^(\d+)[^\d]*.*", r"\1", str(num))
                 if int(num) < 10:
                     snum += '0'
                 snum += str(num)

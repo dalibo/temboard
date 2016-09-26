@@ -18,6 +18,7 @@ class perror(Exception):
     Protocol Error.
     """
     def __init__(self, message):
+        Exception.__init__(self, message)
         self.message = message
 
 class error(Exception):
@@ -25,6 +26,7 @@ class error(Exception):
     Connector Error.
     """
     def __init__(self, code, typ, message):
+        Exception.__init__(self, message)
         self.code = code
         self.typ = typ
         self.message = message
@@ -341,7 +343,7 @@ class protocol3(object):
         self._check_message_length(data, length)
         body = data[5:]
         return (data[0:1], body)
-    
+
     def parse_copy_done(self, data):
         return (data[0:1], None)
 
@@ -434,7 +436,7 @@ class protocol3(object):
         Is a CopyData message ?
         """
         return typ == b'd'
-    
+
     def is_copy_done(self, typ):
         """
         Is a CopyDone message ?
@@ -447,7 +449,7 @@ class protocol3(object):
         (parsed) while dealing with MD5 method.
         """
         return message[1]['salt']
-    
+
     def get_eop_tags(self,):
         """
         Return a tag list corresponding to messages:
@@ -647,7 +649,7 @@ class connector(object):
             except socket.gaierror:
                 raise error('PGC404', 'FATAL', "Unknown name or service \
                         '{host}'".format(host = self._host,))
- 
+
     def _socket_read(self,):
         """
         Read (from the socket), write (into the buffer)
@@ -770,6 +772,7 @@ class connector(object):
             for num in value.split('.'):
                 snum = ''
                 num = re.sub(r"devel|beta|rc", "", str(num))
+                num = re.sub(r"^(\d+)[^\d]*.*", r"\1", str(num))
                 if int(num) < 10:
                     snum += '0'
                 snum += str(num)
@@ -891,10 +894,16 @@ class connector(object):
                     for value in message[1]:
                         if row_desc[i]['type_oid'] in [20, 21, 23]:
                             # Convert PG int2, int4 and int8 to python int()
-                            row[row_desc[i]['name']] = int(value)
+                            try:
+                                row[row_desc[i]['name']] = int(value)
+                            except Exception as e:
+                                row[row_desc[i]['name']] = None
                         elif row_desc[i]['type_oid'] in [700, 701, 1700]:
                             # Convert PG float4, float8 and numeric to python float()
-                            row[row_desc[i]['name']] = float(value)
+                            try:
+                                row[row_desc[i]['name']] = float(value)
+                            except Exception as e:
+                                row[row_desc[i]['name']] = None
                         elif row_desc[i]['type_oid'] == 16:
                             # Convert PG boolean to python's
                             if value == 't':
