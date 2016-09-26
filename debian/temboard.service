@@ -1,0 +1,27 @@
+# It's not recommended to modify this file in-place, because it will be
+# overwritten during package upgrades.  If you want to customize, the
+# best way is to create a file "/etc/systemd/system/temboard.service",
+# containing
+#	.include /lib/systemd/system/temboard.service
+#	...make your changes here...
+# For more info about custom unit files, see
+# http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F
+
+[Unit]
+Description=temBoard Web UI
+After=network.target syslog.target
+
+[Service]
+Type=forking
+
+User=temboard
+Group=temboard
+
+PIDFile=/var/run/temboard/temboard.pid
+
+ExecStart=/usr/bin/temboard -c /etc/temboard/temboard.conf -d -p /var/run/temboard/temboard.pid
+ExecStop=/bin/kill -TERM $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
