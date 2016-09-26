@@ -16,7 +16,7 @@ except ImportError:
 from temboardagent.routing import add_route, add_worker
 from temboardagent.configuration import (PluginConfiguration, ConfigurationError,
                                     Configuration)
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (HTTPError, SharedItem_exists,
@@ -263,50 +263,62 @@ def supervision_collector_worker(commands, command, config):
     logger = get_logger(config)
     # TODO: logging methods in supervision plugin must be aligned.
     logging.root = logger
-    logger.info("Start pid=%s id=%s" % (os.getpid(), command.commandid,))
+    logger.debug("Starting with pid=%s" % (os.getpid()))
+    logger.debug("commandid=%s" % (command.commandid))
     command.state = COMMAND_START
     command.time = time.time()
-    command.pid = os.getpid()
-    commands.update(command)
+
     try:
+        command.pid = os.getpid()
+        commands.update(command)
         system_info = host_info(config.plugins['supervision'])
-    except ValueError as e:
-        logger.error("supervision_collector_worker - unable to get system information: %s\n" % str(e))
+    except (ValueError, Exception) as e:
+        logger.traceback(get_tb())
+        logger.error(str(e))
+        logger.debug("Failed.")
         sys.exit(1)
 
    # Load the probes to run
-    probes = load_probes(config.plugins['supervision'], config.temboard['home'])
-    config.plugins['supervision']['conninfo'] = [{
-        'host': config.postgresql['host'],
-        'port': config.postgresql['port'],
-        'user': config.postgresql['user'],
-        'database': config.postgresql['dbname'],
-        'password': config.postgresql['password'],
-        'dbnames': config.plugins['supervision']['dbnames'],
-        'instance': config.postgresql['instance']
-    }]
+    try:
+        probes = load_probes(config.plugins['supervision'], config.temboard['home'])
+        config.plugins['supervision']['conninfo'] = [{
+            'host': config.postgresql['host'],
+            'port': config.postgresql['port'],
+            'user': config.postgresql['user'],
+            'database': config.postgresql['dbname'],
+            'password': config.postgresql['password'],
+            'dbnames': config.plugins['supervision']['dbnames'],
+            'instance': config.postgresql['instance']
+        }]
 
-    # Validate connection information from the config, and ensure
-    # the instance is available
-    instances = []
-    for conninfo in config.plugins['supervision']['conninfo']:
-        logging.debug("Validate connection information on instance \"%s\"", conninfo['instance'])
-        instances.append(instance_info(conninfo, system_info['hostname']))
+        # Validate connection information from the config, and ensure
+        # the instance is available
+        instances = []
+        for conninfo in config.plugins['supervision']['conninfo']:
+            logging.debug("Validate connection information on instance \"%s\"", conninfo['instance'])
+            instances.append(instance_info(conninfo, system_info['hostname']))
 
-    # Gather the data from probes
-    data = run_probes(probes, system_info['hostname'], instances)
+        # Gather the data from probes
+        data = run_probes(probes, system_info['hostname'], instances)
 
-    # Prepare and send output
-    output = {
-        'datetime': now(),
-        'hostinfo': system_info,
-        'instances': remove_passwords(instances),
-        'data': data,
-        'version': __VERSION__
-    }
-    q = Queue('%s/metrics.q'% (config.temboard['home']), max_size = 1024 * 1024 * 10, overflow_mode = 'slide')
-    q.push(Message(content = json.dumps(output)))
-    logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
+        # Prepare and send output
+        output = {
+            'datetime': now(),
+            'hostinfo': system_info,
+            'instances': remove_passwords(instances),
+            'data': data,
+            'version': __VERSION__
+        }
+        q = Queue('%s/metrics.q'% (config.temboard['home']), max_size = 1024 * 1024 * 10, overflow_mode = 'slide')
+        q.push(Message(content = json.dumps(output)))
+    except Exception as e:
+        logger.traceback(get_tb())
+        logger.error(str(e))
+        logger.debug("Failed.")
+        sys.exit(1)
+
+    logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
+    logger.debug("Done.")
 
 @add_worker(b'supervision_sender')
 def supervision_sender_worker(commands, command, config):
@@ -316,7 +328,8 @@ def supervision_sender_worker(commands, command, config):
     logger = get_logger(config)
     # TODO: logging methods in supervision plugin must be aligned.
     logging.root = logger
-    logger.info("Start pid=%s id=%s" % (os.getpid(), command.commandid,))
+    logger.debug("Starting with pid=%s" % (os.getpid()))
+    logger.debug("commandid=%s" % (command.commandid))
     command.state = COMMAND_START
     command.time = time.time()
     command.pid = os.getpid()
@@ -336,23 +349,25 @@ def supervision_sender_worker(commands, command, config):
                     config.plugins['supervision']['agent_key'],
                     msg.content)
         except urllib2.HTTPError as e:
-            logger.error("Failed to send data.")
-            logger.debug(e.message)
-            logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
+            logger.traceback(get_tb())
+            logger.error(str(e))
             # On an error 409 (DB Integrity) we need to remove the message.
             if int(e.code) != 409:
-                return
+                logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
+                logger.debug("Failed.")
+                sys.exit(1)
         except Exception as e:
-            logger.error("Failed to send data.")
-            logger.debug(str(e))
-            logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
-            return
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
+            logger.debug("Failed.")
+            sys.exit(1)
         _ = q.shift(delete = True, check_msg = msg)
         if c > 60:
-            logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
-            return
+            break
         c += 1
-    logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
+    logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
+    logger.debug("Done.")
 
 def scheduler(queue_in, config, commands):
     # Schedule collector worker.

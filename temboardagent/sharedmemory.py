@@ -137,7 +137,7 @@ class Commands(object):
                 (self.commands[i].time + ttl) < time.time() and \
                 (self.commands[i].state == COMMAND_DONE or \
                     self.commands[i].state == COMMAND_ERROR):
-                logger.info("Command %s will be removed from shared memory." %
+                logger.debug("Removing command with commandid=%s" %
                                 (self.commands[i].commandid))
                 # Deletion: overwrite array element by a null Command.
                 self.commands[i] = Command()
@@ -150,8 +150,7 @@ class Commands(object):
                 try:
                    os.getpgid(self.commands[i].pid)
                 except OSError as e:
-                    logger.info("Command %s will be removed from shared memory,"
-                                " the worker process is dead." %
+                    logger.debug("Removing command with commandid=%s." %
                                 (self.commands[i].commandid))
                     self.commands[i] = Command()
 
@@ -251,7 +250,7 @@ class Sessions(object):
         for i in range(0, self.size):
             if len(self.sessions[i].sessionid) == T_SESSIONID_SIZE and \
                 (self.sessions[i].time + ttl) < time.time():
-                logger.info("Session %s has expired." %
+                logger.info("Session with sessionid=%s expired." %
                                 (self.sessions[i].sessionid))
                 try:
                     NotificationMgmt.push(config, Notification(

@@ -2,7 +2,7 @@ import os
 import sys
 import imp
 import time
-from temboardagent.logger import get_logger
+from temboardagent.logger import get_logger, get_tb
 from temboardagent.spc import connector, error
 from temboardagent.errors import HTTPError
 
@@ -37,6 +37,8 @@ def load_plugins_configurations(config):
             pg_version = conn.get_pg_version()
             conn.close()
         except Exception as e:
+            logger.traceback(get_tb())
+            logger.error(str(e))
             logger.error("Not able to get PostgreSQL version number.")
             try:
                 conn.close()
@@ -59,33 +61,38 @@ def load_plugins_configurations(config):
             try:
                 if (module_compat.PG_MIN_VERSION > pg_version):
                     # Version not supported
-                    logger.error("-> PostgreSQL version (%s) is not supported by this plugin (min:%s)."
+                    logger.error("PostgreSQL version (%s) is not supported (min:%s)."
                                     % (pg_version, module_compat.PG_MIN_VERSION))
+                    logger.info("Failed.")
                     continue
-                else:
-                    logger.info("-> PostgreSQL version (%s) is supported by this plugin." % (pg_version))
             except ValueError as e:
                 # PG_MIN_VERSION not set
                 pass
         except Exception as e:
-            pass
+            if fp_s:
+                fp_s.close()
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            logger.info("Failed.")
+            continue
+        logger.info("Done.")
         try:
             # Locate and load the module with imp.
             fp, pathname, description = imp.find_module(plugin_name, [path + '/plugins'])
             module = imp.load_module(plugin_name, fp, pathname, description)
             # Try to run module's configuration() function.
-            logger.info("-> loading configuration.")
+            logger.info("Loading plugin '%s' configuration." % (plugin_name))
             plugin_configuration = getattr(module, 'configuration')(config)
             ret.update({module.__name__: plugin_configuration})
-            fp.close()
+            logger.info("Done.")
         except AttributeError as e:
-            if fp:
-                fp.close()
-            logger.error("-> error: %s" % str(e))
+            logger.info("No configuration.")
         except Exception as e:
             if fp:
                 fp.close()
-            logger.error("-> error: %s" % str(e))
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            logger.info("Failed.")
 
     return ret
 
@@ -113,11 +120,16 @@ def exec_scheduler(queue_in, config, commands, logger):
              config.plugins[plugin_name]['scheduler_interval']:
             continue
         try:
+            logger.debug("Running %s.scheduler()" % (plugin_name))
             # Call plugin's scheduler() function.
             getattr(sys.modules[plugin_name], 'scheduler')(queue_in, config, commands)
             PLUGINS_LAST_SCHEDULE[plugin_name] = time.time()
+            logger.debug("Done.")
         except AttributeError as e:
             # scheduler() function does not exist.
+            logger.debug("Function does not exist.")
             pass
         except Exception as e:
-            logger.error("scheduler - %s: %s" % (plugin_name, str(e)))
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            logger.debug("Failed.")
