@@ -1,7 +1,6 @@
 import time
 import pickle
 import base64
-from traceback import format_exc
 
 from temboardagent.routing import add_route
 from temboardagent.errors import (HTTPError, SharedItem_exists,
@@ -11,7 +10,7 @@ from temboardagent.sharedmemory import Session, Command
 from temboardagent.types import *
 from temboardagent.tools import validate_parameters, hash_id
 from temboardagent.usermgmt import auth_user, gen_sessionid
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.spc import connector, error
 from temboardagent.command import exec_command
 from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
@@ -86,12 +85,18 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
     # Add an unconditional sleeping time to reduce brute-force risks
     time.sleep(1)
 
-    validate_parameters(post,
-        [('username', T_USERNAME, False),
-        ('password', T_PASSWORD, False)])
-    logger.info("[login] Authenticating user: %s" % (post['username']))
-    auth_user(config.temboard['users'], post['username'],
+    logger.info("Authenticating user: %s" % (post['username']))
+    try:
+        validate_parameters(post,
+            [('username', T_USERNAME, False),
+            ('password', T_PASSWORD, False)])
+        auth_user(config.temboard['users'], post['username'],
                 post['password'])
+    except HTTPError as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Authentication failed.")
+        raise e
     try:
         session = sessions.get_by_username(post['username'])
         if not session:
@@ -107,10 +112,12 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
                                         username = post['username'],
                                         message = "Login"))
         except NotificationError as e:
+            logger.traceback(get_tb())
             logger.error(e.message)
 
     except (SharedItem_exists, SharedItem_no_free_slot_left) as e:
-        logger.error("[login] %s"% str(e))
+        logger.traceback(get_tb())
+        logger.error(e.message)
         raise HTTPError(500, "Internal error.")
     return {'session': sessionid}
 
@@ -160,20 +167,28 @@ def logout(http_context, queue_in = None, config = None, sessions = None, comman
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
-    username = check_sessionid(headers, sessions)
-    logger.info("[logout] User session: %s" % (headers['X-Session']))
+    logger.info("Removing session: %s" % (headers['X-Session']))
+    try:
+        username = check_sessionid(headers, sessions)
+    except HTTPError as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Invalid session.")
+        raise e
 
     try:
         NotificationMgmt.push(config, Notification(
                                         username = username,
                                         message = "Logout"))
     except NotificationError as e:
+        logger.traceback(get_tb())
         logger.error(e.message)
 
     try:
         sessions.delete(headers['X-Session'].encode('utf-8'))
     except (SharedItem_exists, SharedItem_no_free_slot_left) as e:
-        logger.error("[logout] %s"% str(e))
+        logger.traceback(get_tb())
+        logger.error(e.message)
         raise HTTPError(500, "Internal error.")
     return {'logout': True}
 
@@ -223,6 +238,7 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
         password = config.postgresql['password'],
         database = config.postgresql['dbname']
     )
+    logger.info('Starting discovery.')
     try:
         conn.connect()
         ret = {
@@ -235,16 +251,19 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
             'plugins': [plugin_name for plugin_name in config.temboard['plugins']]
         }
         conn.close()
+        logger.info('Discovery done.')
         return ret
 
     except (error, Exception, HTTPError) as e:
-        logger.error(format_exc())
+        logger.traceback(get_tb())
+        logger.error(str(e))
+        logger.info('Discovery failed.')
         try:
             conn.close()
         except Exception:
             pass
         if isinstance(e, HTTPError):
-            raise HTTPError(e.code, e.message['error'])
+            raise e
         else:
             raise HTTPError(500, "Internal error.")
 
@@ -295,19 +314,37 @@ def profile(http_context, queue_in = None, config = None, sessions = None, comma
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
-    check_sessionid(headers, sessions)
-    logger.info("[profile] User session: %s" % (headers['X-Session']))
+    logger.info("Get user profile.")
+    try:
+        check_sessionid(headers, sessions)
+    except HTTPError as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Invalid session.")
+        raise e
     try:
         session = sessions.get_by_sessionid(headers['X-Session'].encode('utf-8'))
+        logger.info("Done.")
         return {'username': session.username}
-    except SharedItem_not_found:
+    except SharedItem_not_found as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Failed.")
         raise HTTPError(401, "Invalid session.")
 
 @add_route('GET', '/command/'+T_COMMANDID)
 def get_command(http_context, queue_in = None, config = None, sessions = None, commands = None):
+    headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
-    check_sessionid(http_context['headers'], sessions)
+    logger.info("Get command status.")
+    try:
+        check_sessionid(headers, sessions)
+    except HTTPError as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Invalid session.")
+        raise e
     cid = http_context['urlvars'][0]
     try:
         command = commands.get_by_commandid(cid.encode('utf-8'))
@@ -316,8 +353,12 @@ def get_command(http_context, queue_in = None, config = None, sessions = None, c
         c_result = command.result
         if c_state == COMMAND_DONE or c_state == COMMAND_ERROR:
             commands.delete(cid.encode('utf-8'))
+        logger.info("Done.")
         return {'cid': cid, 'time': c_time, 'state': c_state, 'result': c_result}
-    except SharedItem_not_found:
+    except SharedItem_not_found as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Failed.")
         raise HTTPError(401, "Invalid command.")
 
 @add_route('GET', '/notifications')
@@ -378,11 +419,21 @@ def notifications(http_context, queue_in = None, config = None, sessions = None,
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
-    username = check_sessionid(headers, sessions)
+    logger.info("Get notifications.")
+    try:
+        username = check_sessionid(headers, sessions)
+    except HTTPError as e:
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Invalid session.")
+        raise e
 
     try:
         notifications = NotificationMgmt.get_last_n(config, -1)
+        logger.info("Done.")
         return list(notifications)
     except (NotificationError, Exception) as e:
-        logger.error("[notifications] %s"% str(e))
+        logger.traceback(get_tb())
+        logger.error(e.message)
+        logger.info("Failed.")
         raise HTTPError(500, "Internal error.")

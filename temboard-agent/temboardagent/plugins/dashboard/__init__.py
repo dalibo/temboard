@@ -7,15 +7,14 @@ try:
 except ImportError:
     from  ConfigParser import NoOptionError
 
-from traceback import format_exc
 from temboardagent.routing import add_route
 from temboardagent.api_wrapper import *
-from temboardagent.logger import set_logger_name
+from temboardagent.logger import set_logger_name, get_tb
 from temboardagent.spc import connector, error
 from temboardagent.routing import add_route, add_worker
 from temboardagent.configuration import (PluginConfiguration, ConfigurationError,
                                     Configuration)
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (HTTPError, SharedItem_exists,
@@ -569,7 +568,7 @@ def dashboard_info(http_context, queue_in = None, config = None, sessions = None
     return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_info')
 
 def dashboard_worker_sigterm_handler(signum, frame):
-    logging.info("dashboard_collector_worker - SIGTERM")
+    logging.info("Dashboard collector worker received SIGTERM")
     sys.exit(1)
 
 @add_worker(b'dashboard_collector')
@@ -577,9 +576,10 @@ def dashboard_collector_worker(commands, command, config):
     try:
         signal.signal(signal.SIGTERM, dashboard_worker_sigterm_handler)
         start_time = time.time() * 1000
-        set_logger_name("dashboard_collector_worker")
+        set_logger_name("dashboard_collector")
         logger = get_logger(config)
-        logger.info("Start pid=%s id=%s" % (getpid(), command.commandid,))
+        logger.debug("Starting with pid=%s" % (getpid()))
+        logger.debug("commandid=%s" % (command.commandid))
         command.state = COMMAND_START
         command.time = time.time()
         command.pid = getpid()
@@ -600,16 +600,17 @@ def dashboard_collector_worker(commands, command, config):
         conn.close()
         q = Queue('%s/dashboard.q'% (config.temboard['home']), max_length = (config.plugins['dashboard']['history_length']+1), overflow_mode = 'slide')
         q.push(Message(content = json.dumps(db_metrics)))
-        logger.info("End. Duration: %s." % (str(time.time() * 1000 - start_time)))
+        logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
+        logger.debug("Done.")
     except (error, Exception) as e:
-        logger.error(format_exc())
+        logger.traceback(get_tb())
+        logger.error(str(e))
+        logger.debug("Failed.")
         try:
             conn.close()
         except Exception:
             pass
-        logger.error("dashboard_collector_worker - unable to get metrics: %s\n" % str(e))
         sys.exit(1)
-
 
 def scheduler(queue_in, config, commands):
     logger = get_logger(config)

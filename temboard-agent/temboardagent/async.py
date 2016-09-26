@@ -1,9 +1,10 @@
 from multiprocessing import Process
 import time
 import signal
+from os import getpid
 
 from temboardagent.sharedmemory import Command
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import get_logger, set_logger_name, get_tb
 import temboardagent.workers
 from temboardagent.routing import get_worker
 from temboardagent.daemon import (set_global_workers, scheduler_sigterm_handler,
@@ -32,9 +33,9 @@ def Scheduler(commands, queue_in, config, sessions):
     """
     Asynchronous command scheduler in charge of:
         - fetching new async command from the command queue.
-        - if any new command, starting a new worker process to handle it.
+        - if any new command, starting a new worker process.
         - doing maintenance tasks like sessions and commands clean-up.
-        - execute each function named scheduler() from the loaded plugins. 
+        - executing function named scheduler() from each loaded plugins. 
     """
     set_logger_name("scheduler")
     logger = get_logger(config)
@@ -43,26 +44,30 @@ def Scheduler(commands, queue_in, config, sessions):
     signal.signal(signal.SIGTERM, scheduler_sigterm_handler)
     signal.signal(signal.SIGHUP, scheduler_sighup_handler)
 
-    logger.info("Starting")
+    logger.debug("Starting with pid=%s", (getpid()))
     workers = []
     while True:
         if reload_true():
             # SIGHUP signal caught.
             try:
                 logger.info("SIGHUP signal caught, trying to reload"
-                            " configuration file.")
+                            " configuration.")
                 new_config =  Configuration(config.configfile)
                 # Prevent any change on plugins list..
                 new_config.temboard['plugins'] = config.temboard['plugins']
                 new_config.plugins = load_plugins_configurations(new_config)
+                # Logger re-creation.
                 del logger
                 set_logger_name("scheduler")
                 logger = get_logger(new_config)
                 config = new_config
+                logger.info("New configuration loaded.")
             except (ConfigurationError, ImportError) as e:
-                logger.error("Keeping old configuration: %s."
-                                % (str(e)))
-            set_global_reload(False);
+                logger.traceback(get_tb())
+                logger.error(str(e))
+                logger.info("Some error occured, keeping old configuration.")
+
+            set_global_reload(False)
 
         try:
             # Fetch one new input from the command queue.
