@@ -365,7 +365,7 @@ def post_settings(conn, config, http_context):
                                         username = http_context['username'],
                                         message = "Setting '%s' changed: '%s' -> '%s'" % (
                                                         pg_config_item['name'],
-                                                        pg_config_item['setting'],
+                                                        pg_config_item['setting_raw'],
                                                         setting['setting'])))
             except NotificationError as e:
                 logger.error(e.message)
