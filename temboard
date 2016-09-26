@@ -151,6 +151,7 @@ def main():
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     application.listen(config.temboard['port'], address = config.temboard['address'], ssl_options = ssl_ctx)
+    logger.info("Starting temboardui on %s:%d" % (config.temboard['address'], config.temboard['port']))
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
