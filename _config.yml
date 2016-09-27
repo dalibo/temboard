@@ -1,0 +1,12 @@
+# Site settings
+name: temBoard
+title: PostgreSQL Remote Control
+email: contact@dalibo.com
+description: "temBoard centralizes the management, monitoring and supervision of many PostgreSQL servers"
+baseurl: ""
+url: "https://temboard.io"
+twitter_username: temboardio
+
+# Build settings
+markdown: kramdown
+permalink: pretty

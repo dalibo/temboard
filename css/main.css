@@ -1,0 +1,35 @@
+body {
+  font: 12px/1.5 Bitstream Vera Sans, Helvetica, Arial, sans-serif;
+  color: #000;
+}
+
+.splash {
+    padding-top: 120px;
+    margin-bottom: 75px;
+}
+
+.navbar-default .navbar-brand, .navbar-default .navbar-nav>li>a {
+    color: #000;
+}
+
+.navbar-default .navbar-nav>li>a:hover,
+.navbar-default .navbar-nav>li>a:focus {
+    color: #5e5e5e;
+}
+
+.footer {
+    width: 100%;
+    background-color: #f5f5f5;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.pane {
+    margin-top: 50px;
+    margin-bottom: 120px;
+}
+
+.copyright {
+    padding-top: 20px;
+    font-size: 0.8em;
+}
