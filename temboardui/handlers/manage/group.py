@@ -8,6 +8,7 @@ from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
+from temboardui.logger import get_tb
 
 class ManageGroupAllJsonHandler(JsonHandler):
 
@@ -17,15 +18,18 @@ class ManageGroupAllJsonHandler(JsonHandler):
 
     def get_all(self, group_kind):
         try:
+            self.logger.info("Getting group list.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             groups = get_group_list(self.db_session, group_kind);
-            
+            self.logger.debug(groups)
+
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(
                     200,
                     {
@@ -34,7 +38,9 @@ class ManageGroupAllJsonHandler(JsonHandler):
                     }
                 )
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.info("Failed.")
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -50,6 +56,7 @@ class ManageGroupJsonHandler(JsonHandler):
     @tornado.web.asynchronous
     def get(self, group_kind, group_name = None):
         if group_name is None:
+            self.logger.error("Group name is missing.")
             self.set_status(500)
             self.set_header("Content-Type", "application/json")
             self.write(json.dumps({'error': "Group name is missing."}))
@@ -63,16 +70,19 @@ class ManageGroupJsonHandler(JsonHandler):
 
     def get_group(self, group_kind, group_name):
         try:
+            self.logger.info("Getting group by name.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             group = get_group(self.db_session, group_name, group_kind)
-            
+            self.logger.debug(group)
+
             if group_kind == 'role':
                 self.db_session.expunge_all()
                 self.db_session.commit()
                 self.db_session.close()
+                self.logger.info("Done")
                 return JSONAsyncResult(
                     200,
                     {
@@ -86,6 +96,7 @@ class ManageGroupJsonHandler(JsonHandler):
                 self.db_session.expunge_all()
                 self.db_session.commit()
                 self.db_session.close()
+                self.logger.info("Done.")
                 return JSONAsyncResult(
                     200,
                     {
@@ -98,7 +109,9 @@ class ManageGroupJsonHandler(JsonHandler):
                 )
                 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -111,6 +124,7 @@ class ManageGroupJsonHandler(JsonHandler):
 
     def post_group(self, group_kind, group_name):
         try:
+            self.logger.info("Posting new group.")
             group = None
             self.load_auth_cookie()
             self.start_db_session()
@@ -120,13 +134,13 @@ class ManageGroupJsonHandler(JsonHandler):
                 group = get_group(self.db_session, group_name, group_kind)
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
 
             # Submited attributes checking.
             if 'new_group_name' not in data or data['new_group_name'] == '':
                 raise TemboardUIError(400, "Group name is missing.")
             if 'description' not in data:
                 raise TemboardUIError(400, "Group description field is missing.")
-
             check_group_name(data['new_group_name'])
             check_group_description(data['description'])
 
@@ -155,10 +169,13 @@ class ManageGroupJsonHandler(JsonHandler):
 
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'ok': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -177,20 +194,26 @@ class ManageDeleteGroupJsonHandler(JsonHandler):
 
     def delete_group(self, group_kind):
         try:
+            self.logger.info("Deleting group.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
+
             if 'group_name' not in data or data['group_name'] == '':
                 raise TemboardUIError(400, "Group name field is missing.")
             delete_group(self.db_session, data['group_name'], group_kind)
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -209,21 +232,27 @@ class ManageGroupHandler(BaseHandler):
 
     def get_index(self, group_kind):
         try:
+            self.logger.info("Group list.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             group_list = get_group_list(self.db_session, group_kind)
+            self.logger.debug(group_list)
+
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     200,
                     None,
                     {'nav': True , 'role': self.current_user, 'group_list': group_list, 'group_kind': group_kind},
                     template_file = 'manage/group.html')
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()

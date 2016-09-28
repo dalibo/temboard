@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
-from temboardui.temboardclient import TemboardError
+from temboardui.logger import get_tb
 
 def configuration(config):
     return {}
@@ -30,6 +30,7 @@ class DashboardHandler(BaseHandler):
 
     def get_dashboard(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting dashboard.")
             instance = None
             role = None
 
@@ -61,6 +62,7 @@ class DashboardHandler(BaseHandler):
                 # If dashboard history is empty, let's try to get data from the live data source.
                 last_data = temboard_dashboard_live(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
                 history = ''
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                 http_code = 200,
                 template_file = 'dashboard.html',
@@ -76,7 +78,9 @@ class DashboardHandler(BaseHandler):
                     'xsession': xsession
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -87,7 +91,6 @@ class DashboardHandler(BaseHandler):
                 if e.code == 401:
                     return HTMLAsyncResult(http_code = 401, redirection = "/server/%s/%s/login" % (agent_address, agent_port))
                 elif e.code == 302:
-                    self.logger.error(".....")
                     return HTMLAsyncResult(http_code = 401, redirection = "/login")
                 code = e.code
             else:
@@ -111,6 +114,7 @@ class DashboardProxyHandler(JsonHandler):
 
     def get_dashboard(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting dashboard (proxy).")
             role = None
             instance = None
 
@@ -134,9 +138,12 @@ class DashboardProxyHandler(JsonHandler):
                 raise TemboardUIError(401, 'X-Session header missing')
 
             dashboard_data = temboard_dashboard(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = dashboard_data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:

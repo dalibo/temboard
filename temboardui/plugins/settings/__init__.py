@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
-from temboardui.temboardclient import TemboardError
+from temboardui.logger import get_tb
 
 def configuration(config):
     return {}
@@ -38,6 +38,7 @@ class ConfigurationHandler(BaseHandler):
 
     def get_configuration(self, agent_address, agent_port, category = None):
         try:
+            self.logger.info("Getting configuration.")
             instance = None
             role = None
 
@@ -80,6 +81,7 @@ class ConfigurationHandler(BaseHandler):
                                     xsession,
                                     tornado.escape.url_escape(tornado.escape.url_unescape(category)),
                                     query_filter)
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -96,7 +98,9 @@ class ConfigurationHandler(BaseHandler):
                         'query_filter': query_filter
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -128,6 +132,7 @@ class ConfigurationHandler(BaseHandler):
 
     def post_configuration(self, agent_address, agent_port, category = None):
         try:
+            self.logger.info("Posting configuration.")
             instance = None
             role = None
 
@@ -194,6 +199,7 @@ class ConfigurationHandler(BaseHandler):
                                     xsession,
                                     tornado.escape.url_escape(tornado.escape.url_unescape(category)),
                                     query_filter)
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -213,7 +219,9 @@ class ConfigurationHandler(BaseHandler):
                         'query_filter': query_filter
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -246,6 +254,7 @@ class ConfigurationHandler(BaseHandler):
 class ConfigurationFileHandler(BaseHandler):
     def get_configuration_file(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting configuration (file).")
             instance = None
             role = None
 
@@ -275,6 +284,7 @@ class ConfigurationFileHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession)
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -288,7 +298,9 @@ class ConfigurationFileHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -323,6 +335,7 @@ class ConfigurationFileHandler(BaseHandler):
         error_message = None
         ret_post = None
         try:
+            self.logger.info("Posting configuration (file).")
             instance = None
             role = None
 
@@ -360,9 +373,15 @@ class ConfigurationFileHandler(BaseHandler):
                                 instance.agent_port,
                                 xsession,
                                 {'action': 'reload'})
-            except TemboardError as e:
-                error_code = e.code
-                error_message = e.message
+            except (TemboardError, Exception) as e:
+                self.logger.traceback(get_tb())
+                self.logger.error(str(e))
+                if isintance(TemboardError, e):
+                    error_code = e.code
+                    error_message = e.message
+                else:
+                    error_code = 500
+                    error_message = "Internale error."
             # Load file content.
             file_content = temboard_get_file_content(
                                 self.ssl_ca_cert_file,
@@ -370,7 +389,7 @@ class ConfigurationFileHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession)
-
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -387,7 +406,9 @@ class ConfigurationFileHandler(BaseHandler):
                         'ret_post': ret_post
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -427,6 +448,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
 
     def get_configuration_file(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting configuration (file).")
             instance = None
             role = None
             self.load_auth_cookie()
@@ -467,6 +489,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession)
+                self.logger.info("Done.")
                 return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -495,6 +518,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession)
+                self.logger.info("Done.")
                 return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -510,7 +534,9 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -545,6 +571,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
         error_message = None
         ret_post = None
         try:
+            self.logger.info("Posting configuration (file).")
             instance = None
             role = None
 
@@ -582,9 +609,15 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 instance.agent_port,
                                 xsession,
                                 {'action': 'reload'})
-            except TemboardError as e:
-                error_code = e.code
-                error_message = e.message
+            except (TemboardError, Exception) as e:
+                self.logger.traceback(get_tb())
+                self.logger.error(str(e))
+                if isinstance(TemboardError, e):
+                    error_code = e.code
+                    error_message = e.message
+                else:
+                    error_code = 500
+                    error_message = "Internale error."
             # Load file content.
             file_content = temboard_get_file_content(
                                 self.ssl_ca_cert_file,
@@ -592,7 +625,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 instance.agent_address,
                                 instance.agent_port,
                                 xsession)
-
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -609,7 +642,9 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'ret_post': ret_post
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -657,6 +692,7 @@ class AdminControlProxyHandler(JsonHandler):
 
     def post_control(self, agent_address, agent_port):
         try:
+            self.logger.info("Posting control (proxy).")
             instance = None
             role = None
 
@@ -685,9 +721,12 @@ class AdminControlProxyHandler(JsonHandler):
                         instance.agent_port,
                         xsession,
                         tornado.escape.json_decode(self.request.body))
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -706,6 +745,7 @@ class ConfigurationProxyHandler(JsonHandler):
 
     def post_configuration(self, agent_address, agent_port):
         try:
+            self.logger.info("Posting configuration (proxy).")
             instance = None
             role = None
 
@@ -734,9 +774,12 @@ class ConfigurationProxyHandler(JsonHandler):
                         agent_port,
                         xsession,
                         tornado.escape.json_decode(self.request.body))
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -753,6 +796,7 @@ class ConfigurationProxyHandler(JsonHandler):
 class HBAOptionsProxyHandler(JsonHandler):
     def get_hba_options(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting HBA options (proxy).")
             role = None
             instance = None
 
@@ -776,9 +820,12 @@ class HBAOptionsProxyHandler(JsonHandler):
                 raise TemboardUIError(401, 'X-Session header missing')
 
             hba_options = temboard_get_hba_options(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = hba_options)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -795,6 +842,7 @@ class HBAOptionsProxyHandler(JsonHandler):
 class HBAProxyHandler(JsonHandler):
     def post_hba(self, agent_address, agent_port):
         try:
+            self.logger.info("Posting HBA (proxy).")
             instance = None
             role = None
 
@@ -831,9 +879,12 @@ class HBAProxyHandler(JsonHandler):
                         instance.agent_port,
                         xsession,
                         {'action': 'reload'})
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -850,6 +901,7 @@ class HBAProxyHandler(JsonHandler):
 class HBADeleteProxyHandler(JsonHandler):
     def delete_hba(self, agent_address, agent_port):
         try:
+            self.logger.info("Deleting HBA (proxy).")
             instance = None
             role = None
 
@@ -878,9 +930,12 @@ class HBADeleteProxyHandler(JsonHandler):
                         instance.agent_port,
                         xsession,
                         self.get_argument('version', None))
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = res)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:

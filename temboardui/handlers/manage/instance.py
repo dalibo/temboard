@@ -8,7 +8,7 @@ from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import temboard_discover, TemboardError
-
+from temboardui.logger import get_tb
 
 class ManageInstanceJsonHandler(JsonHandler):
 
@@ -18,8 +18,10 @@ class ManageInstanceJsonHandler(JsonHandler):
             self.set_status(500)
             self.set_header("Content-Type", "application/json")
             if agent_address is None:
+                self.logger.error("Agent address is missing.")
                 self.write(json.dumps({'error': "Agent address is missing."}))
             else:
+                self.logger.error("Agent port is missing.")
                 self.write(json.dumps({'error': "Agent port is missing."}))
             self.finish()
         else:
@@ -31,6 +33,7 @@ class ManageInstanceJsonHandler(JsonHandler):
 
     def get_instance(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting instance.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
@@ -42,6 +45,7 @@ class ManageInstanceJsonHandler(JsonHandler):
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(
                     200,
                     {
@@ -61,7 +65,9 @@ class ManageInstanceJsonHandler(JsonHandler):
                     }
                 )
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -74,6 +80,7 @@ class ManageInstanceJsonHandler(JsonHandler):
 
     def post_instance(self, agent_address, agent_port):
         try:
+            self.logger.info("Posting instance.")
             instance = None
             self.load_auth_cookie()
             self.start_db_session()
@@ -85,6 +92,7 @@ class ManageInstanceJsonHandler(JsonHandler):
                     raise TemboardUIError(404, "Instance entry not found.") 
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
 
             # Submited attributes checking.
             if 'new_agent_address' not in data or data['new_agent_address'] == '':
@@ -161,10 +169,13 @@ class ManageInstanceJsonHandler(JsonHandler):
                     else:
                         raise TemboardUIError(404, "Unknown plugin.")
             self.db_session.commit()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'ok': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -183,11 +194,13 @@ class ManageDeleteInstanceJsonHandler(JsonHandler):
 
     def delete_instance(self):
         try:
+            self.logger.info("Deleting instance.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
             if 'agent_address' not in data or data['agent_address'] == '':
                 raise TemboardUIError(400, "Agent address field is missing.")
             if 'agent_port' not in data or data['agent_port'] == '':
@@ -195,10 +208,13 @@ class ManageDeleteInstanceJsonHandler(JsonHandler):
             delete_instance(self.db_session, data['agent_address'], data['agent_port'])
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -231,7 +247,7 @@ class ManageInstanceHandler(BaseHandler):
                     {'nav': True , 'role': self.current_user, 'instance_list': instance_list},
                     template_file = 'manage/instance.html')
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.error(str(e))
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -253,7 +269,6 @@ class ManageInstanceHandler(BaseHandler):
                         template_file = 'manage/error.html')
 
 
-
 class DiscoverInstanceJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
@@ -262,16 +277,20 @@ class DiscoverInstanceJsonHandler(JsonHandler):
 
     def get_discover(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting discovery.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
             self.db_session.close()
 
             res = temboard_discover(self.ssl_ca_cert_file, agent_address, agent_port)
+            self.logger.info("Done.")
             return JSONAsyncResult(200, res)
 
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:

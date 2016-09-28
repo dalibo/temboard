@@ -8,6 +8,7 @@ from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
 from temboardui.temboardclient import TemboardError
+from temboardui.logger import get_tb
 
 def configuration(config):
     return {}
@@ -31,6 +32,7 @@ def get_routes(config):
 class ActivityHandler(BaseHandler):
     def get_activity(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting activity.")
             instance = None
             role = None
 
@@ -55,6 +57,7 @@ class ActivityHandler(BaseHandler):
 
             # Load activity.
             activity_data = temboard_activity(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -67,7 +70,9 @@ class ActivityHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -100,6 +105,7 @@ class ActivityHandler(BaseHandler):
 class ActivityWBHandler(BaseHandler):
     def get_activity_w_b(self, agent_address, agent_port, mode):
         try:
+            self.logger.info("Getting waiting/blocking sessions.")
             instance = None
             role = None
 
@@ -129,6 +135,7 @@ class ActivityWBHandler(BaseHandler):
                 activity_data = temboard_activity_blocking(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
             else:
                 raise TemboardUIError(404, "Mode unknown.")
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_path = self.template_path,
@@ -142,7 +149,9 @@ class ActivityWBHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()
@@ -175,6 +184,7 @@ class ActivityWBHandler(BaseHandler):
 class ActivityProxyHandler(JsonHandler):
     def get_activity(self, agent_address, agent_port):
         try:
+            self.logger.info("Getting activity (proxy).")
             role = None
             instance = None
 
@@ -198,9 +208,12 @@ class ActivityProxyHandler(JsonHandler):
                 raise TemboardUIError(401, 'X-Session header missing')
 
             data_activity = temboard_activity(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_activity)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.tracebacke(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -217,6 +230,7 @@ class ActivityProxyHandler(JsonHandler):
 class ActivityWBProxyHandler(JsonHandler):
     def get_activity_w_b(self, agent_address, agent_port, mode):
         try:
+            self.logger.info("Getting waiting/blocking sessions (proxy).")
             role = None
             instance = None
 
@@ -246,9 +260,12 @@ class ActivityWBProxyHandler(JsonHandler):
                 data_activity = temboard_activity_blocking(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
             else:
                 raise TemboardUIError(404, "Mode unknown.")
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_activity)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:
@@ -265,7 +282,7 @@ class ActivityWBProxyHandler(JsonHandler):
 class ActivityKillProxyHandler(JsonHandler):
     def post_kill(self, agent_address, agent_port):
         try:
-            self.logger.error(self.request.body)
+            self.logger.info("Posting terminate backend.")
             role = None
             instance = None
 
@@ -288,10 +305,14 @@ class ActivityKillProxyHandler(JsonHandler):
             if not xsession:
                 raise TemboardUIError(401, 'X-Session header missing')
 
+            self.logger.debug(tornado.escape.json_decode(self.request.body))
             data_kill = temboard_activity_kill(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession, tornado.escape.json_decode(self.request.body))
+            self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_kill)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.close()
             except Exception:

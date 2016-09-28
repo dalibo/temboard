@@ -10,7 +10,7 @@ from temboardui.async import *
 from temboardui.model.tables import MetaData
 from temboardui.model.orm import Roles
 from temboardui.application import get_role_by_cookie
-
+from temboardui.logger import get_tb
 
 class BaseHandler(tornado.web.RequestHandler):
 
@@ -32,6 +32,7 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 return get_role_by_cookie(self.db_session, self.auth_cookie)
             except Exception as e:
+                self.logger.traceback(get_tb())
                 self.logger.error(e.message)
         return
 
@@ -60,6 +61,7 @@ class BaseHandler(tornado.web.RequestHandler):
             Session = scoped_session(session_factory)
             self.db_session = Session()
         except Exception as e:
+            self.logger.traceback(get_tb())
             self.logger.error(e.message)
             raise TemboardUIError(500, "Unable to create a new database session.")
 
@@ -113,6 +115,7 @@ class JsonHandler(BaseHandler):
                 json_data = json.loads(self.request.body)
                 self.request.arguments.update(json_data)
             except Exception as e:
+                self.logger.traceback(get_tb())
                 self.logger.error(e.message)
                 message = 'Unable to parse JSON.'
                 self.send_error(400, error = message)

@@ -17,6 +17,7 @@ from temboardui.plugins.supervision.chartdata import *
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
+from temboardui.logger import get_tb
 
 def configuration(config):
     return {}
@@ -100,6 +101,7 @@ def insert_metrics(session, host, agent_data, logger):
         except Exception as e:
             logger.info("Metric data not inserted in table '%s'" % (table.name))
             logger.debug(agent_data[metric])
+            logger.traceback(get_tb())
             logger.error(str(e))
             session.rollback()
 
@@ -152,7 +154,8 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})
         except IntegrityError as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 thread_session.rollback()
                 thread_session.close()
@@ -160,7 +163,8 @@ class SupervisionCollectorHandler(JsonHandler):
                 pass
             return JSONAsyncResult(http_code = 409, data = {'error': e.message})
         except Exception as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 thread_session.rollback()
                 thread_session.close()
@@ -260,7 +264,8 @@ class SupervisionDataProbeHandler(CsvHandler):
 
             return CSVAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 self.db_session.close()
             except Exception:
@@ -333,7 +338,8 @@ class SupervisionHTMLHandler(BaseHandler):
                     })
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()

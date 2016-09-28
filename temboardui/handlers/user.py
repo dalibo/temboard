@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.application import hash_password, get_role_by_auth, gen_cookie, get_instance
 from temboardui.errors import TemboardUIError
-
+from temboardui.logger import get_tb
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -39,7 +39,8 @@ class LoginHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
         except Exception as e:
-            pass
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
         if role is not None:
             return HTMLAsyncResult(
                 http_code = 302,
@@ -55,6 +56,7 @@ class LoginHandler(BaseHandler):
 
     def post_login(self):
         try:
+            self.logger.info("Login.")
             p_role_name = self.get_argument('username')
             p_role_password = self.get_argument('password')
             role_hash_password = hash_password(p_role_name, p_role_password)
@@ -66,6 +68,7 @@ class LoginHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
             sleep(1)
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                 http_code = 302,
                 redirection = self.get_secure_cookie('referer_uri') if self.get_secure_cookie('referer_uri') is not None else '/home',
@@ -76,7 +79,9 @@ class LoginHandler(BaseHandler):
                 self.db_session.close()
             except Exception:
                 pass
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             sleep(1)
             return HTMLAsyncResult(
                 http_code = 401,
@@ -114,7 +119,8 @@ class AgentLoginHandler(BaseHandler):
                     agent_username = data_profile['username']
                     self.logger.error(agent_username)
                 except Exception as e:
-                    self.logger.error(e.message)
+                    self.logger.traceback(get_tb())
+                    self.logger.error(str(e))
 
             return HTMLAsyncResult(
                 http_code = 200,
@@ -126,7 +132,8 @@ class AgentLoginHandler(BaseHandler):
                     'username': agent_username
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -155,6 +162,7 @@ class AgentLoginHandler(BaseHandler):
 
     def post_login(self, agent_address, agent_port):
         try:
+            self.logger.info("Posting to agent login.")
             instance = None
             self.load_auth_cookie()
             self.start_db_session()
@@ -176,14 +184,16 @@ class AgentLoginHandler(BaseHandler):
                         self.get_argument("password"))
 
             self.set_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port), xsession)
-
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                         http_code = 302,
                         redirection = self.get_secure_cookie('referer_uri') \
                             if self.get_secure_cookie('referer_uri') is not None \
                             else "/server/%s/%s/dashboard" % (instance.agent_address, instance.agent_port))
         except (TemboardError, TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()

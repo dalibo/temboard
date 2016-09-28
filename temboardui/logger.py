@@ -1,10 +1,32 @@
 import os, sys
 import socket
+import traceback
 from logging import (Logger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL,
                     FileHandler)
 from logging.handlers import SysLogHandler
 
 from temboardui.errors import ConfigurationError
+
+"""
+
+Logging things should follow this template:
+
+[INFO] "We are going to do something"
+[DEBUG] Raw data, when we're working with data
+if error:
+    [DEBUG] Error backtrace
+    [ERROR] Error message from the exception
+    [INFO] "Failed."
+else:
+    [INFO] "Done."
+
+"""
+
+def get_tb():
+    exc_info = sys.exc_info()
+    lines = traceback.format_exc().splitlines()
+    del exc_info
+    return lines
 
 # Mapping configuration -> constants
 LOG_FACILITIES = {
@@ -45,10 +67,6 @@ class Log(Logger):
         Logger.__init__(self, name, *args, **kwargs)
 
         log_format = "temboard[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
-        if config.logging['level'] == 'DEBUG':
-            # Add extra informations when we are in DEBUG mode.
-            log_format = "temboard[%(process)d]: [%(name)s] [%(funcName)s@"
-            log_format += "%(pathname)s#L%(lineno)d] %(levelname)s: %(message)s"
 
         if config.logging['method'] == 'syslog':
             try:
@@ -72,6 +90,14 @@ class Log(Logger):
         lh.setLevel(LOG_LEVELS[config.logging['level']])
         lh.setFormatter(Formatter(log_format))
         self.addHandler(lh)
+
+    def traceback(self, tb_lines):
+        if isinstance(tb_lines, list):
+            for l in tb_lines:
+                self.debug(l)
+        else:
+            self.debug(tb_lines)
+
 
 LOGGER_NAME = 'temboard'
 

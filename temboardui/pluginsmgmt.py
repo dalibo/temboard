@@ -34,6 +34,9 @@ def load_plugins(plugin_names, config):
         except AttributeError as e:
             if fp:
                 fp.close()
+        except Exception as e:
+            logger.traceback(get_tb())
+            logger.error(str(e))
     return ret
 
 def plugins_bind_metadata(engine, plugin_names):

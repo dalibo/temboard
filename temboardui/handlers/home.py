@@ -4,6 +4,7 @@ from temboardui.handlers.base import BaseHandler
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instances_by_role_name
+from temboardui.logger import get_tb
 
 class HomeHandler(BaseHandler):
 
@@ -13,6 +14,7 @@ class HomeHandler(BaseHandler):
 
     def get_home(self):
         try:
+            self.logger.info("Loading home.")
             self.load_auth_cookie()
             self.start_db_session()
             role = self.current_user
@@ -22,6 +24,7 @@ class HomeHandler(BaseHandler):
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     http_code = 200,
                     template_file = 'home.html',
@@ -31,7 +34,9 @@ class HomeHandler(BaseHandler):
                         'instance_list': instance_list
                     })
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
                 self.db_session.rollback()

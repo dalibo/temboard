@@ -8,12 +8,14 @@ from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
+from temboardui.logger import get_tb
 
 class ManageUserJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, username = None):
         if username is None:
+            self.logger.error("Username is missing.")
             self.set_status(500)
             self.set_header("Content-Type", "application/json")
             self.write(json.dumps({'error': "Username is missing."}))
@@ -27,6 +29,7 @@ class ManageUserJsonHandler(JsonHandler):
 
     def get_role(self, username):
         try:
+            self.logger.info("Getting role by name.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
@@ -37,6 +40,7 @@ class ManageUserJsonHandler(JsonHandler):
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(
                     200,
                     {
@@ -49,7 +53,9 @@ class ManageUserJsonHandler(JsonHandler):
                     }
                 )
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -62,6 +68,7 @@ class ManageUserJsonHandler(JsonHandler):
 
     def post_role(self, username):
         try:
+            self.logger.info("Posting role.")
             role = None
             self.load_auth_cookie()
             self.start_db_session()
@@ -71,6 +78,7 @@ class ManageUserJsonHandler(JsonHandler):
                 role = get_role(self.db_session, username)
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
 
             # Submited attributes checking.
             if 'new_username' not in data or data['new_username'] == '':
@@ -136,10 +144,13 @@ class ManageUserJsonHandler(JsonHandler):
                     add_role_in_group(self.db_session, role.role_name, group_name)
 
             self.db_session.commit()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'ok': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Done.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -158,20 +169,26 @@ class ManageDeleteUserJsonHandler(JsonHandler):
 
     def delete_role(self):
         try:
+            self.logger.info("Deleting role.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             data = tornado.escape.json_decode(self.request.body)
+            self.logger.debug(data)
+
             if 'username' not in data or data['username'] == '':
                 raise TemboardUIError(400, "Username field is missing.")
             delete_role(self.db_session, data['username'])
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -190,21 +207,27 @@ class ManageUserHandler(BaseHandler):
 
     def get_index(self):
         try:
+            self.logger.info("Getting user list.")
             self.load_auth_cookie()
             self.start_db_session()
             self.check_admin()
 
             role_list = get_role_list(self.db_session)
+            self.logger.debug(role_list)
+
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
+            self.logger.info("Done.")
             return HTMLAsyncResult(
                     200,
                     None,
                     {'nav': True , 'role': self.current_user, 'role_list': role_list},
                     template_file = 'manage/user.html')
         except (TemboardUIError, Exception) as e:
-            self.logger.error(e.message)
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
                 self.db_session.close()

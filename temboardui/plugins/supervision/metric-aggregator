@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from temboardui.options import CLIOptions
 from temboardui.configuration import Configuration
 from temboardui.errors import ConfigurationError, CLIError
-from temboardui.logger import get_logger, set_logger_name
+from temboardui.logger import get_logger, set_logger_name, get_tb
 
 def create_db_engine(logger, user, password, host, port, dbname):
     dburi = "postgresql://%s:%s@%s:%s/%s" % (
@@ -46,7 +46,8 @@ def main():
             exit(0)
     except (ConfigurationError, ImportError, Exception) as e:
         try:
-            logger.error(e.message)
+            logger.traceback(get_tb())
+            logger.error(str(e))
             conn.execute("ROLLBACK")
         except Exception:
             pass
