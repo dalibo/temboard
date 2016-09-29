@@ -71,10 +71,7 @@ def load_plugins_configurations(config):
         except Exception as e:
             if fp_s:
                 fp_s.close()
-            logger.traceback(get_tb())
-            logger.error(str(e))
-            logger.info("Failed.")
-            continue
+            logger.info("Not able to load the compatibility file: compat.py.")
         logger.info("Done.")
         try:
             # Locate and load the module with imp.
