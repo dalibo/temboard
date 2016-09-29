@@ -71,7 +71,7 @@ def say_hello_something(config, http_context):
 
     Usage:
     $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
-    $ curl -s -k -H "X-Session:$XSESSION" "https://192.168.1.25:2345/hello/toto" | python -m json.tool
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello/toto" | python -m json.tool
     {
         "content": "Hello toto"
     }
@@ -91,7 +91,7 @@ def say_hello_something2(config, http_context):
 
     Usage:
     $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
-    $ curl -s -k -H "X-Session:$XSESSION" "https://192.168.1.25:2345/hello2/say?something=toto" | python -m json.tool 
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello2/say?something=toto" | python -m json.tool 
     {
         "content": "Hello toto"
     }
@@ -118,7 +118,7 @@ def say_hello_something3(config, http_context):
 
     Usage:
     $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
-    $ curl -s -k -H "X-Session:$XSESSION" -X POST --data '{"something": "toto"}' "https://192.168.1.25:2345/hello3/say" | python -m json.tool
+    $ curl -s -k -H "X-Session:$XSESSION" -X POST --data '{"something": "toto"}' "https://localhost:2345/hello3/say" | python -m json.tool
     {
         "content": "Hello toto"
     }
@@ -145,7 +145,7 @@ def say_hello_something4(config, http_context):
 
     Usage:
     $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
-    $ curl -s -k -H "X-Session:$XSESSION" "https://192.168.1.25:2345/hello4/toto" | python -m json.tool
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello4/toto" | python -m json.tool
     {
         "content": "Hello toto"
     }
