@@ -1,6 +1,6 @@
 from temboardagent.routing import add_route, add_worker
 from temboardagent.api_wrapper import *
-from temboardagent.logger import set_logger_name, get_logger
+from temboardagent.logger import set_logger_name
 import activity.functions as activity_functions
 
 @add_route('GET', '/activity')
