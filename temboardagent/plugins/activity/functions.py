@@ -8,8 +8,27 @@ from temboardagent.errors import NotificationError
 def get_activity(conn, config, _):
     mem_total = memory_total_size()
     page_size = getpagesize()
-
-    conn.execute("""
+    if conn.get_pg_version() >= 90600:
+        conn.execute("""
+    SELECT
+        pg_stat_activity.pid AS pid,
+        pg_stat_activity.datname AS database,
+        pg_stat_activity.client_addr AS client,
+        round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
+        CASE WHEN pg_stat_activity.wait_event IS NOT NULL THEN 'Y' ELSE 'N' END AS wait,
+        pg_stat_activity.usename AS user,
+        pg_stat_activity.state AS state,
+        pg_stat_activity.query AS query
+    FROM
+        pg_stat_activity
+    WHERE
+        pid <> pg_backend_pid()
+        -- AND state <> 'idle'
+    ORDER BY
+        EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
+        """)
+    else:
+        conn.execute("""
     SELECT
         pg_stat_activity.pid AS pid,
         pg_stat_activity.datname AS database,
@@ -26,7 +45,7 @@ def get_activity(conn, config, _):
         -- AND state <> 'idle'
     ORDER BY
         EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
-    """)
+        """)
     backend_list = []
     for row in conn.get_rows():
         try:
