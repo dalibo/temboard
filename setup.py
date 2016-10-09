@@ -21,7 +21,7 @@ setup(
                 'temboard-agent-adduser'],
     url = '',
     description = 'Administration & monitoring PostgreSQL agent.',
-    data_files = [('/usr/share/temboard-agent/', [
+    data_files = [('share/temboard-agent/', [
                                             'share/temboard-agent.conf.sample',
                                             'share/temboard-agent_CHANGEME.pem',
                                             'share/temboard-agent_CHANGEME.key',
