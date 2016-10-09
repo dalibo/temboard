@@ -1,3 +1,4 @@
+include LICENSE
 graft temboardui/static
 graft temboardui/templates
 graft temboardui/plugins/settings/static
@@ -8,3 +9,4 @@ graft temboardui/plugins/dashboard/static
 graft temboardui/plugins/dashboard/templates
 graft temboardui/plugins/supervision/static
 graft temboardui/plugins/supervision/templates
+graft share

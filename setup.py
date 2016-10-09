@@ -23,7 +23,7 @@ setup(
     zip_safe=False,
     url = '',
     description = 'temBoard User Interface.',
-    data_files = [('/usr/share/temboard/', [
+    data_files = [('share/temboard/', [
             'share/temboard.conf.sample',
             'share/ssl/temboard_CHANGEME.pem',
             'share/ssl/temboard_CHANGEME.key',
