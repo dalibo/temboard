@@ -3,7 +3,7 @@ import sys
 import traceback
 import socket
 from logging import (Logger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL,
-                    FileHandler)
+                    FileHandler, StreamHandler)
 from logging.handlers import SysLogHandler
 from temboardagent.errors import ConfigurationError
 
@@ -49,7 +49,7 @@ LOG_LEVELS = {
     'CRITICAL': CRITICAL
 }
 
-LOG_METHODS = [ 'syslog', 'file' ]
+LOG_METHODS = [ 'syslog', 'file', 'stderr' ]
 
 
 
@@ -89,6 +89,11 @@ class Log(Logger):
                 log_format = "%(asctime)s "+log_format
             except IOError as e:
                 raise ConfigurationError(e)
+        elif config.logging['method'] == 'stderr':
+            lh = StreamHandler()
+            # Add timestamp
+            log_format = "%(asctime)s "+log_format
+
         # Set log level according to the level defined in configuration files.
         lh.setLevel(LOG_LEVELS[config.logging['level']])
         lh.setFormatter(Formatter(log_format))

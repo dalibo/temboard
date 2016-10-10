@@ -30,7 +30,7 @@ dbname = postgres
 instance = main
 
 [logging]
-# Available methods for logging: syslog or file
+# Available methods for logging: stderr, syslog or file
 method = file
 # Syslog facility.
 # facility = local0
