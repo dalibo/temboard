@@ -25,7 +25,7 @@ The configuration file `temboard.conf` is formated using INI format. Configurati
   - `dbname`: Database name. Default: `temboard`;
 
 ### `[logging]`
-  - `method`: Method used to send the logs: `syslog` or `file`. Default: `syslog`;
+  - `method`: Method used to send the logs: `stderr`, `syslog` or `file`. Default: `syslog`;
   - `facility`: Syslog facility. Default: `local0`;
   - `destination`: Path to the log file. Default: `/dev/log`;
   - `level`: Log level, can be set to `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL`. Default: `INFO`.

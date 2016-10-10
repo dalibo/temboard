@@ -101,7 +101,7 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `instance`: Cluster name. Default: `main`.
 
 ### `[logging]`
-  - `method`: Method used to send the logs: `syslog` or `file`. Default: `syslog`;
+  - `method`: Method used to send the logs: `stderr`, `syslog` or `file`. Default: `syslog`;
   - `facility`: Syslog facility. Default: `local0`;
   - `destination`: Path to the log file. Default: `/dev/log`;
   - `level`: Log level, can be set to `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL`. Default: `INFO`.
