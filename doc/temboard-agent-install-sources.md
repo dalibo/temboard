@@ -91,5 +91,6 @@ $ curl -k -X POST -H "Content-Type: application/json" -d '{"username": "<usernam
 ```
 $ sudo apt-get install python-rednose python-nose
 $ cd temboard-agent/test
+$ cp test/configuration.py.sample test/configuration.py
 $ nosetests --rednose -v test_*
 ```
