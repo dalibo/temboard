@@ -124,7 +124,8 @@ create table metric_bgwriter (
   maxwritten_clean bigint not null,
   buffers_backend bigint not null,
   buffers_backend_fsync bigint,
-  buffers_alloc bigint not null
+  buffers_alloc bigint not null,
+  stats_reset timestamptz
 );
 
 -- Database sizes
@@ -157,7 +158,8 @@ create table metric_filesystems_size (
   foreign key (hostname) references hosts (hostname),
   primary key (datetime, hostname, mount_point),
   used bigint not null,
-  total bigint not null
+  total bigint not null,
+  device text not null
 );
 
 -- Temp files total size when stored at tablespace level (from 8.3 to 9.1)

@@ -153,6 +153,7 @@ metric_bgwriter = Table(
     Column('buffers_backend', BigInteger, nullable=False),
     Column('buffers_backend_fsync', BigInteger, nullable=True),
     Column('buffers_alloc', BigInteger, nullable=False),
+    Column('stats_reset', DateTime(timezone=True), nullable=True),
     schema = "supervision")
 
 
@@ -192,6 +193,7 @@ metric_filesystems_size = Table(
                          ['supervision.hosts.hostname']),
     Column('used', BigInteger, nullable=False),
     Column('total', BigInteger, nullable=False),
+    Column('device', UnicodeText, nullable=False),
     schema = "supervision")
 
 
