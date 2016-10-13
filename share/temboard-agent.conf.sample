@@ -14,6 +14,8 @@ ssl_key_file = /etc/temboard-agent/ssl/temboard-agent_CHANGEME.key
 # Data directory for internal usage.
 # Each running agent *must* has its own and dedicated home directory.
 home = /var/lib/temboard-agent/main
+# Overload system hostname, must be a valid FQDN.
+# hostname =
 
 [postgresql]
 # Unix socket path.
@@ -51,8 +53,6 @@ destination = /var/log/temboard-agent/temboard-agent.log
 
 [supervision]
 # Supervision plugin part.
-# Replace real machine hostname.
-# hostname =
 # DB name list (comma separator) to supervise. * for all.
 dbnames = *
 # Metric collector parameters.

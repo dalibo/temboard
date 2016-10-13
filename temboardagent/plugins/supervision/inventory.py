@@ -15,16 +15,11 @@ from temboardagent.tools import check_fqdn
 from temboardagent.logger import get_tb
 
 
-def host_info(options):
+def host_info(hostname_cfg):
     """Gather system information."""
     sinfo = SysInfo()
     _, _, _, _, arch = sinfo.uname()
-    hostname = sinfo.hostname()
-    if 'hostname' in options and options['hostname']:
-        hostname = options['hostname']
-
-    if not check_fqdn(hostname):
-        raise ValueError("Invalid FQDN: %s" % hostname)
+    hostname = sinfo.hostname(hostname_cfg)
 
     hostinfo = {
         "hostname": hostname,

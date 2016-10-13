@@ -24,7 +24,8 @@ class Configuration(configparser.ConfigParser):
             'ssl_cert_file': None,
             'ssl_key_file': None,
             'plugins': ["supervision", "dashboard", "settings", "administration", "activity"],
-            'home': '/var/lib/temboard-agent'
+            'home': '/var/lib/temboard-agent',
+            'hostname': None
         }
         self.logging = {
             'method': 'syslog',
@@ -130,6 +131,11 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError as e:
            pass
 
+        try:
+            hostname = self.get('temboard', 'hostname')
+            self.temboard['hostname'] = hostname
+        except configparser.NoOptionError as e:
+            pass
 
         # Test if 'logging' section exists.
         self.check_section('logging')

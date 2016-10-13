@@ -26,11 +26,12 @@ from temboardagent.command import exec_command
 from temboardagent.pluginsmgmt import load_plugins_configurations
 from temboardagent.api import check_sessionid
 from temboardagent.queue import Queue, Message
+from temboardagent.tools import now, check_fqdn
+from temboardagent.inventory import SysInfo
 
 from supervision.inventory import host_info, instance_info
 from supervision.probes import *
 from supervision.output import send_output, remove_passwords
-from temboardagent.tools import now, check_fqdn
 
 __VERSION__ = '0.0.1'
 
@@ -224,12 +225,6 @@ def api_run_probe(probe_instance, config):
     logger = get_logger(config)
     # TODO: logging methods in supervision_agent code and supervision_agent should be aligned.
     logging.root = logger
-    try:
-        system_info = host_info(config.plugins['supervision'])
-    except ValueError as e:
-        logger.error("supervision_worker - unable to get system information: %s\n" % str(e))
-        return
-
     config.plugins['supervision']['conninfo'] = [{
         'host': config.postgresql['host'],
         'port': config.postgresql['port'],
@@ -242,9 +237,11 @@ def api_run_probe(probe_instance, config):
     # Validate connection information from the config, and ensure
     # the instance is available
     instances = []
+    sysinfo = SysInfo()
+    hostname = sysinfo.hostname(config.temboard['hostname'])
     for conninfo in config.plugins['supervision']['conninfo']:
         logging.debug("Validate connection information on instance \"%s\"", conninfo['instance'])
-        instances.append(instance_info(conninfo, system_info['hostname']))
+        instances.append(instance_info(conninfo, hostname))
 
     # Gather the data from probes
     data = run_probes([probe_instance], instances, delta = False)
@@ -271,7 +268,7 @@ def supervision_collector_worker(commands, command, config):
     try:
         command.pid = os.getpid()
         commands.update(command)
-        system_info = host_info(config.plugins['supervision'])
+        system_info = host_info(config.temboard['hostname'])
     except (ValueError, Exception) as e:
         logger.traceback(get_tb())
         logger.error(str(e))
@@ -404,7 +401,6 @@ def configuration(config):
                 'probes': '*',
                 'agent_key': None,
                 'collector_url': None,
-                'hostname': None,
                 'ssl_ca_cert_file': None
             }
             set_logger_name("supervision")
@@ -430,12 +426,6 @@ def configuration(config):
             try:
                 agent_key = self.get(__name__, 'agent_key')
                 self.plugin_configuration['agent_key'] = agent_key
-            except NoOptionError as e:
-                pass
-
-            try:
-                hostname = self.get(__name__, 'hostname')
-                self.plugin_configuration['hostname'] = hostname
             except NoOptionError as e:
                 pass
 
