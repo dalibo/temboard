@@ -1,6 +1,9 @@
+import os
 import hashlib
 import time
 import re
+import errno
+from time import strftime, gmtime
 from temboardagent.errors import HTTPError
 
 def hash_id(id):
@@ -42,3 +45,79 @@ def validate_parameters(values, types):
             raise HTTPError(406, "Parameter '%s' not sent." % (key,))
         except Exception as e:
             raise HTTPError(406, "Parameter '%s' is malformed." % (key,))
+
+MULTIPLIERS = ['', 'k', 'M', 'G', 'T', 'P']
+
+def to_bytes(size, unit):
+    """
+    Convert the given size, expressed in unit, to bytes.
+
+    Args:
+        size (int): the size to convert to bytes
+        unit (str): the unit this size is in
+    Returns:
+        the converted size
+
+    Example:
+
+    >>> to_bytes(7890, 'M')
+    8273264640
+    >>> to_bytes(7890, 'unexistent_unit')
+    Traceback (most recent call last):
+    ...
+    KeyError: 'Invalid unit: unexistent_unit'
+
+    """
+    if unit not in MULTIPLIERS:
+        raise KeyError("Invalid unit: %s" % unit)
+    return size * 1024 ** MULTIPLIERS.index(unit)
+
+def which(prog, search_path=None):
+    """
+    Search for a file in the given list of directories or fallback to PATH.
+
+    Args:
+        prog (str): the file to search
+        search_path (list): list of directories to search
+    Returns:
+        the first path found
+
+    Example:
+
+    >>> which('ls') #doctest: +SKIP
+    '/bin/ls'
+    >>> which('ifconfig') #doctest: +SKIP
+    Traceback (most recent call last):
+    ...
+    OSError: No such file or directory
+    >>> which('ifconfig', ['/sbin']) #doctest: +SKIP
+    '/sbin/ifconfig'
+    """
+
+    env_path = re.split(r':', os.environ['PATH'])
+    if search_path is None:
+        search_path = env_path
+    else:
+        search_path += env_path
+
+    for d in search_path:
+        path = d + '/' + prog
+        if os.path.exists(path):
+            return path
+
+    raise OSError(os.strerror(errno.ENOENT))
+
+def check_fqdn(name):
+    """
+    Check if a hostname is fully qualified, it must only contain
+    letters, - and have dots.
+    """
+    # StackOverflow #11809631
+    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\.?$)', name):
+        return True
+    else:
+        return False
+
+def now():
+    """Give the current date and time at GMT, suitable for PostgreSQL."""
+    return strftime("%Y-%m-%d %H:%M:%S +0000", gmtime())

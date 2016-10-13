@@ -22,7 +22,7 @@ def send_output(ca_cert_file, url, key, j_output):
 
     logging.debug("Sending output to %s", url)
     logging.debug("Output is:" + pprint.pformat(j_output))
-    (code, res) = https_request(
+    (code, res, _) = https_request(
         ca_cert_file,
         method = 'POST',
         url = url,
