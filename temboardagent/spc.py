@@ -849,17 +849,39 @@ class connector(object):
         self._socket_send(data)
         self._socket.close()
 
-    def execute(self, query):
+    def execute(self, query, parameters = None):
         """
         Execute a query and fetch the results.
         """
-        self._query = query
+        if parameters:
+            self._query = self._build_query(query, parameters)
+        else:
+            self._query = query
         self._rows = []
         self._nb_rows = None
         data = self._protocol.query(self._query)
         self._socket_send(data)
         self._socket_read()
         self.get_nb_rows()
+
+    def _build_query(self, query, parameters):
+        """
+        Build a query using an input string and parameters (tuple).
+        Matching pattern for replacement is '%s'.
+        Supported types are: int, float, str, datetime.date, datetime.datetime.
+        """
+        pp = list()
+        for p in parameters:
+            if type(p) is str:
+                p = "'%s'" % (re.sub(r"('|\\)",r"\\\1", p))
+            elif type(p) in (datetime.date, datetime.datetime):
+                p = "'%s'" % (p)
+            elif type(p) in (int, float):
+                p = str(p)
+            else:
+                raise Exception("Unsupported type %s." % (type(p)))
+            pp.append(p)
+        return query % tuple(pp)
 
     def begin(self,):
         """
