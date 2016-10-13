@@ -245,11 +245,11 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
         pginfo = PgInfo(conn)
         ret = {
             'hostname': sysinfo.hostname(config.temboard['hostname']),
-            'cpu': discover.get_n_cpu(),
-            'memory_size': discover.get_memory_size(),
-            'pg_port': discover.get_pg_port(conn),
-            'pg_version': discover.get_pg_version(conn),
-            'pg_data': discover.get_pg_data(conn),
+            'cpu': sysinfo.n_cpu(),
+            'memory_size': sysinfo.memory_size(),
+            'pg_port': pginfo.setting('port'),
+            'pg_version': pginfo.version()['full'],
+            'pg_data': pginfo.setting('data_directory'),
             'plugins': [plugin_name for plugin_name in config.temboard['plugins']]
         }
         conn.close()
