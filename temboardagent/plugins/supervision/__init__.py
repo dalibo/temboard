@@ -247,7 +247,7 @@ def api_run_probe(probe_instance, config):
         instances.append(instance_info(conninfo, system_info['hostname']))
 
     # Gather the data from probes
-    data = run_probes([probe_instance], system_info['hostname'], instances, delta = False)
+    data = run_probes([probe_instance], instances, delta = False)
     return data
 
 
