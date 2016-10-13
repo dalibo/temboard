@@ -39,6 +39,12 @@ class SysInfo(Inventory):
         from multiprocessing import cpu_count
         return cpu_count()
 
+    def memory_size(self):
+        if self.os == 'Linux':
+            return self._mem_info_linux()['MemTotal']
+        else:
+            raise Exception("Unsupported OS.")
+
     def cpu_info(self):
         if self.os == 'Linux':
             return self._cpu_info_linux()
