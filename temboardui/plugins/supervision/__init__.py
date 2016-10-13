@@ -76,7 +76,7 @@ def check_host_key(session, hostname, agent_key):
         raise Exception("Can't find the target instance in application.instances table.")
     raise Exception("Can't check agent's key.")
 
-def insert_metrics(session, host, agent_data, logger):
+def insert_metrics(session, host, agent_data, logger, hostname):
     for metric in agent_data.keys():
         # Do not try to insert empty lines
         if len(agent_data[metric]) == 0:
@@ -94,6 +94,8 @@ def insert_metrics(session, host, agent_data, logger):
         for line in agent_data[metric]:
             if 'measure_interval' in line:
                 line['measure_interval'] = str(line['measure_interval'])
+            # Add hostname from hostinfo to each line
+            line['hostname'] = hostname
         try:
             session.execute(table.insert().values(agent_data[metric]))
             session.flush()
@@ -149,7 +151,7 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session.commit()
 
             # Insert metrics data
-            insert_metrics(thread_session, host, data['data'], self.logger)
+            insert_metrics(thread_session, host, data['data'], self.logger, data['hostinfo']['hostname'])
             # Close the session
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})

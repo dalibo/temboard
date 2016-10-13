@@ -5,9 +5,9 @@ import json
 
 from temboardagent.spc import connector, error
 from temboardagent.queue import Queue, Message
-from supervision.utils import exec_command, now
-from supervision.inventory import get_file_systems, parse_linux_meminfo
-
+from temboardagent.command import exec_command
+from temboardagent.tools import now
+from temboardagent.inventory import SysInfo
 
 def load_probes(options, home):
     """Give a list of probe objects, ready to run."""
@@ -26,7 +26,7 @@ def load_probes(options, home):
 
     return probes
 
-def run_probes(probes, hostname, instances, delta = True):
+def run_probes(probes, instances, delta = True):
     """Execute the probes."""
 
     logging.debug("Starting probe run")
@@ -44,7 +44,7 @@ def run_probes(probes, hostname, instances, delta = True):
         if p.level == 'host':
             if p.check():
                 logging.debug("Running host probe %s", p.get_name())
-                out = p.run(hostname)
+                out = p.run()
 
         if p.level == 'instance' or p.level == 'database':
             out = []
@@ -220,10 +220,9 @@ class SqlProbe(Probe):
             conn.connect()
             conn.execute(sql)
             for r in conn.get_rows():
-                # Add the info of the instance (hostname, port) to the
+                # Add the info of the instance (port) to the
                 # result to output one big list for all instances and
                 # all databases
-                r['hostname'] = conninfo['hostname']
                 r['port'] = conninfo['port']
 
                 # Compute delta if the probe needs that
@@ -431,12 +430,13 @@ from pg_tablespace"""
 class probe_filesystems_size(HostProbe):
     system = 'Linux'
 
-    def run(self, hostname):
+    def run(self):
         # Everything is already gathered in the inventory, just add
         # the time
         out = []
         datetime = now()
-        for fs in get_file_systems(hostname):
+        sysinfo = SysInfo()
+        for fs in sysinfo.file_systems():
             fs['datetime'] = datetime
             out.append(fs)
 
@@ -447,7 +447,7 @@ class probe_cpu(HostProbe):
     system = 'Linux'
     hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
 
-    def run(self, hostname):
+    def run(self):
         stat = open('/proc/stat')
         out = []
         for line in stat:
@@ -469,7 +469,6 @@ class probe_cpu(HostProbe):
 
                 metrics['measure_interval'] = interval
                 metrics['datetime'] = now()
-                metrics['hostname'] = hostname
                 metrics['cpu'] = cols[0]
 
                 out.append(metrics)
@@ -482,10 +481,9 @@ class probe_cpu(HostProbe):
 class probe_process(HostProbe):
     system = 'Linux'
 
-    def run(self, hostname):
+    def run(self):
         metrics = {
-            'datetime': now(),
-            'hostname': hostname
+            'datetime': now()
         }
         # Process information is partly stored in /proc/stat, ctxt and
         # processes are ever incresing counters, compute deltas on
@@ -528,12 +526,12 @@ class probe_process(HostProbe):
 class probe_memory(HostProbe):
     system = 'Linux'
 
-    def run(self, hostname):
-        meminfo = parse_linux_meminfo()
+    def run(self):
+        sysinfo = SysInfo()
+        meminfo = sysinfo.mem_info()
 
         return [{
             'datetime': now(),
-            'hostname': hostname,
             'mem_total': meminfo['MemTotal'],
             'mem_used': meminfo['MemTotal'] - meminfo['MemFree'],
             'mem_free': meminfo['MemFree'],
@@ -547,13 +545,12 @@ class probe_memory(HostProbe):
 class probe_loadavg(HostProbe):
     system = 'Linux'
 
-    def run(self, hostname):
+    def run(self):
         loadavg = open('/proc/loadavg')
         cols = loadavg.readline().split()
         loadavg.close()
         return [{
             'datetime': now(),
-            'hostname': hostname,
             'load1': cols[0],
             'load5': cols[1],
             'load15': cols[2]
@@ -570,7 +567,6 @@ class probe_wal_files(SqlProbe):
 
         metric = {
             'datetime': now(),
-            'hostname': conninfo['hostname'],
             'port': conninfo['port']
         }
         rows = self.run_sql(conninfo, "select count(s.f) AS total, sum((pg_stat_file('pg_xlog/'||s.f)).size) AS total_size, pg_current_xlog_location() as current_location from pg_ls_dir('pg_xlog') AS s(f) WHERE f ~ E'^[0-9A-F]{24}$'")

@@ -30,7 +30,7 @@ from temboardagent.queue import Queue, Message
 from supervision.inventory import host_info, instance_info
 from supervision.probes import *
 from supervision.output import send_output, remove_passwords
-from supervision.utils import now, check_fqdn
+from temboardagent.tools import now, check_fqdn
 
 __VERSION__ = '0.0.1'
 
@@ -299,7 +299,7 @@ def supervision_collector_worker(commands, command, config):
             instances.append(instance_info(conninfo, system_info['hostname']))
 
         # Gather the data from probes
-        data = run_probes(probes, system_info['hostname'], instances)
+        data = run_probes(probes, instances)
 
         # Prepare and send output
         output = {
@@ -309,6 +309,7 @@ def supervision_collector_worker(commands, command, config):
             'data': data,
             'version': __VERSION__
         }
+        logger.debug("Collected data: %s" % (output))
         q = Queue('%s/metrics.q'% (config.temboard['home']), max_size = 1024 * 1024 * 10, overflow_mode = 'slide')
         q.push(Message(content = json.dumps(output)))
     except Exception as e:
