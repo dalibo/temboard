@@ -91,6 +91,7 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `ssl_cert_file`: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.pem`;
   - `ssl_key_file`: Path to SSL private key file. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.key`;
   - `home`: Path to agent home directory, it contains files used to store temporary data. When running multiple agents on the same host, each agent must have its own home directory. Default: `/var/lib/temboard-agent/main`.
+  - `hostname`: Overload real machine hostname. Must be a valid FQDN. Default: `None`;
 
 ### `[postgresql]`
   - `host`: Path to PostgreSQL unix socket. Default: `/var/run/postgresql`;
@@ -111,7 +112,6 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `history_length`: Number of record to keep. Default: `20`.
 
 ### `[supervision]`
-  - `hostname`: Overide real machine hostname. Default: `None`;
   - `dbnames`: Database name list (comma separator) to supervise. * for all. Default: `*`;
   - `agent_key`: Authentication key used to send data to the collector (API /supervision/collector of the UI). Default: `None`;
   - `collector_url`: Collector URL. Default: `None`;

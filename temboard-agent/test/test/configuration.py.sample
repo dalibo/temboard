@@ -29,6 +29,7 @@ ssl_key_file = %s
 # SSL: certificat file path (.pem)
 ssl_cert_file = %s
 home = %s
+hostname = test.temboard.io
 
 [postgresql]
 host = %s
@@ -44,7 +45,6 @@ destination = %s
 level = DEBUG
 
 [supervision]
-hostname = neptune.localhost.lo
 dbnames = '*'
 # agent_key = ''
 collector_url = http://localhost:8888/collector/

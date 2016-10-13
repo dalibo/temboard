@@ -15,7 +15,7 @@ from temboardagent.spc import connector, error
 from temboardagent.command import exec_command
 from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
-import temboardagent.discover as discover
+from temboardagent.inventory import *
 
 def check_sessionid(http_header, sessions):
     validate_parameters(http_header,
@@ -241,8 +241,10 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
     logger.info('Starting discovery.')
     try:
         conn.connect()
+        sysinfo = SysInfo()
+        pginfo = PgInfo(conn)
         ret = {
-            'hostname': discover.get_hostname(),
+            'hostname': sysinfo.hostname(config.temboard['hostname']),
             'cpu': discover.get_n_cpu(),
             'memory_size': discover.get_memory_size(),
             'pg_port': discover.get_pg_port(conn),

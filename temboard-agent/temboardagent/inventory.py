@@ -18,11 +18,16 @@ class SysInfo(Inventory):
     def _os_info(self):
         return (platform.system(), platform.release())
 
-    def hostname(self):
-        if self.os == 'Linux':
-            return self._hostname_linux()
-        else:
-            raise Exception("Unsupported OS.")
+    def hostname(self, hostname = None):
+        if not hostname:
+            # Find the hostname by ourself.
+            if self.os == 'Linux':
+                hostname = self._hostname_linux()
+            else:
+                raise Exception("Unsupported OS.")
+        if not check_fqdn(hostname):
+            raise ValueError("Invalid FQDN: %s" % (hostname))
+        return hostname
 
     def uname(self):
         return os.uname()
@@ -79,7 +84,7 @@ class SysInfo(Inventory):
         try:
             # Try to get hostname (FQDN) using 'hostname -f'
             (rc, out, err) = exec_command([which('hostname'), '-f'])
-            if ec_ret == 0:
+            if rc == 0:
                 hostname = out.encode('utf-8').strip()
         except Exception as e:
             try:
