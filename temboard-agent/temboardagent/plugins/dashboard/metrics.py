@@ -7,23 +7,26 @@ from temboardagent.queue import Queue, Message
 from temboardagent.command import exec_command
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.errors import NotificationError
+from temboardagent.inventory import *
 
 def get_metrics(conn, config, _ = None):
     dm = DashboardMetrics(conn)
+    sysinfo = SysInfo()
+    pginfo = PgInfo(conn)
     return {'buffers': dm.get_buffers(),
             'hitratio': dm.get_hitratio(),
             'active_backends': dm.get_active_backends(),
             'cpu': dm.get_cpu_usage(),
             'loadaverage': dm.get_load_average(),
             'memory': dm.get_memory_usage(),
-            'hostname': dm.get_hostname(),
-            'os_version': dm.get_os_version(),
+            'hostname': sysinfo.hostname(config.temboard['hostname']),
+            'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release),
             'databases': dm.get_stat_db(),
             'pg_uptime': dm.get_pg_uptime(),
-            'n_cpu': dm.get_n_cpu(),
-            'pg_version': dm.get_pg_version(),
-            'pg_data': dm.get_pg_data(),
-            'pg_port': dm.get_pg_port(),
+            'n_cpu': sysinfo.n_cpu(),
+            'pg_version': pginfo.version()['full'],
+            'pg_data': pginfo.setting('data_directory'),
+            'pg_port': pginfo.setting('port'),
             'notifications': dm.get_notifications(config)}
 
 def get_metrics_queue(config, _ = None):
@@ -39,13 +42,15 @@ def get_history_metrics_queue(config, _ = None):
 
 def get_info(conn, config, _):
     dm = DashboardMetrics(conn)
+    sysinfo = SysInfo()
+    pginfo = PgInfo(conn)
     return {
-            'hostname': dm.get_hostname(),
-            'os_version': dm.get_os_version(),
+            'hostname': sysinfo.hostname(config.temboard['hostname']),
+            'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release),
             'pg_uptime': dm.get_pg_uptime(),
-            'pg_data': dm.get_pg_data(),
-            'pg_version': dm.get_pg_version(),
-            'pg_port': dm.get_pg_port()
+            'pg_version': pginfo.version()['full'],
+            'pg_data': pginfo.setting('data_directory'),
+            'pg_port': pginfo.setting('port'),
     }
 
 
@@ -74,41 +79,40 @@ def get_memory_usage(config, _):
     return {'memory': dm.get_memory_usage()}
 
 def get_hostname(config, _):
-    dm = DashboardMetrics()
-    return {'hostname': dm.get_hostname()}
+    sysinfo = SysInfo()
+    return {'hostname': sysinfo.hostname(config.temboard['hostname'])}
 
 def get_os_version(config, _):
-    dm = DashboardMetrics()
-    return {'os_version': dm.get_os_version()}
+    sysinfo = SysInfo()
+    return {'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release)}
 
 def get_databases(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'databases': dm.get_stat_db()}
 
 def get_n_cpu(config, _):
-    dm = DashboardMetrics()
-    return {'n_cpu': dm.get_n_cpu()}
+    sysinfo = SysInfo()
+    return {'n_cpu': sysinfo.n_cpu()}
 
 def get_pg_version(conn, config, _):
-    dm = DashboardMetrics(conn)
-    return {'pg_version': dm.get_pg_version()}
+    pginfo = PgInfo(conn)
+    return {'pg_version': pginfo.version()['full']}
 
 def get_pg_uptime(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'pg_uptime': dm.get_pg_uptime()}
 
 def get_pg_port(conn, config, _):
-    dm = DashboardMetrics(conn)
-    return {'pg_port': dm.get_pg_port()}
+    pginfo = PgInfo(conn)
+    return {'pg_port': pginfo.setting('port')}
 
 def get_pg_data(conn, config, _):
-    dm = DashboardMetrics(conn)
-    return {'pg_data': dm.get_pg_data()}
+    pginfo = PgInfo(conn)
+    return {'pg_data': pginfo.setting('data_directory')}
 
 class DashboardMetrics(object):
     conn = None
     config = None
-    system = 'Linux'
     _instance = None
     def __init__(self, conn = None):
         self.conn = conn
@@ -133,20 +137,17 @@ class DashboardMetrics(object):
                 'time': current_time}
  
     def get_cpu_usage(self,):
-        if self.system == 'Linux':
+        sysinfo = SysInfo()
+        if sysinfo.os == 'Linux':
             return self._get_cpu_usage_linux()
 
     def get_load_average(self,):
         return getloadavg()[0]
 
     def get_memory_usage(self,):
-        if self.system == 'Linux':
+        sysinfo = SysInfo()
+        if sysinfo.os == 'Linux':
             return self._get_memory_usage_linux()
-
-    def get_pg_version(self,):
-        query = "SELECT regexp_replace(version(), '^PostgreSQL ([^\s]+).*$', '\\1') AS num_version"
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['num_version']
 
     def get_stat_db(self,):
         query = """SELECT count(datid) as databases,
@@ -163,42 +164,10 @@ class DashboardMetrics(object):
                 'total_rollback': row['total_rollback'],
                 'timestamp': time.time()}
 
-    def get_hostname(self,):
-        if self.system == 'Linux':
-            return self._get_hostname_linux()
-
-    def get_os_version(self,):
-        if self.system == 'Linux':
-            return self._get_os_version_linux()
-
-    def get_n_cpu(self,):
-        from multiprocessing import cpu_count
-        return cpu_count()
-
     def get_pg_uptime(self,):
         query = "SELECT NOW() - pg_postmaster_start_time() AS uptime"
         self.conn.execute(query)
         return list(self.conn.get_rows())[0]['uptime']
-
-    def get_pg_port(self,):
-        query = "SELECT setting FROM pg_settings WHERE name = 'port'"
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['setting']
-
-    def get_pg_data(self,):
-        query = "SELECT setting FROM pg_settings WHERE name = 'data_directory'"
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['setting']
-
-    def _get_os_version_linux(self,):
-        (returncode, stdout, stderrout) = exec_command(['/bin/uname', '-sri'])
-        if returncode == 0:
-            return stdout.replace('\n', '')
-
-    def _get_hostname_linux(self,):
-        (returncode, stdout, stderrout) = exec_command(['/bin/hostname'])
-        if returncode == 0:
-            return stdout.replace('\n', '')
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
