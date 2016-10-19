@@ -16,6 +16,8 @@ ssl_key_file = /etc/temboard-agent/ssl/temboard-agent_CHANGEME.key
 home = /var/lib/temboard-agent/main
 # Overload system hostname, must be a valid FQDN.
 # hostname =
+# Key
+key = SECRETKEYTOBECHANGED
 
 [postgresql]
 # Unix socket path.
@@ -55,8 +57,7 @@ destination = /var/log/temboard-agent/temboard-agent.log
 # Supervision plugin part.
 # DB name list (comma separator) to supervise. * for all.
 dbnames = *
-# Metric collector parameters.
-agent_key = SECRETKEYTOBECHANGED
+# Collector URL.
 collector_url = https://COLLECTORADDRESS:COLLECTORPORT/supervision/collector
 # List of probes to run, comma separator, * for all.
 # Available probes: locks,process,db_size,tblspc_size,sessions,blocks,xacts,replication,loadavg,filesystems_size,cpu,bgwriter,memory,wal_files

@@ -344,7 +344,7 @@ def supervision_sender_worker(commands, command, config):
         try:
             send_output(config.plugins['supervision']['ssl_ca_cert_file'],
                     config.plugins['supervision']['collector_url'],
-                    config.plugins['supervision']['agent_key'],
+                    config.temboard['key'],
                     msg.content)
         except urllib2.HTTPError as e:
             logger.traceback(get_tb())
@@ -399,7 +399,6 @@ def configuration(config):
                 'dbnames': '*',
                 'scheduler_interval': 60,
                 'probes': '*',
-                'agent_key': None,
                 'collector_url': None,
                 'ssl_ca_cert_file': None
             }
@@ -420,12 +419,6 @@ def configuration(config):
             try:
                 probes = self.get(__name__, 'probes')
                 self.plugin_configuration['probes'] = re.split(r'[,\s]+', probes)
-            except NoOptionError as e:
-                pass
-
-            try:
-                agent_key = self.get(__name__, 'agent_key')
-                self.plugin_configuration['agent_key'] = agent_key
             except NoOptionError as e:
                 pass
 

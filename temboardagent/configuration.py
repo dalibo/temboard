@@ -9,10 +9,10 @@ import re
 from temboardagent.errors import ConfigurationError
 from temboardagent.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
 
-class Configuration(configparser.ConfigParser):
+class BaseConfiguration(configparser.ConfigParser):
     """
-    Customized configuration parser.
-    """ 
+    Common configuration parser.
+    """
     def __init__(self, configfile, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile
@@ -25,7 +25,8 @@ class Configuration(configparser.ConfigParser):
             'ssl_key_file': None,
             'plugins': ["supervision", "dashboard", "settings", "administration", "activity"],
             'home': '/var/lib/temboard-agent',
-            'hostname': None
+            'hostname': None,
+            'key': None
         }
         self.logging = {
             'method': 'syslog',
@@ -42,9 +43,6 @@ class Configuration(configparser.ConfigParser):
             'pg_config': '/usr/bin/pg_config',
             'instance': 'main'
         }
-
-        self.plugins = {}
-
         try:
             with open(self.configfile) as fd:
                 self.readfp(fd)
@@ -55,6 +53,20 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                     "Configuration file does not contain section headers.")
 
+
+    def check_section(self, section):
+        if not self.has_section(section):
+            raise ConfigurationError(
+                    "Section '%s' not found in configuration file %s"
+                    % (section, self.configfile))
+
+class Configuration(BaseConfiguration):
+    """
+    Customized configuration parser.
+    """
+    def __init__(self, configfile, *args, **kwargs):
+        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
+        self.plugins = {}
         # Test if 'temboard' section exists.
         self.check_section('temboard')
 
@@ -99,6 +111,11 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError("'plugins' option must be a list of string"
                     " (alphanum only) in %s."
                     % (self.configfile))
+        try:
+            self.temboard['key'] = self.get('temboard', 'key')
+        except configparser.NoOptionError as e:
+                pass
+
 
         try:
             with open(self.get('temboard', 'ssl_cert_file')) as fd:
@@ -216,12 +233,6 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError as e:
            pass
 
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
-
 class PluginConfiguration(configparser.ConfigParser):
     """
     Customized configuration parser for plugins.
@@ -245,3 +256,31 @@ class PluginConfiguration(configparser.ConfigParser):
             raise ConfigurationError(
                     "Section '%s' not found in configuration file %s"
                     % (section, self.configfile))
+
+class LazyConfiguration(BaseConfiguration):
+    """
+    Customized configuration parser.
+    """
+    def __init__(self, configfile, *args, **kwargs):
+        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
+        # Test if 'temboard' section exists.
+        self.check_section('temboard')
+        for k,v in self.temboard.iteritems():
+            try:
+                self.temboard[k] = self.get('temboard', k)
+            except configparser.NoOptionError as e:
+               pass
+        # Test if 'logging' section exists.
+        self.check_section('logging')
+        for k,v in self.logging.iteritems():
+            try:
+                self.logging[k] = self.get('logging', k)
+            except configparser.NoOptionError as e:
+               pass
+        # Test if 'postgresql' section exists.
+        self.check_section('postgresql')
+        for k,v in self.logging.iteritems():
+            try:
+                self.postgresql[k] = self.get('postgresql', k)
+            except configparser.NoOptionError as e:
+               pass
