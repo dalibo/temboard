@@ -110,6 +110,7 @@ def main():
             (r"/", BaseHandler, handler_conf),
             (r"/home", HomeHandler, handler_conf),
             (r"/login", LoginHandler, handler_conf),
+            (r"/json/login", LoginJsonHandler, handler_conf),
             (r"/logout", LogoutHandler, handler_conf),
             # Manage users
             (r"/manage/users", ManageUserHandler, handler_conf),
@@ -125,6 +126,7 @@ def main():
             # Manage instances
             (r"/manage/instances", ManageInstanceHandler, handler_conf),
             (r"/json/manage/instance$", ManageInstanceJsonHandler, handler_conf),
+            (r"/json/register/instance$", RegisterInstanceJsonHandler, handler_conf),
             (r"/json/manage/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", ManageInstanceJsonHandler, handler_conf),
             (r"/json/manage/delete/instance$", ManageDeleteInstanceJsonHandler, handler_conf),
             # Discover

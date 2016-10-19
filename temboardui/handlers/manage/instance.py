@@ -164,13 +164,15 @@ class ManageInstanceJsonHandler(JsonHandler):
             # Add each selected plugin.
             if data['plugins']:
                 for plugin_name in data['plugins']:
-                    if plugin_name in self.application.loaded_plugins:
-                        add_instance_plugin(self.db_session, instance.agent_address, instance.agent_port, plugin_name)
-                    else:
-                        raise TemboardUIError(404, "Unknown plugin.")
+                    # 'administration' plugin case: the plugin is not currently implemented on UI side
+                    if plugin_name != 'administration':
+                        if plugin_name in self.application.loaded_plugins:
+                            add_instance_plugin(self.db_session, instance.agent_address, instance.agent_port, plugin_name)
+                        else:
+                            raise TemboardUIError(404, "Unknown plugin %s." % (plugin_name))
             self.db_session.commit()
             self.logger.info("Done.")
-            return JSONAsyncResult(200, {'ok': True})
+            return JSONAsyncResult(200, {"message": "OK"})
 
         except (TemboardUIError, Exception) as e:
             self.logger.traceback(get_tb())
@@ -287,6 +289,38 @@ class DiscoverInstanceJsonHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(200, res)
 
+        except (TemboardUIError, TemboardError, Exception) as e:
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if isinstance(e, TemboardUIError) or isinstance(e, TemboardError):
+                return JSONAsyncResult(e.code, {'error': e.message})
+            else:
+                return JSONAsyncResult(500, {'error': "Internal error."})
+
+class RegisterInstanceJsonHandler(ManageInstanceJsonHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        run_background(self.post_register, self.async_callback)
+
+    def post_register(self,):
+        try:
+            data = tornado.escape.json_decode(self.request.body)
+            if 'agent_address' not in data or data['agent_address'] is None:
+                # Try to find agent's IP
+                x_real_ip = self.request.headers.get("X-Real-IP")
+                data['new_agent_address'] = x_real_ip or self.request.remote_ip
+            else:
+                data['new_agent_address'] = data['agent_address']
+            data['new_agent_port'] = data['agent_port']
+            self.request.body = tornado.escape.json_encode(data)
+            self.logger.debug(data)
+            self.logger.debug(self.request.body)
+            return self.post_instance(None, None)
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.traceback(get_tb())
             self.logger.error(str(e))

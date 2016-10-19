@@ -63,7 +63,7 @@ $ sudo -u postgres temboard-agent-adduser
 
 ### Registration in the Web UI of the supersivion plugin
 
-In the `temboard-agent.conf` file, section `[supervision]` two parameters must be configurated to make the agent interact with the UI. The first one is `agent_key` is string used to uniquely identify the agent in the UI, it let the UI allow the agent to push its metric data.
+In the `temboard-agent.conf` file, 2 parameters must be configurated to make the agent interact with the UI. The first one is `key` and is a string used to uniquely identify the agent in the UI, it let the UI allow the agent to push its metric data.
 
 The best way to configure the agent key is to generate a random string of letters and number:
 ```
@@ -100,6 +100,7 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `password`: User password. Default: `None`;
   - `dbname`: Database name for the connection. Default: `postgres`;
   - `instance`: Cluster name. Default: `main`.
+  - `key`: Authentication key used to send data to the UI. Default: `None`;
 
 ### `[logging]`
   - `method`: Method used to send the logs: `stderr`, `syslog` or `file`. Default: `syslog`;
@@ -113,7 +114,6 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
 
 ### `[supervision]`
   - `dbnames`: Database name list (comma separator) to supervise. * for all. Default: `*`;
-  - `agent_key`: Authentication key used to send data to the collector (API /supervision/collector of the UI). Default: `None`;
   - `collector_url`: Collector URL. Default: `None`;
   - `probes`: List of probes to run, comma separator, * for all. Default: `*`;
   - `scheduler_interval`: Interval, in second, between each run of the process executing the probes. Default: `60`;

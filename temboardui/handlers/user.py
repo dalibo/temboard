@@ -3,7 +3,7 @@ from time import sleep
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
 
-from temboardui.handlers.base import BaseHandler
+from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.application import hash_password, get_role_by_auth, gen_cookie, get_instance
@@ -183,7 +183,7 @@ class AgentLoginHandler(BaseHandler):
                         self.get_argument("username"),
                         self.get_argument("password"))
 
-            self.set_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port), xsession)
+            self.set_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port), xsession, expires_days=0.5)
             self.logger.info("Done.")
             return HTMLAsyncResult(
                         http_code = 302,
@@ -212,3 +212,44 @@ class AgentLoginHandler(BaseHandler):
     @tornado.web.asynchronous
     def post(self, agent_address, agent_port):
         run_background(self.post_login, self.async_callback, (agent_address, agent_port))
+
+class LoginJsonHandler(JsonHandler):
+    def post_login(self):
+        try:
+            self.logger.info("Login (API).")
+            post = tornado.escape.json_decode(self.request.body)
+            p_role_name = post['username']
+            p_role_password = post['password']
+            role_hash_password = hash_password(p_role_name, p_role_password)
+
+            self.start_db_session()
+            role = get_role_by_auth(self.db_session, p_role_name, role_hash_password)
+            self.logger.info("Role '%s' authentificated." % (role.role_name))
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+            sleep(1)
+            self.logger.info("Done.")
+
+            return JSONAsyncResult(
+                http_code = 200,
+                data = { "message": "OK" },
+                secure_cookie = { 'name': 'temboard', 'content': gen_cookie(role.role_name, role_hash_password)})
+
+        except (TemboardUIError, Exception) as e:
+            try:
+                self.db_session.rollback()
+                self.db_session.close()
+            except Exception:
+                pass
+            self.logger.traceback(get_tb())
+            self.logger.error(str(e))
+            self.logger.info("Failed.")
+            sleep(1)
+            return JSONAsyncResult(
+                http_code = 401,
+                data = { "error": "Wrong username/password."})
+
+    @tornado.web.asynchronous
+    def post(self):
+        run_background(self.post_login, self.async_callback)
