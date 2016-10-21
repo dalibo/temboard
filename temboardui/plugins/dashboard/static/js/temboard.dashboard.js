@@ -1,175 +1,70 @@
-/*
- * Loadaverage line chart options.
- */
-var loadaverageoptions = {
-	responsive : true,
-	animation: false,
-	scaleBeginAtZero: true,
-	bezierCurve : true,
-	pointDot: false,
-	showTooltips: false,
-	scaleShowVerticalLines: false,
-	scaleIntegersOnly: true,
-	scaleStartValue: 0,
-	scaleOverride: true,
-	scaleSteps: 4,
-	scaleStepWidth: 0.5
-};
-
-/*
- * Buffers line chart options.
- */
-var buffersoptions = {
-	responsive : true,
-	animation: false,
-	scaleBeginAtZero: true,
-	bezierCurve : true,
-	pointDot: false,
-	showTooltips: false,
-	scaleShowVerticalLines: false,
-	scaleIntegersOnly: true,
-	scaleStartValue: 0,
-	scaleOverride: true,
-	scaleSteps: 4,
-	scaleStepWidth: 5
-};
-
-/*
- * Active Backends line chart options.
- */
-var backendsoptions = {
-	responsive : true,
-	animation: false,
-	scaleBeginAtZero: true,
-	bezierCurve : true,
-	pointDot: false,
-	showTooltips: false,
-	scaleShowVerticalLines: false,
-	scaleIntegersOnly: true,
-	scaleStartValue: 0,
-	scaleOverride: true,
-	scaleSteps: 4,
-	scaleStepWidth: 1
-};
-
-/*
- * TPS line chart options.
- */
-var tpsoptions = {
-	responsive : true,
-	animation: false,
-	scaleBeginAtZero: true,
-	bezierCurve : true,
-	pointDot: false,
-	showTooltips: false,
-	scaleShowVerticalLines: false,
-	scaleIntegersOnly: true,
-	scaleStartValue: 0,
-	scaleOverride: true,
-	scaleSteps: 4,
-	scaleStepWidth: 5
-};
-var loadaveragedata = {
-	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-	datasets : [
-			{
-				label: "Loadaverage",
-				fillColor: "rgba(101,152,184,0.2)",
-				strokeColor: "rgba(101,152,184,1)",
-				pointColor: "rgba(101,152,184,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(101,152,184,1)",
-				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-			}
-	]
-};
-var buffersdata = {
-	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-	datasets : [
-			{
-				label: "Buffers",
-				fillColor: "rgba(101,152,184,0.2)",
-				strokeColor: "rgba(101,152,184,1)",
-				pointColor: "rgba(101,152,184,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(101,152,184,1)",
-				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-			}
-	]
-};
-var backendsdata = {
-	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-	datasets : [
-			{
-				label: "Active Backends",
-				fillColor: "rgba(101,152,184,0.2)",
-				strokeColor: "rgba(101,152,184,1)",
-				pointColor: "rgba(101,152,184,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(101,152,184,1)",
-				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-			}
-	]
-};
-var tpsdata = {
-	labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-	datasets : [
-			{
-				label: "Commit",
-				fillColor: "rgba(0,188,18,0.2)",
-				strokeColor: "rgba(0,188,18,1)",
-				pointColor: "rgba(0,188,18,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(0,188,18,1)",
-				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-			},
-			{
-				label: "Rollback",
-				fillColor: "rgba(188,0,0,0.2)",
-				strokeColor: "rgba(188,0,0,1)",
-				pointColor: "rgba(188,0,0,1)",
-				pointStrokeColor: "#fff",
-				pointHighlightFill: "#fff",
-				pointHighlightStroke: "rgba(188,0,0,1)",
-				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-			}
-	]
-};
-
-var loadaverage_values = loadaveragedata.datasets[0].data;
-var buffers_values = buffersdata.datasets[0].data;
-var backends_values = backendsdata.datasets[0].data;
-var tps_values = tpsdata.datasets[0].data;
 var last_update_timestamp = 0;
+
+// Chart.js 2.X plugin to force display of tooltips with doughnut charts.
+Chart.pluginService.register({
+		beforeRender: function (chart) {
+			if (chart.config.options.showAllTooltips) {
+				// create an array of tooltips
+				// we can't use the chart tooltip because there is only one tooltip per chart
+				chart.pluginTooltips = [];
+				chart.config.data.datasets.forEach(function (dataset, i) {
+					chart.getDatasetMeta(i).data.forEach(function (sector, j) {
+						chart.pluginTooltips.push(new Chart.Tooltip({
+							_chart: chart.chart,
+							_chartInstance: chart,
+							_data: chart.data,
+							_options: chart.options.tooltips,
+							_active: [sector]
+						}, chart));
+					});
+				});
+
+				// turn off normal tooltips
+				chart.options.tooltips.enabled = false;
+			}
+		},
+		afterDraw: function (chart, easing) {
+			if (chart.config.options.showAllTooltips) {
+				// we don't want the permanent tooltips to animate, so don't do anything till the animation runs atleast once
+				if (!chart.allTooltipsOnce) {
+					if (easing !== 1)
+						return;
+					chart.allTooltipsOnce = true;
+				}
+
+				// turn on tooltips
+				chart.options.tooltips.enabled = true;
+				Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
+					tooltip.initialize();
+					tooltip.update();
+					// we don't actually need this since we are not animating tooltips
+					tooltip.pivot();
+					tooltip.transition(easing).draw();
+				});
+				chart.options.tooltips.enabled = false;
+			}
+		}
+	})
 
 /*
  * CPU & Memory usage donut charts options.
  */
 var options = {
-	tooltipTemplate: "<%= label %>: <%= value %>%",
 	responsive : true,
-	animation: false,
-	onAnimationComplete: function()
-	{
-		/** Force the display of tooltips. **/
-		var new_segments = [];
-		var pos = 0
-		for (var i=0; i <this.segments.length; i++)
-		{
-			if (this.segments[i].value > 0)
-			{
-				new_segments[pos] = this.segments[i]
-				pos++
+	showAllTooltips: true,
+	legend: {
+		display: false
+	},
+	animation: {
+		duration: 0
+	},
+	tooltips: {
+		callbacks: {
+			label: function(tooltipItem, data) {
+				return data.labels[tooltipItem.index]+': '+data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' %';
 			}
 		}
-		this.showTooltip(new_segments, true);
-	},
-	tooltipEvents: [],
-	showTooltips: true
+	}
 }
 
 function html_error_modal(code, error)
@@ -262,36 +157,104 @@ function update_dashboard(data)
 	$('#pg_uptime').html(data['pg_uptime']);
 	/** Update memory usage chart **/
 	
-	window.memorychart.segments[0].value = data['memory']['active'];
-	window.memorychart.segments[1].value = data['memory']['cached'];
-	window.memorychart.segments[2].value = data['memory']['free'];
+	window.memorychart.data.datasets[0].data[0] = data['memory']['active'];
+	window.memorychart.data.datasets[0].data[1] = data['memory']['cached'];
+	window.memorychart.data.datasets[0].data[2] = data['memory']['free'];
 	window.memorychart.update();
 	/** Update CPU usage chart **/
-	window.cpuchart.segments[0].value = data['cpu']['iowait'];
-	window.cpuchart.segments[1].value = data['cpu']['steal'];
-	window.cpuchart.segments[2].value = data['cpu']['user'];
-	window.cpuchart.segments[3].value = data['cpu']['system'];
-	window.cpuchart.segments[4].value = data['cpu']['idle'];
+	window.cpuchart.data.datasets[0].data[0] = data['cpu']['iowait'];
+	window.cpuchart.data.datasets[0].data[1] = data['cpu']['steal'];
+	window.cpuchart.data.datasets[0].data[2] = data['cpu']['user'];
+	window.cpuchart.data.datasets[0].data[3] = data['cpu']['system'];
+	window.cpuchart.data.datasets[0].data[4] = data['cpu']['idle'];
 	window.cpuchart.update();
 	/** Hitratio chart **/
-	window.hitratiochart.segments[0].value = data['hitratio'];
-	window.hitratiochart.segments[1].value = (100 - data['hitratio']);
+	window.hitratiochart.data.datasets[0].data[0] = data['hitratio'];
+	window.hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
 	window.hitratiochart.update();
 }
+
+function resize_chart(chart, max_val, step_size_limit)
+{
+	while (chart.options.scales.yAxes[0].ticks.max < max_val)
+	{
+		chart.options.scales.yAxes[0].ticks.stepSize *= 2;
+		chart.options.scales.yAxes[0].ticks.max *= 2;
+	}
+	while ((chart.options.scales.yAxes[0].ticks.stepSize > step_size_limit) && max_val < Math.ceil(chart.options.scales.yAxes[0].ticks.max / 2))
+	{
+		chart.options.scales.yAxes[0].ticks.stepSize /= 2;
+		chart.options.scales.yAxes[0].ticks.max /= 2;
+	}
+	chart.update();
+}
+
+/*
+ * Loadaverage line chart options.
+ */
+var loadaverage_config = {
+	type: 'line',
+	data: {
+		labels: [ "","","","","","","","","","","","","","","","","","","","" ],
+		datasets : [
+			{
+				label: "Loadaverage",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
+		]
+	},
+	options: {
+		responsive : true,
+		animation: false,
+		legend: {
+			display: false
+		},
+		scales: {
+			yAxes: [{
+				ticks: {
+					max: 4,
+					min: 0,
+					stepSize: 1,
+					beginAtZero: true
+				}
+			}],
+			xAxes: [{
+				gridLines: {
+					display: false
+				}
+			}]
+		},
+		elements: {
+			point: {
+				radius: 0
+			},
+			line: {
+				backgroundColor: 'rgba(101,152,184,0.2)',
+				borderColor: "rgba(101,152,184,1)",
+				borderWidth: 1
+			}
+		},
+		tooltips: {
+			enabled: false
+		}
+	}
+};
+
+var loadaverage_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 
 function update_loadaverage(data, update_chart)
 {
 	if (!("loadaveragechart" in window))
 	{
 		var loadaveragecontext = $('#chart-loadaverage').get(0).getContext('2d');
-		window.loadaveragechart = new Chart(loadaveragecontext).Line(loadaveragedata, loadaverageoptions);
+		window.loadaveragechart = new Chart(loadaveragecontext, loadaverage_config);
 	}
 	/** Add the very new loadaverage value to the chart dataset ... **/
-	window.loadaveragechart.addData([data['loadaverage']], "");
+	window.loadaveragechart.data.datasets[0].data.push(data['loadaverage']);
 	/** ... and to the global array loadaverage_values **/
 	loadaverage_values.push(data['loadaverage']);
-	window.loadaveragechart.removeData();
 	loadaverage_values.shift();
+	window.loadaveragechart.data.datasets[0].data.shift();
 	if (update_chart)
 	{
 		$('#loadaverage').html(data['loadaverage']);
@@ -303,26 +266,68 @@ function update_loadaverage(data, update_chart)
 				max_val = loadaverage_values[i];
 			}
 		}
-		while (Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth) < max_val)
-		{
-			window.loadaveragechart.options.scaleStepWidth *= 2;
-			window.loadaveragechart.buildScale(loadaveragedata.labels);
-		}
-		while ((window.loadaveragechart.options.scaleStepWidth > 0.5) && max_val < Math.ceil(window.loadaveragechart.options.scaleSteps * window.loadaveragechart.options.scaleStepWidth / 2))
-		{
-			window.loadaveragechart.options.scaleStepWidth /= 2;
-			window.loadaveragechart.buildScale(loadaveragedata.labels);
-		}
-		window.loadaveragechart.update();
+		resize_chart(window.loadaveragechart, max_val, 1);
 	}
 }
+
+/*
+ * Buffers line chart options.
+ */
+var buffers_config = {
+	type: 'line',
+	data: {
+		labels: [ "","","","","","","","","","","","","","","","","","","","" ],
+		datasets : [
+			{
+				label: "Buffers",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
+		]
+	},
+	options: {
+		responsive : true,
+		animation: false,
+		legend: {
+			display: false
+		},
+		scales: {
+			yAxes: [{
+				ticks: {
+					max: 20,
+					min: 0,
+					stepSize: 5,
+					beginAtZero: true
+				}
+			}],
+			xAxes: [{
+				gridLines: {
+					display: false
+				}
+			}]
+		},
+		elements: {
+			point: {
+				radius: 0
+			},
+			line: {
+				backgroundColor: 'rgba(101,152,184,0.2)',
+				borderColor: "rgba(101,152,184,1)",
+				borderWidth: 1
+			}
+		},
+		tooltips: {
+			enabled: false
+		}
+	}
+};
+var buffers_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 
 function update_buffers(data, update_chart)
 {
 	if (!("bufferschart" in window))
 	{
 		var bufferscontext = $('#chart-buffers').get(0).getContext('2d');
-		window.bufferschart = new Chart(bufferscontext).Line(buffersdata, buffersoptions);
+		window.bufferschart = new Chart(bufferscontext, buffers_config);
 	}
 	/** Re-process delta calculation **/
 	if (buffers_values.length > 0)
@@ -338,11 +343,11 @@ function update_buffers(data, update_chart)
 		delta = 0;
 	}
 
-	window.bufferschart.addData([delta], "");
+	window.bufferschart.data.datasets[0].data.push(delta);
 	/** We need to store delta value. **/
 	data['buffers']['delta'] = delta;
 	buffers_values.push(data['buffers']);
-	window.bufferschart.removeData();
+	window.bufferschart.data.datasets[0].data.shift();
 	buffers_values.shift();
 	if (update_chart)
 	{
@@ -355,32 +360,76 @@ function update_buffers(data, update_chart)
 				max_val = buffers_values[i]['delta'];
 			}
 		}
-		while (Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth) < max_val)
-		{
-			window.bufferschart.options.scaleStepWidth *= 2;
-			window.bufferschart.buildScale(buffersdata.labels);
-		}
-		while ((window.bufferschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.bufferschart.options.scaleSteps * window.bufferschart.options.scaleStepWidth / 2))
-		{
-			window.bufferschart.options.scaleStepWidth /= 2;
-			window.bufferschart.buildScale(buffersdata.labels);
-		}
-		window.bufferschart.update();
+		resize_chart(window.bufferschart, max_val, 5);
 	}
 }
+
+/*
+ * Active Backends line chart options.
+ */
+var backends_config = {
+	type: 'line',
+	data: {
+		labels: [ "","","","","","","","","","","","","","","","","","","","" ],
+		datasets : [
+			{
+				label: "Active Backends",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
+		]
+	},
+	options: {
+		responsive : true,
+		animation: false,
+		legend: {
+			display: false
+		},
+		scales: {
+			yAxes: [{
+				ticks: {
+					max: 4,
+					min: 0,
+					stepSize: 1,
+					beginAtZero: true
+				}
+			}],
+			xAxes: [{
+				gridLines: {
+					display: false
+				}
+			}]
+		},
+		elements: {
+			point: {
+				radius: 0
+			},
+			line: {
+				backgroundColor: 'rgba(101,152,184,0.2)',
+				borderColor: 'rgba(101,152,184,1)',
+				borderWidth: 1
+			}
+		},
+		tooltips: {
+			enabled: false
+		}
+	}
+};
+
+
+var backends_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 
 function update_backends(data, update_chart)
 {
 	if (!("backendschart" in window))
 	{
-		var backendscontext = $('#chart-backends').get(0).getContext('2d');
-		window.backendschart = new Chart(backendscontext).Line(backendsdata, backendsoptions);
+		var backends_context = $('#chart-backends').get(0).getContext('2d');
+		window.backendschart = new Chart(backends_context, backends_config);
 	}
 	/** Add the very new backends value to the chart dataset ... **/
-	window.backendschart.addData([data['active_backends']['nb']], "");
+	window.backendschart.data.datasets[0].data.push(data['active_backends']['nb']);
 	/** ... and to the global array backends_values **/
 	backends_values.push(data['active_backends']['nb']);
-	window.backendschart.removeData();
+	window.backendschart.data.datasets[0].data.shift();
 	backends_values.shift();
 	if (update_chart)
 	{
@@ -393,25 +442,76 @@ function update_backends(data, update_chart)
 				max_val = backends_values[i];
 			}
 		}
-		while (Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth) < max_val)
-		{
-			window.backendschart.options.scaleStepWidth *= 2;
-			window.backendschart.buildScale(backendsdata.labels);
-		}
-		while ((window.backendschart.options.scaleStepWidth > 1) && max_val < Math.ceil(window.backendschart.options.scaleSteps * window.backendschart.options.scaleStepWidth / 2))
-		{
-			window.backendschart.options.scaleStepWidth /= 2;
-			window.backendschart.buildScale(backendsdata.labels);
-		}
-		window.backendschart.update();
+		resize_chart(window.backendschart, max_val, 1);
 	}
 }
+
+/*
+ * TPS line chart options.
+ */
+
+var tps_config = {
+	type: 'line',
+	data: {
+		labels: [ "","","","","","","","","","","","","","","","","","","","" ],
+		datasets : [
+			{
+				label: "Commit",
+				backgroundColor: "rgba(0,188,18,0.2)",
+				borderColor: "rgba(0,188,18,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			},
+			{
+				label: "Rollback",
+				backgroundColor: "rgba(188,0,0,0.2)",
+				borderColor: "rgba(188,0,0,1)",
+				data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+			}
+		]
+	},
+	options: {
+		responsive: true,
+		animation: false,
+		legend: {
+			display: false
+		},
+		scales: {
+			yAxes: [{
+				ticks: {
+					max: 20,
+					min: 0,
+					stepSize: 5,
+					beginAtZero: true
+				}
+			}],
+			xAxes: [{
+				gridLines: {
+					display: false
+				}
+			}]
+		},
+		elements: {
+			point: {
+				radius: 0
+			},
+			line: {
+				borderWidth: 1
+			}
+		},
+		tooltips: {
+			enabled: false
+		}
+	}
+};
+
+var tps_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 
 function update_tps(data, update_chart)
 {
 	if (!("tpschart" in window))
 	{
-		window.tpschart = new Chart($('#chart-tps').get(0).getContext('2d')).Line(tpsdata, tpsoptions);
+		var tps_context = $('#chart-tps').get(0).getContext('2d');
+		window.tpschart = new Chart(tps_context, tps_config);
 	}
 	/** Proceed with delta calculation **/
 	if (tps_values.length > 0)
@@ -430,13 +530,15 @@ function update_tps(data, update_chart)
 		delta_rollback = 0;
 	}
 
-	window.tpschart.addData([delta_commit, delta_rollback], "");
+	window.tpschart.data.datasets[0].data.push(delta_commit);
+	window.tpschart.data.datasets[1].data.push(delta_rollback);
 	/** We need to store delta value. **/
 	data['databases']['delta_commit'] = delta_commit;
 	data['databases']['delta_rollback'] = delta_rollback;
 	tps_values.push(data['databases']);
-	window.tpschart.removeData();
 	tps_values.shift();
+	window.tpschart.data.datasets[0].data.shift();
+	window.tpschart.data.datasets[1].data.shift();
 	if (update_chart)
 	{
 		$('#tps_commit').html(delta_commit);
@@ -456,27 +558,17 @@ function update_tps(data, update_chart)
 				}
 			}
 		}
-		while (Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth) < max_val)
-		{
-			window.tpschart.options.scaleStepWidth *= 2;
-			window.tpschart.buildScale(tpsdata.labels);
-		}
-		while ((window.tpschart.options.scaleStepWidth > 5) && max_val < Math.ceil(window.tpschart.options.scaleSteps * window.tpschart.options.scaleStepWidth / 2))
-		{
-			window.tpschart.options.scaleStepWidth /= 2;
-			window.tpschart.buildScale(tpsdata.labels);
-		}
-		window.tpschart.update();
+		resize_chart(window.tpschart, max_val, 5);
 	}
 }
 
 window.onload = function(){
 	var memorycontext = $('#chart-memory').get(0).getContext('2d');
-	window.memorychart = new Chart(memorycontext).Doughnut(memorydata, options);
+	window.memorychart = new Chart(memorycontext, {type: 'doughnut', data: memorydata, options: options});
 	var cpucontext = $('#chart-cpu').get(0).getContext('2d');
-	window.cpuchart = new Chart(cpucontext).Doughnut(cpudata, options);
+	window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
 	var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
-	window.hitratiochart = new Chart(hitratiocontext).Doughnut(hitratiodata, options);
+	window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
 };
 
 function update_notifications(data)

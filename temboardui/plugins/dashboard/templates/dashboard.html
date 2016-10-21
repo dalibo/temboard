@@ -13,10 +13,10 @@
 		<div class="col-md-12">
 			<div class="panel panel-default panel-dashboard">
 				<div class="panel-heading">
-			    	Informations
-			    </div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+					Informations
+				</div>
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<table class="table-dashboard-info">
 					<tr>
 						<td>OS:</td>
@@ -50,157 +50,127 @@
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					TPS <div class="pull-right">Commit:<span id="tps_commit" class="label label-success">0</span> Rollback: <span id="tps_rollback" class="label label-danger">0</span></div>
-			    </div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				</div>
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-tps-holder">
 						<canvas id="chart-tps" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Loadaverage <div class="pull-right"><span id="loadaverage" class="label label-primary">{{dashboard['loadaverage']}}</span></div>
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-loadaverage-holder">
 						<canvas id="chart-loadaverage" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					CPU usage
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-cpu-holder">
 						<canvas id="chart-cpu" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Memory usage
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-memory-holder">
 						<canvas id="chart-memory" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Cache Hit ratio
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-hitratio-holder">
 						<canvas id="chart-hitratio" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Buffers <div class="pull-right"><span id="buffers_delta" class="label label-primary">{{buffers_delta}}</span></div>
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-buffers-holder">
 						<canvas id="chart-buffers" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Active backends <div class="pull-right"><span id="backends" class="label label-primary">{{dashboard['active_backends']['nb']}}</span></div>
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body">
+				<!-- /.panel-heading -->
+				<div class="panel-body">
 					<div id="canvas-backends-holder">
 						<canvas id="chart-backends" />
 					</div>
 				</div>
 			</div>
 			<div class="panel panel-default panel-dashboard">
-			    <div class="panel-heading">
+				<div class="panel-heading">
 					Notifications
 				</div>
-			    <!-- /.panel-heading -->
-			    <div class="panel-body" id="divNotif10">
+				<!-- /.panel-heading -->
+				<div class="panel-body" id="divNotif10">
 					<div class="row text-center"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
-<script src="/js/Chart.js"></script>
+<!-- <script src="/js/Chart.js"></script> -->
+<script src="/js/Chart.min.js"></script>
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script>
-	var memorydata = [
-		{
-			value: {{ dashboard['memory']['active'] }},
-			label: "Active",
-			color: "#cc2936"
-		},
-		{
-			value: {{ dashboard['memory']['cached'] }},
-			label: "Cached",
-			color: "#29cc36"
-		},
-		{
-			value: {{ dashboard['memory']['free'] }},
-			label: "Free",
-			color: "#eeeeee"
-		}
-	];
+	var memorydata = {
+		labels: [ "Active", "Cached", "Free" ],
+		datasets: [
+			{
+				data: [{{dashboard['memory']['active']}}, {{dashboard['memory']['cached']}}, {{dashboard['memory']['free']}}],
+				backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
+			}
+		]
+	};
 
-	var cpudata = [
-		{
-			value: {{ dashboard['cpu']['iowait'] }},
-			label: "IO Wait",
-			color: "#cc2936"
-		},
-		{
-			value: {{ dashboard['cpu']['steal'] }},
-			label: "Steal",
-			color: "#cbff00"
-		},
-		{
-			value: {{ dashboard['cpu']['user'] }},
-			label: "User",
-			color: "#29cc36"
-		},
-		{
-			value: {{ dashboard['cpu']['system'] }},
-			label: "System",
-			color: "#cbff00"
-		},
-		{
-			value: {{ dashboard['cpu']['idle'] }},
-			label: "IDLE",
-			color: "#eeeeee"
-		}
+	var cpudata = {
+		labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
+		datasets: [
+			{
+				data: [{{dashboard['cpu']['iowait']}}, {{dashboard['cpu']['steal']}}, {{dashboard['cpu']['user']}}, {{dashboard['cpu']['system']}}, {{dashboard['cpu']['idle']}}],
+				backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
+			}
+		]
+	};
 
-	];
-
-	var hitratiodata = [
-		{
-			value: {{ dashboard['hitratio'] }},
-			label: "Hit",
-			color: "#29cc36"
-		},
-		{
-			value: {{ readratio }},
-			label: "Read",
-			color: "#cc2936"
-		}
-	
-	];
+	var hitratiodata = {
+		labels: ["Hit", "Read"],
+		datasets: [
+			{
+				data: [{{dashboard['hitratio']}}, {{readratio}}],
+				backgroundColor: ["#29cc36", "#cc2936"]
+			}
+		]
+	};
 	var jdata_history = JSON.parse('{% raw history %}');
 	for (var p in jdata_history)
 	{
