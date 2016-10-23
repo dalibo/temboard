@@ -12,6 +12,7 @@
 ## Installation
 
 Install dependencies with `pip`:
+
 ```
 sudo pip install tornado
 sudo pip install psycopg2
@@ -21,41 +22,41 @@ sudo pip install sqlalchemy
 Proceed with the installation of the UI:
 
 ```
-$ cd temboard/
-$ sudo python setup.py install
+cd temboard/
+sudo python setup.py install
 ```
 
 ## Prepare directories and files
 
 Creation of directories for the configuration file and SSL files:
 ```
-$ sudo mkdir /etc/temboard
-$ sudo mkdir /etc/temboard/ssl
+sudo mkdir /etc/temboard
+sudo mkdir /etc/temboard/ssl
 ```
 
 Logging directory:
 ```
-$ sudo mkdir /var/log/temboard
+sudo mkdir /var/log/temboard
 ```
 
 PID directory:
 ```
-$ sudo mkdir /var/run/temboard
+sudo mkdir /var/run/temboard
 ```
 
 Copy the sample configuration file:
 ```
-$ sudo cp /usr/share/temboard/temboard.conf.sample /etc/temboard/temboard.conf
+sudo cp /usr/share/temboard/temboard.conf.sample /etc/temboard/temboard.conf
 ```
 
 Copy dummies self-signed SSL key and cacerts files:
 ```
-$ sudo cp /usr/share/temboard/temboard_* /etc/temboard/ssl/.
+sudo cp /usr/share/temboard/temboard_* /etc/temboard/ssl/.
 ```
 
 Copy the logrotate configuration file:
 ```
-$ sudo cp /usr/share/temboard/temboard.logrotate /etc/logrotate.d/temboard
+sudo cp /usr/share/temboard/temboard.logrotate /etc/logrotate.d/temboard
 ```
 
 ## Users
@@ -77,16 +78,16 @@ sudo chmod 600 /etc/temboard/temboard.conf
 ### Using provided SSL certificate
 `temboard` provides a ready to use self-signed SSL certifcate located in `/usr/share/temboard` directory, if you don't want to use it, you can create a new one with the `openssl` binary.
 ```
-$ sudo cp /usr/share/temboard/temboard_CHANGEME.key /etc/temboard/ssl/.
-$ sudo cp /usr/share/temboard/temboard_CHANGEME.pem /etc/temboard/ssl/.
-$ sudo chown temboard.temboard /etc/temboard/ssl/*
+sudo cp /usr/share/temboard/temboard_CHANGEME.key /etc/temboard/ssl/.
+sudo cp /usr/share/temboard/temboard_CHANGEME.pem /etc/temboard/ssl/.
+sudo chown temboard.temboard /etc/temboard/ssl/*
 ```
 
 ### Build a new self-signed certificate
 
 To build a new SSL certifcate:
 ```
-$ sudo -u temboard openssl req -new -x509 -days 365 -nodes -out /etc/temboard/ssl/localhost.pem -keyout /etc/temboard/ssl/localhost.key
+sudo -u temboard openssl req -new -x509 -days 365 -nodes -out /etc/temboard/ssl/localhost.pem -keyout /etc/temboard/ssl/localhost.key
 ```
 
 Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file need to be set respectively to `/etc/temboard/ssl/localhost.pem` and `/etc/temboard/ssl/localhost.key`.
@@ -96,14 +97,14 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file ne
 Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To allow this data flow, the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. temBoard embeds a default CA cert. file containing agent's default SSL certificate.
 
 ```
-$ sudo cp /usr/share/temboard/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
+sudo cp /usr/share/temboard/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
 ```
 
 `ssl_ca_cert_file` parameter in section `[temboard]` from the configuration file needs to be set to `/etc/temboard/ssl/ca_certs_localhost.pem`.
 
 ### Restrictions on SSL files
 ```
-$ sudo chmod 0600 /etc/temboard/ssl/*
+sudo chmod 0600 /etc/temboard/ssl/*
 ```
 
 ## Repository
@@ -114,17 +115,17 @@ The repository must be set up otherwise the temboard service will not start. See
 
 ### Start
 ```
-$ sudo -u temboard temboard -d -p /var/run/temboard/temboard.pid
+sudo -u temboard temboard -d -p /var/run/temboard/temboard.pid
 ```
 
 ### Stop
 ```
-$ sudo kill $(cat /var/run/temboard/temboard.pid)
+sudo kill $(cat /var/run/temboard/temboard.pid)
 ```
 
 ### Reload configuration
 ```
-$ sudo kill -HUP $(cat /var/run/temboard/temboard.pid)
+sudo kill -HUP $(cat /var/run/temboard/temboard.pid)
 ```
 
 ### Init scripts and systemd service file

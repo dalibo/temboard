@@ -67,7 +67,7 @@ To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ A
 Before adding a new instance in `temboard` interface, you'd check that `temboard-agent` is up & running on the machine hosting the PostgreSQL instance.
 A quick smoke test can be done using `curl` from `temboard` machine:
 ```
-temboard$ curl https://<temboard-agent-address>:2345/discover
+curl https://<temboard-agent-address>:2345/discover
 
 {"hostname": "debian-tbd-agent.local", "pg_data": "/var/lib/postgresql/9.5/main", "pg_port": 5432, "plugins": ["supervision", "dashboard", "settings", "administration", "activity"], "memory_size": 518451200, "pg_version": "PostgreSQL 9.5.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 4.9.2-10) 4.9.2, 64-bit", "cpu": 1}
 ```
@@ -85,7 +85,7 @@ See `doc/temboard-agent-configuration.md` for more information.
 
 In order to use most of the plugins, one or more `user` must be added to each `tembaord-agent`. Once the `temboard-agent` is well configured, you can use the script `temboard-agent-adduser` to create a new `user`:
 ```
-temboard-agent$ sudo -u postgres temboard-agent-adduser
+sudo -u postgres temboard-agent-adduser
 
 Username: john
 Password: 
@@ -95,7 +95,7 @@ Done.
 
 Testing login with this new user can be done using `curl` tool:
 ```
-temboard-agent$ curl -k -X POST --data '{"username": "john", "password": "xxxxx"}' https://127.0.0.1:2345/login
+curl -k -X POST --data '{"username": "john", "password": "xxxxx"}' https://127.0.0.1:2345/login
 
 {"session": "fe43c3973ec7ca0fc219c00588c97c39afc06fcf91ee1203d19a892466600dae"}
 ```

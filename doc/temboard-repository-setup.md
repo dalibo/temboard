@@ -13,8 +13,8 @@ To ensure the browsing of the web interface is fast enough, please note the `wor
 To acces the `repository`, `temboard` needs to have its own user and database. To create them on a typical PostgreSQL setup, run the following commands:
 
 ```
-repository# sudo -u postgres createuser temboard -l -P
-repository# sudo -u postgres createdb -O temboard temboard
+sudo -u postgres createuser temboard -l -P
+sudo -u postgres createdb -O temboard temboard
 ```
 
 ## Authentication with password
@@ -37,13 +37,13 @@ If the PostgreSQL cluster is on th different host, replace `127.0.0.1/32` by the
 
 `temboard` SQL schema must be loaded. The schema is stored in the SQL files located in `/usr/share/temboard` after the installation:
 ```
-repository# psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
 ```
 
 If you plan to use the plugin `supervision`:
 ```
-repository# sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
-repository# psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/supervision.sql temboard
+sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/supervision.sql temboard
 ```
 
 ## Configuration of temBoard
