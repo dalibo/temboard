@@ -11,21 +11,21 @@ deb https://packages.temboard.io/apt/ jessie main
 Ensure APT can handle HTTPS:
 
 ```
-$ sudo apt-get install apt-transport-https
+sudo apt-get install apt-transport-https
 ```
 
 Add the GPG key of the repository and update the packages list:
 
 ```
-$ sudo apt-get install wget ca-certificates
-$ wget -q -O - https://packages.temboard.io/apt/265B525B.asc | sudo apt-key add -
-$ sudo apt-get update
+sudo apt-get install wget ca-certificates
+wget -q -O - https://packages.temboard.io/apt/265B525B.asc | sudo apt-key add -
+sudo apt-get update
 
 
 ## Installation
 
 ```
-$ sudo apt-get install temboard-agent
+sudo apt-get install temboard-agent
 ```
 
 ## Configuration
@@ -45,13 +45,13 @@ Before starting the agent, see `doc/temboard-agent-configuration.md` for post-in
 ### Start the agent
 
 ```
-$ sudo service temboard-agent start
+sudo service temboard-agent start
 ```
 
 ### Status
 
 ```
-$ sudo service temboard-agent status
+sudo service temboard-agent status
 
 ● temboard-agent.service - LSB: Start temboard-agent
    Loaded: loaded (/etc/init.d/temboard-agent)
@@ -67,20 +67,20 @@ Aug 25 15:24:37 debian-tbd-agent temboard-agent[10342]: Starting: temboard-agent
 ### Reload configuration
 
 ```
-$ sudo service temboard-agent reload
+sudo service temboard-agent reload
 ```
 
 ### Stop the agent
 
 ```
-$ sudo service temboard-agent stop
+sudo service temboard-agent stop
 ```
 
 ## Package building
 
 To create a new debian package from `temboard-agent` sources, the packages `dpkg-dev` and `debhelper` have to be installed.
 ```
-$ sudo apt-get install dpkg-dev debhelper
+sudo apt-get install dpkg-dev debhelper
 ```
 
 Then, you need to go in `temboard/temboard-agent/debian` directory and execute the script `make_deb.sh`. Once the script executed, the .deb file can be found in `temboard/` directory.

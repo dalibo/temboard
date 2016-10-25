@@ -44,7 +44,7 @@ gpgcheck=0
 With the YUM repositories set up, the temBoard agent can be installed with `yum`:
 
 ```
-# yum install temboard-agent
+yum install temboard-agent
 ```
 
 ## Configuration
@@ -65,12 +65,12 @@ Before starting the agent, see `doc/temboard-agent-configuration.md` for post-in
 
 On RHEL / CentOS 5 and 6:
 ```
-$ sudo service temboard-agent start
+sudo service temboard-agent start
 ```
 
 On RHEL / CentOS 7:
 ```
-$ sudo systemctl start temboard-agent
+sudo systemctl start temboard-agent
 ```
 
 ### Start at boot time
@@ -78,13 +78,13 @@ $ sudo systemctl start temboard-agent
 On RHEL / CentOS 5 and 6:
 
 ```
-# chkconfig temboard-agent on
+chkconfig temboard-agent on
 ```
 
 On RHEL / CentOS 7:
 
 ```
-# systemctl enable temboard-agent
+systemctl enable temboard-agent
 ```
 
 ### Status
@@ -92,13 +92,13 @@ On RHEL / CentOS 7:
 On RHEL / CentOS 6:
 
 ```
-# ps auxf | grep temboard-agent
+ps auxf | grep temboard-agent
 ```
 
 On RHEL / CentOS 7:
 
 ```
-# systemctl status temboard-agent
+systemctl status temboard-agent
 ```
 
 ### Reload configuration
@@ -106,13 +106,13 @@ On RHEL / CentOS 7:
 On RHEL / CentOS 6:
 
 ```
-# service temboard-agent reload
+service temboard-agent reload
 ```
 
 On RHEL / CentOS 7:
 
 ```
-# systemctl reload temboard-agent
+systemctl reload temboard-agent
 ```
 
 ### Stop
@@ -120,11 +120,11 @@ On RHEL / CentOS 7:
 On RHEL / CentOS 6:
 
 ```
-# service temboard-agent stop
+service temboard-agent stop
 ```
 
 On RHEL / CentOS 7:
 
 ```
-# systemctl stop temboard-agent
+systemctl stop temboard-agent
 ```

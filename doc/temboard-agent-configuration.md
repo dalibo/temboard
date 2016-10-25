@@ -7,16 +7,16 @@
 ### Using provided SSL certificate
 `temboard-agent` provides a ready to use self-signed SSL certifcate located in `/usr/share/temboard-agent` directory, if you don't want to use it, you can create a new one with the `openssl` binary.
 ```
-$ sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
-$ sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
-$ sudo chown postgres.postgres /etc/temboard-agent/ssl/*
+sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
+sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
+sudo chown postgres.postgres /etc/temboard-agent/ssl/*
 ```
 
 ### Build a new self-signed certificate
 
 To build a new SSL certifcate:
 ```
-$ sudo -u postgres openssl req -new -x509 -days 365 -nodes -out /etc/temboard-agent/ssl/localhost.pem -keyout /etc/temboard-agent/ssl/localhost.key
+sudo -u postgres openssl req -new -x509 -days 365 -nodes -out /etc/temboard-agent/ssl/localhost.pem -keyout /etc/temboard-agent/ssl/localhost.key
 ```
 
 Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard-agent.conf` file need to be set respectively to `/etc/temboard-agent/ssl/localhost.pem` and `/etc/temboard-agent/ssl/localhost.key`.
@@ -25,14 +25,14 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard-agent.conf` f
 
 The plugin `supervision` sends periodically collected data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, the HTTPS client implemented by the agent needs to have the UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
 ```
-$ sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
+sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 ```
 
 `ssl_ca_cert_file` parameter in section `[supervision]` from the configuration file needs to be set to `/etc/temboard-agent/ssl/ca_certs_localhost.pem`.
 
 ### Restrictions on SSL files
 ```
-$ sudo chmod 0600 /etc/temboard-agent/ssl/*
+sudo chmod 0600 /etc/temboard-agent/ssl/*
 ```
 
 ### Access to PostgreSQL Cluster
@@ -41,7 +41,7 @@ The agent needs a PostgreSQL superuser. By default, it is configured to work wit
 
 To create a dedicated one with password authentication:
 ```
-$ sudo -u postgres createuser temboard -s -P
+sudo -u postgres createuser temboard -s -P
 ```
 
 This superuser should be able to connect to the cluster through the unix socket using a password, check `pg_hba.conf` file and reload configuration.
@@ -58,7 +58,7 @@ When interacting with the agent using HTTP, for example when accessing certain p
 
 Add a first user:
 ```
-$ sudo -u postgres temboard-agent-adduser
+sudo -u postgres temboard-agent-adduser
 ```
 
 ### Registration in the Web UI of the supersivion plugin
@@ -67,7 +67,7 @@ In the `temboard-agent.conf` file, 2 parameters must be configurated to make the
 
 The best way to configure the agent key is to generate a random string of letters and number:
 ```
-$ cat /dev/urandom | tr -dc '[:alnum:]' | fold -w 64 | head -1
+cat /dev/urandom | tr -dc '[:alnum:]' | fold -w 64 | head -1
 ```
 
 The second is `collector_url`. It lets the agent know where to post its data. Just change the hostname to point to the UI. Since the UI is only reachable using HTTPS, the UI SSL certificate (or CA certificates that has issued it) must be in the filepath where `ssl_ca_cert_file` points.
