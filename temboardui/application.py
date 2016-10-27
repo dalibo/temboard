@@ -3,7 +3,7 @@ import re
 from hashlib import sha512
 from binascii import hexlify
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, scoped_session, joinedload
 from sqlalchemy.orm.exc import *
 from sqlalchemy.exc import *
@@ -148,24 +148,11 @@ def delete_group(session, group_name, group_kind):
     except Exception as e:
         raise TemboardUIError(400, e.message)
 
-def get_group_list(session, group_kind = 'role', order = None, direction = None):
-    if order is not None:
-        if direction is not None:
-            if direction.lower() not in ('asc', 'desc'):
-                raise TemboardUIError(400, "Wrong order direction.")
-        else:
-            direction = 'asc'
-        if not hasattr(Groups, order):
-            raise TemboardUIError(400, "Can't order results by '%s'." % (order))
-        if group_kind == 'role':
-            return session.query(Groups).filter(Groups.group_kind == unicode(group_kind)).order_by('%s %s' % (order, direction)).all()
-        else:
-            return session.query(Groups).options(joinedload(Groups.ari)).filter(Groups.group_kind == unicode(group_kind)).order_by('%s %s' % (order, direction)).all()
+def get_group_list(session, group_kind = 'role'):
+    if group_kind == 'role':
+        return session.query(Groups).filter(Groups.group_kind == unicode(group_kind)).order_by(Groups.group_name).all()
     else:
-        if group_kind == 'role':
-            return session.query(Groups).filter(Groups.group_kind == unicode(group_kind)).all()
-        else:
-            return session.query(Groups).options(joinedload(Groups.ari)).filter(Groups.group_kind == unicode(group_kind)).all()
+        return session.query(Groups).options(joinedload(Groups.ari)).filter(Groups.group_kind == unicode(group_kind)).order_by(Groups.group_name).all()
 
 def add_role_in_group(session, role_name, group_name):
     try:
@@ -197,13 +184,19 @@ def delete_role_from_group(session, role_name, group_name):
         raise TemboardUIError(400, e.message)
 
 def get_groups_by_role(session, role_name):
-    return session.query(RoleGroups).filter(RoleGroups.role_name == unicode(role_name)).order_by('group_name asc').all()
+    return session.query(RoleGroups).filter(RoleGroups.role_name == unicode(role_name)).order_by(RoleGroups.group_name).all()
+
+def get_instance_groups_by_role(session, role_name):
+    return session.query(InstanceGroups.group_name).filter(
+            InstanceGroups.group_name == AccessRoleInstance.instance_group_name,
+            AccessRoleInstance.role_group_name == RoleGroups.group_name,
+            RoleGroups.role_name == unicode(role_name)).group_by(InstanceGroups.group_name).order_by(InstanceGroups.group_name).all()
 
 def get_roles_by_group(session, group_name):
     return session.query(Roles).filter(
             RoleGroups.group_name == unicode(group_name),
             Roles.role_name == RoleGroups.role_name
-        ).order_by('role_name asc').all()
+        ).order_by(Roles.role_name).all()
 
 
 """
@@ -380,14 +373,14 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
         raise TemboardUIError(400, e.message)
 
 def get_instances_by_group(session, group_name):
-    return session.query(Instances).filter(
+    return session.query(Instances).options(joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
             InstanceGroups.group_name == unicode(group_name),
             Instances.agent_address == InstanceGroups.agent_address,
             Instances.agent_port == InstanceGroups.agent_port
-        ).order_by('instances.agent_address asc').all()
+        ).order_by(Instances.agent_address).all()
 
 def get_groups_by_instance(session, agent_address, agent_port):
-    return session.query(InstanceGroups).filter(InstanceGroups.agent_address == unicode(agent_address), InstanceGroups.agent_port == agent_port).order_by('group_name asc').all()
+    return session.query(InstanceGroups).filter(InstanceGroups.agent_address == unicode(agent_address), InstanceGroups.agent_port == agent_port).order_by(InstanceGroup.group_name).all()
 
 def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
     try:
@@ -429,7 +422,7 @@ def get_instances_by_role_name(session, role_name):
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
             Plugins.agent_address == Instances.agent_address,
             Plugins.agent_port == Instances.agent_port,
-            RoleGroups.role_name == unicode(role_name)).order_by('instance_groups.group_name asc').all()
+            RoleGroups.role_name == unicode(role_name)).order_by(InstanceGroups.group_name).all()
 
 def role_name_can_access_instance(session, role_name, agent_address, agent_port):
     try:
