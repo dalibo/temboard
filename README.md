@@ -15,15 +15,16 @@ Temboard is composed of 2 basic elements:
 
 ## Dashboard Overview 
 
-![Demo Dashboard](site/demo_dashboard.gif)
+![Demo Dashboard](doc/demo_dashboard.gif)
 
 ## Changing a Parameter
 
-![Demo Settings](site/demo_settings.gif)
+![Demo Settings](doc/demo_settings.gif)
 
 # Install 
 
-Please read our [doc/index.md](doc/index.md) or go to  [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/)
+Please read the doc here: [doc/index.md](doc/index.md) 
+or go to  [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/)
 
 # Contribute
 
