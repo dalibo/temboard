@@ -141,7 +141,7 @@ class JsonHandler(BaseHandler):
         if not isinstance(async_result, JSONAsyncResult):
             self.finish()
             return
-        if async_result.secure_cookie != None and 'name' in async_result.secure_cookie and 'content' in async_result.secure_cookie:
+        if hasattr(async_result, 'secure_cookie') and async_result.secure_cookie != None and 'name' in async_result.secure_cookie and 'content' in async_result.secure_cookie:
             self.set_secure_cookie(async_result.secure_cookie['name'], async_result.secure_cookie['content'], expires_days=0.5)
         if async_result.http_code == 200:
             self.write(json.dumps(async_result.data))
