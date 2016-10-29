@@ -37,7 +37,7 @@ If the PostgreSQL cluster is on th different host, replace `127.0.0.1/32` by the
 
 `temboard` SQL schema must be loaded. The schema is stored in the SQL files located in `/usr/share/temboard` after the installation:
 ```
-psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/sql/application.sql temboard
 ```
 
 If you plan to use the plugin `supervision`:
