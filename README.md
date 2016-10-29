@@ -11,15 +11,17 @@ Temboard is composed of 2 basic elements:
 
 * A central **server** to control the agents and collect metrics
 
+# Demo
 
+![Demo Dashboard](site/demo_dashboard.gif)
 
 # Install 
 
-See [From source](doc/index.md)
+Please read our [doc/index.md](doc/index.md) or go to  [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/)
 
 # Contribute
 
-Temboard is open project. Any contribution to improve it is welcome. 
+Temboard is an open project. Any contribution to improve it is welcome. 
 
 # License
 
