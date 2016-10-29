@@ -63,7 +63,7 @@ def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
         if row[0] == agent_key:
             return
     except Exception as e:
-        raise Exception("Can't find the target instance in application.instances table.")
+        raise Exception("Can't find the instance \"%s\" in application.instances table." % hostname)
     raise Exception("Can't check agent's key.")
 
 def check_host_key(session, hostname, agent_key):
@@ -73,7 +73,7 @@ def check_host_key(session, hostname, agent_key):
             if row[0] == agent_key:
                 return
     except Exception as e:
-        raise Exception("Can't find the target instance in application.instances table.")
+        raise Exception("Can't find the instance \"%s\" in application.instances table." % hostname)
     raise Exception("Can't check agent's key.")
 
 def insert_metrics(session, host, agent_data, logger, hostname):
