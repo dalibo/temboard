@@ -13,7 +13,13 @@ Temboard is composed of 2 basic elements:
 
 # Demo
 
+## Dashboard Overview 
+
 ![Demo Dashboard](site/demo_dashboard.gif)
+
+## Changing a Parameter
+
+![Demo Settings](site/demo_settings.gif)
 
 # Install 
 
