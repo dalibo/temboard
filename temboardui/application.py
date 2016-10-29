@@ -380,7 +380,7 @@ def get_instances_by_group(session, group_name):
         ).order_by(Instances.agent_address).all()
 
 def get_groups_by_instance(session, agent_address, agent_port):
-    return session.query(InstanceGroups).filter(InstanceGroups.agent_address == unicode(agent_address), InstanceGroups.agent_port == agent_port).order_by(InstanceGroup.group_name).all()
+    return session.query(InstanceGroups).filter(InstanceGroups.agent_address == unicode(agent_address), InstanceGroups.agent_port == agent_port).order_by(InstanceGroups.group_name).all()
 
 def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
     try:
