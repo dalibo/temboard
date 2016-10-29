@@ -15,6 +15,7 @@ sudo pip install setuptools
 Proceed with the installation of the agent:
 ```
 cd temboard/temboard-agent/
+sudo cp -r share/ /usr/share/temboard-agent
 sudo python setup.py install
 ```
 

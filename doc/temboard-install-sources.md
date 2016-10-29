@@ -23,6 +23,7 @@ Proceed with the installation of the UI:
 
 ```
 cd temboard/
+sudo cp -r share/ /usr/share/temboard
 sudo python setup.py install
 ```
 
