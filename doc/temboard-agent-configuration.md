@@ -76,12 +76,12 @@ The second is `collector_url`. It lets the agent know where to post its data. Ju
 ## The configuration file
 
 The configuration file `temboard-agent.conf` is formated using INI format. Configuration parameters are distributed under sections:
-  - `[temboard]`: this is the main section grouping core parameters;
-  - `[postgresql]`: parameters related to the PostgreSQL cluster that the agent is connected to;
-  - `[logging]`: how and where to log;
-  - `[dashboard]`: parameters of the plugin `dashboard`;
-  - `[supervision]`: plugin `supervision`;
-  - `[administration]`: plugin `administration`.
+- `[temboard]`: this is the main section grouping core parameters;
+- `[postgresql]`: parameters related to the PostgreSQL cluster that the agent is connected to;
+- `[logging]`: how and where to log;
+- `[dashboard]`: parameters of the plugin `dashboard`;
+- `[supervision]`: plugin `supervision`;
+- `[administration]`: plugin `administration`.
 
 ### `[temboard]`
   - `port`: port number that the agent will listen on to serve its `HTTP API`. Default: `2345`;
