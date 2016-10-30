@@ -1,5 +1,21 @@
 # `temboard-agent` configuration
 
+## Key & Hostname
+
+In the `temboard-agent.conf` file, 2 important parameters must be configured to make the agent interact with the central server:
+
+* The `hostname` is used to identify the Agent. It must be a **unique** and 
+  [fully qualified domain name](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) ( e.g. ``db1.mydomain.foo`` ). 
+  Note that ``localhost`` is not a valid value for this parameter. 
+ 
+* The `key` is used to authentify the Agent. It must be a long series of characters and you must keep it secret. The best 
+  way to configure the agent key is to generate a random string of letters and number:
+
+```
+cat /dev/urandom | tr -dc '[:alnum:]' | fold -w 64 | head -1
+```
+
+
 ## SSL certificate
 
 `temboard-agent` embeds a lightweight HTTPS server aimed to serve its API, thus it is required to use a SSL certificate. As long as the agent's API is not reachable through a public interface, usage of self-signed certificates is safe.
@@ -63,14 +79,9 @@ sudo -u postgres temboard-agent-adduser
 
 ### Registration in the Web UI of the supersivion plugin
 
-In the `temboard-agent.conf` file, 2 parameters must be configurated to make the agent interact with the UI. The first one is `key` and is a string used to uniquely identify the agent in the UI, it let the UI allow the agent to push its metric data.
-
-The best way to configure the agent key is to generate a random string of letters and number:
-```
-cat /dev/urandom | tr -dc '[:alnum:]' | fold -w 64 | head -1
-```
-
-The second is `collector_url`. It lets the agent know where to post its data. Just change the hostname to point to the UI. Since the UI is only reachable using HTTPS, the UI SSL certificate (or CA certificates that has issued it) must be in the filepath where `ssl_ca_cert_file` points.
+If you want to use the supervision plugin, you need to setup the `collector_url`. It lets the agent know where to post its data. 
+Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate 
+(or CA certificates that has issued it) must be in the filepath where `ssl_ca_cert_file` points.
 
 
 ## The configuration file
@@ -91,7 +102,7 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `ssl_cert_file`: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.pem`;
   - `ssl_key_file`: Path to SSL private key file. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.key`;
   - `home`: Path to agent home directory, it contains files used to store temporary data. When running multiple agents on the same host, each agent must have its own home directory. Default: `/var/lib/temboard-agent/main`.
-  - `hostname`: Overload real machine hostname. Must be a valid FQDN. Default: `None`;
+  - `hostname`: Overrides real machine hostname. Must be a valid FQDN. Default: `None`;
 
 ### `[postgresql]`
   - `host`: Path to PostgreSQL unix socket. Default: `/var/run/postgresql`;

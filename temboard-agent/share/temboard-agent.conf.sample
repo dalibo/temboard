@@ -14,8 +14,10 @@ ssl_key_file = /etc/temboard-agent/ssl/temboard-agent_CHANGEME.key
 # Data directory for internal usage.
 # Each running agent *must* has its own and dedicated home directory.
 home = /var/lib/temboard-agent/main
-# Overload system hostname, must be a valid FQDN.
-# hostname =
+# Hostname must be an unique and valid FQDN : e.g. db1.mydomain.foo
+# If you leave this empty, then the system wide hostname will be used
+# Note : `localhost` is not a correct value
+# hostname = db1.mydomain.foo
 # Key
 key = SECRETKEYTOBECHANGED
 
