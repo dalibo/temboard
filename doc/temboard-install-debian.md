@@ -2,10 +2,10 @@
 
 ## Package repository setup
 
-Add the temboard repository to the configuration of APT. Create /etc/apt/source.list.d/temboard.list with the following contents :
+Add the temboard repository to the configuration of APT:
 
 ```
-deb https://packages.temboard.io/apt/ jessie main
+echo 'deb https://packages.temboard.io/apt/ jessie main' > /etc/apt/source.list.d/temboard.list
 ```
 
 Ensure APT can handle HTTPS:
