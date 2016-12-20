@@ -31,7 +31,7 @@ sudo apt-get install temboard-agent
 
 ## Configuration
 
-Before starting the agent, see `doc/temboard-agent-configuration.md` for post-installation tasks.
+Before starting the agent, see [temboard-agent configuration](temboard-agent-configuration.md) for post-installation tasks.
 
 ## Operations
 
