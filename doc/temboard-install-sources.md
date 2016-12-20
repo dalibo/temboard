@@ -11,14 +11,6 @@
 
 ## Installation
 
-Install dependencies with `pip`:
-
-```
-sudo pip install tornado
-sudo pip install psycopg2
-sudo pip install sqlalchemy
-```
-
 Proceed with the installation of the UI:
 
 ```
