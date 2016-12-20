@@ -2,10 +2,10 @@
 
 ## Package repository setup
 
-Add the temboard repository to the configuration of APT. Create /etc/apt/source.list.d/temboard.list with the following contents :
+Add the temboard repository to the configuration of APT:
 
 ```
-deb https://packages.temboard.io/apt/ jessie main
+echo 'deb https://packages.temboard.io/apt/ jessie main' > /etc/apt/source.list.d/temboard.list
 ```
 
 Ensure APT can handle HTTPS:
@@ -22,7 +22,7 @@ wget -q -O - https://packages.temboard.io/apt/265B525B.asc | sudo apt-key add -
 sudo apt-get update
 ```
 
-A database in a PostgreSQL 9.5 cluster is required to run temBoard, if you intend to host it on the same machine, add the definition of the repository of the PGPG, by following [their howto]](https://wiki.postgresql.org/wiki/Apt).
+A database in a PostgreSQL 9.5 cluster is required to run temBoard, if you intend to host it on the same machine, add the definition of the repository of the PGPG, by following [their howto](https://wiki.postgresql.org/wiki/Apt).
 
 In a nutshell, the following packages shall be installed, the "contribs" are needed by the `supervision` plugin:
 
