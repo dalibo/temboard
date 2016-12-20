@@ -24,7 +24,7 @@ Temboard is composed of 2 basic elements:
 # Install 
 
 Please read the doc here: [doc/index.md](doc/index.md) 
-or go to  [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/)
+or go to [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/).
 
 # Contribute
 

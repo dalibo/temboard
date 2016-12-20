@@ -19,6 +19,7 @@ setup(
             'temboardui.plugins.settings',
             'temboardui.plugins.activity'],
     scripts = ['temboard', 'temboardui/plugins/supervision/metric-aggregator'],
+    install_requires=requires,
     include_package_data=True,
     zip_safe=False,
     url = '',
