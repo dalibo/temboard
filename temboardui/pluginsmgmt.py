@@ -1,5 +1,5 @@
 import os, imp, sys
-from temboardui.logger import get_logger
+from temboardui.logger import get_logger, get_tb
 
 def load_plugins(plugin_names, config):
     """

@@ -25,7 +25,8 @@ class Configuration(configparser.ConfigParser):
             'ssl_ca_cert_file': None,
             'cookie_secret': None,
             'plugins': ["dashboard", "settings", "activity", "supervision"],
-            'plugins_orm_engine': ["supervision"]
+            'plugins_orm_engine': ["supervision"],
+            'home': '/var/run/temboard'
         }
         self.logging = {
             'method': 'syslog',
@@ -148,6 +149,17 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError("'plugins_orm_engine' option must be a list of string"
                     " (alphanum only) in %s"
                     % (self.configfile))
+
+        try:
+            home = self.get('temboard', 'home')
+            if not os.access(home, os.W_OK):
+                raise Exception()
+            self.temboard['home'] = self.get('temboard', 'home')
+        except Exception as e:
+            raise ConfigurationError("Home directory %s not writable."
+                    % (self.get('temboard', 'home')))
+        except configparser.NoOptionError as e:
+           pass
 
 
         # Test if 'logging' section exists.

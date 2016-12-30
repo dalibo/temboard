@@ -24,6 +24,7 @@ from temboardui.errors import ConfigurationError, CLIError
 from temboardui.logger import get_logger, set_logger_name
 from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
+from temboardui.taskmanager import TaskManager
 
 class CustomTornadoWebApp(tornado.web.Application):
     logger = None
@@ -153,6 +154,14 @@ def main():
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     application.listen(config.temboard['port'], address = config.temboard['address'], ssl_options = ssl_ctx)
+
+    # Task Manager
+    task_manager = TaskManager()
+    task_manager.set_logger(logger)
+    task_manager.task_list.filepath = os.path.join(config.temboard['home'], 'task_list')
+    logger.info("Starting task manager.")
+    task_manager.start(parameters = {'configpath': options.configfile})
+
     logger.info("Starting temboardui on %s:%d" % (config.temboard['address'], config.temboard['port']))
     tornado.ioloop.IOLoop.instance().start()
 

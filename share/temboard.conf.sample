@@ -16,6 +16,9 @@ cookie_secret = SECRETKEYTOBECHANGED
 plugins = ["dashboard", "settings", "activity", "supervision"]
 # Array of plugins requiring a PG connexion to the repository.
 plugins_orm_engine = ["supervision"]
+# Working dir
+home = /var/run/temboard
+
 
 [repository]
 # Unix socket path.

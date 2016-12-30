@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 from datetime import timedelta
+import time
 
 import tornado.web
 import tornado.escape
@@ -9,15 +10,18 @@ from tornado.template import Loader
 
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import *
+from sqlalchemy import create_engine
 
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.plugins.supervision.model.orm import *
 from temboardui.plugins.supervision.model.tables import *
 from temboardui.plugins.supervision.chartdata import *
 from temboardui.async import *
-from temboardui.errors import TemboardUIError
+from temboardui.configuration import Configuration
+from temboardui.errors import TemboardUIError, ConfigurationError
 from temboardui.application import get_instance
-from temboardui.logger import get_tb
+from temboardui.logger import get_logger, set_logger_name, get_tb
+from temboardui.taskmanager import add_worker, add_scheduler, Task, S_TASK_TODO, serialize_task_parameters
 
 def configuration(config):
     return {}
@@ -368,3 +372,49 @@ class SupervisionHTMLHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port, period):
         run_background(self.get_index, self.async_callback, (agent_address, agent_port, period))
+
+
+@add_worker('worker_data_agg', 1)
+def worker_data_agg(task):
+    try:
+        parameters = json.loads(task.parameters)
+        config =  Configuration(parameters['configpath'])
+        set_logger_name("worker_data_agg")
+        logger = get_logger(config)
+        dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
+                    user = config.repository['user'],
+                    password = config.repository['password'],
+                    host = config.repository['host'],
+                    port = config.repository['port'],
+                    dbname = config.repository['dbname'])
+        engine = create_engine(dburi)
+        with engine.connect() as conn:
+            conn.execute("SET search_path TO supervision")
+            res = conn.execute("SELECT * FROM metric_populate_agg_tables()")
+            for row in res.fetchall():
+                logger.debug("table=%s insert=%s" % (row['agg_tablename'], row['nb_insert']))
+            conn.execute("COMMIT")
+            exit(0)
+    except (ConfigurationError, ImportError, Exception) as e:
+        try:
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            try:
+                conn.execute("ROLLBACK")
+            except Exception as e:
+                pass
+        except Exception:
+            pass
+        exit(1)
+
+@add_scheduler('scheduler_data_agg')
+def scheduler_data_agg(task_list, parameters):
+    task = Task(
+            worker_name = b'worker_data_agg',
+            task_id = b'task_data_agg',
+            parameters = serialize_task_parameters(parameters),
+            state = S_TASK_TODO,
+            repeat = 15 * 60, # Repeat each 15min
+            creation_time = int(time.time()))
+    task_list.add(task)
+    task_list.save()
