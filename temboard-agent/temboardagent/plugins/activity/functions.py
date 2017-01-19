@@ -15,7 +15,7 @@ def get_activity(conn, config, _):
         pg_stat_activity.datname AS database,
         pg_stat_activity.client_addr AS client,
         round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
-        CASE WHEN pg_stat_activity.wait_event IS NOT NULL THEN 'Y' ELSE 'N' END AS wait,
+        CASE WHEN pg_stat_activity.wait_event_type IS DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
         pg_stat_activity.usename AS user,
         pg_stat_activity.state AS state,
         pg_stat_activity.query AS query

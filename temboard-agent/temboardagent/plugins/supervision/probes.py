@@ -287,7 +287,7 @@ class probe_sessions(SqlProbe):
             self.sql = """select
   current_timestamp as datetime,
   d.datname as dbname,
-  coalesce(sum((current_query not in ('<IDLE>','<IDLE> in transaction') and not waiting)::integer), 0) as active, 
+  coalesce(sum((current_query not in ('<IDLE>','<IDLE> in transaction') and not waiting)::integer), 0) as active,
   coalesce(sum(waiting::integer), 0) as waiting,
   coalesce(sum((current_query='<IDLE>')::integer), 0) as idle,
   coalesce(sum((current_query='<IDLE> in transaction')::integer), 0) as idle_in_xact,
@@ -319,8 +319,8 @@ group by d.datname"""
             self.sql = """select
   current_timestamp as datetime,
   d.datname as dbname,
-  coalesce(sum((state = 'active' and wait_event is NULL)::integer), 0) as active,
-  coalesce(sum((state = 'active' and wait_event is not NULL)::integer), 0) as waiting,
+  coalesce(sum((state = 'active' and wait_event_type IS DISTINCT FROM 'Lock')::integer), 0) as active,
+  coalesce(sum((state = 'active' and wait_event_type IS NOT DISTINCT FROM 'Lock')::integer), 0) as waiting,
   coalesce(sum((state = 'idle')::integer), 0) as idle,
   coalesce(sum((state = 'idle in transaction')::integer), 0) as idle_in_xact,
   coalesce(sum((state = 'idle in transaction (aborted)')::integer), 0) as idle_in_xact_aborted,
