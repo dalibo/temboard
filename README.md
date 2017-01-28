@@ -7,7 +7,8 @@ You can use it monitor, optimize or configure multiple PostgreSQL instances.
 
 Temboard is composed of 2 basic elements:
 
-* A lightweight **agent** that you need to install on every PostgreSQL server you want to manage
+* A lightweight **agent** that you need to install on every PostgreSQL server 
+  you want to manage
 
 * A central **server** to control the agents and collect metrics
 
@@ -21,10 +22,15 @@ Temboard is composed of 2 basic elements:
 
 ![Demo Settings](doc/demo_settings.gif)
 
+# Quick Start
+
+We're providing a complete testing environment based on docker:
+
+Please read our [QUICKSTART](QUICKSTART.md) guide for more details.
+
 # Install 
 
-Please read the doc here: [doc/index.md](doc/index.md) 
-or go to [http://temboard.readthedocs.io](http://temboard.readthedocs.io/en/latest/).
+Please read the doc here: <http://temboard.readthedocs.io/en/latest/>.
 
 # Contribute
 
