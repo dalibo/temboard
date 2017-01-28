@@ -2,8 +2,7 @@ QUICK START
 ================================================================================
 
 If you want to have a quick look at Temboard, here's 3 steps to deploy a testing
-environement composed of 3 PostgreSQL instances ( 9.4, 9.5 and 9.6 ) and central
-Temboard server.  
+environment composed of 3 PostgreSQL instances and a central Temboard server.  
 
 1- [Install docker](https://docs.docker.com/engine/installation/) 
    and [Install docker-compose](https://docs.docker.com/compose/install/)
@@ -39,12 +38,12 @@ Tips
 ------------------------------------------------------------------------------- 
 
 - If you're already running a PostgreSQL instance on your machine, you might
-  encounter conflicts with ports `5433`, `5434` and `5435`. If so, you can *
-	modify the `docker-compose.yml` file and choose alternative ports
+  encounter conflicts with ports `5433`, `5434` and `5435`. If so, you can 
+  modify the `docker-compose.yml` file and choose alternative ports
 
 - If you run docker on a distant linux server: build a simple SSH tunnel to 
   reach the temboard server without exposing it on the internet :
 
-        ```
-			  ssh -L 8888:localhost:8888 your_server_ip
-        ```
+   ```
+   ssh -L 8888:localhost:8888 your_server_ip
+   ```
