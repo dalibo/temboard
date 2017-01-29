@@ -9,6 +9,12 @@ Temboard is composed of 2 basic elements:
 
 * A central [server](#the-server) that will control the agents and collect metrics from them.
 
+# Quick Start
+
+We're providing a complete testing environment based on docker:                 
+                                                                                
+Please read our [QUICKSTART](QUICKSTART.md) guide for more details.
+
 # The Agent
 
 There's 3 different ways to install the agent:
