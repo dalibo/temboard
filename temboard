@@ -92,7 +92,7 @@ def main():
         exit(1)
     # Run temboard as a background daemon.
     if (options.daemon):
-        daemonize(options.pidfile)
+        daemonize(options.pidfile, config)
     # Dirty way for getting static/ and templates/ absolute paths.
     import temboardui
     base_path = os.path.dirname(temboardui.__file__)

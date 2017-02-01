@@ -23,7 +23,7 @@ def remove_pidfile(pidfile):
         except OSError:
             pass
 
-def daemonize(pidfile):
+def daemonize(pidfile, config):
     """
     Run temboard as a background daemon.
     Inspired by:
@@ -35,6 +35,9 @@ def daemonize(pidfile):
             pid = int(pf.read().strip())
     except IOError:
         pid = None
+    except ValueError:
+        sys.stderr.write("WARNING: pidfile %s in wrong format.\n" % pidfile)
+        pid = -1
 
     # If pidfile exists, yet another temboard is probably running.
     if pid:
@@ -80,8 +83,13 @@ def daemonize(pidfile):
     sys.stdout.flush()
     sys.stderr.flush()
     si = file('/dev/null', 'r')
-    so = file('/dev/null', 'a+')
-    se = file('/dev/null', 'a+', 0)
+    so = se = None
+    if config.logging['method'] == 'file':
+        se = file(config.logging['destination'], 'a+', 0)
+        so = file(config.logging['destination'], 'a+')
+    else:
+        so = file('/dev/null', 'a+')
+        se = file('/dev/null', 'a+', 0)
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
