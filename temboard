@@ -153,7 +153,11 @@ def main():
     plugins_bind_metadata(application.engine, config.temboard['plugins_orm_engine'])
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
-    application.listen(config.temboard['port'], address = config.temboard['address'], ssl_options = ssl_ctx)
+    try:
+        application.listen(config.temboard['port'], address = config.temboard['address'], ssl_options = ssl_ctx)
+    except socket.error as e:
+        logger.error("FATAL: " + str(e) + '. Quit');
+        sys.exit(3)
 
     # Task Manager
     task_manager = TaskManager()
