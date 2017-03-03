@@ -1,4 +1,9 @@
 *.pyc
 *.sw*
 *.conf
+*.egg-info/
 _site
+build/
+dist/
+site/
+temboard-agent/
