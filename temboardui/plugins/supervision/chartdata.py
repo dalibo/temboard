@@ -300,7 +300,7 @@ def get_fs_size(session, host_id, start, end):
         query += "supervision.expand_data_by_host_id('metric_filesystems_size', tstzrange('%s', '%s'), %s) AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)) TO STDOUT WITH CSV HEADER" % (start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'), host_id)
     else:
         tablename = get_tablename('filesystems_size', start, end)
-        query += "supervision.%s WHERE instance_id = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY 1,2 ASC) TO STDOUT WITH CSV HEADER" % (tablename, host_id, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'))
+        query += "supervision.%s WHERE host_id = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY 1,2 ASC) TO STDOUT WITH CSV HEADER" % (tablename, host_id, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'))
 
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -327,7 +327,7 @@ def get_fs_usage(session, host_id, start, end):
         query += "supervision.expand_data_by_host_id('metric_filesystems_size', tstzrange('%s', '%s'), %s) AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)) TO STDOUT WITH CSV HEADER" % (start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'), host_id)
     else:
         tablename = get_tablename('filesystems_size', start, end)
-        query += "supervision.%s WHERE instance_id = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY 1,2 ASC) TO STDOUT WITH CSV HEADER" % (tablename, host_id, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'))
+        query += "supervision.%s WHERE host_id = %s AND datetime >= '%s' AND datetime <= '%s' ORDER BY 1,2 ASC) TO STDOUT WITH CSV HEADER" % (tablename, host_id, start.strftime('%Y-%m-%dT%H:%M:%S'), end.strftime('%Y-%m-%dT%H:%M:%S'))
 
     cur.copy_expert(query, data_buffer)
     cur.close()
