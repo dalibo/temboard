@@ -3,6 +3,7 @@ import json
 import datetime
 from datetime import timedelta
 import time
+import md5
 
 import tornado.web
 import tornado.escape
@@ -21,7 +22,8 @@ from temboardui.configuration import Configuration
 from temboardui.errors import TemboardUIError, ConfigurationError
 from temboardui.application import get_instance
 from temboardui.logger import get_logger, set_logger_name, get_tb
-from temboardui.taskmanager import add_worker, add_scheduler, Task, S_TASK_TODO, serialize_task_parameters
+from temboardui.taskmanager import (add_worker, add_scheduler, Task, S_TASK_TODO,
+                                    serialize_task_parameters, unserialize_task_parameters)
 
 def configuration(config):
     return {}
@@ -48,17 +50,62 @@ def merge_agent_info(session, host_info, instances_info):
     """Update the host, instance and database information with the
     data received from the agent."""
 
+    try:
+        # Try to get host_id, based on hostname
+        host_info['host_id'] = get_host_id(session, host_info['hostname'])
+    except Exception as e:
+        # host not found
+        pass
+
     host = Host.from_dict(host_info)
 
     # Insert or update host information
     session.merge(host)
+    session.flush()
+    session.commit()
+
+    # Get host_id in any case
+    host_id = get_host_id(session, host_info['hostname'])
+
     for instance_info in instances_info:
         # Only process instances marked as available, since only those
         # have complete information
         if instance_info['available']:
+            try:
+                # Try to get instance_id
+                instance_info['instance_id'] = get_instance_id(session, host_id, instance_info['port'])
+            except Exception as e:
+                # instance not found
+                pass
+            instance_info['host_id'] = host_id
+
             inst = Instance.from_dict(instance_info)
+            # Insert or update instance information
             session.merge(inst)
+            session.flush()
+            session.commit()
     return host
+
+def get_host_id(session, hostname):
+    """
+    Get host_id from the hostname.
+    """
+    result = session.execute("SELECT host_id FROM supervision.hosts WHERE hostname = :hostname", {"hostname": hostname})
+    try:
+        return result.fetchone()[0]
+    except Exception as e:
+        raise Exception("Can't find host_id for \"%s\" in supervision.hosts table." % hostname)
+
+def get_instance_id(session, host_id, port):
+    """
+    Get instance from host_id and port.
+    """
+    result = session.execute("SELECT instance_id FROM supervision.instances WHERE host_id = :host_id AND port = :port", {"host_id": host_id, "port": port})
+    try:
+        return result.fetchone()[0]
+    except Exception as e:
+        raise Exception("Can't find instance_id for \"%s/%s\" in supervision.instances table." % (host_id, port))
+
 
 def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
     result = session.execute("SELECT agent_key FROM application.instances WHERE hostname = :hostname AND pg_data = :pgdata AND pg_port = :pgport LIMIT 1", {"hostname": hostname, "pgdata": pg_data, "pgport": pg_port})
@@ -80,42 +127,209 @@ def check_host_key(session, hostname, agent_key):
         raise Exception("Can't find the instance \"%s\" in application.instances table." % hostname)
     raise Exception("Can't check agent's key.")
 
-def insert_metrics(session, host, agent_data, logger, hostname):
+def insert_metrics(session, host, agent_data, logger, hostname, port):
+    try:
+        # Find host_id & instance_id
+        host_id = get_host_id(session, hostname)
+        instance_id = get_instance_id(session, host_id, port)
+    except Exception as e:
+        logger.info("Unable to find host & instance IDs")
+        logger.debug(agent_data)
+        logger.traceback(get_tb())
+        logger.error(str(e))
+        session.rollback()
+        return
+
+    cur = session.connection().connection.cursor()
     for metric in agent_data.keys():
         # Do not try to insert empty lines
         if len(agent_data[metric]) == 0:
             continue
 
-        # Find the name to the Table object
-        if 'metric_' + metric in globals().keys():
-            table = globals()['metric_' + metric]
-        else:
-            continue
-
-        # XXX The interval input must be a string to be cast by
-        # PostgreSQL. It is used by the measure_interval value, which
-        # come as a number
-        for line in agent_data[metric]:
-            if 'measure_interval' in line:
-                line['measure_interval'] = str(line['measure_interval'])
-            # Add hostname from hostinfo to each line
-            line['hostname'] = hostname
         try:
-            session.execute(table.insert().values(agent_data[metric]))
-            session.flush()
-            session.commit()
+            # Insert data
+            if metric == 'sessions':
+                for metric_data in agent_data['sessions']:
+                    cur.execute("INSERT INTO supervision.metric_sessions_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    metric_data['active'],
+                                    metric_data['waiting'],
+                                    metric_data['idle'],
+                                    metric_data['idle_in_xact'],
+                                    metric_data['idle_in_xact_aborted'],
+                                    metric_data['fastpath'],
+                                    metric_data['disabled'],
+                                    metric_data['no_priv'])))
+
+            elif metric == 'xacts':
+                for metric_data in agent_data['xacts']:
+                    cur.execute("INSERT INTO supervision.metric_xacts_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['n_commit'],
+                                    metric_data['n_rollback'])))
+            elif metric == 'locks':
+                for metric_data in agent_data['locks']:
+                    cur.execute("INSERT INTO supervision.metric_locks_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    metric_data['access_share'],
+                                    metric_data['row_share'],
+                                    metric_data['row_exclusive'],
+                                    metric_data['share_update_exclusive'],
+                                    metric_data['share'],
+                                    metric_data['share_row_exclusive'],
+                                    metric_data['exclusive'],
+                                    metric_data['access_exclusive'],
+                                    metric_data['siread'],
+                                    metric_data['waiting_access_share'],
+                                    metric_data['waiting_row_share'],
+                                    metric_data['waiting_row_exclusive'],
+                                    metric_data['waiting_share_update_exclusive'],
+                                    metric_data['waiting_share'],
+                                    metric_data['waiting_share_row_exclusive'],
+                                    metric_data['waiting_exclusive'],
+                                    metric_data['waiting_access_exclusive'])))
+            elif metric == 'blocks':
+                for metric_data in agent_data['blocks']:
+                    cur.execute("INSERT INTO supervision.metric_blocks_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['blks_read'],
+                                    metric_data['blks_hit'],
+                                    metric_data['hitmiss_ratio'])))
+            elif metric == 'bgwriter':
+                for metric_data in agent_data['bgwriter']:
+                    cur.execute("INSERT INTO supervision.metric_bgwriter_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], instance_id,
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['checkpoints_timed'],
+                                    metric_data['checkpoints_req'],
+                                    metric_data['checkpoint_write_time'],
+                                    metric_data['checkpoint_sync_time'],
+                                    metric_data['buffers_checkpoint'],
+                                    metric_data['buffers_clean'],
+                                    metric_data['maxwritten_clean'],
+                                    metric_data['buffers_backend'],
+                                    metric_data['buffers_backend_fsync'],
+                                    metric_data['buffers_alloc'],
+                                    metric_data['stats_reset'])))
+            elif metric == 'db_size':
+                for metric_data in agent_data['db_size']:
+                    cur.execute("INSERT INTO supervision.metric_db_size_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    metric_data['size'])))
+            elif metric == 'tblspc_size':
+                for metric_data in agent_data['tblspc_size']:
+                    cur.execute("INSERT INTO supervision.metric_tblspc_size_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['spcname'],
+                                    (None,
+                                    metric_data['size'])))
+            elif metric == 'filesystems_size':
+                for metric_data in agent_data['filesystems_size']:
+                    cur.execute("INSERT INTO supervision.metric_filesystems_size_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], host_id, metric_data['mount_point'],
+                                    (None,
+                                    metric_data['used'],
+                                    metric_data['total'],
+                                    metric_data['device'])))
+            elif metric == 'temp_files_size_tblspc':
+                for metric_data in agent_data['temp_files_size_tblspc']:
+                    cur.execute("INSERT INTO supervision.metric_temp_files_size_tblspc_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['spcname'],
+                                    (None,
+                                    metric_data['size'])))
+            elif metric == 'temp_files_size_db':
+                for metric_data in agent_data['temp_files_size_db']:
+                    cur.execute("INSERT INTO supervision.metric_temp_files_size_db_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    metric_data['size'])))
+            elif metric == 'wal_files':
+                for metric_data in agent_data['wal_files']:
+                    cur.execute("INSERT INTO supervision.metric_wal_files_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], instance_id,
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['written_size'],
+                                    metric_data['current_location'],
+                                    metric_data['total'],
+                                    metric_data['archive_ready'],
+                                    metric_data['total_size'])))
+            elif metric == 'cpu':
+                for metric_data in agent_data['cpu']:
+                    cur.execute("INSERT INTO supervision.metric_cpu_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], host_id, metric_data['cpu'],
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['time_user'],
+                                    metric_data['time_system'],
+                                    metric_data['time_idle'],
+                                    metric_data['time_iowait'],
+                                    metric_data['time_steal'])))
+            elif metric == 'process':
+                for metric_data in agent_data['process']:
+                    cur.execute("INSERT INTO supervision.metric_process_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], host_id,
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['context_switches'],
+                                    metric_data['forks'],
+                                    metric_data['procs_running'],
+                                    metric_data['procs_blocked'],
+                                    metric_data['procs_total'])))
+            elif metric == 'memory':
+                for metric_data in agent_data['memory']:
+                    cur.execute("INSERT INTO supervision.metric_memory_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], host_id,
+                                    (None,
+                                    metric_data['mem_total'],
+                                    metric_data['mem_used'],
+                                    metric_data['mem_free'],
+                                    metric_data['mem_buffers'],
+                                    metric_data['mem_cached'],
+                                    metric_data['swap_total'],
+                                    metric_data['swap_used'])))
+            elif metric == 'loadavg':
+                for metric_data in agent_data['loadavg']:
+                    cur.execute("INSERT INTO supervision.metric_loadavg_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], host_id,
+                                    (None,
+                                    metric_data['load1'],
+                                    metric_data['load5'],
+                                    metric_data['load15'])))
+            elif metric == 'vacuum_analyze':
+                for metric_data in agent_data['vacuum_analyze']:
+                    cur.execute("INSERT INTO supervision.metric_vacuum_analyze_current VALUES (%s, %s, %s, %s)",
+                                (metric_data['datetime'], instance_id, metric_data['dbname'],
+                                    (None,
+                                    str(metric_data['measure_interval']),
+                                    metric_data['n_vacuum'],
+                                    metric_data['n_analyze'],
+                                    metric_data['n_autovacuum'],
+                                    metric_data['n_autoanalyze'])))
+            elif metric == 'replication':
+                for metric_data in agent_data['replication']:
+                    cur.execute("INSERT INTO supervision.metric_replication_current VALUES (%s, %s, %s)",
+                                (metric_data['datetime'], instance_id,
+                                    (None,
+                                    metric_data['receive_location'],
+                                    metric_data['replay_location'])))
+
+            session.connection().connection.commit()
         except Exception as e:
-            logger.info("Metric data not inserted in table '%s'" % (table.name))
+            logger.info("Metric data not inserted for '%s' type" % (metric))
             logger.debug(agent_data[metric])
             logger.traceback(get_tb())
             logger.error(str(e))
-            session.rollback()
+            session.connection().connection.rollback()
 
 class SupervisionCollectorHandler(JsonHandler):
-    def __init__(self, application, request, **kwargs):
-        super(SupervisionCollectorHandler, self).__init__(
-            application, request, **kwargs)
-        self._session = None
 
     @property
     def engine(self):
@@ -155,7 +369,8 @@ class SupervisionCollectorHandler(JsonHandler):
             thread_session.commit()
 
             # Insert metrics data
-            insert_metrics(thread_session, host, data['data'], self.logger, data['hostinfo']['hostname'])
+            insert_metrics(thread_session, host, data['data'], self.logger, data['hostinfo']['hostname'], data['instances'][0]['port'])
+
             # Close the session
             thread_session.close()
             return JSONAsyncResult(http_code = 200, data = {'done': True})
@@ -202,6 +417,11 @@ class SupervisionDataProbeHandler(CsvHandler):
                 raise TemboardUIError(404, "Instance not found.")
             if __name__ not in [plugin.plugin_name for plugin in instance.plugins]:
                 raise TemboardUIError(408, "Plugin not active.")
+
+            # Find host_id & instance_id
+            host_id = get_host_id(self.db_session, instance.hostname)
+            instance_id = get_instance_id(self.db_session, host_id, instance.pg_port)
+
             self.db_session.expunge_all()
 
             dbname = self.get_argument('dbname', default=None)
@@ -221,47 +441,47 @@ class SupervisionDataProbeHandler(CsvHandler):
                     raise TemboardUIError(406, 'Datetime not valid.')
 
             if probe_name == 'loadavg':
-                data = get_loadaverage(self.db_session, instance.hostname, start_time, end_time)
+                data = get_loadaverage(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'db_size':
-                data = get_db_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_db_size(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'cpu':
-                data = get_cpu(self.db_session, instance.hostname, start_time, end_time)
+                data = get_cpu(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'tps':
-                data = get_tps(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_tps(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'memory':
-                data = get_memory(self.db_session, instance.hostname, start_time, end_time)
+                data = get_memory(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'swap':
-                data = get_swap(self.db_session, instance.hostname, start_time, end_time)
+                data = get_swap(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'ctxforks':
-                data = get_ctxforks(self.db_session, instance.hostname, start_time, end_time)
+                data = get_ctxforks(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'sessions':
-                data = get_sessions(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_sessions(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'blocks':
-                data = get_blocks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_blocks(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'hitreadratio':
-                data = get_hitreadratio(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_hitreadratio(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'checkpoints':
-                data = get_checkpoints(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_checkpoints(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'w_buffers':
-                data = get_written_buffers(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_written_buffers(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'instance_size':
-                data = get_instance_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_instance_size(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'locks':
-                data = get_locks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_locks(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'waiting_locks':
-                data = get_waiting_locks(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_waiting_locks(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'fs_size':
-                data = get_fs_size(self.db_session, instance.hostname, start_time, end_time)
+                data = get_fs_size(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'fs_usage':
-                data = get_fs_usage(self.db_session, instance.hostname, start_time, end_time)
+                data = get_fs_usage(self.db_session, host_id, start_time, end_time)
             elif probe_name == 'tblspc_size':
-                data = get_tblspc_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_tblspc_size(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'wal_files_size':
-                data = get_wal_files_size(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_wal_files_size(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'wal_files_count':
-                data = get_wal_files_count(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_wal_files_count(self.db_session, instance_id, start_time, end_time)
             elif probe_name == 'wal_files_rate':
-                data = get_wal_files_rate(self.db_session, instance.hostname, instance.pg_port, start_time, end_time)
+                data = get_wal_files_rate(self.db_session, instance_id, start_time, end_time)
             else:
                 raise TemboardUIError(404, 'Unknown probe.')
 
@@ -374,12 +594,13 @@ class SupervisionHTMLHandler(BaseHandler):
         run_background(self.get_index, self.async_callback, (agent_address, agent_port, period))
 
 
-@add_worker('worker_data_agg', 1)
+@add_worker('worker_agg_data', 1)
 def worker_data_agg(task):
+    # Worker in charge of aggregate data
     try:
-        parameters = json.loads(task.parameters)
+        parameters = unserialize_task_parameters(task.parameters)
         config =  Configuration(parameters['configpath'])
-        set_logger_name("worker_data_agg")
+        set_logger_name("worker_agg_data")
         logger = get_logger(config)
         dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
                     user = config.repository['user'],
@@ -390,9 +611,9 @@ def worker_data_agg(task):
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO supervision")
-            res = conn.execute("SELECT * FROM metric_populate_agg_tables()")
+            res = conn.execute("SELECT * FROM aggregate_data()")
             for row in res.fetchall():
-                logger.debug("table=%s insert=%s" % (row['agg_tablename'], row['nb_insert']))
+                logger.debug("table=%s insert=%s" % (row['tblname'], row['nb_rows']))
             conn.execute("COMMIT")
             exit(0)
     except (ConfigurationError, ImportError, Exception) as e:
@@ -407,14 +628,60 @@ def worker_data_agg(task):
             pass
         exit(1)
 
-@add_scheduler('scheduler_data_agg')
+@add_worker('worker_history_data', 1)
+def worker_history_data(task):
+    # Worker in charge of history data
+    try:
+        parameters = unserialize_task_parameters(task.parameters)
+        config =  Configuration(parameters['configpath'])
+        set_logger_name("worker_history_data")
+        logger = get_logger(config)
+        dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
+                    user = config.repository['user'],
+                    password = config.repository['password'],
+                    host = config.repository['host'],
+                    port = config.repository['port'],
+                    dbname = config.repository['dbname'])
+        engine = create_engine(dburi)
+        with engine.connect() as conn:
+            conn.execute("SET search_path TO supervision")
+            res = conn.execute("SELECT * FROM history_tables()")
+            for row in res.fetchall():
+                logger.debug("table=%s insert=%s" % (row['tblname'], row['nb_rows']))
+            conn.execute("COMMIT")
+            exit(0)
+    except (ConfigurationError, ImportError, Exception) as e:
+        try:
+            logger.traceback(get_tb())
+            logger.error(str(e))
+            try:
+                conn.execute("ROLLBACK")
+            except Exception as e:
+                pass
+        except Exception:
+            pass
+        exit(1)
+
+@add_scheduler('scheduler_agg_data')
 def scheduler_data_agg(task_list, parameters):
     task = Task(
-            worker_name = b'worker_data_agg',
-            task_id = b'task_data_agg',
+            worker_name = b'worker_agg_data',
+            taskid = b'task_agg_data',
             parameters = serialize_task_parameters(parameters),
             state = S_TASK_TODO,
-            repeat = 15 * 60, # Repeat each 15min
+            repeat = 30 * 60, # Repeat each 30min
+            creation_time = int(time.time()))
+    task_list.add(task)
+    task_list.save()
+
+@add_scheduler('scheduler_history_data')
+def scheduler_history_data(task_list, parameters):
+    task = Task(
+            worker_name = b'worker_history_data',
+            taskid = b'task_history_data',
+            parameters = serialize_task_parameters(parameters),
+            state = S_TASK_TODO,
+            repeat = 3 * 60 * 60, # Repeat each 3h
             creation_time = int(time.time()))
     task_list.add(task)
     task_list.save()

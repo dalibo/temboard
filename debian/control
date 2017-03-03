@@ -7,6 +7,6 @@ Standards-Version: 3.9.1
 
 Package: temboard
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-tornado (>= 3.2.0), python-sqlalchemy (>=0.9.8), python-psycopg2 (>=2.5.4)
+Depends: ${misc:Depends}, ${python:Depends}, python-tornado (>= 3.2.0), python-sqlalchemy (>=0.9.8), python-psycopg2 (>=2.5.4), python-pandas (>=0.15.0)
 Description: PostgreSQL Administration & Monitoring web client.
 
