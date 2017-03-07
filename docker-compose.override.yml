@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+  temboardui-ui:
+    volumes:
+      - .:/usr/local/src/temboard-master
+      - ..:/usr/local/src
+    entrypoint: /usr/local/src/temboard-master/docker/entrypoint.sh
