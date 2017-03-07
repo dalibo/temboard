@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE, CalledProcessError, call
+from subprocess import Popen, PIPE, CalledProcessError, call, check_call
 
 # Shortcut functions like check_output() do not appear in subprocess
 # until python 2.7 and we need to stay compatible with python 2.6 for
@@ -65,16 +65,16 @@ def exec_script(script_args, **kwargs):
     Execute an external script.
     """
     kwargs.setdefault("stderr", PIPE)
-    kwargs.setdefault("stdin", PIPE)
+    kwargs.setdefault("stdout", PIPE)
     try:
-        output = check_output(script_args, **kwargs)
+        rcode = check_call(script_args, **kwargs)
     except CalledProcessError as err:
         return (err.returncode, None, err.output)
     except IOError as err:
         if err.errno == errno.EPIPE:
             pass
 
-    return (0, output, None)
+    return (0, None, None)
 
 def oneline_cmd_to_array(command_line):
     """
