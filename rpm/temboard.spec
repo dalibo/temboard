@@ -25,6 +25,7 @@ BuildRequires:	python-setuptools
 Requires:	python-tornado >= 3.2
 Requires:	python-sqlalchemy >= 0.9.8
 Requires:	python-psycopg2
+Requires:	python-pandas >= 0.15.0
 
 %description
 temBoard is a monitoring and remote control solution for PostgreSQL

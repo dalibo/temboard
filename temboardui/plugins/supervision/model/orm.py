@@ -62,4 +62,4 @@ class Instance(Model):
     host = relationship('Host', backref='instances')
 
     def __repr__(self):
-        return "instance: %s:%s" % (self.hostname, self.port)
+        return "instance: %s:%s" % (self.host_id, self.port)

@@ -1,495 +1,743 @@
-drop schema if exists supervision cascade;
-create schema supervision;
+DROP SCHEMA IF EXISTS supervision CASCADE;
+CREATE SCHEMA supervision;
 SET search_path TO supervision, public;
+
+
+BEGIN;
 
 -- A host is something running an operating system, it can be physical
 -- or virtual. The primary key being the hostname it must be fully
 -- qualified.
-create table hosts (
-  hostname text primary key, -- fqdn
-  os text not null, -- kernel name
-  os_version text not null, -- kernel version
-  os_flavour text, -- distribution
-  cpu_count integer, 
-  cpu_arch text,
-  memory_size bigint,
-  swap_size bigint,
-  virtual boolean
+CREATE TABLE hosts (
+  host_id SERIAL PRIMARY KEY,
+  hostname TEXT NOT NULL UNIQUE, -- fqdn
+  os TEXT NOT NULL, -- kernel name
+  os_version TEXT NOT NULL, -- kernel version
+  os_flavour TEXT, -- distribution
+  cpu_count INTEGER, 
+  cpu_arch TEXT,
+  memory_size BIGINT,
+  swap_size BIGINT,
+  virtual BOOLEAN
 );
 
 -- Instances are defined as running postgres processed that listen to
 -- a specific TCP port
-create table instances (
-  hostname text not null references hosts (hostname),
-  port integer not null,
-  local_name text not null, -- name of the instance inside the agent configuration
-  version text not null, -- dotted minor version
-  version_num integer not null, -- for comparisons (e.g. 90401)
-  data_directory text not null,
-  sysuser text, -- system user
-  standby boolean not null default false,
-  primary key (hostname, port)
+CREATE TABLE instances (
+  instance_id SERIAL PRIMARY KEY,
+  host_id INTEGER NOT NULL REFERENCES hosts (host_id),
+  port INTEGER NOT NULL,
+  local_name TEXT NOT NULL, -- name of the instance inside the agent configuration
+  version TEXT NOT NULL, -- dotted minor version
+  version_num INTEGER NOT NULL, -- for comparisons (e.g. 90401)
+  data_directory TEXT NOT NULL,
+  sysuser TEXT, -- system user
+  standby BOOLEAN NOT NULL DEFAULT false,
+  UNIQUE (host_id, port)
 );
 
--- Metrics tables
 
--- Sessions. Number of backends by type. Summing all counters gives
--- the total number of backends
-create table metric_sessions (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  active integer not null,
-  waiting integer not null,
-  idle integer not null,
-  idle_in_xact integer not null,
-  idle_in_xact_aborted integer not null,
-  fastpath integer not null,
-  disabled integer not null,
-  no_priv integer not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname)
+-- Composite types for each type of record we need to store
+CREATE TYPE metric_sessions_record AS (
+  datetime TIMESTAMPTZ,
+  active INTEGER,
+  waiting INTEGER,
+  idle INTEGER,
+  idle_in_xact INTEGER,
+  idle_in_xact_aborted INTEGER,
+  fastpath INTEGER,
+  disabled INTEGER,
+  no_priv INTEGER
 );
 
--- Transactions. Values are deltas over measure_interval.
-create table metric_xacts (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname),
-  measure_interval interval not null,
-  n_commit bigint not null,
-  n_rollback bigint not null
+CREATE TYPE metric_xacts_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  n_commit BIGINT,
+  n_rollback BIGINT
 );
 
--- Locks. Number of locks by mode and acquisition
-create table metric_locks (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname),
-  access_share integer not null,
-  row_share integer not null,
-  row_exclusive integer not null,
-  share_update_exclusive integer not null,
-  share integer not null,
-  share_row_exclusive integer not null,
-  exclusive integer not null,
-  access_exclusive integer not null,
-  siread integer not null,
-  waiting_access_share integer not null,
-  waiting_row_share integer not null,
-  waiting_row_exclusive integer not null,
-  waiting_share_update_exclusive integer not null,
-  waiting_share integer not null,
-  waiting_share_row_exclusive integer not null,
-  waiting_exclusive integer not null,
-  waiting_access_exclusive integer not null
+CREATE TYPE metric_locks_record AS (
+  datetime TIMESTAMPTZ,
+  access_share INTEGER,
+  row_share INTEGER,
+  row_exclusive INTEGER,
+  share_update_exclusive INTEGER,
+  share INTEGER,
+  share_row_exclusive INTEGER,
+  exclusive INTEGER,
+  access_exclusive INTEGER,
+  siread INTEGER,
+  waiting_access_share INTEGER ,
+  waiting_row_share INTEGER,
+  waiting_row_exclusive INTEGER,
+  waiting_share_update_exclusive INTEGER,
+  waiting_share INTEGER,
+  waiting_share_row_exclusive INTEGER,
+  waiting_exclusive INTEGER,
+  waiting_access_exclusive INTEGER
 );
 
--- Per database read I/O. Values are deltas over measure_interval
-create table metric_blocks (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  measure_interval interval not null,
-  blks_read bigint not null,
-  blks_hit bigint not null,
-  hitmiss_ratio float not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname)
+CREATE TYPE metric_blocks_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  blks_read BIGINT,
+  blks_hit BIGINT,
+  hitmiss_ratio FLOAT
 );
 
--- Per instance write I/O and checkpoint from pg_stat_bgwriter. Deltas
--- over measure_interval to compute frequencies.
-create table metric_bgwriter (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port),
-  measure_interval interval not null,
-  checkpoints_timed bigint not null,
-  checkpoints_req bigint not null,
-  checkpoint_write_time double precision,
-  checkpoint_sync_time double precision,
-  buffers_checkpoint bigint not null,
-  buffers_clean bigint not null,
-  maxwritten_clean bigint not null,
-  buffers_backend bigint not null,
-  buffers_backend_fsync bigint,
-  buffers_alloc bigint not null,
-  stats_reset timestamptz
+CREATE TYPE metric_bgwriter_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  checkpoints_timed BIGINT,
+  checkpoints_req BIGINT,
+  checkpoint_write_time DOUBLE PRECISION,
+  checkpoint_sync_time DOUBLE PRECISION,
+  buffers_checkpoint BIGINT,
+  buffers_clean BIGINT,
+  maxwritten_clean BIGINT,
+  buffers_backend BIGINT,
+  buffers_backend_fsync BIGINT,
+  buffers_alloc BIGINT,
+  stats_reset TIMESTAMPTZ
 );
 
--- Database sizes
-create table metric_db_size (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname),
-  size bigint not null -- in bytes
+CREATE TYPE metric_db_size_record AS (
+  datetime TIMESTAMPTZ,
+  size BIGINT
 );
 
--- Tablespace sizes
-create table metric_tblspc_size (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  spcname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, spcname),
-  size bigint not null -- in bytes
+CREATE TYPE metric_tblspc_size_record AS (
+  datetime TIMESTAMPTZ,
+  size BIGINT
 );
 
--- Filesystems disk usage in bytes
-create table metric_filesystems_size (
-  datetime timestamptz not null,
-  hostname text not null,
-  mount_point text not null,
-  foreign key (hostname) references hosts (hostname),
-  primary key (datetime, hostname, mount_point),
-  used bigint not null,
-  total bigint not null,
-  device text not null
+CREATE TYPE metric_filesystems_size_record AS (
+  datetime TIMESTAMPTZ,
+  used BIGINT,
+  total BIGINT,
+  device TEXT
 );
 
--- Temp files total size when stored at tablespace level (from 8.3 to 9.1)
-create table metric_temp_files_size_tblspc (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  spcname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, spcname),
-  size bigint not null
+CREATE TYPE metric_temp_files_size_tblspc_record AS (
+  datetime TIMESTAMPTZ,
+  size BIGINT
 );
 
--- Temp files total size when stored at database level (8.2 and older, 9.2 and latter)
-create table metric_temp_files_size_db (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname),
-  size bigint not null
+CREATE TYPE metric_temp_files_size_db_record AS (
+  datetime TIMESTAMPTZ,
+  size BIGINT
 );
 
--- WAL files activity.
-create table metric_wal_files (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port),
-  measure_interval interval not null,
-  written_size bigint not null, -- delta
-  current_location text not null,
-  total integer not null,
-  archive_ready integer not null,
-  total_size bigint not null
+CREATE TYPE metric_wal_files_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  written_size BIGINT,
+  current_location TEXT,
+  total INTEGER,
+  archive_ready INTEGER,
+  total_size BIGINT
 );
 
-create table metric_cpu (
-  datetime timestamptz not null,
-  hostname text not null,
-  cpu text not null,
-  foreign key (hostname) references hosts (hostname),
-  primary key (datetime, hostname, cpu),
-  measure_interval interval not null,
-  -- time_* are in milliseconds
-  time_user integer not null, -- user + nice from /proc/stat
-  time_system integer not null, -- system + irq + softirq from /proc/stat
-  time_idle integer not null,
-  time_iowait integer not null,
-  time_steal integer not null
+CREATE TYPE metric_cpu_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  time_user INTEGER,
+  time_system INTEGER,
+  time_idle INTEGER,
+  time_iowait INTEGER,
+  time_steal INTEGER
 );
 
-create table metric_process (
-  datetime timestamptz not null,
-  hostname text not null,
-  foreign key (hostname) references hosts (hostname),
-  primary key (datetime, hostname),
-  measure_interval interval not null,
-  context_switches bigint not null,
-  forks bigint not null,
-  -- following are not deltas
-  procs_running integer not null,
-  procs_blocked integer not null,
-  procs_total integer not null
+CREATE TYPE metric_process_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  context_switches BIGINT,
+  forks BIGINT,
+  procs_running INTEGER,
+  procs_blocked INTEGER,
+  procs_total INTEGER
 );
 
--- RAM + SWAP in bytes
-create table metric_memory (
-  datetime timestamptz not null,
-  hostname text not null,
-  foreign key (hostname) references hosts (hostname),
-  primary key (datetime, hostname),
-  mem_total bigint not null,
-  mem_used bigint not null,
-  mem_free bigint not null,
-  mem_buffers bigint not null,
-  mem_cached bigint not null,
-  swap_total bigint not null,
-  swap_used bigint not null
+CREATE TYPE metric_memory_record AS (
+  datetime TIMESTAMPTZ,
+  mem_total BIGINT,
+  mem_used BIGINT,
+  mem_free BIGINT,
+  mem_buffers BIGINT,
+  mem_cached BIGINT,
+  swap_total BIGINT,
+  swap_used BIGINT
 );
 
--- Load average
-create table metric_loadavg (
-  datetime timestamptz not null,
-  hostname text not null,
-  foreign key (hostname) references hosts (hostname),
-  primary key (datetime, hostname),
-  load1 float not null,
-  load5 float not null,
-  load15 float not null
+CREATE TYPE metric_loadavg_record AS (
+  datetime TIMESTAMPTZ,
+  load1 FLOAT,
+  load5 FLOAT,
+  load15 FLOAT
 );
 
--- Number of vacuum and analyze (manual or auto) per database. Values
--- are deltas over measure_interval
-create table metric_vacuum_analyze (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  dbname text not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port, dbname),
-  measure_interval interval not null,
-  n_vacuum integer not null,
-  n_analyze integer not null,
-  n_autovacuum integer not null,
-  n_autoanalyze integer not null
+CREATE TYPE metric_vacuum_analyze_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  n_vacuum INTEGER,
+  n_analyze INTEGER,
+  n_autovacuum INTEGER,
+  n_autoanalyze INTEGER
 );
 
--- Replication WAL addresses to compute lag between primary and
--- standby servers inside a cluster
-create table metric_replication (
-  datetime timestamptz not null,
-  hostname text not null,
-  port integer not null,
-  foreign key (hostname, port) references instances (hostname, port),
-  primary key (datetime, hostname, port),
-  receive_location text not null,
-  replay_location text not null
+CREATE TYPE metric_replication_record AS (
+  datetime TIMESTAMPTZ,
+  receive_location TEXT,
+  replay_location TEXT
 );
 
+
+-- Creation of the aggregate function: min(pg_lsn)
 CREATE OR REPLACE FUNCTION pg_lsn_smaller(in_pg_lsn1 pg_lsn, in_pg_lsn2 pg_lsn) RETURNS pg_lsn
 LANGUAGE plpgsql
 AS $$
 DECLARE
 BEGIN
-	IF in_pg_lsn1 < in_pg_lsn2 THEN
-		RETURN in_pg_lsn1;
-	ELSE
-		RETURN in_pg_lsn2;
-	END IF;
+  IF in_pg_lsn1 < in_pg_lsn2 THEN
+    RETURN in_pg_lsn1;
+  ELSE
+    RETURN in_pg_lsn2;
+  END IF;
 END;
 
 $$;
 
 CREATE AGGREGATE min (pg_lsn) ( SFUNC = pg_lsn_smaller, STYPE = pg_lsn, SORTOP = <);
 
-CREATE OR REPLACE FUNCTION metric_configuration() RETURNS TABLE(tablename TEXT, agg_query TEXT, insert_agg_query TEXT)
-LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION metric_tables_config() RETURNS json
+LANGUAGE plpgsql
+AS $$
+
 DECLARE
+  v_query JSON;
+  v_conf JSON;
 BEGIN
-	RETURN QUERY SELECT
-					'metric_db_size'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, (SUM(size)/COUNT(*))::BIGINT AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET size = EXCLUDED.size, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_loadavg'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, round(avg(load1)::numeric, 2) AS load1, round(avg(load5)::numeric, 2) AS load5, round(avg(load15)::numeric, 2) AS load15, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET load1 = EXCLUDED.load1, load5 = EXCLUDED.load5, load15 = EXCLUDED.load15, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
+  --
+  -- Query template list for the actions: 'history' and 'expand'
+  -- 'history': Move data from metric_<type>_current to metric_<type>_history, grouping records into array of records.
+  -- 'expand': Return data from both metric_<type>_current and metric_<type>_history tables, depending on the time interval.
+  --
+  SELECT '{
+    "history": {
+      "host_id":     "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2 ORDER BY 1,2 ASC;",
+      "instance_id": "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2 ORDER BY 1,2 ASC;",
+      "dbname":      "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, dbname, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2 ASC;",
+      "spcname":     "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, spcname, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;",
+      "mount_point": "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, mount_point, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;",
+      "cpu":         "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, cpu, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;"
+    },
+    "expand": {
+      "host_id": "WITH expand AS (SELECT datetime, host_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, hist_query.record FROM (SELECT host_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
+      "instance_id": "WITH expand AS (SELECT datetime, instance_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, hist_query.record FROM (SELECT instance_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
+      "dbname": "WITH expand AS (SELECT datetime, instance_id, dbname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, dbname, hist_query.record FROM (SELECT instance_id, dbname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
+      "spcname":"WITH expand AS (SELECT datetime, instance_id, spcname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, spcname, hist_query.record FROM (SELECT instance_id, spcname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
+      "mount_point": "WITH expand AS (SELECT datetime, host_id, mount_point, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, mount_point, hist_query.record FROM (SELECT host_id, mount_point, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
+      "cpu": "WITH expand AS (SELECT datetime, host_id, cpu, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, cpu, hist_query.record FROM (SELECT host_id, cpu, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;"
+    }
+  }'::JSON INTO v_query;
 
-	RETURN QUERY SELECT
-					'metric_bgwriter'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, SUM(checkpoints_timed) AS checkpoints_timed, SUM(checkpoints_req) AS checkpoints_req, SUM(checkpoint_write_time) AS checkpoint_write_time, SUM(checkpoint_sync_time) AS checkpoint_sync_time, SUM(buffers_checkpoint) AS buffers_checkpoint, SUM(buffers_clean) AS buffers_clean, SUM(maxwritten_clean) AS maxwritten_clean, SUM(buffers_backend) AS buffers_backend, SUM(buffers_backend_fsync) AS buffers_backend_fsync, SUM(buffers_alloc) AS buffers_alloc FROM #tablename# #where# GROUP BY 1, 2, 3 ORDER BY 1,2,3'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, checkpoints_timed = EXCLUDED.checkpoints_timed, checkpoints_req = EXCLUDED.checkpoints_req, checkpoint_write_time = EXCLUDED.checkpoint_write_time, checkpoint_sync_time = EXCLUDED.checkpoint_sync_time, buffers_checkpoint = EXCLUDED.buffers_checkpoint, buffers_clean = EXCLUDED.buffers_clean, maxwritten_clean = EXCLUDED.maxwritten_clean, buffers_backend = EXCLUDED.buffers_backend, buffers_backend_fsync = EXCLUDED.buffers_backend_fsync, buffers_alloc = EXCLUDED.buffers_alloc WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+  --
+  -- Global configuration.
+  --
+  -- For each type of metric we have to deal with, there is the following object defining some properties:
+  -- // Unique key used to find the configuration based on the metric name.
+  -- "<metric_name>": {            
+  --   // Tables name prefix, for ease stuff it should be the same as <metric_name>
+  --   "name": "<metric_tbl_name>",
+  --   // Record composite type
+  --   "record_type": "<metric_record_type>",
+  --   // List of extra columns.
+  --   "columns": [
+  --     {
+  --       // Column name
+  --       "name": "<column_name>",
+  --       // Column data type
+  --       "data_type": "<column_data_type>"
+  --     },
+  --     [...]
+  --   ],
+  --   // Query template use to history data.
+  --   "history": "<query_tpl_history>",
+  --   // Query template use to fetch data from both _current & _history tables.
+  --   "expand": "<query_tpl_expand>",
+  --   // Query template use to aggregate data.
+  --   "aggregate": "<query_tpl_aggregate>"
+  -- }
 
-	RETURN QUERY SELECT
-					'metric_blocks'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(blks_read) AS blks_read, SUM(blks_hit) AS blks_hit, SUM(hitmiss_ratio)/COUNT(*) AS hitmiss_ratio, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, blks_read = EXCLUDED.blks_read, blks_hit = EXCLUDED.blks_hit, hitmiss_ratio = EXCLUDED.hitmiss_ratio WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+  SELECT ('{
+  "metric_sessions": {
+    "name": "metric_sessions",
+    "record_type": "metric_sessions_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).active), AVG((r).waiting), AVG((r).idle), AVG((r).idle_in_xact), AVG((r).idle_in_xact_aborted), AVG((r).fastpath), AVG((r).disabled), AVG((r).no_priv))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_xacts": {
+    "name": "metric_xacts",
+    "record_type": "metric_xacts_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).n_commit), SUM((r).n_rollback))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_locks": {
+    "name": "metric_locks",
+    "record_type": "metric_locks_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).access_share), AVG((r).row_share), AVG((r).row_exclusive), AVG((r).share_update_exclusive), AVG((r).share), AVG((r).share_row_exclusive), AVG((r).exclusive), AVG((r).access_exclusive), AVG((r).siread), AVG((r).waiting_access_share), AVG((r).waiting_row_share), AVG((r).waiting_row_exclusive), AVG((r).waiting_share_update_exclusive), AVG((r).waiting_share), AVG((r).waiting_share_row_exclusive), AVG((r).waiting_exclusive), AVG((r).waiting_access_exclusive))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_blocks": {
+    "name": "metric_blocks",
+    "record_type": "metric_blocks_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).blks_read), SUM((r).blks_hit), AVG((r).hitmiss_ratio))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_bgwriter": {
+    "name": "metric_bgwriter",
+    "record_type": "metric_bgwriter_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'instance_id')||'",
+    "expand": "'||(v_query->'expand'->>'instance_id')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, ROW(NULL, SUM((r).measure_interval), SUM((r).checkpoints_timed), SUM((r).checkpoints_req), SUM((r).checkpoint_write_time), SUM((r).checkpoint_sync_time), SUM((r).buffers_checkpoint), SUM((r).buffers_clean), SUM((r).maxwritten_clean), SUM((r).buffers_backend), SUM((r).buffers_backend_fsync), SUM((r).buffers_alloc), NULL)::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, instance_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_db_size": {
+    "name": "metric_db_size",
+    "record_type": "metric_db_size_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_tblspc_size": {
+    "name": "metric_tblspc_size",
+    "record_type": "metric_tblspc_size_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "spcname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'spcname')||'",
+    "expand": "'||(v_query->'expand'->>'spcname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, spcname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, spcname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, spcname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_filesystems_size": {
+    "name": "metric_filesystems_size",
+    "record_type": "metric_filesystems_size_record",
+    "columns":
+    [
+      {"name": "host_id", "data_type": "INTEGER NOT NULL REFERENCES hosts (host_id)"},
+      {"name": "mount_point", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'mount_point')||'",
+    "expand": "'||(v_query->'expand'->>'mount_point')||'",
+  "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, mount_point, ROW(NULL, AVG((r).used), AVG((r).total), (r).device)::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, mount_point text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3,(r).device ORDER BY 1,2,3 ON CONFLICT (datetime, host_id, mount_point) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_temp_files_size_tblspc": {
+    "name": "metric_temp_files_size_tblspc",
+    "record_type": "metric_temp_files_size_tblspc_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "spcname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'spcname')||'",
+    "expand": "'||(v_query->'expand'->>'spcname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, spcname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, spcname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, spcname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_temp_files_size_db": {
+    "name": "metric_temp_files_size_db",
+    "record_type": "metric_temp_files_size_db_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_wal_files": {
+    "name": "metric_wal_files",
+    "record_type": "metric_wal_files_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'instance_id')||'",
+    "expand": "'||(v_query->'expand'->>'instance_id')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, ROW(NULL, SUM((r).measure_interval), MAX((r).written_size), MIN((r).current_location::pg_lsn)::TEXT, MAX((r).total), MAX((r).archive_ready), MAX((r).total_size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, instance_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_cpu": {
+    "name": "metric_cpu",
+    "record_type": "metric_cpu_record",
+    "columns":
+    [
+      {"name": "host_id", "data_type": "INTEGER NOT NULL REFERENCES hosts (host_id)"},
+      {"name": "cpu", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'cpu')||'",
+    "expand": "'||(v_query->'expand'->>'cpu')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, cpu, ROW(NULL, SUM((r).measure_interval), SUM((r).time_user), SUM((r).time_system), SUM((r).time_idle), SUM((r).time_iowait), SUM((r).time_steal))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, cpu text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, host_id, cpu) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_process": {
+    "name": "metric_process",
+    "record_type": "metric_process_record",
+    "columns":
+    [
+      {"name": "host_id", "data_type": "INTEGER NOT NULL REFERENCES hosts (host_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'host_id')||'",
+    "expand": "'||(v_query->'expand'->>'host_id')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, SUM((r).measure_interval), SUM((r).context_switches), SUM((r).forks), AVG((r).procs_running), AVG((r).procs_blocked), AVG((r).procs_total))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_memory": {
+    "name": "metric_memory",
+    "record_type": "metric_memory_record",
+    "columns":
+    [
+      {"name": "host_id", "data_type": "INTEGER NOT NULL REFERENCES hosts (host_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'host_id')||'",
+    "expand": "'||(v_query->'expand'->>'host_id')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, AVG((r).mem_total), AVG((r).mem_used), AVG((r).mem_free), AVG((r).mem_buffers), AVG((r).mem_cached), AVG((r).swap_total), AVG((r).swap_used))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_loadavg": {
+    "name": "metric_loadavg",
+    "record_type": "metric_loadavg_record",
+    "columns":
+    [
+      {"name": "host_id", "data_type": "INTEGER NOT NULL REFERENCES hosts (host_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'host_id')||'",
+    "expand": "'||(v_query->'expand'->>'host_id')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, ROUND(AVG((r).load1)::NUMERIC, 2), ROUND(AVG((r).load5)::NUMERIC, 2), ROUND(AVG((r).load15)::NUMERIC, 2))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  },
+  "metric_vacuum_analyze": {
+    "name": "metric_vacuum_analyze",
+    "record_type": "metric_vacuum_analyze_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).n_vacuum), SUM((r).n_analyze), SUM((r).n_autovacuum), SUM((r).n_autoanalyze))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+  }}')::JSON INTO v_conf;
+  RETURN v_conf;
 
-	RETURN QUERY SELECT
-					'metric_cpu'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, cpu, SUM(measure_interval) AS measure_interval, SUM(time_user) AS time_user, SUM(time_system) AS time_system, SUM(time_idle) AS time_idle, SUM(time_iowait) AS time_iowait, SUM(time_steal) AS time_steal FROM #tablename# #where# GROUP BY 1,2,3'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, cpu) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, time_user = EXCLUDED.time_user, time_system = EXCLUDED.time_system, time_iowait = EXCLUDED.time_iowait, time_steal = EXCLUDED.time_steal WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+END;
 
-	RETURN QUERY SELECT
-					'metric_sessions'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(active)/COUNT(*) AS active, SUM(waiting)/COUNT(*) AS waiting, SUM(idle)/COUNT(*) AS idle, SUM(idle_in_xact)/COUNT(*) AS idle_in_xact, SUM(idle_in_xact_aborted)/COUNT(*) AS idle_in_xact_aborted, SUM(fastpath)/COUNT(*) AS fastpath, SUM(disabled)/COUNT(*) AS disabled, SUM(no_priv)/COUNT(*) AS no_priv, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, active = EXCLUDED.active, waiting = EXCLUDED.waiting, idle = EXCLUDED.idle, idle_in_xact = EXCLUDED.idle_in_xact, idle_in_xact_aborted = EXCLUDED.idle_in_xact_aborted, fastpath = EXCLUDED.fastpath, disabled = EXCLUDED.disabled, no_priv = EXCLUDED.no_priv WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_xacts'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_commit) AS n_commit, SUM(n_rollback) AS n_rollback, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, measure_interval = EXCLUDED.measure_interval, n_commit = EXCLUDED.n_commit, n_rollback = EXCLUDED.n_rollback WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_locks'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, avg(access_share) AS access_share, avg(row_share) AS row_share, avg(row_exclusive) AS row_exclusive, avg(share_update_exclusive) AS share_update_exclusive, avg(share) AS share, avg(share_row_exclusive) AS share_row_exclusive, avg(exclusive) AS exclusive, avg(access_exclusive) AS access_exclusive, avg(siread) AS siread, avg(waiting_access_share) AS waiting_access_share, avg(waiting_row_share) AS waiting_row_share, avg(waiting_row_exclusive) AS waiting_row_exclusive, avg(waiting_share_update_exclusive) AS waiting_share_update_exclusive, avg(waiting_share) AS waiting_share, avg(waiting_share_row_exclusive) AS waiting_share_row_exclusive, avg(waiting_exclusive) AS waiting_exclusive, avg(waiting_access_exclusive) AS waiting_access_exclusive, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, access_share = EXCLUDED.access_share, row_share = EXCLUDED.row_share, row_exclusive = EXCLUDED.row_exclusive, share_update_exclusive = EXCLUDED.share_update_exclusive, share = EXCLUDED.share, share_row_exclusive = EXCLUDED.share_row_exclusive, exclusive = EXCLUDED.exclusive, access_exclusive = EXCLUDED.access_exclusive, siread = EXCLUDED.siread, waiting_access_share = EXCLUDED.waiting_access_share, waiting_row_share = EXCLUDED.waiting_row_share, waiting_row_exclusive = EXCLUDED.waiting_row_exclusive, waiting_share_update_exclusive = EXCLUDED.waiting_share_update_exclusive, waiting_share = EXCLUDED.waiting_share, waiting_share_row_exclusive = EXCLUDED.waiting_share_row_exclusive, waiting_exclusive = EXCLUDED.waiting_exclusive, waiting_access_exclusive = EXCLUDED.waiting_access_exclusive  WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_tblspc_size'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, spcname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, spcname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_filesystems_size'::TEXT,
-					'SELECT #trunc_function#(datetime), hostname, mount_point, avg(used) AS used, avg(total) AS total, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, mount_point) DO UPDATE SET w = EXCLUDED.w, used = EXCLUDED.used, total = EXCLUDED.total WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_temp_files_size_tblspc'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, spcname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, spcname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_temp_files_size_db'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, avg(size) AS size, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2,3,4 ORDER BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET w = EXCLUDED.w, size = EXCLUDED.size WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_wal_files'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, SUM(measure_interval) AS measure_interval, MAX(written_size) AS written_size, MIN(current_location::pg_lsn)::TEXT AS current_location, MAX(total) AS total, MAX(archive_ready) AS archive_ready, MAX(total_size) AS total_size FROM #tablename# #where# GROUP BY 1,2,3 ORDER BY 1,2,3'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, written_size = EXCLUDED.written_size, total = EXCLUDED.total, archive_ready = EXCLUDED.archive_ready, total_size = EXCLUDED.total_size, current_location = EXCLUDED.current_location WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
-	RETURN QUERY SELECT
-					'metric_process'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, SUM(measure_interval) AS measure_interval, SUM(context_switches) AS context_switches, SUM(forks) AS forks, avg(procs_running) AS procs_running, avg(procs_blocked) AS procs_blocked, avg(procs_total) AS procs_total, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1,2'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, context_switches = EXCLUDED.context_switches, forks = EXCLUDED.forks, procs_running = EXCLUDED.procs_running, procs_blocked = EXCLUDED.procs_blocked, procs_total = EXCLUDED.procs_total, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_memory'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, avg(mem_total) AS mem_total, avg(mem_used) AS mem_used, avg(mem_free) AS mem_free, avg(mem_buffers) AS mem_buffers, avg(mem_cached) AS mem_cached, avg(swap_total) AS swap_total, avg(swap_used) AS swap_used, COUNT(*) AS w FROM #tablename# #where# GROUP BY 1,2 ORDER BY 1,2'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname) DO UPDATE SET mem_total = EXCLUDED.mem_total, mem_used = EXCLUDED.mem_used, mem_free = EXCLUDED.mem_free, mem_buffers = EXCLUDED.mem_buffers, mem_cached = EXCLUDED.mem_cached, swap_total = EXCLUDED.swap_total, swap_used = EXCLUDED.swap_used, w = EXCLUDED.w WHERE #tablename#.w < EXCLUDED.w'::TEXT;
-	RETURN QUERY SELECT
-					'metric_vacuum_analyze'::TEXT,
-					'SELECT #trunc_function#(datetime) AS datetime, hostname, port, dbname, SUM(measure_interval) AS measure_interval, SUM(n_vacuum) AS n_vacuum, SUM(n_analyze) AS n_analyze, SUM(n_autovacuum) AS n_autovacuum, SUM(n_autoanalyze) AS n_autoanalyze FROM #tablename# #where# GROUP BY 1,2,3,4'::TEXT,
-					'INSERT INTO #tablename# #agg_query# ON CONFLICT (datetime, hostname, port, dbname) DO UPDATE SET measure_interval = EXCLUDED.measure_interval, n_vacuum = EXCLUDED.n_vacuum, n_analyze = EXCLUDED.n_analyze, n_autovacuum = EXCLUDED.n_autovacuum, n_autoanalyze = EXCLUDED.n_autoanalyze WHERE #tablename#.measure_interval < EXCLUDED.measure_interval'::TEXT;
+$$;
+
+
+CREATE OR REPLACE FUNCTION create_tables() RETURNS TABLE(tblname TEXT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  t JSON;
+  c JSON;
+  v_agg_periods TEXT[] := array['30m', '6h'];
+  v_create_tbl_cols_cur TEXT;
+  v_create_idx_cols_cur TEXT;
+  v_create_tbl_cols_hist TEXT;
+  v_create_idx_cols_hist TEXT;
+  v_tablename TEXT;
+  v_like_tablename TEXT;
+  v_create_tbl_stmt TEXT;
+  v_create_idx_stmt TEXT;
+  i_period TEXT;
+BEGIN
+  -- Tables creation if they do not exist
+  FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
+    v_create_tbl_cols_cur := 'datetime TIMESTAMPTZ NOT NULL';
+    v_create_idx_cols_cur := 'datetime';
+    FOR c IN SELECT json_array_elements(t->'columns') LOOP
+      v_create_tbl_cols_cur := v_create_tbl_cols_cur||', '||trim((c->'name')::TEXT, '"')||' '||trim((c->'data_type')::TEXT, '"');
+      v_create_idx_cols_cur := v_create_idx_cols_cur||', '||trim((c->'name')::TEXT, '"');
+    END LOOP;
+
+  -- Creation of current table.
+    v_tablename := trim((t->'name')::TEXT, '"')||'_current';
+    PERFORM 1 FROM pg_tables WHERE tablename = v_tablename AND schemaname = current_schema();
+    IF NOT FOUND THEN
+      EXECUTE 'CREATE TABLE '||v_tablename||' ('||v_create_tbl_cols_cur||', record '||trim((t->'record_type')::TEXT, '"')||')';
+      EXECUTE 'CREATE INDEX idx_'||v_tablename||' ON '||v_tablename||' ('||v_create_idx_cols_cur||')';
+      RETURN QUERY SELECT v_tablename;
+    END IF;
+
+    -- Creation of history table.
+    v_create_tbl_cols_hist := 'history_range TSTZRANGE NOT NULL';
+    v_create_idx_cols_hist := 'history_range';
+    FOR c IN SELECT json_array_elements(t->'columns') LOOP
+      v_create_tbl_cols_hist := v_create_tbl_cols_hist||', '||trim((c->'name')::TEXT, '"')||' '||trim((c->'data_type')::TEXT, '"');
+      v_create_idx_cols_hist := v_create_idx_cols_hist||', '||trim((c->'name')::TEXT, '"');
+    END LOOP;
+
+    v_tablename := trim((t->'name')::TEXT, '"')||'_history';
+    PERFORM 1 FROM pg_tables WHERE tablename = v_tablename AND schemaname = current_schema();
+    IF NOT FOUND THEN
+      EXECUTE 'CREATE TABLE '||v_tablename||' ('||v_create_tbl_cols_hist||', records '||trim((t->'record_type')::TEXT, '"')||'[])';
+      EXECUTE 'CREATE INDEX idx_'||v_tablename||' ON '||v_tablename||' ('||v_create_idx_cols_hist||')';
+      RETURN QUERY SELECT v_tablename;
+    END IF;
+
+    -- Aggregate tables creation.
+    FOREACH i_period IN ARRAY v_agg_periods LOOP
+      v_tablename := trim((t->'name')::TEXT, '"')||'_'||i_period||'_current';
+      v_like_tablename := trim((t->'name')::TEXT, '"')||'_current';
+      PERFORM 1 FROM pg_tables WHERE tablename = v_tablename AND schemaname = current_schema();
+      IF NOT FOUND THEN
+        EXECUTE 'CREATE TABLE '||v_tablename||' (LIKE '||v_like_tablename||')';
+        -- Weight: number of record aggregated
+        EXECUTE 'ALTER TABLE '||v_tablename||' ADD COLUMN w INTEGER DEFAULT 1';
+        EXECUTE 'ALTER TABLE '||v_tablename||' ADD UNIQUE ('||v_create_idx_cols_cur||')';
+        RETURN QUERY SELECT v_tablename;
+      END IF;
+    END LOOP;
+  END LOOP;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION metric_create_agg_tables() RETURNS TABLE(created_table TEXT)
-LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION history_tables() RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  t JSON;
+  v_table_current TEXT;
+  v_table_history TEXT;
+  v_query TEXT;
+  i INTEGER;
+BEGIN
+  -- History data from each _current table
+  FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
+    v_table_current := trim((t->'name')::TEXT, '"')||'_current';
+    v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+    -- Lock _current table to prevent concurrent updates
+    EXECUTE 'LOCK TABLE '||v_table_current||' IN SHARE MODE';
+    v_query := replace(t->>'history', '#history_table#', v_table_history);
+    v_query := replace(v_query, '#current_table#', v_table_current);
+    v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
+    -- Move data into _history table
+    EXECUTE v_query;
+    GET DIAGNOSTICS i = ROW_COUNT;
+    -- Truncate _current table
+    EXECUTE 'TRUNCATE '||v_table_current;
+    -- Return each history table name and the number of rows inserted
+    RETURN QUERY SELECT v_table_history, i;
+  END LOOP;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION expand_data(i_name TEXT, i_range TSTZRANGE) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
 
 DECLARE
-	i_tablename TEXT;
-	v_tablename_agg TEXT;
-	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
-	i_period TEXT;
+  t JSON;
+  v_query TEXT;
+  v_table_current TEXT;
+  v_table_history TEXT;
 BEGIN
-	FOR i_tablename IN SELECT tablename FROM metric_configuration() ORDER BY tablename LOOP
-		FOREACH i_period IN ARRAY v_agg_periods LOOP
-			v_tablename_agg := i_tablename||'_'||i_period;
-			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
-			IF NOT FOUND THEN
-				EXECUTE 'CREATE TABLE '||v_tablename_agg||' (LIKE '||i_tablename||' INCLUDING ALL)';
-				EXECUTE 'ALTER TABLE '||v_tablename_agg||' ADD COLUMN w INTEGER DEFAULT 1';
-				RETURN QUERY SELECT v_tablename_agg;
-			END IF;
-		END LOOP;
-	END LOOP;
+  -- Build and execute 'expand' query
+  SELECT metric_tables_config()->i_name INTO t;
+  v_query := t->>'expand';
+  v_table_current := trim((t->'name')::TEXT, '"')||'_current';
+  v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+  v_query := replace(v_query, '#history_table#', v_table_history);
+  v_query := replace(v_query, '#current_table#', v_table_current);
+  v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
+  v_query := replace(v_query, '#where_current#', 'datetime <@ '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#where_history#', 'history_range && '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#tstzrange#', ''''||i_range::TEXT||'''::TSTZRANGE');
+  RAISE NOTICE '%', v_query;
+  RETURN QUERY EXECUTE v_query;
 END;
 
 $$;
 
-CREATE OR REPLACE FUNCTION metric_truncate_agg_tables() RETURNS TABLE(created_table TEXT)
-LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION expand_data_by_host_id(i_name TEXT, i_range TSTZRANGE, host_id INTEGER) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
 
 DECLARE
-	i_tablename TEXT;
-	v_tablename_agg TEXT;
-	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
-	i_period TEXT;
+  t JSON;
+  v_query TEXT;
+  v_table_current TEXT;
+  v_table_history TEXT;
 BEGIN
-	FOR i_tablename IN SELECT tablename FROM metric_configuration() ORDER BY tablename LOOP
-		FOREACH i_period IN ARRAY v_agg_periods LOOP
-			v_tablename_agg := i_tablename||'_'||i_period;
-			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
-			IF FOUND THEN
-				EXECUTE 'TRUNCATE '||v_tablename_agg;
-				RETURN QUERY SELECT v_tablename_agg;
-			END IF;
-		END LOOP;
-	END LOOP;
+
+  -- Build and execute 'expand' query and filter results by host_id.
+  SELECT metric_tables_config()->i_name INTO t;
+  v_query := t->>'expand';
+  v_table_current := trim((t->'name')::TEXT, '"')||'_current';
+  v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+  v_query := replace(v_query, '#history_table#', v_table_history);
+  v_query := replace(v_query, '#current_table#', v_table_current);
+  v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
+  v_query := replace(v_query, '#where_current#', 'host_id = '||host_id||' AND datetime <@ '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#where_history#', 'host_id = '||host_id||' AND history_range && '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#tstzrange#', ''''||i_range::TEXT||'''::TSTZRANGE');
+  RAISE NOTICE '%', v_query;
+  RETURN QUERY EXECUTE v_query;
+END;
+
+$$;
+
+CREATE OR REPLACE FUNCTION expand_data_by_instance_id(i_name TEXT, i_range TSTZRANGE, instance_id INTEGER) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
+
+DECLARE
+  t JSON;
+  v_query TEXT;
+  v_table_current TEXT;
+  v_table_history TEXT;
+BEGIN
+
+  SELECT metric_tables_config()->i_name INTO t;
+  v_query := t->>'expand';
+  v_table_current := trim((t->'name')::TEXT, '"')||'_current';
+  v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+  v_query := replace(v_query, '#history_table#', v_table_history);
+  v_query := replace(v_query, '#current_table#', v_table_current);
+  v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
+  v_query := replace(v_query, '#where_current#', 'instance_id = '||instance_id||' AND datetime <@ '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#where_history#', 'instance_id = '||instance_id||' AND history_range && '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#tstzrange#', ''''||i_range::TEXT||'''::TSTZRANGE');
+  RAISE NOTICE '%', v_query;
+  RETURN QUERY EXECUTE v_query;
 END;
 
 $$;
 
 
-CREATE OR REPLACE FUNCTION metric_populate_agg_tables() RETURNS TABLE(agg_tablename TEXT, nb_insert BIGINT)
-LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION expand_data_by_dbname(i_name TEXT, i_range TSTZRANGE, instance_id INTEGER, dbname TEXT) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
 
 DECLARE
-	v_last_datetime TIMESTAMP WITH TIME ZONE;
-	i_tablename TEXT;
-	i_agg_query TEXT;
-	v_agg_query TEXT;
-	i_insert_agg_query TEXT;
-	v_insert_agg_query TEXT;
-	v_tablename_agg TEXT;
-	v_agg_periods TEXT[] := array['10m', '30m', '4h'];
-	v_interval TEXT;
-	i_period TEXT;
-	v_nb_insert BIGINT := 0;
-	rec RECORD;
+  t JSON;
+  v_query TEXT;
+  v_table_current TEXT;
+  v_table_history TEXT;
 BEGIN
-	PERFORM metric_create_agg_tables();
-	FOR i_tablename, i_agg_query, i_insert_agg_query IN SELECT * FROM metric_configuration() ORDER BY tablename LOOP
-		FOREACH i_period IN ARRAY v_agg_periods LOOP
-			v_tablename_agg := i_tablename||'_'||i_period;
-			IF i_period = '10m' THEN
-				v_interval := '10 minutes';
-			ELSIF i_period = '30m' THEN
-				v_interval := '30 minutes';
-			ELSE
-				v_interval := '4 hours';
-			END IF;
-			PERFORM 1 FROM pg_tables WHERE tablename = v_tablename_agg;
-			IF NOT FOUND THEN
-				RAISE NOTICE 'Table % not found.', v_tablename_agg;
-				CONTINUE;
-			END IF;
-			v_agg_query := replace(i_agg_query, '#trunc_function#', 'trunc_time_'||i_period);
-			v_agg_query := replace(v_agg_query, '#tablename#', i_tablename);
-			v_nb_insert := 0;
 
-			RAISE NOTICE 'Populating % ...', v_tablename_agg;
-			EXECUTE 'SELECT MAX(datetime) FROM '||v_tablename_agg INTO v_last_datetime ;
-			IF v_last_datetime IS NULL THEN
-				v_agg_query := replace(v_agg_query, '#where#', '');
-			ELSE
-				v_agg_query := replace(v_agg_query, '#where#', 'WHERE datetime >= ('''||v_last_datetime||'''::TIMESTAMP WITH TIME ZONE - INTERVAL '''||v_interval||''')');
-			END IF;
-			v_insert_agg_query := replace(i_insert_agg_query, '#tablename#', v_tablename_agg);
-			v_insert_agg_query := replace(v_insert_agg_query, '#agg_query#', v_agg_query);
-			RAISE DEBUG '%', v_insert_agg_query;
-			EXECUTE v_insert_agg_query;
-			IF FOUND THEN
-				GET DIAGNOSTICS v_nb_insert = ROW_COUNT;
-			END IF;
-			RETURN QUERY SELECT v_tablename_agg, v_nb_insert;
+  SELECT metric_tables_config()->i_name INTO t;
+  v_query := t->>'expand';
+  v_table_current := trim((t->'name')::TEXT, '"')||'_current';
+  v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+  v_query := replace(v_query, '#history_table#', v_table_history);
+  v_query := replace(v_query, '#current_table#', v_table_current);
+  v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
+  v_query := replace(v_query, '#where_current#', 'instance_id = '||instance_id||' AND dbname = '||quote_literal(dbname)||' AND datetime <@ '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#where_history#', 'instance_id = '||instance_id||' AND dbname = '||quote_literal(dbname)||' AND history_range && '''||i_range::TEXT||'''::TSTZRANGE');
+  v_query := replace(v_query, '#tstzrange#', ''''||i_range::TEXT||'''::TSTZRANGE');
+  RAISE NOTICE '%', v_query;
+  RETURN QUERY EXECUTE v_query;
+END;
 
-		END LOOP;
-	END LOOP;
+$$;
+
+
+CREATE OR REPLACE FUNCTION aggregate_data() RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  t JSON;
+  v_agg_periods TEXT[] := array['30m', '6h'];
+  v_agg_table TEXT;
+  i_period TEXT;
+  v_query TEXT;
+  i INTEGER;
+BEGIN
+  -- Build and run 'aggregate' query for type of metric.
+  FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
+    FOREACH i_period IN ARRAY v_agg_periods LOOP
+      v_agg_table := trim((t->'name')::TEXT, '"')||'_'||i_period||'_current';
+      v_query := replace(t->>'aggregate', '#agg_table#', v_agg_table);
+      v_query := replace(v_query, '#interval#', i_period);
+      v_query := replace(v_query, '#record_type#', t->>'record_type');
+      v_query := replace(v_query, '#name#', t->>'name');
+      EXECUTE v_query;
+      GET DIAGNOSTICS i = ROW_COUNT;
+      RETURN QUERY SELECT v_agg_table, i;
+    END LOOP;
+  END LOOP;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION trunc_time_10m(TIMESTAMP WITH TIME ZONE)
-RETURNS TIMESTAMP WITH TIME ZONE AS $$
-  SELECT date_trunc('hour', $1) + INTERVAL '10 min' * TRUNC(date_part('minute', $1) / 10)
-$$ LANGUAGE SQL IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION trunc_time_30m(TIMESTAMP WITH TIME ZONE)
-RETURNS TIMESTAMP WITH TIME ZONE AS $$
-  SELECT date_trunc('hour', $1) + INTERVAL '30 min' * TRUNC(date_part('minute', $1) / 30)
-$$ LANGUAGE SQL IMMUTABLE;
+CREATE OR REPLACE FUNCTION truncate_time(i_tstz TIMESTAMP WITH TIME ZONE, i_interval INTERVAL)
+RETURNS TIMESTAMP WITH TIME ZONE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  r_tstz TIMESTAMP WITH TIME ZONE;
+  v_interval_min INT;
+BEGIN
+  SELECT (EXTRACT(EPOCH FROM i_interval)/60)::INTEGER INTO v_interval_min;
+  IF v_interval_min < 60 THEN
+    SELECT date_trunc('hour', i_tstz) + i_interval*TRUNC(date_part('minutes', i_tstz) / v_interval_min) INTO r_tstz;
+  ELSE
+    SELECT date_trunc('day', i_tstz) + i_interval*TRUNC(date_part('hours', i_tstz) / (v_interval_min/60)::INTEGER) INTO r_tstz;
+  END IF;
+  RETURN r_tstz;
+END;
+$$;
 
-CREATE OR REPLACE FUNCTION trunc_time_4h(TIMESTAMP WITH TIME ZONE)
-RETURNS TIMESTAMP WITH TIME ZONE AS $$
-  SELECT date_trunc('day', $1) + INTERVAL '4 hours' * TRUNC(date_part('hours', $1) / 4)
-$$ LANGUAGE SQL IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION set_datetime_record(i_datetime TIMESTAMP WITH TIME ZONE, i_record ANYELEMENT)
+RETURNS ANYELEMENT
+LANGUAGE plpgsql
+AS $$
+
+DECLARE
+  r_record RECORD;
+BEGIN
+  r_record := i_record;
+  r_record.datetime := i_datetime;
+  RETURN r_record;
+END;
+
+$$;
+
+-- Create the tables if they don't exist
+SELECT * FROM create_tables();
+
+COMMIT;
