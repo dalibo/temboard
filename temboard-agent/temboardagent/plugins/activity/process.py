@@ -1,6 +1,9 @@
 import os
 import time
 
+# Label returned when the data is not available
+NotAvailableLabel = 'N/A'
+
 def bytes2human(num):
     """
     Convert a size into a human readable format.
@@ -85,10 +88,10 @@ class Process(object):
                 # CPU time
                 cpu_time = float(infos[13]) + float(infos[14]) + float(infos[15]) + float(infos[16])
                 cpu_time_capture = time.time()
-            fd.close()
             return (iow, rss, cpu_time, cpu_time_capture)
         except Exception as e:
-            raise e
+            # Case when /proc/<pid>/stat can be read/parsed
+            return (NotAvailableLabel, None, None, None)
 
     def __parse_proc_io(self,):
         """
@@ -106,10 +109,10 @@ class Process(object):
                         read_bytes = int(infos[1])
                     if infos[0][:-1] == 'write_bytes':
                         write_bytes = int(infos[1])
-                fd.close()
-                return (read_bytes, write_bytes, io_capture)
+            return (read_bytes, write_bytes, io_capture)
         except Exception as e:
-            raise e
+            # Case when /proc/<pid>/io can be read/parsed
+            return (None, None, None)
 
     def __init_stat(self,):
         (self.iow, self.rss, self.cpu_time, self.cpu_time_capture) = self.__parse_proc_stat()
@@ -117,21 +120,31 @@ class Process(object):
 
     def cpu_usage(self,):
         (_, _, new_cpu_time, new_cpu_time_capture) = self.__parse_proc_stat()
-        cpu_usage = float("%.2f" % (round(float(float(new_cpu_time - self.cpu_time) / float(new_cpu_time_capture - self.cpu_time_capture)), 2)))
-        self.cpu_time = new_cpu_time
-        self.cpu_time_capture = new_cpu_time_capture
-        return cpu_usage
+        if new_cpu_time is not None and new_cpu_time_capture is not None:
+            cpu_usage = float("%.2f" % (round(float(float(new_cpu_time - self.cpu_time) / float(new_cpu_time_capture - self.cpu_time_capture)), 2)))
+            self.cpu_time = new_cpu_time
+            self.cpu_time_capture = new_cpu_time_capture
+            return cpu_usage
+        else:
+            return NotAvailableLabel
 
     def mem_usage(self, new_capture = False):
         if new_capture is True:
             self.__init_stat()
-        return float("%.2f" % (round(float(float(self.rss) * self.page_size) / float(self.mem_total) * 100, 2)))
+        if self.rss is not None and self.mem_total is not None:
+            return float("%.2f" % (round(float(float(self.rss) * self.page_size) / float(self.mem_total) * 100, 2)))
+        else:
+            return NotAvailableLabel
+
 
     def io_usage(self,):
         (new_read_bytes, new_write_bytes, new_io_capture) = self.__parse_proc_io()
-        read_rate = float("%.2f" % (round(float(float(new_read_bytes - self.read_bytes) / float(new_io_capture - self.io_capture)), 2)))
-        write_rate = float("%.2f" % (round(float(float(new_write_bytes - self.write_bytes) / float(new_io_capture - self.io_capture)), 2)))
-        self.read_bytes = new_read_bytes
-        self.write_bytes = new_write_bytes
-        self.io_capture = new_io_capture
-        return (bytes2human(read_rate), bytes2human(write_rate))
+        if new_read_bytes is not None and new_write_bytes is not None and new_io_capture is not None:
+            read_rate = float("%.2f" % (round(float(float(new_read_bytes - self.read_bytes) / float(new_io_capture - self.io_capture)), 2)))
+            write_rate = float("%.2f" % (round(float(float(new_write_bytes - self.write_bytes) / float(new_io_capture - self.io_capture)), 2)))
+            self.read_bytes = new_read_bytes
+            self.write_bytes = new_write_bytes
+            self.io_capture = new_io_capture
+            return (bytes2human(read_rate), bytes2human(write_rate))
+        else:
+            return (NotAvailableLabel, NotAvailableLabel)
