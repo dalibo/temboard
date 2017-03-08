@@ -36,6 +36,8 @@ Please read the doc here: <http://temboard.readthedocs.io/en/latest/>.
 
 Temboard is an open project. Any contribution to improve it is welcome. 
 
+Want to contribute? Please first read our guide on [contributing](CONTRIBUTING.md) if you're interested in getting involved.
+
 # License
 
 Temboard is available under the [PostgreSQL License](LICENSE).
