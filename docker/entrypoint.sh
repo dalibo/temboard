@@ -16,5 +16,6 @@ fi
 
 # Run temboard in the background and wait for ever. This allow to kill temboard
 # without killing the container.
-temboard --daemon
+rm -vf temboard.pid
+temboard --daemon --pid-file temboard.pid
 exec ${*-tail -f /dev/null}

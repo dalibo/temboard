@@ -9,3 +9,4 @@ temboard-agent/test/test/configuration.py
 # We provide override. Base compose file comes from
 # https://github.com/dalibo/docker/blob/master/temboard/docker-compose.yml
 docker-compose.yml
+temboard.pid
