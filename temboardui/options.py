@@ -24,3 +24,7 @@ class temboarduiOptions(CLIOptions):
         self.add_option(
             "-p", "--pid-file", dest="pidfile",
             help="PID file.", default="/run/temboard.pid")
+        self.add_option(
+            "--debug",
+            action="store_true", dest="debug", default=False,
+            help="Debug mode for development.")

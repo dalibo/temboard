@@ -142,6 +142,7 @@ def main():
             (r"/images/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/images'}),
             (r"/fonts/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/fonts'})
         ],
+        debug=options.debug,
         cookie_secret = config.temboard['cookie_secret'],
         template_path = base_path+"/templates",
         default_handler_class = Error404Handler
