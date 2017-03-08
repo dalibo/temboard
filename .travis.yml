@@ -1,0 +1,11 @@
+language: python
+
+sudo: false
+
+install:
+  - virtualenv venv
+  - env/bin/pip install flake8-diff
+
+script:
+  - echo $TRAVIS_COMMIT_RANGE
+  - venv/bin/flake8-diff $TRAVIS_PULL_REQUEST
