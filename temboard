@@ -6,6 +6,7 @@ import ssl
 
 import tornado.ioloop
 import tornado.web
+from tornado import autoreload
 
 from sqlalchemy import create_engine
 
@@ -90,6 +91,7 @@ def main():
             pass
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
+    autoreload.watch(options.configfile)
     # Run temboard as a background daemon.
     if (options.daemon):
         daemonize(options.pidfile, config)
