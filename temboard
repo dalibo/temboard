@@ -100,6 +100,13 @@ def main():
     base_path = os.path.dirname(temboardui.__file__)
     del temboardui
 
+    # Task Manager
+    task_manager = TaskManager()
+    task_manager.set_logger(logger)
+    task_manager.task_list.filepath = os.path.join(config.temboard['home'], 'task_list')
+    logger.info("Starting task manager.")
+    task_manager.start(parameters = {'configpath': options.configfile})
+
     # Worker pool creation.
     new_worker_pool(12)
 
@@ -161,13 +168,6 @@ def main():
     except socket.error as e:
         logger.error("FATAL: " + str(e) + '. Quit');
         sys.exit(3)
-
-    # Task Manager
-    task_manager = TaskManager()
-    task_manager.set_logger(logger)
-    task_manager.task_list.filepath = os.path.join(config.temboard['home'], 'task_list')
-    logger.info("Starting task manager.")
-    task_manager.start(parameters = {'configpath': options.configfile})
 
     logger.info("Starting temboardui on %s:%d" % (config.temboard['address'], config.temboard['port']))
     tornado.ioloop.IOLoop.instance().start()
