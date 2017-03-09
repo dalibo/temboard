@@ -1,11 +1,13 @@
 language: python
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+
 sudo: false
 
 install:
-  - virtualenv venv
-  - venv/bin/pip install flake8 flake8-diff
-  - source venv/bin/activate
+  - pip install flake8 flake8-diff
 
 script:
   - flake8-diff $TRAVIS_COMMIT_RANGE
