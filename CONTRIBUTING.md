@@ -58,7 +58,7 @@ The following command will fetch the newest changes in the official repo.
 Then you can **create a new branch**.
 
 ```
-    git create -b the_name_of_the_branch upstream/master
+    git checkout -b the_name_of_the_branch upstream/master
 ```
 
 Change/Add some code, commit your stuff. Then, push your changes to github:
