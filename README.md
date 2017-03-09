@@ -1,6 +1,8 @@
 
 ![Temboard](doc/temboard.png)
 
+[![Build Status](https://travis-ci.org/dalibo/temboard.svg?branch=master)](https://travis-ci.org/dalibo/temboard)
+
 Temboard is a powerful mangement tool for PostgreSQL. 
 
 You can use it monitor, optimize or configure multiple PostgreSQL instances.
