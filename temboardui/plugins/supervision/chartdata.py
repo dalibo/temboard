@@ -1,6 +1,8 @@
 import cStringIO
 import pandas
 import time
+import datetime
+
 
 def zoom_level(start, end):
     zoom = 0
@@ -17,6 +19,7 @@ def zoom_level(start, end):
         zoom = 2
     return zoom
 
+
 def get_tablename(probename, start, end):
     zoom = zoom_level(start, end)
     if zoom == 1:
@@ -26,12 +29,14 @@ def get_tablename(probename, start, end):
     else:
         return
 
+
 def datetime_to_pgtstz(dt):
     """
     Convert and return a python datetime to a postgres timestamp with time zone
     as a string.
     """
     return '%s %s' % (dt.strftime('%Y-%m-%d %H:%M:%S'), time.tzname[0])
+
 
 def get_loadaverage(session, host_id, start, end):
     """
@@ -66,9 +71,7 @@ COPY (
         host_id integer,
         record metric_loadavg_record))
 TO STDOUT WITH CSV HEADER
-""" % (datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end),
-        host_id)
+""" % (datetime_to_pgtstz(start), datetime_to_pgtstz(end), host_id)
     else:
         tablename = get_tablename('loadavg', start, end)
         query += """
@@ -79,10 +82,7 @@ TO STDOUT WITH CSV HEADER
         AND datetime <= '%s'
     ORDER BY datetime ASC)
 TO STDOUT WITH CSV HEADER
-""" % (tablename,
-        host_id,
-        datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end))
+""" % (tablename, host_id, datetime_to_pgtstz(start), datetime_to_pgtstz(end))
 
     # Retreive data using copy_expert()
     cur.copy_expert(query, data_buffer)
@@ -90,6 +90,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_cpu(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -105,7 +106,7 @@ COPY (
         round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
         round((SUM((record).time_steal)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS steal
     FROM
-"""
+"""  # noqa
     if zl == 0:
         query += """
         supervision.expand_data_by_host_id(
@@ -118,9 +119,7 @@ COPY (
         record metric_cpu_record)
     GROUP BY datetime, host_id)
 TO STDOUT WITH CSV HEADER
-""" % (datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end),
-        host_id)
+""" % (datetime_to_pgtstz(start), datetime_to_pgtstz(end), host_id)
     else:
         tablename = get_tablename('cpu', start, end)
         query += """
@@ -132,16 +131,14 @@ TO STDOUT WITH CSV HEADER
     GROUP BY datetime, host_id
     ORDER BY datetime)
 TO STDOUT WITH CSV HEADER
-""" % (tablename,
-        host_id,
-        datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end))
+""" % (tablename, host_id, datetime_to_pgtstz(start), datetime_to_pgtstz(end))
 
     cur.copy_expert(query, data_buffer)
     cur.close()
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_tps(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -155,7 +152,7 @@ COPY (
         round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
         round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
     FROM
-"""
+"""  # noqa
     if zl == 0:
         query += """
         supervision.expand_data_by_instance_id(
@@ -168,9 +165,7 @@ COPY (
         record metric_xacts_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER
-""" % (datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end),
-        instance_id)
+""" % (datetime_to_pgtstz(start), datetime_to_pgtstz(end), instance_id)
     else:
         tablename = get_tablename('xacts', start, end)
         query += """
@@ -182,16 +177,15 @@ TO STDOUT WITH CSV HEADER
     GROUP BY datetime, instance_id
     ORDER BY datetime)
 TO STDOUT WITH CSV HEADER
-""" % (tablename,
-        instance_id,
-        datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end))
+""" % (tablename, instance_id, datetime_to_pgtstz(start),
+       datetime_to_pgtstz(end))
 
     cur.copy_expert(query, data_buffer)
     cur.close()
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_db_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -218,9 +212,7 @@ COPY (
         dbname text,
         record metric_db_size_record))
 TO STDOUT WITH CSV HEADER
-""" % (datetime_to_pgtstz(start),
-        datetime_to_pgtstz(end),
-        instance_id)
+""" % (datetime_to_pgtstz(start), datetime_to_pgtstz(end), instance_id)
     else:
         tablename = get_tablename('db_size', start, end)
         query += """
@@ -248,6 +240,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     data_pivot.close()
     return data
+
 
 def get_instance_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -297,6 +290,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_memory(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -311,7 +305,7 @@ COPY (
         (record).mem_buffers AS buffers,
         ((record).mem_used - (record).mem_cached - (record).mem_buffers) AS other
     FROM
-"""
+"""  # noqa
 
     if zl == 0:
         query += """
@@ -346,6 +340,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_swap(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -393,6 +388,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_sessions(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -448,6 +444,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_blocks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -460,7 +457,7 @@ COPY (
         ROUND(SUM((record).blks_read)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_read_s,
         ROUND(SUM((record).blks_hit)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_hit_s
     FROM
-"""
+"""  # noqa
     if zl == 0:
         query += """
         supervision.expand_data_by_instance_id(
@@ -497,6 +494,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_hitreadratio(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -511,7 +509,7 @@ COPY (
                 THEN ROUND((SUM((record).blks_hit)::FLOAT/(SUM((record).blks_hit) + SUM((record).blks_read)::FLOAT) * 100)::numeric, 2)
                 ELSE 100 END AS hit_read_ratio
     FROM
-"""
+"""  # noqa
     if zl == 0:
         query += """
         supervision.expand_data_by_instance_id(
@@ -547,6 +545,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_checkpoints(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -596,6 +595,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_written_buffers(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -642,6 +642,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_locks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -699,6 +700,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_waiting_locks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -753,6 +755,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_fs_size(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -809,6 +812,7 @@ TO STDOUT WITH CSV HEADER
     data_pivot.close()
     return data
 
+
 def get_fs_usage(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     data_pivot = cStringIO.StringIO()
@@ -822,7 +826,7 @@ COPY (
         mount_point,
         round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
     FROM
-"""
+"""  # noqa
 
     if zl == 0:
         query += """
@@ -866,6 +870,7 @@ TO STDOUT WITH CSV HEADER
     data_pivot.close()
     return data
 
+
 def get_ctxforks(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -878,7 +883,7 @@ COPY (
         round(SUM((record).context_switches)/(extract('epoch' from MIN((record).measure_interval)))) AS context_switches_s,
         round(SUM((record).forks)/(extract('epoch' from MIN((record).measure_interval)))) AS forks_s
     FROM
-"""
+"""  # noqa
 
     if zl == 0:
         query += """
@@ -915,6 +920,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_tblspc_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -972,6 +978,7 @@ TO STDOUT WITH CSV HEADER
     data_pivot.close()
     return data
 
+
 def get_wal_files_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -1017,6 +1024,7 @@ TO STDOUT WITH CSV HEADER
     data = data_buffer.getvalue()
     data_buffer.close()
     return data
+
 
 def get_wal_files_count(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
@@ -1064,6 +1072,7 @@ TO STDOUT WITH CSV HEADER
     data_buffer.close()
     return data
 
+
 def get_wal_files_rate(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
@@ -1075,7 +1084,7 @@ COPY (
         to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
         round(SUM((record).written_size)/(extract('epoch' from MIN((record).measure_interval)))) AS written_size_s
     FROM
-"""
+"""  # noqa
     if zl == 0:
         query += """
         supervision.expand_data_by_instance_id(
