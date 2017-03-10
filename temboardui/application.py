@@ -8,7 +8,12 @@ from sqlalchemy.orm import sessionmaker, scoped_session, joinedload
 from sqlalchemy.orm.exc import *
 from sqlalchemy.exc import *
 
-from temboardui.model.orm import *
+from temboardui.model.orm import (
+    Groups,
+    Instances,
+    InstanceGroups,
+    Roles,
+)
 from temboardui.model.tables import metadata
 from temboardui.errors import TemboardUIError
 
@@ -37,9 +42,13 @@ def add_role(session, role_name, role_password, role_email, is_active = True, is
     except Exception as e:
         raise TemboardUIError(e.message)
 
-def update_role(session, role_name, new_role_name = None, role_password = None, role_email = None, is_active = None, is_admin = None):
+
+def update_role(session, role_name, new_role_name=None, role_password=None,
+                role_email=None, is_active=None, is_admin=None):
     try:
-        role = session.query(Roles).filter_by(role_name = unicode(role_name)).first()
+        role = session.query(Roles) \
+            .filter_by(role_name=unicode(role_name)) \
+            .first()
         if new_role_name is not None:
             role.role_name = unicode(new_role_name)
         if role_password is not None:
@@ -121,7 +130,11 @@ def get_group(session, group_name, group_kind):
 
 def update_group(session, group_name, group_kind, new_group_name = None, group_description = None):
     try:
-        group = session.query(Groups).filter_by(group_name = unicode(group_name), group_kind = unicode(group_kind)).first()
+        group = session.query(Groups) \
+            .filter_by(
+                group_name=unicode(group_name),
+                group_kind=unicode(group_kind)) \
+            .first()
         if new_group_name is not None:
             group.group_name = unicode(new_group_name)
         if group_description is not None:
@@ -264,7 +277,11 @@ def update_instance(session,
                 pg_version = None,
                 pg_data = None):
     try:
-        instance = session.query(Instances).filter_by(agent_address = unicode(agent_address), agent_port = agent_port).first()
+        instance = session.query(Instances) \
+            .filter_by(
+                agent_address=unicode(agent_address),
+                agent_port=agent_port) \
+            .first()
         if new_agent_address is not None:
             instance.agent_adresse = unicode(new_agent_address)
         if new_agent_port is not None:

@@ -5,115 +5,115 @@
 {% block content %}
 <!-- HBA row edit modal -->
 <div class="modal fade" id="HBAModal" tabindex="-1" role="dialog" aria-labelledby="HBAModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="HBAModalLabel"></h4>
-			</div>
-			<div class="modal-body" id="HBAModalInfo">
-			</div>
-			<div class="modal-body" id="HBAModalBody">
-			</div>
-			<div class="modal-footer" id="HBAModalFooter">
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="HBAModalLabel"></h4>
+      </div>
+      <div class="modal-body" id="HBAModalInfo">
+      </div>
+      <div class="modal-body" id="HBAModalBody">
+      </div>
+      <div class="modal-footer" id="HBAModalFooter">
+      </div>
+    </div>
+  </div>
 </div>
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-		{% if file_type == 'hba' %}
-			<h1><i class="fa fa-cog"></i> Settings <small>/</small> Host Base Authentication</h1>
-		{% end %}
-		</div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+    {% if file_type == 'hba' %}
+      <h1><i class="fa fa-cog"></i> Settings <small>/</small> Host Base Authentication</h1>
+    {% end %}
+    </div>
+  </div>
 {% try %}
 {% if ret_post %}
-	<div class="row">
-		<div class="col-md-12">
-			<div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
-				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
-				<p><strong>{{file_content['filepath']}}</strong> file successfully updated and PostgreSQL configuration reloaded.</p>
-			</div>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+      <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
+        <p><strong>{{file_content['filepath']}}</strong> file successfully updated and PostgreSQL configuration reloaded.</p>
+      </div>
+    </div>
+  </div>
 {% end %}
 {% except %}
 {% end %}
 
 {% try %}
 {% if error_code > 0 %}
-	<div class="row">
-		<div class="col-md-12">
-			<div id="error-configuration" class="alert alert-danger" role="alert">
-				<h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
-				<p>{{error_code}}: {{error_message}}</p>
-			</div>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+      <div id="error-configuration" class="alert alert-danger" role="alert">
+        <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
+        <p>{{error_code}}: {{error_message}}</p>
+      </div>
+    </div>
+  </div>
 {% end %}
 {% except %}
 {% end %}
-	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">File: <span class="label label-default">{{conf_file['filepath']}}</span>&nbsp;&nbsp;Version: <select name="version" id="selectHBAVersion"><option value="CURRENT">CURRENT</option>{% for version in file_versions['versions'] %}<option value="{{version}}" {% if version == conf_file['version'] %}selected{% end %}>{{version}}</option>{% end %}</select><div class="pull-right"><button class="btn btn-xs btn-primary add">+ Add a new row</button></div></div>
-				<div id="divtopHBA">
-				<div class="panel-body" id="divHBA">
-						<table id="HBATable" class="table table-bordered table-condensed table-hover">
-						<tbody>
-						<tr data-header="1">
-							<th width="54"></th>
-							<th width="20">#</th>
-							<th>Connection</th>
-							<th>Database</th>
-							<th>User</th>
-							<th>Address</th>
-							<th width="50">Method</th>
-							<th>Options</th>
-							<th width="54"></th>
-						</tr>
-						{% set no = 0 %}
-						{% for record in conf_file['entries'] %}
-							{% set no += 1 %}
-						<tr data-line-number="{{no}}">
-							<td>
-								<button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="glyphicon glyphicon-arrow-up"></i></button>
-								<button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="glyphicon glyphicon-arrow-down"></i></button>
-							</td>
-							<td class="text-center"><span class="no">{{no}}</span></td>
-							{% if 'comment' in record %}
-							<td colspan="6" class="comment"># {{record['comment']}}</td>
-							{% else %}
-							<td class="connection">{{record['connection']}}</td>
-							<td class="database">{{record['database']}}</td>
-							<td class="user">{{record['user']}}</td>
-							<td class="address">{{record['address']}}</td>
-							<td class="text-center auth_method"><span class="label label-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
-							<td class="auth_options">{{record['auth_options']}}</td>
-							{% end %}
-							<td>
-								<button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>
-								<button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="glyphicon glyphicon-remove-circle"></i></button>
-							</td>
-						</tr>
-						{% end %}
-						</tbody>
-						</table>
-						<div class="col-md-12 text-center divButton">
-							{% if conf_file['version'] %}
-							<button type="submit" class="btn btn-sm btn-danger remove-version">Remove this version</button>
-							{% end %}
-							<button type="submit" class="btn btn-sm btn-warning cancel">Cancel</button>
-							<button type="submit" class="btn btn-sm btn-primary save">Save and reload configuration</button>
-						</div>
-				</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">File: <span class="label label-default">{{conf_file['filepath']}}</span>&nbsp;&nbsp;Version: <select name="version" id="selectHBAVersion"><option value="CURRENT">CURRENT</option>{% for version in file_versions['versions'] %}<option value="{{version}}" {% if version == conf_file['version'] %}selected{% end %}>{{version}}</option>{% end %}</select><div class="pull-right"><button class="btn btn-xs btn-primary add">+ Add a new row</button></div></div>
+        <div id="divtopHBA">
+        <div class="panel-body" id="divHBA">
+            <table id="HBATable" class="table table-bordered table-condensed table-hover">
+            <tbody>
+            <tr data-header="1">
+              <th width="54"></th>
+              <th width="20">#</th>
+              <th>Connection</th>
+              <th>Database</th>
+              <th>User</th>
+              <th>Address</th>
+              <th width="50">Method</th>
+              <th>Options</th>
+              <th width="54"></th>
+            </tr>
+            {% set no = 0 %}
+            {% for record in conf_file['entries'] %}
+              {% set no += 1 %}
+            <tr data-line-number="{{no}}">
+              <td>
+                <button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="glyphicon glyphicon-arrow-up"></i></button>
+                <button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="glyphicon glyphicon-arrow-down"></i></button>
+              </td>
+              <td class="text-center"><span class="no">{{no}}</span></td>
+              {% if 'comment' in record %}
+              <td colspan="6" class="comment"># {{record['comment']}}</td>
+              {% else %}
+              <td class="connection">{{record['connection']}}</td>
+              <td class="database">{{record['database']}}</td>
+              <td class="user">{{record['user']}}</td>
+              <td class="address">{{record['address']}}</td>
+              <td class="text-center auth_method"><span class="label label-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
+              <td class="auth_options">{{record['auth_options']}}</td>
+              {% end %}
+              <td>
+                <button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="glyphicon glyphicon-remove-circle"></i></button>
+              </td>
+            </tr>
+            {% end %}
+            </tbody>
+            </table>
+            <div class="col-md-12 text-center divButton">
+              {% if conf_file['version'] %}
+              <button type="submit" class="btn btn-sm btn-danger remove-version">Remove this version</button>
+              {% end %}
+              <button type="submit" class="btn btn-sm btn-warning cancel">Cancel</button>
+              <button type="submit" class="btn btn-sm btn-primary save">Save and reload configuration</button>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script src="/js/bootstrap-multiselect.js"></script>
 <script src="/js/bootstrap-tagsinput.min.js"></script>
@@ -124,75 +124,75 @@ var xsession = "{{xsession}}";
 var agent_address = "{{instance.agent_address}}";
 var agent_port = "{{instance.agent_port}}";
 $(document).ready(function() {
-	var tableid = "HBATable";
-	var modalid = "HBAModal";
+  var tableid = "HBATable";
+  var modalid = "HBAModal";
 
-	function init()
-	{
-		$('#selectHBAVersion').multiselect({
-			buttonWidth: '200px',
-			buttonClass: 'btn btn-xs btn-primary',
-		});
-		$('#selectHBAVersion').on('change', function(event) {
-			event.preventDefault();
-			var version = $('#selectHBAVersion').find(':selected').attr('value');
-			var url = '/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/hba';
-			if (version != 'CURRENT')
-				url += '?version='+version;
-			window.location.replace(url);
-		});
-		$(".up,.down").click(function(){
-			var row = $(this).parents("tr:first");
-			$(this).tooltip("hide");
-			if ($(this).is(".up")) {
-				tr_move("up", row, tableid);
-			} else {
-				tr_move("down", row, tableid);
-			}
-		});
-		$(".remove").click(function(){
-			var row = $(this).parents("tr:first");
-			$(this).tooltip("hide");
-			tr_remove(row, tableid);
-		});
-		$(".edit").click(function () {
-			$('#HBAModal').modal('show');
-			$('[data-toggle=popover]').popover('hide');
-			var row = $(this).parents("tr:first");
-			row_edit(row, tableid, modalid, agent_address, agent_port, xsession, null);
-		});
-		$(".cancel").click(function(){
-			$("#divtopHBA").load(window.location.href + " #divHBA", function() {
-				$(function () {
-					$('[data-toggle="tooltip"]').tooltip()
-				})
-				init();
-			});
-		});
-	}
-	init();
-	$(".add").click(function (){
-		$('#HBAModal').modal('show');
-		$('[data-toggle=popover]').popover('hide');
-		row_edit(null, tableid, modalid, agent_address, agent_port, xsession, 'record');
-	});
+  function init()
+  {
+    $('#selectHBAVersion').multiselect({
+      buttonWidth: '200px',
+      buttonClass: 'btn btn-xs btn-primary',
+    });
+    $('#selectHBAVersion').on('change', function(event) {
+      event.preventDefault();
+      var version = $('#selectHBAVersion').find(':selected').attr('value');
+      var url = '/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/hba';
+      if (version != 'CURRENT')
+        url += '?version='+version;
+      window.location.replace(url);
+    });
+    $(".up,.down").click(function(){
+      var row = $(this).parents("tr:first");
+      $(this).tooltip("hide");
+      if ($(this).is(".up")) {
+        tr_move("up", row, tableid);
+      } else {
+        tr_move("down", row, tableid);
+      }
+    });
+    $(".remove").click(function(){
+      var row = $(this).parents("tr:first");
+      $(this).tooltip("hide");
+      tr_remove(row, tableid);
+    });
+    $(".edit").click(function () {
+      $('#HBAModal').modal('show');
+      $('[data-toggle=popover]').popover('hide');
+      var row = $(this).parents("tr:first");
+      row_edit(row, tableid, modalid, agent_address, agent_port, xsession, null);
+    });
+    $(".cancel").click(function(){
+      $("#divtopHBA").load(window.location.href + " #divHBA", function() {
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        })
+        init();
+      });
+    });
+  }
+  init();
+  $(".add").click(function (){
+    $('#HBAModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    row_edit(null, tableid, modalid, agent_address, agent_port, xsession, 'record');
+  });
 
-	$(".save").click(function(){
-		save_hba_table(tableid, modalid, agent_address, agent_port, xsession);
-	});
+  $(".save").click(function(){
+    save_hba_table(tableid, modalid, agent_address, agent_port, xsession);
+  });
 
-	{% if conf_file['version'] %}
+  {% if conf_file['version'] %}
 
-	$(".remove-version").click(function(){
-		try {
-			var version = $('#selectHBAVersion').find(':selected').attr('value');
-			delete_hba(modalid, agent_address, agent_port, xsession, version);
-		} catch(e) {
-			return;
-		}
-	});
+  $(".remove-version").click(function(){
+    try {
+      var version = $('#selectHBAVersion').find(':selected').attr('value');
+      delete_hba(modalid, agent_address, agent_port, xsession, version);
+    } catch(e) {
+      return;
+    }
+  });
 
-	{% end %}
+  {% end %}
 });
 </script>
 {% end %}
