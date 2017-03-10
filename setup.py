@@ -1,22 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='temboard',
     version='0.0.1',
     author='Julien Tachoires',
     license='PostgreSQL',
-    packages=[
-        'temboardui',
-        'temboardui.handlers',
-        'temboardui.handlers.manage',
-        'temboardui.model',
-        'temboardui.plugins',
-        'temboardui.plugins.dashboard',
-        'temboardui.plugins.supervision',
-        'temboardui.plugins.supervision.model',
-        'temboardui.plugins.settings',
-        'temboardui.plugins.activity'
-    ],
+    packages=find_packages(),
     scripts=['temboard'],
     install_requires=[
         'pandas>=0.15.0',
