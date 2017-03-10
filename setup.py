@@ -1,12 +1,5 @@
 from setuptools import setup
 
-requires = [
-    'pandas>=0.15.0',
-    'psycopg2>=2.5.4',
-    'sqlalchemy>=0.9.8',
-    'tornado>=3.2',
-]
-
 setup(
     name='temboard',
     version='0.0.1',
@@ -25,7 +18,12 @@ setup(
         'temboardui.plugins.activity'
     ],
     scripts=['temboard'],
-    install_requires=requires,
+    install_requires=[
+        'pandas>=0.15.0',
+        'psycopg2>=2.5.4',
+        'sqlalchemy>=0.9.8',
+        'tornado>=3.2',
+    ],
     include_package_data=True,
     zip_safe=False,
     url='',
