@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='temboard',
     version='0.0.1',
-    author='Julien Tachoires',
+    author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
     packages=find_packages(),
     scripts=['temboard'],
