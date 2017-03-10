@@ -36,7 +36,7 @@ class ManageUserJsonHandler(JsonHandler):
 
             role = get_role(self.db_session, username)
             groups = get_group_list(self.db_session);
-            
+
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()

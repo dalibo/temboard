@@ -138,7 +138,7 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
         if isinstance(e, HTTPError):
             raise e
         else:
-            raise HTTPError(500, "Internal error.") 
+            raise HTTPError(500, "Internal error.")
 
 @add_route('POST', '/administration/vacuum')
 def api_vacuum(http_context, queue_in = None, config = None, sessions = None, commands = None):

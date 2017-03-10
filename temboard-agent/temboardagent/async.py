@@ -35,7 +35,7 @@ def Scheduler(commands, queue_in, config, sessions):
         - fetching new async command from the command queue.
         - if any new command, starting a new worker process.
         - doing maintenance tasks like sessions and commands clean-up.
-        - executing function named scheduler() from each loaded plugins. 
+        - executing function named scheduler() from each loaded plugins.
     """
     set_logger_name("scheduler")
     logger = get_logger(config)
@@ -89,10 +89,10 @@ def Scheduler(commands, queue_in, config, sessions):
                 workers.remove(worker)
 
         # Let store workers in a global var.
-        set_global_workers(workers) 
+        set_global_workers(workers)
         # Execute plugins scheduler() function.
         exec_scheduler(queue_in, config, commands, logger)
         # Purge expired sessions if any.
         sessions.purge_expired(3600, logger, config)
-        # Remove old unchecked commands. 
+        # Remove old unchecked commands.
         commands.purge_expired(60, logger)

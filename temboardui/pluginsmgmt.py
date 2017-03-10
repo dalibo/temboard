@@ -25,7 +25,7 @@ def load_plugins(plugin_names, config):
             # Try to run module's configuration() function.
             logger.info("Loading plugin '%s' configuration." % (plugin_name,))
             ret.update({
-                module.__name__: { 
+                module.__name__: {
                     'configuration': getattr(module, 'configuration')(config),
                     'routes': getattr(module, 'get_routes')(config)
                 }

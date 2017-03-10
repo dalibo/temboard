@@ -41,7 +41,7 @@ class ManageInstanceJsonHandler(JsonHandler):
             instance = get_instance(self.db_session, agent_address, agent_port)
             groups = get_group_list(self.db_session, 'instance');
             if not instance:
-                raise TemboardUIError(404, "Instance entry not found.") 
+                raise TemboardUIError(404, "Instance entry not found.")
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
@@ -89,7 +89,7 @@ class ManageInstanceJsonHandler(JsonHandler):
                 # Update instance case.
                 instance = get_instance(self.db_session, agent_address, agent_port)
                 if not instance:
-                    raise TemboardUIError(404, "Instance entry not found.") 
+                    raise TemboardUIError(404, "Instance entry not found.")
 
             data = tornado.escape.json_decode(self.request.body)
             self.logger.debug(data)

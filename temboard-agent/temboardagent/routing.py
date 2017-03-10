@@ -6,7 +6,7 @@ WORKERS = []
 
 def add_route(method, path):
     """
-    Function decorator for HTTP method/path -> API function mapping. 
+    Function decorator for HTTP method/path -> API function mapping.
     """
     def func_wrapper(function):
         global ROUTES

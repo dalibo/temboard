@@ -4,7 +4,7 @@
  */
 function load_update_instance_form(modal_id, agent_address, agent_port)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -114,7 +114,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			var footer_html = '';
 			footer_html += '<button type="submit" id="submitFormUpdateInstance" class="btn btn-primary">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
-			
+
 			// Write the form.
 			$('#'+modal_id+'Body').html(body_html);
 			$('#'+modal_id+'Footer').html(footer_html);
@@ -174,7 +174,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 
 function send_update_instance_form(modal_id, agent_address, agent_port)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
 		type: 'post',
 		beforeSend: function(xhr){
@@ -211,7 +211,7 @@ function send_update_instance_form(modal_id, agent_address, agent_port)
 
 function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -248,7 +248,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 
 function send_delete_instance(modal_id, agent_address, agent_port)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/delete/instance',
 		type: 'post',
 		beforeSend: function(xhr){
@@ -278,7 +278,7 @@ function send_delete_instance(modal_id, agent_address, agent_port)
  */
 function load_add_instance_form(modal_id)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/all/group/instance',
 		type: 'get',
 		beforeSend: function(xhr){
@@ -373,7 +373,7 @@ function load_add_instance_form(modal_id)
 			var footer_html = '';
 			footer_html += '<button type="submit" id="submitFormAddInstance" class="btn btn-primary">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
-			
+
 			// Write the form.
 			$('#'+modal_id+'Body').html(body_html);
 			$('#'+modal_id+'Footer').html(footer_html);
@@ -433,7 +433,7 @@ function load_add_instance_form(modal_id)
 
 function send_add_instance_form(modal_id)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/instance',
 		type: 'post',
 		beforeSend: function(xhr){

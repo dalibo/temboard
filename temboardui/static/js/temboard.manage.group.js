@@ -4,7 +4,7 @@
  */
 function load_update_group_form(modal_id, group_kind, group_name)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/group/'+group_kind+'/'+group_name,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -117,7 +117,7 @@ function send_update_group_form(modal_id, group_kind)
 			'description': $('#inputDescription').val()
 		});
 	}
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/group/'+group_kind+'/'+group_name,
 		type: 'post',
 		beforeSend: function(xhr){
@@ -147,7 +147,7 @@ function send_update_group_form(modal_id, group_kind)
 
 function load_delete_group_confirm(modal_id, group_kind, group_name)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/group/'+group_kind+'/'+group_name,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -192,7 +192,7 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
 
 function send_delete_group(modal_id, group_kind, group_name)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/delete/group/'+group_kind,
 		type: 'post',
 		beforeSend: function(xhr){
@@ -260,7 +260,7 @@ function load_add_group_form(modal_id, group_kind)
 			send_add_group_form(modal_id, group_kind);
 		});
 	} else {
-		$.ajax({ 
+		$.ajax({
 			url: '/json/manage/all/group/role',
 			type: 'get',
 			beforeSend: function(xhr){
@@ -351,7 +351,7 @@ function send_add_group_form(modal_id, group_kind)
 			'description': $('#inputDescription').val()
 		});
 	}
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/group/'+group_kind,
 		type: 'post',
 		beforeSend: function(xhr){

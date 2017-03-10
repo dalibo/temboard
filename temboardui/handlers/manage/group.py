@@ -107,7 +107,7 @@ class ManageGroupJsonHandler(JsonHandler):
                         'in_groups': [ari.role_group_name for ari in group.ari]
                     }
                 )
-                
+
         except (TemboardUIError, Exception) as e:
             self.logger.traceback(get_tb())
             self.logger.error(str(e))

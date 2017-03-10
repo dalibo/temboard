@@ -136,7 +136,7 @@ def daemonize(pidfile):
         sys.stderr.write("FATAL: can't write pidfile %s.\n" % pidfile)
         sys.exit(1)
 
-    # First fork.    
+    # First fork.
     try:
         pid = os.fork()
         if pid > 0:
@@ -151,7 +151,7 @@ def daemonize(pidfile):
     os.chdir("/")
     os.setsid()
     os.umask(0)
-    
+
     # Do second fork.
     try:
         pid = os.fork()
@@ -162,7 +162,7 @@ def daemonize(pidfile):
         sys.stderr.write("FATAL: fork failed: %d (%s)\n"
                             % (e.errno, e.strerror))
         sys.exit(1)
-    
+
     # Redirect standard file descriptors.
     sys.stdout.flush()
     sys.stderr.flush()

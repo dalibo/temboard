@@ -28,7 +28,7 @@ class HomeHandler(BaseHandler):
             return HTMLAsyncResult(
                     http_code = 200,
                     template_file = 'home.html',
-                    data = { 
+                    data = {
                         'nav': True,
                         'role': role,
                         'instance_list': instance_list

@@ -184,7 +184,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 self.sessions,
                                 self.commands)
                     return (200, response)
-            
+
         raise HTTPError(404, 'URL not found.')
 
 def handleRequestsUsing(commands, queue_cmd, config, sessions):

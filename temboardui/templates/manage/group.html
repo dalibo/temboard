@@ -81,19 +81,19 @@ $(document).ready(function() {
 });
 
 $('#buttonLoadAddGroupForm').click(function () {
-	$('#GroupModal').modal('show');  
+	$('#GroupModal').modal('show');
 	$('[data-toggle=popover]').popover('hide');
 	load_add_group_form('GroupModal', '{{group_kind}}');
 });
 
 $('[data-action=edit]').click(function () {
-	$('#GroupModal').modal('show');  
+	$('#GroupModal').modal('show');
 	$('[data-toggle=popover]').popover('hide');
 	load_update_group_form('GroupModal', '{{group_kind}}', $(this).data('group_name'));
 });
 
 $('[data-action=delete]').click(function () {
-	$('#GroupModal').modal('show');  
+	$('#GroupModal').modal('show');
 	$('[data-toggle=popover]').popover('hide');
 	load_delete_group_confirm('GroupModal', '{{group_kind}}', $(this).data('group_name'));
 });

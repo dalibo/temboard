@@ -73,7 +73,7 @@ class ConfigurationHandler(BaseHandler):
                                         xsession)
             query_filter = self.get_argument('filter', None, True)
             if category == None:
-                category = tornado.escape.url_escape(configuration_cat['categories'][0]) 
+                category = tornado.escape.url_escape(configuration_cat['categories'][0])
             configuration_data = temboard_get_configuration(
                                     self.ssl_ca_cert_file,
                                     instance.agent_address,
@@ -92,7 +92,7 @@ class ConfigurationHandler(BaseHandler):
                         'instance': instance,
                         'data': configuration_data,
                         'xsession': xsession,
-                        'current_cat': tornado.escape.url_unescape(category), 
+                        'current_cat': tornado.escape.url_unescape(category),
                         'configuration_categories': configuration_cat,
                         'configuration_status': configuration_status,
                         'query_filter': query_filter
@@ -190,7 +190,7 @@ class ConfigurationHandler(BaseHandler):
                                     instance.agent_port,
                                     xsession)
             if category == None:
-                category = tornado.escape.url_escape(configuration_cat['categories'][0]) 
+                category = tornado.escape.url_escape(configuration_cat['categories'][0])
             # Load settings depending on the current category or the filter value.
             configuration_data = temboard_get_configuration(
                                     self.ssl_ca_cert_file,
@@ -210,7 +210,7 @@ class ConfigurationHandler(BaseHandler):
                         'instance': instance,
                         'data': configuration_data,
                         'xsession': xsession,
-                        'current_cat': tornado.escape.url_unescape(category), 
+                        'current_cat': tornado.escape.url_unescape(category),
                         'configuration_categories': configuration_cat,
                         'configuration_status': configuration_status,
                         'error_code': error_code,

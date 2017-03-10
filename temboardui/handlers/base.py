@@ -119,20 +119,20 @@ class JsonHandler(BaseHandler):
                 self.logger.error(e.message)
                 message = 'Unable to parse JSON.'
                 self.send_error(400, error = message)
- 
+
         # Set up response dictionary.
         self.response = dict()
- 
+
     def set_default_headers(self):
         self.set_header('Content-Type', 'application/json')
- 
+
     def write_error(self, status_code, **kwargs):
         try:
             self.response = {'error': kwargs['exc_info'][1].reason}
             self.write_json()
         except (KeyError, AttributeError):
             self.write(kwargs)
- 
+
     def write_json(self):
         output = json.dumps(self.response)
         self.write(output)
