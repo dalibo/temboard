@@ -95,7 +95,7 @@ def say_hello_something2(config, http_context):
     {
         "content": "Hello toto"
     }
-    """
+    """  # noqa
     if http_context and 'something' in http_context['query']:
         validate_parameters(http_context['query'], [
             ('something', T_SOMETHING, True)
