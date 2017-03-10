@@ -206,7 +206,7 @@ class Configuration(BaseConfiguration):
             self.postgresql['user'] = self.get('postgresql', 'user')
         except configparser.NoOptionError as e:
            pass
- 
+
         try:
             if not (self.getint('postgresql', 'port') >= 0
                     and self.getint('postgresql', 'port') <= 65535):
@@ -236,7 +236,7 @@ class Configuration(BaseConfiguration):
 class PluginConfiguration(configparser.ConfigParser):
     """
     Customized configuration parser for plugins.
-    """ 
+    """
     def __init__(self, configfile, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile

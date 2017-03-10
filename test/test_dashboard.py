@@ -89,7 +89,7 @@ class TestDashboard:
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 })
- 
+
         dict_data = json.loads(res)
         assert status == 200 \
                 and 'buffers' in dict_data \
@@ -130,7 +130,7 @@ class TestDashboard:
                 })
 
         dict_data = json.loads(res)
-   
+
         assert status == 200 \
                 and 'active_backends' in dict_data \
                     and 'nb' in dict_data['active_backends'] \

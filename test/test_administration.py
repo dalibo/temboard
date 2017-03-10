@@ -124,7 +124,7 @@ class TestAdministration:
                 "mode": "standard"
             }
         )
-   
+
         if status != 200:
             self._drop_dummy_db(dummy_dbname)
             assert False
@@ -236,7 +236,7 @@ class TestAdministration:
             )
         except HTTPError as e:
             status = e.code
- 
+
         if status != 200:
             self._drop_dummy_db(dummy_dbname)
             assert False
