@@ -15,7 +15,7 @@ setup(
     ],
     include_package_data=True,
     zip_safe=False,
-    url='',
+    url='https://github.com/dalibo/temboard/',
     description='temBoard User Interface.',
     data_files=[('share/temboard/', [
         'share/sql/application.sql',
