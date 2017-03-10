@@ -1,7 +1,7 @@
 dependencies:
   override:
     - pip install -e .
-    - pip install --upgrade flake8-diff
+    - pip install --upgrade flake8-diff pytest
   cache_directories:
     - ~/.cache/pip/
 
@@ -11,3 +11,4 @@ test:
     # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
     - git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
     - flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+    - pytest -vv --showlocals --strict --full-trace test/
