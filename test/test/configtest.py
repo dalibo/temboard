@@ -1,21 +1,23 @@
 WORK_PATH = '/tmp'
 
 # Debian / 9.5
-PG_BIN = '/usr/lib/postgresql/9.5/bin'
+# PG_BIN = '/usr/lib/postgresql/9.5/bin'
 # Gentoo / 9.5
-# PG_BIN = '/usr/lib64/postgresql-9.5/bin'
+PG_BIN = '/usr/lib64/postgresql-9.5/bin'
 PG_PORT=5445
-PG_CONFIG = '/usr/bin/pg_config'
 PG_USER = 'temboard'
 PG_PASSWORD = 'temboard'
-PG_CONF = ["log_min_duration_statement = 0\n", "log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '\n"]
+PG_SETTINGS = [
+    "log_min_duration_statement = 0\n",
+    "log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '\n"
+]
 
-G_HOST = "127.0.0.1"
-G_PORT = 12446
-G_USER = 'temboard'
-G_PASSWORD = 'password'
+AGENT_HOST = "127.0.0.1"
+AGENT_PORT = 12446
+AGENT_USER = 'temboard'
+AGENT_PASSWORD = 'password'
 
-G_CONFIG = """
+AGENT_CONFIG = """
 [temboard]
 # HTTP port
 port = %s
@@ -56,7 +58,7 @@ ssl_ca_cert_file = %s
 pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
 """
 
-SSL_CERT = """-----BEGIN CERTIFICATE-----
+AGENT_SSL_CERT = """-----BEGIN CERTIFICATE-----
 MIIDXTCCAkWgAwIBAgIJAN2gVhFWzW9fMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
 BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
 aWRnaXRzIFB0eSBMdGQwHhcNMTUwOTI3MTYwMzU5WhcNMTgwNjIzMTYwMzU5WjBF
@@ -79,7 +81,7 @@ zg==
 -----END CERTIFICATE-----
 """
 
-SSL_KEY = """-----BEGIN PRIVATE KEY-----
+AGENT_SSL_KEY = """-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6pN66wG6Dw7Oq
 LEEP5PQfQXgXM0HrokBGxUdHqKrj5e6Br+ZixWzpdF8m/S/oDGlWhKlvB1dq+Cmc
 Jsn64+BkfK2GA9gGJqgvGzWIRPp+0YdXS95+rf3fIxOl5xMSYrb1QrWGBtqkQLGN
