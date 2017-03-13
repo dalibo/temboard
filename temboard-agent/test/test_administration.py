@@ -112,7 +112,7 @@ WHERE
             global XSESSION
             XSESSION = self._temboard_login()
             assert True
-        except error as e:
+        except error:
             assert False
 
     def test_01_vacuum_ok(self):
