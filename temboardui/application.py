@@ -9,10 +9,13 @@ from sqlalchemy.orm.exc import *
 from sqlalchemy.exc import *
 
 from temboardui.model.orm import (
+    AccessRoleInstance,
     Groups,
     Instances,
     InstanceGroups,
+    Plugins,
     Roles,
+    RoleGroups,
 )
 from temboardui.model.tables import metadata
 from temboardui.errors import TemboardUIError
