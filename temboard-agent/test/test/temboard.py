@@ -12,7 +12,7 @@ import ssl
 import socket
 import json
 
-import test.configuration as test_conf
+import test.configtest as test_conf
 from test.spc import connector, error
 
 
