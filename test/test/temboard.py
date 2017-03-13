@@ -323,7 +323,7 @@ def drop_env(test_env):
         time.sleep(1)
         # Remove PostgreSQL data dir
         pg_drop(test_env['pg']['pg_data'])
-    except Exception as e:
+    except Exception:
         pass
 
 
