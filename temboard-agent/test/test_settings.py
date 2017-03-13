@@ -1,20 +1,16 @@
 import json
 import os
-import re
-import time
-from urllib2 import HTTPError
 from hashlib import md5
 import datetime
 
-from test.temboard import init_env, drop_env, rand_string, temboard_request
-import test.configuration as cf
+from test.temboard import init_env, drop_env, temboard_request
 from test.spc import connector, error
 
 ENV = {}
 XSESSION = ''
 
-class TestSettings(object):
 
+class TestSettings(object):
 
     @classmethod
     def setup_class(cls):
@@ -27,11 +23,11 @@ class TestSettings(object):
 
     def _exec_query(self, dbname, query):
         conn = connector(
-            host = ENV['pg_sockdir'],
-            port = cf.PG_PORT,
-            user = cf.PG_USER,
-            password = cf.PG_PASSWORD,
-            database = dbname
+            host=ENV['pg']['socket_dir'],
+            port=ENV['pg']['port'],
+            user=ENV['pg']['user'],
+            password=ENV['pg']['password'],
+            database=dbname
         )
         conn.connect()
         conn.execute(query)
@@ -47,11 +43,16 @@ class TestSettings(object):
 
     def _temboard_login(self):
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': cf.G_USER, 'password': cf.G_PASSWORD})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': ENV['agent']['user'],
+                    'password': ENV['agent']['password']
+                    }
+                )
         return json.loads(res)['session']
 
     def test_00_env_pg(self):
@@ -59,11 +60,11 @@ class TestSettings(object):
         [settings] 00: PostgreSQL instance is up & running
         """
         conn = connector(
-            host = ENV['pg_sockdir'],
-            port = cf.PG_PORT,
-            user = cf.PG_USER,
-            password = cf.PG_PASSWORD,
-            database = 'postgres'
+            host=ENV['pg']['socket_dir'],
+            port=ENV['pg']['port'],
+            user=ENV['pg']['user'],
+            password=ENV['pg']['password'],
+            database='postgres'
         )
         try:
             conn.connect()
@@ -71,21 +72,23 @@ class TestSettings(object):
             global XSESSION
             XSESSION = self._temboard_login()
             assert True
-        except Exception as e:
+        except error:
             assert False
 
     def test_01_get_settings_configuration_ok(self):
         """
         [settings] 01: GET /settings/configuration : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
+                }
+            )
 
         # HTTP return code is 200.
         assert status == 200
@@ -98,9 +101,16 @@ class TestSettings(object):
             nb_settings += len(cat['rows'])
 
         # dict_data length is equal to the number of category in pg_settings.
-        assert len(dict_data) == self._exec_query('postgres', "SELECT COUNT(DISTINCT(category)) AS nb FROM pg_settings")[0]['nb']
-        # Total number of settings returned is equal to the number of settings in pg_settings.
-        assert nb_settings == self._exec_query('postgres', "SELECT COUNT(*) AS nb FROM pg_settings")[0]['nb']
+        assert len(dict_data) == self._exec_query(
+                                    'postgres',
+                                    "SELECT COUNT(DISTINCT(category)) AS nb "
+                                    "FROM pg_settings")[0]['nb']
+        # Total number of settings returned is equal to
+        # the number of settings in pg_settings.
+        assert nb_settings == self._exec_query(
+                                'postgres',
+                                "SELECT COUNT(*) AS nb "
+                                "FROM pg_settings")[0]['nb']
         # Check first row's structure is right.
         assert 'context' in dict_data[0]['rows'][0]
         assert 'enumvals' in dict_data[0]['rows'][0]
@@ -122,47 +132,65 @@ class TestSettings(object):
     def test_02_get_settings_configuration_ko_401(self):
         """
         [settings] 02: GET /settings/configuration : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_03_get_settings_configuration_ko_406(self):
         """
         [settings] 03: GET /settings/configuration : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
-                })
+                }
+            )
         assert status == 406
 
     def test_04_post_settings_configuration_ok(self):
         """
         [settings] 04: POST /settings/configuration : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {'settings': [{'name': 'autovacuum', 'setting': 'off'}]})
+                data={
+                    'settings': [
+                        {'name': 'autovacuum', 'setting': 'off'}
+                    ]
+                }
+            )
 
         dict_data = json.loads(res)
-        res_query = self._exec_query('postgres', "SELECT 1 AS t FROM regexp_split_to_table(pg_read_file('postgresql.auto.conf'),E'\n') AS l WHERE l = 'autovacuum = ''off'''")
+        q = """
+SELECT
+    1 AS t
+FROM
+    regexp_split_to_table(pg_read_file('postgresql.auto.conf'),E'\n') AS l
+WHERE
+    l = 'autovacuum = ''off'''
+"""
+        res_query = self._exec_query('postgres', q)
         # HTTP return code is 200.
         assert status == 200
         # Check new 'autovacuum' value is in postgresql.auto.conf.
@@ -183,72 +211,87 @@ class TestSettings(object):
     def test_05_post_settings_configuration_ko_401(self):
         """
         [settings] 05: POST /settings/configuration : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
+                    "X-Session": "3" * 64
                 },
-                data = {'settings': [{'name': 'autovacuum', 'setting': 'off'}]})
+                data={
+                    'settings': [
+                        {'name': 'autovacuum', 'setting': 'off'}
+                    ]
+                }
+            )
         assert status == 401
 
     def test_06_get_settings_configuration_ko_406(self):
         """
         [settings] 06: POST /settings/configuration : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
                 },
-                data = {'settings': [{'name': 'autovacuum', 'setting': 'off'}]})
+                data={
+                    'settings': [
+                        {'name': 'autovacuum', 'setting': 'off'}
+                    ]
+                }
+            )
         assert status == 406
 
     def test_07_post_settings_configuration_ko_400(self):
         """
         [settings] 07: POST /settings/configuration : HTTP return code is 400 on invalid json data
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/configuration' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = '')
+                data=''
+            )
         assert status == 400
 
     def test_08_get_settings_configuration_status_ok(self):
         """
         [settings] 08: GET /settings/configuration/status : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
+        # shared_buffers update requires the server to restart
+        self._exec_query(
+                'postgres',
+                "ALTER SYSTEM SET shared_buffers TO '256MB'"
+            )
+        # autovacuum update requires the server to reload
+        self._exec_query(
+                'postgres',
+                "ALTER SYSTEM SET autovacuum TO 'on'"
+            )
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/status' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {'settings': [{'name': 'shared_buffers', 'setting': '1GB'}]})
-        if status != 200:
-            assert False
-        self._exec_query('postgres', "ALTER SYSTEM SET autovacuum TO 'on'")
-        (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/status' % (cf.G_HOST, cf.G_PORT),
-                headers = {
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                })
+                data=''
+            )
         dict_data = json.loads(res)
         # HTTP return code is 200.
         assert status == 200
@@ -258,8 +301,8 @@ class TestSettings(object):
         assert 'reload_changes' in dict_data
         assert type(dict_data['restart_changes']) == list
         assert type(dict_data['reload_changes']) == list
-        assert dict_data['restart_pending'] == True
-        assert dict_data['reload_pending'] == True
+        assert dict_data['restart_pending'] is True
+        assert dict_data['reload_pending'] is True
         assert type(dict_data['restart_changes']) == list
         assert type(dict_data['reload_changes']) == list
         assert len(dict_data['restart_changes']) == 1
@@ -304,12 +347,13 @@ class TestSettings(object):
     def test_09_get_settings_configuration_status_ko_406(self):
         """
         [settings] 09: GET /settings/configuration/status : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/status' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/status' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
                 }
@@ -319,79 +363,95 @@ class TestSettings(object):
     def test_10_get_settings_configuration_status_ko_401(self):
         """
         [settings] 10: GET /settings/configuration/status : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/status' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_11_get_settings_configuration_categories(self):
         """
         [settings] 11: GET /settings/configuration/categories : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/categories' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/categories' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
 
         assert status == 200
         assert 'categories' in dict_data
         assert type(dict_data['categories']) == list
-        assert len(dict_data['categories']) == self._exec_query('postgres', "SELECT COUNT(DISTINCT(category)) AS nb FROM pg_settings")[0]['nb']
-        assert dict_data['categories'][0] == self._exec_query('postgres', "SELECT category FROM pg_settings ORDER BY category LIMIT 1")[0]['category']
+        assert len(dict_data['categories']) == \
+            self._exec_query(
+                'postgres',
+                "SELECT COUNT(DISTINCT(category)) AS nb "
+                "FROM pg_settings")[0]['nb']
+        assert dict_data['categories'][0] == \
+            self._exec_query(
+                'postgres',
+                "SELECT category FROM pg_settings "
+                "ORDER BY category LIMIT 1")[0]['category']
 
     def test_12_get_settings_configuration_categories_ko_401(self):
         """
         [settings] 12: GET /settings/configuration/categories : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/categories' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/categories' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_13_get_settings_configuration_categories_ko_406(self):
         """
         [settings] 13: GET /settings/configuration/categories : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/categories' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/categories' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
-                })
+                }
+            )
         assert status == 406
 
     def test_14_get_settings_configuration_category_ok(self):
         """
         [settings] 14: GET /settings/configuration/category/:categoryname : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/category/Autovacuum' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
 
         # Count the number of settings
@@ -401,7 +461,10 @@ class TestSettings(object):
 
         assert status == 200
         assert len(dict_data) == 1
-        assert nb_settings == self._exec_query('postgres', "SELECT COUNT(*) AS nb FROM pg_settings WHERE category = 'Autovacuum'")[0]['nb']
+        assert nb_settings == self._exec_query(
+                                'postgres',
+                                "SELECT COUNT(*) AS nb FROM pg_settings "
+                                "WHERE category = 'Autovacuum'")[0]['nb']
         assert 'context' in dict_data[0]['rows'][0]
         assert 'enumvals' in dict_data[0]['rows'][0]
         assert 'max_val' in dict_data[0]['rows'][0]
@@ -422,44 +485,49 @@ class TestSettings(object):
     def test_15_get_settings_configuration_category_ko_401(self):
         """
         [settings] 15: GET /settings/configuration/category/:categoryname : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/category/Autovacuum' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_16_get_settings_configuration_category_ko_406(self):
         """
         [settings] 16: GET /settings/configuration/category/:categoryname : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/configuration/category/Autovacuum' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
-                })
+                }
+            )
         assert status == 406
 
     def test_17_get_settings_hba_ok(self):
         """
         [settings] 17: GET /settings/hba : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'version' in dict_data
@@ -482,48 +550,54 @@ class TestSettings(object):
     def test_18_get_settings_hba_ko_401(self):
         """
         [settings] 18: GET /settings/hba : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
-
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_19_get_settings_hba_ko_406(self):
         """
         [settings] 19: GET /settings/hba : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
-                })
-
+                }
+            )
         assert status == 406
 
     def test_20_get_settings_hba_raw_ok(self):
         """
         [settings] 20: GET /settings/hba/raw : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_hba = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_hba.conf')) AS md5sum_hba")[0]['md5sum_hba']
+        md5sum_hba = self._exec_query(
+                        'postgres',
+                        "SELECT md5(pg_read_file('pg_hba.conf')) "
+                        "AS md5sum_hba")[0]['md5sum_hba']
         assert status == 200
         assert 'version' in dict_data
         assert 'filepath' in dict_data
@@ -535,58 +609,82 @@ class TestSettings(object):
     def test_21_get_settings_hba_raw_ko_401(self):
         """
         [settings] 21: GET /settings/hba/raw : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
-
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_22_get_settings_hba_raw_ko_406(self):
         """
         [settings] 22: GET /settings/hba/raw : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "XXXXXXXXXXX"
-                })
-
+                    "X-Session": "X" * 12
+                }
+            )
         assert status == 406
 
     def test_23_post_settings_hba_ok(self):
         """
         [settings] 23: POST /settings/hba : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
-                        'entries':
-                        [
-                            {'connection': 'local', 'database': 'all', 'user': 'all', 'auth_method': 'trust', 'auth_options': 'blahblah'},
-                            {'connection': 'host', 'database': 'test', 'user': 'test', 'address': '192.168.1.0/24', 'auth_method': 'trust'},
-                            {'connection': 'hostssl', 'database': 'test2', 'user': 'test2', 'address': '192.168.1.0 255.255.255.0', 'auth_method': 'trust'}
-                        ]
-                })
-
+                data={
+                    'entries':
+                    [
+                        {
+                            'connection': 'local',
+                            'database': 'all',
+                            'user': 'all',
+                            'auth_method': 'trust',
+                            'auth_options': 'blahblah'
+                        },
+                        {
+                            'connection': 'host',
+                            'database': 'test',
+                            'user': 'test',
+                            'address': '192.168.1.0/24',
+                            'auth_method': 'trust'
+                        },
+                        {
+                            'connection': 'hostssl',
+                            'database': 'test2',
+                            'user': 'test2',
+                            'address': '192.168.1.0 255.255.255.0',
+                            'auth_method': 'trust'
+                        }
+                    ]
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_hba = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_hba.conf')) AS md5sum_hba")[0]['md5sum_hba']
+        md5sum_hba = self._exec_query(
+                        'postgres',
+                        "SELECT md5(pg_read_file('pg_hba.conf')) "
+                        "AS md5sum_hba")[0]['md5sum_hba']
         # Expected hba raw content.
-        exp_hba_raw = "local  all  all  trust blahblah\r\nhost  test  test 192.168.1.0/24 trust \r\nhostssl  test2  test2 192.168.1.0 255.255.255.0 trust \r\n"
+        exp_hba_raw = "local  all  all  trust blahblah\r\nhost  test  test 192.168.1.0/24 trust \r\nhostssl  test2  test2 192.168.1.0 255.255.255.0 trust \r\n"  # noqa
         assert status == 200
         assert type(dict_data) == dict
         assert 'last_version' in dict_data
@@ -596,85 +694,107 @@ class TestSettings(object):
     def test_24_post_settings_hba_ko_401(self):
         """
         [settings] 24: POST /settings/hba : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
+                    "X-Session": "3" * 64
                 },
-                data = {
-                        'entries':
-                        [
-                            {'connection': 'local', 'database': 'all', 'user': 'all', 'auth_method': 'trust'}
-                        ]
-                })
-
+                data={
+                    'entries':
+                    [
+                        {
+                            'connection': 'local',
+                            'database': 'all',
+                            'user': 'all',
+                            'auth_method': 'trust',
+                            'auth_options': 'blahblah'
+                        }
+                    ]
+                }
+            )
         assert status == 401
 
     def test_25_post_settings_hba_ko_406(self):
         """
         [settings] 25: POST /settings/hba : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
                 },
-                data = {
-                        'entries':
-                        [
-                            {'connection': 'local', 'database': 'all', 'user': 'all', 'auth_method': 'trust'}
-                        ]
-                })
-
+                data={
+                    'entries':
+                    [
+                        {
+                            'connection': 'local',
+                            'database': 'all',
+                            'user': 'all',
+                            'auth_method': 'trust',
+                            'auth_options': 'blahblah'
+                        }
+                    ]
+                }
+            )
         assert status == 406
 
     def test_26_post_settings_hba_ko_406(self):
         """
         [settings] 26: POST /settings/hba : HTTP return code is 406 on invalid data
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": XSESSION
+                    "X-Session": "XXXXXXXXXXX"
                 },
-                data = {
-                    'toto': 'tutu'
-                })
-
+                data={'toto': 'tutu'}
+            )
         assert status == 406
 
     def test_27_post_settings_hba_version_ok(self):
         """
         [settings] 27: POST /settings/hba : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
-                        'entries':
-                        [
-                            {'connection': 'local', 'database': 'all', 'user': 'all', 'auth_method': 'trust'}
-                        ],
-                        'new_version': True
-                })
-
+                data={
+                    'entries':
+                    [
+                        {
+                            'connection': 'local',
+                            'database': 'all',
+                            'user': 'all',
+                            'auth_method': 'trust'
+                        }
+                    ],
+                    'new_version': True
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_hba = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_hba.conf')) AS md5sum_hba")[0]['md5sum_hba']
+        md5sum_hba = self._exec_query(
+                        'postgres',
+                        "SELECT md5(pg_read_file('pg_hba.conf')) "
+                        "AS md5sum_hba")[0]['md5sum_hba']
         # Expected hba raw content.
         exp_hba_raw = "local  all  all  trust \r\n"
 
@@ -682,7 +802,9 @@ class TestSettings(object):
         assert type(dict_data) == dict
         assert 'last_version' in dict_data
         try:
-            dt_version = datetime.datetime.strptime(dict_data['last_version'], "%Y-%m-%dT%H:%M:%S")
+            datetime.datetime.strptime(
+                            dict_data['last_version'],
+                            "%Y-%m-%dT%H:%M:%S")
         except ValueError:
             assert False
         assert 'filepath' in dict_data
@@ -691,81 +813,99 @@ class TestSettings(object):
     def test_28_get_settings_hba_versions_ok(self):
         """
         [settings] 28: GET /settings/hba/versions: HTTP return code is 200 and the repsonse date structure is right.
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'filepath' in dict_data
         assert 'versions' in dict_data
         assert type(dict_data['versions']) == list
         assert len(dict_data['versions']) == 1
-        assert os.path.isfile("%s.%s" % (dict_data['filepath'], dict_data['versions'][0]))
+        assert os.path.isfile("%s.%s" % (
+                dict_data['filepath'],
+                dict_data['versions'][0]))
 
     def test_29_get_settings_hba_versions_ko_401(self):
         """
         [settings] 29: GET /settings/hba/versions: HTTP return code is 401 on invalid xsession.
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_30_get_settings_hba_versions_ko_406(self):
         """
         [settings] 30: GET /settings/hba/versions: HTTP return code is 406 on malformed xsession.
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": "XXXXXXXXXXX"
-                })
+                }
+            )
         assert status == 406
 
     def test_31_get_settings_hba_version_ok(self):
         """
         [settings] 31: GET /settings/hba?version=:version : HTTP return code is 200 and the response data structure is right
-        """
-        # We need do get the last version id.
+        """  # noqa
+        # We need to get the last version id.
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'filepath' in dict_data
         assert 'versions' in dict_data
         assert type(dict_data['versions']) == list
         assert len(dict_data['versions']) == 1
-        assert os.path.isfile("%s.%s" % (dict_data['filepath'], dict_data['versions'][0]))
+        assert os.path.isfile("%s.%s" % (
+            dict_data['filepath'],
+            dict_data['versions'][0]
+            )
+        )
         last_version = dict_data['versions'][0]
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba?version=%s' % (cf.G_HOST, cf.G_PORT, last_version),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        last_version
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'version' in dict_data
@@ -784,65 +924,75 @@ class TestSettings(object):
     def test_32_get_settings_hba_version_ko_404(self):
         """
         [settings] 32: GET /settings/hba?version=:version : HTTP return code is 404 on unexisting version
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba?version=1970-01-01T00:00:01' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba?version=1970-01-01T00:00:01' %
+                    (ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
-        dict_data = json.loads(res)
+                }
+            )
         assert status == 404
 
     def test_33_get_settings_hba_version_ko_406(self):
         """
         [settings] 33: GET /settings/hba?version=:version : HTTP return code is 406 on malformed version id
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba?version=XX112233' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba?version=XX112233' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
-        dict_data = json.loads(res)
+                }
+            )
         assert status == 406
 
     def test_34_get_settings_hba_raw_version_ok(self):
         """
         [settings] 34: GET /settings/hba/raw?version=:version : HTTP return code is 200 and the response data structure is right
-        """
-        # We need do get the last version id.
+        """  # noqa
+        # We need to get the last version id.
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'], ENV['agent']['port']),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'filepath' in dict_data
         assert 'versions' in dict_data
         assert type(dict_data['versions']) == list
         assert len(dict_data['versions']) == 1
-        assert os.path.isfile("%s.%s" % (dict_data['filepath'], dict_data['versions'][0]))
+        assert os.path.isfile("%s.%s" % (
+                dict_data['filepath'],
+                dict_data['versions'][0]
+                )
+            )
         last_version = dict_data['versions'][0]
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw?version=%s' % (cf.G_HOST, cf.G_PORT, last_version),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        last_version
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'version' in dict_data
@@ -850,71 +1000,93 @@ class TestSettings(object):
         assert dict_data['version'] == last_version
         assert type(dict_data['filepath']) == unicode
         assert 'content' in dict_data
-        assert md5(dict_data['content']).hexdigest() == md5(self._read_file("%s.%s" % (dict_data['filepath'], last_version))).hexdigest()
+        assert md5(dict_data['content']).hexdigest() == \
+            md5(self._read_file("%s.%s" % (
+                dict_data['filepath'],
+                last_version)
+                )).hexdigest()
 
     def test_35_get_settings_hba_raw_version_ko_404(self):
         """
         [settings] 35: GET /settings/hba/raw?version=:version : HTTP return code is 404 on unexisting version
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw?version=1970-01-01T00:00:01' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        '1970-01-01T00:00:01'
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
-        dict_data = json.loads(res)
+                }
+            )
         assert status == 404
 
     def test_36_get_settings_hba_raw_version_ko_406(self):
         """
         [settings] 36: GET /settings/hba/raw?version=:version : HTTP return code is 406 on malformed version id
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/raw?version=XX112233' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        'XX112233'
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
-        dict_data = json.loads(res)
+                }
+            )
         assert status == 406
 
     def test_37_delete_settings_hba_version_ok(self):
         """
         [settings] 37: DELETE /settings/hba/raw?version=:version : HTTP return code is 200 and data structure is right
-        """
-        # We need do get the last version id.
+        """  # noqa
+        # We need to get the last version id.
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/hba/versions' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/hba/versions' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'filepath' in dict_data
         assert 'versions' in dict_data
         assert type(dict_data['versions']) == list
         assert len(dict_data['versions']) == 1
-        assert os.path.isfile("%s.%s" % (dict_data['filepath'], dict_data['versions'][0]))
+        assert os.path.isfile("%s.%s" % (
+                dict_data['filepath'],
+                dict_data['versions'][0]
+                )
+            )
         last_version = dict_data['versions'][0]
         filepath = dict_data['filepath']
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=%s' % (cf.G_HOST, cf.G_PORT, last_version),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='DELETE',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        last_version
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
         assert status == 200
         assert 'deleted' in dict_data
@@ -926,78 +1098,100 @@ class TestSettings(object):
     def test_38_delete_settings_hba_version_ko_401(self):
         """
         [settings] 38: DELETE /settings/hba/raw?version=:version : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=1970-01-01T00:00:01' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='DELETE',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        '1970-01-01T00:00:01'
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
-
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_39_delete_settings_hba_version_ko_406(self):
         """
         [settings] 39: DELETE /settings/hba/raw?version=:version : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=1970-01-01T00:00:01' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='DELETE',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        '1970-01-01T00:00:01'
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "XXXXXXXXXXX"
-                })
-
+                    "X-Session": "3" * 12
+                }
+            )
         assert status == 406
 
     def test_40_delete_settings_hba_version_ko_406(self):
         """
         [settings] 40: DELETE /settings/hba/raw?version=:version : HTTP return code is 406 on malformed version id
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=1122XXGGHH' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='DELETE',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        'A' * 6
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         assert status == 406
 
     def test_41_delete_settings_hba_version_ko_404(self):
         """
         [settings] 41: DELETE /settings/hba/raw?version=:version : HTTP return code is 404 on unexisting version
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=1970-01-01T00:00:01' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='DELETE',
+                url='https://%s:%s/settings/hba?version=%s' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port'],
+                        '1970-01-01T00:00:01'
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         assert status == 404
 
     def test_42_get_settings_pg_ident_ok(self):
         """
         [settings] 42: GET /settings/pg_ident : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
-                })
-
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_pg_ident = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_ident.conf')) AS md5sum_pg_ident")[0]['md5sum_pg_ident']
+        md5sum_pg_ident = self._exec_query(
+                            'postgres',
+                            "SELECT md5(pg_read_file('pg_ident.conf')) "
+                            "AS md5sum_pg_ident")[0]['md5sum_pg_ident']
         assert status == 200
         assert 'filepath' in dict_data
         assert type(dict_data['filepath']) == unicode
@@ -1007,52 +1201,64 @@ class TestSettings(object):
     def test_43_get_settings_pg_ident_ko_401(self):
         """
         [settings] 43: GET /settings/pg_ident : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
-                })
-
+                    "X-Session": "3" * 64
+                }
+            )
         assert status == 401
 
     def test_44_get_settings_pg_ident_ko_406(self):
         """
         [settings] 44: GET /settings/pg_ident : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'GET',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "XXXXXXXXXXX"
-                })
-
+                    "X-Session": "X" * 12
+                }
+            )
         assert status == 406
 
     def test_45_post_settings_hba_raw_ok(self):
         """
         [settings] 45: POST /settings/hba/raw : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
-                        'content': 'local all all trust',
-                        'new_version': True
-                })
-
+                data={
+                    'content': 'local all all trust',
+                    'new_version': True
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_hba = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_hba.conf')) AS md5sum_hba")[0]['md5sum_hba']
+        md5sum_hba = self._exec_query(
+                        'postgres',
+                        "SELECT md5(pg_read_file('pg_hba.conf')) "
+                        "AS md5sum_hba")[0]['md5sum_hba']
         # Expected hba raw content.
         exp_hba_raw = "local all all trust"
 
@@ -1060,7 +1266,9 @@ class TestSettings(object):
         assert type(dict_data) == dict
         assert 'last_version' in dict_data
         try:
-            dt_version = datetime.datetime.strptime(dict_data['last_version'], "%Y-%m-%dT%H:%M:%S")
+            datetime.datetime.strptime(
+                            dict_data['last_version'],
+                            "%Y-%m-%dT%H:%M:%S")
         except ValueError:
             assert False
         assert 'filepath' in dict_data
@@ -1069,77 +1277,92 @@ class TestSettings(object):
     def test_46_post_settings_hba_raw_ko_401(self):
         """
         [settings] 46: POST /settings/hba/raw : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
+                    "X-Session": "3" * 64
                 },
-                data = {
-                        'content': 'local all all trust',
-                        'new_version': True
-                })
-
+                data={
+                    'content': 'local all all trust',
+                    'new_version': True
+                }
+            )
         assert status == 401
 
     def test_47_post_settings_hba_raw_ko_406(self):
         """
         [settings] 47: POST /settings/hba/raw : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "XXXXXXXXXXX"
+                    "X-Session": "X" * 12
                 },
-                data = {
-                        'content': 'local all all trust',
-                        'new_version': True
-                })
-
+                data={
+                    'content': 'local all all trust',
+                    'new_version': True
+                }
+            )
         assert status == 406
 
     def test_48_post_settings_hba_raw_ko_406(self):
         """
         [settings] 48: POST /settings/hba/raw : HTTP return code is 406 on invalid data
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/hba/raw' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/hba/raw' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
+                data={
                     'toto': 'tutu'
-                })
-
+                }
+            )
         assert status == 406
 
     def test_49_post_settings_pg_ident_ok(self):
         """
         [settings] 49: POST /settings/pg_ident : HTTP return code is 200 and the response data structure is right
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
-                        'content': '# test\r\n# test\r\n'
-                })
-
+                data={
+                    'content': '# test\r\n# test\r\n'
+                }
+            )
         dict_data = json.loads(res)
-        md5sum_pg_ident = self._exec_query('postgres', "SELECT md5(pg_read_file('pg_ident.conf')) AS md5sum_pg_ident")[0]['md5sum_pg_ident']
+        md5sum_pg_ident = self._exec_query(
+                            'postgres',
+                            "SELECT md5(pg_read_file('pg_ident.conf')) AS "
+                            "md5sum_pg_ident")[0]['md5sum_pg_ident']
         # Expected hba raw content.
         exp_pg_ident_raw = "# test\r\n# test\r\n"
 
@@ -1152,53 +1375,62 @@ class TestSettings(object):
     def test_50_post_settings_pg_ident_ko_401(self):
         """
         [settings] 50: POST /settings/pg_ident : HTTP return code is 401 on invalid xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e"
+                    "X-Session": "3" * 64
                 },
-                data = {
-                        'content': '# test'
-                })
-
+                data={
+                    'content': '# test\r\n# test\r\n'
+                }
+            )
         assert status == 401
 
     def test_51_post_settings_pg_ident_ko_406(self):
         """
         [settings] 51: POST /settings/pg_ident : HTTP return code is 406 on malformed xsession
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
-                    "X-Session": "XXXXXXXXXXX"
+                    "X-Session": "X" * 12
                 },
-                data = {
-                        'content': '# test'
-                })
-
+                data={
+                    'content': '# test\r\n# test\r\n'
+                }
+            )
         assert status == 406
 
     def test_52_post_settings_pg_ident_ko_406(self):
         """
         [settings] 52: POST /settings/pg_ident : HTTP return code is 406 on invalid data
-        """
+        """  # noqa
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/settings/pg_ident' % (cf.G_HOST, cf.G_PORT),
-                headers = {
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/settings/pg_ident' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                    ),
+                headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
                 },
-                data = {
-                        'toto': 'tutu'
-                })
-
+                data={
+                    'toto': 'tutu'
+                }
+            )
         assert status == 406
