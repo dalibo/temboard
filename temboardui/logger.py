@@ -1,6 +1,5 @@
 import os, sys
 import socket
-import traceback
 from logging import (Logger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL,
                     FileHandler, StreamHandler)
 from logging.handlers import SysLogHandler
@@ -21,12 +20,6 @@ else:
     [INFO] "Done."
 
 """
-
-def get_tb():
-    exc_info = sys.exc_info()
-    lines = traceback.format_exc().splitlines()
-    del exc_info
-    return lines
 
 # Mapping configuration -> constants
 LOG_FACILITIES = {
@@ -49,6 +42,23 @@ LOG_LEVELS = {
 }
 
 LOG_METHODS = [ 'syslog', 'file', 'stderr' ]
+
+
+class MultilineFormatter(Formatter):
+    def format(self, record):
+        s = super(MultilineFormatter, self).format(record)
+        if '\n' not in s:
+            return s
+
+        lines = s.splitlines()
+        d = record.__dict__.copy()
+        for i, line in enumerate(lines[1:]):
+            record.message = line
+            lines[1+i] = self._fmt % record.__dict__
+        record.__dict__ = d
+
+        return '\n'.join(lines)
+
 
 class Log(Logger):
     """
@@ -93,15 +103,8 @@ class Log(Logger):
 
         # Set log level according to the level defined in configuration files.
         lh.setLevel(LOG_LEVELS[config.logging['level']])
-        lh.setFormatter(Formatter(log_format))
+        lh.setFormatter(MultilineFormatter(log_format))
         self.addHandler(lh)
-
-    def traceback(self, tb_lines):
-        if isinstance(tb_lines, list):
-            for l in tb_lines:
-                self.debug(l)
-        else:
-            self.debug(tb_lines)
 
 
 LOGGER_NAME = 'temboard'
