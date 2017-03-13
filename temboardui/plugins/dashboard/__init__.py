@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
-from temboardui.logger import get_tb
+
 
 def configuration(config):
     return {}
@@ -78,8 +78,7 @@ class DashboardHandler(BaseHandler):
                     'xsession': xsession
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -141,8 +140,7 @@ class DashboardProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = dashboard_data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()

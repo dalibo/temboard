@@ -1,5 +1,5 @@
 import os, imp, sys
-from temboardui.logger import get_logger, get_tb
+from temboardui.logger import get_logger
 
 def load_plugins(plugin_names, config):
     """
@@ -35,8 +35,7 @@ def load_plugins(plugin_names, config):
             if fp:
                 fp.close()
         except Exception as e:
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
     return ret
 
 def plugins_bind_metadata(engine, plugin_names):

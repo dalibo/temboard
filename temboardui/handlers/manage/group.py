@@ -8,7 +8,7 @@ from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
-from temboardui.logger import get_tb
+
 
 class ManageGroupAllJsonHandler(JsonHandler):
 
@@ -39,8 +39,7 @@ class ManageGroupAllJsonHandler(JsonHandler):
                 )
         except (TemboardUIError, Exception) as e:
             self.logger.info("Failed.")
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -109,8 +108,7 @@ class ManageGroupJsonHandler(JsonHandler):
                 )
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -173,8 +171,7 @@ class ManageGroupJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {'ok': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -211,8 +208,7 @@ class ManageDeleteGroupJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -250,8 +246,7 @@ class ManageGroupHandler(BaseHandler):
                     {'nav': True , 'role': self.current_user, 'group_list': group_list, 'group_kind': group_kind},
                     template_file = 'manage/group.html')
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()

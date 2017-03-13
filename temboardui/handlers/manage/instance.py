@@ -8,7 +8,7 @@ from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import temboard_discover, TemboardError
-from temboardui.logger import get_tb
+
 
 class ManageInstanceJsonHandler(JsonHandler):
 
@@ -65,8 +65,7 @@ class ManageInstanceJsonHandler(JsonHandler):
                     }
                 )
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -175,8 +174,7 @@ class ManageInstanceJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {"message": "OK"})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -214,8 +212,7 @@ class ManageDeleteInstanceJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -290,8 +287,7 @@ class DiscoverInstanceJsonHandler(JsonHandler):
             return JSONAsyncResult(200, res)
 
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -322,8 +318,7 @@ class RegisterInstanceJsonHandler(ManageInstanceJsonHandler):
             self.logger.debug(self.request.body)
             return self.post_instance(None, None)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()

@@ -8,7 +8,7 @@ from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
 from temboardui.temboardclient import TemboardError
-from temboardui.logger import get_tb
+
 
 def configuration(config):
     return {}
@@ -70,8 +70,7 @@ class ActivityHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -149,8 +148,7 @@ class ActivityWBHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -211,8 +209,7 @@ class ActivityProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_activity)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.tracebacke(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -263,8 +260,7 @@ class ActivityWBProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_activity)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -310,8 +306,7 @@ class ActivityKillProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data_kill)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
