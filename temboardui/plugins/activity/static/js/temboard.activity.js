@@ -249,7 +249,7 @@ function show_modal_kill(agent_address, agent_port, xsession)
 			type: 'POST',
 			beforeSend: function(xhr){
 				xhr.setRequestHeader('X-Session', xsession);
-				$('#ModalInfo').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+				$('#ModalInfo').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			},
 			async: true,
 			contentType: "application/json",

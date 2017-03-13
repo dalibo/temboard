@@ -10,7 +10,7 @@ function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal
 		data: JSON.stringify(json_params),
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
 			xhr.setRequestHeader('X-Session', xsession);
 		},
@@ -98,7 +98,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
 			xhr.setRequestHeader('X-Session', xsession);
 			$('#'+modalid+'Label').html('Processing, please wait...');
 			$('#'+modalid+'Info').html('');
-			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
 		async: true,
@@ -484,7 +484,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
 
 			$('#'+modalid+'Label').html('Processing, please wait...');
 			$('#'+modalid+'Info').html('');
-			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 			$('#'+modalid).modal('show');
 		},
@@ -522,7 +522,7 @@ function delete_hba(modalid, agent_address, agent_port, xsession, version)
 
 			$('#'+modalid+'Label').html('Processing, please wait...');
 			$('#'+modalid+'Info').html('');
-			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 			$('#'+modalid).modal('show');
 		},

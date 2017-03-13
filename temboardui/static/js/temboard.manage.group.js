@@ -10,7 +10,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
 			$('#'+modal_id+'Info').html('');
-			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
 		async: true,
@@ -122,7 +122,7 @@ function send_update_group_form(modal_id, group_kind)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 		},
 		data: data,
 		async: true,
@@ -152,7 +152,7 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
 		async: true,
@@ -197,7 +197,7 @@ function send_delete_group(modal_id, group_kind, group_name)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Body').html('');
 		},
 		async: true,
@@ -266,7 +266,7 @@ function load_add_group_form(modal_id, group_kind)
 			beforeSend: function(xhr){
 				$('#'+modal_id+'Label').html('Processing, please wait...');
 				$('#'+modal_id+'Info').html('');
-				$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+				$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 				$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 			},
 			async: true,
@@ -356,7 +356,7 @@ function send_add_group_form(modal_id, group_kind)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 		},
 		data: data,
 		async: true,
