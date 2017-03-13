@@ -7,8 +7,9 @@ cache:
 sudo: false
 
 install:
-  - pip install flake8 flake8-diff
+  - pip install --upgrade --requirement requirements-ci.txt
 
 script:
   - git diff --check $TRAVIS_COMMIT_RANGE
   - flake8-diff $TRAVIS_COMMIT_RANGE
+  - py.test -vv --showlocals --strict --full-trace test/

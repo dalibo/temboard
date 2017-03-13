@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.application import hash_password, get_role_by_auth, gen_cookie, get_instance
 from temboardui.errors import TemboardUIError
-from temboardui.logger import get_tb
+
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -39,8 +39,7 @@ class LoginHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
         except Exception as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
         if role is not None:
             return HTMLAsyncResult(
                 http_code = 302,
@@ -79,8 +78,7 @@ class LoginHandler(BaseHandler):
                 self.db_session.close()
             except Exception:
                 pass
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             sleep(1)
             return HTMLAsyncResult(
@@ -119,8 +117,7 @@ class AgentLoginHandler(BaseHandler):
                     agent_username = data_profile['username']
                     self.logger.error(agent_username)
                 except Exception as e:
-                    self.logger.traceback(get_tb())
-                    self.logger.error(str(e))
+                    self.logger.exception(str(e))
 
             return HTMLAsyncResult(
                 http_code = 200,
@@ -132,8 +129,7 @@ class AgentLoginHandler(BaseHandler):
                     'username': agent_username
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             try:
                 self.db_session.rollback()
                 self.db_session.close()
@@ -191,8 +187,7 @@ class AgentLoginHandler(BaseHandler):
                             if self.get_secure_cookie('referer_uri') is not None \
                             else "/server/%s/%s/dashboard" % (instance.agent_address, instance.agent_port))
         except (TemboardError, TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -242,8 +237,7 @@ class LoginJsonHandler(JsonHandler):
                 self.db_session.close()
             except Exception:
                 pass
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             sleep(1)
             return JSONAsyncResult(

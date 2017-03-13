@@ -8,7 +8,7 @@ from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import *
 from temboardui.application import *
 from temboardui.errors import TemboardUIError
-from temboardui.logger import get_tb
+
 
 class ManageUserJsonHandler(JsonHandler):
 
@@ -53,8 +53,7 @@ class ManageUserJsonHandler(JsonHandler):
                     }
                 )
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -148,8 +147,7 @@ class ManageUserJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {'ok': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Done.")
             try:
                 self.db_session.rollback()
@@ -186,8 +184,7 @@ class ManageDeleteUserJsonHandler(JsonHandler):
             return JSONAsyncResult(200, {'delete': True})
 
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()
@@ -225,8 +222,7 @@ class ManageUserHandler(BaseHandler):
                     {'nav': True , 'role': self.current_user, 'role_list': role_list},
                     template_file = 'manage/user.html')
         except (TemboardUIError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.rollback()

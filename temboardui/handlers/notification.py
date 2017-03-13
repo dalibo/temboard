@@ -7,7 +7,7 @@ from temboardui.temboardclient import TemboardError
 from temboardui.handlers.base import JsonHandler, BaseHandler
 from temboardui.async import *
 from temboardui.application import get_instance
-from temboardui.logger import get_tb
+
 
 class NotificationsHandler(BaseHandler):
     def get_notifications(self, agent_address, agent_port):
@@ -47,8 +47,7 @@ class NotificationsHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()

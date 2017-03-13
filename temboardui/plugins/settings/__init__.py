@@ -8,7 +8,7 @@ from temboardui.temboardclient import *
 from temboardui.async import *
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
-from temboardui.logger import get_tb
+
 
 def configuration(config):
     return {}
@@ -99,8 +99,7 @@ class ConfigurationHandler(BaseHandler):
                         'query_filter': query_filter
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -221,8 +220,7 @@ class ConfigurationHandler(BaseHandler):
                         'query_filter': query_filter
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -300,8 +298,7 @@ class ConfigurationFileHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -376,8 +373,7 @@ class ConfigurationFileHandler(BaseHandler):
                                 xsession,
                                 {'action': 'reload'})
             except (TemboardError, Exception) as e:
-                self.logger.traceback(get_tb())
-                self.logger.error(str(e))
+                self.logger.exception(str(e))
                 if isintance(TemboardError, e):
                     error_code = e.code
                     error_message = e.message
@@ -408,8 +404,7 @@ class ConfigurationFileHandler(BaseHandler):
                         'ret_post': ret_post
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -536,8 +531,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'xsession': xsession
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -612,8 +606,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 xsession,
                                 {'action': 'reload'})
             except (TemboardError, Exception) as e:
-                self.logger.traceback(get_tb())
-                self.logger.error(str(e))
+                self.logger.exception(str(e))
                 if isinstance(TemboardError, e):
                     error_code = e.code
                     error_message = e.message
@@ -644,8 +637,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'ret_post': ret_post
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.expunge_all()
@@ -726,8 +718,7 @@ class AdminControlProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -779,8 +770,7 @@ class ConfigurationProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -825,8 +815,7 @@ class HBAOptionsProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = hba_options)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -884,8 +873,7 @@ class HBAProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = data)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
@@ -935,8 +923,7 @@ class HBADeleteProxyHandler(JsonHandler):
             self.logger.info("Done.")
             return JSONAsyncResult(http_code = 200, data = res)
         except (TemboardUIError, TemboardError, Exception) as e:
-            self.logger.traceback(get_tb())
-            self.logger.error(str(e))
+            self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
                 self.db_session.close()
