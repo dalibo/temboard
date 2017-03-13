@@ -156,7 +156,7 @@ function update_dashboard(data)
 	$('#pg_port').html(data['pg_port']);
 	$('#pg_uptime').html(data['pg_uptime']);
 	/** Update memory usage chart **/
-	
+
 	window.memorychart.data.datasets[0].data[0] = data['memory']['active'];
 	window.memorychart.data.datasets[0].data[1] = data['memory']['cached'];
 	window.memorychart.data.datasets[0].data[2] = data['memory']['free'];

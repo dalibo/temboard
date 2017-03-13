@@ -12,7 +12,7 @@ from temboardui.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
 class Configuration(configparser.ConfigParser):
     """
     Customized configuration parser.
-    """ 
+    """
     def __init__(self, configfile, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile
@@ -207,7 +207,7 @@ class Configuration(configparser.ConfigParser):
             self.repository['user'] = self.get('repository', 'user')
         except configparser.NoOptionError as e:
            pass
- 
+
         try:
             if not (self.getint('repository', 'port') >= 0
                     and self.getint('repository', 'port') <= 65535):

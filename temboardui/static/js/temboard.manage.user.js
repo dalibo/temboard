@@ -4,7 +4,7 @@
  */
 function load_update_user_form(modal_id, username)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/user/'+username,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -117,7 +117,7 @@ function load_update_user_form(modal_id, username)
 function send_update_user_form(modal_id)
 {
 	var username = $('#inputUsername').val();
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/user/'+username,
 		type: 'post',
 		beforeSend: function(xhr){
@@ -150,7 +150,7 @@ function send_update_user_form(modal_id)
 
 function load_delete_user_confirm(modal_id, username)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/user/'+username,
 		type: 'get',
 		beforeSend: function(xhr){
@@ -186,7 +186,7 @@ function load_delete_user_confirm(modal_id, username)
 
 function send_delete_user(modal_id, username)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/delete/user',
 		type: 'post',
 		beforeSend: function(xhr){
@@ -216,7 +216,7 @@ function send_delete_user(modal_id, username)
  */
 function load_add_user_form(modal_id)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/all/group/role',
 		type: 'get',
 		beforeSend: function(xhr){
@@ -311,7 +311,7 @@ function load_add_user_form(modal_id)
 
 function send_add_user_form(modal_id)
 {
-	$.ajax({ 
+	$.ajax({
 		url: '/json/manage/user',
 		type: 'post',
 		beforeSend: function(xhr){

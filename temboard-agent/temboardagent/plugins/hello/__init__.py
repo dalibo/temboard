@@ -91,11 +91,11 @@ def say_hello_something2(config, http_context):
 
     Usage:
     $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
-    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello2/say?something=toto" | python -m json.tool 
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello2/say?something=toto" | python -m json.tool
     {
         "content": "Hello toto"
     }
-    """
+    """  # noqa
     if http_context and 'something' in http_context['query']:
         validate_parameters(http_context['query'], [
             ('something', T_SOMETHING, True)

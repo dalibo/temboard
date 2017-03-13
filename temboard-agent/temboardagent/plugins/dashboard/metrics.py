@@ -135,7 +135,7 @@ class DashboardMetrics(object):
         current_active_backends = self._get_current_active_backends()
         return {'nb': current_active_backends,
                 'time': current_time}
- 
+
     def get_cpu_usage(self,):
         sysinfo = SysInfo()
         if sysinfo.os == 'Linux':

@@ -4,7 +4,7 @@ import json
 import datetime
 
 """
-Notifications are messages stored in a Queue aimed to keep a track of each 
+Notifications are messages stored in a Queue aimed to keep a track of each
 possible action impacting PostgreSQL server configuration or behaviour.
 
 For now, they are pushed when the following actions are triggered:

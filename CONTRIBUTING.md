@@ -78,3 +78,11 @@ Please follow the instructions as proposed in [pull request documentation](https
 Don't forget to give as much details as possible.
 
 Project maintainers will hopefully review your code and give you some feedback.
+
+### Configure your editor
+
+If possible, configure your editor to follow the coding conventions of the
+library.  A `.editorconfig` file is included at the root of the repository that
+can be used to configure whitespace and charset handling in your editor.  See
+that file for a description of the conventions.  The [EditorConfig](
+http://editorconfig.org/#download) site links to plugins for various editors.

@@ -296,7 +296,7 @@ class TestSupervision:
         except HTTPError as e:
             status = e.code
         assert status == 200
- 
+
     def test_14_supervision_replication(self):
         """
         [supervision] 14: GET /supervision/probe/replication : Check HTTP code returned is 200

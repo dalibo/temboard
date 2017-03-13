@@ -22,7 +22,7 @@ def validate_parameters(values, types):
     to loop over all 'types' elements which are tuples: ('values' key,
     validation regexp, if the value item currently checked is a list of thing
     to check).
-    If values[key] (or each element of it when it's a list) does not match 
+    If values[key] (or each element of it when it's a list) does not match
     with the regexp then we trow an error.
     """
     for (key, typ, is_list) in types:

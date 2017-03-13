@@ -80,7 +80,7 @@ role_groups = Table(
 
 access_role_instance = Table(
     'access_role_instance', metadata,
-    Column('role_group_name', UnicodeText, nullable=False, primary_key=True),  
+    Column('role_group_name', UnicodeText, nullable=False, primary_key=True),
     Column('role_group_kind', UnicodeText, nullable=False, server_default = text('role')),
     Column('instance_group_name', UnicodeText, nullable=False, primary_key=True),
     Column('instance_group_kind', UnicodeText, nullable=False, server_default = text('instance')),

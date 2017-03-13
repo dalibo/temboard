@@ -4,105 +4,105 @@
 
 {% block content %}
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<h1><i class="fa fa-home fa-fw"></i> Home</h1>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					Instances
-				</div>
-				<div class="panel-body">
-					<table class="table table-striped table-bordered table-hover" id="tableInstances">
-					<thead>
-						<tr>
-							<th>Hostname</th>
-							<th>Groups</th>
-							<th>CPU</th>
-							<th>Memory</th>
-							<th>PG Version</th>
-							<th>PG Port</th>
-							<th class="no-sort"></th>
-							<th class="no-sort"></th>
-							<th class="no-sort"></th>
-							<th class="no-sort"></th>
-							<th class="no-sort"></th>
-						</tr>
-					</thead>
-					<tbody>
-					{% for instance in instance_list %}
-						{% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
-						<tr>
-							<td><strong>{{instance.hostname}}</strong></td>
-							<td>{% for group in instance.groups %} <span class="label label-success">{{group.group_name}}</span>{% end %}</td>
-							<td>{{instance.cpu}}</td>
-							<td data-type="size" data-memory_size="{{instance.memory_size}}">{{instance.memory_size}}</td>
-							<td>{{instance.pg_version}}</td>
-							<td>{{instance.pg_port}}</td>
-							<td class="text-center">
-								{% if 'dashboard' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Dashboard" data-action="dashboard" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-dashboard fa-fw"></i></button>{% end %}
-							</td>
-							<td class="text-center">
-								{% if 'activity' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>{% end %}
-							</td>
-							<td class="text-center">
-								{% if 'supervision' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
-							</td>
-							<td class="text-center">
-								{% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
-							</td>
-							<td class="text-center">
-								<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Notifications" data-action="notifications" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="glyphicon glyphicon-envelope"></i></button>
-							</td>
-						</tr>
-					{% end %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+      <h1><i class="fa fa-home fa-fw"></i> Home</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Instances
+        </div>
+        <div class="panel-body">
+          <table class="table table-striped table-bordered table-hover" id="tableInstances">
+          <thead>
+            <tr>
+              <th>Hostname</th>
+              <th>Groups</th>
+              <th>CPU</th>
+              <th>Memory</th>
+              <th>PG Version</th>
+              <th>PG Port</th>
+              <th class="no-sort"></th>
+              <th class="no-sort"></th>
+              <th class="no-sort"></th>
+              <th class="no-sort"></th>
+              <th class="no-sort"></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for instance in instance_list %}
+            {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+            <tr>
+              <td><strong>{{instance.hostname}}</strong></td>
+              <td>{% for group in instance.groups %} <span class="label label-success">{{group.group_name}}</span>{% end %}</td>
+              <td>{{instance.cpu}}</td>
+              <td data-type="size" data-memory_size="{{instance.memory_size}}">{{instance.memory_size}}</td>
+              <td>{{instance.pg_version}}</td>
+              <td>{{instance.pg_port}}</td>
+              <td class="text-center">
+                {% if 'dashboard' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Dashboard" data-action="dashboard" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-dashboard fa-fw"></i></button>{% end %}
+              </td>
+              <td class="text-center">
+                {% if 'activity' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>{% end %}
+              </td>
+              <td class="text-center">
+                {% if 'supervision' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
+              </td>
+              <td class="text-center">
+                {% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Notifications" data-action="notifications" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="glyphicon glyphicon-envelope"></i></button>
+              </td>
+            </tr>
+          {% end %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 <script src="/js/filesize.min.js"></script>
 <script src="/js/datatables/jquery.dataTables.min.js"></script>
 <script src="/js/datatables/dataTables.bootstrap.min.js"></script>
 <script>
 $(document).ready(function() {
-	$('#tableInstances').DataTable({
-		stateSave: true
-	});
+  $('#tableInstances').DataTable({
+    stateSave: true
+  });
 
-	$('[data-type=size]').each(function(){
-		if ($(this).html() != 'None')
-			$(this).html(filesize($(this).html()));
-	});
+  $('[data-type=size]').each(function(){
+    if ($(this).html() != 'None')
+      $(this).html(filesize($(this).html()));
+  });
 
-	$('[data-action=dashboard]').click(function () {
-		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/dashboard');
-	});
+  $('[data-action=dashboard]').click(function () {
+    $('[data-toggle=popover]').popover('hide');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/dashboard');
+  });
 
-	$('[data-action=activity]').click(function () {
-		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity/running');
-	});
-	
-	$('[data-action=supervision]').click(function () {
-		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/supervision/day');
-	});
+  $('[data-action=activity]').click(function () {
+    $('[data-toggle=popover]').popover('hide');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity/running');
+  });
 
-	$('[data-action=settings]').click(function () {
-		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/settings/configuration');
-	});
+  $('[data-action=supervision]').click(function () {
+    $('[data-toggle=popover]').popover('hide');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/supervision/day');
+  });
 
-	$('[data-action=notifications]').click(function () {
-		$('[data-toggle=popover]').popover('hide');
-		window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/notifications');
-	});
+  $('[data-action=settings]').click(function () {
+    $('[data-toggle=popover]').popover('hide');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/settings/configuration');
+  });
+
+  $('[data-action=notifications]').click(function () {
+    $('[data-toggle=popover]').popover('hide');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/notifications');
+  });
 
 });
 </script>

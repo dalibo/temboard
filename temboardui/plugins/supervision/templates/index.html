@@ -4,109 +4,109 @@
 
 {% block content %}
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="ModalLabel"></h4>
-			</div>
-			<div class="modal-body" id="ModalBody">
-				<img id="imageModal" width="100%"/>
-			</div>
-			<div class="modal-footer" id="ModalFooter">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-			</div>
-		</div>
-	</div>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ModalLabel"></h4>
+      </div>
+      <div class="modal-body" id="ModalBody">
+        <img id="imageModal" width="100%"/>
+      </div>
+      <div class="modal-footer" id="ModalFooter">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12">
-			<h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval{%end%}</h1>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="contDTP">
-			<div class="form-date-picker pull-right">
-				<div class="form-inline">
-					<div class='input-group date' id='DTP_start'>
-						<input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
-						<span class="input-group-addon">
-							<span class="glyphicon glyphicon-calendar"></span>
-						</span>
-					</div>
-					<i class="glyphicon glyphicon-arrow-right"></i>
-					<div class='input-group date' id='DTP_end'>
-						<input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
-						<span class="input-group-addon">
-							<span class="glyphicon glyphicon-calendar"></span>
-						</span>
-					</div>
-					<button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row row-chart">
-		<div class="col-md-12" id="Loadavg"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="CPU"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="CtxForks"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Memory"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Swap"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="FsSize"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="FsUsage"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="TPS"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="InstanceSize"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="TblspcSize"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Sessions"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Blocks"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="HRR"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Checkpoints"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="WalFilesSize"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="WalFilesCount"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="WalFilesRate"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="WBuffers"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="Locks"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-12" id="WLocks"></div>
-	</div>
+  <div class="row">
+    <div class="col-md-12">
+      <h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval{%end%}</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="contDTP">
+      <div class="form-date-picker pull-right">
+        <div class="form-inline">
+          <div class='input-group date' id='DTP_start'>
+            <input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+          <i class="glyphicon glyphicon-arrow-right"></i>
+          <div class='input-group date' id='DTP_end'>
+            <input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+          <button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row row-chart">
+    <div class="col-md-12" id="Loadavg"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="CPU"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="CtxForks"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Memory"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Swap"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="FsSize"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="FsUsage"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="TPS"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="InstanceSize"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="TblspcSize"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Sessions"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Blocks"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="HRR"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Checkpoints"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="WalFilesSize"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="WalFilesCount"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="WalFilesRate"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="WBuffers"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="Locks"></div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" id="WLocks"></div>
+  </div>
 </div>
 
 <script src="/js/dygraph-combined.js"></script>
@@ -126,59 +126,59 @@ orig_xAxisRange = null;
 
 $(document).ready(function() {
 
-	$(function () {
-		$('#DTP_start').datetimepicker({
-			format: "YYYY-MM-DDTHH:mm:ss"
-		});
-		$('#DTP_end').datetimepicker({
-			format: "YYYY-MM-DDTHH:mm:ss",
-			useCurrent: false
-		});
-		$("#DTP_start").on("dp.change", function (e) {
-			$('#DTP_end').data("DateTimePicker").minDate(e.date);
-		});
-		$("#DTP_end").on("dp.change", function (e) {
-			$('#DTP_start').data("DateTimePicker").maxDate(e.date);
-		});
-	});
+  $(function () {
+    $('#DTP_start').datetimepicker({
+      format: "YYYY-MM-DDTHH:mm:ss"
+    });
+    $('#DTP_end').datetimepicker({
+      format: "YYYY-MM-DDTHH:mm:ss",
+      useCurrent: false
+    });
+    $("#DTP_start").on("dp.change", function (e) {
+      $('#DTP_end').data("DateTimePicker").minDate(e.date);
+    });
+    $("#DTP_end").on("dp.change", function (e) {
+      $('#DTP_start').data("DateTimePicker").maxDate(e.date);
+    });
+  });
 
-	$('#buttonChangeInterval').click(function() {
-		window.location.replace(interval_api_url+"?start="+$("#inputDTP_start").val()+"&end="+$("#inputDTP_end").val());
-	});
+  $('#buttonChangeInterval').click(function() {
+    window.location.replace(interval_api_url+"?start="+$("#inputDTP_start").val()+"&end="+$("#inputDTP_end").val());
+  });
 
-	var graphs = [
-		// System
-		{id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.orange, colors.green], ylabel: "Loadaverage"}},
-		{id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: [colors.blue, colors.green, colors.red, colors.gray], ylabel: "%", stackedGraph: true}},
-		{id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: [colors.blue, colors.green]}},
-		{id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.orange], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
-		{id: "Swap",title: "Swap usage",api: "swap",options: {colors: [colors.red], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
-		{id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMG2: true}},
-		{id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
-		// PostgreSQL
-		{id: "TPS",title: "Transactions per second",api: "tps",options: {colors: [colors.green, colors.red], ylabel: "Transactions", stackedGraph: true}},
-		{id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: [colors.blue], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
-		{id: "TblspcSize",title: "Tablespaces size",api: "tblspc_size",options: {ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
-		{id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
-		{id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: [colors.red, colors.green], ylabel: "Blocks"}},
-		{id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: [colors.blue], ylabel: "%"}},
-		{id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ], ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
-		{id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: [colors.blue, colors.blue2], labelsKMG2: true, ylabel: "Size"}},
-		{id: "WalFilesCount",title: "WAL Files",api: "wal_files_count",options: {colors: [colors.blue, colors.blue2], ylabel: "WAL files"}},
-		{id: "WalFilesRate",title: "WAL Files written rate",api: "wal_files_rate",options: {colors: [colors.blue], ylabel: "Byte per second", labelsKMG2: true, stackedGraph: true}},
-		{id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
-		{id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
-		{id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
+  var graphs = [
+    // System
+    {id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.orange, colors.green], ylabel: "Loadaverage"}},
+    {id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: [colors.blue, colors.green, colors.red, colors.gray], ylabel: "%", stackedGraph: true}},
+    {id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: [colors.blue, colors.green]}},
+    {id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.orange], ylabel: "Memory", labelsKMG2: true, stackedGraph: true}},
+    {id: "Swap",title: "Swap usage",api: "swap",options: {colors: [colors.red], ylabel: "Swap", labelsKMG2: true, stackedGraph: true}},
+    {id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMG2: true}},
+    {id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
+    // PostgreSQL
+    {id: "TPS",title: "Transactions per second",api: "tps",options: {colors: [colors.green, colors.red], ylabel: "Transactions", stackedGraph: true}},
+    {id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: [colors.blue], ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
+    {id: "TblspcSize",title: "Tablespaces size",api: "tblspc_size",options: {ylabel: "Size", stackedGraph: true, labelsKMG2: true}},
+    {id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
+    {id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: [colors.red, colors.green], ylabel: "Blocks"}},
+    {id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: [colors.blue], ylabel: "%"}},
+    {id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {labels: [ 'Date', 'timed', 'requested', 'write_time', 'sync_time' ], ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
+    {id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: [colors.blue, colors.blue2], labelsKMG2: true, ylabel: "Size"}},
+    {id: "WalFilesCount",title: "WAL Files",api: "wal_files_count",options: {colors: [colors.blue, colors.blue2], ylabel: "WAL files"}},
+    {id: "WalFilesRate",title: "WAL Files written rate",api: "wal_files_rate",options: {colors: [colors.blue], ylabel: "Byte per second", labelsKMG2: true, stackedGraph: true}},
+    {id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
+    {id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
+    {id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
 
-	];
+  ];
 
-	for (var i in graphs)
-	{
-		sync_graphs.push({
-			dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start_date, end_date),
-			api: graphs[i].api
-		});
-	}
+  for (var i in graphs)
+  {
+    sync_graphs.push({
+      dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start_date, end_date),
+      api: graphs[i].api
+    });
+  }
 });
 
 </script>
