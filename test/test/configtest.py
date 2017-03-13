@@ -4,7 +4,7 @@ WORK_PATH = '/tmp'
 # PG_BIN = '/usr/lib/postgresql/9.5/bin'
 # Gentoo / 9.5
 PG_BIN = '/usr/lib64/postgresql-9.5/bin'
-PG_PORT=5445
+PG_PORT = 5445
 PG_USER = 'temboard'
 PG_PASSWORD = 'temboard'
 PG_SETTINGS = [
@@ -56,7 +56,7 @@ ssl_ca_cert_file = %s
 
 [administration]
 pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
-"""
+"""  # noqa
 
 AGENT_SSL_CERT = """-----BEGIN CERTIFICATE-----
 MIIDXTCCAkWgAwIBAgIJAN2gVhFWzW9fMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
