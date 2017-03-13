@@ -30,44 +30,45 @@
   <div class="row">
     {% include menu.html %}
     <div class="col-md-9">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          {%if group_kind == 'role'%}User{%else%}Instance{%end%} group list
-          <button id="buttonLoadAddGroupForm" class="btn btn-primary btn-xs pull-right">+ Add a new {%if group_kind == 'role'%}user{%else%}instance{%end%} group</button>
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <p>
+            <button id="buttonLoadAddGroupForm" class="btn btn-success btn-sm">
+              New {%if group_kind == 'role'%}user{%else%}instance{%end%} group
+            </button>
+          </p>
         </div>
-        <div class="panel-body">
-          <table class="table table-striped table-bordered table-hover" id="tableGroups">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Description</th>
-              {% if group_kind == 'instance' %}
-              <th>User groups</th>
-              {% end %}
-              <th class="no-sort"></th>
-              <th class="no-sort"></th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for group_item in group_list %}
-            <tr>
-              <td>{{group_item.group_name}}</td>
-              <td>{{group_item.group_description}}</td>
-              {% if group_kind == 'instance' %}
-              <td>{% for ari in group_item.ari %} <span class="label label-default">{{ari.role_group_name}}</span>{% end %}</td>
-              {% end %}
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
-              </td>
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="glyphicon glyphicon-remove-circle"></i></button>
-              </td>
-            </tr>
-          {% end %}
-          </tbody>
-        </table>
       </div>
-    </div>
+      <table class="table table-striped table-bordered table-hover" id="tableGroups">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          {% if group_kind == 'instance' %}
+          <th>User groups</th>
+          {% end %}
+          <th class="no-sort"></th>
+          <th class="no-sort"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for group_item in group_list %}
+        <tr>
+          <td>{{group_item.group_name}}</td>
+          <td>{{group_item.group_description}}</td>
+          {% if group_kind == 'instance' %}
+          <td>{% for ari in group_item.ari %} <span class="label label-default">{{ari.role_group_name}}</span>{% end %}</td>
+          {% end %}
+          <td class="text-center">
+            <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="glyphicon glyphicon-remove-circle"></i></button>
+          </td>
+        </tr>
+      {% end %}
+      </tbody>
+    </table>
   </div>
 </div>
 <script src="/js/temboard.manage.group.js"></script>

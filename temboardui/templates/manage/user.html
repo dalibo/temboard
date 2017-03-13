@@ -30,44 +30,45 @@
   <div class="row">
     {% include menu.html %}
     <div class="col-md-9">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-              User list
-              <button id="buttonLoadAddUserForm" class="btn btn-primary btn-xs pull-right">+ Add a new user</button>
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <p>
+            <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm">
+              New user
+            </button>
+          </p>
         </div>
-        <div class="panel-body">
-          <table class="table table-striped table-bordered table-hover" id="tableUsers">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th width="40">Active</th>
-              <th width="40">Admin.</th>
-              <th>Groups</th>
-              <th class="no-sort"></th>
-              <th class="no-sort"></th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for role_item in role_list %}
-            <tr>
-              <td>{{role_item.role_name}}</td>
-              <td>{{role_item.role_email}}</td>
-              <td class="text-center">{% if role_item.is_active is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
-              <td class="text-center">{% if role_item.is_admin is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
-              <td>{% for group in role_item.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-username="{{role_item.role_name}}" data-action="edit"><i class="fa fa-edit"></i></button>
-              </td>
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-username="{{role_item.role_name}}" data-action="delete"><i class="glyphicon glyphicon-remove-circle"></i></button>
-              </td>
-            </tr>
-          {% end %}
-          </tbody>
-        </table>
       </div>
-    </div>
+      <table class="table table-striped table-bordered table-hover" id="tableUsers">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th width="40">Active</th>
+          <th width="40">Admin.</th>
+          <th>Groups</th>
+          <th class="no-sort"></th>
+          <th class="no-sort"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for role_item in role_list %}
+        <tr>
+          <td>{{role_item.role_name}}</td>
+          <td>{{role_item.role_email}}</td>
+          <td class="text-center">{% if role_item.is_active is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
+          <td class="text-center">{% if role_item.is_admin is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
+          <td>{% for group in role_item.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
+          <td class="text-center">
+            <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-username="{{role_item.role_name}}" data-action="edit"><i class="fa fa-edit"></i></button>
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-username="{{role_item.role_name}}" data-action="delete"><i class="glyphicon glyphicon-remove-circle"></i></button>
+          </td>
+        </tr>
+      {% end %}
+      </tbody>
+    </table>
   </div>
 </div>
 <script src="/js/temboard.manage.user.js"></script>
