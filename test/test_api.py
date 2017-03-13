@@ -34,7 +34,7 @@ class TestAPI:
             conn.connect()
             conn.close()
             assert True
-        except error as e:
+        except error:
             assert False
 
     def test_01_login_ok(self):
