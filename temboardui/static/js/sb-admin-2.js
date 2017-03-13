@@ -18,4 +18,8 @@ $(function() {
     if (element.is('li')) {
         element.addClass('active');
     }
+
+    element = $('.list-group a').filter(function() {
+        return this.href == url || url.href.indexOf(this.href) != -1;
+    }).addClass('active');
 });
