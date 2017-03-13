@@ -10,7 +10,7 @@ function load_update_user_form(modal_id, username)
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
 			$('#'+modal_id+'Info').html('');
-			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
 		async: true,
@@ -122,7 +122,8 @@ function send_update_user_form(modal_id)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
+        debugger;
 		},
 		data: JSON.stringify({
 			'new_username': $('#inputNewUsername').val(),
@@ -155,7 +156,7 @@ function load_delete_user_confirm(modal_id, username)
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Body').html('');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
@@ -191,7 +192,7 @@ function send_delete_user(modal_id, username)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Body').html('');
 		},
 		async: true,
@@ -222,7 +223,7 @@ function load_add_user_form(modal_id)
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
 			$('#'+modal_id+'Info').html('');
-			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 			$('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
 		},
 		async: true,
@@ -316,7 +317,7 @@ function send_add_user_form(modal_id)
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
-			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped active" style="width: 100%;">Please wait ...</div></div></div></div>');
+			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
 		},
 		data: JSON.stringify({
 			'new_username': $('#inputNewUsername').val(),
