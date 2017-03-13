@@ -1,13 +1,12 @@
 import json
 import re
-import time
 
 from urllib2 import HTTPError
 from test.temboard import init_env, drop_env, rand_string, temboard_request
-import test.configuration as cf
 from test.spc import connector, error
 
 ENV = {}
+
 
 class TestAPI:
 
@@ -25,11 +24,11 @@ class TestAPI:
         [api] 00: PostgreSQL instance is up & running
         """
         conn = connector(
-            host = ENV['pg_sockdir'],
-            port = cf.PG_PORT,
-            user = cf.PG_USER,
-            password = cf.PG_PASSWORD,
-            database = 'postgres'
+            host=ENV['pg']['socket_dir'],
+            port=ENV['pg']['port'],
+            user=ENV['pg']['user'],
+            password=ENV['pg']['password'],
+            database='postgres'
         )
         try:
             conn.connect()
@@ -43,11 +42,16 @@ class TestAPI:
         [api] 01: POST /login : HTTP return code is 200 on valid credentials
         """
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': cf.G_USER, 'password': cf.G_PASSWORD})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': ENV['agent']['user'],
+                    'password': ENV['agent']['password']
+                    }
+                )
         assert status == 200
 
     def test_02_login_ok(self):
@@ -55,11 +59,16 @@ class TestAPI:
         [api] 02: POST /login : Session ID format matches ^[a-f0-9]{64}$
         """
         (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': cf.G_USER, 'password': cf.G_PASSWORD})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': ENV['agent']['user'],
+                    'password': ENV['agent']['password']
+                    }
+                )
         xsession = json.loads(res)['session']
         assert re.match('^[a-f0-9]{64}$', xsession)
 
@@ -70,11 +79,16 @@ class TestAPI:
         status = 0
         try:
             (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': cf.G_USER, 'password': rand_string(12)})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': ENV['agent']['user'],
+                    'password': rand_string(12)
+                    }
+                )
         except HTTPError as e:
             status = e.code
         assert status == 404
@@ -86,11 +100,16 @@ class TestAPI:
         status = 0
         try:
             (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': rand_string(12), 'password': rand_string(12)})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': rand_string(12),
+                    'password': rand_string(12)
+                    }
+                )
         except HTTPError as e:
             status = e.code
         assert status == 404
@@ -102,11 +121,16 @@ class TestAPI:
         status = 0
         try:
             (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': rand_string(2), 'password': rand_string(12)})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': rand_string(2),
+                    'password': rand_string(12)
+                    }
+                )
         except HTTPError as e:
             status = e.code
         assert status == 406
@@ -118,11 +142,16 @@ class TestAPI:
         status = 0
         try:
             (status, res) = temboard_request(
-                ENV['g_ssl_cert_file_path'],
-                method = 'POST',
-                url = 'https://%s:%s/login' % (cf.G_HOST, cf.G_PORT),
-                headers = {"Content-type": "application/json"},
-                data = {'username': rand_string(12), 'password': rand_string(2)})
+                ENV['agent']['ssl_cert_file'],
+                method='POST',
+                url='https://%s:%s/login' % (
+                    ENV['agent']['host'], ENV['agent']['port']),
+                headers={"Content-type": "application/json"},
+                data={
+                    'username': rand_string(12),
+                    'password': rand_string(2)
+                    }
+                )
         except HTTPError as e:
             status = e.code
         assert status == 406
