@@ -1,7 +1,6 @@
 dependencies:
   override:
-    - pip install -e .
-    - pip install --upgrade flake8-diff pytest
+    - pip install --upgrade --requirement requirements-ci.txt
   cache_directories:
     - ~/.cache/pip/
 
