@@ -1,15 +1,6 @@
 body {
 }
 
-#wrapper {
-	width: 100%;
-	min-width: 1000px;
-	height: auto;
-	/* background-color: #222; */
-	min-height: 100vh;
-	overflow: hidden;
-}
-
 #page-wrapper {
 	padding: 0 15px;
 	height: 100%;
@@ -28,7 +19,6 @@ body {
 .navbar {
 	border: 0;
 	background-color: #222;
-  margin-bottom: 0;
 }
 
 .navbar-brand {
@@ -234,23 +224,6 @@ select.form-control {
 	padding: 10px 0px 10px 10px;
 	font-size: 24px;
 	color: #fff;
-}
-
-#tableHeaderInfo {
-	border: 0;
-	background-color: #393939;
-	width: 100%;
-}
-
-#tableHeaderInfo tr td {
-	border: 0;
-	color: #aaa;
-	padding: 0 5px 0px 5px;
-	font-size: 11px;
-}
-
-#tableHeaderInfo tr td.pull-right {
-	color: #5DA5DA;
 }
 
 #panelLogin {

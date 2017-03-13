@@ -55,14 +55,14 @@
 </head>
 <body>
   <div id="modalError" /></div>
-  <div id="wrapper">
+  <div>
     <script src="/js/jquery-2.1.4.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
     <!-- Custom Theme JavaScript -->
     <script src="/js/sb-admin-2.js"></script>
     {% if nav %}
     <!-- Navigation -->
-    <div class="navbar navbar-default">
+    <div class="navbar navbar-default navbar-static-top">
       <div class="container-fluid">
         <div class="navbar-header">
           <a class="navbar-brand" href="/home">
@@ -86,7 +86,80 @@
       </div>
     </div>
     {% end %}
-    {% block content %} {% end %}
+
+    <div class="container-fluid">
+      {% if globals().has_key('instance') %}
+      <div class="row">
+        <div class="col-md-3">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <b>
+                {{instance.hostname}}
+              </b>
+            </div>
+            <div class="panel-body">
+              <p>
+              {% for group in instance.groups %}
+                <span class="label label-default small">
+                  {{group.group_name}}
+                </span>&nbsp;
+              {% end %}
+              </p>
+              <table class="table table-condensed">
+                <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
+                <tr><td>PG data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
+                <tr><td>PG Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
+                <tr><td>PG Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-9">
+          <div class="row">
+            <div class="col-md-12">
+              {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+              {% if 'dashboard' in plugin_names %}
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
+                 class="btn btn-default">
+                <i class="fa fa-dashboard fa-fw"></i>
+                Dashboard
+              </a>
+              {% end %}
+              {% if 'activity' in plugin_names %}
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"
+                 class="btn btn-default">
+                <i class="fa fa-bars fa-fw"></i>
+                Activity
+              </a>
+              {% end %}
+              {% if 'supervision' in plugin_names %}
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day"
+                 class="btn btn-default">
+                <i class="fa fa-bar-chart-o"></i>
+                Supervision
+              </a>
+              {% end %}
+              {% if 'settings' in plugin_names %}
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration"
+                 class="btn btn-default">
+                <i class="fa fa-cog"></i>
+                Settings
+              </a>
+              {% end %}
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
+                 class="btn btn-default">
+                <i class="fa fa-envelope-o"></i>
+                Notifications
+              </a>
+            </div>
+          </div>
+          {% block content %} {% end %}
+        </div>
+      </div>
+      {% else %}
+        {% block content %} {% end %}
+      {% end %} {# end if instance #}
+    </div>
   </div>
   <script>
   // Popover activation
