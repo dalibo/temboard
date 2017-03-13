@@ -1,11 +1,3 @@
-import os, sys
-import socket
-from logging import (Logger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL,
-                    FileHandler, StreamHandler)
-from logging.handlers import SysLogHandler
-
-from temboardui.errors import ConfigurationError
-
 """
 
 Logging things should follow this template:
@@ -13,35 +5,16 @@ Logging things should follow this template:
 [INFO] "We are going to do something"
 [DEBUG] Raw data, when we're working with data
 if error:
-    [DEBUG] Error backtrace
-    [ERROR] Error message from the exception
+    [ERROR] Error message with exception
     [INFO] "Failed."
 else:
     [INFO] "Done."
 
 """
 
-# Mapping configuration -> constants
-LOG_FACILITIES = {
-    'local0': SysLogHandler.LOG_LOCAL0,
-    'local1': SysLogHandler.LOG_LOCAL1,
-    'local2': SysLogHandler.LOG_LOCAL2,
-    'local3': SysLogHandler.LOG_LOCAL3,
-    'local4': SysLogHandler.LOG_LOCAL4,
-    'local5': SysLogHandler.LOG_LOCAL5,
-    'local6': SysLogHandler.LOG_LOCAL6,
-    'local7': SysLogHandler.LOG_LOCAL7
-}
 
-LOG_LEVELS = {
-    'DEBUG': DEBUG,
-    'INFO': INFO,
-    'WARNING': WARNING,
-    'ERROR': ERROR,
-    'CRITICAL': CRITICAL
-}
-
-LOG_METHODS = [ 'syslog', 'file', 'stderr' ]
+from logging import Formatter
+from logging.handlers import SysLogHandler
 
 
 class MultilineFormatter(Formatter):
@@ -60,61 +33,59 @@ class MultilineFormatter(Formatter):
         return '\n'.join(lines)
 
 
-class Log(Logger):
-    """
-    Logger
-    """
-    _instances = dict()
-
-    def __new__(cls, config, name, *args, **kwargs):
-        # Create a new logger only once.
-        if name not in  cls._instances:
-            inst = super(Log, cls).__new__(cls)
-            cls._instances[name] = inst
-        return cls._instances[name]
-
-    def __init__(self, config, name, *args, **kwargs):
-        Logger.__init__(self, name, *args, **kwargs)
-
-        log_format = "temboard[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
-
-        if config.logging['method'] == 'syslog':
-            try:
-                # Instanciate a new syslog handler.
-                lh = SysLogHandler(
-                        address = str(config.logging['destination']),
-                        facility = LOG_FACILITIES[config.logging['facility']])
-            except socket.error as e:
-                raise ConfigurationError(e)
-        elif config.logging['method'] == 'file':
-            try:
-                # Instanciate a new file handler.
-                lh = FileHandler(
-                        filename = config.logging['destination'],
-                        mode = 'a')
-                # Add timestamp when using a FileHandler.
-                log_format = "%(asctime)s "+log_format
-            except IOError as e:
-                raise ConfigurationError(e)
-        elif config.logging['method'] == 'stderr':
-            lh = StreamHandler()
-            # Add timestamp
-            log_format = "%(asctime)s "+log_format
-
-        # Set log level according to the level defined in configuration files.
-        lh.setLevel(LOG_LEVELS[config.logging['level']])
-        lh.setFormatter(MultilineFormatter(log_format))
-        self.addHandler(lh)
+LOG_METHODS = {
+    'stderr': {
+        '()': 'logging.StreamHandler',
+        'formatter': 'full',
+    },
+    'file': {
+        '()': 'logging.FileHandler',
+        'mode': 'a',
+        'formatter': 'minimal',
+    },
+    'syslog': {
+        '()': 'logging.handlers.SysLogHandler',
+        'formatter': 'minimal',
+    }
+}
 
 
-LOGGER_NAME = 'temboard'
+def generate_logging_config(config):
+    LOG_METHODS['file']['filename'] = config.logging['destination']
+    facility = SysLogHandler.facility_names[config.logging['facility']]
+    LOG_METHODS['syslog']['facility'] = facility
+    LOG_METHODS['syslog']['address'] = config.logging['destination']
 
-def set_logger_name(name):
-    global LOGGER_NAME
-    LOGGER_NAME = name
+    format_ = (
+        "temboard[%(process)5d]: [%(name)-24s] %(levelname)8s: "
+        "%(message)s"
+    )
 
-def get_logger(config):
-    """
-    Returns a logger instance.
-    """
-    return Log(config, LOGGER_NAME)
+    logging_config = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'minimal': {
+                '()': 'temboardui.logger.MultilineFormatter',
+                'format': format_,
+            },
+            'full': {
+                '()': 'temboardui.logger.MultilineFormatter',
+                'format': '%(asctime)s ' + format_,
+            }
+        },
+        'handlers': {
+            'configured': LOG_METHODS[config.logging['method']]
+        },
+        'root': {
+            'level': 'INFO',
+            'handlers': ['configured'],
+        },
+        'loggers': {
+            'temboardui': {
+                'level': config.logging['level'],
+            },
+        },
+    }
+
+    return logging_config

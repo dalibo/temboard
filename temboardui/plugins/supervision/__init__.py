@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import datetime
@@ -21,7 +22,6 @@ from temboardui.async import *
 from temboardui.configuration import Configuration
 from temboardui.errors import TemboardUIError, ConfigurationError
 from temboardui.application import get_instance
-from temboardui.logger import get_logger, set_logger_name
 from temboardui.taskmanager import (add_worker, add_scheduler, Task, S_TASK_TODO,
                                     serialize_task_parameters, unserialize_task_parameters)
 
@@ -591,11 +591,10 @@ class SupervisionHTMLHandler(BaseHandler):
 @add_worker('worker_agg_data', 1)
 def worker_data_agg(task):
     # Worker in charge of aggregate data
+    logger = logging.getLogger("worker_agg_data")
     try:
         parameters = unserialize_task_parameters(task.parameters)
         config =  Configuration(parameters['configpath'])
-        set_logger_name("worker_agg_data")
-        logger = get_logger(config)
         dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
                     user = config.repository['user'],
                     password = config.repository['password'],
@@ -624,11 +623,10 @@ def worker_data_agg(task):
 @add_worker('worker_history_data', 1)
 def worker_history_data(task):
     # Worker in charge of history data
+    logger = logging.getLogger("worker_history_data")
     try:
         parameters = unserialize_task_parameters(task.parameters)
         config =  Configuration(parameters['configpath'])
-        set_logger_name("worker_history_data")
-        logger = get_logger(config)
         dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
                     user = config.repository['user'],
                     password = config.repository['password'],

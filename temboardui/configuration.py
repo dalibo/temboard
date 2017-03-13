@@ -3,11 +3,15 @@ try:
 except ImportError:
      import ConfigParser as configparser
 
+from logging import _checkLevel as check_log_level
+from logging.handlers import SysLogHandler
 import os
 import json
 import re
 from temboardui.errors import ConfigurationError
-from temboardui.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
+
+from .logger import LOG_METHODS
+
 
 class Configuration(configparser.ConfigParser):
     """
@@ -165,18 +169,20 @@ class Configuration(configparser.ConfigParser):
         # Test if 'logging' section exists.
         self.check_section('logging')
         try:
-            if not self.get('logging', 'method') in LOG_METHODS:
+            method = self.get('logging', 'method')
+            if method not in LOG_METHODS:
                 raise ValueError()
-            self.logging['method'] = self.get('logging', 'method')
+            self.logging['method'] = method
         except ValueError as e:
             raise ConfigurationError("Invalid 'method' option in 'logging' section in %s."
                     % (self.configfile))
         except configparser.NoOptionError as e:
            pass
         try:
-            if not self.get('logging', 'facility') in LOG_FACILITIES:
+            facility = self.get('logging', 'facility')
+            if facility not in SysLogHandler.facility_names:
                 raise ValueError()
-            self.logging['facility'] = self.get('logging', 'facility')
+            self.logging['facility'] = facility
         except ValueError as e:
             raise ConfigurationError("Invalid 'facility' option in 'logging' section in %s."
                     % (self.configfile))
@@ -187,9 +193,8 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError as e:
            pass
         try:
-            if not self.get('logging', 'level') in LOG_LEVELS:
-                raise ValueError()
-            self.logging['level'] = self.get('logging', 'level')
+            level = self.get('logging', 'level')
+            self.logging['level'] = check_log_level(level)
         except ValueError as e:
             raise ConfigurationError("Invalid 'level' option in 'logging' section in %s."
                     % (self.configfile))

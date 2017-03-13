@@ -1,4 +1,5 @@
 flake8
 flake8-diff
 pytest
+mock
 -e .
