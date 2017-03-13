@@ -214,6 +214,23 @@ def init_env():
         * PostgreSQL cluster initdb
         * start PostgreSQL cluster and agent
     """
+
+    # Overwrite some variables from testconfig.py by env. variables.
+
+    # PostgreSQL binaries path
+    tbd_pgbin = test_conf.PG_BIN
+    if 'TBD_PGBIN' in os.environ:
+        tbd_pgbin = os.environ['TBD_PGBIN']
+
+    # PostgreSQL port
+    tbd_pgport = test_conf.PG_PORT
+    if 'TBD_PGPORT' in os.environ:
+        tbd_pgport = os.environ['TBD_PGPORT']
+    # Work path
+    tbd_workpath = test_conf.WORK_PATH
+    if 'TBD_WORKPATH' in os.environ:
+        tbd_workpath = os.environ['TBD_WORKPATH']
+
     test_env = {
         'agent': {
             'conf_file': None,
@@ -230,10 +247,10 @@ def init_env():
             'password': test_conf.AGENT_PASSWORD,
         },
         'pg': {
-            'bin': test_conf.PG_BIN,
+            'bin': tbd_pgbin,
             'pg_data': None,
             'socket_dir': None,
-            'port': str(test_conf.PG_PORT),
+            'port': str(tbd_pgport),
             'user': test_conf.PG_USER,
             'password': test_conf.PG_PASSWORD,
             'log_file': None
@@ -242,7 +259,7 @@ def init_env():
     try:
         ext = str(int(time.time() * 1000))
         # Folders creation
-        root_dir = _mkdir(test_conf.WORK_PATH+'/tests_temboard/'+ext)
+        root_dir = _mkdir(tbd_workpath+'/tests_temboard/'+ext)
         agent_dir = _mkdir(root_dir+'/temboard-agent')
         log_dir = _mkdir(root_dir+'/logs')
 
