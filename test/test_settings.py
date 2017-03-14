@@ -1,10 +1,22 @@
 import json
 import os
+import sys
+import inspect
 from hashlib import md5
 import datetime
 
 from test.temboard import init_env, drop_env, temboard_request
-from test.spc import connector, error
+
+# Import spc
+tbda_dir = os.path.realpath(
+                os.path.abspath(
+                    os.path.split(
+                        inspect.getfile(
+                            inspect.currentframe()))[0])+'/../temboardagent')
+if tbda_dir not in sys.path:
+    sys.path.insert(0, tbda_dir)
+
+from temboardagent.spc import connector, error  # noqa
 
 ENV = {}
 XSESSION = ''

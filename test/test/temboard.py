@@ -2,6 +2,7 @@ from __future__ import print_function
 import time
 import os
 import sys
+import inspect
 import signal
 import random
 import string
@@ -13,7 +14,18 @@ import socket
 import json
 
 import test.configtest as test_conf
-from test.spc import connector, error
+
+# Add main temboard-agent module dir into sys.path
+# The goal is to import spc
+tbda_dir = os.path.realpath(
+                os.path.abspath(
+                    os.path.split(
+                        inspect.getfile(
+                            inspect.currentframe()))[0])+'/../temboardagent')
+if tbda_dir not in sys.path:
+    sys.path.insert(0, tbda_dir)
+
+from temboardagent.spc import connector, error  # noqa
 
 
 def exec_command(command_args, comm=True, **kwargs):
@@ -328,7 +340,7 @@ def drop_env(test_env):
     try:
         # Try to stop the agent.
         agent_stop(test_env['agent']['pid_file'])
-    except Exception as e:
+    except Exception:
         pass
     try:
         # Try to stop PG cluster
