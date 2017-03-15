@@ -20,63 +20,61 @@
     </div>
   </div>
 </div>
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-4">
-      <h1><i class="fa fa-bars fa-fw"></i> Activity <small>/</small> {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% end %} queries</h1>
-    </div>
-    <div class="col-md-8 navActivity">
-      <button type="button" class="btn btn-primary btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
-      <button type="button" class="btn btn-primary btn-sm" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
-      <button type="button" class="btn btn-danger btn-sm" id="killButton"><i class="glyphicon glyphicon-fire"></i> Terminate backend</button>
-    </div>
+<div class="row">
+  <div class="col-md-4">
+    <h1><i class="fa fa-bars fa-fw"></i> Activity <small>/</small> {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% end %} queries</h1>
   </div>
-  <div class="row" id="configuration-row">
-    <div class="col-md-12"></div>
+  <div class="col-md-8 navActivity">
+    <button type="button" class="btn btn-primary btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
+    <button type="button" class="btn btn-primary btn-sm" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
+    <button type="button" class="btn btn-danger btn-sm" id="killButton"><i class="glyphicon glyphicon-fire"></i> Terminate backend</button>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-      <form role="form" method="post">
-        <table id="tableActivity" class="table table-condensed table-striped table-activity">
-          <tr>
-            <th class="xs"></th>
-            <th class="sm">PID</th>
-            <th class="med">Database</th>
-            <th class="med">User</th>
-            <th class="sm">%CPU</th>
-            <th class="sm">%mem</th>
-            <th class="med">Read/s</th>
-            <th class="med">Write/s</th>
-            <th class="xs">IOW</th>
-            <th class="med">Lock Rel.</th>
-            <th class="med">Lock Mode</th>
-            <th class="med">Lock Type</th>
-            <th class="lg">State</th>
-            <th class="med">Duration (s)</th>
-            <th class="query">Query</th>
-          </tr>
-          {% for row in activities['rows'] %}
-          <tr class="{%if float(row['duration'])>5%}danger{%else%}{%if float(row['duration'])>1%}warning{%else%}none{%end%}{%end%}">
-            <td><input type="checkbox" class="input-xs" data-pid="{{row['pid']}}" readonly disabled/></td>
-            <td>{{row['pid']}}</td>
-            <td class="text-center">{{row['database']}}</td>
-            <td class="text-center">{{row['user']}}</td>
-            <td class="text-right">{{row['cpu']}}</td>
-            <td class="text-right">{{row['memory']}}</td>
-            <td class="text-right">{{row['read_s']}}</td>
-            <td class="text-right">{{row['write_s']}}</td>
-            <td><span class="label {% if row['iow'] == 'Y'%}label-danger{%else%}label-success{%end%}">{{row['iow']}}</span></td>
-            <td>{{row['relation']}}</td>
-            <td>{{row['mode']}}</td>
-            <td>{{row['type']}}</td>
-            <td class="text-center"><span class="label {%if row['state'] == 'active'%}label-success{%elif row['state'] == 'idle in transaction'%}label-danger{%elif row['state'] == 'idle in transaction (aborted)'%}label-danger{%else%}label-default{%end%}">{{row['state']}}</span></td>
-            <td class="text-right">{{row['duration']}}</td>
-            <td class="query">{{row['query']}}</td>
-          </tr>
-          {% end %}
-        </table>
-      </form>
-    </div>
+</div>
+<div class="row" id="configuration-row">
+  <div class="col-md-12"></div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <form role="form" method="post">
+      <table id="tableActivity" class="table table-condensed table-striped table-activity">
+        <tr>
+          <th class="xs"></th>
+          <th class="sm">PID</th>
+          <th class="med">Database</th>
+          <th class="med">User</th>
+          <th class="sm">%CPU</th>
+          <th class="sm">%mem</th>
+          <th class="med">Read/s</th>
+          <th class="med">Write/s</th>
+          <th class="xs">IOW</th>
+          <th class="med">Lock Rel.</th>
+          <th class="med">Lock Mode</th>
+          <th class="med">Lock Type</th>
+          <th class="lg">State</th>
+          <th class="med">Duration (s)</th>
+          <th class="query">Query</th>
+        </tr>
+        {% for row in activities['rows'] %}
+        <tr class="{%if float(row['duration'])>5%}danger{%else%}{%if float(row['duration'])>1%}warning{%else%}none{%end%}{%end%}">
+          <td><input type="checkbox" class="input-xs" data-pid="{{row['pid']}}" readonly disabled/></td>
+          <td>{{row['pid']}}</td>
+          <td class="text-center">{{row['database']}}</td>
+          <td class="text-center">{{row['user']}}</td>
+          <td class="text-right">{{row['cpu']}}</td>
+          <td class="text-right">{{row['memory']}}</td>
+          <td class="text-right">{{row['read_s']}}</td>
+          <td class="text-right">{{row['write_s']}}</td>
+          <td><span class="label {% if row['iow'] == 'Y'%}label-danger{%else%}label-success{%end%}">{{row['iow']}}</span></td>
+          <td>{{row['relation']}}</td>
+          <td>{{row['mode']}}</td>
+          <td>{{row['type']}}</td>
+          <td class="text-center"><span class="label {%if row['state'] == 'active'%}label-success{%elif row['state'] == 'idle in transaction'%}label-danger{%elif row['state'] == 'idle in transaction (aborted)'%}label-danger{%else%}label-default{%end%}">{{row['state']}}</span></td>
+          <td class="text-right">{{row['duration']}}</td>
+          <td class="query">{{row['query']}}</td>
+        </tr>
+        {% end %}
+      </table>
+    </form>
   </div>
 </div>
 
