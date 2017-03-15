@@ -7,7 +7,7 @@ This directory contains functional tests for each plugin. To run these tests you
 ## `nosetests` installation
 
 ``` console
-# pip install nosetests
+# pip install nose
 ```
 
 ## Run the tests
