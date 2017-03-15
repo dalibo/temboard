@@ -2,7 +2,6 @@ from __future__ import print_function
 import time
 import os
 import sys
-import inspect
 import signal
 import random
 import string
@@ -16,12 +15,10 @@ import json
 import test.configtest as test_conf
 
 # Add main temboard-agent module dir into sys.path
-# The goal is to import spc
+# The goal is to import spc module
 tbda_dir = os.path.realpath(
-                os.path.abspath(
-                    os.path.split(
-                        inspect.getfile(
-                            inspect.currentframe()))[0])+'/../temboardagent')
+            os.path.join(__file__, '..', '..', 'temboard-agent'))
+
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
 

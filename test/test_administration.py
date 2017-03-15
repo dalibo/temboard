@@ -2,19 +2,17 @@ import json
 import time
 import os
 import sys
-import inspect
 
 from urllib2 import HTTPError
 from test.temboard import init_env, drop_env, temboard_request
 
 # Import spc
 tbda_dir = os.path.realpath(
-                os.path.abspath(
-                    os.path.split(
-                        inspect.getfile(
-                            inspect.currentframe()))[0])+'/../temboardagent')
+            os.path.join(__file__, '..', '..', 'temboard-agent'))
+
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
+
 
 from temboardagent.spc import connector, error  # noqa
 
