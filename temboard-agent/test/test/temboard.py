@@ -17,7 +17,7 @@ import test.configtest as test_conf
 # Add main temboard-agent module dir into sys.path
 # The goal is to import spc module
 tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..', 'temboard-agent'))
+            os.path.join(__file__, '..', '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)

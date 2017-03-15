@@ -7,7 +7,7 @@ from test.temboard import init_env, drop_env, temboard_request
 
 # Import spc
 tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..', 'temboard-agent'))
+            os.path.join(__file__, '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
