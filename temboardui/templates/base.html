@@ -118,36 +118,37 @@
           <div class="row">
             <div class="col-md-12">
               {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+              {% set plugin = globals().get('plugin', None) %}
               {% if 'dashboard' in plugin_names %}
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
-                 class="btn btn-default">
+                 class="btn btn-default {{'active' if plugin == 'dashboard' else ''}}">
                 <i class="fa fa-dashboard fa-fw"></i>
                 Dashboard
               </a>
               {% end %}
               {% if 'activity' in plugin_names %}
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"
-                 class="btn btn-default">
+                 class="btn btn-default {{'active' if plugin == 'activity' else ''}}">
                 <i class="fa fa-bars fa-fw"></i>
                 Activity
               </a>
               {% end %}
               {% if 'supervision' in plugin_names %}
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day"
-                 class="btn btn-default">
+                 class="btn btn-default {{'active' if plugin == 'supervision' else ''}}">
                 <i class="fa fa-bar-chart-o"></i>
                 Supervision
               </a>
               {% end %}
               {% if 'settings' in plugin_names %}
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration"
-                 class="btn btn-default">
+                 class="btn btn-default {{'active' if plugin == 'settings' else ''}}">
                 <i class="fa fa-cog"></i>
                 Settings
               </a>
               {% end %}
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
-                 class="btn btn-default">
+                 class="btn btn-default {{'active' if plugin == 'notifications' else ''}}">
                 <i class="fa fa-envelope-o"></i>
                 Notifications
               </a>

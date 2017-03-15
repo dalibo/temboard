@@ -553,6 +553,7 @@ class SupervisionHTMLHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
+                        'plugin': 'supervision',
                         'period': period,
                         'start_date': start_date.strftime('%Y-%m-%dT%H:%M:%S'),
                         'end_date': end_date.strftime('%Y-%m-%dT%H:%M:%S')

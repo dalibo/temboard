@@ -43,6 +43,7 @@ class NotificationsHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
+                        'plugin': 'notifications',
                         'notifications': notifications,
                         'xsession': xsession
                     })

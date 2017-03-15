@@ -66,6 +66,7 @@ class ActivityHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
+                        'plugin': 'activity',
                         'activities': activity_data,
                         'xsession': xsession
                     })
@@ -143,6 +144,7 @@ class ActivityWBHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
+                        'plugin': 'activity',
                         'activities': activity_data,
                         'mode': mode,
                         'xsession': xsession
