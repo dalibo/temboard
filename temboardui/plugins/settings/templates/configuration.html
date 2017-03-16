@@ -22,16 +22,10 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-12">
-    {%if query_filter%}
-    <h1><i class="fa fa-cog"></i> Settings <small>/</small> Configuration <small>/</small> <span class="label label-default">{{query_filter}}</span></h1>
-    {% end %}
-    {%if not query_filter%}
-    <h1><i class="fa fa-cog"></i> Settings <small>/</small> Configuration</h1>
-    {% end %}
-  </div>
-</div>
+{% set file_type = 'postgres' %}
+
+{% include menu.html %}
+
 {% try %}
 {% if ret_post and len(ret_post['settings']) > 0%}
 <div class="row">
