@@ -3,6 +3,7 @@
 
 [![Travis Build Status](https://travis-ci.org/dalibo/temboard.svg?branch=master)](https://travis-ci.org/dalibo/temboard)
 [![CircleCI Build Status](https://circleci.com/gh/dalibo/temboard.svg?style=shield&circle-token=06839d6191de49336658cc2d473290c15b4248c3)](https://circleci.com/gh/dalibo/temboard)
+[![codecov](https://codecov.io/gh/dalibo/temboard/branch/master/graph/badge.svg)](https://codecov.io/gh/dalibo/temboard)
 
 
 Temboard is a powerful mangement tool for PostgreSQL.
@@ -45,4 +46,3 @@ Want to contribute? Please first read our guide on [contributing](CONTRIBUTING.m
 # License
 
 Temboard is available under the [PostgreSQL License](LICENSE).
-
