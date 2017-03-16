@@ -20,11 +20,9 @@
     </div>
   </div>
 </div>
+{% include menu.html %}
 <div class="row">
-  <div class="col-md-4">
-    <h1><i class="fa fa-bars fa-fw"></i> Activity <small>/</small> {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% end %} queries</h1>
-  </div>
-  <div class="col-md-8 navActivity">
+  <div class="col-md-12 navActivity text-center">
     <button type="button" class="btn btn-primary btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
     <button type="button" class="btn btn-primary btn-sm" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
     <button type="button" class="btn btn-danger btn-sm" id="killButton"><i class="glyphicon glyphicon-fire"></i> Terminate backend</button>

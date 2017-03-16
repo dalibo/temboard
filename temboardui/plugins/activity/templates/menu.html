@@ -1,0 +1,11 @@
+<ul class="nav nav-tabs">
+  <li class="{{'active' if mode == 'running' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"> Running</a>
+  </li>
+  <li class="{{'active' if mode == 'waiting' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/waiting"> Waiting</a>
+  </li>
+  <li class="{{'active' if mode == 'blocking' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/blocking">Blocking</a>
+  </li>
+</ul>
