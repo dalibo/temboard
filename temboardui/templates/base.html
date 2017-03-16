@@ -113,47 +113,54 @@
               </table>
             </div>
           </div>
-        </div>
-        <div class="col-md-9">
           <div class="row">
             <div class="col-md-12">
-              {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
-              {% set plugin = globals().get('plugin', None) %}
-              {% if 'dashboard' in plugin_names %}
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
-                 class="btn btn-default {{'active' if plugin == 'dashboard' else ''}}">
-                <i class="fa fa-dashboard fa-fw"></i>
-                Dashboard
-              </a>
-              {% end %}
-              {% if 'activity' in plugin_names %}
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"
-                 class="btn btn-default {{'active' if plugin == 'activity' else ''}}">
-                <i class="fa fa-bars fa-fw"></i>
-                Activity
-              </a>
-              {% end %}
-              {% if 'supervision' in plugin_names %}
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day"
-                 class="btn btn-default {{'active' if plugin == 'supervision' else ''}}">
-                <i class="fa fa-bar-chart-o"></i>
-                Supervision
-              </a>
-              {% end %}
-              {% if 'settings' in plugin_names %}
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration"
-                 class="btn btn-default {{'active' if plugin == 'settings' else ''}}">
-                <i class="fa fa-cog"></i>
-                Settings
-              </a>
-              {% end %}
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
-                 class="btn btn-default {{'active' if plugin == 'notifications' else ''}}">
-                <i class="fa fa-envelope-o"></i>
-                Notifications
-              </a>
+              <ul class="nav nav-pills nav-stacked">
+                {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+                {% set plugin = globals().get('plugin', None) %}
+                {% if 'dashboard' in plugin_names %}
+                <li class="{{'active' if plugin == 'dashboard' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
+                    <i class="fa fa-dashboard"></i>
+                    Dashboard
+                  </a>
+                </li>
+                {% end %}
+                {% if 'activity' in plugin_names %}
+                <li class="{{'active' if plugin == 'activity' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running">
+                    <i class="fa fa-bars"></i>
+                    Activity
+                  </a>
+                </li>
+                {% end %}
+                {% if 'supervision' in plugin_names %}
+                <li class="{{'active' if plugin == 'supervision' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">
+                    <i class="fa fa-bar-chart-o"></i>
+                    Supervision
+                  </a>
+                </li>
+                {% end %}
+                {% if 'settings' in plugin_names %}
+                <li class="{{'active' if plugin == 'settings' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
+                    <i class="fa fa-cog"></i>
+                    Settings
+                  </a>
+                </li>
+                {% end %}
+                <li class="{{'active' if plugin == 'notifications' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications">
+                    <i class="fa fa-envelope-o"></i>
+                    Notifications
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
+        <div class="col-md-9">
           {% block content %} {% end %}
         </div>
       </div>
