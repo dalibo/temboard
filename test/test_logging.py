@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from mock import Mock
 
 
 def test_multiline_formatter():
@@ -25,3 +26,19 @@ def test_multiline_formatter():
     assert 'PREFIX: Traceback' in payload
     assert 'PREFIX: File' in payload
     assert 'PREFIX:   exec' in payload
+
+
+def test_config():
+    from temboardui.logger import generate_logging_config
+
+    config = Mock(logging=dict(
+        destination='destination',
+        facility='local0',
+        method='stderr',
+        level='INFO',
+    ))
+
+    logging = generate_logging_config(config)
+
+    assert logging['loggers']['temboardui']['level'] == config.logging['level']
+    assert 'StreamHandler' in logging['handlers']['configured']['()']

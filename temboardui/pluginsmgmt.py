@@ -1,5 +1,9 @@
+import logging
 import os, imp, sys
-from temboardui.logger import get_logger
+
+
+logger = logging.getLogger(__name__)
+
 
 def load_plugins(plugin_names, config):
     """
@@ -13,8 +17,6 @@ def load_plugins(plugin_names, config):
     # Get this module's path.
     path = os.path.dirname(os.path.realpath(__file__))
     ret = dict()
-    # Get the logger.
-    logger = get_logger(config)
     # Loop through declared plugins.
     for plugin_name in plugin_names:
         # Locate and load the module with imp.
