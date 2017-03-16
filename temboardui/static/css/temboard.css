@@ -35,6 +35,11 @@ body {
 	background-color: #222;
 }
 
+.nav-tabs {
+  /* always leave space under tabs */
+  margin-bottom: 10px;
+}
+
 #canvas-memory-holder{
 	width:100%;
 }
@@ -279,10 +284,6 @@ select.form-control {
 
 .table-activity td.query {
 	color:#337AB7;
-}
-
-.navActivity {
-	padding: 10px 0px 0px 0px;
 }
 
 .alert-restricted {
