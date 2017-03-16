@@ -214,12 +214,6 @@ select.form-control {
 	margin-top: 20px;
 }
 
-.change-cat {
-	width: 700px;
-	margin-bottom: 20px;
-}
-
-
 .navbar .navbar-left table tr td {
 	color: #666;
 }
@@ -241,10 +235,6 @@ select.form-control {
 }
 #restartModalBody h1 i {
 	color: #C9302C;
-}
-
-#formSearchSettings {
-	padding-left: 37px;
 }
 
 .table-activity {

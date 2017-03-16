@@ -193,32 +193,55 @@ $('#reloadYesButton').on(
 );
 </script>
 {% end %}
-{% if not query_filter %}
-<div class="row">
-  <div class="col-md-12">
+<div class="row form-group">
+  <div class="col-md-3">
+    <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration" class="form" role="search">
+      <label class="sr-only" for="selectServer">Search</label>
+      <div class="input-group">
+        <input class="form-control" id="inputSearchSettings" name="filter" placeholder="Find in settings" value="{{query_filter if query_filter is not None else ''}}"/>
+        <span class="input-group-btn">
+          {% if query_filter %}
+          <a class="btn btn-default"
+             href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
+            <i class="fa fa-fw fa-times"></i>
+          </a>
+          {% end %}
+          <button type="submit" class="btn btn-default" id="buttonSearchSettings">
+            <i class="fa fa-fw fa-search"></i>
+          </button>
+        </span>
+      </div>
+    </form>
+  </div>
+  <div class="col-md-7">
     <label class="sr-only" for="selectConfCat">Category</label>
-    <div class="input-group change-cat">
+    <div class="input-group">
       <div class="input-group-addon">Category</div>
-      <select class="form-control" id="selectConfCat">{% for cat in configuration_categories['categories'] %}<option value="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration/category/{{url_escape(cat)}}"{% if url_escape(current_cat) == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>{% end %}</select>
+      <select class="form-control" id="selectConfCat" {{'disabled' if query_filter else ''}}>
+        {% if not query_filter %}
+        {% for cat in configuration_categories['categories'] %}
+        <option value="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration/category/{{url_escape(cat)}}"{% if url_escape(current_cat) == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>
+        {% end %}
+        {% end %}
+      </select>
     </div>
+    <script>
+    $('#selectConfCat').on('change', function(event) {
+      event.preventDefault();
+      window.location.replace($('#selectConfCat').find(':selected').attr('value'));
+    });
+    </script>
   </div>
 </div>
-<script>
-$('#selectConfCat').on('change', function(event) {
-  event.preventDefault();
-  window.location.replace($('#selectConfCat').find(':selected').attr('value'));
-});
-</script>
-{% end %}
 {% if len(data) == 0 %}
 <div class="row">
   <div class="col-md-12"><p>No results found...</p></div>
 </div>
 {% end %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-md-10">
   {% for setting_group in data %}
-    <div class="panel panel-default panel-settings">
+    <div class="panel panel-default">
       <div class="panel-heading">{{setting_group['category']}}</div>
       <div class="panel-body">
         <form role="form" method="post">
