@@ -18,21 +18,11 @@ body {
 
 .navbar {
 	border: 0;
-	background-color: #222;
 }
 
 .navbar-brand {
   padding: 0;
   padding-right: 15px;
-}
-
-.navbar-default .navbar-collapse, .navbar-default .navbar-form {
-	border: 0px;
-}
-
-.navbar-default .navbar-nav>li>a:hover {
-	color: #fff;
-	background-color: #222;
 }
 
 .nav-tabs {
