@@ -3,11 +3,6 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Login{% end %}
 
 {% block content %}
-<div class="row">
-  <div class="col-md-12">
-    <h1><i class="glyphicon glyphicon-log-in"></i> Login</h1>
-  </div>
-</div>
 {% if username is not None %}
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
