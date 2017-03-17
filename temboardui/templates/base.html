@@ -72,13 +72,12 @@
         <ul class="nav navbar-nav navbar-right">
           {% try %}
           {% if role.is_admin %}
-          <li>
+          <li class="{{'active' if globals().get('request') and 'manage' in request.uri else ''}}">
             <a href="/manage/instances"><i class="fa fa-wrench"></i> Manage</a>
           </li>
           {% end %}
           {% except %}
           {% end %}
-          <li class="divider-vertical"></li>
           <li>
             <a href="/logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a>
           </li>
