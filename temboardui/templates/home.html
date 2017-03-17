@@ -26,7 +26,7 @@
       {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
       <tr>
         <td><strong>{{instance.hostname}}</strong></td>
-        <td>{% for group in instance.groups %} <span class="label label-success">{{group.group_name}}</span>{% end %}</td>
+        <td>{% for group in instance.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
         <td>{{instance.cpu}}</td>
         <td data-type="size" data-memory_size="{{instance.memory_size}}">{{instance.memory_size}}</td>
         <td>{{instance.pg_version}}</td>
