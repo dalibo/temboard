@@ -295,33 +295,13 @@ td {
 	padding-bottom: 0px;
 }
 
-
-.panel-settings {
-	width: 700px;
-}
-
-.panel-settings table tr td.action-setting {
-	width: 40px;
-	vertical-align: middle;
-}
-.panel-settings table tr td.label-setting {
-	width: 400px;
-}
-.panel-settings table tr td.input-setting {
-	width: 260px;
-	vertical-align: middle;
-}
-
 .title-setting {
-	font-size: 12px;
 	font-weight: bold;
 	color: #000;
 }
 
 .desc-setting {
 	color: #555;
-	font-size: 12px;
-	text-align: justify;
 }
 
 .supervision-chart {

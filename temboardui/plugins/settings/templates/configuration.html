@@ -213,7 +213,7 @@ $('#reloadYesButton').on(
       </div>
     </form>
   </div>
-  <div class="col-md-7">
+  <div class="col-md-7 col-md-offset-2">
     <label class="sr-only" for="selectConfCat">Category</label>
     <div class="input-group">
       <div class="input-group-addon">Category</div>
@@ -239,7 +239,7 @@ $('#reloadYesButton').on(
 </div>
 {% end %}
 <div class="row">
-  <div class="col-md-10">
+  <div class="col-md-12">
   {% for setting_group in data %}
     <div class="panel panel-default">
       <div class="panel-heading">{{setting_group['category']}}</div>
