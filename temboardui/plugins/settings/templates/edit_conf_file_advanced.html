@@ -75,8 +75,8 @@
             {% set no += 1 %}
           <tr data-line-number="{{no}}">
             <td>
-              <button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="glyphicon glyphicon-arrow-up"></i></button>
-              <button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="glyphicon glyphicon-arrow-down"></i></button>
+              <button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>
             </td>
             <td class="text-center"><span class="no">{{no}}</span></td>
             {% if 'comment' in record %}
@@ -91,7 +91,7 @@
             {% end %}
             <td>
               <button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>
-              <button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="glyphicon glyphicon-remove-circle"></i></button>
+              <button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>
             </td>
           </tr>
           {% end %}

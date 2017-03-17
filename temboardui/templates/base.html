@@ -85,7 +85,7 @@
           {% except %}
           {% end %}
           <li>
-            <a href="/logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a>
+            <a href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
           </li>
         </ul>
       </div>
@@ -157,7 +157,7 @@
                 {% end %}
                 <li class="{{'active' if plugin == 'notifications' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications">
-                    <i class="fa fa-envelope-o"></i>
+                    <i class="fa fa-envelope"></i>
                     Notifications
                   </a>
                 </li>
