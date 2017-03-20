@@ -34,21 +34,21 @@
 {% end %}
 {% except %}
 {% end %}
+<p>
+  <em>{{file_content['filepath']}}</em>
+</p>
 <div class="row">
   <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">{{file_content['filepath']}}</div>
-      <div class="panel-body">
-        <form role="form" method="post">
-          <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
-          <div class="row">
-            <div class="col-md-12 text-center">
-              <button type="submit" class="btn btn-sm btn-primary">Save and reload configuration</button>
-            </div>
-          </div>
-        </form>
+    <form role="form" method="post">
+      <div class="form-group">
+        <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
       </div>
-    </div>
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <button type="submit" class="btn btn-sm btn-primary">Save and reload configuration</button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 <script>

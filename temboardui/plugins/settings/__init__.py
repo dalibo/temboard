@@ -30,6 +30,8 @@ def get_routes(config):
         (r"/proxy/(.*)/([0-9]{1,5})/settings/hba$", HBAProxyHandler, handler_conf),
         (r"/proxy/(.*)/([0-9]{1,5})/settings/hba/delete$", HBADeleteProxyHandler, handler_conf),
         (r"/js/settings/(.*)", tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
+        (r"/css/settings/(.*)", tornado.web.StaticFileHandler,
+         {'path': plugin_path + "/static/css"}),
     ]
     return routes
 
