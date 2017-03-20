@@ -11,8 +11,6 @@
   <title>{% block title %} {% end %}</title>
   <!-- Bootstrap -->
   <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <!-- MetisMenu CSS -->
-  <link href="/css/metisMenu.min.css" rel="stylesheet">
 
   <!-- Timeline CSS -->
   <link href="/css/timeline.css" rel="stylesheet">
@@ -57,117 +55,133 @@
 </head>
 <body>
   <div id="modalError" /></div>
-  <div id="wrapper">
+  <div>
     <script src="/js/jquery-2.1.4.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="/js/metisMenu.min.js"></script>
     <!-- Custom Theme JavaScript -->
     <script src="/js/sb-admin-2.js"></script>
     {% if nav %}
     <!-- Navigation -->
-    <div class="navbar" role="navigation" id="topNav">
-      <div class="sidebar">
-        <img id="logo" src="/images/temboard-150x32-w.png" />
-        <div class="sidebar-nav navbar-collapse">
-          <ul class="nav" id="side-menu">
-            {% try %}
-            {% if instance %}
-            {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
-            <li>
-              <table id="tableHeaderInfo">
-                <tr><td colspan="2" class="text-center"><h4><span class="label label-success">{{instance.hostname}}</span></h4></td></tr>
-                <tr><td>Groups: </td><td class="pull-right">{% for group in instance.groups %} {{group.group_name}}{% end %}</td></tr>
-                <tr><td>Host: </td><td class="pull-right">{{instance.agent_address}}</td></tr>
-                <tr><td>PG data: </td><td class="pull-right">{{instance.pg_data}}</td></tr>
-                <tr><td>PG Port: </td><td class="pull-right">{{instance.pg_port}}</td></tr>
-                <tr><td>PG Version: </td><td class="pull-right">{{instance.pg_version}}</td></tr>
+    <div class="navbar navbar-default navbar-static-top navbar-inverse">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/home">
+            <img id="logo" src="/images/temboard-150x32-w.png" />
+          </a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          {% try %}
+          {% if role.is_admin %}
+          <li class="{{'active' if globals().get('request') and 'manage' in request.uri else ''}}">
+            <a href="/manage/instances"
+               data-toggle="tooltip"
+               data-placement="bottom"
+               title="Manage instances and users">
+              <i class="fa fa-wrench"></i>
+              Manage
+            </a>
+          </li>
+          {% end %}
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-user"></i>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="dropdown-header">Signed in as <b>{{role.role_name}}</b></li>
+              <li role="separator" class="divider"></li>
+              <li>
+                <a href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+              </li>
+            </ul>
+          </li>
+          {% except %}
+          {% end %}
+        </ul>
+      </div>
+    </div>
+    {% end %}
+
+    <div class="container">
+      {% if globals().has_key('instance') %}
+      <div class="row">
+        <div class="col-md-3">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <b>
+                {{instance.hostname}}
+              </b>
+            </div>
+            <div class="panel-body">
+              <p>
+              {% for group in instance.groups %}
+                <span class="label label-default small">
+                  {{group.group_name}}
+                </span>&nbsp;
+              {% end %}
+              </p>
+              <table class="table table-condensed">
+                <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
+                <tr><td>PG data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
+                <tr><td>PG Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
+                <tr><td>PG Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
               </table>
-            </li>
-            {% end %}
-            {% except %}
-            {% end %}
-            <li><a href="/home"><i class="fa fa-home fa-fw"></i> Home</a></li>
-            {% try %}
-              {% if instance %}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="nav nav-pills nav-stacked">
+                {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+                {% set plugin = globals().get('plugin', None) %}
                 {% if 'dashboard' in plugin_names %}
-            <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a></li>
+                <li class="{{'active' if plugin == 'dashboard' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
+                    <i class="fa fa-dashboard fa-fw"></i>
+                    Dashboard
+                  </a>
+                </li>
                 {% end %}
                 {% if 'activity' in plugin_names %}
-            <li>
-              <a href="#"><i class="fa fa-bars"></i> Activity<span class="fa arrow"></span></a>
-              <ul class="nav nav-second-level collapse">
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"> Running queries</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/waiting"> Waiting queries</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/blocking">Blocking queries</a></li>
-              </ul>
-            </li>
+                <li class="{{'active' if plugin == 'activity' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running">
+                    <i class="fa fa-bars fa-fw"></i>
+                    Activity
+                  </a>
+                </li>
                 {% end %}
                 {% if 'supervision' in plugin_names %}
-            <li>
-              <a href="#"><i class="fa fa-bar-chart-o"></i> Supervision<span class="fa arrow"></span></a>
-              <ul class="nav nav-second-level collapse">
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">Charts - Last day</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/week">Charts - Last week</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/month">Charts - Last month</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/year">Charts - Last year</a></li>
-              </ul>
-            </li>
+                <li class="{{'active' if plugin == 'supervision' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">
+                    <i class="fa fa-bar-chart-o fa-fw"></i>
+                    Supervision
+                  </a>
+                </li>
                 {% end %}
                 {% if 'settings' in plugin_names %}
-            <li>
-              <a href="#"><i class="fa fa-cog"></i> Settings<span class="fa arrow"></span></a>
-              <ul class="nav nav-second-level collapse">
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">Configuration</a></li>
-                <li>
-                  <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration" class="form" id="formSearchSettings"  role="search">
-                    <label class="sr-only" for="selectServer">Search</label>
-                    <div class="input-group">
-                      <input class="form-control input-sm" id="inputSearchSettings" name="filter" placeholder="Find in settings"/>
-                      <span class="input-group-btn">
-                        <button type="submit" class="btn btn-sm btn-primary" id="buttonSearchSettings"><i class="glyphicon glyphicon-search"></i></button>
-                      </span>
-                    </div>
-                  </form>
+                <li class="{{'active' if plugin == 'settings' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
+                    <i class="fa fa-cog fa-fw"></i>
+                    Settings
+                  </a>
                 </li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/hba">Host Base Authentication</a></li>
-                <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/pg_ident">User Name Maps</a></li>
-              </ul>
-            </li>
                 {% end %}
-            <li><a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"><i class="glyphicon glyphicon-envelope"></i> Notifications</a></li>
-              {% end %}
-            {% except %}
-            {% end %}
-            <li><a href="/logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
-            {% try %}
-            {% if role.is_admin %}
-            <li>
-              <a href="#"><i class="fa fa-wrench fa-fw"></i> Manage<span class="fa arrow"></span></a>
-              <ul class="nav nav-second-level collapse">
-                <li><a href="/manage/users">Users</a></li>
-                <li><a href="/manage/groups/role">User groups</a></li>
-                <li><a href="/manage/instances">Instances</a></li>
-                <li><a href="/manage/groups/instance">Instance groups</a></li>
+                <li class="{{'active' if plugin == 'notifications' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications">
+                    <i class="fa fa-envelope fa-fw"></i>
+                    Notifications
+                  </a>
+                </li>
               </ul>
-            </li>
-            {% end %}
-            {% except %}
-            {% end %}
-          </ul>
+            </div>
+          </div>
         </div>
-        <!-- /.sidebar-collapse -->
+        <div class="col-md-9">
+          {% block content %} {% end %}
+        </div>
       </div>
-      <!-- /.navbar-static-side -->
-    </div>
-    <script>
-    $('#side-menu').metisMenu();
-    </script>
-    <div id="page-wrapper">
-    {% else %}
-    <div>
-    {% end %}
-      {% block content %} {% end %}
+      {% else %}
+        {% block content %} {% end %}
+      {% end %} {# end if instance #}
     </div>
   </div>
   <script>

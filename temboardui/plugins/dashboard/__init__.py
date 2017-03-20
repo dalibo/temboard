@@ -71,6 +71,7 @@ class DashboardHandler(BaseHandler):
                     'nav': True,
                     'role': role,
                     'instance': instance,
+                    'plugin': 'dashboard',
                     'dashboard' : last_data,
                     'history': history,
                     'buffers_delta' : 0,

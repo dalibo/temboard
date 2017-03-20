@@ -3,60 +3,52 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Settings / {% if file_type == 'hba' %}Host Base Authentication{% else %}User Name Maps{% end %}{% end %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-    {% if file_type == 'hba' %}
-      <h1><i class="fa fa-cog"></i> Settings <small>/</small> Host Base Authentication</h1>
-    {% elif file_type == 'pg_ident' %}
-      <h1><i class="fa fa-cog"></i> Settings <small>/</small> User Name Maps</h1>
-    {% end %}
-    </div>
-  </div>
+
+{% include menu.html %}
+
 {% try %}
 {% if ret_post %}
-  <div class="row">
-    <div class="col-md-12">
-      <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
-        <p><strong>{% if file_type == 'hba' %}pg_hba.conf{% elif file_type == 'pg_ident' %}pg_ident.conf{% end %}</strong> file successfully updated and PostgreSQL configuration reloaded.</p>
-      </div>
+<div class="row">
+  <div class="col-md-12">
+    <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
+      <p><strong>{% if file_type == 'hba' %}pg_hba.conf{% elif file_type == 'pg_ident' %}pg_ident.conf{% end %}</strong> file successfully updated and PostgreSQL configuration reloaded.</p>
     </div>
   </div>
+</div>
 {% end %}
 {% except %}
 {% end %}
 
 {% try %}
 {% if error_code > 0%}
-  <div class="row">
-    <div class="col-md-12">
-      <div id="error-configuration" class="alert alert-danger" role="alert">
-        <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
-        <p>{{error_code}}: {{error_message}}</p>
-      </div>
+<div class="row">
+  <div class="col-md-12">
+    <div id="error-configuration" class="alert alert-danger" role="alert">
+      <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
+      <p>{{error_code}}: {{error_message}}</p>
     </div>
   </div>
+</div>
 {% end %}
 {% except %}
 {% end %}
-  <div class="row">
-    <div class="col-md-12">
-      <div class="panel panel-default panel-settings">
-        <div class="panel-heading">{{file_content['filepath']}}</div>
-        <div class="panel-body">
-          <form role="form" method="post">
-            <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
-            <div class="row">
-              <div class="col-md-12 text-center">
-                <button type="submit" class="btn btn-sm btn-primary">Save and reload configuration</button>
-              </div>
-            </div>
-          </form>
+<p>
+  <em>{{file_content['filepath']}}</em>
+</p>
+<div class="row">
+  <div class="col-md-12">
+    <form role="form" method="post">
+      <div class="form-group">
+        <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <button type="submit" class="btn btn-sm btn-primary">Save and reload configuration</button>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 <script>

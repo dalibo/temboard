@@ -409,8 +409,8 @@ function get_row_html(row)
 	var row_html = '';
 	row_html += '<tr data-line-number="'+row.line+'">';
 	row_html += '	<td>';
-	row_html += '		<button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="glyphicon glyphicon-arrow-up"></i></button>';
-	row_html += '		<button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="glyphicon glyphicon-arrow-down"></i></button>';
+	row_html += '		<button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>';
+	row_html += '		<button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>';
 	row_html += '	</td>';
 	row_html += '	<td class="text-center"><span class="no">'+row.line+'</span></td>';
 
@@ -435,7 +435,7 @@ function get_row_html(row)
 	}
 	row_html += '	<td>';
 	row_html += '		<button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>';
-	row_html += '		<button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="glyphicon glyphicon-remove-circle"></i></button>';
+	row_html += '		<button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>';
 	row_html += '	</td>';
 	row_html += '</tr>';
 	return row_html;

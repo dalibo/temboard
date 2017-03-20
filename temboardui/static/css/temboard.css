@@ -1,15 +1,6 @@
 body {
 }
 
-#wrapper {
-	width: 100%;
-	min-width: 1000px;
-	height: auto;
-	/* background-color: #222; */
-	min-height: 100vh;
-	overflow: hidden;
-}
-
 #page-wrapper {
 	padding: 0 15px;
 	height: 100%;
@@ -27,19 +18,16 @@ body {
 
 .navbar {
 	border: 0;
-	width: 250px;
-	min-height: 0;
-	margin-bottom: -50000px; /* any large number will do */
-	padding-bottom: 50000px;
 }
 
-.navbar-default .navbar-collapse, .navbar-default .navbar-form {
-	border: 0px;
+.navbar-brand {
+  padding: 0;
+  padding-right: 15px;
 }
 
-.sidebar {
-	background-color: #222;
-	min-height: 100%;
+.nav-tabs {
+  /* always leave space under tabs */
+  margin-bottom: 10px;
 }
 
 #canvas-memory-holder{
@@ -62,10 +50,6 @@ body {
 }
 #canvas-tps-holder{
 	width:100%;
-}
-.row {
-  margin-left: 0px;
-  margin-right: 0px;
 }
 
 .panel-dashboard {
@@ -220,69 +204,8 @@ select.form-control {
 	margin-top: 20px;
 }
 
-.change-cat {
-	width: 700px;
-	margin-bottom: 20px;
-}
-
-
 .navbar .navbar-left table tr td {
 	color: #666;
-}
-
-.sidebar-nav ul li {
-	border-top: 1px solid rgba(0, 0, 0, 0.3);
-	box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.05) inset;
-	border-bottom: 1px solid #222;
-}
-
-.sidebar-nav ul li a {
-	color: #aaa;
-	text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
-}
-.sidebar-nav ul li a.active {
-	color: #fff;
-}
-.sidebar-nav ul li a.active i {
-	color: #fff;
-}
-.sidebar-nav ul li a:hover {
-	color: #fff;
-	background-color: #222;
-}
-.sidebar-nav ul li a:hover i {
-	color: #fff;
-	background-color: #222;
-}
-.sidebar-nav ul li a:focus {
-	color: #fff;
-	background-color: #222;
-}
-.sidebar-nav ul li ul li{
-	border-bottom: 1px solid #2d2d2d;
-	background-color: #393939;
-}
-.sidebar-nav ul li ul li a {
-}
-.sidebar-nav ul li ul li a.active {
-	color: #fff;
-	background-color: #494949;
-}
-.sidebar-nav ul li ul li a.active i {
-	color: #fff;
-	background-color: #494949;
-}
-.sidebar-nav ul li ul li a:hover {
-	color: #fff;
-	background-color: #494949;
-}
-.sidebar-nav ul li ul li a:hover i {
-	color: #fff;
-	background-color: #494949;
-}
-.sidebar-nav ul li ul li a:focus {
-	color: #fff;
-	background-color: #393939;
 }
 
 #logo {
@@ -290,30 +213,6 @@ select.form-control {
 	padding: 10px 0px 10px 10px;
 	font-size: 24px;
 	color: #fff;
-}
-
-.sidebar-nav {
-	background-image: -webkit-linear-gradient(left, color-stop(#333333 10px), color-stop(#222222 10px));
-	background-image: linear-gradient(to right, #333333 10px, #222222 10px);
-	background-repeat: repeat-x;
-	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ff333333', endColorstr='#ff222222', GradientType=1);
-}
-
-#tableHeaderInfo {
-	border: 0;
-	background-color: #393939;
-	width: 100%;
-}
-
-#tableHeaderInfo tr td {
-	border: 0;
-	color: #aaa;
-	padding: 0 5px 0px 5px;
-	font-size: 11px;
-}
-
-#tableHeaderInfo tr td.pull-right {
-	color: #5DA5DA;
 }
 
 #panelLogin {
@@ -326,10 +225,6 @@ select.form-control {
 }
 #restartModalBody h1 i {
 	color: #C9302C;
-}
-
-#formSearchSettings {
-	padding-left: 37px;
 }
 
 .table-activity {
@@ -371,10 +266,6 @@ select.form-control {
 	color:#337AB7;
 }
 
-.navActivity {
-	padding: 10px 0px 0px 0px;
-}
-
 .alert-restricted {
 	margin-top: 10px;
 	padding: 10px;
@@ -404,33 +295,13 @@ td {
 	padding-bottom: 0px;
 }
 
-
-.panel-settings {
-	width: 700px;
-}
-
-.panel-settings table tr td.action-setting {
-	width: 40px;
-	vertical-align: middle;
-}
-.panel-settings table tr td.label-setting {
-	width: 400px;
-}
-.panel-settings table tr td.input-setting {
-	width: 260px;
-	vertical-align: middle;
-}
-
 .title-setting {
-	font-size: 12px;
 	font-weight: bold;
 	color: #000;
 }
 
 .desc-setting {
 	color: #555;
-	font-size: 12px;
-	text-align: justify;
 }
 
 .supervision-chart {
@@ -440,7 +311,7 @@ td {
 
 #contDTP {
 	/*margin-bottom: 5px;*/
-	min-width: 500px; 
+	min-width: 500px;
 }
 
 .row-chart {

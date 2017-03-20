@@ -20,54 +20,50 @@
     </div>
   </div>
 </div>
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-      <h1><i class="fa fa-wrench fa-fw"></i> Manage <small>/</small> Instances</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          Instance list
-          <button id="buttonLoadAddInstanceForm" class="btn btn-primary btn-xs pull-right">+ Add a new instance</button>
-        </div>
-        <div class="panel-body">
-          <table class="table table-striped table-bordered table-hover" id="tableInstances">
-          <thead>
-            <tr>
-              <th>Agent</th>
-              <th>Hostname</th>
-              <th>PG Version</th>
-              <th>PG Port</th>
-              <th>PG Data</th>
-              <th>Groups</th>
-              <th class="no-sort"></th>
-              <th class="no-sort"></th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for instance_item in instance_list %}
-            <tr>
-              <td>{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
-              <td>{{instance_item.hostname}}</td>
-              <td>{{instance_item.pg_version}}</td>
-              <td>{{instance_item.pg_port}}</td>
-              <td>{{instance_item.pg_data}}</td>
-              <td>{% for group in instance_item.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-edit"></i></button>
-              </td>
-              <td class="text-center">
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="glyphicon glyphicon-remove-circle"></i></button>
-              </td>
-            </tr>
-          {% end %}
-          </tbody>
-        </table>
+<div class="row">
+  {% include menu.html %}
+  <div class="col-md-9">
+    <div class="row">
+      <div class="col-md-12 text-right">
+        <p>
+          <button id="buttonLoadAddInstanceForm" class="btn btn-success btn-sm">
+            New instance
+          </button>
+        </p>
       </div>
     </div>
+    <table class="table table-striped table-bordered table-hover" id="tableInstances">
+    <thead>
+      <tr>
+        <th>Agent</th>
+        <th>Hostname</th>
+        <th>PG Version</th>
+        <th>PG Port</th>
+        <th>PG Data</th>
+        <th>Groups</th>
+        <th class="no-sort"></th>
+        <th class="no-sort"></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for instance_item in instance_list %}
+      <tr>
+        <td>{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
+        <td>{{instance_item.hostname}}</td>
+        <td>{{instance_item.pg_version}}</td>
+        <td>{{instance_item.pg_port}}</td>
+        <td>{{instance_item.pg_data}}</td>
+        <td>{% for group in instance_item.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
+        <td class="text-center">
+          <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-edit"></i></button>
+        </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-trash-o"></i></button>
+        </td>
+      </tr>
+    {% end %}
+    </tbody>
+    </table>
   </div>
 </div>
 <script src="/js/temboard.manage.instance.js"></script>

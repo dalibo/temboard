@@ -19,94 +19,88 @@
     </div>
   </div>
 </div>
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-      <h1><i class="fa fa-bar-chart-o"></i> Supervision <small>/</small> Charts <small>/</small> {% if period != 'interval' %}Last {{period}}{%else%}Interval{%end%}</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="contDTP">
-      <div class="form-date-picker pull-right">
-        <div class="form-inline">
-          <div class='input-group date' id='DTP_start'>
-            <input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
-            <span class="input-group-addon">
-              <span class="glyphicon glyphicon-calendar"></span>
-            </span>
-          </div>
-          <i class="glyphicon glyphicon-arrow-right"></i>
-          <div class='input-group date' id='DTP_end'>
-            <input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
-            <span class="input-group-addon">
-              <span class="glyphicon glyphicon-calendar"></span>
-            </span>
-          </div>
-          <button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
+{% include menu.html %}
+<div class="row">
+  <div class="col-md-12" id="contDTP">
+    <div class="form-date-picker pull-right">
+      <div class="form-inline">
+        <div class='input-group date' id='DTP_start'>
+          <input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
+          <span class="input-group-addon">
+            <span class="fa fa-calendar"></span>
+          </span>
         </div>
+        <i class="fa fa-arrow-right"></i>
+        <div class='input-group date' id='DTP_end'>
+          <input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
+          <span class="input-group-addon">
+            <span class="fa fa-calendar"></span>
+          </span>
+        </div>
+        <button id="buttonChangeInterval" class="btn btn-primary btn-sm">Apply</button>
       </div>
     </div>
   </div>
-  <div class="row row-chart">
-    <div class="col-md-12" id="Loadavg"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="CPU"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="CtxForks"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Memory"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Swap"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="FsSize"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="FsUsage"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="TPS"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="InstanceSize"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="TblspcSize"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Sessions"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Blocks"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="HRR"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Checkpoints"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="WalFilesSize"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="WalFilesCount"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="WalFilesRate"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="WBuffers"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="Locks"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12" id="WLocks"></div>
-  </div>
+</div>
+<div class="row row-chart">
+  <div class="col-md-12" id="Loadavg"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="CPU"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="CtxForks"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Memory"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Swap"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="FsSize"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="FsUsage"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="TPS"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="InstanceSize"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="TblspcSize"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Sessions"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Blocks"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="HRR"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Checkpoints"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="WalFilesSize"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="WalFilesCount"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="WalFilesRate"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="WBuffers"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="Locks"></div>
+</div>
+<div class="row">
+  <div class="col-md-12" id="WLocks"></div>
 </div>
 
 <script src="/js/dygraph-combined.js"></script>
