@@ -136,7 +136,7 @@
                 {% if 'dashboard' in plugin_names %}
                 <li class="{{'active' if plugin == 'dashboard' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
-                    <i class="fa fa-dashboard"></i>
+                    <i class="fa fa-dashboard fa-fw"></i>
                     Dashboard
                   </a>
                 </li>
@@ -144,7 +144,7 @@
                 {% if 'activity' in plugin_names %}
                 <li class="{{'active' if plugin == 'activity' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running">
-                    <i class="fa fa-bars"></i>
+                    <i class="fa fa-bars fa-fw"></i>
                     Activity
                   </a>
                 </li>
@@ -152,7 +152,7 @@
                 {% if 'supervision' in plugin_names %}
                 <li class="{{'active' if plugin == 'supervision' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">
-                    <i class="fa fa-bar-chart-o"></i>
+                    <i class="fa fa-bar-chart-o fa-fw"></i>
                     Supervision
                   </a>
                 </li>
@@ -160,14 +160,14 @@
                 {% if 'settings' in plugin_names %}
                 <li class="{{'active' if plugin == 'settings' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
-                    <i class="fa fa-cog"></i>
+                    <i class="fa fa-cog fa-fw"></i>
                     Settings
                   </a>
                 </li>
                 {% end %}
                 <li class="{{'active' if plugin == 'notifications' else ''}}">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications">
-                    <i class="fa fa-envelope"></i>
+                    <i class="fa fa-envelope fa-fw"></i>
                     Notifications
                   </a>
                 </li>
