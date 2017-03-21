@@ -15,6 +15,29 @@ body {
   margin-bottom: 10px;
 }
 
+@media (min-width:992px) {
+  .sidebar-fixed-width {
+    width: inherit;
+    min-width: 300px;
+    max-width: 300px;
+    position:relative;
+    overflow: auto;
+  }
+
+  .main {
+    width:calc(100% - 300px);
+  }
+}
+
+/**
+ * This rule can be useful for plugins for which we don't need the full width.
+ * Should be used just like Bootstrap's `.container` (ie. with rows and col-xx
+ * inside).
+ */
+.limiter {
+  max-width: 1000px;
+}
+
 #canvas-memory-holder{
 	width:100%;
 }

@@ -63,7 +63,7 @@
     {% if nav %}
     <!-- Navigation -->
     <div class="navbar navbar-default navbar-static-top navbar-inverse">
-      <div class="container">
+      <div class="container-fluid">
         <div class="navbar-header">
           <a class="navbar-brand" href="/home">
             <img id="logo" src="/images/temboard-150x32-w.png" />
@@ -102,10 +102,10 @@
     </div>
     {% end %}
 
-    <div class="container">
-      {% if globals().has_key('instance') %}
+    {% if globals().has_key('instance') %}
+    <div class="container-fluid">
       <div class="row">
-        <div class="col-md-3">
+        <div class="sidebar-fixed-width col-md-3">
           <div class="panel panel-default">
             <div class="panel-heading">
               <b>
@@ -175,14 +175,16 @@
             </div>
           </div>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-9 main">
           {% block content %} {% end %}
         </div>
       </div>
-      {% else %}
-        {% block content %} {% end %}
-      {% end %} {# end if instance #}
     </div>
+    {% else %}
+    <div class="container">
+      {% block content %} {% end %}
+    </div>
+    {% end %} {# end if instance #}
   </div>
   <script>
   // Popover activation
