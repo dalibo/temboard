@@ -312,10 +312,6 @@ td {
 	min-width: 500px;
 }
 
-.row-chart {
-	margin-top: 10px;
-}
-
 .legend-chart, .visibility-chart {
 	font-size: 12px;
 }
