@@ -1,21 +1,6 @@
 body {
 }
 
-#page-wrapper {
-	padding: 0 15px;
-	height: 100%;
-	background-color: #fff;
-	min-height: 100vh;
-	margin: 0 0 0 250px;
-	padding: 0 30px;
-	border-left: 1px solid #e7e7e7;
-}
-
-#page-wrapper {
-	background-color: #fff;
-	padding: 10px 0 0 0;
-}
-
 .navbar {
 	border: 0;
 }
@@ -114,16 +99,6 @@ body {
 .popover-content table {
 	width: 100%;
 	padding: 5px;
-}
-
-#page-wrapper h1 {
-	font-size: 20px;
-	color: #337AB7;
-	margin: 0 0 10px 0;
-}
-
-#page-wrapper h1 i {
-	color: #333;
 }
 
 .panel-default > .panel-heading {
