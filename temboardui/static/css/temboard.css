@@ -66,26 +66,6 @@ body {
 	float: left;
 }
 
-.row-dashboard {
-	margin-left: 15px;
-	padding: 0;
-}
-
-.row-dashboard .col-md-6 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
-}
-
-.row-dashboard .col-md-4 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
-}
-
-.row-dashboard .col-md-12 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
-}
-
 .row-dashboard .col-md-12 table {
 	width: 100%;
 	margin-bottom: 0px;
