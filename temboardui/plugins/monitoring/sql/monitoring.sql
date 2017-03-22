@@ -1,6 +1,6 @@
-DROP SCHEMA IF EXISTS supervision CASCADE;
-CREATE SCHEMA supervision;
-SET search_path TO supervision, public;
+DROP SCHEMA IF EXISTS monitoring CASCADE;
+CREATE SCHEMA monitoring;
+SET search_path TO monitoring, public;
 
 
 BEGIN;
@@ -14,7 +14,7 @@ CREATE TABLE hosts (
   os TEXT NOT NULL, -- kernel name
   os_version TEXT NOT NULL, -- kernel version
   os_flavour TEXT, -- distribution
-  cpu_count INTEGER, 
+  cpu_count INTEGER,
   cpu_arch TEXT,
   memory_size BIGINT,
   swap_size BIGINT,
@@ -247,7 +247,7 @@ BEGIN
   --
   -- For each type of metric we have to deal with, there is the following object defining some properties:
   -- // Unique key used to find the configuration based on the metric name.
-  -- "<metric_name>": {            
+  -- "<metric_name>": {
   --   // Tables name prefix, for ease stuff it should be the same as <metric_name>
   --   "name": "<metric_tbl_name>",
   --   // Record composite type

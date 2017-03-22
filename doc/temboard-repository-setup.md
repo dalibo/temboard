@@ -2,7 +2,7 @@
 
 The `repository` is a PostgreSQL (>=9.5) database. It let temboard store its data, including users, agent registration and metrics data.
 
-Usage of plugin `supervision` requires `tablefunc` extension. This extension is available as part of the extensions shipped with the source code of PostgreSQL, in the `contrib/` directory. Usually, the "contrib" package of PostgreSQL from your Linux distribution has it.
+Usage of plugin `monitoring` requires `tablefunc` extension. This extension is available as part of the extensions shipped with the source code of PostgreSQL, in the `contrib/` directory. Usually, the "contrib" package of PostgreSQL from your Linux distribution has it.
 
 ## Configuration
 
@@ -40,10 +40,10 @@ If the PostgreSQL cluster is on th different host, replace `127.0.0.1/32` by the
 psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
 ```
 
-If you plan to use the plugin `supervision`:
+If you plan to use the plugin `monitoring`:
 ```
 sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
-psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/supervision.sql temboard
+psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/monitoring.sql temboard
 ```
 
 ## Configuration of temBoard

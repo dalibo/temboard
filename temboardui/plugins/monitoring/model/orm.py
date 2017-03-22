@@ -1,9 +1,9 @@
-from temboardui.plugins.supervision.model import tables
+from temboardui.plugins.monitoring.model import tables
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref, mapper
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship
 from sqlalchemy.inspection import inspect
+
 
 class ModelMixin(object):
     """
@@ -21,8 +21,8 @@ class ModelMixin(object):
         dict_values (dict):
             a dictionary from which the instance should be built
         recurse (bool):
-            if ``True``, also builds related instances. Else, only the base columns
-            are included.
+            if ``True``, also builds related instances. Else, only the base
+            columns are included.
         """
         mapper = inspect(cls)
         columns_values = {
@@ -47,7 +47,6 @@ class ModelMixin(object):
 
 
 Model = declarative_base(cls=(ModelMixin,))
-
 
 
 class Host(Model):

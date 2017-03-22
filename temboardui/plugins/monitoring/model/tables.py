@@ -5,13 +5,18 @@ Mapping of the database for use with SQLAlchemy.
 from sqlalchemy.sql import text
 
 from sqlalchemy.schema import (
-    MetaData, Table, Column,
-    ForeignKey, CheckConstraint, ForeignKeyConstraint,
-    UniqueConstraint)
+    MetaData,
+    Table,
+    Column,
+    ForeignKey,
+    UniqueConstraint,
+)
 from sqlalchemy.types import (
-    Integer, UnicodeText, BigInteger,
-    Boolean, DateTime, Interval, Float, String)
-from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, JSON
+    Integer,
+    UnicodeText,
+    BigInteger,
+    Boolean,
+)
 
 metadata = MetaData()
 
@@ -27,13 +32,13 @@ hosts = Table(
     Column('memory_size', BigInteger),
     Column('swap_size', BigInteger),
     Column('virtual', Boolean),
-    schema = "supervision")
+    schema="monitoring")
 
 instances = Table(
     'instances', metadata,
     Column('instance_id', Integer, primary_key=True),
     Column('host_id', Integer,
-           ForeignKey("supervision.hosts.host_id"),
+           ForeignKey("monitoring.hosts.host_id"),
            nullable=False,
            ),
     Column('port', Integer, nullable=False),
@@ -44,4 +49,4 @@ instances = Table(
     Column('sysuser', UnicodeText,),
     Column('standby', Boolean, nullable=False, server_default=text('False')),
     UniqueConstraint('host_id', 'port'),
-    schema = "supervision")
+    schema="monitoring")

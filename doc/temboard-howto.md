@@ -69,12 +69,12 @@ A quick smoke test can be done using `curl` from `temboard` machine:
 ```
 curl https://<temboard-agent-address>:2345/discover
 
-{"hostname": "debian-tbd-agent.local", "pg_data": "/var/lib/postgresql/9.5/main", "pg_port": 5432, "plugins": ["supervision", "dashboard", "settings", "administration", "activity"], "memory_size": 518451200, "pg_version": "PostgreSQL 9.5.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 4.9.2-10) 4.9.2, 64-bit", "cpu": 1}
+{"hostname": "debian-tbd-agent.local", "pg_data": "/var/lib/postgresql/9.5/main", "pg_port": 5432, "plugins": ["monitoring", "dashboard", "settings", "administration", "activity"], "memory_size": 518451200, "pg_version": "PostgreSQL 9.5.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 4.9.2-10) 4.9.2, 64-bit", "cpu": 1}
 ```
 
-#### `supervision` plugin
+#### `monitoring` plugin
 
-The `supervision` plugin from `temboarg-agent` is in charge to collect system and PostgreSQL metrics about the host is running on. Periodicaly, these data (JSON object) are sent to `temboard` using an `https` API. To allow this data flow, a key must be built and shared between `temboard` and the `temboard-agent`.
+The `monitoring` plugin from `temboarg-agent` is in charge to collect system and PostgreSQL metrics about the host is running on. Periodicaly, these data (JSON object) are sent to `temboard` using an `https` API. To allow this data flow, a key must be built and shared between `temboard` and the `temboard-agent`.
 
   * On the agent side, the key has to be set in `temboard-agent.conf` file, under the `[temboard]` section, the parameter is `key`. Configuration must be reloaed.
   * On `temboard` UI side, you have to edit the corresponding `instance` and set the same key in `Agent key` field.
@@ -117,7 +117,7 @@ Go to `Manage` -> `Instances`, then `+ Add a new instance`.
 
   * `Agent address`: IPv4 address that the agent is listening on; 
   * `Agent port`: Port number that the agent is listening on;
-  * `Agent secret key`: Authentication key used by the agent to send data to the collector (`supervision` plugin only);
+  * `Agent secret key`: Authentication key used by the agent to send data to the collector (`monitoring` plugin only);
   * `Groups`: Instance groups this instance belongs to.
   * `Active plugins`: `plugins` enabled for this instance. Selected `plugins` must be loaded by the `agent` too.
 

@@ -20,7 +20,7 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
 	html_chart_panel += '	</div>';
 	html_chart_panel += '	<div class="panel-body">';
 	html_chart_panel += '		<div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
-	html_chart_panel += '		<div id="chart'+id+'" class="supervision-chart"></div>';
+	html_chart_panel += '		<div id="chart'+id+'" class="monitoring-chart"></div>';
 	html_chart_panel += '		<div id="visibility'+id+'" class="visibility-chart"></div>';
 	html_chart_panel += '	</div>';
 	html_chart_panel += '</div>';
