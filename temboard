@@ -3,7 +3,6 @@
 
 import logging.config
 import sys, signal, os
-import ssl
 
 import tornado.ioloop
 import tornado.web
@@ -27,6 +26,8 @@ from temboardui.errors import ConfigurationError, CLIError
 from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
 from temboardui.taskmanager import TaskManager
+from temboardui.autossl import AutoHTTPSServer
+
 
 
 logger = logging.getLogger('temboardui')
@@ -169,13 +170,17 @@ def main():
 
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
+    server = AutoHTTPSServer(application, ssl_options=ssl_ctx)
     try:
-        application.listen(config.temboard['port'], address = config.temboard['address'], ssl_options = ssl_ctx)
+        server.listen(config.temboard['port'], address=config.temboard['address'])
     except socket.error as e:
         logger.error("FATAL: " + str(e) + '. Quit');
         sys.exit(3)
 
-    logger.info("Starting temboardui on %s:%d" % (config.temboard['address'], config.temboard['port']))
+    logger.info(
+        "Starting temboardui on https://%s:%d",
+        config.temboard['address'], config.temboard['port'],
+    )
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
