@@ -12,6 +12,6 @@ test:
     - flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
     - >
       pytest -vv --showlocals --strict --full-trace
-      --cov=temboardui --cov-report=xml
+      --cov=temboardui --cov-report=term --cov-report=xml
       test/
     - codecov
