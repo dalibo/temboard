@@ -43,9 +43,10 @@ class HTMLAsyncResult(AsyncResult):
 
 
 class JSONAsyncResult(AsyncResult):
-    def __init__(self, http_code=0, data={}):
+    def __init__(self, http_code=0, data={}, secure_cookie=None):
         super(JSONAsyncResult, self).__init__(
             http_code=http_code, content_type="application/json", data=data)
+        self.secure_cookie = secure_cookie
 
 
 class CSVAsyncResult(AsyncResult):
