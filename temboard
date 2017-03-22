@@ -175,7 +175,10 @@ def main():
         logger.error("FATAL: " + str(e) + '. Quit');
         sys.exit(3)
 
-    logger.info("Starting temboardui on %s:%d" % (config.temboard['address'], config.temboard['port']))
+    logger.info(
+        "Starting temboardui on https://%s:%d",
+        config.temboard['address'], config.temboard['port'],
+    )
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
