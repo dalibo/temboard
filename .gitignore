@@ -1,12 +1,11 @@
 *.pyc
 *.sw*
 *.conf
+!temboard.dev.conf
 *.egg-info/
 build/
 dist/
 site/
 temboard-agent/test/test/configuration.py
-# We provide override. Base compose file comes from
-# https://github.com/dalibo/docker/blob/master/temboard/docker-compose.yml
-docker-compose.yml
+docker-compose.override.yml
 temboard.pid

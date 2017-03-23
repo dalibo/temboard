@@ -1,0 +1,45 @@
+version: '3'
+
+volumes:
+  data96:
+  run96:
+
+
+services:
+  repository:
+    image: postgres:9.6
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: temboard
+      POSTGRES_PASSWORD: temboard
+    volumes:
+      - ./share/sql/application.sql:/docker-entrypoint-initdb.d/00-temboard.sql
+      - ./temboardui/plugins/supervision/sql/supervision.sql:/docker-entrypoint-initdb.d/10-plugin-supervision.sql
+      - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
+
+  instance96:
+    image: postgres:9.6
+    volumes:
+      - data96:/var/lib/postgresql/data
+      - run96:/var/run/postgresql
+
+  agent96:
+    image: dalibo/temboard-agent
+    ports:
+      - 2345:2345
+    volumes:
+      - data96:/var/lib/postgresql/data
+      - run96:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance96:temboard-agent-96.temboard.local
+    environment:
+      TEMBOARD_HOSTNAME: temboard-agent-96.temboard.local
+      TEMBOARD_KEY: key_for_agent_96
+      TEMBOARD_UI_URL: https://172.17.0.1:8888/
+    networks:
+      default:
+        aliases:
+          - temboard-agent-96
