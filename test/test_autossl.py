@@ -210,6 +210,26 @@ def test_handle_stream_ssl(mocker):
 
 
 @pytest.mark.gen_test
+def test_handle_stream_closed(mocker):
+    mocker.patch(
+        'temboardui.autossl.AutoHTTPSServer.handle_http_connection'
+    )
+    IOStream = mocker.patch('temboardui.autossl.IOStream')
+
+    from temboardui.autossl import AutoHTTPSServer, StreamClosedError
+
+    server = AutoHTTPSServer(request_callback=Mock('request_callback'))
+
+    ssl_stream = Mock(name='ssl_stream')
+    ssl_stream.wait_for_handshake.side_effect = StreamClosedError()
+
+    yield server.handle_stream(ssl_stream, '127.0.0.1')
+
+    assert ssl_stream.wait_for_handshake.called is True
+    assert IOStream.called is False
+
+
+@pytest.mark.gen_test
 def test_handle_stream_http_request(mocker):
     parent_handle_stream = mocker.patch(
         'temboardui.autossl.HTTPServer.handle_stream'
