@@ -27,7 +27,7 @@ from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
 from temboardui.taskmanager import TaskManager
 from temboardui.autossl import AutoHTTPSServer
-
+from temboardui.utils import check_sqlalchemy_connectivity
 
 
 logger = logging.getLogger('temboardui')
@@ -70,16 +70,14 @@ class CustomTornadoWebApp(tornado.web.Application):
         )
         self.engine = create_engine(dburi)
         try:
-            conn = self.engine.connect()
+            check_sqlalchemy_connectivity(self.engine)
         except Exception as e:
-            self.logger.error("Connection to the database failed for the following reason:")
-            self.logger.error("\t%s" % e.message)
-            self.logger.error("Please check your configuration.")
+            self.logger.warn("Connection to the database failed: %s", e)
+            self.logger.warn("Please check your configuration.")
             sys.stderr.write("FATAL: %s\n" % e.message)
             remove_pidfile(pidfile)
             exit(1)
-        else:
-            conn.close()
+
 
 def main():
     optparser = temboarduiOptions(description = "temBoard UI/web client.")
