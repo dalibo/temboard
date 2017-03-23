@@ -35,7 +35,11 @@ from tornado.httputil import (
     ResponseStartLine,
 )
 from tornado.http1connection import HTTP1Connection
-from tornado.iostream import IOStream, SSLIOStream
+from tornado.iostream import (
+    IOStream,
+    SSLIOStream,
+    StreamClosedError,
+)
 from tornado.log import (
     app_log,
     gen_log,
@@ -203,6 +207,9 @@ class AutoHTTPSServer(HTTPServer):
                 logger.exception("Failed to process HTTP request:")
             finally:
                 stream.close()
+        except StreamClosedError:
+            logger.debug("Stream closed by client during handshake. Skipping.")
+            return
         else:
             super(AutoHTTPSServer, self).handle_stream(ssl_stream, address)
 
