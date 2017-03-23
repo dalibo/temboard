@@ -3,6 +3,7 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Settings / {% if file_type == 'hba' %}Host Base Authentication{% end %}
 
 {% block content %}
+<div class="limiter">
 
 {% include menu.html %}
 
@@ -63,4 +64,5 @@ var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('textareaFile
 );
 </script>
 {% end %}
+</div> <!-- end limiter -->
 {% end %}

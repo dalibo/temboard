@@ -1,21 +1,6 @@
 body {
 }
 
-#page-wrapper {
-	padding: 0 15px;
-	height: 100%;
-	background-color: #fff;
-	min-height: 100vh;
-	margin: 0 0 0 250px;
-	padding: 0 30px;
-	border-left: 1px solid #e7e7e7;
-}
-
-#page-wrapper {
-	background-color: #fff;
-	padding: 10px 0 0 0;
-}
-
 .navbar {
 	border: 0;
 }
@@ -28,6 +13,29 @@ body {
 .nav-tabs {
   /* always leave space under tabs */
   margin-bottom: 10px;
+}
+
+@media (min-width:992px) {
+  .sidebar-fixed-width {
+    width: inherit;
+    min-width: 300px;
+    max-width: 300px;
+    position:relative;
+    overflow: auto;
+  }
+
+  .main {
+    width:calc(100% - 300px);
+  }
+}
+
+/**
+ * This rule can be useful for plugins for which we don't need the full width.
+ * Should be used just like Bootstrap's `.container` (ie. with rows and col-xx
+ * inside).
+ */
+.limiter {
+  max-width: 1000px;
 }
 
 #canvas-memory-holder{
@@ -56,26 +64,6 @@ body {
 	margin: 0px 10px 10px 0px;
 	width: 330px;
 	float: left;
-}
-
-.row-dashboard {
-	margin-left: 15px;
-	padding: 0;
-}
-
-.row-dashboard .col-md-6 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
-}
-
-.row-dashboard .col-md-4 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
-}
-
-.row-dashboard .col-md-12 {
-	margin: 0 0 10px 0;
-	padding: 0 10px 0 0;
 }
 
 .row-dashboard .col-md-12 table {
@@ -114,16 +102,6 @@ body {
 .popover-content table {
 	width: 100%;
 	padding: 5px;
-}
-
-#page-wrapper h1 {
-	font-size: 20px;
-	color: #337AB7;
-	margin: 0 0 10px 0;
-}
-
-#page-wrapper h1 i {
-	color: #333;
 }
 
 .panel-default > .panel-heading {
@@ -312,10 +290,6 @@ td {
 #contDTP {
 	/*margin-bottom: 5px;*/
 	min-width: 500px;
-}
-
-.row-chart {
-	margin-top: 10px;
 }
 
 .legend-chart, .visibility-chart {
