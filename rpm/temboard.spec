@@ -12,7 +12,7 @@ Summary:	temBoard Web Interface
 
 Group:		Applications/Databases
 License:	BSD
-URL:		http://tembord.io/
+URL:		http://temboard.io/
 Source0:	%{pkgname}-%{version}.tar.gz
 Source1:	temboard.init
 Source2:	temboard.service
