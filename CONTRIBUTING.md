@@ -1,22 +1,22 @@
 # Development Environment Setup
 
-Setup quickly a development environment with Docker & Compose.
+You can quickly set up a dev env with virtualenv and Docker Compose.
+
+First, create a virtualenv, activate it, install temboard and run it:
 
 ``` console
-$ wget https://raw.githubusercontent.com/dalibo/docker/master/temboard/docker-compose.yml
+$ pip install -e .
+$ temboard -c temboard.dev.conf --debug
+```
+
+Temboard is now waiting for postgres. Now launch services:
+
+``` console
 $ docker-compose up
 ```
 
-Go to https://127.0.0.0:8888/ to access temboard runing with your code!
+Go to https://127.0.0.1:8888/ to access temboard runing with your code!
 
-By default, temboard is daemonized in temboardui-ui container. When editing the
-code, kill first the daemonized temboard and then restart it manually.
-
-``` console
-$ docker-compose exec temboardui-ui bash
-# pkill temboard
-# temboard
-```
 
 # GitHub Workflow
 
