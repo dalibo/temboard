@@ -9,3 +9,4 @@ site/
 temboard-agent/test/test/configuration.py
 docker-compose.override.yml
 temboard.pid
+task_list
