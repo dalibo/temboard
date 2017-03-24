@@ -1,6 +1,7 @@
 
 ![Temboard](doc/temboard.png)
 
+[![Documentation Status](https://readthedocs.org/projects/temboard/badge/?version=latest)](http://temboard.readthedocs.io/en/latest/?badge=latest)
 [![Travis Build Status](https://travis-ci.org/dalibo/temboard.svg?branch=master)](https://travis-ci.org/dalibo/temboard)
 [![CircleCI Build Status](https://circleci.com/gh/dalibo/temboard.svg?style=shield&circle-token=06839d6191de49336658cc2d473290c15b4248c3)](https://circleci.com/gh/dalibo/temboard)
 [![codecov](https://codecov.io/gh/dalibo/temboard/branch/master/graph/badge.svg)](https://codecov.io/gh/dalibo/temboard)
