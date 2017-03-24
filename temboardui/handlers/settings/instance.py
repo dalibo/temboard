@@ -10,7 +10,7 @@ from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import temboard_discover, TemboardError
 
 
-class ManageInstanceJsonHandler(JsonHandler):
+class SettingsInstanceJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
@@ -186,7 +186,7 @@ class ManageInstanceJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageDeleteInstanceJsonHandler(JsonHandler):
+class SettingsDeleteInstanceJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def post(self):
@@ -224,7 +224,7 @@ class ManageDeleteInstanceJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageInstanceHandler(BaseHandler):
+class SettingsInstanceHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self):
@@ -244,7 +244,7 @@ class ManageInstanceHandler(BaseHandler):
                     200,
                     None,
                     {'nav': True , 'role': self.current_user, 'instance_list': instance_list},
-                    template_file = 'manage/instance.html')
+                    template_file = 'settings/instance.html')
         except (TemboardUIError, Exception) as e:
             self.logger.error(str(e))
             try:
@@ -265,7 +265,7 @@ class ManageInstanceHandler(BaseHandler):
                         500,
                         None,
                         {'nav': False, 'error': e.message},
-                        template_file = 'manage/error.html')
+                        template_file = 'settings/error.html')
 
 
 class DiscoverInstanceJsonHandler(JsonHandler):
@@ -298,7 +298,7 @@ class DiscoverInstanceJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class RegisterInstanceJsonHandler(ManageInstanceJsonHandler):
+class RegisterInstanceJsonHandler(SettingsInstanceJsonHandler):
     @tornado.web.asynchronous
     def post(self):
         run_background(self.post_register, self.async_callback)

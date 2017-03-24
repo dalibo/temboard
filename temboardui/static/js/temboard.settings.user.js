@@ -1,11 +1,11 @@
 /*
- * Load user properties using '/json/manage/user/'+username API
+ * Load user properties using '/json/settings/user/'+username API
  * and build the update form.
  */
 function load_update_user_form(modal_id, username)
 {
 	$.ajax({
-		url: '/json/manage/user/'+username,
+		url: '/json/settings/user/'+username,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -118,7 +118,7 @@ function send_update_user_form(modal_id)
 {
 	var username = $('#inputUsername').val();
 	$.ajax({
-		url: '/json/manage/user/'+username,
+		url: '/json/settings/user/'+username,
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -151,7 +151,7 @@ function send_update_user_form(modal_id)
 function load_delete_user_confirm(modal_id, username)
 {
 	$.ajax({
-		url: '/json/manage/user/'+username,
+		url: '/json/settings/user/'+username,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -187,7 +187,7 @@ function load_delete_user_confirm(modal_id, username)
 function send_delete_user(modal_id, username)
 {
 	$.ajax({
-		url: '/json/manage/delete/user',
+		url: '/json/settings/delete/user',
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -217,7 +217,7 @@ function send_delete_user(modal_id, username)
 function load_add_user_form(modal_id)
 {
 	$.ajax({
-		url: '/json/manage/all/group/role',
+		url: '/json/settings/all/group/role',
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -312,7 +312,7 @@ function load_add_user_form(modal_id)
 function send_add_user_form(modal_id)
 {
 	$.ajax({
-		url: '/json/manage/user',
+		url: '/json/settings/user',
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');

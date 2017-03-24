@@ -1,11 +1,11 @@
 /*
- * Load instance properties using /json/manage/instance API
+ * Load instance properties using /json/settings/instance API
  * and build the update form.
  */
 function load_update_instance_form(modal_id, agent_address, agent_port)
 {
 	$.ajax({
-		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
+		url: '/json/settings/instance/'+agent_address+'/'+agent_port,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -177,7 +177,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 function send_update_instance_form(modal_id, agent_address, agent_port)
 {
 	$.ajax({
-		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
+		url: '/json/settings/instance/'+agent_address+'/'+agent_port,
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -214,7 +214,7 @@ function send_update_instance_form(modal_id, agent_address, agent_port)
 function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 {
 	$.ajax({
-		url: '/json/manage/instance/'+agent_address+'/'+agent_port,
+		url: '/json/settings/instance/'+agent_address+'/'+agent_port,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -251,7 +251,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
 function send_delete_instance(modal_id, agent_address, agent_port)
 {
 	$.ajax({
-		url: '/json/manage/delete/instance',
+		url: '/json/settings/delete/instance',
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -281,7 +281,7 @@ function send_delete_instance(modal_id, agent_address, agent_port)
 function load_add_instance_form(modal_id)
 {
 	$.ajax({
-		url: '/json/manage/all/group/instance',
+		url: '/json/settings/all/group/instance',
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -436,7 +436,7 @@ function load_add_instance_form(modal_id)
 function send_add_instance_form(modal_id)
 {
 	$.ajax({
-		url: '/json/manage/instance',
+		url: '/json/settings/instance',
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');

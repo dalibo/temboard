@@ -1,11 +1,11 @@
 /*
- * Load group properties using /json/manage/group/<group_kind>/<group_name> API
+ * Load group properties using /json/settings/group/<group_kind>/<group_name> API
  * and build the update form.
  */
 function load_update_group_form(modal_id, group_kind, group_name)
 {
 	$.ajax({
-		url: '/json/manage/group/'+group_kind+'/'+group_name,
+		url: '/json/settings/group/'+group_kind+'/'+group_name,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -118,7 +118,7 @@ function send_update_group_form(modal_id, group_kind)
 		});
 	}
 	$.ajax({
-		url: '/json/manage/group/'+group_kind+'/'+group_name,
+		url: '/json/settings/group/'+group_kind+'/'+group_name,
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -148,7 +148,7 @@ function send_update_group_form(modal_id, group_kind)
 function load_delete_group_confirm(modal_id, group_kind, group_name)
 {
 	$.ajax({
-		url: '/json/manage/group/'+group_kind+'/'+group_name,
+		url: '/json/settings/group/'+group_kind+'/'+group_name,
 		type: 'get',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -193,7 +193,7 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
 function send_delete_group(modal_id, group_kind, group_name)
 {
 	$.ajax({
-		url: '/json/manage/delete/group/'+group_kind,
+		url: '/json/settings/delete/group/'+group_kind,
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -261,7 +261,7 @@ function load_add_group_form(modal_id, group_kind)
 		});
 	} else {
 		$.ajax({
-			url: '/json/manage/all/group/role',
+			url: '/json/settings/all/group/role',
 			type: 'get',
 			beforeSend: function(xhr){
 				$('#'+modal_id+'Label').html('Processing, please wait...');
@@ -352,7 +352,7 @@ function send_add_group_form(modal_id, group_kind)
 		});
 	}
 	$.ajax({
-		url: '/json/manage/group/'+group_kind,
+		url: '/json/settings/group/'+group_kind,
 		type: 'post',
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');

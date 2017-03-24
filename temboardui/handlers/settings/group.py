@@ -10,7 +10,7 @@ from temboardui.application import *
 from temboardui.errors import TemboardUIError
 
 
-class ManageGroupAllJsonHandler(JsonHandler):
+class SettingsGroupAllJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, group_kind):
@@ -50,7 +50,7 @@ class ManageGroupAllJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageGroupJsonHandler(JsonHandler):
+class SettingsGroupJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, group_kind, group_name = None):
@@ -183,7 +183,7 @@ class ManageGroupJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageDeleteGroupJsonHandler(JsonHandler):
+class SettingsDeleteGroupJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def post(self, group_kind):
@@ -220,7 +220,7 @@ class ManageDeleteGroupJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageGroupHandler(BaseHandler):
+class SettingsGroupHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self, group_kind):
@@ -244,7 +244,7 @@ class ManageGroupHandler(BaseHandler):
                     200,
                     None,
                     {'nav': True , 'role': self.current_user, 'group_list': group_list, 'group_kind': group_kind},
-                    template_file = 'manage/group.html')
+                    template_file = 'settings/group.html')
         except (TemboardUIError, Exception) as e:
             self.logger.exception(str(e))
             self.logger.info("Failed.")
@@ -266,4 +266,4 @@ class ManageGroupHandler(BaseHandler):
                         500,
                         None,
                         {'nav': False, 'error': e.message},
-                        template_file = 'manage/error.html')
+                        template_file = 'settings/error.html')

@@ -10,7 +10,7 @@ from temboardui.application import *
 from temboardui.errors import TemboardUIError
 
 
-class ManageUserJsonHandler(JsonHandler):
+class SettingsUserJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, username = None):
@@ -159,7 +159,7 @@ class ManageUserJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageDeleteUserJsonHandler(JsonHandler):
+class SettingsDeleteUserJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def post(self):
@@ -196,7 +196,7 @@ class ManageDeleteUserJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageUserHandler(BaseHandler):
+class SettingsUserHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self):
@@ -220,7 +220,7 @@ class ManageUserHandler(BaseHandler):
                     200,
                     None,
                     {'nav': True , 'role': self.current_user, 'role_list': role_list},
-                    template_file = 'manage/user.html')
+                    template_file = 'settings/user.html')
         except (TemboardUIError, Exception) as e:
             self.logger.exception(str(e))
             self.logger.info("Failed.")
@@ -242,4 +242,4 @@ class ManageUserHandler(BaseHandler):
                         500,
                         None,
                         {'nav': False, 'error': e.message},
-                        template_file = 'manage/error.html')
+                        template_file = 'settings/error.html')
