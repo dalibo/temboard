@@ -123,7 +123,6 @@ function send_update_user_form(modal_id)
 		beforeSend: function(xhr){
 			$('#'+modal_id+'Label').html('Processing, please wait...');
 			$('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-        debugger;
 		},
 		data: JSON.stringify({
 			'new_username': $('#inputNewUsername').val(),
