@@ -122,6 +122,7 @@ def main():
                 data={
                     'hostname': infos['hostname'],
                     'agent_key': config.temboard['key'],
+                    'agent_address': options.host,
                     'agent_port': config.temboard['port'],
                     'cpu': infos['cpu'],
                     'memory_size': infos['memory_size'],
