@@ -6,7 +6,7 @@ address = 0.0.0.0
 # User & password file.
 users = /etc/temboard-agent/users
 # Plugins in use.
-plugins = ["supervision", "dashboard", "settings", "administration", "activity"]
+plugins = ["monitoring", "dashboard", "settings", "administration", "activity"]
 # SSL: certificat file path (.pem)
 ssl_cert_file = /etc/temboard-agent/ssl/temboard-agent_CHANGEME.pem
 # SSL: private key file path (.key)
@@ -55,12 +55,12 @@ destination = /var/log/temboard-agent/temboard-agent.log
 # Number of record to keep. Default: 20
 # history_length = 20
 
-[supervision]
-# Supervision plugin part.
+[monitoring]
+# Monitoring plugin part.
 # DB name list (comma separator) to supervise. * for all.
 dbnames = *
 # Collector URL.
-collector_url = https://COLLECTORADDRESS:COLLECTORPORT/supervision/collector
+collector_url = https://COLLECTORADDRESS:COLLECTORPORT/monitoring/collector
 # List of probes to run, comma separator, * for all.
 # Available probes: locks,process,db_size,tblspc_size,sessions,blocks,xacts,replication,loadavg,filesystems_size,cpu,bgwriter,memory,wal_files
 # when monitoring a standby server, 'wal_file' probe shouldn't be loaded.
