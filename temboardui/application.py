@@ -286,7 +286,7 @@ def update_instance(session,
                 agent_port=agent_port) \
             .first()
         if new_agent_address is not None:
-            instance.agent_adresse = unicode(new_agent_address)
+            instance.agent_address = unicode(new_agent_address)
         if new_agent_port is not None:
             instance.agent_port = int(new_agent_port)
         if cpu is not None and cpu is not u'':
