@@ -25,7 +25,7 @@ port = %s
 address = 127.0.0.1
 # user & password file
 users = %s
-plugins = ["supervision", "dashboard", "settings", "administration", "activity"]
+plugins = ["monitoring", "dashboard", "settings", "administration", "activity"]
 # SSL: private key file path (.key)
 ssl_key_file = %s
 # SSL: certificat file path (.pem)
@@ -46,7 +46,7 @@ method=file
 destination = %s
 level = DEBUG
 
-[supervision]
+[monitoring]
 dbnames = '*'
 # agent_key = ''
 collector_url = http://localhost:8888/collector/
