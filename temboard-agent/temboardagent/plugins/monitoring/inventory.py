@@ -9,9 +9,8 @@ Currently, only Linux is supported.
 import os
 import logging
 import pwd
-from temboardagent.spc import connector, error, get_pgpass
-from temboardagent.inventory import *
-from temboardagent.tools import check_fqdn
+from temboardagent.spc import connector, error
+from temboardagent.inventory import SysInfo, PgInfo
 from temboardagent.logger import get_tb
 
 
@@ -50,7 +49,8 @@ def instance_info(conninfo, hostname):
     }
 
     # Try the connection
-    conn = connector(conninfo['host'], conninfo['port'], conninfo['user'], conninfo['password'], conninfo['database'])
+    conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
+                     conninfo['password'], conninfo['database'])
     try:
         conn.connect()
         # Get PostgreSQL informations using PgInfo
@@ -65,7 +65,8 @@ def instance_info(conninfo, hostname):
         instance_info['standby'] = pginfo.is_in_recovery()
 
         # Grab the list of tablespaces
-        instance_info['tablespaces'] = pginfo.tablespaces(instance_info['data_directory'])
+        instance_info['tablespaces'] = pginfo.tablespaces(
+                                        instance_info['data_directory'])
 
         # When the user has not given a dbnames list or '*' in the
         # configuration file, we must get the list of databases. Since
@@ -91,7 +92,8 @@ def instance_info(conninfo, hostname):
     except error as e:
         logging.error(get_tb())
         logging.error(str(e))
-        logging.warning("Unable to gather information for cluster \"%s\"", conninfo['instance'])
+        logging.warning("Unable to gather information for cluster \"%s\"",
+                        conninfo['instance'])
         instance_info['available'] = False
 
     return instance_info
