@@ -76,7 +76,9 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			body_html += '	<div class="row">';
 			body_html += '		<div class="form-group">';
 			body_html += '			<div class="col-sm-12 text-center">';
-			body_html += '				<button type="button" id="buttonDiscover" class="btn btn-success">Get instance\'s information</button>';
+      body_html += '				<button type="button" id="buttonDiscover" class="btn btn-default">';
+      body_html += '        <i class="fa fa-download"></i>';
+      body_html += '        Get instance\'s information</button>';
 			body_html += '			</div>';
 			body_html += '		</div>';
 			body_html += '	</div>';
@@ -112,7 +114,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 			body_html += '	</div>';
 			body_html += '</form>';
 			var footer_html = '';
-			footer_html += '<button type="submit" id="submitFormUpdateInstance" class="btn btn-primary">Save</button>';
+			footer_html += '<button type="submit" id="submitFormUpdateInstance" class="btn btn-success">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 
 			// Write the form.
@@ -371,7 +373,7 @@ function load_add_instance_form(modal_id)
 			body_html += '	</div>';
 			body_html += '</form>';
 			var footer_html = '';
-			footer_html += '<button type="submit" id="submitFormAddInstance" class="btn btn-primary">Save</button>';
+			footer_html += '<button type="submit" id="submitFormAddInstance" class="btn btn-success">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 
 			// Write the form.

@@ -117,7 +117,7 @@
     <button type="submit" class="btn btn-sm btn-danger remove-version">Remove this version</button>
     {% end %}
     <button type="submit" class="btn btn-sm btn-warning cancel">Cancel</button>
-    <button type="submit" class="btn btn-sm btn-primary save">Save and reload configuration</button>
+    <button type="submit" class="btn btn-sm btn-success save">Save and reload configuration</button>
   </div>
 </div>
 </div> <!-- end limiter -->
@@ -137,7 +137,7 @@ $(document).ready(function() {
   {
     $('#selectHBAVersion').multiselect({
       buttonWidth: '200px',
-      buttonClass: 'btn btn-xs btn-primary',
+      buttonClass: 'btn btn-xs btn-default',
     });
     $('#selectHBAVersion').on('change', function(event) {
       event.preventDefault();
