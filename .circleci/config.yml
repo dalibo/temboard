@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: python:2.7
+        environment:
+          TERM: linux
+          TERMINFO: /etc/terminfo
+    working_directory: /home/ubuntu/temboard-agent
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - temboard-agent-{{ .Branch }}
+            - temboard-agent-master
+      - run: pip install --upgrade flake8-diff
+      - run: git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+      - run: flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+      - save_cache:
+          key: temboard-agent-{{ .Branch }}
+          paths:
+            - "~/.cache/pip/"
