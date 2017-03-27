@@ -28,6 +28,16 @@ Linux you probably already have Ruby installed; test with ruby -v in your
 terminal. When you've confirmed you have Ruby installed, run `gem install sass`
 to install Sass.
 
+Then you can either build a dist version of the css:
+```
+grunt sass:dist
+```
+
+Or build a dev version which will get updated each time you make a change in
+any of the .scss files:
+```
+grunt watch
+```
 
 # GitHub Workflow
 
