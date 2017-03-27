@@ -24,11 +24,17 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      bootstrap: {
+      bootstrapfonts: {
         expand: true,
         cwd: 'node_modules/bootstrap-sass/assets/fonts/bootstrap/',
         src: ['*'],
         dest: 'temboardui/static/fonts/'
+      },
+      bootstrapjs: {
+        expand: true,
+        cwd: 'node_modules/bootstrap-sass/assets/javascripts/',
+        src: ['bootstrap.min.js'],
+        dest: 'temboardui/static/js/'
       }
     },
     // configure the "grunt watch" task
@@ -43,5 +49,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('bootstrap', ['copy:bootstrap', 'sass:dist']);
+  grunt.registerTask('bootstrap', [
+    'copy:bootstrapfonts',
+    'copy:bootstrapjs',
+    'sass:dist'
+  ]);
 };
