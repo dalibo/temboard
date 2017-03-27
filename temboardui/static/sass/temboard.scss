@@ -66,25 +66,27 @@
   float: left;
 }
 
-.row-dashboard .col-md-12 table {
-  width: 100%;
-  margin-bottom: 0px;
-  border: 0;
+.row-dashboard {
+  .col-md-12 table {
+    width: 100%;
+    margin-bottom: 0px;
+    border: 0;
+  }
+  table tr td {
+    border: 0;
+    font-size: 11px;
+  }
+  table tr {
+  }
+
+  .panel {
+    height: 210px;
+  }
 }
 
-.row-dashboard table tr td {
-  border: 0;
-  font-size: 11px;
-}
 
 .dashboard-info-val {
   color:#337AB7;
-}
-.row-dashboard table tr {
-}
-
-.row-dashboard .panel {
-  height: 210px;
 }
 
 .popover-title {
@@ -97,11 +99,11 @@
 .popover-content {
   font-size: 11px;
   min-width: 200px;
-}
 
-.popover-content table {
-  width: 100%;
-  padding: 5px;
+  table {
+    width: 100%;
+    padding: 5px;
+  }
 }
 
 .panel-default > .panel-heading {
@@ -117,66 +119,67 @@ select.form-control {
   padding: 0px 20px 20px 20px;
   font-size: 12px;
   width: 700px;
+
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
+
+  .close {
+    margin-right: 5px;
+  }
+
+  .modal .close {
+    margin-right: 20px;
+  }
 }
 
-#alert-configuration p {
-  padding-top: 0px;
-}
-
-#alert-configuration h2 {
-  font-size: 18px;
-  padding: 0px;
-  margin-top: 10px;
-}
-
-#alert-configuration .close {
-  margin-right: 5px;
-}
-
-#alert-configuration .modal .close {
-  margin-right: 20px;
-}
 
 #error-configuration {
   padding: 0px 20px 20px 20px;
   font-size: 12px;
   width: 700px;
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
 }
 
-#error-configuration p {
-  padding-top: 0px;
-}
-
-#error-configuration h2 {
-  font-size: 18px;
-  padding: 0px;
-  margin-top: 10px;
-}
 
 
 #ok-configuration {
   padding: 0px 20px 20px 20px;
   font-size: 12px;
   width: 700px;
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
+
+  table {
+    margin: 0px;
+  }
+
+  .close {
+    margin-right: 5px;
+  }
 }
 
-#ok-configuration p {
-  padding-top: 0px;
-}
-
-#ok-configuration h2 {
-  font-size: 18px;
-  padding: 0px;
-  margin-top: 10px;
-}
-
-#ok-configuration table {
-  margin: 0px;
-}
-
-#ok-configuration .close {
-  margin-right: 5px;
-}
 
 #configuration-row {
   margin-top: 20px;
@@ -199,49 +202,52 @@ select.form-control {
 
 #restartModalBody h1 {
   text-align: center;
-  color: #C9302C;
-}
-#restartModalBody h1 i {
-  color: #C9302C;
+  &, i {
+    color: #C9302C;
+  }
 }
 
 .table-activity {
   font-size: 11px;
-}
+
+  tr th {
+    &.xs {
+      width: 20px;
+    }
+
+    &.sm {
+      width: 35px;
+    }
+
+    &.med {
+      width: 70px;
+    }
+
+    &.lg {
+      width: 110px;
+    }
+  }
 
 
-.table-activity tr th.xs {
-  width: 20px;
-}
+  & > tbody > tr {
+    & > td,
+    & > th {
+      padding: 1px;
+      vertical-align: middle;
+    }
+  }
 
-.table-activity tr th.sm {
-  width: 35px;
-}
+  & > tbody > tr > th {
+    text-align: center;
+  }
 
-.table-activity tr th.med {
-  width: 70px;
-}
+  .input-xs {
+    margin: 5px 0px 0px 0px;
+  }
 
-.table-activity tr th.lg {
-  width: 110px;
-}
-
-
-.table-activity > tbody > tr > td, .table-activity > tbody > tr > th {
-  padding: 1px;
-  vertical-align: middle;
-}
-
-.table-activity > tbody > tr > th {
-  text-align: center;
-}
-
-.table-activity .input-xs {
-  margin: 5px 0px 0px 0px;
-}
-
-.table-activity td.query {
-  color:#337AB7;
+  td.query {
+    color:#337AB7;
+  }
 }
 
 .alert-restricted {
@@ -302,30 +308,35 @@ td {
   text-align: right;
 }
 
-#HBATable > tbody > tr > td {
-  padding: 1px;
-}
-#HBATable > tbody > tr > td > span {
-  margin: 0px;
-  line-height: 1;
-}
+#HBATable {
+  & > tbody > tr > td {
+    padding: 1px;
 
-#HBATable > tbody > tr > td > button {
-  padding: 0px 5px 0px 5px;
-}
+    & > span {
+      margin: 0px;
+      line-height: 1;
+    }
 
-#HBATable .comment {
-  color: red;
-  font-style: italic;
-}
+    & > button {
+      padding: 0px 5px 0px 5px;
+    }
+  }
 
-#HBATable .no {
-  font-weight: bold;
-  color: #999;
-}
+  .comment {
+    color: red;
+    font-style: italic;
+  }
 
-#HBATable .connection,.database,.user {
-  color: #337AB7;
+  .no {
+    font-weight: bold;
+    color: #999;
+  }
+
+  .connection,
+  .database,
+  .user {
+    color: #337AB7;
+  }
 }
 
 #divNotif10 {
@@ -340,16 +351,16 @@ ul.notifications {
   list-style: none;
   padding: 0;
   margin: 0;
-}
 
-ul.notifications li {
-  width: 100%;
-  line-height: 1.8em;
-  color: #333;
-}
+  li {
+    width: 100%;
+    line-height: 1.8em;
+    color: #333;
+  }
 
-ul.notifications > li > span.date-notification-db {
-  color: #337AB7;
+  & > li > span.date-notification-db {
+    color: #337AB7;
+  }
 }
 
 td.date {
