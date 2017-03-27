@@ -5,6 +5,8 @@ from setuptools import setup, find_packages
 setup(
     name='temboard',
     version='0.0.1',
+    description='temBoard User Interface.',
+    long_description=open('README.rst').read(),
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
     packages=find_packages(),
@@ -18,7 +20,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     url='https://github.com/dalibo/temboard/',
-    description='temBoard User Interface.',
     data_files=[('share/temboard/', [
         'share/sql/application.sql',
         'share/ssl/temboard_CHANGEME.key',
