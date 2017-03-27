@@ -17,7 +17,7 @@ Proceed with the installation of the UI:
 ```
 cd temboard/
 sudo cp -r share/ /usr/share/temboard
-sudo cp temboardui/plugins/supervision/sql/supervision.sql /usr/share/temboard/.
+sudo cp temboardui/plugins/monitoring/sql/monitoring.sql /usr/share/temboard/.
 sudo python setup.py install
 ```
 

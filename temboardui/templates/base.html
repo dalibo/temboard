@@ -152,11 +152,11 @@
                   </a>
                 </li>
                 {% end %}
-                {% if 'supervision' in plugin_names %}
-                <li class="{{'active' if plugin == 'supervision' else ''}}">
-                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision/day">
+                {% if 'monitoring' in plugin_names %}
+                <li class="{{'active' if plugin == 'monitoring' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/day">
                     <i class="fa fa-bar-chart-o fa-fw"></i>
-                    Supervision
+                    Monitoring
                   </a>
                 </li>
                 {% end %}

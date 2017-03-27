@@ -1,6 +1,6 @@
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Supervision{% end %}
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Monitoring{% end %}
 
 {% block content %}
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
@@ -69,9 +69,9 @@
 <script src="/js/dygraph-extra.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/bootstrap-datetimepicker.min.js"></script>
-<script src="/js/supervision/temboard.supervision.js"></script>
+<script src="/js/monitoring/temboard.monitoring.js"></script>
 <script>
-api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/supervision"
+api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
 start_date = "{{escape(start_date)}}";
 end_date = "{{escape(end_date)}}";
 

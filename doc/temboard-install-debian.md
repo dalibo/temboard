@@ -24,7 +24,7 @@ sudo apt-get update
 
 A database in a PostgreSQL 9.5 cluster is required to run temBoard, if you intend to host it on the same machine, add the definition of the repository of the PGPG, by following [their howto](https://wiki.postgresql.org/wiki/Apt).
 
-In a nutshell, the following packages shall be installed, the "contribs" are needed by the `supervision` plugin:
+In a nutshell, the following packages shall be installed, the "contribs" are needed by the `monitoring` plugin:
 
 ```
 sudo apt-get install postgresql-9.5 postgresql-contrib-9.5

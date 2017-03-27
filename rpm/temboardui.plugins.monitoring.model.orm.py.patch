@@ -1,5 +1,5 @@
---- temboard-ui-0.0.1/temboardui/plugins/supervision/model/orm.py.orig	2016-07-15 21:34:18.031001950 +0200
-+++ temboard-ui-0.0.1/temboardui/plugins/supervision/model/orm.py	2016-07-15 21:32:34.014999055 +0200
+--- temboard-ui-0.0.1/temboardui/plugins/monitoring/model/orm.py.orig	2016-07-15 21:34:18.031001950 +0200
++++ temboard-ui-0.0.1/temboardui/plugins/monitoring/model/orm.py	2016-07-15 21:32:34.014999055 +0200
 @@ -25,11 +25,11 @@
              are included.
          """

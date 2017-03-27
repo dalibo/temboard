@@ -38,7 +38,7 @@
           {% if 'activity' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Activity" data-action="activity" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bars fa-fw"></i></button>{% end %}
         </td>
         <td class="text-center">
-          {% if 'supervision' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Supervision" data-action="supervision" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
+          {% if 'monitoring' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Monitoring" data-action="monitoring" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
         </td>
         <td class="text-center">
           {% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
@@ -76,9 +76,9 @@ $(document).ready(function() {
     window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/activity/running');
   });
 
-  $('[data-action=supervision]').click(function () {
+  $('[data-action=monitoring]').click(function () {
     $('[data-toggle=popover]').popover('hide');
-    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/supervision/day');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/monitoring/day');
   });
 
   $('[data-action=settings]').click(function () {

@@ -46,8 +46,8 @@ def get_loadaverage(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     # Get a new psycopg2 cursor from the current sqlalchemy session
     cur = session.connection().connection.cursor()
-    # Change working schema to 'supervision'
-    cur.execute("SET search_path TO supervision")
+    # Change working schema to 'monitoring'
+    cur.execute("SET search_path TO monitoring")
     # Get the "zoom level", depending on the time interval
     zl = zoom_level(start, end)
     # Usage of COPY .. TO STDOUT WITH CSV for data extraction
@@ -62,7 +62,7 @@ COPY (
     if zl == 0:
         # Look up in non-aggregated data
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_loadavg',
             tstzrange('%s', '%s'),
             %s)
@@ -77,7 +77,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('loadavg', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -101,7 +101,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_cpu(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -114,7 +114,7 @@ COPY (
     FROM"""  # noqa
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_cpu',
             tstzrange('%s', '%s'),
             %s)
@@ -131,7 +131,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('cpu', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -155,7 +155,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_tps(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -166,7 +166,7 @@ COPY (
     FROM"""  # noqa
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_xacts',
             tstzrange('%s', '%s'),
             %s)
@@ -183,7 +183,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('xacts', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -208,7 +208,7 @@ def get_db_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     data_pivot = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -219,7 +219,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_db_size',
             tstzrange('%s', '%s'),
             %s)
@@ -235,7 +235,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('db_size', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -264,7 +264,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_instance_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -274,7 +274,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_db_size',
             tstzrange('%s', '%s'),
             %s)
@@ -291,7 +291,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('db_size', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -314,7 +314,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_memory(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -328,7 +328,7 @@ COPY (
 
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_memory',
             tstzrange('%s', '%s'),
             %s)
@@ -343,7 +343,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('memory', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -366,7 +366,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_swap(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -377,7 +377,7 @@ COPY (
 
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_memory',
             tstzrange('%s', '%s'),
             %s)
@@ -392,7 +392,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('memory', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -415,7 +415,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_sessions(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -431,7 +431,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_sessions',
             tstzrange('%s', '%s'),
             %s)
@@ -448,7 +448,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('sessions', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -471,7 +471,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_blocks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -482,7 +482,7 @@ COPY (
     FROM"""  # noqa
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_blocks',
             tstzrange('%s', '%s'),
             %s)
@@ -499,7 +499,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('blocks', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -522,7 +522,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_hitreadratio(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -535,7 +535,7 @@ COPY (
     FROM"""  # noqa
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_blocks',
             tstzrange('%s', '%s'),
             %s)
@@ -552,7 +552,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('blocks', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -575,7 +575,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_checkpoints(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -588,7 +588,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_bgwriter',
             tstzrange('%s', '%s'),
             %s)
@@ -603,7 +603,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('bgwriter', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -625,7 +625,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_written_buffers(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -637,7 +637,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_bgwriter',
             tstzrange('%s', '%s'),
             %s)
@@ -652,7 +652,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('bgwriter', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -674,7 +674,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_locks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -692,7 +692,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_locks',
             tstzrange('%s', '%s'),
             %s)
@@ -709,7 +709,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('locks', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -732,7 +732,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_waiting_locks(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -749,7 +749,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_locks',
             tstzrange('%s', '%s'),
             %s)
@@ -766,7 +766,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('locks', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -790,7 +790,7 @@ def get_fs_size(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     data_pivot = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -802,7 +802,7 @@ COPY (
 """
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_filesystems_size',
             tstzrange('%s', '%s'),
             %s)
@@ -818,7 +818,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('filesystems_size', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -848,7 +848,7 @@ def get_fs_usage(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     data_pivot = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -860,7 +860,7 @@ COPY (
 
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_filesystems_size',
             tstzrange('%s', '%s'),
             %s)
@@ -876,7 +876,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('filesystems_size', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -905,7 +905,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_ctxforks(session, host_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -917,7 +917,7 @@ COPY (
 
     if zl == 0:
         query += """
-        supervision.expand_data_by_host_id(
+        monitoring.expand_data_by_host_id(
             'metric_process',
             tstzrange('%s', '%s'),
             %s)
@@ -933,7 +933,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('process', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         host_id = %s
         AND datetime >= '%s'
@@ -958,7 +958,7 @@ def get_tblspc_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     data_pivot = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -969,7 +969,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_tblspc_size',
             tstzrange('%s', '%s'),
             %s)
@@ -985,7 +985,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('tblspc_size', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -1014,7 +1014,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_wal_files_size(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -1025,7 +1025,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_wal_files',
             tstzrange('%s', '%s'),
             %s)
@@ -1040,7 +1040,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('wal_files', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -1062,7 +1062,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_wal_files_count(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -1073,7 +1073,7 @@ COPY (
     FROM"""
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_wal_files',
             tstzrange('%s', '%s'),
             %s)
@@ -1088,7 +1088,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('wal_files', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'
@@ -1110,7 +1110,7 @@ TO STDOUT WITH CSV HEADER""" % (
 def get_wal_files_rate(session, instance_id, start, end):
     data_buffer = cStringIO.StringIO()
     cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO supervision")
+    cur.execute("SET search_path TO monitoring")
     zl = zoom_level(start, end)
     query = """
 COPY (
@@ -1120,7 +1120,7 @@ COPY (
     FROM"""  # noqa
     if zl == 0:
         query += """
-        supervision.expand_data_by_instance_id(
+        monitoring.expand_data_by_instance_id(
             'metric_wal_files',
             tstzrange('%s', '%s'),
             %s)
@@ -1136,7 +1136,7 @@ TO STDOUT WITH CSV HEADER""" % (
     else:
         tablename = get_tablename('wal_files', start, end)
         query += """
-        supervision.%s
+        monitoring.%s
     WHERE
         instance_id = %s
         AND datetime >= '%s'

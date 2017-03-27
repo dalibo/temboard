@@ -4169,7 +4169,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Reponse:",
-          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.8\nDate: Wed, 22 Apr 2015 12:33:19 GMT\nContent-type: application/json\n{\n    \"hostname\": \"neptune\",\n    \"pg_data\": \"/var/lib/postgresql/9.4/main\",\n    \"pg_port\": 5432,\n    \"plugins\": [\"supervision\", \"dashboard\", \"settings\", \"administration\", \"activity\"],\n    \"memory_size\": 8241508352,\n    \"pg_version\": \"PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit\",\n    \"cpu\": 4\n}",
+          "content": "HTTP/1.0 200 OK\nServer: temboard-agent/0.0.1 Python/2.7.8\nDate: Wed, 22 Apr 2015 12:33:19 GMT\nContent-type: application/json\n{\n    \"hostname\": \"neptune\",\n    \"pg_data\": \"/var/lib/postgresql/9.4/main\",\n    \"pg_port\": 5432,\n    \"plugins\": [\"monitoring\", \"dashboard\", \"settings\", \"administration\", \"activity\"],\n    \"memory_size\": 8241508352,\n    \"pg_version\": \"PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit\",\n    \"cpu\": 4\n}",
           "type": "json"
         }
       ]

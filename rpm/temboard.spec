@@ -16,7 +16,7 @@ URL:		http://temboard.io/
 Source0:	%{pkgname}-%{version}.tar.gz
 Source1:	temboard.init
 Source2:	temboard.service
-Patch1:		temboardui.plugins.supervision.model.orm.py.patch
+Patch1:		temboardui.plugins.monitoring.model.orm.py.patch
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 

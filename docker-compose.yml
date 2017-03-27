@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: temboard
     volumes:
       - ./share/sql/application.sql:/docker-entrypoint-initdb.d/00-temboard.sql
-      - ./temboardui/plugins/supervision/sql/supervision.sql:/docker-entrypoint-initdb.d/10-plugin-supervision.sql
+      - ./temboardui/plugins/monitoring/sql/monitoring.sql:/docker-entrypoint-initdb.d/10-plugin-monitoring.sql
       - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
 
   instance96:

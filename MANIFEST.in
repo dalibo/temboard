@@ -7,6 +7,6 @@ graft temboardui/plugins/activity/static
 graft temboardui/plugins/activity/templates
 graft temboardui/plugins/dashboard/static
 graft temboardui/plugins/dashboard/templates
-graft temboardui/plugins/supervision/static
-graft temboardui/plugins/supervision/templates
+graft temboardui/plugins/monitoring/static
+graft temboardui/plugins/monitoring/templates
 graft share
