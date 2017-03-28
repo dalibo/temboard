@@ -41,7 +41,7 @@
           {% if 'monitoring' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Monitoring" data-action="monitoring" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-bar-chart-o fa-fw"></i></button>{% end %}
         </td>
         <td class="text-center">
-          {% if 'settings' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Settings" data-action="settings" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
+          {% if 'pgconf' in plugin_names %}<button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Configuration" data-action="pgconf" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-cog fa-fw"></i></button>{% end %}
         </td>
         <td class="text-center">
           <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Notifications" data-action="notifications" data-agent_address="{{instance.agent_address}}" data-agent_port="{{instance.agent_port}}"><i class="fa fa-envelope"></i></button>
@@ -81,9 +81,9 @@ $(document).ready(function() {
     window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/monitoring/day');
   });
 
-  $('[data-action=settings]').click(function () {
+  $('[data-action=pgconf]').click(function () {
     $('[data-toggle=popover]').popover('hide');
-    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/settings/configuration');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/pgconf/configuration');
   });
 
   $('[data-action=notifications]').click(function () {

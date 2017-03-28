@@ -14,7 +14,7 @@ The configuration file `temboard.conf` is formated using INI format. Configurati
   - `ssl_key_file`: Path to SSL private key file. Default: `/etc/temboard/ssl/temboard_CHANGEME.key`;
   - `ssl_ca_cert_file `: File where to store each agent's SSL certificate. Default: `/etc/temboard/ssl/temboard_ca_certs_CHANGEME.pem`;
   - `cookie_secret`: Secret key used to crypt cookie content. Default: `SECRETKEYTOBECHANGED`;
-  - `plugins`: Array of plugin name to load. Default: `["monitoring", "dashboard", "settings", "activity"]`;
+  - `plugins`: Array of plugin name to load. Default: `["monitoring", "dashboard", "pgconf", "activity"]`;
   - `plugins_orm_engine`: Array of plugin name that need a connexion to the repository. Default: `["monitoring"]`.
 
 ### `[repository]`

@@ -20,17 +20,17 @@ def get_routes(config):
         'template_path':  plugin_path + "/templates"
     }
     routes = [
-        (r"/server/(.*)/([0-9]{1,5})/settings/configuration$", ConfigurationHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/settings/configuration/category/(.+)$", ConfigurationHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/settings/hba", HBAHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/settings/pg_ident", PGIdentHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/pgconf/configuration$", ConfigurationHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/pgconf/configuration/category/(.+)$", ConfigurationHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/pgconf/hba", HBAHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/pgconf/pg_ident", PGIdentHandler, handler_conf),
         (r"/proxy/(.*)/([0-9]{1,5})/administration/control", AdminControlProxyHandler, handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/settings/configuration", ConfigurationProxyHandler, handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/settings/hba/options", HBAOptionsProxyHandler, handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/settings/hba$", HBAProxyHandler, handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/settings/hba/delete$", HBADeleteProxyHandler, handler_conf),
-        (r"/js/settings/(.*)", tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/css/settings/(.*)", tornado.web.StaticFileHandler,
+        (r"/proxy/(.*)/([0-9]{1,5})/pgconf/configuration", ConfigurationProxyHandler, handler_conf),
+        (r"/proxy/(.*)/([0-9]{1,5})/pgconf/hba/options", HBAOptionsProxyHandler, handler_conf),
+        (r"/proxy/(.*)/([0-9]{1,5})/pgconf/hba$", HBAProxyHandler, handler_conf),
+        (r"/proxy/(.*)/([0-9]{1,5})/pgconf/hba/delete$", HBADeleteProxyHandler, handler_conf),
+        (r"/js/pgconf/(.*)", tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
+        (r"/css/pgconf/(.*)", tornado.web.StaticFileHandler,
          {'path': plugin_path + "/static/css"}),
     ]
     return routes
@@ -93,7 +93,7 @@ class ConfigurationHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'data': configuration_data,
                         'xsession': xsession,
                         'current_cat': tornado.escape.url_unescape(category),
@@ -212,7 +212,7 @@ class ConfigurationHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'data': configuration_data,
                         'xsession': xsession,
                         'current_cat': tornado.escape.url_unescape(category),
@@ -297,7 +297,7 @@ class ConfigurationFileHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'file_type': self.file_type,
                         'file_content': file_content,
                         'xsession': xsession
@@ -401,7 +401,7 @@ class ConfigurationFileHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'file_type': self.file_type,
                         'file_content': file_content,
                         'error_code': error_code,
@@ -501,7 +501,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'file_versions': file_versions,
                         'file_type': self.file_type,
                         'conf_file_raw': conf_file_raw,
@@ -531,7 +531,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'file_versions': file_versions,
                         'file_type': self.file_type,
                         'conf_file': conf_file,
@@ -637,7 +637,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                         'nav': True,
                         'role': role,
                         'instance': instance,
-                        'plugin': 'settings',
+                        'plugin': 'pgconf',
                         'file_type': self.file_type,
                         'file_content': file_content,
                         'error_code': error_code,
@@ -743,7 +743,7 @@ class AdminControlProxyHandler(JsonHandler):
         run_background(self.post_control, self.async_callback, (agent_address, agent_port))
 
 class ConfigurationProxyHandler(JsonHandler):
-    """ /settings/configuration JSON handler """
+    """ /pgconf/configuration JSON handler """
 
     def post_configuration(self, agent_address, agent_port):
         try:

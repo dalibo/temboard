@@ -28,7 +28,12 @@ class Configuration(configparser.ConfigParser):
             'ssl_key_file': None,
             'ssl_ca_cert_file': None,
             'cookie_secret': None,
-            'plugins': ["dashboard", "settings", "activity", "monitoring"],
+            'plugins': [
+                "dashboard",
+                "pgconf",
+                "activity",
+                "monitoring",
+            ],
             'plugins_orm_engine': ["monitoring"],
             'home': '/var/run/temboard'
         }

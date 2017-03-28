@@ -1,6 +1,6 @@
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Settings / {% if file_type == 'hba' %}Host Base Authentication{% end %}{%end%}
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Configuration / {% if file_type == 'hba' %}Host Base Authentication{% end %}{%end%}
 
 {% block content %}
 <!-- HBA row edit modal -->
@@ -124,7 +124,7 @@
 <script src="/js/bootstrap-multiselect.js"></script>
 <script src="/js/bootstrap-tagsinput.min.js"></script>
 <script src="/js/typeahead.bundle.js"></script>
-<script src="/js/settings/temboard.settings.js"></script>
+<script src="/js/pgconf/temboard.pgconf.js"></script>
 <script type="text/javascript">
 var xsession = "{{xsession}}";
 var agent_address = "{{instance.agent_address}}";
@@ -142,7 +142,7 @@ $(document).ready(function() {
     $('#selectHBAVersion').on('change', function(event) {
       event.preventDefault();
       var version = $('#selectHBAVersion').find(':selected').attr('value');
-      var url = '/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/hba';
+      var url = '/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba';
       if (version != 'CURRENT')
         url += '?version='+version;
       window.location.replace(url);
@@ -201,5 +201,5 @@ $(document).ready(function() {
   {% end %}
 });
 </script>
-<link href="/css/settings/temboard.settings.css" rel="stylesheet">
+<link href="/css/pgconf/temboard.pgconf.css" rel="stylesheet">
 {% end %}

@@ -1,0 +1,11 @@
+<ul class="nav nav-tabs">
+  <li class="{{'active' if file_type == 'postgres' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"> postgres.conf</a>
+  </li>
+  <li class="{{'active' if file_type == 'hba' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba"> Host Base Authentication</a>
+  </li>
+  <li class="{{'active' if file_type == 'pg_ident' else ''}}">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/pg_ident"> User Name Maps</a>
+  </li>
+</ul>

@@ -1,5 +1,5 @@
 /*
- * Settings plugin
+ * Pgconf plugin
  */
 
 function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal_id, json_params)
@@ -92,7 +92,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
 	}
 
 	$.ajax({
-		url: '/proxy/'+agent_address+'/'+agent_port+'/settings/hba/options',
+		url: '/proxy/'+agent_address+'/'+agent_port+'/pgconf/hba/options',
 		type: 'GET',
 		beforeSend: function(xhr){
 			xhr.setRequestHeader('X-Session', xsession);
@@ -476,7 +476,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
 	data.new_version = true;
 	data.entries = hba_rows;
 	$.ajax({
-		url: '/proxy/'+agent_address+'/'+agent_port+'/settings/hba',
+		url: '/proxy/'+agent_address+'/'+agent_port+'/pgconf/hba',
 		type: 'POST',
 		data: JSON.stringify(data),
 		beforeSend: function(xhr){
@@ -515,7 +515,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
 function delete_hba(modalid, agent_address, agent_port, xsession, version)
 {
 	$.ajax({
-		url: '/proxy/'+agent_address+'/'+agent_port+'/settings/hba/delete?version='+version,
+		url: '/proxy/'+agent_address+'/'+agent_port+'/pgconf/hba/delete?version='+version,
 		type: 'GET',
 		beforeSend: function(xhr){
 			xhr.setRequestHeader('X-Session', xsession);
