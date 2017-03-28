@@ -33,6 +33,17 @@ setup(
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
     long_description=open('README.rst').read(),
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Environment :: No Input/Output (Daemon)",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 2 :: Only",
+        "Topic :: Database :: Database Engines/Servers",
+        "Topic :: System :: Monitoring",
+    ],
     data_files=[
         ('share/temboard-agent/', [
             'share/temboard-agent.conf.sample',
