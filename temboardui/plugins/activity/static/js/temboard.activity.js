@@ -201,7 +201,7 @@ function update_activity_w_b(data)
 function pause_activity()
 {
 	poll_activity = false;
-	$("#pauseButton").removeClass('btn-primary').addClass('btn-warning');
+	$("#pauseButton").removeClass('btn-success').addClass('btn-warning');
 	$('input[type=checkbox]').each(function () {
 		$(this).attr('readonly', false);
 		$(this).attr('disabled', false);
@@ -211,7 +211,7 @@ function pause_activity()
 function resume_activity()
 {
 	poll_activity = true;
-	$("#pauseButton").removeClass('btn-warning').addClass('btn-primary');
+	$("#pauseButton").removeClass('btn-warning').addClass('btn-success');
 	$('input:checked').each(function () {
 		$(this).attr('checked', false);
 	});
@@ -265,7 +265,7 @@ function show_modal_kill(agent_address, agent_port, xsession)
 				{
 					$('#ModalInfo').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert">Error: Session expired.</div></div></div>');
 					var footer_html = '';
-					footer_html += '<button type="button" id="buttonBackLogin" class="btn btn-primary">Back to login page</button>';
+					footer_html += '<button type="button" id="buttonBackLogin" class="btn btn-success">Back to login page</button>';
 					footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 					$('#ModalFooter').html(footer_html);
 					$('#buttonBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');

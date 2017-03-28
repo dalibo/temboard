@@ -79,7 +79,7 @@ function load_update_user_form(modal_id, username)
 			body_html += '	</div>';
 			body_html += '</form>';
 			var footer_html = '';
-			footer_html += '<button type="submit" id="submitFormUpdateUser" class="btn btn-primary">Save</button>';
+			footer_html += '<button type="submit" id="submitFormUpdateUser" class="btn btn-success">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 			// Write the form.
 			$('#'+modal_id+'Body').html(body_html);
@@ -274,7 +274,7 @@ function load_add_user_form(modal_id)
 			body_html += '	</div>';
 			body_html += '</form>';
 			var footer_html = '';
-			footer_html += '<button type="submit" id="submitFormAddUser" class="btn btn-primary">Save</button>';
+			footer_html += '<button type="submit" id="submitFormAddUser" class="btn btn-success">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 			// Write the form.
 			$('#'+modal_id+'Body').html(body_html);

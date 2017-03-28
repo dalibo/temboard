@@ -17,6 +17,28 @@ $ docker-compose up
 
 Go to https://127.0.0.1:8888/ to access temboard runing with your code!
 
+## CSS
+
+Temboard UI mainly relies on `Bootstrap`. The CSS files are compiled with
+`SASS`.
+
+In case you want to contribute on the styles, first install the nodeJS dev
+dependencies:
+
+```
+npm install
+```
+
+Then you can either build a dist version of the css:
+```
+grunt sass:dist
+```
+
+Or build a dev version which will get updated each time you make a change in
+any of the .scss files:
+```
+grunt watch
+```
 
 # GitHub Workflow
 

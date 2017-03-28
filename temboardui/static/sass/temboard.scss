@@ -1,0 +1,368 @@
+@import "bootstrap";
+
+
+.navbar {
+  border: 0;
+}
+
+.navbar-brand {
+  padding: 0;
+  padding-right: 15px;
+}
+
+.nav-tabs {
+  /* always leave space under tabs */
+  margin-bottom: 10px;
+}
+
+@media (min-width:992px) {
+  .sidebar-fixed-width {
+    width: inherit;
+    min-width: 300px;
+    max-width: 300px;
+    position:relative;
+    overflow: auto;
+  }
+
+  .main {
+    width:calc(100% - 300px);
+  }
+}
+
+/**
+ * This rule can be useful for plugins for which we don't need the full width.
+ * Should be used just like Bootstrap's `.container` (ie. with rows and col-xx
+ * inside).
+ */
+.limiter {
+  max-width: 1000px;
+}
+
+#canvas-memory-holder{
+  width:100%;
+}
+#canvas-cpu-holder{
+  width:100%;
+}
+#canvas-hitratio-holder{
+  width:100%;
+}
+#canvas-loadaverage-holder{
+  width:100%;
+}
+#canvas-buffers-holder{
+  width:100%;
+}
+#canvas-backends-holder{
+  width:100%;
+}
+#canvas-tps-holder{
+  width:100%;
+}
+
+.panel-dashboard {
+  margin: 0px 10px 10px 0px;
+  width: 330px;
+  float: left;
+}
+
+.row-dashboard {
+  .col-md-12 table {
+    width: 100%;
+    margin-bottom: 0px;
+    border: 0;
+  }
+  table tr td {
+    border: 0;
+    font-size: 11px;
+  }
+  table tr {
+  }
+
+  .panel {
+    height: 210px;
+  }
+}
+
+
+.dashboard-info-val {
+  color:#337AB7;
+}
+
+.popover-title {
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 200px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.popover-content {
+  font-size: 11px;
+  min-width: 200px;
+
+  table {
+    width: 100%;
+    padding: 5px;
+  }
+}
+
+.panel-default > .panel-heading {
+  padding: 5px 5px 10px 10px;
+  border-bottom: 0px;
+}
+
+select.form-control {
+  font-size: 12px;
+}
+
+#alert-configuration {
+  padding: 0px 20px 20px 20px;
+  font-size: 12px;
+  width: 700px;
+
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
+
+  .close {
+    margin-right: 5px;
+  }
+
+  .modal .close {
+    margin-right: 20px;
+  }
+}
+
+
+#error-configuration {
+  padding: 0px 20px 20px 20px;
+  font-size: 12px;
+  width: 700px;
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
+}
+
+
+
+#ok-configuration {
+  padding: 0px 20px 20px 20px;
+  font-size: 12px;
+  width: 700px;
+  p {
+    padding-top: 0px;
+  }
+
+  h2 {
+    font-size: 18px;
+    padding: 0px;
+    margin-top: 10px;
+  }
+
+  table {
+    margin: 0px;
+  }
+
+  .close {
+    margin-right: 5px;
+  }
+}
+
+
+#configuration-row {
+  margin-top: 20px;
+}
+
+.navbar .navbar-left table tr td {
+  color: #666;
+}
+
+#logo {
+  margin: 0px;
+  padding: 10px 0px 10px 10px;
+  font-size: 24px;
+  color: #fff;
+}
+
+#panelLogin {
+  margin-top: 20px;
+}
+
+#restartModalBody h1 {
+  text-align: center;
+  &, i {
+    color: #C9302C;
+  }
+}
+
+.table-activity {
+  font-size: 11px;
+
+  tr th {
+    &.xs {
+      width: 20px;
+    }
+
+    &.sm {
+      width: 35px;
+    }
+
+    &.med {
+      width: 70px;
+    }
+
+    &.lg {
+      width: 110px;
+    }
+  }
+
+
+  & > tbody > tr {
+    & > td,
+    & > th {
+      padding: 1px;
+      vertical-align: middle;
+    }
+  }
+
+  & > tbody > tr > th {
+    text-align: center;
+  }
+
+  .input-xs {
+    margin: 5px 0px 0px 0px;
+  }
+
+  td.query {
+    color:#337AB7;
+  }
+}
+
+.alert-restricted {
+  margin-top: 10px;
+  padding: 10px;
+}
+
+table tbody tr td span {
+  margin: 2px;
+  line-height: 2.2em;
+}
+
+.no-sort::after { display: none!important; }
+
+.no-sort {
+  pointer-events: none!important;
+  cursor: default!important;
+}
+
+td {
+  font-size: 12px;
+}
+
+.modal-header {
+  background-color: #f6f6f6;
+}
+
+.modal-body {
+  padding-bottom: 0px;
+}
+
+.title-setting {
+  font-weight: bold;
+  color: #000;
+}
+
+.desc-setting {
+  color: #555;
+}
+
+.monitoring-chart {
+  width: 100%;
+  height: 300px;
+}
+
+#contDTP {
+  /*margin-bottom: 5px;*/
+  min-width: 500px;
+}
+
+.legend-chart, .visibility-chart {
+  font-size: 12px;
+}
+
+.form-date-picker {
+  min-width: 700px;
+  display: inline;
+  text-align: right;
+}
+
+#HBATable {
+  & > tbody > tr > td {
+    padding: 1px;
+
+    & > span {
+      margin: 0px;
+      line-height: 1;
+    }
+
+    & > button {
+      padding: 0px 5px 0px 5px;
+    }
+  }
+
+  .comment {
+    color: red;
+    font-style: italic;
+  }
+
+  .no {
+    font-weight: bold;
+    color: #999;
+  }
+
+  .connection,
+  .database,
+  .user {
+    color: #337AB7;
+  }
+}
+
+#divNotif10 {
+  margin-top: 2px;
+  width: 325px;
+  height: 168px;
+  overflow-y: scroll;
+}
+
+ul.notifications {
+  font-size: 11px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    width: 100%;
+    line-height: 1.8em;
+    color: #333;
+  }
+
+  & > li > span.date-notification-db {
+    color: #337AB7;
+  }
+}
+
+td.date {
+  color: #337AB7;
+}

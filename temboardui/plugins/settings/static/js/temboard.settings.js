@@ -189,7 +189,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
 			body_html += '	</div>';
 			body_html += '</form>';
 			var footer_html = '';
-			footer_html += '<button type="submit" id="submitFormUpdateHBARow" class="btn btn-primary">Save</button>';
+			footer_html += '<button type="submit" id="submitFormUpdateHBARow" class="btn btn-success">Save</button>';
 			footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
 
 			// Write the form.
@@ -494,7 +494,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
 		success: function (data) {
 			$('#'+modalid+'Label').html('Save and reload configuration');
 			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-success" role="alert"><h4><i class="fa fa-check-circle fa-fw"></i> OK </h4><p>HBA file has been updated and PostgreSQL configuration reloaded.</p></div></div></div>');
-			$('#'+modalid+'Footer').html('<button type="button" id="buttonOK" class="btn btn-primary" data-dismiss="modal">OK</button>');
+			$('#'+modalid+'Footer').html('<button type="button" id="buttonOK" class="btn btn-success" data-dismiss="modal">OK</button>');
 			$('#buttonOK').click(function() {
 				window.location.replace(window.location.pathname);
 			});
@@ -532,7 +532,7 @@ function delete_hba(modalid, agent_address, agent_port, xsession, version)
 		success: function (data) {
 			$('#'+modalid+'Label').html('Remove HBA file version');
 			$('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-success" role="alert"><h4><i class="fa fa-check-circle fa-fw"></i> OK </h4><p>Version <b>'+version+'</b> of HBA file has been removed.</p></div></div></div>');
-			$('#'+modalid+'Footer').html('<button type="button" id="buttonOK" class="btn btn-primary" data-dismiss="modal">OK</button>');
+			$('#'+modalid+'Footer').html('<button type="button" id="buttonOK" class="btn btn-success" data-dismiss="modal">OK</button>');
 			$('#buttonOK').click(function() {
 				window.location.replace(window.location.pathname);
 			});
