@@ -22,11 +22,12 @@ Go to https://127.0.0.1:8888/ to access temboard runing with your code!
 Temboard UI mainly relies on `Bootstrap`. The CSS files are compiled with
 `SASS`.
 
-This task requires you to have [Ruby](http://www.ruby-lang.org/en/downloads/)
-and [Sass](http://sass-lang.com/download.html) installed. If you're on OS X or
-Linux you probably already have Ruby installed; test with ruby -v in your
-terminal. When you've confirmed you have Ruby installed, run `gem install sass`
-to install Sass.
+In case you want to contribute on the styles, first install the nodeJS dev
+dependencies:
+
+```
+npm install
+```
 
 Then you can either build a dist version of the css:
 ```

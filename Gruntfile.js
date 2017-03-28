@@ -1,13 +1,14 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     sass: {
+      options: {
+        sourceMap: true,
+        includePaths: ['node_modules/bootstrap-sass/assets/stylesheets']
+      },
       // this is the "dev" Sass config used with "grunt watch" command
       dev: {
         options: {
-          style: 'expanded',
-          // tell Sass to look in the Bootstrap stylesheets directory when
-          // compiling
-          loadPath: 'node_modules/bootstrap-sass/assets/stylesheets'
+          outputStyle: 'expanded'
         },
         files: {
           'temboardui/static/css/temboard.css': 'temboardui/static/sass/temboard.scss'
@@ -15,8 +16,7 @@ module.exports = function(grunt) {
       },
       dist: {
         options: {
-          style: 'compressed',
-          loadPath: 'node_modules/bootstrap-sass/assets/stylesheets'
+          outputStyle: 'compressed'
         },
         files: {
           'temboardui/static/css/temboard.css': 'temboardui/static/sass/temboard.scss'
@@ -45,7 +45,7 @@ module.exports = function(grunt) {
       }
     }
   });
-  grunt.loadNpmTasks('grunt-contrib-sass');
+  grunt.loadNpmTasks('grunt-sass');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
