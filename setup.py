@@ -23,13 +23,6 @@ setup(
     author='Dalibo',
     author_email='contact@dalibo.com',
     license='PostgreSQL',
-    packages=find_packages(),
-    scripts=[
-        'temboard-agent',
-        'temboard-agent-adduser',
-        'temboard-agent-password',
-        'temboard-agent-register',
-    ],
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
     long_description=open('README.rst').read(),
@@ -43,6 +36,13 @@ setup(
         "Programming Language :: Python :: 2 :: Only",
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
+    ],
+    packages=find_packages(),
+    scripts=[
+        'temboard-agent',
+        'temboard-agent-adduser',
+        'temboard-agent-password',
+        'temboard-agent-register',
     ],
     data_files=[
         ('share/temboard-agent/', [
