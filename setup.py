@@ -21,6 +21,7 @@ setup(
     name='temboard-agent',
     version=VERSION,
     author='Dalibo',
+    author_email='contact@dalibo.com',
     license='PostgreSQL',
     packages=find_packages(),
     scripts=[
