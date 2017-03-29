@@ -1,13 +1,14 @@
 import logging
-import re, os
+import re
+import os
 import time
 import json
 
 from temboardagent.spc import connector, error
 from temboardagent.queue import Queue, Message
-from temboardagent.command import exec_command
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
+
 
 def load_probes(options, home):
     """Give a list of probe objects, ready to run."""
@@ -18,7 +19,9 @@ def load_probes(options, home):
     r = re.compile(r'^probe_(\w+)$')
     for c in globals().keys():
         m = r.search(c)
-        if m is not None and issubclass(globals()[c], Probe) and (m.group(1) in options['probes'] or '*' in options['probes']):
+        if m is not None and issubclass(globals()[c], Probe) \
+                and (m.group(1) in options['probes']
+                     or '*' in options['probes']):
             o = eval(c + "(options)")
             o.set_home(home)
             probes.append(o)
@@ -26,7 +29,8 @@ def load_probes(options, home):
 
     return probes
 
-def run_probes(probes, instances, delta = True):
+
+def run_probes(probes, instances, delta=True):
     """Execute the probes."""
 
     logging.debug("Starting probe run")
@@ -51,13 +55,18 @@ def run_probes(probes, instances, delta = True):
             for i in instances:
                 if i['available']:
                     if p.check(i['version_num']):
-                        logging.debug("Running %s level probe \"%s\" on instance \"%s\"", p.level, p.get_name(), i['instance'])
+                        logging.debug("Running %s level probe \"%s\" on "
+                                      "instance \"%s\"",
+                                      p.level,
+                                      p.get_name(),
+                                      i['instance'])
                         out += p.run(i)
 
         output[p.get_name()] = out
 
     logging.debug("Finished probe run")
     return output
+
 
 class Probe(object):
     """Base class for all plugins."""
@@ -99,7 +108,9 @@ class Probe(object):
         return None
 
     def get_last_measure(self, store_key):
-        q = Queue("%s/%s.q" % (self.home, store_key), max_length = 1, overflow_mode = 'slide')
+        q = Queue("%s/%s.q" % (self.home, store_key),
+                  max_length=1,
+                  overflow_mode='slide')
         msg = q.shift()
         if msg:
             return json.loads(msg.content)
@@ -128,7 +139,8 @@ class Probe(object):
 
                 delta_values = {}
                 for k in current_values.keys():
-                    delta_value = current_values[k] - last_measure['measure'][k]
+                    delta_value = current_values[k] - \
+                                  last_measure['measure'][k]
                     if delta_value < 0:
                         raise Exception('Negative delta value.')
                     delta_values[k] = delta_value
@@ -137,8 +149,15 @@ class Probe(object):
         except Exception as e:
             delta = (None, None)
         try:
-            q = Queue("%s/%s.q" % (self.home, store_key), max_length = 1, overflow_mode = 'slide')
-            q.push(Message(content = json.dumps({ 'measure_time': current_time, 'measure': dict(current_values)})))
+            q = Queue("%s/%s.q" % (self.home, store_key),
+                      max_length=1,
+                      overflow_mode='slide')
+            q.push(Message(content=json.dumps(
+                {
+                    'measure_time': current_time,
+                    'measure': dict(current_values)
+                }
+            )))
         except Exception as e:
             logging.error(str(e))
         return delta
@@ -146,10 +165,11 @@ class Probe(object):
     def __repr__(self):
         return self.get_name()
 
+
 # system probe base class
 class HostProbe(Probe):
     level = 'host'
-    system = None # kernel name from os.uname()[0]
+    system = None  # kernel name from os.uname()[0]
     min_version = None
     max_version = None
 
@@ -159,7 +179,8 @@ class HostProbe(Probe):
             if self.system != os.uname()[0]:
                 return False
 
-        version = [ int(x) for x in re.sub(r'[-_].*$', '', os.uname()[2]).split('.') ]
+        version = [int(x) for x in
+                   re.sub(r'[-_].*$', '', os.uname()[2]).split('.')]
         if self.min_version is not None:
             if version[0:len(self.min_version)] < self.min_version:
                 return False
@@ -169,6 +190,7 @@ class HostProbe(Probe):
                 return False
 
         return True
+
 
 # postgres probe base class
 class SqlProbe(Probe):
@@ -200,7 +222,6 @@ class SqlProbe(Probe):
                 return False
 
         return True
-
 
     def run_sql(self, conninfo, sql, database=None):
         """Get the result of the SQL query"""
@@ -238,7 +259,8 @@ class SqlProbe(Probe):
 
                     # Create the store key for the delta
                     if self.delta_key is not None:
-                        key = conninfo['instance'] + database + r[self.delta_key]
+                        key = conninfo['instance'] + database \
+                              + r[self.delta_key]
                     else:
                         key = conninfo['instance'] + database
 
@@ -255,11 +277,11 @@ class SqlProbe(Probe):
 
                 output.append(r)
             conn.close()
-        except error as e:
-            logging.error("Unable to run probe \"%s\" on \"%s\" on database \"%s\"", self.get_name(),
+        except error:
+            logging.error("Unable to run probe \"%s\" on \"%s\" on "
+                          "database \"%s\"", self.get_name(),
                           conninfo['instance'], database)
         return output
-
 
     def run(self, conninfo):
         """Execute the query depending on the level configured."""
@@ -298,7 +320,7 @@ class probe_sessions(SqlProbe):
 from pg_database d
   left join pg_stat_activity a on (d.oid = a.datid)
 where d.datallowconn
-group by d.datname"""
+group by d.datname"""  # noqa
         elif version >= 90200 and version < 90600:
             self.sql = """select
   current_timestamp as datetime,
@@ -314,7 +336,7 @@ group by d.datname"""
 from pg_database d
   left join pg_stat_activity a on (d.oid = a.datid)
 where d.datallowconn
-group by d.datname"""
+group by d.datname"""  # noqa
         elif version >= 90600:
             self.sql = """select
   current_timestamp as datetime,
@@ -330,7 +352,7 @@ group by d.datname"""
 from pg_database d
   left join pg_stat_activity a on (d.oid = a.datid)
 where d.datallowconn
-group by d.datname"""
+group by d.datname"""  # noqa
 
         return True
 
@@ -376,7 +398,7 @@ class probe_locks(SqlProbe):
 from pg_database d
   left join pg_locks l on (l.database = d.oid)
 where d.datallowconn
-group by d.datname"""
+group by d.datname"""  # noqa
 
 
 class probe_blocks(SqlProbe):
@@ -389,7 +411,7 @@ class probe_blocks(SqlProbe):
   coalesce(blks_hit::float*100/nullif(blks_read+blks_hit, 0), 0) as hitmiss_ratio
 from pg_stat_database s
   join pg_database d on (d.oid = s.datid)
-where d.datallowconn"""
+where d.datallowconn"""  # noqa
     delta_columns = ['blks_read', 'blks_hit']
     delta_key = 'dbname'
     delta_interval_column = 'measure_interval'
@@ -455,10 +477,13 @@ class probe_cpu(HostProbe):
             if len(cols) == 0:
                 continue
             if re.match(r'^cpu\d+$', cols[0]):
-                # Convert values to int then in milliseconds, before computing the delta
+                # Convert values to int then in milliseconds
+                # before computing the delta
                 (interval, metrics) = self.delta(cols[0], {
-                    'time_user': (int(cols[1]) + int(cols[2])) * 1000 / self.hz,
-                    'time_system': (int(cols[3]) + int(cols[6]) + int(cols[7])) * 1000 / self.hz,
+                    'time_user': (int(cols[1]) +
+                                  int(cols[2])) * 1000 / self.hz,
+                    'time_system': (int(cols[3]) + int(cols[6]) +
+                                    int(cols[7])) * 1000 / self.hz,
                     'time_idle': int(cols[4]) * 1000 / self.hz,
                     'time_iowait': int(cols[5]) * 1000 / self.hz,
                     'time_steal': int(cols[8]) * 1000 / self.hz
@@ -523,6 +548,7 @@ class probe_process(HostProbe):
         metrics.update(deltas)
         return [metrics]
 
+
 class probe_memory(HostProbe):
     system = 'Linux'
 
@@ -569,13 +595,28 @@ class probe_wal_files(SqlProbe):
             'datetime': now(),
             'port': conninfo['port']
         }
-        rows = self.run_sql(conninfo, "select count(s.f) AS total, sum((pg_stat_file('pg_xlog/'||s.f)).size) AS total_size, pg_current_xlog_location() as current_location from pg_ls_dir('pg_xlog') AS s(f) WHERE f ~ E'^[0-9A-F]{24}$'")
+        rows = self.run_sql(conninfo, """
+select
+  count(s.f) AS total,
+  sum((pg_stat_file('pg_xlog/'||s.f)).size) AS total_size,
+  pg_current_xlog_location() as current_location
+from
+  pg_ls_dir('pg_xlog') AS s(f)
+where f ~ E'^[0-9A-F]{24}$'
+""")
 
         metric['total'] = rows[0]['total']
         metric['total_size'] = rows[0]['total_size']
         metric['current_location'] = rows[0]['current_location']
 
-        rows = self.run_sql(conninfo, "select count(s.f) AS archive_ready from pg_ls_dir('pg_xlog/archive_status') as s(f) where f ~ E'\.ready$'")
+        rows = self.run_sql(conninfo, """
+select
+  count(s.f) AS archive_ready
+from
+  pg_ls_dir('pg_xlog/archive_status') as s(f)
+where
+  f ~ E'\.ready$'
+""")
 
         metric['archive_ready'] = rows[0]['archive_ready']
 
@@ -584,12 +625,14 @@ class probe_wal_files(SqlProbe):
         # converted to an number first
         m = re.match(r'^([0-9A-F]+)/([0-9A-F]+)$', metric['current_location'])
         if m:
-            current = int("0xff000000", 0) * int("0x" + m.group(1), 0) + int("0x" + m.group(2), 0)
+            current = int("0xff000000", 0) * int("0x" + m.group(1), 0) + \
+                      int("0x" + m.group(2), 0)
         else:
             logging.error("Unable to convert xlog location to a number")
             return []
 
-        (interval, delta) = self.delta(conninfo['instance'], { 'written_size': current })
+        (interval, delta) = self.delta(conninfo['instance'],
+                                       {'written_size': current})
 
         # Empty the first time
         if interval is None:

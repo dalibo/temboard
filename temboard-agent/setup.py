@@ -10,7 +10,7 @@ setup(
     license = 'PostgreSQL',
     packages = [
                 'temboardagent',
-                'temboardagent.plugins.supervision',
+                'temboardagent.plugins.monitoring',
                 'temboardagent.plugins.dashboard',
                 'temboardagent.plugins.administration',
                 'temboardagent.plugins.settings',

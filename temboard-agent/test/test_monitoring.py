@@ -18,7 +18,7 @@ ENV = {}
 XSESSION = ''
 
 
-class TestSupervision:
+class Testmonitoring:
 
     @classmethod
     def setup_class(cls):
@@ -63,16 +63,16 @@ class TestSupervision:
         except error:
             assert False
 
-    def test_01_supervision_session(self):
+    def test_01_monitoring_session(self):
         """
-        [supervision] 01: GET /supervision/probe/sessions : Check HTTP code returned is 200
+        [monitoring] 01: GET /monitoring/probe/sessions : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/sessions' % (
+                url='https://%s:%s/monitoring/probe/sessions' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -85,16 +85,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_02_supervision_xacts(self):
+    def test_02_monitoring_xacts(self):
         """
-        [supervision] 02: GET /supervision/probe/xacts : Check HTTP code returned is 200
+        [monitoring] 02: GET /monitoring/probe/xacts : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/xacts' % (
+                url='https://%s:%s/monitoring/probe/xacts' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -107,16 +107,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_03_supervision_locks(self):
+    def test_03_monitoring_locks(self):
         """
-        [supervision] 03: GET /supervision/probe/locks : Check HTTP code returned is 200
+        [monitoring] 03: GET /monitoring/probe/locks : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/locks' % (
+                url='https://%s:%s/monitoring/probe/locks' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -129,16 +129,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_04_supervision_blocks(self):
+    def test_04_monitoring_blocks(self):
         """
-        [supervision] 04: GET /supervision/probe/blocks : Check HTTP code returned is 200
+        [monitoring] 04: GET /monitoring/probe/blocks : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/blocks' % (
+                url='https://%s:%s/monitoring/probe/blocks' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -151,16 +151,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_05_supervision_bgwriter(self):
+    def test_05_monitoring_bgwriter(self):
         """
-        [supervision] 05: GET /supervision/probe/bgwriter : Check HTTP code returned is 200
+        [monitoring] 05: GET /monitoring/probe/bgwriter : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/bgwriter' % (
+                url='https://%s:%s/monitoring/probe/bgwriter' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -173,16 +173,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_06_supervision_db_size(self):
+    def test_06_monitoring_db_size(self):
         """
-        [supervision] 06: GET /supervision/probe/db_size : Check HTTP code returned is 200
+        [monitoring] 06: GET /monitoring/probe/db_size : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/db_size' % (
+                url='https://%s:%s/monitoring/probe/db_size' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -195,16 +195,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_07_supervision_tblspc_size(self):
+    def test_07_monitoring_tblspc_size(self):
         """
-        [supervision] 07: GET /supervision/probe/tblspc_size : Check HTTP code returned is 200
+        [monitoring] 07: GET /monitoring/probe/tblspc_size : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/tblspc_size' % (
+                url='https://%s:%s/monitoring/probe/tblspc_size' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -217,16 +217,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_08_supervision_filesystems_size(self):
+    def test_08_monitoring_filesystems_size(self):
         """
-        [supervision] 08: GET /supervision/probe/filesystems_size : Check HTTP code returned is 200
+        [monitoring] 08: GET /monitoring/probe/filesystems_size : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/filesystems_size' % (
+                url='https://%s:%s/monitoring/probe/filesystems_size' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -239,16 +239,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_09_supervision_cpu(self):
+    def test_09_monitoring_cpu(self):
         """
-        [supervision] 09: GET /supervision/probe/cpu : Check HTTP code returned is 200
+        [monitoring] 09: GET /monitoring/probe/cpu : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/cpu' % (
+                url='https://%s:%s/monitoring/probe/cpu' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -261,16 +261,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_10_supervision_process(self):
+    def test_10_monitoring_process(self):
         """
-        [supervision] 10: GET /supervision/probe/process : Check HTTP code returned is 200
+        [monitoring] 10: GET /monitoring/probe/process : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/process' % (
+                url='https://%s:%s/monitoring/probe/process' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -283,16 +283,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_11_supervision_memory(self):
+    def test_11_monitoring_memory(self):
         """
-        [supervision] 11: GET /supervision/probe/memory : Check HTTP code returned is 200
+        [monitoring] 11: GET /monitoring/probe/memory : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/memory' % (
+                url='https://%s:%s/monitoring/probe/memory' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -305,16 +305,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_12_supervision_loadavg(self):
+    def test_12_monitoring_loadavg(self):
         """
-        [supervision] 12: GET /supervision/probe/loadavg : Check HTTP code returned is 200
+        [monitoring] 12: GET /monitoring/probe/loadavg : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/loadavg' % (
+                url='https://%s:%s/monitoring/probe/loadavg' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -327,16 +327,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_13_supervision_wal_files(self):
+    def test_13_monitoring_wal_files(self):
         """
-        [supervision] 13: GET /supervision/probe/wal_files : Check HTTP code returned is 200
+        [monitoring] 13: GET /monitoring/probe/wal_files : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/wal_files' % (
+                url='https://%s:%s/monitoring/probe/wal_files' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
@@ -349,16 +349,16 @@ class TestSupervision:
             status = e.code
         assert status == 200
 
-    def test_14_supervision_replication(self):
+    def test_14_monitoring_replication(self):
         """
-        [supervision] 14: GET /supervision/probe/replication : Check HTTP code returned is 200
+        [monitoring] 14: GET /monitoring/probe/replication : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/supervision/probe/replication' % (
+                url='https://%s:%s/monitoring/probe/replication' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                         ),
