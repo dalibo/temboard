@@ -1,5 +1,5 @@
 import re
-from settings.filemgmt import *
+from pgconf.filemgmt import *
 from temboardagent.errors import HTTPError
 
 class HBAManager(ConfigurationFileManager):

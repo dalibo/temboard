@@ -19,7 +19,7 @@ ENV = {}
 XSESSION = ''
 
 
-class TestSettings(object):
+class TestPgconf(object):
 
     @classmethod
     def setup_class(cls):
@@ -66,7 +66,7 @@ class TestSettings(object):
 
     def test_00_env_pg(self):
         """
-        [settings] 00: PostgreSQL instance is up & running
+        [pgconf] 00: PostgreSQL instance is up & running
         """
         conn = connector(
             host=ENV['pg']['socket_dir'],
@@ -84,14 +84,14 @@ class TestSettings(object):
         except error:
             assert False
 
-    def test_01_get_settings_configuration_ok(self):
+    def test_01_get_pgconf_configuration_ok(self):
         """
-        [settings] 01: GET /settings/configuration : HTTP return code is 200 and the response data structure is right
+        [pgconf] 01: GET /pgconf/configuration : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -138,14 +138,14 @@ class TestSettings(object):
         assert 'file_val_raw' in dict_data[0]['rows'][0]
         assert len(dict_data[0]['rows'][0]) == 15
 
-    def test_02_get_settings_configuration_ko_401(self):
+    def test_02_get_pgconf_configuration_ko_401(self):
         """
-        [settings] 02: GET /settings/configuration : HTTP return code is 401 on invalid xsession
+        [pgconf] 02: GET /pgconf/configuration : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -154,14 +154,14 @@ class TestSettings(object):
             )
         assert status == 401
 
-    def test_03_get_settings_configuration_ko_406(self):
+    def test_03_get_pgconf_configuration_ko_406(self):
         """
-        [settings] 03: GET /settings/configuration : HTTP return code is 406 on malformed xsession
+        [pgconf] 03: GET /pgconf/configuration : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -170,14 +170,14 @@ class TestSettings(object):
             )
         assert status == 406
 
-    def test_04_post_settings_configuration_ok(self):
+    def test_04_post_pgconf_configuration_ok(self):
         """
-        [settings] 04: POST /settings/configuration : HTTP return code is 200 and the response data structure is right
+        [pgconf] 04: POST /pgconf/configuration : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -217,14 +217,14 @@ WHERE
         assert dict_data['settings'][0]['name'] == 'autovacuum'
         assert dict_data['settings'][0]['setting'] == 'off'
 
-    def test_05_post_settings_configuration_ko_401(self):
+    def test_05_post_pgconf_configuration_ko_401(self):
         """
-        [settings] 05: POST /settings/configuration : HTTP return code is 401 on invalid xsession
+        [pgconf] 05: POST /pgconf/configuration : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -238,14 +238,14 @@ WHERE
             )
         assert status == 401
 
-    def test_06_get_settings_configuration_ko_406(self):
+    def test_06_get_pgconf_configuration_ko_406(self):
         """
-        [settings] 06: POST /settings/configuration : HTTP return code is 406 on malformed xsession
+        [pgconf] 06: POST /pgconf/configuration : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -259,14 +259,14 @@ WHERE
             )
         assert status == 406
 
-    def test_07_post_settings_configuration_ko_400(self):
+    def test_07_post_pgconf_configuration_ko_400(self):
         """
-        [settings] 07: POST /settings/configuration : HTTP return code is 400 on invalid json data
+        [pgconf] 07: POST /pgconf/configuration : HTTP return code is 400 on invalid json data
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/configuration' % (
+                url='https://%s:%s/pgconf/configuration' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -276,9 +276,9 @@ WHERE
             )
         assert status == 400
 
-    def test_08_get_settings_configuration_status_ok(self):
+    def test_08_get_pgconf_configuration_status_ok(self):
         """
-        [settings] 08: GET /settings/configuration/status : HTTP return code is 200 and the response data structure is right
+        [pgconf] 08: GET /pgconf/configuration/status : HTTP return code is 200 and the response data structure is right
         """  # noqa
         # shared_buffers update requires the server to restart
         self._exec_query(
@@ -293,7 +293,7 @@ WHERE
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/status' % (
+                url='https://%s:%s/pgconf/configuration/status' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -353,14 +353,14 @@ WHERE
         assert 'name' in dict_data['reload_changes'][0]
         assert len(dict_data['reload_changes'][0]) == 16
 
-    def test_09_get_settings_configuration_status_ko_406(self):
+    def test_09_get_pgconf_configuration_status_ko_406(self):
         """
-        [settings] 09: GET /settings/configuration/status : HTTP return code is 406 on malformed xsession
+        [pgconf] 09: GET /pgconf/configuration/status : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/status' % (
+                url='https://%s:%s/pgconf/configuration/status' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -369,14 +369,14 @@ WHERE
             )
         assert status == 406
 
-    def test_10_get_settings_configuration_status_ko_401(self):
+    def test_10_get_pgconf_configuration_status_ko_401(self):
         """
-        [settings] 10: GET /settings/configuration/status : HTTP return code is 401 on invalid xsession
+        [pgconf] 10: GET /pgconf/configuration/status : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/status' % (
+                url='https://%s:%s/pgconf/configuration/status' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -385,14 +385,14 @@ WHERE
             )
         assert status == 401
 
-    def test_11_get_settings_configuration_categories(self):
+    def test_11_get_pgconf_configuration_categories(self):
         """
-        [settings] 11: GET /settings/configuration/categories : HTTP return code is 200 and the response data structure is right
+        [pgconf] 11: GET /pgconf/configuration/categories : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/categories' % (
+                url='https://%s:%s/pgconf/configuration/categories' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -415,14 +415,14 @@ WHERE
                 "SELECT category FROM pg_settings "
                 "ORDER BY category LIMIT 1")[0]['category']
 
-    def test_12_get_settings_configuration_categories_ko_401(self):
+    def test_12_get_pgconf_configuration_categories_ko_401(self):
         """
-        [settings] 12: GET /settings/configuration/categories : HTTP return code is 401 on invalid xsession
+        [pgconf] 12: GET /pgconf/configuration/categories : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/categories' % (
+                url='https://%s:%s/pgconf/configuration/categories' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -431,14 +431,14 @@ WHERE
             )
         assert status == 401
 
-    def test_13_get_settings_configuration_categories_ko_406(self):
+    def test_13_get_pgconf_configuration_categories_ko_406(self):
         """
-        [settings] 13: GET /settings/configuration/categories : HTTP return code is 406 on malformed xsession
+        [pgconf] 13: GET /pgconf/configuration/categories : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/categories' % (
+                url='https://%s:%s/pgconf/configuration/categories' % (
                     ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -447,14 +447,14 @@ WHERE
             )
         assert status == 406
 
-    def test_14_get_settings_configuration_category_ok(self):
+    def test_14_get_pgconf_configuration_category_ok(self):
         """
-        [settings] 14: GET /settings/configuration/category/:categoryname : HTTP return code is 200 and the response data structure is right
+        [pgconf] 14: GET /pgconf/configuration/category/:categoryname : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                url='https://%s:%s/pgconf/configuration/category/Autovacuum'
                     % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -491,14 +491,14 @@ WHERE
         assert 'file_val_raw' in dict_data[0]['rows'][0]
         assert len(dict_data[0]['rows'][0]) == 15
 
-    def test_15_get_settings_configuration_category_ko_401(self):
+    def test_15_get_pgconf_configuration_category_ko_401(self):
         """
-        [settings] 15: GET /settings/configuration/category/:categoryname : HTTP return code is 401 on invalid xsession
+        [pgconf] 15: GET /pgconf/configuration/category/:categoryname : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                url='https://%s:%s/pgconf/configuration/category/Autovacuum'
                     % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -507,14 +507,14 @@ WHERE
             )
         assert status == 401
 
-    def test_16_get_settings_configuration_category_ko_406(self):
+    def test_16_get_pgconf_configuration_category_ko_406(self):
         """
-        [settings] 16: GET /settings/configuration/category/:categoryname : HTTP return code is 406 on malformed xsession
+        [pgconf] 16: GET /pgconf/configuration/category/:categoryname : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/configuration/category/Autovacuum'
+                url='https://%s:%s/pgconf/configuration/category/Autovacuum'
                     % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -523,14 +523,14 @@ WHERE
             )
         assert status == 406
 
-    def test_17_get_settings_hba_ok(self):
+    def test_17_get_pgconf_hba_ok(self):
         """
-        [settings] 17: GET /settings/hba : HTTP return code is 200 and the response data structure is right
+        [pgconf] 17: GET /pgconf/hba : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -556,14 +556,14 @@ WHERE
             else:
                 assert 'comment' in row
 
-    def test_18_get_settings_hba_ko_401(self):
+    def test_18_get_pgconf_hba_ko_401(self):
         """
-        [settings] 18: GET /settings/hba : HTTP return code is 401 on invalid xsession
+        [pgconf] 18: GET /pgconf/hba : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -572,14 +572,14 @@ WHERE
             )
         assert status == 401
 
-    def test_19_get_settings_hba_ko_406(self):
+    def test_19_get_pgconf_hba_ko_406(self):
         """
-        [settings] 19: GET /settings/hba : HTTP return code is 406 on malformed xsession
+        [pgconf] 19: GET /pgconf/hba : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -588,14 +588,14 @@ WHERE
             )
         assert status == 406
 
-    def test_20_get_settings_hba_raw_ok(self):
+    def test_20_get_pgconf_hba_raw_ok(self):
         """
-        [settings] 20: GET /settings/hba/raw : HTTP return code is 200 and the response data structure is right
+        [pgconf] 20: GET /pgconf/hba/raw : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -615,14 +615,14 @@ WHERE
         assert 'content' in dict_data
         assert md5(dict_data['content']).hexdigest() == md5sum_hba
 
-    def test_21_get_settings_hba_raw_ko_401(self):
+    def test_21_get_pgconf_hba_raw_ko_401(self):
         """
-        [settings] 21: GET /settings/hba/raw : HTTP return code is 401 on invalid xsession
+        [pgconf] 21: GET /pgconf/hba/raw : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -631,14 +631,14 @@ WHERE
             )
         assert status == 401
 
-    def test_22_get_settings_hba_raw_ko_406(self):
+    def test_22_get_pgconf_hba_raw_ko_406(self):
         """
-        [settings] 22: GET /settings/hba/raw : HTTP return code is 406 on malformed xsession
+        [pgconf] 22: GET /pgconf/hba/raw : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -647,14 +647,14 @@ WHERE
             )
         assert status == 406
 
-    def test_23_post_settings_hba_ok(self):
+    def test_23_post_pgconf_hba_ok(self):
         """
-        [settings] 23: POST /settings/hba : HTTP return code is 200 and the response data structure is right
+        [pgconf] 23: POST /pgconf/hba : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -700,14 +700,14 @@ WHERE
         assert 'filepath' in dict_data
         assert md5sum_hba == md5(exp_hba_raw).hexdigest()
 
-    def test_24_post_settings_hba_ko_401(self):
+    def test_24_post_pgconf_hba_ko_401(self):
         """
-        [settings] 24: POST /settings/hba : HTTP return code is 401 on invalid xsession
+        [pgconf] 24: POST /pgconf/hba : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -728,14 +728,14 @@ WHERE
             )
         assert status == 401
 
-    def test_25_post_settings_hba_ko_406(self):
+    def test_25_post_pgconf_hba_ko_406(self):
         """
-        [settings] 25: POST /settings/hba : HTTP return code is 406 on malformed xsession
+        [pgconf] 25: POST /pgconf/hba : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -756,14 +756,14 @@ WHERE
             )
         assert status == 406
 
-    def test_26_post_settings_hba_ko_406(self):
+    def test_26_post_pgconf_hba_ko_406(self):
         """
-        [settings] 26: POST /settings/hba : HTTP return code is 406 on invalid data
+        [pgconf] 26: POST /pgconf/hba : HTTP return code is 406 on invalid data
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -773,14 +773,14 @@ WHERE
             )
         assert status == 406
 
-    def test_27_post_settings_hba_version_ok(self):
+    def test_27_post_pgconf_hba_version_ok(self):
         """
-        [settings] 27: POST /settings/hba : HTTP return code is 200 and the response data structure is right
+        [pgconf] 27: POST /pgconf/hba : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba' % (
+                url='https://%s:%s/pgconf/hba' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -819,14 +819,14 @@ WHERE
         assert 'filepath' in dict_data
         assert md5sum_hba == md5(exp_hba_raw).hexdigest()
 
-    def test_28_get_settings_hba_versions_ok(self):
+    def test_28_get_pgconf_hba_versions_ok(self):
         """
-        [settings] 28: GET /settings/hba/versions: HTTP return code is 200 and the repsonse date structure is right.
+        [pgconf] 28: GET /pgconf/hba/versions: HTTP return code is 200 and the repsonse date structure is right.
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -843,14 +843,14 @@ WHERE
                 dict_data['filepath'],
                 dict_data['versions'][0]))
 
-    def test_29_get_settings_hba_versions_ko_401(self):
+    def test_29_get_pgconf_hba_versions_ko_401(self):
         """
-        [settings] 29: GET /settings/hba/versions: HTTP return code is 401 on invalid xsession.
+        [pgconf] 29: GET /pgconf/hba/versions: HTTP return code is 401 on invalid xsession.
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -859,14 +859,14 @@ WHERE
             )
         assert status == 401
 
-    def test_30_get_settings_hba_versions_ko_406(self):
+    def test_30_get_pgconf_hba_versions_ko_406(self):
         """
-        [settings] 30: GET /settings/hba/versions: HTTP return code is 406 on malformed xsession.
+        [pgconf] 30: GET /pgconf/hba/versions: HTTP return code is 406 on malformed xsession.
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -875,15 +875,15 @@ WHERE
             )
         assert status == 406
 
-    def test_31_get_settings_hba_version_ok(self):
+    def test_31_get_pgconf_hba_version_ok(self):
         """
-        [settings] 31: GET /settings/hba?version=:version : HTTP return code is 200 and the response data structure is right
+        [pgconf] 31: GET /pgconf/hba?version=:version : HTTP return code is 200 and the response data structure is right
         """  # noqa
         # We need to get the last version id.
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -905,7 +905,7 @@ WHERE
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         last_version
@@ -930,14 +930,14 @@ WHERE
         assert 'auth_method' in dict_data['entries'][0]
         assert 'auth_options' in dict_data['entries'][0]
 
-    def test_32_get_settings_hba_version_ko_404(self):
+    def test_32_get_pgconf_hba_version_ko_404(self):
         """
-        [settings] 32: GET /settings/hba?version=:version : HTTP return code is 404 on unexisting version
+        [pgconf] 32: GET /pgconf/hba?version=:version : HTTP return code is 404 on unexisting version
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba?version=1970-01-01T00:00:01' %
+                url='https://%s:%s/pgconf/hba?version=1970-01-01T00:00:01' %
                     (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -946,14 +946,14 @@ WHERE
             )
         assert status == 404
 
-    def test_33_get_settings_hba_version_ko_406(self):
+    def test_33_get_pgconf_hba_version_ko_406(self):
         """
-        [settings] 33: GET /settings/hba?version=:version : HTTP return code is 406 on malformed version id
+        [pgconf] 33: GET /pgconf/hba?version=:version : HTTP return code is 406 on malformed version id
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba?version=XX112233' % (
+                url='https://%s:%s/pgconf/hba?version=XX112233' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -962,15 +962,15 @@ WHERE
             )
         assert status == 406
 
-    def test_34_get_settings_hba_raw_version_ok(self):
+    def test_34_get_pgconf_hba_raw_version_ok(self):
         """
-        [settings] 34: GET /settings/hba/raw?version=:version : HTTP return code is 200 and the response data structure is right
+        [pgconf] 34: GET /pgconf/hba/raw?version=:version : HTTP return code is 200 and the response data structure is right
         """  # noqa
         # We need to get the last version id.
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
@@ -992,7 +992,7 @@ WHERE
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                url='https://%s:%s/pgconf/hba/raw?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         last_version
@@ -1015,14 +1015,14 @@ WHERE
                 last_version)
                 )).hexdigest()
 
-    def test_35_get_settings_hba_raw_version_ko_404(self):
+    def test_35_get_pgconf_hba_raw_version_ko_404(self):
         """
-        [settings] 35: GET /settings/hba/raw?version=:version : HTTP return code is 404 on unexisting version
+        [pgconf] 35: GET /pgconf/hba/raw?version=:version : HTTP return code is 404 on unexisting version
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                url='https://%s:%s/pgconf/hba/raw?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         '1970-01-01T00:00:01'
@@ -1034,14 +1034,14 @@ WHERE
             )
         assert status == 404
 
-    def test_36_get_settings_hba_raw_version_ko_406(self):
+    def test_36_get_pgconf_hba_raw_version_ko_406(self):
         """
-        [settings] 36: GET /settings/hba/raw?version=:version : HTTP return code is 406 on malformed version id
+        [pgconf] 36: GET /pgconf/hba/raw?version=:version : HTTP return code is 406 on malformed version id
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/raw?version=%s' % (
+                url='https://%s:%s/pgconf/hba/raw?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         'XX112233'
@@ -1053,15 +1053,15 @@ WHERE
             )
         assert status == 406
 
-    def test_37_delete_settings_hba_version_ok(self):
+    def test_37_delete_pgconf_hba_version_ok(self):
         """
-        [settings] 37: DELETE /settings/hba/raw?version=:version : HTTP return code is 200 and data structure is right
+        [pgconf] 37: DELETE /pgconf/hba/raw?version=:version : HTTP return code is 200 and data structure is right
         """  # noqa
         # We need to get the last version id.
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/hba/versions' % (
+                url='https://%s:%s/pgconf/hba/versions' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1086,7 +1086,7 @@ WHERE
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='DELETE',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         last_version
@@ -1104,14 +1104,14 @@ WHERE
         assert dict_data['deleted'] is True
         assert not os.path.isfile("%s.%s" % (filepath, last_version))
 
-    def test_38_delete_settings_hba_version_ko_401(self):
+    def test_38_delete_pgconf_hba_version_ko_401(self):
         """
-        [settings] 38: DELETE /settings/hba/raw?version=:version : HTTP return code is 401 on invalid xsession
+        [pgconf] 38: DELETE /pgconf/hba/raw?version=:version : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='DELETE',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         '1970-01-01T00:00:01'
@@ -1123,14 +1123,14 @@ WHERE
             )
         assert status == 401
 
-    def test_39_delete_settings_hba_version_ko_406(self):
+    def test_39_delete_pgconf_hba_version_ko_406(self):
         """
-        [settings] 39: DELETE /settings/hba/raw?version=:version : HTTP return code is 406 on malformed xsession
+        [pgconf] 39: DELETE /pgconf/hba/raw?version=:version : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='DELETE',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         '1970-01-01T00:00:01'
@@ -1142,14 +1142,14 @@ WHERE
             )
         assert status == 406
 
-    def test_40_delete_settings_hba_version_ko_406(self):
+    def test_40_delete_pgconf_hba_version_ko_406(self):
         """
-        [settings] 40: DELETE /settings/hba/raw?version=:version : HTTP return code is 406 on malformed version id
+        [pgconf] 40: DELETE /pgconf/hba/raw?version=:version : HTTP return code is 406 on malformed version id
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='DELETE',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         'A' * 6
@@ -1161,14 +1161,14 @@ WHERE
             )
         assert status == 406
 
-    def test_41_delete_settings_hba_version_ko_404(self):
+    def test_41_delete_pgconf_hba_version_ko_404(self):
         """
-        [settings] 41: DELETE /settings/hba/raw?version=:version : HTTP return code is 404 on unexisting version
+        [pgconf] 41: DELETE /pgconf/hba/raw?version=:version : HTTP return code is 404 on unexisting version
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='DELETE',
-                url='https://%s:%s/settings/hba?version=%s' % (
+                url='https://%s:%s/pgconf/hba?version=%s' % (
                         ENV['agent']['host'],
                         ENV['agent']['port'],
                         '1970-01-01T00:00:01'
@@ -1180,14 +1180,14 @@ WHERE
             )
         assert status == 404
 
-    def test_42_get_settings_pg_ident_ok(self):
+    def test_42_get_pgconf_pg_ident_ok(self):
         """
-        [settings] 42: GET /settings/pg_ident : HTTP return code is 200 and the response data structure is right
+        [pgconf] 42: GET /pgconf/pg_ident : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1207,14 +1207,14 @@ WHERE
         assert 'content' in dict_data
         assert md5(dict_data['content']).hexdigest() == md5sum_pg_ident
 
-    def test_43_get_settings_pg_ident_ko_401(self):
+    def test_43_get_pgconf_pg_ident_ko_401(self):
         """
-        [settings] 43: GET /settings/pg_ident : HTTP return code is 401 on invalid xsession
+        [pgconf] 43: GET /pgconf/pg_ident : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1225,14 +1225,14 @@ WHERE
             )
         assert status == 401
 
-    def test_44_get_settings_pg_ident_ko_406(self):
+    def test_44_get_pgconf_pg_ident_ko_406(self):
         """
-        [settings] 44: GET /settings/pg_ident : HTTP return code is 406 on malformed xsession
+        [pgconf] 44: GET /pgconf/pg_ident : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1243,14 +1243,14 @@ WHERE
             )
         assert status == 406
 
-    def test_45_post_settings_hba_raw_ok(self):
+    def test_45_post_pgconf_hba_raw_ok(self):
         """
-        [settings] 45: POST /settings/hba/raw : HTTP return code is 200 and the response data structure is right
+        [pgconf] 45: POST /pgconf/hba/raw : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1283,14 +1283,14 @@ WHERE
         assert 'filepath' in dict_data
         assert md5sum_hba == md5(exp_hba_raw).hexdigest()
 
-    def test_46_post_settings_hba_raw_ko_401(self):
+    def test_46_post_pgconf_hba_raw_ko_401(self):
         """
-        [settings] 46: POST /settings/hba/raw : HTTP return code is 401 on invalid xsession
+        [pgconf] 46: POST /pgconf/hba/raw : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1305,14 +1305,14 @@ WHERE
             )
         assert status == 401
 
-    def test_47_post_settings_hba_raw_ko_406(self):
+    def test_47_post_pgconf_hba_raw_ko_406(self):
         """
-        [settings] 47: POST /settings/hba/raw : HTTP return code is 406 on malformed xsession
+        [pgconf] 47: POST /pgconf/hba/raw : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1327,14 +1327,14 @@ WHERE
             )
         assert status == 406
 
-    def test_48_post_settings_hba_raw_ko_406(self):
+    def test_48_post_pgconf_hba_raw_ko_406(self):
         """
-        [settings] 48: POST /settings/hba/raw : HTTP return code is 406 on invalid data
+        [pgconf] 48: POST /pgconf/hba/raw : HTTP return code is 406 on invalid data
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/hba/raw' % (
+                url='https://%s:%s/pgconf/hba/raw' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1348,14 +1348,14 @@ WHERE
             )
         assert status == 406
 
-    def test_49_post_settings_pg_ident_ok(self):
+    def test_49_post_pgconf_pg_ident_ok(self):
         """
-        [settings] 49: POST /settings/pg_ident : HTTP return code is 200 and the response data structure is right
+        [pgconf] 49: POST /pgconf/pg_ident : HTTP return code is 200 and the response data structure is right
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1381,14 +1381,14 @@ WHERE
         assert dict_data['update'] is True
         assert md5sum_pg_ident == md5(exp_pg_ident_raw).hexdigest()
 
-    def test_50_post_settings_pg_ident_ko_401(self):
+    def test_50_post_pgconf_pg_ident_ko_401(self):
         """
-        [settings] 50: POST /settings/pg_ident : HTTP return code is 401 on invalid xsession
+        [pgconf] 50: POST /pgconf/pg_ident : HTTP return code is 401 on invalid xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1402,14 +1402,14 @@ WHERE
             )
         assert status == 401
 
-    def test_51_post_settings_pg_ident_ko_406(self):
+    def test_51_post_pgconf_pg_ident_ko_406(self):
         """
-        [settings] 51: POST /settings/pg_ident : HTTP return code is 406 on malformed xsession
+        [pgconf] 51: POST /pgconf/pg_ident : HTTP return code is 406 on malformed xsession
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),
@@ -1423,14 +1423,14 @@ WHERE
             )
         assert status == 406
 
-    def test_52_post_settings_pg_ident_ko_406(self):
+    def test_52_post_pgconf_pg_ident_ko_406(self):
         """
-        [settings] 52: POST /settings/pg_ident : HTTP return code is 406 on invalid data
+        [pgconf] 52: POST /pgconf/pg_ident : HTTP return code is 406 on invalid data
         """  # noqa
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/settings/pg_ident' % (
+                url='https://%s:%s/pgconf/pg_ident' % (
                         ENV['agent']['host'],
                         ENV['agent']['port']
                     ),

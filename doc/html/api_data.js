@@ -1921,11 +1921,11 @@ define({ "api": [
   },
   {
     "type": "delete",
-    "url": "/settings/hba?version=:version",
+    "url": "/pgconf/hba?version=:version",
     "title": "Remove a previous pg_hba.conf version.",
     "version": "0.0.1",
-    "name": "DeleteSettingsHBA",
-    "group": "Settings",
+    "name": "DeletePgconfHBA",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -1989,7 +1989,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -X DELETE -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/hba?version=2016-01-29T08:44:26\"",
+        "content": "curl -k -X DELETE -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/hba?version=2016-01-29T08:44:26\"",
         "type": "curl"
       }
     ],
@@ -2046,16 +2046,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/configuration",
+    "url": "/pgconf/configuration",
     "title": "Fetch all PostgreSQL settings.",
     "version": "0.0.1",
-    "name": "GetSettingsConfiguration",
-    "group": "Settings",
+    "name": "GetPgconfConfiguration",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -2211,7 +2211,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/configuration",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/configuration",
         "type": "curl"
       }
     ],
@@ -2255,16 +2255,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/configuration/categories",
+    "url": "/pgconf/configuration/categories",
     "title": "Fetch settings categories names.",
     "version": "0.0.1",
-    "name": "GetSettingsConfigurationCategories",
-    "group": "Settings",
+    "name": "GetPgconfConfigurationCategories",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -2301,7 +2301,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/configuration/categories",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/configuration/categories",
         "type": "curl"
       }
     ],
@@ -2345,16 +2345,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/configuration/category/:categoryname",
+    "url": "/pgconf/configuration/category/:categoryname",
     "title": "Fetch settings for one category, based on categoryname.",
     "version": "0.0.1",
-    "name": "GetSettingsConfigurationCategory",
-    "group": "Settings",
+    "name": "GetPgconfConfigurationCategory",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -2523,7 +2523,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/configuration/category/Autovacuum\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/configuration/category/Autovacuum\"",
         "type": "curl"
       }
     ],
@@ -2567,16 +2567,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/configuration/status",
+    "url": "/pgconf/configuration/status",
     "title": "Shows settings waiting for PostgreSQL reload and/or restart",
     "version": "0.0.1",
-    "name": "GetSettingsConfigurationStatus",
-    "group": "Settings",
+    "name": "GetPgconfConfigurationStatus",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -2865,7 +2865,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/configuration/status\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/configuration/status\"",
         "type": "curl"
       }
     ],
@@ -2909,16 +2909,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/hba?version=:version",
+    "url": "/pgconf/hba?version=:version",
     "title": "Get pg_hba.conf records",
     "version": "0.0.1",
-    "name": "GetSettingsHBA",
-    "group": "Settings",
+    "name": "GetPgconfHBA",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3024,7 +3024,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/hba\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/hba\"",
         "type": "curl"
       }
     ],
@@ -3081,16 +3081,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/hba/options",
+    "url": "/pgconf/hba/options",
     "title": "Get HBA potential values for each column.",
     "version": "0.0.1",
-    "name": "GetSettingsHBAOptions",
-    "group": "Settings",
+    "name": "GetPgconfHBAOptions",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3155,7 +3155,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/hba/options\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/hba/options\"",
         "type": "curl"
       }
     ],
@@ -3199,16 +3199,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/hba/raw?version=:version",
+    "url": "/pgconf/hba/raw?version=:version",
     "title": "Get pg_hba.conf raw content",
     "version": "0.0.1",
-    "name": "GetSettingsHBARaw",
-    "group": "Settings",
+    "name": "GetPgconfHBARaw",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3279,7 +3279,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/hba/raw?version=2016-01-29T08:46:09\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/hba/raw?version=2016-01-29T08:46:09\"",
         "type": "curl"
       }
     ],
@@ -3336,16 +3336,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/hba/versions",
+    "url": "/pgconf/hba/versions",
     "title": "Get the list of pg_hba.conf versions.",
     "version": "0.0.1",
-    "name": "GetSettingsHBAVersions",
-    "group": "Settings",
+    "name": "GetPgconfHBAVersions",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3396,7 +3396,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/hba/versions\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/hba/versions\"",
         "type": "curl"
       }
     ],
@@ -3440,16 +3440,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",
-    "url": "/settings/pg_ident",
+    "url": "/pgconf/pg_ident",
     "title": "Get pg_ident.conf raw content",
     "version": "0.0.1",
-    "name": "GetSettingsPGIdentRaw",
-    "group": "Settings",
+    "name": "GetPgconfPGIdentRaw",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3500,7 +3500,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/settings/pg_ident\"",
+        "content": "curl -k -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            https://localhost:2345/pgconf/pg_ident\"",
         "type": "curl"
       }
     ],
@@ -3544,16 +3544,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "post",
-    "url": "/settings/configuration",
+    "url": "/pgconf/configuration",
     "title": "Update setting/s value.",
     "version": "0.0.1",
-    "name": "PostSettingsConfiguration",
-    "group": "Settings",
+    "name": "PostPgconfConfiguration",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3645,7 +3645,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            -H \"Content-Type: application/json\" \\\n            --data '{\"settings\": [{\"name\": \"autovacuum\", \"setting\": \"on\"}]}' \\\n            https://localhost:2345/settings/configuration",
+        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n            -H \"Content-Type: application/json\" \\\n            --data '{\"settings\": [{\"name\": \"autovacuum\", \"setting\": \"on\"}]}' \\\n            https://localhost:2345/pgconf/configuration",
         "type": "curl"
       }
     ],
@@ -3702,16 +3702,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "post",
-    "url": "/settings/hba",
+    "url": "/pgconf/hba",
     "title": "Replace pg_hba.conf file content.",
     "version": "0.0.1",
-    "name": "PostSettingsHBA",
-    "group": "Settings",
+    "name": "PostPgconfHBA",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3824,7 +3824,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"entries\": [{\"connection\": \"local\", \"user\": \"all\", \"database\": \"all\", \"auth_method\": \"peer\"}, ... ], \"new_version\": true}' \\\n            https://localhost:2345/settings/hba\"",
+        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"entries\": [{\"connection\": \"local\", \"user\": \"all\", \"database\": \"all\", \"auth_method\": \"peer\"}, ... ], \"new_version\": true}' \\\n            https://localhost:2345/pgconf/hba\"",
         "type": "curl"
       }
     ],
@@ -3868,16 +3868,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "post",
-    "url": "/settings/hba/raw",
+    "url": "/pgconf/hba/raw",
     "title": "Replace pg_hba.conf file content (raw mode).",
     "version": "0.0.1",
-    "name": "PostSettingsHBARaw",
-    "group": "Settings",
+    "name": "PostPgconfHBARaw",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -3948,7 +3948,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"content\": \"local all all md5\\r\\n ...\", \"new_version\": true}' \\\n            https://localhost:2345/settings/hba/raw\"",
+        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"content\": \"local all all md5\\r\\n ...\", \"new_version\": true}' \\\n            https://localhost:2345/pgconf/hba/raw\"",
         "type": "curl"
       }
     ],
@@ -3992,16 +3992,16 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "post",
-    "url": "/settings/pg_ident",
+    "url": "/pgconf/pg_ident",
     "title": "Replace pg_ident.conf file content (raw mode).",
     "version": "0.0.1",
-    "name": "PostSettingsPGIdentRaw",
-    "group": "Settings",
+    "name": "PostPgconfPGIdentRaw",
+    "group": "Pgconf",
     "header": {
       "fields": {
         "Header": [
@@ -4058,7 +4058,7 @@ define({ "api": [
     "examples": [
       {
         "title": "Example usage:",
-        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"content\": \"# PostgreSQL User Name Maps\\r\\n ...\"}' \\\n            https://localhost:2345/settings/pg_ident\"",
+        "content": "curl -k -X POST -H \"X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e\" \\\n                -H \"Content-Type: application/json\" \\\n                --data '{\"content\": \"# PostgreSQL User Name Maps\\r\\n ...\"}' \\\n            https://localhost:2345/pgconf/pg_ident\"",
         "type": "curl"
       }
     ],
@@ -4102,8 +4102,8 @@ define({ "api": [
         }
       ]
     },
-    "filename": "./temboardagent/plugins/settings/__init__.py",
-    "groupTitle": "Settings"
+    "filename": "./temboardagent/plugins/pgconf/__init__.py",
+    "groupTitle": "Pgconf"
   },
   {
     "type": "get",

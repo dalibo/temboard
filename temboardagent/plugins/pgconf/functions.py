@@ -8,8 +8,8 @@ from temboardagent.errors import HTTPError, NotificationError
 from temboardagent.tools import validate_parameters
 from temboardagent.types import *
 from temboardagent.notification import NotificationMgmt, Notification
-from settings.types import *
-from settings.hba import *
+from pgconf.types import *
+from pgconf.hba import *
 
 def get_settings_categories(conn, config, _):
     query = """
@@ -397,7 +397,7 @@ HBA
 """
 def get_hba_raw(conn, config, http_context):
     version = None
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
 
     if http_context and 'version' in http_context['query']:
@@ -419,7 +419,7 @@ def get_hba_raw(conn, config, http_context):
 
 def get_hba(conn, config, http_context):
     version = None
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
     if http_context and 'version' in http_context['query']:
         # Check parameter 'version'
@@ -440,7 +440,7 @@ def get_hba(conn, config, http_context):
     return ret
 
 def get_hba_versions(conn, config, http_context):
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
     hba_file = get_setting(conn, 'hba_file')
     return {
@@ -450,7 +450,7 @@ def get_hba_versions(conn, config, http_context):
 
 def post_hba_raw(conn, config, http_context):
     new_version = False
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
 
     if 'content' not in http_context['post']:
@@ -471,7 +471,7 @@ def post_hba_raw(conn, config, http_context):
 
 def post_hba(conn, config, http_context):
     new_version = False
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
 
     # Push a notification.
@@ -519,7 +519,7 @@ def post_hba(conn, config, http_context):
 
 def delete_hba_version(conn, config, http_context):
     version = None
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
 
     if http_context and 'version' in http_context['query']:
@@ -550,7 +550,7 @@ pg_ident
 """
 
 def get_pg_ident(conn, config, http_context):
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
     ret = {
         'filepath': None,
@@ -573,7 +573,7 @@ def get_pg_ident(conn, config, http_context):
     return ret
 
 def post_pg_ident(conn, config, http_context):
-    set_logger_name("settings")
+    set_logger_name("pgconf")
     logger = get_logger(config)
 
     if 'content' not in http_context['post']:

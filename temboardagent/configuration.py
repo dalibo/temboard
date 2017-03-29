@@ -23,7 +23,7 @@ class BaseConfiguration(configparser.ConfigParser):
             'users': '/etc/temboard-agent/users',
             'ssl_cert_file': None,
             'ssl_key_file': None,
-            'plugins': ["monitoring", "dashboard", "settings",
+            'plugins': ["monitoring", "dashboard", "pgconf",
                         "administration", "activity"],
             'home': '/var/lib/temboard-agent',
             'hostname': None,
