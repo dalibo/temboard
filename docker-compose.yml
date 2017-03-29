@@ -1,0 +1,54 @@
+version: '3'
+
+volumes:
+  data:
+  run:
+
+services:
+  ui:
+    image: dalibo/temboard:latest
+    links:
+      - repository
+    environment:
+      PGHOST: repository
+      PGUSER: temboard
+      PGPASSWORD: temboard
+    ports:
+      - "8888:8888"
+    links:
+      - repository
+
+  repository:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: temboard
+      POSTGRES_PASSWORD: temboard
+
+  instance:
+    image: postgres:9.6
+    volumes:
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql
+    networks:
+      default:
+        aliases: [instance.fqdn]
+
+  agent:
+    image: dalibo/temboard-agent
+    environment:
+      HISTFILE: /usr/local/src/temboard-agent/docker-histfile
+      TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_HOSTNAME: instance.fqdn
+      TEMBOARD_KEY: key_for_agent_dev
+      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
+      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
+      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+    volumes:
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/usr/local/src/temboard-agent/
+    links:
+      - instance
+    command: tail -f /dev/null
