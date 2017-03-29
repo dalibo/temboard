@@ -1,0 +1,99 @@
+version: '3'
+
+volumes:
+  data96:
+  run96:
+
+  data95:
+  run95:
+
+  data94:
+  run94:
+
+
+services:
+  ui:
+    image: dalibo/temboard:latest
+    environment:
+      PGHOST: repository
+      PGUSER: temboard
+      PGPASSWORD: temboard
+    links:
+      - repository
+    ports:
+      - "8888:8888"
+
+  repository:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: temboard
+      POSTGRES_PASSWORD: temboard
+
+  instance96:
+    image: postgres:9.6
+    ports:
+      - 5433:5432
+    volumes:
+      - data96:/var/lib/postgresql/data
+      - run96:/var/run/postgresql
+
+  agent96:
+    image: dalibo/temboard-agent
+    volumes:
+      - data96:/var/lib/postgresql/data
+      - run96:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance96:instance96.fqdn
+      - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance96.fqdn
+      TEMBOARD_KEY: key_for_agent_96
+      TEMBOARD_UI_URL: https://ui:8888/
+
+  instance95:
+    image: postgres:9.5
+    ports:
+      - 5434:5432
+    volumes:
+      - data95:/var/lib/postgresql/data
+      - run95:/var/run/postgresql
+
+  agent95:
+    image: dalibo/temboard-agent
+    volumes:
+      - data95:/var/lib/postgresql/data
+      - run95:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance95:instance95.fqdn
+      - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance95.fqdn
+      TEMBOARD_KEY: key_for_agent_95
+      TEMBOARD_UI_URL: https://ui:8888/
+
+  instance94:
+    image: postgres:9.4
+    ports:
+      - 5435:5432
+    volumes:
+      - data94:/var/lib/postgresql/data
+      - run94:/var/run/postgresql
+
+  agent94:
+    image: dalibo/temboard-agent
+    volumes:
+      - data94:/var/lib/postgresql/data
+      - run94:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance94:instance94.fqdn
+      - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance94.fqdn
+      TEMBOARD_KEY: key_for_agent_94
+      TEMBOARD_UI_URL: https://ui:8888/
