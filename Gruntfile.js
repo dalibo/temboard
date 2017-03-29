@@ -41,7 +41,7 @@ module.exports = function(grunt) {
     watch: {
       sass: {
         files: 'temboardui/static/sass/*.scss',
-        tasks: ['sass:dev']
+        tasks: ['sass:dist']
       }
     }
   });
