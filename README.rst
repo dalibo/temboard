@@ -2,7 +2,7 @@
  temBoard Agent
 ################
 
-| |CircleCI|
+| |CircleCI| |PyPI|
 
 `temBoard <http://temboard.io/>`_ is a powerful management tool for PostgreSQL.
 
@@ -47,3 +47,7 @@ Choose the next version according to `PEP 440
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard-agent.svg?style=shield
    :target: https://circleci.com/gh/dalibo/temboard-agent
    :alt: CircleCI
+
+.. |PyPI| image:: https://img.shields.io/pypi/v/temboard-agent.svg
+   :target: https://pypi.python.org/pypi/temboard-agent
+   :alt: Version on PyPI
