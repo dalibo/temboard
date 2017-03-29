@@ -1,17 +1,17 @@
 import os.path
 from os import listdir
-from os import remove
 import datetime
 from temboardagent.errors import HTTPError
+
 
 class ConfigurationFileManager:
 
     @classmethod
-    def get_file_content(self, filepath, version = None):
+    def get_file_content(self, filepath, version=None):
         return read_file_content(filepath, version)
 
     @classmethod
-    def save_file_content(self, filepath, filecontent, new_version = False):
+    def save_file_content(self, filepath, filecontent, new_version=False):
         return save_file_content(filecontent, filepath, new_version)
 
     @classmethod
@@ -22,18 +22,21 @@ class ConfigurationFileManager:
     def get_versions(self, filepath):
         return get_file_versions(filepath)
 
+
 def check_version_format(version):
     """
     Checks if a version number is well formed, eg:
         YYYY-MM-DDTHH:mm:ss
     """
     try:
-        dt_version = datetime.datetime.strptime(version, "%Y-%m-%dT%H:%M:%S")
+        datetime.datetime.strptime(version, "%Y-%m-%dT%H:%M:%S")
         return True
-    except Exception as e:
-        raise HTTPError(406, "Bad version format, should be 'YYYY-MM-DDTHH:mm:ss'")
+    except Exception:
+        raise HTTPError(406,
+                        "Bad version format, should be 'YYYY-MM-DDTHH:mm:ss'")
 
-def save_file_content(content, filepath, new_version = False):
+
+def save_file_content(content, filepath, new_version=False):
     ret = {'last_version': None}
     if new_version is True and os.path.isfile(filepath):
         """
@@ -45,7 +48,7 @@ def save_file_content(content, filepath, new_version = False):
         filepath_version = "%s.%s" % (filepath, dt_str)
         ret['last_version'] = dt_str
         # Read current version's content.
-        cur_content = None;
+        cur_content = None
         with open(filepath, 'r') as fd:
             cur_content = fd.read()
         # Check if new version's file exists.
@@ -67,7 +70,8 @@ def save_file_content(content, filepath, new_version = False):
     ret['filepath'] = filepath
     return ret
 
-def read_file_content(filepath, version = None):
+
+def read_file_content(filepath, version=None):
     """
     Returns file content or content from a previsous version.
     """
@@ -76,12 +80,13 @@ def read_file_content(filepath, version = None):
         check_version_format(version)
         filepath_version = "%s.%s" % (filepath, version)
         if not os.path.isfile(filepath_version):
-            raise HTTPError(404, "Version %s of file %s does not exist." \
-                                % (version, filepath))
+            raise HTTPError(404, "Version %s of file %s does not exist."
+                                 % (version, filepath))
         filepath = filepath_version
 
     with open(filepath, 'r') as fd:
         return fd.read()
+
 
 def get_file_versions(filepath):
     """
@@ -90,8 +95,8 @@ def get_file_versions(filepath):
     filedir = os.path.dirname(filepath)
     filename = os.path.basename(filepath)
     if not os.path.isdir(filedir):
-        raise HTTPError(500, "Unable to list content from directory: %s" \
-                            % (filedir))
+        raise HTTPError(500, "Unable to list content from directory: %s"
+                             % (filedir))
     if not os.path.isfile(filepath):
         raise HTTPError(404, "File %s does not exist." % (filepath))
 
@@ -100,7 +105,7 @@ def get_file_versions(filepath):
     for f in listdir(filedir):
         try:
             if f[:l_filename] == filename \
-                and check_version_format(f[l_filename+1:]):
+               and check_version_format(f[l_filename+1:]):
                 """
                 Let's consider f as one of the  previous version of the file
                 if the first part of f's name is equal to original file name
@@ -108,10 +113,11 @@ def get_file_versions(filepath):
                 valid version number.
                 """
                 versions.append(f[l_filename+1:])
-        except Exception as e:
+        except Exception:
             pass
     # Return a sorted versions list.
     return sorted(versions, reverse=True)
+
 
 def delete_file_version(filepath, version):
     """
@@ -123,5 +129,5 @@ def delete_file_version(filepath, version):
         os.remove(filepath_version)
         return {'version': version, 'deleted': True}
     else:
-        raise HTTPError(404, "Version %s of file %s does not exist." \
-                % (version, filepath))
+        raise HTTPError(404, "Version %s of file %s does not exist."
+                             % (version, filepath))

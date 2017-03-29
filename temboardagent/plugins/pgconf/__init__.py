@@ -1,32 +1,18 @@
-import time
-import pickle
-import base64
-import os
-try:
-    from configparser import NoOptionError
-except ImportError:
-    from  ConfigParser import NoOptionError
-
-from temboardagent.routing import add_route, add_worker
-from temboardagent.api_wrapper import *
-from temboardagent.logger import set_logger_name, get_logger
-from temboardagent.configuration import (PluginConfiguration, ConfigurationError,
-                                    Configuration)
-from temboardagent.tools import validate_parameters
-from temboardagent.types import *
-from temboardagent.sharedmemory import Command
-from temboardagent.tools import hash_id
-from temboardagent.errors import (HTTPError, SharedItem_exists,
-                SharedItem_no_free_slot_left, SharedItem_not_found)
-from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
-from temboardagent.spc import connector, error
-from temboardagent.command import exec_command, oneline_cmd_to_array, exec_script
+from temboardagent.routing import add_route
+from temboardagent.api_wrapper import (
+    api_function_wrapper_pg,
+)
+from temboardagent.logger import set_logger_name
 import pgconf.functions as pgconf_functions
-from pgconf.types import *
+from pgconf.types import (
+    T_PGSETTINGS_CATEGORY,
+)
+
 
 @add_route('GET', '/pgconf/configuration')
 @add_route('GET', '/settings/configuration')
-def get_pg_configuration(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_configuration(http_context, queue_in=None, config=None,
+                         sessions=None, commands=None):
     """
     @api {get} /pgconf/configuration Fetch all PostgreSQL settings.
     @apiVersion 0.0.1
@@ -111,13 +97,16 @@ def get_pg_configuration(http_context, queue_in = None, config = None, sessions 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_settings')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_settings')
+
 
 @add_route('GET', '/pgconf/configuration/categories')
 @add_route('GET', '/settings/configuration/categories')
-def get_pg_configuration_categories(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_configuration_categories(http_context, queue_in=None, config=None,
+                                    sessions=None, commands=None):
     """
     @api {get} /pgconf/configuration/categories Fetch settings categories names.
     @apiVersion 0.0.1
@@ -167,13 +156,16 @@ def get_pg_configuration_categories(http_context, queue_in = None, config = None
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_settings_categories')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_settings_categories')
+
 
 @add_route('POST', '/pgconf/configuration')
 @add_route('POST', '/settings/configuration')
-def post_pg_configuration(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_pg_configuration(http_context, queue_in=None, config=None,
+                          sessions=None, commands=None):
     """
     @api {post} /pgconf/configuration Update setting/s value.
     @apiVersion 0.0.1
@@ -248,13 +240,16 @@ def post_pg_configuration(http_context, queue_in = None, config = None, sessions
         {"error": "Invalid json format: Expecting ',' delimiter: line 1 column 51 (char 50)."}
 
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'post_settings')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'post_settings')
+
 
 @add_route('GET', '/pgconf/configuration/category/'+T_PGSETTINGS_CATEGORY)
 @add_route('GET', '/settings/configuration/category/'+T_PGSETTINGS_CATEGORY)
-def get_pg_configuration_category(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_configuration_category(http_context, queue_in=None, config=None,
+                                  sessions=None, commands=None):
     """
     @api {get} /pgconf/configuration/category/:categoryname Fetch settings for one category, based on categoryname.
     @apiVersion 0.0.1
@@ -342,13 +337,16 @@ def get_pg_configuration_category(http_context, queue_in = None, config = None, 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_settings')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_settings')
+
 
 @add_route('GET', '/pgconf/configuration/status')
 @add_route('GET', '/settings/configuration/status')
-def get_pg_configuration_status(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_configuration_status(http_context, queue_in=None, config=None,
+                                sessions=None, commands=None):
     """
     @api {get} /pgconf/configuration/status Shows settings waiting for PostgreSQL reload and/or restart
     @apiVersion 0.0.1
@@ -456,14 +454,16 @@ def get_pg_configuration_status(http_context, queue_in = None, config = None, se
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_settings_status')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_settings_status')
 
 
 @add_route('GET', '/pgconf/hba')
 @add_route('GET', '/settings/hba')
-def get_pg_hba(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_hba(http_context, queue_in=None, config=None, sessions=None,
+               commands=None):
     """
     @api {get} /pgconf/hba?version=:version Get pg_hba.conf records
     @apiVersion 0.0.1
@@ -542,13 +542,16 @@ def get_pg_hba(http_context, queue_in = None, config = None, sessions = None, co
 
         {"error": "Version 2016-01-29T08:46:09 of file /etc/postgresql/9.4/main/pg_hba.conf does not exist."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_hba')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_hba')
+
 
 @add_route('GET', '/pgconf/hba/raw')
 @add_route('GET', '/settings/hba/raw')
-def get_pg_hba_raw(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
+                   commands=None):
     """
     @api {get} /pgconf/hba/raw?version=:version Get pg_hba.conf raw content
     @apiVersion 0.0.1
@@ -610,13 +613,16 @@ def get_pg_hba_raw(http_context, queue_in = None, config = None, sessions = None
 
         {"error": "Version 2016-01-29T08:46:09 of file /etc/postgresql/9.4/main/pg_hba.conf does not exist."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_hba_raw')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_hba_raw')
+
 
 @add_route('POST', '/pgconf/hba')
 @add_route('POST', '/settings/hba')
-def post_pg_hba(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_pg_hba(http_context, queue_in=None, config=None, sessions=None,
+                commands=None):
     """
     @api {post} /pgconf/hba Replace pg_hba.conf file content.
     @apiVersion 0.0.1
@@ -676,13 +682,16 @@ def post_pg_hba(http_context, queue_in = None, config = None, sessions = None, c
         {"error": "Parameter 'X-Session' is malformed."}
 
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'post_hba')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'post_hba')
+
 
 @add_route('POST', '/pgconf/hba/raw')
 @add_route('POST', '/settings/hba/raw')
-def post_pg_hba_raw(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
+                    commands=None):
     """
     @api {post} /pgconf/hba/raw Replace pg_hba.conf file content (raw mode).
     @apiVersion 0.0.1
@@ -736,13 +745,16 @@ def post_pg_hba_raw(http_context, queue_in = None, config = None, sessions = Non
         {"error": "Parameter 'X-Session' is malformed."}
 
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'post_hba_raw')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'post_hba_raw')
+
 
 @add_route('DELETE', '/pgconf/hba')
 @add_route('DELETE', '/settings/hba')
-def delete_pg_hba(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def delete_pg_hba(http_context, queue_in=None, config=None, sessions=None,
+                  commands=None):
     """
     @api {delete} /pgconf/hba?version=:version Remove a previous pg_hba.conf version.
     @apiVersion 0.0.1
@@ -801,13 +813,16 @@ def delete_pg_hba(http_context, queue_in = None, config = None, sessions = None,
         Content-type: application/json
 
         {"error": "Version 2016-01-29T08:44:26 of file /etc/postgresql/9.4/main/pg_hba.conf does not exist."}
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'delete_hba_version')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'delete_hba_version')
+
 
 @add_route('GET', '/pgconf/hba/versions')
 @add_route('GET', '/settings/hba/versions')
-def get_pg_hba_versions(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_hba_versions(http_context, queue_in=None, config=None,
+                        sessions=None, commands=None):
     """
     @api {get} /pgconf/hba/versions Get the list of pg_hba.conf versions.
     @apiVersion 0.0.1
@@ -860,14 +875,16 @@ def get_pg_hba_versions(http_context, queue_in = None, config = None, sessions =
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_hba_versions')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_hba_versions')
 
 
 @add_route('GET', '/pgconf/pg_ident')
 @add_route('GET', '/settings/pg_ident')
-def get_pg_ident(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_pg_ident(http_context, queue_in=None, config=None, sessions=None,
+                 commands=None):
     """
     @api {get} /pgconf/pg_ident Get pg_ident.conf raw content
     @apiVersion 0.0.1
@@ -915,13 +932,16 @@ def get_pg_ident(http_context, queue_in = None, config = None, sessions = None, 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_pg_ident')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_pg_ident')
+
 
 @add_route('POST', '/pgconf/pg_ident')
 @add_route('POST', '/settings/pg_ident')
-def post_pg_ident(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_pg_ident(http_context, queue_in=None, config=None, sessions=None,
+                  commands=None):
     """
     @api {post} /pgconf/pg_ident Replace pg_ident.conf file content (raw mode).
     @apiVersion 0.0.1
@@ -970,13 +990,16 @@ def post_pg_ident(http_context, queue_in = None, config = None, sessions = None,
         Content-type: application/json
 
         {"error": "Parameter 'X-Session' is malformed."}
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'post_pg_ident')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'post_pg_ident')
+
 
 @add_route('GET', '/pgconf/hba/options')
 @add_route('GET', '/settings/hba/options')
-def get_hba_options(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_hba_options(http_context, queue_in=None, config=None, sessions=None,
+                    commands=None):
     """
     @api {get} /pgconf/hba/options Get HBA potential values for each column.
     @apiVersion 0.0.1
@@ -1028,6 +1051,7 @@ def get_hba_options(http_context, queue_in = None, config = None, sessions = Non
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name("pgconf")
-    return api_function_wrapper_pg(config, http_context, sessions, pgconf_functions, 'get_hba_options')
+    return api_function_wrapper_pg(config, http_context, sessions,
+                                   pgconf_functions, 'get_hba_options')

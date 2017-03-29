@@ -229,7 +229,7 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
         }
 
     @apiError (500 error) error Internal error.
-    """
+    """  # noqa
     set_logger_name("api")
     logger = get_logger(config)
     conn = connector(
