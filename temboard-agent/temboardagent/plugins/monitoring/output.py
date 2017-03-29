@@ -1,11 +1,11 @@
 import json
-import re, logging
+import logging
 import pprint
 
-from supervision.probes import Probe
+from monitoring.probes import Probe
 from temboardagent.httpsclient import https_request
 
-# output functions
+
 class OutputEncoder(json.JSONEncoder):
     """Tell json that probe objects should be encoded as strings using their
     name.
@@ -17,6 +17,7 @@ class OutputEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
+
 def send_output(ca_cert_file, url, key, j_output):
     """Send data to the target URL."""
 
@@ -24,15 +25,16 @@ def send_output(ca_cert_file, url, key, j_output):
     logging.debug("Output is:" + pprint.pformat(j_output))
     (code, res, _) = https_request(
         ca_cert_file,
-        method = 'POST',
-        url = url,
-        headers = {
+        method='POST',
+        url=url,
+        headers={
             "Content-type": "application/json",
             "X-Key": key
         },
-        data = json.loads(j_output)
+        data=json.loads(j_output)
     )
     logging.debug("Server replied with status %s", code)
+
 
 def remove_passwords(instances):
     clean_instances = []

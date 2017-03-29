@@ -39,12 +39,12 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard-agent.conf` f
 
 ### CA certificate file
 
-The plugin `supervision` sends periodically collected data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, the HTTPS client implemented by the agent needs to have the UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
+The plugin `monitoring` sends periodically collected data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, the HTTPS client implemented by the agent needs to have the UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
 ```
 sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 ```
 
-`ssl_ca_cert_file` parameter in section `[supervision]` from the configuration file needs to be set to `/etc/temboard-agent/ssl/ca_certs_localhost.pem`.
+`ssl_ca_cert_file` parameter in section `[monitoring]` from the configuration file needs to be set to `/etc/temboard-agent/ssl/ca_certs_localhost.pem`.
 
 ### Restrictions on SSL files
 ```
@@ -79,8 +79,8 @@ sudo -u postgres temboard-agent-adduser
 
 ### Registration in the Web UI of the supersivion plugin
 
-If you want to use the supervision plugin, you need to setup the `collector_url`. It lets the agent know where to post its data. 
-Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate 
+If you want to use the monitoring plugin, you need to setup the `collector_url`. It lets the agent know where to post its data.
+Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
 (or CA certificates that has issued it) must be in the filepath where `ssl_ca_cert_file` points.
 
 
@@ -91,14 +91,14 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
 - `[postgresql]`: parameters related to the PostgreSQL cluster that the agent is connected to;
 - `[logging]`: how and where to log;
 - `[dashboard]`: parameters of the plugin `dashboard`;
-- `[supervision]`: plugin `supervision`;
+- `[monitoring]`: plugin `monitoring`;
 - `[administration]`: plugin `administration`.
 
 ### `[temboard]`
   - `port`: port number that the agent will listen on to serve its `HTTP API`. Default: `2345`;
   - `address`: IP v4 address that the agent will listen on. Default: `0.0.0.0` (all);
   - `users`: Path to the file containing the list of the users allowed to use the `HTTP API`. Default: `/etc/temboard-agent/users`;
-  - `plugins`: Array of plugin (name) to load. Default: `["supervision", "dashboard", "settings", "administration", "activity"]`;
+  - `plugins`: Array of plugin (name) to load. Default: `["monitoring", "dashboard", "settings", "administration", "activity"]`;
   - `ssl_cert_file`: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.pem`;
   - `ssl_key_file`: Path to SSL private key file. Default: `/etc/temboard-agent/ssl/temboard-agent_CHANGEME.key`;
   - `home`: Path to agent home directory, it contains files used to store temporary data. When running multiple agents on the same host, each agent must have its own home directory. Default: `/var/lib/temboard-agent/main`.
@@ -123,7 +123,7 @@ The configuration file `temboard-agent.conf` is formated using INI format. Confi
   - `scheduler_interval`: Time interval, in second, between each run of the process collecting data used to render the dashboard. Default: `2`;
   - `history_length`: Number of record to keep. Default: `20`.
 
-### `[supervision]`
+### `[monitoring]`
   - `dbnames`: Database name list (comma separator) to supervise. * for all. Default: `*`;
   - `collector_url`: Collector URL. Default: `None`;
   - `probes`: List of probes to run, comma separator, * for all. Default: `*`;
