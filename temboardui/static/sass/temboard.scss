@@ -47,21 +47,21 @@
   .panel-body table {
     width: 100%;
   }
-  table tr td {
-    border: 0;
-    font-size: 11px;
-  }
-  table tr {
-  }
 
   .panel-body {
     height: 190px;
   }
 }
 
+.table-dashboard-info > tbody > tr > {
+  th {
+    font-weight: normal;
+  }
 
-.dashboard-info-val {
-  color:#337AB7;
+  td {
+    font-weight: bold;
+    text-align: right;
+  }
 }
 
 .popover-title {
@@ -240,10 +240,6 @@ table tbody tr td span {
 .no-sort {
   pointer-events: none!important;
   cursor: default!important;
-}
-
-td {
-  font-size: 12px;
 }
 
 .modal-header {

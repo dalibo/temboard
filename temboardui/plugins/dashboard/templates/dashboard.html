@@ -13,34 +13,36 @@
       <!-- /.panel-heading -->
       <div class="panel-body">
         <table class="table-dashboard-info">
+        <tbody>
         <tr>
-          <td>OS:</td>
-          <td class="dashboard-info-val pull-right" id="os_version">{{ dashboard['os_version'] }}</td>
+          <th>OS:</th>
+          <td id="os_version">{{ dashboard['os_version'] }}</td>
         </tr>
         <tr>
-          <td>CPU:</td>
-          <td class="dashboard-info-val pull-right" id="cpu">{{ dashboard['n_cpu'] }}</td>
+          <th>CPU:</th>
+          <td id="cpu">{{ dashboard['n_cpu'] }}</td>
         </tr>
         <tr>
-          <td>Memory (kB):</td>
-          <td class="dashboard-info-val pull-right" id="memory">{{ dashboard['memory']['total'] }}</td>
+          <th>Memory (kB):</th>
+          <td id="memory">{{ dashboard['memory']['total'] }}</td>
         </tr>
         <tr>
-          <td>Databases size:</td>
-          <td class="dashboard-info-val pull-right" id="size">{{ dashboard['databases']['total_size'] }}</td>
+          <th>Databases size:</th>
+          <td id="size">{{ dashboard['databases']['total_size'] }}</td>
         </tr>
         <tr>
-          <td>Number of database:</td>
-          <td class="dashboard-info-val pull-right" id="nb_db">{{ dashboard['databases']['databases'] }}</td>
+          <th>Number of database:</th>
+          <td id="nb_db">{{ dashboard['databases']['databases'] }}</td>
         </tr>
         <tr>
-          <td>Uptime:</td>
-          <td class="dashboard-info-val pull-right" id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
+          <th>Uptime:</th>
+          <td id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
         </tr>
         <tr>
-          <td>Current time:</td>
-          <td class="dashboard-info-val pull-right" id="time">{{ dashboard['databases']['time'] }}</td>
+          <th>Current time:</th>
+          <td id="time">{{ dashboard['databases']['time'] }}</td>
         </tr>
+        </tbody>
         </table>
       </div>
     </div>
