@@ -223,6 +223,9 @@ var loadaverage_config = {
       xAxes: [{
         gridLines: {
           display: false
+        },
+        ticks: {
+          display: false
         }
       }]
     },
@@ -305,6 +308,9 @@ var buffers_config = {
       }],
       xAxes: [{
         gridLines: {
+          display: false
+        },
+        ticks: {
           display: false
         }
       }]
@@ -401,6 +407,9 @@ var backends_config = {
       xAxes: [{
         gridLines: {
           display: false
+        },
+        ticks: {
+          display: false
         }
       }]
     },
@@ -492,6 +501,9 @@ var tps_config = {
       }],
       xAxes: [{
         gridLines: {
+          display: false
+        },
+        ticks: {
           display: false
         }
       }]
