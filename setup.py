@@ -10,6 +10,7 @@ setup(
         'temboard-agent',
         'temboard-agent-adduser',
         'temboard-agent-password',
+        'temboard-agent-register',
     ],
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
