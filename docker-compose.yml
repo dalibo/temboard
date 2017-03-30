@@ -34,12 +34,9 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance96:temboard-agent-96.temboard.local
+      - instance96:instance96.fqdn
     environment:
-      TEMBOARD_HOSTNAME: temboard-agent-96.temboard.local
+      TEMBOARD_HOSTNAME: instance96.fqdn
       TEMBOARD_KEY: key_for_agent_96
       TEMBOARD_UI_URL: https://172.17.0.1:8888/
-    networks:
-      default:
-        aliases:
-          - temboard-agent-96
+      TEMBOARD_REGISTER_HOST: 0.0.0.0
