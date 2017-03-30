@@ -52,6 +52,7 @@ Chart.pluginService.register({
  */
 var options = {
   responsive : true,
+  maintainAspectRatio: false,
   showAllTooltips: true,
   legend: {
     display: false
@@ -205,6 +206,7 @@ var loadaverage_config = {
   },
   options: {
     responsive : true,
+    maintainAspectRatio: false,
     animation: false,
     legend: {
       display: false
@@ -287,6 +289,7 @@ var buffers_config = {
   },
   options: {
     responsive : true,
+    maintainAspectRatio: false,
     animation: false,
     legend: {
       display: false
@@ -381,6 +384,7 @@ var backends_config = {
   },
   options: {
     responsive : true,
+    maintainAspectRatio: false,
     animation: false,
     legend: {
       display: false
@@ -472,6 +476,7 @@ var tps_config = {
   },
   options: {
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     legend: {
       display: false
