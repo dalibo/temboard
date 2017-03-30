@@ -13,3 +13,7 @@ insert_final_newline = true
 
 [*.yml]
 indent_size = 2
+
+[Makefile]
+indent_size = 8
+indent_style = tab
