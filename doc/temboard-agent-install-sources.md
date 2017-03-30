@@ -7,18 +7,9 @@
 
 ## Installation
 
-To install Python `setuptools` with `pip`:
 ```
-sudo pip install setuptools
+sudo pip install https://github.com/dalibo/temboard-agent/archive/master.zip
 ```
-
-Proceed with the installation of the agent:
-```
-cd temboard/temboard-agent/
-sudo cp -r share/ /usr/share/temboard-agent
-sudo python setup.py install
-```
-
 
 ## Prepare directories and files
 
@@ -77,21 +68,4 @@ sudo kill $(cat /var/lib/temboard-agent/main/temboard-agent.pid)
 ### Reload configuration
 ```
 sudo kill -HUP $(cat /var/lib/temboard-agent/main/temboard-agent.pid)
-```
-
-## Smoke test
-
-Start the agent, then try:
-```
-curl -k https://127.0.0.1:2345/discover
-curl -k -X POST -H "Content-Type: application/json" -d '{"username": "<username>", "password": "<password>"}' https://127.0.0.1:2345/login
-```
-
-## Functional tests
-
-```
-sudo apt-get install python-rednose python-nose
-cd temboard-agent/test
-cp test/configuration.py.sample test/configuration.py
-nosetests --rednose -v test_*
 ```

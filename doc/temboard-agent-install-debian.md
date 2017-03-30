@@ -83,4 +83,4 @@ To create a new debian package from `temboard-agent` sources, the packages `dpkg
 sudo apt-get install dpkg-dev debhelper
 ```
 
-Then, you need to go in `temboard/temboard-agent/debian` directory and execute the script `make_deb.sh`. Once the script executed, the .deb file can be found in `temboard/` directory.
+Then, you need to go in `temboard-agent/debian` directory and execute the script `make_deb.sh`. Once the script executed, the .deb file can be found in `temboard-agent/` directory.
