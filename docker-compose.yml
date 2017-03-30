@@ -2,6 +2,7 @@ version: '3'
 
 volumes:
   data:
+  repository:
   run:
 
 services:
@@ -20,6 +21,8 @@ services:
 
   repository:
     image: postgres:9.6
+    volumes:
+      - repository:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
