@@ -7,7 +7,9 @@ setup(
     license='PostgreSQL',
     packages=find_packages(),
     scripts=[
-        'temboard-agent', 'temboard-agent-password', 'temboard-agent-adduser'
+        'temboard-agent',
+        'temboard-agent-adduser',
+        'temboard-agent-password',
     ],
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
