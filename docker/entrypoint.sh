@@ -69,9 +69,9 @@ register() {
     wait-for-it localhost:2345 -t 60
     wait-for-it ${hostport} -t 60
 
-    python /usr/local/src/temboard-agent/temboard-agent-register \
-           --host $COMPOSE_SERVICE --port 2345 --groups ${TEMBOARD_GROUPS} \
-           ${TEMBOARD_UI_URL%/}
+    temboard-agent-register \
+        --host $COMPOSE_SERVICE --port 2345 --groups ${TEMBOARD_GROUPS} \
+        ${TEMBOARD_UI_URL%/}
 }
 
 if [ -z "${command##temboard-agent*}" ] ; then
