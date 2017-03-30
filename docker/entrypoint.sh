@@ -43,7 +43,7 @@ user = ${PGUSER}
 password = ${PGPASSWORD}
 instance = ${PGINSTANCE-main}
 
-[supervision]
+[monitoring]
 collector_url = ${TEMBOARD_UI_URL%/}/monitoring/collector
 ssl_ca_cert_file = ${TEMBOARD_SSL_CA}
 
