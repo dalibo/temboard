@@ -70,11 +70,11 @@ register() {
     wait-for-it ${hostport} -t 60
 
     temboard-agent-register \
-        --host $COMPOSE_SERVICE --port 2345 --groups ${TEMBOARD_GROUPS} \
+        --host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} --port 2345 --groups ${TEMBOARD_GROUPS} \
         ${TEMBOARD_UI_URL%/}
 }
 
-if [ -z "${command##temboard-agent*}" ] ; then
+if [ -z "${command##temboard-agent*}" -a -n "${TEMBOARD_UI_USER-}" ] ; then
     register &
 fi
 
