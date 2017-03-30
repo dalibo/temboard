@@ -74,7 +74,7 @@ register() {
         ${TEMBOARD_UI_URL%/}
 }
 
-if [ -z "${command##temboard-agent*}" ] ; then
+if [ -z "${command##temboard-agent*}" -a -n "${TEMBOARD_UI_USER-}" ] ; then
     register &
 fi
 
