@@ -74,7 +74,9 @@ register() {
            ${TEMBOARD_UI_URL%/}
 }
 
-register &
+if [ -z "${command##temboard-agent*}" ] ; then
+    register &
+fi
 
 set -x
 exec ${command}
