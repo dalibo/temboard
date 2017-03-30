@@ -38,55 +38,30 @@
   max-width: 1000px;
 }
 
-#canvas-memory-holder{
-  width:100%;
-}
-#canvas-cpu-holder{
-  width:100%;
-}
-#canvas-hitratio-holder{
-  width:100%;
-}
-#canvas-loadaverage-holder{
-  width:100%;
-}
-#canvas-buffers-holder{
-  width:100%;
-}
-#canvas-backends-holder{
-  width:100%;
-}
-#canvas-tps-holder{
-  width:100%;
-}
-
-.panel-dashboard {
-  margin: 0px 10px 10px 0px;
-  width: 330px;
-  float: left;
+.canvas-wrapper {
+  width: 100%;
+  height: 100%;
 }
 
 .row-dashboard {
-  .col-md-12 table {
+  .panel-body table {
     width: 100%;
-    margin-bottom: 0px;
-    border: 0;
-  }
-  table tr td {
-    border: 0;
-    font-size: 11px;
-  }
-  table tr {
   }
 
-  .panel {
-    height: 210px;
+  .panel-body {
+    height: 190px;
   }
 }
 
+.table-dashboard-info > tbody > tr > {
+  th {
+    font-weight: normal;
+  }
 
-.dashboard-info-val {
-  color:#337AB7;
+  td {
+    font-weight: bold;
+    text-align: right;
+  }
 }
 
 .popover-title {
@@ -267,10 +242,6 @@ table tbody tr td span {
   cursor: default!important;
 }
 
-td {
-  font-size: 12px;
-}
-
 .modal-header {
   background-color: #f6f6f6;
 }
@@ -341,9 +312,8 @@ td {
 
 #divNotif10 {
   margin-top: 2px;
-  width: 325px;
-  height: 168px;
-  overflow-y: scroll;
+  width: 100%;
+  overflow-y: auto;
 }
 
 ul.notifications {

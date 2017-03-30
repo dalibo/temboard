@@ -5,7 +5,7 @@
 {% block content %}
 
 <div class="row row-dashboard">
-  <div class="col-md-12">
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Informations
@@ -13,114 +13,132 @@
       <!-- /.panel-heading -->
       <div class="panel-body">
         <table class="table-dashboard-info">
+        <tbody>
         <tr>
-          <td>OS:</td>
-          <td class="dashboard-info-val pull-right" id="os_version">{{ dashboard['os_version'] }}</td>
+          <th>OS:</th>
+          <td id="os_version">{{ dashboard['os_version'] }}</td>
         </tr>
         <tr>
-          <td>CPU:</td>
-          <td class="dashboard-info-val pull-right" id="cpu">{{ dashboard['n_cpu'] }}</td>
+          <th>CPU:</th>
+          <td id="cpu">{{ dashboard['n_cpu'] }}</td>
         </tr>
         <tr>
-          <td>Memory (kB):</td>
-          <td class="dashboard-info-val pull-right" id="memory">{{ dashboard['memory']['total'] }}</td>
+          <th>Memory (kB):</th>
+          <td id="memory">{{ dashboard['memory']['total'] }}</td>
         </tr>
         <tr>
-          <td>Databases size:</td>
-          <td class="dashboard-info-val pull-right" id="size">{{ dashboard['databases']['total_size'] }}</td>
+          <th>Databases size:</th>
+          <td id="size">{{ dashboard['databases']['total_size'] }}</td>
         </tr>
         <tr>
-          <td>Number of database:</td>
-          <td class="dashboard-info-val pull-right" id="nb_db">{{ dashboard['databases']['databases'] }}</td>
+          <th>Number of database:</th>
+          <td id="nb_db">{{ dashboard['databases']['databases'] }}</td>
         </tr>
         <tr>
-          <td>Uptime:</td>
-          <td class="dashboard-info-val pull-right" id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
+          <th>Uptime:</th>
+          <td id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
         </tr>
         <tr>
-          <td>Current time:</td>
-          <td class="dashboard-info-val pull-right" id="time">{{ dashboard['databases']['time'] }}</td>
+          <th>Current time:</th>
+          <td id="time">{{ dashboard['databases']['time'] }}</td>
         </tr>
+        </tbody>
         </table>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         TPS <div class="pull-right">Commit:<span id="tps_commit" class="label label-success">0</span> Rollback: <span id="tps_rollback" class="label label-danger">0</span></div>
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-tps-holder">
+        <div id="canvas-tps-holder" class="canvas-wrapper">
           <canvas id="chart-tps" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Loadaverage <div class="pull-right"><span id="loadaverage" class="label label-primary">{{dashboard['loadaverage']}}</span></div>
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-loadaverage-holder">
+        <div id="canvas-loadaverage-holder" class="canvas-wrapper">
           <canvas id="chart-loadaverage" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         CPU usage
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-cpu-holder">
+        <div id="canvas-cpu-holder" class="canvas-wrapper">
           <canvas id="chart-cpu" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Memory usage
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-memory-holder">
+        <div id="canvas-memory-holder" class="canvas-wrapper">
           <canvas id="chart-memory" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Cache Hit ratio
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-hitratio-holder">
+        <div id="canvas-hitratio-holder" class="canvas-wrapper">
           <canvas id="chart-hitratio" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Buffers <div class="pull-right"><span id="buffers_delta" class="label label-primary">{{buffers_delta}}</span></div>
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-buffers-holder">
+        <div id="canvas-buffers-holder" class="canvas-wrapper">
           <canvas id="chart-buffers" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Active backends <div class="pull-right"><span id="backends" class="label label-primary">{{dashboard['active_backends']['nb']}}</span></div>
       </div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-        <div id="canvas-backends-holder">
+        <div id="canvas-backends-holder" class="canvas-wrapper">
           <canvas id="chart-backends" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="col-md-6 col-lg-4 col-xl-3">
     <div class="panel panel-default panel-dashboard">
       <div class="panel-heading">
         Notifications
