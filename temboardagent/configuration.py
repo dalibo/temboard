@@ -23,8 +23,13 @@ class BaseConfiguration(configparser.ConfigParser):
             'users': '/etc/temboard-agent/users',
             'ssl_cert_file': None,
             'ssl_key_file': None,
-            'plugins': ["monitoring", "dashboard", "settings",
-                        "administration", "activity"],
+            'plugins': [
+                "monitoring",
+                "dashboard",
+                "pgconf",
+                "administration",
+                "activity"
+            ],
             'home': '/var/lib/temboard-agent',
             'hostname': None,
             'key': None
@@ -89,7 +94,7 @@ class Configuration(BaseConfiguration):
         except ValueError as e:
             raise ConfigurationError("'address' option must be a valid IPv4 in %s."
                     % (self.configfile))
-        except configparser.NoOptionError as e:
+        except configparser.NoOptionError:
            pass
 
 
