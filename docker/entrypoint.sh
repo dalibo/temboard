@@ -70,7 +70,9 @@ register() {
     wait-for-it ${hostport} -t 60
 
     temboard-agent-register \
-        --host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} --port 2345 --groups ${TEMBOARD_GROUPS} \
+        --host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} \
+        --port ${TEMBOARD_REGISTER_PORT-2345} \
+        --groups ${TEMBOARD_GROUPS} \
         ${TEMBOARD_UI_URL%/}
 }
 
