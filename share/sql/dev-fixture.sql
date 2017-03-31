@@ -52,5 +52,5 @@ SELECT agent_address, agent_port, plug
         UNION ALL
         SELECT 'monitoring'
         UNION ALL
-        SELECT 'settings'
+        SELECT 'pgconf'
     ) s(plug);

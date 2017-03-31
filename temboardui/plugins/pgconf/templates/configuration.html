@@ -1,6 +1,6 @@
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Settings &gt; Configuration{% end %}
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Configuration / Main Config {% end %}
 
 {% block content %}
 <!-- Reset Modal -->
@@ -196,14 +196,14 @@ $('#reloadYesButton').on(
 {% end %}
 <div class="row form-group">
   <div class="col-md-3">
-    <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration" class="form" role="search">
+    <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration" class="form" role="search">
       <label class="sr-only" for="selectServer">Search</label>
       <div class="input-group">
         <input class="form-control" id="inputSearchSettings" name="filter" placeholder="Find in settings" value="{{query_filter if query_filter is not None else ''}}"/>
         <span class="input-group-btn">
           {% if query_filter %}
           <a class="btn btn-default"
-             href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
+             href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration">
             <i class="fa fa-fw fa-times"></i>
           </a>
           {% end %}
@@ -221,7 +221,7 @@ $('#reloadYesButton').on(
       <select class="form-control" id="selectConfCat" {{'disabled' if query_filter else ''}}>
         {% if not query_filter %}
         {% for cat in configuration_categories['categories'] %}
-        <option value="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration/category/{{url_escape(cat)}}"{% if url_escape(current_cat) == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>
+        <option value="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration/category/{{url_escape(cat)}}"{% if url_escape(current_cat) == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>
         {% end %}
         {% end %}
       </select>
@@ -286,7 +286,7 @@ $('#reloadYesButton').on(
   {% end %}
   </div>
 </div>
-<script src="/js/settings/temboard.settings.js"></script>
+<script src="/js/pgconf/temboard.pgconf.js"></script>
 <script src="/js/bootstrap-toggle.min.js"></script>
 <script>
 $(document).ready(function() {
@@ -314,7 +314,7 @@ $(document).ready(function() {
         'click',
         function(event) {
           event.preventDefault();
-          modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
+          modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
         }
       );
     });
@@ -338,7 +338,7 @@ $(document).ready(function() {
         'click',
         function(event) {
         event.preventDefault();
-        modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/settings/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
+        modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
   }
 );
   });

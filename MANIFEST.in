@@ -1,8 +1,8 @@
 include LICENSE
 graft temboardui/static
 graft temboardui/templates
-graft temboardui/plugins/settings/static
-graft temboardui/plugins/settings/templates
+graft temboardui/plugins/pgconf/static
+graft temboardui/plugins/pgconf/templates
 graft temboardui/plugins/activity/static
 graft temboardui/plugins/activity/templates
 graft temboardui/plugins/dashboard/static

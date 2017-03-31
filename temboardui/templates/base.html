@@ -160,11 +160,11 @@
                   </a>
                 </li>
                 {% end %}
-                {% if 'settings' in plugin_names %}
-                <li class="{{'active' if plugin == 'settings' else ''}}">
-                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/settings/configuration">
+                {% if 'pgconf' in plugin_names %}
+                <li class="{{'active' if plugin == 'pgconf' else ''}}">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration">
                     <i class="fa fa-cog fa-fw"></i>
-                    Settings
+                    Configuration
                   </a>
                 </li>
                 {% end %}
