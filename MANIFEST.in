@@ -1,2 +1,3 @@
 include apidoc.json LICENSE
 graft share
+include temboard-agent.service
