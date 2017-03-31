@@ -24,12 +24,6 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      bootstrapfonts: {
-        expand: true,
-        cwd: 'node_modules/bootstrap-sass/assets/fonts/bootstrap/',
-        src: ['*'],
-        dest: 'temboardui/static/fonts/'
-      },
       bootstrapjs: {
         expand: true,
         cwd: 'node_modules/bootstrap-sass/assets/javascripts/',
@@ -50,7 +44,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
 
   grunt.registerTask('bootstrap', [
-    'copy:bootstrapfonts',
     'copy:bootstrapjs',
     'sass:dist'
   ]);
