@@ -1,11 +1,15 @@
 import tornado.web
-from sqlalchemy.exc import *
 
 from temboardui.errors import TemboardUIError
-from temboardui.temboardclient import *
-from temboardui.temboardclient import TemboardError
-from temboardui.handlers.base import JsonHandler, BaseHandler
-from temboardui.async import *
+from temboardui.temboardclient import (
+    TemboardError,
+    temboard_get_notifications,
+)
+from temboardui.handlers.base import BaseHandler
+from temboardui.async import (
+    HTMLAsyncResult,
+    run_background,
+)
 from temboardui.application import get_instance
 
 
@@ -29,17 +33,22 @@ class NotificationsHandler(BaseHandler):
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
-            xsession = self.get_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port))
+            xsession = self.get_secure_cookie(
+                "temboard_%s_%s" %
+                (instance.agent_address, instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
 
             # Load notifications.
-            notifications = temboard_get_notifications(self.ssl_ca_cert_file, instance.agent_address, instance.agent_port, xsession)
+            notifications = temboard_get_notifications(self.ssl_ca_cert_file,
+                                                       instance.agent_address,
+                                                       instance.agent_port,
+                                                       xsession)
             self.logger.info("Done.")
             return HTMLAsyncResult(
-                    http_code = 200,
-                    template_file = 'notifications.html',
-                    data = {
+                    http_code=200,
+                    template_file='notifications.html',
+                    data={
                         'nav': True,
                         'role': role,
                         'instance': instance,
@@ -56,18 +65,21 @@ class NotificationsHandler(BaseHandler):
                 self.db_session.close()
             except Exception:
                 pass
-            if (isinstance(e, TemboardUIError) or isinstance(e, TemboardError)):
+            if (isinstance(e, TemboardUIError) or
+               isinstance(e, TemboardError)):
                 if e.code == 401:
-                    return HTMLAsyncResult(http_code = 401, redirection = "/server/%s/%s/login" % (agent_address, agent_port))
+                    return HTMLAsyncResult(http_code=401,
+                                           redirection="/server/%s/%s/login" %
+                                           (agent_address, agent_port))
                 elif e.code == 302:
-                    return HTMLAsyncResult(http_code = 401, redirection = "/login")
+                    return HTMLAsyncResult(http_code=401, redirection="/login")
                 code = e.code
             else:
                 code = 500
             return HTMLAsyncResult(
-                        http_code = code,
-                        template_file = 'error.html',
-                        data = {
+                        http_code=code,
+                        template_file='error.html',
+                        data={
                             'nav': True,
                             'role': role,
                             'instance': instance,
@@ -77,4 +89,5 @@ class NotificationsHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
-        run_background(self.get_notifications, self.async_callback, (agent_address, agent_port))
+        run_background(self.get_notifications, self.async_callback,
+                       (agent_address, agent_port))

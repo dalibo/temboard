@@ -1,12 +1,23 @@
 import tornado.web
 from time import sleep
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import *
 
 from temboardui.handlers.base import BaseHandler, JsonHandler
-from temboardui.temboardclient import *
-from temboardui.async import *
-from temboardui.application import hash_password, get_role_by_auth, gen_cookie, get_instance
+from temboardui.temboardclient import (
+    TemboardError,
+    temboard_login,
+    temboard_profile,
+)
+from temboardui.async import (
+    HTMLAsyncResult,
+    JSONAsyncResult,
+    run_background,
+)
+from temboardui.application import (
+    gen_cookie,
+    get_instance,
+    get_role_by_auth,
+    hash_password,
+)
 from temboardui.errors import TemboardUIError
 
 
@@ -14,9 +25,10 @@ class LogoutHandler(BaseHandler):
     def get(self):
         try:
             self.clear_cookie('temboard')
-        except Exception as e:
+        except Exception:
             pass
         self.redirect('/home')
+
 
 class LoginHandler(BaseHandler):
 
@@ -42,13 +54,13 @@ class LoginHandler(BaseHandler):
             self.logger.exception(str(e))
         if role is not None:
             return HTMLAsyncResult(
-                http_code = 302,
-                redirection = '/home'
+                http_code=302,
+                redirection='/home'
             )
         return HTMLAsyncResult(
-            http_code = 200,
-            template_file = 'login.html',
-            data = {
+            http_code=200,
+            template_file='login.html',
+            data={
                 'nav': False
             }
         )
@@ -61,17 +73,24 @@ class LoginHandler(BaseHandler):
             role_hash_password = hash_password(p_role_name, p_role_password)
 
             self.start_db_session()
-            role = get_role_by_auth(self.db_session, p_role_name, role_hash_password)
+            role = get_role_by_auth(self.db_session, p_role_name,
+                                    role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
             sleep(1)
             self.logger.info("Done.")
+            redirection = self.get_secure_cookie('referer_uri') \
+                if self.get_secure_cookie('referer_uri') is not None \
+                else '/home'
             return HTMLAsyncResult(
-                http_code = 302,
-                redirection = self.get_secure_cookie('referer_uri') if self.get_secure_cookie('referer_uri') is not None else '/home',
-                secure_cookie = { 'name': 'temboard', 'content': gen_cookie(role.role_name, role_hash_password)})
+                http_code=302,
+                redirection=redirection,
+                secure_cookie={
+                    'name': 'temboard',
+                    'content': gen_cookie(role.role_name,
+                                          role_hash_password)})
         except (TemboardUIError, Exception) as e:
             try:
                 self.db_session.rollback()
@@ -82,9 +101,10 @@ class LoginHandler(BaseHandler):
             self.logger.info("Failed.")
             sleep(1)
             return HTMLAsyncResult(
-                http_code = 401,
-                template_file = 'login.html',
-                data = { 'nav': False , 'error': 'Wrong username/password.'})
+                http_code=401,
+                template_file='login.html',
+                data={'nav': False, 'error': 'Wrong username/password.'})
+
 
 class AgentLoginHandler(BaseHandler):
     """ Login Handler """
@@ -107,22 +127,24 @@ class AgentLoginHandler(BaseHandler):
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
-            xsession = self.get_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port))
+            xsession = self.get_secure_cookie(
+                "temboard_%s_%s" % (instance.agent_address,
+                                    instance.agent_port))
             if xsession:
                 try:
                     data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                    instance.agent_address,
-                                    instance.agent_port,
-                                    xsession)
+                                                    instance.agent_address,
+                                                    instance.agent_port,
+                                                    xsession)
                     agent_username = data_profile['username']
                     self.logger.error(agent_username)
                 except Exception as e:
                     self.logger.exception(str(e))
 
             return HTMLAsyncResult(
-                http_code = 200,
-                template_file = 'agent-login.html',
-                data = {
+                http_code=200,
+                template_file='agent-login.html',
+                data={
                     'nav': True,
                     'instance': instance,
                     'role': None,
@@ -135,26 +157,27 @@ class AgentLoginHandler(BaseHandler):
                 self.db_session.close()
             except Exception as e:
                 pass
-            if (isinstance(e, TemboardUIError) or isinstance(e, TemboardError)):
+            if (isinstance(e, TemboardUIError) or
+               isinstance(e, TemboardError)):
                 if e.code == 302:
-                    return HTMLAsyncResult(http_code = 401, redirection = "/login")
+                    return HTMLAsyncResult(http_code=401, redirection="/login")
                 code = e.code
             else:
                 code = 500
             return HTMLAsyncResult(
-                        http_code = code,
-                        template_file = 'error.html',
-                        data = {
-                            'nav': True,
-                            'instance': instance,
-                            'code': str(e.code),
-                            'message': str(e.message)
-                        })
-
+                http_code=code,
+                template_file='error.html',
+                data={
+                    'nav': True,
+                    'instance': instance,
+                    'code': str(e.code),
+                    'message': str(e.message)
+                })
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
-        run_background(self.get_login, self.async_callback, (agent_address, agent_port))
+        run_background(self.get_login, self.async_callback,
+                       (agent_address, agent_port))
 
     def post_login(self, agent_address, agent_port):
         try:
@@ -179,13 +202,19 @@ class AgentLoginHandler(BaseHandler):
                         self.get_argument("username"),
                         self.get_argument("password"))
 
-            self.set_secure_cookie("temboard_%s_%s" % (instance.agent_address, instance.agent_port), xsession, expires_days=0.5)
+            self.set_secure_cookie(
+                "temboard_%s_%s" %
+                (instance.agent_address, instance.agent_port),
+                xsession,
+                expires_days=0.5
+            )
             self.logger.info("Done.")
-            return HTMLAsyncResult(
-                        http_code = 302,
-                        redirection = self.get_secure_cookie('referer_uri') \
-                            if self.get_secure_cookie('referer_uri') is not None \
-                            else "/server/%s/%s/dashboard" % (instance.agent_address, instance.agent_port))
+            redirection = self.get_secure_cookie('referer_uri') \
+                if self.get_secure_cookie('referer_uri') is not None \
+                else "/server/%s/%s/dashboard" % (instance.agent_address,
+                                                  instance.agent_port)
+            return HTMLAsyncResult(http_code=302,
+                                   redirection=redirection)
         except (TemboardError, TemboardUIError, Exception) as e:
             self.logger.exception(str(e))
             self.logger.info("Failed.")
@@ -195,9 +224,9 @@ class AgentLoginHandler(BaseHandler):
             except Exception as e:
                 pass
             return HTMLAsyncResult(
-                    http_code = 200,
-                    template_file = 'agent-login.html',
-                    data = {
+                    http_code=200,
+                    template_file='agent-login.html',
+                    data={
                         'nav': True,
                         'error': e.message,
                         'instance': instance,
@@ -206,7 +235,9 @@ class AgentLoginHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def post(self, agent_address, agent_port):
-        run_background(self.post_login, self.async_callback, (agent_address, agent_port))
+        run_background(self.post_login, self.async_callback,
+                       (agent_address, agent_port))
+
 
 class LoginJsonHandler(JsonHandler):
     def post_login(self):
@@ -218,7 +249,8 @@ class LoginJsonHandler(JsonHandler):
             role_hash_password = hash_password(p_role_name, p_role_password)
 
             self.start_db_session()
-            role = get_role_by_auth(self.db_session, p_role_name, role_hash_password)
+            role = get_role_by_auth(self.db_session, p_role_name,
+                                    role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
             self.db_session.expunge_all()
             self.db_session.commit()
@@ -227,9 +259,12 @@ class LoginJsonHandler(JsonHandler):
             self.logger.info("Done.")
 
             return JSONAsyncResult(
-                http_code = 200,
-                data = { "message": "OK" },
-                secure_cookie = { 'name': 'temboard', 'content': gen_cookie(role.role_name, role_hash_password)})
+                http_code=200,
+                data={"message": "OK"},
+                secure_cookie={
+                    'name': 'temboard',
+                    'content': gen_cookie(role.role_name, role_hash_password)
+                })
 
         except (TemboardUIError, Exception) as e:
             try:
@@ -241,8 +276,8 @@ class LoginJsonHandler(JsonHandler):
             self.logger.info("Failed.")
             sleep(1)
             return JSONAsyncResult(
-                http_code = 401,
-                data = { "error": "Wrong username/password."})
+                http_code=401,
+                data={"error": "Wrong username/password."})
 
     @tornado.web.asynchronous
     def post(self):
