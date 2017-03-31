@@ -22,6 +22,7 @@ setup(
     url='https://github.com/dalibo/temboard/',
     data_files=[('share/temboard/', [
         'share/sql/application.sql',
+        'share/sql/dev-fixture.sql',
         'share/ssl/temboard_CHANGEME.key',
         'share/ssl/temboard_CHANGEME.pem',
         'share/ssl/temboard_ca_certs_CHANGEME.pem',

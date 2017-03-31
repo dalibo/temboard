@@ -28,7 +28,6 @@ RUN mkdir -p /etc/temboard \
     && chown temboard. /etc/temboard
 VOLUME /etc/temboard
 
-COPY fixture.sql /var/lib/temboard/
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["gosu", "temboard", "docker-entrypoint.sh"]
 CMD ["temboard"]
