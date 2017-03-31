@@ -1,16 +1,27 @@
 import tornado.web
 import json
-from time import sleep
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import *
 
 from temboardui.handlers.base import BaseHandler, JsonHandler
-from temboardui.async import *
-from temboardui.application import *
+from temboardui.async import (
+    HTMLAsyncResult,
+    JSONAsyncResult,
+    run_background,
+)
+from temboardui.application import (
+    get_group_list,
+    get_group,
+    check_group_name,
+    check_group_description,
+    delete_role_group_from_instance_group,
+    update_group,
+    add_group,
+    add_role_group_in_instance_group,
+    delete_group,
+)
 from temboardui.errors import TemboardUIError
 
 
-class ManageGroupAllJsonHandler(JsonHandler):
+class SettingsGroupAllJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, group_kind):
@@ -23,7 +34,7 @@ class ManageGroupAllJsonHandler(JsonHandler):
             self.start_db_session()
             self.check_admin()
 
-            groups = get_group_list(self.db_session, group_kind);
+            groups = get_group_list(self.db_session, group_kind)
             self.logger.debug(groups)
 
             self.db_session.expunge_all()
@@ -31,12 +42,16 @@ class ManageGroupAllJsonHandler(JsonHandler):
             self.db_session.close()
             self.logger.info("Done.")
             return JSONAsyncResult(
-                    200,
-                    {
-                        'groups': [{'name': group.group_name, 'kind': group.group_kind, 'description': group.group_description} for group in groups],
-                        'loaded_plugins': self.application.loaded_plugins
-                    }
-                )
+                200,
+                {
+                    'groups': [{
+                        'name': group.group_name,
+                        'kind': group.group_kind,
+                        'description': group.group_description
+                    } for group in groups],
+                    'loaded_plugins': self.application.loaded_plugins
+                }
+            )
         except (TemboardUIError, Exception) as e:
             self.logger.info("Failed.")
             self.logger.exception(str(e))
@@ -50,10 +65,11 @@ class ManageGroupAllJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageGroupJsonHandler(JsonHandler):
+
+class SettingsGroupJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
-    def get(self, group_kind, group_name = None):
+    def get(self, group_kind, group_name=None):
         if group_name is None:
             self.logger.error("Group name is missing.")
             self.set_status(500)
@@ -61,11 +77,13 @@ class ManageGroupJsonHandler(JsonHandler):
             self.write(json.dumps({'error': "Group name is missing."}))
             self.finish()
         else:
-            run_background(self.get_group, self.async_callback, (group_kind, group_name,))
+            run_background(
+                self.get_group, self.async_callback, (group_kind, group_name,))
 
     @tornado.web.asynchronous
-    def post(self, group_kind, group_name = None):
-        run_background(self.post_group, self.async_callback, (group_kind, group_name,))
+    def post(self, group_kind, group_name=None):
+        run_background(
+            self.post_group, self.async_callback, (group_kind, group_name,))
 
     def get_group(self, group_kind, group_name):
         try:
@@ -102,7 +120,10 @@ class ManageGroupJsonHandler(JsonHandler):
                         'name': group.group_name,
                         'kind': group.group_kind,
                         'description': group.group_description,
-                        'user_groups': [{'name': user_group.group_name, 'description': user_group.group_description} for user_group in user_groups],
+                        'user_groups': [{
+                            'name': user_group.group_name,
+                            'description': user_group.group_description
+                        } for user_group in user_groups],
                         'in_groups': [ari.role_group_name for ari in group.ari]
                     }
                 )
@@ -138,7 +159,8 @@ class ManageGroupJsonHandler(JsonHandler):
             if 'new_group_name' not in data or data['new_group_name'] == '':
                 raise TemboardUIError(400, "Group name is missing.")
             if 'description' not in data:
-                raise TemboardUIError(400, "Group description field is missing.")
+                raise TemboardUIError(
+                    400, "Group description field is missing.")
             check_group_name(data['new_group_name'])
             check_group_description(data['description'])
 
@@ -147,23 +169,28 @@ class ManageGroupJsonHandler(JsonHandler):
             if group:
                 if group_kind == 'instance':
                     for ari in group.ari:
-                        delete_role_group_from_instance_group(self.db_session, ari.role_group_name, group.group_name)
+                        delete_role_group_from_instance_group(
+                            self.db_session, ari.role_group_name,
+                            group.group_name)
 
-                group = update_group(self.db_session,
-                            group.group_name,
-                            group_kind,
-                            data['new_group_name'],
-                            data['description'])
+                group = update_group(
+                    self.db_session,
+                    group.group_name,
+                    group_kind,
+                    data['new_group_name'],
+                    data['description'])
             # New group case.
             else:
-                group = add_group(self.db_session,
-                            data['new_group_name'],
-                            data['description'],
-                            group_kind)
+                group = add_group(
+                    self.db_session,
+                    data['new_group_name'],
+                    data['description'],
+                    group_kind)
 
             if 'user_groups' in data and data['user_groups']:
                 for group_name in data['user_groups']:
-                    add_role_group_in_instance_group(self.db_session, group_name, group.group_name)
+                    add_role_group_in_instance_group(
+                        self.db_session, group_name, group.group_name)
 
             self.db_session.commit()
             self.db_session.close()
@@ -183,7 +210,8 @@ class ManageGroupJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageDeleteGroupJsonHandler(JsonHandler):
+
+class SettingsDeleteGroupJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def post(self, group_kind):
@@ -220,7 +248,8 @@ class ManageDeleteGroupJsonHandler(JsonHandler):
             else:
                 return JSONAsyncResult(500, {'error': "Internal error."})
 
-class ManageGroupHandler(BaseHandler):
+
+class SettingsGroupHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self, group_kind):
@@ -241,10 +270,16 @@ class ManageGroupHandler(BaseHandler):
             self.db_session.close()
             self.logger.info("Done.")
             return HTMLAsyncResult(
-                    200,
-                    None,
-                    {'nav': True , 'role': self.current_user, 'group_list': group_list, 'group_kind': group_kind},
-                    template_file = 'manage/group.html')
+                200,
+                None,
+                {
+                    'nav': True,
+                    'role': self.current_user,
+                    'group_list': group_list,
+                    'group_kind': group_kind
+                },
+                template_file='settings/group.html'
+            )
         except (TemboardUIError, Exception) as e:
             self.logger.exception(str(e))
             self.logger.info("Failed.")
@@ -261,9 +296,9 @@ class ManageGroupHandler(BaseHandler):
                             401,
                             None,
                             {'nav': False},
-                            template_file = 'unauthorized.html')
+                            template_file='unauthorized.html')
             return HTMLAsyncResult(
                         500,
                         None,
                         {'nav': False, 'error': e.message},
-                        template_file = 'manage/error.html')
+                        template_file='settings/error.html')

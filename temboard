@@ -15,9 +15,9 @@ from temboardui.handlers.base import *
 from temboardui.handlers.user import *
 from temboardui.handlers.home import *
 from temboardui.handlers.notification import *
-from temboardui.handlers.manage.user import *
-from temboardui.handlers.manage.group import *
-from temboardui.handlers.manage.instance import *
+from temboardui.handlers.settings.user import *
+from temboardui.handlers.settings.group import *
+from temboardui.handlers.settings.instance import *
 
 from temboardui.async import new_worker_pool
 from temboardui.options import temboarduiOptions
@@ -119,22 +119,22 @@ def main():
             (r"/json/login", LoginJsonHandler, handler_conf),
             (r"/logout", LogoutHandler, handler_conf),
             # Manage users
-            (r"/manage/users", ManageUserHandler, handler_conf),
-            (r"/json/manage/user$", ManageUserJsonHandler, handler_conf),
-            (r"/json/manage/user/([0-9a-z\-_\.]{3,16})$", ManageUserJsonHandler, handler_conf),
-            (r"/json/manage/delete/user$", ManageDeleteUserJsonHandler, handler_conf),
-            (r"/json/manage/all/group/(role|instance)$", ManageGroupAllJsonHandler, handler_conf),
+            (r"/settings/users", SettingsUserHandler, handler_conf),
+            (r"/json/settings/user$", SettingsUserJsonHandler, handler_conf),
+            (r"/json/settings/user/([0-9a-z\-_\.]{3,16})$", SettingsUserJsonHandler, handler_conf),
+            (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler, handler_conf),
+            (r"/json/settings/all/group/(role|instance)$", SettingsGroupAllJsonHandler, handler_conf),
             # Manage groups (users & instances)
-            (r"/manage/groups/(role|instance)$", ManageGroupHandler, handler_conf),
-            (r"/json/manage/group/(role|instance)$", ManageGroupJsonHandler, handler_conf),
-            (r"/json/manage/group/(role|instance)/([0-9a-z\-_\.]{3,16})$", ManageGroupJsonHandler, handler_conf),
-            (r"/json/manage/delete/group/(role|instance)$", ManageDeleteGroupJsonHandler, handler_conf),
+            (r"/settings/groups/(role|instance)$", SettingsGroupHandler, handler_conf),
+            (r"/json/settings/group/(role|instance)$", SettingsGroupJsonHandler, handler_conf),
+            (r"/json/settings/group/(role|instance)/([0-9a-z\-_\.]{3,16})$", SettingsGroupJsonHandler, handler_conf),
+            (r"/json/settings/delete/group/(role|instance)$", SettingsDeleteGroupJsonHandler, handler_conf),
             # Manage instances
-            (r"/manage/instances", ManageInstanceHandler, handler_conf),
-            (r"/json/manage/instance$", ManageInstanceJsonHandler, handler_conf),
+            (r"/settings/instances", SettingsInstanceHandler, handler_conf),
+            (r"/json/settings/instance$", SettingsInstanceJsonHandler, handler_conf),
             (r"/json/register/instance$", RegisterInstanceJsonHandler, handler_conf),
-            (r"/json/manage/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", ManageInstanceJsonHandler, handler_conf),
-            (r"/json/manage/delete/instance$", ManageDeleteInstanceJsonHandler, handler_conf),
+            (r"/json/settings/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", SettingsInstanceJsonHandler, handler_conf),
+            (r"/json/settings/delete/instance$", SettingsDeleteInstanceJsonHandler, handler_conf),
             # Discover
             (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", DiscoverInstanceJsonHandler, handler_conf),
             # Agent Login
