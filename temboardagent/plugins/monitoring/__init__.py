@@ -435,6 +435,10 @@ def monitoring_sender_worker(commands, command, config):
                 "Duration: %s." % (str(time.time() * 1000 - start_time)))
             logger.debug("Failed.")
             sys.exit(1)
+
+        # If everything's fine then remove current msg from the queue
+        q.shift(delete=True, check_msg=msg)
+
         if c > 60:
             break
         c += 1
