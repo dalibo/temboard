@@ -15,10 +15,13 @@ setup(
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
     long_description=open('README.rst').read(),
-    data_files=[('share/temboard-agent/', [
-        'share/temboard-agent.conf.sample',
-        'share/temboard-agent_CHANGEME.pem',
-        'share/temboard-agent_CHANGEME.key',
-        'share/temboard-agent_ca_certs_CHANGEME.pem',
-        'share/temboard-agent.logrotate'
-    ])])
+    data_files=[
+        ('share/temboard-agent/', [
+            'share/temboard-agent.conf.sample',
+            'share/temboard-agent_CHANGEME.pem',
+            'share/temboard-agent_CHANGEME.key',
+            'share/temboard-agent_ca_certs_CHANGEME.pem',
+            'share/temboard-agent.logrotate'
+        ]),
+        ('lib/systemd/system', ['temboard-agent.service']),
+    ])
