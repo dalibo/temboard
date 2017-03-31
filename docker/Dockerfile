@@ -24,9 +24,13 @@ RUN useradd --home-dir /var/lib/temboard --create-home --system temboard
 VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
 
+RUN mkdir -p /etc/temboard \
+    && chown temboard. /etc/temboard
+VOLUME /etc/temboard
+
 COPY fixture.sql /var/lib/temboard/
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["gosu", "temboard", "docker-entrypoint.sh"]
-CMD ["temboard --config temboard.conf"]
+CMD ["temboard"]
 
 EXPOSE 8888
