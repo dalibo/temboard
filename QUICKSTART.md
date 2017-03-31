@@ -1,47 +1,51 @@
-QUICK START
-================================================================================
+## Quickstart
 
-If you want to have a quick look at Temboard, here's 3 steps to deploy a testing
-environment composed of 3 PostgreSQL instances and a central Temboard server.  
+A `docker-compose.quickstart.yml` file is provided. It's aimed to quickly try temboard with
+a few postgres servers.
 
-1- [Install docker](https://docs.docker.com/engine/installation/) 
-   and [Install docker-compose](https://docs.docker.com/compose/install/)
-
-2- Fetch our pre-configured compose file and launch it
-
-```
-wget https://raw.githubusercontent.com/dalibo/docker/master/temboard/docker-compose.yml
+``` console
+wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker-compose.yml
 docker-compose up
 ```
 
-3- Go to <https://127.0.0.1:8888>
+After starting the docker-compose image, the UI is available on
+https://0.0.0.0:8888/ with `admin` / `admin` credentials.
 
-* Connect to the Temboard server with `admin / admin`
-* Connect to each Postgres instance with `alice / alice`
-* The temboard server is listening to the local LAN
+The agents can be accessed with `alice` / `alice` or `bob` / `bob`.
 
-Warnings
--------------------------------------------------------------------------------
+`docker-compose` will launch:
 
-**DO NOT USE THIS IN PRODUCTION**.                                                           
-                                                                   
-Obviously these docker machines are designed for testing and demo. All database
-access are set to ``trust``, the SSL certificate is self-signed and the default
-passwords are public.
-
-If you want to deploy Temboard in a production environment, take some time to
-read the [documentation](doc/index.md) at <http://temboard.readthedocs.io> 
+- a PG 9.4 cluster
+- a PG 9.5 cluster
+- a PG 9.6 cluster
+- a temboard agent for each PG cluster
+- a standard PG 9.6 cluster for the UI
+- a container for the UI
 
 
+## Warnings
 
-Tips
-------------------------------------------------------------------------------- 
+**DO NOT USE THIS IN PRODUCTION**
+
+temBoard docker images are designed for testing and demo. The SSL certificate is
+self-signed and the default passwords are public.
+
+temBoard agent is designed to run on same host as PostgreSQL which is
+incompatible with Docker service-minded architecture. Temboard agent images
+require access to docker socket to restart PostgreSQL. Which you do not want in
+production.
+
+If you want to deploy temBoard in a production environment, take some time to
+read <http://temboard.rtd.io>.
+
+
+## Tips
 
 - If you're already running a PostgreSQL instance on your machine, you might
-  encounter conflicts with ports `5433`, `5434` and `5435`. If so, you can 
-  modify the `docker-compose.yml` file and choose alternative ports
+  encounter conflicts with ports `5433`, `5434` and `5435`. If so remove or edit
+  `ports` in `docker-compose.yml`.
 
-- If you run docker on a distant linux server: build a simple SSH tunnel to 
+- If you run docker on a distant linux server: build a simple SSH tunnel to
   reach the temboard server without exposing it on the internet :
 
    ```
