@@ -2,16 +2,18 @@ from temboardagent.logger import get_logger, get_tb
 from temboardagent.api import check_sessionid
 from temboardagent.errors import HTTPError
 from temboardagent.spc import connector, error
-import sys
 
-def api_function_wrapper_pg(config, http_context, sessions, module, function_name):
+
+def api_function_wrapper_pg(config, http_context, sessions, module,
+                            function_name):
     """
     API function wrapper in charge of:
-        - instanciate a new logger;
+        - instanciating a new logger;
         - check the user session id;
-        - start a new PostgreSQL connexion;
-        - call a function named 'function_name' from 'module_name' module and return its result;
-        - close the PG connexion.
+        - start a new PostgreSQL connection;
+        - call the function 'function_name' from 'module_name' module and
+          return its result;
+        - close PG connection.
     """
     logger = get_logger(config)
     logger.debug("Calling %s.%s()." % (module.__name__, function_name,))
@@ -21,11 +23,11 @@ def api_function_wrapper_pg(config, http_context, sessions, module, function_nam
         username = check_sessionid(http_context['headers'], sessions)
         http_context['username'] = username
         conn = connector(
-            host = config.postgresql['host'],
-            port = config.postgresql['port'],
-            user = config.postgresql['user'],
-            password = config.postgresql['password'],
-            database = config.postgresql['dbname']
+            host=config.postgresql['host'],
+            port=config.postgresql['port'],
+            user=config.postgresql['user'],
+            password=config.postgresql['password'],
+            database=config.postgresql['dbname']
         )
         conn.connect()
         dm = getattr(module, function_name)(conn, config, http_context)
@@ -46,12 +48,15 @@ def api_function_wrapper_pg(config, http_context, sessions, module, function_nam
         else:
             raise HTTPError(500, "Internal error.")
 
-def api_function_wrapper(config, http_context, sessions, module, function_name):
+
+def api_function_wrapper(config, http_context, sessions, module,
+                         function_name):
     """
     API function wrapper in charge of:
-        - instanciate a new logger;
+        - instanciating a new logger;
         - check the user session id;
-        - call a function named 'function_name' from 'module_name' module and return its result;
+        - call the function 'function_name' from 'module_name' module and
+          return its result;
     """
     logger = get_logger(config)
     logger.debug("Calling %s.%s()." % (module.__name__, function_name,))
