@@ -6,6 +6,7 @@ from binascii import hexlify
 
 from temboardagent.errors import ConfigurationError, HTTPError
 
+
 def hash_password(username, password):
     """
     Hash a password with the following formula:
@@ -16,6 +17,7 @@ def hash_password(username, password):
     hpasswd = sha512(bytes_password + bytes_sha_username).digest()
     return base64.b64encode(hpasswd)
 
+
 def read_password_file(filepath):
     """
     Read and return the user/password file.
@@ -25,8 +27,9 @@ def read_password_file(filepath):
             lines = fd.readlines()
             fd.close()
             return lines
-    except IOError as e:
+    except IOError:
         raise ConfigurationError("Can't open password file for reading.")
+
 
 def get_user(filepath, username):
     """
@@ -38,6 +41,7 @@ def get_user(filepath, username):
             return (l_username, l_hpasswd)
     raise HTTPError(404, 'Invalid username/password.')
 
+
 def auth_user(filepath, username, password):
     """
     Hash and compair the given couple username/password.
@@ -46,6 +50,7 @@ def auth_user(filepath, username, password):
     n_hpasswd = hash_password(username, password)
     if n_hpasswd.decode('utf-8') != l_hpasswd:
         raise HTTPError(404, 'Invalid username/password.')
+
 
 def gen_sessionid(username):
     """
