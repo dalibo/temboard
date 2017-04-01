@@ -275,7 +275,7 @@ def configuration(config):
                     if val.startswith(char) and val.endswith(char):
                         val = val[1:-1]
                 self.plugin_configuration['pg_ctl'] = val
-            except configparser.NoOptionError as e:
+            except NoOptionError:
                 pass
 
     c = Configuration(config)
