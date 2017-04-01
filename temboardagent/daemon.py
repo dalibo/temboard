@@ -1,4 +1,7 @@
-import sys, os, atexit, signal
+import sys
+import os
+import atexit
+import signal
 import time
 
 # Some global vars we need to have because signal handler function can't take
@@ -8,20 +11,25 @@ SCHEDULER = None
 WORKERS = None
 RELOAD = False
 
+
 def set_global_workers(workers):
     global WORKERS
     WORKERS = workers
+
 
 def set_global_scheduler(scheduler):
     global SCHEDULER
     SCHEDULER = scheduler
 
+
 def set_global_reload(value):
     global RELOAD
     RELOAD = value
 
+
 def reload_true():
     return RELOAD
+
 
 def httpd_sighup_handler(signum, frame):
     """
@@ -31,6 +39,7 @@ def httpd_sighup_handler(signum, frame):
     if SCHEDULER:
         # Send a SIGHUP signal to the scheduler.
         os.kill(SCHEDULER.pid, signal.SIGHUP)
+
 
 def scheduler_sighup_handler(signum, frame):
     """
@@ -44,6 +53,7 @@ def scheduler_sighup_handler(signum, frame):
                 if worker_pid:
                     os.kill(worker_pid, signal.SIGHUP)
             time.sleep(0.5)
+
 
 def httpd_sigterm_handler(signum, frame):
     """
@@ -66,6 +76,7 @@ def httpd_sigterm_handler(signum, frame):
     # sys.exit() does not work in this context.
     os._exit(1)
 
+
 def scheduler_sigterm_handler(signum, frame):
     """
     SIGTEMR signal handler for scheduler process.
@@ -87,11 +98,13 @@ def scheduler_sigterm_handler(signum, frame):
             time.sleep(0.5)
     sys.exit(1)
 
+
 def worker_sigterm_handler(signum, frame):
     """
     Default SIGTERM signal handler for the workers.
     """
     return
+
 
 def worker_sighup_handler(signum, frame):
     """
@@ -109,6 +122,7 @@ def remove_pidfile(pidfile):
             os.remove(pidfile)
         except OSError:
             pass
+
 
 def daemonize(pidfile):
     """
@@ -130,7 +144,7 @@ def daemonize(pidfile):
 
     # Try to write pidfile.
     try:
-        with open(pidfile,'w+') as pf:
+        with open(pidfile, 'w+') as pf:
             pf.write("\0")
     except IOError:
         sys.stderr.write("FATAL: can't write pidfile %s.\n" % pidfile)
@@ -144,7 +158,7 @@ def daemonize(pidfile):
             sys.exit(0)
     except OSError as e:
         sys.stderr.write("FATAL: fork failed: %d (%s)\n"
-                            % (e.errno, e.strerror))
+                         % (e.errno, e.strerror))
         sys.exit(1)
 
     # Decouple from parent environment.
@@ -160,7 +174,7 @@ def daemonize(pidfile):
             sys.exit(0)
     except OSError as e:
         sys.stderr.write("FATAL: fork failed: %d (%s)\n"
-                            % (e.errno, e.strerror))
+                         % (e.errno, e.strerror))
         sys.exit(1)
 
     # Redirect standard file descriptors.
@@ -175,7 +189,7 @@ def daemonize(pidfile):
     # write pidfile
     atexit.register(remove_pidfile, pidfile)
     pid = str(os.getpid())
-    with open(pidfile,'w+') as pf:
+    with open(pidfile, 'w+') as pf:
         pf.write("%s\n" % pid)
     global PIDFILE
     PIDFILE = pidfile
