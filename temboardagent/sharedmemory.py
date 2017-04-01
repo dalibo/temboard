@@ -5,11 +5,16 @@ from ctypes import (Structure, c_char, c_double, c_int, c_wchar,
 import os
 import time
 
-from temboardagent.errors import (SharedItem_not_found, SharedItem_exists, SharedItem_bad_type_size,
-                    SharedItem_no_free_slot_left, NotificationError)
-from temboardagent.types import *
+from temboardagent.errors import (SharedItem_not_found, SharedItem_exists,
+                                  SharedItem_bad_type_size,
+                                  SharedItem_no_free_slot_left,
+                                  NotificationError)
+from temboardagent.types import (T_COMMANDID_SIZE, T_WORKER_SIZE,
+                                 T_PARAMETERS_SIZE, T_RESULT_SIZE,
+                                 T_SESSIONID_SIZE, T_USERNAME_SIZE)
 from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
+
 
 class Command(Structure):
     """
@@ -41,6 +46,7 @@ class Command(Structure):
         ('result', c_wchar * T_RESULT_SIZE)
     ]
 
+
 class Session(Structure):
     """
     Session structure. The Session Array is shared by the HTTP server process
@@ -55,17 +61,18 @@ class Session(Structure):
         ('username', c_char * T_USERNAME_SIZE)
     ]
 
+
 class Commands(object):
     """
     Commands object.
     """
-    def __init__(self, size = 100):
+    def __init__(self, size=100):
         # Lock handler.
         self.lock = Lock()
         # Array size.
         self.size = size
         # Array of Command.
-        self.commands = Array(Command, self.size, lock = self.lock)
+        self.commands = Array(Command, self.size, lock=self.lock)
 
     def get_by_commandid(self, commandid):
         """
@@ -129,29 +136,29 @@ class Commands(object):
     def purge_expired(self, ttl, logger):
         """
         In charge of removing old Commands (when Command's last update time +
-        given TTL is prior to current timestamp and the worker finished its work
-         on it) from the shared array.
+        given TTL is prior to current timestamp and the worker finished its
+        work on it) from the shared array.
         """
         for i in range(0, self.size):
             if len(self.commands[i].commandid) == T_COMMANDID_SIZE and \
                 (self.commands[i].time + ttl) < time.time() and \
-                (self.commands[i].state == COMMAND_DONE or \
+                (self.commands[i].state == COMMAND_DONE or
                     self.commands[i].state == COMMAND_ERROR):
                 logger.debug("Removing command with commandid=%s" %
-                                (self.commands[i].commandid))
+                             (self.commands[i].commandid))
                 # Deletion: overwrite array element by a null Command.
                 self.commands[i] = Command()
             # We need to ckeck if the processes executing commands with a
             # state = COMMAND_START are stil alive and then remove the
             # command if they are not.
             if len(self.commands[i].commandid) == T_COMMANDID_SIZE and \
-                self.commands[i].state == COMMAND_START and \
-                self.commands[i].pid > 0:
+               self.commands[i].state == COMMAND_START and \
+               self.commands[i].pid > 0:
                 try:
-                   os.getpgid(self.commands[i].pid)
-                except OSError as e:
-                    logger.debug("Removing command with commandid=%s." %
-                                (self.commands[i].commandid))
+                    os.getpgid(self.commands[i].pid)
+                except OSError:
+                    logger.debug("Removing command with commandid=%s." % (
+                                 self.commands[i].commandid))
                     self.commands[i] = Command()
 
     def check_uniqueness(self, worker, parameters):
@@ -160,23 +167,24 @@ class Commands(object):
         """
         for i in range(0, self.size):
             if len(self.commands[i].commandid) == T_COMMANDID_SIZE and \
-                self.commands[i].worker == worker and \
-                self.commands[i].parameters == parameters and \
-                self.commands[i].state != COMMAND_DONE and \
-                self.commands[i].state != COMMAND_ERROR:
+                    self.commands[i].worker == worker and \
+                    self.commands[i].parameters == parameters and \
+                    self.commands[i].state != COMMAND_DONE and \
+                    self.commands[i].state != COMMAND_ERROR:
                 raise SharedItem_exists()
+
 
 class Sessions(object):
     """
     Sessions object.
     """
-    def __init__(self, size = 100):
+    def __init__(self, size=100):
         # Lock handler.
         self.lock = Lock()
         # Array size.
         self.size = size
         # Array of Session.
-        self.sessions = Array(Session, self.size, lock = self.lock)
+        self.sessions = Array(Session, self.size, lock=self.lock)
 
     def get_by_sessionid(self, sessionid):
         """
@@ -249,13 +257,13 @@ class Sessions(object):
         """
         for i in range(0, self.size):
             if len(self.sessions[i].sessionid) == T_SESSIONID_SIZE and \
-                (self.sessions[i].time + ttl) < time.time():
+                    (self.sessions[i].time + ttl) < time.time():
                 logger.info("Session with sessionid=%s expired." %
-                                (self.sessions[i].sessionid))
+                            (self.sessions[i].sessionid))
                 try:
                     NotificationMgmt.push(config, Notification(
-                                        username = self.sessions[i].username,
-                                        message = "Session expired"))
+                                        username=self.sessions[i].username,
+                                        message="Session expired"))
                 except NotificationError as e:
                     logger.error(e.message)
 
