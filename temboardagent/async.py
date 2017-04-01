@@ -1,18 +1,20 @@
 from multiprocessing import Process
-import time
 import signal
 from os import getpid
 
-from temboardagent.sharedmemory import Command
 from temboardagent.logger import get_logger, set_logger_name, get_tb
-import temboardagent.workers
 from temboardagent.routing import get_worker
-from temboardagent.daemon import (set_global_workers, scheduler_sigterm_handler,
-                    scheduler_sighup_handler, set_global_reload,
-                    reload_true, worker_sigterm_handler, worker_sighup_handler)
+from temboardagent.daemon import (set_global_workers,
+                                  scheduler_sigterm_handler,
+                                  scheduler_sighup_handler,
+                                  set_global_reload,
+                                  reload_true, worker_sigterm_handler,
+                                  worker_sighup_handler)
 from temboardagent.configuration import Configuration
 from temboardagent.errors import ConfigurationError
-from temboardagent.pluginsmgmt import load_plugins_configurations, exec_scheduler
+from temboardagent.pluginsmgmt import (load_plugins_configurations,
+                                       exec_scheduler)
+
 
 def Worker(commands, command, config):
     """
@@ -28,6 +30,7 @@ def Worker(commands, command, config):
         set_logger_name("scheduler")
         logger = get_logger(config)
         logger.error(str(e))
+
 
 def Scheduler(commands, queue_in, config, sessions):
     """
@@ -52,7 +55,7 @@ def Scheduler(commands, queue_in, config, sessions):
             try:
                 logger.info("SIGHUP signal caught, trying to reload"
                             " configuration.")
-                new_config =  Configuration(config.configfile)
+                new_config = Configuration(config.configfile)
                 # Prevent any change on plugins list..
                 new_config.temboard['plugins'] = config.temboard['plugins']
                 new_config.plugins = load_plugins_configurations(new_config)
@@ -78,7 +81,8 @@ def Scheduler(commands, queue_in, config, sessions):
             pass
         else:
             # Start the worker process.
-            newworker = Process(target=Worker, args=(commands, command, config))
+            newworker = Process(target=Worker,
+                                args=(commands, command, config))
             workers.append(newworker)
             newworker.start()
 
