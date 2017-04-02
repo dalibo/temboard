@@ -37,7 +37,7 @@ class HBAManager(ConfigurationFileManager):
         for row in conn.get_rows():
             users.append(row['usename'])
         # Get groups containgin users
-        conn.execute(""""
+        conn.execute("""
             SELECT rolname
             FROM pg_user
             JOIN pg_auth_members
