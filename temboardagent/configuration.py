@@ -9,12 +9,13 @@ import re
 from temboardagent.errors import ConfigurationError
 from temboardagent.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
 
-class BaseConfiguration(configparser.ConfigParser):
+
+class BaseConfiguration(configparser.RawConfigParser):
     """
     Common configuration parser.
     """
     def __init__(self, configfile, *args, **kwargs):
-        configparser.ConfigParser.__init__(self, *args, **kwargs)
+        configparser.RawConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile
         # Default configuration values
         self.temboard = {
@@ -239,12 +240,13 @@ class Configuration(BaseConfiguration):
         except configparser.NoOptionError as e:
            pass
 
-class PluginConfiguration(configparser.ConfigParser):
+
+class PluginConfiguration(configparser.RawConfigParser):
     """
     Customized configuration parser for plugins.
     """
     def __init__(self, configfile, *args, **kwargs):
-        configparser.ConfigParser.__init__(self, *args, **kwargs)
+        configparser.RawConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile
 
         try:
