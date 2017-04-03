@@ -2,7 +2,7 @@
  temBoard Agent
 ################
 
-| |CircleCI| |PyPI|
+| |Python| |CircleCI| |PyPI|
 
 `temBoard <http://temboard.io/>`_ is a powerful management tool for PostgreSQL.
 
@@ -11,37 +11,27 @@ REST API to implement various management tasks on PostgreSQL instance. See
 http://temboard.io/ for the big picture.
 
 
-============
- Developing
-============
+==========
+ Features
+==========
 
-With Docker & Compose, you can run your code like this:
+- Non intrusive daemon dedicated to one PostgreSQL cluster.
+- No extra dependencies other than ``setuptools``.
+- Written python2.7, supported by stable distribution releases.
+- Secured REST API with SSL and credentials.
+- Extensible with plugins.
+
+
+==============
+ Installation
+==============
 
 .. code-block::
 
-   $ docker-compose up -d
-   $ docker-compose exec agent bash
-   # pip install -e /usr/local/src/temboard-agent/
-   # gosu temboard temboard-agent -c temboard-agent.conf
-
-Goto https://0.0.0.0:8888/ to add your agent with hostname ``agent`` and port
-``2345``.
-
-That's it !
+   pip install temboard-agent
 
 
-===========
- Releasing
-===========
-
-Choose the next version according to `PEP 440
-<https://www.python.org/dev/peps/pep-0440/#version-scheme>`_.
-
-.. code-block
-
-   git tag 1.1
-   git push --tags
-   make release
+See `temBoard full documentation <http://temboard.io/>`_ for details on configuration.
 
 
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard-agent.svg?style=shield
@@ -51,3 +41,7 @@ Choose the next version according to `PEP 440
 .. |PyPI| image:: https://img.shields.io/pypi/v/temboard-agent.svg
    :target: https://pypi.python.org/pypi/temboard-agent
    :alt: Version on PyPI
+
+.. |Python| image:: https://img.shields.io/pypi/pyversions/temboard-agent.svg
+   :target: https://www.python.org/
+   :alt: Versions of python supported
