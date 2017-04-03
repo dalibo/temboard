@@ -2,8 +2,6 @@
 
 The `repository` is a PostgreSQL (>=9.5) database. It let temboard store its data, including users, agent registration and metrics data.
 
-Usage of plugin `monitoring` requires `tablefunc` extension. This extension is available as part of the extensions shipped with the source code of PostgreSQL, in the `contrib/` directory. Usually, the "contrib" package of PostgreSQL from your Linux distribution has it.
-
 ## Configuration
 
 To ensure the browsing of the web interface is fast enough, please note the `work_mem` parameter PostgreSQL cluster hosting the repository should be set to at least `16MB`.
@@ -42,7 +40,6 @@ psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql 
 
 If you plan to use the plugin `monitoring`:
 ```
-sudo -u postgres psql -U postgres -c "CREATE EXTENSION tablefunc" temboard
 psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/monitoring.sql temboard
 ```
 
