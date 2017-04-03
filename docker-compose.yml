@@ -1,9 +1,8 @@
 version: '3'
 
 volumes:
-  data96:
-  run96:
-
+  rdata:
+  rrun:
 
 services:
   repository:
@@ -14,29 +13,26 @@ services:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
     volumes:
+      - rdata:/var/lib/postgresql/data
+      - rrun:/var/run/postgresql
       - ./share/sql/application.sql:/docker-entrypoint-initdb.d/00-temboard.sql
       - ./temboardui/plugins/monitoring/sql/monitoring.sql:/docker-entrypoint-initdb.d/10-plugin-monitoring.sql
       - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
 
-  instance96:
-    image: postgres:9.6
-    volumes:
-      - data96:/var/lib/postgresql/data
-      - run96:/var/run/postgresql
-
-  agent96:
+  agent:
     image: dalibo/temboard-agent
     ports:
       - 2345:2345
     volumes:
-      - data96:/var/lib/postgresql/data
-      - run96:/var/run/postgresql/
+      - rdata:/var/lib/postgresql/data
+      - rrun:/var/run/postgresql
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance96:instance96.fqdn
+      - repository:repository.fqdn
     environment:
-      TEMBOARD_HOSTNAME: instance96.fqdn
-      TEMBOARD_KEY: key_for_agent_96
+      TEMBOARD_HOSTNAME: repository.fqdn
+      TEMBOARD_KEY: key_for_agent0
       TEMBOARD_UI_URL: https://172.17.0.1:8888/
       TEMBOARD_REGISTER_HOST: 0.0.0.0
+      TEMBOARD_REGISTER_PORT: 2345
