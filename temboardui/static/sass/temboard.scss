@@ -336,3 +336,15 @@ ul.notifications {
 td.date {
   color: #337AB7;
 }
+
+$glow-color-start: white;
+$glow-color-end: lighten($brand-primary, 30%);
+@keyframes glowing {
+  0% { box-shadow: 0 0 3px $glow-color-start; }
+  50% { box-shadow: 0 0 10px $glow-color-end; }
+  100% { box-shadow: 0 0 3px $glow-color-start; }
+}
+
+.glow {
+  animation: glowing 1500ms infinite;
+}
