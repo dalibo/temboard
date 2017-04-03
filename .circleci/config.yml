@@ -13,10 +13,15 @@ jobs:
           keys:
             - temboard-agent-{{ .Branch }}
             - temboard-agent-master
-      - run: pip install --upgrade flake8-diff docutils
-      - run: git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-      - run: flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-      - run: rst2html.py --verbose --halt=warning README.rst $CIRCLE_ARTIFACTS/README.html
+      - run:
+          command: |
+            pip install --upgrade flake8-diff docutils
+            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
+      - store_artifacts:
+          path: README.html
+          destination: build/README.html
       - save_cache:
           key: temboard-agent-{{ .Branch }}
           paths:

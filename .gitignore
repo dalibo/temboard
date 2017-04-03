@@ -1,4 +1,6 @@
-docker-compose.override.yml
-temboard_agent.egg-info/
 *.pyc
+build/
+dist/
+docker-compose.override.yml
 docker-histfile
+temboard_agent.egg-info/
