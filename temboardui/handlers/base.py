@@ -1,15 +1,18 @@
 import tornado.web
 import json
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import *
 
 from temboardui.errors import TemboardUIError
-from temboardui.temboardclient import *
 from tornado.template import Loader
-from temboardui.async import *
+from temboardui.async import (
+    CSVAsyncResult,
+    HTMLAsyncResult,
+    JSONAsyncResult,
+)
 from temboardui.model.tables import MetaData
 from temboardui.model.orm import Roles
 from temboardui.application import get_role_by_cookie
+
 
 class BaseHandler(tornado.web.RequestHandler):
 
@@ -36,7 +39,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def check_admin(self,):
         if isinstance(self.current_user, Roles) and \
-            self.current_user.is_admin is True:
+           self.current_user.is_admin is True:
             return
         raise TemboardUIError(401, "Unauthorized access.")
 
@@ -60,27 +63,36 @@ class BaseHandler(tornado.web.RequestHandler):
             self.db_session = Session()
         except Exception as e:
             self.logger.exception(e.message)
-            raise TemboardUIError(500, "Unable to create a new database session.")
+            raise TemboardUIError(500,
+                                  "Unable to create a new database session.")
 
     def async_callback(self, async_result):
         """
         Callback executed once the function called by run_background() returns
-         something, async_result single arg must be an HTMLAsyncResult instance.
-        This callback is in charge to render the final HTML content returned to the client.
+        something, async_result single arg must be an HTMLAsyncResult instance.
+        This callback is in charge to render the final HTML content returned to
+        the client.
         """
         if not isinstance(async_result, HTMLAsyncResult):
             self.finish()
             return
-        if async_result.secure_cookie != None and 'name' in async_result.secure_cookie and 'content' in async_result.secure_cookie:
-            self.set_secure_cookie(async_result.secure_cookie['name'], async_result.secure_cookie['content'], expires_days=0.5)
-        if async_result.http_code in (301, 302, 401) and async_result.redirection is not None:
-            self.set_secure_cookie('referer_uri', self.request.uri, expires_days=0.5)
+        if async_result.secure_cookie is not None and \
+           'name' in async_result.secure_cookie and \
+           'content' in async_result.secure_cookie:
+            self.set_secure_cookie(async_result.secure_cookie['name'],
+                                   async_result.secure_cookie['content'],
+                                   expires_days=0.5)
+        if async_result.http_code in (301, 302, 401) and \
+           async_result.redirection is not None:
+            self.set_secure_cookie('referer_uri', self.request.uri,
+                                   expires_days=0.5)
             self.redirect(async_result.redirection)
             return
         if async_result.http_code == 200:
             if async_result.template_path is not None:
                 self.loader = Loader(async_result.template_path)
-                self.write(self.loader.load(async_result.template_file).generate(**async_result.data))
+                self.write(self.loader.load(async_result.template_file)
+                           .generate(**async_result.data))
                 self.finish()
                 return
             else:
@@ -90,18 +102,20 @@ class BaseHandler(tornado.web.RequestHandler):
             self.render(async_result.template_file, **async_result.data)
             return
 
+
 class Error404Handler(tornado.web.RequestHandler):
     def prepare(self,):
         raise tornado.web.HTTPError(404)
 
     def write_error(self, status_code, **kwargs):
         if "Content-Type" in self.request.headers and \
-            self.request.headers["Content-Type"].startswith("application/json"):
+           self.request.headers["Content-Type"].startswith("application/json"):
             self.set_header('Content-Type', 'application/json')
             output = json.dumps({'error': 'Not found.'})
             self.write(output)
         else:
             self.write('404: Not found.')
+
 
 class JsonHandler(BaseHandler):
     """Request handler where requests and responses speak JSON."""
@@ -114,7 +128,7 @@ class JsonHandler(BaseHandler):
             except Exception as e:
                 self.logger.exception(e.message)
                 message = 'Unable to parse JSON.'
-                self.send_error(400, error = message)
+                self.send_error(400, error=message)
 
         # Set up response dictionary.
         self.response = dict()
@@ -137,8 +151,13 @@ class JsonHandler(BaseHandler):
         if not isinstance(async_result, JSONAsyncResult):
             self.finish()
             return
-        if hasattr(async_result, 'secure_cookie') and async_result.secure_cookie != None and 'name' in async_result.secure_cookie and 'content' in async_result.secure_cookie:
-            self.set_secure_cookie(async_result.secure_cookie['name'], async_result.secure_cookie['content'], expires_days=0.5)
+        if hasattr(async_result, 'secure_cookie') and \
+           async_result.secure_cookie is not None and \
+           'name' in async_result.secure_cookie and \
+           'content' in async_result.secure_cookie:
+            self.set_secure_cookie(async_result.secure_cookie['name'],
+                                   async_result.secure_cookie['content'],
+                                   expires_days=0.5)
         if async_result.http_code == 200:
             self.write(json.dumps(async_result.data))
         else:
@@ -146,6 +165,7 @@ class JsonHandler(BaseHandler):
             self.set_header("Content-Type", "application/json")
             self.write(json.dumps({'error': async_result.data['error']}))
         self.finish()
+
 
 class CsvHandler(BaseHandler):
     def async_callback(self, async_result):

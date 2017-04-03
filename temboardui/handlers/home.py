@@ -1,7 +1,10 @@
 import tornado.web
 
 from temboardui.handlers.base import BaseHandler
-from temboardui.async import *
+from temboardui.async import (
+    HTMLAsyncResult,
+    run_background,
+)
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instances_by_role_name
 
@@ -20,14 +23,15 @@ class HomeHandler(BaseHandler):
             role = self.current_user
             if not role:
                 raise TemboardUIError(302, 'Current role unknown.')
-            instance_list = get_instances_by_role_name(self.db_session, role.role_name)
+            instance_list = get_instances_by_role_name(self.db_session,
+                                                       role.role_name)
             self.db_session.expunge_all()
             self.db_session.commit()
             self.db_session.close()
             self.logger.info("Done.")
             return HTMLAsyncResult(
-                    http_code = 200,
-                    template_file = 'home.html',
+                    http_code=200,
+                    template_file='home.html',
                     data={
                         'nav': True,
                         'role': role,
@@ -50,9 +54,9 @@ class HomeHandler(BaseHandler):
                             401,
                             None,
                             {'nav': False},
-                            template_file = 'unauthorized.html')
+                            template_file='unauthorized.html')
             return HTMLAsyncResult(
                         500,
                         None,
                         {'nav': False, 'error': e.message},
-                        template_file = 'error.html')
+                        template_file='error.html')
