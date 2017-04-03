@@ -17,6 +17,15 @@ Goto https://0.0.0.0:8888/ to add your agent with hostname ``agent`` and port
 That's it !
 
 
+======================================
+ Reporting Issue & Submitting a Patch
+======================================
+
+We use `dalibo/temboard-agent <https://github.com/dalibo/temboard-agent>`_ as
+BTS and patch reviewing system. Fork the main repository and open a PR against
+master as usual.
+
+
 ===========
  Releasing
 ===========
