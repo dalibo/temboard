@@ -11,6 +11,29 @@ REST API to implement various management tasks on PostgreSQL instance. See
 http://temboard.io/ for the big picture.
 
 
+==========
+ Features
+==========
+
+- Non intrusive daemon dedicated to one PostgreSQL cluster.
+- No extra dependencies other than ``setuptools``.
+- Written python2.7, supported by stable distribution releases.
+- Secured REST API with SSL and credentials.
+- Extensible with plugins.
+
+
+==============
+ Installation
+==============
+
+.. code-block::
+
+   pip install temboard-agent
+
+
+See `temBoard full documentation <http://temboard.io/>`_ for details on configuration.
+
+
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard-agent.svg?style=shield
    :target: https://circleci.com/gh/dalibo/temboard-agent
    :alt: CircleCI
