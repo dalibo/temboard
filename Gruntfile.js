@@ -23,6 +23,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    postcss: {
+      options: {
+        map: true,
+        processors: require('autoprefixer')({browsers: 'last 2 versions'})
+      },
+      dist: {
+        src: 'temboardui/static/css/temboard.css'
+      }
+    },
     copy: {
       bootstrapjs: {
         expand: true,
@@ -40,11 +49,13 @@ module.exports = function(grunt) {
     }
   });
   grunt.loadNpmTasks('grunt-sass');
+  grunt.loadNpmTasks('grunt-postcss');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
   grunt.registerTask('bootstrap', [
     'copy:bootstrapjs',
-    'sass:dist'
+    'sass:dist',
+    'postcss:dist'
   ]);
 };
