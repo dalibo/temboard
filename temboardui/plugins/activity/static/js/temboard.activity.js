@@ -117,7 +117,7 @@ function update_activity(data)
     }
     var activity_html = '';
     activity_html += '<tr class="'+class_duration+'">';
-    activity_html += '  <td><input type="checkbox" class="input-xs" data-pid="'+data[i].pid+'" readonly disabled /></td>';
+    activity_html += '  <td><input type="checkbox" class="hide input-xs" data-pid="'+data[i].pid+'"/></td>';
     activity_html += '  <td>'+data[i].pid+'</td>';
     activity_html += '  <td class="text-center">'+data[i].database+'</td>';
     activity_html += '  <td class="text-center">'+data[i].user+'</td>';
@@ -178,7 +178,7 @@ function update_activity_w_b(data)
     }
     var activity_html = '';
     activity_html += '<tr class="'+class_duration+'">';
-    activity_html += '  <td><input type="checkbox" class="input-xs" data-pid="'+data[i].pid+'" readonly disabled /></td>';
+    activity_html += '  <td><input type="checkbox" class="hide input-xs" data-pid="'+data[i].pid+'"/></td>';
     activity_html += '  <td>'+data[i].pid+'</td>';
     activity_html += '  <td class="text-center">'+data[i].database+'</td>';
     activity_html += '  <td class="text-center">'+data[i].user+'</td>';
@@ -204,8 +204,7 @@ function pause_activity()
   $('#pauseButton').addClass('hide');
   $('#resumeButton').removeClass('hide');
   $('input[type=checkbox]').each(function () {
-    $(this).attr('readonly', false);
-    $(this).attr('disabled', false);
+    $(this).removeClass('hide');
   });
 }
 
@@ -218,8 +217,7 @@ function resume_activity()
     $(this).attr('checked', false);
   });
   $('input[type=checkbox]').each(function () {
-    $(this).attr('readonly', true);
-    $(this).attr('disabled', true);
+    $(this).addClass('hide');
   });
   $('#killButton').addClass('hide');
 }
