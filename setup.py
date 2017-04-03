@@ -4,10 +4,14 @@ import subprocess
 
 try:
     # Release mode
-    VERSION = (
-        subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"])
-        .strip().decode()
-    )
+    # git describe returns version[-count-gsha1].
+    version, count, sha = (
+        subprocess.check_output(["git", "describe", "--tags"])
+        .strip().decode() + '--'
+    ).split('-', 3)[:3]
+    VERSION = version
+    if count:
+        VERSION += '.dev%s' % (count,)
 except subprocess.CalledProcessError:
     # pip install mode
     with open('PKG-INFO') as fo:
