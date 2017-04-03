@@ -22,10 +22,12 @@
 </div>
 {% include menu.html %}
 <div class="row">
-  <div class="col-md-12 text-center">
+  <div class="col-md-4">
+    <button type="button" class="btn btn-danger btn-sm hide" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
+  </div>
+  <div class="col-md-4 text-center">
     <button type="button" class="btn btn-default btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
-    <button type="button" class="btn btn-default btn-sm glow hide" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
-    <button type="button" class="btn btn-danger btn-sm" id="killButton"><i class="fa fa-stop"></i> Terminate backend</button>
+    <button type="button" class="btn btn-default btn-sm hide glow" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
   </div>
 </div>
 <div class="row" id="configuration-row">

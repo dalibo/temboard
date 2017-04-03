@@ -221,8 +221,13 @@ function resume_activity()
     $(this).attr('readonly', true);
     $(this).attr('disabled', true);
   });
+  $('#killButton').addClass('hide');
 }
 
+// show the kill button only when backends have been selected
+$(document.body).on('click', 'input[type=checkbox]', function() {
+  $('#killButton').toggleClass('hide', $('input:checked').length == 0);
+});
 function show_modal_kill(agent_address, agent_port, xsession)
 {
   var pids = [];
