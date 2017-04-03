@@ -1,7 +1,7 @@
 try:
     import configparser
 except ImportError:
-     import ConfigParser as configparser
+    import ConfigParser as configparser
 
 from logging import _checkLevel as check_log_level
 from logging.handlers import SysLogHandler
@@ -56,10 +56,10 @@ class Configuration(configparser.ConfigParser):
         try:
             with open(self.configfile) as fd:
                 self.readfp(fd)
-        except IOError as e:
+        except IOError:
             raise ConfigurationError("Configuration file %s can't be opened."
-                    % (self.configfile))
-        except configparser.MissingSectionHeaderError as e:
+                                     % (self.configfile))
+        except configparser.MissingSectionHeaderError:
             raise ConfigurationError(
                     "Configuration file does not contain section headers.")
 
@@ -71,63 +71,71 @@ class Configuration(configparser.ConfigParser):
                     and self.getint('temboard', 'port') <= 65535):
                 raise ValueError()
             self.temboard['port'] = self.getint('temboard', 'port')
-        except ValueError as e:
-            raise ConfigurationError("'port' option must be an integer [0-65535] in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "'port' option must be an integer [0-65535] in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
         try:
-            if not re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$', \
+            if not re.match(
+                r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$',  # noqa
                 self.get('temboard', 'address')):
                 raise ValueError()
             self.temboard['address'] = self.get('temboard', 'address')
-        except ValueError as e:
-            raise ConfigurationError("'address' option must be a valid IPv4 in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "'address' option must be a valid IPv4 in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
 
         try:
             with open(self.get('temboard', 'ssl_cert_file')) as fd:
-                _ = fd.read()
-                self.temboard['ssl_cert_file'] = self.get('temboard', 'ssl_cert_file')
-        except Exception as e:
+                fd.read()
+                self.temboard['ssl_cert_file'] = self.get('temboard',
+                                                          'ssl_cert_file')
+        except Exception:
             raise ConfigurationError("SSL certificate file %s can't be opened."
-                    % (self.get('temboard', 'ssl_cert_file')))
-        except configparser.NoOptionError as e:
-           pass
+                                     % (self.get('temboard', 'ssl_cert_file')))
+        except configparser.NoOptionError:
+            pass
 
         try:
             with open(self.get('temboard', 'ssl_key_file')) as fd:
-                _ = fd.read()
-                self.temboard['ssl_key_file'] = self.get('temboard', 'ssl_key_file')
-        except Exception as e:
+                fd.read()
+                self.temboard['ssl_key_file'] = self.get('temboard',
+                                                         'ssl_key_file')
+        except Exception:
             raise ConfigurationError("SSL private key file %s can't be opened."
-                    % (self.get('temboard', 'ssl_key_file')))
-        except configparser.NoOptionError as e:
-           pass
+                                     % (self.get('temboard', 'ssl_key_file')))
+        except configparser.NoOptionError:
+            pass
 
         try:
             with open(self.get('temboard', 'ssl_ca_cert_file')) as fd:
-                _ = fd.read()
-                self.temboard['ssl_ca_cert_file'] = self.get('temboard', 'ssl_ca_cert_file')
-        except Exception as e:
-            raise ConfigurationError("SSL CA cert file %s can't be opened."
-                    % (self.get('temboard', 'ssl_ca_cert_file')))
-        except configparser.NoOptionError as e:
-           pass
+                fd.read()
+                self.temboard['ssl_ca_cert_file'] = self.get(
+                    'temboard', 'ssl_ca_cert_file')
+        except Exception:
+            raise ConfigurationError(
+                "SSL CA cert file %s can't be opened."
+                % (self.get('temboard', 'ssl_ca_cert_file')))
+        except configparser.NoOptionError:
+            pass
 
         try:
-            if not re.match(r'.{10,128}$', \
-                self.get('temboard', 'cookie_secret')):
+            if not re.match(r'.{10,128}$',
+               self.get('temboard', 'cookie_secret')):
                 raise ValueError()
             val = self.get('temboard', 'cookie_secret').lstrip('"').rstrip('"')
             self.temboard['cookie_secret'] = val
-        except ValueError as e:
-            raise ConfigurationError("'cookie_secret' parameter must be a valid string (.{10,128}) in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "'cookie_secret' parameter must be a valid string (.{10,128}) "
+                "in %s." % (self.configfile))
+        except configparser.NoOptionError:
+            pass
 
         try:
             plugins = json.loads(self.get('temboard', 'plugins'))
@@ -137,12 +145,12 @@ class Configuration(configparser.ConfigParser):
                 if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
                     raise ValueError
             self.temboard['plugins'] = plugins
-        except configparser.NoOptionError as e:
-           pass
-        except ValueError as e:
-            raise ConfigurationError("'plugins' option must be a list of string"
-                    " (alphanum only) in %s"
-                    % (self.configfile))
+        except configparser.NoOptionError:
+            pass
+        except ValueError:
+            raise ConfigurationError(
+                "'plugins' option must be a list of string (alphanum only) in "
+                "%s" % (self.configfile))
 
         try:
             plugins = json.loads(self.get('temboard', 'plugins_orm_engine'))
@@ -152,24 +160,25 @@ class Configuration(configparser.ConfigParser):
                 if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
                     raise ValueError
             self.temboard['plugins_orm_engine'] = plugins
-        except configparser.NoOptionError as e:
-           pass
-        except ValueError as e:
-            raise ConfigurationError("'plugins_orm_engine' option must be a list of string"
-                    " (alphanum only) in %s"
-                    % (self.configfile))
+        except configparser.NoOptionError:
+            pass
+        except ValueError:
+            raise ConfigurationError(
+                "'plugins_orm_engine' option must be a list of string"
+                " (alphanum only) in %s"
+                % (self.configfile))
 
         try:
             home = self.get('temboard', 'home')
             if not os.access(home, os.W_OK):
                 raise Exception()
             self.temboard['home'] = self.get('temboard', 'home')
-        except Exception as e:
-            raise ConfigurationError("Home directory %s not writable."
-                    % (self.get('temboard', 'home')))
-        except configparser.NoOptionError as e:
-           pass
-
+        except Exception:
+            raise ConfigurationError(
+                "Home directory %s not writable."
+                % (self.get('temboard', 'home')))
+        except configparser.NoOptionError:
+            pass
 
         # Test if 'logging' section exists.
         self.check_section('logging')
@@ -178,67 +187,71 @@ class Configuration(configparser.ConfigParser):
             if method not in LOG_METHODS:
                 raise ValueError()
             self.logging['method'] = method
-        except ValueError as e:
-            raise ConfigurationError("Invalid 'method' option in 'logging' section in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "Invalid 'method' option in 'logging' section in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
         try:
             facility = self.get('logging', 'facility')
             if facility not in SysLogHandler.facility_names:
                 raise ValueError()
             self.logging['facility'] = facility
-        except ValueError as e:
-            raise ConfigurationError("Invalid 'facility' option in 'logging' section in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "Invalid 'facility' option in 'logging' section in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
         try:
             self.logging['destination'] = self.get('logging', 'destination')
-        except configparser.NoOptionError as e:
-           pass
+        except configparser.NoOptionError:
+            pass
         try:
             level = self.get('logging', 'level')
             self.logging['level'] = check_log_level(level)
-        except ValueError as e:
-            raise ConfigurationError("Invalid 'level' option in 'logging' section in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "Invalid 'level' option in 'logging' section in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
 
         # Test if 'repository' section exists.
         self.check_section('repository')
         try:
             self.repository['host'] = self.get('repository', 'host')
-        except configparser.NoOptionError as e:
-           pass
+        except configparser.NoOptionError:
+            pass
 
         try:
             self.repository['user'] = self.get('repository', 'user')
-        except configparser.NoOptionError as e:
-           pass
+        except configparser.NoOptionError:
+            pass
 
         try:
             if not (self.getint('repository', 'port') >= 0
                     and self.getint('repository', 'port') <= 65535):
                 raise ValueError()
             self.repository['port'] = self.getint('repository', 'port')
-        except ValueError as e:
-            raise ConfigurationError("'port' option must be an integer "
-                    "[0-65535] in 'repository' section in %s."
-                    % (self.configfile))
-        except configparser.NoOptionError as e:
-           pass
+        except ValueError:
+            raise ConfigurationError(
+                "'port' option must be an integer "
+                "[0-65535] in 'repository' section in %s."
+                % (self.configfile))
+        except configparser.NoOptionError:
+            pass
 
         try:
             self.repository['password'] = self.get('repository', 'password')
-        except configparser.NoOptionError as e:
-           pass
+        except configparser.NoOptionError:
+            pass
 
         try:
             self.repository['dbname'] = self.get('repository', 'dbname')
-        except configparser.NoOptionError as e:
-           pass
+        except configparser.NoOptionError:
+            pass
 
     def check_section(self, section):
         if not self.has_section(section):
