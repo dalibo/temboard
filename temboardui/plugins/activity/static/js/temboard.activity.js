@@ -201,7 +201,8 @@ function update_activity_w_b(data)
 function pause_activity()
 {
   poll_activity = false;
-  $("#pauseButton").removeClass('btn-success').addClass('btn-warning');
+  $('#pauseButton').addClass('hide');
+  $('#resumeButton').removeClass('hide');
   $('input[type=checkbox]').each(function () {
     $(this).attr('readonly', false);
     $(this).attr('disabled', false);
@@ -211,7 +212,8 @@ function pause_activity()
 function resume_activity()
 {
   poll_activity = true;
-  $("#pauseButton").removeClass('btn-warning').addClass('btn-success');
+  $('#pauseButton').removeClass('hide');
+  $('#resumeButton').addClass('hide');
   $('input:checked').each(function () {
     $(this).attr('checked', false);
   });
