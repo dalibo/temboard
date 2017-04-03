@@ -348,3 +348,9 @@ $glow-color-end: lighten($brand-primary, 30%);
 .glow {
   animation: glowing 1500ms infinite;
 }
+
+.btn-danger {
+  color: darken($brand-danger, 5%);
+  background-color: white;
+  border-color: $btn-default-border;
+}
