@@ -117,7 +117,7 @@ function update_activity(data)
     }
     var activity_html = '';
     activity_html += '<tr class="'+class_duration+'">';
-    activity_html += '  <td><input type="checkbox" class="input-xs" data-pid="'+data[i].pid+'" readonly disabled /></td>';
+    activity_html += '  <td><input type="checkbox" class="hide input-xs" data-pid="'+data[i].pid+'"/></td>';
     activity_html += '  <td>'+data[i].pid+'</td>';
     activity_html += '  <td class="text-center">'+data[i].database+'</td>';
     activity_html += '  <td class="text-center">'+data[i].user+'</td>';
@@ -178,7 +178,7 @@ function update_activity_w_b(data)
     }
     var activity_html = '';
     activity_html += '<tr class="'+class_duration+'">';
-    activity_html += '  <td><input type="checkbox" class="input-xs" data-pid="'+data[i].pid+'" readonly disabled /></td>';
+    activity_html += '  <td><input type="checkbox" class="hide input-xs" data-pid="'+data[i].pid+'"/></td>';
     activity_html += '  <td>'+data[i].pid+'</td>';
     activity_html += '  <td class="text-center">'+data[i].database+'</td>';
     activity_html += '  <td class="text-center">'+data[i].user+'</td>';
@@ -201,26 +201,31 @@ function update_activity_w_b(data)
 function pause_activity()
 {
   poll_activity = false;
-  $("#pauseButton").removeClass('btn-success').addClass('btn-warning');
+  $('#pauseButton').addClass('hide');
+  $('#resumeButton').removeClass('hide');
   $('input[type=checkbox]').each(function () {
-    $(this).attr('readonly', false);
-    $(this).attr('disabled', false);
+    $(this).removeClass('hide');
   });
 }
 
 function resume_activity()
 {
   poll_activity = true;
-  $("#pauseButton").removeClass('btn-warning').addClass('btn-success');
+  $('#pauseButton').removeClass('hide');
+  $('#resumeButton').addClass('hide');
   $('input:checked').each(function () {
     $(this).attr('checked', false);
   });
   $('input[type=checkbox]').each(function () {
-    $(this).attr('readonly', true);
-    $(this).attr('disabled', true);
+    $(this).addClass('hide');
   });
+  $('#killButton').addClass('hide');
 }
 
+// show the kill button only when backends have been selected
+$(document.body).on('click', 'input[type=checkbox]', function() {
+  $('#killButton').toggleClass('hide', $('input:checked').length == 0);
+});
 function show_modal_kill(agent_address, agent_port, xsession)
 {
   var pids = [];

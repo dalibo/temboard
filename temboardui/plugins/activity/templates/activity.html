@@ -23,10 +23,12 @@
 </div>
 {% include menu.html %}
 <div class="row">
-  <div class="col-md-12 text-center">
-    <button type="button" class="btn btn-success btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
-    <button type="button" class="btn btn-success btn-sm" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
-    <button type="button" class="btn btn-danger btn-sm" id="killButton"><i class="fa fa-stop"></i> Terminate backend</button>
+  <div class="col-md-4">
+    <button type="button" class="btn btn-danger btn-sm hide" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
+  </div>
+  <div class="col-md-4 text-center">
+    <button type="button" class="btn btn-default btn-sm" id="pauseButton"><i class="fa fa-pause"></i> Pause</button>
+    <button type="button" class="btn btn-default btn-sm hide glow" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
   </div>
 </div>
 <div class="row" id="configuration-row">
@@ -53,7 +55,7 @@
         </tr>
         {% for row in activities['rows'] %}
         <tr class="{%if float(row['duration'])>5%}danger{%else%}{%if float(row['duration'])>1%}warning{%else%}none{%end%}{%end%}">
-          <td><input type="checkbox" class="input-xs" data-pid="{{row['pid']}}" readonly disabled/></td>
+          <td><input type="checkbox" class="hide input-xs" data-pid="{{row['pid']}}"/></td>
           <td>{{row['pid']}}</td>
           <td class="text-center">{{row['database']}}</td>
           <td class="text-center">{{row['user']}}</td>
