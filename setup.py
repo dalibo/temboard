@@ -14,12 +14,15 @@ try:
         VERSION += '.dev%s' % (count,)
 except subprocess.CalledProcessError:
     # pip install mode
-    with open('PKG-INFO') as fo:
-        for line in fo:
-            if not line.startswith('Version: '):
-                continue
-            VERSION = line.replace('Version: ', '').strip()
-            break
+    try:
+        with open('PKG-INFO') as fo:
+            for line in fo:
+                if not line.startswith('Version: '):
+                    continue
+                VERSION = line.replace('Version: ', '').strip()
+                break
+    except IOError:
+        VERSION = '0'
 
 setup(
     name='temboard-agent',
