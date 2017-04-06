@@ -21,7 +21,7 @@ except subprocess.CalledProcessError:
                     continue
                 VERSION = line.replace('Version: ', '').strip()
                 break
-    except IOError:
+    except Exception:
         VERSION = '0'
 
 setup(
