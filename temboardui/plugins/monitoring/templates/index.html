@@ -25,14 +25,14 @@
     <div class="form-date-picker pull-right">
       <div class="form-inline">
         <div class='input-group date' id='DTP_start'>
-          <input type='text' class="form-control input-sm" id="inputDTP_start" value="{{escape(start_date)}}"/>
+          <input type='text' class="form-control input-sm" id="inputDTP_start"/>
           <span class="input-group-addon">
             <span class="fa fa-calendar"></span>
           </span>
         </div>
         <i class="fa fa-arrow-right"></i>
         <div class='input-group date' id='DTP_end'>
-          <input type='text' class="form-control input-sm" id="inputDTP_end" value="{{escape(end_date)}}"/>
+          <input type='text' class="form-control input-sm" id="inputDTP_end"/>
           <span class="input-group-addon">
             <span class="fa fa-calendar"></span>
           </span>
@@ -84,10 +84,12 @@ $(document).ready(function() {
 
   $(function () {
     $('#DTP_start').datetimepicker({
-      format: "YYYY-MM-DDTHH:mm:ss"
+      defaultDate: start_date,
+      format: "YYYY-MM-DD HH:mm:ss"
     });
     $('#DTP_end').datetimepicker({
-      format: "YYYY-MM-DDTHH:mm:ss",
+      defaultDate: end_date,
+      format: "YYYY-MM-DD HH:mm:ss",
       useCurrent: false
     });
     $("#DTP_start").on("dp.change", function (e) {
@@ -99,7 +101,9 @@ $(document).ready(function() {
   });
 
   $('#buttonChangeInterval').click(function() {
-    window.location.replace(interval_api_url+"?start="+$("#inputDTP_start").val()+"&end="+$("#inputDTP_end").val());
+    var start = new Date($('#inputDTP_start').val()).toISOString();
+    var end = new Date($('#inputDTP_end').val()).toISOString();
+    window.location.replace(interval_api_url+"?start="+start+"&end="+end);
   });
 
   var graphs = [
@@ -125,7 +129,6 @@ $(document).ready(function() {
     {id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
     {id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
     {id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
-
   ];
 
   for (var i in graphs)
