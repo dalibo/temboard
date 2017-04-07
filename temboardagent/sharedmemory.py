@@ -167,10 +167,10 @@ class Commands(object):
         """
         for i in range(0, self.size):
             if len(self.commands[i].commandid) == T_COMMANDID_SIZE and \
-                    self.commands[i].worker == worker and \
-                    self.commands[i].parameters == parameters and \
-                    self.commands[i].state != COMMAND_DONE and \
-                    self.commands[i].state != COMMAND_ERROR:
+               self.commands[i].worker == worker and \
+               self.commands[i].parameters == parameters and \
+               self.commands[i].state != COMMAND_DONE and \
+               self.commands[i].state != COMMAND_ERROR:
                 raise SharedItem_exists()
 
 
@@ -257,7 +257,7 @@ class Sessions(object):
         """
         for i in range(0, self.size):
             if len(self.sessions[i].sessionid) == T_SESSIONID_SIZE and \
-                    (self.sessions[i].time + ttl) < time.time():
+               (self.sessions[i].time + ttl) < time.time():
                 logger.info("Session with sessionid=%s expired." %
                             (self.sessions[i].sessionid))
                 try:
