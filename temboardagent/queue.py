@@ -65,7 +65,7 @@ class Queue(object):
 
     def get_last_n_messages(self, n):
         """
-        Generator intended to return thes last n messages from the queue.
+        Generator intended to return the last n messages from the queue.
         As far as the last records are located at the end of the file, we read
         the file backwards until the number of desired lines is reached or the
         whole file has been read. -1 means no limit.
