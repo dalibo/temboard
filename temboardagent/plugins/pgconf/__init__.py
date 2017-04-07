@@ -10,7 +10,6 @@ from pgconf.types import (
 
 
 @add_route('GET', '/pgconf/configuration')
-@add_route('GET', '/settings/configuration')
 def get_pg_configuration(http_context, queue_in=None, config=None,
                          sessions=None, commands=None):
     """
@@ -104,7 +103,6 @@ def get_pg_configuration(http_context, queue_in=None, config=None,
 
 
 @add_route('GET', '/pgconf/configuration/categories')
-@add_route('GET', '/settings/configuration/categories')
 def get_pg_configuration_categories(http_context, queue_in=None, config=None,
                                     sessions=None, commands=None):
     """
@@ -163,7 +161,6 @@ def get_pg_configuration_categories(http_context, queue_in=None, config=None,
 
 
 @add_route('POST', '/pgconf/configuration')
-@add_route('POST', '/settings/configuration')
 def post_pg_configuration(http_context, queue_in=None, config=None,
                           sessions=None, commands=None):
     """
@@ -247,7 +244,6 @@ def post_pg_configuration(http_context, queue_in=None, config=None,
 
 
 @add_route('GET', '/pgconf/configuration/category/'+T_PGSETTINGS_CATEGORY)
-@add_route('GET', '/settings/configuration/category/'+T_PGSETTINGS_CATEGORY)
 def get_pg_configuration_category(http_context, queue_in=None, config=None,
                                   sessions=None, commands=None):
     """
@@ -344,7 +340,6 @@ def get_pg_configuration_category(http_context, queue_in=None, config=None,
 
 
 @add_route('GET', '/pgconf/configuration/status')
-@add_route('GET', '/settings/configuration/status')
 def get_pg_configuration_status(http_context, queue_in=None, config=None,
                                 sessions=None, commands=None):
     """
@@ -461,7 +456,6 @@ def get_pg_configuration_status(http_context, queue_in=None, config=None,
 
 
 @add_route('GET', '/pgconf/hba')
-@add_route('GET', '/settings/hba')
 def get_pg_hba(http_context, queue_in=None, config=None, sessions=None,
                commands=None):
     """
@@ -549,7 +543,6 @@ def get_pg_hba(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('GET', '/pgconf/hba/raw')
-@add_route('GET', '/settings/hba/raw')
 def get_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
                    commands=None):
     """
@@ -620,7 +613,6 @@ def get_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('POST', '/pgconf/hba')
-@add_route('POST', '/settings/hba')
 def post_pg_hba(http_context, queue_in=None, config=None, sessions=None,
                 commands=None):
     """
@@ -689,7 +681,6 @@ def post_pg_hba(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('POST', '/pgconf/hba/raw')
-@add_route('POST', '/settings/hba/raw')
 def post_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
                     commands=None):
     """
@@ -752,7 +743,6 @@ def post_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('DELETE', '/pgconf/hba')
-@add_route('DELETE', '/settings/hba')
 def delete_pg_hba(http_context, queue_in=None, config=None, sessions=None,
                   commands=None):
     """
@@ -820,7 +810,6 @@ def delete_pg_hba(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('GET', '/pgconf/hba/versions')
-@add_route('GET', '/settings/hba/versions')
 def get_pg_hba_versions(http_context, queue_in=None, config=None,
                         sessions=None, commands=None):
     """
@@ -882,7 +871,6 @@ def get_pg_hba_versions(http_context, queue_in=None, config=None,
 
 
 @add_route('GET', '/pgconf/pg_ident')
-@add_route('GET', '/settings/pg_ident')
 def get_pg_ident(http_context, queue_in=None, config=None, sessions=None,
                  commands=None):
     """
@@ -939,7 +927,6 @@ def get_pg_ident(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('POST', '/pgconf/pg_ident')
-@add_route('POST', '/settings/pg_ident')
 def post_pg_ident(http_context, queue_in=None, config=None, sessions=None,
                   commands=None):
     """
@@ -997,7 +984,6 @@ def post_pg_ident(http_context, queue_in=None, config=None, sessions=None,
 
 
 @add_route('GET', '/pgconf/hba/options')
-@add_route('GET', '/settings/hba/options')
 def get_hba_options(http_context, queue_in=None, config=None, sessions=None,
                     commands=None):
     """
