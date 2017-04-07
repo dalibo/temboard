@@ -1,6 +1,8 @@
 import time
 import signal
 import json
+import sys
+
 from os import getpid
 try:
     from configparser import NoOptionError
