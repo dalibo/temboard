@@ -214,7 +214,7 @@ def httpd_run(commands, queue_in, config, sessions):
                                    certfile=config.temboard['ssl_cert_file'],
                                    server_side=True)
     # We need a timeout here because the code after httpd.handle_request() call
-    # is written to handle configuration re-loading and needs to be ran
+    # is written to handle configuration re-loading and needs to be run
     # periodicaly.
     httpd.timeout = 1
     set_logger_name("httpd")
