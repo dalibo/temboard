@@ -3,25 +3,27 @@ import subprocess
 
 
 try:
-    # Release mode
-    # git describe returns version[-count-gsha1].
-    version, count, sha = (
-        subprocess.check_output(["git", "describe", "--tags"])
-        .strip().decode() + '--'
-    ).split('-', 3)[:3]
-    VERSION = version
-    if count:
-        VERSION += '.dev%s' % (count,)
-except subprocess.CalledProcessError:
     # pip install mode
-        with open('PKG-INFO') as fo:
-            for line in fo:
-                if not line.startswith('Version: '):
-                    continue
-                VERSION = line.replace('Version: ', '').strip()
-                break
-except Exception:
-    VERSION = '0'
+    with open('PKG-INFO') as fo:
+        for line in fo:
+            if not line.startswith('Version: '):
+                continue
+            VERSION = line.replace('Version: ', '').strip()
+            break
+except IOError:
+    try:
+        # Release mode
+        # git describe returns version[-count-gsha1].
+        version, count, sha = (
+            subprocess.check_output(["git", "describe", "--tags"])
+            .strip().decode() + '--'
+        ).split('-', 3)[:3]
+    except Exception:
+        VERSION = '0'
+    else:
+        VERSION = version
+        if count:
+            VERSION += '.dev%s' % (count,)
 
 setup(
     name='temboard-agent',
