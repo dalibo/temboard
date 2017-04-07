@@ -8,10 +8,9 @@ import ssl
 import hashlib
 import struct
 import re
-import os
-import errno
 from io import BytesIO
 import datetime
+
 
 class perror(Exception):
     """
@@ -20,6 +19,7 @@ class perror(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
         self.message = message
+
 
 class error(Exception):
     """
@@ -31,7 +31,8 @@ class error(Exception):
         self.typ = typ
         self.message = message
 
-def get_pgpass(pgpass = None):
+
+def get_pgpass(pgpass=None):
     """
     Get postgres' password using pgpass file.
 
@@ -53,12 +54,14 @@ def get_pgpass(pgpass = None):
         return ret
     raise Exception("pgpass file not found")
 
-def pg_escape(in_string, escapee_char = r"'"):
+
+def pg_escape(in_string, escapee_char=r"'"):
     out_string = ''
     out_string += escapee_char
     out_string += re.sub(escapee_char, escapee_char * 2, in_string)
     out_string += escapee_char
     return out_string
+
 
 class protocol3(object):
     """
@@ -84,9 +87,9 @@ class protocol3(object):
             b'N': 'parse_notice',
             b'W': 'parse_copy_both_response',
             # Not implemented
-            b'A': 'ignore', # Notification
-            b'n': 'ignore', # No Data
-            b'I': 'ignore', # Empty query
+            b'A': 'ignore',  # Notification
+            b'n': 'ignore',  # No Data
+            b'I': 'ignore',  # Empty query
         }
 
     def ssl_request(self,):
@@ -100,7 +103,8 @@ class protocol3(object):
         Startup packet.
         """
         data = struct.pack('!L', self._version) + b'user' + b'\x00' \
-                + user.encode() + b'\x00' + b'database' + b'\x00' + database.encode()
+            + user.encode() + b'\x00' + b'database' + b'\x00' \
+            + database.encode()
         if replication:
             data += b'\x00replication\x001'
         data += b'\x00\x00'
@@ -256,7 +260,7 @@ class protocol3(object):
                 eop = ndata.index(b'\x00')
                 name = ndata[0:eop].decode()
                 ndata = ndata[eop+1:]
-                (table_oid, col_oid, type_oid, type_size, typmod, format_code) \
+                (table_oid, col_oid, type_oid, type_size, typmod, format_code)\
                     = struct.unpack('!LhLhlh', ndata[0:18])
                 ndata = ndata[18:]
                 ret.append({
@@ -324,7 +328,6 @@ class protocol3(object):
         """
         length = struct.unpack('!L', data[1:5])[0]
         self._check_message_length(data, length)
-        copy_format = struct.unpack('!B', data[5:6])[0]
         n_col = struct.unpack('!H', data[6:8])[0]
         ret = []
         pos = 0
@@ -348,7 +351,7 @@ class protocol3(object):
         return (data[0:1], None)
 
     def parse_copy_both_response(self, data):
-        return self.parse_copy_out_response(data);
+        return self.parse_copy_out_response(data)
 
     def is_error(self, typ):
         """
@@ -378,10 +381,10 @@ class protocol3(object):
         """
         Is the authentication method implemented ?
         """
-        return message[0][0:1] == b'R' and ( \
-            message[1]['code'] == 3 or \
-            message[1]['code'] == 5 or \
-            message[1]['code'] == 0)
+        return message[0][0:1] == b'R' and (
+                message[1]['code'] == 3 or
+                message[1]['code'] == 5 or
+                message[1]['code'] == 0)
 
     def is_parameter_status(self, typ):
         """
@@ -456,6 +459,7 @@ class protocol3(object):
         Error, NoData, ReadyForQuery, AuthResponse, EmptyQueryResponse
         """
         return [b'n', b'I', b'E', b'Z', b'R']
+
 
 class message_buffer(object):
     """
@@ -565,6 +569,7 @@ class message_buffer(object):
                 return True
         return False
 
+
 class connector(object):
     """
     PostgreSQL connector class.
@@ -616,7 +621,7 @@ class connector(object):
         # Number of rows affected by the query.
         self._nb_rows = None
         # Socket default timeout.
-        self._default_timeout = 60 # Seconds
+        self._default_timeout = 60  # Seconds
         # PostgreSQL version
         self._pg_version = 0
         # replication
@@ -627,12 +632,13 @@ class connector(object):
         Convert the given hostname into a more convenient form.
         """
         # ip4
-        if re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$', \
-            self._host):
+        if re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
+                    '(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$',
+                    self._host):
             self._host_ip4 = self._host
         # ip6
-        elif re.match(r'^[0-9a-fA-F]+:([0-9a-fA-F]*:*){0,6}:[0-9a-fA-F]+$', \
-            self._host):
+        elif re.match(r'^[0-9a-fA-F]+:([0-9a-fA-F]*:*){0,6}:[0-9a-fA-F]+$',
+                      self._host):
             self._host_ip6 = self._host
         # unix socket
         elif re.match(r'^\/.*', self._host):
@@ -640,29 +646,31 @@ class connector(object):
         # hostname
         else:
             try:
-                for addr in socket.getaddrinfo(self._host, self._port, \
-                                socket.AF_UNSPEC, socket.SOCK_STREAM):
+                for addr in socket.getaddrinfo(self._host,
+                                               self._port,
+                                               socket.AF_UNSPEC,
+                                               socket.SOCK_STREAM):
                     if addr[0] == socket.AF_INET:
                         self._host_ip4 = addr[4][0]
                     if addr[0] == socket.AF_INET6:
                         self._host_ip6 = addr[4][0]
             except socket.gaierror:
-                raise error('PGC404', 'FATAL', "Unknown name or service \
-                        '{host}'".format(host = self._host,))
+                raise error('PGC404', 'FATAL', "Unknown name or service"
+                            " '{host}'".format(host=self._host))
 
     def _socket_read(self,):
         """
         Read (from the socket), write (into the buffer)
         """
         self._message_buffer.truncate()
-        ret = []
         while not self._message_buffer.is_eop(self._protocol.get_eop_tags()):
             try:
                 raw_data = self._socket.recv(self._socket_read_length)
             except socket.timeout as err:
                 raise error('PGC105', 'FATAL', "Timeout")
             except socket.error as err:
-                raise error('PGC106', 'FATAL', "Socket error: {msg}".format(msg = err))
+                raise error('PGC106', 'FATAL', "Socket error: {msg}".format(
+                                                                    msg=err))
             self._message_buffer.write(raw_data)
 
     def _get_messages(self, method):
@@ -673,8 +681,8 @@ class connector(object):
             try:
                 yield self._protocol.parse_message(raw)
             except perror as err:
-                raise error('PGC107', 'FATAL', "Protocol violation: {msg}" \
-                        .format(msg = err.message))
+                raise error('PGC107', 'FATAL', "Protocol violation: "
+                                               "{msg}".format(msg=err.message))
 
     def _check_message_error(self, message):
         """
@@ -701,20 +709,22 @@ class connector(object):
         # Convert "host" parameter to a valid socket address
         self._set_ip_type()
         if self._host_unix is None \
-            and self._host_ip4 is None \
-            and self._host_ip6 is None:
-            raise error('PGC101', 'FATAL', "Could not connect to {host}" \
-                    .format(host = self._host))
+                and self._host_ip4 is None \
+                and self._host_ip6 is None:
+            raise error('PGC101', 'FATAL', "Could not connect to "
+                                           "{host}".format(host=self._host))
 
         # Try with Unix socket
         if self._host_unix is not None:
             try:
                 tmp_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                tmp_socket.connect(self._host_unix+'/.s.PGSQL.'+str(self._port))
+                tmp_socket.connect(self._host_unix + '/.s.PGSQL.'
+                                   + str(self._port))
                 return tmp_socket
             except socket.error:
-                raise error('PGC101', 'FATAL', "Could not connect to {host}" \
-                        .format(host = self._host_unix))
+                raise error('PGC101', 'FATAL', "Could not connect to "
+                                               "{host}".format(
+                                                   host=self._host_unix))
         # Try with IPV4
         if self._host_ip4 is not None:
             try:
@@ -723,8 +733,9 @@ class connector(object):
                 return tmp_socket
             except socket.error:
                 if self._host_ip6 is None:
-                    raise error('PGC101', 'FATAL', "Could not connect to {host}"\
-                            .format(host = self._host_ip4))
+                    raise error('PGC101', 'FATAL', "Could not connect to "
+                                                   "{host}".format(
+                                                        host=self._host_ip4))
 
         # Try with IPV6
         if self._host_ip6 is not None:
@@ -733,8 +744,9 @@ class connector(object):
                 tmp_socket.connect((self._host_ip6, self._port))
                 return tmp_socket
             except socket.error:
-                raise error('PGC101', 'FATAL', "Could not connect to {host}" \
-                        .format(host = self._host_ip6))
+                raise error('PGC101', 'FATAL', "Could not connect to "
+                                               "{host}".format(
+                                                   host=self._host_ip6))
 
     def _socket_send(self, data):
         """
@@ -792,7 +804,9 @@ class connector(object):
         # Set socket timeout
         self.set_timeout(self._default_timeout)
         # Startup
-        data = self._protocol.startup(self._user, self._database, self._replication)
+        data = self._protocol.startup(self._user,
+                                      self._database,
+                                      self._replication)
         self._socket_send(data)
         # Get messages from socket output
         self._socket_read()
@@ -801,26 +815,30 @@ class connector(object):
         self._check_message_error(messages[0])
         # If auth. method not implemented, raise an error
         if not self._protocol.is_auth_supported(messages[0]):
-            raise error('PGC102', 'FATAL', \
-                    "Authentication method not supported")
+            raise error('PGC102', 'FATAL',
+                        "Authentication method not supported")
 
         if self._protocol.is_auth_md5(messages[0]):
             # MD5
-            password = "md5" + hashlib.md5( \
-                                hashlib.md5( \
-                                    self._password.encode() + self._user.encode()).hexdigest().encode() \
-                                + self._protocol.get_salt(messages[0]) \
-                                ).hexdigest()
+            password = "md5" + hashlib.md5(
+                                hashlib.md5(
+                                    self._password.encode()
+                                    + self._user.encode()
+                                ).hexdigest().encode()
+                                + self._protocol.get_salt(messages[0])
+                            ).hexdigest()
             data = self._protocol.password_message(password)
             self._socket_send(data)
             self._socket_read()
-            messages = list(self._get_messages(self._message_buffer.get_messages))
+            messages = list(self._get_messages(
+                self._message_buffer.get_messages))
         elif self._protocol.is_auth_cleartext(messages[0]):
             # Cleartext
             data = self._protocol.password_message(self._password)
             self._socket_send(data)
             self._socket_read()
-            messages = list(self._get_messages(self._message_buffer.get_messages))
+            messages = list(self._get_messages(
+                self._message_buffer.get_messages))
 
         for message in messages:
             # Treat all messages.
@@ -849,7 +867,7 @@ class connector(object):
         self._socket_send(data)
         self._socket.close()
 
-    def execute(self, query, parameters = None):
+    def execute(self, query, parameters=None):
         """
         Execute a query and fetch the results.
         """
@@ -873,7 +891,7 @@ class connector(object):
         pp = list()
         for p in parameters:
             if type(p) is str:
-                p = "'%s'" % (re.sub(r"('|\\)",r"\\\1", p))
+                p = "'%s'" % (re.sub(r"('|\\)", r"\\\1", p))
             elif type(p) in (datetime.date, datetime.datetime):
                 p = "'%s'" % (p)
             elif type(p) in (int, float):
@@ -918,13 +936,14 @@ class connector(object):
                             # Convert PG int2, int4 and int8 to python int()
                             try:
                                 row[row_desc[i]['name']] = int(value)
-                            except Exception as e:
+                            except Exception:
                                 row[row_desc[i]['name']] = None
                         elif row_desc[i]['type_oid'] in [700, 701, 1700]:
-                            # Convert PG float4, float8 and numeric to python float()
+                            # Convert PG float4, float8 and numeric to python
+                            # float()
                             try:
                                 row[row_desc[i]['name']] = float(value)
-                            except Exception as e:
+                            except Exception:
                                 row[row_desc[i]['name']] = None
                         elif row_desc[i]['type_oid'] == 16:
                             # Convert PG boolean to python's

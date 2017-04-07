@@ -1,27 +1,38 @@
 import time
-import pickle
-import base64
 
 from temboardagent.routing import add_route
-from temboardagent.errors import (HTTPError, SharedItem_exists,
-                            SharedItem_no_free_slot_left, SharedItem_not_found,
-                            NotificationError)
-from temboardagent.sharedmemory import Session, Command
-from temboardagent.types import *
-from temboardagent.tools import validate_parameters, hash_id
+from temboardagent.errors import (
+    HTTPError,
+    NotificationError,
+    SharedItem_exists,
+    SharedItem_no_free_slot_left,
+    SharedItem_not_found,
+)
+from temboardagent.sharedmemory import Session
+from temboardagent.types import (
+    T_COMMANDID,
+    T_PASSWORD,
+    T_SESSIONID,
+    T_USERNAME,
+)
+from temboardagent.tools import validate_parameters
 from temboardagent.usermgmt import auth_user, gen_sessionid
 from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.spc import connector, error
-from temboardagent.command import exec_command
-from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
+from temboardagent.workers import COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
-from temboardagent.inventory import *
+from temboardagent.inventory import SysInfo, PgInfo
+
 
 def check_sessionid(http_header, sessions):
+    """
+    Check X-Session is valid and the session exists.
+    """
     validate_parameters(http_header,
-        [('X-Session', T_SESSIONID, False)])
+                        [('X-Session', T_SESSIONID, False)])
     try:
-        session = sessions.get_by_sessionid(http_header['X-Session'].encode('utf-8'))
+        session = sessions.get_by_sessionid(
+                    http_header['X-Session'].encode('utf-8'))
         session.time = time.time()
         username = session.username
         sessions.update(session)
@@ -29,13 +40,10 @@ def check_sessionid(http_header, sessions):
     except SharedItem_not_found:
         raise HTTPError(401, "Invalid session.")
 
-"""
-HTTP REST API
-v0.0.1
-"""
 
 @add_route('POST', '/login')
-def login(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def login(http_context, queue_in=None, config=None, sessions=None,
+          commands=None):
     """
     @api {get} /login User login
     @apiVersion 0.0.1
@@ -78,7 +86,7 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
         Content-type: application/json
 
         {"error": "Parameter 'password' is malformed."}
-    """
+    """  # noqa
     post = http_context['post']
     set_logger_name("api")
     logger = get_logger(config)
@@ -88,10 +96,11 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
     logger.info("Authenticating user: %s" % (post['username']))
     try:
         validate_parameters(post,
-            [('username', T_USERNAME, False),
-            ('password', T_PASSWORD, False)])
-        auth_user(config.temboard['users'], post['username'],
-                post['password'])
+                            [('username', T_USERNAME, False),
+                             ('password', T_PASSWORD, False)])
+        auth_user(config.temboard['users'],
+                  post['username'],
+                  post['password'])
     except HTTPError as e:
         logger.traceback(get_tb())
         logger.error(e.message)
@@ -101,7 +110,9 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
         session = sessions.get_by_username(post['username'])
         if not session:
             sessionid = gen_sessionid(post['username'])
-            session = Session(sessionid.encode('utf-8'), time.time(), post['username'].encode('utf-8'))
+            session = Session(sessionid.encode('utf-8'),
+                              time.time(),
+                              post['username'].encode('utf-8'))
             sessions.add(session)
         else:
             sessionid = session.sessionid
@@ -109,8 +120,8 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
             sessions.update(session)
         try:
             NotificationMgmt.push(config, Notification(
-                                        username = post['username'],
-                                        message = "Login"))
+                                        username=post['username'],
+                                        message="Login"))
         except NotificationError as e:
             logger.traceback(get_tb())
             logger.error(e.message)
@@ -121,8 +132,10 @@ def login(http_context, queue_in = None, config = None, sessions = None, command
         raise HTTPError(500, "Internal error.")
     return {'session': sessionid}
 
+
 @add_route('GET', '/logout')
-def logout(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def logout(http_context, queue_in=None, config=None, sessions=None,
+           commands=None):
     """
     @api {get} /logout User logout
     @apiVersion 0.0.1
@@ -163,7 +176,7 @@ def logout(http_context, queue_in = None, config = None, sessions = None, comman
         Content-type: application/json
 
         {"error": "Parameter 'X-Session' is malformed."}
-    """
+    """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
@@ -178,8 +191,8 @@ def logout(http_context, queue_in = None, config = None, sessions = None, comman
 
     try:
         NotificationMgmt.push(config, Notification(
-                                        username = username,
-                                        message = "Logout"))
+                                        username=username,
+                                        message="Logout"))
     except NotificationError as e:
         logger.traceback(get_tb())
         logger.error(e.message)
@@ -194,7 +207,8 @@ def logout(http_context, queue_in = None, config = None, sessions = None, comman
 
 
 @add_route('GET', '/discover')
-def get_discover(http_contexte, queue_in = None, config = None, sessions = None, commands = None):
+def get_discover(http_contexte, queue_in=None, config=None, sessions=None,
+                 commands=None):
     """
     @api {get} /discover Get global informations about the env.
     @apiVersion 0.0.1
@@ -233,11 +247,11 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
     set_logger_name("api")
     logger = get_logger(config)
     conn = connector(
-        host = config.postgresql['host'],
-        port = config.postgresql['port'],
-        user = config.postgresql['user'],
-        password = config.postgresql['password'],
-        database = config.postgresql['dbname']
+        host=config.postgresql['host'],
+        port=config.postgresql['port'],
+        user=config.postgresql['user'],
+        password=config.postgresql['password'],
+        database=config.postgresql['dbname']
     )
     logger.info('Starting discovery.')
     try:
@@ -251,7 +265,8 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
             'pg_port': pginfo.setting('port'),
             'pg_version': pginfo.version()['full'],
             'pg_data': pginfo.setting('data_directory'),
-            'plugins': [plugin_name for plugin_name in config.temboard['plugins']]
+            'plugins': [plugin_name for plugin_name in
+                        config.temboard['plugins']]
         }
         conn.close()
         logger.info('Discovery done.')
@@ -270,8 +285,10 @@ def get_discover(http_contexte, queue_in = None, config = None, sessions = None,
         else:
             raise HTTPError(500, "Internal error.")
 
+
 @add_route('GET', '/profile')
-def profile(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def profile(http_context, queue_in=None, config=None, sessions=None,
+            commands=None):
     """
     @api {get} /profile Get current user name.
     @apiVersion 0.0.1
@@ -313,7 +330,7 @@ def profile(http_context, queue_in = None, config = None, sessions = None, comma
         Content-type: application/json
 
         {"error": "Parameter 'X-Session' is malformed."}
-    """
+    """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
@@ -326,7 +343,8 @@ def profile(http_context, queue_in = None, config = None, sessions = None, comma
         logger.info("Invalid session.")
         raise e
     try:
-        session = sessions.get_by_sessionid(headers['X-Session'].encode('utf-8'))
+        session = sessions.get_by_sessionid(
+                    headers['X-Session'].encode('utf-8'))
         logger.info("Done.")
         return {'username': session.username}
     except SharedItem_not_found as e:
@@ -335,8 +353,10 @@ def profile(http_context, queue_in = None, config = None, sessions = None, comma
         logger.info("Failed.")
         raise HTTPError(401, "Invalid session.")
 
+
 @add_route('GET', '/command/'+T_COMMANDID)
-def get_command(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_command(http_context, queue_in=None, config=None, sessions=None,
+                commands=None):
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
@@ -357,15 +377,20 @@ def get_command(http_context, queue_in = None, config = None, sessions = None, c
         if c_state == COMMAND_DONE or c_state == COMMAND_ERROR:
             commands.delete(cid.encode('utf-8'))
         logger.info("Done.")
-        return {'cid': cid, 'time': c_time, 'state': c_state, 'result': c_result}
+        return {'cid': cid,
+                'time': c_time,
+                'state': c_state,
+                'result': c_result}
     except SharedItem_not_found as e:
         logger.traceback(get_tb())
         logger.error(e.message)
         logger.info("Failed.")
         raise HTTPError(401, "Invalid command.")
 
+
 @add_route('GET', '/notifications')
-def notifications(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def notifications(http_context, queue_in=None, config=None, sessions=None,
+                  commands=None):
     """
     @api {get} /notifications Get all notifications.
     @apiVersion 0.0.1
@@ -418,13 +443,13 @@ def notifications(http_context, queue_in = None, config = None, sessions = None,
         Content-type: application/json
 
         {"error": "Parameter 'X-Session' is malformed."}
-    """
+    """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
     logger = get_logger(config)
     logger.info("Get notifications.")
     try:
-        username = check_sessionid(headers, sessions)
+        check_sessionid(headers, sessions)
     except HTTPError as e:
         logger.traceback(get_tb())
         logger.error(e.message)

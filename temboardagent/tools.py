@@ -6,6 +6,7 @@ import errno
 from time import strftime, gmtime
 from temboardagent.errors import HTTPError
 
+
 def hash_id(id):
     """
     Hash (MD5) and returns a string built from the given id aimed to be used as
@@ -15,6 +16,7 @@ def hash_id(id):
     m = hashlib.md5()
     m.update(strid.encode('utf-8'))
     return m.hexdigest()
+
 
 def validate_parameters(values, types):
     """
@@ -28,25 +30,31 @@ def validate_parameters(values, types):
     for (key, typ, is_list) in types:
         try:
             if not is_list:
-                # If 'typ' is a string, it must be considered as a regexp pattern.
-                if type(typ) == str  and re.match(typ, str(values[key])) is None:
-                    raise HTTPError(406, "Parameter '%s' is malformed." % (key,))
-                if type(typ) != str and typ != type(values[key]):
-                    raise HTTPError(406, "Parameter '%s' is malformed." % (key,))
+                # If 'typ' is a string, it must be considered as a regexp
+                # pattern.
+                if type(typ) == str and \
+                        re.match(typ, str(values[key])) is None:
+                    raise HTTPError(406, "Parameter '%s' is malformed."
+                                         % (key))
+                if type(typ) != str and isinstance(values[key], type(typ)):
+                    raise HTTPError(406, "Parameter '%s' is malformed."
+                                         % (key))
             if is_list:
                 for value in values[key]:
                     if type(typ) == str and re.match(typ, str(value)) is None:
                         raise HTTPError(406, "Parameter '%s' is malformed."
-                                                % (key,))
+                                             % (key))
                     if type(typ) != str and typ != type(value):
                         raise HTTPError(406, "Parameter '%s' is malformed."
-                                                % (key,))
-        except KeyError as e:
-            raise HTTPError(406, "Parameter '%s' not sent." % (key,))
-        except Exception as e:
-            raise HTTPError(406, "Parameter '%s' is malformed." % (key,))
+                                             % (key))
+        except KeyError:
+            raise HTTPError(406, "Parameter '%s' not sent." % (key))
+        except Exception:
+            raise HTTPError(406, "Parameter '%s' is malformed." % (key))
+
 
 MULTIPLIERS = ['', 'k', 'M', 'G', 'T', 'P']
+
 
 def to_bytes(size, unit):
     """
@@ -71,6 +79,7 @@ def to_bytes(size, unit):
     if unit not in MULTIPLIERS:
         raise KeyError("Invalid unit: %s" % unit)
     return size * 1024 ** MULTIPLIERS.index(unit)
+
 
 def which(prog, search_path=None):
     """
@@ -107,16 +116,19 @@ def which(prog, search_path=None):
 
     raise OSError(os.strerror(errno.ENOENT))
 
+
 def check_fqdn(name):
     """
     Check if a hostname is fully qualified, it must only contain
     letters, - and have dots.
     """
     # StackOverflow #11809631
-    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\.?$)', name):
+    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]'
+                '{2,63}\.?$)', name):
         return True
     else:
         return False
+
 
 def now():
     """Give the current date and time at GMT, suitable for PostgreSQL."""

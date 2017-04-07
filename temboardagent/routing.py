@@ -4,6 +4,7 @@ import sys
 ROUTES = []
 WORKERS = []
 
+
 def add_route(method, path):
     """
     Function decorator for HTTP method/path -> API function mapping.
@@ -41,11 +42,13 @@ def add_route(method, path):
         return function
     return func_wrapper
 
+
 def get_routes():
     """
     Returns the routes.
     """
     return ROUTES
+
 
 def add_worker(name):
     """
@@ -59,6 +62,7 @@ def add_worker(name):
             'function': function.__name__})
         return function
     return func_wrapper
+
 
 def get_worker(name):
     """

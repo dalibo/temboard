@@ -7,21 +7,21 @@ except ImportError:
     from SocketServer import ThreadingMixIn
     from urlparse import urlparse, parse_qs
 import json
-import time
 import sys
 from urllib import unquote_plus
 import ssl
 
 from temboardagent.routing import get_routes
-import temboardagent.api
 from temboardagent.errors import HTTPError, ConfigurationError
 from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.daemon import set_global_reload, reload_true
 from temboardagent.pluginsmgmt import load_plugins_configurations
 from temboardagent.configuration import Configuration
 
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Handle requests in a separate thread. """
+
 
 class RequestHandler(BaseHTTPRequestHandler):
     """
@@ -85,8 +85,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self,):
         self.send_response(200, "OK")
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, GET, DELETE, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', "X-Requested-With, X-Session, Content-Type")
+        self.send_header('Access-Control-Allow-Methods',
+                         'POST, GET, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers',
+                         "X-Requested-With, X-Session, Content-Type")
         self.send_header('Access-Control-Max-Age', '1728000')
         self.end_headers()
         self.logger.info(self.headers.dict['origin'])
@@ -95,7 +97,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         Overrides log_message() for HTTP requests logging with our own logger.
         """
-        self.logger.info("client: %s request: %s" % (self.address_string(),format%args))
+        self.logger.info("client: %s request: %s" % (
+                         self.address_string(),
+                         format % args))
 
     def response(self):
         """
@@ -137,7 +141,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             is_that_route = True
             # Check that HTTP method and url root are matching.
             if route['http_method'] == self.http_method and \
-                route['root'] == root:
+               route['root'] == root:
                 pos = 0
                 # Check each element in the path.
                 for elt in splitpath[1:]:
@@ -146,8 +150,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                             # Then this is a regular expression.
                             res = route['splitpath'][pos].match(elt)
                             if res is not None:
-                                # If the regexp matches, we want to get the value
-                                # and append it in urlvars.
+                                # If the regexp matches, we want to get the
+                                #  value and append it in urlvars.
                                 urlvars.append(unquote_plus(res.group(1)))
                             else:
                                 is_that_route = False
@@ -162,14 +166,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                     pos += 1
                 if is_that_route:
                     if self.http_method == 'POST':
-                        # TODO: raise an HTTP error if the content-length is too large.
+                        # TODO: raise an HTTP error if the content-length is
+                        # too large.
                         try:
                             # Load POST content expecting it is in JSON format.
+                            post_raw = self.rfile.read(
+                                        int(self.headers['Content-Length']))
                             self.post_json = json.loads(
-                                                self.rfile.read(
-                                                    int(self.headers['Content-Length'])).decode('utf-8'))
+                                                post_raw.decode('utf-8'))
                         except Exception as e:
-                            raise HTTPError(400, 'Invalid json format: %s.' %(str(e)))
+                            raise HTTPError(400, 'Invalid json format: %s.'
+                                                 % (str(e)))
                     http_context = {
                         'headers': self.headers,
                         'query': self.query,
@@ -177,7 +184,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                         'urlvars': urlvars
                     }
                     # Call the right API function.
-                    response = getattr(sys.modules[route['module']], route['function'])(
+                    response = getattr(sys.modules[route['module']],
+                                       route['function'])(
                                 http_context,
                                 self.cmd_queue,
                                 self.config,
@@ -187,9 +195,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         raise HTTPError(404, 'URL not found.')
 
+
 def handleRequestsUsing(commands, queue_cmd, config, sessions):
     return lambda *args: RequestHandler(queue_cmd, commands, config,
-                            sessions, *args)
+                                        sessions, *args)
+
 
 def httpd_run(commands, queue_in, config, sessions):
     """
@@ -200,11 +210,12 @@ def httpd_run(commands, queue_in, config, sessions):
     handler_class = handleRequestsUsing(commands, queue_in, config, sessions)
     httpd = ThreadedHTTPServer(server_address, handler_class)
     httpd.socket = ssl.wrap_socket(httpd.socket,
-                                    keyfile = config.temboard['ssl_key_file'],
-                                    certfile = config.temboard['ssl_cert_file'],
-                                    server_side = True)
+                                   keyfile=config.temboard['ssl_key_file'],
+                                   certfile=config.temboard['ssl_cert_file'],
+                                   server_side=True)
     # We need a timeout here because the code after httpd.handle_request() call
-    # is written to handle configuration re-loading and needs to be ran periodicaly.
+    # is written to handle configuration re-loading and needs to be run
+    # periodicaly.
     httpd.timeout = 1
     set_logger_name("httpd")
     logger = get_logger(config)
@@ -237,4 +248,4 @@ def httpd_run(commands, queue_in, config, sessions):
                 logger.error(str(e))
                 logger.info("Keeping previous configuration.")
             # Reset the global var indicating a SIGHUP signal.
-            set_global_reload(False);
+            set_global_reload(False)

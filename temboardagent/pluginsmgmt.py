@@ -3,8 +3,8 @@ import sys
 import imp
 import time
 from temboardagent.logger import get_logger, get_tb
-from temboardagent.spc import connector, error
-from temboardagent.errors import HTTPError
+from temboardagent.spc import connector
+
 
 def load_plugins_configurations(config):
     """
@@ -26,11 +26,11 @@ def load_plugins_configurations(config):
     while pg_version == 0:
         try:
             conn = connector(
-                host = config.postgresql['host'],
-                port = config.postgresql['port'],
-                user = config.postgresql['user'],
-                password = config.postgresql['password'],
-                database = config.postgresql['dbname']
+                host=config.postgresql['host'],
+                port=config.postgresql['port'],
+                user=config.postgresql['user'],
+                password=config.postgresql['password'],
+                database=config.postgresql['dbname']
             )
             """ Trying to get PostgreSQL version number. """
             conn.connect()
@@ -55,14 +55,20 @@ def load_plugins_configurations(config):
         logger.info("Loading plugin '%s'." % (plugin_name,))
         try:
             # Loading compat.py file
-            fp_s, pathname_s, description_s = imp.find_module('compat', [path + '/plugins/'+plugin_name])
-            module_compat = imp.load_module('compat', fp_s, pathname_s, description_s)
+            fp_s, path_s, desc_s = imp.find_module(
+                                        'compat',
+                                        [path+'/plugins/'+plugin_name])
+            module_compat = imp.load_module('compat',
+                                            fp_s,
+                                            path_s,
+                                            desc_s)
             # Check modules's PG_MIN_VERSION
             try:
                 if (module_compat.PG_MIN_VERSION > pg_version):
                     # Version not supported
-                    logger.error("PostgreSQL version (%s) is not supported (min:%s)."
-                                    % (pg_version, module_compat.PG_MIN_VERSION))
+                    logger.error("PostgreSQL version (%s) is not supported "
+                                 "(min:%s)." % (pg_version,
+                                                module_compat.PG_MIN_VERSION))
                     logger.info("Failed.")
                     continue
             except ValueError as e:
@@ -75,7 +81,8 @@ def load_plugins_configurations(config):
         logger.info("Done.")
         try:
             # Locate and load the module with imp.
-            fp, pathname, description = imp.find_module(plugin_name, [path + '/plugins'])
+            fp, pathname, description = imp.find_module(plugin_name,
+                                                        [path+'/plugins'])
             module = imp.load_module(plugin_name, fp, pathname, description)
             # Try to run module's configuration() function.
             logger.info("Loading plugin '%s' configuration." % (plugin_name))
@@ -93,8 +100,11 @@ def load_plugins_configurations(config):
 
     return ret
 
-# Global var to keep a track of timestamp of the last plugin's scheduler() function call.
+
+# Global var to keep a track of timestamp of the last plugin's scheduler()
+# function call.
 PLUGINS_LAST_SCHEDULE = {}
+
 
 def exec_scheduler(queue_in, config, commands, logger):
     """
@@ -113,13 +123,16 @@ def exec_scheduler(queue_in, config, commands, logger):
             # Check if this is the first shoot.
             PLUGINS_LAST_SCHEDULE[plugin_name] = time.time()
             first_run = True
-        if not first_run  and (time.time() - PLUGINS_LAST_SCHEDULE[plugin_name]) < \
-             config.plugins[plugin_name]['scheduler_interval']:
+        if not first_run and (
+                (time.time() - PLUGINS_LAST_SCHEDULE[plugin_name]) <
+                config.plugins[plugin_name]['scheduler_interval']):
             continue
         try:
             logger.debug("Running %s.scheduler()" % (plugin_name))
             # Call plugin's scheduler() function.
-            getattr(sys.modules[plugin_name], 'scheduler')(queue_in, config, commands)
+            getattr(sys.modules[plugin_name], 'scheduler')(queue_in,
+                                                           config,
+                                                           commands)
             PLUGINS_LAST_SCHEDULE[plugin_name] = time.time()
             logger.debug("Done.")
         except AttributeError as e:

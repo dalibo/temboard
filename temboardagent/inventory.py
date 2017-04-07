@@ -3,13 +3,15 @@ import socket
 import os
 import re
 
-from temboardagent.spc import *
-from temboardagent.tools import *
+from temboardagent.spc import connector
+from temboardagent.tools import check_fqdn, which, to_bytes
 from temboardagent.command import exec_command
+
 
 class Inventory(object):
     def __init__(self):
         pass
+
 
 class SysInfo(Inventory):
     def __init__(self):
@@ -18,7 +20,7 @@ class SysInfo(Inventory):
     def _os_info(self):
         return (platform.system(), platform.release())
 
-    def hostname(self, hostname = None):
+    def hostname(self, hostname=None):
         if not hostname:
             # Find the hostname by ourself.
             if self.os == 'Linux':
@@ -92,12 +94,12 @@ class SysInfo(Inventory):
             (rc, out, err) = exec_command([which('hostname'), '-f'])
             if rc == 0:
                 hostname = out.encode('utf-8').strip()
-        except Exception as e:
+        except Exception:
             try:
                 # Try to get hostname (FQDN) using socket module
                 (hostname, _, _) = socket.gethostbyaddr(socket.gethostname())
                 hostname = hostname.strip()
-            except Exception as e:
+            except Exception:
                 pass
         return hostname
 
@@ -115,7 +117,8 @@ class SysInfo(Inventory):
                 if key == 'processor':
                     current_cpu = {}
                     cpus.append(current_cpu)
-                if key in ['core id', 'cpu MHz', 'model name', 'cache size', 'processor']:
+                if key in ['core id', 'cpu MHz', 'model name',
+                           'cache size', 'processor']:
                     current_cpu[str(re.sub(r' +', '_', key)).lower()] = value
         if cpus:
             return {
@@ -152,7 +155,8 @@ class SysInfo(Inventory):
                     if m:
                         addrs.append(m.group(1))
 
-                    m = re.match(r'^\sinet6 ([\dabcdef\:]+)/\d+ scope global', line)
+                    m = re.match(r'^\sinet6 ([\dabcdef\:]+)/\d+ scope global',
+                                 line)
                     if m:
                         addrs.append(m.group(1))
                 return addrs
@@ -168,7 +172,8 @@ class SysInfo(Inventory):
                     if m:
                         addrs.append(m.group(2))
 
-                    m = re.match(r'^\sinet6 (addr: )?([\dabcdef\:]+)(/\d+)? .+[Gg]lobal$', line)
+                    m = re.match(r'^\sinet6 (addr: )?([\dabcdef\:]+)(/\d+)? '
+                                 '.+[Gg]lobal$', line)
                     if m:
                         addrs.append(m.group(2))
                 return addrs
@@ -181,7 +186,8 @@ class SysInfo(Inventory):
         fs = []
         (rc, out, err) = exec_command([which('df'), '-k'])
         lines = out.splitlines()
-        del lines[0] # Remove header
+        # Remove header
+        del lines[0]
         dev = None
         for line in lines:
             cols = line.split()
@@ -215,7 +221,6 @@ class SysInfo(Inventory):
     def mount_points(self):
         return [fs['mount_point'] for fs in self.file_systems()]
 
-
     def _find_mount_point_linux(self, path, mount_points):
         realpath = os.path.realpath(path)
 
@@ -241,14 +246,14 @@ class SysInfo(Inventory):
                 fd = open("/etc/redhat-release")
                 os_flavor = fd.readline().strip()
                 fd.close()
-            except OSError as e:
+            except OSError:
                 fd.close()
         elif os.path.exists("/etc/debian_version"):
             try:
                 fd = open("/etc/debian_version")
                 os_flavor = "Debian " + fd.readline().strip()
                 fd.close()
-            except OSError as e:
+            except OSError:
                 fd.close()
         return os_flavor
 
@@ -272,7 +277,8 @@ class PgInfo(Inventory):
         """
         Returns a dict with PostgreSQL full & numeric version.
         """
-        q = "SELECT version(), setting AS server FROM pg_settings WHERE name = 'server_version'"
+        q = "SELECT version(), setting AS server FROM pg_settings WHERE " \
+            "name = 'server_version'"
         self.db_conn.execute(q)
         return {
             'full': list(self.db_conn.get_rows())[0]['version'],
@@ -290,11 +296,13 @@ class PgInfo(Inventory):
     def tablespaces(self, data_directory):
         # Grab the list of tablespaces
         if self.db_conn.get_pg_version() < 90200:
-            self.db_conn.execute("SELECT spcname, spclocation, pg_tablespace_size(oid) AS size\
-                             FROM pg_tablespace;")
+            self.db_conn.execute("SELECT spcname, spclocation, "
+                                 "pg_tablespace_size(oid) AS size FROM "
+                                 "pg_tablespace;")
         else:
-            self.db_conn.execute("SELECT spcname, pg_tablespace_location(oid) AS spclocation, \
-                            pg_tablespace_size(oid) AS size FROM pg_tablespace;")
+            self.db_conn.execute("SELECT spcname, pg_tablespace_location(oid) "
+                                 "AS spclocation, pg_tablespace_size(oid) AS "
+                                 "size FROM pg_tablespace;")
 
         tablespaces = []
         sysinfo = SysInfo()
