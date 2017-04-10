@@ -5,36 +5,60 @@ import os
 try:
     from configparser import NoOptionError
 except ImportError:
-    from  ConfigParser import NoOptionError
+    from ConfigParser import NoOptionError
 
 from temboardagent.routing import add_route, add_worker
-from temboardagent.api_wrapper import *
+from temboardagent.api_wrapper import api_function_wrapper_pg
 from temboardagent.logger import set_logger_name, get_logger, get_tb
-from temboardagent.configuration import (PluginConfiguration, ConfigurationError,
-                                    Configuration)
-from temboardagent.tools import validate_parameters
-from temboardagent.types import *
+from temboardagent.configuration import (
+    PluginConfiguration,
+    ConfigurationError,
+)
+from temboardagent.api import check_sessionid
+from temboardagent.tools import validate_parameters, hash_id
+from temboardagent.types import T_OBJECTNAME
 from temboardagent.sharedmemory import Command
-from temboardagent.tools import hash_id
-from temboardagent.errors import (HTTPError, SharedItem_exists,
-                SharedItem_no_free_slot_left, SharedItem_not_found, NotificationError)
+from temboardagent.errors import (
+    HTTPError,
+    SharedItem_exists,
+    SharedItem_no_free_slot_left,
+    SharedItem_not_found,
+    NotificationError,
+)
 from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
 from temboardagent.spc import connector, error
-from temboardagent.command import exec_command, oneline_cmd_to_array, exec_script
+from temboardagent.command import (
+    oneline_cmd_to_array,
+    exec_script,
+)
 from temboardagent.notification import NotificationMgmt, Notification
 
 import administration.functions as admin_functions
-from administration.types import *
+from administration.types import T_CONTROL, T_VACUUMMODE
+
 
 @add_route('GET', '/administration/pg_version')
-def api_pg_version(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def api_pg_version(http_context,
+                   queue_in=None,
+                   config=None,
+                   sessions=None,
+                   commands=None):
     set_logger_name("administration")
-    return api_function_wrapper_pg(config, http_context, sessions, admin_functions, 'pg_version')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   admin_functions,
+                                   'pg_version')
+
 
 @add_route('POST', '/administration/control')
-def post_pg_control(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_pg_control(http_context,
+                    queue_in=None,
+                    config=None,
+                    sessions=None,
+                    commands=None):
     # NOTE: in this case we don't want to use api functions wrapper, it leads
-    # to "Broken pipe" error with debian init.d on start/restart. This is
+    # to "Broken pipe" error with debian init.d scrip on start/restart. This is
     # probably due to getattr() call.
     set_logger_name("administration")
     # Get a new logger.
@@ -47,9 +71,11 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
         validate_parameters(post, [
             ('action', T_CONTROL, False)
         ])
-        session = sessions.get_by_sessionid(http_context['headers']['X-Session'].encode('utf-8'))
+        session = sessions.get_by_sessionid(
+                    http_context['headers']['X-Session'].encode('utf-8')
+                    )
     except (Exception, HTTPError) as e:
-        logger.traceback(get_bt())
+        logger.traceback(get_tb())
         logger.error(str(e))
         logger.debug(http_context)
         if isinstance(e, HTTPError):
@@ -58,32 +84,42 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
             raise HTTPError(500, "Internal error.")
 
     try:
-        NotificationMgmt.push(config, Notification(
-                                        username = session.username,
-                                        message = "PostgreSQL %s" % (post['action'])))
+        NotificationMgmt.push(config,
+                              Notification(
+                                username=session.username,
+                                message="PostgreSQL %s" % post['action']
+                                )
+                              )
     except (NotificationError, Exception) as e:
         logger.traceback(get_tb())
         logger.error(str(e))
 
     try:
         logger.info("PostgreSQL '%s' requested." % (post['action']))
-        cmd_args = oneline_cmd_to_array(config.plugins['administration']['pg_ctl'] % (post['action']))
+        cmd_args = oneline_cmd_to_array(
+                    config.plugins['administration']['pg_ctl'] % (
+                        post['action']
+                        )
+                    )
         (rcode, stdout, stderr) = exec_script(cmd_args)
         if rcode != 0:
             raise Exception(str(stderr))
-        # Let's check if postgresql is up & running on 'start' or 'restart' action.
+        # Let's check if PostgreSQL is up & running after having executed
+        # 'start' or 'restart' action.
         if post['action'] in ['start', 'restart']:
             conn = connector(
-                host = config.postgresql['host'],
-                port = config.postgresql['port'],
-                user = config.postgresql['user'],
-                password = config.postgresql['password'],
-                database = config.postgresql['dbname']
+                host=config.postgresql['host'],
+                port=config.postgresql['port'],
+                user=config.postgresql['user'],
+                password=config.postgresql['password'],
+                database=config.postgresql['dbname']
             )
-            # When a start/restart operation is requested, after the startup/pg_ctl
-            # script is executed we check that postgres is up & running: while the
-            # PG connection is not working, during 10 seconds (max) we'll check
-            # (connect/SELECT 1/disconnect) the connection, every 0.5 second.
+            # When a start/restart operation is requested, after the
+            # startup/pg_ctl script has been executed then we check that
+            # postgres is up & running:
+            # while the PG conn. is not working then, for 10 seconds (max)
+            # we'll check (connect/SELECT 1/disconnect) the connection, every
+            # 0.5 second.
             retry = True
             t_start = time.time()
             while retry:
@@ -93,11 +129,11 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
                     conn.close()
                     logger.info("Done.")
                     return {'action': post['action'], 'state': 'ok'}
-                except error as e:
+                except error:
                     if (time.time() - t_start) > 10:
                         try:
                             conn.close()
-                        except error as e:
+                        except error:
                             pass
                         except Exception:
                             pass
@@ -107,11 +143,11 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
 
         elif post['action'] == 'stop':
             conn = connector(
-                host = config.postgresql['host'],
-                port = config.postgresql['port'],
-                user = config.postgresql['user'],
-                password = config.postgresql['password'],
-                database = config.postgresql['dbname']
+                host=config.postgresql['host'],
+                port=config.postgresql['port'],
+                user=config.postgresql['user'],
+                password=config.postgresql['password'],
+                database=config.postgresql['dbname']
             )
             # Check the PG conn is not working anymore.
             try:
@@ -126,7 +162,7 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
                         retry = False
                 logger.info("Failed.")
                 return {'action': post['action'], 'state': 'ko'}
-            except error as e:
+            except error:
                 logger.info("Done.")
                 return {'action': post['action'], 'state': 'ok'}
         logger.info("Done.")
@@ -140,8 +176,13 @@ def post_pg_control(http_context, queue_in = None, config = None, sessions = Non
         else:
             raise HTTPError(500, "Internal error.")
 
+
 @add_route('POST', '/administration/vacuum')
-def api_vacuum(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def api_vacuum(http_context,
+               queue_in=None,
+               config=None,
+               sessions=None,
+               commands=None):
     set_logger_name("administration")
     worker = b'vacuum'
     # Get a new logger.
@@ -157,11 +198,14 @@ def api_vacuum(http_context, queue_in = None, config = None, sessions = None, co
         ])
         # Serialize parameters.
         parameters = base64.b64encode(
-                        pickle.dumps({
-                            'database': post['database'],
-                            'table': post['table'],
-                            'mode': post['mode']
-        })).decode('utf-8')
+                        pickle.dumps(
+                            {
+                                'database': post['database'],
+                                'table': post['table'],
+                                'mode': post['mode']
+                            }
+                        )
+                    ).decode('utf-8')
     except (Exception, HTTPError) as e:
         logger.traceback(get_tb())
         logger.error(str(e))
@@ -176,9 +220,14 @@ def api_vacuum(http_context, queue_in = None, config = None, sessions = None, co
     except SharedItem_exists as e:
         logger.traceback(get_tb())
         logger.error(str(e))
-        raise HTTPError(402, "Vaccum '%s' already running on table '%s'." % (post['mode'], post['table']))
-    cid =  hash_id(worker + b'-' + parameters.encode('utf-8'))
-    command =  Command(
+        raise HTTPError(402,
+                        "Vaccum '%s' already running on table '%s'." % (
+                            post['mode'],
+                            post['table']
+                            )
+                        )
+    cid = hash_id(worker + b'-' + parameters.encode('utf-8'))
+    command = Command(
             cid.encode('utf-8'),
             time.time(),
             0,
@@ -196,6 +245,7 @@ def api_vacuum(http_context, queue_in = None, config = None, sessions = None, co
         logger.error(str(e))
         raise HTTPError(500, "Internal error.")
 
+
 @add_worker(b'vacuum')
 def worker_vacuum(commands, command, config):
     start_time = time.time() * 1000
@@ -209,15 +259,19 @@ def worker_vacuum(commands, command, config):
         command.time = time.time()
         commands.update(command)
         parameters = pickle.loads(base64.b64decode(command.parameters))
-        logger.debug("table=%s, mode=%s, database=%s"
-                    % (parameters['table'], parameters['mode'], parameters['database'],))
+        logger.debug("table=%s, mode=%s, database=%s" % (
+                        parameters['table'],
+                        parameters['mode'],
+                        parameters['database'],
+                        )
+                     )
 
         conn = connector(
-            host = config.postgresql['host'],
-            port = config.postgresql['port'],
-            user = config.postgresql['user'],
-            password = config.postgresql['password'],
-            database = parameters['database']
+            host=config.postgresql['host'],
+            port=config.postgresql['port'],
+            user=config.postgresql['user'],
+            password=config.postgresql['password'],
+            database=parameters['database']
         )
         conn.connect()
         if parameters['mode'] == 'standard':
@@ -226,7 +280,7 @@ def worker_vacuum(commands, command, config):
             query = "VACUUM %s %s" % (parameters['mode'], parameters['table'],)
         conn.execute(query)
         conn.close()
-    except (error, SharedItem_not_found, Exception)  as e:
+    except (error, SharedItem_not_found, Exception) as e:
         command.state = COMMAND_ERROR
         command.result = str(e)
         command.time = time.time()
@@ -237,7 +291,7 @@ def worker_vacuum(commands, command, config):
         try:
             commands.update(command)
             conn.close()
-        except Exception as e:
+        except Exception:
             pass
         logger.info("Failed.")
         return
@@ -253,24 +307,27 @@ def worker_vacuum(commands, command, config):
     logger.info("Done.")
     logger.debug(" in %s s." % (str((time.time()*1000 - start_time)/1000),))
 
+
 def configuration(config):
     class Configuration(PluginConfiguration):
         def __init__(self, config, *args, **kwargs):
-            PluginConfiguration.__init__(self, config.configfile, *args, **kwargs)
+            PluginConfiguration.__init__(self,
+                                         config.configfile,
+                                         *args,
+                                         **kwargs)
 
             self.plugin_configuration = {
                 'pg_ctl': None,
             }
             set_logger_name("administration")
-            logger = get_logger(config)
 
             try:
                 self.check_section(__name__)
-            except ConfigurationError as e:
+            except ConfigurationError:
                 return
 
             try:
-                val =  self.get(__name__, 'pg_ctl')
+                val = self.get(__name__, 'pg_ctl')
                 for char in ['"', '\'']:
                     if val.startswith(char) and val.endswith(char):
                         val = val[1:-1]
