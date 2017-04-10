@@ -106,6 +106,9 @@ function zoom(is_zoomed, start_date, end_date, g, data, api_url, orig_start_date
   g.updateOptions({
     file: api_url+"/"+data+"?start="+start_date+"&end="+end_date,
   }, false);
+
+  $('#DTP_start').data('DateTimePicker').date(moment(start_date));
+  $('#DTP_end').data('DateTimePicker').date(moment(end_date));
 }
 
 function synchronize_zoom(is_zoomed, start_date, end_date, g, api_url, orig_start_date, orig_end_date)
