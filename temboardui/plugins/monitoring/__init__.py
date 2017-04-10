@@ -1,6 +1,7 @@
 import logging
 import os
 import datetime
+import dateutil
 from datetime import timedelta
 import time
 
@@ -718,14 +719,12 @@ class MonitoringDataProbeHandler(CsvHandler):
             end_time = None
             if start:
                 try:
-                    start_time = datetime.datetime.strptime(
-                        start, '%Y-%m-%dT%H:%M:%S')
+                    start_time = dateutil.parser.parse(start)
                 except ValueError as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
             if end:
                 try:
-                    end_time = datetime.datetime.strptime(
-                        end, '%Y-%m-%dT%H:%M:%S')
+                    end_time = dateutil.parser.parse(end)
                 except ValueError as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
 
@@ -854,18 +853,17 @@ class MonitoringHTMLHandler(BaseHandler):
                 start = self.get_argument('start', default=None)
                 end = self.get_argument('end', default=None)
                 try:
-                    start_date = datetime.datetime.strptime(
-                        start, '%Y-%m-%dT%H:%M:%S')
-                    end_date = datetime.datetime.strptime(
-                        end, '%Y-%m-%dT%H:%M:%S')
+                    dateutil.parser.parse(start)
+                    dateutil.parser.parse(end)
                 except Exception as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
             else:
                 raise TemboardUIError(500, "Unknown period.")
 
             if period != 'interval':
-                start_date = datetime.datetime.now() - delta
-                end_date = datetime.datetime.now()
+                now = datetime.datetime.utcnow()
+                start = (now - delta).isoformat() + 'Z'
+                end = now.isoformat() + 'Z'
             return HTMLAsyncResult(
                     http_code=200,
                     template_path=self.template_path,
@@ -876,8 +874,8 @@ class MonitoringHTMLHandler(BaseHandler):
                         'instance': instance,
                         'plugin': 'monitoring',
                         'period': period,
-                        'start_date': start_date.strftime('%Y-%m-%dT%H:%M:%S'),
-                        'end_date': end_date.strftime('%Y-%m-%dT%H:%M:%S')
+                        'start_date': start,
+                        'end_date': end
                     })
 
         except (TemboardUIError, Exception) as e:

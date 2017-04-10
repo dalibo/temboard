@@ -9,7 +9,7 @@ def zoom_level(start, end):
     if end:
         d = end - start
     else:
-        d = datetime.datetime.now() - start
+        d = datetime.datetime.utcnow() - start
 
     if d.days > 1 and d.days <= 31:
         zoom = 1
@@ -30,14 +30,6 @@ def get_tablename(probename, start, end):
         return
 
 
-def datetime_to_pgtstz(dt):
-    """
-    Convert and return a python datetime to a postgres timestamp with time zone
-    as a string.
-    """
-    return '%s %s' % (dt.strftime('%Y-%m-%d %H:%M:%S'), time.tzname[0])
-
-
 def get_loadaverage(session, host_id, start, end):
     """
     Loadaverage data loader for chart rendering.
@@ -54,7 +46,7 @@ def get_loadaverage(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).load1,
         (record).load5,
         (record).load15
@@ -70,8 +62,8 @@ COPY (
         host_id integer,
         record metric_loadavg_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -86,8 +78,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     # Retreive data using copy_expert()
@@ -106,7 +98,7 @@ def get_cpu(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         round((SUM((record).time_user)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS user,
         round((SUM((record).time_system)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS system,
         round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
@@ -124,8 +116,8 @@ COPY (
         record metric_cpu_record)
     GROUP BY datetime, host_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -141,8 +133,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -160,7 +152,7 @@ def get_tps(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
         round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
     FROM"""  # noqa
@@ -176,8 +168,8 @@ COPY (
         record metric_xacts_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -193,8 +185,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -213,7 +205,7 @@ def get_db_size(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         dbname,
         (record).size
     FROM"""
@@ -228,8 +220,8 @@ COPY (
         dbname text,
         record metric_db_size_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -244,8 +236,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -269,7 +261,7 @@ def get_instance_size(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         SUM((record).size) AS size
     FROM"""
     if zl == 0:
@@ -284,8 +276,8 @@ COPY (
         record metric_db_size_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -301,8 +293,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -319,7 +311,7 @@ def get_memory(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).mem_free AS free,
         (record).mem_cached AS cached,
         (record).mem_buffers AS buffers,
@@ -336,8 +328,8 @@ COPY (
         host_id integer,
         record metric_memory_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -352,8 +344,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -371,7 +363,7 @@ def get_swap(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).swap_used AS used
     FROM"""
 
@@ -385,8 +377,8 @@ COPY (
         host_id integer,
         record metric_memory_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -401,8 +393,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -420,7 +412,7 @@ def get_sessions(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         SUM((record).active) AS active,
         SUM((record).waiting) AS waiting,
         SUM((record).idle) AS idle,
@@ -441,8 +433,8 @@ COPY (
         record metric_sessions_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -458,8 +450,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -476,7 +468,7 @@ def get_blocks(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         ROUND(SUM((record).blks_read)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_read_s,
         ROUND(SUM((record).blks_hit)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_hit_s
     FROM"""  # noqa
@@ -492,8 +484,8 @@ COPY (
         record metric_blocks_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -509,8 +501,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -527,7 +519,7 @@ def get_hitreadratio(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         CASE
             WHEN (SUM((record).blks_hit) + SUM((record).blks_read)) > 0
                 THEN ROUND((SUM((record).blks_hit)::FLOAT/(SUM((record).blks_hit) + SUM((record).blks_read)::FLOAT) * 100)::numeric, 2)
@@ -545,8 +537,8 @@ COPY (
         record metric_blocks_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -562,8 +554,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -580,7 +572,7 @@ def get_checkpoints(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).checkpoints_timed AS timed,
         (record).checkpoints_req AS req,
         ROUND(((record).checkpoint_write_time/1000)::numeric, 1) AS write_time,
@@ -596,8 +588,8 @@ COPY (
         instance_id integer,
         record metric_bgwriter_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -612,8 +604,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -630,7 +622,7 @@ def get_written_buffers(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).buffers_checkpoint AS checkpoint,
         (record).buffers_clean AS clean,
         (record).buffers_backend AS backend
@@ -645,8 +637,8 @@ COPY (
             instance_id integer,
             record metric_bgwriter_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -661,8 +653,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -679,7 +671,7 @@ def get_locks(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         SUM((record).access_share) AS access_share,
         SUM((record).row_share) AS row_share,
         SUM((record).row_exclusive) AS row_exclusive,
@@ -702,8 +694,8 @@ COPY (
             record metric_locks_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -719,8 +711,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -737,7 +729,7 @@ def get_waiting_locks(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         SUM((record).waiting_access_share) AS access_share,
         SUM((record).waiting_row_share) AS row_share,
         SUM((record).waiting_row_exclusive) AS row_exclusive,
@@ -759,8 +751,8 @@ COPY (
         record metric_locks_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -776,8 +768,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -795,7 +787,7 @@ def get_fs_size(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         mount_point,
         (record).used AS size
     FROM
@@ -811,8 +803,8 @@ COPY (
         mount_point text,
         record metric_filesystems_size_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -827,8 +819,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -853,7 +845,7 @@ def get_fs_usage(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         mount_point,
         round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
     FROM"""  # noqa
@@ -869,8 +861,8 @@ COPY (
         mount_point text,
         record metric_filesystems_size_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -885,8 +877,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -910,7 +902,7 @@ def get_ctxforks(session, host_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         round(SUM((record).context_switches)/(extract('epoch' from MIN((record).measure_interval)))) AS context_switches_s,
         round(SUM((record).forks)/(extract('epoch' from MIN((record).measure_interval)))) AS forks_s
     FROM"""  # noqa
@@ -926,8 +918,8 @@ COPY (
         record metric_process_record)
     GROUP BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             host_id
         )
     else:
@@ -943,8 +935,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             host_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -963,7 +955,7 @@ def get_tblspc_size(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         spcname,
         (record).size
     FROM"""
@@ -978,8 +970,8 @@ COPY (
         spcname text,
         record metric_tblspc_size_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -994,8 +986,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
 
     cur.copy_expert(query, data_buffer)
@@ -1019,7 +1011,7 @@ def get_wal_files_size(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).written_size,
         (record).total_size
     FROM"""
@@ -1033,8 +1025,8 @@ COPY (
         instance_id integer,
         record metric_wal_files_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -1049,8 +1041,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -1067,7 +1059,7 @@ def get_wal_files_count(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         (record).archive_ready,
         (record).total
     FROM"""
@@ -1081,8 +1073,8 @@ COPY (
         instance_id integer,
         record metric_wal_files_record))
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -1097,8 +1089,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()
@@ -1115,7 +1107,7 @@ def get_wal_files_rate(session, instance_id, start, end):
     query = """
 COPY (
     SELECT
-        to_char(datetime, 'YYYY/MM/DD HH24:MI:SS') AS date,
+        datetime AS date,
         round(SUM((record).written_size)/(extract('epoch' from MIN((record).measure_interval)))) AS written_size_s
     FROM"""  # noqa
     if zl == 0:
@@ -1129,8 +1121,8 @@ COPY (
         record metric_wal_files_record)
     GROUP BY datetime, instance_id)
 TO STDOUT WITH CSV HEADER""" % (
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end),
+            start,
+            end,
             instance_id
         )
     else:
@@ -1146,8 +1138,8 @@ TO STDOUT WITH CSV HEADER""" % (
 TO STDOUT WITH CSV HEADER""" % (
             tablename,
             instance_id,
-            datetime_to_pgtstz(start),
-            datetime_to_pgtstz(end)
+            start,
+            end
         )
     cur.copy_expert(query, data_buffer)
     cur.close()

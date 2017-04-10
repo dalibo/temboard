@@ -40,12 +40,12 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         add_export_button_callback(id, g, is_initial, title);
       },
       zoomCallback: function(minDate, maxDate, yRanges) {
-        zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, api, api_url, start_date, end_date);
+        zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), this, api, api_url, start_date, end_date);
         if (this.isZoomed())
           sync_dateWindow(this, this.xAxisRange());
         else
           sync_dateWindow(this, orig_xAxisRange);
-        synchronize_zoom(this.isZoomed(), epoch2pgtimestamp(minDate), epoch2pgtimestamp(maxDate), this, api_url, start_date, end_date);
+        synchronize_zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), this, api_url, start_date, end_date);
       }
   }
 
@@ -61,15 +61,11 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
   return g;
 }
 
-function epoch2pgtimestamp(epoch_ms)
+function timestampToIsoDate(epoch_ms)
 {
   var ndate = new Date(epoch_ms);
-  var hh = (h=ndate.getHours())<10?('0'+h):h;
-  var mm = (m=ndate.getMinutes())<10?('0'+m):m;
-  var ss = (s=ndate.getSeconds())<10?('0'+s):s;
-  return ndate.getFullYear()+'-'+(ndate.getMonth()+1)+'-'+ndate.getDate()+'T'+hh+':'+mm+':'+ss;
+  return ndate.toISOString();
 }
-
 
 function add_visibility_cb(chart_id, g, is_initial)
 {
