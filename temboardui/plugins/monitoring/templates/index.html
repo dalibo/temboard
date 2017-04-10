@@ -111,8 +111,7 @@ $(document).ready(function() {
         close: 'fa fa-close'
       },
       defaultDate: end_date,
-      format: "YYYY-MM-DD HH:mm:ss",
-      useCurrent: false
+      format: "YYYY-MM-DD HH:mm:ss"
     });
     $("#DTP_start").on("dp.change", function (e) {
       $('#DTP_end').data("DateTimePicker").minDate(e.date);
