@@ -1,15 +1,13 @@
 import time
 from os import getloadavg
 import re
-import json
 
-from temboardagent.queue import Queue, Message
-from temboardagent.command import exec_command
-from temboardagent.notification import NotificationMgmt, Notification
-from temboardagent.errors import NotificationError
-from temboardagent.inventory import *
+from temboardagent.queue import Queue
+from temboardagent.notification import NotificationMgmt
+from temboardagent.inventory import SysInfo, PgInfo
 
-def get_metrics(conn, config, _ = None):
+
+def get_metrics(conn, config, _=None):
     dm = DashboardMetrics(conn)
     sysinfo = SysInfo()
     pginfo = PgInfo(conn)
@@ -29,16 +27,23 @@ def get_metrics(conn, config, _ = None):
             'pg_port': pginfo.setting('port'),
             'notifications': dm.get_notifications(config)}
 
-def get_metrics_queue(config, _ = None):
-    q = Queue('%s/dashboard.q'% (config.temboard['home']), max_length = (config.plugins['dashboard']['history_length']+1), overflow_mode = 'slide')
+
+def get_metrics_queue(config, _=None):
+    q = Queue('%s/dashboard.q' % (config.temboard['home']),
+              max_length=(config.plugins['dashboard']['history_length']+1),
+              overflow_mode='slide')
     dm = DashboardMetrics()
     msg = q.get_last_message()
     msg['notifications'] = dm.get_notifications(config)
     return msg
 
-def get_history_metrics_queue(config, _ = None):
-    q = Queue('%s/dashboard.q'% (config.temboard['home']), max_length = (config.plugins['dashboard']['history_length']+1), overflow_mode = 'slide')
+
+def get_history_metrics_queue(config, _=None):
+    q = Queue('%s/dashboard.q' % (config.temboard['home']),
+              max_length=(config.plugins['dashboard']['history_length']+1),
+              overflow_mode='slide')
     return q.get_content_all_messages()
+
 
 def get_info(conn, config, _):
     dm = DashboardMetrics(conn)
@@ -58,63 +63,78 @@ def get_buffers(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'buffers': dm.get_buffers()}
 
+
 def get_hitratio(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'hitratio': dm.get_hitratio()}
+
 
 def get_active_backends(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'active_backends': dm.get_active_backends()}
 
+
 def get_cpu_usage(config, _):
     dm = DashboardMetrics()
     return {'cpu': dm.get_cpu_usage()}
+
 
 def get_loadaverage(config, _):
     dm = DashboardMetrics()
     return {'loadaverage': dm.get_load_average()}
 
+
 def get_memory_usage(config, _):
     dm = DashboardMetrics()
     return {'memory': dm.get_memory_usage()}
+
 
 def get_hostname(config, _):
     sysinfo = SysInfo()
     return {'hostname': sysinfo.hostname(config.temboard['hostname'])}
 
+
 def get_os_version(config, _):
     sysinfo = SysInfo()
     return {'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release)}
+
 
 def get_databases(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'databases': dm.get_stat_db()}
 
+
 def get_n_cpu(config, _):
     sysinfo = SysInfo()
     return {'n_cpu': sysinfo.n_cpu()}
+
 
 def get_pg_version(conn, config, _):
     pginfo = PgInfo(conn)
     return {'pg_version': pginfo.version()['full']}
 
+
 def get_pg_uptime(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'pg_uptime': dm.get_pg_uptime()}
+
 
 def get_pg_port(conn, config, _):
     pginfo = PgInfo(conn)
     return {'pg_port': pginfo.setting('port')}
 
+
 def get_pg_data(conn, config, _):
     pginfo = PgInfo(conn)
     return {'pg_data': pginfo.setting('data_directory')}
+
 
 class DashboardMetrics(object):
     conn = None
     config = None
     _instance = None
-    def __init__(self, conn = None):
+
+    def __init__(self, conn=None):
         self.conn = conn
 
     def get_buffers(self,):
@@ -150,11 +170,20 @@ class DashboardMetrics(object):
             return self._get_memory_usage_linux()
 
     def get_stat_db(self,):
-        query = """SELECT count(datid) as databases,
-        pg_size_pretty(sum(pg_database_size(pg_database.datname))::bigint) as total_size,
-        to_char(now(),'HH24:MI') as time, sum(xact_commit)::BIGINT as total_commit,
-        sum(xact_rollback)::BIGINT as total_rollback FROM pg_database JOIN pg_stat_database ON
-        (pg_database.oid = pg_stat_database.datid) WHERE datistemplate = 'f'"""
+        query = """
+SELECT
+  count(datid) as databases,
+  pg_size_pretty(sum(pg_database_size(
+    pg_database.datname))::bigint) as total_size,
+  to_char(now(),'HH24:MI') as time,
+  sum(xact_commit)::BIGINT as total_commit,
+  sum(xact_rollback)::BIGINT as total_rollback
+FROM
+  pg_database
+  JOIN pg_stat_database ON (pg_database.oid = pg_stat_database.datid)
+WHERE
+  datistemplate = 'f'
+        """
         self.conn.execute(query)
         row = list(self.conn.get_rows())[0]
         return {'databases': row['databases'],
@@ -201,14 +230,19 @@ class DashboardMetrics(object):
         cpu_time_snap_1 = self._get_current_cpu_usage_linux()
         delta_time_total = 0
         delta = {}
-        for k in ['time_user', 'time_system', 'time_idle', 'time_iowait', 'time_steal']:
+        for k in ['time_user', 'time_system', 'time_idle', 'time_iowait',
+                  'time_steal']:
             delta_time_total += cpu_time_snap_1[k] - cpu_time_snap_0[k]
             delta[k] = cpu_time_snap_1[k] - cpu_time_snap_0[k]
-        return {'user': round(delta['time_user'] / delta_time_total * 100, 1),
-                'system': round(delta['time_system'] / delta_time_total * 100, 1),
+        return {
+                'user': round(delta['time_user'] / delta_time_total * 100, 1),
+                'system': round(delta['time_system'] /
+                                delta_time_total * 100, 1),
                 'idle': round(delta['time_idle'] / delta_time_total * 100, 1),
-                'iowait': round(delta['time_iowait'] / delta_time_total * 100, 1),
-                'steal': round(delta['time_steal'] / delta_time_total * 100, 1)}
+                'iowait': round(delta['time_iowait'] /
+                                delta_time_total * 100, 1),
+                'steal': round(delta['time_steal'] / delta_time_total * 100, 1)
+                }
 
     def _get_current_cpu_usage_linux(self,):
         ret = {}
@@ -217,7 +251,8 @@ class DashboardMetrics(object):
                 cols = line.split()
                 if len(cols) > 0 and cols[0] == 'cpu':
                     ret['time_user'] = float(cols[1]) + float(cols[2])
-                    ret['time_system'] = float(cols[3]) + float(cols[6]) + float(cols[7])
+                    ret['time_system'] = float(cols[3]) + float(cols[6]) + \
+                        float(cols[7])
                     ret['time_idle'] = float(cols[4])
                     ret['time_iowait'] = float(cols[5])
                     ret['time_steal'] = float(cols[8])
@@ -231,9 +266,13 @@ class DashboardMetrics(object):
 
     def _get_current_active_backends(self,):
         if self.conn.get_pg_version() >= 90200:
-            query = "SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE state != 'idle'"
+            query = """
+SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE state != 'idle'
+            """
         else:
-            query = "SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE current_query != '<IDLE>'"
+            query = """
+SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE current_query != '<IDLE>'
+            """
         self.conn.execute(query)
         return list(self.conn.get_rows())[0]['nb']
 
