@@ -1,8 +1,8 @@
-import os
 import time
 
 # Label returned when the data is not available
 NotAvailableLabel = 'N/A'
+
 
 def bytes2human(num):
     """
@@ -35,13 +35,14 @@ def memory_total_size():
                     if items[0][:-1] == 'MemTotal':
                         mem_total = int(items[1])
                         if items[2] == 'kB':
-                            return mem_total * 1024;
+                            return mem_total * 1024
                         else:
                             return mem_total
             fd.close()
-    except Exception as e:
+    except Exception:
         pass
     return
+
 
 class Process(object):
     """
@@ -86,10 +87,11 @@ class Process(object):
                 # RSS
                 rss = infos[23]
                 # CPU time
-                cpu_time = float(infos[13]) + float(infos[14]) + float(infos[15]) + float(infos[16])
+                cpu_time = (float(infos[13]) + float(infos[14]) +
+                            float(infos[15]) + float(infos[16]))
                 cpu_time_capture = time.time()
             return (iow, rss, cpu_time, cpu_time_capture)
-        except Exception as e:
+        except Exception:
             # Case when /proc/<pid>/stat can be read/parsed
             return (NotAvailableLabel, None, None, None)
 
@@ -110,38 +112,90 @@ class Process(object):
                     if infos[0][:-1] == 'write_bytes':
                         write_bytes = int(infos[1])
             return (read_bytes, write_bytes, io_capture)
-        except Exception as e:
+        except Exception:
             # Case when /proc/<pid>/io can be read/parsed
             return (None, None, None)
 
     def __init_stat(self,):
-        (self.iow, self.rss, self.cpu_time, self.cpu_time_capture) = self.__parse_proc_stat()
-        (self.read_bytes, self.write_bytes, self.io_capture) = self.__parse_proc_io()
+        (self.iow,
+         self.rss,
+         self.cpu_time,
+         self.cpu_time_capture) = self.__parse_proc_stat()
+
+        (self.read_bytes,
+         self.write_bytes,
+         self.io_capture) = self.__parse_proc_io()
 
     def cpu_usage(self,):
+        """
+        Calculates and returns CPU usage based on CPU time
+        """
         (_, _, new_cpu_time, new_cpu_time_capture) = self.__parse_proc_stat()
         if new_cpu_time is not None and new_cpu_time_capture is not None:
-            cpu_usage = float("%.2f" % (round(float(float(new_cpu_time - self.cpu_time) / float(new_cpu_time_capture - self.cpu_time_capture)), 2)))
+            cpu_usage = float("%.2f" % (
+                            round(
+                                float(
+                                    float(new_cpu_time - self.cpu_time) /
+                                    float(new_cpu_time_capture -
+                                          self.cpu_time_capture)
+                                    ),
+                                2
+                                )
+                            )
+                        )
             self.cpu_time = new_cpu_time
             self.cpu_time_capture = new_cpu_time_capture
             return cpu_usage
         else:
             return NotAvailableLabel
 
-    def mem_usage(self, new_capture = False):
+    def mem_usage(self, new_capture=False):
+        """
+        Calculates and returns memory usage.
+        """
         if new_capture is True:
             self.__init_stat()
         if self.rss is not None and self.mem_total is not None:
-            return float("%.2f" % (round(float(float(self.rss) * self.page_size) / float(self.mem_total) * 100, 2)))
+            return float("%.2f" % (
+                    round(
+                        float(float(self.rss) * self.page_size) /
+                        float(self.mem_total) * 100,
+                        2
+                        )
+                    )
+                )
         else:
             return NotAvailableLabel
 
-
     def io_usage(self,):
-        (new_read_bytes, new_write_bytes, new_io_capture) = self.__parse_proc_io()
-        if new_read_bytes is not None and new_write_bytes is not None and new_io_capture is not None:
-            read_rate = float("%.2f" % (round(float(float(new_read_bytes - self.read_bytes) / float(new_io_capture - self.io_capture)), 2)))
-            write_rate = float("%.2f" % (round(float(float(new_write_bytes - self.write_bytes) / float(new_io_capture - self.io_capture)), 2)))
+        """
+        Calculates and returns I/O disk rates.
+        """
+        (new_read_bytes,
+         new_write_bytes,
+         new_io_capture) = self.__parse_proc_io()
+        if new_read_bytes is not None and new_write_bytes is not None \
+           and new_io_capture is not None:
+            read_rate = float("%.2f" % (
+                            round(
+                                float(
+                                    float(new_read_bytes - self.read_bytes) /
+                                    float(new_io_capture - self.io_capture)
+                                    ),
+                                2
+                                )
+                            )
+                        )
+            write_rate = float("%.2f" % (
+                            round(
+                                float(
+                                    float(new_write_bytes - self.write_bytes) /
+                                    float(new_io_capture - self.io_capture)
+                                    ),
+                                2
+                                )
+                            )
+                        )
             self.read_bytes = new_read_bytes
             self.write_bytes = new_write_bytes
             self.io_capture = new_io_capture
