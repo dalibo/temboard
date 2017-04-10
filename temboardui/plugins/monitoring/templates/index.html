@@ -95,7 +95,7 @@ $(document).ready(function() {
         clear: 'fa fa-ban',
         close: 'fa fa-close'
       },
-      defaultDate: start_date,
+      defaultDate: moment(start_date),
       format: "YYYY-MM-DD HH:mm:ss"
     });
     $('#DTP_end').datetimepicker({
@@ -110,7 +110,7 @@ $(document).ready(function() {
         clear: 'fa fa-ban',
         close: 'fa fa-close'
       },
-      defaultDate: end_date,
+      defaultDate: moment(end_date),
       format: "YYYY-MM-DD HH:mm:ss"
     });
     $("#DTP_start").on("dp.change", function (e) {
