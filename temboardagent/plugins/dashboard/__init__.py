@@ -7,27 +7,36 @@ from os import getpid
 try:
     from configparser import NoOptionError
 except ImportError:
-    from  ConfigParser import NoOptionError
+    from ConfigParser import NoOptionError
 
-from temboardagent.routing import add_route
-from temboardagent.api_wrapper import *
-from temboardagent.logger import set_logger_name, get_tb
+from temboardagent.api_wrapper import (
+    api_function_wrapper,
+    api_function_wrapper_pg,
+)
 from temboardagent.spc import connector, error
 from temboardagent.routing import add_route, add_worker
-from temboardagent.configuration import (PluginConfiguration, ConfigurationError,
-                                    Configuration)
+from temboardagent.configuration import (
+    PluginConfiguration,
+    ConfigurationError,
+)
 from temboardagent.logger import get_logger, set_logger_name, get_tb
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
-from temboardagent.errors import (HTTPError, SharedItem_exists,
-                SharedItem_no_free_slot_left, SharedItem_not_found)
-from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
-from temboardagent.pluginsmgmt import load_plugins_configurations
+from temboardagent.errors import (
+    SharedItem_exists,
+    SharedItem_no_free_slot_left,
+)
+from temboardagent.workers import COMMAND_START
 from temboardagent.queue import Queue, Message
-import dashboard.metrics
+import dashboard.metrics as metrics
+
 
 @add_route('GET', '/dashboard')
-def dashboard(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard(http_context,
+              queue_in=None,
+              config=None,
+              sessions=None,
+              commands=None):
     """
     @api {get} /dashboard Fetch all
     @apiVersion 0.0.1
@@ -126,22 +135,49 @@ def dashboard(http_context, queue_in = None, config = None, sessions = None, com
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_metrics_queue')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_metrics_queue')
+
 
 @add_route('GET', '/dashboard/live')
-def dashboard_live(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_live(http_context,
+                   queue_in=None,
+                   config=None,
+                   sessions=None,
+                   commands=None):
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_metrics')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_metrics')
+
 
 @add_route('GET', '/dashboard/history')
-def dashboard_history(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_history(http_context,
+                      queue_in=None,
+                      config=None,
+                      sessions=None,
+                      commands=None):
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_history_metrics_queue')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_history_metrics_queue')
+
 
 @add_route('GET', '/dashboard/buffers')
-def dashboard_buffers(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_buffers(http_context,
+                      queue_in=None,
+                      config=None,
+                      sessions=None,
+                      commands=None):
     """
     @api {get} /dashboard/buffers PostgreSQL bgwriter buffers
     @apiVersion 0.0.1
@@ -175,12 +211,21 @@ def dashboard_buffers(http_context, queue_in = None, config = None, sessions = N
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_buffers')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_buffers')
+
 
 @add_route('GET', '/dashboard/hitratio')
-def dashboard_hitratio(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_hitratio(http_context,
+                       queue_in=None,
+                       config=None,
+                       sessions=None,
+                       commands=None):
     """
     @api {get} /dashboard/hitratio PostgreSQL cache hit ratio
     @apiVersion 0.0.1
@@ -212,12 +257,21 @@ def dashboard_hitratio(http_context, queue_in = None, config = None, sessions = 
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_hitratio')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_hitratio')
+
 
 @add_route('GET', '/dashboard/active_backends')
-def dashboard_active_backends(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_active_backends(http_context,
+                              queue_in=None,
+                              config=None,
+                              sessions=None,
+                              commands=None):
     """
     @api {get} /dashboard/active_backends PostgreSQL active backends
     @apiVersion 0.0.1
@@ -251,12 +305,21 @@ def dashboard_active_backends(http_context, queue_in = None, config = None, sess
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_active_backends')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_active_backends')
+
 
 @add_route('GET', '/dashboard/cpu')
-def dashboard_cpu(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_cpu(http_context,
+                  queue_in=None,
+                  config=None,
+                  sessions=None,
+                  commands=None):
     """
     @api {get} /dashboard/cpu CPU usage
     @apiVersion 0.0.1
@@ -293,12 +356,21 @@ def dashboard_cpu(http_context, queue_in = None, config = None, sessions = None,
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_cpu_usage')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_cpu_usage')
+
 
 @add_route('GET', '/dashboard/loadaverage')
-def dashboard_loadaverage(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_loadaverage(http_context,
+                          queue_in=None,
+                          config=None,
+                          sessions=None,
+                          commands=None):
     """
     @api {get} /dashboard/loadaverage System loadaverage
     @apiVersion 0.0.1
@@ -330,11 +402,20 @@ def dashboard_loadaverage(http_context, queue_in = None, config = None, sessions
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_loadaverage')
+    """  # noqa
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_loadaverage')
+
 
 @add_route('GET', '/dashboard/memory')
-def dashboard_memory(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_memory(http_context,
+                     queue_in=None,
+                     config=None,
+                     sessions=None,
+                     commands=None):
     """
     @api {get} /dashboard/memory Memory usage
     @apiVersion 0.0.1
@@ -370,12 +451,21 @@ def dashboard_memory(http_context, queue_in = None, config = None, sessions = No
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_memory_usage')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_memory_usage')
+
 
 @add_route('GET', '/dashboard/hostname')
-def dashboard_hostname(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_hostname(http_context,
+                       queue_in=None,
+                       config=None,
+                       sessions=None,
+                       commands=None):
     """
     @api {get} /dashboard/hostname Machine hostname
     @apiVersion 0.0.1
@@ -407,12 +497,21 @@ def dashboard_hostname(http_context, queue_in = None, config = None, sessions = 
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_hostname')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_hostname')
+
 
 @add_route('GET', '/dashboard/os_version')
-def dashboard_os_version(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_os_version(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
     """
     @api {get} /dashboard/os_version Operating system version
     @apiVersion 0.0.1
@@ -444,12 +543,21 @@ def dashboard_os_version(http_context, queue_in = None, config = None, sessions 
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_os_version')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_os_version')
+
 
 @add_route('GET', '/dashboard/pg_version')
-def dashboard_pg_version(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_pg_version(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
     """
     @api {get} /dashboard/pg_version PostgreSQL version
     @apiVersion 0.0.1
@@ -481,12 +589,21 @@ def dashboard_pg_version(http_context, queue_in = None, config = None, sessions 
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_pg_version')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_pg_version')
+
 
 @add_route('GET', '/dashboard/n_cpu')
-def dashboard_n_cpu(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_n_cpu(http_context,
+                    queue_in=None,
+                    config=None,
+                    sessions=None,
+                    commands=None):
     """
     @api {get} /dashboard/n_cpu Number of CPU
     @apiVersion 0.0.1
@@ -518,12 +635,21 @@ def dashboard_n_cpu(http_context, queue_in = None, config = None, sessions = Non
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper(config, http_context, sessions, metrics, 'get_n_cpu')
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                metrics,
+                                'get_n_cpu')
+
 
 @add_route('GET', '/dashboard/databases')
-def dashboard_databases(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_databases(http_context,
+                        queue_in=None,
+                        config=None,
+                        sessions=None,
+                        commands=None):
     """
     @api {get} /dashboard/databases PostgreSQL instance size & number of DB
     @apiVersion 0.0.1
@@ -560,18 +686,32 @@ def dashboard_databases(http_context, queue_in = None, config = None, sessions =
         Content-type: application/json
 
         {"error": "Invalid session."}
-    """
+    """  # noqa
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_databases')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_databases')
+
 
 @add_route('GET', '/dashboard/info')
-def dashboard_info(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def dashboard_info(http_context,
+                   queue_in=None,
+                   config=None,
+                   sessions=None,
+                   commands=None):
     set_logger_name("dashboard")
-    return api_function_wrapper_pg(config, http_context, sessions, metrics, 'get_info')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_info')
+
 
 def dashboard_worker_sigterm_handler(signum, frame):
-    logging.info("Dashboard collector worker received SIGTERM")
     sys.exit(1)
+
 
 @add_worker(b'dashboard_collector')
 def dashboard_collector_worker(commands, command, config):
@@ -588,11 +728,11 @@ def dashboard_collector_worker(commands, command, config):
         commands.update(command)
 
         conn = connector(
-            host = config.postgresql['host'],
-            port = config.postgresql['port'],
-            user = config.postgresql['user'],
-            password = config.postgresql['password'],
-            database = config.postgresql['dbname']
+            host=config.postgresql['host'],
+            port=config.postgresql['port'],
+            user=config.postgresql['user'],
+            password=config.postgresql['password'],
+            database=config.postgresql['dbname']
         )
         conn.connect()
         db_metrics = metrics.get_metrics(conn, config)
@@ -600,8 +740,11 @@ def dashboard_collector_worker(commands, command, config):
         db_metrics.pop('notifications', None)
 
         conn.close()
-        q = Queue('%s/dashboard.q'% (config.temboard['home']), max_length = (config.plugins['dashboard']['history_length']+1), overflow_mode = 'slide')
-        q.push(Message(content = json.dumps(db_metrics)))
+        q = Queue('%s/dashboard.q' % (config.temboard['home']),
+                  max_length=(config.plugins['dashboard']['history_length']+1),
+                  overflow_mode='slide'
+                  )
+        q.push(Message(content=json.dumps(db_metrics)))
         logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
         logger.debug("Done.")
     except (error, Exception) as e:
@@ -614,8 +757,8 @@ def dashboard_collector_worker(commands, command, config):
             pass
         sys.exit(1)
 
+
 def scheduler(queue_in, config, commands):
-    logger = get_logger(config)
     worker = b'dashboard_collector'
     parameters = ''
     # Check command uniqueness.
@@ -624,8 +767,15 @@ def scheduler(queue_in, config, commands):
     except SharedItem_exists:
         return
 
-    cid =  hash_id(worker)
-    command = Command(cid.encode('utf-8'), time.time(), 0, worker, parameters, 0, u'')
+    cid = hash_id(worker)
+    command = Command(cid.encode('utf-8'),
+                      time.time(),
+                      0,
+                      worker,
+                      parameters,
+                      0,
+                      u''
+                      )
     try:
         commands.add(command)
         # Put the Command in the command queue
@@ -638,7 +788,10 @@ def scheduler(queue_in, config, commands):
 def configuration(config):
     class Configuration(PluginConfiguration):
         def __init__(self, config, *args, **kwargs):
-            PluginConfiguration.__init__(self, config.configfile, *args, **kwargs)
+            PluginConfiguration.__init__(self,
+                                         config.configfile,
+                                         *args,
+                                         **kwargs)
 
             self.plugin_configuration = {
                 'scheduler_interval': 2,
@@ -649,33 +802,43 @@ def configuration(config):
 
             try:
                 self.check_section(__name__)
-            except ConfigurationError as e:
+            except ConfigurationError:
                 return
 
             try:
-                if not (self.getint(__name__, 'scheduler_interval') > 0 and \
-                    self.getint(__name__, 'scheduler_interval') < 86400):
+                if not (self.getint(__name__, 'scheduler_interval') > 0 and
+                        self.getint(__name__, 'scheduler_interval') < 86400):
                     raise ValueError()
                 self.plugin_configuration['scheduler_interval'] = \
                     self.getint(__name__, 'scheduler_interval')
-            except ValueError as e:
-                logger.error("%s - configuration error: 'scheduler_interval' must be"
-                    "an integer between 0 and 86400 in '%s' section in %s."
-                    % (__name__, self.configfile, __name__))
-            except NoOptionError as e:
+            except ValueError:
+                logger.error("%s - configuration error: 'scheduler_interval' "
+                             "must be an integer between 0 and 86400 in "
+                             "section '%s' in %s." % (
+                                 __name__,
+                                 self.configfile,
+                                 __name__
+                                 )
+                             )
+            except NoOptionError:
                 pass
 
             try:
-                if not (self.getint(__name__, 'history_length') > 0 and \
-                    self.getint(__name__, 'history_length') < 300):
+                if not (self.getint(__name__, 'history_length') > 0 and
+                        self.getint(__name__, 'history_length') < 300):
                     raise ValueError()
                 self.plugin_configuration['history_length'] = \
                     self.getint(__name__, 'history_length')
-            except ValueError as e:
-                logger.error("%s - configuration error: 'histor_length' must be"
-                    "an integer between 0 and 300 in '%s' section in %s."
-                    % (__name__, self.configfile, __name__))
-            except NoOptionError as e:
+            except ValueError:
+                logger.error("%s - configuration error: 'histor_length' must "
+                             "be an integer between 0 and 300 in section '%s'"
+                             " in %s." % (
+                                 __name__,
+                                 self.configfile,
+                                 __name__
+                                 )
+                             )
+            except NoOptionError:
                 pass
 
     c = Configuration(config)
