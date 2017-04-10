@@ -31,6 +31,10 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
       legend: "always",
       labelsDiv: "legend"+id,
       labelsKMB: true,
+      dateWindow: [
+        new Date(start_date).getTime(),
+        new Date(end_date).getTime()
+      ],
       drawCallback: function(g, is_initial) {
         if (is_initial)
         {
