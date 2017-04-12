@@ -84,10 +84,32 @@ $(document).ready(function() {
 
   $(function () {
     $('#DTP_start').datetimepicker({
+      icons: {
+        time: 'fa fa-clock-o',
+        date: 'fa fa-calendar',
+        up: 'fa fa-arrow-up',
+        down: 'fa fa-arrow-down',
+        previous: 'fa fa-arrow-left',
+        next: 'fa fa-arrow-right',
+        today: 'fa fa-calendar-plus-o',
+        clear: 'fa fa-ban',
+        close: 'fa fa-close'
+      },
       defaultDate: start_date,
       format: "YYYY-MM-DD HH:mm:ss"
     });
     $('#DTP_end').datetimepicker({
+      icons: {
+        time: 'fa fa-clock-o',
+        date: 'fa fa-calendar',
+        up: 'fa fa-arrow-up',
+        down: 'fa fa-arrow-down',
+        previous: 'fa fa-arrow-left',
+        next: 'fa fa-arrow-right',
+        today: 'fa fa-calendar-plus-o',
+        clear: 'fa fa-ban',
+        close: 'fa fa-close'
+      },
       defaultDate: end_date,
       format: "YYYY-MM-DD HH:mm:ss",
       useCurrent: false
