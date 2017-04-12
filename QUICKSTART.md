@@ -1,7 +1,7 @@
 ## Quickstart
 
-A `docker-compose.quickstart.yml` file is provided. It's aimed to quickly try temboard with
-a few postgres servers.
+A `docker-compose.yml` file is provided. It's aimed to quickly try temboard with
+a few PostgreSQL servers. Requires docker-compose 1.10+ and docker engine 1.13+.
 
 ``` console
 wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker-compose.yml
