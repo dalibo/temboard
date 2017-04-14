@@ -78,7 +78,7 @@ $(document).ready(function() {
 
   $('[data-action=monitoring]').click(function () {
     $('[data-toggle=popover]').popover('hide');
-    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/monitoring/day');
+    window.location.replace('/server/'+$(this).data('agent_address')+'/'+$(this).data('agent_port')+'/monitoring');
   });
 
   $('[data-action=pgconf]').click(function () {

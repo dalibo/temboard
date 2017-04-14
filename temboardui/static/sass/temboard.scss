@@ -1,4 +1,6 @@
 @import "bootstrap";
+@import "daterangepicker-override";
+@import "daterangepicker";
 
 
 .navbar {
@@ -264,19 +266,16 @@ table tbody tr td span {
   height: 300px;
 }
 
-#contDTP {
-  /*margin-bottom: 5px;*/
-  min-width: 500px;
-}
-
 .legend-chart, .visibility-chart {
   font-size: 12px;
 }
 
-.form-date-picker {
-  min-width: 700px;
-  display: inline;
-  text-align: right;
+#daterange {
+  width: 300px;
+  cursor: pointer;
+  border: 1px solid $input-border;
+  border-radius: $input-border-radius;
+  padding: $padding-small-vertical $padding-small-horizontal;
 }
 
 #HBATable {

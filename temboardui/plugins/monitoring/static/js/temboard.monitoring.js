@@ -37,19 +37,14 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         new Date(end_date).getTime()
       ],
       drawCallback: function(g, is_initial) {
-        if (is_initial)
-        {
-          orig_xAxisRange = g.xAxisRange();
-        }
         add_visibility_cb(id, g, is_initial);
         add_export_button_callback(id, g, is_initial, title);
       },
       zoomCallback: function(minDate, maxDate, yRanges) {
-        if (this.isZoomed())
-          sync_dateWindow(this, this.xAxisRange());
-        else
-          sync_dateWindow(this, orig_xAxisRange);
-        synchronize_zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), api_url, start_date, end_date);
+        var picker = $('#daterange').data('daterangepicker');
+        picker.setStartDate(moment(minDate));
+        picker.setEndDate(moment(maxDate));
+        synchronize_zoom(picker.startDate, picker.endDate, api_url);
       }
   }
 
@@ -59,7 +54,7 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
   }
   var g = new Dygraph(
     document.getElementById("chart"+id),
-    api_url+"/"+api+"?start="+start_date+"&end="+end_date,
+    api_url+"/"+api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date),
     default_options
   );
   return g;
@@ -95,31 +90,18 @@ function add_visibility_cb(chart_id, g, is_initial)
   }
 }
 
-function synchronize_zoom(is_zoomed, start_date, end_date, api_url, orig_start_date, orig_end_date)
+function synchronize_zoom(start_date, end_date, api_url)
 {
   for(var i in sync_graphs)
   {
-    if (!is_zoomed)
-    {
-      start_date = orig_start_date;
-      end_date = orig_end_date;
-    }
+    // update the date range
     sync_graphs[i].dygraph.updateOptions({
-        file: api_url+"/"+sync_graphs[i].api+"?start="+start_date+"&end="+end_date
-      }, false);
-  }
-}
-function sync_dateWindow(g, xaxisrange)
-{
-  for(var i in sync_graphs)
-  {
-    if (sync_graphs[i].dygraph != g)
-    {
-      sync_graphs[i].dygraph.updateOptions({
-        dateWindow: xaxisrange,
-        isZoomedIgnoreProgrammaticZoom: false,
-      }, true);
-    }
+      dateWindow: [start_date, end_date]
+    });
+    // load the date for the given range
+    sync_graphs[i].dygraph.updateOptions({
+      file: api_url+"/"+sync_graphs[i].api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)
+    }, false);
   }
 }
 

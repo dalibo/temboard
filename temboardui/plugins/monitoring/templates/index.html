@@ -19,26 +19,12 @@
     </div>
   </div>
 </div>
-{% include menu.html %}
 <div class="row form-group">
-  <div class="col-md-12" id="contDTP">
-    <div class="form-date-picker pull-right">
-      <div class="form-inline">
-        <div class='input-group date' id='DTP_start'>
-          <input type='text' class="form-control input-sm" id="inputDTP_start"/>
-          <span class="input-group-addon">
-            <span class="fa fa-calendar"></span>
-          </span>
-        </div>
-        <i class="fa fa-arrow-right"></i>
-        <div class='input-group date' id='DTP_end'>
-          <input type='text' class="form-control input-sm" id="inputDTP_end"/>
-          <span class="input-group-addon">
-            <span class="fa fa-calendar"></span>
-          </span>
-        </div>
-        <button id="buttonChangeInterval" class="btn btn-success btn-sm">Apply</button>
-      </div>
+  <div class="col-md-12">
+    <div id="daterange">
+      <i class="fa fa-calendar"></i>
+      <span></span>
+      <i class="caret"></i>
     </div>
   </div>
 </div>
@@ -68,63 +54,49 @@
 <script src="/js/dygraph-combined.js"></script>
 <script src="/js/dygraph-extra.js"></script>
 <script src="/js/moment.min.js"></script>
-<script src="/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/daterangepicker.js"></script>
 <script src="/js/monitoring/temboard.monitoring.js"></script>
 <script>
 api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-start_date = "{{escape(start_date)}}";
-end_date = "{{escape(end_date)}}";
 
 sync_graphs = [];
 data_api_url = api_url+"/data";
 interval_api_url = api_url+"/interval";
-orig_xAxisRange = null;
 
 $(document).ready(function() {
 
-  $(function () {
-    $('#DTP_start').datetimepicker({
-      icons: {
-        time: 'fa fa-clock-o',
-        date: 'fa fa-calendar',
-        up: 'fa fa-arrow-up',
-        down: 'fa fa-arrow-down',
-        previous: 'fa fa-arrow-left',
-        next: 'fa fa-arrow-right',
-        today: 'fa fa-calendar-plus-o',
-        clear: 'fa fa-ban',
-        close: 'fa fa-close'
-      },
-      defaultDate: moment(start_date),
-      format: "YYYY-MM-DD HH:mm:ss"
-    });
-    $('#DTP_end').datetimepicker({
-      icons: {
-        time: 'fa fa-clock-o',
-        date: 'fa fa-calendar',
-        up: 'fa fa-arrow-up',
-        down: 'fa fa-arrow-down',
-        previous: 'fa fa-arrow-left',
-        next: 'fa fa-arrow-right',
-        today: 'fa fa-calendar-plus-o',
-        clear: 'fa fa-ban',
-        close: 'fa fa-close'
-      },
-      defaultDate: moment(end_date),
-      format: "YYYY-MM-DD HH:mm:ss"
-    });
-    $("#DTP_start").on("dp.change", function (e) {
-      $('#DTP_end').data("DateTimePicker").minDate(e.date);
-    });
-    $("#DTP_end").on("dp.change", function (e) {
-      $('#DTP_start').data("DateTimePicker").maxDate(e.date);
-    });
-  });
-
-  $('#buttonChangeInterval').click(function() {
-    var start = new Date($('#inputDTP_start').val()).toISOString();
-    var end = new Date($('#inputDTP_end').val()).toISOString();
-    window.location.replace(interval_api_url+"?start="+start+"&end="+end);
+  var format = 'DD/MM/YYYY HH:mm';
+  var start = moment().subtract(24, 'hours');
+  var end = moment();
+  var cb = function(start, end) {
+    $('#daterange span').html(
+      start.format(format) + ' - ' + end.format(format));
+  }
+  $("#daterange").daterangepicker({
+    startDate: start,
+    endDate: end,
+    alwaysShowCalendars: true,
+    timePicker: true,
+    timePickerIncrement: 5,
+    timePicker24Hour: true,
+    locale: {
+      format: format
+    },
+    ranges: {
+      'Last Hour': [moment().subtract(1, 'hours'), moment()],
+      'Last 24 Hours': [start, end],
+      'Last 7 Days': [moment().subtract(7, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(30, 'days'), moment()],
+      'Last 12 Months': [moment().subtract(12, 'months'), moment()]
+    }
+  }, cb);
+  cb(start, end);
+  $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+    synchronize_zoom(
+      picker.startDate,
+      picker.endDate,
+      data_api_url
+    );
   });
 
   var graphs = [
@@ -155,7 +127,7 @@ $(document).ready(function() {
   for (var i in graphs)
   {
     sync_graphs.push({
-      dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start_date, end_date),
+      dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start, end),
       api: graphs[i].api
     });
   }
