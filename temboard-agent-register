@@ -9,10 +9,13 @@ import urllib2
 import json
 
 from temboardagent.options import agentRegisterOptions
-from temboardagent.errors import ConfigurationError
+from temboardagent.errors import (
+    ConfigurationError,
+    HTTPError,
+)
 from temboardagent.types import T_PASSWORD, T_USERNAME
 from temboardagent.tools import validate_parameters
-from temboardagent.httpsclient import https_request, HTTPError
+from temboardagent.httpsclient import https_request
 from temboardagent.configuration import LazyConfiguration
 
 
