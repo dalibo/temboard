@@ -49,8 +49,6 @@
   </style>
   <!-- Toggle -->
   <link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
-  <!-- Datetime Picker -->
-  <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
   <!-- Tags Input -->
   <link href="/css/bootstrap-tagsinput.css" rel="stylesheet">
   <!-- Typeahead for tags input -->
@@ -154,7 +152,7 @@
                 {% end %}
                 {% if 'monitoring' in plugin_names %}
                 <li class="{{'active' if plugin == 'monitoring' else ''}}">
-                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/day">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring">
                     <i class="fa fa-bar-chart-o fa-fw"></i>
                     Monitoring
                   </a>

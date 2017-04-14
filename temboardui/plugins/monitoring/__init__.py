@@ -75,8 +75,7 @@ def get_routes(config):
         'template_path':  plugin_path + "/templates"
     }
     routes = [
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/"
-         "(day|week|month||year|interval)$",
+        (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler,
          handler_conf),
         (r"/monitoring/collector", MonitoringCollectorHandler, handler_conf),
@@ -818,7 +817,7 @@ class MonitoringDataProbeHandler(CsvHandler):
 
 
 class MonitoringHTMLHandler(BaseHandler):
-    def get_index(self, agent_address, agent_port, period):
+    def get_index(self, agent_address, agent_port):
         try:
             instance = None
             role = None
@@ -841,29 +840,6 @@ class MonitoringHTMLHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
 
-            if period == 'day':
-                delta = timedelta(hours=24)
-            elif period == 'week':
-                delta = timedelta(days=7)
-            elif period == 'month':
-                delta = timedelta(days=31)
-            elif period == 'year':
-                delta = timedelta(days=365)
-            elif period == 'interval':
-                start = self.get_argument('start', default=None)
-                end = self.get_argument('end', default=None)
-                try:
-                    dateutil.parser.parse(start)
-                    dateutil.parser.parse(end)
-                except Exception as e:
-                    raise TemboardUIError(406, 'Datetime not valid.')
-            else:
-                raise TemboardUIError(500, "Unknown period.")
-
-            if period != 'interval':
-                now = datetime.datetime.utcnow()
-                start = (now - delta).isoformat() + 'Z'
-                end = now.isoformat() + 'Z'
             return HTMLAsyncResult(
                     http_code=200,
                     template_path=self.template_path,
@@ -873,9 +849,6 @@ class MonitoringHTMLHandler(BaseHandler):
                         'role': role,
                         'instance': instance,
                         'plugin': 'monitoring',
-                        'period': period,
-                        'start_date': start,
-                        'end_date': end
                     })
 
         except (TemboardUIError, Exception) as e:
@@ -904,9 +877,9 @@ class MonitoringHTMLHandler(BaseHandler):
                         })
 
     @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, period):
+    def get(self, agent_address, agent_port):
         run_background(self.get_index, self.async_callback,
-                       (agent_address, agent_port, period))
+                       (agent_address, agent_port))
 
 
 @add_worker('worker_agg_data', 1)
