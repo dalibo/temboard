@@ -1,51 +1,60 @@
-from activity.process import *
+from activity.process import Process, memory_total_size
+import time
 from resource import getpagesize
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.tools import validate_parameters
-from temboardagent.types import *
+from temboardagent.types import T_PID
 from temboardagent.errors import NotificationError
 
-def get_activity(conn, config, _):
+
+def get_activity(conn, config, http_context):
+    """
+    Returns PostgreSQL backend list based on pg_stat_activity view.
+    For each backend (process) we need to compute: CPU and mem. usage, I/O
+    infos.
+    """
     mem_total = memory_total_size()
     page_size = getpagesize()
     if conn.get_pg_version() >= 90600:
-        conn.execute("""
-    SELECT
-        pg_stat_activity.pid AS pid,
-        pg_stat_activity.datname AS database,
-        pg_stat_activity.client_addr AS client,
-        round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
-        CASE WHEN pg_stat_activity.wait_event_type IS DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
-        pg_stat_activity.usename AS user,
-        pg_stat_activity.state AS state,
-        pg_stat_activity.query AS query
-    FROM
-        pg_stat_activity
-    WHERE
-        pid <> pg_backend_pid()
-        -- AND state <> 'idle'
-    ORDER BY
-        EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
-        """)
+        query = """
+SELECT
+  pg_stat_activity.pid AS pid,
+  pg_stat_activity.datname AS database,
+  pg_stat_activity.client_addr AS client,
+  round(EXTRACT(epoch FROM (NOW()
+    - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
+  CASE WHEN pg_stat_activity.wait_event_type IS
+    DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
+  pg_stat_activity.usename AS user,
+  pg_stat_activity.state AS state,
+  pg_stat_activity.query AS query
+FROM
+  pg_stat_activity
+WHERE
+  pid <> pg_backend_pid()
+ORDER BY
+  EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
+        """
     else:
-        conn.execute("""
-    SELECT
-        pg_stat_activity.pid AS pid,
-        pg_stat_activity.datname AS database,
-        pg_stat_activity.client_addr AS client,
-        round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
-        CASE WHEN pg_stat_activity.waiting = 't' THEN 'Y' ELSE 'N' END AS wait,
-        pg_stat_activity.usename AS user,
-        pg_stat_activity.state AS state,
-        pg_stat_activity.query AS query
-    FROM
-        pg_stat_activity
-    WHERE
-        pid <> pg_backend_pid()
-        -- AND state <> 'idle'
-    ORDER BY
-        EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
-        """)
+        query = """
+SELECT
+  pg_stat_activity.pid AS pid,
+  pg_stat_activity.datname AS database,
+  pg_stat_activity.client_addr AS client,
+  round(EXTRACT(epoch FROM (NOW()
+    - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
+  CASE WHEN pg_stat_activity.waiting = 't' THEN 'Y' ELSE 'N' END AS wait,
+  pg_stat_activity.usename AS user,
+  pg_stat_activity.state AS state,
+  pg_stat_activity.query AS query
+FROM
+  pg_stat_activity
+WHERE
+  pid <> pg_backend_pid()
+ORDER BY
+  EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
+        """
+    conn.execute(query)
     backend_list = []
     for row in conn.get_rows():
         try:
@@ -59,7 +68,7 @@ def get_activity(conn, config, _):
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
-        except Exception as e:
+        except Exception:
             pass
 
     time.sleep(0.1)
@@ -84,11 +93,16 @@ def get_activity(conn, config, _):
                 'cpu': row['process'].cpu_usage(),
                 'memory': row['process'].mem_usage()
             })
-        except Exception as e:
+        except Exception:
             pass
-    return {'rows':final_backend_list}
+    return {'rows': final_backend_list}
+
 
 def post_activity_kill(conn, config, http_context):
+    """
+    Kill (using pg_terminate_backend()) processes based on a given backend PID
+    list.
+    """
     validate_parameters(http_context['post'], [
         ('pids', T_PID, True)
     ])
@@ -97,39 +111,50 @@ def post_activity_kill(conn, config, http_context):
         conn.execute("SELECT pg_terminate_backend(%s) AS killed" % (pid))
         # Push a notification.
         try:
-            NotificationMgmt.push(config, Notification(
-                                username = http_context['username'],
-                                message = "Backend %s terminated" % (pid)))
-        except (NotificationError, Exception) as e:
+            NotificationMgmt.push(config,
+                                  Notification(
+                                    username=http_context['username'],
+                                    message="Backend %s terminated" % (pid)))
+        except (NotificationError, Exception):
             pass
 
-        ret['backends'].append({'pid':pid, 'killed': list(conn.get_rows())[0]['killed']})
+        ret['backends'].append({
+            'pid': pid,
+            'killed': list(conn.get_rows())[0]['killed']
+            }
+        )
     return ret
 
+
 def get_activity_waiting(conn, config, _):
+    """
+    Returns the list of waiting (on lock) queries.
+    """
     mem_total = memory_total_size()
     page_size = getpagesize()
 
-    conn.execute("""
-    SELECT
-        pg_locks.pid AS pid,
-        pg_stat_activity.datname AS database,
-        pg_stat_activity.usename AS user,
-        pg_locks.mode AS mode,
-        pg_locks.locktype AS type,
-        COALESCE(pg_locks.relation::regclass::text, ' ') AS relation,
-        round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
-        pg_stat_activity.state AS state,
-        pg_stat_activity.query AS query
-    FROM
-        pg_catalog.pg_locks
-        JOIN pg_catalog.pg_stat_activity ON(pg_catalog.pg_locks.pid = pg_catalog.pg_stat_activity.pid)
-    WHERE
-        NOT pg_catalog.pg_locks.granted
-        AND pg_catalog.pg_stat_activity.pid <> pg_backend_pid()
-    ORDER BY
-        EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
-    """)
+    query = """
+SELECT
+  pg_locks.pid AS pid,
+  pg_stat_activity.datname AS database,
+  pg_stat_activity.usename AS user,
+  pg_locks.mode AS mode,
+  pg_locks.locktype AS type,
+  COALESCE(pg_locks.relation::regclass::text, ' ') AS relation,
+  round(EXTRACT(epoch FROM (NOW()
+    - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
+  pg_stat_activity.state AS state,
+  pg_stat_activity.query AS query
+FROM
+  pg_catalog.pg_locks JOIN pg_catalog.pg_stat_activity
+    ON (pg_catalog.pg_locks.pid = pg_catalog.pg_stat_activity.pid)
+WHERE
+  NOT pg_catalog.pg_locks.granted
+  AND pg_catalog.pg_stat_activity.pid <> pg_backend_pid()
+ORDER BY
+  EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
+    """
+    conn.execute(query)
     backend_list = []
     for row in conn.get_rows():
         try:
@@ -144,7 +169,7 @@ def get_activity_waiting(conn, config, _):
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
-        except Exception as e:
+        except Exception:
             pass
 
     time.sleep(0.1)
@@ -170,89 +195,77 @@ def get_activity_waiting(conn, config, _):
                 'cpu': row['process'].cpu_usage(),
                 'memory': row['process'].mem_usage()
             })
-        except Exception as e:
+        except Exception:
             pass
-    return {'rows':final_backend_list}
+    return {'rows': final_backend_list}
+
 
 def get_activity_blocking(conn, config, _):
+    """
+    Returns the list of blocking (lock) queries.
+    """
     mem_total = memory_total_size()
     page_size = getpagesize()
 
-    conn.execute("""
-    SELECT
-        pid,
-        datname AS database,
-        usename AS user,
-        COALESCE(relation::text, ' ') AS relation,
-        mode,
-        locktype AS type,
-        duration,
-        state,
-        query
-    FROM
-        (
-        SELECT
-            blocking.pid,
-            pg_stat_activity.query,
-            blocking.mode,
-            pg_stat_activity.datname,
-            pg_stat_activity.usename,
-            blocking.locktype,
-            round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
-            blocking.relation::regclass AS relation,
-            pg_stat_activity.state AS state
-        FROM
-            pg_locks AS blocking
-            JOIN (
-                SELECT
-                    transactionid
-                FROM
-                    pg_locks
-                WHERE
-                    NOT granted) AS blocked ON (blocking.transactionid = blocked.transactionid)
-            JOIN pg_stat_activity ON (blocking.pid = pg_stat_activity.pid)
-        WHERE
-            blocking.granted
-        UNION ALL
-        SELECT
-            blocking.pid,
-            pg_stat_activity.query,
-            blocking.mode,
-            pg_stat_activity.datname,
-            pg_stat_activity.usename,
-            blocking.locktype,
-            round(EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
-            blocking.relation::regclass AS relation,
-            pg_stat_activity.state AS state
-        FROM
-            pg_locks AS blocking
-            JOIN (
-                SELECT
-                    database,
-                    relation,
-                    mode
-                FROM
-                    pg_locks
-                WHERE
-                    NOT granted
-                    AND relation IS NOT NULL) AS blocked ON (blocking.database = blocked.database AND blocking.relation = blocked.relation)
-            JOIN pg_stat_activity ON (blocking.pid = pg_stat_activity.pid)
-        WHERE
-            blocking.granted
-        ) AS sq
-    GROUP BY
-        pid,
-        query,
-        mode,
-        locktype,
-        duration,
-        datname,
-        usename,
-        relation,
-        state
-    ORDER BY
-        duration DESC
-    """)
+    query = """
+SELECT
+  pid,
+  datname AS database,
+  usename AS user,
+  COALESCE(relation::text, ' ') AS relation,
+  mode,
+  locktype AS type,
+  duration,
+  state,
+  query
+FROM (
+  SELECT
+    blocking.pid,
+    pg_stat_activity.query,
+    blocking.mode,
+    pg_stat_activity.datname,
+    pg_stat_activity.usename,
+    blocking.locktype,
+    round(EXTRACT(epoch FROM (NOW()
+      - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
+    blocking.relation::regclass AS relation,
+    pg_stat_activity.state AS state
+  FROM
+    pg_locks AS blocking
+    JOIN (SELECT transactionid FROM pg_locks WHERE NOT granted) AS blocked
+      ON (blocking.transactionid = blocked.transactionid)
+    JOIN pg_stat_activity
+      ON (blocking.pid = pg_stat_activity.pid)
+  WHERE
+    blocking.granted
+  UNION ALL
+  SELECT
+    blocking.pid,
+    pg_stat_activity.query,
+    blocking.mode,
+    pg_stat_activity.datname,
+    pg_stat_activity.usename,
+    blocking.locktype,
+    round(EXTRACT(epoch FROM (NOW()
+      - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
+    blocking.relation::regclass AS relation,
+    pg_stat_activity.state AS state
+  FROM
+    pg_locks AS blocking
+    JOIN (SELECT database, relation, mode FROM pg_locks WHERE NOT granted
+        AND relation IS NOT NULL) AS blocked
+      ON (blocking.database = blocked.database
+        AND blocking.relation = blocked.relation)
+    JOIN pg_stat_activity
+      ON (blocking.pid = pg_stat_activity.pid)
+  WHERE
+    blocking.granted
+) AS sq
+GROUP BY pid, query, mode, locktype, duration, datname, usename, relation,
+  state
+ORDER BY duration DESC
+    """
+    conn.execute(query)
     backend_list = []
     for row in conn.get_rows():
         try:
@@ -267,7 +280,7 @@ def get_activity_blocking(conn, config, _):
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
-        except Exception as e:
+        except Exception:
             pass
 
     time.sleep(0.1)
@@ -293,6 +306,6 @@ def get_activity_blocking(conn, config, _):
                 'cpu': row['process'].cpu_usage(),
                 'memory': row['process'].mem_usage()
             })
-        except Exception as e:
+        except Exception:
             pass
-    return {'rows':final_backend_list}
+    return {'rows': final_backend_list}

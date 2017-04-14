@@ -1,10 +1,15 @@
-from temboardagent.routing import add_route, add_worker
-from temboardagent.api_wrapper import *
+from temboardagent.routing import add_route
+from temboardagent.api_wrapper import api_function_wrapper_pg
 from temboardagent.logger import set_logger_name
 import activity.functions as activity_functions
 
+
 @add_route('GET', '/activity')
-def get_activity(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_activity(http_context,
+                 queue_in=None,
+                 config=None,
+                 sessions=None,
+                 commands=None):
     """
     @api {get} /activity Get the list of backend.
     @apiVersion 0.0.1
@@ -79,12 +84,21 @@ def get_activity(http_context, queue_in = None, config = None, sessions = None, 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name('activity')
-    return api_function_wrapper_pg(config, http_context, sessions, activity_functions, 'get_activity')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   activity_functions,
+                                   'get_activity')
+
 
 @add_route('GET', '/activity/waiting')
-def get_activity_waiting(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_activity_waiting(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
     """
     @api {get} /activity/waiting Get the list of backend waiting for lock acquisition.
     @apiVersion 0.0.1
@@ -161,12 +175,21 @@ def get_activity_waiting(http_context, queue_in = None, config = None, sessions 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name('activity')
-    return api_function_wrapper_pg(config, http_context, sessions, activity_functions, 'get_activity_waiting')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   activity_functions,
+                                   'get_activity_waiting')
+
 
 @add_route('GET', '/activity/blocking')
-def get_activity_blocking(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_activity_blocking(http_context,
+                          queue_in=None,
+                          config=None,
+                          sessions=None,
+                          commands=None):
     """
     @api {get} /activity/blocking Get the list of backend blocking other backends due to lock acquisition.
     @apiVersion 0.0.1
@@ -243,12 +266,21 @@ def get_activity_blocking(http_context, queue_in = None, config = None, sessions
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name('activity')
-    return api_function_wrapper_pg(config, http_context, sessions, activity_functions, 'get_activity_blocking')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   activity_functions,
+                                   'get_activity_blocking')
+
 
 @add_route('POST', '/activity/kill')
-def post_activity_kill(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def post_activity_kill(http_context,
+                       queue_in=None,
+                       config=None,
+                       sessions=None,
+                       commands=None):
     """
     @api {post} /activity/kill Terminate N backends.
     @apiVersion 0.0.1
@@ -300,6 +332,10 @@ def post_activity_kill(http_context, queue_in = None, config = None, sessions = 
 
         {"error": "Parameter 'X-Session' is malformed."}
 
-    """
+    """  # noqa
     set_logger_name('activity')
-    return api_function_wrapper_pg(config, http_context, sessions, activity_functions, 'post_activity_kill')
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   activity_functions,
+                                   'post_activity_kill')
