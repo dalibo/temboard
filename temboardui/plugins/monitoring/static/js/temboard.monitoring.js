@@ -45,12 +45,11 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         add_export_button_callback(id, g, is_initial, title);
       },
       zoomCallback: function(minDate, maxDate, yRanges) {
-        zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), this, api, api_url, start_date, end_date);
         if (this.isZoomed())
           sync_dateWindow(this, this.xAxisRange());
         else
           sync_dateWindow(this, orig_xAxisRange);
-        synchronize_zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), this, api_url, start_date, end_date);
+        synchronize_zoom(this.isZoomed(), timestampToIsoDate(minDate), timestampToIsoDate(maxDate), api_url, start_date, end_date);
       }
   }
 
@@ -96,36 +95,18 @@ function add_visibility_cb(chart_id, g, is_initial)
   }
 }
 
-function zoom(is_zoomed, start_date, end_date, g, data, api_url, orig_start_date, orig_end_date)
-{
-  if (!is_zoomed)
-  {
-    start_date = orig_start_date;
-    end_date = orig_end_date;
-  }
-  g.updateOptions({
-    file: api_url+"/"+data+"?start="+start_date+"&end="+end_date,
-  }, false);
-
-  $('#DTP_start').data('DateTimePicker').date(moment(start_date));
-  $('#DTP_end').data('DateTimePicker').date(moment(end_date));
-}
-
-function synchronize_zoom(is_zoomed, start_date, end_date, g, api_url, orig_start_date, orig_end_date)
+function synchronize_zoom(is_zoomed, start_date, end_date, api_url, orig_start_date, orig_end_date)
 {
   for(var i in sync_graphs)
   {
-    if (sync_graphs[i].dygraph != g)
+    if (!is_zoomed)
     {
-      if (!is_zoomed)
-      {
-        start_date = orig_start_date;
-        end_date = orig_end_date;
-      }
-      sync_graphs[i].dygraph.updateOptions({
-          file: api_url+"/"+sync_graphs[i].api+"?start="+start_date+"&end="+end_date
-        }, false);
+      start_date = orig_start_date;
+      end_date = orig_end_date;
     }
+    sync_graphs[i].dygraph.updateOptions({
+        file: api_url+"/"+sync_graphs[i].api+"?start="+start_date+"&end="+end_date
+      }, false);
   }
 }
 function sync_dateWindow(g, xaxisrange)
