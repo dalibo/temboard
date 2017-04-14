@@ -5,10 +5,13 @@ WARNING: This plugin is for developer use *ONLY* and shoudn't be loaded.
 
 import sys
 from temboardagent.routing import add_route
-from temboardagent.api_wrapper import *
-from temboardagent.logger import set_logger_name
+from temboardagent.api_wrapper import (
+    api_function_wrapper,
+    api_function_wrapper_pg,
+)
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
+
 
 def say_hello_world(config, http_context):
     """
@@ -20,11 +23,16 @@ def say_hello_world(config, http_context):
     {
         "content": "Hello World."
     }
-    """
+    """  # noqa
     return {"content": "Hello World."}
 
+
 @add_route('GET', '/hello')
-def get_hello(http_context, queue_in = None, config = None, sessions = None, commands = None):
+def get_hello(http_context,
+              queue_in=None,
+              config=None,
+              sessions=None,
+              commands=None):
     """
     Parameters:
         http_context: HTTP context containing HTTP paramaters and variables.
@@ -33,9 +41,11 @@ def get_hello(http_context, queue_in = None, config = None, sessions = None, com
         sessions: List of current sessions.
         commands: List of current commands (async. jobs).
     """
-    return api_function_wrapper(config, http_context, sessions, sys.modules[__name__], 'say_hello_world')
-
-
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                sys.modules[__name__],
+                                'say_hello_world')
 
 
 def say_hello_world_time(conn, config, http_context):
@@ -49,21 +59,30 @@ def say_hello_world_time(conn, config, http_context):
         "message": "Hello World",
         "time": "2016-09-29 10:19:37.059801+02"
     }
-    """
+    """  # noqa
     conn.execute("""
 SELECT 'Hello World' AS message, NOW() AS time
     """)
     row = list(conn.get_rows())[0]
     return {"message": row['message'], "time": row['time']}
 
-@add_route('GET', '/hello/time')
-def get_hello_time(http_context, queue_in = None, config = None, sessions = None, commands = None):
-    return api_function_wrapper_pg(config, http_context, sessions, sys.modules[__name__], 'say_hello_world_time')
 
+@add_route('GET', '/hello/time')
+def get_hello_time(http_context,
+                   queue_in=None,
+                   config=None,
+                   sessions=None,
+                   commands=None):
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   sys.modules[__name__],
+                                   'say_hello_world_time')
 
 
 # Defining a new type to validate 'something'.
-T_SOMETHING=r'(^[a-z]{1,100}$)'
+T_SOMETHING = r'(^[a-z]{1,100}$)'
+
 
 def say_hello_something(config, http_context):
     """
@@ -75,14 +94,21 @@ def say_hello_something(config, http_context):
     {
         "content": "Hello toto"
     }
-    """
+    """  # noqa
     return {"content": "Hello %s" % (http_context['urlvars'][0])}
 
+
 @add_route('GET', '/hello/'+T_SOMETHING)
-def get_hello_something(http_context, queue_in = None, config = None, sessions = None, commands = None):
-    return api_function_wrapper(config, http_context, sessions, sys.modules[__name__], 'say_hello_something')
-
-
+def get_hello_something(http_context,
+                        queue_in=None,
+                        config=None,
+                        sessions=None,
+                        commands=None):
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                sys.modules[__name__],
+                                'say_hello_something')
 
 
 def say_hello_something2(config, http_context):
@@ -105,11 +131,18 @@ def say_hello_something2(config, http_context):
     else:
         raise HTTPError(444, "Parameter 'something' not sent.")
 
+
 @add_route('GET', '/hello2/say')
-def get_hello_something2(http_context, queue_in = None, config = None, sessions = None, commands = None):
-    return api_function_wrapper(config, http_context, sessions, sys.modules[__name__], 'say_hello_something2')
-
-
+def get_hello_something2(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                sys.modules[__name__],
+                                'say_hello_something2')
 
 
 def say_hello_something3(config, http_context):
@@ -122,7 +155,7 @@ def say_hello_something3(config, http_context):
     {
         "content": "Hello toto"
     }
-    """
+    """  # noqa
     if http_context and 'something' in http_context['post']:
         validate_parameters(http_context['post'], [
             ('something', T_SOMETHING, True)
@@ -132,11 +165,18 @@ def say_hello_something3(config, http_context):
     else:
         raise HTTPError(444, "Parameter 'something' not sent.")
 
+
 @add_route('POST', '/hello3/say')
-def get_hello_something3(http_context, queue_in = None, config = None, sessions = None, commands = None):
-    return api_function_wrapper(config, http_context, sessions, sys.modules[__name__], 'say_hello_something3')
-
-
+def get_hello_something3(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                sys.modules[__name__],
+                                'say_hello_something3')
 
 
 def say_hello_something4(config, http_context):
@@ -149,11 +189,25 @@ def say_hello_something4(config, http_context):
     {
         "content": "Hello toto"
     }
-    """
+    """  # noqa
     from temboardagent.command import exec_command, oneline_cmd_to_array
-    (return_code, stdout, stderr) = exec_command(oneline_cmd_to_array("echo 'Hello %s'" % (http_context['urlvars'][0])))
+    (return_code, stdout, stderr) = exec_command(
+                                        oneline_cmd_to_array(
+                                            "echo 'Hello %s'" %
+                                            http_context['urlvars'][0]
+                                            )
+                                        )
     return {"content": stdout[:-1]}
 
+
 @add_route('GET', '/hello4/'+T_SOMETHING)
-def get_hello_something4(http_context, queue_in = None, config = None, sessions = None, commands = None):
-    return api_function_wrapper(config, http_context, sessions, sys.modules[__name__], 'say_hello_something4')
+def get_hello_something4(http_context,
+                         queue_in=None,
+                         config=None,
+                         sessions=None,
+                         commands=None):
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                sys.modules[__name__],
+                                'say_hello_something4')
