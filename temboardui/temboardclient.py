@@ -139,11 +139,11 @@ def temboard_dashboard_info(in_ca_cert_file, hostname, port, xsession):
 def temboard_get_configuration(in_ca_cert_file, hostname, port, xsession, enc_category = None, query_filter = None):
     try:
         if query_filter:
-            path = "/settings/configuration?filter="+quote(query_filter)
+            path = "/pgconf/configuration?filter="+quote(query_filter)
         elif enc_category:
-            path = "/settings/configuration/category/"+enc_category
+            path = "/pgconf/configuration/category/"+enc_category
         else:
-            path = "/settings/configuration"
+            path = "/pgconf/configuration"
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'GET',
@@ -163,7 +163,7 @@ def temboard_post_configuration(in_ca_cert_file, hostname, port, xsession, setti
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'POST',
-                url = 'https://%s:%s/settings/configuration' % (hostname, port),
+                url = 'https://%s:%s/pgconf/configuration' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -180,7 +180,7 @@ def temboard_get_configuration_categories(in_ca_cert_file, hostname, port, xsess
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'GET',
-                url = 'https://%s:%s/settings/configuration/categories' % (hostname, port),
+                url = 'https://%s:%s/pgconf/configuration/categories' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -196,7 +196,7 @@ def temboard_get_configuration_status(in_ca_cert_file, hostname, port, xsession)
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'GET',
-                url = 'https://%s:%s/settings/configuration/status' % (hostname, port),
+                url = 'https://%s:%s/pgconf/configuration/status' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -225,7 +225,7 @@ def temboard_post_administration_control(in_ca_cert_file, hostname, port, xsessi
         raise TemboardError(500, str(e))
 
 def temboard_get_file_content(in_ca_cert_file, file_type, hostname, port, xsession):
-    file_types = { 'hba': '/settings/hba/raw', 'pg_ident': '/settings/pg_ident'}
+    file_types = { 'hba': '/pgconf/hba/raw', 'pg_ident': '/pgconf/pg_ident'}
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     try:
@@ -244,7 +244,7 @@ def temboard_get_file_content(in_ca_cert_file, file_type, hostname, port, xsessi
         raise TemboardError(500, str(e))
 
 def temboard_post_file_content(in_ca_cert_file, file_type, hostname, port, xsession, content):
-    file_types = { 'hba': '/settings/hba/raw', 'pg_ident': '/settings/pg_ident'}
+    file_types = { 'hba': '/pgconf/hba/raw', 'pg_ident': '/pgconf/pg_ident'}
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     try:
@@ -361,7 +361,7 @@ def temboard_profile(in_ca_cert_file, hostname, port, xsession):
         raise TemboardError(500, str(e))
 
 def temboard_get_conf_file_versions(in_ca_cert_file, file_type, hostname, port, xsession):
-    file_types = { 'hba': '/settings/hba/versions' }
+    file_types = { 'hba': '/pgconf/hba/versions' }
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     try:
@@ -380,7 +380,7 @@ def temboard_get_conf_file_versions(in_ca_cert_file, file_type, hostname, port, 
         raise TemboardError(500, str(e))
 
 def temboard_get_conf_file(in_ca_cert_file, file_type, version, hostname, port, xsession):
-    file_types = { 'hba': '/settings/hba' }
+    file_types = { 'hba': '/pgconf/hba' }
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     p_version = ''
@@ -402,7 +402,7 @@ def temboard_get_conf_file(in_ca_cert_file, file_type, version, hostname, port, 
         raise TemboardError(500, str(e))
 
 def temboard_get_conf_file_raw(in_ca_cert_file, file_type, version, hostname, port, xsession):
-    file_types = { 'hba': '/settings/hba/raw' }
+    file_types = { 'hba': '/pgconf/hba/raw' }
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     p_version = ''
@@ -428,7 +428,7 @@ def temboard_get_hba_options(in_ca_cert_file, hostname, port, xsession):
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'GET',
-                url = 'https://%s:%s/settings/hba/options' % (hostname, port),
+                url = 'https://%s:%s/pgconf/hba/options' % (hostname, port),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
@@ -440,7 +440,7 @@ def temboard_get_hba_options(in_ca_cert_file, hostname, port, xsession):
         raise TemboardError(500, str(e))
 
 def temboard_post_conf_file(in_ca_cert_file, file_type, hostname, port, xsession, data):
-    file_types = { 'hba': '/settings/hba' }
+    file_types = { 'hba': '/pgconf/hba' }
     if file_type not in file_types:
         raise TemboardError(404, 'Unknown file_type.')
     try:
@@ -464,7 +464,7 @@ def temboard_delete_hba_version(in_ca_cert_file, hostname, port, xsession, versi
         res = temboard_request(
                 in_ca_cert_file,
                 method = 'DELETE',
-                url = 'https://%s:%s/settings/hba?version=%s' % (hostname, port, version),
+                url = 'https://%s:%s/pgconf/hba?version=%s' % (hostname, port, version),
                 headers = {
                     "Content-type": "application/json",
                     "X-Session": xsession
