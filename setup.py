@@ -1,10 +1,34 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
+import subprocess
+
+try:
+    # pip install mode
+    with open('PKG-INFO') as fo:
+        for line in fo:
+            if not line.startswith('Version: '):
+                continue
+            VERSION = line.replace('Version: ', '').strip()
+            break
+except IOError:
+    try:
+        # Release mode
+        # git describe returns version[-count-gsha1].
+        version, count, sha = (
+            subprocess.check_output(["git", "describe", "--tags"])
+            .strip().decode() + '--'
+        ).split('-', 3)[:3]
+    except Exception:
+        VERSION = '0'
+    else:
+        VERSION = version
+        if count:
+            VERSION += '.dev%s' % (count,)
 
 setup(
     name='temboard',
-    version='0.0.1',
+    version=VERSION,
     description='temBoard User Interface.',
     long_description=open('README.rst').read(),
     author='Julien Tachoires, Étienne BERSAC',
