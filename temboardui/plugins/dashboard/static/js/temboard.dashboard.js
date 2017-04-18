@@ -149,7 +149,7 @@ function update_dashboard(data)
   $('#hostname').html(data['hostname']);
   $('#os_version').html(data['os_version']);
   $('#n_cpu').html(data['n_cpu']);
-  $('#memory').html(data['memory']['total']);
+  $('#memory').html(filesize(data['memory']['total'] * 1000));
   $('#pg_version').html(data['pg_version']);
   $('#size').html(data['databases']['total_size']);
   $('#nb_db').html(data['databases']['databases']);
