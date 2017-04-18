@@ -32,6 +32,24 @@
 }
 
 /**
+ * Home page instance list
+ */
+.instance-list {
+  .dl-horizontal {
+    margin-bottom: 0;
+  }
+  dd {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-group-item:hover {
+    background-color: $table-bg-hover;
+  }
+}
+
+/**
  * This rule can be useful for plugins for which we don't need the full width.
  * Should be used just like Bootstrap's `.container` (ie. with rows and col-xx
  * inside).
