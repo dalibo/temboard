@@ -2,7 +2,7 @@
 
 Monitor, optimize and configure multiple PostgreSQL instances.
 
-| |RTD| |Travis| |CircleCI| |Codecov|
+| |Python| |RTD| |Travis| |CircleCI| |Codecov| |PyPI|
 
 ======
  Demo
@@ -62,6 +62,22 @@ temBoard is available under the `PostgreSQL License
    :target: https://codecov.io/gh/dalibo/temboard
    :alt: Code coverage
 
+.. |Demo| image:: https://github.com/dalibo/temboard/raw/gh-pages/imgs/temboard_poster.png
+   :target: http://temboard.io/imgs/temboard.mp4
+   :alt: Screenshot temBoard
+
+.. |PyPI| image:: https://img.shields.io/pypi/v/temboard.svg
+   :target: https://pypi.python.org/pypi/temboard
+   :alt: Version on PyPI
+
+.. |Python| image:: https://img.shields.io/pypi/pyversions/temboard.svg
+   :target: https://www.python.org/
+   :alt: Versions of python supported
+
+.. |RTD| image:: https://readthedocs.org/projects/temboard/badge/?version=latest
+   :target: http://temboard.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation
+
 .. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/doc/temboard.png
    :target: http://temboard.io/
    :alt: temBoard logo: a woodpecker
@@ -69,11 +85,3 @@ temBoard is available under the `PostgreSQL License
 .. |Travis| image:: https://travis-ci.org/dalibo/temboard.svg?branch=master
    :target: https://travis-ci.org/dalibo/temboard
    :alt: Travis
-
-.. |RTD| image:: https://readthedocs.org/projects/temboard/badge/?version=latest
-   :target: http://temboard.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation
-
-.. |Demo| image:: https://github.com/dalibo/temboard/raw/gh-pages/imgs/temboard_poster.png
-   :target: http://temboard.io/imgs/temboard.mp4
-   :alt: Screenshot temBoard
