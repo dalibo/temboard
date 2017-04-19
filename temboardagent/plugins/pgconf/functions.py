@@ -43,8 +43,10 @@ def get_settings(conn, config, http_context=None):
         validate_parameters(http_context['query'], [
             ('filter', T_PGSETTINGS_FILTER, True)
         ])
-        filter_query = " WHERE name ILIKE '%%%s%%'" % \
-                       (http_context['query']['filter'][0],)
+        filter_query = " WHERE name ILIKE '%{0}%'" \
+                       " OR short_desc ILIKE '%{0}%'" \
+                       " OR extra_desc ILIKE '%{0}%'".format(
+                               http_context['query']['filter'][0])
     query = """
 SELECT
     name,
