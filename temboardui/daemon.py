@@ -1,7 +1,9 @@
-import sys, os, atexit, signal
-import time
+import atexit
+import os
+import sys
 
 PIDFILE = None
+
 
 def httpd_sigterm_handler(signum, frame):
     """
@@ -13,6 +15,7 @@ def httpd_sigterm_handler(signum, frame):
     # sys.exit() does not work in this context.
     os._exit(1)
 
+
 def remove_pidfile(pidfile):
     """
     Delete the pidfile.
@@ -22,6 +25,7 @@ def remove_pidfile(pidfile):
             os.remove(pidfile)
         except OSError:
             pass
+
 
 def daemonize(pidfile, config):
     """
@@ -46,7 +50,7 @@ def daemonize(pidfile, config):
 
     # Try to write pidfile.
     try:
-        with open(pidfile,'w+') as pf:
+        with open(pidfile, 'w+') as pf:
             pf.write("\0")
     except IOError:
         sys.stderr.write("FATAL: can't write pidfile %s.\n" % pidfile)
@@ -59,8 +63,8 @@ def daemonize(pidfile, config):
             # Exit first parent.
             sys.exit(0)
     except OSError as e:
-        sys.stderr.write("FATAL: fork failed: %d (%s)\n"
-                            % (e.errno, e.strerror))
+        sys.stderr.write("FATAL: fork failed: %d (%s)\n" % (e.errno,
+                                                            e.strerror))
         sys.exit(1)
 
     # Decouple from parent environment.
@@ -75,8 +79,8 @@ def daemonize(pidfile, config):
             # Exit from second parent.
             sys.exit(0)
     except OSError as e:
-        sys.stderr.write("FATAL: fork failed: %d (%s)\n"
-                            % (e.errno, e.strerror))
+        sys.stderr.write("FATAL: fork failed: %d (%s)\n" % (e.errno,
+                                                            e.strerror))
         sys.exit(1)
 
     # Redirect standard file descriptors.
@@ -96,7 +100,7 @@ def daemonize(pidfile, config):
     # write pidfile
     atexit.register(remove_pidfile, pidfile)
     pid = str(os.getpid())
-    with open(pidfile,'w+') as pf:
+    with open(pidfile, 'w+') as pf:
         pf.write("%s\n" % pid)
     global PIDFILE
     PIDFILE = pidfile
