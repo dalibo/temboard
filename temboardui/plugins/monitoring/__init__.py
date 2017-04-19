@@ -1,8 +1,6 @@
 import logging
 import os
-import datetime
 import dateutil
-from datetime import timedelta
 import time
 
 import tornado.web
@@ -821,7 +819,6 @@ class MonitoringHTMLHandler(BaseHandler):
         try:
             instance = None
             role = None
-            delta = None
 
             self.load_auth_cookie()
             self.start_db_session()
