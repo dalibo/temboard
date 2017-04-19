@@ -726,8 +726,11 @@ class MonitoringDataProbeHandler(CsvHandler):
                     raise TemboardUIError(406, 'Datetime not valid.')
 
             if probe_name == 'loadavg':
+                interval = self.get_argument('interval', default='all')
+                if interval not in ['load1', 'load5', 'load15', 'all']:
+                    raise TemboardUIError(400, 'Interval not available')
                 data = get_loadaverage(
-                    self.db_session, host_id, start_time, end_time)
+                    self.db_session, host_id, start_time, end_time, interval)
             elif probe_name == 'db_size':
                 data = get_db_size(
                     self.db_session, instance_id, start_time, end_time)
