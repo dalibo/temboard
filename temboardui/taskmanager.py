@@ -1,11 +1,10 @@
-import os
 import sys
 import time
 import json
 import fcntl
 from multiprocessing import Process, Queue, Lock
 from multiprocessing.sharedctypes import Array
-from ctypes import Structure, c_char, c_double, c_int, c_wchar, c_short
+from ctypes import Structure, c_char, c_int, c_wchar, c_short
 
 # List of workers, filled by the decorator add_worker()
 __WORKERS = []
@@ -15,18 +14,19 @@ __SCHEDULERS = []
 # Worker name size
 T_WORKERNAME_SIZE = 32
 # Task id size
-T_TASKID_SIZE =     32
+T_TASKID_SIZE = 32
 # Size of task parameters passed to the worker
 T_PARAMETERS_SIZE = 2048
 # Worker's output buffer size
-T_OUTPUT_SIZE =     4096
+T_OUTPUT_SIZE = 4096
 
 # Task states
-S_TASK_TODO =      1
-S_TASK_DOING =     2
-S_TASK_DONE =      3
-S_TASK_FAILED =    4
+S_TASK_TODO = 1
+S_TASK_DOING = 2
+S_TASK_DONE = 3
+S_TASK_FAILED = 4
 S_TASK_SUSPENDED = 5
+
 
 def serialize_task_parameters(parameters):
     """
@@ -35,25 +35,31 @@ def serialize_task_parameters(parameters):
     """
     return json.dumps(parameters).decode('utf-8')
 
+
 def unserialize_task_parameters(s_parameters):
     """
     Unserialization function for Task parameters.
     """
     return json.loads(s_parameters)
 
+
 def add_worker(name, pool_size):
     """
     Decorator for adding new workers.
     """
+
     def func_wrapper(function):
         global __WORKERS
         __WORKERS.append({
             'name': name,
             'pool_size': pool_size,
             'module': function.__module__,
-            'function': function.__name__})
+            'function': function.__name__
+        })
         return function
+
     return func_wrapper
+
 
 def get_worker_pool_size(worker_name):
     """
@@ -65,24 +71,30 @@ def get_worker_pool_size(worker_name):
             return w['pool_size']
     return 0
 
+
 def add_scheduler(name):
     """
     Decorator for adding Task scheduling functions.
     """
+
     def func_wrapper(function):
         global __SCHEDULERS
         __SCHEDULERS.append({
             'name': name,
             'module': function.__module__,
-            'function': function.__name__})
+            'function': function.__name__
+        })
         return function
+
     return func_wrapper
+
 
 def get_all_scheduler_func():
     """
     Returns Task scheduling functions from the global list.
     """
     return __SCHEDULERS
+
 
 def get_all_worker_func():
     """
@@ -118,16 +130,26 @@ class Task(Structure):
 
     def __repr__(self):
         return json.dumps({
-                'worker_name': self.worker_name,
-                'taskid': self.taskid,
-                'parameters': unserialize_task_parameters(self.parameters),
-                'state': self.state,
-                'repeat': self.repeat,
-                'output': self.output,
-                'creation_time': self.creation_time,
-                'update_time': self.update_time,
-                'due_time': self.due_time
+            'worker_name':
+            self.worker_name,
+            'taskid':
+            self.taskid,
+            'parameters':
+            unserialize_task_parameters(self.parameters),
+            'state':
+            self.state,
+            'repeat':
+            self.repeat,
+            'output':
+            self.output,
+            'creation_time':
+            self.creation_time,
+            'update_time':
+            self.update_time,
+            'due_time':
+            self.due_time
         })
+
 
 class TaskList(object):
     """
@@ -135,13 +157,14 @@ class TaskList(object):
     Each new Task must be added using add() method before being handled by the
     worker.
     """
-    def __init__(self, filepath = None, size = 100):
+
+    def __init__(self, filepath=None, size=100):
         # Lock handler
         self.lock = Lock()
         # Maximum number of task
         self.size = size
         # Shared Array of Task
-        self.tasks = Array(Task, self.size, lock = self.lock)
+        self.tasks = Array(Task, self.size, lock=self.lock)
         # File path, if None, task_list is not sync'ed to file
         self.filepath = None
 
@@ -153,9 +176,9 @@ class TaskList(object):
         # couple worker_name/taskid
         for i in range(0, self.size):
             if self.tasks[i].taskid == task.taskid \
-                and self.tasks[i].worker_name == task.worker_name:
+               and self.tasks[i].worker_name == task.worker_name:
                 raise Exception('Task {1}/{2} already exists.'.format(
-                                    task.worker_name, task.taskid))
+                    task.worker_name, task.taskid))
 
         # Let's found a free slot in the Task array where the new Task
         # will be inserted.
@@ -173,7 +196,7 @@ class TaskList(object):
         # Loop through each Task and compair worker_name/taskid
         for i in range(0, self.size):
             if self.tasks[i].taskid == taskid \
-                and self.tasks[i].worker_name == worker_name:
+               and self.tasks[i].worker_name == worker_name:
                 return self.tasks[i]
         raise Exception('Task not found')
 
@@ -184,7 +207,7 @@ class TaskList(object):
         # Loop through each Task to find the one we are looking for.
         for i in range(0, self.size):
             if self.tasks[i].taskid == task.taskid \
-                and self.tasks[i].worker_name == task.worker_name:
+               and self.tasks[i].worker_name == task.worker_name:
                 self.tasks[i] = task
                 return
         raise Exception('Task not found')
@@ -196,7 +219,7 @@ class TaskList(object):
         # Loop through each Task to find the one we are looking for.
         for i in range(0, self.size):
             if self.tasks[i].taskid == taskid \
-                and self.tasks[i].worker_name == worker_name:
+               and self.tasks[i].worker_name == worker_name:
                 # To remove a existing Task, we replace it with an empty one
                 self.tasks[i] = Task()
                 return
@@ -204,19 +227,19 @@ class TaskList(object):
 
     def save(self):
         """
-        Save Task list content into the on-disk image file, file path is defined
-        by self.filepath.
+        Save Task list content into the on-disk image file, file path is
+        defined by self.filepath.
         """
         if not self.filepath:
             return
         with open(self.filepath, 'w') as fd:
             # Hold an exclusive lock on the file
-            rv = fcntl.flock(fd, fcntl.LOCK_EX)
+            fcntl.flock(fd, fcntl.LOCK_EX)
             for i in range(0, self.size):
                 if self.tasks[i].worker_name != b'':
                     fd.write('{0}\n'.format(str(self.tasks[i])))
             # Unhold fd lock
-            rv = fcntl.flock(fd, fcntl.LOCK_UN)
+            fcntl.flock(fd, fcntl.LOCK_UN)
             fd.close()
 
     def load_at_boot(self):
@@ -234,27 +257,28 @@ class TaskList(object):
 
         with open(self.filepath, 'r') as fd:
             # Hold a shared lock on the file
-            rv = fcntl.flock(fd, fcntl.LOCK_SH)
+            fcntl.flock(fd, fcntl.LOCK_SH)
             for line in fd.readlines():
                 # Unserialize
                 d_task = json.loads(line)
-                # Change Task state to S_TASK_FAILED if we meet a uncomplete Task.
+                # Change Task state to S_TASK_FAILED if we meet a uncomplete
+                # Task.
                 if d_task['state'] == S_TASK_DOING:
                     d_task['state'] = S_TASK_FAILED
                 # Create a new Task
                 task = Task(
-                        worker_name = d_task['worker_name'],
-                        taskid = d_task['taskid'],
-                        parameters = serialize_task_parameters(d_task['parameters']),
-                        state = d_task['state'],
-                        repeat = d_task['repeat'],
-                        creation_time = d_task['creation_time'],
-                        update_time = d_task['update_time'],
-                        due_time = d_task['due_time'])
+                    worker_name=d_task['worker_name'],
+                    taskid=d_task['taskid'],
+                    parameters=serialize_task_parameters(d_task['parameters']),
+                    state=d_task['state'],
+                    repeat=d_task['repeat'],
+                    creation_time=d_task['creation_time'],
+                    update_time=d_task['update_time'],
+                    due_time=d_task['due_time'])
                 # Add Task to the shared Array
                 self.add(task)
 
-            rv = fcntl.flock(fd, fcntl.LOCK_UN)
+            fcntl.flock(fd, fcntl.LOCK_UN)
             fd.close()
 
 
@@ -264,6 +288,7 @@ class TaskManager(object):
      * scheduling a list of Task according to their properties
      * starting a worker when a Task need to be processed immediately
     """
+
     def __init__(self):
         """
         Constructor
@@ -332,20 +357,23 @@ class TaskManager(object):
             for s in get_all_scheduler_func():
                 try:
                     # Execute each scheduling function
-                    self.exec_scheduler_func(s['name'])(self.task_list, parameters)
+                    self.exec_scheduler_func(s['name'])(self.task_list,
+                                                        parameters)
                 except Exception as e:
                     self.logger.error(e)
 
         while True:
             # TaskList maintenance
             for task in self.task_list.tasks:
-                if task.state in (S_TASK_DONE, S_TASK_FAILED) and task.repeat > 0 \
-                    and task.update_time + task.repeat <= int(time.time()):
+                if task.state in (S_TASK_DONE, S_TASK_FAILED) \
+                   and task.repeat > 0 \
+                   and task.update_time + task.repeat <= int(time.time()):
                     # Case when a Task need be repeated.
                     task.state = S_TASK_TODO
 
-                if task.state in (S_TASK_DONE, S_TASK_FAILED) and task.due_time > 0 \
-                    and task.due_time <= int(time.time()):
+                if task.state in (S_TASK_DONE, S_TASK_FAILED) \
+                   and task.due_time > 0 \
+                   and task.due_time <= int(time.time()):
                     # Case when the due time is reached.
                     task.state = S_TASK_TODO
 
@@ -390,16 +418,26 @@ class TaskManager(object):
                 pass
             else:
                 try:
-                    if get_worker_pool_size(task.worker_name) > self.count_running_worker(task.worker_name):
-                        # If we got a new Task, let's start a new worker in a child process.
-                        new_worker = Process(target=self.start_worker, args=(task,))
+                    if get_worker_pool_size(
+                            task.worker_name) > self.count_running_worker(
+                                task.worker_name):
+                        # If we got a new Task, let's start a new worker in a
+                        # child process.
+                        new_worker = Process(
+                            target=self.start_worker, args=(task, ))
                         # Keep a track of the running jobs.
-                        self.running_jobs.append({'task': task, 'worker': new_worker})
+                        self.running_jobs.append({
+                            'task': task,
+                            'worker': new_worker
+                        })
                         # Start the worker.
                         new_worker.start()
-                        self.logger.info('[{wn}] New worker started with pid={pid}'.format(wn=task.worker_name, pid=new_worker.pid))
+                        self.logger.info(
+                            '[{wn}] New worker started with pid={pid}'.format(
+                                wn=task.worker_name, pid=new_worker.pid))
                     else:
-                        self.logger.info('[{wn}] Worker pool size full.'.format(wn=task.worker_name))
+                        self.logger.info('[{wn}] Worker pool size full.'.
+                                         format(wn=task.worker_name))
                         task.state = S_TASK_TODO
                         self.task_list.update(task)
                         self.task_list.save()
@@ -411,12 +449,17 @@ class TaskManager(object):
                 # process is still alive.
                 if not running_job['worker'].is_alive():
                     # Process is not alive.
-                    self.logger.info('[{wn}] Worker job with pid={pid} done.'.format(wn=running_job['task'].worker_name, pid=running_job['worker'].pid))
+                    self.logger.info(
+                        '[{wn}] Worker job with pid={pid} done.'.format(
+                            wn=running_job['task'].worker_name,
+                            pid=running_job['worker'].pid))
                     # Join the process
                     running_job['worker'].join()
                     try:
                         # Get the Task from memory
-                        task = self.task_list.get(running_job['task'].worker_name, running_job['task'].taskid)
+                        task = self.task_list.get(
+                            running_job['task'].worker_name,
+                            running_job['task'].taskid)
                         if task.repeat > 0:
                             # Task must be rescheduled
                             if running_job['worker'].exitcode != 0:
@@ -428,7 +471,8 @@ class TaskManager(object):
                             self.task_list.save()
                         else:
                             # We remove it from the Task list
-                            self.task_list.delete(task.worker_name, task.taskid)
+                            self.task_list.delete(task.worker_name,
+                                                  task.taskid)
                             self.task_list.save()
                     except Exception as e:
                         self.logger.error(e)
@@ -439,7 +483,8 @@ class TaskManager(object):
         """
         Start both scheduler and main processes.
         """
-        self.scheduler = Process(target=self.run_scheduler, args=(parameters,))
+        self.scheduler = Process(
+            target=self.run_scheduler, args=(parameters, ))
         self.scheduler.start()
         self.process = Process(target=self.run)
         self.process.start()
