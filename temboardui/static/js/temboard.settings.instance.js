@@ -121,7 +121,11 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       $('#'+modal_id+'Body').html(body_html);
       $('#'+modal_id+'Footer').html(footer_html);
       $('#submitFormUpdateInstance').click(function() {
-        $('#formUpdateInstance').submit()
+        // Check if at least one group has been selected
+        var groups = $('#selectGroups').val();
+        if (groups || confirm('No group selected.\nDo you want to proceed anyway?')) {
+          $('#formUpdateInstance').submit();
+        }
       });
       // Activate multiselect plugin for group selecting.
       $('#selectGroups').multiselect();
