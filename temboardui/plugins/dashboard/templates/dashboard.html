@@ -23,8 +23,8 @@
           <td id="cpu">{{ dashboard['n_cpu'] }}</td>
         </tr>
         <tr>
-          <th>Memory (kB):</th>
-          <td id="memory">{{ dashboard['memory']['total'] }}</td>
+          <th>Memory:</th>
+          <td id="memory" data-type="size">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
         <tr>
           <th>Databases size:</th>
@@ -153,6 +153,7 @@
 <!-- <script src="/js/Chart.js"></script> -->
 <script src="/js/Chart.min.js"></script>
 <script src="/js/dashboard/temboard.dashboard.js"></script>
+<script src="/js/filesize.min.js"></script>
 <script>
   var memorydata = {
     labels: [ "Active", "Cached", "Free" ],
@@ -200,5 +201,12 @@
   var agent_address = "{{instance.agent_address}}";
   var agent_port = "{{instance.agent_port}}";
   window.setInterval(function () {refresh_dashboard(agent_address, agent_port, xsession)}, 2000);
+
+  $(document).ready(function() {
+    $('[data-type=size]').each(function(){
+      if ($(this).html() != 'None')
+        $(this).html(filesize($(this).html()));
+    });
+  });
 </script>
 {% end %}
