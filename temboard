@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging.config
-import sys, signal, os
+import os
+import signal
+import socket
+import sys
 
 import tornado.ioloop
 import tornado.web
@@ -11,24 +14,50 @@ from tornado import autoreload
 from sqlalchemy import create_engine
 
 from temboardui.logger import generate_logging_config
-from temboardui.handlers.base import *
-from temboardui.handlers.user import *
-from temboardui.handlers.home import *
-from temboardui.handlers.notification import *
-from temboardui.handlers.settings.user import *
-from temboardui.handlers.settings.group import *
-from temboardui.handlers.settings.instance import *
+from temboardui.handlers.base import (
+    BaseHandler,
+    Error404Handler,
+)
+from temboardui.handlers.user import (
+    AgentLoginHandler,
+    LoginHandler,
+    LoginJsonHandler,
+    LogoutHandler,
+)
+from temboardui.handlers.home import (
+    HomeHandler,
+)
+from temboardui.handlers.notification import (
+    NotificationsHandler,
+)
+from temboardui.handlers.settings.user import (
+    SettingsDeleteUserJsonHandler,
+    SettingsUserHandler,
+    SettingsUserJsonHandler,
+)
+from temboardui.handlers.settings.group import (
+    SettingsDeleteGroupJsonHandler,
+    SettingsGroupAllJsonHandler,
+    SettingsGroupHandler,
+    SettingsGroupJsonHandler,
+)
+from temboardui.handlers.settings.instance import (
+    DiscoverInstanceJsonHandler,
+    RegisterInstanceJsonHandler,
+    SettingsDeleteInstanceJsonHandler,
+    SettingsInstanceHandler,
+    SettingsInstanceJsonHandler,
+)
 
 from temboardui.async import new_worker_pool
 from temboardui.options import temboarduiOptions
 from temboardui.configuration import Configuration
-from temboardui.errors import ConfigurationError, CLIError
+from temboardui.errors import ConfigurationError
 from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
 from temboardui.taskmanager import TaskManager
 from temboardui.autossl import AutoHTTPSServer
 from temboardui.utils import check_sqlalchemy_connectivity
-
 
 logger = logging.getLogger('temboardui')
 
@@ -57,17 +86,16 @@ class CustomTornadoWebApp(tornado.web.Application):
 
     def log_request(self, handler):
         request_time = 1000.0 * handler.request.request_time()
-        log_message = '%d %s %.2fms' % (handler.get_status(), handler._request_summary(), request_time)
+        log_message = '%d %s %.2fms' % (handler.get_status(),
+                                        handler._request_summary(),
+                                        request_time)
         self.logger.info(log_message)
 
     def create_db_engine(self, pidfile):
         dburi = "postgresql://%s:%s@%s:%s/%s" % (
-            self.config.repository['user'],
-            self.config.repository['password'],
-            self.config.repository['host'],
-            self.config.repository['port'],
-            self.config.repository['dbname']
-        )
+            self.config.repository['user'], self.config.repository['password'],
+            self.config.repository['host'], self.config.repository['port'],
+            self.config.repository['dbname'])
         self.engine = create_engine(dburi)
         try:
             check_sqlalchemy_connectivity(self.engine)
@@ -80,11 +108,11 @@ class CustomTornadoWebApp(tornado.web.Application):
 
 
 def main():
-    optparser = temboarduiOptions(description = "temBoard UI/web client.")
+    optparser = temboarduiOptions(description="temBoard UI/web client.")
     (options, _) = optparser.parse_args()
     # Load configuration from the configuration file.
     try:
-        config =  Configuration(options.configfile)
+        config = Configuration(options.configfile)
     except (ConfigurationError, ImportError) as e:
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
@@ -110,7 +138,10 @@ def main():
         'certfile': config.temboard['ssl_cert_file'],
         'keyfile': config.temboard['ssl_key_file']
     }
-    handler_conf = {'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'], 'template_path': None}
+    handler_conf = {
+        'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
+        'template_path': None
+    }
     application = CustomTornadoWebApp(
         [
             (r"/", BaseHandler, handler_conf),
@@ -121,65 +152,91 @@ def main():
             # Manage users
             (r"/settings/users", SettingsUserHandler, handler_conf),
             (r"/json/settings/user$", SettingsUserJsonHandler, handler_conf),
-            (r"/json/settings/user/([0-9a-z\-_\.]{3,16})$", SettingsUserJsonHandler, handler_conf),
-            (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler, handler_conf),
-            (r"/json/settings/all/group/(role|instance)$", SettingsGroupAllJsonHandler, handler_conf),
+            (r"/json/settings/user/([0-9a-z\-_\.]{3,16})$",
+             SettingsUserJsonHandler, handler_conf),
+            (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler,
+             handler_conf),
+            (r"/json/settings/all/group/(role|instance)$",
+             SettingsGroupAllJsonHandler, handler_conf),
             # Manage groups (users & instances)
-            (r"/settings/groups/(role|instance)$", SettingsGroupHandler, handler_conf),
-            (r"/json/settings/group/(role|instance)$", SettingsGroupJsonHandler, handler_conf),
-            (r"/json/settings/group/(role|instance)/([0-9a-z\-_\.]{3,16})$", SettingsGroupJsonHandler, handler_conf),
-            (r"/json/settings/delete/group/(role|instance)$", SettingsDeleteGroupJsonHandler, handler_conf),
+            (r"/settings/groups/(role|instance)$", SettingsGroupHandler,
+             handler_conf),
+            (r"/json/settings/group/(role|instance)$",
+             SettingsGroupJsonHandler, handler_conf),
+            (r"/json/settings/group/(role|instance)/([0-9a-z\-_\.]{3,16})$",
+             SettingsGroupJsonHandler, handler_conf),
+            (r"/json/settings/delete/group/(role|instance)$",
+             SettingsDeleteGroupJsonHandler, handler_conf),
             # Manage instances
             (r"/settings/instances", SettingsInstanceHandler, handler_conf),
-            (r"/json/settings/instance$", SettingsInstanceJsonHandler, handler_conf),
-            (r"/json/register/instance$", RegisterInstanceJsonHandler, handler_conf),
-            (r"/json/settings/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", SettingsInstanceJsonHandler, handler_conf),
-            (r"/json/settings/delete/instance$", SettingsDeleteInstanceJsonHandler, handler_conf),
+            (r"/json/settings/instance$", SettingsInstanceJsonHandler,
+             handler_conf),
+            (r"/json/register/instance$", RegisterInstanceJsonHandler,
+             handler_conf),
+            (r"/json/settings/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$",
+             SettingsInstanceJsonHandler, handler_conf),
+            (r"/json/settings/delete/instance$",
+             SettingsDeleteInstanceJsonHandler, handler_conf),
             # Discover
-            (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$", DiscoverInstanceJsonHandler, handler_conf),
+            (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$",
+             DiscoverInstanceJsonHandler, handler_conf),
             # Agent Login
-            (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler, handler_conf),
+            (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler,
+             handler_conf),
             # Notifications
-            (r"/server/(.*)/([0-9]{1,5})/notifications", NotificationsHandler, handler_conf),
-            (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/css'}),
-            (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/codemirror'}),
-            (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/js'}),
-            (r"/images/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/images'}),
-            (r"/fonts/(.*)", tornado.web.StaticFileHandler, {'path': base_path+'/static/fonts'})
+            (r"/server/(.*)/([0-9]{1,5})/notifications", NotificationsHandler,
+             handler_conf),
+            (r"/css/(.*)", tornado.web.StaticFileHandler, {
+                'path': base_path + '/static/css'
+            }),
+            (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {
+                'path': base_path + '/static/codemirror'
+            }),
+            (r"/js/(.*)", tornado.web.StaticFileHandler, {
+                'path': base_path + '/static/js'
+            }),
+            (r"/images/(.*)", tornado.web.StaticFileHandler, {
+                'path': base_path + '/static/images'
+            }),
+            (r"/fonts/(.*)", tornado.web.StaticFileHandler, {
+                'path': base_path + '/static/fonts'
+            })
         ],
         debug=options.debug,
-        cookie_secret = config.temboard['cookie_secret'],
-        template_path = base_path+"/templates",
-        default_handler_class = Error404Handler
-    )
+        cookie_secret=config.temboard['cookie_secret'],
+        template_path=base_path + "/templates",
+        default_handler_class=Error404Handler)
     application.set_config(config)
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
     application.create_db_engine(options.pidfile)
-    plugins_bind_metadata(application.engine, config.temboard['plugins_orm_engine'])
+    plugins_bind_metadata(application.engine,
+                          config.temboard['plugins_orm_engine'])
 
     # Task Manager
     task_manager = TaskManager()
     task_manager.set_logger(logger)
     task_manager.task_list.filepath = os.path.join(config.temboard['home'],
-                                                    'task_list')
+                                                   'task_list')
     logger.info("Starting task manager.")
-    task_manager.start(parameters = {'configpath': options.configfile})
+    task_manager.start(parameters={'configpath': options.configfile})
 
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     server = AutoHTTPSServer(application, ssl_options=ssl_ctx)
     try:
-        server.listen(config.temboard['port'], address=config.temboard['address'])
+        server.listen(
+            config.temboard['port'], address=config.temboard['address'])
     except socket.error as e:
-        logger.error("FATAL: " + str(e) + '. Quit');
+        logger.error("FATAL: " + str(e) + '. Quit')
         sys.exit(3)
 
     logger.info(
         "Starting temboardui on https://%s:%d",
-        config.temboard['address'], config.temboard['port'],
-    )
+        config.temboard['address'],
+        config.temboard['port'], )
     tornado.ioloop.IOLoop.instance().start()
+
 
 if __name__ == "__main__":
     try:

@@ -1,6 +1,5 @@
 codecov
 flake8
-flake8-diff
 pytest
 pytest-cov
 pytest-mock
