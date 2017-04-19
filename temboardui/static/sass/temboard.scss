@@ -104,6 +104,10 @@
 .panel-default > .panel-heading {
   padding: 5px 5px 10px 10px;
   border-bottom: 0px;
+
+  &.panel-heading-inverse {
+    background-color: $brand-primary;
+  }
 }
 
 select.form-control {
