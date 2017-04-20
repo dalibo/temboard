@@ -5,6 +5,7 @@
 {% block content %}
 <div class="row">
   <div class="col-md-12">
+    {% if len(instance_list) > 0 %}
     <ul class="list-group instance-list">
     {% for instance in instance_list %}
       {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
@@ -44,6 +45,20 @@
       </li>
     {% end %}
     </ul>
+    {% else %}
+    <p>
+    {% try %}
+      {% if role.is_admin %}
+      No instance is available yet.<br>
+      Go to <strong>Settings</strong> to add or configure instances.
+      {% else %}
+      You don't have access to any instance.<br>
+      Please contact an administrator.
+      {% end %}
+    {% except %}
+    {% end %}
+    </p>
+    {% end %}
   </div>
 </div>
 {% end %}
