@@ -18,3 +18,4 @@ REST API documentation
    core_api
    administration_api
    activity_api
+   dashboard_api
