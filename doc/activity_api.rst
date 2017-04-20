@@ -1,6 +1,6 @@
 .. _activity_api:
 
-Activity plugin
-===============
+Activity plugin API
+===================
 
 .. autotemboard:: activity
