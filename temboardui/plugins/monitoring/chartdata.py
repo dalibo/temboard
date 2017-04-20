@@ -29,7 +29,7 @@ def get_tablename(probename, start, end):
         return
 
 
-def get_loadaverage(session, host_id, start, end):
+def get_loadaverage(session, host_id, start, end, interval):
     """
     Loadaverage data loader for chart rendering.
     """
@@ -41,15 +41,18 @@ def get_loadaverage(session, host_id, start, end):
     cur.execute("SET search_path TO monitoring")
     # Get the "zoom level", depending on the time interval
     zl = zoom_level(start, end)
+    if interval == 'all':
+        interval = ['load1', 'load5', 'load15']
+    else:
+        interval = [interval]
+    interval_sql = (',').join(['(record).%s' % i for i in interval])
     # Usage of COPY .. TO STDOUT WITH CSV for data extraction
     query = """
 COPY (
     SELECT
         datetime AS date,
-        (record).load1,
-        (record).load5,
-        (record).load15
-    FROM"""
+        %s
+    FROM""" % (interval_sql)
     if zl == 0:
         # Look up in non-aggregated data
         query += """

@@ -3,11 +3,12 @@
 {% block title %}temBoard - Home{% end %}
 
 {% block content %}
+<script src="/js/moment.min.js"></script>
+<script src="/js/dygraph-combined.js"></script>
 <div class="row">
   <div class="col-md-12">
     <ul class="list-group instance-list">
     {% for instance in instance_list %}
-      {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
       <li class="list-group-item">
         <div class="row">
           <div class="col-md-12">
@@ -25,7 +26,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-5">
             <dl class="dl-horizontal small">
               <dt>Host: </dt>
               <dd>{{instance.agent_address}}</dd>
@@ -37,8 +38,85 @@
               <dd>{{instance.pg_version}}</dd>
             </dl>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-3">
             <span>{% for group in instance.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</span>
+          </div>
+          <div class="col-md-4">
+            <br>
+            {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
+            {% set chart_loadavg_id = "chart-" + instance.hostname + "-loadavg" %}
+            {% set chart_tps_id = "chart-" + instance.hostname + "-tps" %}
+            <div class="row">
+              <div class="col-md-12">
+                <div id="{{chart_tps_id}}"
+                     class="sparkline-container"
+                     data-toggle="tooltip"
+                     data-title="Transations / sec (last hour)"
+                     data-placement="bottom">
+                </div>
+                <div id="{{chart_loadavg_id}}"
+                     class="sparkline-container"
+                     data-toggle="tooltip"
+                     data-title="Load average (last hour)"
+                     data-placement="bottom">
+                </div>
+              </div>
+              <script>
+              $(document).ready(function() {
+                var api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
+
+                var start = moment().subtract(1, 'hours').toISOString();
+                var end = moment().toISOString();
+                var defaultOptions = {
+                  axes: {
+                    x: {
+                      drawGrid: false,
+                      axisLabelFontSize: 9,
+                      axisLabelColor: '#999',
+                      pixelsPerLabel: 40,
+                      gridLineColor: '#dfdfdf',
+                      axisLineColor: '#dfdfdf'
+                      //drawAxis: false
+                    },
+                    y: {
+                      axisLabelFontSize: 9,
+                      axisLabelColor: '#999',
+                      axisLabelWidth: 15,
+                      pixelsPerLabel: 10,
+                      drawAxesAtZero: true,
+                      includeZero: true,
+                      axisLineColor: '#dfdfdf',
+                      gridLineColor: '#dfdfdf'
+                    }
+                  },
+                  legend: 'never',
+                  highlightCircleSize: 0,
+                  interactionModel: {}
+                };
+                var g = new Dygraph(
+                  document.getElementById("{{chart_tps_id}}"),
+                  api_url + "/data/tps?start=" + start + "&end=" + end,
+                  $.extend({
+                    colors: ['#50BD68', '#F15854']
+                  }, defaultOptions)
+                );
+                var g = new Dygraph(
+                  document.getElementById("{{chart_loadavg_id}}"),
+                  api_url + "/data/loadavg?interval=load5&start=" + start + "&end=" + end,
+                  $.extend({
+                    colors: ['#FAA43A']
+                  }, defaultOptions)
+                );
+              });
+              </script>
+            </div>
+            {% else %}
+            <div class="row">
+              <div class="col-md-12 text-center text-muted small">
+                <em>Monitoring plugin not active</em>
+              </div>
+            </div>
+            {% end %}
           </div>
         </div>
       </li>
