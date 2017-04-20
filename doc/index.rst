@@ -15,4 +15,5 @@ REST API documentation
 ----------------------
 
 .. toctree::
+   core_api
    activity_api

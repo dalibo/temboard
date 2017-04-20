@@ -45,47 +45,58 @@ def check_sessionid(http_header, sessions):
 def login(http_context, queue_in=None, config=None, sessions=None,
           commands=None):
     """
-    @api {get} /login User login
-    @apiVersion 0.0.1
-    @apiName UserLogin
-    @apiGroup User
+User login
 
-    @apiParam {String} username Username.
-    @apiParam {String} password Password.
+**Example request**:
 
-    @apiSuccess {String} sessions Session ID.
+.. sourcecode:: http
 
-    @apiExample {curl} Example usage:
-        curl -k -X POST -H "Content-Type: application/json" -d '{"username": "julien", "password": "password12!"}' \
-            https://localhost:2345/login
+    POST /login HTTP/1.1
+    Content-Type: application/json
 
-    @apiSuccessExample Success-Reponse:
-        HTTP/1.0 200 OK
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:19:48 GMT
-        Content-type: application/json
+    {
+        "username": "alice",
+        "password": "foo!!"
+    }
 
-        {"session": "fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63"}
+**Example response**:
 
-    @apiError (500 error) error Internal error.
-    @apiError (404 error) error Invalid username or password.
-    @apiError (406 error) error Username or password malformed or missing.
+.. sourcecode:: http
 
-    @apiErrorExample 404 error example
-        HTTP/1.0 404 Not Found
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:20:33 GMT
-        Content-type: application/json
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:19:48 GMT
+    Content-type: application/json
 
-        {"error": "Invalid username/password."}
+    {"session": "fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63"}
 
-    @apiErrorExample 406 error example
-        HTTP/1.0 406 Not Acceptable
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:21:01 GMT
-        Content-type: application/json
+:reqheader Content-Type: ``application/json``
+:statuscode 200: no error
+:statuscode 404: invalid username or password
+:statuscode 500: internal error
+:statuscode 406: username or password malformed or missing
 
-        {"error": "Parameter 'password' is malformed."}
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 404 Not Found
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:20:33 GMT
+    Content-type: application/json
+
+    {"error": "Invalid username/password."}
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:21:01 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'password' is malformed."}
+
+
     """  # noqa
     post = http_context['post']
     set_logger_name("api")
@@ -137,45 +148,55 @@ def login(http_context, queue_in=None, config=None, sessions=None,
 def logout(http_context, queue_in=None, config=None, sessions=None,
            commands=None):
     """
-    @api {get} /logout User logout
-    @apiVersion 0.0.1
-    @apiName UserLogout
-    @apiGroup User
+User logout
 
-    @apiHeader {String} X-Session Session ID.
+**Example request**:
 
-    @apiSuccess {Bool} logout True if logout succeeds.
+.. sourcecode:: http
 
-    @apiExample {curl} Example usage:
-        curl -k -H "X-Session: fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63" https://localhost:2345/logout
+    GET /logout HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
-    @apiSuccessExample Success-Reponse:
-        HTTP/1.0 200 OK
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:33:19 GMT
-        Content-type: application/json
 
-        {"logout": true}
+**Example response**:
 
-    @apiError (500 error) error Internal error.
-    @apiError (401 error) error Invalid session ID.
-    @apiError (406 error) error Session ID malformed.
+.. sourcecode:: http
 
-    @apiErrorExample 401 error example
-        HTTP/1.0 401 Unauthorized
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:36:33 GMT
-        Content-type: application/json
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:33:19 GMT
+    Content-type: application/json
 
-        {"error": "Invalid session."}
+    {"logout": true}
 
-    @apiErrorExample 406 error example
-        HTTP/1.0 406 Not Acceptable
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:37:23 GMT
-        Content-type: application/json
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session ID
+:statuscode 500: internal error
+:statuscode 406: session ID malformed
 
-        {"error": "Parameter 'X-Session' is malformed."}
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 401 Unauthorized
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:36:33 GMT
+    Content-type: application/json
+
+    {"error": "Invalid session."}
+
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:37:23 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'X-Session' is malformed."}
+
+
     """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
@@ -210,39 +231,38 @@ def logout(http_context, queue_in=None, config=None, sessions=None,
 def get_discover(http_contexte, queue_in=None, config=None, sessions=None,
                  commands=None):
     """
-    @api {get} /discover Get global informations about the env.
-    @apiVersion 0.0.1
-    @apiName Discover
-    @apiGroup User
+Get global informations about the environment
 
-    @apiSuccess {String}   hostname Hostname.
-    @apiSuccess {String}   pg_data PostgreSQL data directory.
-    @apiSuccess {Number}   pg_port PostgreSQL listen port.
-    @apiSuccess {String}   pg_version PostgreSQL version.
-    @apiSuccess {String[]} plugins List or available plugins.
-    @apiSuccess {Number}   memory_size Memory size (bytes).
-    @apiSuccess {Number}   cpu Number of CPU.
+**Example request**:
 
-    @apiExample {curl} Example usage:
-        curl -k https://localhost:2345/discover
+.. sourcecode:: http
 
-    @apiSuccessExample Success-Reponse:
-        HTTP/1.0 200 OK
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:33:19 GMT
-        Content-type: application/json
-        {
-            "hostname": "neptune",
-            "pg_data": "/var/lib/postgresql/9.4/main",
-            "pg_port": 5432,
-            "plugins": ["monitoring", "dashboard", "pgconf",
-                        "administration", "activity"],
-            "memory_size": 8241508352,
-            "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
-            "cpu": 4
-        }
+    GET /discover HTTP/1.1
 
-    @apiError (500 error) error Internal error.
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:33:19 GMT
+    Content-type: application/json
+
+    {
+        "hostname": "neptune",
+        "pg_data": "/var/lib/postgresql/9.4/main",
+        "pg_port": 5432,
+        "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity"],
+        "memory_size": 8241508352,
+        "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
+        "cpu": 4
+    }
+
+:statuscode 200: no error
+:statuscode 500: internal error
+
+
     """  # noqa
     set_logger_name("api")
     logger = get_logger(config)
@@ -290,46 +310,57 @@ def get_discover(http_contexte, queue_in=None, config=None, sessions=None,
 def profile(http_context, queue_in=None, config=None, sessions=None,
             commands=None):
     """
-    @api {get} /profile Get current user name.
-    @apiVersion 0.0.1
-    @apiName Profile
-    @apiGroup User
+Get current username
 
-    @apiHeader {String} X-Session Session ID.
+**Example request**:
 
-    @apiSuccess {String} username Username.
+.. sourcecode:: http
 
-    @apiExample {curl} Example usage:
-        curl -k -H "X-Session: fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63" https://localhost:2345/profile
+    GET /profile HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
-    @apiSuccessExample Success-Reponse:
-        HTTP/1.0 200 OK
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:33:19 GMT
-        Content-type: application/json
-        {
-            "username": "julien"
-        }
 
-    @apiError (500 error) error Internal error.
-    @apiError (401 error) error Invalid session ID.
-    @apiError (406 error) error Session ID malformed.
+**Example response**:
 
-    @apiErrorExample 401 error example
-        HTTP/1.0 401 Unauthorized
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:36:33 GMT
-        Content-type: application/json
+.. sourcecode:: http
 
-        {"error": "Invalid session."}
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:33:19 GMT
+    Content-type: application/json
 
-    @apiErrorExample 406 error example
-        HTTP/1.0 406 Not Acceptable
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:37:23 GMT
-        Content-type: application/json
+    {
+        "username": "alice"
+    }
 
-        {"error": "Parameter 'X-Session' is malformed."}
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session ID
+:statuscode 500: internal error
+:statuscode 406: session ID malformed
+
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 401 Unauthorized
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:36:33 GMT
+    Content-type: application/json
+
+    {"error": "Invalid session."}
+
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:37:23 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'X-Session' is malformed."}
+
+
     """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
@@ -392,57 +423,64 @@ def get_command(http_context, queue_in=None, config=None, sessions=None,
 def notifications(http_context, queue_in=None, config=None, sessions=None,
                   commands=None):
     """
-    @api {get} /notifications Get all notifications.
-    @apiVersion 0.0.1
-    @apiName Notifications
-    @apiGroup User
+Get all notifications from the agent.
 
-    @apiHeader {String} X-Session Session ID.
+**Example request**:
 
-    @apiSuccess {Object[]} notifications List of notifications.
-    @apiSuccess {String}   notifications.date Notification datetime.
-    @apiSuccess {String}   notifications.username Username.
-    @apiSuccess {String}   notifications.message Message.
+.. sourcecode:: http
 
-    @apiExample {curl} Example usage:
-        curl -k -H "X-Session: fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63" https://localhost:2345/notifications
+    GET /notifications HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
-    @apiSuccessExample Success-Reponse:
-        HTTP/1.0 200 OK
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:33:19 GMT
-        Content-type: application/json
 
-        [
-            {"date": "2016-04-11T16:12:38", "username": "julien", "message": "Login"},
-            {"date": "2016-04-11T16:02:03", "username": "julien", "message": "Login"},
-            {"date": "2016-04-11T15:51:15", "username": "julien", "message": "HBA file version '2016-04-11T15:32:53' removed."},
-            {"date": "2016-04-11T15:51:10", "username": "julien", "message": "HBA file version '2016-04-11T15:47:26' removed."},
-            {"date": "2016-04-11T15:51:04", "username": "julien", "message": "HBA file version '2016-04-11T15:48:50' removed."},
-            {"date": "2016-04-11T15:50:57", "username": "julien", "message": "PostgreSQL reload"},
-            {"date": "2016-04-11T15:50:57", "username": "julien", "message": "HBA file updated"},
-            {"date": "2016-04-11T15:48:50", "username": "julien", "message": "PostgreSQL reload"}
-        ]
+**Example response**:
 
-    @apiError (500 error) error Internal error.
-    @apiError (401 error) error Invalid session ID.
-    @apiError (406 error) error Session ID malformed.
+.. sourcecode:: http
 
-    @apiErrorExample 401 error example
-        HTTP/1.0 401 Unauthorized
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:36:33 GMT
-        Content-type: application/json
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:33:19 GMT
+    Content-type: application/json
 
-        {"error": "Invalid session."}
+    [
+        {"date": "2016-04-11T16:12:38", "username": "alice", "message": "Login"},
+        {"date": "2016-04-11T16:02:03", "username": "alice", "message": "Login"},
+        {"date": "2016-04-11T15:51:15", "username": "alice", "message": "HBA file version '2016-04-11T15:32:53' removed."},
+        {"date": "2016-04-11T15:51:10", "username": "alice", "message": "HBA file version '2016-04-11T15:47:26' removed."},
+        {"date": "2016-04-11T15:51:04", "username": "alice", "message": "HBA file version '2016-04-11T15:48:50' removed."},
+        {"date": "2016-04-11T15:50:57", "username": "alice", "message": "PostgreSQL reload"},
+        {"date": "2016-04-11T15:50:57", "username": "alice", "message": "HBA file updated"},
+        {"date": "2016-04-11T15:48:50", "username": "alice", "message": "PostgreSQL reload"}
+    ]
 
-    @apiErrorExample 406 error example
-        HTTP/1.0 406 Not Acceptable
-        Server: temboard-agent/0.0.1 Python/2.7.8
-        Date: Wed, 22 Apr 2015 12:37:23 GMT
-        Content-type: application/json
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session ID
+:statuscode 500: internal error
+:statuscode 406: session ID malformed
 
-        {"error": "Parameter 'X-Session' is malformed."}
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 401 Unauthorized
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:36:33 GMT
+    Content-type: application/json
+
+    {"error": "Invalid session."}
+
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 12:37:23 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'X-Session' is malformed."}
+
+
     """  # noqa
     headers = http_context['headers']
     set_logger_name("api")
