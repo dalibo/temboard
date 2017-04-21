@@ -4,6 +4,7 @@ from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import (
     TemboardError,
     temboard_get_notifications,
+    temboard_profile,
 )
 from temboardui.handlers.base import BaseHandler
 from temboardui.async import (
@@ -38,6 +39,12 @@ class NotificationsHandler(BaseHandler):
                 (instance.agent_address, instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
+            else:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                instance.agent_address,
+                                                instance.agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
 
             # Load notifications.
             notifications = temboard_get_notifications(self.ssl_ca_cert_file,
@@ -54,7 +61,8 @@ class NotificationsHandler(BaseHandler):
                         'instance': instance,
                         'plugin': 'notifications',
                         'notifications': notifications,
-                        'xsession': xsession
+                        'xsession': xsession,
+                        'agent_username': agent_username,
                     })
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))

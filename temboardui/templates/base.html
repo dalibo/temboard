@@ -127,6 +127,12 @@
                 <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
                 <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
               </table>
+              {% try %}
+              {% if agent_username %}
+              <small class="text-muted">Logged in as <strong>{{agent_username}}</strong></small>
+              {% end %}
+              {% except %}
+              {% end %}
             </div>
           </div>
           <div class="row">

@@ -147,7 +147,7 @@ class AgentLoginHandler(BaseHandler):
                 data={
                     'nav': True,
                     'instance': instance,
-                    'role': None,
+                    'role': role,
                     'username': agent_username
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
