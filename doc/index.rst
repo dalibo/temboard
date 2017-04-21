@@ -20,3 +20,4 @@ REST API documentation
    activity_api
    dashboard_api
    monitoring_api
+   pgconf_api
