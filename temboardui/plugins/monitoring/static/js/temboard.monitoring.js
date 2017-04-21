@@ -119,6 +119,12 @@ function add_visibility_cb(chart_id, g, is_initial)
   }
 }
 
+
+function updateDateRange(start, end) {
+  $('#daterange span').html(
+    start.format(dateFormat) + ' - ' + end.format(dateFormat));
+}
+
 function synchronize_zoom(start_date, end_date, api_url)
 {
   var picker = $('#daterange').data('daterangepicker');
@@ -128,6 +134,8 @@ function synchronize_zoom(start_date, end_date, api_url)
   // get new date from picker (may be rounded)
   start_date = picker.startDate;
   end_date = picker.endDate;
+
+  updateDateRange(start_date, end_date);
 
   for(var i in sync_graphs)
   {

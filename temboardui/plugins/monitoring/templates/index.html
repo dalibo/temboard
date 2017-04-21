@@ -62,16 +62,12 @@ api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring
 sync_graphs = [];
 data_api_url = api_url+"/data";
 interval_api_url = api_url+"/interval";
+var dateFormat = 'DD/MM/YYYY HH:mm';
 
 $(document).ready(function() {
 
-  var format = 'DD/MM/YYYY HH:mm';
   var start = moment().subtract(24, 'hours');
   var end = moment();
-  var cb = function(start, end) {
-    $('#daterange span').html(
-      start.format(format) + ' - ' + end.format(format));
-  }
   $("#daterange").daterangepicker({
     startDate: start,
     endDate: end,
@@ -80,7 +76,7 @@ $(document).ready(function() {
     timePickerIncrement: 5,
     timePicker24Hour: true,
     locale: {
-      format: format
+      format: dateFormat
     },
     ranges: {
       'Last Hour': [moment().subtract(1, 'hours'), moment()],
@@ -89,8 +85,8 @@ $(document).ready(function() {
       'Last 30 Days': [moment().subtract(30, 'days'), moment()],
       'Last 12 Months': [moment().subtract(12, 'months'), moment()]
     }
-  }, cb);
-  cb(start, end);
+  });
+  updateDateRange(start, end);
   $('#daterange').on('apply.daterangepicker', function(ev, picker) {
     synchronize_zoom(
       picker.startDate,
