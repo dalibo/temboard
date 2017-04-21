@@ -10,3 +10,4 @@ twitter_username: temboardio
 # Build settings
 markdown: kramdown
 permalink: pretty
+exclude: ['venv']
