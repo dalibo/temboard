@@ -4,24 +4,13 @@ Monitor, optimize and configure multiple PostgreSQL instances.
 
 | |RTD| |Travis| |CircleCI| |Codecov|
 
+======
+ Demo
+======
 
-==========
- Features
-==========
+| |Demo|
 
-Dashboard
-=========
-
-.. image:: https://github.com/dalibo/temboard/raw/master/doc/demo_dashboard.gif
-   :alt: Demo Dashboard
-
-
-Changing a Parameter
-====================
-
-.. image:: https://github.com/dalibo/temboard/raw/master/doc/demo_settings.gif
-   :alt: Demo Settings
-
+*Click on image to see a quick demo.*
 
 ============
  Quickstart
@@ -84,3 +73,7 @@ temBoard is available under the `PostgreSQL License
 .. |RTD| image:: https://readthedocs.org/projects/temboard/badge/?version=latest
    :target: http://temboard.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation
+
+.. |Demo| image:: https://github.com/dalibo/temboard/raw/gh-pages/imgs/temboard_poster.png
+   :target: http://temboard.io/imgs/temboard.mp4
+   :alt: Screenshot temBoard
