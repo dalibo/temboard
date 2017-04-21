@@ -41,10 +41,39 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         add_export_button_callback(id, g, is_initial, title);
       },
       zoomCallback: function(minDate, maxDate, yRanges) {
-        var picker = $('#daterange').data('daterangepicker');
-        picker.setStartDate(moment(minDate));
-        picker.setEndDate(moment(maxDate));
-        synchronize_zoom(picker.startDate, picker.endDate, api_url);
+        synchronize_zoom(minDate, maxDate, api_url);
+      },
+      // change interaction model in order to be able to capture the end of
+      // panning
+      // Dygraphs doesn't provide any panCallback unfortunately
+      interactionModel: {
+        mousedown: function (event, g, context) {
+          context.initializeMouseDown(event, g, context);
+          if (event.shiftKey) {
+            Dygraph.startPan(event, g, context);
+          } else {
+            Dygraph.startZoom(event, g, context);
+          }
+        },
+        mousemove: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.movePan(event, g, context);
+          } else if (context.isZooming) {
+            Dygraph.moveZoom(event, g, context);
+          }
+        },
+        mouseup: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.endPan(event, g, context);
+            var dates = g.dateWindow_;
+            // synchronize charts on pan end
+            synchronize_zoom(dates[0], dates[1], api_url);
+          } else if (context.isZooming) {
+            Dygraph.endZoom(event, g, context);
+            // don't do the same since zoom is animated
+            // zoomCallback will do the job
+          }
+        }
       }
   }
 
@@ -92,6 +121,14 @@ function add_visibility_cb(chart_id, g, is_initial)
 
 function synchronize_zoom(start_date, end_date, api_url)
 {
+  var picker = $('#daterange').data('daterangepicker');
+  picker.setStartDate(moment(start_date));
+  picker.setEndDate(moment(end_date));
+
+  // get new date from picker (may be rounded)
+  start_date = picker.startDate;
+  end_date = picker.endDate;
+
   for(var i in sync_graphs)
   {
     // update the date range
