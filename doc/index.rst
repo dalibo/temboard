@@ -19,3 +19,4 @@ REST API documentation
    administration_api
    activity_api
    dashboard_api
+   monitoring_api
