@@ -247,7 +247,7 @@ def dashboard_buffers(http_context,
                       sessions=None,
                       commands=None):
     """
-Get the number of buffer allocated by PostgreSQL ``background writer`` process.
+Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
 .. sourcecode:: http
 
