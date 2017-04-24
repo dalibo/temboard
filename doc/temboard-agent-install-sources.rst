@@ -10,7 +10,7 @@ Dependencies
 Installation
 ------------
 
-To install Python `setuptools` with `pip`:
+First install Python `setuptools` with `pip`:
 
 .. code-block:: bash
 
