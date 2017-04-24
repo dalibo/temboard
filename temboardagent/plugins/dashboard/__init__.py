@@ -247,7 +247,7 @@ def dashboard_buffers(http_context,
                       sessions=None,
                       commands=None):
     """
-Get the number of buffer allocated by PostgreSQL ``background writer`` process.
+Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
 .. sourcecode:: http
 
@@ -290,7 +290,7 @@ def dashboard_hitratio(http_context,
                        sessions=None,
                        commands=None):
     """
-Get PostgreSQL global cache hit ratio
+Get PostgreSQL global cache hit ratio.
 
 .. sourcecode:: http
 
@@ -333,7 +333,7 @@ def dashboard_active_backends(http_context,
                               sessions=None,
                               commands=None):
     """
-Get the total number of active backends
+Get the total number of active backends.
 
 .. sourcecode:: http
 
@@ -382,7 +382,7 @@ def dashboard_cpu(http_context,
                   sessions=None,
                   commands=None):
     """
-Get CPU usage
+Get CPU usage.
 
 .. sourcecode:: http
 
@@ -434,7 +434,7 @@ def dashboard_loadaverage(http_context,
                           sessions=None,
                           commands=None):
     """
-System loadaverage
+System loadaverage.
 
 .. sourcecode:: http
 
@@ -476,7 +476,7 @@ def dashboard_memory(http_context,
                      sessions=None,
                      commands=None):
     """
-Memory usage
+Memory usage.
 
 .. sourcecode:: http
 
@@ -527,7 +527,7 @@ def dashboard_hostname(http_context,
                        sessions=None,
                        commands=None):
     """
-Machine hostname
+Machine hostname.
 
 .. sourcecode:: http
 
@@ -572,7 +572,7 @@ def dashboard_os_version(http_context,
                          sessions=None,
                          commands=None):
     """
-Operating system version
+Operating system version.
 
 .. sourcecode:: http
 
@@ -617,7 +617,7 @@ def dashboard_pg_version(http_context,
                          sessions=None,
                          commands=None):
     """
-Get PostgreSQL server version
+Get PostgreSQL server version.
 
 .. sourcecode:: http
 
@@ -663,7 +663,7 @@ def dashboard_n_cpu(http_context,
                     sessions=None,
                     commands=None):
     """
-Number of CPU
+Number of CPU.
 
 .. sourcecode:: http
 
@@ -709,7 +709,7 @@ def dashboard_databases(http_context,
                         sessions=None,
                         commands=None):
     """
-PostgreSQL cluster size & number of databases
+PostgreSQL cluster size & number of databases.
 
 .. sourcecode:: http
 
@@ -762,7 +762,7 @@ def dashboard_info(http_context,
                    sessions=None,
                    commands=None):
     """
-Get a bunch of global informations about system and PostgreSQL
+Get a bunch of global informations about system and PostgreSQL.
 
 .. sourcecode:: http
 

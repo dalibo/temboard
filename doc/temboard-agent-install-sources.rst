@@ -10,7 +10,7 @@ Dependencies
 Installation
 ------------
 
-To install Python `setuptools` with `pip`:
+First install Python `setuptools` with `pip`:
 
 .. code-block:: bash
 
@@ -64,9 +64,9 @@ Change owner and rights:
 
 .. code-block:: bash
 
-    sudo chown -R postgres.postgres /var/lib/temboard-agent
-    sudo chown postgres.postgres /var/log/temboard-agent
-    sudo chown -R postgres.postgres /etc/temboard-agent
+    sudo chown -R postgres:postgres /var/lib/temboard-agent
+    sudo chown postgres:postgres /var/log/temboard-agent
+    sudo chown -R postgres:postgres /etc/temboard-agent
     sudo chmod 0600 /etc/temboard-agent/temboard-agent.conf
 
 

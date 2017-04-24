@@ -35,7 +35,7 @@ It provides a ready to use self-signed SSL certifcate located in ``/usr/share/te
 
     sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
     sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
-    sudo chown postgres.postgres /etc/temboard-agent/ssl/*
+    sudo chown postgres:postgres /etc/temboard-agent/ssl/*
 
 
 Build a new self-signed certificate
@@ -99,7 +99,7 @@ Add a first user:
 Registration in the Web UI of the monitoring plugin
 ---------------------------------------------------
 
-If you want to use the monitoring plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
+If you want to use the ``monitoring`` plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
 Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
 (or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
 
@@ -132,7 +132,7 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
 
   - ``host``: Path to PostgreSQL unix socket. Default: ``/var/run/postgresql``;
   - ``port``: PostgreSQL port number. Default: ``5432``;
-  - ``user``: PostgreSQL user, Must be a super-user. Default: ``postgres``;
+  - ``user``: PostgreSQL user. Must be a super-user. Default: ``postgres``;
   - ``password``: User password. Default: ``None``;
   - ``dbname``: Database name for the connection. Default: ``postgres``;
   - ``instance``: Cluster name. Default: ``main``.
@@ -155,11 +155,11 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
 ``monitoring`` plugin
 ^^^^^^^^^^^^^^^^^^^^^
 
-  - ``dbnames``: Database name list (comma separator) to supervise. * for all. Default: ``*``;
+  - ``dbnames``: Database name list (comma separated) to supervise. * for all. Default: ``*``;
   - ``collector_url``: Collector URL. Default: ``None``;
-  - ``probes``: List of probes to run, comma separator, * for all. Default: ``*``;
+  - ``probes``: List of probes to run (comma separated). * for all. Default: ``*``;
   - ``scheduler_interval``: Interval, in second, between each run of the process executing the probes. Default: ``60``;
-  - ``ssl_ca_cert_file ``: File where to store collector's SSL certificate. Default: ``None``.
+  - ``ssl_ca_cert_file``: File where to store collector's SSL certificate. Default: ``None``.
 
 ``administration`` plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^
