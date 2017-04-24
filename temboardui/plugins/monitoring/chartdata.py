@@ -116,7 +116,8 @@ COPY (
         host_id integer,
         cpu text,
         record metric_cpu_record)
-    GROUP BY datetime, host_id)
+    GROUP BY datetime, host_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -168,7 +169,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_xacts_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -276,7 +278,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_db_size_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -433,7 +436,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_sessions_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -484,7 +488,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_blocks_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -537,7 +542,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_blocks_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -694,7 +700,8 @@ COPY (
             instance_id integer,
             dbname text,
             record metric_locks_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -751,7 +758,8 @@ COPY (
         instance_id integer,
         dbname text,
         record metric_locks_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -918,7 +926,8 @@ COPY (
     AS (datetime timestamp with time zone,
         host_id integer,
         record metric_process_record)
-    GROUP BY datetime)
+    GROUP BY datetime
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
@@ -1121,7 +1130,8 @@ COPY (
     AS (datetime timestamp with time zone,
         instance_id integer,
         record metric_wal_files_record)
-    GROUP BY datetime, instance_id)
+    GROUP BY datetime, instance_id
+    ORDER BY datetime)
 TO STDOUT WITH CSV HEADER""" % (
             start,
             end,
