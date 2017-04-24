@@ -35,7 +35,7 @@ It provides a ready to use self-signed SSL certifcate located in ``/usr/share/te
 
     sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
     sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
-    sudo chown postgres.postgres /etc/temboard-agent/ssl/*
+    sudo chown postgres:postgres /etc/temboard-agent/ssl/*
 
 
 Build a new self-signed certificate
