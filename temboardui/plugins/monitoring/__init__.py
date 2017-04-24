@@ -50,6 +50,7 @@ from temboardui.async import (
     CSVAsyncResult,
 )
 from temboardui.temboardclient import (
+    TemboardError,
     temboard_profile,
 )
 from temboardui.configuration import Configuration
@@ -847,13 +848,22 @@ class MonitoringHTMLHandler(BaseHandler):
                 "temboard_%s_%s" %
                 (instance.agent_address, instance.agent_port))
 
+            # Here we want to get the current agent username if a session
+            # already exists.
+            # Monitoring plugin doesn't require agent authentication since we
+            # already have the data.
+            # Don't fail if there's a session error (for example when the agent
+            # has been restarted)
             agent_username = None
-            if xsession:
-                data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                                instance.agent_address,
-                                                instance.agent_port,
-                                                xsession)
-                agent_username = data_profile['username']
+            try:
+                if xsession:
+                    data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                    instance.agent_address,
+                                                    instance.agent_port,
+                                                    xsession)
+                    agent_username = data_profile['username']
+            except TemboardError:
+                pass
 
             return HTMLAsyncResult(
                     http_code=200,
