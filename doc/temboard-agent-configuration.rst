@@ -99,7 +99,7 @@ Add a first user:
 Registration in the Web UI of the monitoring plugin
 ---------------------------------------------------
 
-If you want to use the monitoring plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
+If you want to use the ``monitoring`` plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
 Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
 (or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
 
