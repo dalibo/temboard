@@ -8,6 +8,7 @@ from temboardui.temboardclient import (
     temboard_dashboard,
     temboard_dashboard_history,
     temboard_dashboard_live,
+    temboard_profile,
 )
 from temboardui.async import (
     HTMLAsyncResult,
@@ -70,6 +71,12 @@ class DashboardHandler(BaseHandler):
                                                instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
+            else:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                instance.agent_address,
+                                                instance.agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
 
             dashboard_history = temboard_dashboard_history(
                 self.ssl_ca_cert_file, instance.agent_address,
@@ -99,7 +106,8 @@ class DashboardHandler(BaseHandler):
                     'history': history,
                     'buffers_delta': 0,
                     'readratio': (100 - last_data['hitratio']),
-                    'xsession': xsession
+                    'xsession': xsession,
+                    'agent_username': agent_username,
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))

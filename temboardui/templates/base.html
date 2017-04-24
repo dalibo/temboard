@@ -121,12 +121,19 @@
                 </span>&nbsp;
               {% end %}
               </p>
-              <table class="table table-condensed small">
+              <table class="table table-condensed table-no-margin small">
                 <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
                 <tr><td>Data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
                 <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
                 <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
               </table>
+              {% try %}
+              {% if agent_username %}
+              <small class="text-muted">Logged in as <strong>{{agent_username}}</strong></small>
+              {% end %}
+              {% except %}
+              <small class="text-muted">Not logged in</small>
+              {% end %}
             </div>
           </div>
           <div class="row">

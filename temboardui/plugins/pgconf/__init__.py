@@ -18,6 +18,7 @@ from temboardui.temboardclient import (
     temboard_post_conf_file,
     temboard_post_configuration,
     temboard_post_file_content,
+    temboard_profile,
 )
 from temboardui.async import (
     HTMLAsyncResult,
@@ -128,6 +129,12 @@ class ConfigurationHandler(BaseHandler):
                 (instance.agent_address, instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
+            else:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                instance.agent_address,
+                                                instance.agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
 
             configuration_status = temboard_get_configuration_status(
                                         self.ssl_ca_cert_file,
@@ -164,6 +171,7 @@ class ConfigurationHandler(BaseHandler):
                         'plugin': 'pgconf',
                         'data': configuration_data,
                         'xsession': xsession,
+                        'agent_username': agent_username,
                         'current_cat': tornado.escape.url_unescape(category),
                         'configuration_categories': configuration_cat,
                         'configuration_status': configuration_status,

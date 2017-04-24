@@ -380,3 +380,7 @@ $glow-color-end: lighten($brand-primary, 30%);
   background-color: white;
   border-color: $btn-default-border;
 }
+
+.table-no-margin {
+  margin-bottom: 0;
+}

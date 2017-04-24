@@ -49,6 +49,10 @@ from temboardui.async import (
     JSONAsyncResult,
     CSVAsyncResult,
 )
+from temboardui.temboardclient import (
+    TemboardError,
+    temboard_profile,
+)
 from temboardui.configuration import Configuration
 from temboardui.errors import TemboardUIError, ConfigurationError
 from temboardui.application import get_instance
@@ -840,6 +844,27 @@ class MonitoringHTMLHandler(BaseHandler):
             self.db_session.commit()
             self.db_session.close()
 
+            xsession = self.get_secure_cookie(
+                "temboard_%s_%s" %
+                (instance.agent_address, instance.agent_port))
+
+            # Here we want to get the current agent username if a session
+            # already exists.
+            # Monitoring plugin doesn't require agent authentication since we
+            # already have the data.
+            # Don't fail if there's a session error (for example when the agent
+            # has been restarted)
+            agent_username = None
+            try:
+                if xsession:
+                    data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                    instance.agent_address,
+                                                    instance.agent_port,
+                                                    xsession)
+                    agent_username = data_profile['username']
+            except TemboardError:
+                pass
+
             return HTMLAsyncResult(
                     http_code=200,
                     template_path=self.template_path,
@@ -849,6 +874,7 @@ class MonitoringHTMLHandler(BaseHandler):
                         'role': role,
                         'instance': instance,
                         'plugin': 'monitoring',
+                        'agent_username': agent_username
                     })
 
         except (TemboardUIError, Exception) as e:

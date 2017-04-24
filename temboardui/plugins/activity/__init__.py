@@ -15,6 +15,7 @@ from temboardui.temboardclient import (
     temboard_activity_blocking,
     temboard_activity_kill,
     temboard_activity_waiting,
+    temboard_profile,
 )
 
 
@@ -75,6 +76,12 @@ class ActivityHandler(BaseHandler):
                                                instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
+            else:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                instance.agent_address,
+                                                instance.agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
 
             # Load activity.
             activity_data = temboard_activity(self.ssl_ca_cert_file,
@@ -91,7 +98,8 @@ class ActivityHandler(BaseHandler):
                     'instance': instance,
                     'plugin': 'activity',
                     'activities': activity_data,
-                    'xsession': xsession
+                    'xsession': xsession,
+                    'agent_username': agent_username,
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))
@@ -160,6 +168,12 @@ class ActivityWBHandler(BaseHandler):
                                                instance.agent_port))
             if not xsession:
                 raise TemboardUIError(401, "Authentication cookie is missing.")
+            else:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                instance.agent_address,
+                                                instance.agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
 
             # Load activity.
             if mode == 'waiting':
@@ -184,7 +198,8 @@ class ActivityWBHandler(BaseHandler):
                     'plugin': 'activity',
                     'activities': activity_data,
                     'mode': mode,
-                    'xsession': xsession
+                    'xsession': xsession,
+                    'agent_username': agent_username,
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))
