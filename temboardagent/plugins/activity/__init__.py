@@ -28,6 +28,7 @@ Get list of PostgreSQL backends.
     HTTP/1.0 200 OK
     Server: temboard-agent/0.0.1 Python/2.7.8
     Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Access-Control-Allow-Origin: *
     Content-type: application/json
 
     {
@@ -113,6 +114,7 @@ Get list of PostgreSQL backends waiting for lock acquisition.
     HTTP/1.0 200 OK
     Server: temboard-agent/0.0.1 Python/2.7.8
     Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Access-Control-Allow-Origin: *
     Content-type: application/json
 
     {
@@ -143,28 +145,6 @@ Get list of PostgreSQL backends waiting for lock acquisition.
 :statuscode 401: invalid session
 :statuscode 500: internal error
 :statuscode 406: header ``X-Session`` is malformed.
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
-
 
     """  # noqa
     set_logger_name('activity')
@@ -199,6 +179,7 @@ Get list of PostgreSQL backends blocking other backends due to lock acquisition.
     HTTP/1.0 200 OK
     Server: temboard-agent/0.0.1 Python/2.7.8
     Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Access-Control-Allow-Origin: *
     Content-type: application/json
 
     {
@@ -229,27 +210,6 @@ Get list of PostgreSQL backends blocking other backends due to lock acquisition.
 :statuscode 401: invalid session
 :statuscode 500: internal error
 :statuscode 406: header ``X-Session`` is malformed.
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
 
 
     """  # noqa
@@ -292,6 +252,7 @@ Terminate (kill) a list of PostgreSQL backends.
     HTTP/1.0 200 OK
     Server: temboard-agent/0.0.1 Python/2.7.8
     Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Access-Control-Allow-Origin: *
     Content-type: application/json
 
     {
@@ -307,27 +268,6 @@ Terminate (kill) a list of PostgreSQL backends.
 :statuscode 401: invalid session
 :statuscode 500: internal error
 :statuscode 406: header ``X-Session`` is malformed.
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 09:58:00 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
 
 
     """  # noqa

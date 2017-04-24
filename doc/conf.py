@@ -19,6 +19,8 @@
 import os
 import sys
 sys.path.insert(0, '../temboardagent/plugins')
+sys.path.insert(0, '../temboardagent')
+sys.path.insert(0, '..')
 sys.path.insert(0, '.')
 
 

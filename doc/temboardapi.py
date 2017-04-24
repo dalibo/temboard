@@ -25,7 +25,9 @@ from temboardagent import routing
 
 def get_routes(plugin):
     for route in routing.get_routes():
-        if route['root'] == plugin:
+        if plugin != 'api' and route['module'] == plugin:
+            yield route['http_method'], route['path'], route
+        if plugin == 'api' and route['module'] == 'temboardagent.api':
             yield route['http_method'], route['path'], route
 
 

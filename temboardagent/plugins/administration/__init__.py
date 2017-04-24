@@ -57,6 +57,65 @@ def post_pg_control(http_context,
                     config=None,
                     sessions=None,
                     commands=None):
+    """
+Control PostgreSQL server. Supported actions are "start", "stop", "restart" and "reload".
+
+**Example request**:
+
+.. sourcecode:: http
+
+    POST /administration/control HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+    Content-Type: application/json
+
+    {
+        "action": "restart"
+    }
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Content-type: application/json
+
+    {
+        "action": "restart",
+        "state": "ok"
+    }
+
+
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session
+:statuscode 500: internal error
+:statuscode 406: header or parameter is malformed.
+
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 401 Unauthorized
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:58:00 GMT
+    Content-type: application/json
+
+    {"error": "Invalid session."}
+
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:58:00 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'action' is malformed."}
+
+
+    """  # noqa
     # NOTE: in this case we don't want to use api functions wrapper, it leads
     # to "Broken pipe" error with debian init.d scrip on start/restart. This is
     # probably due to getattr() call.
