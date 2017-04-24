@@ -155,9 +155,9 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
 ``monitoring`` plugin
 ^^^^^^^^^^^^^^^^^^^^^
 
-  - ``dbnames``: Database name list (comma separator) to supervise. * for all. Default: ``*``;
+  - ``dbnames``: Database name list (comma separated) to supervise. * for all. Default: ``*``;
   - ``collector_url``: Collector URL. Default: ``None``;
-  - ``probes``: List of probes to run, comma separator, * for all. Default: ``*``;
+  - ``probes``: List of probes to run (comma separated). * for all. Default: ``*``;
   - ``scheduler_interval``: Interval, in second, between each run of the process executing the probes. Default: ``60``;
   - ``ssl_ca_cert_file ``: File where to store collector's SSL certificate. Default: ``None``.
 
