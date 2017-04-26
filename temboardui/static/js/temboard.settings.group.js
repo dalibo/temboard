@@ -30,7 +30,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="New group name" value="'+data['name']+'" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="New group name" value="'+data['name']+'" />';
       body_html += '    </div>';
       if (group_kind == 'instance')
       {
@@ -236,7 +236,7 @@ function load_add_group_form(modal_id, group_kind)
     body_html += '  <div class="row">';
     body_html += '    <div class="form-group col-sm-12">';
     body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-    body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="Group name" />';
+    body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="Group name" />';
     body_html += '    </div>';
     body_html += '  </div>';
     body_html += '  <div class="row">';
@@ -280,7 +280,7 @@ function load_add_group_form(modal_id, group_kind)
         body_html += '  <div class="row">';
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-        body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="New group name" />';
+        body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="New group name" />';
         body_html += '    </div>';
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';

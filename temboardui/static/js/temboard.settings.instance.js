@@ -26,11 +26,11 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewAgentAddress" class="control-label">Agent address</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewAgentAddress" placeholder="db.entreprise.lan" value="'+data['agent_address']+'" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewAgentAddress" placeholder="db.entreprise.lan" value="'+data['agent_address']+'" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewAgentPort" class="control-label">Agent port</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewAgentPort" placeholder="2345" value="'+data['agent_port']+'" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewAgentPort" placeholder="2345" value="'+data['agent_port']+'" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -304,11 +304,11 @@ function load_add_instance_form(modal_id)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewAgentAddress" class="control-label">Agent address</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewAgentAddress" placeholder="db.entreprise.lan" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewAgentAddress" placeholder="db.entreprise.lan" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewAgentPort" class="control-label">Agent port</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewAgentPort" placeholder="2345" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewAgentPort" placeholder="2345" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
