@@ -18,7 +18,6 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
     dataType: "json",
     success: function (data) {
       $('#'+modal_id+'Label').html('Update instance properties');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['agent_address']+' <small>'+data['agent_port']+'</small></h4>');
       var body_html = '';
       body_html += '<form id="formUpdateInstance">';
       body_html += '  <input type="hidden" id="inputAgentAddress" value="'+data['agent_address']+'" />';
@@ -162,7 +161,6 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
             $('#inputPgVersion').val(data['pg_version']);
             $('#inputPgPort').val(data['pg_port']);
             $('#'+modal_id+'Label').html('Update instance properties');
-            $('#'+modal_id+'Info').html('<h4 class="text-center">'+$('#inputNewAgentAddress').val()+' <small>'+$('#inputNewAgentPort').val()+'</small></h4>');
           },
           error: function(xhr) {
             $('#'+modal_id+'Label').html('Update instance properties');
@@ -234,7 +232,6 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
       footer_html += '<button type="submit" id="buttonDeleteInstance" class="btn btn-danger">Yes, delete this instance</button>';
       footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
       $('#'+modal_id+'Label').html('Delete instance confirmation');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['agent_address']+' <small>'+data['agent_port']+'</small></h4>');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
 

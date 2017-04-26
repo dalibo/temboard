@@ -18,7 +18,6 @@ function load_update_user_form(modal_id, username)
     dataType: "json",
     success: function (data) {
       $('#'+modal_id+'Label').html('Update user properties');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['role_name']+' <small>'+data['role_email']+'</small></h4>');
       var body_html = '';
       body_html += '<form id="formUpdateUser">';
       body_html += '  <input type="hidden" id="inputUsername" value="'+data['role_name']+'" />';
@@ -167,7 +166,6 @@ function load_delete_user_confirm(modal_id, username)
       footer_html += '<button type="submit" id="buttonDeleteUser" class="btn btn-danger">Yes, delete this user</button>';
       footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
       $('#'+modal_id+'Label').html('Delete user confirmation');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['role_name']+' <small>'+data['role_email']+'</small></h4>');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
       $('#buttonDeleteUser').click(function( event ) {

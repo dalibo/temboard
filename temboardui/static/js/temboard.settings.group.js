@@ -23,7 +23,6 @@ function load_update_group_form(modal_id, group_kind, group_name)
       } else {
         $('#'+modal_id+'Label').html('Update instance group properties');
       }
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['name']+'</h4>');
       var body_html = '';
       body_html += '<form id="formUpdateGroup">';
       body_html += '  <input type="hidden" id="inputGroupname" value="'+data['name']+'" />';
@@ -168,7 +167,6 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
       var footer_html = '';
       footer_html += '<button type="submit" id="buttonDeleteGroup" class="btn btn-danger">Yes, delete this group</button>';
       footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['name']+'</h4>');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
       $('#buttonDeleteGroup').click(function( event ) {
