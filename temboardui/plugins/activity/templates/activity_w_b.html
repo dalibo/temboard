@@ -56,7 +56,7 @@
         </tr>
         {% for row in activities['rows'] %}
         <tr class="{%if float(row['duration'])>5%}danger{%else%}{%if float(row['duration'])>1%}warning{%else%}none{%end%}{%end%}">
-          <td><input type="checkbox" class="hide input-xs" data-pid="{{row['pid']}}"/></td>
+          <td><input type="checkbox" class="invisible input-xs" data-pid="{{row['pid']}}"/></td>
           <td>{{row['pid']}}</td>
           <td class="text-center">{{row['database']}}</td>
           <td class="text-center">{{row['user']}}</td>
