@@ -36,7 +36,6 @@ function load_update_group_form(modal_id, group_kind, group_name)
       {
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
-        body_html += '      <p>Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         var selected = '';
@@ -51,6 +50,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
           descriptions[group['name']] = group['description'];
         }
         body_html += '      </select>';
+        body_html += '      <p class="help-block">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
       }
       body_html += '  </div>';
@@ -284,7 +284,6 @@ function load_add_group_form(modal_id, group_kind)
         body_html += '    </div>';
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
-        body_html += '      <p>Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         for (var group of data['groups'])
@@ -293,6 +292,7 @@ function load_add_group_form(modal_id, group_kind)
           descriptions[group['name']] = group['description'];
         }
         body_html += '      </select>';
+        body_html += '      <p class="help-block">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
         body_html += '  </div>';
         body_html += '  <div class="row">';

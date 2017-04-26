@@ -37,7 +37,7 @@ function load_update_user_form(modal_id, username)
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
       body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
       body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
@@ -248,7 +248,7 @@ function load_add_user_form(modal_id)
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
       body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
       body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
