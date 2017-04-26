@@ -206,6 +206,7 @@ function pause_activity()
   $('input[type=checkbox]').each(function () {
     $(this).removeClass('invisible');
   });
+  $('#loadingIndicator').addClass('hidden');
 }
 
 function resume_activity()
@@ -220,6 +221,7 @@ function resume_activity()
     $(this).addClass('invisible');
   });
   $('#killButton').addClass('hide');
+  $('#loadingIndicator').removeClass('hidden');
 }
 
 // show the kill button only when backends have been selected
