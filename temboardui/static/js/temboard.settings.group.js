@@ -23,20 +23,18 @@ function load_update_group_form(modal_id, group_kind, group_name)
       } else {
         $('#'+modal_id+'Label').html('Update instance group properties');
       }
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['name']+'</h4>');
       var body_html = '';
       body_html += '<form id="formUpdateGroup">';
       body_html += '  <input type="hidden" id="inputGroupname" value="'+data['name']+'" />';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="New group name" value="'+data['name']+'" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="New group name" value="'+data['name']+'" />';
       body_html += '    </div>';
       if (group_kind == 'instance')
       {
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
-        body_html += '      <p>Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         var selected = '';
@@ -51,6 +49,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
           descriptions[group['name']] = group['description'];
         }
         body_html += '      </select>';
+        body_html += '      <p class="help-block">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
       }
       body_html += '  </div>';
@@ -168,7 +167,6 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
       var footer_html = '';
       footer_html += '<button type="submit" id="buttonDeleteGroup" class="btn btn-danger">Yes, delete this group</button>';
       footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['name']+'</h4>');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
       $('#buttonDeleteGroup').click(function( event ) {
@@ -236,7 +234,7 @@ function load_add_group_form(modal_id, group_kind)
     body_html += '  <div class="row">';
     body_html += '    <div class="form-group col-sm-12">';
     body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-    body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="Group name" />';
+    body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="Group name" />';
     body_html += '    </div>';
     body_html += '  </div>';
     body_html += '  <div class="row">';
@@ -280,11 +278,10 @@ function load_add_group_form(modal_id, group_kind)
         body_html += '  <div class="row">';
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="inputNewGroupname" class="control-label">Group name</label>';
-        body_html += '      <input type="text" class="form-control input-sm" id="inputNewGroupname" placeholder="New group name" />';
+        body_html += '      <input type="text" class="form-control" id="inputNewGroupname" placeholder="New group name" />';
         body_html += '    </div>';
         body_html += '    <div class="form-group col-sm-6">';
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
-        body_html += '      <p>Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         for (var group of data['groups'])
@@ -293,6 +290,7 @@ function load_add_group_form(modal_id, group_kind)
           descriptions[group['name']] = group['description'];
         }
         body_html += '      </select>';
+        body_html += '      <p class="help-block">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
         body_html += '  </div>';
         body_html += '  <div class="row">';

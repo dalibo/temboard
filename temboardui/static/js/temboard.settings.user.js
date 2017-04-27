@@ -18,26 +18,25 @@ function load_update_user_form(modal_id, username)
     dataType: "json",
     success: function (data) {
       $('#'+modal_id+'Label').html('Update user properties');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['role_name']+' <small>'+data['role_email']+'</small></h4>');
       var body_html = '';
       body_html += '<form id="formUpdateUser">';
       body_html += '  <input type="hidden" id="inputUsername" value="'+data['role_name']+'" />';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewUsername" class="control-label">Username</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewUsername" placeholder="New Username" value="'+data['role_name']+'" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewUsername" placeholder="New Username" value="'+data['role_name']+'" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputEmail" class="control-label">Email</label>';
-      body_html += '      <input type="email" class="form-control input-sm" id="inputEmail" placeholder="Email" value="'+data['role_email']+'">';
+      body_html += '      <input type="email" class="form-control" id="inputEmail" placeholder="Email" value="'+data['role_email']+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
-      body_html += '      <input type="password" class="form-control input-sm" id="inputPassword" placeholder="Password" />';
-      body_html += '      <input type="password" class="form-control input-sm" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
+      body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
+      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
@@ -167,7 +166,6 @@ function load_delete_user_confirm(modal_id, username)
       footer_html += '<button type="submit" id="buttonDeleteUser" class="btn btn-danger">Yes, delete this user</button>';
       footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
       $('#'+modal_id+'Label').html('Delete user confirmation');
-      $('#'+modal_id+'Info').html('<h4 class="text-center">'+data['role_name']+' <small>'+data['role_email']+'</small></h4>');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
       $('#buttonDeleteUser').click(function( event ) {
@@ -236,19 +234,19 @@ function load_add_user_form(modal_id)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputNewUsername" class="control-label">Username</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputNewUsername" placeholder="Username" />';
+      body_html += '      <input type="text" class="form-control" id="inputNewUsername" placeholder="Username" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputEmail" class="control-label">Email</label>';
-      body_html += '      <input type="email" class="form-control input-sm" id="inputEmail" placeholder="Email" />';
+      body_html += '      <input type="email" class="form-control" id="inputEmail" placeholder="Email" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
-      body_html += '      <input type="password" class="form-control input-sm" id="inputPassword" placeholder="Password" />';
-      body_html += '      <input type="password" class="form-control input-sm" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
+      body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
+      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
