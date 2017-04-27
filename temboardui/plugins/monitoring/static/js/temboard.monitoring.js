@@ -123,13 +123,35 @@ function add_visibility_cb(chart_id, g, is_initial)
 function updateDateRange(start, end) {
   $('#daterange span').html(
     start.format(dateFormat) + ' - ' + end.format(dateFormat));
+  window.location.hash = 'start=' + start + '&end=' + end;
 }
 
-function synchronize_zoom(start_date, end_date, api_url)
+function getHashParams() {
+
+  var hashParams = {};
+  var e;
+  var a = /\+/g;  // Regex for replacing addition symbol with a space
+  var r = /([^&;=]+)=?([^&;]*)/g;
+  var d = function (s) {
+    return decodeURIComponent(s.replace(a, " "));
+  };
+  var q = window.location.hash.substring(1);
+
+  while (e = r.exec(q)) {
+    hashParams[d(e[1])] = d(e[2]);
+  }
+
+  return hashParams;
+}
+
+function synchronize_zoom(start_date, end_date, api_url, silent)
 {
   var picker = $('#daterange').data('daterangepicker');
-  picker.setStartDate(moment(start_date));
-  picker.setEndDate(moment(end_date));
+  if (!silent) {
+    // update picker
+    picker.setStartDate(moment(start_date));
+    picker.setEndDate(moment(end_date));
+  }
 
   // get new date from picker (may be rounded)
   start_date = picker.startDate;

@@ -65,9 +65,23 @@ interval_api_url = api_url+"/interval";
 var dateFormat = 'DD/MM/YYYY HH:mm';
 
 $(document).ready(function() {
+  /**
+   * Parse location hash to get start and end date
+   * If dates are not provided, falls back to the date range corresponding to
+   * the last 24 hours.
+   */
+  var start;
+  var end;
+  var now = moment();
+  var minus24h = now.clone().subtract(24, 'hours');
+  var p = getHashParams();
+  if (p.start && p.end) {
+    start = moment(parseInt(p.start));
+    end = moment(parseInt(p.end));
+  }
+  start = start && start.isValid() ? start : minus24h;
+  end = end && end.isValid() ? end : now;
 
-  var start = moment().subtract(24, 'hours');
-  var end = moment();
   $("#daterange").daterangepicker({
     startDate: start,
     endDate: end,
@@ -79,11 +93,11 @@ $(document).ready(function() {
       format: dateFormat
     },
     ranges: {
-      'Last Hour': [moment().subtract(1, 'hours'), moment()],
-      'Last 24 Hours': [start, end],
-      'Last 7 Days': [moment().subtract(7, 'days'), moment()],
-      'Last 30 Days': [moment().subtract(30, 'days'), moment()],
-      'Last 12 Months': [moment().subtract(12, 'months'), moment()]
+      'Last Hour': [now.clone().subtract(1, 'hours'), now],
+      'Last 24 Hours': [minus24h, now],
+      'Last 7 Days': [now.clone().subtract(7, 'days'), now],
+      'Last 30 Days': [now.clone().subtract(30, 'days'), now],
+      'Last 12 Months': [now.clone().subtract(12, 'months'), now]
     }
   });
   updateDateRange(start, end);
@@ -91,7 +105,8 @@ $(document).ready(function() {
     synchronize_zoom(
       picker.startDate,
       picker.endDate,
-      data_api_url
+      data_api_url,
+      true
     );
   });
 
