@@ -1,7 +1,0 @@
-CONFIGDIR='/etc/temboard-agent'
-LOGDIR='/var/log/temboard-agent'
-
-if [ "$1" = "purge" ]; then
-	/bin/rm -rf $CONFIGDIR
-	/bin/rm -rf $LOGDIR
-fi

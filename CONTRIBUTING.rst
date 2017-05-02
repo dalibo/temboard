@@ -38,3 +38,7 @@ Choose the next version according to `PEP 440
    git tag 1.1
    git push --tags
    make release
+
+Now build distro packages with ``make -C packaging build``. Ensure you ``NAME``
+and ``EMAIL`` env vars contain maintainer identification. See
+``packaging/README.rst`` for further details.
