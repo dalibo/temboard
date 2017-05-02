@@ -15,9 +15,9 @@ jobs:
             - temboard-agent-master
       - run:
           command: |
-            pip install --upgrade flake8-diff docutils
+            pip install --upgrade flake8 docutils
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-            flake8-diff --verbose $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            flake8 temboard-agent temboardagent
             python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
       - store_artifacts:
           path: README.html
