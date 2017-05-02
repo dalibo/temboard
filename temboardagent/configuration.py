@@ -242,7 +242,6 @@ class Configuration(BaseConfiguration):
             pass
 
 
-
 class PluginConfiguration(configparser.RawConfigParser):
     """
     Customized configuration parser for plugins.
