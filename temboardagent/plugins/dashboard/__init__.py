@@ -134,7 +134,6 @@ Get the whole last data set used to render dashboard view. Data have been collec
 
 
 @add_route('GET', '/dashboard/live')
-
 def dashboard_live(http_context,
                    queue_in=None,
                    config=None,
