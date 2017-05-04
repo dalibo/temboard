@@ -120,9 +120,6 @@ select.form-control {
 }
 
 #alert-configuration {
-  padding: 0px 20px 20px 20px;
-  font-size: 12px;
-  width: 700px;
 
   p {
     padding-top: 0px;
@@ -133,21 +130,10 @@ select.form-control {
     padding: 0px;
     margin-top: 10px;
   }
-
-  .close {
-    margin-right: 5px;
-  }
-
-  .modal .close {
-    margin-right: 20px;
-  }
 }
 
 
 #error-configuration {
-  padding: 0px 20px 20px 20px;
-  font-size: 12px;
-  width: 700px;
   p {
     padding-top: 0px;
   }
@@ -162,9 +148,6 @@ select.form-control {
 
 
 #ok-configuration {
-  padding: 0px 20px 20px 20px;
-  font-size: 12px;
-  width: 700px;
   p {
     padding-top: 0px;
   }
@@ -177,10 +160,6 @@ select.form-control {
 
   table {
     margin: 0px;
-  }
-
-  .close {
-    margin-right: 5px;
   }
 }
 
