@@ -218,16 +218,14 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError:
             pass
 
-        # Test if 'repository' section exists.
-        self.check_section('repository')
         try:
             self.repository['host'] = self.get('repository', 'host')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['user'] = self.get('repository', 'user')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
@@ -240,17 +238,17 @@ class Configuration(configparser.ConfigParser):
                 "'port' option must be an integer "
                 "[0-65535] in 'repository' section in %s."
                 % (self.configfile))
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['password'] = self.get('repository', 'password')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['dbname'] = self.get('repository', 'dbname')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
     def check_section(self, section):
