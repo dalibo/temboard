@@ -44,11 +44,11 @@ class Configuration(configparser.ConfigParser):
             'level': 'INFO'
         }
         self.repository = {
-            'host': 'localhost',
-            'user': 'temboard',
-            'port': 5432,
-            'password': 'temboard',
-            'dbname': 'temboard'
+            'host': os.environ.get('PGHOST', '/var/run/postgresql/'),
+            'port': int(os.environ.get('PGPORT', '5432')),
+            'user': os.environ.get('PGUSER', 'temboard'),
+            'password': os.environ.get('PGPASSWORD', 'temboard'),
+            'dbname': os.environ.get('PGDATABASE', 'temboard'),
         }
 
         self.plugins = {}
