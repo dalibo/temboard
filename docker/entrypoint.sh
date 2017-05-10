@@ -39,12 +39,7 @@ cat > ~/.pgpass <<EOF
 EOF
 chmod 0600 ~/.pgpass
 
-psql="psql -aw"
-if ! psql -c 'SELECT 1 FROM application.instances LIMIT 1;' ; then
-    $psql -f /usr/local/share/temboard/application.sql
-    $psql -f /usr/local/share/temboard/monitoring.sql
-    $psql -f /usr/local/share/temboard/dev-fixture.sql
-fi
+DEV=1 bash /usr/local/share/temboard/create_repository.sh
 
 set -x
 exec ${*-temboard}

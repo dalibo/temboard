@@ -45,6 +45,9 @@ setup(
     zip_safe=False,
     url='https://github.com/dalibo/temboard/',
     data_files=[
+        ('share/temboard', [
+            'share/create_repository.sh',
+        ]),
         ('share/temboard/sql/', [
             'share/sql/application.sql',
             'share/sql/dev-fixture.sql',
