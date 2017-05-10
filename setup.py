@@ -48,8 +48,8 @@ setup(
         ('share/temboard/sql/', [
             'share/sql/application.sql',
             'share/sql/dev-fixture.sql',
-            'temboardui/plugins/monitoring/sql/monitoring.sql',
-            ]),
+            'share/sql/monitoring.sql',
+        ]),
         ('share/temboard/quickstart/', [
             'share/temboard_CHANGEME.key',
             'share/temboard_CHANGEME.pem',
