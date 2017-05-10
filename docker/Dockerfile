@@ -16,9 +16,9 @@ RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu
     ;
 
 ENV TEMBOARD_COOKIE_SECRET SECRETKEYTOBECHANGED
-ENV TEMBOARD_SSL_CA /usr/local/share/temboard/temboard_ca_certs_CHANGEME.pem
-ENV TEMBOARD_SSL_CERT /usr/local/share/temboard/temboard_CHANGEME.pem
-ENV TEMBOARD_SSL_KEY /usr/local/share/temboard/temboard_CHANGEME.key
+ENV TEMBOARD_SSL_CA /usr/local/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem
+ENV TEMBOARD_SSL_CERT /usr/local/share/temboard/quickstart/temboard_CHANGEME.pem
+ENV TEMBOARD_SSL_KEY /usr/local/share/temboard/quickstart/temboard_CHANGEME.key
 
 RUN useradd --home-dir /var/lib/temboard --create-home --system temboard
 VOLUME /var/lib/temboard

@@ -4,21 +4,9 @@ Monitor, optimize and configure multiple PostgreSQL instances.
 
 | |Python| |RTD| |Travis| |CircleCI| |Codecov| |PyPI|
 
-======
- Demo
-======
-
 | |Demo|
 
 *Click on image to see a quick demo.*
-
-============
- Quickstart
-============
-
-We're providing a complete *testing* environment based on docker ! Please read
-our `QUICKSTART <https://github.com/dalibo/temboard/blob/master/QUICKSTART.md>`_
-guide for more details.
 
 
 =========
@@ -28,11 +16,31 @@ guide for more details.
 temBoard is composed of 2 basic elements:
 
 - A lightweight **agent** that you need to install on every PostgreSQL server
-  you want to manage. See `dalibo/temboard-agent
-  <https://github.com/dalibo/temboard-agent>`_ for the agent project.
+  you want to manage. See `dalibo/temboard-agent`_ for the agent project.
 - A central **web app** (this project) to control the agents and collect metrics.
 
-Please `read the docs <http://temboard.readthedocs.io/en/latest/>`_ for details.
+
+temBoard needs a dedicated database called *repository* to store configuration,
+metrics and other data.
+
+::
+
+    pip install temboard
+    sudo -u postgres bash /usr/local/share/temboard/create_repository.sh
+    temboard -c /usr/local/share/temboard/quickstart/temboard.conf
+
+Now install `dalibo/temboard-agent`_ along the PostgreSQL cluster you want to
+administer and register it in the UI. Further details on
+`temboard.readthedocs.io <http://temboard.readthedocs.io/en/latest/>`_.
+
+
+===================
+ Docker Quickstart
+===================
+
+We provide a complete *testing* environment based on Docker ! Please read our
+`QUICKSTART <https://github.com/dalibo/temboard/blob/master/QUICKSTART.md>`_
+guide for more details.
 
 
 ============
@@ -85,3 +93,5 @@ temBoard is available under the `PostgreSQL License
 .. |Travis| image:: https://travis-ci.org/dalibo/temboard.svg?branch=master
    :target: https://travis-ci.org/dalibo/temboard
    :alt: Travis
+
+.. _dalibo/temboard-agent: https://github.com/dalibo/temboard-agent

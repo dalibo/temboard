@@ -6,7 +6,7 @@ except ImportError:
 import logging
 from logging import _checkLevel as check_log_level
 from logging.handlers import SysLogHandler
-import os
+import os.path
 import json
 import re
 from temboardui.errors import ConfigurationError
@@ -23,7 +23,8 @@ class Configuration(configparser.ConfigParser):
     """
     def __init__(self, configfile, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = configfile
+        self.configfile = os.path.realpath(configfile)
+        self.configdir = os.path.dirname(self.configfile)
         # Default configuration values
         self.temboard = {
             'port': 8888,
