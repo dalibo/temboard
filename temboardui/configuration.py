@@ -3,6 +3,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+import logging
 from logging import _checkLevel as check_log_level
 from logging.handlers import SysLogHandler
 import os
@@ -11,6 +12,9 @@ import re
 from temboardui.errors import ConfigurationError
 
 from .logger import LOG_METHODS
+
+
+logger = logging.getLogger(__name__)
 
 
 class Configuration(configparser.ConfigParser):
@@ -91,36 +95,20 @@ class Configuration(configparser.ConfigParser):
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_cert_file')) as fd:
-                fd.read()
-                self.temboard['ssl_cert_file'] = self.get('temboard',
-                                                          'ssl_cert_file')
-        except Exception:
-            raise ConfigurationError("SSL certificate file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_cert_file')))
+            self.temboard['ssl_cert_file'] = self.getfile(
+                'temboard', 'ssl_cert_file')
         except configparser.NoOptionError:
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_key_file')) as fd:
-                fd.read()
-                self.temboard['ssl_key_file'] = self.get('temboard',
-                                                         'ssl_key_file')
-        except Exception:
-            raise ConfigurationError("SSL private key file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_key_file')))
+            self.temboard['ssl_key_file'] = self.getfile(
+                'temboard', 'ssl_key_file')
         except configparser.NoOptionError:
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_ca_cert_file')) as fd:
-                fd.read()
-                self.temboard['ssl_ca_cert_file'] = self.get(
-                    'temboard', 'ssl_ca_cert_file')
-        except Exception:
-            raise ConfigurationError(
-                "SSL CA cert file %s can't be opened."
-                % (self.get('temboard', 'ssl_ca_cert_file')))
+            self.temboard['ssl_ca_cert_file'] = self.getfile(
+                'temboard', 'ssl_ca_cert_file')
         except configparser.NoOptionError:
             pass
 
@@ -256,3 +244,19 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                     "Section '%s' not found in configuration file %s"
                     % (section, self.configfile))
+
+    def abspath(self, path):
+        if path.startswith('/'):
+            return path
+        else:
+            return os.path.realpath('/'.join([self.configdir, path]))
+
+    def getfile(self, section, name):
+        path = self.abspath(self.get(section, name))
+        try:
+            with open(path) as fd:
+                fd.read()
+        except Exception as e:
+            logger.warn("Failed to open %s: %s", path, e)
+            raise ConfigurationError("%s file can't be opened." % (path,))
+        return path
