@@ -8,7 +8,8 @@ RUN apt-get update \
     && apt-get clean \
     ;
 
-RUN pip install --no-cache-dir https://github.com/dalibo/temboard/archive/master.zip
+ARG REQUIREMENT=https://github.com/dalibo/temboard/archive/master.zip
+RUN pip install --no-cache-dir $REQUIREMENT
 RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64", "/usr/local/bin/gosu")' \
     && chmod 0755 /usr/local/bin/gosu \
     && python -c 'import urllib; urllib.urlretrieve("https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh", "/usr/local/bin/wait-for-it")' \
