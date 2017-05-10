@@ -914,7 +914,8 @@ def worker_data_agg(task):
     logger = logging.getLogger("worker_agg_data")
     try:
         parameters = unserialize_task_parameters(task.parameters)
-        config = Configuration(parameters['configpath'])
+        config = Configuration()
+        config.parsefile(parameters['configpath'])
         dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
                     user=config.repository['user'],
                     password=config.repository['password'],
@@ -948,7 +949,8 @@ def worker_history_data(task):
     logger = logging.getLogger("worker_history_data")
     try:
         parameters = unserialize_task_parameters(task.parameters)
-        config = Configuration(parameters['configpath'])
+        config = Configuration()
+        config.parsefile(parameters['configpath'])
         dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
                     user=config.repository['user'],
                     password=config.repository['password'],

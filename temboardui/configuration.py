@@ -21,10 +21,8 @@ class Configuration(configparser.ConfigParser):
     """
     Customized configuration parser.
     """
-    def __init__(self, configfile, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = os.path.realpath(configfile)
-        self.configdir = os.path.dirname(self.configfile)
         # Default configuration values
         self.temboard = {
             'port': 8888,
@@ -58,6 +56,32 @@ class Configuration(configparser.ConfigParser):
 
         self.plugins = {}
 
+    def check_section(self, section):
+        if not self.has_section(section):
+            raise ConfigurationError(
+                    "Section '%s' not found in configuration file %s"
+                    % (section, self.configfile))
+
+    def abspath(self, path):
+        if path.startswith('/'):
+            return path
+        else:
+            return os.path.realpath('/'.join([self.configdir, path]))
+
+    def getfile(self, section, name):
+        path = self.abspath(self.get(section, name))
+        try:
+            with open(path) as fd:
+                fd.read()
+        except Exception as e:
+            logger.warn("Failed to open %s: %s", path, e)
+            raise ConfigurationError("%s file can't be opened." % (path,))
+        return path
+
+    def parsefile(self, configfile):
+        self.configfile = os.path.realpath(configfile)
+        self.configdir = os.path.dirname(self.configfile)
+
         try:
             with open(self.configfile) as fd:
                 self.readfp(fd)
@@ -68,6 +92,9 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                     "Configuration file does not contain section headers.")
 
+        self.load()
+
+    def load(self):
         # Test if 'temboard' section exists.
         self.check_section('temboard')
 
@@ -239,25 +266,3 @@ class Configuration(configparser.ConfigParser):
             self.repository['dbname'] = self.get('repository', 'dbname')
         except (configparser.NoSectionError, configparser.NoOptionError):
             pass
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
-
-    def abspath(self, path):
-        if path.startswith('/'):
-            return path
-        else:
-            return os.path.realpath('/'.join([self.configdir, path]))
-
-    def getfile(self, section, name):
-        path = self.abspath(self.get(section, name))
-        try:
-            with open(path) as fd:
-                fd.read()
-        except Exception as e:
-            logger.warn("Failed to open %s: %s", path, e)
-            raise ConfigurationError("%s file can't be opened." % (path,))
-        return path
