@@ -53,8 +53,8 @@ setup(
         'temboard-agent-register',
     ],
     data_files=[
-        ('share/temboard-agent/', [
-            'share/temboard-agent.conf.sample',
+        ('share/temboard-agent/quickstart/', [
+            'share/temboard-agent.conf',
             'share/temboard-agent_CHANGEME.pem',
             'share/temboard-agent_CHANGEME.key',
             'share/temboard-agent_ca_certs_CHANGEME.pem',
