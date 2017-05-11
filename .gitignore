@@ -1,4 +1,5 @@
 *.pyc
+.coverage
 build/
 dist/
 docker-compose.override.yml
