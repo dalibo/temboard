@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  debian:
+    image: buildpack-deps:${CODENAME}
+    environment:
+      # See dch(1)
+      DEBFULLNAME: ${NAME}
+      DEBEMAIL: ${EMAIL}
+    volumes:
+    - .:/workspace
+    - ../dist/:/dist
+    command: /workspace/mkdeb.sh
