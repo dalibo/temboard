@@ -31,7 +31,7 @@ class BaseConfiguration(configparser.RawConfigParser):
                 "administration",
                 "activity"
             ],
-            'home': '/var/lib/temboard-agent',
+            'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
             'hostname': None,
             'key': None
         }
