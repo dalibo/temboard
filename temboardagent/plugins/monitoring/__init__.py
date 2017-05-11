@@ -1192,16 +1192,10 @@ def configuration(config):
                 pass
 
             try:
-                with open(self.get(__name__, 'ssl_ca_cert_file')) as fd:
-                    fd.read()
-                    self.plugin_configuration['ssl_ca_cert_file'] = \
-                        self.get(__name__, 'ssl_ca_cert_file')
+                self.plugin_configuration['ssl_ca_cert_file'] = (
+                    self.getfile(__name__, 'ssl_ca_cert_file'))
             except NoOptionError:
                 pass
-            except Exception:
-                raise ConfigurationError(
-                    "SSL CA certificates file %s can't be opened."
-                    % (self.get(__name__, 'ssl_ca_cert_file')))
 
     c = Configuration(config)
     return c.plugin_configuration

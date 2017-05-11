@@ -1,13 +1,18 @@
+import logging
+
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
 
-import os
+import os.path
 import json
 import re
 from temboardagent.errors import ConfigurationError
 from temboardagent.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseConfiguration(configparser.RawConfigParser):
@@ -16,7 +21,9 @@ class BaseConfiguration(configparser.RawConfigParser):
     """
     def __init__(self, configfile, *args, **kwargs):
         configparser.RawConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = configfile
+        self.configfile = os.path.realpath(configfile)
+        self.confdir = os.path.dirname(self.configfile)
+
         # Default configuration values
         self.temboard = {
             'port': 2345,
@@ -66,6 +73,22 @@ class BaseConfiguration(configparser.RawConfigParser):
                     "Section '%s' not found in configuration file %s"
                     % (section, self.configfile))
 
+    def abspath(self, path):
+        if path.startswith('/'):
+            return path
+        else:
+            return os.path.realpath('/'.join([self.confdir, path]))
+
+    def getfile(self, section, name):
+        path = self.abspath(self.get(section, name))
+        try:
+            with open(path) as fd:
+                fd.read()
+        except Exception as e:
+            logger.warn("Failed to open %s: %s", path, e)
+            raise ConfigurationError("%s file can't be opened." % (path,))
+        return path
+
 
 class Configuration(BaseConfiguration):
     """
@@ -100,7 +123,7 @@ class Configuration(BaseConfiguration):
             pass
 
         try:
-            self.temboard['users'] = self.get('temboard', 'users')
+            self.temboard['users'] = self.getfile('temboard', 'users')
         except configparser.NoOptionError:
             pass
 
@@ -124,24 +147,14 @@ class Configuration(BaseConfiguration):
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_cert_file')) as fd:
-                fd.read()
-                self.temboard['ssl_cert_file'] = self.get('temboard',
-                                                          'ssl_cert_file')
-        except Exception:
-            raise ConfigurationError("SSL certificate file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_cert_file')))
+            self.temboard['ssl_cert_file'] = (
+                self.getfile('temboard', 'ssl_cert_file'))
         except configparser.NoOptionError:
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_key_file')) as fd:
-                fd.read()
-                self.temboard['ssl_key_file'] = self.get('temboard',
-                                                         'ssl_key_file')
-        except Exception:
-            raise ConfigurationError("SSL private key file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_key_file')))
+            self.temboard['ssl_key_file'] = (
+                self.getfile('temboard', 'ssl_key_file'))
         except configparser.NoOptionError:
             pass
 
