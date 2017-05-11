@@ -15,6 +15,7 @@ jobs:
             - temboard-agent-master
       - run:
           command: |
+            set -x
             pip install --upgrade flake8 docutils
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboard-agent temboardagent
