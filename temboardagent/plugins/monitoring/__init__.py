@@ -1145,7 +1145,8 @@ def configuration(config):
                 'dbnames': '*',
                 'scheduler_interval': 60,
                 'probes': '*',
-                'collector_url': None,
+                'collector_url': os.environ.get(
+                    'TEMBOARD_MONITORING_COLLECTOR_URL', None),
                 'ssl_ca_cert_file': None
             }
             set_logger_name("monitoring")
