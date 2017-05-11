@@ -150,11 +150,11 @@ class Configuration(BaseConfiguration):
             if not os.access(home, os.W_OK):
                 raise Exception()
             self.temboard['home'] = self.get('temboard', 'home')
+        except configparser.NoOptionError:
+            pass
         except Exception:
             raise ConfigurationError("Home directory %s not writable."
                                      % (self.get('temboard', 'home')))
-        except configparser.NoOptionError:
-            pass
 
         try:
             hostname = self.get('temboard', 'hostname')
