@@ -1196,12 +1196,12 @@ def configuration(config):
                     fd.read()
                     self.plugin_configuration['ssl_ca_cert_file'] = \
                         self.get(__name__, 'ssl_ca_cert_file')
+            except NoOptionError:
+                pass
             except Exception:
                 raise ConfigurationError(
                     "SSL CA certificates file %s can't be opened."
                     % (self.get(__name__, 'ssl_ca_cert_file')))
-            except NoOptionError:
-                pass
 
     c = Configuration(config)
     return c.plugin_configuration
