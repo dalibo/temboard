@@ -1,4 +1,4 @@
-NAME?="dalibo/temboard-agent"
+NAME="dalibo/temboard-agent"
 
 build:
 	docker build --tag $(NAME) .
