@@ -14,7 +14,7 @@ docker-compose up
 - a PG 9.5 cluster (exposed at 5434)
 - a PG 9.6 cluster (exposed at 5435)
 - a temBoard agent for each PG cluster
-- a standard PG 9.6 cluster for the UI (exposed at 5432)
+- a standard PG 9.6 cluster for the UI (not exposed)
 - a container for temBoard UI
 
 temBoard UI is available on <https://0.0.0.0:8888/> with `admin` / `admin`
