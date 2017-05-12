@@ -1,4 +1,4 @@
-NAME?="dalibo/temboard"
+NAME="dalibo/temboard"
 
 build:
 	docker build --tag $(NAME) .
