@@ -29,7 +29,7 @@ http://temboard.io/ for the big picture.
 .. code-block::
 
    pip install temboard-agent
-
+   sudo -u postgres temboard-agent -c /usr/local/share/temboard-agent/quickstart/temboard-agent.conf
 
 See `temBoard full documentation <http://temboard.io/>`_ for details on configuration.
 

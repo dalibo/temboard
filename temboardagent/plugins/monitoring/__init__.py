@@ -1145,7 +1145,8 @@ def configuration(config):
                 'dbnames': '*',
                 'scheduler_interval': 60,
                 'probes': '*',
-                'collector_url': None,
+                'collector_url': os.environ.get(
+                    'TEMBOARD_MONITORING_COLLECTOR_URL', None),
                 'ssl_ca_cert_file': None
             }
             set_logger_name("monitoring")
@@ -1191,14 +1192,8 @@ def configuration(config):
                 pass
 
             try:
-                with open(self.get(__name__, 'ssl_ca_cert_file')) as fd:
-                    fd.read()
-                    self.plugin_configuration['ssl_ca_cert_file'] = \
-                        self.get(__name__, 'ssl_ca_cert_file')
-            except Exception:
-                raise ConfigurationError(
-                    "SSL CA certificates file %s can't be opened."
-                    % (self.get(__name__, 'ssl_ca_cert_file')))
+                self.plugin_configuration['ssl_ca_cert_file'] = (
+                    self.getfile(__name__, 'ssl_ca_cert_file'))
             except NoOptionError:
                 pass
 
