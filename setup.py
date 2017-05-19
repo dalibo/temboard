@@ -58,7 +58,8 @@ setup(
             'share/temboard-agent_CHANGEME.pem',
             'share/temboard-agent_CHANGEME.key',
             'share/temboard-agent_ca_certs_CHANGEME.pem',
-            'share/temboard-agent.logrotate'
+            'share/temboard-agent.logrotate',
+            'share/users',
         ]),
         ('lib/systemd/system', ['temboard-agent.service']),
     ])
