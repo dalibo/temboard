@@ -7,6 +7,7 @@ cache:
 sudo: false
 
 install:
+  - pip install --upgrade wheel
   - pip install --upgrade --requirement requirements-ci.txt
 
 script:
