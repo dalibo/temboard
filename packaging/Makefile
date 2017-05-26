@@ -10,4 +10,4 @@ changes-%:
 	./mkchanges.sh $(shell readlink -e ../dist/last_build_$*.deb) $*
 
 push:
-	find ../dist/ -name "*.changes" | xargs -rlt dput dalibo
+	find ../dist/ -name "*.changes" | xargs -rt dput dalibo
