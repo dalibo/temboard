@@ -60,5 +60,5 @@ setup(
             'share/temboard.conf',
             'share/temboard.logrotate',
         ]),
-        ('lib/systemd/system', ['temboard.service']),
+        ('lib/systemd/system', ['packaging/temboard.service']),
     ])
