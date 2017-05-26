@@ -33,8 +33,12 @@ master as usual.
 Choose the next version according to `PEP 440
 <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_.
 
-.. code-block
+.. code-block::
 
    git tag 1.1
    git push --tags
    make release
+
+Now build distro packages with ``make -C packaging build``. Ensure you ``NAME``
+and ``EMAIL`` env vars contain maintainer identification. See
+``packaging/README.rst`` for further details.

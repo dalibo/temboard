@@ -61,5 +61,5 @@ setup(
             'share/temboard-agent.logrotate',
             'share/users',
         ]),
-        ('lib/systemd/system', ['temboard-agent.service']),
+        ('lib/systemd/system', ['packaging/temboard-agent.service']),
     ])

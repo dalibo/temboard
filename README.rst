@@ -4,7 +4,7 @@
 
 | |Python| |CircleCI| |PyPI|
 
-`temBoard <http://temboard.io/>`_ is a powerful management tool for PostgreSQL.
+temBoard_ is a powerful management tool for PostgreSQL.
 
 temBoard agent is a Python2 service designed to run along PostgreSQL, exposing a
 REST API to implement various management tasks on PostgreSQL instance. See
@@ -16,7 +16,7 @@ http://temboard.io/ for the big picture.
 ==========
 
 - Non intrusive daemon dedicated to one PostgreSQL cluster.
-- No extra dependencies other than ``setuptools``.
+- No extra dependencies.
 - Written python2.7, supported by stable distribution releases.
 - Secured REST API with SSL and credentials.
 - Extensible with plugins.
@@ -31,7 +31,7 @@ http://temboard.io/ for the big picture.
    pip install temboard-agent
    sudo -u postgres temboard-agent -c /usr/local/share/temboard-agent/quickstart/temboard-agent.conf
 
-See `temBoard full documentation <http://temboard.io/>`_ for details on configuration.
+See `temBoard full documentation`_ for details on configuration.
 
 
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard-agent.svg?style=shield
@@ -45,3 +45,6 @@ See `temBoard full documentation <http://temboard.io/>`_ for details on configur
 .. |Python| image:: https://img.shields.io/pypi/pyversions/temboard-agent.svg
    :target: https://www.python.org/
    :alt: Versions of python supported
+
+.. _`temBoard`: http://temboard.io/
+.. _`temBoard full documentation`: http://temboard.readthedocs.io/
