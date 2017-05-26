@@ -3,6 +3,7 @@ language: python
 cache:
   directories:
     - $HOME/.cache/pip
+    - $VIRTUAL_ENV/
 
 sudo: false
 
