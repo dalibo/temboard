@@ -3,10 +3,12 @@ language: python
 cache:
   directories:
     - $HOME/.cache/pip
+    - $VIRTUAL_ENV/
 
 sudo: false
 
 install:
+  - pip install --upgrade wheel
   - pip install --upgrade --requirement requirements-ci.txt
 
 script:
