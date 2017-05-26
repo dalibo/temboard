@@ -111,8 +111,9 @@ def main():
     optparser = temboarduiOptions(description="temBoard UI/web client.")
     (options, _) = optparser.parse_args()
     # Load configuration from the configuration file.
+    config = Configuration()
     try:
-        config = Configuration(options.configfile)
+        config.parsefile(options.configfile)
     except (ConfigurationError, ImportError) as e:
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)

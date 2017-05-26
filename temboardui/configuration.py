@@ -3,9 +3,10 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+import logging
 from logging import _checkLevel as check_log_level
 from logging.handlers import SysLogHandler
-import os
+import os.path
 import json
 import re
 from temboardui.errors import ConfigurationError
@@ -13,13 +14,15 @@ from temboardui.errors import ConfigurationError
 from .logger import LOG_METHODS
 
 
+logger = logging.getLogger(__name__)
+
+
 class Configuration(configparser.ConfigParser):
     """
     Customized configuration parser.
     """
-    def __init__(self, configfile, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = configfile
         # Default configuration values
         self.temboard = {
             'port': 8888,
@@ -44,14 +47,40 @@ class Configuration(configparser.ConfigParser):
             'level': 'INFO'
         }
         self.repository = {
-            'host': 'localhost',
-            'user': 'temboard',
-            'port': 5432,
-            'password': 'temboard',
-            'dbname': 'temboard'
+            'host': os.environ.get('PGHOST', '/var/run/postgresql/'),
+            'port': int(os.environ.get('PGPORT', '5432')),
+            'user': os.environ.get('PGUSER', 'temboard'),
+            'password': os.environ.get('PGPASSWORD', 'temboard'),
+            'dbname': os.environ.get('PGDATABASE', 'temboard'),
         }
 
         self.plugins = {}
+
+    def check_section(self, section):
+        if not self.has_section(section):
+            raise ConfigurationError(
+                    "Section '%s' not found in configuration file %s"
+                    % (section, self.configfile))
+
+    def abspath(self, path):
+        if path.startswith('/'):
+            return path
+        else:
+            return os.path.realpath('/'.join([self.configdir, path]))
+
+    def getfile(self, section, name):
+        path = self.abspath(self.get(section, name))
+        try:
+            with open(path) as fd:
+                fd.read()
+        except Exception as e:
+            logger.warn("Failed to open %s: %s", path, e)
+            raise ConfigurationError("%s file can't be opened." % (path,))
+        return path
+
+    def parsefile(self, configfile):
+        self.configfile = os.path.realpath(configfile)
+        self.configdir = os.path.dirname(self.configfile)
 
         try:
             with open(self.configfile) as fd:
@@ -63,6 +92,9 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                     "Configuration file does not contain section headers.")
 
+        self.load()
+
+    def load(self):
         # Test if 'temboard' section exists.
         self.check_section('temboard')
 
@@ -91,36 +123,20 @@ class Configuration(configparser.ConfigParser):
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_cert_file')) as fd:
-                fd.read()
-                self.temboard['ssl_cert_file'] = self.get('temboard',
-                                                          'ssl_cert_file')
-        except Exception:
-            raise ConfigurationError("SSL certificate file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_cert_file')))
+            self.temboard['ssl_cert_file'] = self.getfile(
+                'temboard', 'ssl_cert_file')
         except configparser.NoOptionError:
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_key_file')) as fd:
-                fd.read()
-                self.temboard['ssl_key_file'] = self.get('temboard',
-                                                         'ssl_key_file')
-        except Exception:
-            raise ConfigurationError("SSL private key file %s can't be opened."
-                                     % (self.get('temboard', 'ssl_key_file')))
+            self.temboard['ssl_key_file'] = self.getfile(
+                'temboard', 'ssl_key_file')
         except configparser.NoOptionError:
             pass
 
         try:
-            with open(self.get('temboard', 'ssl_ca_cert_file')) as fd:
-                fd.read()
-                self.temboard['ssl_ca_cert_file'] = self.get(
-                    'temboard', 'ssl_ca_cert_file')
-        except Exception:
-            raise ConfigurationError(
-                "SSL CA cert file %s can't be opened."
-                % (self.get('temboard', 'ssl_ca_cert_file')))
+            self.temboard['ssl_ca_cert_file'] = self.getfile(
+                'temboard', 'ssl_ca_cert_file')
         except configparser.NoOptionError:
             pass
 
@@ -218,16 +234,14 @@ class Configuration(configparser.ConfigParser):
         except configparser.NoOptionError:
             pass
 
-        # Test if 'repository' section exists.
-        self.check_section('repository')
         try:
             self.repository['host'] = self.get('repository', 'host')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['user'] = self.get('repository', 'user')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
@@ -240,21 +254,15 @@ class Configuration(configparser.ConfigParser):
                 "'port' option must be an integer "
                 "[0-65535] in 'repository' section in %s."
                 % (self.configfile))
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['password'] = self.get('repository', 'password')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
 
         try:
             self.repository['dbname'] = self.get('repository', 'dbname')
-        except configparser.NoOptionError:
+        except (configparser.NoSectionError, configparser.NoOptionError):
             pass
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
