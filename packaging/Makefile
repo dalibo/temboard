@@ -3,6 +3,7 @@ all:
 build: deb
 
 deb:
+	mkdir -p ../dist/
 	docker-compose run --rm debian
 	$(MAKE) changes-wheezy
 	$(MAKE) changes-jessie
