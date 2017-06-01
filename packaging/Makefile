@@ -12,7 +12,7 @@ changes-%:
 	./mkchanges.sh $(shell readlink -e ../dist/last_build.deb) $*
 
 push:
-	find ../dist/ -name "*.changes" | xargs -rlt dput temboard
+	find ../dist/ -name "*.changes" | xargs -rt dput dalibo
 
 reprepro:
 	test -f ./reprepro-config/reprepro-authorized_keys || cat ~/.ssh/*.pub > ./reprepro-config/reprepro-authorized_keys
