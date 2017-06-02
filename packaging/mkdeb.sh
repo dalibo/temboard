@@ -18,15 +18,6 @@ teardown () {
     fi
 }
 trap teardown EXIT INT TERM
-
-genchanges() {
-    tar -C $WORKDIR -xvf $(find $WORKDIR -name control.tar.gz) ./control
-    cat - $WORKDIR/control > $WORKDIR/control.full <<EOF
-Source: temboard-agent
-
-EOF
-}
-
 teardown
 
 if [ -z "$(find /var/lib/apt/lists/ -type f)" ] ; then
