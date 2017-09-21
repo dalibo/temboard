@@ -46,7 +46,7 @@ class BaseConfiguration(configparser.RawConfigParser):
             'method': 'syslog',
             'facility': 'local0',
             'destination': '/dev/log',
-            'level': 'INFO'
+            'level': 'DEBUG'
         }
         self.postgresql = {
             'host': '/var/run/postgresql',

@@ -26,7 +26,7 @@ RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu
 ENV TEMBOARD_HOSTNAME ""
 ENV TEMBOARD_KEY ""
 ENV TEMBOARD_USERS alice:alice bob:bob
-ENV TEMBOARD_LOGGING_LEVEL INFO
+ENV TEMBOARD_LOGGING_LEVEL DEBUG
 ENV TEMBOARD_SSL_CA /usr/local/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem
 ENV TEMBOARD_SSL_CERT /usr/local/share/temboard-agent/temboard-agent_CHANGEME.pem
 ENV TEMBOARD_SSL_KEY /usr/local/share/temboard-agent/temboard-agent_CHANGEME.key
