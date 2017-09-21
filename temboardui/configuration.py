@@ -44,7 +44,7 @@ class Configuration(configparser.ConfigParser):
             'method': 'syslog',
             'facility': 'local0',
             'destination': '/dev/log',
-            'level': 'INFO'
+            'level': 'DEBUG',
         }
         self.repository = {
             'host': os.environ.get('PGHOST', '/var/run/postgresql/'),
