@@ -262,6 +262,7 @@ class PluginConfiguration(configparser.RawConfigParser):
     def __init__(self, configfile, *args, **kwargs):
         configparser.RawConfigParser.__init__(self, *args, **kwargs)
         self.configfile = configfile
+        self.confdir = os.path.dirname(self.configfile)
 
         try:
             with open(self.configfile) as fd:
@@ -277,6 +278,22 @@ class PluginConfiguration(configparser.RawConfigParser):
         if not self.has_section(section):
             raise ConfigurationError("Section '%s' not found in configuration "
                                      "file %s" % (section, self.configfile))
+
+    def abspath(self, path):
+        if path.startswith('/'):
+            return path
+        else:
+            return os.path.realpath('/'.join([self.confdir, path]))
+
+    def getfile(self, section, name):
+        path = self.abspath(self.get(section, name))
+        try:
+            with open(path) as fd:
+                fd.read()
+        except Exception as e:
+            logger.warn("Failed to open %s: %s", path, e)
+            raise ConfigurationError("%s file can't be opened." % (path,))
+        return path
 
 
 class LazyConfiguration(BaseConfiguration):
