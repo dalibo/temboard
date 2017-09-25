@@ -1,14 +1,14 @@
-# `temboard-agent` configuration
+<h1>Agent configuration</h1>
 
 ## Key & Hostname
 
 In the `temboard-agent.conf` file, 2 important parameters must be configured to make the agent interact with the central server:
 
-* The `hostname` is used to identify the Agent. It must be a **unique** and 
-  [fully qualified domain name](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) ( e.g. ``db1.mydomain.foo`` ). 
-  Note that ``localhost`` is not a valid value for this parameter. 
- 
-* The `key` is used to authentify the Agent. It must be a long series of characters and you must keep it secret. The best 
+* The `hostname` is used to identify the Agent. It must be a **unique** and
+  [fully qualified domain name](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) ( e.g. ``db1.mydomain.foo`` ).
+  Note that ``localhost`` is not a valid value for this parameter.
+
+* The `key` is used to authentify the Agent. It must be a long series of characters and you must keep it secret. The best
   way to configure the agent key is to generate a random string of letters and number:
 
 ```
@@ -64,7 +64,7 @@ This superuser should be able to connect to the cluster through the unix socket 
 Example of `pg_hba.conf` entry:
 ```
 local   postgres        temboard                                  md5
-```    
+```
 
 The access to the PostgreSQL cluster is then configured in the `[postgresql]` section of the `/etc/temboard-agent/temboard-agent.conf` file.
 
@@ -79,8 +79,8 @@ sudo -u postgres temboard-agent-adduser
 
 ### Registration in the Web UI of the supersivion plugin
 
-If you want to use the supervision plugin, you need to setup the `collector_url`. It lets the agent know where to post its data. 
-Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate 
+If you want to use the supervision plugin, you need to setup the `collector_url`. It lets the agent know where to post its data.
+Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
 (or CA certificates that has issued it) must be in the filepath where `ssl_ca_cert_file` points.
 
 

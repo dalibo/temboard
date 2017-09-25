@@ -13,5 +13,12 @@ pages:
   - Agent Installation: temboard-agent-install-sources.md
   - Agent Configuration: temboard-agent-configuration.md
   - Server Installation: temboard-install-sources.md
-  - Server Setup: temboard-repository-setup.md
+  - Repository Setup: temboard-repository-setup.md
 - How To: temboard-howto.md
+
+# Markdown settings
+strict: yes
+markdown_extensions:
+- toc:
+    baselevel: 2
+    permalink: yes

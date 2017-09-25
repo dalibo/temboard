@@ -1,4 +1,4 @@
-# Repository Setup
+<h1>Repository Setup</h1>
 
 The `repository` is a PostgreSQL (>=9.5) database. It let temboard store its data, including users, agent registration and metrics data.
 
@@ -48,4 +48,3 @@ psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/monitoring.sql t
 The last step is to configure temBoard to access the database. Edit `/etc/temboard/temboard.conf` and configure the parameters under the `[repository]`.
 
 Then start the `temboard` service and check the log file (`/var/log/temboard/temboard.log` by default).
-

@@ -1,4 +1,4 @@
-# temBoard agent installation from sources and configuration
+<h1>Agent installation from PyPI</h1>
 
 ## Dependencies
 
@@ -8,7 +8,7 @@
 ## Installation
 
 ```
-sudo pip install https://github.com/dalibo/temboard-agent/archive/master.zip
+sudo pip install temboard-agent
 ```
 
 ## Prepare directories and files
@@ -47,11 +47,6 @@ sudo chown postgres.postgres /var/log/temboard-agent
 sudo chown -R postgres.postgres /etc/temboard-agent
 sudo chmod 0600 /etc/temboard-agent/temboard-agent.conf
 ```
-
-
-## Configuration
-
-Before starting the agent, see `doc/temboard-agent-configuration.md` for post-installation tasks.
 
 ## Operating the agent
 
