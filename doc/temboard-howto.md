@@ -88,8 +88,8 @@ In order to use most of the plugins, one or more `user` must be added to each `t
 sudo -u postgres temboard-agent-adduser
 
 Username: john
-Password: 
-Retype password: 
+Password:
+Retype password:
 Done.
 ```
 
@@ -102,7 +102,7 @@ curl -k -X POST --data '{"username": "john", "password": "xxxxx"}' https://127.0
 
 ### Add a new instance
 
-There are two ways for adding a new instance in Temboard UI:
+There are two ways for adding a new instance in temBoard UI:
   * using the UI itself and its online form;
   * using the script `temboard-agent-register` from the host running the agent.
 
@@ -115,7 +115,7 @@ Go to `Manage` -> `Instances`, then `+ Add a new instance`.
 
 ### Instance attributes
 
-  * `Agent address`: IPv4 address that the agent is listening on; 
+  * `Agent address`: IPv4 address that the agent is listening on;
   * `Agent port`: Port number that the agent is listening on;
   * `Agent secret key`: Authentication key used by the agent to send data to the collector (`monitoring` plugin only);
   * `Groups`: Instance groups this instance belongs to.
@@ -132,13 +132,13 @@ Once `Agent address` and `Agent port` filled, if the `agent` is up & running, it
 
 ## From the command line with `temboard-agent-register`
 
-This script tries to ease instance/agent registration to Temboard UI.
+This script tries to ease instance/agent registration to temBoard UI.
 
 Requirements:
   * having an agent configured;
   * `temboard-agent` must be running;
   * having an HTTPS flow open between the host running the agent and the host running the UI (default port: `8888`);
-  * having a user with admin. rights to Temboard UI.
+  * having a user with admin. rights to temBoard UI.
 
 `temboard-agent-register` should be executed from the host running the agent we want to register and works following these steps:
   - Agent configuration loading;
@@ -150,7 +150,7 @@ Usage:
 ```
 Usage: temboard-agent-register [options] <https-temboard-ui-address>
 
-Register a couple PostgreSQL instance/agent to a Temboard UI.
+Register a couple PostgreSQL instance/agent to a temBoard UI.
 
 Options:
   -c CONFIGFILE, --config=CONFIGFILE

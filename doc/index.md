@@ -1,9 +1,9 @@
 
-![Temboard](temboard.png)
+![temBoard](temboard.png)
 
-Temboard is a powerful mangement tool for PostgreSQL. You can use it monitor, optimize or configure multiple PostgreSQL instances.
+temBoard is a powerful mangement tool for PostgreSQL. You can use it monitor, optimize or configure multiple PostgreSQL instances.
 
-Temboard is composed of 2 basic elements:
+temBoard is composed of 2 basic elements:
 
 * An lightweight [agent](#the-agent) that you need to install on every PostgreSQL server you want to manage
 
