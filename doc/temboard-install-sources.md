@@ -1,4 +1,4 @@
-# temBoard installation from sources
+<h1>Server installation from PyPI</h1>
 
 ## Dependencies
 
@@ -15,10 +15,7 @@
 Proceed with the installation of the UI:
 
 ```
-cd temboard/
-sudo cp -r share/ /usr/share/temboard
-sudo cp temboardui/plugins/monitoring/sql/monitoring.sql /usr/share/temboard/.
-sudo python setup.py install
+sudo pip install temboard
 ```
 
 ## Prepare directories and files
@@ -126,4 +123,3 @@ sudo kill -HUP $(cat /var/run/temboard/temboard.pid)
 ### Init scripts and systemd service file
 
 Init scripts and a systemd service file are available in the `rpm/` and `debian/` directories inside the source tree.
-
