@@ -53,6 +53,7 @@ def load_plugins_configurations(config):
     # Loop through each plugin listed in the configuration file.
     for plugin_name in config.temboard['plugins']:
         logger.info("Loading plugin '%s'." % (plugin_name,))
+        fp_s = None
         try:
             # Loading compat.py file
             fp_s, path_s, desc_s = imp.find_module(
