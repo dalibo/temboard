@@ -2,21 +2,20 @@ site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
 copyright: Copyright 2015-2017 <a href="http://www.dalibo.com">dalibo</a>
-repo_url: https://github.com/dalibo/temboard/tree/master/doc 
-docs_dir: doc 
+repo_url: https://github.com/dalibo/temboard/tree/master/doc
+docs_dir: doc
 theme: readthedocs
 pages:
  - 'Home': index.md
  - 'Quick Start': QUICKSTART.md
- - 'Agent': 
-   - 'Install on Debian': temboard-agent-install-debian.md
-   - 'Install On Red Hat': temboard-agent-install-rpm.md
+ - 'Agent':
+   # - 'Install on Debian': temboard-agent-install-debian.md
+   # - 'Install On Red Hat': temboard-agent-install-rpm.md
    - 'Install From Source': temboard-agent-install-sources.md
    - 'Configure': temboard-agent-configuration.md
  - 'Server':
-   - 'Install on Debian': temboard-install-debian.md
-   - 'Install On Red Hat': temboard-install-rpm.md
+   # - 'Install on Debian': temboard-install-debian.md
+   # - 'Install On Red Hat': temboard-install-rpm.md
    - 'Intall From source': temboard-install-sources.md
    - 'Setup': temboard-repository-setup.md
    - 'How To': temboard-howto.md
-
