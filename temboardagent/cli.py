@@ -1,12 +1,10 @@
 from multiprocessing import Process, Queue
-import sys
 import signal
 
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .options import temboardOptions
 from .configuration import Configuration
-from .errors import ConfigurationError
 from .logger import get_logger, set_logger_name
 from .daemon import (
     daemonize,
@@ -24,18 +22,10 @@ def main():
     (options, _) = optparser.parse_args()
 
     # Load configuration from the configuration file.
-    try:
-        config = Configuration(options.configfile)
-        set_logger_name("temboard-agent")
-        logger = get_logger(config)
-        logger.info("Starting main process.")
-    except (ConfigurationError, ImportError) as e:
-        try:
-            logger.error(str(e))
-        except Exception:
-            pass
-        sys.stderr.write("FATAL: %s\n" % str(e))
-        exit(1)
+    config = Configuration(options.configfile)
+    set_logger_name("temboard-agent")
+    logger = get_logger(config)
+    logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.
     if (options.daemon):
