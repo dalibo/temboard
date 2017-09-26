@@ -5,6 +5,7 @@ import pdb
 import sys
 
 from .cli import main
+from .errors import UserError
 from .logger import LOG_FORMAT
 
 
@@ -21,6 +22,9 @@ try:
     retcode = main()
 except pdb.bdb.BdbQuit:
     logger.info("Graceful exit from debugger.")
+except UserError as e:
+    retcode = e.retcode
+    logger.critical("FATAL: %s", e)
 except Exception as e:
     logger.exception('Unhandled error:')
     if debug:

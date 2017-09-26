@@ -1,3 +1,9 @@
+class UserError(Exception):
+    def __init__(self, message, retcode=1):
+        super(UserError, self).__init__(message)
+        self.retcode = retcode
+
+
 class HTTPError(Exception):
     """ HTTP server errors """
     def __init__(self, code, message):
