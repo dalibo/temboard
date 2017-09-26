@@ -25,9 +25,15 @@ except pdb.bdb.BdbQuit:
 except UserError as e:
     retcode = e.retcode
     logger.critical("FATAL: %s", e)
-except Exception as e:
+except Exception:
     logger.exception('Unhandled error:')
     if debug:
         pdb.post_mortem(sys.exc_info()[2])
+    else:
+        logger.error("This is a bug!")
+        logger.error(
+            "Please report traceback to "
+            "https://github.com/dalibo/temboard-agent/issues! Thanks!"
+        )
 
 exit(retcode)
