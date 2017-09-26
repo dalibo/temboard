@@ -71,3 +71,5 @@ def main():
 
     # Join command scheduler process on http server process exit.
     scheduler.join()
+
+    return 0

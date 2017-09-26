@@ -51,6 +51,9 @@ LOG_LEVELS = {
 }
 
 LOG_METHODS = ['syslog', 'file', 'stderr']
+LOG_FORMAT = (
+    "temboard-agent[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
+)
 
 
 class Log(Logger):
@@ -69,9 +72,7 @@ class Log(Logger):
     def __init__(self, config, name, *args, **kwargs):
         Logger.__init__(self, name, *args, **kwargs)
 
-        log_format = "temboard-agent[%(process)d]: [%(name)s] %(levelname)s:"\
-                     " %(message)s"
-
+        log_format = LOG_FORMAT
         if config.logging['method'] == 'syslog':
             try:
                 # Instanciate a new syslog handler.
