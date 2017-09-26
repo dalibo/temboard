@@ -20,10 +20,6 @@ from .queue import purge_queue_dir
 
 
 def main():
-    """
-    Main function.
-    """
-    # Instanciate a new temboard-agent options parser.
     optparser = temboardOptions(description="temBoard agent.")
     (options, _) = optparser.parse_args()
 
@@ -40,11 +36,11 @@ def main():
             pass
         sys.stderr.write("FATAL: %s\n" % str(e))
         exit(1)
+
     # Run temboard-agent as a background daemon.
     if (options.daemon):
         daemonize(options.pidfile)
 
-    # Load plugins configuration.
     config.plugins = load_plugins_configurations(config)
 
     # Purge all data queues at start time excepting metrics & notifications.
