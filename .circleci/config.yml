@@ -14,11 +14,12 @@ jobs:
             - temboard-agent-{{ .Branch }}
             - temboard-agent-master
       - run:
+          name: Python lint and tests
           command: |
             set -x
             pip install --upgrade flake8 docutils
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-            flake8 temboard-agent temboardagent
+            flake8 temboard-agent/
             python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
       - store_artifacts:
           path: README.html
