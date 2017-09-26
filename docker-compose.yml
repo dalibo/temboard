@@ -1,11 +1,16 @@
-version: '3'
+version: '2'
 
 volumes:
   data:
-  repository:
   run:
 
 services:
+  repository:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: temboard
+      POSTGRES_PASSWORD: temboard
+
   ui:
     image: dalibo/temboard:latest
     links:
@@ -16,16 +21,6 @@ services:
       PGPASSWORD: temboard
     ports:
       - "8888:8888"
-    links:
-      - repository
-
-  repository:
-    image: postgres:9.6
-    volumes:
-      - repository:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: temboard
-      POSTGRES_PASSWORD: temboard
 
   instance:
     image: postgres:9.6
