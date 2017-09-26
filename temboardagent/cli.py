@@ -1,21 +1,22 @@
 from multiprocessing import Process, Queue
 import sys
 import signal
-from temboardagent.sharedmemory import Commands, Sessions
-from temboardagent.async import Scheduler
-from temboardagent.options import temboardOptions
-from temboardagent.configuration import Configuration
-from temboardagent.errors import ConfigurationError
-from temboardagent.logger import get_logger, set_logger_name
-from temboardagent.daemon import (
+
+from .sharedmemory import Commands, Sessions
+from .async import Scheduler
+from .options import temboardOptions
+from .configuration import Configuration
+from .errors import ConfigurationError
+from .logger import get_logger, set_logger_name
+from .daemon import (
     daemonize,
     httpd_sigterm_handler,
     set_global_scheduler,
     httpd_sighup_handler,
 )
-from temboardagent.httpd import httpd_run
-from temboardagent.pluginsmgmt import load_plugins_configurations
-from temboardagent.queue import purge_queue_dir
+from .httpd import httpd_run
+from .pluginsmgmt import load_plugins_configurations
+from .queue import purge_queue_dir
 
 
 def main():
