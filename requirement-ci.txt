@@ -1,0 +1,5 @@
+codecov
+docutils
+flake8
+pytest
+pytest-cov

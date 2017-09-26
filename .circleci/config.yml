@@ -17,10 +17,12 @@ jobs:
           name: Python lint and tests
           command: |
             set -x
-            pip install --upgrade flake8 docutils
+            pip install --upgrade --requirement requirement-ci.txt --editable .
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboard-agent/
             python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
+            pytest test/unit/
+            codecov
       - store_artifacts:
           path: README.html
           destination: build/README.html
