@@ -14,6 +14,7 @@ jobs:
             - temboard-agent-{{ .Branch }}
             - temboard-agent-master
       - run:
+          name: Python lint and tests
           command: |
             set -x
             pip install --upgrade flake8 docutils
