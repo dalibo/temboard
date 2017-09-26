@@ -1,65 +1,52 @@
-from multiprocessing import Process, Queue
-import signal
+from distutils.util import strtobool
+import logging
+import os
+import pdb
+import sys
 
-from .sharedmemory import Commands, Sessions
-from .async import Scheduler
-from .options import temboardOptions
-from .configuration import Configuration
-from .logger import get_logger, set_logger_name
-from .daemon import (
-    daemonize,
-    httpd_sigterm_handler,
-    set_global_scheduler,
-    httpd_sighup_handler,
-)
-from .httpd import httpd_run
-from .pluginsmgmt import load_plugins_configurations
-from .queue import purge_queue_dir
+from .errors import UserError
+from .logger import LOG_FORMAT
 
 
-def main():
-    optparser = temboardOptions(description="temBoard agent.")
-    (options, _) = optparser.parse_args()
+logger = logging.getLogger(__name__)
 
-    # Load configuration from the configuration file.
-    config = Configuration(options.configfile)
-    set_logger_name("temboard-agent")
-    logger = get_logger(config)
-    logger.info("Starting main process.")
 
-    # Run temboard-agent as a background daemon.
-    if (options.daemon):
-        daemonize(options.pidfile)
+def cli(main):
+    # A decorator to add consistent CLI bootstrap
+    #
+    # Decorated function must accept argv and environ arguments and return an
+    # exit code.
+    #
+    # The decorator adds basic logging setup and error management. The
+    # decorated function can just raise exception and log using logging module
+    # as usual.
 
-    config.plugins = load_plugins_configurations(config)
+    def cli_wrapper(argv=sys.argv[1:], environ=os.environ):
+        debug = strtobool(environ.get('DEBUG', '0'))
 
-    # Purge all data queues at start time excepting metrics & notifications.
-    purge_queue_dir(config.temboard['home'],
-                    ['metrics.q', 'notifications.q', 'notifications_last_10.q']
-                    )
+        retcode = 1
+        try:
+            logging.basicConfig(
+                level=logging.DEBUG if debug else logging.INFO,
+                format=LOG_FORMAT,
+            )
+            logger.debug("Starting temBoard agent.")
+            retcode = main(argv, environ) or 1
+        except pdb.bdb.BdbQuit:
+            logger.info("Graceful exit from debugger.")
+        except UserError as e:
+            retcode = e.retcode
+            logger.critical("%s", e)
+        except Exception:
+            logger.exception('Unhandled error:')
+            if debug:
+                pdb.post_mortem(sys.exc_info()[2])
+            else:
+                logger.error("This is a bug!")
+                logger.error(
+                    "Please report traceback to "
+                    "https://github.com/dalibo/temboard-agent/issues! Thanks!"
+                )
 
-    # Creation of the command list (max 100).
-    commands = Commands(100)
-    # Creation of the session list (max 100).
-    sessions = Sessions(100)
-    # Command queue creation.
-    queue_in = Queue()
-
-    # Start the command scheduler process.
-    scheduler = Process(target=Scheduler,
-                        args=(commands, queue_in, config, sessions))
-    scheduler.start()
-
-    # Let's store scheduler reference in a global var.
-    set_global_scheduler(scheduler)
-    # Add signal handlers on SIGTERM and SIGHUP.
-    signal.signal(signal.SIGTERM, httpd_sigterm_handler)
-    signal.signal(signal.SIGHUP, httpd_sighup_handler)
-
-    # Serve HTTPS forever.
-    httpd_run(commands, queue_in, config, sessions)
-
-    # Join command scheduler process on http server process exit.
-    scheduler.join()
-
-    return 0
+        exit(retcode)
+    return cli_wrapper
