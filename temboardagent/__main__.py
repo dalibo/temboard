@@ -24,7 +24,7 @@ except pdb.bdb.BdbQuit:
     logger.info("Graceful exit from debugger.")
 except UserError as e:
     retcode = e.retcode
-    logger.critical("FATAL: %s", e)
+    logger.critical("%s", e)
 except Exception:
     logger.exception('Unhandled error:')
     if debug:
