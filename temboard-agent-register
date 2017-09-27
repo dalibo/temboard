@@ -1,2 +1,2 @@
 #!/bin/bash
-exec python -m temboardagent.register -- $@
+exec python -m temboardagent.register $@
