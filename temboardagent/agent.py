@@ -4,6 +4,7 @@ from multiprocessing import Process, Queue
 import signal
 
 from .cli import cli
+from .options import define_common_arguments
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .configuration import Configuration
@@ -23,12 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def define_arguments(parser):
-    parser.add_argument(
-        '-c', '--config',
-        action='store', dest='configfile',
-        default='/etc/temboard-agent/temboard-agent.conf',
-        help="Configuration file. Default: %(default)s",
-    )
+    define_common_arguments(parser)
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='daemon',

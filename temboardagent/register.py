@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+from argparse import ArgumentParser
 import os
 from sys import stdout, stderr
 from getpass import getpass
@@ -7,7 +9,7 @@ import urllib2
 import json
 
 from .cli import cli
-from .options import agentRegisterOptions
+from .options import define_common_arguments
 from .errors import (
     ConfigurationError,
     HTTPError,
@@ -50,36 +52,65 @@ def ask_username():
     return username
 
 
+def define_arguments(parser):
+    parser.add_argument(
+        '-?', '--help',
+        action='help',
+        help='show this help message and exit')
+
+    define_common_arguments(parser)
+
+    parser.add_argument(
+        '-h', '--host',
+        dest='host',
+        help="Agent address. Default: %(default)s",
+        default='localhost'
+    )
+    parser.add_argument(
+        '-p', '--port',
+        dest='port',
+        help="Agent listening TCP port. Default: %(default)s",
+        default='2345',
+    )
+    parser.add_argument(
+        '-g', '--groups',
+        dest='groups',
+        help="Instance groups list, comma separated. Default: %(default)s",
+        default=None,
+    )
+    parser.add_argument(
+        'ui_address',
+        metavar='TEMBOARD-UI-ADDRESS',
+        help="temBoard UI address to register to.",
+    )
+
+
 @cli
 def main(argv, environ):
-    optparser = agentRegisterOptions(
-                    usage="usage: %prog [options] <https-temboard-ui-address>",
-                    add_help_option=False,
-                    description="Register a couple PostgreSQL instance/agent "
-                                "to a Temboard UI.")
-    (options, args) = optparser.parse_args()
+    parser = ArgumentParser(
+        prog='temboard-agent-register',
+        description=(
+            "Register a couple PostgreSQL instance/agent "
+            "to a Temboard UI."
+        ),
+        add_help=False,
+    )
+    define_arguments(parser)
 
-    if options.help is True:
-        print(optparser.format_help().strip())
-        exit(0)
-    if len(args) != 1:
-        print("ERROR: One argument is required.\n")
-        print(optparser.format_help().strip())
-        exit(1)
+    args = parser.parse_args(argv)
 
     # Loading agent configuration file.
-    config = LazyConfiguration(options.configfile)
+    config = LazyConfiguration(args.configfile)
 
-    ui_address = args[0]
     # Load configuration from the configuration file.
     try:
         # Getting system/instance informations using agent's discovering API
         print("Getting system & PostgreSQL informations from the agent "
-              "(https://%s:%s/discover) .." % (options.host, options.port))
+              "(https://%s:%s/discover) .." % (args.host, args.port))
         (code, content, cookies) = https_request(
                 None,
                 'GET',
-                "https://%s:%s/discover" % (options.host, options.port),
+                "https://%s:%s/discover" % (args.host, args.port),
                 headers={
                     "Content-type": "application/json"
                 })
@@ -89,13 +120,13 @@ def main(argv, environ):
 
         # Authentication done by the UI
         print("")
-        print("Login at %s." % (ui_address))
+        print("Login at %s." % (args.ui_address))
         username = ask_username()
         password = ask_password()
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/login" % (ui_address),
+                "%s/json/login" % (args.ui_address),
                 headers={
                     "Content-type": "application/json"
                 },
@@ -107,18 +138,18 @@ def main(argv, environ):
                 temboard_cookie = cookie_content
                 continue
 
-        if options.groups:
-            groups = [g for g in options.groups.split(',')]
+        if args.groups:
+            groups = [g for g in args.groups.split(',')]
         else:
             groups = None
 
         # POSTing new instance
         print("")
-        print("Registering instance/agent to %s .." % (ui_address))
+        print("Registering instance/agent to %s .." % (args.ui_address))
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/register/instance" % (ui_address),
+                "%s/json/register/instance" % (args.ui_address),
                 headers={
                     "Content-type": "application/json",
                     "Cookie": temboard_cookie
@@ -126,7 +157,7 @@ def main(argv, environ):
                 data={
                     'hostname': infos['hostname'],
                     'agent_key': config.temboard['key'],
-                    'agent_address': options.host,
+                    'agent_address': args.host,
                     'agent_port': config.temboard['port'],
                     'cpu': infos['cpu'],
                     'memory_size': infos['memory_size'],
