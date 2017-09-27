@@ -18,7 +18,7 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.logger import get_logger, set_logger_name, get_tb
+from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (
@@ -1001,8 +1001,7 @@ def monitoring_collector_worker(commands, command, config):
         commands.update(command)
         system_info = host_info(config.temboard['hostname'])
     except (ValueError, Exception) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug("Failed.")
         sys.exit(1)
 
@@ -1044,8 +1043,7 @@ def monitoring_collector_worker(commands, command, config):
                   max_size=1024 * 1024 * 10, overflow_mode='slide')
         q.push(Message(content=json.dumps(output)))
     except Exception as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug("Failed.")
         sys.exit(1)
 
@@ -1083,8 +1081,7 @@ def monitoring_sender_worker(commands, command, config):
                         config.temboard['key'],
                         msg.content)
         except urllib2.HTTPError as e:
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
             # On an error 409 (DB Integrity) we need to remove the message.
             if int(e.code) != 409:
                 logger.debug(
@@ -1092,8 +1089,7 @@ def monitoring_sender_worker(commands, command, config):
                 logger.debug("Failed.")
                 sys.exit(1)
         except Exception as e:
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
             logger.debug(
                 "Duration: %s." % (str(time.time() * 1000 - start_time)))
             logger.debug("Failed.")

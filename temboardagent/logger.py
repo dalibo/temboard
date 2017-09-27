@@ -1,33 +1,8 @@
-import sys
-import traceback
 import socket
 from logging import (Logger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL,
                      FileHandler, StreamHandler)
 from logging.handlers import SysLogHandler
 from temboardagent.errors import ConfigurationError
-
-
-"""
-
-Logging things should follow this template:
-
-[INFO] "We are going to do something"
-[DEBUG] Raw data, when we're working with data
-if error:
-    [DEBUG] Error backtrace
-    [ERROR] Error message from the exception
-    [INFO] "Failed."
-else:
-    [INFO] "Done."
-
-"""
-
-
-def get_tb():
-    exc_info = sys.exc_info()
-    lines = traceback.format_exc().splitlines()
-    del exc_info
-    return lines
 
 
 # Mapping configuration -> constants
@@ -100,13 +75,6 @@ class Log(Logger):
         lh.setLevel(LOG_LEVELS[config.logging['level']])
         lh.setFormatter(Formatter(log_format))
         self.addHandler(lh)
-
-    def traceback(self, tb_lines):
-        if isinstance(tb_lines, list):
-            for l in tb_lines:
-                self.debug(l)
-        else:
-            self.debug(tb_lines)
 
 
 LOGGER_NAME = 'temboard-agent'
