@@ -1,3 +1,4 @@
+import logging.config
 from multiprocessing import Process, Queue
 import signal
 
@@ -6,7 +7,7 @@ from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .options import temboardOptions
 from .configuration import Configuration
-from .logger import get_logger, set_logger_name
+from .logger import get_logger, set_logger_name, generate_logging_config
 from .daemon import (
     daemonize,
     httpd_sigterm_handler,
@@ -25,6 +26,8 @@ def main(argv, environ):
 
     # Load configuration from the configuration file.
     config = Configuration(options.configfile)
+    logging_config = generate_logging_config(config)
+    logging.config.dictConfig(logging_config)
     set_logger_name("temboard-agent")
     logger = get_logger(config)
     logger.info("Starting main process.")
