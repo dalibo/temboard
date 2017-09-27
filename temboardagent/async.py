@@ -1,8 +1,9 @@
+import logging.config
 from multiprocessing import Process
 import signal
 from os import getpid
 
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import generate_logging_config
 from temboardagent.routing import get_worker
 from temboardagent.daemon import (set_global_workers,
                                   scheduler_sigterm_handler,
@@ -16,6 +17,9 @@ from temboardagent.pluginsmgmt import (load_plugins_configurations,
                                        exec_scheduler)
 
 
+logger = logging.getLogger(__name__)
+
+
 def Worker(commands, command, config):
     """
     Routing function in charge of calling the right worker function.
@@ -27,8 +31,6 @@ def Worker(commands, command, config):
     try:
         get_worker(command.worker)(commands, command, config)
     except (AttributeError, Exception) as e:
-        set_logger_name("scheduler")
-        logger = get_logger(config)
         logger.error(str(e))
 
 
@@ -40,9 +42,6 @@ def Scheduler(commands, queue_in, config, sessions):
         - doing maintenance tasks like sessions and commands clean-up.
         - executing function named scheduler() from each loaded plugins.
     """
-    set_logger_name("scheduler")
-    logger = get_logger(config)
-
     # Add a signal handler on SIGTERM and SIGHUP signals.
     signal.signal(signal.SIGTERM, scheduler_sigterm_handler)
     signal.signal(signal.SIGHUP, scheduler_sighup_handler)
@@ -56,13 +55,11 @@ def Scheduler(commands, queue_in, config, sessions):
                 logger.info("SIGHUP signal caught, trying to reload"
                             " configuration.")
                 new_config = Configuration(config.configfile)
+                logging_config = generate_logging_config(new_config)
+                logging.config.dictConfig(logging_config)
                 # Prevent any change on plugins list..
                 new_config.temboard['plugins'] = config.temboard['plugins']
                 new_config.plugins = load_plugins_configurations(new_config)
-                # Logger re-creation.
-                del logger
-                set_logger_name("scheduler")
-                logger = get_logger(new_config)
                 config = new_config
                 logger.info("New configuration loaded.")
             except (ConfigurationError, ImportError) as e:

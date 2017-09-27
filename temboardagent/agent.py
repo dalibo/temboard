@@ -7,7 +7,7 @@ from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .options import temboardOptions
 from .configuration import Configuration
-from .logger import get_logger, set_logger_name, generate_logging_config
+from .logger import generate_logging_config
 from .daemon import (
     daemonize,
     httpd_sigterm_handler,
@@ -19,6 +19,9 @@ from .pluginsmgmt import load_plugins_configurations
 from .queue import purge_queue_dir
 
 
+logger = logging.getLogger(__name__)
+
+
 @cli
 def main(argv, environ):
     optparser = temboardOptions(description="temBoard agent.")
@@ -28,8 +31,6 @@ def main(argv, environ):
     config = Configuration(options.configfile)
     logging_config = generate_logging_config(config)
     logging.config.dictConfig(logging_config)
-    set_logger_name("temboard-agent")
-    logger = get_logger(config)
     logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.

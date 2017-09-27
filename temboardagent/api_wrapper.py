@@ -1,7 +1,11 @@
-from temboardagent.logger import get_logger
+import logging
+
 from temboardagent.api import check_sessionid
 from temboardagent.errors import HTTPError
 from temboardagent.spc import connector, error
+
+
+logger = logging.getLogger(__name__)
 
 
 def api_function_wrapper_pg(config, http_context, sessions, module,
@@ -15,7 +19,6 @@ def api_function_wrapper_pg(config, http_context, sessions, module,
           return its result;
         - close PG connection.
     """
-    logger = get_logger(config)
     logger.debug("Calling %s.%s()." % (module.__name__, function_name,))
     logger.debug(http_context)
 
@@ -57,7 +60,6 @@ def api_function_wrapper(config, http_context, sessions, module,
         - call the function 'function_name' from 'module_name' module and
           return its result;
     """
-    logger = get_logger(config)
     logger.debug("Calling %s.%s()." % (module.__name__, function_name,))
     logger.debug(http_context)
 

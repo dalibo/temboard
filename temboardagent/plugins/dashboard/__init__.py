@@ -1,3 +1,4 @@
+import logging
 import time
 import signal
 import json
@@ -19,7 +20,6 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (
@@ -29,6 +29,9 @@ from temboardagent.errors import (
 from temboardagent.workers import COMMAND_START
 from temboardagent.queue import Queue, Message
 import dashboard.metrics as metrics
+
+
+logger = logging.getLogger(__name__)
 
 
 @add_route('GET', '/dashboard')
@@ -125,7 +128,6 @@ Get the whole last data set used to render dashboard view. Data have been collec
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -142,7 +144,6 @@ def dashboard_live(http_context,
     """
 Synchronous version of ``/dashboard``. Please refer to ``/dashboard`` API documentation for details.
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -231,7 +232,6 @@ Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``histo
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -274,7 +274,6 @@ Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -317,7 +316,6 @@ Get PostgreSQL global cache hit ratio.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -366,7 +364,6 @@ Get the total number of active backends.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -418,7 +415,6 @@ Get CPU usage.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -511,7 +507,6 @@ Memory usage.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -556,7 +551,6 @@ Machine hostname.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -601,7 +595,6 @@ Operating system version.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -647,7 +640,6 @@ Get PostgreSQL server version.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -693,7 +685,6 @@ Number of CPU.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -746,7 +737,6 @@ PostgreSQL cluster size & number of databases.
 
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -795,7 +785,6 @@ Get a bunch of global informations about system and PostgreSQL.
 :statuscode 406: header ``X-Session`` is malformed.
 
     """  # noqa
-    set_logger_name("dashboard")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -812,8 +801,6 @@ def dashboard_collector_worker(commands, command, config):
     try:
         signal.signal(signal.SIGTERM, dashboard_worker_sigterm_handler)
         start_time = time.time() * 1000
-        set_logger_name("dashboard_collector")
-        logger = get_logger(config)
         logger.debug("Starting with pid=%s" % (getpid()))
         logger.debug("commandid=%s" % (command.commandid))
         command.state = COMMAND_START
@@ -890,8 +877,6 @@ def configuration(config):
                 'scheduler_interval': 2,
                 'history_length': 20
             }
-            set_logger_name("dashboard")
-            logger = get_logger(config)
 
             try:
                 self.check_section(__name__)

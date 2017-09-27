@@ -1,3 +1,4 @@
+import logging
 import time
 import pickle
 import base64
@@ -9,7 +10,6 @@ except ImportError:
 
 from temboardagent.routing import add_route, add_worker
 from temboardagent.api_wrapper import api_function_wrapper_pg
-from temboardagent.logger import set_logger_name, get_logger
 from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
@@ -37,13 +37,15 @@ import administration.functions as admin_functions
 from administration.types import T_CONTROL, T_VACUUMMODE
 
 
+logger = logging.getLogger(__name__)
+
+
 @add_route('GET', '/administration/pg_version')
 def api_pg_version(http_context,
                    queue_in=None,
                    config=None,
                    sessions=None,
                    commands=None):
-    set_logger_name("administration")
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -119,9 +121,6 @@ Control PostgreSQL server. Supported actions are "start", "stop", "restart" and 
     # NOTE: in this case we don't want to use api functions wrapper, it leads
     # to "Broken pipe" error with debian init.d scrip on start/restart. This is
     # probably due to getattr() call.
-    set_logger_name("administration")
-    # Get a new logger.
-    logger = get_logger(config)
     post = http_context['post']
 
     try:
@@ -239,10 +238,7 @@ def api_vacuum(http_context,
                config=None,
                sessions=None,
                commands=None):
-    set_logger_name("administration")
     worker = b'vacuum'
-    # Get a new logger.
-    logger = get_logger(config)
     try:
         check_sessionid(http_context['headers'], sessions)
         post = http_context['post']
@@ -302,8 +298,6 @@ def api_vacuum(http_context,
 @add_worker(b'vacuum')
 def worker_vacuum(commands, command, config):
     start_time = time.time() * 1000
-    set_logger_name("vacuum_worker")
-    logger = get_logger(config)
     logger.info("Starting with pid=%s" % (os.getpid()))
     logger.debug("commandid=%s" % (command.commandid,))
 
@@ -370,7 +364,6 @@ def configuration(config):
             self.plugin_configuration = {
                 'pg_ctl': None,
             }
-            set_logger_name("administration")
 
             try:
                 self.check_section(__name__)
