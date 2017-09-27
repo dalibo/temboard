@@ -1,11 +1,11 @@
+from argparse import ArgumentParser
 import logging.config
 from multiprocessing import Process, Queue
 import signal
 
-from .cli import cli
+from .cli import cli, define_common_arguments
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
-from .options import temboardOptions
 from .configuration import Configuration
 from .logger import generate_logging_config
 from .daemon import (
@@ -22,20 +22,40 @@ from .queue import purge_queue_dir
 logger = logging.getLogger(__name__)
 
 
+def define_arguments(parser):
+    define_common_arguments(parser)
+    parser.add_argument(
+        '-d', '--daemon',
+        action='store_true', dest='daemon',
+        default=False,
+        help="Run in background. Default: %(default)s",
+    )
+    parser.add_argument(
+        '-p', '--pid-file',
+        action='store', dest='pidfile',
+        default='/run/temboard-agent.pid',
+        help="PID file. Default: %(default)s",
+    )
+
+
 @cli
 def main(argv, environ):
-    optparser = temboardOptions(description="temBoard agent.")
-    (options, _) = optparser.parse_args(argv)
+    parser = ArgumentParser(
+        prog='temboard-agent',
+        description="temBoard agent.",
+    )
+    define_arguments(parser)
+    args = parser.parse_args(argv)
 
     # Load configuration from the configuration file.
-    config = Configuration(options.configfile)
+    config = Configuration(args.configfile)
     logging_config = generate_logging_config(config)
     logging.config.dictConfig(logging_config)
     logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.
-    if (options.daemon):
-        daemonize(options.pidfile)
+    if (args.daemon):
+        daemonize(args.pidfile)
 
     config.plugins = load_plugins_configurations(config)
 

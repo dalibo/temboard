@@ -2,8 +2,6 @@ import pytest
 
 
 def test_big_main(mocker):
-    pa = mocker.patch('temboardagent.agent.temboardOptions.parse_args')
-    pa.return_value = (mocker.Mock(), mocker.Mock())
     mocker.patch('temboardagent.agent.Configuration')
     mocker.patch('temboardagent.agent.daemonize')
     mocker.patch('temboardagent.agent.logging.config.dictConfig')
