@@ -2,7 +2,6 @@ from temboardagent.routing import add_route
 from temboardagent.api_wrapper import (
     api_function_wrapper_pg,
 )
-from temboardagent.logger import set_logger_name
 import pgconf.functions as pgconf_functions
 from pgconf.types import (
     T_PGSETTINGS_CATEGORY,
@@ -89,7 +88,6 @@ Get PostgreSQL settings from ``pg_settings`` system view and configuration files
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_settings')
 
@@ -136,7 +134,6 @@ Get list of settings categories.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_settings_categories')
 
@@ -197,7 +194,6 @@ Update one or many PostgreSQL settings values. This API issues ``ALTER SYSTEM`` 
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'post_settings')
 
@@ -261,7 +257,6 @@ Get list of settings for one category, based on category name.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_settings')
 
@@ -326,7 +321,6 @@ Shows settings waiting for PostgreSQL server reload and/or restart
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_settings_status')
 
@@ -411,7 +405,6 @@ Get records from the ``pg_hba.conf`` file.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_hba')
 
@@ -476,7 +469,6 @@ Get raw content of ``pg_hba.conf`` file.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_hba_raw')
 
@@ -532,7 +524,6 @@ Writes ``pg_hba.conf`` file content.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'post_hba')
 
@@ -580,7 +571,6 @@ Writes ``pg_hba.conf`` file content. Raw mode.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'post_hba_raw')
 
@@ -636,7 +626,6 @@ Remove a version of ``pg_hba.conf`` file.
     {"error": "Version 2016-01-29T08:46:09 of file /etc/postgresql/9.4/main/pg_hba.conf does not exist."}
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'delete_hba_version')
 
@@ -684,7 +673,6 @@ Get the list of ``pg_hba.conf`` versions.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_hba_versions')
 
@@ -727,7 +715,6 @@ Get raw content of ``pg_ident.conf`` file
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_pg_ident')
 
@@ -773,7 +760,6 @@ Write ``pg_ident.conf`` file content. Raw mode.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'post_pg_ident')
 
@@ -818,6 +804,5 @@ Get HBA potential values for each column.
 
 
     """  # noqa
-    set_logger_name("pgconf")
     return api_function_wrapper_pg(config, http_context, sessions,
                                    pgconf_functions, 'get_hba_options')

@@ -1,6 +1,5 @@
 from temboardagent.routing import add_route
 from temboardagent.api_wrapper import api_function_wrapper_pg
-from temboardagent.logger import set_logger_name
 import activity.functions as activity_functions
 
 
@@ -82,7 +81,6 @@ Get list of PostgreSQL backends.
 
 
     """  # noqa
-    set_logger_name('activity')
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -147,7 +145,6 @@ Get list of PostgreSQL backends waiting for lock acquisition.
 :statuscode 406: header ``X-Session`` is malformed.
 
     """  # noqa
-    set_logger_name('activity')
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -213,7 +210,6 @@ Get list of PostgreSQL backends blocking other backends due to lock acquisition.
 
 
     """  # noqa
-    set_logger_name('activity')
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -271,7 +267,6 @@ Terminate (kill) a list of PostgreSQL backends.
 
 
     """  # noqa
-    set_logger_name('activity')
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
