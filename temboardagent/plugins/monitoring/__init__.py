@@ -18,7 +18,6 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (
@@ -56,6 +55,8 @@ from monitoring.probes import (
 from monitoring.output import send_output, remove_passwords
 
 __VERSION__ = '0.0.1'
+
+logger = logging.getLogger(__name__)
 
 
 @add_route('GET', '/monitoring/probe/sessions')
@@ -130,8 +131,6 @@ Run ``sessions`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -189,8 +188,6 @@ Run ``xacts`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -262,8 +259,6 @@ Run ``locks`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -321,8 +316,6 @@ Run ``blocks`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -387,8 +380,6 @@ Run ``bgwriter`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -450,8 +441,6 @@ Run ``db_size`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -519,8 +508,6 @@ Run ``tblspc_size`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -584,8 +571,6 @@ Run ``filesystems_size`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -676,8 +661,6 @@ Run ``cpu`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -736,8 +719,6 @@ Run ``process`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -797,8 +778,6 @@ Run ``memory`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -854,8 +833,6 @@ Run ``loadavg`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -915,8 +892,6 @@ Run ``wal_files`` monitoring probe.
 
 
     """  # noqa
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -931,8 +906,6 @@ Run ``wal_files`` monitoring probe.
 @add_route('GET', '/monitoring/probe/replication')
 def monitoring_probe_replication(http_context, queue_in=None, config=None,
                                  sessions=None, commands=None):
-    set_logger_name("monitoring")
-    logger = get_logger(config)
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -948,11 +921,6 @@ def api_run_probe(probe_instance, config):
     """
     Run a probe instance.
     """
-    set_logger_name("monitoring")
-    logger = get_logger(config)
-    # TODO: logging methods in monitoring_agent code and monitoring_agent
-    # should be aligned.
-    logging.root = logger
     config.plugins['monitoring']['conninfo'] = [{
         'host': config.postgresql['host'],
         'port': config.postgresql['port'],
@@ -987,10 +955,6 @@ def monitoring_collector_worker(commands, command, config):
     signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
 
     start_time = time.time() * 1000
-    set_logger_name("monitoring_collector_worker")
-    logger = get_logger(config)
-    # TODO: logging methods in monitoring plugin must be aligned.
-    logging.root = logger
     logger.debug("Starting with pid=%s" % (os.getpid()))
     logger.debug("commandid=%s" % (command.commandid))
     command.state = COMMAND_START
@@ -1055,10 +1019,6 @@ def monitoring_collector_worker(commands, command, config):
 def monitoring_sender_worker(commands, command, config):
     signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
     start_time = time.time() * 1000
-    set_logger_name("monitoring_sender_worker")
-    logger = get_logger(config)
-    # TODO: logging methods in monitoring plugin must be aligned.
-    logging.root = logger
     logger.debug("Starting with pid=%s" % (os.getpid()))
     logger.debug("commandid=%s" % (command.commandid))
     command.state = COMMAND_START
@@ -1145,8 +1105,6 @@ def configuration(config):
                     'TEMBOARD_MONITORING_COLLECTOR_URL', None),
                 'ssl_ca_cert_file': None
             }
-            set_logger_name("monitoring")
-            logger = get_logger(config)
 
             try:
                 self.check_section(__name__)
