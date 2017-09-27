@@ -14,25 +14,6 @@ class CLIOptions(OptionParser):
                         default="/etc/temboard-agent/temboard-agent.conf")
 
 
-class temboardOptions(CLIOptions):
-    """
-    temboard-agent options parser.
-    """
-    def __init__(self, *args, **kwargs):
-        CLIOptions.__init__(self, *args, **kwargs)
-        self.add_option("-d",
-                        "--daemon",
-                        dest="daemon",
-                        action="store_true",
-                        help="Run in background. Default: %default",
-                        default=False)
-        self.add_option("-p",
-                        "--pid-file",
-                        dest="pidfile",
-                        help="PID file. Default: %default",
-                        default="/run/temboard-agent.pid")
-
-
 class agentRegisterOptions(CLIOptions):
     """
     Command line interface options parser.
