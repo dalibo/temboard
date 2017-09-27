@@ -17,7 +17,7 @@ from temboardagent.types import (
 )
 from temboardagent.tools import validate_parameters
 from temboardagent.usermgmt import auth_user, gen_sessionid
-from temboardagent.logger import get_logger, set_logger_name, get_tb
+from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.spc import connector, error
 from temboardagent.workers import COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
@@ -113,8 +113,7 @@ User login
                   post['username'],
                   post['password'])
     except HTTPError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Authentication failed.")
         raise e
     try:
@@ -134,12 +133,10 @@ User login
                                         username=post['username'],
                                         message="Login"))
         except NotificationError as e:
-            logger.traceback(get_tb())
-            logger.error(e.message)
+            logger.exception(e.message)
 
     except (SharedItem_exists, SharedItem_no_free_slot_left) as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         raise HTTPError(500, "Internal error.")
     return {'session': sessionid}
 
@@ -205,8 +202,7 @@ User logout
     try:
         username = check_sessionid(headers, sessions)
     except HTTPError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Invalid session.")
         raise e
 
@@ -215,14 +211,12 @@ User logout
                                         username=username,
                                         message="Logout"))
     except NotificationError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
 
     try:
         sessions.delete(headers['X-Session'].encode('utf-8'))
     except (SharedItem_exists, SharedItem_no_free_slot_left) as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         raise HTTPError(500, "Internal error.")
     return {'logout': True}
 
@@ -293,8 +287,7 @@ Get global informations about the environment
         return ret
 
     except (error, Exception, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.info('Discovery failed.')
         try:
             conn.close()
@@ -369,8 +362,7 @@ Get current username
     try:
         check_sessionid(headers, sessions)
     except HTTPError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Invalid session.")
         raise e
     try:
@@ -379,8 +371,7 @@ Get current username
         logger.info("Done.")
         return {'username': session.username}
     except SharedItem_not_found as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Failed.")
         raise HTTPError(401, "Invalid session.")
 
@@ -395,8 +386,7 @@ def get_command(http_context, queue_in=None, config=None, sessions=None,
     try:
         check_sessionid(headers, sessions)
     except HTTPError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Invalid session.")
         raise e
     cid = http_context['urlvars'][0]
@@ -413,8 +403,7 @@ def get_command(http_context, queue_in=None, config=None, sessions=None,
                 'state': c_state,
                 'result': c_result}
     except SharedItem_not_found as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Failed.")
         raise HTTPError(401, "Invalid command.")
 
@@ -489,8 +478,7 @@ Get all notifications from the agent.
     try:
         check_sessionid(headers, sessions)
     except HTTPError as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Invalid session.")
         raise e
 
@@ -499,7 +487,6 @@ Get all notifications from the agent.
         logger.info("Done.")
         return list(notifications)
     except (NotificationError, Exception) as e:
-        logger.traceback(get_tb())
-        logger.error(e.message)
+        logger.exception(e.message)
         logger.info("Failed.")
         raise HTTPError(500, "Internal error.")

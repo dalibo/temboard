@@ -19,7 +19,7 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.logger import get_logger, set_logger_name, get_tb
+from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.sharedmemory import Command
 from temboardagent.tools import hash_id
 from temboardagent.errors import (
@@ -842,8 +842,7 @@ def dashboard_collector_worker(commands, command, config):
         logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
         logger.debug("Done.")
     except (error, Exception) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug("Failed.")
         try:
             conn.close()

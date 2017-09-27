@@ -17,7 +17,6 @@ from temboardagent.inventory import (
     SysInfo,
     PgInfo,
 )
-from temboardagent.logger import get_tb
 
 
 def host_info(hostname_cfg):
@@ -96,8 +95,7 @@ def instance_info(conninfo, hostname):
             instance_info['sysuser'] = None
 
     except error as e:
-        logging.error(get_tb())
-        logging.error(str(e))
+        logging.exception(str(e))
         logging.warning("Unable to gather information for cluster \"%s\"",
                         conninfo['instance'])
         instance_info['available'] = False

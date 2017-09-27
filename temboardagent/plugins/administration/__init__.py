@@ -9,7 +9,7 @@ except ImportError:
 
 from temboardagent.routing import add_route, add_worker
 from temboardagent.api_wrapper import api_function_wrapper_pg
-from temboardagent.logger import set_logger_name, get_logger, get_tb
+from temboardagent.logger import set_logger_name, get_logger
 from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
@@ -134,8 +134,7 @@ Control PostgreSQL server. Supported actions are "start", "stop", "restart" and 
                     http_context['headers']['X-Session'].encode('utf-8')
                     )
     except (Exception, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug(http_context)
         if isinstance(e, HTTPError):
             raise e
@@ -150,8 +149,7 @@ Control PostgreSQL server. Supported actions are "start", "stop", "restart" and 
                                 )
                               )
     except (NotificationError, Exception) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
 
     try:
         logger.info("PostgreSQL '%s' requested." % (post['action']))
@@ -227,8 +225,7 @@ Control PostgreSQL server. Supported actions are "start", "stop", "restart" and 
         logger.info("Done.")
         return {'action': post['action'], 'state': 'ok'}
     except (Exception, error, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.info("Failed")
         if isinstance(e, HTTPError):
             raise e
@@ -266,8 +263,7 @@ def api_vacuum(http_context,
                         )
                     ).decode('utf-8')
     except (Exception, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         if isinstance(e, HTTPError):
             raise e
         else:
@@ -277,8 +273,7 @@ def api_vacuum(http_context,
     try:
         commands.check_uniqueness(worker, parameters)
     except SharedItem_exists as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         raise HTTPError(402,
                         "Vaccum '%s' already running on table '%s'." % (
                             post['mode'],
@@ -300,8 +295,7 @@ def api_vacuum(http_context,
         queue_in.put(command)
         return {"cid": cid}
     except SharedItem_no_free_slot_left as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         raise HTTPError(500, "Internal error.")
 
 
@@ -344,8 +338,7 @@ def worker_vacuum(commands, command, config):
         command.result = str(e)
         command.time = time.time()
 
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
 
         try:
             commands.update(command)
@@ -360,8 +353,7 @@ def worker_vacuum(commands, command, config):
         command.time = time.time()
         commands.update(command)
     except Exception as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
 
     logger.info("Done.")
     logger.debug(" in %s s." % (str((time.time()*1000 - start_time)/1000),))

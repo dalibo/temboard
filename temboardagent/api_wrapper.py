@@ -1,4 +1,4 @@
-from temboardagent.logger import get_logger, get_tb
+from temboardagent.logger import get_logger
 from temboardagent.api import check_sessionid
 from temboardagent.errors import HTTPError
 from temboardagent.spc import connector, error
@@ -36,8 +36,7 @@ def api_function_wrapper_pg(config, http_context, sessions, module,
         return dm
 
     except (error, Exception, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug("Failed.")
         try:
             conn.close()
@@ -70,8 +69,7 @@ def api_function_wrapper(config, http_context, sessions, module,
         return dm
 
     except (Exception, HTTPError) as e:
-        logger.traceback(get_tb())
-        logger.error(str(e))
+        logger.exception(str(e))
         logger.debug("Failed.")
         if isinstance(e, HTTPError):
             raise e

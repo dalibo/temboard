@@ -2,7 +2,7 @@ from multiprocessing import Process
 import signal
 from os import getpid
 
-from temboardagent.logger import get_logger, set_logger_name, get_tb
+from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.routing import get_worker
 from temboardagent.daemon import (set_global_workers,
                                   scheduler_sigterm_handler,
@@ -66,8 +66,7 @@ def Scheduler(commands, queue_in, config, sessions):
                 config = new_config
                 logger.info("New configuration loaded.")
             except (ConfigurationError, ImportError) as e:
-                logger.traceback(get_tb())
-                logger.error(str(e))
+                logger.exception(str(e))
                 logger.info("Some error occured, keeping old configuration.")
 
             set_global_reload(False)

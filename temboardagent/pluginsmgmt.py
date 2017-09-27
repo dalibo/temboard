@@ -2,7 +2,7 @@ import os
 import sys
 import imp
 import time
-from temboardagent.logger import get_logger, get_tb
+from temboardagent.logger import get_logger
 from temboardagent.spc import connector
 
 
@@ -37,8 +37,7 @@ def load_plugins_configurations(config):
             pg_version = conn.get_pg_version()
             conn.close()
         except Exception as e:
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
             logger.error("Not able to get PostgreSQL version number.")
             try:
                 conn.close()
@@ -96,8 +95,7 @@ def load_plugins_configurations(config):
         except Exception as e:
             if fp:
                 fp.close()
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
             logger.info("Failed.")
 
     return ret
@@ -142,6 +140,5 @@ def exec_scheduler(queue_in, config, commands, logger):
             logger.debug("Function does not exist.")
             pass
         except Exception as e:
-            logger.traceback(get_tb())
-            logger.error(str(e))
+            logger.exception(str(e))
             logger.debug("Failed.")

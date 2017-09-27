@@ -13,7 +13,7 @@ import ssl
 
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError, ConfigurationError
-from temboardagent.logger import get_logger, set_logger_name, get_tb
+from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.daemon import set_global_reload, reload_true
 from temboardagent.pluginsmgmt import load_plugins_configurations
 from temboardagent.configuration import Configuration
@@ -244,8 +244,7 @@ def httpd_run(commands, queue_in, config, sessions):
                 logger = get_logger(new_config)
                 logger.info("Done.")
             except (ConfigurationError, ImportError) as e:
-                logger.traceback(get_tb())
-                logger.error(str(e))
+                logger.exception(str(e))
                 logger.info("Keeping previous configuration.")
             # Reset the global var indicating a SIGHUP signal.
             set_global_reload(False)
