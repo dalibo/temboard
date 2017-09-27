@@ -3,8 +3,7 @@ import logging.config
 from multiprocessing import Process, Queue
 import signal
 
-from .cli import cli
-from .options import define_common_arguments
+from .cli import cli, define_common_arguments
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .configuration import Configuration

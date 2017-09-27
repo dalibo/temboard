@@ -8,8 +8,7 @@ import re
 import urllib2
 import json
 
-from .cli import cli
-from .options import define_common_arguments
+from .cli import cli, define_common_arguments
 from .errors import (
     ConfigurationError,
     HTTPError,
