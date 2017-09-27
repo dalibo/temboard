@@ -1,4 +1,4 @@
-import logging
+import logging.config
 
 try:
     import configparser
@@ -9,7 +9,11 @@ import os.path
 import json
 import re
 from temboardagent.errors import ConfigurationError
-from temboardagent.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
+from temboardagent.logger import (
+    LOG_FACILITIES, LOG_LEVELS, LOG_METHODS,
+    generate_logging_config,
+)
+from .pluginsmgmt import load_plugins_configurations
 
 
 logger = logging.getLogger(__name__)
@@ -253,6 +257,17 @@ class Configuration(BaseConfiguration):
             self.postgresql['instance'] = self.get('postgresql', 'instance')
         except configparser.NoOptionError:
             pass
+
+    def reload(self):
+        new = self.__class__(self.configfile)
+        # Prevent any change on plugins list.
+        new.temboard['plugins'] = self.temboard['plugins']
+        new.plugins = load_plugins_configurations(new)
+        return new
+
+    def setup_logging(self):
+        logging_config = generate_logging_config(self)
+        logging.config.dictConfig(logging_config)
 
 
 class PluginConfiguration(configparser.RawConfigParser):
