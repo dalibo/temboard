@@ -1,9 +1,13 @@
+import logging
 import os
 import sys
 import imp
 import time
-from temboardagent.logger import get_logger
+
 from temboardagent.spc import connector
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_plugins_configurations(config):
@@ -18,8 +22,6 @@ def load_plugins_configurations(config):
     # Get this module's path.
     path = os.path.dirname(__file__)
     ret = dict()
-    # Get the logger.
-    logger = get_logger(config)
     # PostgreSQL version
     pg_version = 0
 

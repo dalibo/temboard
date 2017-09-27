@@ -6,7 +6,7 @@ def test_big_main(mocker):
     pa.return_value = (mocker.Mock(), mocker.Mock())
     mocker.patch('temboardagent.agent.Configuration')
     mocker.patch('temboardagent.agent.daemonize')
-    mocker.patch('temboardagent.agent.get_logger')
+    mocker.patch('temboardagent.agent.logging.config.dictConfig')
     mocker.patch('temboardagent.agent.httpd_run')
     mocker.patch('temboardagent.agent.load_plugins_configurations')
     mocker.patch('temboardagent.agent.Process')

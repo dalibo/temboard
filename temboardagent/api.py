@@ -1,3 +1,4 @@
+import logging
 import time
 
 from temboardagent.routing import add_route
@@ -17,11 +18,13 @@ from temboardagent.types import (
 )
 from temboardagent.tools import validate_parameters
 from temboardagent.usermgmt import auth_user, gen_sessionid
-from temboardagent.logger import get_logger, set_logger_name
 from temboardagent.spc import connector, error
 from temboardagent.workers import COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.inventory import SysInfo, PgInfo
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_sessionid(http_header, sessions):
@@ -99,8 +102,6 @@ User login
 
     """  # noqa
     post = http_context['post']
-    set_logger_name("api")
-    logger = get_logger(config)
     # Add an unconditional sleeping time to reduce brute-force risks
     time.sleep(1)
 
@@ -196,8 +197,6 @@ User logout
 
     """  # noqa
     headers = http_context['headers']
-    set_logger_name("api")
-    logger = get_logger(config)
     logger.info("Removing session: %s" % (headers['X-Session']))
     try:
         username = check_sessionid(headers, sessions)
@@ -258,8 +257,6 @@ Get global informations about the environment
 
 
     """  # noqa
-    set_logger_name("api")
-    logger = get_logger(config)
     conn = connector(
         host=config.postgresql['host'],
         port=config.postgresql['port'],
@@ -356,8 +353,6 @@ Get current username
 
     """  # noqa
     headers = http_context['headers']
-    set_logger_name("api")
-    logger = get_logger(config)
     logger.info("Get user profile.")
     try:
         check_sessionid(headers, sessions)
@@ -380,8 +375,6 @@ Get current username
 def get_command(http_context, queue_in=None, config=None, sessions=None,
                 commands=None):
     headers = http_context['headers']
-    set_logger_name("api")
-    logger = get_logger(config)
     logger.info("Get command status.")
     try:
         check_sessionid(headers, sessions)
@@ -472,8 +465,6 @@ Get all notifications from the agent.
 
     """  # noqa
     headers = http_context['headers']
-    set_logger_name("api")
-    logger = get_logger(config)
     logger.info("Get notifications.")
     try:
         check_sessionid(headers, sessions)

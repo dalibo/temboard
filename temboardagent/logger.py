@@ -25,21 +25,6 @@ LOG_FORMAT = (
 )
 
 
-LOGGER_NAME = 'temboard-agent'
-
-
-def set_logger_name(name):
-    global LOGGER_NAME
-    LOGGER_NAME = name
-
-
-def get_logger(config):
-    """
-    Returns a logger instance.
-    """
-    return logging.getLogger(LOGGER_NAME)
-
-
 def generate_logging_config(config):
     LOG_METHODS['file']['filename'] = config.logging['destination']
     facility = SysLogHandler.facility_names[config.logging['facility']]

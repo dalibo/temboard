@@ -1,8 +1,8 @@
+import logging
 import os.path
 import re
 
 from temboardagent.spc import pg_escape, error
-from temboardagent.logger import set_logger_name, get_logger
 from temboardagent.errors import HTTPError, NotificationError
 from temboardagent.tools import validate_parameters
 from temboardagent.notification import NotificationMgmt, Notification
@@ -16,6 +16,9 @@ from pgconf.hba import (
     HBAEntry,
     HBAManager,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_settings_categories(conn, config, _):
@@ -292,9 +295,6 @@ def get_settings_status(conn, config, http_context):
 
 
 def post_settings(conn, config, http_context):
-    set_logger_name("settings")
-    logger = get_logger(config)
-
     if http_context and 'filter' in http_context['query']:
         # Check 'filter' parameters.
         validate_parameters(http_context['query'], [
@@ -469,7 +469,6 @@ HBA
 
 def get_hba_raw(conn, config, http_context):
     version = None
-    set_logger_name("pgconf")
 
     if http_context and 'version' in http_context['query']:
         # Check parameter 'version'
@@ -491,7 +490,6 @@ def get_hba_raw(conn, config, http_context):
 
 def get_hba(conn, config, http_context):
     version = None
-    set_logger_name("pgconf")
     if http_context and 'version' in http_context['query']:
         # Check parameter 'version'
         validate_parameters(http_context['query'], [
@@ -512,7 +510,6 @@ def get_hba(conn, config, http_context):
 
 
 def get_hba_versions(conn, config, http_context):
-    set_logger_name("pgconf")
     hba_file = get_setting(conn, 'hba_file')
     return {
         'filepath': hba_file,
@@ -522,7 +519,6 @@ def get_hba_versions(conn, config, http_context):
 
 def post_hba_raw(conn, config, http_context):
     new_version = False
-    set_logger_name("pgconf")
 
     if 'content' not in http_context['post']:
         raise HTTPError(406, "Parameter 'content' not sent.")
@@ -542,8 +538,6 @@ def post_hba_raw(conn, config, http_context):
 
 def post_hba(conn, config, http_context):
     new_version = False
-    set_logger_name("pgconf")
-    logger = get_logger(config)
 
     # Push a notification.
     try:
@@ -598,8 +592,6 @@ def post_hba(conn, config, http_context):
 
 def delete_hba_version(conn, config, http_context):
     version = None
-    set_logger_name("pgconf")
-    logger = get_logger(config)
 
     if http_context and 'version' in http_context['query']:
         # Check parameter 'version'
@@ -634,8 +626,6 @@ pg_ident
 
 
 def get_pg_ident(conn, config, http_context):
-    set_logger_name("pgconf")
-    logger = get_logger(config)
     ret = {
         'filepath': None,
         'content': ''
@@ -661,9 +651,6 @@ def get_pg_ident(conn, config, http_context):
 
 
 def post_pg_ident(conn, config, http_context):
-    set_logger_name("pgconf")
-    logger = get_logger(config)
-
     if 'content' not in http_context['post']:
         raise HTTPError(406, "Parameter 'content' not sent.")
     try:

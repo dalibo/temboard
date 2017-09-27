@@ -1,3 +1,5 @@
+import logging.config
+
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from socketserver import ThreadingMixIn
@@ -13,10 +15,13 @@ import ssl
 
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError, ConfigurationError
-from temboardagent.logger import get_logger, set_logger_name
+from temboardagent.logger import generate_logging_config
 from temboardagent.daemon import set_global_reload, reload_true
 from temboardagent.pluginsmgmt import load_plugins_configurations
 from temboardagent.configuration import Configuration
+
+
+logger = logging.getLogger(__name__)
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -39,9 +44,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.sessions = sessions
         # Configuration instance.
         self.config = config
-        # Logger.
-        set_logger_name("httpd")
-        self.logger = get_logger(config)
         # HTTP server version.
         self.server_version = "temboard-agent/0.0.1"
         # HTTP request method
@@ -217,8 +219,6 @@ def httpd_run(commands, queue_in, config, sessions):
     # is written to handle configuration re-loading and needs to be run
     # periodicaly.
     httpd.timeout = 1
-    set_logger_name("httpd")
-    logger = get_logger(config)
     while True:
         httpd.handle_request()
         if reload_true():
@@ -228,6 +228,9 @@ def httpd_run(commands, queue_in, config, sessions):
                 logger.info("SIGHUP signal caught, trying to reload "
                             "configuration.")
                 new_config = Configuration(config.configfile)
+                logging_config = generate_logging_config(new_config)
+                logging.config.dictConfig(logging_config)
+
                 # Prevent any change on plugins list..
                 new_config.temboard['plugins'] = config.temboard['plugins']
                 new_config.plugins = load_plugins_configurations(new_config)
@@ -237,11 +240,6 @@ def httpd_run(commands, queue_in, config, sessions):
                                                 queue_in,
                                                 new_config,
                                                 sessions)
-                del logger
-                # ... and re-create a new one with the new
-                # configuration.
-                set_logger_name("httpd")
-                logger = get_logger(new_config)
                 logger.info("Done.")
             except (ConfigurationError, ImportError) as e:
                 logger.exception(str(e))
