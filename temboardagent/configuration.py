@@ -18,26 +18,24 @@ logger = logging.getLogger(__name__)
 
 
 LOG_METHODS = {
-    'stderr': {
-        '()': 'logging.StreamHandler',
-        'formatter': 'full',
-    },
     'file': {
         '()': 'logging.FileHandler',
         'mode': 'a',
-        'formatter': 'minimal',
+        'formatter': 'dated_syslog',
     },
     'syslog': {
         '()': 'logging.handlers.SysLogHandler',
+        'formatter': 'syslog',
+    },
+    'stderr': {
+        '()': 'logging.StreamHandler',
         'formatter': 'minimal',
-    }
+    },
 }
 
 LOG_FACILITIES = SysLogHandler.facility_names
 LOG_LEVELS = logging._levelNames.values()
-LOG_FORMAT = (
-    "temboard-agent[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
-)
+LOG_FORMAT = '[%(name)-32.32s %(levelname)5.5s] %(message)s'
 
 
 def generate_logging_config(config):
@@ -45,23 +43,25 @@ def generate_logging_config(config):
     facility = SysLogHandler.facility_names[config.logging['facility']]
     LOG_METHODS['syslog']['facility'] = facility
     LOG_METHODS['syslog']['address'] = config.logging['destination']
+    syslog_fmt = (
+        "temboard-agent[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
+    )
 
     logging_config = {
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
-            'minimal': {
-                'format': LOG_FORMAT,
-            },
-            'full': {
-                'format': '%(asctime)s ' + LOG_FORMAT,
-            }
+            'minimal': {'format': LOG_FORMAT},
+            'syslog': {'format': syslog_fmt},
+            'dated_syslog': {'format': '%(asctime)s ' + syslog_fmt},
         },
         'handlers': {
             'configured': LOG_METHODS[config.logging['method']]
         },
         'root': {
             'level': 'INFO',
+            # Avoid instanciate all handlers, especially syslog which open
+            # /dev/log
             'handlers': ['configured'],
         },
         'loggers': {
