@@ -17,6 +17,15 @@ from .pluginsmgmt import load_plugins_configurations
 logger = logging.getLogger(__name__)
 
 
+class LastnameFilter(logging.Filter):
+    def filter(self, record):
+        record.lastname = record.name
+        if record.name.startswith('temboardagent.'):
+            _, record.lastname = record.name.rsplit('.', 1)
+        # Always log, we are just enriching records.
+        return 1
+
+
 LOG_METHODS = {
     'file': {
         '()': 'logging.FileHandler',
@@ -35,28 +44,41 @@ LOG_METHODS = {
 
 LOG_FACILITIES = SysLogHandler.facility_names
 LOG_LEVELS = logging._levelNames.values()
-LOG_FORMAT = '[%(name)-32.32s %(levelname)5.5s] %(message)s'
 
 
-def generate_logging_config(config):
-    LOG_METHODS['file']['filename'] = config.logging['destination']
-    facility = SysLogHandler.facility_names[config.logging['facility']]
+def generate_logging_config(
+        level='DEBUG', destination=None, facility='local0',
+        method='stderr', **kw):
+
+    facility = SysLogHandler.facility_names[facility]
     LOG_METHODS['syslog']['facility'] = facility
-    LOG_METHODS['syslog']['address'] = config.logging['destination']
+    LOG_METHODS['syslog']['address'] = destination
+    LOG_METHODS['file']['filename'] = destination
+
+    log_fmt = '[%(lastname)-16.16s] %(levelname)5.5s: %(message)s'
     syslog_fmt = (
-        "temboard-agent[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
+        "temboard-agent[%(process)d]: "
+        "[%(lastname)s] %(levelname)s: %(message)s"
     )
 
     logging_config = {
         'version': 1,
         'disable_existing_loggers': False,
+        'filters': {
+            'lastname': {
+                '()': __name__ + '.LastnameFilter',
+            }
+        },
         'formatters': {
-            'minimal': {'format': LOG_FORMAT},
+            'minimal': {'format': log_fmt},
             'syslog': {'format': syslog_fmt},
             'dated_syslog': {'format': '%(asctime)s ' + syslog_fmt},
         },
         'handlers': {
-            'configured': LOG_METHODS[config.logging['method']]
+            'configured': dict(
+                LOG_METHODS[method],
+                filters=['lastname'],
+            ),
         },
         'root': {
             'level': 'INFO',
@@ -66,18 +88,18 @@ def generate_logging_config(config):
         },
         'loggers': {
             'temboardagent': {
-                'level': config.logging['level'],
+                'level': level,
             },
             'temboard-agent': {
-                'level': config.logging['level'],
+                'level': level,
             },
         },
     }
     return logging_config
 
 
-def setup_logging(config):
-    logging_config = generate_logging_config(config)
+def setup_logging(**kw):
+    logging_config = generate_logging_config(**kw)
     logging.config.dictConfig(logging_config)
 
 
@@ -556,4 +578,4 @@ class MergedConfiguration(DotDict):
 
     def setup_logging(self):
         # Just to save one import for code reloading config.
-        setup_logging(self)
+        setup_logging(**self.logging)

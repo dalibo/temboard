@@ -5,7 +5,7 @@ import pdb
 import sys
 
 from .errors import UserError
-from .configuration import LOG_FORMAT
+from .configuration import setup_logging
 
 
 logger = logging.getLogger(__name__)
@@ -35,10 +35,7 @@ def cli(main):
 
         retcode = 1
         try:
-            logging.basicConfig(
-                level=logging.DEBUG if debug else logging.INFO,
-                format=LOG_FORMAT,
-            )
+            setup_logging(level='DEBUG' if debug else 'INFO')
             logger.debug("Starting temBoard agent.")
             retcode = main(argv, environ) or 1
         except pdb.bdb.BdbQuit:
