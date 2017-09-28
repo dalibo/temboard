@@ -90,13 +90,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                          "X-Requested-With, X-Session, Content-Type")
         self.send_header('Access-Control-Max-Age', '1728000')
         self.end_headers()
-        self.logger.info(self.headers.dict['origin'])
+        logger.info(self.headers.dict['origin'])
 
     def log_message(self, format, *args):
         """
         Overrides log_message() for HTTP requests logging with our own logger.
         """
-        self.logger.info("client: %s request: %s" % (
+        logger.info("client: %s request: %s" % (
                          self.address_string(),
                          format % args))
 
@@ -114,7 +114,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             # This is an unknown error. Just inform there is an internal error.
             code = 500
             message = {'error': "Internal error."}
-            self.logger.error("Internal error: %s" % (str(e)))
+            logger.error("Internal error: %s" % (str(e)))
         self.send_response(int(code))
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-type', 'application/json')
