@@ -17,6 +17,22 @@ from .pluginsmgmt import load_plugins_configurations
 logger = logging.getLogger(__name__)
 
 
+class MultilineFormatter(logging.Formatter):
+    def format(self, record):
+        s = super(MultilineFormatter, self).format(record)
+        if '\n' not in s:
+            return s
+
+        lines = s.splitlines()
+        d = record.__dict__.copy()
+        for i, line in enumerate(lines[1:]):
+            record.message = line
+            lines[1+i] = self._fmt % record.__dict__
+        record.__dict__ = d
+
+        return '\n'.join(lines)
+
+
 class LastnameFilter(logging.Filter):
     def filter(self, record):
         record.lastname = record.name
@@ -74,10 +90,22 @@ def generate_logging_config(
             }
         },
         'formatters': {
-            'dated_syslog': {'format': '%(asctime)s ' + syslog_fmt},
-            'minimal': {'format': minimal_fmt},
-            'syslog': {'format': syslog_fmt},
-            'verbose': {'format': verbose_fmt},
+            'dated_syslog': {
+                '()': __name__ + '.MultilineFormatter',
+                'format': '%(asctime)s ' + syslog_fmt,
+            },
+            'minimal': {
+                '()': __name__ + '.MultilineFormatter',
+                'format': minimal_fmt,
+            },
+            'syslog': {
+                '()': __name__ + '.MultilineFormatter',
+                'format': syslog_fmt,
+            },
+            'verbose': {
+                '()': __name__ + '.MultilineFormatter',
+                'format': verbose_fmt,
+            },
         },
         'handlers': {
             'configured': dict(
