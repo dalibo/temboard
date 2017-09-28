@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 import logging
 from multiprocessing import Process, Queue
 import signal
@@ -6,7 +6,7 @@ import signal
 from .cli import cli, define_common_arguments
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
-from .configuration import Configuration
+from .configuration import load_configuration, OptionSpec
 from .daemon import (
     daemonize,
     httpd_sigterm_handler,
@@ -14,7 +14,6 @@ from .daemon import (
     httpd_sighup_handler,
 )
 from .httpd import httpd_run
-from .pluginsmgmt import load_plugins_configurations
 from .queue import purge_queue_dir
 
 
@@ -25,16 +24,21 @@ def define_arguments(parser):
     define_common_arguments(parser)
     parser.add_argument(
         '-d', '--daemon',
-        action='store_true', dest='daemon',
-        default=False,
+        action='store_true', dest='temboard_daemonize',
         help="Run in background. Default: %(default)s",
     )
     parser.add_argument(
         '-p', '--pid-file',
-        action='store', dest='pidfile',
-        default='/run/temboard-agent.pid',
+        action='store', dest='temboard_pidfile',
         help="PID file. Default: %(default)s",
     )
+
+
+def list_options_specs():
+    # Generate each option specs.
+    section = 'temboard'
+    yield OptionSpec(section, 'daemonize', False)
+    yield OptionSpec(section, 'pidfile', '/run/temboard-agent.pid')
 
 
 @cli
@@ -42,20 +46,17 @@ def main(argv, environ):
     parser = ArgumentParser(
         prog='temboard-agent',
         description="temBoard agent.",
+        argument_default=UNDEFINED_ARGUMENT,
     )
     define_arguments(parser)
     args = parser.parse_args(argv)
-
-    # Load configuration from the configuration file.
-    config = Configuration(args.configfile)
+    config = load_configuration(specs=list_options_specs(), args=args)
     config.setup_logging()
     logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.
-    if (args.daemon):
-        daemonize(args.pidfile)
-
-    config.plugins = load_plugins_configurations(config)
+    if (config.temboard.daemonize):
+        daemonize(config.temboard.pidfile)
 
     # Purge all data queues at start time excepting metrics & notifications.
     purge_queue_dir(config.temboard['home'],
