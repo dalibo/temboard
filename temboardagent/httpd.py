@@ -15,10 +15,7 @@ import ssl
 
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError, ConfigurationError
-from temboardagent.logger import generate_logging_config
 from temboardagent.daemon import set_global_reload, reload_true
-from temboardagent.pluginsmgmt import load_plugins_configurations
-from temboardagent.configuration import Configuration
 
 
 logger = logging.getLogger(__name__)
@@ -227,22 +224,19 @@ def httpd_run(commands, queue_in, config, sessions):
             try:
                 logger.info("SIGHUP signal caught, trying to reload "
                             "configuration.")
-                new_config = Configuration(config.configfile)
-                logging_config = generate_logging_config(new_config)
-                logging.config.dictConfig(logging_config)
-
-                # Prevent any change on plugins list..
-                new_config.temboard['plugins'] = config.temboard['plugins']
-                new_config.plugins = load_plugins_configurations(new_config)
-                # New RequestHandler using the new configuration.
-                httpd.RequestHandlerClass = handleRequestsUsing(
-                                                commands,
-                                                queue_in,
-                                                new_config,
-                                                sessions)
-                logger.info("Done.")
+                config = config.reload()
             except (ConfigurationError, ImportError) as e:
                 logger.exception(str(e))
                 logger.info("Keeping previous configuration.")
+                config.setup_logging()
+            else:
+                config.setup_logging()
+
+                # New RequestHandler using the new configuration.
+                httpd.RequestHandlerClass = handleRequestsUsing(
+                    commands, queue_in, config, sessions,
+                )
+                logger.info("Done.")
+
             # Reset the global var indicating a SIGHUP signal.
             set_global_reload(False)

@@ -3,7 +3,6 @@ from multiprocessing import Process
 import signal
 from os import getpid
 
-from temboardagent.logger import generate_logging_config
 from temboardagent.routing import get_worker
 from temboardagent.daemon import (set_global_workers,
                                   scheduler_sigterm_handler,
@@ -11,10 +10,8 @@ from temboardagent.daemon import (set_global_workers,
                                   set_global_reload,
                                   reload_true, worker_sigterm_handler,
                                   worker_sighup_handler)
-from temboardagent.configuration import Configuration
 from temboardagent.errors import ConfigurationError
-from temboardagent.pluginsmgmt import (load_plugins_configurations,
-                                       exec_scheduler)
+from temboardagent.pluginsmgmt import exec_scheduler
 
 
 logger = logging.getLogger(__name__)
@@ -54,17 +51,13 @@ def Scheduler(commands, queue_in, config, sessions):
             try:
                 logger.info("SIGHUP signal caught, trying to reload"
                             " configuration.")
-                new_config = Configuration(config.configfile)
-                logging_config = generate_logging_config(new_config)
-                logging.config.dictConfig(logging_config)
-                # Prevent any change on plugins list..
-                new_config.temboard['plugins'] = config.temboard['plugins']
-                new_config.plugins = load_plugins_configurations(new_config)
-                config = new_config
+                config = config.reload()
                 logger.info("New configuration loaded.")
             except (ConfigurationError, ImportError) as e:
                 logger.exception(str(e))
                 logger.info("Some error occured, keeping old configuration.")
+            else:
+                config.setup_logging()
 
             set_global_reload(False)
 

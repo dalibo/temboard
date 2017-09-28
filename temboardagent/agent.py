@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-import logging.config
+import logging
 from multiprocessing import Process, Queue
 import signal
 
@@ -7,7 +7,6 @@ from .cli import cli, define_common_arguments
 from .sharedmemory import Commands, Sessions
 from .async import Scheduler
 from .configuration import Configuration
-from .logger import generate_logging_config
 from .daemon import (
     daemonize,
     httpd_sigterm_handler,
@@ -49,8 +48,7 @@ def main(argv, environ):
 
     # Load configuration from the configuration file.
     config = Configuration(args.configfile)
-    logging_config = generate_logging_config(config)
-    logging.config.dictConfig(logging_config)
+    config.setup_logging()
     logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.

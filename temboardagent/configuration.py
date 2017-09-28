@@ -1,4 +1,5 @@
-import logging
+import logging.config
+from logging.handlers import SysLogHandler
 
 try:
     import configparser
@@ -9,10 +10,69 @@ import os.path
 import json
 import re
 from temboardagent.errors import ConfigurationError
-from temboardagent.logger import LOG_FACILITIES, LOG_LEVELS, LOG_METHODS
+from .pluginsmgmt import load_plugins_configurations
 
 
 logger = logging.getLogger(__name__)
+
+
+LOG_METHODS = {
+    'stderr': {
+        '()': 'logging.StreamHandler',
+        'formatter': 'full',
+    },
+    'file': {
+        '()': 'logging.FileHandler',
+        'mode': 'a',
+        'formatter': 'minimal',
+    },
+    'syslog': {
+        '()': 'logging.handlers.SysLogHandler',
+        'formatter': 'minimal',
+    }
+}
+
+LOG_FACILITIES = SysLogHandler.facility_names
+LOG_LEVELS = logging._levelNames.values()
+LOG_FORMAT = (
+    "temboard-agent[%(process)d]: [%(name)s] %(levelname)s: %(message)s"
+)
+
+
+def generate_logging_config(config):
+    LOG_METHODS['file']['filename'] = config.logging['destination']
+    facility = SysLogHandler.facility_names[config.logging['facility']]
+    LOG_METHODS['syslog']['facility'] = facility
+    LOG_METHODS['syslog']['address'] = config.logging['destination']
+
+    logging_config = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'minimal': {
+                'format': LOG_FORMAT,
+            },
+            'full': {
+                'format': '%(asctime)s ' + LOG_FORMAT,
+            }
+        },
+        'handlers': {
+            'configured': LOG_METHODS[config.logging['method']]
+        },
+        'root': {
+            'level': 'INFO',
+            'handlers': ['configured'],
+        },
+        'loggers': {
+            'temboardagent': {
+                'level': config.logging['level'],
+            },
+            'temboard-agent': {
+                'level': config.logging['level'],
+            },
+        },
+    }
+    return logging_config
 
 
 class BaseConfiguration(configparser.RawConfigParser):
@@ -253,6 +313,17 @@ class Configuration(BaseConfiguration):
             self.postgresql['instance'] = self.get('postgresql', 'instance')
         except configparser.NoOptionError:
             pass
+
+    def reload(self):
+        new = self.__class__(self.configfile)
+        # Prevent any change on plugins list.
+        new.temboard['plugins'] = self.temboard['plugins']
+        new.plugins = load_plugins_configurations(new)
+        return new
+
+    def setup_logging(self):
+        logging_config = generate_logging_config(self)
+        logging.config.dictConfig(logging_config)
 
 
 class PluginConfiguration(configparser.RawConfigParser):
