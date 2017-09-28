@@ -38,9 +38,11 @@ def exec_command(command_args, comm=True, **kwargs):
     except OSError as err:
         return (err.errno, None, err.strerror)
 
-    if comm is True:
+    if comm:
         (stdout, stderrout) = process.communicate()
         return (process.returncode, stdout, stderrout)
+    else:
+        return process
 
 
 def pg_init(pg_bin, pg_data, pg_settings):
