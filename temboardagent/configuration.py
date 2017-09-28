@@ -9,12 +9,34 @@ except ImportError:
 import os.path
 import json
 import re
+import sys
+
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
 
 
 logger = logging.getLogger(__name__)
+
+
+class ColoredStreamHandler(logging.StreamHandler):
+
+    _color_map = {
+        logging.DEBUG: '37',
+        logging.INFO: '1;39',
+        logging.WARN: '96',
+        logging.ERROR: '91',
+        logging.CRITICAL: '1;91',
+    }
+
+    def format(self, record):
+        lines = super(ColoredStreamHandler, self).format(record)
+        color = self._color_map.get(record.levelno, '39')
+        lines = ''.join([
+            '\033[0;%sm%s\033[0m' % (color, line)
+            for line in lines.splitlines(True)
+        ])
+        return lines
 
 
 class MultilineFormatter(logging.Formatter):
@@ -73,6 +95,8 @@ def generate_logging_config(
 
     fmt = 'verbose' if level == 'DEBUG' else 'minimal'
     LOG_METHODS['stderr']['formatter'] = fmt
+    if sys.stderr.isatty():
+        LOG_METHODS['stderr']['()'] = __name__ + '.ColoredStreamHandler'
 
     minimal_fmt = '%(levelname)5.5s: %(message)s'
     verbose_fmt = '%(asctime)s [%(lastname)-16.16s] ' + minimal_fmt
