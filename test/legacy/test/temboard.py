@@ -167,8 +167,7 @@ def agent_start(pid_file, conf_file, python="python"):
     """
     Start the agent.
     """
-    cmd = "%s ../temboard-agent -c %s -d -p %s" % (
-            python,
+    cmd = "../../temboard-agent -c %s -d -p %s" % (
             conf_file,
             pid_file
             )
