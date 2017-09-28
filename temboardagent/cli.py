@@ -5,7 +5,7 @@ import pdb
 import sys
 
 from .errors import UserError
-from .logger import LOG_FORMAT
+from .configuration import LOG_FORMAT
 
 
 logger = logging.getLogger(__name__)
