@@ -1,6 +1,13 @@
 import pytest
 
 
+def test_help(mocker):
+    from temboardagent.agent import main
+
+    with pytest.raises(SystemExit):
+        main(argv=['--help'])
+
+
 def test_big_main(mocker):
     mocker.patch('temboardagent.agent.Configuration')
     mocker.patch('temboardagent.agent.daemonize')
