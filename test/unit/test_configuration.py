@@ -62,4 +62,4 @@ def test_logging():
         level='DEBUG',
     )))
 
-    generate_logging_config(config)
+    generate_logging_config(**config)
