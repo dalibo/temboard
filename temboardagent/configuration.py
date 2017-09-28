@@ -55,7 +55,11 @@ def generate_logging_config(
     LOG_METHODS['syslog']['address'] = destination
     LOG_METHODS['file']['filename'] = destination
 
-    log_fmt = '[%(lastname)-16.16s] %(levelname)5.5s: %(message)s'
+    fmt = 'verbose' if level == 'DEBUG' else 'minimal'
+    LOG_METHODS['stderr']['formatter'] = fmt
+
+    minimal_fmt = '%(levelname)5.5s: %(message)s'
+    verbose_fmt = '%(asctime)s [%(lastname)-16.16s] ' + minimal_fmt
     syslog_fmt = (
         "temboard-agent[%(process)d]: "
         "[%(lastname)s] %(levelname)s: %(message)s"
@@ -70,9 +74,10 @@ def generate_logging_config(
             }
         },
         'formatters': {
-            'minimal': {'format': log_fmt},
-            'syslog': {'format': syslog_fmt},
             'dated_syslog': {'format': '%(asctime)s ' + syslog_fmt},
+            'minimal': {'format': minimal_fmt},
+            'syslog': {'format': syslog_fmt},
+            'verbose': {'format': verbose_fmt},
         },
         'handlers': {
             'configured': dict(
