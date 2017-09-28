@@ -99,7 +99,7 @@ def main(argv, environ):
     args = parser.parse_args(argv)
 
     # Loading agent configuration file.
-    config = LazyConfiguration(args.configfile)
+    config = LazyConfiguration(args.temboard_configfile)
 
     # Load configuration from the configuration file.
     try:

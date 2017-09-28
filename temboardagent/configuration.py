@@ -10,6 +10,7 @@ import os.path
 import json
 import re
 from temboardagent.errors import ConfigurationError
+from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
 
 
@@ -73,6 +74,11 @@ def generate_logging_config(config):
         },
     }
     return logging_config
+
+
+def setup_logging(config):
+    logging_config = generate_logging_config(config)
+    logging.config.dictConfig(logging_config)
 
 
 class BaseConfiguration(configparser.RawConfigParser):
@@ -314,17 +320,6 @@ class Configuration(BaseConfiguration):
         except configparser.NoOptionError:
             pass
 
-    def reload(self):
-        new = self.__class__(self.configfile)
-        # Prevent any change on plugins list.
-        new.temboard['plugins'] = self.temboard['plugins']
-        new.plugins = load_plugins_configurations(new)
-        return new
-
-    def setup_logging(self):
-        logging_config = generate_logging_config(self)
-        logging.config.dictConfig(logging_config)
-
 
 class PluginConfiguration(configparser.RawConfigParser):
     """
@@ -394,3 +389,171 @@ class LazyConfiguration(BaseConfiguration):
                 self.postgresql[k] = self.get('postgresql', k)
             except configparser.NoOptionError:
                 pass
+
+
+# Here begin the new API
+#
+# The purpose of the new API is to merge args, file, environment and defaults
+# safely, even when reloading.
+#
+# The API must be very simple, IoC-free. Implementation must be highly testable
+# and tested.
+
+
+class OptionSpec(object):
+    # Hold known name and default of an option.
+    #
+    # An option *must* be specified to follow the principle of *validated your
+    # inputs*.
+    #
+    # Defining defaults here is agnostic from origin : argparse, environ,
+    # ConfigParser, etc. The origin of configuration must not take care of
+    # default nor validation.
+
+    def __init__(self, section, name, default=None):
+        self.section = section
+        self.name = name
+        self.default = default
+
+    def __repr__(self):
+        return '<OptionSpec %s>' % (self,)
+
+    def __str__(self):
+        return '%s_%s' % (self.section, self.name)
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __hash__(self):
+        return hash(str(self))
+
+
+def load_configuration(specs, args):
+    # Main entry point to load configuration.
+    #
+    # specs is a list or a flat dict of OptionSpecs
+    #
+    # argparser should **not** manage defaults. Use argparse.SUPPRESS as
+    # argument_default to store only user defined arguments. MergeConfiguration
+    # merge defaults after file and environ are loaded. Defaults from argparse
+    # are considered user input and overrides file and environ.
+    #
+    # configfile **must** be store in dest `temboard_configfile` in args.
+    #
+    # Origin order: args > environ > file > defaults
+
+    config = MergedConfiguration(specs)
+    config.load(args)
+    return config
+
+
+class Value(object):
+    # Hold an option value and its origin
+    def __init__(self, name, value, origin):
+        self.name = name
+        self.value = value
+        self.origin = origin
+
+    def __repr__(self):
+        return '<%(name)s=%(value)r %(origin)s>' % self.__dict__
+
+
+def iter_args_values(args):
+    # Walk args from argparse and yield values.
+    for k, v in args.__dict__.items():
+        yield Value(k, v, 'args')
+
+
+def iter_defaults(specs):
+    # Walk specs flat dict and yield default values.
+    for spec in specs.values():
+        yield Value(str(spec), spec.default, 'defaults')
+
+
+class MergedConfiguration(DotDict):
+    # Merge and holds configuration from args, files and more
+    #
+    # Origin order: args > environ > file > defaults
+
+    def __init__(self, specs=None):
+        # Spec is a flat dict of OptionSpec.
+        specs = specs or {}
+        specs = specs if isinstance(specs, dict) else {s: s for s in specs}
+
+        # Add required configfile option
+        spec = OptionSpec(
+            'temboard', 'configfile',
+            default='/etc/temboard-agent/temboard-agent.conf',
+        )
+        specs.setdefault(spec, spec)
+
+        DotDict.__init__(self)
+        self.__dict__['specs'] = specs
+        self.loaded = False
+
+    def add_values(self, values):
+        # Merge **missing* values. No override.
+        for value in values:
+            spec = self.specs[value.name]
+            section = self.setdefault(spec.section, {})
+            if spec.name in section:
+                # Skip already defined values
+                continue
+            section[spec.name] = value.value
+
+    def load(self, args):
+        # Origins are loaded in order. First wins (except file due to legacy).
+
+        self.add_values(iter_args_values(args))
+
+        # Loading default for configfile *before* loading file.
+        self.setdefault('temboard', {})
+        self.temboard.setdefault(
+            'configfile', self.specs['temboard_configfile'].default,
+        )
+
+        logger.debug('Loading %s.', self.temboard.configfile)
+        fileconfig = Configuration(self.temboard.configfile)
+        self.load_file(fileconfig)
+        self.plugins = load_plugins_configurations(self)
+        self.add_values(iter_defaults(self.specs))
+        self.loaded = True
+
+    def load_file(self, fileconfig):
+        # This is a glue with legacy file-only configuration loading.
+        #
+        # File is loaded and validated in a single step using legacy code.
+        # Values from file overrides previous defined values (including
+        # args...).
+        #
+        # This glue will be dropped once validated is extended to all origin of
+        # configuration.
+
+        for name in {'temboard', 'logging', 'postgresql'}:
+            values = getattr(fileconfig, name, {})
+            section = self.setdefault(name, {})
+            for k, v in values.items():
+                section[k] = v
+
+        # Compat with fileconfig
+        self.configfile = fileconfig.configfile
+        self.confdir = fileconfig.confdir
+
+    def reload(self):
+        # Reread file config.
+
+        assert self.loaded, "Can't reload unloaded configuration."
+        old_plugins = self.temboard.plugins
+
+        logger.debug('Loading %s.', self.temboard.configfile)
+        fileconfig = Configuration(self.temboard.configfile)
+        self.load_file(fileconfig)
+        # Prevent any change on plugins list.
+        self.temboard.plugins = old_plugins
+        # Now reload plugins configurations
+        self.plugins = load_plugins_configurations(self)
+        return self
+
+    def setup_logging(self):
+        # Just to save one import for code reloading config.
+        setup_logging(self)

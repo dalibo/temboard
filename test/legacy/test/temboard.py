@@ -172,9 +172,8 @@ def agent_start(pid_file, conf_file, python="python"):
             pid_file
             )
 
-    exec_command(cmd, comm=False, shell=True)
-    # Let's sleep a bit
-    time.sleep(1)
+    retcode, stdout, stderr = exec_command(cmd, comm=True, shell=True)
+    assert retcode == 0, stderr
 
 
 def agent_stop(pid_file):

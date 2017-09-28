@@ -3,14 +3,27 @@
 from __future__ import unicode_literals
 from sys import stdout, stderr
 from getpass import getpass
+from optparse import OptionParser
 
 from temboardagent.usermgmt import hash_password
-from temboardagent.options import CLIOptions
 from temboardagent.errors import ConfigurationError, HTTPError
 from temboardagent.usermgmt import get_user
 from temboardagent.configuration import Configuration
 from temboardagent.types import T_PASSWORD, T_USERNAME
 from temboardagent.tools import validate_parameters
+
+
+class CLIOptions(OptionParser):
+    """
+    Command line interface options parser.
+    """
+    def __init__(self, *args, **kwargs):
+        OptionParser.__init__(self, *args, **kwargs)
+        self.add_option("-c",
+                        "--config",
+                        dest="configfile",
+                        help="Configuration file. Default: %default",
+                        default="/etc/temboard-agent/temboard-agent.conf")
 
 
 def ask_password():
