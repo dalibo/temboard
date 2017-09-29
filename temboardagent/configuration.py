@@ -1,5 +1,4 @@
 import logging
-from logging.handlers import SysLogHandler
 
 try:
     import configparser
@@ -7,257 +6,21 @@ except ImportError:
     import ConfigParser as configparser
 
 import os.path
-import json
-import re
 
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
-from .log import generate_logging_config, HANDLERS as LOG_HANDLERS
+from .log import generate_logging_config
 from .errors import UserError
-from . import validators as v
+from . import validators
 
 
 logger = logging.getLogger(__name__)
 
 
-LOG_METHODS = LOG_HANDLERS.keys()
-LOG_FACILITIES = SysLogHandler.facility_names
-LOG_LEVELS = logging._levelNames.values()
-
-
 def setup_logging(**kw):
     logging_config = generate_logging_config(**kw)
     logging.config.dictConfig(logging_config)
-
-
-class BaseConfiguration(configparser.RawConfigParser):
-    """
-    Common configuration parser.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        configparser.RawConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = os.path.realpath(configfile)
-        self.confdir = os.path.dirname(self.configfile)
-
-        # Default configuration values
-        self.temboard = {
-            'address': '0.0.0.0',
-            'users': '/etc/temboard-agent/users',
-            'ssl_cert_file': None,
-            'ssl_key_file': None,
-            'plugins': [
-                "monitoring",
-                "dashboard",
-                "pgconf",
-                "administration",
-                "activity"
-            ],
-            'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
-            'hostname': None,
-            'key': None
-        }
-        self.logging = {
-            'method': 'syslog',
-            'facility': 'local0',
-            'destination': '/dev/log',
-            'level': 'DEBUG'
-        }
-        self.postgresql = {
-            'host': '/var/run/postgresql',
-            'user': 'postgres',
-            'port': 5432,
-            'password': None,
-            'dbname': 'postgres',
-            'pg_config': '/usr/bin/pg_config',
-            'instance': 'main'
-        }
-        try:
-            with open(self.configfile) as fd:
-                self.readfp(fd)
-        except IOError:
-            raise ConfigurationError("Configuration file %s can't be opened."
-                                     % (self.configfile))
-        except configparser.MissingSectionHeaderError:
-            raise ConfigurationError(
-                    "Configuration file does not contain section headers.")
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
-
-    def abspath(self, path):
-        if path.startswith('/'):
-            return path
-        else:
-            return os.path.realpath('/'.join([self.confdir, path]))
-
-    def getfile(self, section, name):
-        path = self.abspath(self.get(section, name))
-        try:
-            with open(path) as fd:
-                fd.read()
-        except Exception as e:
-            logger.warn("Failed to open %s: %s", path, e)
-            raise ConfigurationError("%s file can't be opened." % (path,))
-        return path
-
-
-class Configuration(BaseConfiguration):
-    """
-    Customized configuration parser.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
-        self.plugins = {}
-        # Test if 'temboard' section exists.
-        self.check_section('temboard')
-
-        try:
-            if not re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
-                            '(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d'
-                            ')){3}$', self.get('temboard', 'address')):
-                raise ValueError()
-            self.temboard['address'] = self.get('temboard', 'address')
-        except ValueError:
-            raise ConfigurationError("'address' option must be a valid IPv4 "
-                                     "address in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['users'] = self.getfile('temboard', 'users')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            plugins = json.loads(self.get('temboard', 'plugins'))
-            if not type(plugins) == list:
-                raise ValueError()
-            for plugin in plugins:
-                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
-                    raise ValueError
-            self.temboard['plugins'] = plugins
-        except configparser.NoOptionError:
-            pass
-        except ValueError:
-            raise ConfigurationError("'plugins' option must be a list of "
-                                     "string (alphanum only) in %s." % (
-                                         self.configfile))
-        try:
-            self.temboard['key'] = self.get('temboard', 'key')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_cert_file'] = (
-                self.getfile('temboard', 'ssl_cert_file'))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_key_file'] = (
-                self.getfile('temboard', 'ssl_key_file'))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            home = self.get('temboard', 'home')
-            if not os.access(home, os.W_OK):
-                raise Exception()
-            self.temboard['home'] = self.get('temboard', 'home')
-        except configparser.NoOptionError:
-            pass
-        except Exception:
-            raise ConfigurationError("Home directory %s not writable."
-                                     % (self.get('temboard', 'home')))
-
-        try:
-            hostname = self.get('temboard', 'hostname')
-            self.temboard['hostname'] = hostname
-        except configparser.NoOptionError:
-            pass
-
-        # Test if 'logging' section exists.
-        self.check_section('logging')
-        try:
-            if not self.get('logging', 'method') in LOG_METHODS:
-                raise ValueError()
-            self.logging['method'] = self.get('logging', 'method')
-        except ValueError:
-            raise ConfigurationError("Invalid 'method' option in 'logging' "
-                                     "section in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            if not self.get('logging', 'facility') in LOG_FACILITIES:
-                raise ValueError()
-            self.logging['facility'] = self.get('logging', 'facility')
-        except ValueError:
-            raise ConfigurationError("Invalid 'facility' option in 'logging' "
-                                     "section in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            self.logging['destination'] = self.get('logging', 'destination')
-        except configparser.NoOptionError:
-            pass
-        try:
-            if not self.get('logging', 'level') in LOG_LEVELS:
-                raise ValueError()
-            self.logging['level'] = self.get('logging', 'level')
-        except ValueError:
-            raise ConfigurationError("Invalid 'level' option in 'logging' "
-                                     "section in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        # Test if 'postgresql' section exists.
-        self.check_section('postgresql')
-        try:
-            from os import path
-            if not path.exists(self.get('postgresql', 'host')):
-                raise ValueError()
-            self.postgresql['host'] = self.get('postgresql', 'host')
-        except ValueError:
-            raise ConfigurationError("'host' option must be a valid directory"
-                                     " path containing PostgreSQL's local unix"
-                                     " socket in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['user'] = self.get('postgresql', 'user')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            if not (self.getint('postgresql', 'port') >= 0
-                    and self.getint('postgresql', 'port') <= 65535):
-                raise ValueError()
-            self.postgresql['port'] = self.getint('postgresql', 'port')
-        except ValueError:
-            raise ConfigurationError("'port' option must be an integer "
-                                     "[0-65535] in 'postgresql' section in %s."
-                                     % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['password'] = self.get('postgresql', 'password')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['dbname'] = self.get('postgresql', 'dbname')
-        except configparser.NoOptionError:
-            pass
-        try:
-            self.postgresql['instance'] = self.get('postgresql', 'instance')
-        except configparser.NoOptionError:
-            pass
 
 
 class PluginConfiguration(configparser.RawConfigParser):
@@ -301,12 +64,22 @@ class PluginConfiguration(configparser.RawConfigParser):
         return path
 
 
-class LazyConfiguration(BaseConfiguration):
+class LazyConfiguration(configparser.RawConfigParser):
     """
     Customized configuration parser.
     """
     def __init__(self, configfile, *args, **kwargs):
-        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
+        configparser.RawConfigParser.__init__(self, *args, **kwargs)
+        self.configfile = os.path.realpath(configfile)
+        try:
+            with open(self.configfile) as fd:
+                self.readfp(fd)
+        except IOError:
+            raise ConfigurationError("Configuration file %s can't be opened."
+                                     % (self.configfile))
+        except configparser.MissingSectionHeaderError:
+            raise ConfigurationError(
+                    "Configuration file does not contain section headers.")
         # Test if 'temboard' section exists.
         self.check_section('temboard')
         for k, v in self.temboard.iteritems():
@@ -328,6 +101,11 @@ class LazyConfiguration(BaseConfiguration):
                 self.postgresql[k] = self.get('postgresql', k)
             except configparser.NoOptionError:
                 pass
+
+    def check_section(self, section):
+        if not self.has_section(section):
+            raise ConfigurationError("Section '%s' not found in configuration "
+                                     "file %s" % (section, self.configfile))
 
 
 # Here begin the new API
@@ -459,7 +237,7 @@ class MergedConfiguration(DotDict):
         spec = OptionSpec(
             'temboard', 'configfile',
             default='/etc/temboard-agent/temboard-agent.conf',
-            validator=v.file_,
+            validator=validators.file_,
         )
         specs.setdefault(spec, spec)
 
@@ -485,7 +263,7 @@ class MergedConfiguration(DotDict):
             self.unvalidated_specs.remove(name)
 
     def load(self, args, environ):
-        # Origins are loaded in order. First wins (except file due to legacy).
+        # Origins are loaded in order. First wins..
         #
         # Loading in this order avoid validating ignored values.
 
@@ -501,39 +279,22 @@ class MergedConfiguration(DotDict):
         except ValueError as e:
             raise UserError(str(e))
 
-        self.load_legacy()
-        self.plugins = load_plugins_configurations(self)
         self.add_values(iter_defaults(self.specs))
+        self.plugins = load_plugins_configurations(self)
         self.loaded = True
 
     def load_file(self, filename):
         parser = configparser.RawConfigParser()
         logger.info('Reading %s.', filename)
         parser.read(filename)
+
+        oldpwd = os.getcwd()
+        os.chdir(os.path.dirname(filename))
         self.add_values(iter_configparser_values(parser, filename))
+        os.chdir(oldpwd)
 
-    def load_legacy(self):
-        # This is a glue with legacy file-only configuration loading.
-        #
-        # File is loaded and validated in a single step using legacy code.
-        # Values from file overrides previous defined values (including
-        # args...).
-        #
-        # This glue will be dropped once validated is extended to all origin of
-        # configuration.
-
-        logger.debug('Loading %s.', self.temboard.configfile)
-        fileconfig = Configuration(self.temboard.configfile)
-
-        for name in {'temboard', 'logging', 'postgresql'}:
-            values = getattr(fileconfig, name, {})
-            section = self.setdefault(name, {})
-            for k, v in values.items():
-                section[k] = v
-
-        # Compat with fileconfig
-        self.configfile = fileconfig.configfile
-        self.confdir = fileconfig.confdir
+        # Compat with legacy
+        self.configfile = self.temboard.configfile
 
     def reload(self):
         # Reread file config.
@@ -541,7 +302,11 @@ class MergedConfiguration(DotDict):
         assert self.loaded, "Can't reload unloaded configuration."
         old_plugins = self.temboard.plugins
 
-        self.load_legacy()
+        try:
+            self.load_file(self, self.temboard.configfile)
+        except Exception as e:
+            raise ConfigurationError(str(e))
+
         # Prevent any change on plugins list.
         self.temboard.plugins = old_plugins
         # Now reload plugins configurations

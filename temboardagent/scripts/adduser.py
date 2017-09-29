@@ -13,6 +13,7 @@ from ..usermgmt import get_user
 from ..configuration import load_configuration
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
+from .agent import list_options_specs
 
 
 def ask_password():
@@ -61,7 +62,9 @@ def main(argv, environ):
         argument_default=UNDEFINED_ARGUMENT,
     )
     args = parser.parse_args(argv)
-    config = load_configuration(args=args, environ=environ)
+    config = load_configuration(
+        specs=list_options_specs(), args=args, environ=environ,
+    )
 
     # Load configuration from the configuration file.
     username = ask_username(config)

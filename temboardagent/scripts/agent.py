@@ -1,6 +1,8 @@
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+from socket import getfqdn
 import logging
 from multiprocessing import Process, Queue
+import os
 import signal
 
 from ..cli import cli, define_common_arguments
@@ -40,7 +42,46 @@ def list_options_specs():
     section = 'temboard'
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
+    yield OptionSpec(
+        section, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(section, 'port', validator=v.port, default=2345)
+    yield OptionSpec(section, 'ssl_cert_file', validator=v.file_)
+    yield OptionSpec(section, 'ssl_key_file', validator=v.file_)
+    yield OptionSpec(section, 'key')
+    yield OptionSpec(
+        section, 'users',
+        default='/etc/temboard-agent/users', validator=v.file_,
+    )
+    yield OptionSpec(section, 'hostname', default=getfqdn())
+    home = os.environ.get('HOME', '/var/lib/temboard-agent')
+    yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
+    all_plugins = [
+        "activity"
+        "administration",
+        "dashboard",
+        "monitoring",
+        "pgconf",
+    ]
+    yield OptionSpec(
+        section, 'plugins', default=all_plugins, validator=v.jsonlist,
+    )
+
+    s = 'postgresql'
+    yield OptionSpec(
+        s, 'host', default='/var/run/postgresql', validator=v.dir_)
+    yield OptionSpec(s, 'instance', default='main')
+    yield OptionSpec(s, 'port', default=5432, validator=v.port)
+    yield OptionSpec(s, 'user', default='postgres')
+    yield OptionSpec(s, 'password')
+    yield OptionSpec(s, 'dbname', default='postgres')
+
+    s = 'logging'
+    yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
+    yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
+    yield OptionSpec(
+        s, 'facility', default='local0', validator=v.syslogfacility,
+    )
+    yield OptionSpec(s, 'destination', default='/dev/log')
 
 
 @cli

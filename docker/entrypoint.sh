@@ -28,12 +28,9 @@ address = 0.0.0.0
 port = 2345
 ssl_cert_file = ${TEMBOARD_SSL_CERT}
 ssl_key_file = ${TEMBOARD_SSL_KEY}
-hostname = ${TEMBOARD_HOSTNAME-${hostname --fqdn}}
-key = ${TEMBOARD_KEY}
 
 [logging]
 method = stderr
-level = ${TEMBOARD_LOGGING_LEVEL}
 
 [postgresql]
 host = /var/run/postgresql/
@@ -54,7 +51,7 @@ EOF
 
 touch /etc/temboard-agent/users
 chmod 0600 /etc/temboard-agent/users
-for entry in ${TEMBOARD_USERS} ; do
+for entry in ${TEMBOARD_USERS_LIST} ; do
     echo "Adding user ${entry%%:*}."
     sed -i /${entry%:*}/d /etc/temboard-agent/users
     temboard-agent-password $entry >> /etc/temboard-agent/users
