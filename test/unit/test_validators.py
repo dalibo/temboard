@@ -28,3 +28,18 @@ def test_file():
 
     with pytest.raises(ValueError):
         file_(__file__ + 'ne pas créer')
+
+
+def test_port():
+    from temboardagent.validators import port
+
+    assert 8080 == port('8080')
+
+    with pytest.raises(ValueError):
+        port('-1')
+
+    with pytest.raises(ValueError):
+        port('80000')
+
+    with pytest.raises(ValueError):
+        port('pouet')

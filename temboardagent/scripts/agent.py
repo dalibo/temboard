@@ -15,6 +15,7 @@ from ..daemon import (
 )
 from ..httpd import httpd_run
 from ..queue import purge_queue_dir
+from .. import validators as v
 
 
 logger = logging.getLogger(__name__)
@@ -25,20 +26,21 @@ def define_arguments(parser):
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
-        help="Run in background. Default: %(default)s",
+        help="Run in background.",
     )
     parser.add_argument(
         '-p', '--pid-file',
         action='store', dest='temboard_pidfile',
-        help="PID file. Default: %(default)s",
+        help="PID file.",
     )
 
 
 def list_options_specs():
     # Generate each option specs.
     section = 'temboard'
-    yield OptionSpec(section, 'daemonize', False)
-    yield OptionSpec(section, 'pidfile', '/run/temboard-agent.pid')
+    yield OptionSpec(section, 'daemonize', default=False)
+    yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
+    yield OptionSpec(section, 'port', validator=v.port, default=2345)
 
 
 @cli

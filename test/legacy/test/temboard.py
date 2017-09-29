@@ -129,12 +129,11 @@ def pg_add_super_user(pg_bin, pg_user, pg_host, pg_port, pg_password=''):
             raise Exception(str(e.message))
 
 
-def agent_add_user(passwd_file_path, user, passwd, python="python"):
+def agent_add_user(passwd_file_path, user, passwd):
     """
     Add a new temboard-agent user.
     """
     (ret_code, stdout, stderr) = exec_command([
-                                    python,
                                     "../../temboard-agent-password",
                                     "%s:%s" % (user, passwd)])
     if ret_code != 0:
@@ -163,7 +162,7 @@ def agent_write_conf(conf_tpl, test_env):
             test_env['agent']['ssl_cert_file']))
 
 
-def agent_start(pid_file, conf_file, python="python"):
+def agent_start(pid_file, conf_file):
     """
     Start the agent.
     """
@@ -308,8 +307,7 @@ def init_env():
         # Agent user creation.
         agent_add_user(test_env['agent']['users'],
                        test_env['agent']['user'],
-                       test_env['agent']['password'],
-                       python=sys.executable)
+                       test_env['agent']['password'])
         # Write SSL files.
         agent_write_ssl_files(test_env['agent']['ssl_key_file'],
                               test_conf.AGENT_SSL_KEY,
@@ -320,8 +318,7 @@ def init_env():
                          test_env)
         # Start the agent
         agent_start(test_env['agent']['pid_file'],
-                    test_env['agent']['conf_file'],
-                    python=sys.executable)
+                    test_env['agent']['conf_file'])
         return test_env
     except Exception as e:
         # If anything goes wrong during the setup

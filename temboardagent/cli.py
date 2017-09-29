@@ -15,7 +15,7 @@ def define_common_arguments(parser):
     parser.add_argument(
         '-c', '--config',
         action='store', dest='temboard_configfile',
-        help="Configuration file. Default: %(default)s",
+        help="Configuration file",
     )
 
 
