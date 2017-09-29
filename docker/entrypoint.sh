@@ -53,7 +53,7 @@ EOF
 
 touch /etc/temboard-agent/users
 chmod 0600 /etc/temboard-agent/users
-for entry in ${TEMBOARD_USERS} ; do
+for entry in ${TEMBOARD_USERS_LIST} ; do
     echo "Adding user ${entry%%:*}."
     sed -i /${entry%:*}/d /etc/temboard-agent/users
     temboard-agent-password $entry >> /etc/temboard-agent/users

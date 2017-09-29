@@ -37,7 +37,6 @@ class BaseConfiguration(configparser.RawConfigParser):
         # Default configuration values
         self.temboard = {
             'address': '0.0.0.0',
-            'users': '/etc/temboard-agent/users',
             'ssl_cert_file': None,
             'ssl_key_file': None,
             'plugins': [
@@ -111,11 +110,6 @@ class Configuration(BaseConfiguration):
         except ValueError:
             raise ConfigurationError("'address' option must be a valid IPv4 "
                                      "address in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['users'] = self.getfile('temboard', 'users')
         except configparser.NoOptionError:
             pass
 

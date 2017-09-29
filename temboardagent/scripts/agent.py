@@ -41,6 +41,10 @@ def list_options_specs():
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
     yield OptionSpec(section, 'port', validator=v.port, default=2345)
+    yield OptionSpec(
+        section, 'users',
+        default='/etc/temboard-agent/users', validator=v.file_,
+    )
 
     section = 'postgresql'
     yield OptionSpec(section, 'port', default=5432, validator=v.port)
