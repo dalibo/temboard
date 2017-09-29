@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+from socket import getfqdn
 import logging
 from multiprocessing import Process, Queue
 import signal
@@ -47,6 +48,7 @@ def list_options_specs():
         section, 'users',
         default='/etc/temboard-agent/users', validator=v.file_,
     )
+    yield OptionSpec(section, 'hostname', default=getfqdn())
 
     section = 'postgresql'
     yield OptionSpec(section, 'port', default=5432, validator=v.port)

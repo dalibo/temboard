@@ -28,7 +28,6 @@ address = 0.0.0.0
 port = 2345
 ssl_cert_file = ${TEMBOARD_SSL_CERT}
 ssl_key_file = ${TEMBOARD_SSL_KEY}
-hostname = ${TEMBOARD_HOSTNAME-${hostname --fqdn}}
 key = ${TEMBOARD_KEY}
 
 [logging]

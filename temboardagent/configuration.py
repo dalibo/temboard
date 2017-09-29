@@ -46,7 +46,6 @@ class BaseConfiguration(configparser.RawConfigParser):
                 "activity"
             ],
             'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
-            'hostname': None,
             'key': None
         }
         self.postgresql = {
@@ -141,12 +140,6 @@ class Configuration(BaseConfiguration):
         except Exception:
             raise ConfigurationError("Home directory %s not writable."
                                      % (self.get('temboard', 'home')))
-
-        try:
-            hostname = self.get('temboard', 'hostname')
-            self.temboard['hostname'] = hostname
-        except configparser.NoOptionError:
-            pass
 
         # Test if 'postgresql' section exists.
         self.check_section('postgresql')
