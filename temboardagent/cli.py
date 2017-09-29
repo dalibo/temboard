@@ -37,6 +37,8 @@ def cli(main):
             setup_logging(level='DEBUG' if debug else 'INFO')
             logger.debug("Starting temBoard agent.")
             retcode = main(argv, environ) or 1
+        except KeyboardInterrupt:
+            logger.info('Terminated.')
         except pdb.bdb.BdbQuit:
             logger.info("Graceful exit from debugger.")
         except UserError as e:

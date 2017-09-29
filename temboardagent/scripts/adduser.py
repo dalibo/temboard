@@ -77,7 +77,4 @@ def main(argv, environ):
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt as e:
-        stdout.write("\nExit..\n")
+    main()
