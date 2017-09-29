@@ -14,6 +14,8 @@ from temboardagent.errors import ConfigurationError
 from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
 from .log import generate_logging_config, HANDLERS as LOG_HANDLERS
+from .errors import UserError
+from . import validators as v
 
 
 logger = logging.getLogger(__name__)
@@ -358,10 +360,11 @@ class OptionSpec(object):
     # ConfigParser, etc. The origin of configuration must not take care of
     # default nor validation.
 
-    def __init__(self, section, name, default=None):
+    def __init__(self, section, name, validator=None, default=None):
         self.section = section
         self.name = name
         self.default = default
+        self.validator = validator
 
     def __repr__(self):
         return '<OptionSpec %s>' % (self,)
@@ -375,8 +378,18 @@ class OptionSpec(object):
     def __hash__(self):
         return hash(str(self))
 
+    def validate(self, value):
+        if not self.validator:
+            return value.value
 
-def load_configuration(specs, args, environ=os.environ):
+        try:
+            return self.validator(value.value)
+        except ValueError as e:
+            msg = "Invalid %(name)s from %(origin)s: %(value).16s: %(e).32s."
+            raise ValueError(msg % dict(value.__dict__, e=e))
+
+
+def load_configuration(specs=None, args=None, environ=os.environ):
     # Main entry point to load configuration.
     #
     # specs is a list or a flat dict of OptionSpecs
@@ -408,6 +421,9 @@ class Value(object):
 
 def iter_args_values(args):
     # Walk args from argparse and yield values.
+    if not args:
+        return
+
     for k, v in args.__dict__.items():
         yield Value(k, v, 'args')
 
@@ -447,6 +463,7 @@ class MergedConfiguration(DotDict):
         spec = OptionSpec(
             'temboard', 'configfile',
             default='/etc/temboard-agent/temboard-agent.conf',
+            validator=v.file_,
         )
         specs.setdefault(spec, spec)
 
@@ -466,8 +483,9 @@ class MergedConfiguration(DotDict):
                 continue
 
             spec = self.specs[name]
+            value = spec.validate(value)
             section = self.setdefault(spec.section, {})
-            section[spec.name] = value.value
+            section[spec.name] = value
             self.unvalidated_specs.remove(name)
 
     def load(self, args, environ):
@@ -475,8 +493,11 @@ class MergedConfiguration(DotDict):
         #
         # Loading in this order avoid validating ignored values.
 
-        self.add_values(iter_args_values(args))
-        self.add_values(iter_environ_values(environ))
+        try:
+            self.add_values(iter_args_values(args))
+            self.add_values(iter_environ_values(environ))
+        except ValueError as e:
+            raise UserError(str(e))
 
         # Loading default for configfile *before* loading file.
         self.setdefault('temboard', {})
