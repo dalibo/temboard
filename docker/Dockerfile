@@ -23,7 +23,6 @@ RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu
     && chmod 0755 /usr/local/bin/wait-for-it \
     ;
 
-ENV TEMBOARD_KEY ""
 ENV TEMBOARD_USERS_LIST alice:alice bob:bob
 ENV TEMBOARD_SSL_CA /usr/local/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem
 ENV TEMBOARD_SSL_CERT /usr/local/share/temboard-agent/temboard-agent_CHANGEME.pem

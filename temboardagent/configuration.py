@@ -44,7 +44,6 @@ class BaseConfiguration(configparser.RawConfigParser):
                 "activity"
             ],
             'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
-            'key': None
         }
         self.postgresql = {
             'host': '/var/run/postgresql',
@@ -111,11 +110,6 @@ class Configuration(BaseConfiguration):
             raise ConfigurationError("'plugins' option must be a list of "
                                      "string (alphanum only) in %s." % (
                                          self.configfile))
-        try:
-            self.temboard['key'] = self.get('temboard', 'key')
-        except configparser.NoOptionError:
-            pass
-
         try:
             home = self.get('temboard', 'home')
             if not os.access(home, os.W_OK):
