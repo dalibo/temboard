@@ -505,14 +505,12 @@ class MergedConfiguration(DotDict):
             'configfile', self.specs['temboard_configfile'].default,
         )
 
-        logger.debug('Loading %s.', self.temboard.configfile)
-        fileconfig = Configuration(self.temboard.configfile)
-        self.load_file(fileconfig)
+        self.load_legacy()
         self.plugins = load_plugins_configurations(self)
         self.add_values(iter_defaults(self.specs))
         self.loaded = True
 
-    def load_file(self, fileconfig):
+    def load_legacy(self):
         # This is a glue with legacy file-only configuration loading.
         #
         # File is loaded and validated in a single step using legacy code.
@@ -521,6 +519,9 @@ class MergedConfiguration(DotDict):
         #
         # This glue will be dropped once validated is extended to all origin of
         # configuration.
+
+        logger.debug('Loading %s.', self.temboard.configfile)
+        fileconfig = Configuration(self.temboard.configfile)
 
         for name in {'temboard', 'logging', 'postgresql'}:
             values = getattr(fileconfig, name, {})
@@ -538,9 +539,7 @@ class MergedConfiguration(DotDict):
         assert self.loaded, "Can't reload unloaded configuration."
         old_plugins = self.temboard.plugins
 
-        logger.debug('Loading %s.', self.temboard.configfile)
-        fileconfig = Configuration(self.temboard.configfile)
-        self.load_file(fileconfig)
+        self.load_legacy()
         # Prevent any change on plugins list.
         self.temboard.plugins = old_plugins
         # Now reload plugins configurations

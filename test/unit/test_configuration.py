@@ -16,8 +16,7 @@ def test_spec_and_value():
 
 
 def test_load(mocker):
-    mocker.patch('temboardagent.configuration.Configuration')
-    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
+    mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
     mocker.patch('temboardagent.configuration.v.file_', None)
@@ -55,7 +54,6 @@ def test_load_invalid_from_user(mocker):
 
     from temboardagent.configuration import (
         load_configuration,
-        OptionSpec,
         UserError,
     )
 
@@ -65,8 +63,7 @@ def test_load_invalid_from_user(mocker):
 
 
 def test_load_invalid_default(mocker):
-    mocker.patch('temboardagent.configuration.Configuration')
-    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
+    mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
     mocker.patch('temboardagent.configuration.v.file_', None)
@@ -84,15 +81,21 @@ def test_load_invalid_default(mocker):
 
 
 def test_legacy(mocker):
+    Configuration = mocker.patch('temboardagent.configuration.Configuration')
+
     from temboardagent.configuration import MergedConfiguration, configparser
 
     configparser = configparser.RawConfigParser()
     configparser.temboard = {'port': 8080}
     configparser.configfile = 'configfile'
     configparser.confdir = 'confdir'
-    config = MergedConfiguration()
 
-    config.load_file(configparser)
+    Configuration.return_value = configparser
+
+    config = MergedConfiguration()
+    config.temboard = dict(configfile='mock')
+
+    config.load_legacy()
 
     assert 8080 == config.temboard.port
     assert 'configfile' == config.configfile
