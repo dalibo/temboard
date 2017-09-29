@@ -1,3 +1,13 @@
+# User Input Validator
+#
+# These functions provide stateless validation of user input, mainly CLI
+# arguments and environment variables.
+#
+# On invalid input, a ValueError is raised. Other exceptions are considered a
+# bug.
+#
+# A validator is idempotent. It must accepts what it returns.
+
 import json
 import logging
 import os.path
