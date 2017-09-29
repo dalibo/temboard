@@ -23,59 +23,6 @@ def setup_logging(**kw):
     logging.config.dictConfig(logging_config)
 
 
-class BaseConfiguration(configparser.RawConfigParser):
-    """
-    Common configuration parser.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        configparser.RawConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = os.path.realpath(configfile)
-        self.confdir = os.path.dirname(self.configfile)
-
-        try:
-            with open(self.configfile) as fd:
-                self.readfp(fd)
-        except IOError:
-            raise ConfigurationError("Configuration file %s can't be opened."
-                                     % (self.configfile))
-        except configparser.MissingSectionHeaderError:
-            raise ConfigurationError(
-                    "Configuration file does not contain section headers.")
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
-
-    def abspath(self, path):
-        if path.startswith('/'):
-            return path
-        else:
-            return os.path.realpath('/'.join([self.confdir, path]))
-
-    def getfile(self, section, name):
-        path = self.abspath(self.get(section, name))
-        try:
-            with open(path) as fd:
-                fd.read()
-        except Exception as e:
-            logger.warn("Failed to open %s: %s", path, e)
-            raise ConfigurationError("%s file can't be opened." % (path,))
-        return path
-
-
-class Configuration(BaseConfiguration):
-    """
-    Customized configuration parser.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
-        self.plugins = {}
-        # Test if 'temboard' section exists.
-        self.check_section('temboard')
-
-
 class PluginConfiguration(configparser.RawConfigParser):
     """
     Customized configuration parser for plugins.
@@ -117,12 +64,22 @@ class PluginConfiguration(configparser.RawConfigParser):
         return path
 
 
-class LazyConfiguration(BaseConfiguration):
+class LazyConfiguration(configparser.RawConfigParser):
     """
     Customized configuration parser.
     """
     def __init__(self, configfile, *args, **kwargs):
-        BaseConfiguration.__init__(self, configfile, *args, **kwargs)
+        configparser.RawConfigParser.__init__(self, *args, **kwargs)
+        self.configfile = os.path.realpath(configfile)
+        try:
+            with open(self.configfile) as fd:
+                self.readfp(fd)
+        except IOError:
+            raise ConfigurationError("Configuration file %s can't be opened."
+                                     % (self.configfile))
+        except configparser.MissingSectionHeaderError:
+            raise ConfigurationError(
+                    "Configuration file does not contain section headers.")
         # Test if 'temboard' section exists.
         self.check_section('temboard')
         for k, v in self.temboard.iteritems():
@@ -144,6 +101,11 @@ class LazyConfiguration(BaseConfiguration):
                 self.postgresql[k] = self.get('postgresql', k)
             except configparser.NoOptionError:
                 pass
+
+    def check_section(self, section):
+        if not self.has_section(section):
+            raise ConfigurationError("Section '%s' not found in configuration "
+                                     "file %s" % (section, self.configfile))
 
 
 # Here begin the new API
@@ -301,7 +263,7 @@ class MergedConfiguration(DotDict):
             self.unvalidated_specs.remove(name)
 
     def load(self, args, environ):
-        # Origins are loaded in order. First wins (except file due to legacy).
+        # Origins are loaded in order. First wins..
         #
         # Loading in this order avoid validating ignored values.
 
@@ -317,9 +279,8 @@ class MergedConfiguration(DotDict):
         except ValueError as e:
             raise UserError(str(e))
 
-        self.load_legacy()
-        self.plugins = load_plugins_configurations(self)
         self.add_values(iter_defaults(self.specs))
+        self.plugins = load_plugins_configurations(self)
         self.loaded = True
 
     def load_file(self, filename):
@@ -332,28 +293,8 @@ class MergedConfiguration(DotDict):
         self.add_values(iter_configparser_values(parser, filename))
         os.chdir(oldpwd)
 
-    def load_legacy(self):
-        # This is a glue with legacy file-only configuration loading.
-        #
-        # File is loaded and validated in a single step using legacy code.
-        # Values from file overrides previous defined values (including
-        # args...).
-        #
-        # This glue will be dropped once validated is extended to all origin of
-        # configuration.
-
-        logger.debug('Loading %s.', self.temboard.configfile)
-        fileconfig = Configuration(self.temboard.configfile)
-
-        for name in {'temboard', 'logging', 'postgresql'}:
-            values = getattr(fileconfig, name, {})
-            section = self.setdefault(name, {})
-            for k, v in values.items():
-                section[k] = v
-
-        # Compat with fileconfig
-        self.configfile = fileconfig.configfile
-        self.confdir = fileconfig.confdir
+        # Compat with legacy
+        self.configfile = self.temboard.configfile
 
     def reload(self):
         # Reread file config.
@@ -361,7 +302,11 @@ class MergedConfiguration(DotDict):
         assert self.loaded, "Can't reload unloaded configuration."
         old_plugins = self.temboard.plugins
 
-        self.load_legacy()
+        try:
+            self.load_file(self, self.temboard.configfile)
+        except Exception as e:
+            raise ConfigurationError(str(e))
+
         # Prevent any change on plugins list.
         self.temboard.plugins = old_plugins
         # Now reload plugins configurations
