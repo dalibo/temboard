@@ -32,8 +32,6 @@ def dir_(raw):
     raw = os.path.realpath(raw)
     if not os.path.isdir(raw):
         raise ValueError('Not a directory')
-    if not os.access(raw, os.W_OK):
-        raise ValueError('Not writable')
     return raw
 
 
@@ -87,4 +85,11 @@ def logmethod(raw):
 def syslogfacility(raw):
     if raw not in SysLogHandler.facility_names:
         raise ValueError('unkown syslog facility')
+    return raw
+
+
+def writeabledir(raw):
+    raw = dir_(raw)
+    if not os.access(raw, os.W_OK):
+        raise ValueError('Not writable')
     return raw

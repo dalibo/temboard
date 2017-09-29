@@ -54,7 +54,7 @@ def list_options_specs():
     )
     yield OptionSpec(section, 'hostname', default=getfqdn())
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
-    yield OptionSpec(section, 'home', default=home)
+    yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
     all_plugins = [
         "activity"
         "administration",
@@ -66,8 +66,14 @@ def list_options_specs():
         section, 'plugins', default=all_plugins, validator=v.jsonlist,
     )
 
-    section = 'postgresql'
-    yield OptionSpec(section, 'port', default=5432, validator=v.port)
+    s = 'postgresql'
+    yield OptionSpec(
+        s, 'host', default='/var/run/postgresql', validator=v.dir_)
+    yield OptionSpec(s, 'instance', default='main')
+    yield OptionSpec(s, 'port', default=5432, validator=v.port)
+    yield OptionSpec(s, 'user', default='postgres')
+    yield OptionSpec(s, 'password')
+    yield OptionSpec(s, 'dbname', default='postgres')
 
     s = 'logging'
     yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)

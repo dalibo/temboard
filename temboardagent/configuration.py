@@ -32,15 +32,6 @@ class BaseConfiguration(configparser.RawConfigParser):
         self.configfile = os.path.realpath(configfile)
         self.confdir = os.path.dirname(self.configfile)
 
-        # Default configuration values
-        self.postgresql = {
-            'host': '/var/run/postgresql',
-            'user': 'postgres',
-            'password': None,
-            'dbname': 'postgres',
-            'pg_config': '/usr/bin/pg_config',
-            'instance': 'main'
-        }
         try:
             with open(self.configfile) as fd:
                 self.readfp(fd)
@@ -83,39 +74,6 @@ class Configuration(BaseConfiguration):
         self.plugins = {}
         # Test if 'temboard' section exists.
         self.check_section('temboard')
-
-        # Test if 'postgresql' section exists.
-        self.check_section('postgresql')
-        try:
-            from os import path
-            if not path.exists(self.get('postgresql', 'host')):
-                raise ValueError()
-            self.postgresql['host'] = self.get('postgresql', 'host')
-        except ValueError:
-            raise ConfigurationError("'host' option must be a valid directory"
-                                     " path containing PostgreSQL's local unix"
-                                     " socket in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['user'] = self.get('postgresql', 'user')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['password'] = self.get('postgresql', 'password')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.postgresql['dbname'] = self.get('postgresql', 'dbname')
-        except configparser.NoOptionError:
-            pass
-        try:
-            self.postgresql['instance'] = self.get('postgresql', 'instance')
-        except configparser.NoOptionError:
-            pass
 
 
 class PluginConfiguration(configparser.RawConfigParser):

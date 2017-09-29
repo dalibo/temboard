@@ -37,11 +37,11 @@ def test_directory(mocker):
     access = mocker.patch('temboardagent.validators.os.access')
 
     access.return_value = True
-    assert v.dir_(os.path.dirname(__file__))
+    assert v.writeabledir(os.path.dirname(__file__))
 
     access.return_value = False
     with pytest.raises(ValueError):
-        v.dir_('/usr')
+        v.writeabledir('/usr')
 
 
 def test_file():
