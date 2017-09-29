@@ -27,6 +27,15 @@ def boolean(raw):
     return bool(strtobool(raw))
 
 
+def dir_(raw):
+    raw = os.path.realpath(raw)
+    if not os.path.isdir(raw):
+        raise ValueError('Not a directory')
+    if not os.access(raw, os.W_OK):
+        raise ValueError('Not writable')
+    return raw
+
+
 def file_(raw):
     raw = os.path.realpath(raw)
     if not os.path.exists(raw):

@@ -33,6 +33,17 @@ def test_boolean():
         v.boolean('pouet')
 
 
+def test_directory(mocker):
+    access = mocker.patch('temboardagent.validators.os.access')
+
+    access.return_value = True
+    assert v.dir_(os.path.dirname(__file__))
+
+    access.return_value = False
+    with pytest.raises(ValueError):
+        v.dir_('/usr')
+
+
 def test_file():
     assert v.file_(__file__) == __file__
     relpath = os.path.relpath(__file__)

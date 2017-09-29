@@ -43,7 +43,6 @@ class BaseConfiguration(configparser.RawConfigParser):
                 "administration",
                 "activity"
             ],
-            'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
         }
         self.postgresql = {
             'host': '/var/run/postgresql',
@@ -110,16 +109,6 @@ class Configuration(BaseConfiguration):
             raise ConfigurationError("'plugins' option must be a list of "
                                      "string (alphanum only) in %s." % (
                                          self.configfile))
-        try:
-            home = self.get('temboard', 'home')
-            if not os.access(home, os.W_OK):
-                raise Exception()
-            self.temboard['home'] = self.get('temboard', 'home')
-        except configparser.NoOptionError:
-            pass
-        except Exception:
-            raise ConfigurationError("Home directory %s not writable."
-                                     % (self.get('temboard', 'home')))
 
         # Test if 'postgresql' section exists.
         self.check_section('postgresql')

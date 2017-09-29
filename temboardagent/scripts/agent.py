@@ -2,6 +2,7 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
 from multiprocessing import Process, Queue
+import os
 import signal
 
 from ..cli import cli, define_common_arguments
@@ -52,6 +53,8 @@ def list_options_specs():
         default='/etc/temboard-agent/users', validator=v.file_,
     )
     yield OptionSpec(section, 'hostname', default=getfqdn())
+    home = os.environ.get('HOME', '/var/lib/temboard-agent')
+    yield OptionSpec(section, 'home', default=home)
 
     section = 'postgresql'
     yield OptionSpec(section, 'port', default=5432, validator=v.port)
