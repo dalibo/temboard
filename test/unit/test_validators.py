@@ -6,40 +6,36 @@ import os.path
 
 import pytest
 
+from temboardagent import validators as v
+
 
 def test_boolean():
-    from temboardagent.validators import boolean
-
-    assert boolean('y') is True
-    assert boolean('0') is False
-    assert boolean('yes') is True
-    assert boolean(True) is True
+    assert v.boolean('y') is True
+    assert v.boolean('0') is False
+    assert v.boolean('yes') is True
+    assert v.boolean(True) is True
 
     with pytest.raises(ValueError):
-        boolean('pouet')
+        v.boolean('pouet')
 
 
 def test_file():
-    from temboardagent.validators import file_
-
-    assert file_(__file__) == __file__
+    assert v.file_(__file__) == __file__
     relpath = os.path.relpath(__file__)
-    assert file_(relpath) == __file__
+    assert v.file_(relpath) == __file__
 
     with pytest.raises(ValueError):
-        file_(__file__ + 'ne pas créer')
+        v.file_(__file__ + 'ne pas créer')
 
 
 def test_port():
-    from temboardagent.validators import port
-
-    assert 8080 == port('8080')
+    assert 8080 == v.port('8080')
 
     with pytest.raises(ValueError):
-        port('-1')
+        v.port('-1')
 
     with pytest.raises(ValueError):
-        port('80000')
+        v.port('80000')
 
     with pytest.raises(ValueError):
-        port('pouet')
+        v.port('pouet')
