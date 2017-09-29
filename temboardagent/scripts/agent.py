@@ -45,6 +45,7 @@ def list_options_specs():
         section, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(section, 'port', validator=v.port, default=2345)
     yield OptionSpec(section, 'ssl_cert_file', validator=v.file_)
+    yield OptionSpec(section, 'ssl_key_file', validator=v.file_)
     yield OptionSpec(
         section, 'users',
         default='/etc/temboard-agent/users', validator=v.file_,

@@ -36,7 +36,6 @@ class BaseConfiguration(configparser.RawConfigParser):
 
         # Default configuration values
         self.temboard = {
-            'ssl_key_file': None,
             'plugins': [
                 "monitoring",
                 "dashboard",
@@ -114,12 +113,6 @@ class Configuration(BaseConfiguration):
                                          self.configfile))
         try:
             self.temboard['key'] = self.get('temboard', 'key')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_key_file'] = (
-                self.getfile('temboard', 'ssl_key_file'))
         except configparser.NoOptionError:
             pass
 
