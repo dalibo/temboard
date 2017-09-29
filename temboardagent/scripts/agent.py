@@ -50,7 +50,10 @@ def main(argv, environ):
     )
     define_arguments(parser)
     args = parser.parse_args(argv)
-    config = load_configuration(specs=list_options_specs(), args=args)
+    config = load_configuration(
+        specs=list_options_specs(),
+        args=args, environ=environ,
+    )
     config.setup_logging()
     logger.info("Starting main process.")
 

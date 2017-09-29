@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_spec_and_value():
     from temboardagent.configuration import OptionSpec, Value
 
@@ -22,18 +19,27 @@ def test_load(mocker):
     from temboardagent.configuration import OptionSpec, load_configuration
 
     specs = [
-        OptionSpec(section='temboard', name='verbose', default=False),
+        # to test argument parsing
+        OptionSpec(section='temboard', name='fromarg', default='DEFVAL'),
+        # to test environment parsing
+        OptionSpec(section='temboard', name='fromenv', default='DEFVAL'),
+        # to test default value
+        OptionSpec(section='temboard', name='fromdefault', default='DEFVAL'),
     ]
-    args = Namespace()
-    config = load_configuration(specs=specs, args=args)
+    args = Namespace(temboard_fromarg='ARGVAL')
+    environ = dict(
+        TEMBOARD_FROMENV='ENVVAL',
+        # These should be ignored
+        TEMBOARD_FROMARG='ENVAL',
+        PATH='',
+    )
+    config = load_configuration(specs=specs, args=args, environ=environ)
 
-    assert config.temboard.verbose is False
+    assert 'DEFVAL' == config.temboard.fromdefault
+    assert 'ARGVAL' == config.temboard.fromarg
+    assert 'ENVVAL' == config.temboard.fromenv
     assert config.temboard.configfile.startswith('/etc/temboard-agent/')
     assert config.loaded is True
-
-    args = Namespace(unkown=True)
-    with pytest.raises(Exception):
-        load_configuration(specs=specs, args=args)
 
 
 def test_legacy(mocker):
