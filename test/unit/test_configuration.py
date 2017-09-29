@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+import pytest
+
+
 def test_spec_and_value():
     from temboardagent.configuration import OptionSpec, Value
 
@@ -14,6 +19,8 @@ def test_load(mocker):
     mocker.patch('temboardagent.configuration.Configuration')
     mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
+    # Bypass file validation
+    mocker.patch('temboardagent.configuration.v.file_', None)
 
     from argparse import Namespace
     from temboardagent.configuration import OptionSpec, load_configuration
@@ -40,6 +47,40 @@ def test_load(mocker):
     assert 'ENVVAL' == config.temboard.fromenv
     assert config.temboard.configfile.startswith('/etc/temboard-agent/')
     assert config.loaded is True
+
+
+def test_load_invalid_from_user(mocker):
+    file_ = mocker.patch('temboardagent.configuration.v.file_')
+    file_.side_effect = ValueError()
+
+    from temboardagent.configuration import (
+        load_configuration,
+        OptionSpec,
+        UserError,
+    )
+
+    environ = dict(TEMBOARD_CONFIGFILE=__file__ + 'ne pas créer !')
+    with pytest.raises(UserError):
+        load_configuration(environ=environ)
+
+
+def test_load_invalid_default(mocker):
+    mocker.patch('temboardagent.configuration.Configuration')
+    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
+    mocker.patch('temboardagent.configuration.load_plugins_configurations')
+    # Bypass file validation
+    mocker.patch('temboardagent.configuration.v.file_', None)
+
+    validator = mocker.Mock(side_effect=ValueError())
+
+    from temboardagent.configuration import OptionSpec, load_configuration
+
+    specs = [
+        OptionSpec('section', 'name', default='invalid', validator=validator),
+    ]
+
+    with pytest.raises(ValueError):
+        load_configuration(specs=specs, environ={})
 
 
 def test_legacy(mocker):
