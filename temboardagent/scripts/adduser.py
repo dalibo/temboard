@@ -2,29 +2,17 @@
 
 from __future__ import unicode_literals
 
-from sys import stdout, stderr
+from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+from sys import stdout
 from getpass import getpass
-from optparse import OptionParser
 
+from ..cli import cli
 from ..usermgmt import hash_password
-from ..errors import ConfigurationError, HTTPError
+from ..errors import ConfigurationError, HTTPError, UserError
 from ..usermgmt import get_user
-from ..configuration import Configuration
+from ..configuration import load_configuration
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
-
-
-class CLIOptions(OptionParser):
-    """
-    Command line interface options parser.
-    """
-    def __init__(self, *args, **kwargs):
-        OptionParser.__init__(self, *args, **kwargs)
-        self.add_option("-c",
-                        "--config",
-                        dest="configfile",
-                        help="Configuration file. Default: %default",
-                        default="/etc/temboard-agent/temboard-agent.conf")
 
 
 def ask_password():
@@ -65,33 +53,28 @@ def ask_username(config):
     return username
 
 
-def main():
-    """
-    Main function.
-    """
-    # Instanciate a new CLI options parser.
-    optparser = CLIOptions(description="Add a new temboard-agent user.")
-    (options, _) = optparser.parse_args()
+@cli
+def main(argv, environ):
+    parser = ArgumentParser(
+        prog='temboard-agent-adduser',
+        description="Add a new temboard-agent user.",
+        argument_default=UNDEFINED_ARGUMENT,
+    )
+    args = parser.parse_args(argv)
+    config = load_configuration(args=args, environ=environ)
 
     # Load configuration from the configuration file.
+    username = ask_username(config)
+    password = ask_password()
+    hash_ = hash_password(username, password).decode('utf-8')
     try:
-        config = Configuration(options.configfile)
-        username = ask_username(config)
-        password = ask_password()
         with open(config.temboard['users'], 'a') as fd:
-            fd.write("%s:%s\n" % (
-                username,
-                hash_password(username, password).decode('utf-8')
-                )
-            )
-            stdout.write("Done.\n")
-    except (ConfigurationError, ImportError, IOError) as e:
-        stderr.write("FATAL: %s\n" % str(e))
-        exit(1)
+            fd.write("%s:%s\n" % (username, hash_))
+    except IOError as e:
+        raise UserError(str(e))
+    else:
+        stdout.write("Done.\n")
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt as e:
-        stdout.write("\nExit..\n")
+    main()

@@ -29,6 +29,19 @@ def test_bdb_quit():
     assert 1 == ei.value.code
 
 
+def test_interrupt():
+    from temboardagent.cli import cli
+
+    @cli
+    def main(argv, environ):
+        raise KeyboardInterrupt()
+
+    with pytest.raises(SystemExit) as ei:
+        main(argv=[])
+
+    assert 1 == ei.value.code
+
+
 def test_user_error():
     from temboardagent.cli import cli
     from temboardagent.errors import UserError
