@@ -1,2 +1,2 @@
 #!/bin/bash
-exec python2.7 -m temboardagent.register $@
+exec python2.7 -m temboardagent.scripts.register $@
