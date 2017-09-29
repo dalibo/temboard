@@ -15,6 +15,7 @@ from ..daemon import (
 )
 from ..httpd import httpd_run
 from ..queue import purge_queue_dir
+from .. import validators as v
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ def list_options_specs():
     section = 'temboard'
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
+    yield OptionSpec(section, 'port', validator=v.port, default=2345)
 
 
 @cli

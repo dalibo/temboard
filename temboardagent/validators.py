@@ -14,3 +14,12 @@ def file_(raw):
     if not os.path.exists(raw):
         raise ValueError('File not found')
     return raw
+
+
+def port(raw):
+    port = int(raw)
+
+    if 0 > port or port > 65635:
+        raise ValueError('Port out of range')
+
+    return port

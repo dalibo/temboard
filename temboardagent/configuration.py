@@ -42,7 +42,6 @@ class BaseConfiguration(configparser.RawConfigParser):
 
         # Default configuration values
         self.temboard = {
-            'port': 2345,
             'address': '0.0.0.0',
             'users': '/etc/temboard-agent/users',
             'ssl_cert_file': None,
@@ -116,16 +115,6 @@ class Configuration(BaseConfiguration):
         # Test if 'temboard' section exists.
         self.check_section('temboard')
 
-        try:
-            if not (self.getint('temboard', 'port') >= 0
-                    and self.getint('temboard', 'port') <= 65535):
-                raise ValueError()
-            self.temboard['port'] = self.getint('temboard', 'port')
-        except ValueError:
-            raise ConfigurationError("'port' option must be an integer "
-                                     "[0-65535] in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
         try:
             if not re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
                             '(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d'
@@ -428,6 +417,13 @@ def iter_args_values(args):
         yield Value(k, v, 'args')
 
 
+def iter_configparser_values(parser, filename='config'):
+    for section in parser.sections():
+        for name, value in parser.items(section):
+            name = '%s_%s' % (section, name)
+            yield Value(name, value, origin=filename)
+
+
 def iter_environ_values(environ):
     prefix = 'TEMBOARD_'
     for k, v in environ.items():
@@ -496,19 +492,25 @@ class MergedConfiguration(DotDict):
         try:
             self.add_values(iter_args_values(args))
             self.add_values(iter_environ_values(environ))
+            # Loading default for configfile *before* loading file.
+            self.setdefault('temboard', {})
+            self.temboard.setdefault(
+                'configfile', self.specs['temboard_configfile'].default,
+            )
+            self.load_file(self.temboard.configfile)
         except ValueError as e:
             raise UserError(str(e))
-
-        # Loading default for configfile *before* loading file.
-        self.setdefault('temboard', {})
-        self.temboard.setdefault(
-            'configfile', self.specs['temboard_configfile'].default,
-        )
 
         self.load_legacy()
         self.plugins = load_plugins_configurations(self)
         self.add_values(iter_defaults(self.specs))
         self.loaded = True
+
+    def load_file(self, filename):
+        parser = configparser.RawConfigParser()
+        logger.info('Reading %s.', filename)
+        parser.read(filename)
+        self.add_values(iter_configparser_values(parser, filename))
 
     def load_legacy(self):
         # This is a glue with legacy file-only configuration loading.

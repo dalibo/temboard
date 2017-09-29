@@ -102,6 +102,24 @@ def test_legacy(mocker):
     assert 'confdir' == config.confdir
 
 
+def test_load_configparser():
+    from temboardagent.configuration import (
+        configparser,
+        iter_configparser_values,
+    )
+
+    parser = configparser.RawConfigParser()
+    parser.add_section('section0')
+    parser.set('section0', 'option0', 'pouet')
+
+    values = list(iter_configparser_values(parser, 'my.cfg'))
+
+    assert 1 == len(values)
+    assert 'pouet' == values[0].value
+    assert 'section0_option0' == values[0].name
+    assert 'my.cfg' == values[0].origin
+
+
 def test_logging():
     from temboardagent.configuration import generate_logging_config, DotDict
 
