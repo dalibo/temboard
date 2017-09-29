@@ -42,6 +42,9 @@ def list_options_specs():
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
     yield OptionSpec(section, 'port', validator=v.port, default=2345)
 
+    section = 'postgresql'
+    yield OptionSpec(section, 'port', default=5432, validator=v.port)
+
 
 @cli
 def main(argv, environ):

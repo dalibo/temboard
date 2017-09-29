@@ -66,7 +66,6 @@ class BaseConfiguration(configparser.RawConfigParser):
         self.postgresql = {
             'host': '/var/run/postgresql',
             'user': 'postgres',
-            'port': 5432,
             'password': None,
             'dbname': 'postgres',
             'pg_config': '/usr/bin/pg_config',
@@ -230,18 +229,6 @@ class Configuration(BaseConfiguration):
 
         try:
             self.postgresql['user'] = self.get('postgresql', 'user')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            if not (self.getint('postgresql', 'port') >= 0
-                    and self.getint('postgresql', 'port') <= 65535):
-                raise ValueError()
-            self.postgresql['port'] = self.getint('postgresql', 'port')
-        except ValueError:
-            raise ConfigurationError("'port' option must be an integer "
-                                     "[0-65535] in 'postgresql' section in %s."
-                                     % (self.configfile))
         except configparser.NoOptionError:
             pass
 
