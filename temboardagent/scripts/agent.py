@@ -25,12 +25,12 @@ def define_arguments(parser):
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
-        help="Run in background. Default: %(default)s",
+        help="Run in background.",
     )
     parser.add_argument(
         '-p', '--pid-file',
         action='store', dest='temboard_pidfile',
-        help="PID file. Default: %(default)s",
+        help="PID file.",
     )
 
 

@@ -4,8 +4,10 @@ import pytest
 def test_help(mocker):
     from temboardagent.scripts.agent import main
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as ei:
         main(argv=['--help'])
+
+    assert 0 == ei.value.code
 
 
 def test_big_main(mocker):
