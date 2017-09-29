@@ -28,6 +28,21 @@ def test_file():
         v.file_(__file__ + 'ne pas créer')
 
 
+def test_loglevel():
+    assert 'DEBUG' == v.loglevel('DEBUG')
+    assert 'INFO' == v.loglevel('info')
+
+    with pytest.raises(ValueError):
+        v.loglevel('pouet')
+
+
+def test_logmethod():
+    assert 'stderr' == v.logmethod('stderr')
+
+    with pytest.raises(ValueError):
+        v.logmethod('pouet')
+
+
 def test_port():
     assert 8080 == v.port('8080')
 

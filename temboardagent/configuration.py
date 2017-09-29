@@ -1,5 +1,4 @@
 import logging
-from logging.handlers import SysLogHandler
 
 try:
     import configparser
@@ -13,17 +12,12 @@ import re
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
-from .log import generate_logging_config, HANDLERS as LOG_HANDLERS
+from .log import generate_logging_config
 from .errors import UserError
 from . import validators as v
 
 
 logger = logging.getLogger(__name__)
-
-
-LOG_METHODS = LOG_HANDLERS.keys()
-LOG_FACILITIES = SysLogHandler.facility_names
-LOG_LEVELS = logging._levelNames.values()
 
 
 def setup_logging(**kw):
@@ -56,12 +50,6 @@ class BaseConfiguration(configparser.RawConfigParser):
             'home': os.environ.get('HOME', '/var/lib/temboard-agent'),
             'hostname': None,
             'key': None
-        }
-        self.logging = {
-            'method': 'syslog',
-            'facility': 'local0',
-            'destination': '/dev/log',
-            'level': 'DEBUG'
         }
         self.postgresql = {
             'host': '/var/run/postgresql',
@@ -176,40 +164,6 @@ class Configuration(BaseConfiguration):
         try:
             hostname = self.get('temboard', 'hostname')
             self.temboard['hostname'] = hostname
-        except configparser.NoOptionError:
-            pass
-
-        # Test if 'logging' section exists.
-        self.check_section('logging')
-        try:
-            if not self.get('logging', 'method') in LOG_METHODS:
-                raise ValueError()
-            self.logging['method'] = self.get('logging', 'method')
-        except ValueError:
-            raise ConfigurationError("Invalid 'method' option in 'logging' "
-                                     "section in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            if not self.get('logging', 'facility') in LOG_FACILITIES:
-                raise ValueError()
-            self.logging['facility'] = self.get('logging', 'facility')
-        except ValueError:
-            raise ConfigurationError("Invalid 'facility' option in 'logging' "
-                                     "section in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            self.logging['destination'] = self.get('logging', 'destination')
-        except configparser.NoOptionError:
-            pass
-        try:
-            if not self.get('logging', 'level') in LOG_LEVELS:
-                raise ValueError()
-            self.logging['level'] = self.get('logging', 'level')
-        except ValueError:
-            raise ConfigurationError("Invalid 'level' option in 'logging' "
-                                     "section in %s." % (self.configfile))
         except configparser.NoOptionError:
             pass
 

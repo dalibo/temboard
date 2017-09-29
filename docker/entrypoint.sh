@@ -33,7 +33,6 @@ key = ${TEMBOARD_KEY}
 
 [logging]
 method = stderr
-level = ${TEMBOARD_LOGGING_LEVEL}
 
 [postgresql]
 host = /var/run/postgresql/

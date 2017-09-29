@@ -45,6 +45,14 @@ def list_options_specs():
     section = 'postgresql'
     yield OptionSpec(section, 'port', default=5432, validator=v.port)
 
+    s = 'logging'
+    yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
+    yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
+    yield OptionSpec(
+        s, 'facility', default='local0', validator=v.syslogfacility,
+    )
+    yield OptionSpec(s, 'destination', default='/dev/log')
+
 
 @cli
 def main(argv, environ):
