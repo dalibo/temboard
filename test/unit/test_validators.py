@@ -9,6 +9,20 @@ import pytest
 from temboardagent import validators as v
 
 
+def test_address():
+    assert v.address('0.0.0.0')
+    assert v.address('127.0.0.1')
+
+    with pytest.raises(ValueError):
+        v.address('127')
+
+    with pytest.raises(ValueError):
+        v.address('127.0.0.0.0.0')
+
+    with pytest.raises(ValueError):
+        v.address('localhost')
+
+
 def test_boolean():
     assert v.boolean('y') is True
     assert v.boolean('0') is False

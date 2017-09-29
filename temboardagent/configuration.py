@@ -36,7 +36,6 @@ class BaseConfiguration(configparser.RawConfigParser):
 
         # Default configuration values
         self.temboard = {
-            'address': '0.0.0.0',
             'ssl_cert_file': None,
             'ssl_key_file': None,
             'plugins': [
@@ -100,18 +99,6 @@ class Configuration(BaseConfiguration):
         self.plugins = {}
         # Test if 'temboard' section exists.
         self.check_section('temboard')
-
-        try:
-            if not re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
-                            '(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d'
-                            ')){3}$', self.get('temboard', 'address')):
-                raise ValueError()
-            self.temboard['address'] = self.get('temboard', 'address')
-        except ValueError:
-            raise ConfigurationError("'address' option must be a valid IPv4 "
-                                     "address in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
 
         try:
             plugins = json.loads(self.get('temboard', 'plugins'))

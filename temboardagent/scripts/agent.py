@@ -40,6 +40,8 @@ def list_options_specs():
     section = 'temboard'
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
+    yield OptionSpec(
+        section, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(section, 'port', validator=v.port, default=2345)
     yield OptionSpec(
         section, 'users',

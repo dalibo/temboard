@@ -1,9 +1,23 @@
 import logging
 import os.path
+import re
 from distutils.util import strtobool
 from logging.handlers import SysLogHandler
 
 from .log import HANDLERS as LOG_METHODS
+
+
+_address_re = re.compile(
+    r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
+    r'(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d'
+    r')){3}$'
+)
+
+
+def address(raw):
+    if not _address_re.match(raw):
+        raise ValueError('invalid address')
+    return raw
 
 
 def boolean(raw):
