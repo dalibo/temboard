@@ -1,2 +1,2 @@
 #!/bin/sh
-exec python2.7 -m temboardagent.agent $@
+exec python2.7 -m temboardagent.scripts.agent $@

@@ -3,18 +3,18 @@ import logging
 from multiprocessing import Process, Queue
 import signal
 
-from .cli import cli, define_common_arguments
-from .sharedmemory import Commands, Sessions
-from .async import Scheduler
-from .configuration import load_configuration, OptionSpec
-from .daemon import (
+from ..cli import cli, define_common_arguments
+from ..sharedmemory import Commands, Sessions
+from ..async import Scheduler
+from ..configuration import load_configuration, OptionSpec
+from ..daemon import (
     daemonize,
     httpd_sigterm_handler,
     set_global_scheduler,
     httpd_sighup_handler,
 )
-from .httpd import httpd_run
-from .queue import purge_queue_dir
+from ..httpd import httpd_run
+from ..queue import purge_queue_dir
 
 
 logger = logging.getLogger(__name__)

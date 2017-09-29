@@ -8,15 +8,15 @@ import re
 import urllib2
 import json
 
-from .cli import cli, define_common_arguments
-from .errors import (
+from ..cli import cli, define_common_arguments
+from ..errors import (
     ConfigurationError,
     HTTPError,
 )
-from .types import T_PASSWORD, T_USERNAME
-from .tools import validate_parameters
-from .httpsclient import https_request
-from .configuration import LazyConfiguration
+from ..types import T_PASSWORD, T_USERNAME
+from ..tools import validate_parameters
+from ..httpsclient import https_request
+from ..configuration import LazyConfiguration
 
 
 def ask_password():
