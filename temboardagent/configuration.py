@@ -376,7 +376,7 @@ class OptionSpec(object):
         return hash(str(self))
 
 
-def load_configuration(specs, args):
+def load_configuration(specs, args, environ=os.environ):
     # Main entry point to load configuration.
     #
     # specs is a list or a flat dict of OptionSpecs
@@ -391,7 +391,7 @@ def load_configuration(specs, args):
     # Origin order: args > environ > file > defaults
 
     config = MergedConfiguration(specs)
-    config.load(args)
+    config.load(args=args, environ=environ)
     return config
 
 
@@ -410,6 +410,21 @@ def iter_args_values(args):
     # Walk args from argparse and yield values.
     for k, v in args.__dict__.items():
         yield Value(k, v, 'args')
+
+
+def iter_environ_values(environ):
+    prefix = 'TEMBOARD_'
+    for k, v in environ.items():
+        if not k.startswith(prefix):
+            continue
+
+        k = k.lower()
+        v = v.decode('utf-8')
+
+        # Yield the value with temboard prefix so we don't have to define
+        # TEMBOARD_TEMBOARD_* to set a value in temboard section.
+        yield Value(k, v, 'environ')
+        yield Value(k[len(prefix):], v, 'environ')
 
 
 def iter_defaults(specs):
@@ -437,22 +452,31 @@ class MergedConfiguration(DotDict):
 
         DotDict.__init__(self)
         self.__dict__['specs'] = specs
+        self.__dict__['unvalidated_specs'] = specs.keys()
         self.loaded = False
 
     def add_values(self, values):
-        # Merge **missing* values. No override.
-        for value in values:
-            spec = self.specs[value.name]
-            section = self.setdefault(spec.section, {})
-            if spec.name in section:
-                # Skip already defined values
-                continue
-            section[spec.name] = value.value
+        # Search missing values in values and validate them.
 
-    def load(self, args):
+        values = {v.name: v for v in values}
+        for name in self.unvalidated_specs[:]:
+            try:
+                value = values[name]
+            except KeyError:
+                continue
+
+            spec = self.specs[name]
+            section = self.setdefault(spec.section, {})
+            section[spec.name] = value.value
+            self.unvalidated_specs.remove(name)
+
+    def load(self, args, environ):
         # Origins are loaded in order. First wins (except file due to legacy).
+        #
+        # Loading in this order avoid validating ignored values.
 
         self.add_values(iter_args_values(args))
+        self.add_values(iter_environ_values(environ))
 
         # Loading default for configfile *before* loading file.
         self.setdefault('temboard', {})
