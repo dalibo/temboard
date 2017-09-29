@@ -437,20 +437,28 @@ class MergedConfiguration(DotDict):
 
         DotDict.__init__(self)
         self.__dict__['specs'] = specs
+        self.__dict__['unvalidated_specs'] = specs.keys()
         self.loaded = False
 
     def add_values(self, values):
-        # Merge **missing* values. No override.
-        for value in values:
-            spec = self.specs[value.name]
-            section = self.setdefault(spec.section, {})
-            if spec.name in section:
-                # Skip already defined values
+        # Search missing values in values and validate them.
+
+        values = {v.name: v for v in values}
+        for name in self.unvalidated_specs[:]:
+            try:
+                value = values[name]
+            except KeyError:
                 continue
+
+            spec = self.specs[name]
+            section = self.setdefault(spec.section, {})
             section[spec.name] = value.value
+            self.unvalidated_specs.remove(name)
 
     def load(self, args):
         # Origins are loaded in order. First wins (except file due to legacy).
+        #
+        # Loading in this order avoid validating ignored values.
 
         self.add_values(iter_args_values(args))
 
