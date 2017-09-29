@@ -425,7 +425,11 @@ class MergedConfiguration(DotDict):
         parser = configparser.RawConfigParser()
         logger.info('Reading %s.', filename)
         parser.read(filename)
+
+        oldpwd = os.getcwd()
+        os.chdir(os.path.dirname(filename))
         self.add_values(iter_configparser_values(parser, filename))
+        os.chdir(oldpwd)
 
     def load_legacy(self):
         # This is a glue with legacy file-only configuration loading.

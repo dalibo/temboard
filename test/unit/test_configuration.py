@@ -16,6 +16,7 @@ def test_spec_and_value():
 
 
 def test_load(mocker):
+    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
     mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
@@ -63,6 +64,7 @@ def test_load_invalid_from_user(mocker):
 
 
 def test_load_invalid_default(mocker):
+    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
     mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
