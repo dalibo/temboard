@@ -37,8 +37,8 @@ def define_arguments(parser):
 def list_options_specs():
     # Generate each option specs.
     section = 'temboard'
-    yield OptionSpec(section, 'daemonize', False)
-    yield OptionSpec(section, 'pidfile', '/run/temboard-agent.pid')
+    yield OptionSpec(section, 'daemonize', default=False)
+    yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
 
 
 @cli
