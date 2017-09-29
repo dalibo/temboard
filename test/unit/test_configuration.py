@@ -20,7 +20,7 @@ def test_load(mocker):
     mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
-    mocker.patch('temboardagent.configuration.v.file_', None)
+    mocker.patch('temboardagent.configuration.validators.file_', None)
 
     from argparse import Namespace
     from temboardagent.configuration import OptionSpec, load_configuration
@@ -50,7 +50,7 @@ def test_load(mocker):
 
 
 def test_load_invalid_from_user(mocker):
-    file_ = mocker.patch('temboardagent.configuration.v.file_')
+    file_ = mocker.patch('temboardagent.configuration.validators.file_')
     file_.side_effect = ValueError()
 
     from temboardagent.configuration import (
@@ -68,7 +68,7 @@ def test_load_invalid_default(mocker):
     mocker.patch('temboardagent.configuration.MergedConfiguration.load_legacy')
     mocker.patch('temboardagent.configuration.load_plugins_configurations')
     # Bypass file validation
-    mocker.patch('temboardagent.configuration.v.file_', None)
+    mocker.patch('temboardagent.configuration.validators.file_', None)
 
     validator = mocker.Mock(side_effect=ValueError())
 

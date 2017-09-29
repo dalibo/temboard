@@ -14,7 +14,7 @@ from .utils import DotDict
 from .pluginsmgmt import load_plugins_configurations
 from .log import generate_logging_config
 from .errors import UserError
-from . import validators as v
+from . import validators
 
 
 logger = logging.getLogger(__name__)
@@ -374,7 +374,7 @@ class MergedConfiguration(DotDict):
         spec = OptionSpec(
             'temboard', 'configfile',
             default='/etc/temboard-agent/temboard-agent.conf',
-            validator=v.file_,
+            validator=validators.file_,
         )
         specs.setdefault(spec, spec)
 
