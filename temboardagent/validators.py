@@ -1,3 +1,4 @@
+import json
 import logging
 import os.path
 import re
@@ -40,6 +41,24 @@ def file_(raw):
     raw = os.path.realpath(raw)
     if not os.path.exists(raw):
         raise ValueError('File not found')
+    return raw
+
+
+_identifier_re = re.compile(r'^[a-zA-Z0-9]+$')
+
+
+def jsonlist(raw):
+    if hasattr(raw, 'lower'):
+        raw = json.loads(raw)
+
+    if not isinstance(raw, list):
+        raise ValueError('not a list')
+
+    raw = [str(e) for e in raw]
+    for entry in raw:
+        if not _identifier_re.match(entry):
+            raise ValueError('%s is invalid' % entry)
+
     return raw
 
 

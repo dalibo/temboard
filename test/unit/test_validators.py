@@ -53,6 +53,17 @@ def test_file():
         v.file_(__file__ + 'ne pas créer')
 
 
+def test_jsonlist():
+    assert ['a'] == v.jsonlist(['a'])
+    assert ['a'] == v.jsonlist('["a"]')
+
+    with pytest.raises(ValueError):
+        v.jsonlist('{}')
+
+    with pytest.raises(ValueError):
+        v.jsonlist('["!"]')
+
+
 def test_loglevel():
     assert 'DEBUG' == v.loglevel('DEBUG')
     assert 'INFO' == v.loglevel('info')

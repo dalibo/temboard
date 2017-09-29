@@ -6,8 +6,6 @@ except ImportError:
     import ConfigParser as configparser
 
 import os.path
-import json
-import re
 
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
@@ -35,15 +33,6 @@ class BaseConfiguration(configparser.RawConfigParser):
         self.confdir = os.path.dirname(self.configfile)
 
         # Default configuration values
-        self.temboard = {
-            'plugins': [
-                "monitoring",
-                "dashboard",
-                "pgconf",
-                "administration",
-                "activity"
-            ],
-        }
         self.postgresql = {
             'host': '/var/run/postgresql',
             'user': 'postgres',
@@ -94,21 +83,6 @@ class Configuration(BaseConfiguration):
         self.plugins = {}
         # Test if 'temboard' section exists.
         self.check_section('temboard')
-
-        try:
-            plugins = json.loads(self.get('temboard', 'plugins'))
-            if not type(plugins) == list:
-                raise ValueError()
-            for plugin in plugins:
-                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
-                    raise ValueError
-            self.temboard['plugins'] = plugins
-        except configparser.NoOptionError:
-            pass
-        except ValueError:
-            raise ConfigurationError("'plugins' option must be a list of "
-                                     "string (alphanum only) in %s." % (
-                                         self.configfile))
 
         # Test if 'postgresql' section exists.
         self.check_section('postgresql')
