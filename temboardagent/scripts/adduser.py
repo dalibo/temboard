@@ -2,29 +2,16 @@
 
 from __future__ import unicode_literals
 
+from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout, stderr
 from getpass import getpass
-from optparse import OptionParser
 
 from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError
 from ..usermgmt import get_user
-from ..configuration import Configuration
+from ..configuration import load_configuration
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
-
-
-class CLIOptions(OptionParser):
-    """
-    Command line interface options parser.
-    """
-    def __init__(self, *args, **kwargs):
-        OptionParser.__init__(self, *args, **kwargs)
-        self.add_option("-c",
-                        "--config",
-                        dest="configfile",
-                        help="Configuration file. Default: %default",
-                        default="/etc/temboard-agent/temboard-agent.conf")
 
 
 def ask_password():
@@ -65,17 +52,21 @@ def ask_username(config):
     return username
 
 
-def main():
+def main(argv, environ):
     """
     Main function.
     """
     # Instanciate a new CLI options parser.
-    optparser = CLIOptions(description="Add a new temboard-agent user.")
-    (options, _) = optparser.parse_args()
+    parser = ArgumentParser(
+        prog='temboard-agent-adduser',
+        description="Add a new temboard-agent user.",
+        argument_default=UNDEFINED_ARGUMENT,
+    )
+    args = parser.parse_args(argv)
+    config = load_configuration(args=args, environ=environ)
 
     # Load configuration from the configuration file.
     try:
-        config = Configuration(options.configfile)
         username = ask_username(config)
         password = ask_password()
         with open(config.temboard['users'], 'a') as fd:
