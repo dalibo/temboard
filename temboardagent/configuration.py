@@ -152,8 +152,9 @@ class OptionSpec(object):
         try:
             return self.validator(value.value)
         except ValueError as e:
-            msg = "Invalid %(name)s from %(origin)s: %(value).16s: %(e).32s."
-            raise ValueError(msg % dict(value.__dict__, e=e))
+            logger.debug(
+                "Invalid %s from %s: %.32s...", value.name, value.origin, e)
+            raise
 
 
 def load_configuration(specs=None, args=None, environ=os.environ):
@@ -271,10 +272,8 @@ class MergedConfiguration(DotDict):
             self.add_values(iter_args_values(args))
             self.add_values(iter_environ_values(environ))
             # Loading default for configfile *before* loading file.
-            self.setdefault('temboard', {})
-            self.temboard.setdefault(
-                'configfile', self.specs['temboard_configfile'].default,
-            )
+            spec = self.specs['temboard_configfile']
+            self.add_values([Value(str(spec), spec.default, 'default')])
             self.load_file(self.temboard.configfile)
         except ValueError as e:
             raise UserError(str(e))
