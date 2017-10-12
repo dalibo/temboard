@@ -48,7 +48,7 @@ def dir_(raw):
 def file_(raw):
     raw = os.path.realpath(raw)
     if not os.path.exists(raw):
-        raise ValueError('File not found')
+        raise ValueError('%s: File not found' % raw)
     return raw
 
 

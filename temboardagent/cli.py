@@ -31,6 +31,8 @@ def cli(main):
 
     def cli_wrapper(argv=sys.argv[1:], environ=os.environ):
         debug = strtobool(environ.get('DEBUG', '0'))
+        if debug:
+            os.environ['TEMBOARD_LOGGING_LEVEL'] = b'DEBUG'
 
         retcode = 1
         try:

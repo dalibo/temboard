@@ -56,7 +56,7 @@ def list_options_specs():
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
     all_plugins = [
-        "activity"
+        "activity",
         "administration",
         "dashboard",
         "monitoring",

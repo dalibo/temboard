@@ -92,8 +92,7 @@ def load_plugins_configurations(config):
             ret.update({module.__name__: plugin_configuration})
             logger.info("Done.")
         except AttributeError as e:
-            logger.error(str(e))
-            logger.info("No configuration.")
+            logger.warn("No configuration: %s", e)
         except Exception as e:
             if fp:
                 fp.close()
