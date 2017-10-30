@@ -220,6 +220,18 @@ class SqlProbe(Probe):
 
         return True
 
+    def get_version(self, conninfo):
+        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
+                         conninfo['password'])
+
+        try:
+            conn.connect()
+            version = conn.get_pg_version()
+            conn.close()
+            return version
+        except error:
+            logging.error("Unable to get server version")
+
     def run_sql(self, conninfo, sql, database=None):
         """Get the result of the SQL query"""
         if sql is None:
@@ -585,6 +597,8 @@ class probe_wal_files(SqlProbe):
     min_version = 80200
 
     def run(self, conninfo):
+        version = self.get_version(conninfo)
+
         if conninfo['standby']:
             return []
 
@@ -592,24 +606,40 @@ class probe_wal_files(SqlProbe):
             'datetime': now(),
             'port': conninfo['port']
         }
-        sql = """
+        if version < 100000:
+            sql = """
             SELECT count(s.f) AS total,
                    sum((pg_stat_file('pg_xlog/'||s.f)).size) AS total_size,
                    pg_current_xlog_location() as current_location
             FROM pg_ls_dir('pg_xlog') AS s(f)
             WHERE f ~ E'^[0-9A-F]{24}$'
-        """
+            """
+        else:
+            sql = """
+            SELECT count(s.f) AS total,
+                   sum((pg_stat_file('pg_wal/'||s.f)).size) AS total_size,
+                   pg_current_wal_lsn() as current_location
+            FROM pg_ls_dir('pg_wal') AS s(f)
+            WHERE f ~ E'^[0-9A-F]{24}$'
+            """
         rows = self.run_sql(conninfo, sql)
 
         metric['total'] = rows[0]['total']
         metric['total_size'] = rows[0]['total_size']
         metric['current_location'] = rows[0]['current_location']
 
-        sql = """
+        if version < 100000:
+            sql = """
             SELECT count(s.f) AS archive_ready
             FROM pg_ls_dir('pg_xlog/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'
-        """
+            """
+        else:
+            sql = """
+            SELECT count(s.f) AS archive_ready
+            FROM pg_ls_dir('pg_wal/archive_status') AS s(f)
+            WHERE f ~ E'\.ready$'
+            """
         rows = self.run_sql(conninfo, sql)
 
         metric['archive_ready'] = rows[0]['archive_ready']

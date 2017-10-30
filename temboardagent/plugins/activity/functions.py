@@ -15,7 +15,7 @@ def get_activity(conn, config, http_context):
     """
     mem_total = memory_total_size()
     page_size = getpagesize()
-    if conn.get_pg_version() >= 90600:
+    if conn.get_pg_version() >= 90600 and conn.get_pg_version() < 100000:
         query = """
 SELECT
   pg_stat_activity.pid AS pid,
@@ -35,7 +35,7 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
-    else:
+    elif conn.get_pg_version() < 90600:
         query = """
 SELECT
   pg_stat_activity.pid AS pid,
@@ -54,6 +54,28 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
+    elif conn.get_pg_version() >= 100000:
+        query = """
+SELECT
+  pg_stat_activity.pid AS pid,
+  pg_stat_activity.datname AS database,
+  pg_stat_activity.client_addr AS client,
+  round(EXTRACT(epoch FROM (NOW()
+    - pg_stat_activity.query_start))::numeric, 2)::FLOAT AS duration,
+  CASE WHEN pg_stat_activity.wait_event_type IS
+    DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
+  pg_stat_activity.usename AS user,
+  pg_stat_activity.state AS state,
+  pg_stat_activity.query AS query
+FROM
+  pg_stat_activity
+WHERE
+  pid <> pg_backend_pid()
+  AND backend_type = 'client backend'
+ORDER BY
+  EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
+        """
+
     conn.execute(query)
     backend_list = []
     for row in conn.get_rows():
