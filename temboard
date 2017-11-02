@@ -92,10 +92,13 @@ class CustomTornadoWebApp(tornado.web.Application):
         self.logger.info(log_message)
 
     def create_db_engine(self, pidfile):
-        dburi = "postgresql://%s:%s@%s:%s/%s" % (
-            self.config.repository['user'], self.config.repository['password'],
-            self.config.repository['host'], self.config.repository['port'],
-            self.config.repository['dbname'])
+        dburi = "postgresql://{user}:{pwd}@:{p}/{db}?host={h}".format(
+                    user=self.config.repository['user'],
+                    pwd=self.config.repository['password'],
+                    h=self.config.repository['host'],
+                    p=self.config.repository['port'],
+                    db=self.config.repository['dbname'],
+                )
         self.engine = create_engine(dburi)
         try:
             check_sqlalchemy_connectivity(self.engine)
