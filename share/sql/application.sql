@@ -68,5 +68,13 @@ CREATE TABLE access_role_instance (
 	FOREIGN KEY (instance_group_name, instance_group_kind) REFERENCES groups (group_name, group_kind) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+GRANT ALL ON ALL TABLES IN SCHEMA application TO temboard;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA application TO temboard;
+GRANT ALL ON SCHEMA application TO temboard;
+
 -- Default administrator: admin/admin
 INSERT INTO roles VALUES ('admin', 'xiet7KLumux50Q2dmV/FBue2zqtexElavkVAKnEYN/rw2YLIn51TQsXb3u8FPm4wiuHUTtEjjvBIrtBPAgRMsA==', 'admin@change.me', true, true);
+INSERT INTO groups VALUES ('default', 'Default instance group', 'instance');
+INSERT INTO groups VALUES ('admin', 'Default admin role group', 'role');
+INSERT INTO role_groups VALUES ('admin', 'admin', 'role');
+INSERT INTO access_role_instance VALUES ('admin', 'role', 'default', 'instance');
