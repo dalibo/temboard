@@ -916,12 +916,12 @@ def worker_data_agg(task):
         parameters = unserialize_task_parameters(task.parameters)
         config = Configuration()
         config.parsefile(parameters['configpath'])
-        dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
+        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
                     user=config.repository['user'],
-                    password=config.repository['password'],
-                    host=config.repository['host'],
-                    port=config.repository['port'],
-                    dbname=config.repository['dbname'])
+                    pwd=config.repository['password'],
+                    h=config.repository['host'],
+                    p=config.repository['port'],
+                    db=config.repository['dbname'])
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
@@ -951,12 +951,12 @@ def worker_history_data(task):
         parameters = unserialize_task_parameters(task.parameters)
         config = Configuration()
         config.parsefile(parameters['configpath'])
-        dburi = 'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(
+        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
                     user=config.repository['user'],
-                    password=config.repository['password'],
-                    host=config.repository['host'],
-                    port=config.repository['port'],
-                    dbname=config.repository['dbname'])
+                    pwd=config.repository['password'],
+                    h=config.repository['host'],
+                    p=config.repository['port'],
+                    db=config.repository['dbname'])
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
