@@ -64,50 +64,6 @@ class PluginConfiguration(configparser.RawConfigParser):
         return path
 
 
-class LazyConfiguration(configparser.RawConfigParser):
-    """
-    Customized configuration parser.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        configparser.RawConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = os.path.realpath(configfile)
-        try:
-            with open(self.configfile) as fd:
-                self.readfp(fd)
-        except IOError:
-            raise ConfigurationError("Configuration file %s can't be opened."
-                                     % (self.configfile))
-        except configparser.MissingSectionHeaderError:
-            raise ConfigurationError(
-                    "Configuration file does not contain section headers.")
-        # Test if 'temboard' section exists.
-        self.check_section('temboard')
-        for k, v in self.temboard.iteritems():
-            try:
-                self.temboard[k] = self.get('temboard', k)
-            except configparser.NoOptionError:
-                pass
-        # Test if 'logging' section exists.
-        self.check_section('logging')
-        for k, v in self.logging.iteritems():
-            try:
-                self.logging[k] = self.get('logging', k)
-            except configparser.NoOptionError:
-                pass
-        # Test if 'postgresql' section exists.
-        self.check_section('postgresql')
-        for k, v in self.logging.iteritems():
-            try:
-                self.postgresql[k] = self.get('postgresql', k)
-            except configparser.NoOptionError:
-                pass
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError("Section '%s' not found in configuration "
-                                     "file %s" % (section, self.configfile))
-
-
 # Here begin the new API
 #
 # The purpose of the new API is to merge args, file, environment and defaults
