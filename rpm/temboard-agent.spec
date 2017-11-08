@@ -2,10 +2,6 @@
 %{!?pkgversion: %global pkgversion 0.0.1}
 %{!?pkgrevision: %global pkgrevision 1}
 
-%if 0%{?rhel} == 5
-%define __python /usr/bin/python26
-%endif
-
 %{!?python_sitelib: %global python_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:		%{pkgname}
@@ -21,15 +17,7 @@ Source1:	temboard-agent.init
 Source2:	temboard-agent.service
 Patch1:		temboard-agent.conf.sample.patch
 BuildArch:	noarch
-
-%if 0%{?rhel} == 5
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:	python26-setuptools
-%endif
-
-%if 0%{?rhel} >= 6
 BuildRequires:	python-setuptools
-%endif
 
 %description
 Administration & monitoring PostgreSQL agent.
