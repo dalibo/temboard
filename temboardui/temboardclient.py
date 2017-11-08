@@ -29,6 +29,26 @@ class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
         return self.do_open(self.specialized_conn_class, req)
 
 
+class UnverifiedHTTPSConnection(httplib.HTTPSConnection):
+    # HTTPS connection class, without any SSL cert. check.
+    def connect(self):
+        sock = socket.create_connection((self.host, self.port), self.timeout)
+        if self._tunnel_host:
+            self.sock = sock
+            self._tunnel()
+        self.sock = ssl.wrap_socket(sock)
+
+
+class UnverifiedHTTPSHandler(urllib2.HTTPSHandler):
+    # HTTPS connection handler
+    def __init__(self, connection_class=UnverifiedHTTPSConnection):
+        self.specialized_conn_class = connection_class
+        urllib2.HTTPSHandler.__init__(self)
+
+    def https_open(self, req):
+        return self.do_open(self.specialized_conn_class, req)
+
+
 class RequestWithMethod(urllib2.Request):
     def __init__(self, *args, **kwargs):
         self._method = kwargs.pop('method', None)
@@ -42,7 +62,10 @@ class RequestWithMethod(urllib2.Request):
 def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
     global CA_CERT_FILE
     CA_CERT_FILE = in_ca_cert_file
-    https_handler = VerifiedHTTPSHandler()
+    if in_ca_cert_file is None:
+        https_handler = UnverifiedHTTPSHandler()
+    else:
+        https_handler = VerifiedHTTPSHandler()
     url_opener = urllib2.build_opener(https_handler)
     headers_list = []
     for key, val in headers.iteritems():
