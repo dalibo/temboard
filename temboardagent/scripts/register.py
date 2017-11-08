@@ -7,6 +7,7 @@ from getpass import getpass
 import re
 import urllib2
 import json
+import logging
 
 from ..cli import cli, define_common_arguments
 from ..errors import (
@@ -16,8 +17,10 @@ from ..errors import (
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
 from ..httpsclient import https_request
-from ..configuration import LazyConfiguration
+from ..configuration import load_configuration, setup_logging
+from agent import list_options_specs
 
+logger = logging.getLogger(__name__)
 
 def ask_password():
     try:
@@ -98,14 +101,20 @@ def main(argv, environ):
 
     args = parser.parse_args(argv)
 
+    setup_logging(level='ERROR')
+
     # Loading agent configuration file.
-    config = LazyConfiguration(args.temboard_configfile)
+    config = load_configuration(
+        specs=list_options_specs(),
+        args=args, environ=environ,
+    )
+    config.setup_logging()
 
     # Load configuration from the configuration file.
     try:
         # Getting system/instance informations using agent's discovering API
         print("Getting system & PostgreSQL informations from the agent "
-              "(https://%s:%s/discover) .." % (args.host, args.port))
+              "(https://%s:%s/discover) ..." % (args.host, args.port))
         (code, content, cookies) = https_request(
                 None,
                 'GET',
@@ -114,12 +123,8 @@ def main(argv, environ):
                     "Content-type": "application/json"
                 })
         infos = json.loads(content)
-        for k, v in infos.iteritems():
-            print(" %s: %s" % (k, v))
 
-        # Authentication done by the UI
-        print("")
-        print("Login at %s." % (args.ui_address))
+        print("Login at %s ..." % (args.ui_address))
         username = ask_username()
         password = ask_password()
         (code, content, cookies) = https_request(
@@ -143,8 +148,7 @@ def main(argv, environ):
             groups = None
 
         # POSTing new instance
-        print("")
-        print("Registering instance/agent to %s .." % (args.ui_address))
+        print("Registering instance/agent to %s ..." % (args.ui_address))
         (code, content, cookies) = https_request(
                 None,
                 'POST',
@@ -157,7 +161,7 @@ def main(argv, environ):
                     'hostname': infos['hostname'],
                     'agent_key': config.temboard['key'],
                     'agent_address': args.host,
-                    'agent_port': config.temboard['port'],
+                    'agent_port': str(config.temboard['port']),
                     'cpu': infos['cpu'],
                     'memory_size': infos['memory_size'],
                     'pg_port': infos['pg_port'],
