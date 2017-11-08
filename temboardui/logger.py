@@ -36,16 +36,16 @@ class MultilineFormatter(Formatter):
 LOG_METHODS = {
     'stderr': {
         '()': 'logging.StreamHandler',
-        'formatter': 'full',
+        'formatter': 'minimal',
     },
     'file': {
         '()': 'logging.FileHandler',
         'mode': 'a',
-        'formatter': 'minimal',
+        'formatter': 'full',
     },
     'syslog': {
         '()': 'logging.handlers.SysLogHandler',
-        'formatter': 'minimal',
+        'formatter': 'full',
     }
 }
 
@@ -56,8 +56,13 @@ def generate_logging_config(config):
     LOG_METHODS['syslog']['facility'] = facility
     LOG_METHODS['syslog']['address'] = config.logging['destination']
 
-    format_ = (
+    format_minimal = (
         "temboard[%(process)5d]: [%(name)-24s] %(levelname)8s: "
+        "%(message)s"
+    )
+
+    format_full = (
+        "%(asctime)s temboard[%(process)d]: [%(name)s] %(levelname)s: "
         "%(message)s"
     )
 
@@ -67,11 +72,11 @@ def generate_logging_config(config):
         'formatters': {
             'minimal': {
                 '()': 'temboardui.logger.MultilineFormatter',
-                'format': format_,
+                'format': format_minimal,
             },
             'full': {
                 '()': 'temboardui.logger.MultilineFormatter',
-                'format': '%(asctime)s ' + format_,
+                'format': format_full,
             }
         },
         'handlers': {
