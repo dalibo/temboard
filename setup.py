@@ -3,6 +3,7 @@
 from setuptools import setup, find_packages
 import subprocess
 
+default_version = "1.1"
 try:
     # pip install mode
     with open('PKG-INFO') as fo:
@@ -20,7 +21,7 @@ except IOError:
             .strip().decode() + '--'
         ).split('-', 3)[:3]
     except Exception:
-        VERSION = '0'
+        VERSION = default_version
     else:
         VERSION = version
         if count:
@@ -59,6 +60,15 @@ setup(
             'share/temboard_ca_certs_CHANGEME.pem',
             'share/temboard.conf',
             'share/temboard.logrotate',
+        ]),
+        ('/usr/share/temboard', [
+            'share/temboard.conf',
+            'share/temboard.logrotate',
+            'share/create_repository.sh',
+        ]),
+        ('/usr/share/temboard/sql/', [
+            'share/sql/application.sql',
+            'share/sql/monitoring.sql',
         ]),
         ('lib/systemd/system', ['packaging/temboard.service']),
     ])
