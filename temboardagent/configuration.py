@@ -258,7 +258,7 @@ class MergedConfiguration(DotDict):
         old_plugins = self.temboard.plugins
 
         try:
-            self.load_file(self, self.temboard.configfile)
+            self.load_file(self.temboard.configfile)
         except Exception as e:
             raise ConfigurationError(str(e))
 
