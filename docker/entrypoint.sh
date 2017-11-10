@@ -15,10 +15,10 @@ cat > /etc/temboard/temboard.conf <<EOF
 home = /var/lib/temboard
 address = 0.0.0.0
 port = 8888
-ssl_cert_file = ${TEMBOARD_SSL_CERT}
-ssl_key_file = ${TEMBOARD_SSL_KEY}
-ssl_ca_cert_file = ${TEMBOARD_SSL_CA}
-cookie_secret = ${TEMBOARD_COOKIE_SECRET}
+ssl_cert_file = ${TEMBOARD_SSL_CERT-/usr/local/share/temboard/quickstart/temboard_CHANGEME.pem}
+ssl_key_file = ${TEMBOARD_SSL_KEY-/usr/local/share/temboard/quickstart/temboard_CHANGEME.key}
+ssl_ca_cert_file = ${TEMBOARD_SSL_CA-/usr/local/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem}
+cookie_secret = ${TEMBOARD_COOKIE_SECRET-SECRETKEYTOBECHANGED}
 
 [repository]
 host = ${PGHOST}
