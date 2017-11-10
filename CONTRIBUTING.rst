@@ -30,15 +30,13 @@ master as usual.
  Releasing
 ===========
 
-Choose the next version according to `PEP 440
-<https://www.python.org/dev/peps/pep-0440/#version-scheme>`_.
+Please follow the following steps:
 
-.. code-block::
-
-   git tag 1.1
-   git push --tags
-   make release
-
-Now build distro packages with ``make -C packaging build``. Ensure you ``NAME``
-and ``EMAIL`` env vars contain maintainer identification. See
-``packaging/README.rst`` for further details.
+- Choose the next version according to `PEP 440 <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
+- Update ``setup.py``, without committing.
+- Generate commit and tag with ``make release``.
+- Push commit in master and tag with ``git push`` and ``git push --tags``.
+- Push Python egg to PyPI using ``make upload``.
+- Finally build distro packages with ``NAME=… EMAIL=… make -C packaging build``.
+  ``NAME`` and ``EMAIL`` env vars contain maintainer identification. See
+  ``packaging/README.rst`` for further details.
