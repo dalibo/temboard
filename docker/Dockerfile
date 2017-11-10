@@ -2,7 +2,7 @@ FROM python:2.7-slim
 
 MAINTAINER Étienne BERSAC <etienne.bersac@dalibo.com>
 
-RUN apt-get update \
+RUN apt-get update -y \
     && apt-get install -y --no-install-recommends postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
