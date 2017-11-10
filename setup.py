@@ -1,34 +1,8 @@
 from setuptools import setup, find_packages
-import subprocess
-
-default_version = "1.1"
-
-try:
-    # pip install mode
-    with open('PKG-INFO') as fo:
-        for line in fo:
-            if not line.startswith('Version: '):
-                continue
-            VERSION = line.replace('Version: ', '').strip()
-            break
-except IOError:
-    try:
-        # Release mode
-        # git describe returns version[-count-gsha1].
-        version, count, sha = (
-            subprocess.check_output(["git", "describe", "--tags"])
-            .strip().decode() + '--'
-        ).split('-', 3)[:3]
-    except Exception:
-        VERSION = default_version
-    else:
-        VERSION = version
-        if count:
-            VERSION += '.dev%s' % (count,)
 
 setup(
     name='temboard-agent',
-    version=VERSION,
+    version='1.1',
     author='Dalibo',
     author_email='contact@dalibo.com',
     license='PostgreSQL',
