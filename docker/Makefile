@@ -1,6 +1,7 @@
 NAME="dalibo/temboard"
 
 build:
+	docker pull python:2.7-slim
 	docker build --tag $(NAME) .
 
 clean:

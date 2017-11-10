@@ -1,8 +1,7 @@
 FROM python:2.7-slim
 
-MAINTAINER Étienne BERSAC <etienne.bersac@dalibo.com>
-
-RUN apt-get update \
+RUN apt-get update -y \
+    && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
     && apt-get install -y --no-install-recommends postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
@@ -15,11 +14,6 @@ RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu
     && python -c 'import urllib; urllib.urlretrieve("https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh", "/usr/local/bin/wait-for-it")' \
     && chmod 0755 /usr/local/bin/wait-for-it \
     ;
-
-ENV TEMBOARD_COOKIE_SECRET SECRETKEYTOBECHANGED
-ENV TEMBOARD_SSL_CA /usr/local/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem
-ENV TEMBOARD_SSL_CERT /usr/local/share/temboard/quickstart/temboard_CHANGEME.pem
-ENV TEMBOARD_SSL_KEY /usr/local/share/temboard/quickstart/temboard_CHANGEME.key
 
 RUN useradd --home-dir /var/lib/temboard --create-home --system temboard
 VOLUME /var/lib/temboard
