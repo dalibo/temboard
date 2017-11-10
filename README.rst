@@ -2,7 +2,7 @@
  temBoard Agent
 ################
 
-| |Python| |CircleCI| |PyPI|
+| |Python| |CircleCI| |RTD| |PyPI|
 
 temBoard_ is a powerful management tool for PostgreSQL.
 
@@ -45,6 +45,10 @@ See `temBoard full documentation`_ for details on configuration.
 .. |Python| image:: https://img.shields.io/pypi/pyversions/temboard-agent.svg
    :target: https://www.python.org/
    :alt: Versions of python supported
+
+.. |RTD| image:: https://readthedocs.org/projects/temboard-agent/badge/?version=latest
+   :target: http://temboard-agent.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation
 
 .. _`temBoard`: http://temboard.io/
 .. _`temBoard full documentation`: http://temboard.readthedocs.io/

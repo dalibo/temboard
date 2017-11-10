@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(
+SETUP_KWARGS = dict(
     name='temboard-agent',
     version='1.1',
     author='Dalibo',
@@ -8,7 +8,6 @@ setup(
     license='PostgreSQL',
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
-    long_description=open('README.rst').read(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: No Input/Output (Daemon)",
@@ -20,7 +19,6 @@ setup(
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
-    packages=find_packages(),
     scripts=[
         'temboard-agent',
         'temboard-agent-adduser',
@@ -28,6 +26,10 @@ setup(
         'temboard-agent-register',
     ],
     data_files=[
+        ('share/temboard-agent/', [
+            'share/temboard-agent.conf',
+            'share/temboard-agent.logrotate',
+        ]),
         ('share/temboard-agent/quickstart/', [
             'share/temboard-agent.conf',
             'share/temboard-agent_CHANGEME.pem',
@@ -36,9 +38,13 @@ setup(
             'share/temboard-agent.logrotate',
             'share/users',
         ]),
-        ('/usr/share/temboard-agent/', [
-            'share/temboard-agent.conf',
-            'share/temboard-agent.logrotate',
-        ]),
         ('lib/systemd/system', ['packaging/temboard-agent.service']),
-    ])
+    ],
+)
+
+if __name__ == '__main__':
+    setup(**dict(
+        SETUP_KWARGS,
+        packages=find_packages(),
+        long_description=open('README.rst').read(),
+    ))

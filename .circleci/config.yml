@@ -1,6 +1,22 @@
 version: 2
+
 jobs:
-  build:
+  0-doc:
+    docker: [{image: "python:2.7"}]
+    working_directory: ~/temboard-agent
+    steps:
+    - checkout
+    - run:
+        name: Build documentation with Sphinx
+        command: |
+          pip install --upgrade -r doc/requirements-doc.txt
+          python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
+          make -C doc/ clean html
+    - store_artifacts:
+        path: README.html
+        destination: build/README.html
+
+  0-unit:
     docker:
       - image: python:2.7
         environment:
@@ -20,13 +36,16 @@ jobs:
             pip install --upgrade --requirement requirement-ci.txt --editable .
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboard-agent/
-            python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
             pytest test/unit/
             codecov
-      - store_artifacts:
-          path: README.html
-          destination: build/README.html
       - save_cache:
           key: temboard-agent-{{ .Branch }}
           paths:
             - "~/.cache/pip/"
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+    - 0-doc
+    - 0-unit
