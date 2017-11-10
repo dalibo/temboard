@@ -3,7 +3,7 @@ FROM python:2.7-slim
 MAINTAINER Étienne BERSAC <etienne.bersac@dalibo.com>
 
 RUN apt-get update -y \
-    # For docker client \
+    && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
     && apt-get install -y --no-install-recommends libltdl7 postgresql-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
