@@ -5,3 +5,4 @@ dist/
 docker-compose.override.yml
 docker-histfile
 temboard_agent.egg-info/
+doc/_build/
