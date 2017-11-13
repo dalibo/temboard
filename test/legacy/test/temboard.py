@@ -12,7 +12,7 @@ import ssl
 import socket
 import json
 
-import test.configtest as test_conf
+import configtest as test_conf
 
 # Add main temboard-agent module dir into sys.path
 # The goal is to import spc module
@@ -134,7 +134,7 @@ def agent_add_user(passwd_file_path, user, passwd):
     Add a new temboard-agent user.
     """
     (ret_code, stdout, stderr) = exec_command([
-                                    "../../temboard-agent-password",
+                                    "temboard-agent-password",
                                     "%s:%s" % (user, passwd)])
     if ret_code != 0:
         raise Exception(str(stderr))
@@ -166,7 +166,7 @@ def agent_start(pid_file, conf_file):
     """
     Start the agent.
     """
-    cmd = "../../temboard-agent -c %s -d -p %s" % (
+    cmd = "temboard-agent -c %s -d -p %s" % (
             conf_file,
             pid_file
             )
