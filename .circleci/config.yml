@@ -53,6 +53,27 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
+  0-func:
+    machine: true
+    steps:
+    - checkout
+    - run:
+        name: Install Docker Compose
+        command: |
+          set -x
+          curl -L https://github.com/docker/compose/releases/download/1.17.1/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
+          sudo chmod +x /usr/local/bin/docker-compose
+    - run:
+        name: Execute the tests
+        command: |
+          docker-compose -f test/legacy/docker-compose.yml up
+          docker-compose --file=test/legacy/docker-compose.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | while read code; do
+              if ! [ "$code" == "0" ]; then
+                 exit $code
+              fi
+          done
+
+
 workflows:
   version: 2
   pipeline:
@@ -60,3 +81,4 @@ workflows:
     - 0-doc
     - 0-rpm
     - 0-unit
+    - 0-func
