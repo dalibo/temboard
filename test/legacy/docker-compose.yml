@@ -10,15 +10,15 @@ services:
     environment:
       TBD_PGBIN: /usr/pgsql-9.4/bin
     command: /workspace/test/legacy/run_tests_docker.sh
-  tests_centos7_pg95:
-    build:
-      context: ../../
-      dockerfile: test/legacy/Dockerfile95
-    volumes:
-    - ../../:/workspace
-    environment:
-      TBD_PGBIN: /usr/pgsql-9.5/bin
-    command: /workspace/test/legacy/run_tests_docker.sh
+  #tests_centos7_pg95:
+    #build:
+      #context: ../../
+      #dockerfile: test/legacy/Dockerfile95
+    #volumes:
+    #- ../../:/workspace
+    #environment:
+      #TBD_PGBIN: /usr/pgsql-9.5/bin
+    #command: /workspace/test/legacy/run_tests_docker.sh
   tests_centos7_pg96:
     build:
       context: ../../
@@ -28,12 +28,12 @@ services:
     environment:
       TBD_PGBIN: /usr/pgsql-9.6/bin
     command: /workspace/test/legacy/run_tests_docker.sh
-  tests_centos7_pg10:
-    build:
-      context: ../../
-      dockerfile: test/legacy/Dockerfile10
-    volumes:
-    - ../../:/workspace
-    environment:
-      TBD_PGBIN: /usr/pgsql-10/bin
-    command: /workspace/test/legacy/run_tests_docker.sh
+  #tests_centos7_pg10:
+    #build:
+      #context: ../../
+      #dockerfile: test/legacy/Dockerfile10
+    #volumes:
+    #- ../../:/workspace
+    #environment:
+      #TBD_PGBIN: /usr/pgsql-10/bin
+    #command: /workspace/test/legacy/run_tests_docker.sh
