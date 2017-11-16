@@ -7,6 +7,7 @@ services:
       dockerfile: test/legacy/Dockerfile94
     volumes:
     - ../../:/workspace
+    - /tmp/workspace/dist:/tmp/dist
     environment:
       TBD_PGBIN: /usr/pgsql-9.4/bin
     command: /workspace/test/legacy/run_tests_docker.sh
@@ -25,6 +26,7 @@ services:
       dockerfile: test/legacy/Dockerfile96
     volumes:
     - ../../:/workspace
+    - /tmp/workspace/dist:/tmp/dist
     environment:
       TBD_PGBIN: /usr/pgsql-9.6/bin
     command: /workspace/test/legacy/run_tests_docker.sh

@@ -7,7 +7,14 @@
 # https://git.postgresql.org/gitweb/?p=pgrpms.git;a=blob;f=docker/Dockerfile-CentOS7-PG96;h=912e41d3a2f7aa6af8d36688e02f49f0dccb1ad3;hb=HEAD
 #
 
-cd /workspace
+top_srcdir=$(readlink -m $0/../../..)
+cd $top_srcdir
+# Ensure that setup.py exists (we are correctly located)
+test -f setup.py
+
+# Search for the proper RPM package
+rpmdist=$(rpm --eval '%dist')
+test -f /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
 
 yum_install() {
     local packages=$*
@@ -17,9 +24,13 @@ yum_install() {
 
 yum_install epel-release
 yum_install python python2-pip
-
-pip install -e .
 pip install pytest
+
+if ! rpm --query --queryformat= temboard-agent ; then
+    yum install -y /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
+    rpm --query --queryformat= temboard-agent
+fi
+
 
 # create a user to launch the tests, cannot be done as root
 if ! id testuser > /dev/null 2>&1; then
