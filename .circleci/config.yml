@@ -72,7 +72,7 @@ jobs:
     - run:
         name: Execute the tests
         command: |
-          docker-compose -f test/legacy/docker-compose.yml up
+          TBD_INSTALL_RPM=1 docker-compose -f test/legacy/docker-compose.yml up
           docker-compose --file=test/legacy/docker-compose.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | while read code; do
               if ! [ "$code" == "0" ]; then
                  exit $code

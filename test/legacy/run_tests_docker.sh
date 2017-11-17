@@ -12,10 +12,6 @@ cd $top_srcdir
 # Ensure that setup.py exists (we are correctly located)
 test -f setup.py
 
-# Search for the proper RPM package
-rpmdist=$(rpm --eval '%dist')
-test -f /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
-
 yum_install() {
     local packages=$*
     yum install -y $packages
@@ -26,9 +22,19 @@ yum_install epel-release
 yum_install python python2-pip
 pip install pytest
 
-if ! rpm --query --queryformat= temboard-agent ; then
+install_rpm=${TBD_INSTALL_RPM:-0}
+
+# For circle-ci tests we want to install using RPM
+# When launched locally we install via pip
+if (( install_rpm == 1 ))
+then
+    # Search for the proper RPM package
+    rpmdist=$(rpm --eval '%dist')
+    test -f /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
     yum install -y /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
     rpm --query --queryformat= temboard-agent
+else
+    pip install -e .
 fi
 
 
