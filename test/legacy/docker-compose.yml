@@ -12,17 +12,17 @@ services:
       - TBD_PGBIN=/usr/pgsql-9.4/bin
       - TBD_INSTALL_RPM
     command: /workspace/test/legacy/run_tests_docker.sh
-  #tests_centos7_pg95:
-    #build:
-      #context: ../../
-      #dockerfile: test/legacy/Dockerfile95
-    #volumes:
-    #- ../../:/workspace
-    #- /tmp/workspace/dist:/tmp/dist
-    #environment:
-      #- TBD_PGBIN=/usr/pgsql-9.5/bin
-      #- TBD_INSTALL_RPM
-    #command: /workspace/test/legacy/run_tests_docker.sh
+  tests_centos7_pg95:
+    build:
+      context: ../../
+      dockerfile: test/legacy/Dockerfile95
+    volumes:
+    - ../../:/workspace
+    - /tmp/workspace/dist:/tmp/dist
+    environment:
+      - TBD_PGBIN=/usr/pgsql-9.5/bin
+      - TBD_INSTALL_RPM
+    command: /workspace/test/legacy/run_tests_docker.sh
   tests_centos7_pg96:
     build:
       context: ../../
