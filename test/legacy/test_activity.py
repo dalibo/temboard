@@ -206,20 +206,12 @@ class TestActivity:
             status = e.code
         dict_data = json.loads(res)
 
-        # Get the number of backends
-        nb_backends = self._exec_query(
-                        'postgres',
-                        "SELECT COUNT(pid) AS nb FROM pg_stat_activity "
-                        "WHERE pid != pg_backend_pid()")[0]['nb']
-
         # Join the process
         p.join()
 
         assert status == 200
         assert 'rows' in dict_data
         assert type(dict_data['rows']) == list
-        # Check if the number of rows is equal to the number of backends
-        assert len(dict_data['rows']) == nb_backends
         assert type(dict_data['rows'][0]) == dict
         assert 'pid' in dict_data['rows'][0]
         assert 'database' in dict_data['rows'][0]
@@ -237,7 +229,8 @@ class TestActivity:
         assert type(dict_data['rows'][0]['pid']) == int
         assert type(dict_data['rows'][0]['database']) == unicode
         assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) == float
+        # can be float or 'N/A'
+        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
         assert type(dict_data['rows'][0]['memory']) == float
         assert type(dict_data['rows'][0]['read_s']) == unicode
         assert type(dict_data['rows'][0]['write_s']) == unicode

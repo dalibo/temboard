@@ -25,6 +25,10 @@ jobs:
     - run: ./rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: ~/workspace
+        paths:
+        - dist
 
   0-unit:
     docker:
@@ -53,6 +57,29 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
+  1-func:
+    machine: true
+    steps:
+    - checkout
+    - attach_workspace:
+        at: /tmp/workspace
+    - run:
+        name: Install Docker Compose
+        command: |
+          set -x
+          curl -L https://github.com/docker/compose/releases/download/1.17.1/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
+          sudo chmod +x /usr/local/bin/docker-compose
+    - run:
+        name: Execute the tests
+        command: |
+          TBD_INSTALL_RPM=1 docker-compose -f test/legacy/docker-compose.yml up
+          docker-compose --file=test/legacy/docker-compose.yml ps -q | xargs docker inspect -f '{{ .State.ExitCode }}' | while read code; do
+              if ! [ "$code" == "0" ]; then
+                 exit $code
+              fi
+          done
+
+
 workflows:
   version: 2
   pipeline:
@@ -60,3 +87,5 @@ workflows:
     - 0-doc
     - 0-rpm
     - 0-unit
+    - 1-func:
+        requires: [0-rpm, 0-unit]

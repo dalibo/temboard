@@ -222,7 +222,7 @@ class SqlProbe(Probe):
 
     def get_version(self, conninfo):
         conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'])
+                         conninfo['password'], conninfo['database'])
 
         try:
             conn.connect()

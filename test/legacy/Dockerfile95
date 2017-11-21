@@ -1,0 +1,21 @@
+#########################################################################
+#                                                                       #
+#    Dockerfile for CentOS7 PostgreSQL 9.5 with PGDG RPM packages.      #
+#                                                                       #
+#########################################################################
+
+FROM centos:7
+
+# Add the PostgreSQL PGP key to verify the official yum repository packages
+RUN rpm --import https://yum.postgresql.org/RPM-GPG-KEY-PGDG-95
+
+# Add PostgreSQL's repository. It contains the most recent stable release
+# of PostgreSQL, 9.5:
+RUN yum -q -y install https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-3.noarch.rpm
+
+# Update the Fedora and PostgreSQL repository metadata
+RUN yum -q -y install deltarpm
+RUN yum -q -y update
+
+# Install PostgreSQL 9.5 and some useful packages:
+RUN yum -q -y install postgresql95-server postgresql95-contrib procps-ng net-tools
