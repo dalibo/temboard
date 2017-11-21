@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 import os
 from sys import stdout, stderr
 from getpass import getpass
@@ -96,6 +96,7 @@ def main(argv, environ):
             "to a Temboard UI."
         ),
         add_help=False,
+        argument_default=UNDEFINED_ARGUMENT,
     )
     define_arguments(parser)
 
