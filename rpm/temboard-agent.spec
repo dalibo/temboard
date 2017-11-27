@@ -74,6 +74,7 @@ openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.p
 
 
 %if 0%{?rhel} >= 7
+systemctl daemon-reload
 if systemctl is-active temboard-agent &>/dev/null; then
     systemctl restart temboard-agent
 fi
