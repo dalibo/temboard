@@ -1,12 +1,12 @@
-version: '2'
+version: '3'
 
 services:
   debian:
-    image: buildpack-deps:${CODENAME}
+    image: buildpack-deps:${CODENAME-jessie}
     environment:
       # See dch(1)
-      DEBFULLNAME: ${NAME}
-      DEBEMAIL: ${EMAIL}
+      DEBFULLNAME: ${NAME-Noname}
+      DEBEMAIL: ${EMAIL-root@localhost}
     volumes:
     - .:/workspace
     - ../dist/:/dist
