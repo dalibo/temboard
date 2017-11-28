@@ -10,3 +10,5 @@ docker-compose.override.yml
 temboard.pid
 task_list
 node_modules
+packaging/temboard-*.tar.gz
+temboard.conf.patch

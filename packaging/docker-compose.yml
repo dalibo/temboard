@@ -11,3 +11,9 @@ services:
     - .:/workspace
     - ../dist/:/dist
     command: /workspace/mkdeb.sh
+
+  rpm:
+    image: centos:7
+    volumes:
+    - ..:/workspace
+    command: /workspace/packaging/rpm.sh
