@@ -34,7 +34,7 @@ python setup.py sdist --dist-dir rpm/
   rpm/temboard-agent.rpm.conf > rpm/temboard-agent.conf.patch
 
 # rpmbuild requires files to be owned by running uid
-chown --changes --recursive $(id -u):$(id -g) rpm/
+chown --recursive $(id -u):$(id -g) rpm/
 
 rpmbuild \
     --define "pkgversion $(python setup.py --version)" \
