@@ -4,8 +4,16 @@ cd $(readlink -m $0/../..)
 test -f setup.py
 
 teardown() {
-    chown --changes --recursive $(stat -c %u:%g setup.py) rpm/ $(readlink -e build/ dist/)
+    exit_code=$?
+    chown --recursive $(stat -c %u:%g setup.py) rpm/ $(readlink -e build/) $(readlink -e dist/)
     trap - EXIT
+
+    # If not on CI and we are docker entrypoint (PID 1), let's wait forever on
+    # error. This allows user to enter the container and debug after a build
+    # failure.
+    if [ -z "${CI-}" -a $$ = 1 -a $exit_code -gt 0 ] ; then
+        tail -f /dev/null
+    fi
 }
 
 yum_install() {
