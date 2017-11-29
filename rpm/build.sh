@@ -25,7 +25,7 @@ yum_install() {
 trap teardown EXIT INT TERM
 
 yum_install epel-release
-yum_install python python2-pip rpm-build
+yum_install python-setuptools rpm-build
 
 # Building sources in rpm/
 python setup.py sdist --dist-dir rpm/
