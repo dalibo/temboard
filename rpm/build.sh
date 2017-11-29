@@ -41,3 +41,8 @@ rpmbuild \
     --define "_topdir ${PWD}/dist/rpm" \
     --define "_sourcedir ${PWD}/rpm" \
     -ba rpm/temboard-agent.spec
+
+# Test it
+rpmdist=$(rpm --eval '%dist')
+yum install -y dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
+temboard-agent --help
