@@ -2,3 +2,7 @@
   height: 60vh;
   overflow: auto;
 }
+
+.input-setting {
+  width: 20%;
+}
