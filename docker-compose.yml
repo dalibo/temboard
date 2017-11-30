@@ -36,3 +36,4 @@ services:
       TEMBOARD_UI_URL: https://172.17.0.1:8888/
       TEMBOARD_REGISTER_HOST: 0.0.0.0
       TEMBOARD_REGISTER_PORT: 2345
+      TEMBOARD_GROUPS: default
