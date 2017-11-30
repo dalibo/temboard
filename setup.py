@@ -1,40 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-import subprocess
 
-default_version = "1.1"
-try:
-    # pip install mode
-    with open('PKG-INFO') as fo:
-        for line in fo:
-            if not line.startswith('Version: '):
-                continue
-            VERSION = line.replace('Version: ', '').strip()
-            break
-except IOError:
-    try:
-        # Release mode
-        # git describe returns version[-count-gsha1].
-        version, count, sha = (
-            subprocess.check_output(["git", "describe", "--tags"])
-            .strip().decode() + '--'
-        ).split('-', 3)[:3]
-    except Exception:
-        VERSION = default_version
-    else:
-        VERSION = version
-        if count:
-            VERSION += '.dev%s' % (count,)
-
-setup(
+SETUP_KWARGS = dict(
     name='temboard',
-    version=VERSION,
+    version='1.1',
     description='temBoard User Interface.',
-    long_description=open('README.rst').read(),
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
-    packages=find_packages(),
     scripts=['temboard'],
     install_requires=[
         'pandas>=0.15.0',
@@ -71,4 +44,11 @@ setup(
             'share/sql/monitoring.sql',
         ]),
         ('lib/systemd/system', ['packaging/temboard.service']),
-    ])
+    ]
+)
+
+setup(
+    long_description=open('README.rst').read(),
+    packages=find_packages(),
+    **SETUP_KWARGS
+)
