@@ -36,6 +36,10 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         new Date(start_date).getTime(),
         new Date(end_date).getTime()
       ],
+      xValueParser: function(x) {
+        var m = moment(x);
+        return m.toDate().getTime();
+      },
       drawCallback: function(g, is_initial) {
         add_visibility_cb(id, g, is_initial);
         add_export_button_callback(id, g, is_initial, title);
