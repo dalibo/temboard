@@ -12,15 +12,12 @@ Description=temBoard agent for PostgreSQL
 After=network.target syslog.target
 
 [Service]
-Type=forking
+Type=simple
 
 User=postgres
 Group=postgres
 
-PIDFile=/var/run/temboard-agent/temboard-agent.pid
-
-ExecStart=/usr/bin/temboard-agent -c /etc/temboard-agent/temboard-agent.conf -d -p /var/run/temboard-agent/temboard-agent.pid
-ExecStop=/bin/kill -TERM $MAINPID
+ExecStart=/usr/bin/temboard-agent -c /etc/temboard-agent/temboard-agent.conf
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
