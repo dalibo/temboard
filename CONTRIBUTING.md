@@ -2,6 +2,9 @@
 
 You can quickly set up a dev env with virtualenv and Docker Compose.
 
+If not already done, clone the
+[github repository](https://github.com/dalibo/temboard) on your machine.
+
 First, create a virtualenv for Python2.7, activate it. Then install temBoard and
 run it with:
 
@@ -10,7 +13,8 @@ $ pip install -e .
 $ temboard -c temboard.dev.conf --debug
 ```
 
-temBoard is now waiting for PostgreSQL. Launch services:
+temBoard is now waiting for a repository database. Launch services
+(agent + repository):
 
 ``` console
 $ docker-compose up

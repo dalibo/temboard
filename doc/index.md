@@ -14,5 +14,8 @@ temBoard is composed of 2 basic elements:
 You can set up a complete testing environment based on docker by following the
 [QUICKSTART](QUICKSTART.md) guide for more details.
 
+We also provide some documentation on how to start a dev environnement for the
+UI (server) in case you would like to contribute. See
+[CONTRIBUTING](CONTRIBUTING.md).
 
 For a regular installation, follow the [Installation guide](installation.md)
