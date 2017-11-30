@@ -109,3 +109,16 @@ def test_logging():
     )))
 
     generate_logging_config(**config)
+
+
+def test_pwd_denied(mocker):
+    mocker.patch('temboardagent.configuration.open', create=True)
+    cd = mocker.patch('temboardagent.configuration.os.chdir')
+
+    from temboardagent.configuration import MergedConfiguration
+
+    config = MergedConfiguration()
+    config.temboard = dict(configfile='pouet')
+
+    cd.side_effect = [None, OSError()]
+    config.load_file('/tmp/file.cfg')

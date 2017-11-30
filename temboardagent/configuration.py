@@ -246,7 +246,10 @@ class MergedConfiguration(DotDict):
         oldpwd = os.getcwd()
         os.chdir(os.path.dirname(filename))
         self.add_values(iter_configparser_values(parser, filename))
-        os.chdir(oldpwd)
+        try:
+            os.chdir(oldpwd)
+        except OSError as e:
+            logger.debug("Can't move back to %s: %s", oldpwd, e)
 
         # Compat with legacy
         self.configfile = self.temboard.configfile
