@@ -1,6 +1,6 @@
 import cStringIO
-import pandas
 import datetime
+from .pivot import pivot_timeserie
 
 
 def zoom_level(start, end):
@@ -247,9 +247,13 @@ TO STDOUT WITH CSV HEADER""" % (
     cur.copy_expert(query, data_buffer)
     cur.close()
 
-    df = pandas.read_csv(cStringIO.StringIO(data_buffer.getvalue()))
-    dfp = df.pivot(index='date', columns='dbname', values='size')
-    dfp.to_csv(data_pivot)
+    pivot_timeserie(
+        data_buffer,
+        index='date',
+        key='dbname',
+        value='size',
+        output=data_pivot
+    )
 
     data = data_pivot.getvalue()
     data_buffer.close()
@@ -836,9 +840,13 @@ TO STDOUT WITH CSV HEADER""" % (
     cur.copy_expert(query, data_buffer)
     cur.close()
 
-    df = pandas.read_csv(cStringIO.StringIO(data_buffer.getvalue()))
-    dfp = df.pivot(index='date', columns='mount_point', values='size')
-    dfp.to_csv(data_pivot)
+    pivot_timeserie(
+        data_buffer,
+        index='date',
+        key='mount_point',
+        value='size',
+        output=data_pivot
+    )
 
     data = data_pivot.getvalue()
     data_buffer.close()
@@ -894,9 +902,13 @@ TO STDOUT WITH CSV HEADER""" % (
     cur.copy_expert(query, data_buffer)
     cur.close()
 
-    df = pandas.read_csv(cStringIO.StringIO(data_buffer.getvalue()))
-    dfp = df.pivot(index='date', columns='mount_point', values='usage')
-    dfp.to_csv(data_pivot)
+    pivot_timeserie(
+        data_buffer,
+        index='date',
+        key='mount_point',
+        value='usage',
+        output=data_pivot
+    )
 
     data = data_pivot.getvalue()
     data_buffer.close()
@@ -1004,9 +1016,13 @@ TO STDOUT WITH CSV HEADER""" % (
     cur.copy_expert(query, data_buffer)
     cur.close()
 
-    df = pandas.read_csv(cStringIO.StringIO(data_buffer.getvalue()))
-    dfp = df.pivot(index='date', columns='spcname', values='size')
-    dfp.to_csv(data_pivot)
+    pivot_timeserie(
+        data_buffer,
+        index='date',
+        key='spcname',
+        value='size',
+        output=data_pivot
+    )
 
     data = data_pivot.getvalue()
     data_buffer.close()
