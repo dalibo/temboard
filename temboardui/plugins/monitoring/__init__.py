@@ -1,6 +1,6 @@
 import logging
 import os
-import dateutil
+from dateutil import parser as dt_parser
 import time
 
 import tornado.web
@@ -720,12 +720,12 @@ class MonitoringDataProbeHandler(CsvHandler):
             end_time = None
             if start:
                 try:
-                    start_time = dateutil.parser.parse(start)
+                    start_time = dt_parser.parse(start)
                 except ValueError as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
             if end:
                 try:
-                    end_time = dateutil.parser.parse(end)
+                    end_time = dt_parser.parse(end)
                 except ValueError as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
 
