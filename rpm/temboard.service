@@ -17,9 +17,10 @@ Type=forking
 User=temboard
 Group=temboard
 
-PIDFile=/var/run/temboard/temboard.pid
+RuntimeDirectory=temboard
+PIDFile=/run/temboard/temboard.pid
 
-ExecStart=/usr/bin/temboard -c /etc/temboard/temboard.conf -d -p /var/run/temboard/temboard.pid
+ExecStart=/usr/bin/temboard -c /etc/temboard/temboard.conf -d -p /run/temboard/temboard.pid
 ExecStop=/bin/kill -TERM $MAINPID
 ExecReload=/bin/kill -HUP $MAINPID
 

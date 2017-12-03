@@ -101,8 +101,6 @@ install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard.service
 %endif
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard
-# pidfile directory
-%{__install} -d %{buildroot}/var/run/temboard
 # home directory
 %{__install} -d %{buildroot}/var/lib/temboard
 
@@ -121,7 +119,6 @@ install -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard.service
 %{_unitdir}/temboard.service
 %endif
 
-%attr(-,temboard,temboard) /var/run/temboard
 %attr(-,temboard,temboard) /var/lib/temboard
 
 %changelog
