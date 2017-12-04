@@ -37,7 +37,7 @@ setup(
     packages=find_packages(),
     scripts=['temboard'],
     install_requires=[
-        'pandas>=0.15.0',
+        'python-dateutil>=1.5',
         'psycopg2>=2.5.4',
         'sqlalchemy>=0.9.8',
         'tornado>=3.2',
