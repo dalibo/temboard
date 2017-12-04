@@ -241,7 +241,11 @@ class MergedConfiguration(DotDict):
     def load_file(self, filename):
         parser = configparser.RawConfigParser()
         logger.info('Reading %s.', filename)
-        parser.read(filename)
+        try:
+            with open(filename, 'ro') as fp:
+                parser.readfp(fp)
+        except IOError as e:
+            raise ValueError(str(e))
 
         oldpwd = os.getcwd()
         os.chdir(os.path.dirname(filename))

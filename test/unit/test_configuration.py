@@ -122,3 +122,14 @@ def test_pwd_denied(mocker):
 
     cd.side_effect = [None, OSError()]
     config.load_file('/tmp/file.cfg')
+
+
+def test_load_file_denied(mocker):
+    o = mocker.patch('temboardagent.configuration.open', create=True)
+
+    from temboardagent.configuration import MergedConfiguration
+
+    config = MergedConfiguration()
+    o.side_effect = IOError()
+    with pytest.raises(ValueError):
+        config.load_file('/tmp/file.cfg')
