@@ -103,12 +103,12 @@ fi
 %preun
 %if 0%{?rhel} >= 7
 systemctl stop temboard-agent
+systemctl disable temboard-agent
 %endif
 
 
 %postun
 %if 0%{?rhel} >= 7
-systemctl disable temboard-agent
 systemctl daemon-reload
 %endif
 
