@@ -72,7 +72,6 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
             pg_socket_dir
             )
     exec_command(cmd, comm=False, shell=True)
-    time.sleep(1)
 
 
 def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):
