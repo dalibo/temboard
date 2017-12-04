@@ -29,5 +29,5 @@ TBD_PGBIN="/path/to/pg/9.6/bin" TBD_WORKPATH="/tmp" pytest -v test/legacy/test_*
 You can also run the tests via docker for several versions of Postgres.
 
 ```
-docker-compose up
+make build run
 ```
