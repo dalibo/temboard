@@ -74,8 +74,10 @@ openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.p
 
 
 %if 0%{?rhel} >= 7
-systemctl enable temboard-agent
-systemctl start temboard-agent
+systemctl daemon-reload
+if systemctl is-active temboard-agent &>/dev/null; then
+    systemctl restart temboard-agent
+fi
 %endif
 
 
@@ -96,18 +98,17 @@ systemctl start temboard-agent
 
 %attr(-,postgres,postgres) /var/log/temboard-agent
 %attr(-,postgres,postgres) /var/lib/temboard-agent
-%attr(-,postgres,postgres) /var/run/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
 %if 0%{?rhel} >= 7
 systemctl stop temboard-agent
+systemctl disable temboard-agent
 %endif
 
 
 %postun
 %if 0%{?rhel} >= 7
-systemctl disable temboard-agent
 systemctl daemon-reload
 %endif
 
