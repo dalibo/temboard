@@ -98,7 +98,6 @@ fi
 
 %attr(-,postgres,postgres) /var/log/temboard-agent
 %attr(-,postgres,postgres) /var/lib/temboard-agent
-%attr(-,postgres,postgres) /var/run/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
