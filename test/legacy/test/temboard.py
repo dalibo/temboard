@@ -318,6 +318,25 @@ def init_env():
         # Start the agent
         agent_start(test_env['agent']['pid_file'],
                     test_env['agent']['conf_file'])
+        # Ensure that agent is started, wait for 5 secs, then give up
+        start = time.time()
+        started = False
+        while time.time() - start < 5:
+            try:
+                (status, res) = temboard_request(
+                        test_env['agent']['ssl_cert_file'],
+                        method='GET',
+                        url='https://%s:%s/discover' % (
+                            test_env['agent']['host'],
+                            test_env['agent']['port']),
+                        )
+                if status == 200:
+                    started = True
+                    break
+            except urllib2.URLError:
+                pass
+            time.sleep(0.1)
+        assert started is True, 'Agent could not start on time'
         return test_env
     except Exception as e:
         # If anything goes wrong during the setup
@@ -415,8 +434,9 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
     https_handler = VerifiedHTTPSHandler()
     url_opener = urllib2.build_opener(https_handler)
     headers_list = []
-    for key, val in headers.iteritems():
-        headers_list.append((key, val))
+    if headers:
+        for key, val in headers.iteritems():
+            headers_list.append((key, val))
     url_opener.addheaders = headers_list
     if data:
         request = RequestWithMethod(url, data=json.dumps(data), method=method)
