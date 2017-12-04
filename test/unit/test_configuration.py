@@ -133,3 +133,14 @@ def test_load_file_denied(mocker):
     o.side_effect = IOError()
     with pytest.raises(ValueError):
         config.load_file('/tmp/file.cfg')
+
+
+def test_required():
+    from temboardagent.configuration import (
+        ConfigurationError, MergedConfiguration, OptionSpec,
+    )
+
+    spec = OptionSpec('section', 'req', default=OptionSpec.REQUIRED)
+    config = MergedConfiguration(specs=[spec])
+    with pytest.raises(ConfigurationError):
+        config.check_required()

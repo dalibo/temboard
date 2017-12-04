@@ -74,6 +74,8 @@ class PluginConfiguration(configparser.RawConfigParser):
 
 
 class OptionSpec(object):
+    REQUIRED = object()
+
     # Hold known name and default of an option.
     #
     # An option *must* be specified to follow the principle of *validated your
@@ -82,6 +84,9 @@ class OptionSpec(object):
     # Defining defaults here is agnostic from origin : argparse, environ,
     # ConfigParser, etc. The origin of configuration must not take care of
     # default nor validation.
+    #
+    # Set default to OptoinSpec.REQUIRED to enforce user definition of option
+    # value.
 
     def __init__(self, section, name, validator=None, default=None):
         self.section = section
@@ -100,6 +105,10 @@ class OptionSpec(object):
 
     def __hash__(self):
         return hash(str(self))
+
+    @property
+    def required(self):
+        return self.default is self.REQUIRED
 
     def validate(self, value):
         if not self.validator:
@@ -219,6 +228,13 @@ class MergedConfiguration(DotDict):
             section[spec.name] = value
             self.unvalidated_specs.remove(name)
 
+    def check_required(self):
+        for name in self.unvalidated_specs:
+            spec = self.specs[name]
+            if spec.required:
+                msg = "Missing %s:%s configuration" % (spec.section, spec.name)
+                raise ConfigurationError(msg)
+
     def load(self, args, environ):
         # Origins are loaded in order. First wins..
         #
@@ -234,6 +250,7 @@ class MergedConfiguration(DotDict):
         except ValueError as e:
             raise UserError(str(e))
 
+        self.check_required()
         self.add_values(iter_defaults(self.specs))
         self.plugins = load_plugins_configurations(self)
         self.loaded = True
