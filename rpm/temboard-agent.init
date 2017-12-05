@@ -113,7 +113,7 @@ case "$1" in
 	condrestart
 	;;
     *)
-	echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+	echo $"Usage: $0 {start|stop|restart|condrestart|try-restart|reload|force-reload}"
 	RETVAL=3
 esac
 
