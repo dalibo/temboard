@@ -53,6 +53,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %if 0%{?rhel} <= 6
 %{__install} -d %{buildroot}%{_initrddir}
 %{__install} -m 755 %{SOURCE1} %{buildroot}%{_initrddir}/temboard-agent
+rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent.service
 %endif
 
 %if 0%{?rhel} >= 7
