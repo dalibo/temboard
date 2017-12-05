@@ -14,7 +14,7 @@ class ColoredStreamHandler(logging.StreamHandler):
     }
 
     def format(self, record):
-        lines = super(ColoredStreamHandler, self).format(record)
+        lines = logging.StreamHandler.format(self, record)
         color = self._color_map.get(record.levelno, '39')
         lines = ''.join([
             '\033[0;%sm%s\033[0m' % (color, line)
@@ -25,7 +25,7 @@ class ColoredStreamHandler(logging.StreamHandler):
 
 class MultilineFormatter(logging.Formatter):
     def format(self, record):
-        s = super(MultilineFormatter, self).format(record)
+        s = logging.Formatter.format(self, record)
         if '\n' not in s:
             return s
 
