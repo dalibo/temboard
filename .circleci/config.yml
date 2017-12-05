@@ -17,10 +17,18 @@ jobs:
         destination: build/README.html
 
   0-rpm:
-    docker: [{image: "centos:7"}]
+    docker: [{image: "rpmbuild/centos7"}]
     working_directory: ~/workspace
     steps:
-    - run: yum install -y git ssh
+    - run:
+        name: Install git
+        command: |
+          # Fasten yum.
+          sudo rm -f \
+               /etc/yum.repos.d/*Sources.repo \
+               /etc/yum.repos.d/*Debuginfo.repo
+          sudo sed -i '/^\[updates\]/,$d' /etc/yum.repos.d/CentOS-Base.repo
+          sudo yum install -y git ssh
     - checkout
     - run: ./rpm/build.sh
     - store_artifacts:
