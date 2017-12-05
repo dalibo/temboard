@@ -85,7 +85,7 @@ class OptionSpec(object):
     # ConfigParser, etc. The origin of configuration must not take care of
     # default nor validation.
     #
-    # Set default to OptoinSpec.REQUIRED to enforce user definition of option
+    # Set default to OptionSpec.REQUIRED to enforce user definition of option
     # value.
     #
     # Option value can be None, meaning it is undefined.
