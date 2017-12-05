@@ -19,6 +19,10 @@ Patch1:        temboard-agent.conf.patch
 BuildArch:     noarch
 BuildRequires: python-setuptools
 Requires:      openssl
+%if 0%{?rhel} <= 6
+Requires: python-argparse
+Requires: python-logutils
+%endif
 
 %description
 Administration & monitoring PostgreSQL agent.
