@@ -56,6 +56,7 @@ start(){
 
 	mkdir -p $PIDDIR
 	chown ${RUNASUSER}: $PIDDIR
+	cd /tmp
 	daemon --user $RUNASUSER --pidfile $PIDFILE $DAEMON "$OPTS"
 	RETVAL=$?
 	echo
