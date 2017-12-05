@@ -8,7 +8,7 @@ teardown() {
     # rpmbuild requires files to be owned by running uid
     sudo chown --recursive $(id -u):$(id -g) rpm/
 
-    trap - EXIT
+    trap - EXIT INT TERM
 
     # If not on CI and we are docker entrypoint (PID 1), let's wait forever on
     # error. This allows user to enter the container and debug after a build
