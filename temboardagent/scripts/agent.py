@@ -51,6 +51,7 @@ def list_options_specs():
     yield OptionSpec(
         section, 'ssl_key_file',
         default=OptionSpec.REQUIRED, validator=v.file_)
+    yield OptionSpec(section, 'ssl_ca_cert_file', validator=v.file_)
     yield OptionSpec(section, 'key')
     yield OptionSpec(
         section, 'users',
