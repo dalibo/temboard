@@ -1,4 +1,8 @@
 import logging
+try:
+    from logging.config import dictConfig
+except ImportError:  # pragma: nocover
+    from logutils.dictconfig import dictConfig
 
 try:
     import configparser
@@ -20,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(**kw):
     logging_config = generate_logging_config(**kw)
-    logging.config.dictConfig(logging_config)
+    dictConfig(logging_config)
 
 
 class PluginConfiguration(configparser.RawConfigParser):
