@@ -5,7 +5,9 @@ test -f setup.py
 
 teardown() {
     exit_code=$?
-    chown --recursive $(stat -c %u:%g setup.py) rpm/ $(readlink -e build/) $(readlink -e dist/)
+    # rpmbuild requires files to be owned by running uid
+    sudo chown --recursive $(id -u):$(id -g) rpm/
+
     trap - EXIT
 
     # If not on CI and we are docker entrypoint (PID 1), let's wait forever on
@@ -16,16 +18,9 @@ teardown() {
     fi
 }
 
-yum_install() {
-    local packages=$*
-    yum install -y $packages
-    rpm --query --queryformat= $packages
-}
-
 trap teardown EXIT INT TERM
 
-yum_install epel-release
-yum_install python-setuptools rpm-build
+sudo yum-builddep -y rpm/temboard-agent.spec
 
 # Building sources in rpm/
 python setup.py sdist --dist-dir rpm/
@@ -34,7 +29,7 @@ python setup.py sdist --dist-dir rpm/
   rpm/temboard-agent.rpm.conf > rpm/temboard-agent.conf.patch
 
 # rpmbuild requires files to be owned by running uid
-chown --recursive $(id -u):$(id -g) rpm/
+sudo chown --recursive $(id -u):$(id -g) rpm/
 
 rpmbuild \
     --define "pkgversion $(python setup.py --version)" \
@@ -43,6 +38,5 @@ rpmbuild \
     -ba rpm/temboard-agent.spec
 
 # Test it
-rpmdist=$(rpm --eval '%dist')
-yum install -y dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
+sudo yum install -y dist/rpm/noarch/temboard-agent-*${DIST}*.noarch.rpm
 temboard-agent --help
