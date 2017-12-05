@@ -74,6 +74,8 @@ class PluginConfiguration(configparser.RawConfigParser):
 
 
 class OptionSpec(object):
+    REQUIRED = object()
+
     # Hold known name and default of an option.
     #
     # An option *must* be specified to follow the principle of *validated your
@@ -82,6 +84,11 @@ class OptionSpec(object):
     # Defining defaults here is agnostic from origin : argparse, environ,
     # ConfigParser, etc. The origin of configuration must not take care of
     # default nor validation.
+    #
+    # Set default to OptionSpec.REQUIRED to enforce user definition of option
+    # value.
+    #
+    # Option value can be None, meaning it is undefined.
 
     def __init__(self, section, name, validator=None, default=None):
         self.section = section
@@ -101,7 +108,14 @@ class OptionSpec(object):
     def __hash__(self):
         return hash(str(self))
 
+    @property
+    def required(self):
+        return self.default is self.REQUIRED
+
     def validate(self, value):
+        if value.value is None:
+            return value.value
+
         if not self.validator:
             return value.value
 
@@ -219,6 +233,13 @@ class MergedConfiguration(DotDict):
             section[spec.name] = value
             self.unvalidated_specs.remove(name)
 
+    def check_required(self):
+        for name in self.unvalidated_specs:
+            spec = self.specs[name]
+            if spec.required:
+                msg = "Missing %s:%s configuration" % (spec.section, spec.name)
+                raise ConfigurationError(msg)
+
     def load(self, args, environ):
         # Origins are loaded in order. First wins..
         #
@@ -234,6 +255,7 @@ class MergedConfiguration(DotDict):
         except ValueError as e:
             raise UserError(str(e))
 
+        self.check_required()
         self.add_values(iter_defaults(self.specs))
         self.plugins = load_plugins_configurations(self)
         self.loaded = True
@@ -241,12 +263,19 @@ class MergedConfiguration(DotDict):
     def load_file(self, filename):
         parser = configparser.RawConfigParser()
         logger.info('Reading %s.', filename)
-        parser.read(filename)
+        try:
+            with open(filename, 'ro') as fp:
+                parser.readfp(fp)
+        except IOError as e:
+            raise ValueError(str(e))
 
         oldpwd = os.getcwd()
         os.chdir(os.path.dirname(filename))
         self.add_values(iter_configparser_values(parser, filename))
-        os.chdir(oldpwd)
+        try:
+            os.chdir(oldpwd)
+        except OSError as e:
+            logger.debug("Can't move back to %s: %s", oldpwd, e)
 
         # Compat with legacy
         self.configfile = self.temboard.configfile

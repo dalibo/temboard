@@ -109,3 +109,38 @@ def test_logging():
     )))
 
     generate_logging_config(**config)
+
+
+def test_pwd_denied(mocker):
+    mocker.patch('temboardagent.configuration.open', create=True)
+    cd = mocker.patch('temboardagent.configuration.os.chdir')
+
+    from temboardagent.configuration import MergedConfiguration
+
+    config = MergedConfiguration()
+    config.temboard = dict(configfile='pouet')
+
+    cd.side_effect = [None, OSError()]
+    config.load_file('/tmp/file.cfg')
+
+
+def test_load_file_denied(mocker):
+    o = mocker.patch('temboardagent.configuration.open', create=True)
+
+    from temboardagent.configuration import MergedConfiguration
+
+    config = MergedConfiguration()
+    o.side_effect = IOError()
+    with pytest.raises(ValueError):
+        config.load_file('/tmp/file.cfg')
+
+
+def test_required():
+    from temboardagent.configuration import (
+        ConfigurationError, MergedConfiguration, OptionSpec,
+    )
+
+    spec = OptionSpec('section', 'req', default=OptionSpec.REQUIRED)
+    config = MergedConfiguration(specs=[spec])
+    with pytest.raises(ConfigurationError):
+        config.check_required()
