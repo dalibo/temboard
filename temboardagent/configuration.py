@@ -87,6 +87,8 @@ class OptionSpec(object):
     #
     # Set default to OptoinSpec.REQUIRED to enforce user definition of option
     # value.
+    #
+    # Option value can be None, meaning it is undefined.
 
     def __init__(self, section, name, validator=None, default=None):
         self.section = section
@@ -111,6 +113,9 @@ class OptionSpec(object):
         return self.default is self.REQUIRED
 
     def validate(self, value):
+        if value.value is None:
+            return value.value
+
         if not self.validator:
             return value.value
 
