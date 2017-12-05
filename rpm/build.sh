@@ -38,5 +38,9 @@ rpmbuild \
     -ba rpm/temboard-agent.spec
 
 # Test it
+if [ "${DIST}" = "el6" ] ; then
+    sudo yum install -y epel-release
+fi
+
 sudo yum install -y dist/rpm/noarch/temboard-agent-*${DIST}*.noarch.rpm
 temboard-agent --help

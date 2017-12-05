@@ -1,8 +1,12 @@
 version: '2'
 
 services:
-  centos7:
-    image: rpmbuild/centos7
+  centos6: &centos
+    image: rpmbuild/centos6
     volumes:
     - ../:/workspace
     command: /workspace/rpm/build.sh
+
+  centos7:
+    <<: *centos
+    image: rpmbuild/centos7
