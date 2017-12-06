@@ -30,16 +30,11 @@ if (( install_rpm == 1 ))
 then
     # Search for the proper RPM package
     rpmdist=$(rpm --eval '%dist')
-    test -f /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
-    yum install -y /tmp/dist/rpm/RPMS/noarch/temboard-agent-*${rpmdist}.noarch.rpm
+    rpm=$(readlink -e dist/rpm/noarch/temboard-agent-*${rpmdist}.noarch.rpm)
+    yum install -y $rpm
     rpm --query --queryformat= temboard-agent
 else
     pip install -e .
-fi
-
-# create a user to launch the tests, cannot be done as root
-if ! id testuser > /dev/null 2>&1; then
-    useradd --system testuser
 fi
 
 # Remove any .pyc file to avoid errors with pytest and cache

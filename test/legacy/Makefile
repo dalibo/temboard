@@ -5,4 +5,4 @@ build:
 
 run:
 	docker-compose up
-	if docker-compose ps -q | grep 'Exit [1-9]' ; then exit 1; fi
+	if docker-compose ps | grep 'Exit [1-9]' ; then exit 1; fi

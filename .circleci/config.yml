@@ -34,7 +34,7 @@ jobs:
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
-        root: ~/workspace
+        root: .
         paths:
         - dist
 
@@ -70,7 +70,7 @@ jobs:
     steps:
     - checkout
     - attach_workspace:
-        at: /tmp/workspace
+        at: ~/project
     - run:
         name: Install Docker Compose
         command: |
