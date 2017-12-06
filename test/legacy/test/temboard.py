@@ -338,11 +338,11 @@ def init_env():
             time.sleep(0.1)
         assert started is True, 'Agent could not start on time'
         return test_env
-    except Exception as e:
+    except Exception:
         # If anything goes wrong during the setup
         # then we drop the whole testing environnement.
         drop_env(test_env)
-        raise Exception(e)
+        raise
 
 
 def drop_env(test_env):
