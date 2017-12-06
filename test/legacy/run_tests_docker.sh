@@ -37,11 +37,6 @@ else
     pip install -e .
 fi
 
-# create a user to launch the tests, cannot be done as root
-if ! id testuser > /dev/null 2>&1; then
-    useradd --system testuser
-fi
-
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
 TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vs -p no:cacheprovider test/legacy/
