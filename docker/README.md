@@ -19,12 +19,3 @@ This docker image targets development environment and demo.
   credentials of the UI for autoregister and monitoring report.
 - `TEMBOARD_SSL_CA`, `TEMBOARD_SSL_CERT` and `TEMBOARD_SSL_KEY` for HTTPS.
 - `TEMBOARD_USERS`: a space separated list of `login:password`.
-
-
-## Updating docker image
-
-Refresh temBoard image with:
-
-``` console
-$ make clean build push
-```
