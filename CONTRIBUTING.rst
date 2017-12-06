@@ -37,6 +37,8 @@ Please follow the following steps:
 - Generate commit and tag with ``make release``.
 - Push commit in master and tag with ``git push`` and ``git push --tags``.
 - Push Python egg to PyPI using ``make upload``.
+- Trigger docker master build from
+  https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/.
 - Finally build distro packages with ``NAME=… EMAIL=… make -C packaging build``.
   ``NAME`` and ``EMAIL`` env vars contain maintainer identification. See
   ``packaging/README.rst`` for further details.

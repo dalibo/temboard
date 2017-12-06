@@ -11,6 +11,3 @@ clean:
 # the container to test it.
 dev:
 	docker-compose -f ../docker-compose.yml -f ./docker-compose.dev.yml up
-
-push:
-	docker push $(NAME)
