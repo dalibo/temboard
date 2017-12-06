@@ -1,8 +1,18 @@
 version: '2'
 
 services:
+  centos6_pg10:
+    image: dalibo/temboard-agent-func:centos6
+    volumes:
+    - ../../:/workspace
+    environment:
+      - CI
+      - TBD_PGBIN=/usr/pgsql-10/bin
+      - TBD_INSTALL_RPM
+    command: /workspace/test/legacy/run_tests_docker.sh
+
   tests_centos7_pg94:
-    image: dalibo/temboard-agent-func
+    image: dalibo/temboard-agent-func:centos7
     volumes:
     - ../../:/workspace
     environment:
@@ -11,7 +21,7 @@ services:
       - TBD_INSTALL_RPM
     command: /workspace/test/legacy/run_tests_docker.sh
   tests_centos7_pg95:
-    image: dalibo/temboard-agent-func
+    image: dalibo/temboard-agent-func:centos7
     volumes:
     - ../../:/workspace
     environment:
@@ -20,7 +30,7 @@ services:
       - TBD_INSTALL_RPM
     command: /workspace/test/legacy/run_tests_docker.sh
   tests_centos7_pg96:
-    image: dalibo/temboard-agent-func
+    image: dalibo/temboard-agent-func:centos7
     volumes:
     - ../../:/workspace
     environment:
@@ -29,7 +39,7 @@ services:
       - TBD_INSTALL_RPM
     command: /workspace/test/legacy/run_tests_docker.sh
   tests_centos7_pg10:
-    image: dalibo/temboard-agent-func
+    image: dalibo/temboard-agent-func:centos7
     volumes:
     - ../../:/workspace
     environment:

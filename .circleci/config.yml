@@ -96,4 +96,4 @@ workflows:
     - 0-rpm-centos7
     - 0-unit
     - 1-func:
-        requires: [0-rpm-centos7, 0-unit]
+        requires: [0-rpm-centos6, 0-rpm-centos7, 0-unit]
