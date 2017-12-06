@@ -1,4 +1,8 @@
 import logging
+try:
+    from logging.config import dictConfig
+except ImportError:  # pragma: nocover
+    from logutils.dictconfig import dictConfig
 
 try:
     import configparser
@@ -20,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(**kw):
     logging_config = generate_logging_config(**kw)
-    logging.config.dictConfig(logging_config)
+    dictConfig(logging_config)
 
 
 class PluginConfiguration(configparser.RawConfigParser):
@@ -202,7 +206,8 @@ class MergedConfiguration(DotDict):
     def __init__(self, specs=None):
         # Spec is a flat dict of OptionSpec.
         specs = specs or {}
-        specs = specs if isinstance(specs, dict) else {s: s for s in specs}
+        if not isinstance(specs, dict):
+            specs = dict((s, s) for s in specs)
 
         # Add required configfile option
         spec = OptionSpec(
@@ -220,7 +225,7 @@ class MergedConfiguration(DotDict):
     def add_values(self, values):
         # Search missing values in values and validate them.
 
-        values = {v.name: v for v in values}
+        values = dict((v.name, v) for v in values)
         for name in self.unvalidated_specs[:]:
             try:
                 value = values[name]

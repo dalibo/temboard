@@ -19,6 +19,10 @@ Patch1:        temboard-agent.conf.patch
 BuildArch:     noarch
 BuildRequires: python-setuptools
 Requires:      openssl
+%if 0%{?rhel} <= 6
+Requires: python-argparse
+Requires: python-logutils
+%endif
 
 %description
 Administration & monitoring PostgreSQL agent.
@@ -53,6 +57,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %if 0%{?rhel} <= 6
 %{__install} -d %{buildroot}%{_initrddir}
 %{__install} -m 755 %{SOURCE1} %{buildroot}%{_initrddir}/temboard-agent
+rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent.service
 %endif
 
 %if 0%{?rhel} >= 7
