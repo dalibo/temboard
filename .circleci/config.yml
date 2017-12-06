@@ -1,5 +1,23 @@
 version: 2
 
+.rpm: &rpm
+  working_directory: ~/workspace
+  steps:
+  - run:
+      name: Remove old git
+      command: |
+        set -ex
+        git --version
+        if ! git --version | grep 1.8 ; then sudo yum remove -y git ; fi
+  - checkout
+  - run: ./rpm/build.sh
+  - store_artifacts:
+      path: ~/workspace/dist/
+  - persist_to_workspace:
+      root: .
+      paths:
+      - dist/rpm/noarch/*.rpm
+
 jobs:
   0-doc:
     docker: [{image: "python:2.7"}]
@@ -16,27 +34,13 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-rpm:
+  0-rpm-centos6:
+    docker: [{image: "rpmbuild/centos6"}]
+    <<: *rpm
+
+  0-rpm-centos7:
     docker: [{image: "rpmbuild/centos7"}]
-    working_directory: ~/workspace
-    steps:
-    - run:
-        name: Install git
-        command: |
-          # Fasten yum.
-          sudo rm -f \
-               /etc/yum.repos.d/*Sources.repo \
-               /etc/yum.repos.d/*Debuginfo.repo
-          sudo sed -i '/^\[updates\]/,$d' /etc/yum.repos.d/CentOS-Base.repo
-          sudo yum install -y git ssh
-    - checkout
-    - run: ./rpm/build.sh
-    - store_artifacts:
-        path: ~/workspace/dist/
-    - persist_to_workspace:
-        root: .
-        paths:
-        - dist
+    <<: *rpm
 
   0-unit:
     docker:
@@ -88,7 +92,8 @@ workflows:
   pipeline:
     jobs:
     - 0-doc
-    - 0-rpm
+    - 0-rpm-centos6
+    - 0-rpm-centos7
     - 0-unit
     - 1-func:
-        requires: [0-rpm, 0-unit]
+        requires: [0-rpm-centos7, 0-unit]
