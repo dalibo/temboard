@@ -1,7 +1,5 @@
 FROM python:2.7-slim
 
-MAINTAINER Étienne BERSAC <etienne.bersac@dalibo.com>
-
 RUN apt-get update -y \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
     && apt-get install -y --no-install-recommends libltdl7 postgresql-client \
@@ -14,7 +12,7 @@ VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
 
 RUN mkdir -p /etc/temboard-agent/ \
-&& chown -R temboard. /etc/temboard-agent
+    && chown -R temboard: /etc/temboard-agent
 VOLUME /etc/temboard-agent
 
 RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64", "/usr/local/bin/gosu")' \
@@ -28,5 +26,3 @@ ENTRYPOINT ["gosu", "temboard", "docker-entrypoint.sh"]
 CMD ["temboard-agent"]
 
 RUN pip install --no-cache-dir https://github.com/dalibo/temboard-agent/archive/master.zip
-
-EXPOSE 2345

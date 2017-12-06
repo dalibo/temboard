@@ -10,6 +10,8 @@ services:
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
+    labels:
+      com.dnsdock.alias: postgres.temboard.docker
 
   ui:
     image: dalibo/temboard:latest
@@ -21,6 +23,8 @@ services:
       PGPASSWORD: temboard
     ports:
       - "8888:8888"
+    labels:
+      com.dnsdock.alias: www.temboard.docker
 
   instance:
     image: postgres:9.6
@@ -30,6 +34,8 @@ services:
     networks:
       default:
         aliases: [instance.fqdn]
+    labels:
+      com.dnsdock.alias: instance.temboard.docker
 
   agent:
     image: dalibo/temboard-agent
@@ -50,3 +56,5 @@ services:
     links:
       - instance
     command: tail -f /dev/null
+    labels:
+      com.dnsdock.alias: agent.temboard.docker
