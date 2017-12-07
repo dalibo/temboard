@@ -27,6 +27,8 @@ def Worker(commands, command, config):
 
     try:
         get_worker(command.worker)(commands, command, config)
+    except KeyboardInterrupt:
+        return
     except (AttributeError, Exception) as e:
         logger.error(str(e))
 
@@ -65,6 +67,8 @@ def Scheduler(commands, queue_in, config, sessions):
             # Fetch one new input from the command queue.
             # There is a 0.5s second timeout and the call isn't blocking.
             command = queue_in.get(True, 0.5)
+        except KeyboardInterrupt:
+            break
         except Exception:
             # No new command.
             pass
