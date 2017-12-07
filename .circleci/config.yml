@@ -1,0 +1,52 @@
+version: 2
+
+jobs:
+  0-lint:
+    docker: [{image: "python:2.7"}]
+    working_directory: /workspace
+    steps:
+      - checkout
+      - &restore_cache
+        restore_cache:
+          keys:
+            - temboard-{{ .Branch }}
+            - temboard-master
+      - &python_setup
+        run:
+          name: Setup python environment
+          command: |
+            pip install --upgrade --requirement requirements-ci.txt --editable .
+
+      - run:
+          name: Lint
+          command: |
+            # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
+            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            flake8 temboard temboardui
+            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+      - &save_cache
+        save_cache:
+          key: temboard-{{ .Branch }}
+          paths: ["~/.cache/pip/"]
+
+  0-unit:
+    docker: [{image: "python:2.7"}]
+    working_directory: /workspace
+    steps:
+      - checkout
+      - *restore_cache
+      - *python_setup
+      - run:
+          name: Python tests
+          command: |
+            pytest -vv --showlocals --strict --full-trace --cov=temboardui --cov-report=term --cov-report=xml test/
+            codecov
+      - *save_cache
+
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+    - 0-lint
+    - 0-unit
