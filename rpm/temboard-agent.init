@@ -101,6 +101,9 @@ case "$1" in
     start)
 	start
 	;;
+    status)
+    status -p $PIDFILE temboard-agent
+    ;;
     stop)
 	stop
 	;;
@@ -114,7 +117,7 @@ case "$1" in
 	condrestart
 	;;
     *)
-	echo $"Usage: $0 {start|stop|restart|condrestart|try-restart|reload|force-reload}"
+	echo $"Usage: $0 {start|status|stop|restart|condrestart|try-restart|reload|force-reload}"
 	RETVAL=3
 esac
 
