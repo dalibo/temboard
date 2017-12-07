@@ -10,6 +10,8 @@ Installation and configuration
 
    temboard-agent-install-sources
    temboard-agent-configuration
+   contributing
+
 
 REST API documentation
 ----------------------

@@ -84,6 +84,6 @@ class AutotemBoardDirective(Directive):
 
 
 def setup(app):
-    if 'sphinxcontrib.httpdomain' not in app.extensions:
+    if 'http' not in app.domains:
         httpdomain.setup(app)
     app.add_directive('autotemboard', AutotemBoardDirective)
