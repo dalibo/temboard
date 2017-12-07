@@ -36,7 +36,7 @@ def cli(main):
 
         retcode = 1
         try:
-            setup_logging(level='DEBUG' if debug else 'INFO')
+            setup_logging(level='DEBUG' if debug else 'ERROR')
             logger.debug("Starting temBoard agent.")
             retcode = main(argv, environ) or 1
         except KeyboardInterrupt:

@@ -102,12 +102,13 @@ def main(argv, environ):
         specs=list_options_specs(),
         args=args, environ=environ,
     )
-    config.setup_logging()
-    logger.info("Starting main process.")
 
     # Run temboard-agent as a background daemon.
     if (config.temboard.daemonize):
         daemonize(config.temboard.pidfile)
+
+    config.setup_logging()
+    logger.info("Starting main process.")
 
     # Purge all data queues at start time excepting metrics & notifications.
     purge_queue_dir(config.temboard['home'],
