@@ -1,0 +1,47 @@
+##############
+ Contributing
+##############
+
+
+Reporting Issue & Submitting a Patch
+====================================
+
+We use `dalibo/temboard-agent <https://github.com/dalibo/temboard-agent>`_ to
+track issue and review contribution. Fork the main repository and open a PR
+against ``master`` as usual.
+
+
+Docker Development Environment
+==============================
+
+With Docker & Compose, you can run your code like this:
+
+.. code-block:: console
+
+   $ docker-compose up -d
+   $ docker-compose exec agent bash
+   # pip install -e /usr/local/src/temboard-agent/
+   # gosu temboard temboard-agent -c /etc/temboard-agent/temboard-agent.conf
+
+Goto https://0.0.0.0:8888/ to add your instance with address ``agent``, port
+``2345`` and key ``key_for_agent_dev``.
+
+That's it !
+
+
+Releasing
+=========
+
+Releasing a new version of temBoard agent requires write access to master on
+main repository, PyPI project and Docker Hub repository.
+
+Please follow these steps:
+
+- Choose the next version according to `PEP 440
+  <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
+- Update ``setup.py``, without committing.
+- Generate commit and tag with ``make release``.
+- Push commit to master and tag with ``git push`` and ``git push --tags``.
+- Push Python egg to PyPI using ``make upload``.
+- Trigger docker master build from
+  https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/.
