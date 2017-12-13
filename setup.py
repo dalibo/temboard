@@ -18,6 +18,16 @@ SETUP_KWARGS = dict(
     include_package_data=True,
     zip_safe=False,
     url='https://github.com/dalibo/temboard/',
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 2 :: Only",
+        "Topic :: Database :: Database Engines/Servers",
+        "Topic :: System :: Monitoring",
+    ],
     data_files=[
         ('share/temboard', [
             'share/create_repository.sh',
