@@ -1,4 +1,4 @@
-<h1>Server installation from PyPI</h1>
+<h1>Server installation from sources</h1>
 
 ## Dependencies
 
@@ -14,7 +14,8 @@
 Proceed with the installation of the UI:
 
 ```
-sudo pip install temboard
+cd temboard/
+sudo pip install .
 ```
 
 ## Prepare directories and files
@@ -22,7 +23,6 @@ sudo pip install temboard
 Creation of directories for the configuration file and SSL files:
 ```
 sudo mkdir /etc/temboard
-sudo mkdir /etc/temboard/ssl
 ```
 
 Logging directory:
@@ -37,12 +37,12 @@ sudo mkdir /var/run/temboard
 
 Copy the sample configuration file:
 ```
-sudo cp /usr/share/temboard/temboard.conf.sample /etc/temboard/temboard.conf
+sudo cp /usr/share/temboard/quickstart/temboard.conf /etc/temboard/temboard.conf
 ```
 
 Copy the logrotate configuration file:
 ```
-sudo cp /usr/share/temboard/temboard.logrotate /etc/logrotate.d/temboard
+sudo cp /usr/share/temboard/quickstart/temboard.logrotate /etc/logrotate.d/temboard
 ```
 
 ## Users
@@ -55,7 +55,6 @@ sudo useradd -M -r temboard
 sudo chown -R temboard.temboard /etc/temboard/
 sudo chown -R temboard.temboard /var/log/temboard/
 sudo chown -R temboard.temboard /var/run/temboard/
-sudo chmod 600 /etc/temboard/ssl/*
 sudo chmod 600 /etc/temboard/temboard.conf
 ```
 
@@ -64,35 +63,36 @@ sudo chmod 600 /etc/temboard/temboard.conf
 ### Using provided SSL certificate
 `temboard` provides a ready to use self-signed SSL certifcate located in `/usr/share/temboard/quickstart` directory, if you don't want to use it, you can create a new one with the `openssl` binary.
 ```
-sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.key /etc/temboard/ssl/.
-sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.pem /etc/temboard/ssl/.
-sudo chown temboard.temboard /etc/temboard/ssl/*
+sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.key /etc/temboard/.
+sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.pem /etc/temboard/.
+sudo chown temboard:temboard /etc/temboard/*
 ```
 
 ### Build a new self-signed certificate
 
 To build a new SSL certifcate:
 ```
-sudo -u temboard openssl req -new -x509 -days 365 -nodes -out /etc/temboard/ssl/localhost.pem -keyout /etc/temboard/ssl/localhost.key
+sudo -u temboard openssl req -new -x509 -days 365 -nodes -out /etc/temboard/localhost.pem -keyout /etc/temboard/localhost.key
 ```
 
-Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file need to be set respectively to `/etc/temboard/ssl/localhost.pem` and `/etc/temboard/ssl/localhost.key`.
+Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file need to be set respectively to `localhost.pem` and `localhost.key`.
 
 ### CA certificate file
 
 Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To enable SSL cert. check (THIS IS NOT MANDATORY), the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. temBoard embeds a default CA cert. file containing agent's default SSL certificate.
 
 ```
-sudo cp /usr/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
+sudo cp /usr/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem /etc/temboard/ca_certs_localhost.pem
 ```
 
-`ssl_ca_cert_file` parameter in section `[temboard]` from the configuration file needs to be set to `/etc/temboard/ssl/ca_certs_localhost.pem`.
+`ssl_ca_cert_file` parameter in section `[temboard]` from the configuration file needs to be set to `ca_certs_localhost.pem`.
 
 If you don't want to enable SSL cert. check, please comment this parameter in the configuration file.
 
 ### Restrictions on SSL files
 ```
-sudo chmod 0600 /etc/temboard/ssl/*
+sudo chmod 0600 /etc/temboard/*.key
+sudo chmod 0600 /etc/temboard/*.pem
 ```
 
 ## Repository

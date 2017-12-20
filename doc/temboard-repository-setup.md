@@ -1,19 +1,10 @@
 <h1>Repository Setup</h1>
 
-The `repository` is a PostgreSQL (>=9.5) database. It let temboard store its data, including users, agent registration and metrics data.
+The `repository` is a PostgreSQL (>=9.5) database. It lets temboard store data, users, agent registration and monitoring data.
 
 ## Configuration
 
-To ensure the browsing of the web interface is fast enough, please note the `work_mem` parameter PostgreSQL cluster hosting the repository should be set to at least `16MB`.
-
-## Setup
-
-To acces the `repository`, `temboard` needs to have its own user and database. To create them on a typical PostgreSQL setup, run the following commands:
-
-```
-sudo -u postgres createuser temboard -l -P
-sudo -u postgres createdb -O temboard temboard
-```
+To ensure browsing of the web interface is fast enough, please note `work_mem` parameter PostgreSQL cluster hosting the repository should be set to at least `16MB`.
 
 ## Authentication with password
 
@@ -33,14 +24,21 @@ If the PostgreSQL cluster is on th different host, replace `127.0.0.1/32` by the
 
 ## Installation
 
-`temboard` SQL schema must be loaded. The schema is stored in the SQL files located in `/usr/share/temboard` after the installation:
+To proceed with user and database creation, we're providing the script `create_repository.sh` located in `/usr/share/temboard`. This script must connects to the repository server with super-user privileges. By default, it tries to connect to local socket (`/var/run/postgresql`) and loads data structure into `temboard` database. Here is the list of environnement variables that can be used to change script's behaviour :
+- `PGHOST` : repository host
+- `PGUSER` : repository super-user
+- `PGPASSWORD` : repository super-user's password
+- `PGPORT` : repository listening TCP port
+- `TEMBOARD_PASSWORD` : defines `temboard` user's password
+
+Local usage:
 ```
-psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/application.sql temboard
+sudo -u postgres /usr/share/temboard/create_repository.sh
 ```
 
-If you plan to use the plugin `monitoring`:
+Remote usage:
 ```
-psql -U temboard -1 -v'ON_ERROR_STOP=on' -f /usr/share/temboard/monitoring.sql temboard
+PGUSER=postgres PGHOST=repository.location PGPASSWORD=xxxxxxx /usr/share/temboard/create_repository.sh
 ```
 
 ## Configuration of temBoard
