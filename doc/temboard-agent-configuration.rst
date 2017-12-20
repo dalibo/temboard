@@ -28,13 +28,13 @@ temboard-agent embeds a lightweight HTTPS server aimed to serve its API, thus it
 Using provided SSL certificate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It provides a ready to use self-signed SSL certifcate located in ``/usr/share/temboard-agent`` directory, if you don't want to use it, you can create a new one with the ``openssl`` binary.
+It provides a ready to use self-signed SSL certifcate located in ``/usr/share/temboard-agent/quickstart`` directory, if you don't want to use it, you can create a new one with the ``openssl`` binary.
 
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
-    sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
     sudo chown postgres:postgres /etc/temboard-agent/ssl/*
 
 
@@ -56,7 +56,7 @@ CA certificate file
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 
 ``ssl_ca_cert_file`` parameter in section ``[monitoring]`` from the configuration file needs to be set to ``/etc/temboard-agent/ssl/ca_certs_localhost.pem``.
 
