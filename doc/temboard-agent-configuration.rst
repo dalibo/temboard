@@ -33,9 +33,9 @@ It provides a ready to use self-signed SSL certifcate located in ``/usr/share/te
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
-    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
-    sudo chown postgres:postgres /etc/temboard-agent/ssl/*
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key /etc/temboard-agent/.
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem /etc/temboard-agent/.
+    sudo chown postgres:postgres /etc/temboard-agent/*
 
 
 Build a new self-signed certificate
@@ -45,9 +45,9 @@ To build a new SSL certifcate:
 
 .. code-block:: bash
 
-    sudo -u postgres openssl req -new -x509 -days 365 -nodes -out /etc/temboard-agent/ssl/localhost.pem -keyout /etc/temboard-agent/ssl/localhost.key
+    sudo -u postgres openssl req -new -x509 -days 365 -nodes -out /etc/temboard-agent/localhost.pem -keyout /etc/temboard-agent/localhost.key
 
-Then, ``ssl_cert_file`` and ``ssl_key_file`` parameters from ``temboard-agent.conf`` file need to be set respectively to ``/etc/temboard-agent/ssl/localhost.pem`` and ``/etc/temboard-agent/ssl/localhost.key``.
+Then, ``ssl_cert_file`` and ``ssl_key_file`` parameters from ``temboard-agent.conf`` file need to be set respectively to ``localhost.pem`` and ``localhost.key``.
 
 CA certificate file
 ^^^^^^^^^^^^^^^^^^^
@@ -56,9 +56,9 @@ CA certificate file
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ca_certs_localhost.pem
 
-``ssl_ca_cert_file`` parameter in section ``[monitoring]`` from the configuration file needs to be set to ``/etc/temboard-agent/ssl/ca_certs_localhost.pem``.
+``ssl_ca_cert_file`` parameter in section ``[monitoring]`` from the configuration file needs to be set to ``ca_certs_localhost.pem``.
 
 If you don't want to enable SSL cert. check, please comment ``ssl_ca_cert_file`` parameter.
 
@@ -67,7 +67,8 @@ Restrictions on SSL files
 
 .. code-block:: bash
 
-    sudo chmod 0600 /etc/temboard-agent/ssl/*
+    sudo chmod 0600 /etc/temboard-agent/*.key
+    sudo chmod 0600 /etc/temboard-agent/*.pem
 
 Access to PostgreSQL Cluster
 ----------------------------
@@ -126,8 +127,8 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
   - ``address``: IP v4 address that the agent will listen on. Default: ``0.0.0.0`` (all);
   - ``users``: Path to the file containing the list of the users allowed to use the ``HTTP API``. Default: ``/etc/temboard-agent/users``;
   - ``plugins``: Array of plugin (name) to load. Default: ``["monitoring", "dashboard", "pgconf", "administration", "activity"]``;
-  - ``ssl_cert_file``: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: ``/etc/temboard-agent/ssl/temboard-agent_CHANGEME.pem``;
-  - ``ssl_key_file``: Path to SSL private key file. Default: ``/etc/temboard-agent/ssl/temboard-agent_CHANGEME.key``;
+  - ``ssl_cert_file``: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: ``/etc/temboard-agent/temboard-agent_CHANGEME.pem``;
+  - ``ssl_key_file``: Path to SSL private key file. Default: ``/etc/temboard-agent/temboard-agent_CHANGEME.key``;
   - ``home``: Path to agent home directory, it contains files used to store temporary data. When running multiple agents on the same host, each agent must have its own home directory. Default: ``/var/lib/temboard-agent/main``.
   - ``hostname``: Overrides real machine hostname. Must be a valid FQDN. Default: ``None``;
 
