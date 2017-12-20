@@ -28,13 +28,13 @@ temboard-agent embeds a lightweight HTTPS server aimed to serve its API, thus it
 Using provided SSL certificate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It provides a ready to use self-signed SSL certifcate located in ``/usr/share/temboard-agent`` directory, if you don't want to use it, you can create a new one with the ``openssl`` binary.
+It provides a ready to use self-signed SSL certifcate located in ``/usr/share/temboard-agent/quickstart`` directory, if you don't want to use it, you can create a new one with the ``openssl`` binary.
 
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
-    sudo cp /usr/share/temboard-agent/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key /etc/temboard-agent/ssl/.
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem /etc/temboard-agent/ssl/.
     sudo chown postgres:postgres /etc/temboard-agent/ssl/*
 
 
@@ -52,13 +52,15 @@ Then, ``ssl_cert_file`` and ``ssl_key_file`` parameters from ``temboard-agent.co
 CA certificate file
 ^^^^^^^^^^^^^^^^^^^
 
-``monitoring`` plugin sends data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, HTTPS client implemented by the agent needs to have UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
+``monitoring`` plugin sends data to the collector (API served by the temBoard UI web server) through HTTPS. If you want to enable SSL cert. check (THIS IS NOT MANDATORY), HTTPS client implemented by the agent needs to have UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
+    sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 
 ``ssl_ca_cert_file`` parameter in section ``[monitoring]`` from the configuration file needs to be set to ``/etc/temboard-agent/ssl/ca_certs_localhost.pem``.
+
+If you don't want to enable SSL cert. check, please comment ``ssl_ca_cert_file`` parameter.
 
 Restrictions on SSL files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,14 +102,16 @@ Registration in the Web UI of the monitoring plugin
 ---------------------------------------------------
 
 If you want to use the ``monitoring`` plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
-Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
-(or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
+Just change the hostname to point to the server. Since the Server is only reachable using HTTPS and if you want to enable SSL cert. check,
+the UI SSL certificate (or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
 
 
 The configuration file
 ----------------------
 
+
 The configuration file ``temboard-agent.conf`` is formated using INI format. Configuration parameters are distributed under sections:
+
   - ``[temboard]``: this is the main section grouping core parameters;
   - ``[postgresql]``: parameters related to the PostgreSQL cluster that the agent is connected to;
   - ``[logging]``: how and where to log;
