@@ -44,6 +44,8 @@ SETUP_KWARGS = dict(
             'share/temboard.conf',
             'share/temboard.logrotate',
         ]),
+        ('lib/systemd/system', ['packaging/temboard.service']),
+        # Installation from sources
         ('/usr/share/temboard', [
             'share/temboard.conf',
             'share/temboard.logrotate',
@@ -53,7 +55,11 @@ SETUP_KWARGS = dict(
             'share/sql/application.sql',
             'share/sql/monitoring.sql',
         ]),
-        ('lib/systemd/system', ['packaging/temboard.service']),
+        ('/usr/share/temboard/quickstart/', [
+            'share/temboard_CHANGEME.key',
+            'share/temboard_CHANGEME.pem',
+            'share/temboard_ca_certs_CHANGEME.pem',
+        ]),
     ],
 )
 
