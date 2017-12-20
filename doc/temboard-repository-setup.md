@@ -25,11 +25,13 @@ If the PostgreSQL cluster is on th different host, replace `127.0.0.1/32` by the
 ## Installation
 
 To proceed with user and database creation, we're providing the script `create_repository.sh` located in `/usr/share/temboard`. This script must connects to the repository server with super-user privileges. By default, it tries to connect to local socket (`/var/run/postgresql`) and loads data structure into `temboard` database. Here is the list of environnement variables that can be used to change script's behaviour :
+
 - `PGHOST` : repository host
 - `PGUSER` : repository super-user
 - `PGPASSWORD` : repository super-user's password
 - `PGPORT` : repository listening TCP port
 - `TEMBOARD_PASSWORD` : defines `temboard` user's password
+
 
 Local usage:
 ```
