@@ -10,8 +10,6 @@ pages:
 - Quick Start: QUICKSTART.md
 - Installation:
   - Overview: installation.md
-  - Agent Installation: temboard-agent-install-sources.md
-  - Agent Configuration: temboard-agent-configuration.md
   - Server Installation: temboard-install-sources.md
   - Repository Setup: temboard-repository-setup.md
 - How To: temboard-howto.md
