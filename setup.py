@@ -39,6 +39,16 @@ SETUP_KWARGS = dict(
             'share/users',
         ]),
         ('lib/systemd/system', ['packaging/temboard-agent.service']),
+        # Installation from sources
+        ('/usr/share/temboard-agent/', [
+            'share/temboard-agent.conf',
+            'share/temboard-agent.logrotate',
+        ]),
+        ('/usr/share/temboard-agent/quickstart/', [
+            'share/temboard-agent_CHANGEME.pem',
+            'share/temboard-agent_CHANGEME.key',
+            'share/temboard-agent_ca_certs_CHANGEME.pem',
+        ]),
     ],
 )
 
