@@ -109,7 +109,9 @@ the UI SSL certificate (or CA certificates that has issued it) must be in the fi
 The configuration file
 ----------------------
 
+
 The configuration file ``temboard-agent.conf`` is formated using INI format. Configuration parameters are distributed under sections:
+
   - ``[temboard]``: this is the main section grouping core parameters;
   - ``[postgresql]``: parameters related to the PostgreSQL cluster that the agent is connected to;
   - ``[logging]``: how and where to log;
