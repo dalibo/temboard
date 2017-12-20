@@ -52,13 +52,15 @@ Then, ``ssl_cert_file`` and ``ssl_key_file`` parameters from ``temboard-agent.co
 CA certificate file
 ^^^^^^^^^^^^^^^^^^^
 
-``monitoring`` plugin sends data to the collector (API served by the temBoard UI web server) through HTTPS. To allow this data flow, HTTPS client implemented by the agent needs to have UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
+``monitoring`` plugin sends data to the collector (API served by the temBoard UI web server) through HTTPS. If you want to enable SSL cert. check (THIS IS NOT MANDATORY), HTTPS client implemented by the agent needs to have UI's SSL certifcate (.pem) stored in its CA certificate file. temBoard agent embeds a default CA cert. file containing default temBoard UI SSL certificate.
 
 .. code-block:: bash
 
     sudo cp /usr/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem /etc/temboard-agent/ssl/ca_certs_localhost.pem
 
 ``ssl_ca_cert_file`` parameter in section ``[monitoring]`` from the configuration file needs to be set to ``/etc/temboard-agent/ssl/ca_certs_localhost.pem``.
+
+If you don't want to enable SSL cert. check, please comment ``ssl_ca_cert_file`` parameter.
 
 Restrictions on SSL files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,8 +102,8 @@ Registration in the Web UI of the monitoring plugin
 ---------------------------------------------------
 
 If you want to use the ``monitoring`` plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
-Just change the hostname to point to the server. Since the Server is only reachable using HTTPS, the UI SSL certificate
-(or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
+Just change the hostname to point to the server. Since the Server is only reachable using HTTPS and if you want to enable SSL cert. check,
+the UI SSL certificate (or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
 
 
 The configuration file
