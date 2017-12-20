@@ -8,7 +8,6 @@
   - `python-psycopg2` &ge; **2.6.0**
   - `python-tornado` &ge; **3.2**
   - `python-sqlalchemy` &ge; **0.9.8**
-  - `python-pandas` &ge; **0.15.0**
 
 ## Installation
 
@@ -41,11 +40,6 @@ Copy the sample configuration file:
 sudo cp /usr/share/temboard/temboard.conf.sample /etc/temboard/temboard.conf
 ```
 
-Copy dummies self-signed SSL key and cacerts files:
-```
-sudo cp /usr/share/temboard/temboard_* /etc/temboard/ssl/.
-```
-
 Copy the logrotate configuration file:
 ```
 sudo cp /usr/share/temboard/temboard.logrotate /etc/logrotate.d/temboard
@@ -68,10 +62,10 @@ sudo chmod 600 /etc/temboard/temboard.conf
 ## SSL certificate
 
 ### Using provided SSL certificate
-`temboard` provides a ready to use self-signed SSL certifcate located in `/usr/share/temboard` directory, if you don't want to use it, you can create a new one with the `openssl` binary.
+`temboard` provides a ready to use self-signed SSL certifcate located in `/usr/share/temboard/quickstart` directory, if you don't want to use it, you can create a new one with the `openssl` binary.
 ```
-sudo cp /usr/share/temboard/temboard_CHANGEME.key /etc/temboard/ssl/.
-sudo cp /usr/share/temboard/temboard_CHANGEME.pem /etc/temboard/ssl/.
+sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.key /etc/temboard/ssl/.
+sudo cp /usr/share/temboard/quickstart/temboard_CHANGEME.pem /etc/temboard/ssl/.
 sudo chown temboard.temboard /etc/temboard/ssl/*
 ```
 
@@ -86,13 +80,15 @@ Then, `ssl_cert_file` and `ssl_key_file` parameters from `temboard.conf` file ne
 
 ### CA certificate file
 
-Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To allow this data flow, the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. temBoard embeds a default CA cert. file containing agent's default SSL certificate.
+Some plugins must be able to send requests to `temboard-agent` using the HTTPS API. To enable SSL cert. check (THIS IS NOT MANDATORY), the HTTPS client implemented by `temboard` needs to have each agent's SSL certifcate (.pem) stored in its CA certificate file. temBoard embeds a default CA cert. file containing agent's default SSL certificate.
 
 ```
-sudo cp /usr/share/temboard/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
+sudo cp /usr/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem /etc/temboard/ssl/ca_certs_localhost.pem
 ```
 
 `ssl_ca_cert_file` parameter in section `[temboard]` from the configuration file needs to be set to `/etc/temboard/ssl/ca_certs_localhost.pem`.
+
+If you don't want to enable SSL cert. check, please comment this parameter in the configuration file.
 
 ### Restrictions on SSL files
 ```
