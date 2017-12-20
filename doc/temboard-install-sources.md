@@ -8,7 +8,6 @@
   - `python-psycopg2` &ge; **2.6.0**
   - `python-tornado` &ge; **3.2**
   - `python-sqlalchemy` &ge; **0.9.8**
-  - `python-pandas` &ge; **0.15.0**
 
 ## Installation
 
