@@ -21,8 +21,7 @@ Proceed with the installation of the agent:
 .. code-block:: bash
 
     cd temboard-agent/
-    sudo cp -r share/ /usr/share/temboard-agent
-    sudo python setup.py install
+    sudo pip install .
 
 
 Prepare directories and files
@@ -33,7 +32,6 @@ Creation of directories for configuration and SSL files:
 .. code-block:: bash
 
     sudo mkdir /etc/temboard-agent
-    sudo mkdir /etc/temboard-agent/ssl
 
 Home directory:
 
@@ -52,7 +50,7 @@ Copy the sample configuration file:
 
 .. code-block:: bash
 
-    sudo cp /usr/share/temboard-agent/temboard-agent.conf.sample /etc/temboard-agent/temboard-agent.conf
+    sudo cp /usr/share/temboard-agent/temboard-agent.conf /etc/temboard-agent/temboard-agent.conf
 
 Copy the logrotate configuration file:
 
