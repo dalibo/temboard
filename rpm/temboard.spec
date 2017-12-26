@@ -85,9 +85,9 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
-%{__install} -m 640 %{buildroot}/usr/share/temboard/temboard.conf %{buildroot}/%{confdir}/temboard.conf
+%{__install} -m 640 %{buildroot}/usr/share/temboard/quickstart/temboard.conf %{buildroot}/%{confdir}/temboard.conf
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
-%{__install} -m 644 %{buildroot}/usr/share/temboard/temboard.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard
+%{__install} -m 644 %{buildroot}/usr/share/temboard/quickstart/temboard.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard
 # dummy ssl files
 # init script
 %if 0%{?rhel} <= 6
