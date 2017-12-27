@@ -10,8 +10,9 @@ pages:
 - Quick Start: QUICKSTART.md
 - Installation:
   - Overview: installation.md
-  - Server Installation: temboard-install-sources.md
-  - Repository Setup: temboard-repository-setup.md
+  - Server installation from sources: temboard-install-sources.md
+  - Server installation from RPM: temboard-install-rpm.md
+  - Repository setup: temboard-repository-setup.md
 - How To: temboard-howto.md
 
 # Markdown settings
