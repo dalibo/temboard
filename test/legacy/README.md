@@ -1,8 +1,8 @@
-# Temboard Agent functional tests
+# temBoard Agent functional tests
 
 This directory contains functional tests for each plugin. To run these tests you'll need:
   * PostgreSQL binaries of the version you want the agent will be connected to when running the tests
-  * `nosetests`
+  * `pytest`
 
 Those tests are intented to be run in CircleCI.
 

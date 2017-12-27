@@ -10,7 +10,7 @@ Dependencies
 Installation
 ------------
 
-First install Python `setuptools` with `pip`:
+First install Python ``setuptools`` with ``pip``:
 
 .. code-block:: bash
 
@@ -106,12 +106,3 @@ Start the agent, then try:
 
     curl -k https://127.0.0.1:2345/discover
     curl -k -X POST -H "Content-Type: application/json" -d '{"username": "<username>", "password": "<password>"}' https://127.0.0.1:2345/login
-
-Functional tests
-----------------
-
-.. code-block:: bash
-
-    sudo apt-get install python-rednose python-nose
-    cd temboard-agent/test
-    TBD_PGBIN="/usr/pgsql-9.6/bin" nosetests --rednose -v test_*
