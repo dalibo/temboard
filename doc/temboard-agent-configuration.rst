@@ -23,7 +23,9 @@ In the ``temboard-agent.conf`` file, 2 important parameters must be configured t
 SSL certificate
 ---------------
 
-temboard-agent embeds a lightweight HTTPS server aimed to serve its API, thus it is required to use a SSL certificate. As long as the agent's API is not reachable through a public interface, usage of self-signed certificates is safe.
+``temboard-agent`` embeds a lightweight HTTPS server aimed to serve its API, thus it is required to use a SSL certificate. As long as the agent's API is not reachable through a public interface, usage of self-signed certificates is safe.
+
+When the agent is installed from RPM package, a new SSL self-signed cert. is built.
 
 Using provided SSL certificate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,12 +101,68 @@ Add a first user:
 
     sudo -u postgres temboard-agent-adduser
 
-Registration in the Web UI of the monitoring plugin
----------------------------------------------------
+Monitoring plugin
+-----------------
 
-If you want to use the ``monitoring`` plugin, you need to setup the ``collector_url``. It lets the agent know where to post its data.
+If you plan to use the plugin ``monitoring``, you need to setup ``collector_url`` parameter. It lets the agent know where to post its data.
 Just change the hostname to point to the server. Since the Server is only reachable using HTTPS and if you want to enable SSL cert. check,
 the UI SSL certificate (or CA certificates that has issued it) must be in the filepath where ``ssl_ca_cert_file`` points.
+
+Exemple:
+
+.. code-block:: ini
+
+    [monitoring]
+    collector_url = https://<temboard-ui-addr>:8888/monitoring/collector
+
+
+
+Registration
+------------
+
+Once the agent configuration is ready you can start it and proceed with its registration into the ``temboard`` web UI.
+
+Registration can be done in two ways :
+
+  - through ``temboard`` web UI as an administrator : `Settings` -> `Instance` -> `New instance`
+  - using ``temboard-agent-register`` script from the host running ``temboard-agent``
+
+
+``temboard-agent-register``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This script should help administrators to register freshly new installed agents into ``temboard`` web UI, and must be executed from the host running the agent with the same user running the agent (``postgres`` by default). It requires an administrator access to the UI (``admin`` by default).
+
+Environment variables ``TEMBOARD_UI_USER`` and ``TEMBOARD_UI_PASSWORD`` can be used to define credentials needed to login on the web UI. If not set, credentials will be asked during script runtime.
+
+Exemple to register the agent listening on ``<temboard-agent-addr>`` into the web UI located at ``<temboard-ui-addr>``:
+
+.. code-block:: bash
+
+    sudo -u postgres TEMBOARD_UI_USER="admin" TEMBOARD_UI_PASSWORD="xxxxxxx" temboard-agent-register https://<temboard-ui-addr>:8888 -h <temboard-agent-addr> -g default
+
+
+Usage:
+
+.. code-block:: bash
+
+    usage: temboard-agent-register [-?] [-c TEMBOARD_CONFIGFILE] [-h HOST]
+                                   [-p PORT] [-g GROUPS]
+                                   TEMBOARD-UI-ADDRESS
+
+    Register a couple PostgreSQL instance/agent to a Temboard UI.
+
+    positional arguments:
+      TEMBOARD-UI-ADDRESS   temBoard UI address to register to.
+
+    optional arguments:
+      -?, --help            show this help message and exit
+      -c TEMBOARD_CONFIGFILE, --config TEMBOARD_CONFIGFILE
+                            Configuration file
+      -h HOST, --host HOST  Agent address. Default: localhost
+      -p PORT, --port PORT  Agent listening TCP port. Default: 2345
+      -g GROUPS, --groups GROUPS
+                            Instance groups list, comma separated. Default: None
 
 
 The configuration file
@@ -113,12 +171,12 @@ The configuration file
 
 The configuration file ``temboard-agent.conf`` is formated using INI format. Configuration parameters are distributed under sections:
 
-  - ``[temboard]``: this is the main section grouping core parameters;
-  - ``[postgresql]``: parameters related to the PostgreSQL cluster that the agent is connected to;
-  - ``[logging]``: how and where to log;
-  - ``[dashboard]``: parameters of the plugin ``dashboard``;
-  - ``[monitoring]``: plugin ``monitoring``;
-  - ``[administration]``: plugin ``administration``.
+  - ``temboard``: this is the main section grouping core parameters;
+  - ``postgresql``: parameters related to the PostgreSQL cluster that the agent is connected to;
+  - ``logging``: how and where to log;
+  - ``dashboard``: parameters of the plugin ``dashboard``;
+  - ``monitoring``: plugin ``monitoring``;
+  - ``administration``: plugin ``administration``.
 
 ``temboard`` section
 ^^^^^^^^^^^^^^^^^^^^

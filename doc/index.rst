@@ -9,6 +9,7 @@ Installation and configuration
    :maxdepth: 2
 
    temboard-agent-install-sources
+   temboard-agent-install-rpm
    temboard-agent-configuration
    contributing
 
