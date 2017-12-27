@@ -1,4 +1,4 @@
-# temBoard installation from rpm package on RHEL / CentOS 7
+# temBoard installation from RPM package on RHEL / CentOS 7
 
 ## Package repository setup
 
