@@ -36,6 +36,7 @@ SETUP_KWARGS = dict(
             'share/sql/application.sql',
             'share/sql/dev-fixture.sql',
             'share/sql/monitoring.sql',
+            'share/sql/upgrade-0.0.1-1.1.sql',
         ]),
         ('share/temboard/quickstart/', [
             'share/temboard_CHANGEME.key',
