@@ -22,6 +22,7 @@ sudo yum install temboard
 ## Configuration update
 
 The following changes should be reflected into the configuration file:
+
 * plugin `supervision` renamed to `monitoring` : parameters `plugins` and `plugins_orm_engine`
 * plugin `settings` renamed to `pgconf` : parameter `plugins`
 * CA cert. file not required anymore : parameter `ssl_ca_cert_file` can be commented
@@ -31,6 +32,7 @@ The following changes should be reflected into the configuration file:
 `temboard` database structure needs to be upgraded too. Before doing anything, you should make a backup of `temboard` database with `pg_dump`.
 
 Once the backup is done, you can proceed with database upgrade:
+
 * Load SQL script `/usr/share/temboard/sql/monitoring.sql` with super-user privileges
 * Load upgrade script `/usr/share/temboard/sql/upgrade-0.0.1-1.1.sql` with super-user privileges
 
