@@ -1,5 +1,10 @@
-Upgrade 0.0.1 to 1.1 (RHEL/CentOS)
-==================================
+.. _temboard-agent-upgrade:
+
+Upgrade process (RHEL/CentOS)
+=============================
+
+0.0.1 to 1.1
+------------
 
 Stop the agent:
 
