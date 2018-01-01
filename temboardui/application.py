@@ -556,7 +556,7 @@ def get_instances_by_role_name(session, role_name):
             Plugins.agent_address == Instances.agent_address,
             Plugins.agent_port == Instances.agent_port,
             RoleGroups.role_name == unicode(role_name)).order_by(
-                InstanceGroups.group_name).all()
+                InstanceGroups.group_name, Instances.agent_address).all()
 
 
 def role_name_can_access_instance(session, role_name, agent_address,
