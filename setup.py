@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+import os
+
+# Load version number
+setup_path = os.path.dirname(os.path.realpath(__file__))
+execfile(os.path.join(setup_path,'temboardagent','version.py'))
 
 SETUP_KWARGS = dict(
     name='temboard-agent',
-    version='1.1',
+    version=__version__,
     author='Dalibo',
     author_email='contact@dalibo.com',
     license='PostgreSQL',

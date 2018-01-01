@@ -6,7 +6,7 @@ import sys
 
 from .errors import UserError
 from .configuration import setup_logging
-
+from .version import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,12 @@ def define_common_arguments(parser):
         action='store', dest='temboard_configfile',
         help="Configuration file",
     )
+    parser.add_argument(
+        '-V', '--version',
+        action='version',
+        version=__version__
+    )
+
 
 
 def cli(main):
