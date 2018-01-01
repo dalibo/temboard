@@ -58,6 +58,7 @@ from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
 from temboardui.taskmanager import TaskManager
 from temboardui.autossl import AutoHTTPSServer
 from temboardui.utils import check_sqlalchemy_connectivity
+from temboardui.version import __version__
 
 logger = logging.getLogger('temboardui')
 
@@ -111,7 +112,8 @@ class CustomTornadoWebApp(tornado.web.Application):
 
 
 def main():
-    optparser = temboarduiOptions(description="temBoard UI/web client.")
+    optparser = temboarduiOptions(description="temBoard UI/web client.",
+                                  version=__version__)
     (options, _) = optparser.parse_args()
     # Load configuration from the configuration file.
     config = Configuration()
