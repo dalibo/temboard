@@ -6,7 +6,7 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout
 from getpass import getpass
 
-from ..cli import cli
+from ..cli import cli, define_common_arguments
 from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError, UserError
 from ..usermgmt import get_user
@@ -61,6 +61,7 @@ def main(argv, environ):
         description="Add a new temboard-agent user.",
         argument_default=UNDEFINED_ARGUMENT,
     )
+    define_common_arguments(parser)
     args = parser.parse_args(argv)
     config = load_configuration(
         specs=list_options_specs(), args=args, environ=environ,
