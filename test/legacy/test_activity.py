@@ -236,7 +236,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['write_s']) == unicode
         assert type(dict_data['rows'][0]['iow']) == unicode
         assert type(dict_data['rows'][0]['wait']) == unicode
-        assert type(dict_data['rows'][0]['duration']) == float
+        assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) == unicode
         assert type(dict_data['rows'][0]['query']) == unicode
 
