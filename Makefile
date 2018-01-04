@@ -10,8 +10,8 @@ release:
 	@echo
 	@echo Now push with
 	@echo
-	@echo "    git push rw"
-	@echo "    git push --tags rw"
+	@echo "    git push git@github.com:dalibo/temboard-agent.git"
+	@echo "    git push --tags git@github.com:dalibo/temboard-agent.git"
 	@echo
 	@echo and upload with make upload
 

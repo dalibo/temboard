@@ -41,7 +41,7 @@ Please follow these steps:
   <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
 - Update ``setup.py``, without committing.
 - Generate commit and tag with ``make release``.
-- Push commit to master and tag with ``git push`` and ``git push --tags``.
+- Push commit to master and tag.
 - Push Python egg to PyPI using ``make upload``.
 - Trigger docker master build from
   https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/.
