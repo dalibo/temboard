@@ -7,13 +7,8 @@ release:
 	python setup.py egg_info
 	git commit setup.py -m "Version $(VERSION)"
 	git tag $(VERSION)
-	@echo
-	@echo Now push with
-	@echo
-	@echo "    git push git@github.com:dalibo/temboard-agent.git"
-	@echo "    git push --tags git@github.com:dalibo/temboard-agent.git"
-	@echo
-	@echo and upload with make upload
+	git push git@github.com:dalibo/temboard-agent.git
+	git push --tags git@github.com:dalibo/temboard-agent.git
 
 upload:
 	@echo Checking we are on a tag
