@@ -1,6 +1,5 @@
 *.pyc
 *.sw*
-*.conf
 !temboard.dev.conf
 *.egg-info/
 build/
