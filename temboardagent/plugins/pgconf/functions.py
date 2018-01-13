@@ -1,6 +1,7 @@
 import logging
-import os.path
+import os
 import re
+from collections import namedtuple
 
 from temboardagent.spc import pg_escape, error
 from temboardagent.errors import HTTPError, NotificationError
@@ -21,6 +22,11 @@ from pgconf.hba import (
 logger = logging.getLogger(__name__)
 
 
+class FileSetting(namedtuple('FileSetting', ['name', 'setting', 'sourcefile',
+                                             'sourceline'])):
+    pass
+
+
 def get_settings_categories(conn, config, _):
     query = """
 SELECT DISTINCT(category) FROM pg_settings ORDER BY category
@@ -37,9 +43,78 @@ def get_setting(conn, name):
     return list(conn.get_rows())[0]['setting']
 
 
+def get_files_configuration(conn):
+    # Read settings from configuration files
+
+    # First, we need to know location of all configuration files
+    config_file = get_setting(conn, 'config_file')
+    config_dir = os.path.dirname(config_file)
+
+    # Get include files and directory from the main configuration file
+    configuration = parse_configuration_file(config_file)
+    includes = []
+    for name in ['include_dir', 'include_if_exists', 'include']:
+        fs = configuration.get(name, None)
+        if fs:
+            includes.append(fs)
+
+    # Build configuration files list
+    config_files = []
+    for fs in sorted(includes, key=lambda x: x.sourceline):
+        include_path = fs.setting.strip("'")
+        if not os.path.isabs(include_path):
+            include_path = os.path.join(config_dir, include_path)
+        if os.path.isdir(include_path):
+            # include_dir case
+            files_inc = []
+            for f in os.listdir(include_path):
+                f_path = os.path.join(include_path, f)
+                if f.endswith('.conf') and os.path.isfile(f_path):
+                    files_inc.append(f)
+            for sf in sorted(files_inc):
+                config_files.append(os.path.join(include_path, sf))
+        else:
+            config_files.append(include_path)
+    # At this point config_files contains the list of all files we need to
+    # parse, ordered the right way to respect postgres precedense
+    # It does not include postgresql.auto.conf
+    for config_file in config_files:
+        configuration = parse_configuration_file(config_file, configuration)
+
+    return configuration
+
+
+def preformat(setting, type):
+    if setting.startswith("'") and setting.endswith("'"):
+        setting = setting[1:-1]
+    if type == u'bool':
+        if setting == 'true':
+            setting = 'on'
+        elif setting == 'false':
+            setting = 'off'
+    return setting
+
+
+def format_setting(setting, type, unit=None):
+    if not setting:
+        return
+    if type == u'integer':
+        setting = int(human_to_number(setting, unit))
+    elif type == u'real':
+        setting = float(setting)
+    return setting
+
+
 def get_settings(conn, config, http_context=None):
-    auto_conf = get_auto_configuration(conn)
-    file_conf = get_file_configuration(conn)
+    # get configuration from files
+    files_conf = get_files_configuration(conn)
+    # get auto config
+    data_directory = get_setting(conn, 'data_directory')
+    autoconfig_file = os.path.join(data_directory, 'postgresql.auto.conf')
+    auto_conf = parse_configuration_file(autoconfig_file, {})
+
+    print(files_conf)
+    print(auto_conf)
     filter_query = ''
     if http_context and 'filter' in http_context['query']:
         # Check 'filter' parameters.
@@ -52,19 +127,11 @@ def get_settings(conn, config, http_context=None):
                                http_context['query']['filter'][0])
     query = """
 SELECT
-    name,
-    setting,
-    current_setting(name) AS current_setting,
+    name, setting, current_setting(name) AS current_setting,
     CASE WHEN name IN ('max_wal_size', 'min_wal_size')
     THEN current_setting('wal_segment_size') ELSE unit END AS unit,
-    vartype,
-    min_val,
-    max_val,
-    enumvals,
-    context,
-    category,
-    short_desc||' '||coalesce(extra_desc, '') AS desc,
-    boot_val
+    vartype, min_val, max_val, enumvals, context, category,
+    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val
 FROM pg_settings
 %s ORDER BY category, name
     """ % (filter_query)
@@ -82,12 +149,6 @@ FROM pg_settings
                 cat_exists = True
                 break
             i += 1
-        in_auto_conf = False
-        if row['name'] in auto_conf:
-            in_auto_conf = True
-        in_file_conf = False
-        if row['name'] in file_conf:
-            in_file_conf = True
         row_dict = {
             'name': row['name'],
             'setting': row['setting'],
@@ -106,61 +167,29 @@ FROM pg_settings
             'desc': row['desc']
         }
 
-        if in_auto_conf:
-            val = auto_conf[row['name']]
-            if val.startswith("'") and val.endswith("'"):
-                val = val[1:-1]
-            if row_dict['vartype'] == u'bool':
-                if val == 'true':
-                    val = 'on'
-                elif val == 'false':
-                    val = 'off'
-            row_dict['auto_val'] = val
-            row_dict['auto_val_raw'] = val
+        name = row['name']
 
-        if in_file_conf:
-            val = file_conf[row['name']]
-            if val.startswith("'") and val.endswith("'"):
-                val = val[1:-1]
-            if row_dict['vartype'] == u'bool':
-                if val == 'true':
-                    val = 'on'
-                elif val == 'false':
-                    val = 'off'
-            row_dict['file_val'] = val
-            row_dict['file_val_raw'] = val
+        if name in auto_conf:
+            setting = preformat(auto_conf[name].setting, row['vartype'])
+            row_dict['auto_val'] = setting
+            row_dict['auto_val_raw'] = setting
 
-        if row['name'] not in do_not_format_names and \
-           row['vartype'] == u'integer':
-            row_dict['setting'] = int(row_dict['setting'])
-            row_dict['min_val'] = int(row_dict['min_val'])
-            row_dict['max_val'] = int(row_dict['max_val'])
-            row_dict['boot_val'] = int(
-                human_to_number(row_dict['boot_val'], row_dict['unit']))
-            if in_auto_conf:
-                row_dict['auto_val'] = int(
-                    human_to_number(row_dict['auto_val'], row_dict['unit']))
-            if in_file_conf:
-                row_dict['file_val'] = int(
-                    human_to_number(row_dict['file_val'], row_dict['unit']))
-        elif (row['name'] not in do_not_format_names and
-              row['vartype'] == u'real'):
-            row_dict['setting'] = float(row_dict['setting'])
-            row_dict['min_val'] = float(row_dict['min_val'])
-            row_dict['max_val'] = float(row_dict['max_val'])
-            row_dict['boot_val'] = float(row_dict['boot_val'])
-            if in_auto_conf:
-                row_dict['auto_val'] = float(row_dict['auto_val'])
-            if in_file_conf:
-                row_dict['file_val'] = float(row_dict['file_val'])
+        if name in files_conf:
+            setting = preformat(files_conf[name].setting, row['vartype'])
+            row_dict['file_val'] = setting
+            row_dict['file_val_raw'] = setting
+
+        if name not in do_not_format_names:
+            for e in ['setting', 'min_val', 'max_val', 'boot_val', 'auto_val',
+                      'file_val']:
+                row_dict[e] = format_setting(row_dict[e], row['vartype'],
+                                             row_dict['unit'])
 
         if not cat_exists:
-            ret.append({'category': row['category'],
-                        'rows': [
-                            row_dict
-                        ]})
+            ret.append({'category': row['category'], 'rows': [row_dict]})
         else:
             ret[i]['rows'].append(row_dict)
+
     return ret
 
 
@@ -215,8 +244,7 @@ def human_to_number(h_value, h_unit=None):
     return h_value
 
 
-def parse_configuration_file(file_path,):
-    ret = {}
+def parse_configuration_file(file_path, ret={}):
     if not os.path.isfile(file_path):
         return ret
     try:
@@ -224,39 +252,16 @@ def parse_configuration_file(file_path,):
             file_content = fp.read()
         fp.close()
         reg_conf_entry = re.compile(r'^\s*([\w\.]+)\s*=\s*([^#]+)\s*(#.*)?$')
+        lno = 0
         for line in file_content.split('\n'):
+            lno += 1
             m_conf = reg_conf_entry.match(line.strip())
             if m_conf:
-                ret[m_conf.group(1).strip()] = m_conf.group(2).strip()
+                name = m_conf.group(1).strip()
+                setting = m_conf.group(2).strip()
+                ret[name] = FileSetting(name, setting, file_path, lno)
         return ret
     except IOError:
-        raise HTTPError(500, "Internal error.")
-
-
-def get_auto_configuration(conn,):
-    query = """
-        SELECT setting AS data_dir
-        FROM pg_settings
-        WHERE name = 'data_directory'"""
-    try:
-        conn.execute(query)
-        pg_data = list(conn.get_rows())[0]['data_dir']
-        pg_auto_conf = "%s/postgresql.auto.conf" % (pg_data,)
-        return parse_configuration_file(pg_auto_conf)
-    except error:
-        raise HTTPError(500, "Internal error.")
-
-
-def get_file_configuration(conn,):
-    query = """
-        SELECT setting AS config_file
-        FROM pg_settings
-        WHERE name = 'config_file'"""
-    try:
-        conn.execute(query)
-        config_file = list(conn.get_rows())[0]['config_file']
-        return parse_configuration_file(config_file)
-    except error:
         raise HTTPError(500, "Internal error.")
 
 
