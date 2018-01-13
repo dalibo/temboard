@@ -144,8 +144,8 @@ class DashboardMetrics(object):
                 'time': current_time}
 
     def get_hitratio(self,):
-        query = """SELECT CASE sum(blks_hit) WHEN 0 THEN NULL ELSE
-        trunc((sum(blks_hit) - sum(blks_read)) / sum(blks_hit)*100) END
+        query = """SELECT CASE sum(blks_hit+blks_read) WHEN 0 THEN NULL ELSE
+        trunc(sum(blks_hit)/sum(blks_hit+blks_read)*100) END
         AS hitratio FROM pg_stat_database"""
         self.conn.execute(query)
         return list(self.conn.get_rows())[0]['hitratio']
