@@ -113,8 +113,6 @@ def get_settings(conn, config, http_context=None):
     autoconfig_file = os.path.join(data_directory, 'postgresql.auto.conf')
     auto_conf = parse_configuration_file(autoconfig_file, {})
 
-    print(files_conf)
-    print(auto_conf)
     filter_query = ''
     if http_context and 'filter' in http_context['query']:
         # Check 'filter' parameters.
