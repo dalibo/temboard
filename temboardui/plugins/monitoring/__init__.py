@@ -692,6 +692,7 @@ class MonitoringDataProbeHandler(CsvHandler):
         try:
             instance = None
             role = None
+            no_error = 0
 
             self.load_auth_cookie()
             self.start_db_session()
@@ -716,6 +717,8 @@ class MonitoringDataProbeHandler(CsvHandler):
 
             start = self.get_argument('start', default=None)
             end = self.get_argument('end', default=None)
+            # Return 200 with empty list when an error occurs
+            no_error = int(self.get_argument('noerror', default=0))
             start_time = None
             end_time = None
             if start:
@@ -808,12 +811,15 @@ class MonitoringDataProbeHandler(CsvHandler):
                 self.db_session.close()
             except Exception:
                 pass
-            if (isinstance(e, TemboardUIError)):
-                return CSVAsyncResult(http_code=e.code,
-                                      data={'error': e.message})
+            if no_error == 1:
+                return CSVAsyncResult(http_code=200, data=u'')
             else:
-                return CSVAsyncResult(http_code=500,
-                                      data={'error': e.message})
+                if (isinstance(e, TemboardUIError)):
+                    return CSVAsyncResult(http_code=e.code,
+                                          data={'error': e.message})
+                else:
+                    return CSVAsyncResult(http_code=500,
+                                          data={'error': e.message})
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port, probe_name):
