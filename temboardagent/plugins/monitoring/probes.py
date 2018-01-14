@@ -48,7 +48,11 @@ def run_probes(probes, instances, delta=True):
         if p.level == 'host':
             if p.check():
                 logging.debug("Running host probe %s", p.get_name())
-                out = p.run()
+                try:
+                    out = p.run()
+                except:
+                    pass
+
 
         if p.level == 'instance' or p.level == 'database':
             out = []
@@ -58,7 +62,10 @@ def run_probes(probes, instances, delta=True):
                         logging.debug(
                             "Running %s level probe \"%s\" on instance \"%s\"",
                             p.level, p.get_name(), i['instance'])
-                        out += p.run(i)
+                        try:
+                            out += p.run(i)
+                        except:
+                            pass
 
         output[p.get_name()] = out
 
