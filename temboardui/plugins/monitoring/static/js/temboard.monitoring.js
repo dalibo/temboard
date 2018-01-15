@@ -30,6 +30,7 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
       labelsDiv: "legend"+id,
       labelsKMB: true,
       animatedZooms: true,
+      gridLineColor: '#DDDDDD',
       dateWindow: [
         new Date(start_date).getTime(),
         new Date(end_date).getTime()
