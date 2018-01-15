@@ -1,10 +1,10 @@
-VERSION=$(shell python setup.py --version)
+VERSION=$(shell python2 setup.py --version)
 
 all:
 	@echo Working on temboard-agent $(VERSION)
 
 release:
-	python setup.py egg_info
+	python2 setup.py egg_info
 	git commit setup.py -m "Version $(VERSION)"
 	git tag $(VERSION)
 	git push git@github.com:dalibo/temboard-agent.git
@@ -13,4 +13,4 @@ release:
 upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
-	python3 setup.py sdist bdist_wheel upload -r pypi
+	python2 setup.py sdist bdist_wheel upload -r pypi
