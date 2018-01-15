@@ -13,6 +13,7 @@ pages:
   - Server installation from sources: temboard-install-sources.md
   - Server installation from RPM: temboard-install-rpm.md
   - Repository setup: temboard-repository-setup.md
+  - Upgrade 1.1 to 1.2 (RHEL/CentOS): temboard-upgrade-1.1-1.2.md
   - Upgrade 0.0.1 to 1.1 (RHEL/CentOS): temboard-upgrade-0.0.1-1.1.md
 - How To: temboard-howto.md
 
