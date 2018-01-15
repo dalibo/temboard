@@ -14,11 +14,9 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
   html_chart_panel += '<div class="panel panel-default">';
   html_chart_panel += ' <div class="panel-heading">';
   html_chart_panel += title;
-  html_chart_panel += '   <div class="pull-right">';
-  html_chart_panel += '     <button class="btn btn-primary btn-xs" id="buttonExport'+id+'">Export as PNG</button>';
-  html_chart_panel += '   </div>';
   html_chart_panel += ' </div>';
   html_chart_panel += ' <div class="panel-body">';
+  html_chart_panel += '   <div id="info'+id+'"></div>';
   html_chart_panel += '   <div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
   html_chart_panel += '   <div id="chart'+id+'" class="monitoring-chart"></div>';
   html_chart_panel += '   <div id="visibility'+id+'" class="visibility-chart"></div>';
@@ -41,8 +39,19 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
         return m.toDate().getTime();
       },
       drawCallback: function(g, is_initial) {
-        add_visibility_cb(id, g, is_initial);
-        add_export_button_callback(id, g, is_initial, title);
+        if (g.numRows() == 0)
+        {
+          $('#info'+id).html('<center><i>No data available</i></center>');
+          $('#legend'+id).hide();
+          $('#chart'+id).hide();
+          $('#visibility'+id).hide();
+        } else {
+          add_visibility_cb(id, g, is_initial);
+          $('#info'+id).html('');
+          $('#legend'+id).show();
+          $('#chart'+id).show();
+          $('#visibility'+id).show();
+        }
       },
       zoomCallback: function(minDate, maxDate, yRanges) {
         synchronize_zoom(minDate, maxDate, api_url);
@@ -87,7 +96,7 @@ function new_graph(id, title, api, api_url, options, start_date, end_date)
   }
   var g = new Dygraph(
     document.getElementById("chart"+id),
-    api_url+"/"+api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date),
+    api_url+"/"+api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)+"&noerror=1",
     default_options
   );
   return g;
@@ -171,30 +180,7 @@ function synchronize_zoom(start_date, end_date, api_url, silent)
     });
     // load the date for the given range
     sync_graphs[i].dygraph.updateOptions({
-      file: api_url+"/"+sync_graphs[i].api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)
+      file: api_url+"/"+sync_graphs[i].api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)+"&noerror=1"
     }, false);
   }
-}
-
-function add_export_button_callback(chart_id, g, is_initial, label)
-{
-  if (!is_initial)
-    return;
-  $('#buttonExport'+chart_id).click(function(){
-    var options = {
-      titleFont: "bold 18px verdana",
-      titleFontColor: "black",
-      axisLabelFont: "bold 14px verdana",
-      axisLabelFontColor: "black",
-      labelFont: "normal 12px verdana",
-      labelFontColor: "black",
-      legendFont: "bold 12px verdana",
-      legendFontColor: "black",
-      legendHeight: 20
-    };
-    var img = document.getElementById('imageModal');
-    Dygraph.Export.asPNG(g, img, options);
-    $('#ModalLabel').html(label);
-    $('#Modal').modal('show');
-  });
 }
