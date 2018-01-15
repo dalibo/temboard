@@ -3,6 +3,30 @@
 Upgrade process (RHEL/CentOS)
 =============================
 
+1.1 to 1.2
+----------
+
+Stop the agent:
+
+.. code-block:: bash
+
+    sudo systemctl stop temboard-agent
+
+
+Update the package:
+
+.. code-block:: bash
+
+    sudo yum install temboard-agent
+
+
+Start the agent:
+
+.. code-block:: bash
+
+    sudo systemctl start temboard-agent
+
+
 0.0.1 to 1.1
 ------------
 
