@@ -13,6 +13,7 @@ SETUP_KWARGS = dict(
     license='PostgreSQL',
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
+    install_requires=['temboard-sched>=1.0.dev1'],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: No Input/Output (Daemon)",
