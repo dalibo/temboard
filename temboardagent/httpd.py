@@ -240,3 +240,6 @@ def httpd_run(commands, queue_in, config, sessions):
 
             # Reset the global var indicating a SIGHUP signal.
             set_global_reload(False)
+
+        # Purge expired sessions if any.
+        sessions.purge_expired(3600, logger, config)

@@ -89,7 +89,5 @@ def Scheduler(commands, queue_in, config, sessions):
         set_global_workers(workers)
         # Execute plugins scheduler() function.
         exec_scheduler(queue_in, config, commands, logger)
-        # Purge expired sessions if any.
-        sessions.purge_expired(3600, logger, config)
         # Remove old unchecked commands.
         commands.purge_expired(60, logger)
