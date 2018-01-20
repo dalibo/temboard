@@ -11,7 +11,6 @@ from temboardagent.errors import (
 )
 from temboardagent.sharedmemory import Session
 from temboardagent.types import (
-    T_COMMANDID,
     T_PASSWORD,
     T_SESSIONID,
     T_USERNAME,
@@ -19,7 +18,6 @@ from temboardagent.types import (
 from temboardagent.tools import validate_parameters
 from temboardagent.usermgmt import auth_user, gen_sessionid
 from temboardagent.spc import connector, error
-from temboardagent.workers import COMMAND_DONE, COMMAND_ERROR
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.inventory import SysInfo, PgInfo
 
@@ -45,8 +43,7 @@ def check_sessionid(http_header, sessions):
 
 
 @add_route('POST', '/login')
-def login(http_context, queue_in=None, config=None, sessions=None,
-          commands=None):
+def login(http_context, config=None, sessions=None):
     """
 User login
 
@@ -143,8 +140,7 @@ User login
 
 
 @add_route('GET', '/logout')
-def logout(http_context, queue_in=None, config=None, sessions=None,
-           commands=None):
+def logout(http_context, config=None, sessions=None):
     """
 User logout
 
@@ -221,8 +217,7 @@ User logout
 
 
 @add_route('GET', '/discover')
-def get_discover(http_contexte, queue_in=None, config=None, sessions=None,
-                 commands=None):
+def get_discover(http_context, config=None, sessions=None):
     """
 Get global informations about the environment
 
@@ -297,8 +292,7 @@ Get global informations about the environment
 
 
 @add_route('GET', '/profile')
-def profile(http_context, queue_in=None, config=None, sessions=None,
-            commands=None):
+def profile(http_context, config=None, sessions=None):
     """
 Get current username
 
@@ -371,39 +365,8 @@ Get current username
         raise HTTPError(401, "Invalid session.")
 
 
-@add_route('GET', '/command/'+T_COMMANDID)
-def get_command(http_context, queue_in=None, config=None, sessions=None,
-                commands=None):
-    headers = http_context['headers']
-    logger.info("Get command status.")
-    try:
-        check_sessionid(headers, sessions)
-    except HTTPError as e:
-        logger.exception(e.message)
-        logger.info("Invalid session.")
-        raise e
-    cid = http_context['urlvars'][0]
-    try:
-        command = commands.get_by_commandid(cid.encode('utf-8'))
-        c_time = command.time
-        c_state = command.state
-        c_result = command.result
-        if c_state == COMMAND_DONE or c_state == COMMAND_ERROR:
-            commands.delete(cid.encode('utf-8'))
-        logger.info("Done.")
-        return {'cid': cid,
-                'time': c_time,
-                'state': c_state,
-                'result': c_result}
-    except SharedItem_not_found as e:
-        logger.exception(e.message)
-        logger.info("Failed.")
-        raise HTTPError(401, "Invalid command.")
-
-
 @add_route('GET', '/notifications')
-def notifications(http_context, queue_in=None, config=None, sessions=None,
-                  commands=None):
+def notifications(http_context, config=None, sessions=None):
     """
 Get all notifications from the agent.
 
