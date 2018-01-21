@@ -17,7 +17,6 @@ from temboardagent.configuration import (
 from temboardagent.api import check_sessionid
 from temboardagent.tools import validate_parameters, hash_id
 from temboardagent.types import T_OBJECTNAME
-from temboardagent.sharedmemory import Command
 from temboardagent.errors import (
     HTTPError,
     SharedItem_exists,
@@ -25,7 +24,6 @@ from temboardagent.errors import (
     SharedItem_not_found,
     NotificationError,
 )
-from temboardagent.workers import COMMAND_START, COMMAND_DONE, COMMAND_ERROR
 from temboardagent.spc import connector, error
 from temboardagent.command import (
     oneline_cmd_to_array,
@@ -34,18 +32,14 @@ from temboardagent.command import (
 from temboardagent.notification import NotificationMgmt, Notification
 
 import administration.functions as admin_functions
-from administration.types import T_CONTROL, T_VACUUMMODE
+from administration.types import T_CONTROL
 
 
 logger = logging.getLogger(__name__)
 
 
 @add_route('GET', '/administration/pg_version')
-def api_pg_version(http_context,
-                   queue_in=None,
-                   config=None,
-                   sessions=None,
-                   commands=None):
+def api_pg_version(http_context, config=None, sessions=None):
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -54,11 +48,7 @@ def api_pg_version(http_context,
 
 
 @add_route('POST', '/administration/control')
-def post_pg_control(http_context,
-                    queue_in=None,
-                    config=None,
-                    sessions=None,
-                    commands=None):
+def post_pg_control(http_context, config=None, sessions=None):
     """
 Control PostgreSQL server. Supported actions are "start", "stop", "restart" and "reload".
 
@@ -230,127 +220,6 @@ Control PostgreSQL server. Supported actions are "start", "stop", "restart" and 
             raise e
         else:
             raise HTTPError(500, "Internal error.")
-
-
-@add_route('POST', '/administration/vacuum')
-def api_vacuum(http_context,
-               queue_in=None,
-               config=None,
-               sessions=None,
-               commands=None):
-    worker = b'vacuum'
-    try:
-        check_sessionid(http_context['headers'], sessions)
-        post = http_context['post']
-        # Check POST parameters.
-        validate_parameters(post, [
-            ('database', T_OBJECTNAME, False),
-            ('table', T_OBJECTNAME, False),
-            ('mode', T_VACUUMMODE, False)
-        ])
-        # Serialize parameters.
-        parameters = base64.b64encode(
-                        pickle.dumps(
-                            {
-                                'database': post['database'],
-                                'table': post['table'],
-                                'mode': post['mode']
-                            }
-                        )
-                    ).decode('utf-8')
-    except (Exception, HTTPError) as e:
-        logger.exception(str(e))
-        if isinstance(e, HTTPError):
-            raise e
-        else:
-            raise HTTPError(500, "Internal error.")
-
-    # Check command uniqueness.
-    try:
-        commands.check_uniqueness(worker, parameters)
-    except SharedItem_exists as e:
-        logger.exception(str(e))
-        raise HTTPError(402,
-                        "Vaccum '%s' already running on table '%s'." % (
-                            post['mode'],
-                            post['table']
-                            )
-                        )
-    cid = hash_id(worker + b'-' + parameters.encode('utf-8'))
-    command = Command(
-            cid.encode('utf-8'),
-            time.time(),
-            0,
-            worker,
-            parameters,
-            0,
-            u'')
-    try:
-        commands.add(command)
-        # Put the Command in the command queue
-        queue_in.put(command)
-        return {"cid": cid}
-    except SharedItem_no_free_slot_left as e:
-        logger.exception(str(e))
-        raise HTTPError(500, "Internal error.")
-
-
-@add_worker(b'vacuum')
-def worker_vacuum(commands, command, config):
-    start_time = time.time() * 1000
-    logger.info("Starting with pid=%s" % (os.getpid()))
-    logger.debug("commandid=%s" % (command.commandid,))
-
-    try:
-        command.state = COMMAND_START
-        command.time = time.time()
-        commands.update(command)
-        parameters = pickle.loads(base64.b64decode(command.parameters))
-        logger.debug("table=%s, mode=%s, database=%s" % (
-                        parameters['table'],
-                        parameters['mode'],
-                        parameters['database'],
-                        )
-                     )
-
-        conn = connector(
-            host=config.postgresql['host'],
-            port=config.postgresql['port'],
-            user=config.postgresql['user'],
-            password=config.postgresql['password'],
-            database=parameters['database']
-        )
-        conn.connect()
-        if parameters['mode'] == 'standard':
-            query = "VACUUM %s" % (parameters['table'],)
-        else:
-            query = "VACUUM %s %s" % (parameters['mode'], parameters['table'],)
-        conn.execute(query)
-        conn.close()
-    except (error, SharedItem_not_found, Exception) as e:
-        command.state = COMMAND_ERROR
-        command.result = str(e)
-        command.time = time.time()
-
-        logger.exception(str(e))
-
-        try:
-            commands.update(command)
-            conn.close()
-        except Exception:
-            pass
-        logger.info("Failed.")
-        return
-
-    try:
-        command.state = COMMAND_DONE
-        command.time = time.time()
-        commands.update(command)
-    except Exception as e:
-        logger.exception(str(e))
-
-    logger.info("Done.")
-    logger.debug(" in %s s." % (str((time.time()*1000 - start_time)/1000),))
 
 
 def configuration(config):
