@@ -6,6 +6,8 @@ import logging
 import signal
 import json
 import urllib2
+import collections
+from temboardsched import taskmanager
 
 try:
     from configparser import NoOptionError
@@ -18,15 +20,10 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.sharedmemory import Command
-from temboardagent.tools import hash_id
 from temboardagent.errors import (
     HTTPError,
     SharedItem_exists,
     SharedItem_no_free_slot_left,
-)
-from temboardagent.workers import (
-    COMMAND_START,
 )
 from temboardagent.api import check_sessionid
 from temboardagent.queue import Queue, Message
@@ -60,8 +57,7 @@ logger = logging.getLogger(__name__)
 
 
 @add_route('GET', '/monitoring/probe/sessions')
-def monitoring_probe_sessions(http_context, queue_in=None, config=None,
-                              sessions=None, commands=None):
+def monitoring_probe_sessions(http_context, config=None, sessions=None):
     """
 Run ``sessions`` monitoring probe.
 
@@ -143,8 +139,7 @@ Run ``sessions`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/xacts')
-def monitoring_probe_xacts(http_context, queue_in=None, config=None,
-                           sessions=None, commands=None):
+def monitoring_probe_xacts(http_context, config=None, sessions=None):
     """
 Run ``xacts`` monitoring probe.
 
@@ -200,8 +195,7 @@ Run ``xacts`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/locks')
-def monitoring_probe_locks(http_context, queue_in=None, config=None,
-                           sessions=None, commands=None):
+def monitoring_probe_locks(http_context, config=None, sessions=None):
     """
 Run ``locks`` monitoring probe.
 
@@ -271,8 +265,7 @@ Run ``locks`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/blocks')
-def monitoring_probe_blocks(http_context, queue_in=None, config=None,
-                            sessions=None, commands=None):
+def monitoring_probe_blocks(http_context, config=None, sessions=None):
     """
 Run ``blocks`` monitoring probe.
 
@@ -328,8 +321,7 @@ Run ``blocks`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/bgwriter')
-def monitoring_probe_bgwriter(http_context, queue_in=None, config=None,
-                              sessions=None, commands=None):
+def monitoring_probe_bgwriter(http_context, config=None, sessions=None):
     """
 Run ``bgwriter`` monitoring probe.
 
@@ -392,8 +384,7 @@ Run ``bgwriter`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/db_size')
-def monitoring_probe_db_size(http_context, queue_in=None, config=None,
-                             sessions=None, commands=None):
+def monitoring_probe_db_size(http_context, config=None, sessions=None):
     """
 Run ``db_size`` monitoring probe.
 
@@ -453,8 +444,7 @@ Run ``db_size`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/tblspc_size')
-def monitoring_probe_tblspc_size(http_context, queue_in=None, config=None,
-                                 sessions=None, commands=None):
+def monitoring_probe_tblspc_size(http_context, config=None, sessions=None):
     """
 Run ``tblspc_size`` monitoring probe.
 
@@ -520,8 +510,8 @@ Run ``tblspc_size`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/filesystems_size')
-def monitoring_probe_filesystems_size(http_context, queue_in=None, config=None,
-                                      sessions=None, commands=None):
+def monitoring_probe_filesystems_size(http_context, config=None,
+                                      sessions=None):
     """
 Run ``filesystems_size`` monitoring probe.
 
@@ -584,8 +574,7 @@ Run ``filesystems_size`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/cpu')
-def monitoring_probe_cpu(http_context, queue_in=None, config=None,
-                         sessions=None, commands=None):
+def monitoring_probe_cpu(http_context, config=None, sessions=None):
     """
 Run ``cpu`` monitoring probe.
 
@@ -673,8 +662,7 @@ Run ``cpu`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/process')
-def monitoring_probe_process(http_context, queue_in=None, config=None,
-                             sessions=None, commands=None):
+def monitoring_probe_process(http_context, config=None, sessions=None):
     """
 Run ``process`` monitoring probe.
 
@@ -731,8 +719,7 @@ Run ``process`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/memory')
-def monitoring_probe_memory(http_context, queue_in=None, config=None,
-                            sessions=None, commands=None):
+def monitoring_probe_memory(http_context, config=None, sessions=None):
     """
 Run ``memory`` monitoring probe.
 
@@ -790,8 +777,7 @@ Run ``memory`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/loadavg')
-def monitoring_probe_loadavg(http_context, queue_in=None, config=None,
-                             sessions=None, commands=None):
+def monitoring_probe_loadavg(http_context, config=None, sessions=None):
     """
 Run ``loadavg`` monitoring probe.
 
@@ -845,8 +831,7 @@ Run ``loadavg`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/wal_files')
-def monitoring_probe_wal_files(http_context, queue_in=None, config=None,
-                               sessions=None, commands=None):
+def monitoring_probe_wal_files(http_context, config=None, sessions=None):
     """
 Run ``wal_files`` monitoring probe.
 
@@ -904,8 +889,7 @@ Run ``wal_files`` monitoring probe.
 
 
 @add_route('GET', '/monitoring/probe/replication')
-def monitoring_probe_replication(http_context, queue_in=None, config=None,
-                                 sessions=None, commands=None):
+def monitoring_probe_replication(http_context, config=None, sessions=None):
     check_sessionid(http_context['headers'], sessions)
 
     try:
@@ -947,22 +931,25 @@ def api_run_probe(probe_instance, config):
     return data
 
 
-@add_worker(b'monitoring_collector')
-def monitoring_collector_worker(commands, command, config):
+@taskmanager.worker(pool_size=1)
+def monitoring_collector_worker(config):
     """
     Run probes and push collected metrics in a queue.
     """
     signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
+    # convert config dict to namedtuple
+    config = collections.namedtuple('__config', ['temboard', 'plugins',
+                                                 'postgresql', 'logging'])(
+                    temboard=config['temboard'],
+                    plugins=config['plugins'],
+                    postgresql=config['postgresql'],
+                    logging=config['logging']
+                )
 
     start_time = time.time() * 1000
     logger.debug("Starting with pid=%s" % (os.getpid()))
-    logger.debug("commandid=%s" % (command.commandid))
-    command.state = COMMAND_START
-    command.time = time.time()
 
     try:
-        command.pid = os.getpid()
-        commands.update(command)
         system_info = host_info(config.temboard['hostname'])
     except (ValueError, Exception) as e:
         logger.exception(str(e))
@@ -1007,7 +994,7 @@ def monitoring_collector_worker(commands, command, config):
                   max_size=1024 * 1024 * 10, overflow_mode='slide')
         q.push(Message(content=json.dumps(output)))
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception(e)
         logger.debug("Failed.")
         sys.exit(1)
 
@@ -1015,16 +1002,20 @@ def monitoring_collector_worker(commands, command, config):
     logger.debug("Done.")
 
 
-@add_worker(b'monitoring_sender')
-def monitoring_sender_worker(commands, command, config):
+@taskmanager.worker(pool_size=1)
+def monitoring_sender_worker(config):
     signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
+    # convert config dict to namedtuple
+    config = collections.namedtuple('__config', ['temboard', 'plugins',
+                                                 'postgresql', 'logging'])(
+                    temboard=config['temboard'],
+                    plugins=config['plugins'],
+                    postgresql=config['postgresql'],
+                    logging=config['logging']
+                )
+
     start_time = time.time() * 1000
     logger.debug("Starting with pid=%s" % (os.getpid()))
-    logger.debug("commandid=%s" % (command.commandid))
-    command.state = COMMAND_START
-    command.time = time.time()
-    command.pid = os.getpid()
-    commands.update(command)
     c = 0
     while True:
         # Let's do it smoothly..
@@ -1049,7 +1040,7 @@ def monitoring_sender_worker(commands, command, config):
                 logger.debug("Failed.")
                 sys.exit(1)
         except Exception as e:
-            logger.exception(str(e))
+            logger.exception(e)
             logger.debug(
                 "Duration: %s." % (str(time.time() * 1000 - start_time)))
             logger.debug("Failed.")
@@ -1065,30 +1056,21 @@ def monitoring_sender_worker(commands, command, config):
     logger.debug("Done.")
 
 
-def scheduler(queue_in, config, commands):
-    # Schedule collector worker.
-    schedule_worker(queue_in, config, commands, b'monitoring_collector')
-    # Schedule sender worker.
-    schedule_worker(queue_in, config, commands, b'monitoring_sender')
-
-
-def schedule_worker(queue_in, config, commands, worker, parameters=''):
-    # Check command uniqueness.
-    try:
-        commands.check_uniqueness(worker, parameters)
-    except SharedItem_exists:
-        return
-
-    cid = hash_id(worker)
-    command = Command(cid.encode('utf-8'), time.time(), 0, worker, parameters,
-                      0, u'')
-    try:
-        commands.add(command)
-        # Put the Command in the command queue
-        queue_in.put(command)
-        return
-    except SharedItem_no_free_slot_left:
-        return
+@taskmanager.bootstrap()
+def monitoring_bootstrap(context):
+    conf = context.get('config')
+    yield taskmanager.Task(
+            worker_name='monitoring_collector_worker',
+            id='monitoring_collector',
+            options={'config': conf},
+            redo_interval=conf['plugins']['monitoring']['scheduler_interval'],
+    )
+    yield taskmanager.Task(
+            worker_name='monitoring_sender_worker',
+            id='monitoring_sender',
+            options={'config': conf},
+            redo_interval=conf['plugins']['monitoring']['scheduler_interval'],
+    )
 
 
 def configuration(config):
