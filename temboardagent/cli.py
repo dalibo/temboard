@@ -63,5 +63,5 @@ def cli(main):
                     "https://github.com/dalibo/temboard-agent/issues! Thanks!"
                 )
 
-        exit(retcode)
+        os._exit(retcode)
     return cli_wrapper
