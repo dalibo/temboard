@@ -117,8 +117,6 @@ def main(argv, environ):
 
     # Creation of the session list (max 100).
     sessions = Sessions(100)
-    logger.info(str(config))
-    logger.info(str(config.plugins.__dict__))
 
     tm = taskmanager.TaskManager(
             task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
