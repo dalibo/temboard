@@ -9,6 +9,7 @@ from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
 
+logger = logging.getLogger(__name__)
 
 def load_probes(options, home):
     """Give a list of probe objects, ready to run."""
@@ -25,7 +26,7 @@ def load_probes(options, home):
             o = eval(c + "(options)")
             o.set_home(home)
             probes.append(o)
-            logging.info("Loaded probe: %s", o.get_name())
+            logger.info("Loaded probe: %s", o.get_name())
 
     return probes
 
@@ -33,7 +34,7 @@ def load_probes(options, home):
 def run_probes(probes, instances, delta=True):
     """Execute the probes."""
 
-    logging.debug("Starting probe run")
+    logger.debug("Starting probe run")
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
     output = {}
@@ -47,7 +48,7 @@ def run_probes(probes, instances, delta=True):
 
         if p.level == 'host':
             if p.check():
-                logging.debug("Running host probe %s", p.get_name())
+                logger.debug("Running host probe %s", p.get_name())
                 try:
                     out = p.run()
                 except:
@@ -59,7 +60,7 @@ def run_probes(probes, instances, delta=True):
             for i in instances:
                 if i['available']:
                     if p.check(i['version_num']):
-                        logging.debug(
+                        logger.debug(
                             "Running %s level probe \"%s\" on instance \"%s\"",
                             p.level, p.get_name(), i['instance'])
                         try:
@@ -69,7 +70,7 @@ def run_probes(probes, instances, delta=True):
 
         output[p.get_name()] = out
 
-    logging.debug("Finished probe run")
+    logger.debug("Finished probe run")
     return output
 
 
@@ -109,7 +110,7 @@ class Probe(object):
         if m is not None:
             return m.group(1)
 
-        logging.error("Could not get the name of the probe")
+        logger.error("Could not get the name of the probe")
         return None
 
     def get_last_measure(self, store_key):
@@ -159,7 +160,7 @@ class Probe(object):
                 'measure_time': current_time,
                 'measure': dict(current_values)})))
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))
         return delta
 
     def __repr__(self):
@@ -237,7 +238,7 @@ class SqlProbe(Probe):
             conn.close()
             return version
         except error:
-            logging.error("Unable to get server version")
+            logger.error("Unable to get server version")
 
     def run_sql(self, conninfo, sql, database=None):
         """Get the result of the SQL query"""
@@ -294,7 +295,7 @@ class SqlProbe(Probe):
                 output.append(r)
             conn.close()
         except error:
-            logging.error(
+            logger.error(
                 "Unable to run probe \"%s\" on \"%s\" on database \"%s\"",
                 self.get_name(), conninfo['instance'], database)
         return output
@@ -659,7 +660,7 @@ class probe_wal_files(SqlProbe):
             current = int("0xff000000", 0) * \
                 int("0x" + m.group(1), 0) + int("0x" + m.group(2), 0)
         else:
-            logging.error("Unable to convert xlog location to a number")
+            logger.error("Unable to convert xlog location to a number")
             return []
 
         (interval, delta) = self.delta(conninfo['instance'],
