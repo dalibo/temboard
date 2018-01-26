@@ -770,7 +770,7 @@ def dashboard_worker_sigterm_handler(signum, frame):
 def dashboard_collector_worker(config):
     try:
         signal.signal(signal.SIGTERM, dashboard_worker_sigterm_handler)
-        logger.info("starting dashboard collector")
+        logger.debug("Collecting data")
         conn = connector(
             host=config['postgresql']['host'],
             port=config['postgresql']['port'],
@@ -790,20 +790,21 @@ def dashboard_collector_worker(config):
                         logging=config['logging']
                      )
         # Collect data
-        db_metrics = metrics.get_metrics(conn, config_nt)
+        data = metrics.get_metrics(conn, config_nt)
         conn.close()
 
         # We don't want to store notifications in the history.
-        db_metrics.pop('notifications', None)
+        data.pop('notifications', None)
         q = Queue('%s/dashboard.q' % (config['temboard']['home']),
                   max_length=(config['plugins']['dashboard']['history_length']
                               +1),
                   overflow_mode='slide'
                   )
-        q.push(Message(content=json.dumps(db_metrics)))
-        logger.info("end")
+        q.push(Message(content=json.dumps(data)))
+        logger.debug(data)
+        logger.debug("End")
     except (error, Exception) as e:
-        logger.error("could not collect dashboard data")
+        logger.error("Could not collect data")
         logger.exception(e)
         try:
             conn.close()

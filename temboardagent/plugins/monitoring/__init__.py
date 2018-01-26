@@ -946,14 +946,13 @@ def monitoring_collector_worker(config):
                     logging=config['logging']
                 )
 
-    start_time = time.time() * 1000
-    logger.debug("Starting with pid=%s" % (os.getpid()))
+    logger.debug("Starting collector")
 
     try:
         system_info = host_info(config.temboard['hostname'])
     except (ValueError, Exception) as e:
-        logger.exception(str(e))
-        logger.debug("Failed.")
+        logger.exception(e)
+        logger.debug("Failed")
         sys.exit(1)
 
     # Load the probes to run
@@ -974,10 +973,9 @@ def monitoring_collector_worker(config):
         # the instance is available
         instances = []
         for conninfo in config.plugins['monitoring']['conninfo']:
-            logging.debug("Validate connection information on instance \"%s\"",
-                          conninfo['instance'])
             instances.append(instance_info(conninfo, system_info['hostname']))
 
+        logger.debug("Running probes")
         # Gather the data from probes
         data = run_probes(probes, instances)
 
@@ -989,17 +987,15 @@ def monitoring_collector_worker(config):
             'data': data,
             'version': __VERSION__
         }
-        logger.debug("Collected data: %s" % (output))
+        logger.debug(output)
         q = Queue('%s/metrics.q' % (config.temboard['home']),
                   max_size=1024 * 1024 * 10, overflow_mode='slide')
         q.push(Message(content=json.dumps(output)))
+        logger.debug("Done")
     except Exception as e:
         logger.exception(e)
-        logger.debug("Failed.")
+        logger.error("Could not collect data")
         sys.exit(1)
-
-    logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
-    logger.debug("Done.")
 
 
 @taskmanager.worker(pool_size=1)
@@ -1014,9 +1010,8 @@ def monitoring_sender_worker(config):
                     logging=config['logging']
                 )
 
-    start_time = time.time() * 1000
-    logger.debug("Starting with pid=%s" % (os.getpid()))
     c = 0
+    logger.debug("Starting sender")
     while True:
         # Let's do it smoothly..
         time.sleep(0.5)
@@ -1032,18 +1027,15 @@ def monitoring_sender_worker(config):
                         config.temboard['key'],
                         msg.content)
         except urllib2.HTTPError as e:
-            logger.exception(str(e))
+            logger.exception(e)
             # On an error 409 (DB Integrity) we need to remove the message.
             if int(e.code) != 409:
-                logger.debug(
-                    "Duration: %s." % (str(time.time() * 1000 - start_time)))
-                logger.debug("Failed.")
+                logger.error("Failed with code=%s message=%s"
+                             % (e.code, e.msg))
                 sys.exit(1)
         except Exception as e:
             logger.exception(e)
-            logger.debug(
-                "Duration: %s." % (str(time.time() * 1000 - start_time)))
-            logger.debug("Failed.")
+            logger.error("Failed")
             sys.exit(1)
 
         # If everything's fine then remove current msg from the queue
@@ -1052,8 +1044,7 @@ def monitoring_sender_worker(config):
         if c > 60:
             break
         c += 1
-    logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
-    logger.debug("Done.")
+    logger.debug("Done")
 
 
 @taskmanager.bootstrap()
