@@ -134,6 +134,12 @@ def generate_logging_config(
             'temboardsched.taskmanager': {
                 'level': level,
             },
+            'dashboard': {
+                'level': level,
+            },
+            'monitoring': {
+                'level': level,
+            },
         },
     }
     return logging_config
