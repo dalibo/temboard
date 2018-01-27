@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
 import os
 import signal
 
