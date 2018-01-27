@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
-from multiprocessing import Queue
 import os
 import signal
 
@@ -123,10 +122,10 @@ def main(argv, environ):
             address=os.path.join(config.temboard['home'], '.tm.socket')
          )
     # copy configuration into context as a dict
-    tm.set_context('config', {'plugins': config.plugins.__dict__['data'],
-                              'temboard': config.temboard.__dict__['data'],
-                              'postgresql': config.postgresql.__dict__['data'],
-                              'logging': config.logging.__dict__['data']})
+    tm.set_context('config', {'plugins': config.plugins.__dict__.get('data'),
+                              'temboard': config.temboard.__dict__.get('data'),
+                              'postgresql': config.postgresql.__dict__.get('data'),
+                              'logging': config.logging.__dict__.get('data')})
     tm.start()
 
     # Add signal handlers on SIGTERM and SIGHUP.
@@ -135,9 +134,6 @@ def main(argv, environ):
 
     # Serve HTTPS forever.
     httpd_run(config, sessions)
-
-    # TODO: join the task manager
-    # tm.join()
 
     return 0
 
