@@ -90,6 +90,12 @@ def generate_logging_config(config):
             'temboardui': {
                 'level': config.logging['level'],
             },
+            'monitoring': {
+                'level': config.logging['level'],
+            },
+            'temboardsched.taskmanager': {
+                'level': config.logging['level'],
+            },
         },
     }
 
