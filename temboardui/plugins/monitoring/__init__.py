@@ -1,7 +1,6 @@
 import logging
 import os
 from dateutil import parser as dt_parser
-import time
 
 import tornado.web
 import tornado.escape
@@ -14,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.schema import (
     MetaData,
 )
+from temboardsched import taskmanager
 
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.plugins.monitoring.model.orm import (
@@ -53,17 +53,10 @@ from temboardui.temboardclient import (
     TemboardError,
     temboard_profile,
 )
-from temboardui.configuration import Configuration
-from temboardui.errors import TemboardUIError, ConfigurationError
+from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
-from temboardui.taskmanager import (
-    add_worker,
-    add_scheduler,
-    Task,
-    S_TASK_TODO,
-    serialize_task_parameters,
-    unserialize_task_parameters
-)
+
+logger = logging.getLogger(__name__)
 
 
 def configuration(config):
@@ -914,97 +907,80 @@ class MonitoringHTMLHandler(BaseHandler):
                        (agent_address, agent_port))
 
 
-@add_worker('worker_agg_data', 1)
-def worker_data_agg(task):
+@taskmanager.worker(pool_size=1)
+def aggregate_data_worker(config):
     # Worker in charge of aggregate data
-    logger = logging.getLogger("worker_agg_data")
     try:
-        parameters = unserialize_task_parameters(task.parameters)
-        config = Configuration()
-        config.parsefile(parameters['configpath'])
+        conf = config['repository']
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=config.repository['user'],
-                    pwd=config.repository['password'],
-                    h=config.repository['host'],
-                    p=config.repository['port'],
-                    db=config.repository['dbname'])
+                    user=conf['user'],
+                    pwd=conf['password'],
+                    h=conf['host'],
+                    p=conf['port'],
+                    db=conf['dbname'])
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
+            logger.debug("Running SQL function monitoring.aggregate_data()")
             res = conn.execute("SELECT * FROM aggregate_data()")
             for row in res.fetchall():
-                logger.debug("table=%s insert=%s" %
-                             (row['tblname'], row['nb_rows']))
+                logger.debug("table=%s insert=%s"
+                             % (row['tblname'], row['nb_rows']))
             conn.execute("COMMIT")
-            exit(0)
-    except (ConfigurationError, ImportError, Exception) as e:
+            return
+    except Exception as e:
+        logger.error('Could not aggregate montitoring data')
+        logger.exception(e)
         try:
-            logger.error.exception(str(e))
-            try:
-                conn.execute("ROLLBACK")
-            except Exception as e:
-                pass
+            conn.execute("ROLLBACK")
         except Exception:
             pass
-        exit(1)
+        raise(e)
 
 
-@add_worker('worker_history_data', 1)
-def worker_history_data(task):
-    # Worker in charge of history data
-    logger = logging.getLogger("worker_history_data")
+@taskmanager.worker(pool_size=1)
+def history_tables_worker(config):
+    # Worker in charge of history tables
     try:
-        parameters = unserialize_task_parameters(task.parameters)
-        config = Configuration()
-        config.parsefile(parameters['configpath'])
+        conf = config['repository']
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=config.repository['user'],
-                    pwd=config.repository['password'],
-                    h=config.repository['host'],
-                    p=config.repository['port'],
-                    db=config.repository['dbname'])
+                    user=conf['user'],
+                    pwd=conf['password'],
+                    h=conf['host'],
+                    p=conf['port'],
+                    db=conf['dbname'])
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
+            logger.debug("Running SQL function monitoring.history_tables()")
             res = conn.execute("SELECT * FROM history_tables()")
             for row in res.fetchall():
-                logger.debug("table=%s insert=%s" %
-                             (row['tblname'], row['nb_rows']))
+                logger.debug("table=%s insert=%s"
+                             % (row['tblname'], row['nb_rows']))
             conn.execute("COMMIT")
-            exit(0)
-    except (ConfigurationError, ImportError, Exception) as e:
+            return
+    except Exception as e:
+        logger.error('Could not history montitoring tables')
+        logger.exception(e)
         try:
-            logger.exception(str(e))
-            try:
-                conn.execute("ROLLBACK")
-            except Exception as e:
-                pass
+            conn.execute("ROLLBACK")
         except Exception:
             pass
-        exit(1)
+        raise(e)
 
 
-@add_scheduler('scheduler_agg_data')
-def scheduler_data_agg(task_list, parameters):
-    task = Task(
-            worker_name=b'worker_agg_data',
-            taskid=b'task_agg_data',
-            parameters=serialize_task_parameters(parameters),
-            state=S_TASK_TODO,
-            repeat=30 * 60,  # Repeat each 30min
-            creation_time=int(time.time()))
-    task_list.add(task)
-    task_list.save()
-
-
-@add_scheduler('scheduler_history_data')
-def scheduler_history_data(task_list, parameters):
-    task = Task(
-            worker_name=b'worker_history_data',
-            taskid=b'task_history_data',
-            parameters=serialize_task_parameters(parameters),
-            state=S_TASK_TODO,
-            repeat=3 * 60 * 60,  # Repeat each 3h
-            creation_time=int(time.time()))
-    task_list.add(task)
-    task_list.save()
+@taskmanager.bootstrap()
+def monitoring_bootstrap(context):
+    config = context.get('config')
+    yield taskmanager.Task(
+            worker_name='aggregate_data_worker',
+            id='aggregate_data',
+            options={'config': config},
+            redo_interval=30 * 60  # Repeat each 30m,
+    )
+    yield taskmanager.Task(
+            worker_name='history_tables_worker',
+            id='history_tables',
+            options={'config': config},
+            redo_interval=3 * 60 * 60  # Repeat each 3h
+    )
