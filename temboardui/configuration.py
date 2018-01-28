@@ -11,7 +11,7 @@ import json
 import re
 from temboardui.errors import ConfigurationError
 
-from .logger import LOG_METHODS
+from .logger import HANDLERS
 
 
 logger = logging.getLogger(__name__)
@@ -200,7 +200,7 @@ class Configuration(configparser.ConfigParser):
         self.check_section('logging')
         try:
             method = self.get('logging', 'method')
-            if method not in LOG_METHODS:
+            if method not in HANDLERS:
                 raise ValueError()
             self.logging['method'] = method
         except ValueError:
