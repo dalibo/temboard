@@ -24,6 +24,7 @@ Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-psycopg2
 Requires:      python-dateutil >= 1.5
 Requires:      openssl
+Requires:      temboard-sched
 
 %description
 temBoard is a monitoring and remote control solution for PostgreSQL

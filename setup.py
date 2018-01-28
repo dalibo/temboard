@@ -19,6 +19,7 @@ SETUP_KWARGS = dict(
         'psycopg2>=2.5.4',
         'sqlalchemy>=0.9.8',
         'tornado>=3.2',
+        'temboard-sched',
     ],
     include_package_data=True,
     zip_safe=False,
