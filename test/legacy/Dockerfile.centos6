@@ -9,6 +9,11 @@ RUN set -ex; \
     yum -q -y install procps-ng net-tools sudo postgresql10-server postgresql10-contrib; \
     :
 
+# Install current temboard-sched from temBoard yum repository
+RUN yum -q -y install \
+    https://packages.temboard.io/yum/rhel6/temboard-sched-current.el6.centos.noarch.rpm \
+    ${NULL-}
+
 RUN yum -q -y install procps-ng net-tools python-logutils python-pip; \
     pip install "pytest<3.3"; \
     useradd --system testuser; \

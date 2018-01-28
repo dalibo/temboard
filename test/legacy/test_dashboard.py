@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 
 from test.temboard import init_env, drop_env, temboard_request
 
@@ -66,6 +67,8 @@ class TestDashboard:
         """
         [dashboard] 01: GET /dashboard : HTTP return code is 200 and the data structure is right
         """  # noqa
+        # Wait 1 second just to be sure dashboard collector ran once
+        time.sleep(1)
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',

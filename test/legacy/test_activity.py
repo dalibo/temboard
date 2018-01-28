@@ -237,7 +237,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['iow']) == unicode
         assert type(dict_data['rows'][0]['wait']) == unicode
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) == unicode
+        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) == unicode
 
     def test_02_activity_kill(self):
