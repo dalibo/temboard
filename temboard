@@ -221,9 +221,14 @@ def main():
                           config.temboard['plugins_orm_engine'])
 
     # Task Manager
+    tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
+    if os.path.exists(tm_sock_path):
+        # unix socket cleaning
+        os.path.unlink(tm_sock_path)
+
     tm = taskmanager.TaskManager(
             task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
-            address=os.path.join(config.temboard['home'], '.tm.socket')
+            address=tm_sock_path
          )
     # copy configuration into context as a dict
     tm.set_context(
