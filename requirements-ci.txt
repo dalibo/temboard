@@ -6,4 +6,5 @@ pytest-mock
 pytest-tornado
 mock
 docutils
+temboard-sched
 -e .
