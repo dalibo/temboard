@@ -16,7 +16,7 @@ import ssl
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError, ConfigurationError
 from temboardagent.daemon import set_global_reload, reload_true
-
+from temboardagent import __version__ as temboard_version
 
 logger = logging.getLogger(__name__)
 
@@ -29,20 +29,16 @@ class RequestHandler(BaseHTTPRequestHandler):
     """
     HTTP request handler.
     """
-    def __init__(self, cmd_queue, commands, config, sessions, *args, **kwargs):
+    def __init__(self, config, sessions, *args, **kwargs):
         """
         Constructor.
         """
-        # Commands queue.
-        self.cmd_queue = cmd_queue
-        # Commands array in shared memory.
-        self.commands = commands
         # Sessions array in shared memory.
         self.sessions = sessions
         # Configuration instance.
         self.config = config
         # HTTP server version.
-        self.server_version = "temboard-agent/0.0.1"
+        self.server_version = "temboard-agent/%s" % temboard_version
         # HTTP request method
         self.http_method = None
         # HTTP query.
@@ -186,27 +182,24 @@ class RequestHandler(BaseHTTPRequestHandler):
                     response = getattr(sys.modules[route['module']],
                                        route['function'])(
                                 http_context,
-                                self.cmd_queue,
                                 self.config,
-                                self.sessions,
-                                self.commands)
+                                self.sessions)
                     return (200, response)
 
         raise HTTPError(404, 'URL not found.')
 
 
-def handleRequestsUsing(commands, queue_cmd, config, sessions):
-    return lambda *args: RequestHandler(queue_cmd, commands, config,
-                                        sessions, *args)
+def handleRequestsUsing(config, sessions):
+    return lambda *args: RequestHandler(config, sessions, *args)
 
 
-def httpd_run(commands, queue_in, config, sessions):
+def httpd_run(config, sessions):
     """
     Serve HTTP for ever and reload configuration from the conf file on SIGHUP
     signal catch.
     """
     server_address = (config.temboard['address'], config.temboard['port'])
-    handler_class = handleRequestsUsing(commands, queue_in, config, sessions)
+    handler_class = handleRequestsUsing(config, sessions)
     httpd = ThreadedHTTPServer(server_address, handler_class)
     httpd.socket = ssl.wrap_socket(httpd.socket,
                                    keyfile=config.temboard['ssl_key_file'],
@@ -233,10 +226,12 @@ def httpd_run(commands, queue_in, config, sessions):
                 config.setup_logging()
 
                 # New RequestHandler using the new configuration.
-                httpd.RequestHandlerClass = handleRequestsUsing(
-                    commands, queue_in, config, sessions,
-                )
+                httpd.RequestHandlerClass = handleRequestsUsing(config,
+                                                                sessions)
                 logger.info("Done.")
 
             # Reset the global var indicating a SIGHUP signal.
             set_global_reload(False)
+
+        # Purge expired sessions if any.
+        sessions.purge_expired(3600, logger, config)

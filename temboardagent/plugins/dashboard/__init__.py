@@ -3,12 +3,14 @@ import time
 import signal
 import json
 import sys
+import collections
 
 from os import getpid
 try:
     from configparser import NoOptionError
 except ImportError:
     from ConfigParser import NoOptionError
+from temboardsched import taskmanager
 
 from temboardagent.api_wrapper import (
     api_function_wrapper,
@@ -20,13 +22,10 @@ from temboardagent.configuration import (
     PluginConfiguration,
     ConfigurationError,
 )
-from temboardagent.sharedmemory import Command
-from temboardagent.tools import hash_id
 from temboardagent.errors import (
     SharedItem_exists,
     SharedItem_no_free_slot_left,
 )
-from temboardagent.workers import COMMAND_START
 from temboardagent.queue import Queue, Message
 import dashboard.metrics as metrics
 
@@ -36,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 @add_route('GET', '/dashboard')
 def dashboard(http_context,
-              queue_in=None,
               config=None,
               sessions=None,
               commands=None):
@@ -137,10 +135,8 @@ Get the whole last data set used to render dashboard view. Data have been collec
 
 @add_route('GET', '/dashboard/live')
 def dashboard_live(http_context,
-                   queue_in=None,
                    config=None,
-                   sessions=None,
-                   commands=None):
+                   sessions=None):
     """
 Synchronous version of ``/dashboard``. Please refer to ``/dashboard`` API documentation for details.
     """  # noqa
@@ -153,10 +149,8 @@ Synchronous version of ``/dashboard``. Please refer to ``/dashboard`` API docume
 
 @add_route('GET', '/dashboard/history')
 def dashboard_history(http_context,
-                      queue_in=None,
                       config=None,
-                      sessions=None,
-                      commands=None):
+                      sessions=None):
     """
 Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``history_length`` from the ``dashboard`` section of configuration file. Default value is ``20``.
 
@@ -241,10 +235,8 @@ Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``histo
 
 @add_route('GET', '/dashboard/buffers')
 def dashboard_buffers(http_context,
-                      queue_in=None,
                       config=None,
-                      sessions=None,
-                      commands=None):
+                      sessions=None):
     """
 Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
@@ -283,10 +275,8 @@ Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
 @add_route('GET', '/dashboard/hitratio')
 def dashboard_hitratio(http_context,
-                       queue_in=None,
                        config=None,
-                       sessions=None,
-                       commands=None):
+                       sessions=None):
     """
 Get PostgreSQL global cache hit ratio.
 
@@ -325,10 +315,8 @@ Get PostgreSQL global cache hit ratio.
 
 @add_route('GET', '/dashboard/active_backends')
 def dashboard_active_backends(http_context,
-                              queue_in=None,
                               config=None,
-                              sessions=None,
-                              commands=None):
+                              sessions=None):
     """
 Get the total number of active backends.
 
@@ -373,10 +361,8 @@ Get the total number of active backends.
 
 @add_route('GET', '/dashboard/cpu')
 def dashboard_cpu(http_context,
-                  queue_in=None,
                   config=None,
-                  sessions=None,
-                  commands=None):
+                  sessions=None):
     """
 Get CPU usage.
 
@@ -424,10 +410,8 @@ Get CPU usage.
 
 @add_route('GET', '/dashboard/loadaverage')
 def dashboard_loadaverage(http_context,
-                          queue_in=None,
                           config=None,
-                          sessions=None,
-                          commands=None):
+                          sessions=None):
     """
 System loadaverage.
 
@@ -466,10 +450,8 @@ System loadaverage.
 
 @add_route('GET', '/dashboard/memory')
 def dashboard_memory(http_context,
-                     queue_in=None,
                      config=None,
-                     sessions=None,
-                     commands=None):
+                     sessions=None):
     """
 Memory usage.
 
@@ -516,10 +498,8 @@ Memory usage.
 
 @add_route('GET', '/dashboard/hostname')
 def dashboard_hostname(http_context,
-                       queue_in=None,
                        config=None,
-                       sessions=None,
-                       commands=None):
+                       sessions=None):
     """
 Machine hostname.
 
@@ -560,10 +540,8 @@ Machine hostname.
 
 @add_route('GET', '/dashboard/os_version')
 def dashboard_os_version(http_context,
-                         queue_in=None,
                          config=None,
-                         sessions=None,
-                         commands=None):
+                         sessions=None):
     """
 Operating system version.
 
@@ -604,10 +582,8 @@ Operating system version.
 
 @add_route('GET', '/dashboard/pg_version')
 def dashboard_pg_version(http_context,
-                         queue_in=None,
                          config=None,
-                         sessions=None,
-                         commands=None):
+                         sessions=None):
     """
 Get PostgreSQL server version.
 
@@ -649,10 +625,8 @@ Get PostgreSQL server version.
 
 @add_route('GET', '/dashboard/n_cpu')
 def dashboard_n_cpu(http_context,
-                    queue_in=None,
                     config=None,
-                    sessions=None,
-                    commands=None):
+                    sessions=None):
     """
 Number of CPU.
 
@@ -694,10 +668,8 @@ Number of CPU.
 
 @add_route('GET', '/dashboard/databases')
 def dashboard_databases(http_context,
-                        queue_in=None,
                         config=None,
-                        sessions=None,
-                        commands=None):
+                        sessions=None):
     """
 PostgreSQL cluster size & number of databases.
 
@@ -746,10 +718,8 @@ PostgreSQL cluster size & number of databases.
 
 @add_route('GET', '/dashboard/info')
 def dashboard_info(http_context,
-                   queue_in=None,
                    config=None,
-                   sessions=None,
-                   commands=None):
+                   sessions=None):
     """
 Get a bunch of global informations about system and PostgreSQL.
 
@@ -796,41 +766,46 @@ def dashboard_worker_sigterm_handler(signum, frame):
     sys.exit(1)
 
 
-@add_worker(b'dashboard_collector')
-def dashboard_collector_worker(commands, command, config):
+@taskmanager.worker(pool_size=1)
+def dashboard_collector_worker(config):
     try:
         signal.signal(signal.SIGTERM, dashboard_worker_sigterm_handler)
-        start_time = time.time() * 1000
-        logger.debug("Starting with pid=%s" % (getpid()))
-        logger.debug("commandid=%s" % (command.commandid))
-        command.state = COMMAND_START
-        command.time = time.time()
-        command.pid = getpid()
-        commands.update(command)
-
+        logger.debug("Collecting data")
         conn = connector(
-            host=config.postgresql['host'],
-            port=config.postgresql['port'],
-            user=config.postgresql['user'],
-            password=config.postgresql['password'],
-            database=config.postgresql['dbname']
+            host=config['postgresql']['host'],
+            port=config['postgresql']['port'],
+            user=config['postgresql']['user'],
+            password=config['postgresql']['password'],
+            database=config['postgresql']['dbname']
         )
         conn.connect()
-        db_metrics = metrics.get_metrics(conn, config)
-        # We don't want to store notifications in the history.
-        db_metrics.pop('notifications', None)
-
+        # convert config dict to namedtuple
+        config_nt = collections.namedtuple(
+                        '__config',
+                        ['temboard', 'plugins', 'postgresql', 'logging']
+                    )(
+                        temboard=config['temboard'],
+                        plugins=config['plugins'],
+                        postgresql=config['postgresql'],
+                        logging=config['logging']
+                     )
+        # Collect data
+        data = metrics.get_metrics(conn, config_nt)
         conn.close()
-        q = Queue('%s/dashboard.q' % (config.temboard['home']),
-                  max_length=(config.plugins['dashboard']['history_length']+1),
+
+        # We don't want to store notifications in the history.
+        data.pop('notifications', None)
+        q = Queue('%s/dashboard.q' % (config['temboard']['home']),
+                  max_length=(config['plugins']['dashboard']['history_length']
+                              +1),
                   overflow_mode='slide'
                   )
-        q.push(Message(content=json.dumps(db_metrics)))
-        logger.debug("Duration: %s." % (str(time.time() * 1000 - start_time)))
-        logger.debug("Done.")
+        q.push(Message(content=json.dumps(data)))
+        logger.debug(data)
+        logger.debug("End")
     except (error, Exception) as e:
-        logger.exception(str(e))
-        logger.debug("Failed.")
+        logger.error("Could not collect data")
+        logger.exception(e)
         try:
             conn.close()
         except Exception:
@@ -838,31 +813,15 @@ def dashboard_collector_worker(commands, command, config):
         sys.exit(1)
 
 
-def scheduler(queue_in, config, commands):
-    worker = b'dashboard_collector'
-    parameters = ''
-    # Check command uniqueness.
-    try:
-        commands.check_uniqueness(worker, parameters)
-    except SharedItem_exists:
-        return
-
-    cid = hash_id(worker)
-    command = Command(cid.encode('utf-8'),
-                      time.time(),
-                      0,
-                      worker,
-                      parameters,
-                      0,
-                      u''
-                      )
-    try:
-        commands.add(command)
-        # Put the Command in the command queue
-        queue_in.put(command)
-        return
-    except SharedItem_no_free_slot_left:
-        return
+@taskmanager.bootstrap()
+def dashboard_collector_bootstrap(context):
+    config = context.get('config')
+    yield taskmanager.Task(
+            worker_name='dashboard_collector_worker',
+            id='dashboard_collector',
+            options={'config': config},
+            redo_interval=config['plugins']['dashboard']['scheduler_interval'],
+    )
 
 
 def configuration(config):

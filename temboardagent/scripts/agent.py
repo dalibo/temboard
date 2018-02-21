@@ -1,18 +1,17 @@
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
-from multiprocessing import Process, Queue
 import os
 import signal
 
+from temboardsched import taskmanager
+
 from ..cli import cli, define_common_arguments
-from ..sharedmemory import Commands, Sessions
-from ..async import Scheduler
+from ..sharedmemory import Sessions
 from ..configuration import load_configuration, OptionSpec
 from ..daemon import (
     daemonize,
     httpd_sigterm_handler,
-    set_global_scheduler,
     httpd_sighup_handler,
 )
 from ..httpd import httpd_run
@@ -115,29 +114,32 @@ def main(argv, environ):
                     ['metrics.q', 'notifications.q', 'notifications_last_10.q']
                     )
 
-    # Creation of the command list (max 100).
-    commands = Commands(100)
     # Creation of the session list (max 100).
     sessions = Sessions(100)
-    # Command queue creation.
-    queue_in = Queue()
 
-    # Start the command scheduler process.
-    scheduler = Process(target=Scheduler,
-                        args=(commands, queue_in, config, sessions))
-    scheduler.start()
+    # TaskManager
+    # Remove socket if any
+    tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
+    if os.path.exists(tm_sock_path):
+        os.path.unlink(tm_sock_path)
 
-    # Let's store scheduler reference in a global var.
-    set_global_scheduler(scheduler)
+    tm = taskmanager.TaskManager(
+            task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
+            address=tm_sock_path
+         )
+    # copy configuration into context as a dict
+    tm.set_context('config', {'plugins': config.plugins.__dict__.get('data'),
+                              'temboard': config.temboard.__dict__.get('data'),
+                              'postgresql': config.postgresql.__dict__.get('data'),
+                              'logging': config.logging.__dict__.get('data')})
+    tm.start()
+
     # Add signal handlers on SIGTERM and SIGHUP.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     signal.signal(signal.SIGHUP, httpd_sighup_handler)
 
     # Serve HTTPS forever.
-    httpd_run(commands, queue_in, config, sessions)
-
-    # Join command scheduler process on http server process exit.
-    scheduler.join()
+    httpd_run(config, sessions)
 
     return 0
 

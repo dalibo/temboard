@@ -113,6 +113,7 @@ def test_logging():
 
 def test_pwd_denied(mocker):
     mocker.patch('temboardagent.configuration.open', create=True)
+    mocker.patch('temboardagent.configuration.configparser.RawConfigParser')
     cd = mocker.patch('temboardagent.configuration.os.chdir')
 
     from temboardagent.configuration import MergedConfiguration

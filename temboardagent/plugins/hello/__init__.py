@@ -28,11 +28,7 @@ def say_hello_world(config, http_context):
 
 
 @add_route('GET', '/hello')
-def get_hello(http_context,
-              queue_in=None,
-              config=None,
-              sessions=None,
-              commands=None):
+def get_hello(http_context, config=None, sessions=None):
     """
     Parameters:
         http_context: HTTP context containing HTTP paramaters and variables.
@@ -68,11 +64,7 @@ SELECT 'Hello World' AS message, NOW() AS time
 
 
 @add_route('GET', '/hello/time')
-def get_hello_time(http_context,
-                   queue_in=None,
-                   config=None,
-                   sessions=None,
-                   commands=None):
+def get_hello_time(http_context, config=None, sessions=None):
     return api_function_wrapper_pg(config,
                                    http_context,
                                    sessions,
@@ -99,11 +91,7 @@ def say_hello_something(config, http_context):
 
 
 @add_route('GET', '/hello/'+T_SOMETHING)
-def get_hello_something(http_context,
-                        queue_in=None,
-                        config=None,
-                        sessions=None,
-                        commands=None):
+def get_hello_something(http_context, config=None, sessions=None):
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -133,11 +121,7 @@ def say_hello_something2(config, http_context):
 
 
 @add_route('GET', '/hello2/say')
-def get_hello_something2(http_context,
-                         queue_in=None,
-                         config=None,
-                         sessions=None,
-                         commands=None):
+def get_hello_something2(http_context, config=None, sessions=None):
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -167,11 +151,7 @@ def say_hello_something3(config, http_context):
 
 
 @add_route('POST', '/hello3/say')
-def get_hello_something3(http_context,
-                         queue_in=None,
-                         config=None,
-                         sessions=None,
-                         commands=None):
+def get_hello_something3(http_context, config=None, sessions=None):
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,
@@ -201,11 +181,7 @@ def say_hello_something4(config, http_context):
 
 
 @add_route('GET', '/hello4/'+T_SOMETHING)
-def get_hello_something4(http_context,
-                         queue_in=None,
-                         config=None,
-                         sessions=None,
-                         commands=None):
+def get_hello_something4(http_context, config=None, sessions=None):
     return api_function_wrapper(config,
                                 http_context,
                                 sessions,

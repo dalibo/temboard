@@ -24,7 +24,6 @@ def define_common_arguments(parser):
     )
 
 
-
 def cli(main):
     # A decorator to add consistent CLI bootstrap
     #
@@ -42,26 +41,27 @@ def cli(main):
 
         retcode = 1
         try:
-            setup_logging(level='DEBUG' if debug else 'ERROR')
-            logger.debug("Starting temBoard agent.")
-            retcode = main(argv, environ) or 1
+            try:
+                setup_logging(level='DEBUG' if debug else 'ERROR')
+                logger.debug("Starting temBoard agent.")
+                retcode = main(argv, environ) or 1
+            except pdb.bdb.BdbQuit:
+                logger.info("Graceful exit from debugger.")
+            except UserError as e:
+                retcode = e.retcode
+                logger.critical("%s", e)
+            except Exception:
+                logger.exception('Unhandled error:')
+                if debug:
+                    pdb.post_mortem(sys.exc_info()[2])
+                else:
+                    logger.error("This is a bug!")
+                    logger.error(
+                        "Please report traceback to "
+                        "https://github.com/dalibo/temboard-agent/issues! "
+                        "Thanks!"
+                    )
         except KeyboardInterrupt:
             logger.info('Terminated.')
-        except pdb.bdb.BdbQuit:
-            logger.info("Graceful exit from debugger.")
-        except UserError as e:
-            retcode = e.retcode
-            logger.critical("%s", e)
-        except Exception:
-            logger.exception('Unhandled error:')
-            if debug:
-                pdb.post_mortem(sys.exc_info()[2])
-            else:
-                logger.error("This is a bug!")
-                logger.error(
-                    "Please report traceback to "
-                    "https://github.com/dalibo/temboard-agent/issues! Thanks!"
-                )
-
         exit(retcode)
     return cli_wrapper

@@ -4,11 +4,7 @@ import activity.functions as activity_functions
 
 
 @add_route('GET', '/activity')
-def get_activity(http_context,
-                 queue_in=None,
-                 config=None,
-                 sessions=None,
-                 commands=None):
+def get_activity(http_context, config=None, sessions=None):
     """
 Get list of PostgreSQL backends.
 
@@ -89,11 +85,7 @@ Get list of PostgreSQL backends.
 
 
 @add_route('GET', '/activity/waiting')
-def get_activity_waiting(http_context,
-                         queue_in=None,
-                         config=None,
-                         sessions=None,
-                         commands=None):
+def get_activity_waiting(http_context, config=None, sessions=None):
     """
 Get list of PostgreSQL backends waiting for lock acquisition.
 
@@ -153,11 +145,7 @@ Get list of PostgreSQL backends waiting for lock acquisition.
 
 
 @add_route('GET', '/activity/blocking')
-def get_activity_blocking(http_context,
-                          queue_in=None,
-                          config=None,
-                          sessions=None,
-                          commands=None):
+def get_activity_blocking(http_context, config=None, sessions=None):
     """
 Get list of PostgreSQL backends blocking other backends due to lock acquisition.
 
@@ -218,11 +206,7 @@ Get list of PostgreSQL backends blocking other backends due to lock acquisition.
 
 
 @add_route('POST', '/activity/kill')
-def post_activity_kill(http_context,
-                       queue_in=None,
-                       config=None,
-                       sessions=None,
-                       commands=None):
+def post_activity_kill(http_context, config=None, sessions=None):
     """
 Terminate (kill) a list of PostgreSQL backends.
 

@@ -42,5 +42,8 @@ if [ "${DIST}" = "el6" ] ; then
     sudo yum install -y epel-release
 fi
 
+# Install temboard-sched
+sudo yum install -y https://packages.temboard.io/yum/rh${DIST}/temboard-sched-current.${DIST}.centos.noarch.rpm
+
 sudo yum install -y dist/rpm/noarch/temboard-agent-*${DIST}*.noarch.rpm
 temboard-agent --help

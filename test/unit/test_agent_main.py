@@ -20,8 +20,8 @@ def test_big_main(mocker):
     mocker.patch('temboardagent.scripts.agent.load_configuration')
     mocker.patch('temboardagent.scripts.agent.daemonize')
     mocker.patch('temboardagent.scripts.agent.httpd_run')
-    mocker.patch('temboardagent.scripts.agent.Process')
     mocker.patch('temboardagent.scripts.agent.purge_queue_dir')
+    mocker.patch('temboardagent.scripts.agent.taskmanager.TaskManager')
 
     from temboardagent.scripts.agent import main
 

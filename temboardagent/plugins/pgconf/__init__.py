@@ -9,8 +9,7 @@ from pgconf.types import (
 
 
 @add_route('GET', '/pgconf/configuration')
-def get_pg_configuration(http_context, queue_in=None, config=None,
-                         sessions=None, commands=None):
+def get_pg_configuration(http_context, config=None, sessions=None):
     """
 Get PostgreSQL settings from ``pg_settings`` system view and configuration files.
 
@@ -93,8 +92,7 @@ Get PostgreSQL settings from ``pg_settings`` system view and configuration files
 
 
 @add_route('GET', '/pgconf/configuration/categories')
-def get_pg_configuration_categories(http_context, queue_in=None, config=None,
-                                    sessions=None, commands=None):
+def get_pg_configuration_categories(http_context, config=None, sessions=None):
     """
 Get list of settings categories.
 
@@ -139,8 +137,7 @@ Get list of settings categories.
 
 
 @add_route('POST', '/pgconf/configuration')
-def post_pg_configuration(http_context, queue_in=None, config=None,
-                          sessions=None, commands=None):
+def post_pg_configuration(http_context, config=None, sessions=None):
     """
 Update one or many PostgreSQL settings values. This API issues ``ALTER SYSTEM`` SQL statements.
 
@@ -199,8 +196,7 @@ Update one or many PostgreSQL settings values. This API issues ``ALTER SYSTEM`` 
 
 
 @add_route('GET', '/pgconf/configuration/category/'+T_PGSETTINGS_CATEGORY)
-def get_pg_configuration_category(http_context, queue_in=None, config=None,
-                                  sessions=None, commands=None):
+def get_pg_configuration_category(http_context, config=None, sessions=None):
     """
 Get list of settings for one category, based on category name.
 
@@ -262,8 +258,7 @@ Get list of settings for one category, based on category name.
 
 
 @add_route('GET', '/pgconf/configuration/status')
-def get_pg_configuration_status(http_context, queue_in=None, config=None,
-                                sessions=None, commands=None):
+def get_pg_configuration_status(http_context, config=None, sessions=None):
     """
 Shows settings waiting for PostgreSQL server reload and/or restart
 
@@ -326,8 +321,7 @@ Shows settings waiting for PostgreSQL server reload and/or restart
 
 
 @add_route('GET', '/pgconf/hba')
-def get_pg_hba(http_context, queue_in=None, config=None, sessions=None,
-               commands=None):
+def get_pg_hba(http_context, config=None, sessions=None):
     """
 Get records from the ``pg_hba.conf`` file.
 
@@ -410,8 +404,7 @@ Get records from the ``pg_hba.conf`` file.
 
 
 @add_route('GET', '/pgconf/hba/raw')
-def get_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
-                   commands=None):
+def get_pg_hba_raw(http_context, config=None, sessions=None):
     """
 Get raw content of ``pg_hba.conf`` file.
 
@@ -474,8 +467,7 @@ Get raw content of ``pg_hba.conf`` file.
 
 
 @add_route('POST', '/pgconf/hba')
-def post_pg_hba(http_context, queue_in=None, config=None, sessions=None,
-                commands=None):
+def post_pg_hba(http_context, config=None, sessions=None):
     """
 Writes ``pg_hba.conf`` file content.
 
@@ -529,8 +521,7 @@ Writes ``pg_hba.conf`` file content.
 
 
 @add_route('POST', '/pgconf/hba/raw')
-def post_pg_hba_raw(http_context, queue_in=None, config=None, sessions=None,
-                    commands=None):
+def post_pg_hba_raw(http_context, config=None, sessions=None):
     """
 Writes ``pg_hba.conf`` file content. Raw mode.
 
@@ -576,8 +567,7 @@ Writes ``pg_hba.conf`` file content. Raw mode.
 
 
 @add_route('DELETE', '/pgconf/hba')
-def delete_pg_hba(http_context, queue_in=None, config=None, sessions=None,
-                  commands=None):
+def delete_pg_hba(http_context, config=None, sessions=None):
     """
 Remove a version of ``pg_hba.conf`` file.
 
@@ -631,8 +621,7 @@ Remove a version of ``pg_hba.conf`` file.
 
 
 @add_route('GET', '/pgconf/hba/versions')
-def get_pg_hba_versions(http_context, queue_in=None, config=None,
-                        sessions=None, commands=None):
+def get_pg_hba_versions(http_context, config=None, sessions=None):
     """
 Get the list of ``pg_hba.conf`` versions.
 
@@ -678,8 +667,7 @@ Get the list of ``pg_hba.conf`` versions.
 
 
 @add_route('GET', '/pgconf/pg_ident')
-def get_pg_ident(http_context, queue_in=None, config=None, sessions=None,
-                 commands=None):
+def get_pg_ident(http_context, config=None, sessions=None):
     """
 Get raw content of ``pg_ident.conf`` file
 
@@ -720,8 +708,7 @@ Get raw content of ``pg_ident.conf`` file
 
 
 @add_route('POST', '/pgconf/pg_ident')
-def post_pg_ident(http_context, queue_in=None, config=None, sessions=None,
-                  commands=None):
+def post_pg_ident(http_context, config=None, sessions=None):
     """
 Write ``pg_ident.conf`` file content. Raw mode.
 
@@ -765,8 +752,7 @@ Write ``pg_ident.conf`` file content. Raw mode.
 
 
 @add_route('GET', '/pgconf/hba/options')
-def get_hba_options(http_context, queue_in=None, config=None, sessions=None,
-                    commands=None):
+def get_hba_options(http_context, config=None, sessions=None):
     """
 Get HBA potential values for each column.
 
