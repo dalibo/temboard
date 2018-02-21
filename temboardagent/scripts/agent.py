@@ -117,9 +117,15 @@ def main(argv, environ):
     # Creation of the session list (max 100).
     sessions = Sessions(100)
 
+    # TaskManager
+    # Remove socket if any
+    tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
+    if os.path.exists(tm_sock_path):
+        os.path.unlink(tm_sock_path)
+
     tm = taskmanager.TaskManager(
             task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
-            address=os.path.join(config.temboard['home'], '.tm.socket')
+            address=tm_sock_path
          )
     # copy configuration into context as a dict
     tm.set_context('config', {'plugins': config.plugins.__dict__.get('data'),
