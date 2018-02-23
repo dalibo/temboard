@@ -1,8 +1,8 @@
 $icon-font-path: "../fonts/" !default;
-$brand-primary: #3c424c;
-$brand-success: #1d9d74;
-$navbar-inverse-bg: $brand-primary;
-$link-color: lighten(saturate($brand-primary, 15%), 15%);
+$primary: #3c424c;
+$success: #1d9d74;
+$navbar-inverse-bg: $primary;
+$link-color: lighten(saturate($primary, 15%), 15%);
 
 $input-border-focus: $link-color;
 $grid-gutter-width: 20px;

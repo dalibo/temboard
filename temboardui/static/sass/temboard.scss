@@ -45,7 +45,7 @@
   }
 
   .list-group-item:hover {
-    background-color: $table-bg-hover;
+    background-color: $table-hover-bg;
   }
 
   .sparkline-container {
@@ -111,7 +111,7 @@
   border-bottom: 0px;
 
   &.panel-heading-inverse {
-    background-color: $brand-primary;
+    background-color: $primary;
   }
 }
 
@@ -279,9 +279,10 @@ table tbody tr td span {
 #daterange {
   width: 300px;
   cursor: pointer;
-  border: 1px solid $input-border;
+  border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
-  padding: $padding-small-vertical $padding-small-horizontal;
+  /* FIXME */
+  padding: $spacer $spacer;
 }
 
 #HBATable {
@@ -343,7 +344,7 @@ td.date {
 }
 
 $glow-color-start: white;
-$glow-color-end: lighten($brand-primary, 30%);
+$glow-color-end: lighten($primary, 30%);
 @keyframes glowing {
   0% { box-shadow: 0 0 3px $glow-color-start; }
   50% { box-shadow: 0 0 10px $glow-color-end; }
@@ -355,9 +356,8 @@ $glow-color-end: lighten($brand-primary, 30%);
 }
 
 .btn-danger {
-  color: darken($brand-danger, 5%);
+  color: darken($danger, 5%);
   background-color: white;
-  border-color: $btn-default-border;
 }
 
 .table-no-margin {

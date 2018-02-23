@@ -1,7 +1,9 @@
 {
   "name": "temboard",
   "dependencies": {
-    "bootstrap-sass": "^3.3.7"
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.2.1",
+    "popper.js": "^1.12.3"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.7",
