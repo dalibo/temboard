@@ -302,8 +302,8 @@ class TestActivity:
         tablename = 'testtablew'
         create_database(dbname)
         create_table(dbname, tablename)
-        # Lock table in exclusive mode in a dedicated process for 3 seconds.
-        p1 = Process(target=lock_table_exclusive, args=(dbname, tablename, 3))
+        # Lock table in exclusive mode in a dedicated process for 5 seconds.
+        p1 = Process(target=lock_table_exclusive, args=(dbname, tablename, 5))
         p1.start()
         # Sleep a bit
         time.sleep(1)
@@ -356,7 +356,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['pid']) == int
         assert type(dict_data['rows'][0]['database']) == unicode
         assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) == float
+        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
         assert type(dict_data['rows'][0]['memory']) == float
         assert type(dict_data['rows'][0]['read_s']) == unicode
         assert type(dict_data['rows'][0]['write_s']) == unicode
@@ -366,11 +366,11 @@ class TestActivity:
         assert dict_data['rows'][0]['type'] == u'relation'
         assert type(dict_data['rows'][0]['mode']) == unicode
         assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
-        assert type(dict_data['rows'][0]['duration']) == float
-        assert type(dict_data['rows'][0]['state']) == unicode
+        assert type(dict_data['rows'][0]['duration']) in (float, int)
+        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) == unicode
 
-    def test_04_activity_blocking(self):
+    def  test_04_activity_blocking(self):
         """
         [activity] 04: GET /activity/blocking : Check HTTP code (200) and the whole data structure
         """  # noqa
@@ -380,8 +380,8 @@ class TestActivity:
         tablename = 'testtableb'
         create_database(dbname)
         create_table(dbname, tablename)
-        # Lock table in exclusive mode in a dedicated process for 3 seconds.
-        p1 = Process(target=lock_table_exclusive, args=(dbname, tablename, 3))
+        # Lock table in exclusive mode in a dedicated process for 5 seconds.
+        p1 = Process(target=lock_table_exclusive, args=(dbname, tablename, 5))
         p1.start()
         # Sleep a bit
         time.sleep(1)
@@ -434,7 +434,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['pid']) == int
         assert type(dict_data['rows'][0]['database']) == unicode
         assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) == float
+        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
         assert type(dict_data['rows'][0]['memory']) == float
         assert type(dict_data['rows'][0]['read_s']) == unicode
         assert type(dict_data['rows'][0]['write_s']) == unicode
@@ -444,6 +444,6 @@ class TestActivity:
         assert dict_data['rows'][0]['type'] == u'relation'
         assert type(dict_data['rows'][0]['mode']) == unicode
         assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
-        assert type(dict_data['rows'][0]['duration']) == float
-        assert type(dict_data['rows'][0]['state']) == unicode
+        assert type(dict_data['rows'][0]['duration']) in (float, int)
+        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) == unicode
