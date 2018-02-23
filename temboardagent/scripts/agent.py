@@ -124,8 +124,9 @@ def main(argv, environ):
         os.unlink(tm_sock_path)
 
     tm = taskmanager.TaskManager(
-            task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
-            address=tm_sock_path
+            task_path=str(os.path.join(config.temboard['home'],
+                                       '.tm.task_list')),
+            address=str(tm_sock_path)
          )
     # copy configuration into context as a dict
     tm.set_context('config', {'plugins': config.plugins.__dict__.get('data'),
