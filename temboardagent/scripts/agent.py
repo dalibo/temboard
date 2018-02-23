@@ -121,7 +121,7 @@ def main(argv, environ):
     # Remove socket if any
     tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
     if os.path.exists(tm_sock_path):
-        os.path.unlink(tm_sock_path)
+        os.unlink(tm_sock_path)
 
     tm = taskmanager.TaskManager(
             task_path=os.path.join(config.temboard['home'], '.tm.task_list'),
