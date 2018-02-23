@@ -356,7 +356,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['pid']) == int
         assert type(dict_data['rows'][0]['database']) == unicode
         assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) == float
+        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
         assert type(dict_data['rows'][0]['memory']) == float
         assert type(dict_data['rows'][0]['read_s']) == unicode
         assert type(dict_data['rows'][0]['write_s']) == unicode
@@ -366,8 +366,8 @@ class TestActivity:
         assert dict_data['rows'][0]['type'] == u'relation'
         assert type(dict_data['rows'][0]['mode']) == unicode
         assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
-        assert type(dict_data['rows'][0]['duration']) == float
-        assert type(dict_data['rows'][0]['state']) == unicode
+        assert type(dict_data['rows'][0]['duration']) in (float, int)
+        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) == unicode
 
     def test_04_activity_blocking(self):
@@ -434,7 +434,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['pid']) == int
         assert type(dict_data['rows'][0]['database']) == unicode
         assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) == float
+        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
         assert type(dict_data['rows'][0]['memory']) == float
         assert type(dict_data['rows'][0]['read_s']) == unicode
         assert type(dict_data['rows'][0]['write_s']) == unicode
@@ -444,6 +444,6 @@ class TestActivity:
         assert dict_data['rows'][0]['type'] == u'relation'
         assert type(dict_data['rows'][0]['mode']) == unicode
         assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
-        assert type(dict_data['rows'][0]['duration']) == float
-        assert type(dict_data['rows'][0]['state']) == unicode
+        assert type(dict_data['rows'][0]['duration']) in (float, int)
+        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) == unicode
