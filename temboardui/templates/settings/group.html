@@ -16,7 +16,7 @@
       <div class="modal-body" id="GroupModalBody">
       </div>
       <div class="modal-footer" id="GroupModalFooter">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -56,10 +56,10 @@
         <td>{% for ari in group_item.ari %} <span class="label label-default">{{ari.role_group_name}}</span>{% end %}</td>
         {% end %}
         <td class="text-center">
-          <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-xs" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
         </td>
         <td class="text-center">
-          <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="fa fa-trash-o"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-xs" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="fa fa-trash-o"></i></button>
         </td>
       </tr>
     {% end %}
