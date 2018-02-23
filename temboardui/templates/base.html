@@ -63,28 +63,27 @@
     <script src="/js/sb-admin-2.js"></script>
     {% if nav %}
     <!-- Navigation -->
-    <div class="navbar navbar-default navbar-static-top navbar-inverse">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/home">
-            <img id="logo" src="/images/temboard-150x32-w.png" />
-          </a>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
+    <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand mb-4">
+      <div class="collapse navbar-collapse">
+        <a class="navbar-brand mr-auto" href="/home">
+          <img id="logo" src="/images/temboard-150x32-w.png" />
+        </a>
+        <ul class="navbar-nav">
           {% try %}
           {% if role.is_admin %}
-          <li class="{{'active' if globals().get('request') and 'settings' in request.uri else ''}}">
+          <li class="{{'active' if globals().get('request') and 'settings' in request.uri else ''}} nav-item">
             <a href="/settings/instances"
                data-toggle="tooltip"
                data-placement="bottom"
+               class="nav-link"
                title="Manage instances and users">
               <i class="fa fa-wrench"></i>
               Settings
             </a>
           </li>
           {% end %}
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          <li class="dropdown nav-item">
+            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
               <i class="fa fa-user"></i>
               <span class="caret"></span>
             </a>
