@@ -87,13 +87,11 @@
               <i class="fa fa-user"></i>
               <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu">
-              <li class="dropdown-header">Signed in as <b>{{role.role_name}}</b></li>
-              <li role="separator" class="divider"></li>
-              <li>
-                <a href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
-              </li>
-            </ul>
+            <div class="dropdown-menu dropdown-menu-right">
+              <h6 class="dropdown-header">Signed in as <b>{{role.role_name}}</b></h6>
+              <span role="separator" class="dropdown-divider"></span>
+              <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+            </div>
           </li>
           {% except %}
           {% end %}
