@@ -71,25 +71,12 @@
   height: 100%;
 }
 
-.row-dashboard {
-  .panel-body table {
-    width: 100%;
-  }
-
-  .panel-body {
-    height: 190px;
-  }
+.card-body table {
+  width: 100%;
 }
 
-.table-dashboard-info > tbody > tr > {
-  th {
-    font-weight: normal;
-  }
-
-  td {
-    font-weight: bold;
-    text-align: right;
-  }
+.dashboard .card-body {
+  height: 190px;
 }
 
 .popover-title {

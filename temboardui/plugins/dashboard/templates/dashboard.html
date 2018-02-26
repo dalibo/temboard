@@ -4,43 +4,43 @@
 
 {% block content %}
 
-<div class="row">
+<div class="row dashboard">
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Informations
       </div>
       <!-- /.card-header -->
       <div class="card-body">
-        <table class="table-dashboard-info">
+        <table class="w-100 small">
         <tbody>
         <tr>
           <th>OS:</th>
-          <td id="os_version">{{ dashboard['os_version'] }}</td>
+          <td id="os_version" class="text-right">{{ dashboard['os_version'] }}</td>
         </tr>
         <tr>
           <th>CPU:</th>
-          <td id="cpu">{{ dashboard['n_cpu'] }}</td>
+          <td id="cpu" class="text-right">{{ dashboard['n_cpu'] }}</td>
         </tr>
         <tr>
           <th>Memory:</th>
-          <td id="memory" data-type="size">{{ dashboard['memory']['total'] * 1000 }}</td>
+          <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
         <tr>
           <th>Databases size:</th>
-          <td id="size">{{ dashboard['databases']['total_size'] }}</td>
+          <td id="size" class="text-right">{{ dashboard['databases']['total_size'] }}</td>
         </tr>
         <tr>
           <th>Number of database:</th>
-          <td id="nb_db">{{ dashboard['databases']['databases'] }}</td>
+          <td id="nb_db" class="text-right">{{ dashboard['databases']['databases'] }}</td>
         </tr>
         <tr>
           <th>Uptime:</th>
-          <td id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
+          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
         </tr>
         <tr>
           <th>Current time:</th>
-          <td id="time">{{ dashboard['databases']['time'] }}</td>
+          <td id="time" class="text-right">{{ dashboard['databases']['time'] }}</td>
         </tr>
         </tbody>
         </table>
@@ -48,7 +48,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         TPS <div class="pull-right">Commit:<span id="tps_commit" class="label label-success">0</span> Rollback: <span id="tps_rollback" class="label label-danger">0</span></div>
       </div>
@@ -61,7 +61,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Loadaverage <div class="pull-right"><span id="loadaverage" class="label label-primary">{{dashboard['loadaverage']}}</span></div>
       </div>
@@ -74,7 +74,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         CPU usage
       </div>
@@ -87,7 +87,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Memory usage
       </div>
@@ -100,7 +100,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Cache Hit ratio
       </div>
@@ -113,7 +113,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Buffers <div class="pull-right"><span id="buffers_delta" class="label label-primary">{{buffers_delta}}</span></div>
       </div>
@@ -126,7 +126,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Active backends <div class="pull-right"><span id="backends" class="label label-primary">{{dashboard['active_backends']['nb']}}</span></div>
       </div>
@@ -139,7 +139,7 @@
     </div>
   </div>
   <div class="col-lg-6 col-xl-4">
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-header">
         Notifications
       </div>
