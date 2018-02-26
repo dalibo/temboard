@@ -15,7 +15,7 @@
       <div class="modal-body" id="ModalBody">
       </div>
       <div class="modal-footer" id="ModalFooter">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -23,12 +23,12 @@
 {% include menu.html %}
 <div class="row">
   <div class="col-md-12">
-    <button type="button" class="btn btn-default btn-sm" id="pauseButton">
+    <button type="button" class="btn btn-secondary btn-sm" id="pauseButton">
       <i class="fa fa-pause"></i> Pause
     </button>
     <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-    <button type="button" class="btn btn-default btn-sm hide" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
-    <button type="button" class="btn btn-danger btn-sm hide" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
+    <button type="button" class="btn btn-secondary btn-sm d-none" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
+    <button type="button" class="btn btn-danger btn-sm d-none" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
   </div>
 </div>
 <div class="row" id="configuration-row">
