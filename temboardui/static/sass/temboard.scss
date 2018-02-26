@@ -266,12 +266,11 @@ table tbody tr td span {
 }
 
 #daterange {
-  width: 300px;
+  width: 320px;
   cursor: pointer;
   border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
-  /* FIXME */
-  padding: $spacer $spacer;
+  padding: $input-btn-padding-y $input-btn-padding-x;
 }
 
 #HBATable {
