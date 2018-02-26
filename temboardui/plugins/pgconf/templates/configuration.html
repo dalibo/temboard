@@ -200,14 +200,14 @@ $('#reloadYesButton').on(
       <label class="sr-only" for="selectServer">Search</label>
       <div class="input-group">
         <input class="form-control" id="inputSearchSettings" name="filter" placeholder="Find in settings" value="{{query_filter if query_filter is not None else ''}}"/>
-        <span class="input-group-btn">
+        <span class="input-group-append">
           {% if query_filter %}
-          <a class="btn btn-default"
+          <a class="btn btn-outline-secondary"
              href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration">
             <i class="fa fa-fw fa-times"></i>
           </a>
           {% end %}
-          <button type="submit" class="btn btn-default" id="buttonSearchSettings">
+          <button type="submit" class="btn btn-outline-secondary" id="buttonSearchSettings">
             <i class="fa fa-fw fa-search"></i>
           </button>
         </span>
@@ -217,7 +217,11 @@ $('#reloadYesButton').on(
   <div class="col-md-7 col-md-offset-2">
     <label class="sr-only" for="selectConfCat">Category</label>
     <div class="input-group">
-      <div class="input-group-addon">Category</div>
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          Category
+        </div>
+      </div>
       <select class="form-control" id="selectConfCat" {{'disabled' if query_filter else ''}}>
         {% if not query_filter %}
         {% for cat in configuration_categories['categories'] %}
