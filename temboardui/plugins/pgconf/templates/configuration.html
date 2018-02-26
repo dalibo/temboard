@@ -246,12 +246,12 @@ $('#reloadYesButton').on(
       <div class="card-header">{{setting_group['category']}}</div>
       <div class="card-body">
         <form role="form" method="post">
-        <table class="table table-condensed">
+        <table class="table table-sm">
         {% for setting_row in setting_group['rows'] %}
           <tr>
             <td class="label-setting">
               <span class="title-setting">{{setting_row['name']}}</span>
-              <p class="desc-setting mb-0">{{setting_row['desc']}}</p>
+              <p class="text-muted mb-0 small">{{setting_row['desc']}}</p>
             </td>
             <td class="input-setting">
               {% if setting_row['vartype'] == 'bool' %}
