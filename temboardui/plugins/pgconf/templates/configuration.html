@@ -242,9 +242,9 @@ $('#reloadYesButton').on(
 <div class="row">
   <div class="col-md-12">
   {% for setting_group in data %}
-    <div class="panel panel-default">
-      <div class="panel-heading">{{setting_group['category']}}</div>
-      <div class="panel-body">
+    <div class="card">
+      <div class="card-header">{{setting_group['category']}}</div>
+      <div class="card-body">
         <form role="form" method="post">
         <table class="table table-condensed">
         {% for setting_row in setting_group['rows'] %}
