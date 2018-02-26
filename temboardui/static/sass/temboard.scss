@@ -17,7 +17,7 @@
   margin-bottom: 10px;
 }
 
-@media (min-width:992px) {
+@include media-breakpoint-up(lg) {
   .sidebar-fixed-width {
     width: inherit;
     min-width: 300px;
@@ -28,6 +28,8 @@
 
   .main {
     width:calc(100% - 300px);
+    max-width: none;
+    flex: none;
   }
 }
 
