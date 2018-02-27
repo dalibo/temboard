@@ -31,7 +31,7 @@
 {% try %}
 {% if ret_post and len(ret_post['settings']) > 0%}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
@@ -60,7 +60,7 @@
 {% try %}
 {% if error_code > 0%}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="error-configuration" class="alert alert-danger" role="alert">
       <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
       <p>{{error_code}}: {{error_message}}</p>
@@ -73,7 +73,7 @@
 
 {% if configuration_status['restart_pending'] is True %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
       <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
       <p> Some changes are pending and PostgreSQL should be restarted:</p>
@@ -96,7 +96,7 @@
         {% end %}
       </table>
       <div class="row">
-        <div class="col-md-12 text-center">
+        <div class="col-12 text-center">
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#restartModal">Restart PostgreSQL</button>
         </div>
       </div>
@@ -136,7 +136,7 @@ $('#restartYesButton').on(
 {% end %}
 {% if configuration_status['reload_pending'] is True %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
@@ -156,7 +156,7 @@ $('#restartYesButton').on(
         {% end %}
       </table>
       <div class="row">
-        <div class="col-md-12 text-center">
+        <div class="col-12 text-center">
           <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadModal">Reload configuration</button>
         </div>
       </div>
@@ -195,7 +195,7 @@ $('#reloadYesButton').on(
 </script>
 {% end %}
 <div class="row form-group">
-  <div class="col-md-3 mr-auto">
+  <div class="col-3 mr-auto">
     <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration" class="form" role="search">
       <label class="sr-only" for="selectServer">Search</label>
       <div class="input-group">
@@ -214,7 +214,7 @@ $('#reloadYesButton').on(
       </div>
     </form>
   </div>
-  <div class="col-md-7">
+  <div class="col-7">
     <label class="sr-only" for="selectConfCat">Category</label>
     <div class="input-group">
       <div class="input-group-prepend">
@@ -240,11 +240,11 @@ $('#reloadYesButton').on(
 </div>
 {% if len(data) == 0 %}
 <div class="row">
-  <div class="col-md-12"><p>No results found...</p></div>
+  <div class="col-12"><p>No results found...</p></div>
 </div>
 {% end %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
   {% for setting_group in data %}
     <div class="card">
       <div class="card-header">{{setting_group['category']}}</div>
@@ -279,7 +279,7 @@ $('#reloadYesButton').on(
         {% end %}
         </table>
         <div class="row">
-          <div class="col-md-12 text-center">
+          <div class="col-12 text-center">
             <button type="submit" class="btn btn-sm btn-success">Save and reload configuration</button>
           </div>
         </div>
