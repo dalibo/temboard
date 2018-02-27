@@ -11,7 +11,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Info').html('');
       $('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -75,7 +75,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group">';
       body_html += '      <div class="col-sm-12 text-center">';
-      body_html += '        <button type="button" id="buttonDiscover" class="btn btn-default">';
+      body_html += '        <button type="button" id="buttonDiscover" class="btn btn-outline-secondary">';
       body_html += '        <i class="fa fa-download"></i>';
       body_html += '        Get instance\'s information</button>';
       body_html += '      </div>';
@@ -84,37 +84,37 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '  <div class="row"><br />';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputCpu" class="control-label">Number of CPU</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputCpu" placeholder="Number of CPU" value="'+null2void(data['cpu'])+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputCpu" placeholder="Number of CPU" value="'+null2void(data['cpu'])+'">';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputMemorySize" class="control-label">Memory size (bytes)</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputMemorySize" placeholder="Memory size (byte)" value="'+null2void(data['memory_size'])+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputMemorySize" placeholder="Memory size (byte)" value="'+null2void(data['memory_size'])+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputHostname" class="control-label">Hostname</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputHostname" placeholder="Hostname" value="'+data['hostname']+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputHostname" placeholder="Hostname" value="'+data['hostname']+'">';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgData" class="control-label">PostgreSQL data directory</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgData" placeholder="PostgreSQL data directory" value="'+data['pg_data']+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgData" placeholder="PostgreSQL data directory" value="'+data['pg_data']+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgPort" class="control-label">PostgreSQL port</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgPort" placeholder="PostgreSQL port" value="'+null2void(data['pg_port'])+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgPort" placeholder="PostgreSQL port" value="'+null2void(data['pg_port'])+'">';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgVersion" class="control-label">PostgreSQL version</label><br />';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgVersion" placeholder="PostgreSQL version" value="'+data['pg_version']+'">';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgVersion" placeholder="PostgreSQL version" value="'+data['pg_version']+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<button type="submit" id="submitFormUpdateInstance" class="btn btn-success">Save</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
 
       // Write the form.
       $('#'+modal_id+'Body').html(body_html);
@@ -222,7 +222,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -230,7 +230,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
     success: function (data) {
       var footer_html = '';
       footer_html += '<button type="submit" id="buttonDeleteInstance" class="btn btn-danger">Yes, delete this instance</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
       $('#'+modal_id+'Label').html('Delete instance confirmation');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
@@ -244,7 +244,7 @@ function load_delete_instance_confirm(modal_id, agent_address, agent_port)
       $('#'+modal_id+'Label').html('Delete instance confirmation');
       $('#'+modal_id+'Info').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
       $('#'+modal_id+'Body').html('');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     }
   });
 }
@@ -288,7 +288,7 @@ function load_add_instance_form(modal_id)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Info').html('');
       $('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -342,40 +342,40 @@ function load_add_instance_form(modal_id)
       body_html += '      <button type="button" id="buttonDiscover" class="btn btn-success">Get instance\'s informations</button>';
       body_html += '    </div>';
       body_html += '  </div>';
-      body_html += '  <div class="row"><br />';
+      body_html += '  <div class="row mt-2">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputCpu" class="control-label">Number of CPU</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputCpu" placeholder="Number of CPU" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputCpu" placeholder="Number of CPU" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputMemorySize" class="control-label">Memory size (bytes)</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputMemorySize" placeholder="Memory size (byte)" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputMemorySize" placeholder="Memory size (byte)" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputHostname" class="control-label">Hostname</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputHostname" placeholder="Hostname" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputHostname" placeholder="Hostname" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgData" class="control-label">PostgreSQL data directory</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgData" placeholder="PostgreSQL data directory" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgData" placeholder="PostgreSQL data directory" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgPort" class="control-label">PostgreSQL port</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgPort" placeholder="PostgreSQL port" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgPort" placeholder="PostgreSQL port" />';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputPgVersion" class="control-label">PostgreSQL version</label>';
-      body_html += '      <input type="text" class="form-control input-sm" id="inputPgVersion" placeholder="PostgreSQL version" />';
+      body_html += '      <input type="text" class="form-control form-control-sm" id="inputPgVersion" placeholder="PostgreSQL version" />';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<button type="submit" id="submitFormAddInstance" class="btn btn-success">Save</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
 
       // Write the form.
       $('#'+modal_id+'Body').html(body_html);

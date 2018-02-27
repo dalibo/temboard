@@ -11,7 +11,7 @@ function load_update_user_form(modal_id, username)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Info').html('');
       $('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -36,7 +36,7 @@ function load_update_user_form(modal_id, username)
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
       body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
       body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <p class="form-text text-muted"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
@@ -79,7 +79,7 @@ function load_update_user_form(modal_id, username)
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<button type="submit" id="submitFormUpdateUser" class="btn btn-success">Save</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
       // Write the form.
       $('#'+modal_id+'Body').html(body_html);
       $('#'+modal_id+'Footer').html(footer_html);
@@ -156,7 +156,7 @@ function load_delete_user_confirm(modal_id, username)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Info').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
       $('#'+modal_id+'Body').html('');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -164,7 +164,7 @@ function load_delete_user_confirm(modal_id, username)
     success: function (data) {
       var footer_html = '';
       footer_html += '<button type="submit" id="buttonDeleteUser" class="btn btn-danger">Yes, delete this user</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
       $('#'+modal_id+'Label').html('Delete user confirmation');
       $('#'+modal_id+'Body').html('');
       $('#'+modal_id+'Footer').html(footer_html);
@@ -177,7 +177,7 @@ function load_delete_user_confirm(modal_id, username)
       $('#'+modal_id+'Label').html('Delete user confirmation');
       $('#'+modal_id+'Info').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
       $('#'+modal_id+'Body').html('');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     }
   });
 }
@@ -221,7 +221,7 @@ function load_add_user_form(modal_id)
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Info').html('');
       $('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -246,7 +246,7 @@ function load_add_user_form(modal_id)
       body_html += '      <label for="inputPassword" class="control-label">Password&#42;</label>';
       body_html += '      <input type="password" class="form-control" id="inputPassword" placeholder="Password" />';
       body_html += '      <input type="password" class="form-control" id="inputPassword2" placeholder="Confirm password" />';
-      body_html += '      <p class="help-block"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
+      body_html += '      <p class="form-text text-muted"><small>&#42;: leave this field blank to keep it unchanged.</small></p>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
@@ -273,7 +273,7 @@ function load_add_user_form(modal_id)
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<button type="submit" id="submitFormAddUser" class="btn btn-success">Save</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
       // Write the form.
       $('#'+modal_id+'Body').html(body_html);
       $('#'+modal_id+'Footer').html(footer_html);
