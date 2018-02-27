@@ -342,3 +342,10 @@ $glow-color-end: lighten($primary, 30%);
 .table-no-margin {
   margin-bottom: 0;
 }
+
+// dataTables wraps the table in a fluid container
+// This adds margins. Here we remove them.
+.row .dataTables_wrapper {
+  padding-right: 0;
+  padding-left: 0;
+}
