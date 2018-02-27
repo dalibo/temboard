@@ -5,11 +5,11 @@
 {% block content %}
 <div class="limiter">
 <div class="row">
-  <div class="col-md-12">
-    <table id="tableNotifications" class="table table-condensed table-striped" cellspacing="0">
+  <div class="col-12">
+    <table id="tableNotifications" class="table table-sm table-striped" cellspacing="0">
     <thead>
       <tr>
-        <th width="110">Date</th>
+        <th width="150">Date</th>
         <th>Username</th>
         <th>Content</th>
       </tr>
@@ -18,7 +18,7 @@
       {% for notification in notifications %}
       <tr>
         <td class="date">{{notification['date']}}</td>
-        <td><span class="label label-success">{{notification['username']}}</span></td>
+        <td><span class="badge badge-success">{{notification['username']}}</span></td>
         <td>{{notification['message']}}</td>
       </tr>
       {% end %}
