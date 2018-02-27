@@ -37,9 +37,9 @@
 {% end %}
 <div class="row">
   <div class="col-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">{{file_content['filepath']}}</div>
-      <div class="panel-body">
+    <div class="card">
+      <div class="card-header">{{file_content['filepath']}}</div>
+      <div class="card-body">
         <form role="form" method="post">
           <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
           <div class="row">
