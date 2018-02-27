@@ -195,7 +195,7 @@ $('#reloadYesButton').on(
 </script>
 {% end %}
 <div class="row form-group">
-  <div class="col-md-3">
+  <div class="col-md-3 mr-auto">
     <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration" class="form" role="search">
       <label class="sr-only" for="selectServer">Search</label>
       <div class="input-group">
@@ -214,7 +214,7 @@ $('#reloadYesButton').on(
       </div>
     </form>
   </div>
-  <div class="col-md-7 col-md-offset-2">
+  <div class="col-md-7">
     <label class="sr-only" for="selectConfCat">Category</label>
     <div class="input-group">
       <div class="input-group-prepend">
