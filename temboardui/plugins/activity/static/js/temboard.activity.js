@@ -5,8 +5,8 @@ function html_error_modal(code, error)
   error_html += '   <div class="modal-dialog">';
   error_html += '     <div class="modal-content">';
   error_html += '       <div class="modal-header">';
-  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
   error_html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
+  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
   error_html += '       </div>';
   error_html += '       <div class="modal-body">';
   error_html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
