@@ -11,7 +11,7 @@ function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal
     beforeSend: function(xhr){
       $('#'+modal_id+'Label').html('Processing, please wait...');
       $('#'+modal_id+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>');
       xhr.setRequestHeader('X-Session', xsession);
     },
     async: true,
@@ -99,7 +99,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
       $('#'+modalid+'Label').html('Processing, please wait...');
       $('#'+modalid+'Info').html('');
       $('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
     },
     async: true,
     contentType: "application/json",
@@ -190,7 +190,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<button type="submit" id="submitFormUpdateHBARow" class="btn btn-success">Save</button>';
-      footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+      footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
 
       // Write the form.
       $('#'+modalid+'Body').html(body_html);
@@ -409,8 +409,8 @@ function get_row_html(row)
   var row_html = '';
   row_html += '<tr data-line-number="'+row.line+'">';
   row_html += ' <td>';
-  row_html += '   <button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>';
-  row_html += '   <button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>';
+  row_html += '   <button type="button" class="btn btn-outline-secondary btn-sm up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>';
+  row_html += '   <button type="button" class="btn btn-outline-secondary btn-sm down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>';
   row_html += ' </td>';
   row_html += ' <td class="text-center"><span class="no">'+row.line+'</span></td>';
 
@@ -434,8 +434,8 @@ function get_row_html(row)
     row_html += '<td class="auth_options">'+row.auth_options+'</td>';
   }
   row_html += ' <td>';
-  row_html += '   <button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>';
-  row_html += '   <button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>';
+  row_html += '   <button type="button" class="btn btn-outline-secondary btn-sm edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>';
+  row_html += '   <button type="button" class="btn btn-outline-secondary btn-sm remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>';
   row_html += ' </td>';
   row_html += '</tr>';
   return row_html;
@@ -485,7 +485,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
       $('#'+modalid+'Label').html('Processing, please wait...');
       $('#'+modalid+'Info').html('');
       $('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
       $('#'+modalid).modal('show');
     },
     async: true,
@@ -504,7 +504,7 @@ function save_hba_table(tableid, modalid, agent_address, agent_port, xsession)
       if (xhr.status == 401)
       {
         $('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert"><h4><i class="fa fa-ban fa-fw"></i> Error:</h4><p>Session expired.</p></div></div></div>');
-        $('#'+modalid+'Footer').html('<a class="btn btn-danger" id="ConfirmOK" href="/server/'+agent_address+'/'+agent_port+'/login">Back to login page</a> <button type="button" id="buttonOK" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+        $('#'+modalid+'Footer').html('<a class="btn btn-danger" id="ConfirmOK" href="/server/'+agent_address+'/'+agent_port+'/login">Back to login page</a> <button type="button" id="buttonOK" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
       } else {
         $('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert"><h4><i class="fa fa-ban fa-fw"></i> Error:</h4><p>'+render_xhr_error(xhr)+'</p></div></div></div>');
       }
@@ -523,7 +523,7 @@ function delete_hba(modalid, agent_address, agent_port, xsession, version)
       $('#'+modalid+'Label').html('Processing, please wait...');
       $('#'+modalid+'Info').html('');
       $('#'+modalid+'Body').html('<div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>');
-      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+      $('#'+modalid+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
       $('#'+modalid).modal('show');
     },
     async: true,
@@ -542,7 +542,7 @@ function delete_hba(modalid, agent_address, agent_port, xsession, version)
       if (xhr.status == 401)
       {
         $('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert"><h4><i class="fa fa-ban fa-fw"></i> Error:</h4><p>Session expired.</p></div></div></div>');
-        $('#'+modalid+'Footer').html('<a class="btn btn-danger" id="ConfirmOK" href="/server/'+agent_address+'/'+agent_port+'/login">Back to login page</a> <button type="button" id="buttonOK" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+        $('#'+modalid+'Footer').html('<a class="btn btn-danger" id="ConfirmOK" href="/server/'+agent_address+'/'+agent_port+'/login">Back to login page</a> <button type="button" id="buttonOK" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
       } else {
         $('#'+modalid+'Body').html('<div class="row"><div class="col-md-12"><div class="alert alert-danger" role="alert"><h4><i class="fa fa-ban fa-fw"></i> Error:</h4><p>'+render_xhr_error(xhr)+'</p></div></div></div>');
       }
