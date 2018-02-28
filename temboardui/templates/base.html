@@ -57,7 +57,7 @@
     <script src="/js/sb-admin-2.js"></script>
     {% if nav %}
     <!-- Navigation -->
-    <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand mb-4">
+    <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand sticky-top">
       <div class="collapse navbar-collapse">
         <a class="navbar-brand mr-auto" href="/home">
           <img id="logo" src="/images/temboard-150x32-w.png" />
@@ -97,91 +97,88 @@
     {% if globals().has_key('instance') %}
     <div class="container-fluid">
       <div class="row">
-        <div class="sidebar-fixed-width col-lg-3">
-          <div class="card mb-4">
-            <div class="card-header">
-              <b>
-                {{instance.hostname}}
-              </b>
-            </div>
-            <div class="card-body">
-              <p>
-              {% for group in instance.groups %}
-                <span class="badge badge-secondary small">
-                  {{group.group_name}}
-                </span>&nbsp;
+        <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
+          <div class="sidebar-sticky pt-3">
+            <b>
+              {{instance.hostname}}
+            </b>
+            <p>
+            {% for group in instance.groups %}
+              <span class="badge badge-secondary small">
+                {{group.group_name}}
+              </span>&nbsp;
+            {% end %}
+            </p>
+            <table class="table table-sm table-no-margin small">
+              <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
+              <tr><td>Data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
+              <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
+              <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
+            </table>
+            {% try %}
+            {% if agent_username %}
+            <small class="text-muted">Logged in as <strong>{{agent_username}}</strong></small>
+            {% end %}
+            {% except %}
+            <small class="text-muted">Not logged in</small>
+            {% end %}
+            <hr>
+            <ul class="nav nav-pills flex-column">
+              {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
+              {% set plugin = globals().get('plugin', None) %}
+              {% if 'dashboard' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
+                   class="{{'active' if plugin == 'dashboard' else ''}} nav-link">
+                  <i class="fa fa-dashboard fa-fw"></i>
+                  Dashboard
+                </a>
+              </li>
               {% end %}
-              </p>
-              <table class="table table-sm table-no-margin small">
-                <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
-                <tr><td>Data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
-                <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
-                <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
-              </table>
-              {% try %}
-              {% if agent_username %}
-              <small class="text-muted">Logged in as <strong>{{agent_username}}</strong></small>
+              {% if 'activity' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"
+                   class="{{'active' if plugin == 'activity' else ''}} nav-link">
+                  <i class="fa fa-bars fa-fw"></i>
+                  Activity
+                </a>
+              </li>
               {% end %}
-              {% except %}
-              <small class="text-muted">Not logged in</small>
+              {% if 'monitoring' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
+                   class="{{'active' if plugin == 'monitoring' else ''}} nav-link">
+                  <i class="fa fa-bar-chart-o fa-fw"></i>
+                  Monitoring
+                </a>
+              </li>
               {% end %}
-            </div>
+              {% if 'pgconf' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
+                   class="{{'active' if plugin == 'pgconf' else ''}} nav-link">
+                  <i class="fa fa-cog fa-fw"></i>
+                  Configuration
+                </a>
+              </li>
+              {% end %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
+                   class="{{'active' if plugin == 'notifications' else ''}} nav-link">
+                  <i class="fa fa-envelope fa-fw"></i>
+                  Notifications
+                </a>
+              </li>
+            </ul>
           </div>
-          <ul class="nav nav-pills flex-column">
-            {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
-            {% set plugin = globals().get('plugin', None) %}
-            {% if 'dashboard' in plugin_names %}
-            <li class="nav-item">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
-                 class="{{'active' if plugin == 'dashboard' else ''}} nav-link">
-                <i class="fa fa-dashboard fa-fw"></i>
-                Dashboard
-              </a>
-            </li>
-            {% end %}
-            {% if 'activity' in plugin_names %}
-            <li class="nav-item">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running"
-                 class="{{'active' if plugin == 'activity' else ''}} nav-link">
-                <i class="fa fa-bars fa-fw"></i>
-                Activity
-              </a>
-            </li>
-            {% end %}
-            {% if 'monitoring' in plugin_names %}
-            <li class="nav-item">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-                 class="{{'active' if plugin == 'monitoring' else ''}} nav-link">
-                <i class="fa fa-bar-chart-o fa-fw"></i>
-                Monitoring
-              </a>
-            </li>
-            {% end %}
-            {% if 'pgconf' in plugin_names %}
-            <li class="nav-item">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
-                 class="{{'active' if plugin == 'pgconf' else ''}} nav-link">
-                <i class="fa fa-cog fa-fw"></i>
-                Configuration
-              </a>
-            </li>
-            {% end %}
-            <li class="nav-item">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
-                 class="{{'active' if plugin == 'notifications' else ''}} nav-link">
-                <i class="fa fa-envelope fa-fw"></i>
-                Notifications
-              </a>
-            </li>
-          </ul>
         </div>
-        <div class="col-lg-9 main">
+        <div class="main ml-auto p-3">
           {% block content %} {% end %}
         </div>
       </div>
     </div>
     {% else %}
-    <div class="container">
+    <div class="container pt-3">
       {% block content %} {% end %}
     </div>
     {% end %} {# end if instance #}

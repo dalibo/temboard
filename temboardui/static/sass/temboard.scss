@@ -18,18 +18,36 @@
 }
 
 @include media-breakpoint-up(lg) {
+  $sidebar-width: 270px;
   .sidebar-fixed-width {
     width: inherit;
-    min-width: 300px;
-    max-width: 300px;
+    min-width: $sidebar-width;
+    max-width: $sidebar-width;
     position:relative;
     overflow: auto;
   }
 
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  }
+
+  .sidebar-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 52px;
+    height: calc(100vh - 52px);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   .main {
-    width:calc(100% - 300px);
+    width: calc(100% - #{$sidebar-width});
     max-width: none;
-    flex: none;
   }
 }
 
