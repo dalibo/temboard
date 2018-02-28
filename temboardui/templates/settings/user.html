@@ -52,9 +52,9 @@
       <tr>
         <td>{{role_item.role_name}}</td>
         <td>{{role_item.role_email}}</td>
-        <td class="text-center">{% if role_item.is_active is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
-        <td class="text-center">{% if role_item.is_admin is True %}<span class="label label-success">Yes</span>{% else %}<span class="label label-danger">No</span>{% end %}</td>
-        <td>{% for group in role_item.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</td>
+        <td class="text-center">{% if role_item.is_active is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
+        <td class="text-center">{% if role_item.is_admin is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
+        <td>{% for group in role_item.groups %} <span class="badge badge-default">{{group.group_name}}</span>{% end %}</td>
         <td class="text-center">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-username="{{role_item.role_name}}" data-action="edit"><i class="fa fa-edit"></i></button>
         </td>

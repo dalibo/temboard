@@ -53,7 +53,7 @@
         <td>{{group_item.group_name}}</td>
         <td>{{group_item.group_description}}</td>
         {% if group_kind == 'instance' %}
-        <td>{% for ari in group_item.ari %} <span class="label label-default">{{ari.role_group_name}}</span>{% end %}</td>
+        <td>{% for ari in group_item.ari %} <span class="badge badge-default">{{ari.role_group_name}}</span>{% end %}</td>
         {% end %}
         <td class="text-center">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>

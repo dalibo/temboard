@@ -50,7 +50,7 @@
   <div class="col-lg-6 col-xl-4">
     <div class="card mb-4">
       <div class="card-header">
-        TPS <div class="pull-right">Commit:<span id="tps_commit" class="label label-success">0</span> Rollback: <span id="tps_rollback" class="label label-danger">0</span></div>
+        TPS <div class="pull-right">Commit:<span id="tps_commit" class="badge badge-success">0</span> Rollback: <span id="tps_rollback" class="badge badge-danger">0</span></div>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -63,7 +63,7 @@
   <div class="col-lg-6 col-xl-4">
     <div class="card mb-4">
       <div class="card-header">
-        Loadaverage <div class="pull-right"><span id="loadaverage" class="label label-primary">{{dashboard['loadaverage']}}</span></div>
+        Loadaverage <div class="pull-right"><span id="loadaverage" class="badge badge-primary">{{dashboard['loadaverage']}}</span></div>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -115,7 +115,7 @@
   <div class="col-lg-6 col-xl-4">
     <div class="card mb-4">
       <div class="card-header">
-        Buffers <div class="pull-right"><span id="buffers_delta" class="label label-primary">{{buffers_delta}}</span></div>
+        Buffers <div class="pull-right"><span id="buffers_delta" class="badge badge-primary">{{buffers_delta}}</span></div>
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -128,7 +128,7 @@
   <div class="col-lg-6 col-xl-4">
     <div class="card mb-4">
       <div class="card-header">
-        Active backends <div class="pull-right"><span id="backends" class="label label-primary">{{dashboard['active_backends']['nb']}}</span></div>
+        Active backends <div class="pull-right"><span id="backends" class="badge badge-primary">{{dashboard['active_backends']['nb']}}</span></div>
       </div>
       <!-- /.card-header -->
       <div class="card-body">

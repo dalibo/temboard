@@ -103,7 +103,7 @@
         <td class="database">{{record['database']}}</td>
         <td class="user">{{record['user']}}</td>
         <td class="address">{{record['address']}}</td>
-        <td class="text-center auth_method"><span class="label label-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
+        <td class="text-center auth_method"><span class="badge badge-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
         <td class="auth_options">{{record['auth_options']}}</td>
         {% end %}
         <td>

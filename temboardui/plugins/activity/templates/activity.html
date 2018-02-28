@@ -64,9 +64,9 @@
           <td class="text-right">{{row['memory']}}</td>
           <td class="text-right">{{row['read_s']}}</td>
           <td class="text-right">{{row['write_s']}}</td>
-          <td><span class="label {% if row['iow'] == 'Y'%}label-danger{%else%}label-success{%end%}">{{row['iow']}}</span></td>
-          <td><span class="label {% if row['wait'] == 'Y'%}label-danger{%else%}label-success{%end%}">{{row['wait']}}</td>
-          <td class="text-center"><span class="label {%if row['state'] == 'active'%}label-success{%elif row['state'] == 'idle in transaction'%}label-danger{%elif row['state'] == 'idle in transaction (aborted)'%}label-danger{%else%}label-default{%end%}">{{row['state']}}</span></td>
+          <td><span class="badge {% if row['iow'] == 'Y'%}badge-danger{%else%}badge-success{%end%}">{{row['iow']}}</span></td>
+          <td><span class="badge {% if row['wait'] == 'Y'%}badge-danger{%else%}badge-success{%end%}">{{row['wait']}}</td>
+          <td class="text-center"><span class="badge {%if row['state'] == 'active'%}badge-success{%elif row['state'] == 'idle in transaction'%}badge-danger{%elif row['state'] == 'idle in transaction (aborted)'%}badge-danger{%else%}badge-default{%end%}">{{row['state']}}</span></td>
           <td class="text-right">{{row['duration']}}</td>
           <td class="query">{{row['query']}}</td>
         </tr>

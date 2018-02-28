@@ -83,28 +83,28 @@ function update_activity(data)
   $("#tableActivity").html('<tr><th class="xs"></th><th class="sm">PID</th><th class="med">Database</th><th class="med">User</th><th class="sm">%CPU</th><th class="sm">%mem</th><th class="med">Read/s</th><th class="med">Write/s</th><th class="xs">IOW</th><th class="xs">W</th><th class="lg">State</th><th class="med">Duration (s)</th><th class="query">Query</th></tr>');
   for (var i = 0; i < data.length; ++i)
   {
-    var class_iow = 'label-success';
-    var class_wait = 'label-success';
+    var class_iow = 'badge-success';
+    var class_wait = 'badge-success';
     var class_state = '';
     if (data[i].iow == 'Y')
     {
-      class_iow = 'label-danger';
+      class_iow = 'badge-danger';
     }
     if (data[i].wait == 'Y')
     {
-      class_wait = 'label-danger';
+      class_wait = 'badge-danger';
     }
     switch(data[i]['state'])
     {
       case 'active':
-        class_state = 'label-success';
+        class_state = 'badge-success';
         break;
       case 'idle in transaction':
       case 'idle in transaction (aborted)':
-        class_state = 'label-danger';
+        class_state = 'badge-danger';
         break;
       default:
-        class_state = 'label-default';
+        class_state = 'badge-default';
     }
     var class_duration = 'none';
     if (data[i].duration > 1)
@@ -125,9 +125,9 @@ function update_activity(data)
     activity_html += '  <td class="text-right">'+data[i].memory+'</td>';
     activity_html += '  <td class="text-right">'+data[i].read_s+'</td>';
     activity_html += '  <td class="text-right">'+data[i].write_s+'</td>';
-    activity_html += '  <td><span class="label '+class_iow+'">'+data[i].iow+'</span></td>';
-    activity_html += '  <td><span class="label '+class_wait+'">'+data[i].wait+'</span></td>';
-    activity_html += '  <td class="text-center"><span class="label '+class_state+'">'+data[i].state+'</span></td>';
+    activity_html += '  <td><span class="badge '+class_iow+'">'+data[i].iow+'</span></td>';
+    activity_html += '  <td><span class="badge '+class_wait+'">'+data[i].wait+'</span></td>';
+    activity_html += '  <td class="text-center"><span class="badge '+class_state+'">'+data[i].state+'</span></td>';
     activity_html += '  <td class="text-right">'+data[i].duration+'</td>';
     activity_html += '  <td class="query">'+escapeHtml(data[i].query)+'</td>';
     activity_html += '</tr>';
@@ -144,28 +144,28 @@ function update_activity_w_b(data)
   $("#tableActivity").html('<tr><th class="xs"></th><th class="sm">PID</th><th class="med">Database</th><th class="med">User</th><th class="sm">%CPU</th><th class="sm">%mem</th><th class="med">Read/s</th><th class="med">Write/s</th><th class="xs">IOW</th><th class="med">Lock Rel.</th><th class="med">Lock Mode</th><th class="med">Lock Type</th><th class="lg">State</th><th class="med">Duration (s)</th><th class="query">Query</th></tr>');
   for (var i = 0; i < data.length; ++i)
   {
-    var class_iow = 'label-success';
-    var class_wait = 'label-success';
+    var class_iow = 'badge-success';
+    var class_wait = 'badge-success';
     var class_state = '';
     if (data[i].iow == 'Y')
     {
-      class_iow = 'label-danger';
+      class_iow = 'badge-danger';
     }
     if (data[i].wait == 'Y')
     {
-      class_wait = 'label-danger';
+      class_wait = 'badge-danger';
     }
     switch(data[i]['state'])
     {
       case 'active':
-        class_state = 'label-success';
+        class_state = 'badge-success';
         break;
       case 'idle in transaction':
       case 'idle in transaction (aborted)':
-        class_state = 'label-danger';
+        class_state = 'badge-danger';
         break;
       default:
-        class_state = 'label-default';
+        class_state = 'badge-default';
     }
     var class_duration = 'none';
     if (data[i].duration > 1)
@@ -186,11 +186,11 @@ function update_activity_w_b(data)
     activity_html += '  <td class="text-right">'+data[i].memory+'</td>';
     activity_html += '  <td class="text-right">'+data[i].read_s+'</td>';
     activity_html += '  <td class="text-right">'+data[i].write_s+'</td>';
-    activity_html += '  <td><span class="label '+class_iow+'">'+data[i].iow+'</span></td>';
+    activity_html += '  <td><span class="badge '+class_iow+'">'+data[i].iow+'</span></td>';
     activity_html += '  <td>'+data[i].relation+'</td>';
     activity_html += '  <td>'+data[i].mode+'</td>';
     activity_html += '  <td>'+data[i].type+'</td>';
-    activity_html += '  <td class="text-center"><span class="label '+class_state+'">'+data[i].state+'</span></td>';
+    activity_html += '  <td class="text-center"><span class="badge '+class_state+'">'+data[i].state+'</span></td>';
     activity_html += '  <td class="text-right">'+data[i].duration+'</td>';
     activity_html += '  <td class="query">'+escapeHtml(data[i].query)+'</td>';
     activity_html += '</tr>';
@@ -243,7 +243,7 @@ function show_modal_kill(agent_address, agent_port, xsession)
   var pids_html = '';
   for(var i = 0; i < pids.length; i++)
   {
-    pids_html += '<span class="label label-primary">'+pids[i]+'</span> ';
+    pids_html += '<span class="badge badge-primary">'+pids[i]+'</span> ';
   }
   $('#ModalInfo').html(pids_html);
   var footer_html = '';

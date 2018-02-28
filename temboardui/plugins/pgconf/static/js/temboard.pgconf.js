@@ -219,7 +219,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
           };
         }
         $('input[name=database]').tagsinput({
-          tagClass: 'label label-primary',
+          tagClass: 'badge badge-primary',
           typeaheadjs: [
             {
               minLength: 0,
@@ -230,7 +230,7 @@ function row_edit(row, tableid, modalid, agent_address, agent_port, xsession, fo
           }]
         });
         $('input[name=user]').tagsinput({
-          tagClass: 'label label-primary',
+          tagClass: 'badge badge-primary',
           typeaheadjs: [
             {
               minLength: 0,
@@ -430,7 +430,7 @@ function get_row_html(row)
     row_html += '<td class="database">'+row.database+'</td>';
     row_html += '<td class="user">'+row.user+'</td>';
     row_html += '<td class="address">'+row.address+'</td>';
-    row_html += '<td class="text-center auth_method"><span class="label label-'+auth_method_class+'">'+row.auth_method+'</span></td>';
+    row_html += '<td class="text-center auth_method"><span class="badge badge-'+auth_method_class+'">'+row.auth_method+'</span></td>';
     row_html += '<td class="auth_options">'+row.auth_options+'</td>';
   }
   row_html += ' <td>';

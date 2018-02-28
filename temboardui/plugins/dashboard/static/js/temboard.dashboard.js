@@ -594,7 +594,7 @@ function update_notifications(data)
   var notif_html = '<ul class="notifications">';
   for (var i in data)
   {
-    notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="label label-success">'+data[i].username+'</span> '+data[i].message+'</li>';
+    notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="badge badge-success">'+data[i].username+'</span> '+data[i].message+'</li>';
   }
   notif_html += '</ul>';
   $('#divNotif10').html(notif_html);
