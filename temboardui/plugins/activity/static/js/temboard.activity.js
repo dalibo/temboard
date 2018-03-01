@@ -12,7 +12,7 @@ function html_error_modal(code, error)
   error_html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
   error_html += '       </div>';
   error_html += '       <div class="modal-footer" id="ErrorModalFooter">';
-  error_html += '         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+  error_html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
   error_html += '       </div>';
   error_html += '     </div>';
   error_html += '   </div>';
@@ -50,7 +50,7 @@ function refresh_activity(agent_address, agent_port, xsession, mode)
       {
         $('#ErrorModal').modal('hide');
         $('#modalError').html(html_error_modal(401, 'Session expired'));
-        $('#ErrorModalFooter').html('<a class="btn btn-default" id="aBackLogin">Back to login page</a>');
+        $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
         $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
         $('#ErrorModal').modal('show');
       }
@@ -248,7 +248,7 @@ function show_modal_kill(agent_address, agent_port, xsession)
   $('#ModalInfo').html(pids_html);
   var footer_html = '';
   footer_html += '<button type="button" id="submitKill" class="btn btn-danger">Yes, terminate</button>';
-  footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+  footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
   $('#ModalFooter').html(footer_html);
   $('#submitKill').click(function(){
     $.ajax({
@@ -273,14 +273,14 @@ function show_modal_kill(agent_address, agent_port, xsession)
           $('#ModalInfo').html('<div class="row"><div class="col-12"><div class="alert alert-danger" role="alert">Error: Session expired.</div></div></div>');
           var footer_html = '';
           footer_html += '<button type="button" id="buttonBackLogin" class="btn btn-success">Back to login page</button>';
-          footer_html += ' <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>';
+          footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
           $('#ModalFooter').html(footer_html);
           $('#buttonBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
         }
         else
         {
           $('#ModalInfo').html('<div class="row"><div class="col-12"><div class="alert alert-danger" role="alert">Error: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div></div></div>');
-          $('#ModalFooter').html('<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>');
+          $('#ModalFooter').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
         }
       }
     });
