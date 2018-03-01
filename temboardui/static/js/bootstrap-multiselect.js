@@ -733,7 +733,7 @@
                     }
 
                     var index = $items.index($items.filter(':focus'));
-                    
+
                     // Navigation up.
                     if (event.keyCode === 38 && index > 0) {
                         index--;
