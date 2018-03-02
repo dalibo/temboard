@@ -53,20 +53,8 @@ Chart.pluginService.register({
 var options = {
   responsive : true,
   maintainAspectRatio: false,
-  showAllTooltips: true,
-  legend: {
-    display: false
-  },
-  animation: {
-    duration: 0
-  },
-  tooltips: {
-    callbacks: {
-      label: function(tooltipItem, data) {
-        return data.labels[tooltipItem.index]+': '+data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' %';
-      }
-    }
-  }
+  legend: false,
+  animation: false
 };
 
 function html_error_modal(code, error) {
@@ -110,7 +98,6 @@ function refresh_dashboard(agent_address, agent_port, xsession)
         update_dashboard(data, true);
         update_tps(data, true);
         update_loadaverage(data, true);
-        update_buffers(data, true);
         update_backends(data, true);
         update_notifications(data.notifications);
       }
@@ -273,104 +260,6 @@ function update_loadaverage(data, update_chart)
       }
     }
     resize_chart(window.loadaveragechart, max_val, 1);
-  }
-}
-
-/*
- * Buffers line chart options.
- */
-var buffers_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Buffers",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 20,
-          min: 0,
-          stepSize: 5,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: "rgba(101,152,184,1)",
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
-var buffers_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_buffers(data, update_chart)
-{
-  if (!("bufferschart" in window))
-  {
-    var bufferscontext = $('#chart-buffers').get(0).getContext('2d');
-    window.bufferschart = new Chart(bufferscontext, buffers_config);
-  }
-  /** Re-process delta calculation **/
-  if (buffers_values.length > 0)
-  {
-    var p = buffers_values.length - 1;
-    if (buffers_values[p] != null)
-    {
-      delta = data['buffers']['nb'] - buffers_values[p]['nb'];
-    } else {
-      delta = 0;
-    }
-  } else {
-    delta = 0;
-  }
-
-  window.bufferschart.data.datasets[0].data.push(delta);
-  /** We need to store delta value. **/
-  data['buffers']['delta'] = delta;
-  buffers_values.push(data['buffers']);
-  window.bufferschart.data.datasets[0].data.shift();
-  buffers_values.shift();
-  if (update_chart)
-  {
-    $('#buffers_delta').html(delta);
-    var max_val = 0;
-    for (var i=0; i < buffers_values.length; i++)
-    {
-      if (buffers_values[i] != null && buffers_values[i]['delta'] > max_val)
-      {
-        max_val = buffers_values[i]['delta'];
-      }
-    }
-    resize_chart(window.bufferschart, max_val, 5);
   }
 }
 
