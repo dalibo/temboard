@@ -98,7 +98,7 @@ function refresh_dashboard(agent_address, agent_port, xsession)
         update_dashboard(data, true);
         update_tps(data, true);
         update_loadaverage(data, true);
-        update_backends(data, true);
+        //update_backends(data, true);
         update_notifications(data.notifications);
       }
     },
@@ -160,6 +160,13 @@ function update_dashboard(data)
   window.hitratiochart.data.datasets[0].data[0] = data['hitratio'];
   window.hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
   window.hitratiochart.update();
+
+  /** Sessions chart **/
+  window.sessionschart.data.datasets[0].data[0] = data['active_backends']['nb'];
+  // FIXME service doesn't return max_connections yet
+  var max_connections = data['max_connections'] || 100;
+  window.sessionschart.data.datasets[0].data[1] = max_connections;
+  window.sessionschart.update();
 }
 
 function resize_chart(chart, max_val, step_size_limit)
@@ -345,8 +352,8 @@ function update_backends(data, update_chart)
         max_val = backends_values[i];
       }
     }
-    resize_chart(window.backendschart, max_val, 1);
   }
+    resize_chart(window.backendschart, max_val, 1);
 }
 
 /*
@@ -476,6 +483,8 @@ window.onload = function(){
   window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
   var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
   window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
+  var sessionscontext = $('#chart-sessions').get(0).getContext('2d');
+  window.sessionschart = new Chart(sessionscontext, {type: 'doughnut', data: sessionsdata, options: options});
 };
 
 function update_notifications(data)

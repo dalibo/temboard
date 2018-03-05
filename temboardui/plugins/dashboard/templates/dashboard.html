@@ -41,7 +41,7 @@
               Sessions
             </div>
             <div class="card-body p-0 chart-small">
-              <canvas id="chart-backends"></canvas>
+              <canvas id="chart-sessions"></canvas>
             </div>
           </div>
         </div>
@@ -128,6 +128,17 @@
       }
     ]
   };
+
+  var sessionsdata = {
+    labels: ["Active backends", ""],
+    datasets: [
+      {
+        data: [{{dashboard['active_backends']['nb']}}, 100],
+        backgroundColor: ["#29cc36", "#eeeeee"]
+      }
+    ]
+  };
+
   var jdata_history = JSON.parse('{% raw history %}');
   for (var p in jdata_history)
   {
@@ -138,7 +149,7 @@
     }
     update_tps(jdata_history[p], updchart);
     update_loadaverage(jdata_history[p], updchart);
-    update_backends(jdata_history[p], updchart);
+    /*update_backends(jdata_history[p], updchart);*/
   }
   var xsession = "{{xsession}}";
   var agent_address = "{{instance.agent_address}}";
