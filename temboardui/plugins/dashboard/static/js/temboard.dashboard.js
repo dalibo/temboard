@@ -54,6 +54,8 @@ var options = {
   responsive : true,
   maintainAspectRatio: false,
   legend: false,
+  rotation: Math.PI,
+  circumference: Math.PI,
   animation: false
 };
 
