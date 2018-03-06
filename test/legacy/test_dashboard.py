@@ -85,6 +85,7 @@ class TestDashboard:
         dict_data = json.loads(res)
         assert status == 200 \
             and 'active_backends' in dict_data \
+            and 'max_connections' in dict_data \
             and 'loadaverage' in dict_data \
             and 'os_version' in dict_data \
             and 'pg_version' in dict_data \
@@ -401,3 +402,26 @@ class TestDashboard:
         assert status == 200 \
             and 'n_cpu' in dict_data \
             and type(dict_data['n_cpu']) == int
+
+
+    def test_13_dashboard_max_connections_ok(self):
+        """
+        [dashboard] 13: GET /dashboard/max_connections : HTTP return code is 200 and the data structure is right
+        """  # noqa
+        (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/dashboard/max_connections' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                        ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        dict_data = json.loads(res)
+
+        assert status == 200 \
+            and 'max_connections' in dict_data \
+            and type(dict_data['max_connections']) == int
