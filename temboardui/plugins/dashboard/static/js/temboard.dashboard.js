@@ -122,11 +122,11 @@ function update_dashboard(data)
   update_total_hit();
 
   /** Sessions chart **/
-  window.sessionschart.data.datasets[0].data[0] = data['active_backends']['nb'];
-  // FIXME service doesn't return max_connections yet
-  var max_connections = data['max_connections'] || 100;
-  window.sessionschart.data.datasets[0].data[1] = max_connections;
+  var active_backends = data['active_backends']['nb'];
+  window.sessionschart.data.datasets[0].data[0] = active_backends;
+  window.sessionschart.data.datasets[0].data[1] = data['max_connections'] - active_backends;
   window.sessionschart.update();
+  update_total_sessions();
 }
 
 function update_total_cpu() {
@@ -151,6 +151,15 @@ function update_total_memory() {
 
 function update_total_hit() {
   $('#total-hit').html(window.hitratiochart.data.datasets[0].data[0] + ' %');
+}
+
+function update_total_sessions() {
+  var data = window.sessionschart.data.datasets[0].data;
+  var html = data[0];
+  if (data[1]) {
+    html += ' / ' + (data[0] + data[1]);
+  }
+  $('#total-sessions').html(html);
 }
 
 function resize_chart(chart, max_val, step_size_limit)
@@ -472,6 +481,7 @@ window.onload = function(){
   update_total_hit();
   var sessionscontext = $('#chart-sessions').get(0).getContext('2d');
   window.sessionschart = new Chart(sessionscontext, {type: 'doughnut', data: sessionsdata, options: options});
+  update_total_sessions();
 };
 
 function update_notifications(data)

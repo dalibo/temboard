@@ -48,8 +48,7 @@
             <div class="chart-title">
               Sessions
             </div>
-            <div>
-              9 / 100
+            <div id="total-sessions" class="text-muted">
             </div>
             <div class="card-body p-2 chart-small">
               <canvas id="chart-sessions"></canvas>
@@ -140,11 +139,17 @@
     ]
   };
 
+  {% if not 'max_connections' in dashboard %}
+  {% set free_sessions = 'NaN' %}
+  {% else %}
+  {% set free_sessions = dashboard['max_connections'] - dashboard['active_backends']['nb'] %}
+  {% end %}
+
   var sessionsdata = {
     labels: ["Active backends", ""],
     datasets: [
       {
-        data: [{{dashboard['active_backends']['nb']}}, 100],
+        data: [{{dashboard['active_backends']['nb']}}, {{ free_sessions }}],
         backgroundColor: ["#29cc36", "#eeeeee"]
       }
     ]
