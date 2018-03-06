@@ -111,6 +111,8 @@ function update_dashboard(data)
   window.cpuchart.data.datasets[0].data[3] = data['cpu']['system'];
   window.cpuchart.data.datasets[0].data[4] = data['cpu']['idle'];
   window.cpuchart.update();
+  update_total_cpu();
+
   /** Hitratio chart **/
   window.hitratiochart.data.datasets[0].data[0] = data['hitratio'];
   window.hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
@@ -122,6 +124,16 @@ function update_dashboard(data)
   var max_connections = data['max_connections'] || 100;
   window.sessionschart.data.datasets[0].data[1] = max_connections;
   window.sessionschart.update();
+}
+
+function update_total_cpu() {
+  var totalCpu = 0;
+  // create a copy of data
+  var data = window.cpuchart.data.datasets[0].data.slice(0);
+  // last element is "idle", don't take it into account
+  data.pop();
+  var totalCpu = data.reduce(function(a, b) {return a + b;}, 0);
+  $('#total-cpu').html(parseInt(totalCpu) + ' %');
 }
 
 function resize_chart(chart, max_val, step_size_limit)
@@ -436,6 +448,7 @@ window.onload = function(){
   window.memorychart = new Chart(memorycontext, {type: 'doughnut', data: memorydata, options: options});
   var cpucontext = $('#chart-cpu').get(0).getContext('2d');
   window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
+  update_total_cpu();
   var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
   window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
   var sessionscontext = $('#chart-sessions').get(0).getContext('2d');
