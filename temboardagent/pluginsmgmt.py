@@ -53,7 +53,7 @@ def load_plugins_configurations(config):
 
     # Loop through each plugin listed in the configuration file.
     for plugin_name in config.temboard['plugins']:
-        logger.info("Loading plugin '%s'." % (plugin_name,))
+        logger.info("Loading legacy plugin '%s'." % (plugin_name,))
         fp_s = None
         try:
             # Loading compat.py file
@@ -87,11 +87,14 @@ def load_plugins_configurations(config):
                                                         [path+'/plugins'])
             module = imp.load_module(plugin_name, fp, pathname, description)
             # Try to run module's configuration() function.
-            logger.info("Loading plugin '%s' configuration." % (plugin_name))
-            plugin_configuration = getattr(module, 'configuration')(config)
+            logger.info(
+                "Loading legacy plugin '%s' configuration." % (plugin_name,))
+            plugin_configuration = getattr(module, 'configuration', None)
             ret.update({module.__name__: plugin_configuration})
+            assert plugin_configuration, "undefined configuration"
+            ret[plugin_name] = plugin_configuration(config)
             logger.info("Done.")
-        except AttributeError as e:
+        except AssertionError as e:
             logger.warn("No configuration: %s", e)
         except Exception as e:
             if fp:
