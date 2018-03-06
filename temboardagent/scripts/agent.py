@@ -19,7 +19,7 @@ from ..queue import purge_queue_dir
 from .. import validators as v
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('temboardagent.scripts.agent')
 
 
 def define_arguments(parser):
