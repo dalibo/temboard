@@ -119,6 +119,7 @@ function update_dashboard(data)
   window.hitratiochart.data.datasets[0].data[0] = data['hitratio'];
   window.hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
   window.hitratiochart.update();
+  update_total_hit();
 
   /** Sessions chart **/
   window.sessionschart.data.datasets[0].data[0] = data['active_backends']['nb'];
@@ -146,6 +147,10 @@ function update_total_memory() {
   data.pop();
   var totalMemory = data.reduce(function(a, b) {return a + b;}, 0);
   $('#total-memory').html(parseInt(totalMemory) + ' %');
+}
+
+function update_total_hit() {
+  $('#total-hit').html(window.hitratiochart.data.datasets[0].data[0] + ' %');
 }
 
 function resize_chart(chart, max_val, step_size_limit)
@@ -458,11 +463,13 @@ function update_tps(data, update_chart)
 window.onload = function(){
   var memorycontext = $('#chart-memory').get(0).getContext('2d');
   window.memorychart = new Chart(memorycontext, {type: 'doughnut', data: memorydata, options: options});
+  update_total_memory();
   var cpucontext = $('#chart-cpu').get(0).getContext('2d');
   window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
   update_total_cpu();
   var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
   window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
+  update_total_hit();
   var sessionscontext = $('#chart-sessions').get(0).getContext('2d');
   window.sessionschart = new Chart(sessionscontext, {type: 'doughnut', data: sessionsdata, options: options});
 };
