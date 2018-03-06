@@ -98,12 +98,14 @@ function update_dashboard(data)
   $('#pg_data').html(data['pg_data']);
   $('#pg_port').html(data['pg_port']);
   $('#pg_uptime').html(data['pg_uptime']);
-  /** Update memory usage chart **/
 
+  /** Update memory usage chart **/
   window.memorychart.data.datasets[0].data[0] = data['memory']['active'];
   window.memorychart.data.datasets[0].data[1] = data['memory']['cached'];
   window.memorychart.data.datasets[0].data[2] = data['memory']['free'];
   window.memorychart.update();
+  update_total_memory();
+
   /** Update CPU usage chart **/
   window.cpuchart.data.datasets[0].data[0] = data['cpu']['iowait'];
   window.cpuchart.data.datasets[0].data[1] = data['cpu']['steal'];
@@ -134,6 +136,16 @@ function update_total_cpu() {
   data.pop();
   var totalCpu = data.reduce(function(a, b) {return a + b;}, 0);
   $('#total-cpu').html(parseInt(totalCpu) + ' %');
+}
+
+function update_total_memory() {
+  var totalMemory = 0;
+  // create a copy of data
+  var data = window.memorychart.data.datasets[0].data.slice(0);
+  // last element is "Free", don't take it into account
+  data.pop();
+  var totalMemory = data.reduce(function(a, b) {return a + b;}, 0);
+  $('#total-memory').html(parseInt(totalMemory) + ' %');
 }
 
 function resize_chart(chart, max_val, step_size_limit)
