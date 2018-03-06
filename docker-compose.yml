@@ -6,7 +6,7 @@ volumes:
 
 services:
   repository:
-    image: postgres:9.6
+    image: postgres:10-alpine
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
