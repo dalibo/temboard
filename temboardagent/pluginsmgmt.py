@@ -81,6 +81,7 @@ def load_plugins_configurations(config):
                 fp_s.close()
             logger.info("Not able to load the compatibility file: compat.py.")
         logger.info("Done.")
+        fp = None
         try:
             # Locate and load the module with imp.
             fp, pathname, description = imp.find_module(plugin_name,
