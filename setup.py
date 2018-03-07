@@ -18,7 +18,7 @@ SETUP_KWARGS = dict(
         'python-dateutil>=1.5',
         'psycopg2>=2.5.4',
         'sqlalchemy>=0.9.8',
-        'tornado>=3.2',
+        'tornado>=3.2,<5.0',
         'temboard-sched',
     ],
     include_package_data=True,
