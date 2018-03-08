@@ -8,7 +8,7 @@
   <div class="col-lg-6 col-xl-4">
     <div class="card mb-4">
       <div class="card-header">
-        Informations
+        Information
       </div>
       <!-- /.card-header -->
       <div class="card-body">
@@ -27,20 +27,16 @@
           <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
         <tr>
-          <th>Databases size:</th>
+          <th>DB size:</th>
           <td id="size" class="text-right">{{ dashboard['databases']['total_size'] }}</td>
         </tr>
         <tr>
-          <th>Number of database:</th>
+          <th>Databases:</th>
           <td id="nb_db" class="text-right">{{ dashboard['databases']['databases'] }}</td>
         </tr>
         <tr>
           <th>Uptime:</th>
           <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
-        </tr>
-        <tr>
-          <th>Current time:</th>
-          <td id="time" class="text-right">{{ dashboard['databases']['time'] }}</td>
         </tr>
         </tbody>
         </table>
