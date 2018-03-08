@@ -19,6 +19,36 @@ $ docker-compose up
 Go to https://127.0.0.1:8888/ to access temBoard runing with your code! An agent
 is already set up to manage the PostgreSQL cluster of the UI.
 
+In case you are working on the agent at the same time, here are some more
+instructions.
+
+Assuming that `temboard-agent` code is cloned along with temboard, create a
+`docker-compose.override.yaml` file with the following content:
+
+```
+version: '2'
+
+services:
+  agent:
+    environment:
+      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
+      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
+      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+    volumes:
+      - ../temboard-agent/:/usr/local/src/temboard-agent/
+    command: tail -f /dev/null
+```
+
+You can then run the `$ docker-compose up` command again.
+
+Then in an other terminal, run the following commands:
+
+```
+$ docker-compose exec agent bash # enters the agent machine
+# pip install -e /usr/local/src/temboard-agent/ # installs temboard-agent in dev mode
+# gosu temboard temboard-agent -c /etc/temboard-agent/temboard-agent.conf & # starts temboard-agent
+# gosu temboard temboard-agent-register --host $TEMBOARD_REGISTER_HOST --port $TEMBOARD_REGISTER_PORT --groups default $TEMBOARD_UI_URL # Registers the agent
+```
 
 ## CSS
 
