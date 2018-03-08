@@ -14,6 +14,7 @@ def get_metrics(conn, config, _=None):
     return {'buffers': dm.get_buffers(),
             'hitratio': dm.get_hitratio(),
             'active_backends': dm.get_active_backends(),
+            'max_connections': dm.get_max_connections(),
             'cpu': dm.get_cpu_usage(),
             'loadaverage': dm.get_load_average(),
             'memory': dm.get_memory_usage(),
@@ -72,6 +73,11 @@ def get_hitratio(conn, config, _):
 def get_active_backends(conn, config, _):
     dm = DashboardMetrics(conn)
     return {'active_backends': dm.get_active_backends()}
+
+
+def get_max_connections(conn, config, _):
+    dm = DashboardMetrics(conn)
+    return {'max_connections': dm.get_max_connections()}
 
 
 def get_cpu_usage(config, _):
@@ -155,6 +161,13 @@ class DashboardMetrics(object):
         current_active_backends = self._get_current_active_backends()
         return {'nb': current_active_backends,
                 'time': current_time}
+
+    def get_max_connections(self):
+        query = """
+SELECT setting FROM pg_settings WHERE name = 'max_connections'
+            """
+        self.conn.execute(query)
+        return int(list(self.conn.get_rows())[0]['setting'])
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()

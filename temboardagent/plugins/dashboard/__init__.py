@@ -177,6 +177,7 @@ Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``histo
                 "nb": 1,
                 "time": 1492703660.798522
             },
+            "max_connections": 100,
             "databases":
             {
                 "total_rollback": 1081,
@@ -760,6 +761,48 @@ Get a bunch of global informations about system and PostgreSQL.
                                    sessions,
                                    metrics,
                                    'get_info')
+
+
+@add_route('GET', '/dashboard/max_connections')
+def dashboard_max_connections(http_context,
+                              config=None,
+                              sessions=None):
+    """
+Get the max_connections settings value.
+
+.. sourcecode:: http
+
+    GET /dashboard/active_backends HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.12
+    Date: Thu, 20 Apr 2017 16:35:55 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "max_connections": 100
+    }
+
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session
+:statuscode 500: internal error
+:statuscode 406: header ``X-Session`` is malformed.
+
+
+    """  # noqa
+    return api_function_wrapper_pg(config,
+                                   http_context,
+                                   sessions,
+                                   metrics,
+                                   'get_max_connections')
 
 
 def dashboard_worker_sigterm_handler(signum, frame):
