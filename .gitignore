@@ -1,10 +1,11 @@
 *.pyc
+.pytest_cache/
 .coverage
 build/
 dist/
 docker-compose.override.yml
 docker-histfile
-temboard_agent.egg-info/
 doc/_build/
+*.egg-info/
 rpm/*.patch
 rpm/temboard-agent-*.tar.gz

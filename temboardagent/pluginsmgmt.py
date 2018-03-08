@@ -1,10 +1,11 @@
+from pkg_resources import iter_entry_points
 import logging
 import os
-import sys
 import imp
 import time
 
 from temboardagent.spc import connector
+from .configuration import ConfigurationError
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ def load_plugins_configurations(config):
 
     # Loop through each plugin listed in the configuration file.
     for plugin_name in config.temboard['plugins']:
-        logger.info("Loading plugin '%s'." % (plugin_name,))
+        logger.info("Loading legacy plugin '%s'." % (plugin_name,))
         fp_s = None
         try:
             # Loading compat.py file
@@ -81,17 +82,21 @@ def load_plugins_configurations(config):
                 fp_s.close()
             logger.info("Not able to load the compatibility file: compat.py.")
         logger.info("Done.")
+        fp = None
         try:
             # Locate and load the module with imp.
             fp, pathname, description = imp.find_module(plugin_name,
                                                         [path+'/plugins'])
             module = imp.load_module(plugin_name, fp, pathname, description)
             # Try to run module's configuration() function.
-            logger.info("Loading plugin '%s' configuration." % (plugin_name))
-            plugin_configuration = getattr(module, 'configuration')(config)
+            logger.info(
+                "Loading legacy plugin '%s' configuration." % (plugin_name,))
+            plugin_configuration = getattr(module, 'configuration', None)
             ret.update({module.__name__: plugin_configuration})
+            assert plugin_configuration, "undefined configuration"
+            ret[plugin_name] = plugin_configuration(config)
             logger.info("Done.")
-        except AttributeError as e:
+        except AssertionError as e:
             logger.warn("No configuration: %s", e)
         except Exception as e:
             if fp:
@@ -100,3 +105,40 @@ def load_plugins_configurations(config):
             logger.info("Failed.")
 
     return ret
+
+
+class PluginManager(object):
+    def __init__(self, config=None):
+        self.config = config
+        self.plugins = {}
+
+    def fetch_plugins(self):
+        unloaded_names = filter(
+            lambda name: name not in self.config.plugins,
+            self.config.temboard.plugins
+        )
+        for name in unloaded_names:
+            logger.debug("Looking for plugin %s.", name)
+            for ep in iter_entry_points('temboardagent.plugins', name):
+                logger.info("Found plugin %s.", ep)
+                yield ep
+                self.config.plugins.pop(name, None)
+                break
+            else:
+                raise ConfigurationError("Missing plugin: %s." % (name,))
+
+    def load_plugins(self, entrypoints):
+        for ep in entrypoints:
+            try:
+                cls = ep.load()
+            except Exception:
+                logger.exception("Error while loading %s.", ep)
+                raise ConfigurationError("Failed to load %s." % (ep.name,))
+            else:
+                self.plugins[ep.name] = cls()
+
+
+def load_plugins(config):
+    manager = PluginManager(config)
+    manager.load_plugins(manager.fetch_plugins())
+    return manager

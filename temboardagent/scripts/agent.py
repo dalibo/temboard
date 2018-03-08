@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
@@ -16,10 +18,11 @@ from ..daemon import (
 )
 from ..httpd import httpd_run
 from ..queue import purge_queue_dir
+from ..pluginsmgmt import load_plugins
 from .. import validators as v
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('temboardagent.scripts.agent')
 
 
 def define_arguments(parser):
@@ -108,6 +111,7 @@ def main(argv, environ):
 
     config.setup_logging()
     logger.info("Starting main process.")
+    load_plugins(config)
 
     # Purge all data queues at start time excepting metrics & notifications.
     purge_queue_dir(config.temboard['home'],
