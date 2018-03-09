@@ -2,6 +2,11 @@ import logging.config
 from logging.handlers import SysLogHandler
 import sys
 
+try:
+    from logging.config import dictConfig
+except ImportError:  # pragma: nocover
+    from logutils.dictconfig import dictConfig
+
 
 class ColoredStreamHandler(logging.StreamHandler):
 
@@ -63,6 +68,11 @@ HANDLERS = {
         'formatter': 'minimal',
     },
 }
+
+
+def setup_logging(**kw):
+    logging_config = generate_logging_config(**kw)
+    dictConfig(logging_config)
 
 
 def generate_logging_config(

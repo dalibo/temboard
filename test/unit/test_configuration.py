@@ -15,69 +15,102 @@ def test_spec_and_value():
     assert value.name in {spec}
 
 
+def test_spec_lifetime(mocker):
+    from temboardagent.configuration import (
+        OptionSpec, MergedConfiguration, UserError,
+    )
+
+    def my_validator(x):
+        if x == '__ERROR__':
+            raise ValueError('Triggered error')
+        return x
+
+    config = MergedConfiguration()
+
+    environ = dict(TEMBOARD_MY_OPT='__ERROR__')
+
+    # Start with an empty configuration, nothing is loaded.
+    config.load(environ=environ)
+    assert 'my' not in config
+
+    # Extend configuration by adding a spec.
+    config.add_specs([OptionSpec(
+        'my', 'opt', default='defval', validator=my_validator,
+    )])
+
+    with pytest.raises(UserError):
+        config.load(environ=environ)
+
+    environ = dict(TEMBOARD_MY_OPT='envval')
+    config.load(environ=environ)
+    assert 'my' in config
+    assert 'envval' == config.my.opt
+
+    # Change source. That could be a file.
+    environ = dict(TEMBOARD_MY_OPT='new_envval')
+
+    config.load(environ=environ)
+    # Ensure envval is *not* reloaded
+    assert 'envval' == config.my.opt
+
+    # Assert source is properly reread.
+    config.load(environ=environ, reload_=True)
+    assert 'new_envval' == config.my.opt
+
+
 def test_load(mocker):
-    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
-    mocker.patch('temboardagent.configuration.load_plugins_configurations')
-    # Bypass file validation
-    mocker.patch('temboardagent.configuration.validators.file_', None)
+    mocker.patch('temboardagent.configuration.os.chdir')
 
     from argparse import Namespace
-    from temboardagent.configuration import OptionSpec, load_configuration
+    from temboardagent.configuration import OptionSpec, MergedConfiguration
+    from temboardagent.configuration import configparser
 
+    s = 'temboard'
     specs = [
         # to test argument parsing
-        OptionSpec(section='temboard', name='fromarg', default='DEFVAL'),
+        OptionSpec(section=s, name='fromarg', default='DEFVAL'),
         # to test environment parsing
-        OptionSpec(section='temboard', name='fromenv', default='DEFVAL'),
+        OptionSpec(section=s, name='fromenv', default='DEFVAL'),
+        # to test file loading
+        OptionSpec(section=s, name='fromfile', default='DEFVAL'),
         # to test default value
-        OptionSpec(section='temboard', name='fromdefault', default='DEFVAL'),
+        OptionSpec(section=s, name='fromdefault', default='DEFVAL'),
     ]
     args = Namespace(temboard_fromarg='ARGVAL')
     environ = dict(
         TEMBOARD_FROMENV='ENVVAL',
-        # These should be ignored
-        TEMBOARD_FROMARG='ENVAL',
+        # These should be ignored.
+        TEMBOARD_FROMARG='ENVVAL',
         PATH='',
     )
-    config = load_configuration(specs=specs, args=args, environ=environ)
+    parser = configparser.RawConfigParser()
+    parser.add_section(s)
+    parser.set(s, 'fromfile', 'FILEVAL')
+    # These should be ignored.
+    parser.set(s, 'fromenv', 'FILEVAL')
+    parser.set(s, 'fromarg', 'FILEVAL')
+
+    config = MergedConfiguration(specs=specs)
+    config.load(args=args, environ=environ, parser=parser, pwd='/pouet')
 
     assert 'DEFVAL' == config.temboard.fromdefault
     assert 'ARGVAL' == config.temboard.fromarg
     assert 'ENVVAL' == config.temboard.fromenv
-    assert config.temboard.configfile.startswith('/etc/temboard-agent/')
-    assert config.loaded is True
-
-
-def test_load_invalid_from_user(mocker):
-    file_ = mocker.patch('temboardagent.configuration.validators.file_')
-    file_.side_effect = ValueError()
-
-    from temboardagent.configuration import (
-        load_configuration,
-        UserError,
-    )
-
-    environ = dict(TEMBOARD_CONFIGFILE=__file__ + 'ne pas créer !')
-    with pytest.raises(UserError):
-        load_configuration(environ=environ)
+    assert 'FILEVAL' == config.temboard.fromfile
 
 
 def test_load_invalid_default(mocker):
-    mocker.patch('temboardagent.configuration.MergedConfiguration.load_file')
-    mocker.patch('temboardagent.configuration.load_plugins_configurations')
-    # Bypass file validation
-    mocker.patch('temboardagent.configuration.validators.file_', None)
-
     validator = mocker.Mock(side_effect=ValueError())
 
-    from temboardagent.configuration import OptionSpec, load_configuration
+    from temboardagent.configuration import OptionSpec, MergedConfiguration
 
     specs = [
         OptionSpec('section', 'name', default='invalid', validator=validator),
     ]
 
+    config = MergedConfiguration(specs=specs)
     with pytest.raises(ValueError):
-        load_configuration(specs=specs, environ={})
+        config.load(environ={})
 
 
 def test_load_configparser():
@@ -98,22 +131,8 @@ def test_load_configparser():
     assert 'my.cfg' == values[0].origin
 
 
-def test_logging():
-    from temboardagent.configuration import generate_logging_config, DotDict
-
-    config = DotDict(dict(logging=dict(
-        destination='pouet',
-        facility='local0',
-        method='stderr',
-        level='DEBUG',
-    )))
-
-    generate_logging_config(**config)
-
-
 def test_pwd_denied(mocker):
-    mocker.patch('temboardagent.configuration.open', create=True)
-    mocker.patch('temboardagent.configuration.configparser.RawConfigParser')
+    mocker.patch('temboardagent.configuration.iter_configparser_values')
     cd = mocker.patch('temboardagent.configuration.os.chdir')
 
     from temboardagent.configuration import MergedConfiguration
@@ -122,18 +141,7 @@ def test_pwd_denied(mocker):
     config.temboard = dict(configfile='pouet')
 
     cd.side_effect = [None, OSError()]
-    config.load_file('/tmp/file.cfg')
-
-
-def test_load_file_denied(mocker):
-    o = mocker.patch('temboardagent.configuration.open', create=True)
-
-    from temboardagent.configuration import MergedConfiguration
-
-    config = MergedConfiguration()
-    o.side_effect = IOError()
-    with pytest.raises(ValueError):
-        config.load_file('/tmp/file.cfg')
+    config.load(parser=mocker.Mock(name='parser'), pwd='/etc/pouet')
 
 
 def test_required():

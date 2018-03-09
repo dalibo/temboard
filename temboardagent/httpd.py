@@ -193,11 +193,12 @@ def handleRequestsUsing(config, sessions):
     return lambda *args: RequestHandler(config, sessions, *args)
 
 
-def httpd_run(config, sessions):
+def httpd_run(app, sessions):
     """
     Serve HTTP for ever and reload configuration from the conf file on SIGHUP
     signal catch.
     """
+    config = app.config
     server_address = (config.temboard['address'], config.temboard['port'])
     handler_class = handleRequestsUsing(config, sessions)
     httpd = ThreadedHTTPServer(server_address, handler_class)
@@ -217,13 +218,13 @@ def httpd_run(config, sessions):
             try:
                 logger.info("SIGHUP signal caught, trying to reload "
                             "configuration.")
-                config = config.reload()
+                app.reload()
             except (ConfigurationError, ImportError) as e:
                 logger.exception(str(e))
                 logger.info("Keeping previous configuration.")
-                config.setup_logging()
+                app.setup_logging()
             else:
-                config.setup_logging()
+                app.setup_logging()
 
                 # New RequestHandler using the new configuration.
                 httpd.RequestHandlerClass = handleRequestsUsing(config,

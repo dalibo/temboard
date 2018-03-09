@@ -8,9 +8,10 @@ import signal
 
 from temboardsched import taskmanager
 
-from ..cli import cli, define_common_arguments
+from ..cli import bootstrap
+from ..cli import cli, define_core_arguments
 from ..sharedmemory import Sessions
-from ..configuration import load_configuration, OptionSpec
+from ..configuration import OptionSpec
 from ..daemon import (
     daemonize,
     httpd_sigterm_handler,
@@ -18,7 +19,6 @@ from ..daemon import (
 )
 from ..httpd import httpd_run
 from ..queue import purge_queue_dir
-from ..pluginsmgmt import load_plugins
 from .. import validators as v
 
 
@@ -26,7 +26,7 @@ logger = logging.getLogger('temboardagent.scripts.agent')
 
 
 def define_arguments(parser):
-    define_common_arguments(parser)
+    define_core_arguments(parser)
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
@@ -62,33 +62,6 @@ def list_options_specs():
     yield OptionSpec(section, 'hostname', default=getfqdn())
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
-    all_plugins = [
-        "activity",
-        "administration",
-        "dashboard",
-        "monitoring",
-        "pgconf",
-    ]
-    yield OptionSpec(
-        section, 'plugins', default=all_plugins, validator=v.jsonlist,
-    )
-
-    s = 'postgresql'
-    yield OptionSpec(
-        s, 'host', default='/var/run/postgresql', validator=v.dir_)
-    yield OptionSpec(s, 'instance', default='main')
-    yield OptionSpec(s, 'port', default=5432, validator=v.port)
-    yield OptionSpec(s, 'user', default='postgres')
-    yield OptionSpec(s, 'password')
-    yield OptionSpec(s, 'dbname', default='postgres')
-
-    s = 'logging'
-    yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
-    yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
-    yield OptionSpec(
-        s, 'facility', default='local0', validator=v.syslogfacility,
-    )
-    yield OptionSpec(s, 'destination', default='/dev/log')
 
 
 @cli
@@ -100,18 +73,17 @@ def main(argv, environ):
     )
     define_arguments(parser)
     args = parser.parse_args(argv)
-    config = load_configuration(
+    app = bootstrap(
         specs=list_options_specs(),
         args=args, environ=environ,
     )
+    config = app.config
 
     # Run temboard-agent as a background daemon.
     if (config.temboard.daemonize):
         daemonize(config.temboard.pidfile)
 
-    config.setup_logging()
     logger.info("Starting main process.")
-    load_plugins(config)
 
     # Purge all data queues at start time excepting metrics & notifications.
     purge_queue_dir(config.temboard['home'],
@@ -144,7 +116,7 @@ def main(argv, environ):
     signal.signal(signal.SIGHUP, httpd_sighup_handler)
 
     # Serve HTTPS forever.
-    httpd_run(config, sessions)
+    httpd_run(app, sessions)
 
     return 0
 
