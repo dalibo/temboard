@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     sass: {
       options: {
         sourceMap: true,
-        includePaths: ['node_modules/bootstrap-sass/assets/stylesheets']
+        includePaths: ['node_modules/bootstrap/scss']
       },
       // this is the "dev" Sass config used with "grunt watch" command
       dev: {

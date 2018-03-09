@@ -8,8 +8,8 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="HBAModalLabel"></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body" id="HBAModalInfo">
       </div>
@@ -28,7 +28,7 @@
 {% try %}
 {% if ret_post %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
@@ -43,7 +43,7 @@
 {% try %}
 {% if error_code > 0 %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="error-configuration" class="alert alert-danger" role="alert">
       <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
       <p>{{error_code}}: {{error_message}}</p>
@@ -53,22 +53,31 @@
 {% end %}
 {% except %}
 {% end %}
-<p>
-  <select name="version" id="selectHBAVersion" class="input-sm small">
-    <option value="CURRENT">CURRENT</option>
-    {% for version in file_versions['versions'] %}
-    <option value="{{version}}" {% if version == conf_file['version'] %}selected{% end %}>{{version}}</option>
-    {% end %}
-  </select>
-  <button class="btn btn-xs btn-success add pull-right">+ Add a new row</button>
-</p>
+<div class="row mb-2">
+  <div class="col d-flex">
+    <div class="dropdown mr-auto">
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+              data-toggle="dropdown" role="button" id="selectHBAVersion">Version: {{ conf_file['version'] if conf_file['version'] else 'Current'}}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="selectHBAVersion">
+        <a class="dropdown-item {% if not conf_file['version'] %}active{% end %}"
+           href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba">CURRENT</a>
+        {% for version in file_versions['versions'] %}
+        <a class="dropdown-item {% if version == conf_file['version'] %}active{% end %}"
+           href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba?version={{version}}">{{version}}</a>
+        {% end %}
+      </div>
+    </div>
+    <button class="btn btn-sm btn-success add">+ Add a new row</button>
+  </div>
+</div>
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="divtopHBA">
-      <table id="HBATable" class="table table-bordered table-condensed table-hover">
+      <table id="HBATable" class="table table-bordered table-sm table-hover">
       <tbody>
       <tr data-header="1">
-        <th width="54"></th>
+        <th width="58"></th>
         <th width="20">#</th>
         <th>Connection</th>
         <th>Database</th>
@@ -76,15 +85,15 @@
         <th>Address</th>
         <th width="50">Method</th>
         <th>Options</th>
-        <th width="54"></th>
+        <th width="58"></th>
       </tr>
       {% set no = 0 %}
       {% for record in conf_file['entries'] %}
         {% set no += 1 %}
       <tr data-line-number="{{no}}">
         <td>
-          <button type="button" class="btn btn-default btn-xs up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>
-          <button type="button" class="btn btn-default btn-xs down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-sm up" data-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fa fa-arrow-up"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-sm down" data-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fa fa-arrow-down"></i></button>
         </td>
         <td class="text-center"><span class="no">{{no}}</span></td>
         {% if 'comment' in record %}
@@ -94,12 +103,12 @@
         <td class="database">{{record['database']}}</td>
         <td class="user">{{record['user']}}</td>
         <td class="address">{{record['address']}}</td>
-        <td class="text-center auth_method"><span class="label label-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
+        <td class="text-center auth_method"><span class="badge badge-{% if record['auth_method'] == 'trust' %}danger{% elif record['auth_method'] == 'password' %}warning{% else %}success{% end %}">{{record['auth_method']}}</span></td>
         <td class="auth_options">{{record['auth_options']}}</td>
         {% end %}
         <td>
-          <button type="button" class="btn btn-default btn-xs edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>
-          <button type="button" class="btn btn-default btn-xs remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-sm edit" data-toggle="tooltip" data-placement="bottom" title="Edit this row"><i class="fa fa-edit"></i></button>
+          <button type="button" class="btn btn-outline-secondary btn-sm remove" data-toggle="tooltip" data-placement="bottom" title="Remove this row"><i class="fa fa-trash-o"></i></button>
         </td>
       </tr>
       {% end %}
@@ -109,11 +118,11 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-12 text-center">
+  <div class="col-12 text-center">
     {% if conf_file['version'] %}
     <button type="submit" class="btn btn-sm btn-danger remove-version">Remove this version</button>
     {% end %}
-    <button type="submit" class="btn btn-sm btn-warning cancel">Cancel</button>
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba" class="btn btn-sm btn-warning cancel">Cancel</a>
     <button type="submit" class="btn btn-sm btn-success save">Save and reload configuration</button>
   </div>
 </div>
@@ -132,18 +141,6 @@ $(document).ready(function() {
 
   function init()
   {
-    $('#selectHBAVersion').multiselect({
-      buttonWidth: '200px',
-      buttonClass: 'btn btn-xs btn-default',
-    });
-    $('#selectHBAVersion').on('change', function(event) {
-      event.preventDefault();
-      var version = $('#selectHBAVersion').find(':selected').attr('value');
-      var url = '/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/hba';
-      if (version != 'CURRENT')
-        url += '?version='+version;
-      window.location.replace(url);
-    });
     $(".up,.down").click(function(){
       var row = $(this).parents("tr:first");
       $(this).tooltip("hide");
@@ -164,14 +161,6 @@ $(document).ready(function() {
       var row = $(this).parents("tr:first");
       row_edit(row, tableid, modalid, agent_address, agent_port, xsession, null);
     });
-    $(".cancel").click(function(){
-      $("#divtopHBA").load(window.location.href + " #divHBA", function() {
-        $(function () {
-          $('[data-toggle="tooltip"]').tooltip()
-        })
-        init();
-      });
-    });
   }
   init();
   $(".add").click(function (){
@@ -188,7 +177,7 @@ $(document).ready(function() {
 
   $(".remove-version").click(function(){
     try {
-      var version = $('#selectHBAVersion').find(':selected').attr('value');
+      var version = "{{conf_file['version']}}";
       delete_hba(modalid, agent_address, agent_port, xsession, version);
     } catch(e) {
       return;

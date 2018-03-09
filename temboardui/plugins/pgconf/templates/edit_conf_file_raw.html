@@ -10,7 +10,7 @@
 {% try %}
 {% if ret_post %}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
@@ -25,7 +25,7 @@
 {% try %}
 {% if error_code > 0%}
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-12">
     <div id="error-configuration" class="alert alert-danger" role="alert">
       <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
       <p>{{error_code}}: {{error_message}}</p>
@@ -36,14 +36,14 @@
 {% except %}
 {% end %}
 <div class="row">
-  <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">{{file_content['filepath']}}</div>
-      <div class="panel-body">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">{{file_content['filepath']}}</div>
+      <div class="card-body">
         <form role="form" method="post">
           <textarea id="textareaFileContent" name="content">{{file_content['content']}}</textarea>
           <div class="row">
-            <div class="col-md-12 text-center">
+            <div class="col-12 text-center">
               <button type="submit" class="btn btn-sm btn-success">Save and reload configuration</button>
             </div>
           </div>

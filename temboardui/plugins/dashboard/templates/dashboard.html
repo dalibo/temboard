@@ -4,147 +4,143 @@
 
 {% block content %}
 
-<div class="row row-dashboard">
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
-        Informations
+<div class="row dashboard">
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        Information
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
-        <table class="table-dashboard-info">
+      <!-- /.card-header -->
+      <div class="card-body">
+        <table class="w-100">
         <tbody>
         <tr>
           <th>OS:</th>
-          <td id="os_version">{{ dashboard['os_version'] }}</td>
+          <td id="os_version" class="text-right">{{ dashboard['os_version'] }}</td>
         </tr>
         <tr>
           <th>CPU:</th>
-          <td id="cpu">{{ dashboard['n_cpu'] }}</td>
+          <td id="cpu" class="text-right">{{ dashboard['n_cpu'] }}</td>
         </tr>
         <tr>
           <th>Memory:</th>
-          <td id="memory" data-type="size">{{ dashboard['memory']['total'] * 1000 }}</td>
+          <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
         <tr>
-          <th>Databases size:</th>
-          <td id="size">{{ dashboard['databases']['total_size'] }}</td>
+          <th>DB size:</th>
+          <td id="size" class="text-right">{{ dashboard['databases']['total_size'] }}</td>
         </tr>
         <tr>
-          <th>Number of database:</th>
-          <td id="nb_db">{{ dashboard['databases']['databases'] }}</td>
+          <th>Databases:</th>
+          <td id="nb_db" class="text-right">{{ dashboard['databases']['databases'] }}</td>
         </tr>
         <tr>
           <th>Uptime:</th>
-          <td id="pg_uptime">{{ dashboard['pg_uptime'] }}</td>
-        </tr>
-        <tr>
-          <th>Current time:</th>
-          <td id="time">{{ dashboard['databases']['time'] }}</td>
+          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
         </tr>
         </tbody>
         </table>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
-        TPS <div class="pull-right">Commit:<span id="tps_commit" class="label label-success">0</span> Rollback: <span id="tps_rollback" class="label label-danger">0</span></div>
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        TPS <div class="pull-right">Commit:<span id="tps_commit" class="badge badge-success">0</span> Rollback: <span id="tps_rollback" class="badge badge-danger">0</span></div>
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-tps-holder" class="canvas-wrapper">
           <canvas id="chart-tps" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
-        Loadaverage <div class="pull-right"><span id="loadaverage" class="label label-primary">{{dashboard['loadaverage']}}</span></div>
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        Loadaverage <div class="pull-right"><span id="loadaverage" class="badge badge-primary">{{dashboard['loadaverage']}}</span></div>
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-loadaverage-holder" class="canvas-wrapper">
           <canvas id="chart-loadaverage" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
         CPU usage
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-cpu-holder" class="canvas-wrapper">
           <canvas id="chart-cpu" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
         Memory usage
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-memory-holder" class="canvas-wrapper">
           <canvas id="chart-memory" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
         Cache Hit ratio
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-hitratio-holder" class="canvas-wrapper">
           <canvas id="chart-hitratio" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
-        Buffers <div class="pull-right"><span id="buffers_delta" class="label label-primary">{{buffers_delta}}</span></div>
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        Buffers <div class="pull-right"><span id="buffers_delta" class="badge badge-primary">{{buffers_delta}}</span></div>
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-buffers-holder" class="canvas-wrapper">
           <canvas id="chart-buffers" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
-        Active backends <div class="pull-right"><span id="backends" class="label label-primary">{{dashboard['active_backends']['nb']}}</span></div>
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        Active backends <div class="pull-right"><span id="backends" class="badge badge-primary">{{dashboard['active_backends']['nb']}}</span></div>
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body">
+      <!-- /.card-header -->
+      <div class="card-body">
         <div id="canvas-backends-holder" class="canvas-wrapper">
           <canvas id="chart-backends" />
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-6 col-lg-4 col-xl-3">
-    <div class="panel panel-default panel-dashboard">
-      <div class="panel-heading">
+  <div class="col-lg-6 col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">
         Notifications
       </div>
-      <!-- /.panel-heading -->
-      <div class="panel-body" id="divNotif10">
+      <!-- /.card-header -->
+      <div class="card-body small" id="divNotif10">
         <div class="row text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
       </div>
     </div>

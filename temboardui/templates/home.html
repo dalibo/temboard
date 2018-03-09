@@ -15,7 +15,7 @@
           <div class="col-md-12">
             <div class="pull-right">
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
-                 class="btn btn-default btn-sm">
+                 class="btn btn-outline-secondary btn-sm">
                 View
               </a>
             </div>
@@ -27,20 +27,20 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-5">
-            <dl class="dl-horizontal small">
-              <dt>Host: </dt>
-              <dd>{{instance.agent_address}}</dd>
-              <dt>Data: </dt>
-              <dd>{{instance.pg_data}}</dd>
-              <dt>Port: </dt>
-              <dd>{{instance.pg_port}}</dd>
-              <dt>Version: </dt>
-              <dd>{{instance.pg_version}}</dd>
+          <div class="col-md-5 small">
+            <dl class="row mb-0">
+              <dt class="col-sm-3">Host: </dt>
+              <dd class="col-sm-9 mb-0">{{instance.agent_address}}</dd>
+              <dt class="col-sm-3">Data: </dt>
+              <dd class="col-sm-9 mb-0">{{instance.pg_data}}</dd>
+              <dt class="col-sm-3">Port: </dt>
+              <dd class="col-sm-9 mb-0">{{instance.pg_port}}</dd>
+              <dt class="col-sm-3">Version: </dt>
+              <dd class="col-sm-9 mb-0">{{instance.pg_version}}</dd>
             </dl>
           </div>
           <div class="col-md-3">
-            <span>{% for group in instance.groups %} <span class="label label-default">{{group.group_name}}</span>{% end %}</span>
+            <span>{% for group in instance.groups %} <span class="badge badge-secondary">{{group.group_name}}</span>{% end %}</span>
           </div>
           <div class="col-md-4">
             <br>

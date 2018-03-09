@@ -75,14 +75,14 @@ function html_error_modal(code, error) {
   error_html += '   <div class="modal-dialog">';
   error_html += '     <div class="modal-content">';
   error_html += '       <div class="modal-header">';
-  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
   error_html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
+  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
   error_html += '       </div>';
   error_html += '       <div class="modal-body">';
   error_html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
   error_html += '       </div>';
   error_html += '       <div class="modal-footer" id="ErrorModalFooter">';
-  error_html += '         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+  error_html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
   error_html += '       </div>';
   error_html += '     </div>';
   error_html += '   </div>';
@@ -120,7 +120,7 @@ function refresh_dashboard(agent_address, agent_port, xsession)
       {
         $('#ErrorModal').modal('hide');
         $('#modalError').html(html_error_modal(401, 'Session expired'));
-        $('#ErrorModalFooter').html('<a class="btn btn-default" id="aBackLogin">Back to login page</a>');
+        $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
         $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
         $('#ErrorModal').modal('show');
       }
@@ -594,7 +594,7 @@ function update_notifications(data)
   var notif_html = '<ul class="notifications">';
   for (var i in data)
   {
-    notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="label label-success">'+data[i].username+'</span> '+data[i].message+'</li>';
+    notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="badge badge-success">'+data[i].username+'</span> '+data[i].message+'</li>';
   }
   notif_html += '</ul>';
   $('#divNotif10').html(notif_html);

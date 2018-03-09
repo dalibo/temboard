@@ -11,11 +11,11 @@ colors = {
 function new_graph(id, title, api, api_url, options, start_date, end_date)
 {
   var html_chart_panel = '';
-  html_chart_panel += '<div class="panel panel-default">';
-  html_chart_panel += ' <div class="panel-heading">';
+  html_chart_panel += '<div class="card">';
+  html_chart_panel += ' <div class="card-header">';
   html_chart_panel += title;
   html_chart_panel += ' </div>';
-  html_chart_panel += ' <div class="panel-body">';
+  html_chart_panel += ' <div class="card-body">';
   html_chart_panel += '   <div id="info'+id+'"></div>';
   html_chart_panel += '   <div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
   html_chart_panel += '   <div id="chart'+id+'" class="monitoring-chart"></div>';

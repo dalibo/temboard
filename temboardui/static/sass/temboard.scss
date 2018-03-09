@@ -2,9 +2,12 @@
 @import "daterangepicker-override";
 @import "daterangepicker";
 
+html {
+  font-size: 14px;
+}
 
 .navbar {
-  border: 0;
+  padding: 0;
 }
 
 .navbar-brand {
@@ -17,17 +20,37 @@
   margin-bottom: 10px;
 }
 
-@media (min-width:992px) {
+@include media-breakpoint-up(lg) {
+  $sidebar-width: 270px;
   .sidebar-fixed-width {
     width: inherit;
-    min-width: 300px;
-    max-width: 300px;
+    min-width: $sidebar-width;
+    max-width: $sidebar-width;
     position:relative;
     overflow: auto;
   }
 
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  }
+
+  .sidebar-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 52px;
+    height: calc(100vh - 52px);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   .main {
-    width:calc(100% - 300px);
+    width: calc(100% - #{$sidebar-width});
+    max-width: none;
   }
 }
 
@@ -45,7 +68,7 @@
   }
 
   .list-group-item:hover {
-    background-color: $table-bg-hover;
+    background-color: $table-hover-bg;
   }
 
   .sparkline-container {
@@ -69,25 +92,12 @@
   height: 100%;
 }
 
-.row-dashboard {
-  .panel-body table {
-    width: 100%;
-  }
-
-  .panel-body {
-    height: 190px;
-  }
+.card-body table {
+  width: 100%;
 }
 
-.table-dashboard-info > tbody > tr > {
-  th {
-    font-weight: normal;
-  }
-
-  td {
-    font-weight: bold;
-    text-align: right;
-  }
+.dashboard .card-body {
+  height: 190px;
 }
 
 .popover-title {
@@ -111,7 +121,7 @@
   border-bottom: 0px;
 
   &.panel-heading-inverse {
-    background-color: $brand-primary;
+    background-color: $primary;
   }
 }
 
@@ -238,11 +248,6 @@ select.form-control {
   padding: 10px;
 }
 
-table tbody tr td span {
-  margin: 2px;
-  line-height: 2.2em;
-}
-
 .no-sort::after { display: none!important; }
 
 .no-sort {
@@ -263,10 +268,6 @@ table tbody tr td span {
   color: #000;
 }
 
-.desc-setting {
-  color: #555;
-}
-
 .monitoring-chart {
   width: 100%;
   height: 300px;
@@ -277,11 +278,11 @@ table tbody tr td span {
 }
 
 #daterange {
-  width: 300px;
+  width: 320px;
   cursor: pointer;
-  border: 1px solid $input-border;
+  border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
-  padding: $padding-small-vertical $padding-small-horizontal;
+  padding: $input-btn-padding-y $input-btn-padding-x;
 }
 
 #HBATable {
@@ -322,7 +323,6 @@ table tbody tr td span {
 }
 
 ul.notifications {
-  font-size: 11px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -343,7 +343,7 @@ td.date {
 }
 
 $glow-color-start: white;
-$glow-color-end: lighten($brand-primary, 30%);
+$glow-color-end: lighten($primary, 30%);
 @keyframes glowing {
   0% { box-shadow: 0 0 3px $glow-color-start; }
   50% { box-shadow: 0 0 10px $glow-color-end; }
@@ -355,11 +355,17 @@ $glow-color-end: lighten($brand-primary, 30%);
 }
 
 .btn-danger {
-  color: darken($brand-danger, 5%);
+  color: darken($danger, 5%);
   background-color: white;
-  border-color: $btn-default-border;
 }
 
 .table-no-margin {
   margin-bottom: 0;
+}
+
+// dataTables wraps the table in a fluid container
+// This adds margins. Here we remove them.
+.row .dataTables_wrapper {
+  padding-right: 0;
+  padding-left: 0;
 }
