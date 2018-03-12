@@ -9,7 +9,7 @@ import urllib2
 import json
 import logging
 
-from ..cli import cli, define_common_arguments
+from ..cli import bootstrap, cli, define_core_arguments
 from ..errors import (
     ConfigurationError,
     HTTPError,
@@ -17,7 +17,6 @@ from ..errors import (
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
 from ..httpsclient import https_request
-from ..configuration import load_configuration, setup_logging
 from agent import list_options_specs
 
 logger = logging.getLogger(__name__)
@@ -60,7 +59,7 @@ def define_arguments(parser):
         action='help',
         help='show this help message and exit')
 
-    define_common_arguments(parser)
+    define_core_arguments(parser)
 
     parser.add_argument(
         '-h', '--host',
@@ -101,15 +100,10 @@ def main(argv, environ):
     define_arguments(parser)
 
     args = parser.parse_args(argv)
-
-    setup_logging(level='ERROR')
-
-    # Loading agent configuration file.
-    config = load_configuration(
-        specs=list_options_specs(),
+    app = bootstrap(
+        specs=list_options_specs(), with_plugins=False,
         args=args, environ=environ,
     )
-    config.setup_logging()
 
     # Load configuration from the configuration file.
     try:
@@ -160,9 +154,9 @@ def main(argv, environ):
                 },
                 data={
                     'hostname': infos['hostname'],
-                    'agent_key': config.temboard['key'],
+                    'agent_key': app.config.temboard['key'],
                     'agent_address': args.host,
-                    'agent_port': str(config.temboard['port']),
+                    'agent_port': str(app.config.temboard['port']),
                     'cpu': infos['cpu'],
                     'memory_size': infos['memory_size'],
                     'pg_port': infos['pg_port'],

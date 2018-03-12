@@ -1,8 +1,4 @@
 import logging
-try:
-    from logging.config import dictConfig
-except ImportError:  # pragma: nocover
-    from logutils.dictconfig import dictConfig
 
 try:
     import configparser
@@ -13,18 +9,10 @@ import os.path
 
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
-from .pluginsmgmt import load_plugins_configurations
-from .log import generate_logging_config
 from .errors import UserError
-from . import validators
 
 
 logger = logging.getLogger(__name__)
-
-
-def setup_logging(**kw):
-    logging_config = generate_logging_config(**kw)
-    dictConfig(logging_config)
 
 
 class PluginConfiguration(configparser.RawConfigParser):
@@ -117,10 +105,7 @@ class OptionSpec(object):
         return self.default is self.REQUIRED
 
     def validate(self, value):
-        if value.value is None:
-            return value.value
-
-        if not self.validator:
+        if value.value is None or not self.validator:
             return value.value
 
         try:
@@ -129,25 +114,6 @@ class OptionSpec(object):
             logger.debug(
                 "Invalid %s from %s: %.32s...", value.name, value.origin, e)
             raise
-
-
-def load_configuration(specs=None, args=None, environ=os.environ):
-    # Main entry point to load configuration.
-    #
-    # specs is a list or a flat dict of OptionSpecs
-    #
-    # argparser should **not** manage defaults. Use argparse.SUPPRESS as
-    # argument_default to store only user defined arguments. MergeConfiguration
-    # merge defaults after file and environ are loaded. Defaults from argparse
-    # are considered user input and overrides file and environ.
-    #
-    # configfile **must** be store in dest `temboard_configfile` in args.
-    #
-    # Origin order: args > environ > file > defaults
-
-    config = MergedConfiguration(specs)
-    config.load(args=args, environ=environ)
-    return config
 
 
 class Value(object):
@@ -178,6 +144,7 @@ def iter_configparser_values(parser, filename='config'):
 
 
 def iter_environ_values(environ):
+    environ = environ or {}
     prefix = 'TEMBOARD_'
     for k, v in environ.items():
         if not k.startswith(prefix):
@@ -204,29 +171,20 @@ class MergedConfiguration(DotDict):
     # Origin order: args > environ > file > defaults
 
     def __init__(self, specs=None):
-        # Spec is a flat dict of OptionSpec.
-        specs = specs or {}
-        if not isinstance(specs, dict):
-            specs = dict((s, s) for s in specs)
-
-        # Add required configfile option
-        spec = OptionSpec(
-            'temboard', 'configfile',
-            default='/etc/temboard-agent/temboard-agent.conf',
-            validator=validators.file_,
-        )
-        specs.setdefault(spec, spec)
-
         DotDict.__init__(self)
-        self.__dict__['specs'] = specs
-        self.__dict__['unvalidated_specs'] = specs.keys()
-        self.loaded = False
+        self.__dict__['specs'] = dict([(s, s) for s in specs or []])
+        self.__dict__['unvalidated_specs'] = set(self.specs)
+
+    def add_specs(self, specs):
+        for s in specs:
+            self.specs[s] = s
+            self.unvalidated_specs.add(s)
 
     def add_values(self, values):
         # Search missing values in values and validate them.
 
         values = dict((v.name, v) for v in values)
-        for name in self.unvalidated_specs[:]:
+        for name in list(self.unvalidated_specs):
             try:
                 value = values[name]
             except KeyError:
@@ -245,63 +203,30 @@ class MergedConfiguration(DotDict):
                 msg = "Missing %s:%s configuration" % (spec.section, spec.name)
                 raise ConfigurationError(msg)
 
-    def load(self, args, environ):
+    def load(self, args=None, environ=None, parser=None, pwd=None,
+             reload_=False):
         # Origins are loaded in order. First wins..
         #
         # Loading in this order avoid validating ignored values.
 
+        if reload_:
+            # Reset unvalidated set to re-analyze all options.
+            self.unvalidated_specs.update(set(self.specs))
+
         try:
             self.add_values(iter_args_values(args))
             self.add_values(iter_environ_values(environ))
-            # Loading default for configfile *before* loading file.
-            spec = self.specs['temboard_configfile']
-            self.add_values([Value(str(spec), spec.default, 'default')])
-            self.load_file(self.temboard.configfile)
+            if parser:
+                # configfile values are relatives to configfile directory.
+                oldpwd = os.getcwd()
+                os.chdir(pwd)
+                self.add_values(iter_configparser_values(parser))
+                try:
+                    os.chdir(oldpwd)
+                except OSError as e:
+                    logger.debug("Can't move back to %s: %s", oldpwd, e)
         except ValueError as e:
             raise UserError(str(e))
 
-        self.check_required()
         self.add_values(iter_defaults(self.specs))
-        self.plugins = load_plugins_configurations(self)
-        self.loaded = True
-
-    def load_file(self, filename):
-        parser = configparser.RawConfigParser()
-        logger.info('Reading %s.', filename)
-        try:
-            with open(filename, 'ro') as fp:
-                parser.readfp(fp)
-        except IOError as e:
-            raise ValueError(str(e))
-
-        oldpwd = os.getcwd()
-        os.chdir(os.path.dirname(filename))
-        self.add_values(iter_configparser_values(parser, filename))
-        try:
-            os.chdir(oldpwd)
-        except OSError as e:
-            logger.debug("Can't move back to %s: %s", oldpwd, e)
-
-        # Compat with legacy
-        self.configfile = self.temboard.configfile
-
-    def reload(self):
-        # Reread file config.
-
-        assert self.loaded, "Can't reload unloaded configuration."
-        old_plugins = self.temboard.plugins
-
-        try:
-            self.load_file(self.temboard.configfile)
-        except Exception as e:
-            raise ConfigurationError(str(e))
-
-        # Prevent any change on plugins list.
-        self.temboard.plugins = old_plugins
-        # Now reload plugins configurations
-        self.plugins = load_plugins_configurations(self)
-        return self
-
-    def setup_logging(self):
-        # Just to save one import for code reloading config.
-        setup_logging(**self.logging)
+        self.check_required()

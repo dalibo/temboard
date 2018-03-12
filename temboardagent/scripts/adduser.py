@@ -6,11 +6,10 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout
 from getpass import getpass
 
-from ..cli import cli, define_common_arguments
+from ..cli import bootstrap, cli, define_core_arguments
 from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError, UserError
 from ..usermgmt import get_user
-from ..configuration import load_configuration
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
 from .agent import list_options_specs
@@ -61,18 +60,19 @@ def main(argv, environ):
         description="Add a new temboard-agent user.",
         argument_default=UNDEFINED_ARGUMENT,
     )
-    define_common_arguments(parser)
+    define_core_arguments(parser)
     args = parser.parse_args(argv)
-    config = load_configuration(
-        specs=list_options_specs(), args=args, environ=environ,
+    app = bootstrap(
+        specs=list_options_specs(), with_plugins=False,
+        args=args, environ=environ,
     )
 
     # Load configuration from the configuration file.
-    username = ask_username(config)
+    username = ask_username(app.config)
     password = ask_password()
     hash_ = hash_password(username, password).decode('utf-8')
     try:
-        with open(config.temboard['users'], 'a') as fd:
+        with open(app.config.temboard.users, 'a') as fd:
             fd.write("%s:%s\n" % (username, hash_))
     except IOError as e:
         raise UserError(str(e))
