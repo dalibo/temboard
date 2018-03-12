@@ -31,9 +31,6 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
-    networks:
-      default:
-        aliases: [instance.fqdn]
     labels:
       com.dnsdock.alias: instance.temboard.docker
 
@@ -54,7 +51,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/usr/local/src/temboard-agent/
     links:
-      - instance
+      - instance:instance.fqdn
     command: tail -f /dev/null
     labels:
       com.dnsdock.alias: agent.temboard.docker
