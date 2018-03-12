@@ -27,7 +27,7 @@ services:
       com.dnsdock.alias: www.temboard.docker
 
   instance:
-    image: postgres:9.6
+    image: postgres:10-alpine
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
