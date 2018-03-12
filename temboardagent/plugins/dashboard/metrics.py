@@ -11,6 +11,12 @@ def get_metrics(conn, config, _=None):
     dm = DashboardMetrics(conn)
     sysinfo = SysInfo()
     pginfo = PgInfo(conn)
+
+    cpu_models = [cpu['model_name'] for cpu in sysinfo.cpu_info()['cpus']]
+    cpu_models_counter = {}
+    for elem in cpu_models:
+        cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
+
     return {'buffers': dm.get_buffers(),
             'hitratio': dm.get_hitratio(),
             'active_backends': dm.get_active_backends(),
@@ -19,7 +25,9 @@ def get_metrics(conn, config, _=None):
             'loadaverage': dm.get_load_average(),
             'memory': dm.get_memory_usage(),
             'hostname': sysinfo.hostname(config.temboard['hostname']),
-            'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release),
+            'os_version': sysinfo.os_release,
+            'linux_distribution': sysinfo.linux_distribution(),
+            'cpu_models': cpu_models_counter,
             'databases': dm.get_stat_db(),
             'pg_uptime': dm.get_pg_uptime(),
             'n_cpu': sysinfo.n_cpu(),

@@ -83,6 +83,12 @@ class SysInfo(Inventory):
         else:
             raise Exception("Unsupported OS.")
 
+    def linux_distribution(self):
+        if self.os == 'Linux':
+            return " ".join(platform.linux_distribution()).strip()
+        else:
+            raise Exception("Unsupported OS.")
+
     def _hostname_linux(self):
         """
         Returns system hostname.
