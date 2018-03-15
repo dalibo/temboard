@@ -7,10 +7,10 @@
 <div class="row mb-3">
   <div class="col-xxl-3 col-xl-4 col-12 mb-3 mb-xl-0">
     <div class="row">
-      <div class="col-xl-12 col mb-xl-3">
-        {% block information %}{% end %}
+      <div class="col-xl-12 col mb-xl-2">
+        {% block system_information %}{% end %}
       </div>
-      <div class="col-xl-12 col">
+      <div class="col-xl-12 col mb-xl-3">
         <div class="row">
           <div class="col-6 small text-center">
             <div class="chart-title">
@@ -34,6 +34,13 @@
               <canvas id="chart-memory"></canvas>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="col-xl-12 col mb-xl-2">
+        {% block postgres_information %}{% end %}
+      </div>
+      <div class="col-xl-12 col">
+        <div class="row">
           <div class="col-6 small text-center">
             <div class="chart-title">
               Cache Hit Ratio
@@ -181,9 +188,12 @@
 </script>
 {% end %}
 
-{% block information %}
+{% block system_information %}
         <table class="w-100 small">
         <tbody>
+        <tr>
+          <td colspan="2" class="text-muted text-center">System</td>
+        </tr>
         {% if 'linux_distribution' in dashboard %}
         <tr>
           <th>Distribution:</th>
@@ -218,6 +228,20 @@
           <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
         <tr>
+          <th>Uptime:</th>
+          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
+        </tr>
+        </tbody>
+        </table>
+{% end %}
+
+{% block postgres_information %}
+        <table class="w-100 small">
+        <tbody>
+        <tr>
+          <td colspan="2" class="text-muted text-center">Postgres</td>
+        </tr>
+        <tr>
           <th>Databases:</th>
           <td class="text-right">
             <span id="nb_db">
@@ -227,10 +251,6 @@
               (<span id="size">{{ dashboard['databases']['total_size'] }}</span>)
             </span>
           </td>
-        </tr>
-        <tr>
-          <th>Uptime:</th>
-          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
         </tr>
         </tbody>
         </table>
