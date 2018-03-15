@@ -184,13 +184,34 @@
 {% block information %}
         <table class="w-100 small">
         <tbody>
+        {% if 'linux_distribution' in dashboard %}
+        <tr>
+          <th>Distribution:</th>
+          <td class="text-right">{{ dashboard['linux_distribution'] }}</td>
+        </tr>
+        {% end %}
         <tr>
           <th>OS:</th>
           <td id="os_version" class="text-right">{{ dashboard['os_version'] }}</td>
         </tr>
         <tr>
           <th>CPU:</th>
-          <td id="cpu" class="text-right">{{ dashboard['n_cpu'] }}</td>
+          <td id="cpu" class="text-right">
+            {% if 'cpu_models' in dashboard %}
+              <ul class="list-unstyled mb-0">
+                <li>
+                  {% for model, count in dashboard['cpu_models'].items() %}
+                  {{ count }} &times;
+                  <span class="text-muted small">
+                    {{ model }}
+                  </span>
+                </li>
+              </ul>
+              {% end %}
+            {% else %}
+              {{ dashboard['n_cpu'] }}
+            {% end %}
+          </td>
         </tr>
         <tr>
           <th>Memory:</th>
