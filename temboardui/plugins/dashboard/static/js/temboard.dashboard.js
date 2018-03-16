@@ -53,7 +53,6 @@ function refresh_dashboard(agent_address, agent_port, xsession)
         update_dashboard(data, true);
         update_tps(data, true);
         update_loadaverage(data, true);
-        //update_backends(data, true);
         update_notifications(data.notifications);
       }
     },
@@ -261,92 +260,6 @@ function update_loadaverage(data, update_chart)
     }
     resize_chart(window.loadaveragechart, max_val, 1);
   }
-}
-
-/*
- * Active Backends line chart options.
- */
-var backends_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Active Backends",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 4,
-          min: 0,
-          stepSize: 1,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: 'rgba(101,152,184,1)',
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
-
-
-var backends_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_backends(data, update_chart)
-{
-  if (!("backendschart" in window))
-  {
-    var backends_context = $('#chart-backends').get(0).getContext('2d');
-    window.backendschart = new Chart(backends_context, backends_config);
-  }
-  /** Add the very new backends value to the chart dataset ... **/
-  window.backendschart.data.datasets[0].data.push(data['active_backends']['nb']);
-  /** ... and to the global array backends_values **/
-  backends_values.push(data['active_backends']['nb']);
-  window.backendschart.data.datasets[0].data.shift();
-  backends_values.shift();
-  if (update_chart)
-  {
-    $('#backends').html(data['active_backends']['nb']);
-    var max_val = 0;
-    for (var i=0; i < backends_values.length; i++)
-    {
-      if (backends_values[i] > max_val)
-      {
-        max_val = backends_values[i];
-      }
-    }
-  }
-    resize_chart(window.backendschart, max_val, 1);
 }
 
 /*
