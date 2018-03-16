@@ -8,6 +8,8 @@ from temboardagent.api_wrapper import (
     api_function_wrapper,
     api_function_wrapper_pg,
 )
+from temboardagent.tools import validate_parameters
+from temboardagent.errors import HTTPError
 
 
 logger = logging.getLogger('temboardagent.' + __name__)
@@ -88,6 +90,33 @@ def get_hello_something(http_context, config=None, sessions=None):
         sys.modules[__name__], 'say_hello_something')
 
 
+def say_hello_something2(config, http_context):
+    """
+    "Hello <something>" using GET variable.
+
+    Usage:
+    $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello2/say?something=toto" | python -m json.tool
+    {
+        "content": "Hello toto"
+    }
+    """  # noqa
+    if http_context and 'something' in http_context['query']:
+        validate_parameters(http_context['query'], [
+            ('something', T_SOMETHING, True)
+        ])
+        something = http_context['query']['something'][0]
+        return {"content": "Hello %s" % (something)}
+    else:
+        raise HTTPError(444, "Parameter 'something' not sent.")
+
+
+def get_hello_something2(http_context, config=None, sessions=None):
+    return api_function_wrapper(
+        config, http_context, sessions,
+        sys.modules[__name__], 'say_hello_something2')
+
+
 class Hello(object):
     def __init__(self, app, **kw):
         self.app = app
@@ -97,6 +126,7 @@ class Hello(object):
         add_route('GET', b'/hello')(get_hello)
         add_route('GET', b'/hello/time')(get_hello_time)
         add_route('GET', b'/hello/'+T_SOMETHING)(get_hello_something)
+        add_route('GET', b'/hello2/say')(get_hello_something2)
 
 
 class Failing(object):
