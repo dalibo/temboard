@@ -116,67 +116,11 @@
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script src="/js/filesize.min.js"></script>
 <script>
-  var memorydata = {
-    labels: [ "Active", "Cached", "Free" ],
-    datasets: [
-      {
-        data: [{{dashboard['memory']['active']}}, {{dashboard['memory']['cached']}}, {{dashboard['memory']['free']}}],
-        backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
-      }
-    ]
-  };
-
-  var cpudata = {
-    labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
-    datasets: [
-      {
-        data: [{{dashboard['cpu']['iowait']}}, {{dashboard['cpu']['steal']}}, {{dashboard['cpu']['user']}}, {{dashboard['cpu']['system']}}, {{dashboard['cpu']['idle']}}],
-        backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
-      }
-    ]
-  };
-
-  var hitratiodata = {
-    labels: ["Hit", "Read"],
-    datasets: [
-      {
-        data: [{{dashboard['hitratio']}}, {{readratio}}],
-        backgroundColor: ["#29cc36", "#cc2936"]
-      }
-    ]
-  };
-
-  {% if not 'max_connections' in dashboard %}
-  {% set free_sessions = 'NaN' %}
-  {% else %}
-  {% set free_sessions = dashboard['max_connections'] - dashboard['active_backends']['nb'] %}
-  {% end %}
-
-  var sessionsdata = {
-    labels: ["Active backends", ""],
-    datasets: [
-      {
-        data: [{{dashboard['active_backends']['nb']}}, {{ free_sessions }}],
-        backgroundColor: ["#29cc36", "#eeeeee"]
-      }
-    ]
-  };
-
   var jdata_history = JSON.parse('{% raw history %}');
-  for (var p in jdata_history)
-  {
-    var updchart = false;
-    if (p == (jdata_history.length - 1))
-    {
-      updchart = true;
-    }
-    update_tps(jdata_history[p], updchart);
-    update_loadaverage(jdata_history[p], updchart);
-  }
+  var lastDatabasesDatum = jdata_history[jdata_history.length -1].databases;
   var xsession = "{{xsession}}";
   var agent_address = "{{instance.agent_address}}";
   var agent_port = "{{instance.agent_port}}";
-  window.setInterval(function () {refresh_dashboard(agent_address, agent_port, xsession)}, 2000);
 
   $(document).ready(function() {
     $('[data-type=size]').each(function(){

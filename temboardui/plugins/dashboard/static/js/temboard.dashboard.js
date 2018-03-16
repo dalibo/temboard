@@ -1,17 +1,5 @@
 var last_update_timestamp = 0;
 
-/*
- * CPU & Memory usage donut charts options.
- */
-var options = {
-  responsive : true,
-  maintainAspectRatio: false,
-  legend: false,
-  rotation: Math.PI,
-  circumference: Math.PI,
-  animation: false
-};
-
 function html_error_modal(code, error) {
   var error_html = '';
   error_html += '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
@@ -37,8 +25,7 @@ function html_error_modal(code, error) {
  * Call the agent's dashboard API and update the view through
  * update_dashboard() callback.
  */
-function refresh_dashboard(agent_address, agent_port, xsession)
-{
+function refreshDashboard() {
   $.ajax({
     url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
     type: 'GET',
@@ -51,8 +38,8 @@ function refresh_dashboard(agent_address, agent_port, xsession)
         $('#ErrorModal').modal('hide');
         last_update_timestamp = data['databases']['timestamp'];
         update_dashboard(data, true);
-        update_tps(data, true);
-        update_loadaverage(data, true);
+        updateTps(data.databases);
+        updateLoadaverage(data);
         update_notifications(data.notifications);
       }
     },
@@ -82,6 +69,7 @@ function refresh_dashboard(agent_address, agent_port, xsession)
     }
   });
 }
+window.setInterval(refreshDashboard, 2000);
 
 function update_dashboard(data)
 {
@@ -176,225 +164,251 @@ function resize_chart(chart, max_val, step_size_limit)
   chart.update();
 }
 
-/*
- * Loadaverage line chart options.
- */
-var loadaverage_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Loadaverage",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 4,
-          min: 0,
-          stepSize: 1,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: "rgba(101,152,184,1)",
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
-
-var loadaverage_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_loadaverage(data, update_chart)
-{
-  if (!("loadaveragechart" in window))
-  {
-    var loadaveragecontext = $('#chart-loadaverage').get(0).getContext('2d');
-    window.loadaveragechart = new Chart(loadaveragecontext, loadaverage_config);
-  }
+function updateLoadaverage(data) {
   /** Add the very new loadaverage value to the chart dataset ... **/
-  window.loadaveragechart.data.datasets[0].data.push(data['loadaverage']);
-  /** ... and to the global array loadaverage_values **/
-  loadaverage_values.push(data['loadaverage']);
-  loadaverage_values.shift();
-  window.loadaveragechart.data.datasets[0].data.shift();
-  if (update_chart)
-  {
-    $('#loadaverage').html(data['loadaverage']);
-    var max_val = 0;
-    var i = 0;
-    for (i; i < loadaverage_values.length; i++)
-    {
-      if (loadaverage_values[i] > max_val)
-      {
-        max_val = loadaverage_values[i];
-      }
-    }
-    resize_chart(window.loadaveragechart, max_val, 1);
-  }
+  var chart = window.loadaveragechart;
+  chart.data.datasets[0].data.push(data['loadaverage']);
+  chart.data.datasets[0].data.shift();
+  $('#loadaverage').html(data['loadaverage']);
+  var max = Math.max.apply(null, chart.data.datasets[0].data);
+  resize_chart(window.loadaveragechart, max, 1);
 }
 
-/*
- * TPS line chart options.
- */
+function computeDelta(a, b, duration) {
+  return Math.ceil((a - b) / duration);
+}
 
-var tps_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Commit",
-        backgroundColor: "rgba(0,188,18,0.2)",
-        borderColor: "rgba(0,188,18,1)",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      },
-      {
-        label: "Rollback",
-        backgroundColor: "rgba(188,0,0,0.2)",
-        borderColor: "rgba(188,0,0,1)",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 20,
-          min: 0,
-          stepSize: 5,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
+function updateTps(data) {
+  var chart = window.tpschart;
+  var datasets = chart.data.datasets;
+  var duration = data.timestamp - lastDatabasesDatum.timestamp;
+  var deltaCommit = computeDelta(data.total_commit, lastDatabasesDatum.total_commit, duration);
+  var deltaRollback = computeDelta(data.total_rollback, lastDatabasesDatum.total_rollback, duration);
 
-var tps_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+  var commitData = datasets[0].data;
+  commitData.push(deltaCommit);
+  var rollbackData = datasets[1].data;
+  rollbackData.push(deltaRollback);
+  commitData.shift();
+  rollbackData.shift();
 
-function update_tps(data, update_chart)
-{
-  if (!("tpschart" in window))
-  {
-    var tps_context = $('#chart-tps').get(0).getContext('2d');
-    window.tpschart = new Chart(tps_context, tps_config);
-  }
-  /** Proceed with delta calculation **/
-  if (tps_values.length > 0)
-  {
-    var p = tps_values.length - 1;
-    if (tps_values[p] != null)
-    {
-      delta_commit = Math.ceil((data['databases']['total_commit'] - tps_values[p]['total_commit']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
-      delta_rollback = Math.ceil((data['databases']['total_rollback'] - tps_values[p]['total_rollback']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
-    } else {
-      delta_commit = 0;
-      delta_rollback = 0;
-    }
-  } else {
-    delta_commit = 0;
-    delta_rollback = 0;
-  }
-
-  window.tpschart.data.datasets[0].data.push(delta_commit);
-  window.tpschart.data.datasets[1].data.push(delta_rollback);
-  /** We need to store delta value. **/
-  data['databases']['delta_commit'] = delta_commit;
-  data['databases']['delta_rollback'] = delta_rollback;
-  tps_values.push(data['databases']);
-  tps_values.shift();
-  window.tpschart.data.datasets[0].data.shift();
-  window.tpschart.data.datasets[1].data.shift();
-  if (update_chart)
-  {
-    $('#tps_commit').html(delta_commit);
-    $('#tps_rollback').html(delta_rollback);
-    var max_val = 0;
-    for (var i=0; i < tps_values.length; i++)
-    {
-      if (tps_values[i] != null)
-      {
-        if (tps_values[i]['delta_commit'] > max_val)
-        {
-          max_val = tps_values[i]['delta_commit'];
-        }
-        if (tps_values[i]['delta_rollback'] > max_val)
-        {
-          max_val = tps_values[i]['delta_rollback'];
-        }
-      }
-    }
-    resize_chart(window.tpschart, max_val, 5);
-  }
+  $('#tps_commit').html(deltaCommit);
+  $('#tps_rollback').html(deltaRollback);
+  var max = Math.max.apply(null, commitData.concat(rollbackData));
+  resize_chart(chart, max, 5);
+  lastDatabasesDatum = data;
 }
 
 window.onload = function(){
-  var memorycontext = $('#chart-memory').get(0).getContext('2d');
-  window.memorychart = new Chart(memorycontext, {type: 'doughnut', data: memorydata, options: options});
-  update_total_memory();
-  var cpucontext = $('#chart-cpu').get(0).getContext('2d');
-  window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
-  update_total_cpu();
-  var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
-  window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
-  update_total_hit();
-  var sessionscontext = $('#chart-sessions').get(0).getContext('2d');
-  window.sessionschart = new Chart(sessionscontext, {type: 'doughnut', data: sessionsdata, options: options});
+  var options = {
+    responsive : true,
+    maintainAspectRatio: false,
+    legend: false,
+    rotation: Math.PI,
+    circumference: Math.PI,
+    animation: false
+  };
+
+  window.memorychart = new Chart(
+    $('#chart-memory').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["Active", "Cached", "Free"],
+        datasets: [
+          {
+            backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
+
+  window.cpuchart = new Chart(
+    $('#chart-cpu').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
+        datasets: [
+          {
+            backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
+
+  window.hitratiochart = new Chart(
+    $('#chart-hitratio').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["Hit", "Read"],
+        datasets: [
+          {
+            backgroundColor: ["#29cc36", "#cc2936"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
+
+  window.sessionschart = new Chart(
+    $('#chart-sessions').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["Active backends", ""],
+        datasets: [
+          {
+            backgroundColor: ["#29cc36", "#eeeeee"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
   update_total_sessions();
+
+  var tpsData = jdata_history.map(function(a, index) {
+    if (index === 0) {
+      return [0, 0];
+    }
+    var curr = a.databases;
+    var prev = jdata_history[index - 1].databases;
+    var duration = curr.timestamp - prev.timestamp;
+    var deltaCommit = computeDelta(curr.total_commit, prev.total_commit, duration);
+    var deltaRollback = computeDelta(curr.total_rollback, prev.total_rollback, duration);
+    return [deltaCommit, deltaRollback];
+  });
+
+  window.tpschart = new Chart(
+    $('#chart-tps').get(0).getContext('2d'),
+    {
+      type: 'line',
+      data: {
+        labels: Array.apply(null, Array(jdata_history.length)),
+        datasets : [
+          {
+            label: "Commit",
+            backgroundColor: "rgba(0,188,18,0.2)",
+            borderColor: "rgba(0,188,18,1)",
+            data: tpsData.map(function(a) {return a[0]})
+          },
+          {
+            label: "Rollback",
+            backgroundColor: "rgba(188,0,0,0.2)",
+            borderColor: "rgba(188,0,0,1)",
+            data: tpsData.map(function(a) {return a[1]})
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              max: 20,
+              min: 0,
+              stepSize: 5,
+              beginAtZero: true
+            }
+          }],
+          xAxes: [{
+            gridLines: {
+              display: false
+            },
+            ticks: {
+              display: false
+            }
+          }]
+        },
+        elements: {
+          point: {
+            radius: 0,
+            hoverRadius: 0
+          },
+          line: {
+            borderWidth: 1
+          }
+        },
+        tooltips: {
+          enabled: false
+        }
+      }
+    }
+  );
+
+  window.loadaveragechart = new Chart(
+    $('#chart-loadaverage').get(0).getContext('2d'),
+    {
+      type: 'line',
+      data: {
+        labels: Array.apply(null, Array(jdata_history.length)),
+        datasets : [
+          {
+            label: "Loadaverage",
+            data: jdata_history.map(
+              function(item) {
+                return item.loadaverage
+              }
+            )
+          }
+        ]
+      },
+      options: {
+        responsive : true,
+        maintainAspectRatio: false,
+        animation: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              max: 4,
+              min: 0,
+              stepSize: 1,
+              beginAtZero: true
+            }
+          }],
+          xAxes: [{
+            gridLines: {
+              display: false
+            },
+            ticks: {
+              display: false
+            }
+          }]
+        },
+        elements: {
+          point: {
+            radius: 0,
+            hoverRadius: 0
+          },
+          line: {
+            backgroundColor: 'rgba(250, 164, 58, 0.2)',
+            borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
+            borderWidth: 1
+          }
+        },
+        tooltips: {
+          enabled: false
+        }
+      }
+    }
+  );
+
+  refreshDashboard();
 };
 
 function update_notifications(data)
