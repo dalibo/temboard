@@ -1,6 +1,9 @@
 version: '3'
 
 volumes:
+  data10:
+  run10:
+
   data96:
   run96:
 
@@ -28,6 +31,27 @@ services:
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
+
+  instance10:
+    image: postgres:10
+    volumes:
+    - data10:/var/lib/postgresql/data
+    - run10:/var/run/postgresql
+
+  agent10:
+    image: dalibo/temboard-agent
+    volumes:
+    - data10:/var/lib/postgresql/data
+    - run10:/var/run/postgresql/
+    - /usr/bin/docker:/usr/bin/docker
+    - /var/run/docker.sock:/var/run/docker.sock
+    links:
+    - instance10:instance10.fqdn
+    - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance10.fqdn
+      TEMBOARD_KEY: key_for_agent_10
+      TEMBOARD_UI_URL: https://ui:8888/
 
   instance96:
     image: postgres:9.6
