@@ -117,6 +117,33 @@ def get_hello_something2(http_context, config=None, sessions=None):
         sys.modules[__name__], 'say_hello_something2')
 
 
+def say_hello_something3(config, http_context):
+    """
+    "Hello <something>" using POST variable.
+
+    Usage:
+    $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
+    $ curl -s -k -H "X-Session:$XSESSION" -X POST --data '{"something": "toto"}' "https://localhost:2345/hello3/say" | python -m json.tool
+    {
+        "content": "Hello toto"
+    }
+    """  # noqa
+    if http_context and 'something' in http_context['post']:
+        validate_parameters(http_context['post'], [
+            ('something', T_SOMETHING, True)
+        ])
+        something = http_context['post']['something']
+        return {"content": "Hello %s" % (something)}
+    else:
+        raise HTTPError(444, "Parameter 'something' not sent.")
+
+
+def get_hello_something3(http_context, config=None, sessions=None):
+    return api_function_wrapper(
+        config, http_context, sessions,
+        sys.modules[__name__], 'say_hello_something3')
+
+
 class Hello(object):
     def __init__(self, app, **kw):
         self.app = app
@@ -127,6 +154,7 @@ class Hello(object):
         add_route('GET', b'/hello/time')(get_hello_time)
         add_route('GET', b'/hello/'+T_SOMETHING)(get_hello_something)
         add_route('GET', b'/hello2/say')(get_hello_something2)
+        add_route('POST', b'/hello3/say')(get_hello_something3)
 
 
 class Failing(object):
