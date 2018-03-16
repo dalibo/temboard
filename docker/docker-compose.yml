@@ -24,7 +24,7 @@ services:
       - "8888:8888"
 
   repository:
-    image: postgres:9.6
+    image: postgres:10
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
