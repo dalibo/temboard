@@ -94,9 +94,12 @@ def test_bootstrap(mocker):
 
     app = Application()
     app.config.temboard.configfile = 'pouet'
+    app.plugins['toto'] = toto = mocker.Mock(name='toto')
     app.bootstrap(args=None, environ={})
 
     app = bootstrap(args=None, environ={})
+
+    assert toto.load.called is True
 
 
 def test_application_specs():
