@@ -11,6 +11,7 @@ from temboardagent.api_wrapper import (
 from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
+from temboardagent.configuration import OptionSpec
 
 
 logger = logging.getLogger('temboardagent.' + __name__)
@@ -168,9 +169,32 @@ def get_hello_something4(http_context, config=None, sessions=None):
         sys.modules[__name__], 'say_hello_something4')
 
 
+def say_hello_from_config(config, *a, **kw):
+    """
+    "Hello <something>" using configuration.
+
+    Usage:
+    $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello/from_config" | python -m json.tool
+    {
+        "content": "Hello toto"
+    }
+    """  # noqa
+    return {"content": "Hello %s!" % config.hello.name}
+
+
+def get_hello_from_config(http_context, config, sessions):
+    return api_function_wrapper(
+        http_context=http_context, config=config, sessions=sessions,
+        module=sys.modules[__name__],
+        function_name=say_hello_from_config.__name__)
+
+
 class Hello(object):
     def __init__(self, app, **kw):
         self.app = app
+        self.app.config.add_specs([
+            OptionSpec('hello', 'name', default='World')])
 
     def load(self):
         # URI **MUST** be bytes.
@@ -180,6 +204,7 @@ class Hello(object):
         add_route('GET', b'/hello2/say')(get_hello_something2)
         add_route('POST', b'/hello3/say')(get_hello_something3)
         add_route('GET', b'/hello4/'+T_SOMETHING)(get_hello_something4)
+        add_route('GET', b'/hello/from_config')(get_hello_from_config)
 
 
 class Failing(object):
