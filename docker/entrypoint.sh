@@ -2,7 +2,7 @@
 
 command=${*-temboard-agent}
 
-export PGHOST=${PGHOST-${TEMBOARD_HOSTNAME-localhost}}
+export PGHOST=${PGHOST-${TEMBOARD_HOSTNAME}}
 export PGPORT=${PGPORT-5432}
 export PGUSER=${PGUSER-postgres}
 PGPASSWORD=${PGPASSWORD-}
