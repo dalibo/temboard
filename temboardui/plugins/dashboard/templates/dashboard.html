@@ -16,7 +16,7 @@
             <div class="chart-title">
               CPU
             </div>
-            <div id="total-cpu" class="text-muted">
+            <div id="total-cpu" class="font-weight-bold">
               &nbsp;
             </div>
             <div class="card-body p-2 chart-small">
@@ -27,7 +27,7 @@
             <div class="chart-title">
               Memory
             </div>
-            <div id="total-memory" class="text-muted">
+            <div id="total-memory" class="font-weight-bold">
               &nbsp;
             </div>
             <div class="card-body p-2 chart-small">
@@ -45,7 +45,7 @@
             <div class="chart-title">
               Cache Hit Ratio
             </div>
-            <div id="total-hit" class="text-muted">
+            <div id="total-hit" class="font-weight-bold">
             </div>
             <div class="card-body p-2 chart-small">
               <canvas id="chart-hitratio"></canvas>
@@ -55,7 +55,7 @@
             <div class="chart-title">
               Sessions
             </div>
-            <div id="total-sessions" class="text-muted">
+            <div id="total-sessions" class="font-weight-bold">
             </div>
             <div class="card-body p-2 chart-small">
               <canvas id="chart-sessions"></canvas>
@@ -189,11 +189,11 @@
 {% end %}
 
 {% block system_information %}
-        <table class="w-100 small">
+        <div class="small text-muted text-center">
+          System
+        </div>
+        <table class="w-100 small dashboard-information">
         <tbody>
-        <tr>
-          <td colspan="2" class="text-muted text-center">System</td>
-        </tr>
         {% if 'linux_distribution' in dashboard %}
         <tr>
           <th>Distribution:</th>
@@ -236,22 +236,14 @@
 {% end %}
 
 {% block postgres_information %}
-        <table class="w-100 small">
-        <tbody>
-        <tr>
-          <td colspan="2" class="text-muted text-center">Postgres</td>
-        </tr>
-        <tr>
-          <th>Databases:</th>
-          <td class="text-right">
-            <span id="nb_db">
-              {{ dashboard['databases']['databases'] }}
-            </span>
-            <span class="text-muted">
-              (<span id="size">{{ dashboard['databases']['total_size'] }}</span>)
-            </span>
-          </td>
-        </tr>
-        </tbody>
-        </table>
+        <div class="small text-muted text-center">
+          Postgres
+        </div>
+        <div class="small text-center">
+          <b id="nb_db">
+            {{ dashboard['databases']['databases'] }}
+          </b>
+          Databases
+          - <b id="size">{{ dashboard['databases']['total_size'] }}</b>
+        </div>
 {% end %}

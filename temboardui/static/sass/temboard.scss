@@ -110,6 +110,15 @@ html {
   height: 190px;
 }
 
+table.dashboard-information {
+  th {
+    font-weight: normal;
+  }
+  td {
+    font-weight: bold;
+  }
+}
+
 .popover-title {
   font-size: 12px;
   font-weight: bold;
@@ -276,10 +285,6 @@ select.form-control {
 .title-setting {
   font-weight: bold;
   color: #000;
-}
-
-.chart-title {
-  font-weight: bold;
 }
 
 .chart-small {
