@@ -271,6 +271,42 @@ $(function() {
     return [deltaCommit, deltaRollback];
   });
 
+  var lineChartsOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    legend: {
+      display: false
+    },
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: true
+        }
+      }],
+      xAxes: [{
+        gridLines: {
+          display: false
+        },
+        ticks: {
+          display: false
+        }
+      }]
+    },
+    elements: {
+      point: {
+        radius: 0,
+        hoverRadius: 0
+      },
+      line: {
+        borderWidth: 1
+      }
+    },
+    tooltips: {
+      enabled: false
+    }
+  };
+
   var tpschart = new Chart(
     $('#chart-tps').get(0).getContext('2d'),
     {
@@ -292,41 +328,7 @@ $(function() {
           }
         ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        legend: {
-          display: false
-        },
-        scales: {
-          yAxes: [{
-            ticks: {
-              beginAtZero: true
-            }
-          }],
-          xAxes: [{
-            gridLines: {
-              display: false
-            },
-            ticks: {
-              display: false
-            }
-          }]
-        },
-        elements: {
-          point: {
-            radius: 0,
-            hoverRadius: 0
-          },
-          line: {
-            borderWidth: 1
-          }
-        },
-        tooltips: {
-          enabled: false
-        }
-      }
+      options: lineChartsOptions
     }
   );
 
@@ -343,50 +345,13 @@ $(function() {
               function(item) {
                 return item.loadaverage
               }
-            )
+            ),
+            backgroundColor: 'rgba(250, 164, 58, 0.2)',
+            borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
           }
         ]
       },
-      options: {
-        responsive : true,
-        maintainAspectRatio: false,
-        animation: false,
-        legend: {
-          display: false
-        },
-        scales: {
-          yAxes: [{
-            ticks: {
-              max: 4,
-              min: 0,
-              stepSize: 1,
-              beginAtZero: true
-            }
-          }],
-          xAxes: [{
-            gridLines: {
-              display: false
-            },
-            ticks: {
-              display: false
-            }
-          }]
-        },
-        elements: {
-          point: {
-            radius: 0,
-            hoverRadius: 0
-          },
-          line: {
-            backgroundColor: 'rgba(250, 164, 58, 0.2)',
-            borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
-            borderWidth: 1
-          }
-        },
-        tooltips: {
-          enabled: false
-        }
-      }
+      options: lineChartsOptions
     }
   );
 
