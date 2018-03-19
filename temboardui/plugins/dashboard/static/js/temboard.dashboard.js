@@ -1,8 +1,6 @@
 $(function() {
   "use strict";
 
-  var lastUpdateTimestamp = 0;
-
   function html_error_modal(code, error) {
     var html = '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
     html += '   <div class="modal-dialog">';
@@ -35,14 +33,11 @@ $(function() {
       async: true,
       contentType: "application/json",
       success: function (data) {
-        if (data['databases']['timestamp'] != lastUpdateTimestamp) {
-          $('#ErrorModal').modal('hide');
-          lastUpdateTimestamp = data['databases']['timestamp'];
-          updateDashboard(data, true);
-          updateTps(data.databases);
-          updateLoadaverage(data);
-          updateNotifications(data.notifications);
-        }
+        $('#ErrorModal').modal('hide');
+        updateDashboard(data, true);
+        updateTps(data.databases);
+        updateLoadaverage(data);
+        updateNotifications(data.notifications);
       },
       error: function(xhr) {
         if (xhr.status == 401) {
@@ -162,6 +157,9 @@ $(function() {
     var chart = tpschart;
     var datasets = chart.data.datasets;
     var duration = data.timestamp - lastDatabasesDatum.timestamp;
+    if (duration === 0) {
+      return;
+    }
     var deltaCommit = computeDelta(data.total_commit, lastDatabasesDatum.total_commit, duration);
     var deltaRollback = computeDelta(data.total_rollback, lastDatabasesDatum.total_rollback, duration);
 
@@ -393,6 +391,7 @@ $(function() {
   );
 
   window.setInterval(refreshDashboard, 2000);
+  refreshDashboard();
 });
 
 var entityMap = {
