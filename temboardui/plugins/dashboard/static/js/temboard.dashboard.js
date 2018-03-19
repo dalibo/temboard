@@ -190,8 +190,7 @@ $(function() {
     maintainAspectRatio: false,
     legend: false,
     rotation: Math.PI,
-    circumference: Math.PI,
-    animation: false
+    circumference: Math.PI
   };
 
   var memorychart = new Chart(
