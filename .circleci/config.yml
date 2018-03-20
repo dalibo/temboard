@@ -1,29 +1,12 @@
 version: 2
 
-.rpm: &rpm
-  working_directory: ~/workspace
-  steps:
-  - run:
-      name: Remove old git
-      command: |
-        set -ex
-        git --version
-        if ! git --version | grep 1.8 ; then sudo yum remove -y git ; fi
-  - checkout
-  - run: ./rpm/build.sh
-  - store_artifacts:
-      path: ~/workspace/dist/
-  - persist_to_workspace:
-      root: .
-      paths:
-      - dist/rpm/noarch/*.rpm
-
 jobs:
   0-doc:
     docker: [{image: "python:2.7"}]
     working_directory: ~/temboard-agent
     steps:
     - checkout
+    - run: git submodule update --init --depth=1
     - run:
         name: Build documentation with Sphinx
         command: |
@@ -36,11 +19,37 @@ jobs:
 
   0-rpm-centos6:
     docker: [{image: "rpmbuild/centos6"}]
-    <<: *rpm
+    working_directory: ~/workspace
+    steps:
+    - run:
+        name: Upgrade to descent git version
+        command: |
+            set -ex
+            sudo yum install -y http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+            sudo yum install -y git
+    - checkout
+    - run: git submodule update --init --depth=1
+    - run: ./rpm/build.sh
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/rpm/noarch/*.rpm
 
   0-rpm-centos7:
     docker: [{image: "rpmbuild/centos7"}]
-    <<: *rpm
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run: ./rpm/build.sh
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+         - dist/rpm/noarch/*.rpm
 
   0-unit:
     docker:
@@ -51,6 +60,7 @@ jobs:
     working_directory: /home/ubuntu/temboard-agent
     steps:
       - checkout
+      - run: git submodule update --init --depth=1
       - restore_cache:
           keys:
             - temboard-agent-{{ .Branch }}
@@ -73,6 +83,7 @@ jobs:
     machine: true
     steps:
     - checkout
+    - run: git submodule update --init --depth=1
     - attach_workspace:
         at: ~/project
     - run:
