@@ -43,6 +43,7 @@ class Application(object):
         self.specs = specs or []
         # If `None`, plugin loading is disabled.
         self.with_plugins = with_plugins
+        self.plugins = {}
         self.config = MergedConfiguration()
         # This dict stores env, args and parser for hot reloading of
         # configuration.
@@ -75,9 +76,14 @@ class Application(object):
 
         # Stage 4: load plugins and read all options
         if self.with_plugins:
-            self.load_plugins()
+            self.create_plugins()
         config.add_specs(self.specs)
         config.load(**self.config_sources)
+
+        if self.with_plugins:
+            for name, plugin in self.plugins.items():
+                plugin.load()
+                logger.info("Loaded plugin %s.", name)
 
         return self.config
 
@@ -142,7 +148,7 @@ class Application(object):
             else:
                 raise UserError("Missing plugin: %s." % (name,))
 
-    def load_plugins(self):
+    def create_plugins(self):
         self.config.plugins = load_legacy_plugins(self.config)
         unloaded_names = filter(
             lambda name: name not in self.config.plugins,

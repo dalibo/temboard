@@ -88,15 +88,18 @@ def test_unhandled_error_debug(mocker):
 
 def test_bootstrap(mocker):
     mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
-    mocker.patch('temboardagent.cli.Application.load_plugins', autospec=True)
+    mocker.patch('temboardagent.cli.Application.create_plugins', autospec=True)
     mocker.patch('temboardagent.cli.MergedConfiguration')
     from temboardagent.cli import Application, bootstrap
 
     app = Application()
     app.config.temboard.configfile = 'pouet'
+    app.plugins['toto'] = toto = mocker.Mock(name='toto')
     app.bootstrap(args=None, environ={})
 
     app = bootstrap(args=None, environ={})
+
+    assert toto.load.called is True
 
 
 def test_application_specs():
@@ -175,7 +178,7 @@ def test_fetch_missing(mocker):
         list(app.fetch_plugins(['myplugin']))
 
 
-def test_load_plugins(mocker):
+def test_create_plugins(mocker):
     fp = mocker.patch(
         'temboardagent.cli.Application.fetch_plugins', autospec=True)
     llp = mocker.patch('temboardagent.cli.load_legacy_plugins', autospec=True)
@@ -188,7 +191,7 @@ def test_load_plugins(mocker):
     llp.return_value = dict(legacy=dict(), ng=None)
     fp.return_value = [('ng', mocker.Mock(name='ng'))]
 
-    app.load_plugins()
+    app.create_plugins()
 
     assert 'legacy' not in app.plugins
     assert 'legacy' in app.config.plugins
