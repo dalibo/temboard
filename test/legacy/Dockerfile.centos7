@@ -17,11 +17,6 @@ RUN yum -q -y install \
     https://download.postgresql.org/pub/repos/yum/testing/10/redhat/rhel-7-x86_64/pgdg-centos10-10-1.noarch.rpm \
     ${NULL-}
 
-# Install current temboard-sched from temBoard yum repository
-RUN yum -q -y install \
-    https://packages.temboard.io/yum/rhel7/temboard-sched-current.el7.centos.noarch.rpm \
-    ${NULL-}
-
 # Update the Fedora and PostgreSQL repository metadata
 RUN yum -q -y install \
     procps-ng net-tools python python2-pip sudo \

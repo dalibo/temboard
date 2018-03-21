@@ -141,7 +141,7 @@ def generate_logging_config(
             'temboard-agent': {
                 'level': level,
             },
-            'temboardsched.taskmanager': {
+            'taskmanager': {
                 'level': level,
             },
             'dashboard': {

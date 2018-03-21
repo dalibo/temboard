@@ -6,7 +6,7 @@ import logging
 import os
 import signal
 
-from temboardsched import taskmanager
+from ..scheduler import taskmanager
 
 from ..cli import bootstrap
 from ..cli import cli, define_core_arguments

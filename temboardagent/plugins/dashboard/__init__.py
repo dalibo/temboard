@@ -10,8 +10,8 @@ try:
     from configparser import NoOptionError
 except ImportError:
     from ConfigParser import NoOptionError
-from temboardsched import taskmanager
 
+from temboardagent.scheduler import taskmanager
 from temboardagent.api_wrapper import (
     api_function_wrapper,
     api_function_wrapper_pg,

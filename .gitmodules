@@ -1,0 +1,3 @@
+[submodule "temboardagent/scheduler"]
+	path = temboardagent/scheduler
+	url = https://github.com/dalibo/temboard-sched.git

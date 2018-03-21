@@ -7,7 +7,6 @@ import signal
 import json
 import urllib2
 import collections
-from temboardsched import taskmanager
 
 try:
     from configparser import NoOptionError
@@ -15,6 +14,7 @@ except ImportError:
     from ConfigParser import NoOptionError
 
 
+from temboardagent.scheduler import taskmanager
 from temboardagent.routing import add_route, add_worker
 from temboardagent.configuration import (
     PluginConfiguration,

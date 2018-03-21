@@ -23,7 +23,6 @@ Requires:      openssl
 Requires: python-argparse
 Requires: python-logutils
 %endif
-Requires: temboard-sched
 
 %description
 Administration & monitoring PostgreSQL agent.
