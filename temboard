@@ -13,8 +13,7 @@ from tornado import autoreload
 
 from sqlalchemy import create_engine
 
-from temboardsched import taskmanager
-
+from temboardui.scheduler import taskmanager
 from temboardui.logger import generate_logging_config
 from temboardui.handlers.base import (
     BaseHandler,
