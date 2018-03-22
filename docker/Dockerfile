@@ -6,6 +6,7 @@ RUN apt-get update -y \
         libltdl7 \
         postgresql-client \
         sudo \
+        git-core \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     ;
@@ -26,4 +27,6 @@ COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["sudo", "-EHu", "temboard", "docker-entrypoint.sh"]
 CMD ["temboard-agent"]
 
-RUN pip install --no-cache-dir https://github.com/dalibo/temboard-agent/archive/master.zip
+RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tmp/temboard-agent
+RUN pip install --no-cache-dir /tmp/temboard-agent
+RUN rm -rf /tmp/temboard-agent
