@@ -170,10 +170,6 @@
           <th>Memory:</th>
           <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
         </tr>
-        <tr>
-          <th>Uptime:</th>
-          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
-        </tr>
         </tbody>
         </table>
 {% end %}
@@ -188,5 +184,7 @@
           </b>
           Databases
           - <b id="size">{{ dashboard['databases']['total_size'] }}</b>
+          <br>
+          Uptime: <strong id="pg_uptime">{{ dashboard['pg_uptime'] }}</strong>
         </div>
 {% end %}
