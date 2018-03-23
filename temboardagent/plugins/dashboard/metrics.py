@@ -215,7 +215,9 @@ WHERE
                 'timestamp': time.time()}
 
     def get_pg_uptime(self,):
-        query = "SELECT NOW() - pg_postmaster_start_time() AS uptime"
+        query = """
+SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
+        """
         self.conn.execute(query)
         return list(self.conn.get_rows())[0]['uptime']
 
