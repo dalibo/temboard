@@ -34,6 +34,7 @@ jobs:
     working_directory: /workspace
     steps:
       - checkout
+      - run: git submodule update --init --depth=1
       - *restore_cache
       - *python_setup
       - run:

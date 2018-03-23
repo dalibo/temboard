@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.schema import (
     MetaData,
 )
-from temboardsched import taskmanager
+from temboardui.scheduler import taskmanager
 
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.plugins.monitoring.model.orm import (
