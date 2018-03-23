@@ -781,6 +781,8 @@ class connector(object):
         self._parameter_status[key] = value
         version = ''
         if key == 'server_version':
+            # First remove anything after any potential space
+            value = value.split(' ')[0]
             for num in value.split('.'):
                 snum = ''
                 num = re.sub(r"devel|beta|rc", "", str(num))
