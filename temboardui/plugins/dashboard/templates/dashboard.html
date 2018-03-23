@@ -8,13 +8,24 @@
   <div class="col-xxl-3 col-xl-4 col-12 mb-3 mb-xl-0">
     <div class="row">
       <div class="col-xl-12 col mb-xl-2">
-        {% block system_information %}{% end %}
+        <div class="small text-muted text-center">
+          System
+        </div>
+        <div class="small text-center">
+        {% if 'linux_distribution' in dashboard %}
+        {{ dashboard['linux_distribution'] }} /
+        {% end %}
+        <span id="os_version">{{ dashboard['os_version'] }}</span>
+        </div>
       </div>
       <div class="col-xl-12 col mb-xl-3">
         <div class="row">
           <div class="col-6 small text-center">
             <div class="chart-title">
-              CPU
+              CPU &times; {{ dashboard['n_cpu'] }}
+              <i class="fa fa-info-circle text-muted" data-toggle="tooltip"
+                 title="{% for model, count in dashboard['cpu_models'].items() %} {{ count }} &times; {{ model }}{% end %}">
+              </i>
             </div>
             <div id="total-cpu" class="font-weight-bold">
               &nbsp;
@@ -27,8 +38,14 @@
             <div class="chart-title">
               Memory
             </div>
-            <div id="total-memory" class="font-weight-bold">
+            <div>
+              <span id="total-memory" class="font-weight-bold">
               &nbsp;
+              </span>
+              of
+              <span id="memory" data-type="size" class="font-weight-bold">
+                {{ dashboard['memory']['total'] * 1000 }}
+              </span>
             </div>
             <div class="card-body p-2 chart-small">
               <canvas id="chart-memory"></canvas>
@@ -37,7 +54,18 @@
         </div>
       </div>
       <div class="col-xl-12 col mb-xl-2">
-        {% block postgres_information %}{% end %}
+        <div class="small text-muted text-center">
+          Postgres
+        </div>
+        <div class="small text-center">
+          <b id="nb_db">
+            {{ dashboard['databases']['databases'] }}
+          </b>
+          Databases
+          - <b id="size">{{ dashboard['databases']['total_size'] }}</b>
+          <br>
+          Uptime: <strong id="pg_uptime">{{ dashboard['pg_uptime'] }}</strong>
+        </div>
       </div>
       <div class="col-xl-12 col">
         <div class="row">
@@ -129,47 +157,4 @@
     });
   });
 </script>
-{% end %}
-
-{% block system_information %}
-        <div class="small text-muted text-center">
-          System
-        </div>
-        <div class="small text-center">
-        {% if 'linux_distribution' in dashboard %}
-        {{ dashboard['linux_distribution'] }} /
-        {% end %}
-        <span id="os_version">{{ dashboard['os_version'] }}</span>
-        <br>
-        {% if 'cpu_models' in dashboard %}
-          <ul class="list-unstyled mb-0">
-            <li>
-              {% for model, count in dashboard['cpu_models'].items() %}
-              {{ count }} &times;
-              <span class="text-muted small">
-                {{ model }}
-              </span>
-            </li>
-          </ul>
-          {% end %}
-        {% else %}
-          {{ dashboard['n_cpu'] }}
-        {% end %}
-        Memory: <strong id="memory" data-type="size">{{ dashboard['memory']['total'] * 1000 }}</strong>
-        </div>
-{% end %}
-
-{% block postgres_information %}
-        <div class="small text-muted text-center">
-          Postgres
-        </div>
-        <div class="small text-center">
-          <b id="nb_db">
-            {{ dashboard['databases']['databases'] }}
-          </b>
-          Databases
-          - <b id="size">{{ dashboard['databases']['total_size'] }}</b>
-          <br>
-          Uptime: <strong id="pg_uptime">{{ dashboard['pg_uptime'] }}</strong>
-        </div>
 {% end %}
