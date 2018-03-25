@@ -62,3 +62,14 @@ class Instance(Model):
 
     def __repr__(self):
         return "instance: %s:%s" % (self.host_id, self.port)
+
+
+class Check(Model):
+    __table__ = tables.checks
+    host = relationship('Host', backref='checks')
+    instance = relationship('Instance', backref='checks')
+
+
+class CheckState(Model):
+    __table__ = tables.checkstates
+    check = relationship('Check', backref='states')
