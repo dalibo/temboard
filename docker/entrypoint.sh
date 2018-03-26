@@ -1,5 +1,28 @@
 #!/bin/bash -eu
 
+set -x
+
+catchall() {
+	if [ ${PPID-$$} = 1 -a $? -gt 0 ] ; then
+		tail -f /dev/null
+	fi
+	trap - INT EXIT TERM
+}
+trap catchall INT EXIT TERM
+
+# Stage 1, as root
+if [ $EUID = 0 ] ; then
+	# Align local temboard user with remote postgres user.
+	usermod -u $(stat -c "%u" /var/lib/postgresql/data) temboard
+	groupmod -g $(stat -c "%g" /var/lib/postgresql/data) temboard
+	chown -R temboard: /etc/temboard-agent ~temboard
+
+	# And reexec myself as temboard.
+	exec sudo -u temboard $0 "$@"
+fi
+
+# Now stage 2 as temboard user
+
 command=${*-temboard-agent}
 
 export PGHOST=${PGHOST-${TEMBOARD_HOSTNAME}}
@@ -51,7 +74,6 @@ ssl_ca_cert_file = ${TEMBOARD_SSL_CA-/usr/local/share/temboard-agent/quickstart/
 [administration]
 pg_ctl = docker %s ${PGCONTAINER}
 EOF
-
 
 touch /etc/temboard-agent/users
 chmod 0600 /etc/temboard-agent/users

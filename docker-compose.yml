@@ -46,8 +46,8 @@ services:
       TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
     volumes:
       - data:/var/lib/postgresql/data
-      - run:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
+      - run:/var/run/postgresql/:ro
+      - /usr/bin/docker:/usr/bin/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/usr/local/src/temboard-agent/
     links:
