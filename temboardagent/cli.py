@@ -8,6 +8,7 @@ import pdb
 import sys
 
 from .configuration import configparser
+from .postgres import Postgres
 from .log import setup_logging
 from .pluginsmgmt import load_plugins_configurations as load_legacy_plugins
 from .errors import UserError
@@ -73,6 +74,7 @@ class Application(object):
         config.load(**self.config_sources)
         # Apply logging setup from file
         self.setup_logging()
+        self.postgres = Postgres(**self.config.postgresql)
 
         # Stage 4: load plugins and read all options
         if self.with_plugins:

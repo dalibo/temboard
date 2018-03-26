@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import logging
 import sys
 
+from temboardagent.errors import UserError
 from temboardagent.routing import add_route
 from temboardagent.api_wrapper import (
     api_function_wrapper,
@@ -191,12 +192,18 @@ def get_hello_from_config(http_context, config, sessions):
 
 
 class Hello(object):
+    pg_min_version = 90400
+
     def __init__(self, app, **kw):
         self.app = app
         self.app.config.add_specs([
             OptionSpec('hello', 'name', default='World')])
 
     def load(self):
+        pg_version = self.app.postgres.fetch_version()
+        if pg_version < self.pg_min_version:
+            raise UserError("hellong is incompatible with Postgres below 9.4")
+
         # URI **MUST** be bytes.
         add_route('GET', b'/hello')(get_hello)
         add_route('GET', b'/hello/time')(get_hello_time)
