@@ -1,0 +1,2 @@
+# Edit with /usr/sbin/visudo -sf
+Defaults !env_reset
