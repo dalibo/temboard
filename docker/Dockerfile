@@ -11,6 +11,10 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/* \
     ;
 
+RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tmp/temboard-agent && \
+    pip install --no-cache-dir /tmp/temboard-agent && \
+    rm -rf /tmp/temboard-agent
+
 RUN useradd --home-dir /var/lib/temboard --create-home --system temboard
 VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
@@ -27,7 +31,3 @@ ADD sudoers /etc/sudoers.d/temboard-agent
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["sudo", "-u", "temboard", "docker-entrypoint.sh"]
 CMD ["temboard-agent"]
-
-RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tmp/temboard-agent && \
-    pip install --no-cache-dir /tmp/temboard-agent && \
-    rm -rf /tmp/temboard-agent
