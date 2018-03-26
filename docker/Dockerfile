@@ -27,5 +27,5 @@ VOLUME /etc/temboard-agent
 
 ADD sudoers /etc/sudoers.d/temboard-agent
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["sudo", "-u", "temboard", "docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["temboard-agent"]
