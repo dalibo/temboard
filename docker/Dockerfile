@@ -22,8 +22,9 @@ RUN python -c 'import urllib; urllib.urlretrieve("https://raw.githubusercontent.
     && chmod 0755 /usr/local/bin/wait-for-it \
     ;
 
+ADD sudoers /etc/sudoers.d/temboard-agent
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["sudo", "-EHu", "temboard", "docker-entrypoint.sh"]
+ENTRYPOINT ["sudo", "-u", "temboard", "docker-entrypoint.sh"]
 CMD ["temboard-agent"]
 
 RUN pip install --no-cache-dir https://github.com/dalibo/temboard-agent/archive/master.zip
