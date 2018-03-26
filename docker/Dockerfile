@@ -18,7 +18,8 @@ RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tm
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 
 RUN chmod 0755 /usr/local/bin/wait-for-it \
-    && useradd --home-dir /var/lib/temboard --create-home --system temboard
+    && groupadd --system docker \
+    && useradd --home-dir /var/lib/temboard --create-home --system --groups docker temboard
 VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
 
