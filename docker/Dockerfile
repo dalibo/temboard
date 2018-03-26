@@ -15,17 +15,16 @@ RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tm
     pip install --no-cache-dir /tmp/temboard-agent && \
     rm -rf /tmp/temboard-agent
 
-RUN useradd --home-dir /var/lib/temboard --create-home --system temboard
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
+
+RUN chmod 0755 /usr/local/bin/wait-for-it \
+    && useradd --home-dir /var/lib/temboard --create-home --system temboard
 VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
 
 RUN mkdir -p /etc/temboard-agent/ \
     && chown -R temboard: /etc/temboard-agent
 VOLUME /etc/temboard-agent
-
-RUN python -c 'import urllib; urllib.urlretrieve("https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh", "/usr/local/bin/wait-for-it")' \
-    && chmod 0755 /usr/local/bin/wait-for-it \
-    ;
 
 ADD sudoers /etc/sudoers.d/temboard-agent
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
