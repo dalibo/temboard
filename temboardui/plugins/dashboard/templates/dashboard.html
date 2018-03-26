@@ -17,9 +17,7 @@
         {% end %}
         <span id="os_version">{{ dashboard['os_version'] }}</span>
         </div>
-      </div>
-      <div class="col-xl-12 col mb-xl-3">
-        <div class="row">
+        <div class="row mt-2">
           <div class="col-6 small text-center">
             <div class="chart-title">
               CPU &times; {{ dashboard['n_cpu'] }}
@@ -53,7 +51,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-12 col mb-xl-2">
+      <div class="col-xl-12 col">
         <div class="small text-muted text-center">
           Postgres
         </div>
@@ -66,9 +64,7 @@
           <br>
           Uptime: <strong id="pg_uptime">{{ dashboard['pg_uptime'] }}</strong>
         </div>
-      </div>
-      <div class="col-xl-12 col">
-        <div class="row">
+        <div class="row mt-2">
           <div class="col-6 small text-center">
             <div class="chart-title">
               Cache Hit Ratio
