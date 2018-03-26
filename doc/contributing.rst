@@ -29,6 +29,20 @@ Goto https://0.0.0.0:8888/ to add your instance with address ``agent``, port
 That's it !
 
 
+Editing Documentation
+=====================
+
+Sphinx generates temBoard agent documentation.
+
+.. code-block:: console
+
+   $ cd doc/
+   $ pip install -r requirements-doc.txt
+   $ make html
+
+temBoard agent documentation is at ``_build/html/``.
+
+
 Releasing
 =========
 

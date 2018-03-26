@@ -51,7 +51,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = SETUP_KWARGS['description']
+project = 'temBoard agent'
 copyright = u'2017, Dalibo'
 author = SETUP_KWARGS['author']
 
