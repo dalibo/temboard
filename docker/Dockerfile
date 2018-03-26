@@ -23,8 +23,6 @@ RUN chmod 0755 /usr/local/bin/wait-for-it \
 VOLUME /var/lib/temboard
 WORKDIR /var/lib/temboard
 
-RUN mkdir -p /etc/temboard-agent/ \
-    && chown -R temboard: /etc/temboard-agent
 VOLUME /etc/temboard-agent
 
 ADD sudoers /etc/sudoers.d/temboard-agent
