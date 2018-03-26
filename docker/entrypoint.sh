@@ -3,7 +3,7 @@
 set -x
 
 catchall() {
-	if [ ${PPID-$$} = 1 -a $? -gt 0 ] ; then
+	if [ ${PPID-$$} -lt 2 -a $? -gt 0 ] ; then
 		tail -f /dev/null
 	fi
 	trap - INT EXIT TERM
