@@ -223,8 +223,8 @@ def test_debug_var():
     assert not detect_debug_mode(dict(DEBUG=b'N'))
 
     env = dict(DEBUG=b'1')
-    assert detect_debug_mode(env)
-    assert 'TEMBOARD_LOGGING_DEBUG' not in env
+    assert detect_debug_mode(env) is True
+    assert b'__debug__' == env['TEMBOARD_LOGGING_DEBUG']
 
     env = dict(DEBUG=b'mymodule')
     assert detect_debug_mode(env)

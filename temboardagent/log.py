@@ -149,8 +149,8 @@ def generate_logging_config(
     for logger in core_loggers:
         logging_config['loggers'][logger] = dict(level=level)
 
-    # If --debug, apply DEBUG to all core loggers
-    if debug is True:
+    # If --debug or DEBUG=1, apply DEBUG to all core loggers
+    if debug in (True, '__debug__'):
         debug = core_loggers
 
     if hasattr(debug, 'split'):
