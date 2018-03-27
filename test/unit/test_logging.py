@@ -16,6 +16,11 @@ def test_temboard_debug(mocker):
     assert 'verbose' == config['handlers']['configured']['formatter']
     assert 'DEBUG' == config['loggers']['temboardagent']['level']
 
+    config = generate_logging_config(level='INFO', debug=b'__debug__')
+
+    assert 'verbose' == config['handlers']['configured']['formatter']
+    assert 'DEBUG' == config['loggers']['temboardagent']['level']
+
 
 def test_limit_debug():
     from temboardagent.log import generate_logging_config
