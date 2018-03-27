@@ -91,6 +91,10 @@
                     }
                   },
                   legend: 'never',
+                  xValueParser: function(x) {
+                    var m = moment(x);
+                    return m.toDate().getTime();
+                  },
                   highlightCircleSize: 0,
                   interactionModel: {}
                 };
