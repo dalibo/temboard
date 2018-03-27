@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from argparse import Action as ArgAction
 from pkg_resources import iter_entry_points
 from distutils.util import strtobool
 import logging
@@ -19,11 +20,27 @@ from .version import __version__
 logger = logging.getLogger(__name__)
 
 
+class StoreDefinedAction(ArgAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # Store True if argument is defined.
+        if values is None:
+            values = True
+        setattr(namespace, self.dest, values)
+
+
 def define_core_arguments(parser):
     parser.add_argument(
         '-c', '--config',
         action='store', dest='temboard_configfile',
         help="Configuration file",
+    )
+    parser.add_argument(
+        '--debug',
+        action=StoreDefinedAction, dest='logging_debug', nargs='?',
+        metavar='LOGGER,LOGGER,…',
+        help=(
+            "Shows debug messages for these loggers. "
+            "If no loggers defined, debug all core loggers."),
     )
     parser.add_argument(
         '-V', '--version',
@@ -70,8 +87,8 @@ class Application(object):
         self.config_sources.update(dict(
             parser=parser, pwd=os.path.dirname(configfile)
         ))
-
         config.load(**self.config_sources)
+
         # Apply logging setup from file
         self.setup_logging()
         self.postgres = Postgres(**self.config.postgresql)
@@ -124,6 +141,7 @@ class Application(object):
             s, 'facility', default='local0', validator=v.syslogfacility,
         )
         yield OptionSpec(s, 'destination', default='/dev/log')
+        yield OptionSpec(s, 'debug', default=False)
 
         # These options are *core* because they are needed for legacy plugin
         # loading.
@@ -197,6 +215,15 @@ def bootstrap(args, environ, **kw):
     return app
 
 
+def detect_debug_mode(environ):
+    debug = environ.get('DEBUG', b'0')
+    try:
+        debug = strtobool(debug)
+    except ValueError:
+        environ['TEMBOARD_LOGGING_DEBUG'] = debug
+    return debug
+
+
 def cli(main):
     # A decorator to add consistent CLI behaviour.
     #
@@ -208,14 +235,12 @@ def cli(main):
     # as usual.
 
     def cli_wrapper(argv=sys.argv[1:], environ=os.environ):
-        debug = strtobool(environ.get('DEBUG', '0'))
-        if debug:
-            os.environ['TEMBOARD_LOGGING_LEVEL'] = b'DEBUG'
+        debug = detect_debug_mode(environ)
 
         retcode = 1
         try:
             try:
-                setup_logging(level='DEBUG' if debug else 'ERROR')
+                setup_logging(debug=debug)
                 logger.debug("Starting temBoard agent.")
                 retcode = main(argv, environ) or 1
             except pdb.bdb.BdbQuit:

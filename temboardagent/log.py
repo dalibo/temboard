@@ -76,15 +76,22 @@ def setup_logging(**kw):
 
 
 def generate_logging_config(
-        level='DEBUG', destination=None, facility='local0',
-        method='stderr', **kw):
+        level=None, destination=None, facility='local0',
+        method='stderr', debug=None, **kw):
+
+    if level is None:
+        level = 'DEBUG' if debug else 'INFO'
+
+    if debug is None:
+        debug = level == 'DEBUG'
 
     facility = SysLogHandler.facility_names[facility]
     HANDLERS['syslog']['facility'] = facility
     HANDLERS['syslog']['address'] = destination
     HANDLERS['file']['filename'] = destination
 
-    fmt = 'verbose' if level == 'DEBUG' else 'minimal'
+    fmt = 'verbose' if debug else 'minimal'
+
     HANDLERS['stderr']['formatter'] = fmt
     if sys.stderr.isatty():
         HANDLERS['stderr']['()'] = __name__ + '.ColoredStreamHandler'
@@ -134,22 +141,25 @@ def generate_logging_config(
             # /dev/log
             'handlers': ['configured'],
         },
-        'loggers': {
-            'temboardagent': {
-                'level': level,
-            },
-            'temboard-agent': {
-                'level': level,
-            },
-            'taskmanager': {
-                'level': level,
-            },
-            'dashboard': {
-                'level': level,
-            },
-            'monitoring': {
-                'level': level,
-            },
-        },
+        'loggers': {},
     }
+
+    # Apply level to temboard loggers only
+    core_loggers = ['temboardagent', 'taskmanager', 'dashboard', 'monitoring']
+    for logger in core_loggers:
+        logging_config['loggers'][logger] = dict(level=level)
+
+    # If --debug, apply DEBUG to all core loggers
+    if debug is True:
+        debug = core_loggers
+
+    if hasattr(debug, 'split'):
+        debug = filter(None, debug.split(','))
+
+    # Now apply debug level.
+    if debug:
+        for loggername in debug:
+            logger = logging_config['loggers'].setdefault(loggername, {})
+            logger['level'] = 'DEBUG'
+
     return logging_config

@@ -208,6 +208,7 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
   - ``facility``: Syslog facility. Default: ``local0``;
   - ``destination``: Path to the log file. Default: ``/dev/log``;
   - ``level``: Log level, can be set to ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR`` or ``CRITICAL``. Default: ``INFO``.
+  - ``debug``: A comma separated list of loggers to which level will be set to ``DEBUG``.
 
 ``dashboard`` plugin
 ^^^^^^^^^^^^^^^^^^^^
