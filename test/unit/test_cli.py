@@ -197,3 +197,35 @@ def test_create_plugins(mocker):
     assert 'legacy' in app.config.plugins
     assert 'ng' in app.plugins
     assert 'ng' not in app.config.plugins
+
+
+def test_debug_arg():
+    from argparse import ArgumentParser, SUPPRESS
+    from temboardagent.cli import define_core_arguments
+
+    parser = ArgumentParser(argument_default=SUPPRESS)
+    define_core_arguments(parser)
+
+    args = parser.parse_args([])
+    assert 'logging_debug' not in args
+
+    args = parser.parse_args(['--debug'])
+    assert args.logging_debug is True
+
+    args = parser.parse_args(['--debug', 'myplugin'])
+    assert 'myplugin' == args.logging_debug
+
+
+def test_debug_var():
+    from temboardagent.cli import detect_debug_mode
+
+    assert not detect_debug_mode(dict())
+    assert not detect_debug_mode(dict(DEBUG=b'N'))
+
+    env = dict(DEBUG=b'1')
+    assert detect_debug_mode(env)
+    assert 'TEMBOARD_LOGGING_DEBUG' not in env
+
+    env = dict(DEBUG=b'mymodule')
+    assert detect_debug_mode(env)
+    assert b'mymodule' == env['TEMBOARD_LOGGING_DEBUG']
