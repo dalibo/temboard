@@ -6,6 +6,7 @@ Forked from sphinxcontrib.autohttp.bottle
 
 import re
 import six
+import sys
 
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -21,6 +22,20 @@ from sphinxcontrib import httpdomain
 from sphinxcontrib.autohttp.common import http_directive
 
 from temboardagent import routing
+from temboardagent.cli import Application, UserError
+
+
+class MockedPostgres(object):
+    def fetch_version(self):
+        return 0xFFFFFF
+
+
+def iter_new_routes(old, new):
+    old_path = [r['path'] for r in old]
+    for route in new:
+        if route['path'] in old_path:
+            continue
+        yield route['http_method'], route['path'], route
 
 
 def get_routes(plugin):
@@ -55,14 +70,23 @@ class AutotemBoardDirective(Directive):
 
     def make_rst(self):
         plugin = self.arguments[0]
-        plg = __import__(plugin)
-        for method, path, target in get_routes(plugin):
+        try:
+            cls = self.app.fetch_plugin(plugin)
+            saved_routes = list(routing.get_routes())
+            cls(app=self.app).load()
+            routes = iter_new_routes(saved_routes, routing.get_routes())
+        except UserError:
+            __import__(plugin)
+            routes = get_routes(plugin)
+
+        for method, path, target in routes:
             endpoint = target['function']
             if self.endpoints and endpoint not in self.endpoints:
                 continue
             if endpoint in self.undoc_endpoints:
                 continue
-            view = getattr(plg, target['function'])
+            mod = sys.modules[target['module']]
+            view = getattr(mod, target['function'])
             docstring = view.__doc__ or ''
             if not isinstance(docstring, six.text_type):
                 analyzer = ModuleAnalyzer.for_module(view.__module__)
@@ -74,6 +98,9 @@ class AutotemBoardDirective(Directive):
                 yield line
 
     def run(self):
+        self.app = Application()
+        self.app.postgres = MockedPostgres()
+
         node = nodes.section()
         node.document = self.state.document
         result = ViewList()
