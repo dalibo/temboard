@@ -3,7 +3,7 @@
 set -x
 
 catchall() {
-	if [ ${PPID-$$} = 1 -a $? -gt 0 ] ; then
+	if [ ${PPID-$$} -lt 2 -a $? -gt 0 ] ; then
 		tail -f /dev/null
 	fi
 	trap - INT EXIT TERM
@@ -12,9 +12,15 @@ trap catchall INT EXIT TERM
 
 # Stage 1, as root
 if [ $EUID = 0 ] ; then
-	# Align local temboard user with remote postgres user.
+	# Fix UID and GID
+	groupmod -g $(stat -c "%g" /var/run/docker.sock) docker
 	usermod -u $(stat -c "%u" /var/lib/postgresql/data) temboard
-	groupmod -g $(stat -c "%g" /var/lib/postgresql/data) temboard
+	group=$(stat -c "%G" /var/lib/postgresql/data)
+	if [ "${group}" = "UNKNOWN" ] ; then
+		groupmod -g $(stat -c "%g" /var/lib/postgresql/data) temboard
+		group=temboard
+	fi
+	adduser temboard $group
 	chown -R temboard: /etc/temboard-agent ~temboard
 
 	# And reexec myself as temboard.
