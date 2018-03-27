@@ -4,199 +4,147 @@
 
 {% block content %}
 
-<div class="row dashboard">
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Information
+<div class="row mb-3">
+  <div class="col-xl-4 col-12 mb-3 mb-xl-0">
+    <div class="row">
+      <div class="col-xl-12 col mb-xl-2">
+        <div class="small text-muted text-center">
+          System
+        </div>
+        <div class="small text-center">
+        {% if 'linux_distribution' in dashboard %}
+        {{ dashboard['linux_distribution'] }} /
+        {% end %}
+        <span id="os_version">{{ dashboard['os_version'] }}</span>
+        </div>
+        <div class="row mt-2">
+          <div class="col-6 small text-center">
+            <div class="chart-title">
+              CPU &times; {{ dashboard['n_cpu'] }}
+              <i class="fa fa-info-circle text-muted" data-toggle="tooltip"
+                 title="{% for model, count in dashboard['cpu_models'].items() %} {{ count }} &times; {{ model }}{% end %}">
+              </i>
+            </div>
+            <div id="total-cpu" class="font-weight-bold">
+              &nbsp;
+            </div>
+            <div class="card-body p-2 chart-small">
+              <canvas id="chart-cpu"></canvas>
+            </div>
+          </div>
+          <div class="col-6 small text-center">
+            <div class="chart-title">
+              Memory
+            </div>
+            <div>
+              <span id="total-memory" class="font-weight-bold">
+              &nbsp;
+              </span>
+              of
+              <span id="memory" data-type="size" class="font-weight-bold">
+                {{ dashboard['memory']['total'] * 1000 }}
+              </span>
+            </div>
+            <div class="card-body p-2 chart-small">
+              <canvas id="chart-memory"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <table class="w-100">
-        <tbody>
-        <tr>
-          <th>OS:</th>
-          <td id="os_version" class="text-right">{{ dashboard['os_version'] }}</td>
-        </tr>
-        <tr>
-          <th>CPU:</th>
-          <td id="cpu" class="text-right">{{ dashboard['n_cpu'] }}</td>
-        </tr>
-        <tr>
-          <th>Memory:</th>
-          <td id="memory" data-type="size" class="text-right">{{ dashboard['memory']['total'] * 1000 }}</td>
-        </tr>
-        <tr>
-          <th>DB size:</th>
-          <td id="size" class="text-right">{{ dashboard['databases']['total_size'] }}</td>
-        </tr>
-        <tr>
-          <th>Databases:</th>
-          <td id="nb_db" class="text-right">{{ dashboard['databases']['databases'] }}</td>
-        </tr>
-        <tr>
-          <th>Uptime:</th>
-          <td id="pg_uptime" class="text-right">{{ dashboard['pg_uptime'] }}</td>
-        </tr>
-        </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        TPS <div class="pull-right">Commit:<span id="tps_commit" class="badge badge-success">0</span> Rollback: <span id="tps_rollback" class="badge badge-danger">0</span></div>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-tps-holder" class="canvas-wrapper">
-          <canvas id="chart-tps" />
+      <div class="col-xl-12 col">
+        <div class="small text-muted text-center">
+          Postgres
+        </div>
+        <div class="small text-center">
+          <b id="nb_db">
+            {{ dashboard['databases']['databases'] }}
+          </b>
+          Databases
+          - <b id="size">{{ dashboard['databases']['total_size'] }}</b>
+          <br>
+          Uptime: <strong id="pg_uptime">{{ dashboard['pg_uptime'] }}</strong>
+        </div>
+        <div class="row mt-2">
+          <div class="col-6 small text-center">
+            <div class="chart-title">
+              Cache Hit Ratio
+            </div>
+            <div id="total-hit" class="font-weight-bold">
+            </div>
+            <div class="card-body p-2 chart-small">
+              <canvas id="chart-hitratio"></canvas>
+            </div>
+          </div>
+          <div class="col-6 small text-center">
+            <div class="chart-title">
+              Sessions
+            </div>
+            <div id="total-sessions" class="font-weight-bold">
+            </div>
+            <div class="card-body p-2 chart-small">
+              <canvas id="chart-sessions"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Loadaverage <div class="pull-right"><span id="loadaverage" class="badge badge-primary">{{dashboard['loadaverage']}}</span></div>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-loadaverage-holder" class="canvas-wrapper">
-          <canvas id="chart-loadaverage" />
+  <div class="col-xl-8 col-12">
+    <div class="h-50 pb-3">
+      <div class="card h-100">
+        <div class="text-center small p-0">
+          <span class="chart-title">
+            TPS
+          </span>
+          <div class="position-absolute top-0 right-0 pr-1">Commit: <span id="tps_commit" class="badge badge-success">0</span> Rollback: <span id="tps_rollback" class="badge badge-danger">0</span></div>
+        </div>
+        <div class="card-body h-100 p-2">
+          <div id="canvas-tps-holder" class="canvas-wrapper chart-h-min chart-h-min-xl-0">
+            <canvas id="chart-tps"/>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        CPU usage
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-cpu-holder" class="canvas-wrapper">
-          <canvas id="chart-cpu" />
+    <div class="h-50">
+      <div class="card h-100">
+        <div class="text-center small p-0">
+          <span class="chart-title">
+            Loadaverage
+          </span>
+          <div class="position-absolute top-0 right-0 pr-1"><span id="loadaverage" class="badge badge-primary">{{dashboard['loadaverage']}}</span></div>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Memory usage
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-memory-holder" class="canvas-wrapper">
-          <canvas id="chart-memory" />
+        <div class="card-body h-100 p-2">
+          <div id="canvas-loadaverage-holder" class="canvas-wrapper chart-h-min chart-h-min-xl-0">
+            <canvas id="chart-loadaverage" />
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Cache Hit ratio
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-hitratio-holder" class="canvas-wrapper">
-          <canvas id="chart-hitratio" />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Buffers <div class="pull-right"><span id="buffers_delta" class="badge badge-primary">{{buffers_delta}}</span></div>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-buffers-holder" class="canvas-wrapper">
-          <canvas id="chart-buffers" />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Active backends <div class="pull-right"><span id="backends" class="badge badge-primary">{{dashboard['active_backends']['nb']}}</span></div>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body">
-        <div id="canvas-backends-holder" class="canvas-wrapper">
-          <canvas id="chart-backends" />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-6 col-xl-4">
-    <div class="card mb-4">
-      <div class="card-header">
-        Notifications
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body small" id="divNotif10">
-        <div class="row text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
       </div>
     </div>
   </div>
 </div>
+<div class="row">
+  <div class="col-6">
+    <div class="card mb-4">
+      <div class="card-header small p-1 chart-title">
+        Notifications
+      </div>
+      <div class="card-body p-2 small" id="divNotif10">
+        <div class="text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- <script src="/js/Chart.js"></script> -->
 <script src="/js/Chart.min.js"></script>
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script src="/js/filesize.min.js"></script>
 <script>
-  var memorydata = {
-    labels: [ "Active", "Cached", "Free" ],
-    datasets: [
-      {
-        data: [{{dashboard['memory']['active']}}, {{dashboard['memory']['cached']}}, {{dashboard['memory']['free']}}],
-        backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
-      }
-    ]
-  };
-
-  var cpudata = {
-    labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
-    datasets: [
-      {
-        data: [{{dashboard['cpu']['iowait']}}, {{dashboard['cpu']['steal']}}, {{dashboard['cpu']['user']}}, {{dashboard['cpu']['system']}}, {{dashboard['cpu']['idle']}}],
-        backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
-      }
-    ]
-  };
-
-  var hitratiodata = {
-    labels: ["Hit", "Read"],
-    datasets: [
-      {
-        data: [{{dashboard['hitratio']}}, {{readratio}}],
-        backgroundColor: ["#29cc36", "#cc2936"]
-      }
-    ]
-  };
   var jdata_history = JSON.parse('{% raw history %}');
-  for (var p in jdata_history)
-  {
-    var updchart = false;
-    if (p == (jdata_history.length - 1))
-    {
-      updchart = true;
-    }
-    update_tps(jdata_history[p], updchart);
-    update_loadaverage(jdata_history[p], updchart);
-    update_backends(jdata_history[p], updchart);
-    update_buffers(jdata_history[p], updchart);
-  }
+  var lastDatabasesDatum = jdata_history[jdata_history.length -1].databases;
   var xsession = "{{xsession}}";
   var agent_address = "{{instance.agent_address}}";
   var agent_port = "{{instance.agent_port}}";
-  window.setInterval(function () {refresh_dashboard(agent_address, agent_port, xsession)}, 2000);
 
   $(document).ready(function() {
     $('[data-type=size]').each(function(){

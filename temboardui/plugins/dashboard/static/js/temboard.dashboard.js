@@ -1,489 +1,276 @@
-var last_update_timestamp = 0;
+$(function() {
+  "use strict";
 
-// Chart.js 2.X plugin to force display of tooltips with doughnut charts.
-Chart.pluginService.register({
-  beforeRender: function (chart) {
-    if (chart.config.options.showAllTooltips) {
-      // create an array of tooltips
-      // we can't use the chart tooltip because there is only one tooltip per chart
-      chart.pluginTooltips = [];
-      chart.config.data.datasets.forEach(function (dataset, i) {
-        chart.getDatasetMeta(i).data.forEach(function (sector, j) {
-          chart.pluginTooltips.push(new Chart.Tooltip({
-            _chart: chart.chart,
-            _chartInstance: chart,
-            _data: chart.data,
-            _options: chart.options.tooltips,
-            _active: [sector]
-          }, chart));
-        });
-      });
-
-      // turn off normal tooltips
-      chart.options.tooltips.enabled = false;
-    }
-  },
-  afterDraw: function (chart, easing) {
-    if (chart.config.options.showAllTooltips) {
-      // we don't want the permanent tooltips to animate, so don't do anything till the animation runs atleast once
-      if (!chart.allTooltipsOnce) {
-        if (easing !== 1) {
-          return;
-        }
-        chart.allTooltipsOnce = true;
-      }
-
-      // turn on tooltips
-      chart.options.tooltips.enabled = true;
-      Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
-        tooltip.initialize();
-        tooltip.update();
-        // we don't actually need this since we are not animating tooltips
-        tooltip.pivot();
-        tooltip.transition(easing).draw();
-      });
-      chart.options.tooltips.enabled = false;
-    }
+  function html_error_modal(code, error) {
+    var html = '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
+    html += '   <div class="modal-dialog">';
+    html += '     <div class="modal-content">';
+    html += '       <div class="modal-header">';
+    html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
+    html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+    html += '       </div>';
+    html += '       <div class="modal-body">';
+    html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
+    html += '       </div>';
+    html += '       <div class="modal-footer" id="ErrorModalFooter">';
+    html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
+    html += '       </div>';
+    html += '     </div>';
+    html += '   </div>';
+    html += '</div>';
+    return html;
   }
-});
 
-/*
- * CPU & Memory usage donut charts options.
- */
-var options = {
-  responsive : true,
-  maintainAspectRatio: false,
-  showAllTooltips: true,
-  legend: {
-    display: false
-  },
-  animation: {
-    duration: 0
-  },
-  tooltips: {
-    callbacks: {
-      label: function(tooltipItem, data) {
-        return data.labels[tooltipItem.index]+': '+data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' %';
-      }
-    }
-  }
-};
-
-function html_error_modal(code, error) {
-  var error_html = '';
-  error_html += '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
-  error_html += '   <div class="modal-dialog">';
-  error_html += '     <div class="modal-content">';
-  error_html += '       <div class="modal-header">';
-  error_html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
-  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
-  error_html += '       </div>';
-  error_html += '       <div class="modal-body">';
-  error_html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
-  error_html += '       </div>';
-  error_html += '       <div class="modal-footer" id="ErrorModalFooter">';
-  error_html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
-  error_html += '       </div>';
-  error_html += '     </div>';
-  error_html += '   </div>';
-  error_html += '</div>';
-  return error_html;
-}
-
-/*
- * Call the agent's dashboard API and update the view through
- * update_dashboard() callback.
- */
-function refresh_dashboard(agent_address, agent_port, xsession)
-{
-  $.ajax({
-    url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
-    type: 'GET',
-    beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
-    async: true,
-    contentType: "application/json",
-    success: function (data) {
-      if (data['databases']['timestamp'] != last_update_timestamp)
-      {
+  /*
+   * Call the agent's dashboard API and update the view through
+   * updateDashboard() callback.
+   */
+  function refreshDashboard() {
+    $.ajax({
+      url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
+      type: 'GET',
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      async: true,
+      contentType: "application/json",
+      success: function (data) {
         $('#ErrorModal').modal('hide');
-        last_update_timestamp = data['databases']['timestamp'];
-        update_dashboard(data, true);
-        update_tps(data, true);
-        update_loadaverage(data, true);
-        update_buffers(data, true);
-        update_backends(data, true);
-        update_notifications(data.notifications);
-      }
-    },
-    error: function(xhr) {
-      if (xhr.status == 401)
-      {
-        $('#ErrorModal').modal('hide');
-        $('#modalError').html(html_error_modal(401, 'Session expired'));
-        $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
-        $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
-        $('#ErrorModal').modal('show');
-      }
-      else
-      {
-        $('#ErrorModal').modal('hide');
-        var code = xhr.status;
-        var error = 'Internal error.';
-        if (code > 0)
-        {
-          error = escapeHtml(JSON.parse(xhr.responseText).error);
+        updateDashboard(data, true);
+        updateTps(data.databases);
+        updateLoadaverage(data);
+        updateNotifications(data.notifications);
+      },
+      error: function(xhr) {
+        if (xhr.status == 401) {
+          $('#ErrorModal').modal('hide');
+          $('#modalError').html(html_error_modal(401, 'Session expired'));
+          $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
+          $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
+          $('#ErrorModal').modal('show');
         } else {
-          code = '';
+          $('#ErrorModal').modal('hide');
+          var code = xhr.status;
+          var error = 'Internal error.';
+          if (code > 0)
+          {
+            error = escapeHtml(JSON.parse(xhr.responseText).error);
+          } else {
+            code = '';
+          }
+          $('#modalError').html(html_error_modal(code, error));
+          $('#ErrorModal').modal('show');
         }
-        $('#modalError').html(html_error_modal(code, error));
-        $('#ErrorModal').modal('show');
       }
+    });
+  }
+
+  function updateDashboard(data) {
+    /** Update time **/
+    $('#time').html(data['databases']['time']);
+    $('#hostname').html(data['hostname']);
+    $('#os_version').html(data['os_version']);
+    $('#n_cpu').html(data['n_cpu']);
+    $('#memory').html(filesize(data['memory']['total'] * 1000));
+    $('#pg_version').html(data['pg_version']);
+    $('#size').html(data['databases']['total_size']);
+    $('#nb_db').html(data['databases']['databases']);
+    $('#pg_data').html(data['pg_data']);
+    $('#pg_port').html(data['pg_port']);
+    $('#pg_uptime').html(data['pg_uptime']);
+
+    /** Update memory usage chart **/
+    memorychart.data.datasets[0].data[0] = data['memory']['active'];
+    memorychart.data.datasets[0].data[1] = data['memory']['cached'];
+    memorychart.data.datasets[0].data[2] = data['memory']['free'];
+    memorychart.update();
+    updateTotalMemory();
+
+    /** Update CPU usage chart **/
+    cpuchart.data.datasets[0].data[0] = data['cpu']['iowait'];
+    cpuchart.data.datasets[0].data[1] = data['cpu']['steal'];
+    cpuchart.data.datasets[0].data[2] = data['cpu']['user'];
+    cpuchart.data.datasets[0].data[3] = data['cpu']['system'];
+    cpuchart.data.datasets[0].data[4] = data['cpu']['idle'];
+    cpuchart.update();
+    updateTotalCpu();
+
+    /** Hitratio chart **/
+    hitratiochart.data.datasets[0].data[0] = data['hitratio'];
+    hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
+    hitratiochart.update();
+    updateTotalHit();
+
+    /** Sessions chart **/
+    var active_backends = data['active_backends']['nb'];
+    sessionschart.data.datasets[0].data[0] = active_backends;
+    sessionschart.data.datasets[0].data[1] = data['max_connections'] - active_backends;
+    sessionschart.update();
+    updateTotalSessions();
+  }
+
+  function updateTotalCpu() {
+    var totalCpu = 0;
+    // create a copy of data
+    var data = cpuchart.data.datasets[0].data.slice(0);
+    // last element is "idle", don't take it into account
+    data.pop();
+    var totalCpu = data.reduce(function(a, b) {return a + b;}, 0);
+    $('#total-cpu').html(parseInt(totalCpu) + ' %');
+  }
+
+  function updateTotalMemory() {
+    var totalMemory = 0;
+    // create a copy of data
+    var data = memorychart.data.datasets[0].data.slice(0);
+    // last element is "Free", don't take it into account
+    data.pop();
+    var totalMemory = data.reduce(function(a, b) {return a + b;}, 0);
+    $('#total-memory').html(parseInt(totalMemory) + ' %');
+  }
+
+  function updateTotalHit() {
+    $('#total-hit').html(hitratiochart.data.datasets[0].data[0] + ' %');
+  }
+
+  function updateTotalSessions() {
+    var data = sessionschart.data.datasets[0].data;
+    var html = data[0];
+    if (data[1]) {
+      html += ' / ' + (data[0] + data[1]);
     }
-  });
-}
-
-function update_dashboard(data)
-{
-  /** Update time **/
-  $('#time').html(data['databases']['time']);
-  $('#hostname').html(data['hostname']);
-  $('#os_version').html(data['os_version']);
-  $('#n_cpu').html(data['n_cpu']);
-  $('#memory').html(filesize(data['memory']['total'] * 1000));
-  $('#pg_version').html(data['pg_version']);
-  $('#size').html(data['databases']['total_size']);
-  $('#nb_db').html(data['databases']['databases']);
-  $('#pg_data').html(data['pg_data']);
-  $('#pg_port').html(data['pg_port']);
-  $('#pg_uptime').html(data['pg_uptime']);
-  /** Update memory usage chart **/
-
-  window.memorychart.data.datasets[0].data[0] = data['memory']['active'];
-  window.memorychart.data.datasets[0].data[1] = data['memory']['cached'];
-  window.memorychart.data.datasets[0].data[2] = data['memory']['free'];
-  window.memorychart.update();
-  /** Update CPU usage chart **/
-  window.cpuchart.data.datasets[0].data[0] = data['cpu']['iowait'];
-  window.cpuchart.data.datasets[0].data[1] = data['cpu']['steal'];
-  window.cpuchart.data.datasets[0].data[2] = data['cpu']['user'];
-  window.cpuchart.data.datasets[0].data[3] = data['cpu']['system'];
-  window.cpuchart.data.datasets[0].data[4] = data['cpu']['idle'];
-  window.cpuchart.update();
-  /** Hitratio chart **/
-  window.hitratiochart.data.datasets[0].data[0] = data['hitratio'];
-  window.hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
-  window.hitratiochart.update();
-}
-
-function resize_chart(chart, max_val, step_size_limit)
-{
-  while (chart.options.scales.yAxes[0].ticks.max < max_val)
-  {
-    chart.options.scales.yAxes[0].ticks.stepSize *= 2;
-    chart.options.scales.yAxes[0].ticks.max *= 2;
+    $('#total-sessions').html(html);
   }
-  while ((chart.options.scales.yAxes[0].ticks.stepSize > step_size_limit) && max_val < Math.ceil(chart.options.scales.yAxes[0].ticks.max / 2))
-  {
-    chart.options.scales.yAxes[0].ticks.stepSize /= 2;
-    chart.options.scales.yAxes[0].ticks.max /= 2;
-  }
-  chart.update();
-}
 
-/*
- * Loadaverage line chart options.
- */
-var loadaverage_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Loadaverage",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 4,
-          min: 0,
-          stepSize: 1,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: "rgba(101,152,184,1)",
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
-
-var loadaverage_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_loadaverage(data, update_chart)
-{
-  if (!("loadaveragechart" in window))
-  {
-    var loadaveragecontext = $('#chart-loadaverage').get(0).getContext('2d');
-    window.loadaveragechart = new Chart(loadaveragecontext, loadaverage_config);
-  }
-  /** Add the very new loadaverage value to the chart dataset ... **/
-  window.loadaveragechart.data.datasets[0].data.push(data['loadaverage']);
-  /** ... and to the global array loadaverage_values **/
-  loadaverage_values.push(data['loadaverage']);
-  loadaverage_values.shift();
-  window.loadaveragechart.data.datasets[0].data.shift();
-  if (update_chart)
-  {
+  function updateLoadaverage(data) {
+    /** Add the very new loadaverage value to the chart dataset ... **/
+    var chart = loadaveragechart;
+    chart.data.datasets[0].data.push(data['loadaverage']);
+    chart.data.datasets[0].data.shift();
     $('#loadaverage').html(data['loadaverage']);
-    var max_val = 0;
-    var i = 0;
-    for (i; i < loadaverage_values.length; i++)
-    {
-      if (loadaverage_values[i] > max_val)
-      {
-        max_val = loadaverage_values[i];
-      }
-    }
-    resize_chart(window.loadaveragechart, max_val, 1);
+    chart.update();
   }
-}
 
-/*
- * Buffers line chart options.
- */
-var buffers_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Buffers",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
+  function computeDelta(a, b, duration) {
+    return Math.ceil((a - b) / duration);
+  }
+
+  function updateTps(data) {
+    var chart = tpschart;
+    var datasets = chart.data.datasets;
+    var duration = data.timestamp - lastDatabasesDatum.timestamp;
+    if (duration === 0) {
+      return;
+    }
+    var deltaCommit = computeDelta(data.total_commit, lastDatabasesDatum.total_commit, duration);
+    var deltaRollback = computeDelta(data.total_rollback, lastDatabasesDatum.total_rollback, duration);
+
+    var commitData = datasets[0].data;
+    commitData.push(deltaCommit);
+    var rollbackData = datasets[1].data;
+    rollbackData.push(deltaRollback);
+    commitData.shift();
+    rollbackData.shift();
+
+    $('#tps_commit').html(deltaCommit);
+    $('#tps_rollback').html(deltaRollback);
+    chart.update();
+    lastDatabasesDatum = data;
+  }
+
+  function updateNotifications(data) {
+    var notif_html = '<ul class="notifications">';
+    for (var i in data) {
+      notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="badge badge-success">'+data[i].username+'</span> '+data[i].message+'</li>';
+    }
+    notif_html += '</ul>';
+    $('#divNotif10').html(notif_html);
+  }
+
+  var options = {
     responsive : true,
     maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 20,
-          min: 0,
-          stepSize: 5,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: "rgba(101,152,184,1)",
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
-};
-var buffers_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+    legend: false,
+    rotation: Math.PI,
+    circumference: Math.PI
+  };
 
-function update_buffers(data, update_chart)
-{
-  if (!("bufferschart" in window))
-  {
-    var bufferscontext = $('#chart-buffers').get(0).getContext('2d');
-    window.bufferschart = new Chart(bufferscontext, buffers_config);
-  }
-  /** Re-process delta calculation **/
-  if (buffers_values.length > 0)
-  {
-    var p = buffers_values.length - 1;
-    if (buffers_values[p] != null)
+  var memorychart = new Chart(
+    $('#chart-memory').get(0).getContext('2d'),
     {
-      delta = data['buffers']['nb'] - buffers_values[p]['nb'];
-    } else {
-      delta = 0;
-    }
-  } else {
-    delta = 0;
-  }
-
-  window.bufferschart.data.datasets[0].data.push(delta);
-  /** We need to store delta value. **/
-  data['buffers']['delta'] = delta;
-  buffers_values.push(data['buffers']);
-  window.bufferschart.data.datasets[0].data.shift();
-  buffers_values.shift();
-  if (update_chart)
-  {
-    $('#buffers_delta').html(delta);
-    var max_val = 0;
-    for (var i=0; i < buffers_values.length; i++)
-    {
-      if (buffers_values[i] != null && buffers_values[i]['delta'] > max_val)
-      {
-        max_val = buffers_values[i]['delta'];
-      }
-    }
-    resize_chart(window.bufferschart, max_val, 5);
-  }
-}
-
-/*
- * Active Backends line chart options.
- */
-var backends_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Active Backends",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
-    responsive : true,
-    maintainAspectRatio: false,
-    animation: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          max: 4,
-          min: 0,
-          stepSize: 1,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0
+      type: 'doughnut',
+      data: {
+        labels: ["Active", "Cached", "Free"],
+        datasets: [
+          {
+            backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
+          }
+        ]
       },
-      line: {
-        backgroundColor: 'rgba(101,152,184,0.2)',
-        borderColor: 'rgba(101,152,184,1)',
-        borderWidth: 1
-      }
-    },
-    tooltips: {
-      enabled: false
+      options: options
     }
-  }
-};
+  );
 
-
-var backends_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_backends(data, update_chart)
-{
-  if (!("backendschart" in window))
-  {
-    var backends_context = $('#chart-backends').get(0).getContext('2d');
-    window.backendschart = new Chart(backends_context, backends_config);
-  }
-  /** Add the very new backends value to the chart dataset ... **/
-  window.backendschart.data.datasets[0].data.push(data['active_backends']['nb']);
-  /** ... and to the global array backends_values **/
-  backends_values.push(data['active_backends']['nb']);
-  window.backendschart.data.datasets[0].data.shift();
-  backends_values.shift();
-  if (update_chart)
-  {
-    $('#backends').html(data['active_backends']['nb']);
-    var max_val = 0;
-    for (var i=0; i < backends_values.length; i++)
+  var cpuchart = new Chart(
+    $('#chart-cpu').get(0).getContext('2d'),
     {
-      if (backends_values[i] > max_val)
-      {
-        max_val = backends_values[i];
-      }
-    }
-    resize_chart(window.backendschart, max_val, 1);
-  }
-}
-
-/*
- * TPS line chart options.
- */
-
-var tps_config = {
-  type: 'line',
-  data: {
-    labels: [ "","","","","","","","","","","","","","","","","","","","" ],
-    datasets : [
-      {
-        label: "Commit",
-        backgroundColor: "rgba(0,188,18,0.2)",
-        borderColor: "rgba(0,188,18,1)",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+      type: 'doughnut',
+      data: {
+        labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
+        datasets: [
+          {
+            backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
+          }
+        ]
       },
-      {
-        label: "Rollback",
-        backgroundColor: "rgba(188,0,0,0.2)",
-        borderColor: "rgba(188,0,0,1)",
-        data: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
-      }
-    ]
-  },
-  options: {
+      options: options
+    }
+  );
+
+  var hitratiochart = new Chart(
+    $('#chart-hitratio').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["Hit", "Read"],
+        datasets: [
+          {
+            backgroundColor: ["#29cc36", "#cc2936"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
+
+  var sessionschart = new Chart(
+    $('#chart-sessions').get(0).getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: ["Active backends", ""],
+        datasets: [
+          {
+            backgroundColor: ["#29cc36", "#eeeeee"]
+          }
+        ]
+      },
+      options: options
+    }
+  );
+  updateTotalSessions();
+
+  var tpsData = jdata_history.map(function(a, index) {
+    if (index === 0) {
+      return [0, 0];
+    }
+    var curr = a.databases;
+    var prev = jdata_history[index - 1].databases;
+    var duration = curr.timestamp - prev.timestamp;
+    var deltaCommit = computeDelta(curr.total_commit, prev.total_commit, duration);
+    var deltaRollback = computeDelta(curr.total_rollback, prev.total_rollback, duration);
+    return [deltaCommit, deltaRollback];
+  });
+
+  var lineChartsOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
@@ -493,9 +280,6 @@ var tps_config = {
     scales: {
       yAxes: [{
         ticks: {
-          max: 20,
-          min: 0,
-          stepSize: 5,
           beginAtZero: true
         }
       }],
@@ -510,7 +294,8 @@ var tps_config = {
     },
     elements: {
       point: {
-        radius: 0
+        radius: 0,
+        hoverRadius: 0
       },
       line: {
         borderWidth: 1
@@ -519,86 +304,59 @@ var tps_config = {
     tooltips: {
       enabled: false
     }
-  }
-};
+  };
 
-var tps_values = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
-
-function update_tps(data, update_chart)
-{
-  if (!("tpschart" in window))
-  {
-    var tps_context = $('#chart-tps').get(0).getContext('2d');
-    window.tpschart = new Chart(tps_context, tps_config);
-  }
-  /** Proceed with delta calculation **/
-  if (tps_values.length > 0)
-  {
-    var p = tps_values.length - 1;
-    if (tps_values[p] != null)
+  var tpschart = new Chart(
+    $('#chart-tps').get(0).getContext('2d'),
     {
-      delta_commit = Math.ceil((data['databases']['total_commit'] - tps_values[p]['total_commit']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
-      delta_rollback = Math.ceil((data['databases']['total_rollback'] - tps_values[p]['total_rollback']) / (data['databases']['timestamp'] - tps_values[p]['timestamp']));
-    } else {
-      delta_commit = 0;
-      delta_rollback = 0;
+      type: 'line',
+      data: {
+        labels: Array.apply(null, Array(tpsData.length)),
+        datasets : [
+          {
+            label: "Commit",
+            backgroundColor: "rgba(0,188,18,0.2)",
+            borderColor: "rgba(0,188,18,1)",
+            data: tpsData.map(function(a) {return a[0]})
+          },
+          {
+            label: "Rollback",
+            backgroundColor: "rgba(188,0,0,0.2)",
+            borderColor: "rgba(188,0,0,1)",
+            data: tpsData.map(function(a) {return a[1]})
+          }
+        ]
+      },
+      options: lineChartsOptions
     }
-  } else {
-    delta_commit = 0;
-    delta_rollback = 0;
-  }
+  );
 
-  window.tpschart.data.datasets[0].data.push(delta_commit);
-  window.tpschart.data.datasets[1].data.push(delta_rollback);
-  /** We need to store delta value. **/
-  data['databases']['delta_commit'] = delta_commit;
-  data['databases']['delta_rollback'] = delta_rollback;
-  tps_values.push(data['databases']);
-  tps_values.shift();
-  window.tpschart.data.datasets[0].data.shift();
-  window.tpschart.data.datasets[1].data.shift();
-  if (update_chart)
-  {
-    $('#tps_commit').html(delta_commit);
-    $('#tps_rollback').html(delta_rollback);
-    var max_val = 0;
-    for (var i=0; i < tps_values.length; i++)
+  var loadaveragechart = new Chart(
+    $('#chart-loadaverage').get(0).getContext('2d'),
     {
-      if (tps_values[i] != null)
-      {
-        if (tps_values[i]['delta_commit'] > max_val)
-        {
-          max_val = tps_values[i]['delta_commit'];
-        }
-        if (tps_values[i]['delta_rollback'] > max_val)
-        {
-          max_val = tps_values[i]['delta_rollback'];
-        }
-      }
+      type: 'line',
+      data: {
+        labels: Array.apply(null, Array(jdata_history.length)),
+        datasets : [
+          {
+            label: "Loadaverage",
+            data: jdata_history.map(
+              function(item) {
+                return item.loadaverage
+              }
+            ),
+            backgroundColor: 'rgba(250, 164, 58, 0.2)',
+            borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
+          }
+        ]
+      },
+      options: lineChartsOptions
     }
-    resize_chart(window.tpschart, max_val, 5);
-  }
-}
+  );
 
-window.onload = function(){
-  var memorycontext = $('#chart-memory').get(0).getContext('2d');
-  window.memorychart = new Chart(memorycontext, {type: 'doughnut', data: memorydata, options: options});
-  var cpucontext = $('#chart-cpu').get(0).getContext('2d');
-  window.cpuchart = new Chart(cpucontext, {type: 'doughnut', data: cpudata, options: options});
-  var hitratiocontext = $('#chart-hitratio').get(0).getContext('2d');
-  window.hitratiochart = new Chart(hitratiocontext, {type: 'doughnut', data: hitratiodata, options: options});
-};
-
-function update_notifications(data)
-{
-  var notif_html = '<ul class="notifications">';
-  for (var i in data)
-  {
-    notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="badge badge-success">'+data[i].username+'</span> '+data[i].message+'</li>';
-  }
-  notif_html += '</ul>';
-  $('#divNotif10').html(notif_html);
-}
+  window.setInterval(refreshDashboard, 2000);
+  refreshDashboard();
+});
 
 var entityMap = {
   "&": "&amp;",
