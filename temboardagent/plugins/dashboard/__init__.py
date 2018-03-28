@@ -152,7 +152,7 @@ def dashboard_history(http_context,
                       config=None,
                       sessions=None):
     """
-Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``history_length`` from the ``dashboard`` section of configuration file. Default value is ``20``.
+Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``history_length`` from the ``dashboard`` section of configuration file. Default value is ``150``.
 
 .. sourcecode:: http
 
@@ -877,7 +877,7 @@ def configuration(config):
 
             self.plugin_configuration = {
                 'scheduler_interval': 2,
-                'history_length': 20
+                'history_length': 150
             }
 
             try:
