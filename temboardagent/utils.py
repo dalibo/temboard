@@ -36,6 +36,9 @@ class DotDict(UserDict):
             value = DotDict(value)
         self[name] = value
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
     def setdefault(self, name, default):
         if hasattr(default, 'items'):
             default = DotDict(default)
