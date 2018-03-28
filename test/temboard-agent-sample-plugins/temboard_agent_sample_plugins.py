@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
 import logging
+import os
 import sys
+from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.errors import UserError
 from temboardagent.routing import add_route
@@ -13,9 +15,11 @@ from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
 from temboardagent.configuration import OptionSpec
+from temboardagent.scheduler import taskmanager
 
 
 logger = logging.getLogger('temboardagent.' + __name__)
+APP = None
 
 
 def say_hello_world(config, http_context):
@@ -191,6 +195,58 @@ def get_hello_from_config(http_context, config, sessions):
         function_name=say_hello_from_config.__name__)
 
 
+def say_hello_worker(pickled_app, *a, **kw):
+    app = unpickle(pickled_app)
+    with app.postgres.connect() as conn:
+        conn.execute("""SELECT 'Hello World' AS message, NOW() AS time;""")
+        row = list(conn.get_rows())[0]
+    logger.info("Hello from worker.")
+    return {"message": row['message'], "time": row['time']}
+
+
+def say_hello_from_background_worker(config, *a, **kw):
+    """
+    "Hello <something>" using configuration.
+
+    Usage:
+    $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello/from_worker" | python -m json.tool
+    {
+        "content": "Hello toto"
+    }
+    """  # noqa
+    tm_sock_path = os.path.join(
+        config.temboard['home'], '.tm.socket').encode('ascii')
+    logger.info("Listing tasks.")
+    task_list_resp = taskmanager.TaskManager.send_message(
+        tm_sock_path,
+        taskmanager.Message(taskmanager.MSG_TYPE_TASK_LIST, None),
+        authkey=None,
+    )
+    for task_data in task_list_resp:
+        if task_data['worker_name'] == say_hello_worker.__name__:
+            break
+    else:
+        raise Exception("Worker didn't run")
+
+    return task_data['output']
+
+
+def get_hello_from_background_worker(http_context, config, sessions):
+    return api_function_wrapper(
+        http_context=http_context, config=config, sessions=sessions,
+        module=sys.modules[__name__],
+        function_name=say_hello_from_background_worker.__name__)
+
+
+def hello_task_manager_bootstrap(context):
+    yield taskmanager.Task(
+        worker_name=say_hello_worker.__name__,
+        options={'pickled_app': pickle(APP)},
+        redo_interval=5,
+    )
+
+
 class Hello(object):
     pg_min_version = 90400
 
@@ -200,6 +256,9 @@ class Hello(object):
             OptionSpec('hello', 'name', default='World')])
 
     def load(self):
+        global APP
+        APP = self.app
+
         pg_version = self.app.postgres.fetch_version()
         if pg_version < self.pg_min_version:
             raise UserError("hellong is incompatible with Postgres below 9.4")
@@ -212,6 +271,11 @@ class Hello(object):
         add_route('POST', b'/hello3/say')(get_hello_something3)
         add_route('GET', b'/hello4/'+T_SOMETHING)(get_hello_something4)
         add_route('GET', b'/hello/from_config')(get_hello_from_config)
+        add_route('GET', b'/hello/from_background_worker')(
+            get_hello_from_background_worker)
+
+        taskmanager.worker(pool_size=1)(say_hello_worker)
+        taskmanager.bootstrap()(hello_task_manager_bootstrap)
 
 
 class Failing(object):
