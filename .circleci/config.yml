@@ -10,7 +10,7 @@ jobs:
     - run:
         name: Build documentation with Sphinx
         command: |
-          pip install --upgrade -r doc/requirements-doc.txt
+          pip install --upgrade -r doc/requirements-doc.txt -e .
           python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
           make -C doc/ clean html
     - store_artifacts:

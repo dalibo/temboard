@@ -1,4 +1,4 @@
-from activity.process import Process, memory_total_size
+from .process import Process, memory_total_size
 import time
 from resource import getpagesize
 from temboardagent.notification import NotificationMgmt, Notification

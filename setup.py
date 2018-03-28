@@ -45,6 +45,11 @@ SETUP_KWARGS = dict(
         ]),
         ('lib/systemd/system', ['packaging/temboard-agent.service']),
     ],
+    entry_points={
+        'temboardagent.plugins': [
+            'activity = temboardagent.plugins.activity:ActivityPlugin',
+        ],
+    },
 )
 
 if __name__ == '__main__':
