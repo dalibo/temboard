@@ -214,7 +214,7 @@ The configuration file ``temboard-agent.conf`` is formated using INI format. Con
 ^^^^^^^^^^^^^^^^^^^^
 
   - ``scheduler_interval``: Time interval, in second, between each run of the process collecting data used to render the dashboard. Default: ``2``;
-  - ``history_length``: Number of record to keep. Default: ``20``.
+  - ``history_length``: Number of record to keep. Default: ``150``.
 
 ``monitoring`` plugin
 ^^^^^^^^^^^^^^^^^^^^^
