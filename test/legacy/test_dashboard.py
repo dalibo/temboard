@@ -428,3 +428,25 @@ class TestDashboard:
         assert status == 200 \
             and 'max_connections' in dict_data \
             and type(dict_data['max_connections']) == int
+
+    def test_14_dashboard_config(self):
+        """
+        [dashboard] 14: GET /dashboard/config : HTTP return code is 200 and the data structure is right
+        """  # noqa
+        (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/dashboard/config' % (
+                        ENV['agent']['host'],
+                        ENV['agent']['port']
+                        ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        dict_data = json.loads(res)
+
+        assert status == 200 \
+            and 'history_length' in dict_data \
+            and 'scheduler_interval' in dict_data
