@@ -910,7 +910,7 @@ def configuration(config):
                 self.plugin_configuration['history_length'] = \
                     self.getint(__name__, 'history_length')
             except ValueError:
-                logger.error("%s - configuration error: 'histor_length' must "
+                logger.error("%s - configuration error: 'history_length' must "
                              "be an integer between 0 and 300 in section '%s'"
                              " in %s." % (
                                  __name__,
