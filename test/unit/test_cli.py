@@ -137,7 +137,7 @@ def test_reload(mocker):
     app.reload()
 
 
-def test_fetch_plugins(mocker):
+def test_fetch_plugin(mocker):
     iter_ep = mocker.patch('temboardagent.cli.iter_entry_points')
     from temboardagent.cli import Application
 
@@ -147,11 +147,7 @@ def test_fetch_plugins(mocker):
     ep.load.return_value = 'PLUGIN OBJECT'
     iter_ep.return_value = [ep]
 
-    eps = list(app.fetch_plugins(['found']))
-
-    assert 1 == len(eps)
-    assert 'found' == eps[0][0]
-    assert 'PLUGIN OBJECT' == eps[0][1]
+    assert 'PLUGIN OBJECT' == app.fetch_plugin(['found'])
 
 
 def test_fetch_failing(mocker):
@@ -164,7 +160,7 @@ def test_fetch_failing(mocker):
     iter_ep.return_value = [ep]
 
     with pytest.raises(UserError):
-        list(app.fetch_plugins(['myplugin']))
+        app.fetch_plugin('myplugin')
 
 
 def test_fetch_missing(mocker):
@@ -175,12 +171,12 @@ def test_fetch_missing(mocker):
     iter_ep.return_value = []
 
     with pytest.raises(UserError):
-        list(app.fetch_plugins(['myplugin']))
+        app.fetch_plugin('myplugin')
 
 
 def test_create_plugins(mocker):
-    fp = mocker.patch(
-        'temboardagent.cli.Application.fetch_plugins', autospec=True)
+    mocker.patch(
+        'temboardagent.cli.Application.fetch_plugin', autospec=True)
     llp = mocker.patch('temboardagent.cli.load_legacy_plugins', autospec=True)
     from temboardagent.cli import Application
 
@@ -188,8 +184,7 @@ def test_create_plugins(mocker):
     app.config = mocker.Mock(name='config')
     app.config.temboard.plugins = ['legacy', 'ng']
 
-    llp.return_value = dict(legacy=dict(), ng=None)
-    fp.return_value = [('ng', mocker.Mock(name='ng'))]
+    llp.return_value = dict(legacy=dict())
 
     app.create_plugins()
 

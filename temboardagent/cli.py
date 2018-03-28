@@ -154,19 +154,18 @@ class Application(object):
         yield OptionSpec(s, 'password')
         yield OptionSpec(s, 'dbname', default='postgres')
 
-    def fetch_plugins(self, plugins):
-        for name in plugins:
-            logger.debug("Looking for plugin %s.", name)
-            for ep in iter_entry_points(self.with_plugins, name):
-                logger.info("Found plugin %s.", ep)
-                try:
-                    yield ep.name, ep.load()
-                except Exception:
-                    logger.exception("Error while loading %s.", ep)
-                    raise UserError("Failed to load %s." % (ep.name,))
-                break
-            else:
-                raise UserError("Missing plugin: %s." % (name,))
+    def fetch_plugin(self, name):
+        logger.debug("Looking for plugin %s.", name)
+        for ep in iter_entry_points(self.with_plugins, name):
+            logger.info("Found plugin %s.", ep)
+            try:
+                return ep.load()
+            except Exception:
+                logger.exception("Error while loading %s.", ep)
+                raise UserError("Failed to load %s." % (ep.name,))
+            break
+        else:
+            raise UserError("Missing plugin: %s." % (name,))
 
     def create_plugins(self):
         self.config.plugins = load_legacy_plugins(self.config)
@@ -174,8 +173,10 @@ class Application(object):
             lambda name: name not in self.config.plugins,
             self.config.temboard.plugins
         )
+
         self.plugins = {}
-        for name, cls in self.fetch_plugins(unloaded_names):
+        for name in unloaded_names:
+            cls = self.fetch_plugin(name)
             plugin = cls(self)
             self.plugins[name] = plugin
             self.config.plugins.pop(name, None)
