@@ -18,7 +18,7 @@ from temboardagent.configuration import OptionSpec
 from temboardagent.scheduler import taskmanager
 
 
-logger = logging.getLogger('temboardagent.' + __name__)
+logger = logging.getLogger(__name__)
 APP = None
 
 
