@@ -140,6 +140,7 @@
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script src="/js/filesize.min.js"></script>
 <script>
+  var config = JSON.parse('{% raw config %}');
   var jdata_history = JSON.parse('{% raw history %}');
   var lastDatabasesDatum = jdata_history[jdata_history.length -1].databases;
   var xsession = "{{xsession}}";

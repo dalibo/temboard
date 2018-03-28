@@ -258,12 +258,25 @@ $(function() {
   );
   updateTotalSessions();
 
+  var missingDataCount = config.history_length - jdata_history.length;
+  if (missingDataCount > 0) {
+    var missing = Array.apply(null, {length: missingDataCount});
+    jdata_history = missing.concat(jdata_history);
+  }
+
   var tpsData = jdata_history.map(function(a, index) {
+    if (a === undefined) {
+      return [null, null];
+    }
     if (index === 0) {
       return [0, 0];
     }
     var curr = a.databases;
-    var prev = jdata_history[index - 1].databases;
+    var prev = jdata_history[index - 1];
+    if (!prev) {
+      return [null, null];
+    }
+    prev = prev.databases;
     var duration = curr.timestamp - prev.timestamp;
     var deltaCommit = computeDelta(curr.total_commit, prev.total_commit, duration);
     var deltaRollback = computeDelta(curr.total_rollback, prev.total_rollback, duration);
@@ -331,6 +344,9 @@ $(function() {
     }
   );
 
+  var loadaverageData = jdata_history.map(function(item) {
+    return item ? item.loadaverage : null;
+  });
   var loadaveragechart = new Chart(
     $('#chart-loadaverage').get(0).getContext('2d'),
     {
@@ -340,11 +356,7 @@ $(function() {
         datasets : [
           {
             label: "Loadaverage",
-            data: jdata_history.map(
-              function(item) {
-                return item.loadaverage
-              }
-            ),
+            data: loadaverageData,
             backgroundColor: 'rgba(250, 164, 58, 0.2)',
             borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
           }
