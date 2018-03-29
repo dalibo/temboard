@@ -90,7 +90,7 @@ def generate_logging_config(
     HANDLERS['syslog']['address'] = destination
     HANDLERS['file']['filename'] = destination
 
-    fmt = 'verbose' if debug else 'minimal'
+    fmt = 'verbose' if debug or level == 'DEBUG' else 'minimal'
 
     HANDLERS['stderr']['formatter'] = fmt
     if sys.stderr.isatty():
