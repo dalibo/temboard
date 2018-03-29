@@ -38,9 +38,7 @@ def get_metrics(conn, config, _=None):
 
 
 def get_metrics_queue(config, _=None):
-    q = Queue('%s/dashboard.q' % (config.temboard['home']),
-              max_length=(config.plugins['dashboard']['history_length']+1),
-              overflow_mode='slide')
+    q = Queue('%s/dashboard.q' % (config.temboard['home']))
     dm = DashboardMetrics()
     msg = q.get_last_message()
     msg['notifications'] = dm.get_notifications(config)
@@ -48,9 +46,7 @@ def get_metrics_queue(config, _=None):
 
 
 def get_history_metrics_queue(config, _=None):
-    q = Queue('%s/dashboard.q' % (config.temboard['home']),
-              max_length=(config.plugins['dashboard']['history_length']+1),
-              overflow_mode='slide')
+    q = Queue('%s/dashboard.q' % (config.temboard['home']))
     return q.get_content_all_messages()
 
 
