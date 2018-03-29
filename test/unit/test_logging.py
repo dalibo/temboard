@@ -6,7 +6,7 @@ def test_temboard_debug(mocker):
     config = generate_logging_config()
     assert 'minimal' == config['handlers']['configured']['formatter']
 
-    config = generate_logging_config(level='DEBUG')
+    config = generate_logging_config(level='DEBUG', debug=False)
 
     assert 'verbose' == config['handlers']['configured']['formatter']
     assert 'DEBUG' == config['loggers']['temboardagent']['level']
