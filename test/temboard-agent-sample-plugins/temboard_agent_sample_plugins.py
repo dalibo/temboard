@@ -242,6 +242,7 @@ def get_hello_from_background_worker(http_context, config, sessions):
 def hello_task_manager_bootstrap(context):
     yield taskmanager.Task(
         worker_name=say_hello_worker.__name__,
+        id=say_hello_worker.__name__,
         options={'pickled_app': pickle(APP)},
         redo_interval=5,
     )
