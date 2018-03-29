@@ -27,6 +27,7 @@ from temboardagent.errors import (
     SharedItem_no_free_slot_left,
 )
 from temboardagent.queue import Queue, Message
+import dashboard.config as config_module
 import dashboard.metrics as metrics
 
 
@@ -131,6 +132,69 @@ Get the whole last data set used to render dashboard view. Data have been collec
                                 sessions,
                                 metrics,
                                 'get_metrics_queue')
+
+
+@add_route('GET', '/dashboard/config')
+def dashboard_config(http_context,
+                     config=None,
+                     sessions=None):
+    """
+Get the dashboard plugin config.
+
+.. sourcecode:: http
+
+    GET /dashboard HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:57:52 GMT
+    Content-type: application/json
+
+    {
+        "history_length": 150,
+        "scheduler_interval": 2
+    }
+
+:reqheader X-Session: Session ID
+:statuscode 200: no error
+:statuscode 401: invalid session
+:statuscode 500: internal error
+:statuscode 406: header ``X-Session`` is malformed.
+
+**Error responses**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 401 Unauthorized
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:58:00 GMT
+    Content-type: application/json
+
+    {"error": "Invalid session."}
+
+
+.. sourcecode:: http
+
+    HTTP/1.0 406 Not Acceptable
+    Server: temboard-agent/0.0.1 Python/2.7.8
+    Date: Wed, 22 Apr 2015 09:58:00 GMT
+    Content-type: application/json
+
+    {"error": "Parameter 'X-Session' is malformed."}
+
+
+    """  # noqa
+    return api_function_wrapper(config,
+                                http_context,
+                                sessions,
+                                config_module,
+                                'get_config')
 
 
 @add_route('GET', '/dashboard/live')
@@ -910,7 +974,7 @@ def configuration(config):
                 self.plugin_configuration['history_length'] = \
                     self.getint(__name__, 'history_length')
             except ValueError:
-                logger.error("%s - configuration error: 'histor_length' must "
+                logger.error("%s - configuration error: 'history_length' must "
                              "be an integer between 0 and 300 in section '%s'"
                              " in %s." % (
                                  __name__,
