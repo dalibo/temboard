@@ -238,7 +238,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['wait']) == unicode
         assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) == unicode
+        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
 
     def test_02_activity_kill(self):
         """
@@ -368,7 +368,7 @@ class TestActivity:
         assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) == unicode
+        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
 
     def  test_04_activity_blocking(self):
         """
@@ -446,4 +446,4 @@ class TestActivity:
         assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) == unicode
+        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
