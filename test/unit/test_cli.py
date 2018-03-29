@@ -97,6 +97,8 @@ def test_bootstrap(mocker):
     app.plugins['toto'] = toto = mocker.Mock(name='toto')
     app.bootstrap(args=None, environ={})
 
+    assert repr(app)
+
     app = bootstrap(args=None, environ={})
 
     assert toto.load.called is True
