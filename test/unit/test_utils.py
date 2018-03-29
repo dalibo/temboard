@@ -46,3 +46,12 @@ def test_dotdict():
 
     d = my.setdefault('d', dict(e=True))
     assert d.e is True
+
+
+def test_pickle_dotdict():
+    from pickle import dumps as pickle, loads as unpickle
+    from temboardagent.utils import DotDict
+
+    orig = DotDict(dict(a=1, b=dict(c=2)))
+    copy = unpickle(pickle(orig))
+    assert 2 == copy.b.c

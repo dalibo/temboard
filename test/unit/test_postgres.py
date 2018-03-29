@@ -24,3 +24,12 @@ def test_postgres_fetch_version(mocker):
 
     assert 90400 == version
     assert conn.close.called is True
+
+
+def test_pickle():
+    from pickle import dumps as pickle, loads as unpickle
+    from temboardagent.postgres import Postgres
+
+    orig = Postgres(host='myhost')
+    copy = unpickle(pickle(orig))
+    assert 'myhost' == copy.host

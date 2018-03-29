@@ -114,6 +114,18 @@ def test_application_specs():
     assert 'temboard_plugins' not in specs
 
 
+def test_app_pickle():
+    from pickle import dumps as pickle, loads as unpickle
+    from temboardagent.cli import Application
+
+    empty_generator = (x for x in [])
+    orig = Application(specs=empty_generator)
+    orig.config.update(dict(a=1))
+    copy = unpickle(pickle(orig))
+    assert [] == copy.specs
+    assert copy.config
+
+
 def test_read_file(mocker):
     from temboardagent.cli import Application, UserError
 

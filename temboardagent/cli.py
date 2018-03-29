@@ -58,7 +58,7 @@ class Application(object):
     # add an object, it will be shared with other.
 
     def __init__(self, specs=None, with_plugins='temboardagent.plugins'):
-        self.specs = specs or []
+        self.specs = list(specs) if specs else []
         # If `None`, plugin loading is disabled.
         self.with_plugins = with_plugins
         self.plugins = {}
@@ -66,6 +66,9 @@ class Application(object):
         # This dict stores env, args and parser for hot reloading of
         # configuration.
         self.config_sources = dict()
+
+    def __repr__(self):
+        return '<%s>' % (self.__class__.__name__)
 
     def bootstrap(self, args, environ):
         # bootstrapping the app is a complex process to manage options loading
