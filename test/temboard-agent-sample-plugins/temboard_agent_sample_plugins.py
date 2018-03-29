@@ -282,6 +282,9 @@ class Hello(object):
         taskmanager.worker(pool_size=1)(say_hello_worker)
         taskmanager.bootstrap()(hello_task_manager_bootstrap)
 
+    def unload(self):
+        logger.info("Good by from hellong!")
+
 
 class Failing(object):
     def __init__(self, app, **kw):
