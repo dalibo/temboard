@@ -166,7 +166,6 @@ class Application(object):
             except Exception:
                 logger.exception("Error while loading %s.", ep)
                 raise UserError("Failed to load %s." % (ep.name,))
-            break
         else:
             raise UserError("Missing plugin: %s." % (name,))
 
