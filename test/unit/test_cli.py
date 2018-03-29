@@ -88,20 +88,59 @@ def test_unhandled_error_debug(mocker):
 
 def test_bootstrap(mocker):
     mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
-    mocker.patch('temboardagent.cli.Application.create_plugins', autospec=True)
+    mocker.patch('temboardagent.cli.Application.apply_config', autospec=True)
     mocker.patch('temboardagent.cli.MergedConfiguration')
     from temboardagent.cli import Application, bootstrap
 
     app = Application()
     app.config.temboard.configfile = 'pouet'
-    app.plugins['toto'] = toto = mocker.Mock(name='toto')
     app.bootstrap(args=None, environ={})
 
     assert repr(app)
 
     app = bootstrap(args=None, environ={})
 
-    assert toto.load.called is True
+    assert app.apply_config.called is True
+
+
+def test_apply_config_with_plugins(mocker):
+    mod = 'temboardagent.cli.'
+    mocker.patch(mod + 'Postgres', autospec=True)
+    mocker.patch(mod + 'Application.setup_logging', autospec=True)
+    cp = mocker.patch(mod + 'Application.create_plugins', autospec=True)
+    mocker.patch(mod + 'Application.update_plugins', autospec=True)
+    mocker.patch(mod + 'Application.purge_plugins', autospec=True)
+    from temboardagent.cli import Application
+
+    app = Application()
+    app.config_sources = dict()
+    app.config = mocker.Mock(name='config')
+    app.config.postgresql = dict()
+    cp.return_value = ['plugin']
+
+    app.apply_config()
+
+    assert app.postgres
+    assert app.setup_logging.called is True
+    assert app.update_plugins.called is True
+    assert app.purge_plugins.called is True
+
+
+def test_apply_config_without_plugins(mocker):
+    mod = 'temboardagent.cli.'
+    mocker.patch(mod + 'Postgres', autospec=True)
+    mocker.patch(mod + 'Application.setup_logging', autospec=True)
+    from temboardagent.cli import Application
+
+    app = Application(with_plugins=False)
+    app.config_sources = dict()
+    app.config = mocker.Mock(name='config')
+    app.config.postgresql = dict()
+
+    app.apply_config()
+
+    assert app.postgres
+    assert app.setup_logging.called is True
 
 
 def test_application_specs():
@@ -142,7 +181,7 @@ def test_read_file(mocker):
 
 def test_reload(mocker):
     mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
-    mocker.patch('temboardagent.cli.load_legacy_plugins', autospec=True)
+    mocker.patch('temboardagent.cli.Application.apply_config', autospec=True)
 
     from temboardagent.cli import Application
 
@@ -206,6 +245,34 @@ def test_create_plugins(mocker):
     assert 'legacy' in app.config.plugins
     assert 'ng' in app.plugins
     assert 'ng' not in app.config.plugins
+
+
+def test_update_plugins(mocker):
+    from temboardagent.cli import Application
+
+    app = Application()
+
+    unloadme = mocker.Mock(name='unloadme')
+    old_plugins = dict(unloadme=unloadme)
+
+    loadme = mocker.Mock(name='loadme')
+    app.plugins = dict(loadme=loadme)
+
+    app.update_plugins(old_plugins=old_plugins)
+
+    assert loadme.load.called is True
+    assert unloadme.unload.called is True
+
+
+def test_purge_plugins():
+    from temboardagent.cli import Application, MergedConfiguration
+
+    app = Application()
+    app.plugins = dict(destroyme=1, keepme=1)
+    app.config = MergedConfiguration()
+    app.config.update(dict(temboard=dict(plugins=['keepme'])))
+    app.purge_plugins()
+    assert 'destroyme' not in app.plugins
 
 
 def test_debug_arg():

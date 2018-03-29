@@ -84,30 +84,34 @@ class Application(object):
         parser = configparser.RawConfigParser()
         configfile = config.temboard.configfile
         self.read_file(parser, configfile)
-
-        # Add core options for analyze : logging, plugins and postgresql.
-        config.add_specs(self.core_specs())
         self.config_sources.update(dict(
             parser=parser, pwd=os.path.dirname(configfile)
         ))
-        config.load(**self.config_sources)
 
-        # Apply logging setup from file
+        # Stage 3: Add core and app specific options, load them and apply.
+        config.add_specs(self.core_specs())
+        config.add_specs(self.specs)
+        config.load(**self.config_sources)
+        self.apply_config()
+
+        return self.config
+
+    def apply_config(self):
+        # Once config is loaded or reloaded, update application state to match
+        # new configuration.
+
         self.setup_logging()
         self.postgres = Postgres(**self.config.postgresql)
 
-        # Stage 4: load plugins and read all options
-        if self.with_plugins:
-            self.create_plugins()
-        config.add_specs(self.specs)
-        config.load(**self.config_sources)
+        if not self.with_plugins:
+            return
 
-        if self.with_plugins:
-            for name, plugin in self.plugins.items():
-                plugin.load()
-                logger.info("Loaded plugin %s.", name)
-
-        return self.config
+        old_plugins = self.purge_plugins()
+        new_plugins = self.create_plugins()
+        if new_plugins:
+            logger.debug("Reading new plugins configuration.")
+            self.config.load(**self.config_sources)
+        self.update_plugins(old_plugins=old_plugins)
 
     def bootstrap_specs(self):
         # Generate options specs required for bootstrap from args and environ:
@@ -157,6 +161,14 @@ class Application(object):
         yield OptionSpec(s, 'password')
         yield OptionSpec(s, 'dbname', default='postgres')
 
+    def read_file(self, parser, filename):
+        logger.info('Reading %s.', filename)
+        try:
+            with open(filename, 'ro') as fp:
+                parser.readfp(fp)
+        except IOError as e:
+            raise UserError(str(e))
+
     def fetch_plugin(self, name):
         logger.debug("Looking for plugin %s.", name)
         for ep in iter_entry_points(self.with_plugins, name):
@@ -171,40 +183,59 @@ class Application(object):
 
     def create_plugins(self):
         self.config.plugins = load_legacy_plugins(self.config)
-        unloaded_names = filter(
+
+        # Filter legacy plugins
+        ng_plugins = filter(
             lambda name: name not in self.config.plugins,
             self.config.temboard.plugins
         )
+        # Filter already loaded plugins
+        unloaded_names = [
+            n for n in ng_plugins
+            if n not in self.plugins
+        ]
 
-        self.plugins = {}
         for name in unloaded_names:
             cls = self.fetch_plugin(name)
             plugin = cls(self)
             self.plugins[name] = plugin
             self.config.plugins.pop(name, None)
 
-    def read_file(self, parser, filename):
-        logger.info('Reading %s.', filename)
-        try:
-            with open(filename, 'ro') as fp:
-                parser.readfp(fp)
-        except IOError as e:
-            raise UserError(str(e))
+        return unloaded_names
+
+    def update_plugins(self, old_plugins=None):
+        # Load and unload plugins
+        old_names = set(old_plugins or [])
+        new_names = set(self.plugins)
+
+        to_unload = old_names - new_names
+        for name in to_unload:
+            logger.info("Unloading plugin %s.", name)
+            old_plugins[name].unload()
+
+        to_load = new_names - old_names
+        for name in to_load:
+            logger.info("Loading plugin %s.", name)
+            self.plugins[name].load()
+
+    def purge_plugins(self):
+        old_plugins = self.plugins.copy()
+        for name in self.plugins.keys():
+            if name in self.config.temboard.plugins:
+                continue
+            del self.plugins[name]
+        return old_plugins
 
     def reload(self):
-        # Reread configuration.
-
-        # Preserve plugins until we have plugin hotload/unload
-        old_plugins = self.config.temboard.plugins
+        logger.warn("Reloading configuration.")
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
         self.read_file(parser, self.config.temboard.configfile)
         self.config.load(reload_=True, **self.config_sources)
 
-        self.config.temboard.plugins = old_plugins
-        # Now reload legacy plugins configurations
-        self.config.plugins = load_legacy_plugins(self.config)
+        self.apply_config()
+        logger.info("Configuration reloaded.")
         return self
 
     def setup_logging(self):
