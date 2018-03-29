@@ -244,7 +244,7 @@ def hello_task_manager_bootstrap(context):
         worker_name=say_hello_worker.__name__,
         id=say_hello_worker.__name__,
         options={'pickled_app': pickle(APP)},
-        redo_interval=5,
+        redo_interval=APP.config.hello.background_worker_interval,
     )
 
 
@@ -253,8 +253,12 @@ class Hello(object):
 
     def __init__(self, app, **kw):
         self.app = app
+        s = 'hello'
         self.app.config.add_specs([
-            OptionSpec('hello', 'name', default='World')])
+            OptionSpec(s, 'name', default='World'),
+            OptionSpec(
+                s, 'background_worker_interval', default=10, validator=int),
+        ])
 
     def load(self):
         global APP
