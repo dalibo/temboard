@@ -366,7 +366,8 @@ $(function() {
     }
   );
 
-  window.setInterval(refreshDashboard, 2000);
+  var refreshInterval = config.scheduler_interval * 1000;
+  window.setInterval(refreshDashboard, refreshInterval);
   refreshDashboard();
 });
 
