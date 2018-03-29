@@ -14,3 +14,6 @@ upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
 	python2 setup.py sdist bdist_wheel upload -r pypi
+
+shell:
+	docker-compose exec agent bash

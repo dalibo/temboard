@@ -28,6 +28,9 @@ Goto https://0.0.0.0:8888/ to add your instance with address ``agent``, port
 
 That's it !
 
+The ``make shell`` target is a shorthand to ``docker-compose exec agent bash``
+if you prefer.
+
 
 Editing Documentation
 =====================
