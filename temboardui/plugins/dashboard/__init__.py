@@ -6,6 +6,7 @@ from temboardui.handlers.base import JsonHandler, BaseHandler
 from temboardui.temboardclient import (
     TemboardError,
     temboard_dashboard,
+    temboard_dashboard_config,
     temboard_dashboard_history,
     temboard_dashboard_live,
     temboard_profile,
@@ -78,6 +79,21 @@ class DashboardHandler(BaseHandler):
                                                 xsession)
                 agent_username = data_profile['username']
 
+            try:
+                config = temboard_dashboard_config(
+                    self.ssl_ca_cert_file, instance.agent_address,
+                    instance.agent_port, xsession)
+            except TemboardError as e:
+                # Agent may not be able to send config (old agent)
+                # Use a default one
+                if e.code == 404:
+                    config = {
+                        'history_length': 150,
+                        'scheduler_interval': 2
+                    }
+                else:
+                    raise e
+
             dashboard_history = temboard_dashboard_history(
                 self.ssl_ca_cert_file, instance.agent_address,
                 instance.agent_port, xsession)
@@ -103,6 +119,7 @@ class DashboardHandler(BaseHandler):
                     'instance': instance,
                     'plugin': 'dashboard',
                     'dashboard': last_data,
+                    'config': json.dumps(config),
                     'history': history,
                     'buffers_delta': 0,
                     'readratio': (100 - last_data['hitratio']),
