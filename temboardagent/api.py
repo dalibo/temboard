@@ -44,60 +44,6 @@ def check_sessionid(http_header, sessions):
 
 @add_route('POST', '/login')
 def login(http_context, config=None, sessions=None):
-    """
-User login
-
-**Example request**:
-
-.. sourcecode:: http
-
-    POST /login HTTP/1.1
-    Content-Type: application/json
-
-    {
-        "username": "alice",
-        "password": "foo!!"
-    }
-
-**Example response**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 200 OK
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:19:48 GMT
-    Content-type: application/json
-
-    {"session": "fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63"}
-
-:reqheader Content-Type: ``application/json``
-:statuscode 200: no error
-:statuscode 404: invalid username or password
-:statuscode 500: internal error
-:statuscode 406: username or password malformed or missing
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 404 Not Found
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:20:33 GMT
-    Content-type: application/json
-
-    {"error": "Invalid username/password."}
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:21:01 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'password' is malformed."}
-
-
-    """  # noqa
     post = http_context['post']
     # Add an unconditional sleeping time to reduce brute-force risks
     time.sleep(1)
@@ -141,57 +87,6 @@ User login
 
 @add_route('GET', '/logout')
 def logout(http_context, config=None, sessions=None):
-    """
-User logout
-
-**Example request**:
-
-.. sourcecode:: http
-
-    GET /logout HTTP/1.1
-    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
-
-
-**Example response**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 200 OK
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:33:19 GMT
-    Content-type: application/json
-
-    {"logout": true}
-
-:reqheader X-Session: Session ID
-:statuscode 200: no error
-:statuscode 401: invalid session ID
-:statuscode 500: internal error
-:statuscode 406: session ID malformed
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:36:33 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:37:23 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
-
-
-    """  # noqa
     headers = http_context['headers']
     logger.info("Removing session: %s" % (headers['X-Session']))
     try:
@@ -218,40 +113,6 @@ User logout
 
 @add_route('GET', '/discover')
 def get_discover(http_context, config=None, sessions=None):
-    """
-Get global informations about the environment
-
-**Example request**:
-
-.. sourcecode:: http
-
-    GET /discover HTTP/1.1
-
-
-**Example response**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 200 OK
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:33:19 GMT
-    Content-type: application/json
-
-    {
-        "hostname": "neptune",
-        "pg_data": "/var/lib/postgresql/9.4/main",
-        "pg_port": 5432,
-        "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity"],
-        "memory_size": 8241508352,
-        "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
-        "cpu": 4
-    }
-
-:statuscode 200: no error
-:statuscode 500: internal error
-
-
-    """  # noqa
     conn = connector(
         host=config.postgresql['host'],
         port=config.postgresql['port'],
@@ -293,59 +154,6 @@ Get global informations about the environment
 
 @add_route('GET', '/profile')
 def profile(http_context, config=None, sessions=None):
-    """
-Get current username
-
-**Example request**:
-
-.. sourcecode:: http
-
-    GET /profile HTTP/1.1
-    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
-
-
-**Example response**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 200 OK
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:33:19 GMT
-    Content-type: application/json
-
-    {
-        "username": "alice"
-    }
-
-:reqheader X-Session: Session ID
-:statuscode 200: no error
-:statuscode 401: invalid session ID
-:statuscode 500: internal error
-:statuscode 406: session ID malformed
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:36:33 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:37:23 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
-
-
-    """  # noqa
     headers = http_context['headers']
     logger.info("Get user profile.")
     try:
@@ -367,66 +175,6 @@ Get current username
 
 @add_route('GET', '/notifications')
 def notifications(http_context, config=None, sessions=None):
-    """
-Get all notifications from the agent.
-
-**Example request**:
-
-.. sourcecode:: http
-
-    GET /notifications HTTP/1.1
-    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
-
-
-**Example response**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 200 OK
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:33:19 GMT
-    Content-type: application/json
-
-    [
-        {"date": "2016-04-11T16:12:38", "username": "alice", "message": "Login"},
-        {"date": "2016-04-11T16:02:03", "username": "alice", "message": "Login"},
-        {"date": "2016-04-11T15:51:15", "username": "alice", "message": "HBA file version '2016-04-11T15:32:53' removed."},
-        {"date": "2016-04-11T15:51:10", "username": "alice", "message": "HBA file version '2016-04-11T15:47:26' removed."},
-        {"date": "2016-04-11T15:51:04", "username": "alice", "message": "HBA file version '2016-04-11T15:48:50' removed."},
-        {"date": "2016-04-11T15:50:57", "username": "alice", "message": "PostgreSQL reload"},
-        {"date": "2016-04-11T15:50:57", "username": "alice", "message": "HBA file updated"},
-        {"date": "2016-04-11T15:48:50", "username": "alice", "message": "PostgreSQL reload"}
-    ]
-
-:reqheader X-Session: Session ID
-:statuscode 200: no error
-:statuscode 401: invalid session ID
-:statuscode 500: internal error
-:statuscode 406: session ID malformed
-
-**Error responses**:
-
-.. sourcecode:: http
-
-    HTTP/1.0 401 Unauthorized
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:36:33 GMT
-    Content-type: application/json
-
-    {"error": "Invalid session."}
-
-
-.. sourcecode:: http
-
-    HTTP/1.0 406 Not Acceptable
-    Server: temboard-agent/0.0.1 Python/2.7.8
-    Date: Wed, 22 Apr 2015 12:37:23 GMT
-    Content-type: application/json
-
-    {"error": "Parameter 'X-Session' is malformed."}
-
-
-    """  # noqa
     headers = http_context['headers']
     logger.info("Get notifications.")
     try:
