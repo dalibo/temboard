@@ -19,8 +19,6 @@
 import os
 import sys
 
-sys.path.insert(0, '../temboardagent/plugins')
-sys.path.insert(0, '../temboardagent')
 sys.path.insert(0, '..')
 sys.path.insert(0, '.')
 
@@ -36,7 +34,7 @@ from setup import SETUP_KWARGS  # flake8: noqa
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.httpdomain', 'temboardapi']
+extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.httpdomain']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

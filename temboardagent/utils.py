@@ -1,4 +1,7 @@
-from UserDict import UserDict
+try:
+    from UserDict import UserDict
+except ImportError:
+    from collections import UserDict
 
 
 _UNDEFINED = object()

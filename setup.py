@@ -3,7 +3,7 @@ import os
 
 # Load version number
 setup_path = os.path.dirname(os.path.realpath(__file__))
-execfile(os.path.join(setup_path,'temboardagent','version.py'))
+exec(open(os.path.join(setup_path,'temboardagent','version.py'), 'r').read())
 
 SETUP_KWARGS = dict(
     name='temboard-agent',
