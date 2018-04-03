@@ -1,4 +1,4 @@
-import logging.config
+import logging
 
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -9,14 +9,17 @@ except ImportError:
     from SocketServer import ThreadingMixIn
     from urlparse import urlparse, parse_qs
 import json
+import os
 import sys
 from urllib import unquote_plus
+import signal
 import ssl
 
 from temboardagent.routing import get_routes
-from temboardagent.errors import HTTPError, ConfigurationError
-from temboardagent.daemon import set_global_reload, reload_true
+from temboardagent.errors import HTTPError
 from temboardagent import __version__ as temboard_version
+from .sharedmemory import Sessions
+
 
 logger = logging.getLogger(__name__)
 
@@ -189,50 +192,59 @@ class RequestHandler(BaseHTTPRequestHandler):
         raise HTTPError(404, 'URL not found.')
 
 
-def handleRequestsUsing(config, sessions):
-    return lambda *args: RequestHandler(config, sessions, *args)
+class HTTPDService(object):
+    # Manage long running process serving HTTPS API. This include setup, signal
+    # management and loop.
 
+    def __init__(self, app):
+        self.app = app
 
-def httpd_run(app, sessions):
-    """
-    Serve HTTP for ever and reload configuration from the conf file on SIGHUP
-    signal catch.
-    """
-    config = app.config
-    server_address = (config.temboard['address'], config.temboard['port'])
-    handler_class = handleRequestsUsing(config, sessions)
-    httpd = ThreadedHTTPServer(server_address, handler_class)
-    httpd.socket = ssl.wrap_socket(httpd.socket,
-                                   keyfile=config.temboard['ssl_key_file'],
-                                   certfile=config.temboard['ssl_cert_file'],
-                                   server_side=True)
-    # We need a timeout here because the code after httpd.handle_request() call
-    # is written to handle configuration re-loading and needs to be run
-    # periodicaly.
-    httpd.timeout = 1
-    while True:
-        httpd.handle_request()
-        if reload_true():
-            # SIGHUP caught
-            # Try to load configuration from the configuration file.
-            try:
-                logger.info("SIGHUP signal caught, trying to reload "
-                            "configuration.")
-                app.reload()
-            except (ConfigurationError, ImportError) as e:
-                logger.exception(str(e))
-                logger.info("Keeping previous configuration.")
-                app.setup_logging()
-            else:
-                app.setup_logging()
+    def __enter__(self):
+        signal.signal(signal.SIGHUP, self.sighup_handler)
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
+        self.sighup = False
 
-                # New RequestHandler using the new configuration.
-                httpd.RequestHandlerClass = handleRequestsUsing(config,
-                                                                sessions)
-                logger.info("Done.")
+    def __exit__(self, *a):
+        signal.signal(signal.SIGHUP, signal.SIG_DFL)
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
-            # Reset the global var indicating a SIGHUP signal.
-            set_global_reload(False)
+    def sighup_handler(self, *a):
+        self.sighup = True
 
-        # Purge expired sessions if any.
-        sessions.purge_expired(3600, logger, config)
+    def sigterm_handler(self, *a):
+        os._exit(1)
+
+    def run(self):
+        self.setup()
+        self.serve()
+
+    def serve(self):
+        with self:
+            while True:
+                if self.sighup:
+                    self.sighup = False
+                    self.reload()
+                self.serve1()
+
+    def reload(self):
+        self.app.reload()
+
+    def setup(self):
+        self.sessions = Sessions(size=100)
+        self.httpd = ThreadedHTTPServer(
+            (self.app.config.temboard.address, self.app.config.temboard.port),
+            self.handle_request)
+        self.httpd.socket = ssl.wrap_socket(
+            self.httpd.socket,
+            keyfile=self.app.config.temboard.ssl_key_file,
+            certfile=self.app.config.temboard.ssl_cert_file,
+            server_side=True,
+        )
+        self.httpd.timeout = 1
+
+    def serve1(self):
+        self.httpd.handle_request()
+        self.sessions.purge_expired(3600, logger, self.app.config)
+
+    def handle_request(self, *args):
+        return RequestHandler(self.app.config, self.sessions, *args)

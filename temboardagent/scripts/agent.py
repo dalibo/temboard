@@ -4,20 +4,14 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
 import logging
 import os
-import signal
 
 from ..scheduler import taskmanager
 
 from ..cli import bootstrap
 from ..cli import cli, define_core_arguments
-from ..sharedmemory import Sessions
 from ..configuration import OptionSpec
-from ..daemon import (
-    daemonize,
-    httpd_sigterm_handler,
-    httpd_sighup_handler,
-)
-from ..httpd import httpd_run
+from ..daemon import daemonize
+from ..httpd import HTTPDService
 from ..queue import purge_queue_dir
 from .. import validators as v
 
@@ -90,9 +84,6 @@ def main(argv, environ):
                     ['metrics.q', 'notifications.q', 'notifications_last_10.q']
                     )
 
-    # Creation of the session list (max 100).
-    sessions = Sessions(100)
-
     # TaskManager
     # Remove socket if any
     tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
@@ -111,12 +102,8 @@ def main(argv, environ):
                               'logging': config.logging.__dict__.get('data')})
     tm.start()
 
-    # Add signal handlers on SIGTERM and SIGHUP.
-    signal.signal(signal.SIGTERM, httpd_sigterm_handler)
-    signal.signal(signal.SIGHUP, httpd_sighup_handler)
-
-    # Serve HTTPS forever.
-    httpd_run(app, sessions)
+    httpd = HTTPDService(app)
+    httpd.run()
 
     return 0
 
