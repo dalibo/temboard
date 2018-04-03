@@ -69,6 +69,9 @@ def instance_info(conninfo, hostname):
         # hot standby is available from 9.0
         instance_info['standby'] = pginfo.is_in_recovery()
 
+        # max_connections
+        instance_info['max_connections'] = pginfo.setting('max_connections')
+
         # Grab the list of tablespaces
         instance_info['tablespaces'] = pginfo.tablespaces(
             instance_info['data_directory'])
