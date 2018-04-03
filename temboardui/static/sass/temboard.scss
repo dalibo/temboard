@@ -2,6 +2,7 @@
 @import "daterangepicker-override";
 @import "daterangepicker";
 @import "dygraph";
+@import "../js/highlightjs/default";
 
 html {
   font-size: 14px;
@@ -220,46 +221,78 @@ select.form-control {
   }
 }
 
-.table-activity {
-  font-size: 11px;
-
-  tr th {
-    &.xs {
-      width: 20px;
+table.dataTable thead {
+  .sorting,
+  .sorting_asc,
+  .sorting_desc {
+    &::before,
+    &::after {
+      float: right;
+      font-family: fontawesome;
+      right: 0 !important;
+      content: '';
     }
+  }
+  .sorting_asc::before {
+    content: "\f0de";
+  }
+  .sorting_desc::after {
+    content: "\f0dd";
+  }
+  .sorting::after {
+    content: "\f0dc";
+  }
+}
 
-    &.sm {
-      width: 35px;
-    }
 
-    &.med {
-      width: 70px;
-    }
 
-    &.lg {
-      width: 110px;
+table.table-activity {
+  border-collapse: collapse !important;
+
+  &.table-sm th {
+    padding-right: 10px !important;
+    &.sorting_disabled {
+      padding-right: $table-cell-padding-sm !important;
     }
   }
 
-
-  & > tbody > tr {
-    & > td,
-    & > th {
-      padding: 1px;
-      vertical-align: middle;
-    }
+  td, th {
+    white-space: nowrap;
   }
 
-  & > tbody > tr > th {
-    text-align: center;
+  th.query {
+    width: 50%; /* query should be the widest column */
   }
 
-  .input-xs {
-    margin: 5px 0px 0px 0px;
+  pre, code {
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .hljs {
+    background: none;
+    white-space: nowrap;
   }
 
   td.query {
-    color:#337AB7;
+    max-width: 0;
+    overflow: hidden;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+}
+
+.popover.sql {
+  max-width: 500px;
+
+  pre {
+    margin: 0;
+
+    code {
+      white-space: pre-wrap;
+    }
   }
 }
 

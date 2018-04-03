@@ -98,6 +98,7 @@ class ActivityHandler(BaseHandler):
                     'instance': instance,
                     'plugin': 'activity',
                     'activities': activity_data,
+                    'mode': 'running',
                     'xsession': xsession,
                     'agent_username': agent_username,
                 })
@@ -190,7 +191,7 @@ class ActivityWBHandler(BaseHandler):
             return HTMLAsyncResult(
                 http_code=200,
                 template_path=self.template_path,
-                template_file='activity_w_b.html',
+                template_file='activity.html',
                 data={
                     'nav': True,
                     'role': role,
