@@ -19,7 +19,7 @@ def test_options_specs():
 def test_big_main(mocker):
     mocker.patch('temboardagent.scripts.agent.bootstrap')
     mocker.patch('temboardagent.scripts.agent.daemonize')
-    mocker.patch('temboardagent.scripts.agent.httpd_run')
+    mocker.patch('temboardagent.scripts.agent.HTTPDService')
     mocker.patch('temboardagent.scripts.agent.purge_queue_dir')
     mocker.patch('temboardagent.scripts.agent.taskmanager.TaskManager')
 

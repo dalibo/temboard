@@ -1,38 +1,10 @@
 import sys
 import os
 import atexit
-import signal
-import time
 
 # Some global vars we need to have because signal handler function can't take
 # extra parameters.
 PIDFILE = None
-RELOAD = False
-
-
-def set_global_reload(value):
-    global RELOAD
-    RELOAD = value
-
-
-def reload_true():
-    return RELOAD
-
-
-def httpd_sighup_handler(signum, frame):
-    """
-    SIGHUP handler for httpd process.
-    """
-    set_global_reload(True)
-
-
-def httpd_sigterm_handler(signum, frame):
-    """
-    SIGTERM signal handler for httpd process.
-    """
-    # Exit roughly with os._exit() because httpd is multi-threaded and
-    # sys.exit() does not work in this context.
-    os._exit(1)
 
 
 def remove_pidfile(pidfile):
