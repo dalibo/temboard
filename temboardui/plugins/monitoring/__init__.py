@@ -13,10 +13,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.schema import (
     MetaData,
 )
+from sqlalchemy.orm.exc import NoResultFound
 from temboardui.scheduler import taskmanager
 
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.plugins.monitoring.model.orm import (
+    Check,
+    CheckState,
     Host,
     Instance,
 )
@@ -42,6 +45,10 @@ from temboardui.plugins.monitoring.chartdata import (
     get_wal_files_rate,
     get_wal_files_size,
     get_written_buffers,
+)
+from temboardui.plugins.monitoring.alerting import (
+    bootstrap_checks,
+    check_specs,
 )
 from temboardui.async import (
     run_background,
@@ -603,6 +610,33 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
             session.connection().connection.rollback()
 
 
+def get_host_checks(session, host_id):
+    # Returns enabled alerting checks as list of tuples:
+    # (name, warning threshold, critical threshold)
+    checks = session.query(Check).filter(Check.host_id == host_id)
+    return [(c.name, c.threshold_w, c.threshold_c)
+            for c in checks if c.enabled]
+
+
+def populate_host_checks(session, host_id, instance_id, hostinfo):
+    # Populate checks table with bootstraped checks if needed
+    q = session.query(Check)
+    n = q.filter(Check.host_id == host_id).count()
+    if n != 0:
+        return
+    specs = check_specs
+    for bc in bootstrap_checks(hostinfo):
+        c = Check(host_id=host_id,
+                  instance_id=instance_id,
+                  name=bc[0],
+                  enabled=True,
+                  threshold_w=bc[1],
+                  threshold_c=bc[2],
+                  description=specs.get(bc[0]).get('description'))
+        session.add(c)
+    session.commit()
+
+
 class MonitoringCollectorHandler(JsonHandler):
 
     @property
@@ -610,6 +644,7 @@ class MonitoringCollectorHandler(JsonHandler):
         return self.application.engine
 
     def push_data(self,):
+        config = self.application.config
         key = self.request.headers.get('X-Key')
         if not key:
             return JSONAsyncResult(http_code=401,
@@ -654,8 +689,55 @@ class MonitoringCollectorHandler(JsonHandler):
                 thread_session, host, data['data'], self.logger,
                 data['hostinfo']['hostname'], data['instances'][0]['port'])
 
-            # Close the session
+            # Alerting part
+            host_id = get_host_id(thread_session, data['hostinfo']['hostname'])
+            instance_id = get_instance_id(thread_session, host_id,
+                                          data['instances'][0]['port'])
+            # Populate host checks if needed
+            populate_host_checks(thread_session, host_id, instance_id,
+                                 dict(n_cpu=data['hostinfo']['cpu_count']))
+            # Getting checks for this host/instance
+            enabled_checks = get_host_checks(thread_session, host_id)
             thread_session.close()
+
+            # Add max_connections value to data
+            data['data']['max_connections'] = \
+                data['instances'][0]['max_connections']
+
+            task_options = dict(dbconf=config.repository,
+                                host_id=host_id,
+                                instance_id=instance_id,
+                                data=list())
+            specs = check_specs
+            # Populate data with preprocessed values
+            for check in enabled_checks:
+                spec = specs.get(check[0])
+                if not spec:
+                    continue
+
+                try:
+                    v = spec.get('preprocess')(data['data'])
+                except Exception as e:
+                    logger.exception(e)
+                    logger.warn("Not able to preprocess '%s' data." % check[0])
+                    continue
+
+                v = {'': v} if not type(v) is dict else v
+                for key, val in v.items():
+                    task_options['data'].append(dict(
+                        name=check[0],
+                        key=key,
+                        value=val,
+                        warning=check[1],
+                        critical=check[2]))
+
+            # Create new task for checking preprocessed values
+            taskmanager.schedule_task(
+                'check_data_worker',
+                options=task_options,
+                listener_addr=config.temboard['tm_sock_path'],
+            )
+
             return JSONAsyncResult(http_code=200, data={'done': True})
         except IntegrityError as e:
             self.logger.exception(str(e))
@@ -967,6 +1049,66 @@ def history_tables_worker(config):
         except Exception:
             pass
         raise(e)
+
+
+@taskmanager.worker(pool_size=10)
+def check_data_worker(dbconf, host_id, instance_id, data):
+    # Worker in charge of checking preprocessed monitoring values
+    specs = check_specs
+    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
+                user=dbconf['user'],
+                pwd=dbconf['password'],
+                h=dbconf['host'],
+                p=dbconf['port'],
+                db=dbconf['dbname']
+            )
+    engine = create_engine(dburi)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    worker_session = Session()
+    for raw in data:
+        name = raw.get('name')
+        key = raw.get('key')
+        value = raw.get('value')
+        warning = raw.get('warning')
+        critical = raw.get('critical')
+
+        spec = specs.get(name)
+        state = 'UNDEF'
+        if not spec:
+            continue
+        if not (spec.get('operator')(value, warning)
+                or spec.get('operator')(value, critical)):
+            state = 'OK'
+        if spec.get('operator')(value, warning):
+            state = 'WARNING'
+        if spec.get('operator')(value, critical):
+            state = 'CRITICAL'
+
+        try:
+            c = worker_session.query(Check).filter(
+                    Check.name == unicode(name),
+                    Check.host_id == host_id,
+                    Check.instance_id == instance_id,
+                    Check.enabled == bool(True),
+                ).one()
+        except NoResultFound:
+            continue
+
+        try:
+            cs = worker_session.query(CheckState).filter(
+                    CheckState.check_id == c.check_id,
+                    CheckState.key == unicode(key)
+                ).one()
+            cs.state = unicode(state)
+            worker_session.merge(cs)
+            worker_session.commit()
+        except NoResultFound:
+            cs = CheckState(check_id=c.check_id, key=unicode(key),
+                            state=unicode(state))
+            worker_session.add(cs)
+            worker_session.commit()
+        worker_session.close()
 
 
 @taskmanager.bootstrap()
