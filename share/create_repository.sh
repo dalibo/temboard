@@ -18,6 +18,7 @@ if ! psql -c "SELECT 'INSTALLED' FROM pg_catalog.pg_class WHERE relname = 'insta
     psql="psql -aw --set ON_ERROR_STOP=on"
     $psql -f $SQLDIR/application.sql
     $psql -f $SQLDIR/monitoring.sql
+    $psql -f $SQLDIR/alerting.sql
     if [ -n "${DEV-}" ] ; then
         $psql -f $SQLDIR/dev-fixture.sql
     fi
