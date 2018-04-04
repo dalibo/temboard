@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import ctypes
 import logging
 import sys
@@ -105,13 +107,14 @@ def get_argv_memory():
     fix_argv(argl)
 
     address = argv.contents
-    # Compute memory segment size
+    # Compute memory segment size, including all NULLs.
     size = sum(len(arg) for arg in argl) + argc.value
 
     return address, size
 
 
 def setproctitle(title):
+    # cf. https://chromium.googlesource.com/infra/infra/+/69eb0279c12bcede5937ce9298020dd4581e38dd%5E!/
     address, size = get_argv_memory()
     logger.debug("argv is at %#x, len=%d.", ctypes.addressof(address), size)
     title = title.encode('utf-8')
