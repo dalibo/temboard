@@ -113,9 +113,9 @@ def get_argv_memory():
 
 def setproctitle(title):
     address, size = get_argv_memory()
-    logger.debug("argv is at %s, len=%d.", address, size)
-    # Truncate title and put \0 at end of string
+    logger.debug("argv is at %#x, len=%d.", ctypes.addressof(address), size)
     title = title.encode('utf-8')
+    # Truncate title to fit in argv memory segment.
     title = title[:size - 1]
     # Overwrite argv segment with proc title
     libc.memcpy(address, title, size)
