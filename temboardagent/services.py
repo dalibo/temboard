@@ -2,6 +2,8 @@ import logging
 import os
 import signal
 
+from .utils import setproctitle
+
 
 logger = logging.getLogger(__name__)
 
@@ -10,8 +12,9 @@ class Service(object):
     # Manage long running process. This include setup, signal management and
     # loop.
 
-    def __init__(self, app):
+    def __init__(self, app, name=None):
         self.app = app
+        self.name = name
 
     def __enter__(self):
         signal.signal(signal.SIGHUP, self.sighup_handler)
@@ -29,6 +32,9 @@ class Service(object):
         os._exit(1)
 
     def run(self):
+        if self.name:
+            setproctitle('temboard-agent: %s' % self.name)
+
         self.setup()
         self.serve()
 
