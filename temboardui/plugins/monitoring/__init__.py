@@ -88,6 +88,8 @@ def get_routes(config):
          MonitoringDataProbeHandler, handler_conf),
         (r"/js/monitoring/(.*)", tornado.web.StaticFileHandler,
          {'path': plugin_path + "/static/js"}),
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/checks",
+         MonitoringJSONChecksHandler, handler_conf),
     ]
     return routes
 
@@ -986,6 +988,66 @@ class MonitoringHTMLHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
         run_background(self.get_index, self.async_callback,
+                       (agent_address, agent_port))
+
+
+class MonitoringJSONChecksHandler(JsonHandler):
+
+    def get_checks(self, agent_address, agent_port):
+        try:
+            data = list()
+            instance = None
+            role = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise TemboardUIError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise TemboardUIError(404, "Instance not found.")
+            if __name__ not in [plugin.plugin_name for plugin
+                                in instance.plugins]:
+                raise TemboardUIError(408, "Plugin not active.")
+
+            # Find host_id & instance_id
+            host_id = get_host_id(self.db_session, instance.hostname)
+            instance_id = get_instance_id(self.db_session, host_id,
+                                          instance.pg_port)
+            query = self.db_session.query(
+                        Check.name, CheckState.key, CheckState.state
+                    ).filter(
+                        Check.host_id == host_id,
+                        Check.instance_id == instance_id,
+                        Check.check_id == CheckState.check_id
+                    ).order_by(
+                        Check.name,
+                        CheckState.key
+                    )
+            data = [{'name': r.name, 'key': r.key, 'state': r.state}
+                    for r in query]
+            self.db_session.close()
+            return JSONAsyncResult(http_code=200, data=data)
+
+        except (TemboardUIError, Exception) as e:
+            self.logger.exception(e)
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, TemboardUIError)):
+                return JSONAsyncResult(http_code=e.code,
+                                       data={'error': e.message})
+            else:
+                return JSONAsyncResult(http_code=500,
+                                       data={'error': e.message})
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port):
+        run_background(self.get_checks, self.async_callback,
                        (agent_address, agent_port))
 
 
