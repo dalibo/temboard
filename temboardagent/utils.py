@@ -1,8 +1,14 @@
+import ctypes
+import logging
+import sys
+
 try:
     from UserDict import UserDict
 except ImportError:
     from collections import UserDict
 
+
+logger = logging.getLogger(__name__)
 
 _UNDEFINED = object()
 
@@ -49,3 +55,67 @@ class DotDict(UserDict):
 
     def __iter__(self):
         return iter(self.keys())
+
+
+libc = ctypes.CDLL('libc.so.6')
+
+
+def compute_main_module_name(mod):
+    # Fix __main__ module to find it's importable name
+
+    if mod.__name__ == '__main__':
+        dir_, file_ = mod.__file__.rsplit('/', 1)
+        name = file_.replace('.py', '')
+    else:
+        name = mod.__name__
+
+    return mod.__package__ + '.' + name
+
+
+def fix_argv(argv):
+    # Clean '-c' added by CPython.
+    try:
+        argv.remove('-c')
+    except ValueError:
+        pass
+
+    # Search for -m and readd modname
+    try:
+        m_ind = argv.index('-m')
+    except ValueError:
+        pass
+    else:
+        modname = compute_main_module_name(sys.modules['__main__'])
+        argv.insert(m_ind + 1, modname)
+
+
+def get_argv_memory():
+    """ Return pointer and size of argv memory segment. """
+    # This implemententation works only on Python2. cf.
+    # http://docs.cherrypy.org/en/latest/_modules/cherrypy/process/wspbus.html
+
+    # Allocate variable to point to argv
+    argv = ctypes.POINTER(ctypes.c_char_p)()
+    argc = ctypes.c_int()
+
+    # Get them from CPython API.
+    ctypes.pythonapi.Py_GetArgcArgv(ctypes.byref(argc), ctypes.byref(argv))
+
+    argl = [argv[i] for i in range(argc.value)]
+    fix_argv(argl)
+
+    address = argv.contents
+    # Compute memory segment size
+    size = sum(len(arg) for arg in argl) + argc.value
+
+    return address, size
+
+
+def setproctitle(title):
+    address, size = get_argv_memory()
+    logger.debug("argv is at %s, len=%d.", address, size)
+    # Truncate title and put \0 at end of string
+    title = title[:size - 1]
+    title += '\0'
+    # Overwrite argv segment with proc title
+    libc.memcpy(address, title, size)

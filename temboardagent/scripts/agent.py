@@ -102,7 +102,7 @@ def main(argv, environ):
                               'logging': config.logging.__dict__.get('data')})
     tm.start()
 
-    httpd = HTTPDService(app)
+    httpd = HTTPDService(app, name='main process')
     httpd.run()
 
     return 0

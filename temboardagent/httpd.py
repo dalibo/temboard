@@ -9,16 +9,15 @@ except ImportError:
     from SocketServer import ThreadingMixIn
     from urlparse import urlparse, parse_qs
 import json
-import os
 import sys
 from urllib import unquote_plus
-import signal
 import ssl
 
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError
 from temboardagent import __version__ as temboard_version
 from .sharedmemory import Sessions
+from .services import Service
 
 
 logger = logging.getLogger(__name__)
@@ -192,43 +191,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         raise HTTPError(404, 'URL not found.')
 
 
-class HTTPDService(object):
-    # Manage long running process serving HTTPS API. This include setup, signal
-    # management and loop.
-
-    def __init__(self, app):
-        self.app = app
-
-    def __enter__(self):
-        signal.signal(signal.SIGHUP, self.sighup_handler)
-        signal.signal(signal.SIGTERM, self.sigterm_handler)
-        self.sighup = False
-
-    def __exit__(self, *a):
-        signal.signal(signal.SIGHUP, signal.SIG_DFL)
-        signal.signal(signal.SIGTERM, signal.SIG_DFL)
-
-    def sighup_handler(self, *a):
-        self.sighup = True
-
-    def sigterm_handler(self, *a):
-        os._exit(1)
-
-    def run(self):
-        self.setup()
-        self.serve()
-
-    def serve(self):
-        with self:
-            while True:
-                if self.sighup:
-                    self.sighup = False
-                    self.reload()
-                self.serve1()
-
-    def reload(self):
-        self.app.reload()
-
+class HTTPDService(Service):
     def setup(self):
         self.sessions = Sessions(size=100)
         self.httpd = ThreadedHTTPServer(
