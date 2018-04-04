@@ -212,6 +212,9 @@ def main():
         cookie_secret=config.temboard['cookie_secret'],
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
+
+    config.temboard['tm_sock_path'] = os.path.join(config.temboard['home'],
+                                                   '.tm.socket')
     application.set_config(config)
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
@@ -220,15 +223,14 @@ def main():
                           config.temboard['plugins_orm_engine'])
 
     # Task Manager
-    tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
-    if os.path.exists(tm_sock_path):
+    if os.path.exists(config.temboard['tm_sock_path']):
         # unix socket cleaning
-        os.unlink(tm_sock_path)
+        os.unlink(config.temboard['tm_sock_path'])
 
     tm = taskmanager.TaskManager(
             task_path=str(os.path.join(config.temboard['home'],
                                        '.tm.task_list')),
-            address=str(tm_sock_path)
+            address=str(config.temboard['tm_sock_path'])
          )
     # copy configuration into context as a dict
     tm.set_context(
