@@ -7,8 +7,7 @@ from test.temboard import temboard_request
 from conftest import ENV
 
 # Import spc
-tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..'))
+tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
@@ -21,16 +20,18 @@ XSESSION = ''
 class TestMonitoring:
     def _temboard_login(self):
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
-                headers={"Content-type": "application/json"},
-                data={
-                    'username': ENV['agent']['user'],
-                    'password': ENV['agent']['password']
-                    }
-                )
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/login' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={"Content-type": "application/json"},
+            data={
+                'username': ENV['agent']['user'],
+                'password': ENV['agent']['password']
+            }
+        )
         return json.loads(res)['session']
 
     def test_00_env_pg(self):
@@ -63,9 +64,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/sessions' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -85,9 +86,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/xacts' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -107,9 +108,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/locks' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -129,9 +130,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/blocks' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -151,9 +152,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/bgwriter' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -173,9 +174,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/db_size' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -195,9 +196,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/tblspc_size' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -217,9 +218,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/filesystems_size' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -239,9 +240,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/cpu' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -261,9 +262,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/process' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -283,9 +284,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/memory' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -305,9 +306,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/loadavg' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -327,9 +328,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/wal_files' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -349,9 +350,9 @@ class TestMonitoring:
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
                 url='https://%s:%s/monitoring/probe/replication' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
