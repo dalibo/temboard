@@ -39,4 +39,4 @@ fi
 
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
-TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vs -p no:cacheprovider test/legacy/
+make -C test/legacy pytest

@@ -5,3 +5,7 @@ run:
 
 shell:
 	docker-compose exec test /bin/bash
+
+PYTEST_ARGS?=
+pytest:
+	TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vs -p no:cacheprovider ./ $(PYTEST_ARGS)
