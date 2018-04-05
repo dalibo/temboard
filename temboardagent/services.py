@@ -59,7 +59,8 @@ class Service(object):
         self.sighup = True
 
     def sigterm_handler(self, *a):
-        os._exit(1)
+        logger.info("Terminated.")
+        sys.exit(1)
 
     def run(self):
         if self.name:
