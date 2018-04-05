@@ -97,7 +97,9 @@ def generate_logging_config(
         HANDLERS['stderr']['()'] = __name__ + '.ColoredStreamHandler'
 
     minimal_fmt = '%(levelname)5.5s: %(message)s'
-    verbose_fmt = '%(asctime)s [%(lastname)-16.16s] ' + minimal_fmt
+    verbose_fmt = (
+        '%(asctime)s [%(process)5d] [%(lastname)-16.16s] ' + minimal_fmt
+    )
     syslog_fmt = (
         "temboard-agent[%(process)d]: "
         "[%(lastname)s] %(levelname)s: %(message)s"
