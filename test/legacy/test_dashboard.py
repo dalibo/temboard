@@ -7,8 +7,7 @@ from test.temboard import temboard_request
 from conftest import ENV
 
 # Import spc
-tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..'))
+tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
@@ -21,16 +20,16 @@ XSESSION = ''
 class TestDashboard:
     def _temboard_login(self):
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
-                headers={"Content-type": "application/json"},
-                data={
-                    'username': ENV['agent']['user'],
-                    'password': ENV['agent']['password']
-                    }
-                )
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/login'
+                % (ENV['agent']['host'], ENV['agent']['port']),
+            headers={"Content-type": "application/json"},
+            data={
+                'username': ENV['agent']['user'],
+                'password': ENV['agent']['password']
+            }
+        )
         return json.loads(res)['session']
 
     def test_00_env_pg(self):
@@ -60,17 +59,15 @@ class TestDashboard:
         # Wait 1 second just to be sure dashboard collector ran once
         time.sleep(1)
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard'
+                % (ENV['agent']['host'], ENV['agent']['port']),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
 
         dict_data = json.loads(res)
         assert status == 200 \
@@ -95,17 +92,17 @@ class TestDashboard:
         [dashboard] 02: GET /dashboard/buffers : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/buffers' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/buffers' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
 
         dict_data = json.loads(res)
         assert status == 200 \
@@ -120,17 +117,17 @@ class TestDashboard:
         [dashboard] 03: GET /dashboard/hitratio : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/hitratio' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/hitratio' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
 
         dict_data = json.loads(res)
         assert status == 200 \
@@ -142,17 +139,17 @@ class TestDashboard:
         [dashboard] 04: GET /dashboard/active_backends : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/active_backends' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/active_backends' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
 
         dict_data = json.loads(res)
         assert status == 200 \
@@ -167,17 +164,17 @@ class TestDashboard:
         [dashboard] 05: GET /dashboard/cpu : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/cpu' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/cpu' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
 
         dict_data = json.loads(res)
         assert status == 200 \
@@ -218,17 +215,17 @@ class TestDashboard:
         [dashboard] 06: GET /dashboard/loadaverage : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/loadaverage' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/loadaverage' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -240,17 +237,17 @@ class TestDashboard:
         [dashboard] 07: GET /dashboard/memory : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/memory' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/memory' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -281,17 +278,17 @@ class TestDashboard:
         [dashboard] 08: GET /dashboard/hostname : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/hostname' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/hostname' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -303,17 +300,17 @@ class TestDashboard:
         [dashboard] 09: GET /dashboard/os_version : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/os_version' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/os_version' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -325,17 +322,17 @@ class TestDashboard:
         [dashboard] 10: GET /dashboard/databases : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/databases' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/databases' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -357,17 +354,17 @@ class TestDashboard:
         [dashboard] 11: GET /dashboard/pg_version : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/pg_version' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/pg_version' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -379,40 +376,39 @@ class TestDashboard:
         [dashboard] 12: GET /dashboard/n_cpu : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/n_cpu' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/n_cpu' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
             and 'n_cpu' in dict_data \
             and type(dict_data['n_cpu']) == int
 
-
     def test_13_dashboard_max_connections_ok(self):
         """
         [dashboard] 13: GET /dashboard/max_connections : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/max_connections' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/max_connections' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
@@ -424,17 +420,17 @@ class TestDashboard:
         [dashboard] 14: GET /dashboard/config : HTTP return code is 200 and the data structure is right
         """  # noqa
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/dashboard/config' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
+            ENV['agent']['ssl_cert_file'],
+            method='GET',
+            url='https://%s:%s/dashboard/config' % (
+                ENV['agent']['host'],
+                ENV['agent']['port']
+            ),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            }
+        )
         dict_data = json.loads(res)
 
         assert status == 200 \
