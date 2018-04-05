@@ -179,9 +179,10 @@ def agent_stop(pid_file):
     Stop the agent.
     """
     with open(pid_file, 'r') as fd:
-        pid = fd.read()
+        pid = int(fd.read())
     # Stop it using kill()
-    os.kill(int(pid), signal.SIGTERM)
+    os.kill(pid, signal.SIGTERM)
+    os.waitpid(pid)
 
 
 def agent_write_ssl_files(key_file, key_content, cert_file, cert_content):
