@@ -4,7 +4,8 @@ import os
 import sys
 
 from urllib2 import HTTPError
-from test.temboard import init_env, drop_env, rand_string, temboard_request
+from test.temboard import rand_string, temboard_request
+from conftest import ENV
 
 # Import spc
 tbda_dir = os.path.realpath(
@@ -15,20 +16,8 @@ if tbda_dir not in sys.path:
 
 from temboardagent.spc import connector, error  # noqa
 
-ENV = {}
-
 
 class TestAPI:
-
-    @classmethod
-    def setup_class(cls):
-        global ENV
-        ENV = init_env()
-
-    @classmethod
-    def teardown_class(cls):
-        drop_env(ENV)
-
     def test_00_env_pg(self):
         """
         [api] 00: PostgreSQL instance is up & running

@@ -5,7 +5,8 @@ from multiprocessing import Process
 import time
 
 from urllib2 import HTTPError
-from test.temboard import init_env, drop_env, temboard_request
+from test.temboard import temboard_request
+from conftest import ENV
 
 # Import spc
 tbda_dir = os.path.realpath(
@@ -16,7 +17,6 @@ if tbda_dir not in sys.path:
 
 from temboardagent.spc import connector, error  # noqa
 
-ENV = {}
 XSESSION = ''
 
 
@@ -122,16 +122,6 @@ def update_rows(dbname, tablename):
 
 
 class TestActivity:
-
-    @classmethod
-    def setup_class(cls):
-        global ENV
-        ENV = init_env()
-
-    @classmethod
-    def teardown_class(cls):
-        drop_env(ENV)
-
     def _exec_query(self, dbname, query):
         conn = connector(
             host=ENV['pg']['socket_dir'],
