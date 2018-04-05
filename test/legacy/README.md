@@ -28,6 +28,19 @@ TBD_PGBIN="/path/to/pg/9.6/bin" TBD_WORKPATH="/tmp" pytest -v test/legacy/test_*
 
 You can also run the tests via docker for several versions of Postgres.
 
-```
-make build run
+Choose CentOS version between `centos6` and `centos7` with envvar `TAG`.
+Defaults to `centos7`.
+
+Choose Postgres version from `9.4` to `10` with envvar `POSTGRES_VERSION`.
+Defaults to `10`.
+
+In case of failure, the container wait for you to enter and debug with `make
+shell`
+
+``` console
+$ TAG=centos7 POSTGRES_VERSION=9.5 make run
+…
+$ make shell
+[root@3e8037d18e8b /]# make -C test/legacy pytest PYTEST_ARGS="-x --pdb"
+…
 ```
