@@ -1,5 +1,15 @@
 version: 2
 
+.func-job: &func-job
+  working_directory: /workspace
+  steps:
+  - checkout
+  - attach_workspace:
+      at: /workspace
+  - run:
+      name: Execute the tests
+      command: TBD_INSTALL_RPM=1 test/legacy/run_tests_docker.sh
+
 jobs:
   0-doc:
     docker: [{image: "python:2.7"}]
@@ -79,23 +89,33 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  1-func:
-    machine: true
-    steps:
-    - checkout
-    - run: git submodule update --init --depth=1
-    - attach_workspace:
-        at: ~/project
-    - run:
-        name: Install Docker Compose
-        command: |
-          set -x
-          curl -L https://github.com/docker/compose/releases/download/1.17.1/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
-          sudo chmod +x /usr/local/bin/docker-compose
-    - run:
-        name: Execute the tests
-        command: |
-          TBD_INSTALL_RPM=1 make -C test/legacy build run
+  1-func-centos7-pg10:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-10/bin
+    <<: *func-job
+
+  1-func-centos7-pg96:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-9.6/bin
+    <<: *func-job
+
+  1-func-centos7-pg95:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-9.5/bin
+    <<: *func-job
+
+  1-func-centos6-pg94:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos6
+      environment:
+        TBD_PGBIN: /usr/pgsql-9.4/bin
+    <<: *func-job
 
 
 workflows:
@@ -106,5 +126,11 @@ workflows:
     - 0-rpm-centos6
     - 0-rpm-centos7
     - 0-unit
-    - 1-func:
-        requires: [0-rpm-centos6, 0-rpm-centos7, 0-unit]
+    - 1-func-centos7-pg10:
+        requires: [0-rpm-centos7, 0-unit]
+    - 1-func-centos7-pg96:
+        requires: [0-rpm-centos7, 0-unit]
+    - 1-func-centos7-pg95:
+        requires: [0-rpm-centos7, 0-unit]
+    - 1-func-centos6-pg94:
+        requires: [0-rpm-centos6, 0-unit]
