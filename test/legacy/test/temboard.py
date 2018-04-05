@@ -265,9 +265,8 @@ def init_env():
         }
     }
     try:
-        ext = str(int(time.time() * 1000))
         # Folders creation
-        root_dir = _mkdir(tbd_workpath+'/tests_temboard/'+ext)
+        root_dir = _mkdir(tbd_workpath+'/tests_temboard/')
         agent_dir = _mkdir(root_dir+'/temboard-agent')
         log_dir = _mkdir(root_dir+'/logs')
 
