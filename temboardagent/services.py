@@ -18,6 +18,9 @@ class Service(object):
         self.app = app
         self.name = name
 
+    def __unicode__(self):
+        return '%s (pid=%s)' % (self.name, self.pid)
+
     def __enter__(self):
         signal.signal(signal.SIGHUP, self.sighup_handler)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
