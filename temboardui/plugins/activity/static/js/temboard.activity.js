@@ -1,7 +1,8 @@
 $(function() {
   "use strict";
 
-  var polling = true;
+  var request = null;
+  var intervalId;
 
   var el = $('#tableActivity');
 
@@ -105,34 +106,30 @@ $(function() {
 
   function load() {
     var url_end = activityMode != 'running' ?  '/' + activityMode : '';
-    $.ajax({
+    // abort any pending request
+    request && request.abort();
+    request = $.ajax({
       url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
       type: 'GET',
       beforeSend: function(xhr) {
         xhr.setRequestHeader('X-Session', xsession);
+        $('#loadingIndicator').removeClass('d-none');
       },
       async: true,
       contentType: "application/json",
       success: function (data) {
-        $('#ErrorModal').modal('hide');
         updateActivity(data.rows);
       },
       error: function(xhr) {
-        if (xhr.status == 401)
-        {
-          $('#ErrorModal').modal('hide');
+        if (xhr.status == 401) {
           $('#modalError').html(html_error_modal(401, 'Session expired'));
           $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
           $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
           $('#ErrorModal').modal('show');
-        }
-        else
-        {
-          $('#ErrorModal').modal('hide');
+        } else {
           var code = xhr.status;
           var error = 'Internal error.';
-          if (code > 0)
-          {
+          if (code > 0) {
             error = escapeHtml(JSON.parse(xhr.responseText).error);
           } else {
             code = '';
@@ -140,17 +137,15 @@ $(function() {
           $('#modalError').html(html_error_modal(code, error));
           $('#ErrorModal').modal('show');
         }
+      },
+      complete: function() {
+        $('#ErrorModal').modal('hide');
+        $('#loadingIndicator').addClass('d-none');
       }
     });
   }
 
-  window.setInterval(load, 2000);
-  load();
-
   function updateActivity(data) {
-    if (!polling) {
-      return;
-    }
     $('[data-toggle=popover]').popover('hide');
     table.clear();
     table.rows.add(data).draw();
@@ -189,17 +184,16 @@ $(function() {
   }
 
   $('#pauseButton').click(function pause() {
-    polling = false;
+    request && request.abort();
     $('#pauseButton').addClass('d-none');
     $('#resumeButton').removeClass('d-none');
     $('input[type=checkbox]').each(function () {
       $(this).removeClass('invisible');
     });
-    $('#loadingIndicator').addClass('d-none');
+    window.clearInterval(intervalId);
   });
 
-  $('#resumeButton').click(function resume() {
-    polling = true;
+  function play() {
     $('#pauseButton').removeClass('d-none');
     $('#resumeButton').addClass('d-none');
     $('input:checked').each(function () {
@@ -209,8 +203,14 @@ $(function() {
       $(this).addClass('invisible');
     });
     $('#killButton').addClass('d-none');
-    $('#loadingIndicator').removeClass('d-none');
-  });
+    load();
+    intervalId = window.setInterval(load, 2000);
+  }
+
+  $('#resumeButton').click(play);
+
+  // Launch once
+  play();
 
   // show the kill button only when backends have been selected
   $(document.body).on('click', 'input[type=checkbox]', function() {
