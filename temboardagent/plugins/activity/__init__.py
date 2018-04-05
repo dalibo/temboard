@@ -59,3 +59,6 @@ class ActivityPlugin(object):
         add_route('GET', '/activity')(get_activity)
         add_route('GET', '/activity/waiting')(get_activity_waiting)
         add_route('GET', '/activity/blocking')(get_activity_blocking)
+
+    def unload(self):
+        pass

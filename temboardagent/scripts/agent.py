@@ -12,11 +12,61 @@ from ..cli import cli, define_core_arguments
 from ..configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
+from ..services import Service, ServicesManager
 from ..queue import purge_queue_dir
 from .. import validators as v
 
 
 logger = logging.getLogger('temboardagent.scripts.agent')
+
+
+class SchedulerService(Service):
+    # Adapter from taskmanager.Scheduler to Service
+
+    def __init__(self, task_queue, event_queue, **kw):
+        super(SchedulerService, self).__init__(**kw)
+        self.task_queue = task_queue
+        self.event_queue = event_queue
+        self.scheduler = taskmanager.Scheduler(
+            address=os.path.join(self.app.config.temboard.home, '.tm.socket'),
+            task_path=os.path.join(
+                self.app.config.temboard.home, '.tm.task_list'),
+            authkey=None)
+
+    def setup(self):
+        if os.path.exists(self.scheduler.address):
+            os.unlink(self.scheduler.address)
+
+        self.scheduler.set_context('config', {
+            'plugins': self.app.config.plugins.data,
+            'temboard': self.app.config.temboard.data,
+            'postgresql': self.app.config.postgresql.data,
+            'logging': self.app.config.logging.data,
+        })
+        self.scheduler.task_queue = self.task_queue
+        self.scheduler.event_queue = self.event_queue
+        self.scheduler.setup()
+
+    def serve1(self):
+        self.scheduler.serve1()
+
+
+class WorkerPoolService(Service):
+    # Adapter from taskmanager.WorkerPool to Service
+
+    def __init__(self, task_queue, event_queue, **kw):
+        super(WorkerPoolService, self).__init__(**kw)
+        self.worker_pool = taskmanager.WorkerPool(task_queue, event_queue)
+
+    def setup(self):
+        self.worker_pool.setup()
+
+    def serve1(self):
+        try:
+            self.worker_pool.serve1()
+        except Exception:
+            logger.exception("Unhandled error in worker:")
+            logger.error("Not stopping worker process.")
 
 
 def define_arguments(parser):
@@ -84,26 +134,19 @@ def main(argv, environ):
                     ['metrics.q', 'notifications.q', 'notifications_last_10.q']
                     )
 
-    # TaskManager
-    # Remove socket if any
-    tm_sock_path = os.path.join(config.temboard['home'], '.tm.socket')
-    if os.path.exists(tm_sock_path):
-        os.unlink(tm_sock_path)
+    services = ServicesManager()
+    task_queue = taskmanager.Queue()
+    event_queue = taskmanager.Queue()
+    services.add(SchedulerService(
+        app=app, name=u'scheduler',
+        task_queue=task_queue, event_queue=event_queue))
+    services.add(WorkerPoolService(
+        app=app, name=u'worker pool',
+        task_queue=task_queue, event_queue=event_queue))
 
-    tm = taskmanager.TaskManager(
-            task_path=str(os.path.join(config.temboard['home'],
-                                       '.tm.task_list')),
-            address=str(tm_sock_path)
-         )
-    # copy configuration into context as a dict
-    tm.set_context('config', {'plugins': config.plugins.__dict__.get('data'),
-                              'temboard': config.temboard.__dict__.get('data'),
-                              'postgresql': config.postgresql.__dict__.get('data'),
-                              'logging': config.logging.__dict__.get('data')})
-    tm.start()
-
-    httpd = HTTPDService(app, name=u'main process')
-    httpd.run()
+    with services:
+        httpd = HTTPDService(app, name=u'main process', services=services)
+        httpd.run()
 
     return 0
 
