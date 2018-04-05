@@ -179,9 +179,10 @@ def agent_stop(pid_file):
     Stop the agent.
     """
     with open(pid_file, 'r') as fd:
-        pid = fd.read()
+        pid = int(fd.read())
     # Stop it using kill()
-    os.kill(int(pid), signal.SIGTERM)
+    os.kill(pid, signal.SIGTERM)
+    os.waitpid(pid)
 
 
 def agent_write_ssl_files(key_file, key_content, cert_file, cert_content):
@@ -264,9 +265,8 @@ def init_env():
         }
     }
     try:
-        ext = str(int(time.time() * 1000))
         # Folders creation
-        root_dir = _mkdir(tbd_workpath+'/tests_temboard/'+ext)
+        root_dir = _mkdir(tbd_workpath+'/tests_temboard/')
         agent_dir = _mkdir(root_dir+'/temboard-agent')
         log_dir = _mkdir(root_dir+'/logs')
 

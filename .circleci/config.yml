@@ -16,7 +16,7 @@ jobs:
     working_directory: ~/temboard-agent
     steps:
     - checkout
-    - run: git submodule update --init --depth=1
+    - run: git submodule update --init
     - run:
         name: Build documentation with Sphinx
         command: |
@@ -38,7 +38,7 @@ jobs:
             sudo yum install -y http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
             sudo yum install -y git
     - checkout
-    - run: git submodule update --init --depth=1
+    - run: git submodule update --init
     - run: ./rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
@@ -70,7 +70,7 @@ jobs:
     working_directory: /home/ubuntu/temboard-agent
     steps:
       - checkout
-      - run: git submodule update --init --depth=1
+      - run: git submodule update --init
       - restore_cache:
           keys:
             - temboard-agent-{{ .Branch }}

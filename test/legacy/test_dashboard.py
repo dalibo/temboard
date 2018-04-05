@@ -3,7 +3,8 @@ import os
 import sys
 import time
 
-from test.temboard import init_env, drop_env, temboard_request
+from test.temboard import temboard_request
+from conftest import ENV
 
 # Import spc
 tbda_dir = os.path.realpath(
@@ -14,21 +15,10 @@ if tbda_dir not in sys.path:
 
 from temboardagent.spc import connector, error  # noqa
 
-ENV = {}
 XSESSION = ''
 
 
 class TestDashboard:
-
-    @classmethod
-    def setup_class(cls):
-        global ENV
-        ENV = init_env()
-
-    @classmethod
-    def teardown_class(cls):
-        drop_env(ENV)
-
     def _temboard_login(self):
         (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
