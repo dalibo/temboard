@@ -8,8 +8,7 @@ from test.temboard import rand_string, temboard_request
 from conftest import ENV
 
 # Import spc
-tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..'))
+tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
@@ -41,16 +40,16 @@ class TestAPI:
         [api] 01: POST /login : HTTP return code is 200 on valid credentials
         """
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
-                headers={"Content-type": "application/json"},
-                data={
-                    'username': ENV['agent']['user'],
-                    'password': ENV['agent']['password']
-                    }
-                )
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/login'
+                % (ENV['agent']['host'], ENV['agent']['port']),
+            headers={"Content-type": "application/json"},
+            data={
+                'username': ENV['agent']['user'],
+                'password': ENV['agent']['password']
+            }
+        )
         assert status == 200
 
     def test_02_login_ok(self):
@@ -58,16 +57,16 @@ class TestAPI:
         [api] 02: POST /login : Session ID format matches ^[a-f0-9]{64}$
         """
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
-                headers={"Content-type": "application/json"},
-                data={
-                    'username': ENV['agent']['user'],
-                    'password': ENV['agent']['password']
-                    }
-                )
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/login'
+                % (ENV['agent']['host'], ENV['agent']['port']),
+            headers={"Content-type": "application/json"},
+            data={
+                'username': ENV['agent']['user'],
+                'password': ENV['agent']['password']
+            }
+        )
         xsession = json.loads(res)['session']
         assert re.match('^[a-f0-9]{64}$', xsession)
 
@@ -80,14 +79,14 @@ class TestAPI:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
+                url='https://%s:%s/login'
+                % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={"Content-type": "application/json"},
                 data={
                     'username': ENV['agent']['user'],
                     'password': rand_string(12)
-                    }
-                )
+                }
+            )
         except HTTPError as e:
             status = e.code
         assert status == 404
@@ -101,14 +100,14 @@ class TestAPI:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
+                url='https://%s:%s/login'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={"Content-type": "application/json"},
                 data={
                     'username': rand_string(12),
                     'password': rand_string(12)
-                    }
-                )
+                }
+            )
         except HTTPError as e:
             status = e.code
         assert status == 404
@@ -122,14 +121,14 @@ class TestAPI:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
+                url='https://%s:%s/login'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={"Content-type": "application/json"},
                 data={
                     'username': rand_string(2),
                     'password': rand_string(12)
-                    }
-                )
+                }
+            )
         except HTTPError as e:
             status = e.code
         assert status == 406
@@ -143,14 +142,14 @@ class TestAPI:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
+                url='https://%s:%s/login'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={"Content-type": "application/json"},
                 data={
                     'username': rand_string(12),
                     'password': rand_string(2)
-                    }
-                )
+                }
+            )
         except HTTPError as e:
             status = e.code
         assert status == 406
