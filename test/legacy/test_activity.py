@@ -9,8 +9,7 @@ from test.temboard import temboard_request
 from conftest import ENV
 
 # Import spc
-tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..'))
+tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
 
 if tbda_dir not in sys.path:
     sys.path.insert(0, tbda_dir)
@@ -24,13 +23,9 @@ def pg_sleep(duration=1):
     """
     Start a new PG connection and run pg_sleep()
     """
-    conn = connector(
-        host=ENV['pg']['socket_dir'],
-        port=ENV['pg']['port'],
-        user=ENV['pg']['user'],
-        password=ENV['pg']['password'],
-        database='postgres'
-        )
+    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                     user=ENV['pg']['user'], password=ENV['pg']['password'],
+                     database='postgres')
     try:
         conn.connect()
         conn.execute("SELECT pg_sleep(%s)" % (duration))
@@ -43,13 +38,9 @@ def create_database(dbname):
     """
     Create a database.
     """
-    conn = connector(
-        host=ENV['pg']['socket_dir'],
-        port=ENV['pg']['port'],
-        user=ENV['pg']['user'],
-        password=ENV['pg']['password'],
-        database='postgres'
-        )
+    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                     user=ENV['pg']['user'], password=ENV['pg']['password'],
+                     database='postgres')
     try:
         conn.connect()
         conn.execute("CREATE DATABASE %s" % (dbname))
@@ -62,19 +53,14 @@ def create_table(dbname, tablename):
     """
     Create a table and insert 5 rows in it.
     """
-    conn = connector(
-        host=ENV['pg']['socket_dir'],
-        port=ENV['pg']['port'],
-        user=ENV['pg']['user'],
-        password=ENV['pg']['password'],
-        database=dbname
-        )
+    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                     user=ENV['pg']['user'], password=ENV['pg']['password'],
+                     database=dbname)
     try:
         conn.connect()
         conn.execute("CREATE TABLE %s (id INTEGER)" % (tablename))
-        conn.execute("INSERT INTO %s SELECT generate_series(1, 5)" % (
-                        tablename
-                        ))
+        conn.execute("INSERT INTO %s SELECT generate_series(1, 5)"
+                     % (tablename))
         conn.close()
     except error:
         pass
@@ -84,13 +70,9 @@ def lock_table_exclusive(dbname, tablename, duration):
     """
     Lock a table in exclusive mode for a while (duration in seconds).
     """
-    conn = connector(
-        host=ENV['pg']['socket_dir'],
-        port=ENV['pg']['port'],
-        user=ENV['pg']['user'],
-        password=ENV['pg']['password'],
-        database=dbname
-        )
+    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                     user=ENV['pg']['user'], password=ENV['pg']['password'],
+                     database=dbname)
     try:
         conn.connect()
         conn.execute("BEGIN")
@@ -106,13 +88,9 @@ def update_rows(dbname, tablename):
     """
     Update all rows of a table.
     """
-    conn = connector(
-        host=ENV['pg']['socket_dir'],
-        port=ENV['pg']['port'],
-        user=ENV['pg']['user'],
-        password=ENV['pg']['password'],
-        database=dbname
-        )
+    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                     user=ENV['pg']['user'], password=ENV['pg']['password'],
+                     database=dbname)
     try:
         conn.connect()
         conn.execute("UPDATE %s SET id = id + 1" % (tablename))
@@ -123,13 +101,9 @@ def update_rows(dbname, tablename):
 
 class TestActivity:
     def _exec_query(self, dbname, query):
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database=dbname
-        )
+        conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+                         user=ENV['pg']['user'],
+                         password=ENV['pg']['password'], database=dbname)
         conn.connect()
         conn.execute(query)
         conn.close()
@@ -137,16 +111,16 @@ class TestActivity:
 
     def _temboard_login(self):
         (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='POST',
-                url='https://%s:%s/login' % (
-                    ENV['agent']['host'], ENV['agent']['port']),
-                headers={"Content-type": "application/json"},
-                data={
-                    'username': ENV['agent']['user'],
-                    'password': ENV['agent']['password']
-                    }
-                )
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/login'
+            % (ENV['agent']['host'], ENV['agent']['port']),
+            headers={"Content-type": "application/json"},
+            data={
+                'username': ENV['agent']['user'],
+                'password': ENV['agent']['password']
+            }
+        )
         return json.loads(res)['session']
 
     def test_00_env_pg(self):
@@ -183,10 +157,8 @@ class TestActivity:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/activity' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                url='https://%s:%s/activity'
+                % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -243,20 +215,18 @@ class TestActivity:
         time.sleep(1)
 
         # Get the pid of the backend running the long query
-        backend_pid = self._exec_query(
-                        'postgres',
-                        "SELECT pid FROM pg_stat_activity "
-                        "WHERE query LIKE 'SELECT pg\_sleep%'")[0]['pid']
+        r = self._exec_query('postgres',
+                             "SELECT pid FROM pg_stat_activity "
+                             "WHERE query LIKE 'SELECT pg\_sleep%'")
+        backend_pid = r[0]['pid']
 
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='POST',
-                url='https://%s:%s/activity/kill' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                url='https://%s:%s/activity/kill'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -306,10 +276,8 @@ class TestActivity:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/activity/waiting' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                url='https://%s:%s/activity/waiting'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
@@ -360,7 +328,7 @@ class TestActivity:
         assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
         assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
 
-    def  test_04_activity_blocking(self):
+    def test_04_activity_blocking(self):
         """
         [activity] 04: GET /activity/blocking : Check HTTP code (200) and the whole data structure
         """  # noqa
@@ -384,10 +352,8 @@ class TestActivity:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/activity/blocking' % (
-                        ENV['agent']['host'],
-                        ENV['agent']['port']
-                        ),
+                url='https://%s:%s/activity/blocking'
+                    % (ENV['agent']['host'], ENV['agent']['port']),
                 headers={
                     "Content-type": "application/json",
                     "X-Session": XSESSION
