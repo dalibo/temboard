@@ -67,7 +67,11 @@ class Service(object):
             setproctitle('temboard-agent: %s' % self.name)
 
         self.setup()
-        self.serve()
+        try:
+            self.serve()
+        except KeyboardInterrupt:
+            logger.info("Interrupted.")
+            sys.exit(1)
 
     def serve(self):
         with self:
