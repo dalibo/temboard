@@ -22,17 +22,31 @@
   </div>
 </div>
 {% include menu.html %}
-<div class="row">
-  <div class="col-12">
-    <button type="button" class="btn btn-secondary btn-sm" id="pauseButton">
-      <i class="fa fa-pause"></i> Pause
-    </button>
+<div class="row d-flex justify-content-between">
+  <div class="col-auto">
+    <button type="button" class="btn btn-danger d-none" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
     <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-    <button type="button" class="btn btn-secondary btn-sm d-none" id="resumeButton"><i class="fa fa-play"></i> Resume</button>
-    <button type="button" class="btn btn-danger btn-sm d-none" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
+  </div>
+  <div class="col-auto">
+    <div class="form-row align-items-center">
+      <div class="col-auto">
+        <button type="button" class="btn btn-secondary" disabled id="refreshButton"><i class="fa fa-refresh"></i> Refresh</button>
+      </div>
+      <div class="col-auto">
+        <div class="form-check">
+          <input type="checkbox" checked class="form-check-input" id="autoRefreshCheckbox">
+          <label class="form-check-label" for="autoRefreshCheckbox">
+            Auto refresh every <span id="intervalDuration"></span>s
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="row">
+  <div class="col-12 small text-muted">
+    Tip: disable auto-refresh to select and terminate backends below
+  </div>
   <div class="col-12">
     <table id="tableActivity" class="table-activity table table-sm table-striped small"></table>
   </div>

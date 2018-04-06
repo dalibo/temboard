@@ -1,7 +1,11 @@
 $(function() {
   "use strict";
 
-  var polling = true;
+  var request = null;
+  var intervalId;
+  var intervalDuration = 2;
+
+  $('#intervalDuration').html(intervalDuration);
 
   var el = $('#tableActivity');
 
@@ -16,7 +20,8 @@ $(function() {
       orderable: false,
       className: 'text-center',
       data: function(row, type, val, meta) {
-        return '<input type="checkbox" class="invisible input-xs" data-pid="' + row.pid + '"/>';
+        var disabled = intervalId ? 'disabled' : '';
+        return '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"/>';
       }
     },
     {title: 'PID', data: 'pid', className: 'text-right', orderable: false},
@@ -104,35 +109,32 @@ $(function() {
   });
 
   function load() {
+    $('#killButton').addClass('d-none');
     var url_end = activityMode != 'running' ?  '/' + activityMode : '';
-    $.ajax({
+    // abort any pending request
+    request && request.abort();
+    request = $.ajax({
       url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
       type: 'GET',
       beforeSend: function(xhr) {
         xhr.setRequestHeader('X-Session', xsession);
+        $('#loadingIndicator').removeClass('d-none');
       },
       async: true,
       contentType: "application/json",
       success: function (data) {
-        $('#ErrorModal').modal('hide');
         updateActivity(data.rows);
       },
       error: function(xhr) {
-        if (xhr.status == 401)
-        {
-          $('#ErrorModal').modal('hide');
+        if (xhr.status == 401) {
           $('#modalError').html(html_error_modal(401, 'Session expired'));
           $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
           $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
           $('#ErrorModal').modal('show');
-        }
-        else
-        {
-          $('#ErrorModal').modal('hide');
+        } else {
           var code = xhr.status;
           var error = 'Internal error.';
-          if (code > 0)
-          {
+          if (code > 0) {
             error = escapeHtml(JSON.parse(xhr.responseText).error);
           } else {
             code = '';
@@ -140,17 +142,15 @@ $(function() {
           $('#modalError').html(html_error_modal(code, error));
           $('#ErrorModal').modal('show');
         }
+      },
+      complete: function() {
+        $('#ErrorModal').modal('hide');
+        $('#loadingIndicator').addClass('d-none');
       }
     });
   }
 
-  window.setInterval(load, 2000);
-  load();
-
   function updateActivity(data) {
-    if (!polling) {
-      return;
-    }
     $('[data-toggle=popover]').popover('hide');
     table.clear();
     table.rows.add(data).draw();
@@ -188,38 +188,51 @@ $(function() {
     return error_html;
   }
 
-  $('#pauseButton').click(function pause() {
-    polling = false;
-    $('#pauseButton').addClass('d-none');
-    $('#resumeButton').removeClass('d-none');
-    $('input[type=checkbox]').each(function () {
-      $(this).removeClass('invisible');
+  function pause() {
+    request && request.abort();
+    $('#autoRefreshCheckbox').prop('checked', false);
+    $('#refreshButton').prop('disabled', false);
+    $('#tableActivity input[type=checkbox]').each(function () {
+      $(this).attr('disabled', false);
     });
-    $('#loadingIndicator').addClass('d-none');
-  });
+    window.clearInterval(intervalId);
+    intervalId = null;
+  }
 
-  $('#resumeButton').click(function resume() {
-    polling = true;
-    $('#pauseButton').removeClass('d-none');
-    $('#resumeButton').addClass('d-none');
-    $('input:checked').each(function () {
+  function play() {
+    $('#autoRefreshCheckbox').prop('checked', true)
+    $('#refreshButton').prop('disabled', true);
+    $('#tableActivity input:checked').each(function () {
       $(this).attr('checked', false);
     });
-    $('input[type=checkbox]').each(function () {
-      $(this).addClass('invisible');
+    $('#tableActivity input[type=checkbox]').each(function () {
+      $(this).attr('disabled', true);
     });
-    $('#killButton').addClass('d-none');
-    $('#loadingIndicator').removeClass('d-none');
+    load();
+    intervalId = window.setInterval(load, intervalDuration * 1000);
+  }
+
+  $('#autoRefreshCheckbox').change(function() {
+    if ($(this).prop('checked')) {
+      play();
+    } else {
+      pause();
+    }
   });
+
+  // Launch once
+  play();
+
+  $('#refreshButton').click(load);
 
   // show the kill button only when backends have been selected
   $(document.body).on('click', 'input[type=checkbox]', function() {
-    $('#killButton').toggleClass('d-none', $('input:checked').length === 0);
+    $('#killButton').toggleClass('d-none', $('#tableActivity input:checked').length === 0);
   });
 
   $('#killButton').click(function terminate() {
     var pids = [];
-    $('input:checked').each(function () {
+    $('#tableActivity input:checked').each(function () {
       pids.push($(this).data('pid'));
     });
     if (pids.length === 0) {
