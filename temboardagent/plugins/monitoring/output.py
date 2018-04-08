@@ -2,7 +2,7 @@ import json
 import logging
 import pprint
 
-from monitoring.probes import Probe
+from .probes import Probe
 from temboardagent.httpsclient import https_request
 
 
