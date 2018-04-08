@@ -7,7 +7,7 @@ from temboardagent.types import T_PID
 from temboardagent.errors import NotificationError
 
 
-def get_activity(conn, config, http_context):
+def get_activity(conn):
     """
     Returns PostgreSQL backend list based on pg_stat_activity view.
     For each backend (process) we need to compute: CPU and mem. usage, I/O
@@ -133,22 +133,24 @@ def post_activity_kill(conn, config, http_context):
         conn.execute("SELECT pg_terminate_backend(%s) AS killed" % (pid))
         # Push a notification.
         try:
-            NotificationMgmt.push(config,
-                                  Notification(
-                                    username=http_context['username'],
-                                    message="Backend %s terminated" % (pid)))
+            NotificationMgmt.push(
+                config,
+                Notification(
+                    username=http_context['username'],
+                    message="Backend %s terminated" % (pid)
+                )
+            )
         except (NotificationError, Exception):
             pass
 
         ret['backends'].append({
             'pid': pid,
             'killed': list(conn.get_rows())[0]['killed']
-            }
-        )
+        })
     return ret
 
 
-def get_activity_waiting(conn, config, _):
+def get_activity_waiting(conn):
     """
     Returns the list of waiting (on lock) queries.
     """
@@ -222,7 +224,7 @@ ORDER BY
     return {'rows': final_backend_list}
 
 
-def get_activity_blocking(conn, config, _):
+def get_activity_blocking(conn):
     """
     Returns the list of blocking (lock) queries.
     """
