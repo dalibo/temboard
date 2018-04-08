@@ -1,5 +1,5 @@
 import time
-from os import getloadavg
+import os
 import re
 
 from temboardagent.queue import Queue
@@ -7,7 +7,7 @@ from temboardagent.notification import NotificationMgmt
 from temboardagent.inventory import SysInfo, PgInfo
 
 
-def get_metrics(conn, config, _=None):
+def get_metrics(conn, config):
     dm = DashboardMetrics(conn)
     sysinfo = SysInfo()
     pginfo = PgInfo(conn)
@@ -17,126 +17,113 @@ def get_metrics(conn, config, _=None):
     for elem in cpu_models:
         cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
 
-    return {'buffers': dm.get_buffers(),
-            'hitratio': dm.get_hitratio(),
-            'active_backends': dm.get_active_backends(),
-            'max_connections': dm.get_max_connections(),
-            'cpu': dm.get_cpu_usage(),
-            'loadaverage': dm.get_load_average(),
-            'memory': dm.get_memory_usage(),
-            'hostname': sysinfo.hostname(config.temboard['hostname']),
-            'os_version': sysinfo.os_release,
-            'linux_distribution': sysinfo.linux_distribution(),
-            'cpu_models': cpu_models_counter,
-            'databases': dm.get_stat_db(),
-            'pg_uptime': dm.get_pg_uptime(),
-            'n_cpu': sysinfo.n_cpu(),
-            'pg_version': pginfo.version()['full'],
-            'pg_data': pginfo.setting('data_directory'),
-            'pg_port': pginfo.setting('port'),
-            'notifications': dm.get_notifications(config)}
+    return dict(
+        buffers=dm.get_buffers(),
+        hitratio=dm.get_hitratio(),
+        active_backends=dm.get_active_backends(),
+        max_connections=dm.get_max_connections(),
+        cpu=dm.get_cpu_usage(),
+        loadaverage=dm.get_load_average(),
+        memory=dm.get_memory_usage(),
+        hostname=sysinfo.hostname(config.temboard.hostname),
+        os_version=sysinfo.os_release,
+        linux_distribution=sysinfo.linux_distribution(),
+        cpu_models=cpu_models_counter,
+        databases=dm.get_stat_db(),
+        pg_uptime=dm.get_pg_uptime(),
+        n_cpu=sysinfo.n_cpu(),
+        pg_version=pginfo.version()['full'],
+        pg_data=pginfo.setting('data_directory'),
+        pg_port=pginfo.setting('port'),
+        notifications=dm.get_notifications(config),
+    )
 
 
-def get_metrics_queue(config, _=None):
-    q = Queue('%s/dashboard.q' % (config.temboard['home']))
+def get_metrics_queue(config):
+    q = Queue(os.path.join(config.temboard.home, 'dashboard.q'))
     dm = DashboardMetrics()
     msg = q.get_last_message()
     msg['notifications'] = dm.get_notifications(config)
     return msg
 
 
-def get_history_metrics_queue(config, _=None):
-    q = Queue('%s/dashboard.q' % (config.temboard['home']))
+def get_history_metrics_queue(config):
+    q = Queue(os.path.join(config.temboard.home, 'dashboard.q'))
     return q.get_content_all_messages()
 
 
-def get_info(conn, config, _):
+def get_info(conn, config):
     dm = DashboardMetrics(conn)
     sysinfo = SysInfo()
     pginfo = PgInfo(conn)
-    return {
-            'hostname': sysinfo.hostname(config.temboard['hostname']),
-            'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release),
-            'pg_uptime': dm.get_pg_uptime(),
-            'pg_version': pginfo.version()['full'],
-            'pg_data': pginfo.setting('data_directory'),
-            'pg_port': pginfo.setting('port'),
-    }
+    return dict(
+        hostname=sysinfo.hostname(config.temboard.hostname),
+        os_version=' '.join(sysinfo.os, sysinfo.os_release),
+        pg_uptime=dm.get_pg_uptime(),
+        pg_version=pginfo.version()['full'],
+        pg_data=pginfo.setting('data_directory'),
+        pg_port=pginfo.setting('port'),
+    )
 
 
-def get_buffers(conn, config, _):
+def get_buffers(conn):
     dm = DashboardMetrics(conn)
-    return {'buffers': dm.get_buffers()}
+    return dict(buffers=dm.get_buffers())
 
 
-def get_hitratio(conn, config, _):
+def get_hitratio(conn):
     dm = DashboardMetrics(conn)
-    return {'hitratio': dm.get_hitratio()}
+    return dict(hitratio=dm.get_hitratio())
 
 
-def get_active_backends(conn, config, _):
+def get_active_backends(conn):
     dm = DashboardMetrics(conn)
-    return {'active_backends': dm.get_active_backends()}
+    return dict(active_backends=dm.get_active_backends())
 
 
-def get_max_connections(conn, config, _):
+def get_max_connections(conn):
     dm = DashboardMetrics(conn)
-    return {'max_connections': dm.get_max_connections()}
+    return dict(max_connections=dm.get_max_connections())
 
 
-def get_cpu_usage(config, _):
+def get_cpu_usage():
     dm = DashboardMetrics()
-    return {'cpu': dm.get_cpu_usage()}
+    return dict(cpu=dm.get_cpu_usage())
 
 
-def get_loadaverage(config, _):
+def get_loadaverage():
     dm = DashboardMetrics()
-    return {'loadaverage': dm.get_load_average()}
+    return dict(loadaverage=dm.get_load_average())
 
 
-def get_memory_usage(config, _):
+def get_memory_usage():
     dm = DashboardMetrics()
-    return {'memory': dm.get_memory_usage()}
+    return dict(memory=dm.get_memory_usage())
 
 
-def get_hostname(config, _):
+def get_hostname(config):
     sysinfo = SysInfo()
-    return {'hostname': sysinfo.hostname(config.temboard['hostname'])}
+    return dict(hostname=sysinfo.hostname(config.temboard.hostname))
 
 
-def get_os_version(config, _):
+def get_os_version():
     sysinfo = SysInfo()
-    return {'os_version': "%s %s" % (sysinfo.os, sysinfo.os_release)}
+    return dict(os_version=' '.join((sysinfo.os, sysinfo.os_release)))
 
 
-def get_databases(conn, config, _):
+def get_databases(conn):
     dm = DashboardMetrics(conn)
-    return {'databases': dm.get_stat_db()}
+    return dict(databases=dm.get_stat_db())
 
 
-def get_n_cpu(config, _):
+def get_n_cpu():
     sysinfo = SysInfo()
-    return {'n_cpu': sysinfo.n_cpu()}
+    return dict(n_cpu=sysinfo.n_cpu())
 
 
-def get_pg_version(conn, config, _):
+def get_pg_version(conn):
     pginfo = PgInfo(conn)
-    return {'pg_version': pginfo.version()['full']}
-
-
-def get_pg_uptime(conn, config, _):
-    dm = DashboardMetrics(conn)
-    return {'pg_uptime': dm.get_pg_uptime()}
-
-
-def get_pg_port(conn, config, _):
-    pginfo = PgInfo(conn)
-    return {'pg_port': pginfo.setting('port')}
-
-
-def get_pg_data(conn, config, _):
-    pginfo = PgInfo(conn)
-    return {'pg_data': pginfo.setting('data_directory')}
+    return dict(pg_version=pginfo.version()['full'])
 
 
 class DashboardMetrics(object):
@@ -179,7 +166,7 @@ SELECT setting FROM pg_settings WHERE name = 'max_connections'
             return self._get_cpu_usage_linux()
 
     def get_load_average(self,):
-        return getloadavg()[0]
+        return os.getloadavg()[0]
 
     def get_memory_usage(self,):
         sysinfo = SysInfo()
@@ -254,14 +241,14 @@ SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
             delta_time_total += cpu_time_snap_1[k] - cpu_time_snap_0[k]
             delta[k] = cpu_time_snap_1[k] - cpu_time_snap_0[k]
         return {
-                'user': round(delta['time_user'] / delta_time_total * 100, 1),
-                'system': round(delta['time_system'] /
-                                delta_time_total * 100, 1),
-                'idle': round(delta['time_idle'] / delta_time_total * 100, 1),
-                'iowait': round(delta['time_iowait'] /
-                                delta_time_total * 100, 1),
-                'steal': round(delta['time_steal'] / delta_time_total * 100, 1)
-                }
+            'user': round(delta['time_user'] / delta_time_total * 100, 1),
+            'system': round(delta['time_system'] /
+                            delta_time_total * 100, 1),
+            'idle': round(delta['time_idle'] / delta_time_total * 100, 1),
+            'iowait': round(delta['time_iowait'] /
+                            delta_time_total * 100, 1),
+            'steal': round(delta['time_steal'] / delta_time_total * 100, 1)
+        }
 
     def _get_current_cpu_usage_linux(self,):
         ret = {}

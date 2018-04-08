@@ -51,6 +51,7 @@ SETUP_KWARGS = dict(
             'activity = temboardagent.plugins.activity:ActivityPlugin',
             'monitoring = temboardagent.plugins.monitoring:MonitoringPlugin',
             'pgconf = temboardagent.plugins.pgconf:PgConfPlugin',
+            'dashboard = temboardagent.plugins.dashboard:DashboardPlugin',
         ],
     },
 )
