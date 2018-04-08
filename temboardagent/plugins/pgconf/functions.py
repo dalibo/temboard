@@ -7,12 +7,12 @@ from temboardagent.spc import pg_escape, error
 from temboardagent.errors import HTTPError, NotificationError
 from temboardagent.tools import validate_parameters
 from temboardagent.notification import NotificationMgmt, Notification
-from pgconf.types import (
+from .types import (
     T_FILE_VERSION,
     T_NEW_VERSION,
     T_PGSETTINGS_FILTER,
 )
-from pgconf.hba import (
+from .hba import (
     HBAComment,
     HBAEntry,
     HBAManager,
@@ -27,7 +27,7 @@ class FileSetting(namedtuple('FileSetting', ['name', 'setting', 'sourcefile',
     pass
 
 
-def get_settings_categories(conn, config, _):
+def get_settings_categories(conn):
     query = """
 SELECT DISTINCT(category) FROM pg_settings ORDER BY category
     """
@@ -105,7 +105,7 @@ def format_setting(setting, type, unit=None):
     return setting
 
 
-def get_settings(conn, config, http_context=None):
+def get_settings(conn, http_context=None):
     # get configuration from files
     files_conf = get_files_configuration(conn)
     # get auto config
@@ -119,10 +119,10 @@ def get_settings(conn, config, http_context=None):
         validate_parameters(http_context['query'], [
             ('filter', T_PGSETTINGS_FILTER, True)
         ])
+        filter = http_context['query']['filter'][0]
         filter_query = " WHERE name ILIKE '%{0}%'" \
                        " OR short_desc ILIKE '%{0}%'" \
-                       " OR extra_desc ILIKE '%{0}%'".format(
-                               http_context['query']['filter'][0])
+                       " OR extra_desc ILIKE '%{0}%'".format(filter)
     query = """
 SELECT
     name, setting, current_setting(name) AS current_setting,
@@ -210,7 +210,7 @@ def human_to_number(h_value, h_unit=None):
             if h_unit and h_unit.lower() == u.lower():
                 m = 0
             if u.lower() == p_unit.lower():
-                return (int(p_num) * (1024 ** m))/factor
+                return (int(p_num) * (1024 ** m)) / factor
             else:
                 m += 1
 
@@ -263,8 +263,8 @@ def parse_configuration_file(file_path, ret={}):
         raise HTTPError(500, "Internal error.")
 
 
-def get_settings_status(conn, config, http_context):
-    settings = get_settings(conn, config)
+def get_settings_status(conn):
+    settings = get_settings(conn)
     pending_restart_changes = []
     pending_reload_changes = []
     pending_reload = False
@@ -303,7 +303,7 @@ def post_settings(conn, config, http_context):
         validate_parameters(http_context['query'], [
             ('filter', T_PGSETTINGS_FILTER, True)
         ])
-    pg_config_categories = get_settings(conn, config, None)
+    pg_config_categories = get_settings(conn, http_context)
     if 'settings' not in http_context['post']:
         raise HTTPError(406, "Parameter 'settings' not sent.")
     settings = http_context['post']['settings']
@@ -456,9 +456,9 @@ def post_settings(conn, config, http_context):
     conn.execute("SELECT pg_reload_conf()")
     # Push a notification.
     try:
-        NotificationMgmt.push(config, Notification(
-                                username=http_context['username'],
-                                message="PostgreSQL reload"))
+        NotificationMgmt.push(config,
+                              Notification(username=http_context['username'],
+                                           message="PostgreSQL reload"))
     except NotificationError as e:
         logger.error(e.message)
 
@@ -470,7 +470,7 @@ HBA
 """
 
 
-def get_hba_raw(conn, config, http_context):
+def get_hba_raw(conn, http_context):
     version = None
 
     if http_context and 'version' in http_context['query']:
@@ -491,7 +491,7 @@ def get_hba_raw(conn, config, http_context):
     return ret
 
 
-def get_hba(conn, config, http_context):
+def get_hba(conn, http_context):
     version = None
     if http_context and 'version' in http_context['query']:
         # Check parameter 'version'
@@ -512,7 +512,7 @@ def get_hba(conn, config, http_context):
     return ret
 
 
-def get_hba_versions(conn, config, http_context):
+def get_hba_versions(conn):
     hba_file = get_setting(conn, 'hba_file')
     return {
         'filepath': hba_file,
@@ -522,6 +522,16 @@ def get_hba_versions(conn, config, http_context):
 
 def post_hba_raw(conn, config, http_context):
     new_version = False
+
+    # Push a notification.
+    try:
+        NotificationMgmt.push(
+            config,
+            Notification(
+                username=http_context['username'],
+                message="HBA file updated"))
+    except NotificationError as e:
+        logger.error(e.message)
 
     if 'content' not in http_context['post']:
         raise HTTPError(406, "Parameter 'content' not sent.")
@@ -619,7 +629,7 @@ def delete_hba_version(conn, config, http_context):
     return HBAManager.remove_version(hba_file, version)
 
 
-def get_hba_options(conn, config, http_context):
+def get_hba_options(conn):
     return HBAManager.options(conn)
 
 
@@ -628,7 +638,7 @@ pg_ident
 """
 
 
-def get_pg_ident(conn, config, http_context):
+def get_pg_ident(conn):
     ret = {
         'filepath': None,
         'content': ''
@@ -671,7 +681,7 @@ def post_pg_ident(conn, config, http_context):
         pg_ident_data = fd.read()
         fd.close()
         try:
-            with open(pg_ident_file+".previous", 'w') as fdp:
+            with open(pg_ident_file + ".previous", 'w') as fdp:
                 fdp.write(pg_ident_data)
                 fdp.close()
         except Exception as e:
