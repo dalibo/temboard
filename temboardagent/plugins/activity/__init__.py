@@ -1,11 +1,6 @@
 from temboardagent.errors import UserError
 from temboardagent.routing import add_route
 
-
-if not __name__.startswith('temboardagent.plugins.'):
-    raise ImportError("Migrated to new plugin API.")
-
-
 from . import functions as activity_functions
 
 

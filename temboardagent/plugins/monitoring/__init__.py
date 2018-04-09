@@ -15,9 +15,6 @@ from temboardagent.inventory import SysInfo
 from temboardagent import __version__ as __VERSION__
 from temboardagent.errors import UserError
 
-if not __name__.startswith('temboardagent.plugins.'):
-    raise ImportError("Migrated to new plugin API.")
-
 from .inventory import host_info, instance_info
 from .probes import (
     load_probes,

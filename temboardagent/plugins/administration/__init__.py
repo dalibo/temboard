@@ -13,10 +13,6 @@ from temboardagent.configuration import OptionSpec
 from temboardagent.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 
-if not __name__.startswith('temboardagent.plugins.'):
-    raise ImportError("Migrated to new plugin API.")
-
-
 from . import functions as admin_functions
 from .types import T_CONTROL
 

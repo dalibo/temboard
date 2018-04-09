@@ -230,21 +230,14 @@ def test_fetch_missing(mocker):
 def test_create_plugins(mocker):
     mocker.patch(
         'temboardagent.cli.Application.fetch_plugin', autospec=True)
-    llp = mocker.patch('temboardagent.cli.load_legacy_plugins', autospec=True)
     from temboardagent.cli import Application
 
     app = Application()
     app.config = mocker.Mock(name='config')
-    app.config.temboard.plugins = ['legacy', 'ng']
-
-    llp.return_value = dict(legacy=dict())
-
+    app.config.temboard.plugins = ['ng']
     app.create_plugins()
 
-    assert 'legacy' not in app.plugins
-    assert 'legacy' in app.config.plugins
     assert 'ng' in app.plugins
-    assert 'ng' not in app.config.plugins
 
 
 def test_update_plugins(mocker):

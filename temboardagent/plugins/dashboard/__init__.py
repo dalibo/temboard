@@ -10,14 +10,8 @@ from temboardagent.routing import add_route
 from temboardagent.queue import Queue, Message
 from temboardagent.errors import UserError
 
-<<<<<<< HEAD
-if not __name__.startswith('temboardagent.plugins.'):
-    raise ImportError("Migrated to new plugin API.")
-
-import metrics
-=======
 from . import metrics
->>>>>>> aa40809... fixup! Migrate dashboard plugin
+
 
 logger = logging.getLogger(__name__)
 CONFIG = None
