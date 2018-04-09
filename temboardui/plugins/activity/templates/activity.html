@@ -44,9 +44,31 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-12 small text-muted">
+  <div class="col-8 text-muted">
     Tip: disable auto-refresh to select and terminate backends below
   </div>
+  <div class="col-4 text-right">
+    <a class="collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#filters" role="button" aria-expanded="false" aria-controls="filters">
+      filters
+    </a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12 collapse" id="filters">
+    <form id="state-filter" class="form-inline justify-content-end d-flex">
+      <div class="form-group pr-1">
+        <label><strong>States:</strong></label>
+      </div>
+      {% for state in ['active', 'idle', 'idle in transaction', 'idle in transaction (aborted)', 'fastpath function call', 'disabled'] %}
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="state-filter-{{state}}" value="{{ state }}" checked>
+        <label class="form-check-label" for="state-filter-{{state}}">{{ state }}</label>
+      </div>
+      {% end %}
+    </form>
+  </div>
+</div>
+<div class="row">
   <div class="col-12">
     <table id="tableActivity" class="table-activity table table-sm table-striped small"></table>
   </div>
