@@ -100,6 +100,7 @@ $(function() {
 
   var table = el.DataTable({
     paging: false,
+    stateSave: true,
     lengthChange: false,
     autoWidth: false,
     order: [[columns.length - 2, 'desc']], /* order by duration */
