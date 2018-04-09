@@ -1,193 +1,115 @@
 import logging
 import time
-import pickle
-import base64
-import os
-try:
-    from configparser import NoOptionError
-except ImportError:
-    from ConfigParser import NoOptionError
 
-from temboardagent.routing import add_route, add_worker
-from temboardagent.api_wrapper import api_function_wrapper_pg
-from temboardagent.configuration import (
-    PluginConfiguration,
-    ConfigurationError,
-)
-from temboardagent.api import check_sessionid
-from temboardagent.tools import validate_parameters, hash_id
-from temboardagent.types import T_OBJECTNAME
-from temboardagent.errors import (
-    HTTPError,
-    SharedItem_exists,
-    SharedItem_no_free_slot_left,
-    SharedItem_not_found,
-    NotificationError,
-)
-from temboardagent.spc import connector, error
+from temboardagent.routing import add_route
+from temboardagent.tools import validate_parameters
+from temboardagent.errors import UserError
+from temboardagent.spc import error
 from temboardagent.command import (
     oneline_cmd_to_array,
     exec_script,
 )
+from temboardagent.configuration import OptionSpec
+from temboardagent.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 
-import administration.functions as admin_functions
-from administration.types import T_CONTROL
+if not __name__.startswith('temboardagent.plugins.'):
+    raise ImportError("Migrated to new plugin API.")
+
+
+from . import functions as admin_functions
+from .types import T_CONTROL
 
 
 logger = logging.getLogger(__name__)
 
 
-@add_route('GET', '/administration/pg_version')
-def api_pg_version(http_context, config=None, sessions=None):
-    return api_function_wrapper_pg(config,
-                                   http_context,
-                                   sessions,
-                                   admin_functions,
-                                   'pg_version')
+def api_pg_version(http_context, app):
+    with app.postgres.connect() as conn:
+        return admin_functions.pg_version(conn)
 
 
-@add_route('POST', '/administration/control')
-def post_pg_control(http_context, config=None, sessions=None):
-    # NOTE: in this case we don't want to use api functions wrapper, it leads
-    # to "Broken pipe" error with debian init.d script on start/restart.
-    # This is probably due to getattr() call.
-    post = http_context['post']
+def post_pg_control(http_context, app):
+    # Control instance
+    validate_parameters(http_context['post'], [
+        ('action', T_CONTROL, False)
+    ])
+    action = http_context['post']['action']
+    logger.info("PostgreSQL '%s' requested." % action)
+    NotificationMgmt.push(app.config,
+                          Notification(username=http_context['username'],
+                                       message="PostgreSQL %s" % action))
 
-    try:
-        check_sessionid(http_context['headers'], sessions)
-        # Check POST parameters.
-        validate_parameters(post, [
-            ('action', T_CONTROL, False)
-        ])
-        session = sessions.get_by_sessionid(
-                    http_context['headers']['X-Session'].encode('utf-8')
-                    )
-    except (Exception, HTTPError) as e:
-        logger.exception(str(e))
-        logger.debug(http_context)
-        if isinstance(e, HTTPError):
-            raise e
-        else:
-            raise HTTPError(500, "Internal error.")
+    cmd = app.config.administration.pg_ctl % action
+    cmd_args = oneline_cmd_to_array(cmd)
+    (rcode, stdout, stderr) = exec_script(cmd_args)
+    if rcode != 0:
+        raise Exception(str(stderr))
+    # Let's check if PostgreSQL is up & running after having executed
+    # 'start' or 'restart' action.
+    if action in ['start', 'restart']:
+        # When a start/restart operation is requested, after the
+        # startup/pg_ctl script has been executed then we check that
+        # postgres is up & running:
+        # while the PG conn. is not working then, for 10 seconds (max)
+        # we'll check (connect/SELECT 1/disconnect) the connection, every
+        # 0.5 second.
+        retry = True
+        t_start = time.time()
+        while retry:
+            try:
+                with app.postgres.connect() as conn:
+                    conn.execute('SELECT 1')
+                    logger.info("Done.")
+                    return dict(action=action, state='ok')
+            except error:
+                if (time.time() - t_start) > 10:
+                    logger.info("Failed.")
+                    return dict(action=action, state='ko')
+            logger.info("Retrying...")
+            time.sleep(0.5)
 
-    try:
-        NotificationMgmt.push(config,
-                              Notification(
-                                username=session.username,
-                                message="PostgreSQL %s" % post['action']
-                                )
-                              )
-    except (NotificationError, Exception) as e:
-        logger.exception(str(e))
-
-    try:
-        logger.info("PostgreSQL '%s' requested." % (post['action']))
-        cmd_args = oneline_cmd_to_array(
-                    config.plugins['administration']['pg_ctl'] % (
-                        post['action']
-                        )
-                    )
-        (rcode, stdout, stderr) = exec_script(cmd_args)
-        if rcode != 0:
-            raise Exception(str(stderr))
-        # Let's check if PostgreSQL is up & running after having executed
-        # 'start' or 'restart' action.
-        if post['action'] in ['start', 'restart']:
-            conn = connector(
-                host=config.postgresql['host'],
-                port=config.postgresql['port'],
-                user=config.postgresql['user'],
-                password=config.postgresql['password'],
-                database=config.postgresql['dbname']
-            )
-            # When a start/restart operation is requested, after the
-            # startup/pg_ctl script has been executed then we check that
-            # postgres is up & running:
-            # while the PG conn. is not working then, for 10 seconds (max)
-            # we'll check (connect/SELECT 1/disconnect) the connection, every
-            # 0.5 second.
+    elif action == 'stop':
+        # Check the PG conn is not working anymore.
+        try:
             retry = True
             t_start = time.time()
             while retry:
-                try:
-                    conn.connect()
+                with app.postgres.connect() as conn:
                     conn.execute('SELECT 1')
-                    conn.close()
-                    logger.info("Done.")
-                    return {'action': post['action'], 'state': 'ok'}
-                except error:
-                    if (time.time() - t_start) > 10:
-                        try:
-                            conn.close()
-                        except error:
-                            pass
-                        except Exception:
-                            pass
-                        logger.info("Failed.")
-                        return {'action': post['action'], 'state': 'ko'}
                 time.sleep(0.5)
+                if (time.time() - t_start) > 10:
+                    retry = False
+            logger.info("Failed.")
+            return dict(action=action, state='ko')
+        except error:
+            logger.info("Done.")
+            return dict(action=action, state='ok')
 
-        elif post['action'] == 'stop':
-            conn = connector(
-                host=config.postgresql['host'],
-                port=config.postgresql['port'],
-                user=config.postgresql['user'],
-                password=config.postgresql['password'],
-                database=config.postgresql['dbname']
-            )
-            # Check the PG conn is not working anymore.
-            try:
-                retry = True
-                t_start = time.time()
-                while retry:
-                    conn.connect()
-                    conn.execute('SELECT 1')
-                    conn.close()
-                    time.sleep(0.5)
-                    if (time.time() - t_start) > 10:
-                        retry = False
-                logger.info("Failed.")
-                return {'action': post['action'], 'state': 'ko'}
-            except error:
-                logger.info("Done.")
-                return {'action': post['action'], 'state': 'ok'}
+    elif action == 'reload':
         logger.info("Done.")
-        return {'action': post['action'], 'state': 'ok'}
-    except (Exception, error, HTTPError) as e:
-        logger.exception(str(e))
-        logger.info("Failed")
-        if isinstance(e, HTTPError):
-            raise e
-        else:
-            raise HTTPError(500, "Internal error.")
+        return dict(action=action, state='ok')
 
 
-def configuration(config):
-    class Configuration(PluginConfiguration):
-        def __init__(self, config, *args, **kwargs):
-            PluginConfiguration.__init__(self,
-                                         config.configfile,
-                                         *args,
-                                         **kwargs)
+class AdministrationPlugin(object):
+    PG_MIN_VERSION = 90400
 
-            self.plugin_configuration = {
-                'pg_ctl': None,
-            }
+    def __init__(self, app, **kw):
+        self.app = app
+        s = 'administration'
+        self.app.config.add_specs([
+            OptionSpec(s, 'pg_ctl', default=None, validator=quoted),
+        ])
 
-            try:
-                self.check_section(__name__)
-            except ConfigurationError:
-                return
+    def load(self):
+        pg_version = self.app.postgres.fetch_version()
+        if pg_version < self.PG_MIN_VERSION:
+            msg = "%s is incompatible with Postgres below %s" % (
+                self.__class__.__name__, self.PG_MIN_VERSION)
+            raise UserError(msg)
 
-            try:
-                val = self.get(__name__, 'pg_ctl')
-                for char in ['"', '\'']:
-                    if val.startswith(char) and val.endswith(char):
-                        val = val[1:-1]
-                self.plugin_configuration['pg_ctl'] = val
-            except NoOptionError:
-                pass
+        add_route('GET', '/administration/pg_version')(api_pg_version)
+        add_route('POST', '/administration/control')(post_pg_control)
 
-    c = Configuration(config)
-    return c.plugin_configuration
+    def unload(self):
+        pass
