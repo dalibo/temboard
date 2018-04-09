@@ -16,6 +16,7 @@ from sqlalchemy.types import (
     UnicodeText,
     BigInteger,
     Boolean,
+    REAL,
 )
 
 metadata = MetaData()
@@ -49,4 +50,31 @@ instances = Table(
     Column('sysuser', UnicodeText,),
     Column('standby', Boolean, nullable=False, server_default=text('False')),
     UniqueConstraint('host_id', 'port'),
+    schema="monitoring")
+
+checks = Table(
+    'checks', metadata,
+    Column('check_id', Integer, primary_key=True),
+    Column('host_id', Integer,
+           ForeignKey("monitoring.hosts.host_id"),
+           nullable=False,
+           ),
+    Column('instance_id', Integer,
+           ForeignKey("monitoring.instances.instance_id"),
+           nullable=True,
+           ),
+    Column('enabled', Boolean, nullable=False),
+    Column('name', UnicodeText, nullable=False),
+    Column('threshold_w', REAL),
+    Column('threshold_c', REAL),
+    Column('description', UnicodeText),
+    schema="monitoring")
+
+checkstates = Table(
+    'check_states', metadata,
+    Column('check_id', Integer,
+           ForeignKey("monitoring.checks.check_id"),
+           nullable=False, primary_key=True),
+    Column('key', UnicodeText, nullable=True, primary_key=True),
+    Column('state', UnicodeText, nullable=False),
     schema="monitoring")
