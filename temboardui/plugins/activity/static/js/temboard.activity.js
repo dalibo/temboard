@@ -289,7 +289,7 @@ $(function() {
   var stateFilters = $('#state-filter input[type=checkbox]');
   stateFilters.change(table.draw);
 
-  /* Custom filtering function */
+  /* State filtering function */
   $.fn.dataTable.ext.search.push(
     function stateFilter(settings, data, dataIndex) {
       var states = [];
@@ -306,6 +306,23 @@ $(function() {
       }
       if (states.some(function(item) {return item === data[index]})) {
         return true;
+      }
+      return false;
+    }
+  );
+
+  var searchFilter = $('#searchFilter');
+  searchFilter.keyup(table.draw);
+  /* Custom filtering function */
+  $.fn.dataTable.ext.search.push(
+    function searchFilterFn(settings, data) {
+      var criteria = searchFilter.val();
+      var i = 0;
+      var len = data.length;
+      for (i; i < len; i++) {
+        if (data[i].toUpperCase().indexOf(criteria.toUpperCase()) != -1) {
+          return true;
+        }
       }
       return false;
     }
