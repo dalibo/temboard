@@ -40,25 +40,21 @@ $(function() {
         updateNotifications(data.notifications);
       },
       error: function(xhr) {
-        if (xhr.status == 401) {
-          $('#ErrorModal').modal('hide');
-          $('#modalError').html(html_error_modal(401, 'Session expired'));
+        $('#ErrorModal').modal('hide');
+        var code = xhr.status;
+        var error = 'Internal error.';
+        if (code > 0) {
+          error = escapeHtml(JSON.parse(xhr.responseText).error);
+        } else {
+          code = '';
+        }
+        $('#modalError').html(html_error_modal(code, error));
+
+        if (xhr.status == 401 || xhr.status == 302) {
           $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
           $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
-          $('#ErrorModal').modal('show');
-        } else {
-          $('#ErrorModal').modal('hide');
-          var code = xhr.status;
-          var error = 'Internal error.';
-          if (code > 0)
-          {
-            error = escapeHtml(JSON.parse(xhr.responseText).error);
-          } else {
-            code = '';
-          }
-          $('#modalError').html(html_error_modal(code, error));
-          $('#ErrorModal').modal('show');
         }
+        $('#ErrorModal').modal('show');
       }
     });
   }
