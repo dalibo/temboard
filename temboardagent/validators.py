@@ -103,3 +103,14 @@ def writeabledir(raw):
     if not os.access(raw, os.W_OK):
         raise ValueError('Not writable')
     return raw
+
+
+def list_(raw):
+    return [w.strip() for w in raw.split(b',') if len(w.strip())]
+
+
+def quoted(raw):
+    for char in ['"', '\'']:
+        if raw.startswith(char) and raw.endswith(char):
+            raw = raw[1:-1]
+    return raw

@@ -18,6 +18,7 @@ from temboardagent.errors import HTTPError
 from temboardagent import __version__ as temboard_version
 from .sharedmemory import Sessions
 from .services import Service
+from .api import check_sessionid
 
 
 logger = logging.getLogger(__name__)
@@ -31,14 +32,14 @@ class RequestHandler(BaseHTTPRequestHandler):
     """
     HTTP request handler.
     """
-    def __init__(self, config, sessions, *args, **kwargs):
+    def __init__(self, app, sessions, *args, **kwargs):
         """
         Constructor.
         """
         # Sessions array in shared memory.
         self.sessions = sessions
-        # Configuration instance.
-        self.config = config
+        # Application instance.
+        self.app = app
         # HTTP server version.
         self.server_version = "temboard-agent/%s" % temboard_version
         # HTTP request method
@@ -94,9 +95,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         Overrides log_message() for HTTP requests logging with our own logger.
         """
-        logger.info("client: %s request: %s" % (
-                         self.address_string(),
-                         format % args))
+        logger.info("client: %s request: %s"
+                    % (self.address_string(), format % args))
 
     def response(self):
         """
@@ -106,18 +106,72 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             (code, message) = self.route_request()
         except HTTPError as e:
+            logger.exception(e.message)
+            logger.error(e.message)
             code = e.code
             message = e.message
         except Exception as e:
+            logger.exception(str(e))
+            logger.error("Internal error")
             # This is an unknown error. Just inform there is an internal error.
             code = 500
             message = {'error': "Internal error."}
-            logger.error("Internal error: %s" % (str(e)))
-        self.send_response(int(code))
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps(message).encode('utf-8'))
+
+        try:
+            # Try to send the response
+            self.send_response(int(code))
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(message).encode('utf-8'))
+        except Exception as e:
+            logger.exception(str(e))
+            logger.error("Could not send response")
+
+    def get_route(self, method, path):
+        # Returns the right route according to method/path
+        s_path = path.split('/')[1:]
+        root = s_path[0]
+        for route in get_routes():
+            # Check that HTTP method and url root are matching.
+            if not (route['http_method'] == self.http_method and
+                    route['root'] == root):
+                continue
+
+            p = 0
+            # Check each element in the path.
+            for elt in s_path:
+                try:
+                    if type(route['splitpath'][p]) is not str:
+                        # Then this is a regular expression.
+                        res = route['splitpath'][p].match(elt)
+                        if not res:
+                            break
+                    else:
+                        if route['splitpath'][p] != elt:
+                            break
+                except IndexError:
+                    break
+                p += 1
+            if p == len(s_path):
+                logger.debug(route)
+                return route
+        raise HTTPError(404, 'URL not found.')
+
+    def parse_path(self, path, route):
+        # Parse an URL path when route's path contains regepx
+        p = 0
+        urlvars = list()
+        for elt in path.split('/')[1:]:
+            if type(route['splitpath'][p]) is not str:
+                # Then this is a regular expression.
+                res = route['splitpath'][p].match(elt)
+                if res is not None:
+                    # If the regexp matches, we want to get the
+                    # value and append it in urlvars.
+                    urlvars.append(unquote_plus(res.group(1)))
+            p += 1
+        return urlvars
 
     def route_request(self,):
         """
@@ -125,70 +179,61 @@ class RequestHandler(BaseHTTPRequestHandler):
         function.
         """
         # Let's parse and prepare url, path, query etc..
-        url_parsed = urlparse(self.path, 'http')
-        path = url_parsed.path
+        up = urlparse(self.path, 'http')
+        path = up.path
         splitpath = path.split('/')
         if len(splitpath) == 1:
             raise HTTPError(404, 'Not found.')
-        root = splitpath[1]
-        self.query = parse_qs(url_parsed.query)
-        # Loop on each defined route in the API.
-        for route in get_routes():
-            urlvars = []
-            is_that_route = True
-            # Check that HTTP method and url root are matching.
-            if route['http_method'] == self.http_method and \
-               route['root'] == root:
-                pos = 0
-                # Check each element in the path.
-                for elt in splitpath[1:]:
-                    try:
-                        if type(route['splitpath'][pos]) is not str:
-                            # Then this is a regular expression.
-                            res = route['splitpath'][pos].match(elt)
-                            if res is not None:
-                                # If the regexp matches, we want to get the
-                                #  value and append it in urlvars.
-                                urlvars.append(unquote_plus(res.group(1)))
-                            else:
-                                is_that_route = False
-                                break
-                        else:
-                            if route['splitpath'][pos] != elt:
-                                is_that_route = False
-                                break
-                    except IndexError:
-                        is_that_route = False
-                        break
-                    pos += 1
-                if is_that_route:
-                    if self.http_method == 'POST':
-                        # TODO: raise an HTTP error if the content-length is
-                        # too large.
-                        try:
-                            # Load POST content expecting it is in JSON format.
-                            post_raw = self.rfile.read(
-                                        int(self.headers['Content-Length']))
-                            self.post_json = json.loads(
-                                                post_raw.decode('utf-8'))
-                        except Exception as e:
-                            raise HTTPError(400, 'Invalid json format: %s.'
-                                                 % (str(e)))
-                    http_context = {
-                        'headers': self.headers,
-                        'query': self.query,
-                        'post': self.post_json,
-                        'urlvars': urlvars
-                    }
-                    # Call the right API function.
-                    response = getattr(sys.modules[route['module']],
-                                       route['function'])(
-                                http_context,
-                                self.config,
-                                self.sessions)
-                    return (200, response)
+        self.query = parse_qs(up.query)
 
-        raise HTTPError(404, 'URL not found.')
+        # Get the route
+        route = self.get_route(self.http_method, path)
+        # Parse URL path
+        urlvars = self.parse_path(path, route)
+        post_raw = None
+        # Load POST content if any
+        if self.http_method == 'POST':
+            # TODO: raise an HTTP error if the content-length is
+            # too large.
+            try:
+                post_raw = self.rfile.read(int(self.headers['Content-Length']))
+            except Exception as e:
+                logger.exception(str(e))
+                logger.debug(self.headers)
+                logger.error('Unable to read post data')
+                raise HTTPError(400, 'Unable to read post data')
+
+        # Check session ID
+        if route['check_session']:
+            username = check_sessionid(self.headers, self.sessions)
+        else:
+            username = None
+
+        try:
+            # Load POST content expecting it is in JSON format.
+            if post_raw:
+                self.post_json = json.loads(post_raw.decode('utf-8'))
+        except Exception as e:
+            logger.exception(str(e))
+            logger.error('Invalid json format')
+            raise HTTPError(400, 'Invalid json format')
+
+        http_context = dict(
+            headers=self.headers,
+            query=self.query,
+            post=self.post_json,
+            urlvars=urlvars,
+            username=username,
+        )
+
+        # Handle the request
+        func = getattr(sys.modules[route['module']], route['function'])
+        if route['module'] == 'temboardagent.api':
+            # some core APIs need to deal with sessions
+            return (200, func(http_context, self.app, self.sessions))
+        else:
+            # plugin
+            return (200, func(http_context, self.app))
 
 
 class HTTPDService(Service):
@@ -210,4 +255,4 @@ class HTTPDService(Service):
         self.sessions.purge_expired(3600, logger, self.app.config)
 
     def handle_request(self, *args):
-        return RequestHandler(self.app.config, self.sessions, *args)
+        return RequestHandler(self.app, self.sessions, *args)

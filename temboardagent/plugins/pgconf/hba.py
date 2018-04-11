@@ -1,5 +1,5 @@
 import re
-from pgconf.filemgmt import (
+from .filemgmt import (
     ConfigurationFileManager,
     read_file_content,
     save_file_content,

@@ -1,37 +1,22 @@
 import time
 import os
-import sys
-import re
 import logging
-import signal
 import json
 import urllib2
-import collections
-
-try:
-    from configparser import NoOptionError
-except ImportError:
-    from ConfigParser import NoOptionError
-
+from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.scheduler import taskmanager
-from temboardagent.routing import add_route, add_worker
-from temboardagent.configuration import (
-    PluginConfiguration,
-    ConfigurationError,
-)
-from temboardagent.errors import (
-    HTTPError,
-    SharedItem_exists,
-    SharedItem_no_free_slot_left,
-)
-from temboardagent.api import check_sessionid
+from temboardagent.routing import add_route
+from temboardagent.configuration import OptionSpec
+from temboardagent.validators import file_, list_
 from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
+from temboardagent import __version__ as __VERSION__
+from temboardagent.errors import UserError
 
-from monitoring.inventory import host_info, instance_info
-from monitoring.probes import (
+from .inventory import host_info, instance_info
+from .probes import (
     load_probes,
     probe_bgwriter,
     probe_blocks,
@@ -49,424 +34,238 @@ from monitoring.probes import (
     probe_xacts,
     run_probes,
 )
-from monitoring.output import send_output, remove_passwords
-
-__VERSION__ = '0.0.1'
+from .output import send_output, remove_passwords
 
 logger = logging.getLogger(__name__)
+CONFIG = None
 
 
-@add_route('GET', '/monitoring/probe/sessions')
-def monitoring_probe_sessions(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_sessions(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_sessions(http_context, app):
+    return api_run_probe(probe_sessions(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/xacts')
-def monitoring_probe_xacts(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_xacts(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_xacts(http_context, app):
+    return api_run_probe(probe_xacts(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/locks')
-def monitoring_probe_locks(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_locks(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_locks(http_context, app):
+    return api_run_probe(probe_locks(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/blocks')
-def monitoring_probe_blocks(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_blocks(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_blocks(http_context, app):
+    return api_run_probe(probe_blocks(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/bgwriter')
-def monitoring_probe_bgwriter(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_bgwriter(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_bgwriter(http_context, app):
+    return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/db_size')
-def monitoring_probe_db_size(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_db_size(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_db_size(http_context, app):
+    return api_run_probe(probe_db_size(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/tblspc_size')
-def monitoring_probe_tblspc_size(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_tblspc_size(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_tblspc_size(http_context, app):
+    return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/filesystems_size')
-def monitoring_probe_filesystems_size(http_context, config=None,
-                                      sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(
-            probe_filesystems_size(config.plugins['monitoring']),
-            config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_filesystems_size(http_context, app):
+    return api_run_probe(probe_filesystems_size(app.config.monitoring),
+                         app.config)
 
 
-@add_route('GET', '/monitoring/probe/cpu')
-def monitoring_probe_cpu(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_cpu(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_cpu(http_context, app):
+    return api_run_probe(probe_cpu(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/process')
-def monitoring_probe_process(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_process(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_process(http_context, app):
+    return api_run_probe(probe_process(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/memory')
-def monitoring_probe_memory(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_memory(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_memory(http_context, app):
+    return api_run_probe(probe_memory(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/loadavg')
-def monitoring_probe_loadavg(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_loadavg(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_loadavg(http_context, app):
+    return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/wal_files')
-def monitoring_probe_wal_files(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_wal_files(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_wal_files(http_context, app):
+    return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
-@add_route('GET', '/monitoring/probe/replication')
-def monitoring_probe_replication(http_context, config=None, sessions=None):
-    check_sessionid(http_context['headers'], sessions)
-
-    try:
-        output = api_run_probe(probe_replication(config.plugins['monitoring']),
-                               config)
-        return output
-    except Exception as e:
-        logger.error(str(e.message))
-        raise HTTPError(500, "Internal error.")
+def get_probe_replication(http_context, app):
+    return api_run_probe(probe_replication(app.config.monitoring), app.config)
 
 
 def api_run_probe(probe_instance, config):
     """
     Run a probe instance.
     """
-    config.plugins['monitoring']['conninfo'] = [{
-        'host': config.postgresql['host'],
-        'port': config.postgresql['port'],
-        'user': config.postgresql['user'],
-        'database': config.postgresql['dbname'],
-        'password': config.postgresql['password'],
-        'dbnames': config.plugins['monitoring']['dbnames'],
-        'instance': config.postgresql['instance']
-    }]
+    conninfo = dict(
+        host=config.postgresql.host,
+        port=config.postgresql.port,
+        user=config.postgresql.user,
+        database=config.postgresql.dbname,
+        password=config.postgresql.password,
+        dbnames=config.monitoring.dbnames,
+        instance=config.postgresql.instance,
+    )
     # Validate connection information from the config, and ensure
     # the instance is available
-    instances = []
     sysinfo = SysInfo()
-    hostname = sysinfo.hostname(config.temboard['hostname'])
-    for conninfo in config.plugins['monitoring']['conninfo']:
-        logging.debug("Validate connection information on instance \"%s\"",
-                      conninfo['instance'])
-        instances.append(instance_info(conninfo, hostname))
-
+    hostname = sysinfo.hostname(config.temboard.hostname)
+    instance = instance_info(conninfo, hostname)
     # Set home path
-    probe_instance.set_home(config.temboard['home'])
+    probe_instance.set_home(config.temboard.home)
     # Gather the data from probes
-    data = run_probes([probe_instance], instances, delta=False)
-    return data
+    return run_probes([probe_instance], [instance], delta=False)
 
 
-@taskmanager.worker(pool_size=1)
-def monitoring_collector_worker(config):
+def monitoring_collector_worker(pickled_config):
     """
     Run probes and push collected metrics in a queue.
     """
-    signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
-    # convert config dict to namedtuple
-    config = collections.namedtuple('__config', ['temboard', 'plugins',
-                                                 'postgresql', 'logging'])(
-                    temboard=config['temboard'],
-                    plugins=config['plugins'],
-                    postgresql=config['postgresql'],
-                    logging=config['logging']
-                )
+    logger.debug("Starting monitoring collector")
+    config = unpickle(pickled_config)
+    conninfo = dict(
+        host=config.postgresql.host,
+        port=config.postgresql.port,
+        user=config.postgresql.user,
+        database=config.postgresql.dbname,
+        password=config.postgresql.password,
+        dbnames=config.monitoring.dbnames,
+        instance=config.postgresql.instance,
+    )
 
-    logger.debug("Starting collector")
-
-    try:
-        system_info = host_info(config.temboard['hostname'])
-    except (ValueError, Exception) as e:
-        logger.exception(e)
-        logger.debug("Failed")
-        sys.exit(1)
-
+    system_info = host_info(config.temboard.hostname)
     # Load the probes to run
-    try:
-        probes = load_probes(config.plugins['monitoring'],
-                             config.temboard['home'])
-        config.plugins['monitoring']['conninfo'] = [{
-            'host': config.postgresql['host'],
-            'port': config.postgresql['port'],
-            'user': config.postgresql['user'],
-            'database': config.postgresql['dbname'],
-            'password': config.postgresql['password'],
-            'dbnames': config.plugins['monitoring']['dbnames'],
-            'instance': config.postgresql['instance']
-        }]
+    probes = load_probes(config.monitoring, config.temboard.home)
 
-        # Validate connection information from the config, and ensure
-        # the instance is available
-        instances = []
-        for conninfo in config.plugins['monitoring']['conninfo']:
-            instances.append(instance_info(conninfo, system_info['hostname']))
+    instance = instance_info(conninfo, system_info['hostname'])
 
-        logger.debug("Running probes")
-        # Gather the data from probes
-        data = run_probes(probes, instances)
+    logger.debug("Running probes")
+    # Gather the data from probes
+    data = run_probes(probes, [instance])
 
-        # Prepare and send output
-        output = {
-            'datetime': now(),
-            'hostinfo': system_info,
-            'instances': remove_passwords(instances),
-            'data': data,
-            'version': __VERSION__
-        }
-        logger.debug(output)
-        q = Queue('%s/metrics.q' % (config.temboard['home']),
-                  max_size=1024 * 1024 * 10, overflow_mode='slide')
-        q.push(Message(content=json.dumps(output)))
-        logger.debug("Done")
-    except Exception as e:
-        logger.exception(e)
-        logger.error("Could not collect data")
-        sys.exit(1)
+    # Prepare and send output
+    output = dict(
+        datetime=now(),
+        hostinfo=system_info,
+        instances=remove_passwords([instance]),
+        data=data,
+        version=__VERSION__,
+    )
+    logger.debug(output)
+    q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
+              max_size=1024 * 1024 * 10, overflow_mode='slide')
+    q.push(Message(content=json.dumps(output)))
+    logger.debug("Done")
 
 
-@taskmanager.worker(pool_size=1)
-def monitoring_sender_worker(config):
-    signal.signal(signal.SIGTERM, monitoring_worker_sigterm_handler)
-    # convert config dict to namedtuple
-    config = collections.namedtuple('__config', ['temboard', 'plugins',
-                                                 'postgresql', 'logging'])(
-                    temboard=config['temboard'],
-                    plugins=config['plugins'],
-                    postgresql=config['postgresql'],
-                    logging=config['logging']
-                )
-
+def monitoring_sender_worker(pickled_config):
+    config = unpickle(pickled_config)
     c = 0
     logger.debug("Starting sender")
+    q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
+              max_size=1024 * 1024 * 10, overflow_mode='slide')
     while True:
         # Let's do it smoothly..
         time.sleep(0.5)
-
-        q = Queue('%s/metrics.q' % (config.temboard['home']),
-                  max_size=1024 * 1024 * 10, overflow_mode='slide')
         msg = q.shift(delete=False)
+
         if msg is None:
+            # If we get nothing from the queue then we get out from this while
+            # loop.
             break
         try:
-            send_output(config.plugins['monitoring']['ssl_ca_cert_file'],
-                        config.plugins['monitoring']['collector_url'],
-                        config.temboard['key'],
-                        msg.content)
+            # Try to send data to temboard collector API
+            logger.debug("Trying to send data to collector")
+            logger.debug(config.monitoring.collector_url)
+            logger.debug(msg.content)
+            send_output(
+                config.monitoring.ssl_ca_cert_file,
+                config.monitoring.collector_url,
+                config.temboard.key,
+                msg.content
+            )
         except urllib2.HTTPError as e:
-            logger.exception(e)
-            # On an error 409 (DB Integrity) we need to remove the message.
+            # On error 409 (DB Integrity) we just drop the message and move to
+            # the next message.
             if int(e.code) != 409:
-                logger.error("Failed with code=%s message=%s"
-                             % (e.code, e.msg))
-                sys.exit(1)
-        except Exception as e:
-            logger.exception(e)
-            logger.error("Failed")
-            sys.exit(1)
+                raise e
 
         # If everything's fine then remove current msg from the queue
+        # Integrity check is made using check_msg
         q.shift(delete=True, check_msg=msg)
 
         if c > 60:
             break
         c += 1
+
     logger.debug("Done")
 
 
-@taskmanager.bootstrap()
 def monitoring_bootstrap(context):
-    conf = context.get('config')
     yield taskmanager.Task(
-            worker_name='monitoring_collector_worker',
-            id='monitoring_collector',
-            options={'config': conf},
-            redo_interval=conf['plugins']['monitoring']['scheduler_interval'],
+        worker_name='monitoring_collector_worker',
+        id='monitoring_collector',
+        options={'pickled_config': pickle(CONFIG)},
+        redo_interval=CONFIG.monitoring.scheduler_interval,
     )
     yield taskmanager.Task(
-            worker_name='monitoring_sender_worker',
-            id='monitoring_sender',
-            options={'config': conf},
-            redo_interval=conf['plugins']['monitoring']['scheduler_interval'],
+        worker_name='monitoring_sender_worker',
+        id='monitoring_sender',
+        options={'pickled_config': pickle(CONFIG)},
+        redo_interval=CONFIG.monitoring.scheduler_interval,
     )
 
 
-def configuration(config):
-    class Configuration(PluginConfiguration):
-        def __init__(self, config, *args, **kwargs):
-            PluginConfiguration.__init__(self, config.configfile, *args,
-                                         **kwargs)
+class MonitoringPlugin(object):
+    PG_MIN_VERSION = 90400
 
-            self.plugin_configuration = {
-                'dbnames': '*',
-                'scheduler_interval': 60,
-                'probes': '*',
-                'collector_url': os.environ.get(
-                    'TEMBOARD_MONITORING_COLLECTOR_URL', None),
-                'ssl_ca_cert_file': None
-            }
+    def __init__(self, app, **kw):
+        self.app = app
+        s = 'monitoring'
+        default_col = os.environ.get('TEMBOARD_MONITORING_COLLECTOR_URL', None)
+        self.app.config.add_specs([
+            OptionSpec(s, 'dbnames', default='*', validator=list_),
+            OptionSpec(s, 'scheduler_interval', default=60, validator=int),
+            OptionSpec(s, 'probes', default='*', validator=list_),
+            OptionSpec(s, 'collector_url', default=default_col),
+            OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
+        ])
 
-            try:
-                self.check_section(__name__)
-            except ConfigurationError:
-                return
+    def load(self):
+        global CONFIG
+        CONFIG = self.app.config
 
-            try:
-                dbnames = self.get(__name__, 'dbnames')
-                self.plugin_configuration['dbnames'] = re.split(r'[,\s]+',
-                                                                dbnames)
-            except NoOptionError:
-                pass
+        pg_version = self.app.postgres.fetch_version()
+        if pg_version < self.PG_MIN_VERSION:
+            msg = "%s is incompatible with Postgres below 9.4" % (
+                self.__class__.__name__)
+            raise UserError(msg)
 
-            try:
-                probes = self.get(__name__, 'probes')
-                self.plugin_configuration['probes'] = re.split(r'[,\s]+',
-                                                               probes)
-            except NoOptionError:
-                pass
+        add_route('GET', '/monitoring/probe/sessions')(get_probe_sessions)
+        add_route('GET', '/monitoring/probe/xacts')(get_probe_xacts)
+        add_route('GET', '/monitoring/probe/locks')(get_probe_locks)
+        add_route('GET', '/monitoring/probe/blocks')(get_probe_blocks)
+        add_route('GET', '/monitoring/probe/bgwriter')(get_probe_bgwriter)
+        add_route('GET', '/monitoring/probe/db_size')(get_probe_db_size)
+        add_route('GET', '/monitoring/probe/tblspc_size')(
+            get_probe_tblspc_size)
+        add_route('GET', '/monitoring/probe/filesystems_size')(
+            get_probe_filesystems_size)
+        add_route('GET', '/monitoring/probe/cpu')(get_probe_cpu)
+        add_route('GET', '/monitoring/probe/process')(get_probe_process)
+        add_route('GET', '/monitoring/probe/memory')(get_probe_memory)
+        add_route('GET', '/monitoring/probe/loadavg')(get_probe_loadavg)
+        add_route('GET', '/monitoring/probe/wal_files')(get_probe_wal_files)
+        add_route('GET', '/monitoring/probe/replication')(
+            get_probe_replication)
 
-            try:
-                collector_url = self.get(__name__, 'collector_url')
-                self.plugin_configuration['collector_url'] = collector_url
-            except NoOptionError:
-                pass
+        taskmanager.worker(pool_size=1)(monitoring_collector_worker)
+        taskmanager.worker(pool_size=1)(monitoring_sender_worker)
+        taskmanager.bootstrap()(monitoring_bootstrap)
 
-            try:
-                if not (self.getint(__name__, 'scheduler_interval') > 0 and
-                        self.getint(__name__, 'scheduler_interval') < 86400):
-                    raise ValueError()
-                self.plugin_configuration['scheduler_interval'] = \
-                    self.getint(__name__, 'scheduler_interval')
-            except ValueError:
-                logger.error("%s - configuration error: 'scheduler_interval' "
-                             "must be an integer between 0 and 86400 in '%s' "
-                             "section in %s."
-                             % (__name__, self.configfile, __name__))
-            except NoOptionError:
-                pass
-
-            try:
-                self.plugin_configuration['ssl_ca_cert_file'] = (
-                    self.getfile(__name__, 'ssl_ca_cert_file'))
-            except NoOptionError:
-                pass
-
-    c = Configuration(config)
-    return c.plugin_configuration
-
-
-def monitoring_worker_sigterm_handler(signum, frame):
-    logging.info("monitoring_worker - SIGTERM")
-    sys.exit(1)
+    def unload(self):
+        pass

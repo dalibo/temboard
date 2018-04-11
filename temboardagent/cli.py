@@ -11,7 +11,6 @@ import sys
 from .configuration import configparser
 from .postgres import Postgres
 from .log import setup_logging
-from .pluginsmgmt import load_plugins_configurations as load_legacy_plugins
 from .errors import UserError
 from .configuration import MergedConfiguration, OptionSpec
 from . import validators as v
@@ -182,7 +181,7 @@ class Application(object):
             raise UserError("Missing plugin: %s." % (name,))
 
     def create_plugins(self):
-        self.config.plugins = load_legacy_plugins(self.config)
+        self.config.plugins = dict()
 
         # Filter legacy plugins
         ng_plugins = filter(

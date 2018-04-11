@@ -50,6 +50,11 @@ class SchedulerService(Service):
     def serve1(self):
         self.scheduler.serve1()
 
+    def reload(self):
+        self.app.reload()
+        # Apply configuration changes to bootstraped Tasks
+        self.scheduler.sync_bootstrap_options()
+
 
 class WorkerPoolService(Service):
     # Adapter from taskmanager.WorkerPool to Service

@@ -1,11 +1,14 @@
 import re
 import sys
+import logging
 
 ROUTES = []
 WORKERS = []
 
+logger = logging.getLogger(__name__)
 
-def add_route(method, path):
+
+def add_route(method, path, check_session=True):
     """
     Function decorator for HTTP method/path -> API function mapping.
     """
@@ -32,13 +35,15 @@ def add_route(method, path):
         # A path can't start with a regexp.
         if root is None:
             raise Exception("Wrong route format.")
-        ROUTES.append({
-            'http_method': method,
-            'root': root,
-            'path': path,
-            'splitpath': splitpath,
-            'module': function.__module__,
-            'function': function.__name__})
+        ROUTES.append(dict(
+            http_method=method,
+            root=root,
+            path=path,
+            splitpath=splitpath,
+            module=function.__module__,
+            function=function.__name__,
+            check_session=check_session,
+        ))
         return function
     return func_wrapper
 
@@ -48,27 +53,3 @@ def get_routes():
     Returns the routes.
     """
     return ROUTES
-
-
-def add_worker(name):
-    """
-    Function decorator for worker name -> worker function mapping.
-    """
-    def func_wrapper(function):
-        global WORKERS
-        WORKERS.append({
-            'name': name,
-            'module': function.__module__,
-            'function': function.__name__})
-        return function
-    return func_wrapper
-
-
-def get_worker(name):
-    """
-    Returns the function corresponding to the given worker name.
-    """
-    for worker in WORKERS:
-        if worker['name'] == name:
-            return getattr(sys.modules[worker['module']], worker['function'])
-    raise Exception("Worker %s not found." % (name,))

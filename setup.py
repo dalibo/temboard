@@ -2,8 +2,9 @@ from setuptools import setup, find_packages
 import os
 
 # Load version number
+__version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
-exec(open(os.path.join(setup_path,'temboardagent','version.py'), 'r').read())
+exec(open(os.path.join(setup_path, 'temboardagent', 'version.py'), 'r').read())
 
 SETUP_KWARGS = dict(
     name='temboard-agent',
@@ -48,6 +49,10 @@ SETUP_KWARGS = dict(
     entry_points={
         'temboardagent.plugins': [
             'activity = temboardagent.plugins.activity:ActivityPlugin',
+            'administration = temboardagent.plugins.administration:AdministrationPlugin',  # noqa
+            'dashboard = temboardagent.plugins.dashboard:DashboardPlugin',
+            'monitoring = temboardagent.plugins.monitoring:MonitoringPlugin',
+            'pgconf = temboardagent.plugins.pgconf:PgConfPlugin',
         ],
     },
 )
