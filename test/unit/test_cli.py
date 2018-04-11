@@ -88,6 +88,7 @@ def test_unhandled_error_debug(mocker):
 
 def test_bootstrap(mocker):
     mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
+    mocker.patch('temboardagent.cli.Application.read_dir', autospec=True)
     mocker.patch('temboardagent.cli.Application.apply_config', autospec=True)
     mocker.patch('temboardagent.cli.MergedConfiguration')
     from temboardagent.cli import Application, bootstrap
@@ -179,14 +180,34 @@ def test_read_file(mocker):
         app.read_file(mocker.Mock(name='parser'), 'pouet.conf')
 
 
+def test_read_dir(mocker):
+    rf = mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
+    isdir = mocker.patch('temboardagent.cli.os.path.isdir', autospec=True)
+    glob = mocker.patch('temboardagent.cli.glob', autospec=True)
+
+    from temboardagent.cli import Application
+
+    app = Application()
+    isdir.return_value = False
+    app.read_dir(mocker.Mock(name='parser'), '/dev/null')
+
+    isdir.return_value = True
+    glob.return_value = ['pouet.conf.d/toto.conf']
+    app.read_dir(mocker.Mock(name='parser'), 'pouet.conf.d')
+    assert rf.called is True
+
+
 def test_reload(mocker):
-    mocker.patch('temboardagent.cli.Application.read_file', autospec=True)
-    mocker.patch('temboardagent.cli.Application.apply_config', autospec=True)
+    m = 'temboardagent.cli.Application'
+    mocker.patch(m + '.read_file', autospec=True)
+    mocker.patch(m + '.read_dir', autospec=True)
+    mocker.patch(m + '.apply_config', autospec=True)
 
     from temboardagent.cli import Application
 
     app = Application()
     app.config = mocker.Mock(name='config')
+    app.config.temboard.configfile = 'pouet.conf'
     app.reload()
 
 
