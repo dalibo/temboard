@@ -438,3 +438,14 @@ $glow-color-end: lighten($primary, 30%);
 canvas {
   height: 20px;
 }
+
+.collapse-toggle.dropdown-toggle {
+  &::after {
+    border-top: none;
+    border-bottom: .3em solid;
+  }
+  &.collapsed::after {
+    border-top: .3em solid;
+    border-bottom: none;
+  }
+}

@@ -99,13 +99,13 @@ $(function() {
   ]);
 
   var table = el.DataTable({
-    searching: false,
     paging: false,
+    stateSave: true,
     lengthChange: false,
-    info: false,
     autoWidth: false,
     order: [[columns.length - 2, 'desc']], /* order by duration */
-    columns: columns
+    columns: columns,
+    dom: 't' // only show table
   });
 
   function load() {
@@ -285,6 +285,63 @@ $(function() {
       });
     });
   });
+
+  var stateFilters = $('#state-filter input[type=checkbox]');
+  stateFilters.change(table.draw);
+
+  /* State filtering function */
+  $.fn.dataTable.ext.search.push(
+    function stateFilter(settings, data, dataIndex) {
+      var states = [];
+      stateFilters.each(function(index, el) {
+        var input = $(el);
+        if (input.prop('checked')) {
+          states.push(input.val());
+        }
+      });
+      var index = getColumnIndex('State');
+      if (!index) {
+        console.error('Column index not found');
+        return true;
+      }
+      if (states.some(function(item) {return item === data[index]})) {
+        return true;
+      }
+      return false;
+    }
+  );
+
+  var searchFilter = $('#searchFilter');
+  searchFilter.keyup(table.draw);
+  /* Custom filtering function */
+  $.fn.dataTable.ext.search.push(
+    function searchFilterFn(settings, data) {
+      var criteria = searchFilter.val();
+      var i = 0;
+      var len = data.length;
+      for (i; i < len; i++) {
+        if (data[i].toUpperCase().indexOf(criteria.toUpperCase()) != -1) {
+          return true;
+        }
+      }
+      return false;
+    }
+  );
+
+  /**
+   * Find the index of the column for a given title
+   */
+  function getColumnIndex(title) {
+    var i = 0;
+    var len = columns.length;
+    for (i; i < len; i++) {
+      var col = columns[i];
+      if (col.title == title) {
+        return i;
+      }
+    }
+    return undefined;
+  }
 });
 
 var entityMap = {
