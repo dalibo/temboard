@@ -49,10 +49,10 @@ SETUP_KWARGS = dict(
     entry_points={
         'temboardagent.plugins': [
             'activity = temboardagent.plugins.activity:ActivityPlugin',
+            'administration = temboardagent.plugins.administration:AdministrationPlugin',  # noqa
+            'dashboard = temboardagent.plugins.dashboard:DashboardPlugin',
             'monitoring = temboardagent.plugins.monitoring:MonitoringPlugin',
             'pgconf = temboardagent.plugins.pgconf:PgConfPlugin',
-            'dashboard = temboardagent.plugins.dashboard:DashboardPlugin',
-            'administration = temboardagent.plugins.administration:AdministrationPlugin',  # noqa
         ],
     },
 )
