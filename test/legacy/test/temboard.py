@@ -142,23 +142,45 @@ def agent_add_user(passwd_file_path, user, passwd):
         fd.write(stdout)
 
 
-def agent_write_conf(conf_tpl, test_env):
+def agent_write_conf(test_env):
     """
     Write agent's configuration file.
     """
-    with open(test_env['agent']['conf_file'], 'w') as fd:
-        fd.write(conf_tpl % (
-            test_env['agent']['port'],
-            test_env['agent']['users'],
-            test_env['agent']['ssl_key_file'],
-            test_env['agent']['ssl_cert_file'],
-            test_env['agent']['home'],
-            test_env['pg']['socket_dir'],
-            test_env['pg']['port'],
-            test_env['pg']['user'],
-            test_env['pg']['password'],
-            test_env['agent']['log_file'],
-            test_env['agent']['ssl_cert_file']))
+    config = dict(
+        temboard=test_env['agent'],
+        postgresql=test_env['pg'],
+    )
+    config['logging'] = dict(
+        destination=test_env['agent']['log_file'],
+    )
+    config['monitoring'] = dict(
+        ssl_ca_cert_file=test_env['agent']['ssl_ca_cert_file'],
+    )
+    config['postgresql']['host'] = test_env['pg']['socket_dir']
+    data = dict([
+        ('%s_%s' % (k, kk), vv)
+        for k, v in config.items()
+        for kk, vv in v.items()
+    ])
+    dest = test_env['agent']['conf_file']
+    template = test_conf.AGENT_CONFIG
+    with open(dest, 'w') as fo:
+        fo.write(template % data)
+
+    try:
+        os.mkdir(test_env['agent']['conf_dir'])
+    except OSError:
+        pass
+
+    dest = test_env['agent']['conf_dir'] + '/plugins.conf'
+    template = test_conf.AGENT_CONFIG_PLUGINS
+    with open(dest, 'w') as fo:
+        fo.write(template % data)
+
+    dest = test_env['agent']['conf_dir'] + '/monitoring.conf'
+    template = test_conf.AGENT_CONFIG_MONITORING
+    with open(dest, 'w') as fo:
+        fo.write(template % data)
 
 
 def agent_start(pid_file, conf_file):
@@ -253,6 +275,7 @@ def init_env():
             'port': str(test_conf.AGENT_PORT),
             'user': test_conf.AGENT_USER,
             'password': test_conf.AGENT_PASSWORD,
+            'plugins': '["monitoring", "dashboard", "pgconf", "administration", "activity"]',  # noqa
         },
         'pg': {
             'bin': tbd_pgbin,
@@ -277,6 +300,7 @@ def init_env():
 
         # agent env. vars
         test_env['agent']['conf_file'] = agent_dir+'/temboard-agent.conf'
+        test_env['agent']['conf_dir'] = agent_dir+'/temboard-agent.conf.d'
         test_env['agent']['pid_file'] = agent_dir+'/temboard-agent.pid'
         test_env['agent']['users'] = agent_dir+'/users'
         test_env['agent']['log_file'] = log_dir+'/temboard-agent.log'
@@ -313,8 +337,7 @@ def init_env():
                               test_env['agent']['ssl_cert_file'],
                               test_conf.AGENT_SSL_CERT)
         # Write agent configuration file.
-        agent_write_conf(test_conf.AGENT_CONFIG,
-                         test_env)
+        agent_write_conf(test_env)
         # Start the agent
         agent_start(test_env['agent']['pid_file'],
                     test_env['agent']['conf_file'])
