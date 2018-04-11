@@ -148,8 +148,8 @@ class DashboardPlugin(object):
 
         pg_version = self.app.postgres.fetch_version()
         if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below %s" % (
-                self.__class__.__name__, self.PG_MIN_VERSION)
+            msg = "%s is incompatible with Postgres below 9.4" % (
+                self.__class__.__name__)
             raise UserError(msg)
 
         add_route('GET', '/dashboard')(dashboard)
