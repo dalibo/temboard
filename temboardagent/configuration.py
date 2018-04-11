@@ -111,7 +111,7 @@ class OptionSpec(object):
         try:
             return self.validator(value.value)
         except ValueError as e:
-            logger.debug(
+            logger.error(
                 "Invalid %s from %s: %.32s...", value.name, value.origin, e)
             raise
 
@@ -226,7 +226,7 @@ class MergedConfiguration(DotDict):
                 except OSError as e:
                     logger.debug("Can't move back to %s: %s", oldpwd, e)
         except ValueError as e:
-            raise UserError(str(e))
+            raise UserError("Failed to load configuration.")
 
         self.add_values(iter_defaults(self.specs))
         self.check_required()
