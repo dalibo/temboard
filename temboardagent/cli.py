@@ -3,6 +3,7 @@
 from argparse import Action as ArgAction
 from pkg_resources import iter_entry_points
 from distutils.util import strtobool
+from glob import glob
 import logging
 import os
 import pdb
@@ -83,6 +84,7 @@ class Application(object):
         parser = configparser.RawConfigParser()
         configfile = config.temboard.configfile
         self.read_file(parser, configfile)
+        self.read_dir(parser, configfile + '.d')
         self.config_sources.update(dict(
             parser=parser, pwd=os.path.dirname(configfile)
         ))
@@ -161,12 +163,18 @@ class Application(object):
         yield OptionSpec(s, 'dbname', default='postgres')
 
     def read_file(self, parser, filename):
-        logger.info('Reading %s.', filename)
+        logger.debug('Reading %s.', filename)
         try:
             with open(filename, 'ro') as fp:
                 parser.readfp(fp)
         except IOError as e:
             raise UserError(str(e))
+
+    def read_dir(self, parser, dirname):
+        if not os.path.isdir(dirname):
+            return
+        for filename in sorted(glob(dirname + '/*.conf')):
+            self.read_file(parser, filename)
 
     def fetch_plugin(self, name):
         logger.debug("Looking for plugin %s.", name)
@@ -231,6 +239,7 @@ class Application(object):
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
         self.read_file(parser, self.config.temboard.configfile)
+        self.read_dir(parser, self.config.temboard.configfile + '.d')
         self.config.load(reload_=True, **self.config_sources)
 
         self.apply_config()

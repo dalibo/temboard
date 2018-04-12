@@ -20,43 +20,52 @@ AGENT_PASSWORD = 'password'
 AGENT_CONFIG = """
 [temboard]
 # HTTP port
-port = %s
+port = %(temboard_port)s
 # Bind address
 address = 127.0.0.1
 # user & password file
-users = %s
-plugins = ["monitoring", "dashboard", "pgconf", "administration", "activity"]
+users = %(temboard_users)s
 # SSL: private key file path (.key)
-ssl_key_file = %s
+ssl_key_file = %(temboard_ssl_key_file)s
 # SSL: certificat file path (.pem)
-ssl_cert_file = %s
-home = %s
+ssl_cert_file = %(temboard_ssl_cert_file)s
+home = %(temboard_home)s
 hostname = test.temboard.io
 
 [postgresql]
-host = %s
-port = %s
-user = %s
-password = %s
+host = %(postgresql_host)s
+port = %(postgresql_port)s
+user = %(postgresql_user)s
+password = %(postgresql_password)s
 dbname = postgres
 
 [logging]
 # syslog or file
 method=file
-destination = %s
+destination = %(logging_destination)s
 level = DEBUG
 
+[administration]
+pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
+"""  # noqa
+
+AGENT_CONFIG_PLUGINS = """\
+[temboard]
+plugins = %(temboard_plugins)s
+"""
+
+AGENT_CONFIG_MONITORING = """\
 [monitoring]
 dbnames = '*'
 # agent_key = ''
 collector_url = http://localhost:8888/collector/
 # probes = ''
 # interval = 60
-ssl_ca_cert_file = %s
+ssl_ca_cert_file = %(ssl_ca_cert_file)s
+"""
 
-[administration]
-pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
-"""  # noqa
+AGENT_CONFIG_MONITORING = """\
+"""
 
 AGENT_SSL_CERT = """-----BEGIN CERTIFICATE-----
 MIIDXTCCAkWgAwIBAgIJAN2gVhFWzW9fMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
