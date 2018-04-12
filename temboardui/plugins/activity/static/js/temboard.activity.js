@@ -291,7 +291,7 @@ $(function() {
 
   /* State filtering function */
   $.fn.dataTable.ext.search.push(
-    function stateFilter(settings, data, dataIndex) {
+    function stateFilter(settings, data, index, rawData) {
       var states = [];
       stateFilters.each(function(index, el) {
         var input = $(el);
@@ -299,15 +299,7 @@ $(function() {
           states.push(input.val());
         }
       });
-      var index = getColumnIndex('State');
-      if (!index) {
-        console.error('Column index not found');
-        return true;
-      }
-      if (states.some(function(item) {return item === data[index]})) {
-        return true;
-      }
-      return false;
+      return states.indexOf(rawData.state) > -1;
     }
   );
 
