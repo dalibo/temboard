@@ -737,7 +737,7 @@ class MonitoringCollectorHandler(JsonHandler):
             taskmanager.schedule_task(
                 'check_data_worker',
                 options=task_options,
-                listener_addr=config.temboard['tm_sock_path'],
+                listener_addr=str(config.temboard['tm_sock_path']),
             )
 
             return JSONAsyncResult(http_code=200, data={'done': True})
