@@ -65,7 +65,8 @@ $(function() {
       options: {
         colors: [colors.blue, colors.orange, colors.green],
         ylabel: "Loadaverage"
-      }
+      },
+      visible: true
     },
     {
       id: "CPU",
@@ -75,7 +76,8 @@ $(function() {
         colors: [colors.blue, colors.green, colors.red, colors.gray],
         ylabel: "%",
         stackedGraph: true
-      }
+      },
+      visible: true
     },
     {
       id: "CtxForks",
@@ -264,28 +266,25 @@ $(function() {
     }
   ];
 
+  var v = new Vue({
+    el: '#charts-container',
+    data: {
+      graphs: graphs,
+      visibleGraphs: ['WLocks']
+    }
+  });
+
   graphs.forEach(function(graph) {
-    syncGraphs.push({
-      dygraph: newGraph(graph, start, end),
-      api: graph.api
-    });
+    if (graph.visible) {
+      syncGraphs.push({
+        dygraph: newGraph(graph, start, end),
+        api: graph.api
+      });
+    }
   });
 
   function newGraph(graph, startDate, endDate) {
     var id = graph.id;
-    var html = '';
-    html += '<div class="card w-100 mb-2">';
-    html += ' <div class="card-header">';
-    html += graph.title;
-    html += ' </div>';
-    html += ' <div class="card-body">';
-    html += '   <div id="info'+id+'"></div>';
-    html += '   <div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
-    html += '   <div id="chart'+id+'" class="monitoring-chart"></div>';
-    html += '   <div id="visibility'+id+'" class="visibility-chart"></div>';
-    html += ' </div>';
-    html += '</div>';
-    $('#charts-container').append(html);
     var defaultOptions = {
         axisLabelFontSize: 10,
         yLabelWidth: 14,
