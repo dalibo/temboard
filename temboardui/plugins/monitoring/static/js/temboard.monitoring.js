@@ -1,5 +1,4 @@
 $(function() {
-  var dataApiUrl = apiUrl + "/data";
   var colors = {
     blue: "#5DA5DA",
     blue2: "#226191",
@@ -53,7 +52,6 @@ $(function() {
     synchronizeZoom(
       picker.startDate,
       picker.endDate,
-      dataApiUrl,
       true
     );
   });
@@ -268,16 +266,17 @@ $(function() {
 
   graphs.forEach(function(graph) {
     syncGraphs.push({
-      dygraph: newGraph(graph.id, graph.title, graph.api, dataApiUrl, graph.options, start, end),
+      dygraph: newGraph(graph, start, end),
       api: graph.api
     });
   });
 
-  function newGraph(id, title, api, apiUrl, options, startDate, endDate) {
+  function newGraph(graph, startDate, endDate) {
+    var id = graph.id;
     var html = '';
     html += '<div class="card">';
     html += ' <div class="card-header">';
-    html += title;
+    html += graph.title;
     html += ' </div>';
     html += ' <div class="card-body">';
     html += '   <div id="info'+id+'"></div>';
@@ -318,7 +317,7 @@ $(function() {
           }
         },
         zoomCallback: function(minDate, maxDate, yRanges) {
-          synchronizeZoom(minDate, maxDate, apiUrl);
+          synchronizeZoom(minDate, maxDate);
         },
         // change interaction model in order to be able to capture the end of
         // panning
@@ -344,7 +343,7 @@ $(function() {
               Dygraph.endPan(event, g, context);
               var dates = g.dateWindow_;
               // synchronize charts on pan end
-              synchronizeZoom(dates[0], dates[1], apiUrl);
+              synchronizeZoom(dates[0], dates[1]);
             } else if (context.isZooming) {
               Dygraph.endZoom(event, g, context);
               // don't do the same since zoom is animated
@@ -354,12 +353,12 @@ $(function() {
         }
     };
 
-    for (var attrname in options) {
-      defaultOptions[attrname] = options[attrname];
+    for (var attrname in graph.options) {
+      defaultOptions[attrname] = graph.options[attrname];
     }
     var g = new Dygraph(
       document.getElementById("chart"+id),
-      apiUrl+"/"+api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
+      apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
       defaultOptions
     );
     return g;
@@ -416,7 +415,7 @@ $(function() {
     return hashParams;
   }
 
-  function synchronizeZoom(startDate, endDate, apiUrl, silent) {
+  function synchronizeZoom(startDate, endDate, silent) {
     var picker = $('#daterange').data('daterangepicker');
     if (!silent) {
       // update picker
