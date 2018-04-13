@@ -274,7 +274,7 @@ $(function() {
   function newGraph(graph, startDate, endDate) {
     var id = graph.id;
     var html = '';
-    html += '<div class="card">';
+    html += '<div class="card w-100 mb-2">';
     html += ' <div class="card-header">';
     html += graph.title;
     html += ' </div>';
@@ -285,7 +285,7 @@ $(function() {
     html += '   <div id="visibility'+id+'" class="visibility-chart"></div>';
     html += ' </div>';
     html += '</div>';
-    $('#'+id).html(html);
+    $('#charts-container').append(html);
     var defaultOptions = {
         axisLabelFontSize: 10,
         yLabelWidth: 14,
