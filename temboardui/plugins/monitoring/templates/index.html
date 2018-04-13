@@ -47,7 +47,7 @@
     <div class="card-body">
       <div :id="'info' + graph.id"></div>
       <div :id="'legend' + graph.id" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
-      <div :id="'chart' + graph.id" class="monitoring-chart"></div>
+      <monitoring-chart :graph="graph" :id="'chart' + graph.id"></monitoring-chart>
       <div :id="'visibility' + graph.id" class="visibility-chart"></div>
     </div>
   </div>

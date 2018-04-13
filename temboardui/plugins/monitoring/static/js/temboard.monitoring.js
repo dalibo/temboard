@@ -9,7 +9,6 @@ $(function() {
     orange: "#FAA43A"
   };
   var dateFormat = 'DD/MM/YYYY HH:mm';
-  var syncGraphs = [];
 
   /**
    * Parse location hash to get start and end date
@@ -266,25 +265,27 @@ $(function() {
     }
   ];
 
+  Vue.component('monitoring-chart', {
+    props: ['graph'],
+    mounted: function() {
+      newGraph(this.graph);
+    },
+    template: '<div class="monitoring-chart"></div>'
+  });
+
   var v = new Vue({
     el: '#charts-container',
     data: {
-      graphs: graphs,
-      visibleGraphs: ['WLocks']
+      graphs: graphs
     }
   });
 
-  graphs.forEach(function(graph) {
-    if (graph.visible) {
-      syncGraphs.push({
-        dygraph: newGraph(graph, start, end),
-        api: graph.api
-      });
-    }
-  });
-
-  function newGraph(graph, startDate, endDate) {
+  function newGraph(graph) {
     var id = graph.id;
+    var picker = $('#daterange').data('daterangepicker');
+    var startDate = picker.startDate;
+    var endDate = picker.endDate;
+
     var defaultOptions = {
         axisLabelFontSize: 10,
         yLabelWidth: 14,
@@ -355,12 +356,11 @@ $(function() {
     for (var attrname in graph.options) {
       defaultOptions[attrname] = graph.options[attrname];
     }
-    var g = new Dygraph(
+    graph.dygraph = new Dygraph(
       document.getElementById("chart"+id),
       apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
       defaultOptions
     );
-    return g;
   }
 
   function timestampToIsoDate(epochMs) {
@@ -428,15 +428,17 @@ $(function() {
 
     updateDateRange(startDate, endDate);
 
-    syncGraphs.forEach(function(graph) {
-      // update the date range
-      graph.dygraph.updateOptions({
-        dateWindow: [startDate, endDate]
-      });
-      // load the date for the given range
-      graph.dygraph.updateOptions({
-        file: apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
-      }, false);
+    graphs.forEach(function(graph) {
+      if (graph.visible) {
+        // update the date range
+        graph.dygraph.updateOptions({
+          dateWindow: [startDate, endDate]
+        });
+        // load the date for the given range
+        graph.dygraph.updateOptions({
+          file: apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+        }, false);
+      }
     });
   }
 });
