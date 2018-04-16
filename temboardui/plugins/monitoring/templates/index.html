@@ -93,6 +93,9 @@
   <div class="card w-100 mb-2" v-for="graph in graphs" v-if="graph.visible">
     <div class="card-header">
       {{! graph.title }}
+      <button type="button" class="close" aria-label="Close" v-on:click="graph.visible = false">
+        <span aria-hidden="true">&times;</span>
+      </button>
     </div>
     <div class="card-body">
       <div :id="'info' + graph.id"></div>
