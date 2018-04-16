@@ -1,3 +1,4 @@
+import cStringIO
 import logging
 import os
 from dateutil import parser as dt_parser
@@ -88,8 +89,10 @@ def get_routes(config):
          MonitoringDataProbeHandler, handler_conf),
         (r"/js/monitoring/(.*)", tornado.web.StaticFileHandler,
          {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/checks/state",
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/check/states",
          MonitoringJSONCheckStatesHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/data/check/results/([a-z\-_.0-9]{1,64})$",  # noqa
+         MonitoringDataCheckResultsHandler, handler_conf),
     ]
     return routes
 
@@ -1050,6 +1053,114 @@ class MonitoringJSONCheckStatesHandler(JsonHandler):
     def get(self, agent_address, agent_port):
         run_background(self.get_check_states, self.async_callback,
                        (agent_address, agent_port))
+
+
+class MonitoringDataCheckResultsHandler(CsvHandler):
+
+    def get_data_check_results(self, address, port, check_name):
+        try:
+            instance = None
+            role = None
+            no_error = 0
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise TemboardUIError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, address, port)
+            if not instance:
+                raise TemboardUIError(404, "Instance not found.")
+            if __name__ not in [plugin.plugin_name for plugin
+                                in instance.plugins]:
+                raise TemboardUIError(408, "Plugin not active.")
+
+            # Find host_id & instance_id
+            host_id = get_host_id(self.db_session, instance.hostname)
+            instance_id = get_instance_id(self.db_session, host_id,
+                                          instance.pg_port)
+
+            self.db_session.expunge_all()
+
+            # Arguments
+            start = self.get_argument('start', default=None)
+            end = self.get_argument('end', default=None)
+            key = self.get_argument('key', default=None)
+            # Return 200 with empty list when an error occurs
+            no_error = int(self.get_argument('noerror', default=0))
+            changes_only = int(self.get_argument('changes_only', default=0))
+
+            start_time = None
+            end_time = None
+            if start:
+                try:
+                    start_time = dt_parser.parse(start)
+                except ValueError as e:
+                    raise TemboardUIError(406, 'Datetime not valid.')
+            if end:
+                try:
+                    end_time = dt_parser.parse(end)
+                except ValueError as e:
+                    raise TemboardUIError(406, 'Datetime not valid.')
+
+            data_buffer = cStringIO.StringIO()
+            cur = self.db_session.connection().connection.cursor()
+            cur.execute("SET search_path TO monitoring")
+            query = """
+            COPY (
+                SELECT datetime, state, key, value, warning, critical
+                FROM get_check_results(%s, %s, %s, %s, %s, %s)
+                ORDER BY datetime DESC
+            ) TO STDOUT WITH CSV HEADER
+            """
+            if changes_only == 1:
+                query = """
+                COPY (
+                    SELECT sq.datetime, sq.state, sq.key, sq.value, sq.warning,
+                           sq.critical
+                    FROM (
+                        SELECT *, LEAD(state) OVER (ORDER BY datetime DESC)
+                            AS prev_state
+                        FROM get_check_results(%s, %s, %s, %s, %s, %s)
+                    ) AS sq
+                    WHERE sq.state IS DISTINCT FROM sq.prev_state
+                    ORDER BY sq.datetime DESC
+                ) TO STDOUT WITH CSV HEADER
+                """
+            # build the query
+            query = cur.mogrify(query, (host_id, instance_id, check_name, key,
+                                start_time, end_time))
+
+            cur.copy_expert(query, data_buffer)
+            cur.close()
+            data = data_buffer.getvalue()
+            data_buffer.close()
+
+            self.db_session.commit()
+            self.db_session.close()
+            return CSVAsyncResult(http_code=200, data=data)
+        except (TemboardUIError, Exception) as e:
+            self.logger.exception(str(e))
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if no_error == 1:
+                return CSVAsyncResult(http_code=200, data=u'')
+            else:
+                if (isinstance(e, TemboardUIError)):
+                    return CSVAsyncResult(http_code=e.code,
+                                          data={'error': e.message})
+                else:
+                    return CSVAsyncResult(http_code=500,
+                                          data={'error': e.message})
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port, check_name):
+        run_background(self.get_data_check_results, self.async_callback,
+                       (agent_address, agent_port, check_name))
 
 
 @taskmanager.worker(pool_size=1)
