@@ -37,7 +37,7 @@
 <div id="charts-container">
   <div class="collapse" id="settings">
     <div class="card card-body mb-2">
-      <div class="row">
+      <div class="row mb-2">
         <div class="col-4">
           <span class="text-muted text-uppercase">System</span>
           <ul class="list-unstyled mb-0">
@@ -51,20 +51,20 @@
             </li>
           </ul>
         </div>
-        <div class="col-4">
+        <div class="col-8">
           <span class="text-muted text-uppercase">Postgres</span>
-          <ul class="list-unstyled mb-0">
-            <li v-for="(graph, index) in graphs" v-if="graph.category == 'postgres'">
-              <div class="form-check">
-                <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id" class="form-check-input">
-                <label class="form-check-label" :for="'checkbox' + graph.id">
-                  {{! graph.title }}
-                </label>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div class="col-4">
+          <div class="columns-2">
+            <ul class="list-unstyled mb-0">
+              <li v-for="(graph, index) in graphs" v-if="graph.category == 'postgres'">
+                <div class="form-check">
+                  <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id" class="form-check-input">
+                  <label class="form-check-label" :for="'checkbox' + graph.id">
+                    {{! graph.title }}
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="row">
