@@ -240,3 +240,77 @@ class AlertingJSONChecksHandler(JsonHandler):
     def get(self, agent_address, agent_port):
         run_background(self.get_checks, self.async_callback,
                        (agent_address, agent_port))
+
+    def post_checks(self, agent_address, agent_port):
+        try:
+            instance = None
+            role = None
+
+            self.load_auth_cookie()
+            self.start_db_session()
+
+            role = self.current_user
+            if not role:
+                raise TemboardUIError(302, "Current role unknown.")
+
+            instance = get_instance(self.db_session, agent_address, agent_port)
+            if not instance:
+                raise TemboardUIError(404, "Instance not found.")
+            if 'monitoring' not in [plugin.plugin_name
+                                    for plugin in instance.plugins]:
+                raise TemboardUIError(408, "Plugin not active.")
+
+            # Find host_id & instance_id
+            host_id = get_host_id(self.db_session, instance.hostname)
+            instance_id = get_instance_id(self.db_session, host_id,
+                                          instance.pg_port)
+            # POST data reading
+            post = tornado.escape.json_decode(self.request.body)
+            if 'checks' not in post or type(post.get('checks')) is not list:
+                raise TemboardUIError(400, "Post data not valid.")
+
+            for row in post['checks']:
+                # Find the check from its name
+                check = self.db_session.query(Check).filter(
+                            Check.name == unicode(row.get('name')),
+                            Check.host_id == host_id,
+                            Check.instance_id == instance_id).first()
+
+                if u'enabled' in row:
+                    check.enabled = bool(row.get(u'enabled'))
+                if u'warning' in row:
+                    warning = row.get(u'warning')
+                    if type(warning) not in (int, float):
+                        raise TemboardUIError(400, "Post data not valid.")
+                    check.threshold_w = warning
+                if u'critical' in row:
+                    critical = row.get(u'critical')
+                    if type(critical) not in (int, float):
+                        raise TemboardUIError(400, "Post data not valid.")
+                    check.threshold_c = critical
+                if u'description' in row:
+                    check.description = row.get(u'description')
+
+                self.db_session.merge(check)
+
+            self.db_session.commit()
+            self.db_session.close()
+            return JSONAsyncResult(http_code=200, data=dict())
+
+        except (TemboardUIError, Exception) as e:
+            self.logger.exception(e)
+            try:
+                self.db_session.close()
+            except Exception:
+                pass
+            if (isinstance(e, TemboardUIError)):
+                return JSONAsyncResult(http_code=e.code,
+                                       data={'error': e.message})
+            else:
+                return JSONAsyncResult(http_code=500,
+                                       data={'error': e.message})
+
+    @tornado.web.asynchronous
+    def post(self, agent_address, agent_port):
+        run_background(self.post_checks, self.async_callback,
+                       (agent_address, agent_port))
