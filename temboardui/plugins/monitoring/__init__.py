@@ -88,8 +88,8 @@ def get_routes(config):
          MonitoringDataProbeHandler, handler_conf),
         (r"/js/monitoring/(.*)", tornado.web.StaticFileHandler,
          {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/checks",
-         MonitoringJSONChecksHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/checks/state",
+         MonitoringJSONCheckStatesHandler, handler_conf),
     ]
     return routes
 
@@ -727,6 +727,7 @@ class MonitoringCollectorHandler(JsonHandler):
                 v = {'': v} if not type(v) is dict else v
                 for key, val in v.items():
                     task_options['data'].append(dict(
+                        datetime=data['datetime'],
                         name=check[0],
                         key=key,
                         value=val,
@@ -991,9 +992,9 @@ class MonitoringHTMLHandler(BaseHandler):
                        (agent_address, agent_port))
 
 
-class MonitoringJSONChecksHandler(JsonHandler):
+class MonitoringJSONCheckStatesHandler(JsonHandler):
 
-    def get_checks(self, agent_address, agent_port):
+    def get_check_states(self, agent_address, agent_port):
         try:
             data = list()
             instance = None
@@ -1047,7 +1048,7 @@ class MonitoringJSONChecksHandler(JsonHandler):
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
-        run_background(self.get_checks, self.async_callback,
+        run_background(self.get_check_states, self.async_callback,
                        (agent_address, agent_port))
 
 
@@ -1101,6 +1102,10 @@ def history_tables_worker(config):
             for row in res.fetchall():
                 logger.debug("table=%s insert=%s"
                              % (row['tblname'], row['nb_rows']))
+            logger.debug("Running SQL monitoring.history_check_results()")
+            res = conn.execute("SELECT * FROM history_check_results()")
+            row = res.fetchone()
+            logger.debug("table=history_check_results insert=%s" % row[0])
             conn.execute("COMMIT")
             return
     except Exception as e:
@@ -1129,12 +1134,14 @@ def check_data_worker(dbconf, host_id, instance_id, data):
     Session = scoped_session(session_factory)
     worker_session = Session()
     for raw in data:
+        datetime = raw.get('datetime')
         name = raw.get('name')
         key = raw.get('key')
         value = raw.get('value')
         warning = raw.get('warning')
         critical = raw.get('critical')
 
+        # Proceed with thresholds comparison
         spec = specs.get(name)
         state = 'UNDEF'
         if not spec:
@@ -1147,6 +1154,7 @@ def check_data_worker(dbconf, host_id, instance_id, data):
         if spec.get('operator')(value, critical):
             state = 'CRITICAL'
 
+        # Try to find enabled check for this host_id with the same name
         try:
             c = worker_session.query(Check).filter(
                     Check.name == unicode(name),
@@ -1157,6 +1165,7 @@ def check_data_worker(dbconf, host_id, instance_id, data):
         except NoResultFound:
             continue
 
+        # Update/insert check current state
         try:
             cs = worker_session.query(CheckState).filter(
                     CheckState.check_id == c.check_id,
@@ -1170,7 +1179,17 @@ def check_data_worker(dbconf, host_id, instance_id, data):
                             state=unicode(state))
             worker_session.add(cs)
             worker_session.commit()
-        worker_session.close()
+
+        # Append check result to history
+        worker_session.execute("SELECT monitoring.insert_check_result(:d, :i,"
+                               ":s, :k, :v, :w, :c)",
+                               {'d': datetime, 'i': c.check_id, 's': cs.state,
+                                'k': cs.key, 'v': value, 'w': warning,
+                                'c': critical})
+
+        worker_session.commit()
+
+    worker_session.close()
 
 
 @taskmanager.bootstrap()
