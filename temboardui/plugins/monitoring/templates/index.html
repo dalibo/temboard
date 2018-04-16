@@ -69,8 +69,24 @@
       </div>
       <div class="row">
         <div class="col-12">
-          <button href="#" class="btn btn-link" v-on:click="selectAll">Select all</button>
-          <button href="#" class="btn btn-link" v-on:click="unselectAll">Unselect all</button>
+          <ul class="list-unstyled list-inline mb-0">
+            <li class="list-inline-item">
+              <a href="#" v-on:click="selectAll">Select all</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#" v-on:click="unselectAll">Unselect all</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <ul class="list-unstyled list-inline mb-0">
+            Predefined themes:
+            <li class="list-inline-item" v-for="theme in themes">
+              <a href="#" v-on:click="loadTheme(theme)">{{!theme.title}}</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

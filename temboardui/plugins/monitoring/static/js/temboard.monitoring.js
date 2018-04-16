@@ -66,7 +66,7 @@ $(function() {
         ylabel: "Loadaverage"
       },
       category: 'system',
-      visible: true
+      visible: false
     },
     {
       id: "CPU",
@@ -78,7 +78,7 @@ $(function() {
         stackedGraph: true
       },
       category: 'system',
-      visible: true
+      visible: false
     },
     {
       id: "CtxForks",
@@ -323,16 +323,38 @@ $(function() {
     });
   }
 
+  var themes = {
+  };
+
+  function loadTheme(theme) {
+    $(graphs).each(function(index, graph) {
+      graph.visible = theme.graphs.indexOf(graph.id) != -1;
+    });
+  }
+
   var v = new Vue({
     el: '#charts-container',
     data: {
-      graphs: graphs
+      graphs: graphs,
+      themes: [{
+        title: 'Performance',
+        graphs: ['Loadavg', 'CPU', 'TPS', 'Sessions']
+      }, {
+        title: 'Locks',
+        graphs: ['Locks', 'WLocks', 'Sessions']
+      }, {
+        title: 'Size',
+        graphs: ['FsSize', 'InstanceSize', 'TblspcSize', 'WalFilesSize']
+      }]
     },
     methods: {
       selectAll: selectAll,
-      unselectAll: unselectAll
+      unselectAll: unselectAll,
+      loadTheme: loadTheme
     }
   });
+
+  v.loadTheme(v.themes[0]);
 
   function newGraph(graph) {
     var id = graph.id;
