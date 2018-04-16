@@ -87,7 +87,8 @@ $(function() {
       options: {
         colors: [colors.blue, colors.green]
       },
-      category: 'system'
+      category: 'system',
+      visible: false
     },
     {
       id: "Memory",
@@ -100,7 +101,8 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system'
+      category: 'system',
+      visible: false
     },
     {
       id: "Swap",
@@ -113,7 +115,8 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system'
+      category: 'system',
+      visible: false
     },
     {
       id: "FsSize",
@@ -124,7 +127,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'system'
+      category: 'system',
+      visible: false
     },
     {
       id: "FsUsage",
@@ -133,7 +137,8 @@ $(function() {
       options: {
         ylabel: "%"
       },
-      category: 'system'
+      category: 'system',
+      visible: false
     },
     // PostgreSQL
     {
@@ -145,7 +150,8 @@ $(function() {
         ylabel: "Transactions",
         stackedGraph: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "InstanceSize",
@@ -158,7 +164,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "TblspcSize",
@@ -170,7 +177,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "Sessions",
@@ -180,7 +188,8 @@ $(function() {
         ylabel: "Sessions",
         stackedGraph: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "Blocks",
@@ -190,7 +199,8 @@ $(function() {
         colors: [colors.red, colors.green],
         ylabel: "Blocks"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "HRR",
@@ -200,7 +210,8 @@ $(function() {
         colors: [colors.blue],
         ylabel: "%"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "Checkpoints",
@@ -218,7 +229,8 @@ $(function() {
           }
         }
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "WalFilesSize",
@@ -230,7 +242,8 @@ $(function() {
         labelsKMG2: true,
         ylabel: "Size"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "WalFilesCount",
@@ -240,7 +253,8 @@ $(function() {
         colors: [colors.blue, colors.blue2],
         ylabel: "WAL files"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "WalFilesRate",
@@ -253,7 +267,8 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "WBuffers",
@@ -263,7 +278,8 @@ $(function() {
         ylabel: "Written buffers",
         stackedGraph: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "Locks",
@@ -272,7 +288,8 @@ $(function() {
       options: {
         ylabel: "Locks"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     },
     {
       id: "WLocks",
@@ -281,7 +298,8 @@ $(function() {
       options: {
         ylabel: "Waiting Locks"
       },
-      category: 'postgres'
+      category: 'postgres',
+      visible: false
     }
   ];
 
@@ -293,10 +311,26 @@ $(function() {
     template: '<div class="monitoring-chart"></div>'
   });
 
+  function selectAll(event) {
+    $(this.graphs).each(function(index, graph) {
+      graph.visible = true;
+    });
+  }
+
+  function unselectAll(event) {
+    $(graphs).each(function(index, graph) {
+      graph.visible = false;
+    });
+  }
+
   var v = new Vue({
     el: '#charts-container',
     data: {
       graphs: graphs
+    },
+    methods: {
+      selectAll: selectAll,
+      unselectAll: unselectAll
     }
   });
 

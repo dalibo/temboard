@@ -67,6 +67,12 @@
         <div class="col-4">
         </div>
       </div>
+      <div class="row">
+        <div class="col-12">
+          <button href="#" class="btn btn-link" v-on:click="selectAll">Select all</button>
+          <button href="#" class="btn btn-link" v-on:click="unselectAll">Unselect all</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="card w-100 mb-2" v-for="graph in graphs" v-if="graph.visible">
