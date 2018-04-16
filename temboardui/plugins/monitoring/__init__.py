@@ -18,6 +18,7 @@ from .alerting import (
     check_specs,
 )
 from .handlers.alerting import (
+    AlertingJSONChecksHandler,
     AlertingJSONCheckStatesHandler,
     AlertingDataCheckResultsHandler,
 )
@@ -53,10 +54,12 @@ def get_routes(config):
          MonitoringDataProbeHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/json/check/states",
+        (r"/server/(.*)/([0-9]{1,5})/alerting/json/state",
          AlertingJSONCheckStatesHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/data/check/results/([a-z\-_.0-9]{1,64})$",  # noqa
+        (r"/server/(.*)/([0-9]{1,5})/alerting/data/([a-z\-_.0-9]{1,64})$",
          AlertingDataCheckResultsHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting/json/checks",
+         AlertingJSONChecksHandler, handler_conf),
     ]
     return routes
 
