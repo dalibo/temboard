@@ -104,6 +104,11 @@
       <div :id="'visibility' + graph.id" class="visibility-chart"></div>
     </div>
   </div>
+  <div class="text-center w-100">
+    <a href="#" v-on:click="$('#settings').collapse('show');window.scrollTo({top: 0});" class="btn btn-outline-secondary">
+      + More charts
+    </a>
+  </div>
 </div>
 
 <script src="/js/vue.min.js"></script>
