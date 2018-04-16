@@ -65,6 +65,7 @@ $(function() {
         colors: [colors.blue, colors.orange, colors.green],
         ylabel: "Loadaverage"
       },
+      category: 'system',
       visible: true
     },
     {
@@ -76,6 +77,7 @@ $(function() {
         ylabel: "%",
         stackedGraph: true
       },
+      category: 'system',
       visible: true
     },
     {
@@ -84,7 +86,8 @@ $(function() {
       api: "ctxforks",
       options: {
         colors: [colors.blue, colors.green]
-      }
+      },
+      category: 'system'
     },
     {
       id: "Memory",
@@ -96,7 +99,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true,
         stackedGraph: true
-      }
+      },
+      category: 'system'
     },
     {
       id: "Swap",
@@ -108,7 +112,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true,
         stackedGraph: true
-      }
+      },
+      category: 'system'
     },
     {
       id: "FsSize",
@@ -118,7 +123,8 @@ $(function() {
         ylabel: "Size",
         labelsKMB: false,
         labelsKMG2: true
-      }
+      },
+      category: 'system'
     },
     {
       id: "FsUsage",
@@ -126,7 +132,8 @@ $(function() {
       api: "fs_usage",
       options: {
         ylabel: "%"
-      }
+      },
+      category: 'system'
     },
     // PostgreSQL
     {
@@ -137,7 +144,8 @@ $(function() {
         colors: [colors.green, colors.red],
         ylabel: "Transactions",
         stackedGraph: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "InstanceSize",
@@ -149,7 +157,8 @@ $(function() {
         stackedGraph: true,
         labelsKMB: false,
         labelsKMG2: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "TblspcSize",
@@ -160,7 +169,8 @@ $(function() {
         stackedGraph: true,
         labelsKMB: false,
         labelsKMG2: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "Sessions",
@@ -169,7 +179,8 @@ $(function() {
       options: {
         ylabel: "Sessions",
         stackedGraph: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "Blocks",
@@ -178,7 +189,8 @@ $(function() {
       options: {
         colors: [colors.red, colors.green],
         ylabel: "Blocks"
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "HRR",
@@ -187,7 +199,8 @@ $(function() {
       options: {
         colors: [colors.blue],
         ylabel: "%"
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "Checkpoints",
@@ -204,7 +217,8 @@ $(function() {
             axis: 'y2'
           }
         }
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "WalFilesSize",
@@ -215,7 +229,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true,
         ylabel: "Size"
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "WalFilesCount",
@@ -224,7 +239,8 @@ $(function() {
       options: {
         colors: [colors.blue, colors.blue2],
         ylabel: "WAL files"
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "WalFilesRate",
@@ -236,7 +252,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true,
         stackedGraph: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "WBuffers",
@@ -245,7 +262,8 @@ $(function() {
       options: {
         ylabel: "Written buffers",
         stackedGraph: true
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "Locks",
@@ -253,7 +271,8 @@ $(function() {
       api: "locks",
       options: {
         ylabel: "Locks"
-      }
+      },
+      category: 'postgres'
     },
     {
       id: "WLocks",
@@ -261,7 +280,8 @@ $(function() {
       api: "waiting_locks",
       options: {
         ylabel: "Waiting Locks"
-      }
+      },
+      category: 'postgres'
     }
   ];
 

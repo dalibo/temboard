@@ -30,16 +30,36 @@
 </div>
 
 <div id="charts-container">
-  <ul class="list-unstyled">
-    <li v-for="graph in graphs">
-      <div class="form-check">
-        <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id">
-        <label class="form-check-label" :for="'checkbox' + graph.id">
-          {{! graph.title }}
-        </label>
-      </div>
-    </li>
-  </ul>
+  <div class="row">
+    <div class="col-4">
+      <span class="text-muted text-uppercase">System</span>
+      <ul class="list-unstyled">
+        <li v-for="graph in graphs" v-if="graph.category == 'system'">
+          <div class="form-check">
+            <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id">
+            <label class="form-check-label" :for="'checkbox' + graph.id">
+              {{! graph.title }}
+            </label>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="col-4">
+      <span class="text-muted text-uppercase">Postgres</span>
+      <ul class="list-unstyled">
+        <li v-for="(graph, index) in graphs" v-if="graph.category == 'postgres'">
+          <div class="form-check">
+            <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id">
+            <label class="form-check-label" :for="'checkbox' + graph.id">
+              {{! graph.title }}
+            </label>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="col-4">
+    </div>
+  </div>
   <div class="card w-100 mb-2" v-for="graph in graphs" v-if="graph.visible">
     <div class="card-header">
       {{! graph.title }}
