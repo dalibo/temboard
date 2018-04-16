@@ -19,7 +19,7 @@
     </div>
   </div>
 </div>
-<div class="row form-group">
+<div class="row form-group mb-2">
   <div class="col">
     <div id="daterange">
       <i class="fa fa-calendar"></i>
@@ -36,7 +36,7 @@
 
 <div id="charts-container">
   <div class="collapse" id="settings">
-    <div class="card card-body mb-2">
+    <div class="card card-body bg-light mb-2">
       <div class="row mb-2">
         <div class="col-4">
           <span class="text-muted text-uppercase">System</span>
@@ -68,7 +68,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-12">
+        <div class="col-8">
           <ul class="list-unstyled list-inline mb-0">
             <li class="list-inline-item">
               <a href="#" v-on:click="selectAll">Select all</a>
@@ -77,16 +77,15 @@
               <a href="#" v-on:click="unselectAll">Unselect all</a>
             </li>
           </ul>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-12">
           <ul class="list-unstyled list-inline mb-0">
             Predefined themes:
             <li class="list-inline-item" v-for="theme in themes">
               <a href="#" v-on:click="loadTheme(theme)">{{!theme.title}}</a>
             </li>
           </ul>
+        </div>
+        <div class="col-4 d-flex align-items-end justify-content-end">
+          <button class="btn btn-outline-secondary" data-toggle="collapse" data-target="#settings">Close</button>
         </div>
       </div>
     </div>
