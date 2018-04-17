@@ -58,7 +58,7 @@ def get_info(conn, config):
     pginfo = PgInfo(conn)
     return dict(
         hostname=sysinfo.hostname(config.temboard.hostname),
-        os_version=' '.join(sysinfo.os, sysinfo.os_release),
+        os_version=' '.join([sysinfo.os, sysinfo.os_release]),
         pg_uptime=dm.get_pg_uptime(),
         pg_version=pginfo.version()['full'],
         pg_data=pginfo.setting('data_directory'),
