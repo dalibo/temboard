@@ -39,11 +39,11 @@
         <div class="col-4">
           <span class="text-muted text-uppercase">System</span>
           <ul class="list-unstyled mb-0">
-            <li v-for="graph in graphs" v-if="graph.category == 'system'">
+            <li v-for="(metric, key) in metrics" v-if="metric.category == 'system'">
               <div class="form-check">
-                <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id" class="form-check-input">
-                <label class="form-check-label" :for="'checkbox' + graph.id">
-                  {{! graph.title }}
+                <input type="checkbox" :id="'checkbox' + key" class="form-check-input" :checked="isVisible(key)" v-on:change="setVisible(key, $event)">
+                <label class="form-check-label" :for="'checkbox' + key">
+                  {{! metric.title }}
                 </label>
               </div>
             </li>
@@ -53,11 +53,11 @@
           <span class="text-muted text-uppercase">Postgres</span>
           <div class="columns-2">
             <ul class="list-unstyled mb-0">
-              <li v-for="(graph, index) in graphs" v-if="graph.category == 'postgres'">
+              <li v-for="(metric, key) in metrics" v-if="metric.category == 'postgres'">
                 <div class="form-check">
-                  <input type="checkbox" v-model="graph.visible" :id="'checkbox' + graph.id" class="form-check-input">
-                  <label class="form-check-label" :for="'checkbox' + graph.id">
-                    {{! graph.title }}
+                  <input type="checkbox" :id="'checkbox' + key" class="form-check-input" :checked="isVisible(key)" v-on:change="setVisible(key, $event)">
+                  <label class="form-check-label" :for="'checkbox' + key">
+                    {{! metric.title }}
                   </label>
                 </div>
               </li>
@@ -78,7 +78,7 @@
           <ul class="list-unstyled list-inline mb-0">
             Predefined themes:
             <li class="list-inline-item" v-for="theme in themes">
-              <a href="#" v-on:click="loadTheme(theme)">{{!theme.title}}</a>
+              <a href="#" v-on:click="loadGraphs(theme.graphs)">{{!theme.title}}</a>
             </li>
           </ul>
         </div>
@@ -88,10 +88,10 @@
       </div>
     </div>
   </div>
-  <div class="card w-100 mb-2" v-for="graph in graphs" v-if="graph.visible">
+  <div class="card w-100 mb-2" v-for="graph in graphs">
     <div class="card-header">
-      {{! graph.title }}
-      <button type="button" class="close" aria-label="Close" v-on:click="graph.visible = false">
+      {{! metrics[graph.id].title }}
+      <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph.id)">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>

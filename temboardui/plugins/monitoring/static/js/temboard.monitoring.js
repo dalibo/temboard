@@ -56,21 +56,17 @@ $(function() {
     );
   });
 
-  var graphs = [
-    // System
-    {
-      id: "Loadavg",
+  var metrics = {
+    "Loadavg": {
       title: "Loadaverage",
       api: "loadavg",
       options: {
         colors: [colors.blue, colors.orange, colors.green],
         ylabel: "Loadaverage"
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "CPU",
+    "CPU": {
       title: "CPU Usage",
       api: "cpu",
       options: {
@@ -78,21 +74,17 @@ $(function() {
         ylabel: "%",
         stackedGraph: true
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "CtxForks",
+    "CtxForks": {
       title: "Context switches and forks per second",
       api: "ctxforks",
       options: {
         colors: [colors.blue, colors.green]
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "Memory",
+    "Memory": {
       title: "Memory usage",
       api: "memory",
       options: {
@@ -102,11 +94,9 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "Swap",
+    "Swap": {
       title: "Swap usage",
       api: "swap",
       options: {
@@ -116,11 +106,9 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "FsSize",
+    "FsSize": {
       title: "Filesystems size",
       api: "fs_size",
       options: {
@@ -128,22 +116,18 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
-    {
-      id: "FsUsage",
+    "FsUsage": {
       title: "Filesystems usage",
       api: "fs_usage",
       options: {
         ylabel: "%"
       },
-      category: 'system',
-      visible: false
+      category: 'system'
     },
     // PostgreSQL
-    {
-      id: "TPS",
+    "TPS": {
       title: "Transactions per second",
       api: "tps",
       options: {
@@ -151,11 +135,9 @@ $(function() {
         ylabel: "Transactions",
         stackedGraph: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "InstanceSize",
+    "InstanceSize": {
       title: "Instance size",
       api: "instance_size",
       options: {
@@ -165,11 +147,9 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "TblspcSize",
+    "TblspcSize": {
       title: "Tablespaces size",
       api: "tblspc_size",
       options: {
@@ -178,44 +158,36 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "Sessions",
+    "Sessions": {
       title: "Sessions",
       api: "sessions",
       options: {
         ylabel: "Sessions",
         stackedGraph: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "Blocks",
+    "Blocks": {
       title: "Blocks Hit vs Read per second",
       api: "blocks",
       options: {
         colors: [colors.red, colors.green],
         ylabel: "Blocks"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "HRR",
+    "HRR": {
       title: "Blocks Hit vs Read ratio",
       api: "hitreadratio",
       options: {
         colors: [colors.blue],
         ylabel: "%"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "Checkpoints",
+    "Checkpoints": {
       title: "Checkpoints",
       api: "checkpoints",
       options: {
@@ -230,11 +202,9 @@ $(function() {
           }
         }
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "WalFilesSize",
+    "WalFilesSize": {
       title: "WAL Files size",
       api: "wal_files_size",
       options: {
@@ -243,22 +213,18 @@ $(function() {
         labelsKMG2: true,
         ylabel: "Size"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "WalFilesCount",
+    "WalFilesCount": {
       title: "WAL Files",
       api: "wal_files_count",
       options: {
         colors: [colors.blue, colors.blue2],
         ylabel: "WAL files"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "WalFilesRate",
+    "WalFilesRate": {
       title: "WAL Files written rate",
       api: "wal_files_rate",
       options: {
@@ -268,75 +234,96 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "WBuffers",
+    "WBuffers": {
       title: "Written buffers",
       api: "w_buffers",
       options: {
         ylabel: "Written buffers",
         stackedGraph: true
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "Locks",
+    "Locks": {
       title: "Locks",
       api: "locks",
       options: {
         ylabel: "Locks"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     },
-    {
-      id: "WLocks",
+    "WLocks": {
       title: "Waiting Locks",
       api: "waiting_locks",
       options: {
         ylabel: "Waiting Locks"
       },
-      category: 'postgres',
-      visible: false
+      category: 'postgres'
     }
-  ];
+  };
 
   Vue.component('monitoring-chart', {
     props: ['graph'],
     mounted: function() {
       newGraph(this.graph);
     },
+    watch: {
+      graph: function() {
+        // recreate the chart if metric changes
+        newGraph(this.graph);
+      }
+    },
     template: '<div class="monitoring-chart"></div>'
   });
 
+  function isVisible(metric) {
+    return this.graphs.map(function(graph) {return graph.id;}).indexOf(metric) != -1;
+  }
+
+  function setVisible(metric, event) {
+    if (event.target.checked) {
+      this.graphs.splice(0, 0, {
+        id: metric,
+        chart: null
+      });
+    } else {
+      this.removeGraph(metric);
+    }
+  }
+
   function selectAll(event) {
-    $(this.graphs).each(function(index, graph) {
-      graph.visible = true;
-    });
+    loadGraphs(Object.keys(metrics));
   }
 
   function unselectAll(event) {
-    $(graphs).each(function(index, graph) {
-      graph.visible = false;
-    });
+    loadGraphs([]);
   }
 
-  var themes = {
-  };
+  function removeGraph(graph) {
+    var index = -1;
+    this.graphs.forEach(function(item, index) {
+      if (item.id == graph) {
+        this.graphs.splice(index, 1);
+      }
+    }.bind(this));
+  }
 
-  function loadTheme(theme) {
-    $(graphs).each(function(index, graph) {
-      graph.visible = theme.graphs.indexOf(graph.id) != -1;
+  function loadGraphs(list) {
+    v.graphs = list.map(function(item) {
+      return {
+        id: item,
+        chart: null
+      };
     });
   }
 
   var v = new Vue({
     el: '#charts-container',
     data: {
-      graphs: graphs,
+      // each graph is an Object with id and chart properties
+      graphs: [],
+      metrics: metrics,
       themes: [{
         title: 'Performance',
         graphs: ['Loadavg', 'CPU', 'TPS', 'Sessions']
@@ -349,13 +336,21 @@ $(function() {
       }]
     },
     methods: {
+      isVisible: isVisible,
+      setVisible: setVisible,
       selectAll: selectAll,
       unselectAll: unselectAll,
-      loadTheme: loadTheme
+      removeGraph: removeGraph,
+      loadGraphs: loadGraphs
+    },
+    watch: {
+      graphs: function(val) {
+        localStorage.setItem('graphs', JSON.stringify(val.map(function(item) {return item.id;})));
+      }
     }
   });
 
-  v.loadTheme(v.themes[0]);
+  v.loadGraphs(JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
 
   function newGraph(graph) {
     var id = graph.id;
@@ -431,11 +426,11 @@ $(function() {
     };
 
     for (var attrname in graph.options) {
-      defaultOptions[attrname] = graph.options[attrname];
+      defaultOptions[attrname] = metrics[id].options[attrname];
     }
-    graph.dygraph = new Dygraph(
+    graph.chart = new Dygraph(
       document.getElementById("chart"+id),
-      apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
+      apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
       defaultOptions
     );
   }
@@ -505,17 +500,17 @@ $(function() {
 
     updateDateRange(startDate, endDate);
 
-    graphs.forEach(function(graph) {
-      if (graph.visible) {
-        // update the date range
-        graph.dygraph.updateOptions({
-          dateWindow: [startDate, endDate]
-        });
-        // load the date for the given range
-        graph.dygraph.updateOptions({
-          file: apiUrl+"/"+graph.api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
-        }, false);
-      }
+    v.graphs.forEach(function(graph) {
+      var id = graph.id;
+      var chart = graph.chart;
+      // update the date range
+      chart.updateOptions({
+        dateWindow: [startDate, endDate]
+      });
+      // load the date for the given range
+      chart.updateOptions({
+        file: apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+      }, false);
     });
   }
 });
