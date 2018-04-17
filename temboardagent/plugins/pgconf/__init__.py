@@ -1,5 +1,5 @@
 from temboardagent.errors import UserError
-from temboardagent.routing import add_route
+from temboardagent.routing import RouteSet
 
 from . import functions as pgconf_functions
 from .types import (
@@ -7,70 +7,87 @@ from .types import (
 )
 
 
+routes = RouteSet(prefix=b'/pgconf')
+
+
+@routes.get(b'/configuration')
+@routes.get(b'/configuration/category/' + T_PGSETTINGS_CATEGORY)
 def get_pg_conf(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_settings(conn, http_context)
 
 
+@routes.get(b'/configuration/categories')
 def get_pg_conf_categories(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_settings_categories(conn)
 
 
+@routes.post(b'/configuration')
 def post_pg_conf(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.post_settings(conn, app.config, http_context)
 
 
+@routes.get(b'/configuration/status')
 def get_pg_conf_status(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_settings_status(conn)
 
 
+@routes.get(b'/hba')
 def get_pg_hba(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_hba(conn, http_context)
 
 
-def get_pg_hba_raw(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba_raw(conn, http_context)
-
-
+@routes.post(b'/hba')
 def post_pg_hba(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.post_hba(conn, app.config, http_context)
 
 
-def post_pg_hba_raw(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.post_hba_raw(conn, app.config, http_context)
-
-
+@routes.delete(b'/hba')
 def delete_pg_hba(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.delete_hba_version(conn, app.config,
                                                    http_context)
 
 
+@routes.get(b'/hba/raw')
+def get_pg_hba_raw(http_context, app):
+    with app.postgres.connect() as conn:
+        return pgconf_functions.get_hba_raw(conn, http_context)
+
+
+@routes.post(b'/hba/raw')
+def post_pg_hba_raw(http_context, app):
+    with app.postgres.connect() as conn:
+        return pgconf_functions.post_hba_raw(conn, app.config, http_context)
+
+
+@routes.get(b'/hba/options')
+def get_hba_options(http_context, app):
+    with app.postgres.connect() as conn:
+        return pgconf_functions.get_hba_options(conn)
+
+
+@routes.get(b'/hba/versions')
 def get_pg_hba_versions(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_hba_versions(conn)
 
 
+@routes.get(b'/pg_ident')
 def get_pg_ident(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.get_pg_ident(conn)
 
 
+@routes.post(b'/pg_ident')
 def post_pg_ident(http_context, app):
     with app.postgres.connect() as conn:
         return pgconf_functions.post_pg_ident(conn, app.config, http_context)
-
-
-def get_hba_options(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba_options(conn)
 
 
 class PgConfPlugin(object):
@@ -86,23 +103,7 @@ class PgConfPlugin(object):
                 self.__class__.__name__)
             raise UserError(msg)
 
-        add_route('GET', '/pgconf/configuration')(get_pg_conf)
-        add_route('GET', '/pgconf/configuration/categories')(
-            get_pg_conf_categories)
-        add_route('GET',
-                  '/pgconf/configuration/category/' + T_PGSETTINGS_CATEGORY)(
-            get_pg_conf)
-        add_route('GET', '/pgconf/configuration/status')(get_pg_conf_status)
-        add_route('GET', '/pgconf/hba')(get_pg_hba)
-        add_route('GET', '/pgconf/hba/raw')(get_pg_hba_raw)
-        add_route('GET', '/pgconf/hba/versions')(get_pg_hba_versions)
-        add_route('GET', '/pgconf/pg_ident')(get_pg_ident)
-        add_route('GET', '/pgconf/hba/options')(get_hba_options)
-        add_route('POST', '/pgconf/hba')(post_pg_hba)
-        add_route('POST', '/pgconf/hba/raw')(post_pg_hba_raw)
-        add_route('POST', '/pgconf/configuration')(post_pg_conf)
-        add_route('POST', '/pgconf/pg_ident')(post_pg_ident)
-        add_route('DELETE', '/pgconf/hba')(delete_pg_hba)
+        self.app.router.add(routes)
 
     def unload(self):
-        pass
+        self.app.router.remove(routes)
