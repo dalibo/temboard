@@ -35,6 +35,7 @@ $(function() {
     timePicker: true,
     timePickerIncrement: 5,
     timePicker24Hour: true,
+    opens: 'left',
     locale: {
       format: dateFormat
     },
