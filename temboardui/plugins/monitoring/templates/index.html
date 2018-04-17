@@ -88,20 +88,22 @@
       </div>
     </div>
   </div>
-  <div class="card w-100 mb-2" v-for="graph in graphs">
-    <div class="card-header">
-      {{! metrics[graph.id].title }}
-      <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph.id)">
-        <span aria-hidden="true">&times;</span>
-      </button>
+  <draggable v-model="graphs" :options="{handle:'.card-header'}">
+    <div class="card w-100 mb-2" v-for="graph in graphs">
+      <div class="card-header">
+        {{! metrics[graph.id].title }}
+        <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph.id)">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="card-body">
+        <div :id="'info' + graph.id"></div>
+        <div :id="'legend' + graph.id" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
+        <monitoring-chart :graph="graph" :id="'chart' + graph.id"></monitoring-chart>
+        <div :id="'visibility' + graph.id" class="visibility-chart"></div>
+      </div>
     </div>
-    <div class="card-body">
-      <div :id="'info' + graph.id"></div>
-      <div :id="'legend' + graph.id" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
-      <monitoring-chart :graph="graph" :id="'chart' + graph.id"></monitoring-chart>
-      <div :id="'visibility' + graph.id" class="visibility-chart"></div>
-    </div>
-  </div>
+  </draggable>
   <div class="text-center w-100">
     <a href="#" v-on:click="$('#metrics').collapse('show');window.scrollTo({top: 0});" class="btn btn-outline-secondary">
       + More metrics
@@ -110,6 +112,8 @@
 </div>
 
 <script src="/js/vue.min.js"></script>
+<script src="/js/Sortable.min.js"></script>
+<script src="/js/vuedraggable.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/daterangepicker.js"></script>

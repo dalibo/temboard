@@ -455,3 +455,16 @@ canvas {
   -webkit-columns: 2;
   -moz-columns: 2;
 }
+
+.sortable-ghost {
+  opacity: 0.8;
+  .card-body {
+    background-color: $light;
+  }
+}
+
+.sortable-drag {
+  .card-body > * {
+    opacity: 0;
+  }
+}
