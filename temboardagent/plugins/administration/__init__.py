@@ -92,13 +92,13 @@ def post_pg_control(http_context, app):
 
 class AdministrationPlugin(object):
     PG_MIN_VERSION = 90400
+    options_specs = [
+        OptionSpec('administration', 'pg_ctl', default=None, validator=quoted),
+    ]
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'administration'
-        self.app.config.add_specs([
-            OptionSpec(s, 'pg_ctl', default=None, validator=quoted),
-        ])
+        self.app.config.add_specs(self.options_specs)
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()
@@ -111,3 +111,4 @@ class AdministrationPlugin(object):
 
     def unload(self):
         self.app.router.remove(routes)
+        self.app.config.remove_specs(self.options_specs)
