@@ -129,7 +129,7 @@ class ServicesManager(object):
 
     def add(self, service):
         service.parentpid = self.pid
-        self.processes.append(Process(target=service.run))
+        self.processes.append(Process(target=service.run, name=service.name))
 
     def start(self):
         for process in self.processes:
