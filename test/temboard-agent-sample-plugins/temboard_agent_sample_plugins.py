@@ -4,18 +4,21 @@ import logging
 import os
 
 from temboardagent.errors import UserError
-from temboardagent.routing import add_route
 from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
 from temboardagent.configuration import OptionSpec
 from temboardagent.scheduler import taskmanager
-
+from temboardagent.routing import RouteSet
 
 logger = logging.getLogger(__name__)
 APP = None
 
 
+routes = RouteSet()
+
+
+@routes.get(b'/hello')
 def get_hello(http_context, app):
     """
     Basic "Hello world" API using HTTP method GET.
@@ -30,6 +33,7 @@ def get_hello(http_context, app):
     return {"content": "Hello World."}
 
 
+@routes.get(b'/hello/time')
 def get_hello_time(http_context, app):
     """
     "Hello world" API using a PostgreSQL connection.
@@ -52,6 +56,7 @@ def get_hello_time(http_context, app):
 T_SOMETHING = br'(^[a-z]{1,100}$)'
 
 
+@routes.get(b'/hello/' + T_SOMETHING)
 def get_hello_pathinfo(http_context, app):
     """
     "Hello <something>" using slug
@@ -66,6 +71,7 @@ def get_hello_pathinfo(http_context, app):
     return {"content": "Hello %s" % (http_context['urlvars'][0])}
 
 
+@routes.get(b'/hello2/say')
 def get_hello2_say_query(http_context, config):
     """
     "Hello <something>" using GET variable.
@@ -87,6 +93,7 @@ def get_hello2_say_query(http_context, config):
         raise HTTPError(444, "Parameter 'something' not sent.")
 
 
+@routes.post(b'/hello3/say')
 def post_hello3_say(config, http_context):
     """
     "Hello <something>" using POST variable.
@@ -108,6 +115,7 @@ def post_hello3_say(config, http_context):
         raise HTTPError(444, "Parameter 'something' not sent.")
 
 
+@routes.get(b'/hello4/say')
 def get_hello4_exec(config, http_context):
     """
     "Hello <something>" using slug & exec_command.
@@ -125,6 +133,7 @@ def get_hello4_exec(config, http_context):
     return {"content": stdout[:-1]}
 
 
+@routes.get(b'/hello/from_config')
 def get_hello_from_config(http_context, app):
     """
     "Hello <something>" using configuration.
@@ -147,6 +156,7 @@ def worker_hello(*a, **kw):
     return {"message": row['message'], "time": row['time']}
 
 
+@routes.get(b'/hello/from_background_worker')
 def get_hello_from_worker(http_context, app):
     """
     "Hello <something>" using configuration.
@@ -211,21 +221,13 @@ class Hello(object):
         if pg_version < self.pg_min_version:
             raise UserError("hellong is incompatible with Postgres below 9.4")
 
-        # URI **MUST** be bytes.
-        add_route('GET', b'/hello')(get_hello)
-        add_route('GET', b'/hello/time')(get_hello_time)
-        add_route('GET', b'/hello/' + T_SOMETHING)(get_hello_pathinfo)
-        add_route('GET', b'/hello2/say')(get_hello2_say_query)
-        add_route('POST', b'/hello3/say')(post_hello3_say)
-        add_route('GET', b'/hello4/' + T_SOMETHING)(get_hello4_exec)
-        add_route('GET', b'/hello/from_config')(get_hello_from_config)
-        add_route('GET', b'/hello/from_background_worker')(
-            get_hello_from_worker)
+        self.app.router.add(routes)
 
         taskmanager.worker(pool_size=1)(worker_hello)
         taskmanager.bootstrap()(hello_task_manager_bootstrap)
 
     def unload(self):
+        self.app.router.remove(routes)
         self.app.config.remove_specs(self.my_options_specs)
         logger.info("Good by from hellong!")
 
