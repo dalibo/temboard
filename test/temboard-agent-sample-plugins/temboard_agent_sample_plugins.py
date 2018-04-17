@@ -188,15 +188,15 @@ def hello_task_manager_bootstrap(context):
 
 class Hello(object):
     pg_min_version = 90400
+    my_options_specs = [
+        OptionSpec('hello', 'name', default='World'),
+        OptionSpec(
+            'hello', 'background_worker_interval', default=10, validator=int),
+    ]
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'hello'
-        self.app.config.add_specs([
-            OptionSpec(s, 'name', default='World'),
-            OptionSpec(
-                s, 'background_worker_interval', default=10, validator=int),
-        ])
+        self.app.config.add_specs(self.my_options_specs)
 
     def load(self):
         global APP
@@ -221,6 +221,7 @@ class Hello(object):
         taskmanager.bootstrap()(hello_task_manager_bootstrap)
 
     def unload(self):
+        self.app.config.remove_specs(self.my_options_specs)
         logger.info("Good by from hellong!")
 
 
