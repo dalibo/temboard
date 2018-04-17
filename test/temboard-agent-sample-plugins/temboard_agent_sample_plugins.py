@@ -2,15 +2,10 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import sys
 from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.errors import UserError
 from temboardagent.routing import add_route
-from temboardagent.api_wrapper import (
-    api_function_wrapper,
-    api_function_wrapper_pg,
-)
 from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
@@ -22,7 +17,7 @@ logger = logging.getLogger(__name__)
 APP = None
 
 
-def say_hello_world(config, http_context):
+def get_hello(http_context, app):
     """
     Basic "Hello world" API using HTTP method GET.
 
@@ -36,19 +31,7 @@ def say_hello_world(config, http_context):
     return {"content": "Hello World."}
 
 
-def get_hello(http_context, config=None, sessions=None):
-    """
-    Parameters:
-        http_context: HTTP context containing HTTP paramaters and variables.
-        config: Agent configuration.
-        sessions: List of current sessions.
-    """
-    return api_function_wrapper(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_world')
-
-
-def say_hello_world_time(conn, config, http_context):
+def get_hello_time(http_context, app):
     """
     "Hello world" API using a PostgreSQL connection.
 
@@ -60,24 +43,17 @@ def say_hello_world_time(conn, config, http_context):
         "time": "2016-09-29 10:19:37.059801+02"
     }
     """  # noqa
-    conn.execute("""
-SELECT 'Hello World' AS message, NOW() AS time
-    """)
-    row = list(conn.get_rows())[0]
+    with app.postgres.connect() as conn:
+        conn.execute("""SELECT 'Hello World' AS message, NOW() AS time""")
+        row = list(conn.get_rows())[0]
     return {"message": row['message'], "time": row['time']}
-
-
-def get_hello_time(http_context, config=None, sessions=None):
-    return api_function_wrapper_pg(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_world_time')
 
 
 # Defining a new type to validate 'something'.
 T_SOMETHING = br'(^[a-z]{1,100}$)'
 
 
-def say_hello_something(config, http_context):
+def get_hello_pathinfo(http_context, app):
     """
     "Hello <something>" using slug
 
@@ -91,13 +67,7 @@ def say_hello_something(config, http_context):
     return {"content": "Hello %s" % (http_context['urlvars'][0])}
 
 
-def get_hello_something(http_context, config=None, sessions=None):
-    return api_function_wrapper(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_something')
-
-
-def say_hello_something2(config, http_context):
+def get_hello2_say_query(http_context, config):
     """
     "Hello <something>" using GET variable.
 
@@ -118,13 +88,7 @@ def say_hello_something2(config, http_context):
         raise HTTPError(444, "Parameter 'something' not sent.")
 
 
-def get_hello_something2(http_context, config=None, sessions=None):
-    return api_function_wrapper(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_something2')
-
-
-def say_hello_something3(config, http_context):
+def post_hello3_say(config, http_context):
     """
     "Hello <something>" using POST variable.
 
@@ -145,13 +109,7 @@ def say_hello_something3(config, http_context):
         raise HTTPError(444, "Parameter 'something' not sent.")
 
 
-def get_hello_something3(http_context, config=None, sessions=None):
-    return api_function_wrapper(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_something3')
-
-
-def say_hello_something4(config, http_context):
+def get_hello4_exec(config, http_context):
     """
     "Hello <something>" using slug & exec_command.
 
@@ -168,13 +126,7 @@ def say_hello_something4(config, http_context):
     return {"content": stdout[:-1]}
 
 
-def get_hello_something4(http_context, config=None, sessions=None):
-    return api_function_wrapper(
-        config, http_context, sessions,
-        sys.modules[__name__], 'say_hello_something4')
-
-
-def say_hello_from_config(config, *a, **kw):
+def get_hello_from_config(http_context, app):
     """
     "Hello <something>" using configuration.
 
@@ -185,17 +137,10 @@ def say_hello_from_config(config, *a, **kw):
         "content": "Hello toto"
     }
     """  # noqa
-    return {"content": "Hello %s!" % config.hello.name}
+    return {"content": "Hello %s!" % app.config.hello.name}
 
 
-def get_hello_from_config(http_context, config, sessions):
-    return api_function_wrapper(
-        http_context=http_context, config=config, sessions=sessions,
-        module=sys.modules[__name__],
-        function_name=say_hello_from_config.__name__)
-
-
-def say_hello_worker(pickled_app, *a, **kw):
+def worker_hello(pickled_app, *a, **kw):
     app = unpickle(pickled_app)
     with app.postgres.connect() as conn:
         conn.execute("""SELECT 'Hello World' AS message, NOW() AS time;""")
@@ -204,7 +149,7 @@ def say_hello_worker(pickled_app, *a, **kw):
     return {"message": row['message'], "time": row['time']}
 
 
-def say_hello_from_background_worker(config, *a, **kw):
+def get_hello_from_worker(http_context, app):
     """
     "Hello <something>" using configuration.
 
@@ -216,7 +161,7 @@ def say_hello_from_background_worker(config, *a, **kw):
     }
     """  # noqa
     tm_sock_path = os.path.join(
-        config.temboard['home'], '.tm.socket').encode('ascii')
+        app.config.temboard['home'], '.tm.socket').encode('ascii')
     logger.info("Listing tasks.")
     task_list_resp = taskmanager.TaskManager.send_message(
         tm_sock_path,
@@ -224,7 +169,7 @@ def say_hello_from_background_worker(config, *a, **kw):
         authkey=None,
     )
     for task_data in task_list_resp:
-        if task_data['worker_name'] == say_hello_worker.__name__:
+        if task_data['worker_name'] == worker_hello.__name__:
             break
     else:
         raise Exception("Worker didn't run")
@@ -232,17 +177,10 @@ def say_hello_from_background_worker(config, *a, **kw):
     return task_data['output']
 
 
-def get_hello_from_background_worker(http_context, config, sessions):
-    return api_function_wrapper(
-        http_context=http_context, config=config, sessions=sessions,
-        module=sys.modules[__name__],
-        function_name=say_hello_from_background_worker.__name__)
-
-
 def hello_task_manager_bootstrap(context):
     yield taskmanager.Task(
-        worker_name=say_hello_worker.__name__,
-        id=say_hello_worker.__name__,
+        worker_name=worker_hello.__name__,
+        id=worker_hello.__name__,
         options={'pickled_app': pickle(APP)},
         redo_interval=APP.config.hello.background_worker_interval,
     )
@@ -271,15 +209,15 @@ class Hello(object):
         # URI **MUST** be bytes.
         add_route('GET', b'/hello')(get_hello)
         add_route('GET', b'/hello/time')(get_hello_time)
-        add_route('GET', b'/hello/'+T_SOMETHING)(get_hello_something)
-        add_route('GET', b'/hello2/say')(get_hello_something2)
-        add_route('POST', b'/hello3/say')(get_hello_something3)
-        add_route('GET', b'/hello4/'+T_SOMETHING)(get_hello_something4)
+        add_route('GET', b'/hello/' + T_SOMETHING)(get_hello_pathinfo)
+        add_route('GET', b'/hello2/say')(get_hello2_say_query)
+        add_route('POST', b'/hello3/say')(post_hello3_say)
+        add_route('GET', b'/hello4/' + T_SOMETHING)(get_hello4_exec)
         add_route('GET', b'/hello/from_config')(get_hello_from_config)
         add_route('GET', b'/hello/from_background_worker')(
-            get_hello_from_background_worker)
+            get_hello_from_worker)
 
-        taskmanager.worker(pool_size=1)(say_hello_worker)
+        taskmanager.worker(pool_size=1)(worker_hello)
         taskmanager.bootstrap()(hello_task_manager_bootstrap)
 
     def unload(self):
