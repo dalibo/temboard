@@ -7,11 +7,12 @@ import os
 
 from ..scheduler import taskmanager
 
-from ..cli import bootstrap
+from ..cli import Application
 from ..cli import cli, define_core_arguments
 from ..configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
+from ..routing import Router
 from ..services import Service, ServicesManager
 from ..queue import purge_queue_dir
 from .. import validators as v
@@ -122,10 +123,9 @@ def main(argv, environ):
     )
     define_arguments(parser)
     args = parser.parse_args(argv)
-    app = bootstrap(
-        specs=list_options_specs(),
-        args=args, environ=environ,
-    )
+    app = Application(specs=list_options_specs())
+    app.router = Router()
+    app.bootstrap(args=args, environ=environ)
     config = app.config
 
     # Run temboard-agent as a background daemon.
