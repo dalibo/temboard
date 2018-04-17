@@ -9,6 +9,7 @@ import signal
 from time import sleep
 import sys
 
+from .errors import UserError
 from .utils import setproctitle
 
 
@@ -36,11 +37,15 @@ class Service(object):
         return '%s (pid=%s)' % (self.name, self.pid)
 
     def __enter__(self):
+        self.sigchld = False
+        if self.services:
+            signal.signal(signal.SIGCHLD, self.sigchld_handler)
         signal.signal(signal.SIGHUP, self.sighup_handler)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         self.sighup = False
 
     def __exit__(self, *a):
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
         signal.signal(signal.SIGHUP, signal.SIG_DFL)
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
@@ -54,6 +59,9 @@ class Service(object):
             return True
         except OSError:
             return False
+
+    def sigchld_handler(self, *a):
+        self.sigchld = True
 
     def sighup_handler(self, *a):
         self.sighup = True
@@ -81,6 +89,11 @@ class Service(object):
                         "Parent process %d is dead. Committing suicide.",
                         self.parentpid)
                     sys.exit(1)
+
+                if self.sigchld:
+                    self.sigchld = False
+                    if self.services:
+                        self.services.check()
 
                 if self.sighup:
                     self.sighup = False
@@ -138,6 +151,15 @@ class ServicesManager(object):
     def reload(self):
         for process in self.processes:
             os.kill(process.pid, signal.SIGHUP)
+
+    def check(self):
+        for p in self.processes[:]:
+            logger.debug("Checking child %s (%s).", p.name, p.pid)
+            if not p.is_alive():
+                logger.debug("%s (%s) is dead.", p.name, p.pid)
+                self.processes.remove(p)
+                msg = "Child %s (%s) died." % (p.name, p.pid)
+                raise UserError(msg)
 
     def stop(self):
         for process in self.processes:
