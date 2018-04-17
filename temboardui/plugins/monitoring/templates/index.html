@@ -21,8 +21,8 @@
 </div>
 <div class="row form-group mb-2">
   <div class="col-12 d-flex justify-content-between">
-    <a class="btn collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#settings" role="button" aria-expanded="false" aria-controls="settings">
-      Settings
+    <a class="btn collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#metrics" role="button" aria-expanded="false" aria-controls="metrics">
+      Metrics
     </a>
     <div id="daterange">
       <i class="fa fa-calendar"></i>
@@ -33,7 +33,7 @@
 </div>
 
 <div id="charts-container">
-  <div class="collapse" id="settings">
+  <div class="collapse" id="metrics">
     <div class="card card-body bg-light mb-2">
       <div class="row mb-2">
         <div class="col-4">
@@ -83,7 +83,7 @@
           </ul>
         </div>
         <div class="col-4 d-flex align-items-end justify-content-end">
-          <button class="btn btn-outline-secondary" data-toggle="collapse" data-target="#settings">Close</button>
+          <button class="btn btn-outline-secondary" data-toggle="collapse" data-target="#metrics">Close</button>
         </div>
       </div>
     </div>
@@ -103,8 +103,8 @@
     </div>
   </div>
   <div class="text-center w-100">
-    <a href="#" v-on:click="$('#settings').collapse('show');window.scrollTo({top: 0});" class="btn btn-outline-secondary">
-      + More charts
+    <a href="#" v-on:click="$('#metrics').collapse('show');window.scrollTo({top: 0});" class="btn btn-outline-secondary">
+      + More metrics
     </a>
   </div>
 </div>
