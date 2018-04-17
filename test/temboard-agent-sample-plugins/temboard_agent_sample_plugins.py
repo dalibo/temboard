@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.errors import UserError
 from temboardagent.routing import add_route
