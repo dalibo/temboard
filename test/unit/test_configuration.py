@@ -58,6 +58,38 @@ def test_spec_lifetime(mocker):
     assert 'new_envval' == config.my.opt
 
 
+def test_remove_specs():
+    from temboardagent.configuration import (
+        OptionSpec, MergedConfiguration
+    )
+
+    def my_validator(x):
+        if x == '__ERROR__':
+            raise ValueError('Triggered error')
+        return x
+
+    config = MergedConfiguration()
+    specs = [OptionSpec('my', 'opt', default='defval', validator=my_validator)]
+    config.add_specs(specs)
+
+    environ = dict(TEMBOARD_MY_OPT='envval')
+    config.load(environ=environ)
+
+    # Remove specs
+    config.remove_specs(specs)
+    # Ensure value is unloaded from config
+    assert 'my' not in config
+
+    # Ensure value is not reread from env. It should trigger an error if its
+    # read.
+    environ = dict(TEMBOARD_MY_OPT='__ERROR__')
+    config.load(environ=environ, reload_=True)
+    assert 'my' not in config
+
+    # Remove spec twice.
+    config.remove_specs(specs)
+
+
 def test_load(mocker):
     mocker.patch('temboardagent.configuration.os.chdir')
 

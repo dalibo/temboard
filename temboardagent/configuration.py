@@ -180,6 +180,20 @@ class MergedConfiguration(DotDict):
             self.specs[s] = s
             self.unvalidated_specs.add(s)
 
+    def remove_specs(self, specs):
+        self.unvalidated_specs -= set(specs)
+        for s in specs:
+            self.specs.pop(s, None)
+            # Clean value
+            try:
+                del self[s.section][s.name]
+            except KeyError:
+                pass
+
+            # Clean section if empty
+            if not self.get(s.section):
+                self.pop(s.section, None)
+
     def add_values(self, values):
         # Search missing values in values and validate them.
 
