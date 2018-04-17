@@ -78,6 +78,13 @@ class RouteSet(list):
     def __init__(self, prefix=b''):
         self.prefix = prefix
 
+    def delete(self, path, check_session=True):
+        def register_route(f):
+            self.append(
+                make_route(f, 'DELETE', self.prefix + path, check_session))
+            return f
+        return register_route
+
     def get(self, path, check_session=True):
         def register_route(f):
             self.append(
