@@ -19,8 +19,11 @@
     </div>
   </div>
 </div>
-<div class="row form-group">
-  <div class="col">
+<div class="row form-group mb-2">
+  <div class="col-12 d-flex justify-content-between">
+    <a class="btn btn-outline-secondary collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#metrics" role="button" aria-expanded="false" aria-controls="metrics">
+      Metrics
+    </a>
     <div id="daterange">
       <i class="fa fa-calendar"></i>
       <span></span>
@@ -28,119 +31,95 @@
     </div>
   </div>
 </div>
-<div class="w-100 mb-2" id="Loadavg"></div>
-<div class="w-100 mb-2" id="CPU"></div>
-<div class="w-100 mb-2" id="CtxForks"></div>
-<div class="w-100 mb-2" id="Memory"></div>
-<div class="w-100 mb-2" id="Swap"></div>
-<div class="w-100 mb-2" id="FsSize"></div>
-<div class="w-100 mb-2" id="FsUsage"></div>
-<div class="w-100 mb-2" id="TPS"></div>
-<div class="w-100 mb-2" id="InstanceSize"></div>
-<div class="w-100 mb-2" id="TblspcSize"></div>
-<div class="w-100 mb-2" id="Sessions"></div>
-<div class="w-100 mb-2" id="Blocks"></div>
-<div class="w-100 mb-2" id="HRR"></div>
-<div class="w-100 mb-2" id="Checkpoints"></div>
-<div class="w-100 mb-2" id="WalFilesSize"></div>
-<div class="w-100 mb-2" id="WalFilesCount"></div>
-<div class="w-100 mb-2" id="WalFilesRate"></div>
-<div class="w-100 mb-2" id="WBuffers"></div>
-<div class="w-100 mb-2" id="Locks"></div>
-<div class="w-100 mb-2" id="WLocks"></div>
 
+<div id="charts-container">
+  <div class="collapse" id="metrics">
+    <div class="card card-body bg-light mb-2">
+      <div class="row mb-2">
+        <div class="col-4">
+          <span class="text-muted text-uppercase">System</span>
+          <ul class="list-unstyled mb-0">
+            <li v-for="(metric, key) in metrics" v-if="metric.category == 'system'">
+              <div class="form-check">
+                <input type="checkbox" :id="'checkbox' + key" class="form-check-input" :checked="isVisible(key)" v-on:change="setVisible(key, $event)">
+                <label class="form-check-label" :for="'checkbox' + key">
+                  {{! metric.title }}
+                </label>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="col-8">
+          <span class="text-muted text-uppercase">Postgres</span>
+          <div class="columns-2">
+            <ul class="list-unstyled mb-0">
+              <li v-for="(metric, key) in metrics" v-if="metric.category == 'postgres'">
+                <div class="form-check">
+                  <input type="checkbox" :id="'checkbox' + key" class="form-check-input" :checked="isVisible(key)" v-on:change="setVisible(key, $event)">
+                  <label class="form-check-label" :for="'checkbox' + key">
+                    {{! metric.title }}
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-8">
+          <ul class="list-unstyled list-inline mb-0">
+            <li class="list-inline-item">
+              <a href="#" v-on:click="selectAll">Select all</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#" v-on:click="unselectAll">Unselect all</a>
+            </li>
+          </ul>
+          <ul class="list-unstyled list-inline mb-0">
+            Predefined themes:
+            <li class="list-inline-item" v-for="theme in themes">
+              <a href="#" v-on:click="loadGraphs(theme.graphs)">{{!theme.title}}</a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-4 d-flex align-items-end justify-content-end">
+          <button class="btn btn-outline-secondary" data-toggle="collapse" data-target="#metrics">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <draggable v-model="graphs" :options="{handle:'.card-header'}">
+    <div class="card w-100 mb-2" v-for="graph in graphs">
+      <div class="card-header">
+        {{! metrics[graph.id].title }}
+        <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph.id)">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="card-body">
+        <div :id="'info' + graph.id"></div>
+        <div :id="'legend' + graph.id" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
+        <monitoring-chart :graph="graph" :id="'chart' + graph.id"></monitoring-chart>
+        <div :id="'visibility' + graph.id" class="visibility-chart"></div>
+      </div>
+    </div>
+  </draggable>
+  <div class="text-center w-100">
+    <a href="#" v-on:click="$('#metrics').collapse('show');window.scrollTo({top: 0});" class="btn btn-outline-secondary">
+      + More metrics
+    </a>
+  </div>
+</div>
+
+<script src="/js/vue.min.js"></script>
+<script src="/js/Sortable.min.js"></script>
+<script src="/js/vuedraggable.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/daterangepicker.js"></script>
 <script src="/js/monitoring/temboard.monitoring.js"></script>
 <script>
-api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-
-sync_graphs = [];
-data_api_url = api_url+"/data";
-interval_api_url = api_url+"/interval";
-var dateFormat = 'DD/MM/YYYY HH:mm';
-
-$(document).ready(function() {
-  /**
-   * Parse location hash to get start and end date
-   * If dates are not provided, falls back to the date range corresponding to
-   * the last 24 hours.
-   */
-  var start;
-  var end;
-  var now = moment();
-  var minus24h = now.clone().subtract(24, 'hours');
-  var p = getHashParams();
-  if (p.start && p.end) {
-    start = moment(parseInt(p.start));
-    end = moment(parseInt(p.end));
-  }
-  start = start && start.isValid() ? start : minus24h;
-  end = end && end.isValid() ? end : now;
-
-  $("#daterange").daterangepicker({
-    startDate: start,
-    endDate: end,
-    alwaysShowCalendars: true,
-    timePicker: true,
-    timePickerIncrement: 5,
-    timePicker24Hour: true,
-    locale: {
-      format: dateFormat
-    },
-    ranges: {
-      'Last Hour': [now.clone().subtract(1, 'hours'), now],
-      'Last 24 Hours': [minus24h, now],
-      'Last 7 Days': [now.clone().subtract(7, 'days'), now],
-      'Last 30 Days': [now.clone().subtract(30, 'days'), now],
-      'Last 12 Months': [now.clone().subtract(12, 'months'), now]
-    }
-  });
-  updateDateRange(start, end);
-  $('#daterange').on('apply.daterangepicker', function(ev, picker) {
-    synchronize_zoom(
-      picker.startDate,
-      picker.endDate,
-      data_api_url,
-      true
-    );
-  });
-
-  var graphs = [
-    // System
-    {id: "Loadavg",title: "Loadaverage",api: "loadavg",options: {colors: [colors.blue, colors.orange, colors.green], ylabel: "Loadaverage"}},
-    {id: "CPU",title: "CPU Usage",api: "cpu",options: {colors: [colors.blue, colors.green, colors.red, colors.gray], ylabel: "%", stackedGraph: true}},
-    {id: "CtxForks",title: "Context switches and forks per second",api: "ctxforks",options: {colors: [colors.blue, colors.green]}},
-    {id: "Memory",title: "Memory usage",api: "memory",options: {colors: [colors.light_gray, colors.green, colors.blue, colors.orange], ylabel: "Memory", labelsKMB: false, labelsKMG2: true, stackedGraph: true}},
-    {id: "Swap",title: "Swap usage",api: "swap",options: {colors: [colors.red], ylabel: "Swap", labelsKMB: false, labelsKMG2: true, stackedGraph: true}},
-    {id: "FsSize",title: "Filesystems size",api: "fs_size",options: {ylabel: "Size", labelsKMB: false, labelsKMG2: true}},
-    {id: "FsUsage",title: "Filesystems usage",api: "fs_usage",options: {ylabel: "%"}},
-    // PostgreSQL
-    {id: "TPS",title: "Transactions per second",api: "tps",options: {colors: [colors.green, colors.red], ylabel: "Transactions", stackedGraph: true}},
-    {id: "InstanceSize",title: "Instance size",api: "instance_size",options: {colors: [colors.blue], ylabel: "Size", stackedGraph: true, labelsKMB: false, labelsKMG2: true}},
-    {id: "TblspcSize",title: "Tablespaces size",api: "tblspc_size",options: {ylabel: "Size", stackedGraph: true, labelsKMB: false, labelsKMG2: true}},
-    {id: "Sessions",title: "Sessions",api: "sessions",options: {ylabel: "Sessions", stackedGraph: true}},
-    {id: "Blocks",title: "Blocks Hit vs Read per second",api: "blocks",options: {colors: [colors.red, colors.green], ylabel: "Blocks"}},
-    {id: "HRR",title: "Blocks Hit vs Read ratio",api: "hitreadratio",options: {colors: [colors.blue], ylabel: "%"}},
-    {id: "Checkpoints",title: "Checkpoints",api: "checkpoints",options: {ylabel: "Checkpoints", y2label: "Duration", series: {'write_time': {axis: 'y2'},'sync_time': {axis: 'y2'}}}},
-    {id: "WalFilesSize",title: "WAL Files size",api: "wal_files_size",options: {colors: [colors.blue, colors.blue2], labelsKMB: false, labelsKMG2: true, ylabel: "Size"}},
-    {id: "WalFilesCount",title: "WAL Files",api: "wal_files_count",options: {colors: [colors.blue, colors.blue2], ylabel: "WAL files"}},
-    {id: "WalFilesRate",title: "WAL Files written rate",api: "wal_files_rate",options: {colors: [colors.blue], ylabel: "Byte per second", labelsKMB: false, labelsKMG2: true, stackedGraph: true}},
-    {id: "WBuffers",title: "Written buffers",api: "w_buffers",options: {ylabel: "Written buffers", stackedGraph: true}},
-    {id: "Locks",title: "Locks",api: "locks",options: {ylabel: "Locks"}},
-    {id: "WLocks",title: "Waiting Locks",api: "waiting_locks",options: {ylabel: "Waiting Locks"}}
-  ];
-
-  for (var i in graphs)
-  {
-    sync_graphs.push({
-      dygraph: new_graph(graphs[i].id, graphs[i].title, graphs[i].api, data_api_url, graphs[i].options, start, end),
-      api: graphs[i].api
-    });
-  }
-});
-
+var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/data"
 </script>
 
 {% end %}

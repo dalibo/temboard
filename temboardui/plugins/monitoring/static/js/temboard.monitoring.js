@@ -1,187 +1,516 @@
-colors = {
-  blue: "#5DA5DA",
-  blue2: "#226191",
-  green: "#60BD68",
-  red: "#F15854",
-  gray: "#4D4D4D",
-  light_gray: "#AAAAAA",
-  orange: "#FAA43A",
-}
-
-function new_graph(id, title, api, api_url, options, start_date, end_date)
-{
-  var html_chart_panel = '';
-  html_chart_panel += '<div class="card">';
-  html_chart_panel += ' <div class="card-header">';
-  html_chart_panel += title;
-  html_chart_panel += ' </div>';
-  html_chart_panel += ' <div class="card-body">';
-  html_chart_panel += '   <div id="info'+id+'"></div>';
-  html_chart_panel += '   <div id="legend'+id+'" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>';
-  html_chart_panel += '   <div id="chart'+id+'" class="monitoring-chart"></div>';
-  html_chart_panel += '   <div id="visibility'+id+'" class="visibility-chart"></div>';
-  html_chart_panel += ' </div>';
-  html_chart_panel += '</div>';
-  $('#'+id).html(html_chart_panel);
-  var default_options = {
-      axisLabelFontSize: 10,
-      yLabelWidth: 14,
-      legend: "always",
-      labelsDiv: "legend"+id,
-      labelsKMB: true,
-      animatedZooms: true,
-      gridLineColor: '#DDDDDD',
-      dateWindow: [
-        new Date(start_date).getTime(),
-        new Date(end_date).getTime()
-      ],
-      xValueParser: function(x) {
-        var m = moment(x);
-        return m.toDate().getTime();
-      },
-      drawCallback: function(g, is_initial) {
-        if (g.numRows() == 0)
-        {
-          $('#info'+id).html('<center><i>No data available</i></center>');
-          $('#legend'+id).hide();
-          $('#chart'+id).hide();
-          $('#visibility'+id).hide();
-        } else {
-          add_visibility_cb(id, g, is_initial);
-          $('#info'+id).html('');
-          $('#legend'+id).show();
-          $('#chart'+id).show();
-          $('#visibility'+id).show();
-        }
-      },
-      zoomCallback: function(minDate, maxDate, yRanges) {
-        synchronize_zoom(minDate, maxDate, api_url);
-      },
-      // change interaction model in order to be able to capture the end of
-      // panning
-      // Dygraphs doesn't provide any panCallback unfortunately
-      interactionModel: {
-        mousedown: function (event, g, context) {
-          context.initializeMouseDown(event, g, context);
-          if (event.shiftKey) {
-            Dygraph.startPan(event, g, context);
-          } else {
-            Dygraph.startZoom(event, g, context);
-          }
-        },
-        mousemove: function (event, g, context) {
-          if (context.isPanning) {
-            Dygraph.movePan(event, g, context);
-          } else if (context.isZooming) {
-            Dygraph.moveZoom(event, g, context);
-          }
-        },
-        mouseup: function (event, g, context) {
-          if (context.isPanning) {
-            Dygraph.endPan(event, g, context);
-            var dates = g.dateWindow_;
-            // synchronize charts on pan end
-            synchronize_zoom(dates[0], dates[1], api_url);
-          } else if (context.isZooming) {
-            Dygraph.endZoom(event, g, context);
-            // don't do the same since zoom is animated
-            // zoomCallback will do the job
-          }
-        }
-      }
-  }
-
-  for (var attrname in options)
-  {
-    default_options[attrname] = options[attrname];
-  }
-  var g = new Dygraph(
-    document.getElementById("chart"+id),
-    api_url+"/"+api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)+"&noerror=1",
-    default_options
-  );
-  return g;
-}
-
-function timestampToIsoDate(epoch_ms)
-{
-  var ndate = new Date(epoch_ms);
-  return ndate.toISOString();
-}
-
-function add_visibility_cb(chart_id, g, is_initial)
-{
-  if (!is_initial)
-    return;
-
-  var nb_legend_item = 0;
-  var visibility_html = ''
-  var cb_ids = [];
-  $('#legend'+chart_id).children('span').each(function() {
-    visibility_html += '<input type="checkbox" id="'+chart_id+'CB'+nb_legend_item+'" checked>';
-    visibility_html += '<label for="'+chart_id+'CB'+nb_legend_item+'" style="'+$(this).attr('style')+'"> '+$(this).text()+'</label>  ';
-    cb_ids.push(chart_id+'CB'+nb_legend_item);
-    nb_legend_item += 1;
-  });
-  $('#visibility'+chart_id).html(visibility_html);
-  var nb = 0;
-  for(var i in cb_ids) {
-    $('#'+cb_ids[i]).change(function() {
-      g.setVisibility(parseInt($(this).attr('id').replace(chart_id+'CB', '')), $(this).is(':checked'));
-    });
-    nb += 1;
-  }
-}
-
-
-function updateDateRange(start, end) {
-  $('#daterange span').html(
-    start.format(dateFormat) + ' - ' + end.format(dateFormat));
-  window.location.hash = 'start=' + start + '&end=' + end;
-}
-
-function getHashParams() {
-
-  var hashParams = {};
-  var e;
-  var a = /\+/g;  // Regex for replacing addition symbol with a space
-  var r = /([^&;=]+)=?([^&;]*)/g;
-  var d = function (s) {
-    return decodeURIComponent(s.replace(a, " "));
+$(function() {
+  var colors = {
+    blue: "#5DA5DA",
+    blue2: "#226191",
+    green: "#60BD68",
+    red: "#F15854",
+    gray: "#4D4D4D",
+    light_gray: "#AAAAAA",
+    orange: "#FAA43A"
   };
-  var q = window.location.hash.substring(1);
+  var dateFormat = 'DD/MM/YYYY HH:mm';
 
-  while (e = r.exec(q)) {
-    hashParams[d(e[1])] = d(e[2]);
+  /**
+   * Parse location hash to get start and end date
+   * If dates are not provided, falls back to the date range corresponding to
+   * the last 24 hours.
+   */
+  var start;
+  var end;
+  var now = moment();
+  var minus24h = now.clone().subtract(24, 'hours');
+  var p = getHashParams();
+
+  if (p.start && p.end) {
+    start = moment(parseInt(p.start, 10));
+    end = moment(parseInt(p.end, 10));
+  }
+  start = start && start.isValid() ? start : minus24h;
+  end = end && end.isValid() ? end : now;
+
+  $("#daterange").daterangepicker({
+    startDate: start,
+    endDate: end,
+    alwaysShowCalendars: true,
+    timePicker: true,
+    timePickerIncrement: 5,
+    timePicker24Hour: true,
+    opens: 'left',
+    locale: {
+      format: dateFormat
+    },
+    ranges: {
+      'Last Hour': [now.clone().subtract(1, 'hours'), now],
+      'Last 24 Hours': [minus24h, now],
+      'Last 7 Days': [now.clone().subtract(7, 'days'), now],
+      'Last 30 Days': [now.clone().subtract(30, 'days'), now],
+      'Last 12 Months': [now.clone().subtract(12, 'months'), now]
+    }
+  });
+  updateDateRange(start, end);
+  $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+    synchronizeZoom(
+      picker.startDate,
+      picker.endDate,
+      true
+    );
+  });
+
+  var metrics = {
+    "Loadavg": {
+      title: "Loadaverage",
+      api: "loadavg",
+      options: {
+        colors: [colors.blue, colors.orange, colors.green],
+        ylabel: "Loadaverage"
+      },
+      category: 'system'
+    },
+    "CPU": {
+      title: "CPU Usage",
+      api: "cpu",
+      options: {
+        colors: [colors.blue, colors.green, colors.red, colors.gray],
+        ylabel: "%",
+        stackedGraph: true
+      },
+      category: 'system'
+    },
+    "CtxForks": {
+      title: "Context switches and forks per second",
+      api: "ctxforks",
+      options: {
+        colors: [colors.blue, colors.green]
+      },
+      category: 'system'
+    },
+    "Memory": {
+      title: "Memory usage",
+      api: "memory",
+      options: {
+        colors: [colors.light_gray, colors.green, colors.blue, colors.orange],
+        ylabel: "Memory",
+        labelsKMB: false,
+        labelsKMG2: true,
+        stackedGraph: true
+      },
+      category: 'system'
+    },
+    "Swap": {
+      title: "Swap usage",
+      api: "swap",
+      options: {
+        colors: [colors.red],
+        ylabel: "Swap",
+        labelsKMB: false,
+        labelsKMG2: true,
+        stackedGraph: true
+      },
+      category: 'system'
+    },
+    "FsSize": {
+      title: "Filesystems size",
+      api: "fs_size",
+      options: {
+        ylabel: "Size",
+        labelsKMB: false,
+        labelsKMG2: true
+      },
+      category: 'system'
+    },
+    "FsUsage": {
+      title: "Filesystems usage",
+      api: "fs_usage",
+      options: {
+        ylabel: "%"
+      },
+      category: 'system'
+    },
+    // PostgreSQL
+    "TPS": {
+      title: "Transactions per second",
+      api: "tps",
+      options: {
+        colors: [colors.green, colors.red],
+        ylabel: "Transactions",
+        stackedGraph: true
+      },
+      category: 'postgres'
+    },
+    "InstanceSize": {
+      title: "Instance size",
+      api: "instance_size",
+      options: {
+        colors: [colors.blue],
+        ylabel: "Size",
+        stackedGraph: true,
+        labelsKMB: false,
+        labelsKMG2: true
+      },
+      category: 'postgres'
+    },
+    "TblspcSize": {
+      title: "Tablespaces size",
+      api: "tblspc_size",
+      options: {
+        ylabel: "Size",
+        stackedGraph: true,
+        labelsKMB: false,
+        labelsKMG2: true
+      },
+      category: 'postgres'
+    },
+    "Sessions": {
+      title: "Sessions",
+      api: "sessions",
+      options: {
+        ylabel: "Sessions",
+        stackedGraph: true
+      },
+      category: 'postgres'
+    },
+    "Blocks": {
+      title: "Blocks Hit vs Read per second",
+      api: "blocks",
+      options: {
+        colors: [colors.red, colors.green],
+        ylabel: "Blocks"
+      },
+      category: 'postgres'
+    },
+    "HRR": {
+      title: "Blocks Hit vs Read ratio",
+      api: "hitreadratio",
+      options: {
+        colors: [colors.blue],
+        ylabel: "%"
+      },
+      category: 'postgres'
+    },
+    "Checkpoints": {
+      title: "Checkpoints",
+      api: "checkpoints",
+      options: {
+        ylabel: "Checkpoints",
+        y2label: "Duration",
+        series: {
+          'write_time': {
+            axis: 'y2'
+          },
+          'sync_time': {
+            axis: 'y2'
+          }
+        }
+      },
+      category: 'postgres'
+    },
+    "WalFilesSize": {
+      title: "WAL Files size",
+      api: "wal_files_size",
+      options: {
+        colors: [colors.blue, colors.blue2],
+        labelsKMB: false,
+        labelsKMG2: true,
+        ylabel: "Size"
+      },
+      category: 'postgres'
+    },
+    "WalFilesCount": {
+      title: "WAL Files",
+      api: "wal_files_count",
+      options: {
+        colors: [colors.blue, colors.blue2],
+        ylabel: "WAL files"
+      },
+      category: 'postgres'
+    },
+    "WalFilesRate": {
+      title: "WAL Files written rate",
+      api: "wal_files_rate",
+      options: {
+        colors: [colors.blue],
+        ylabel: "Byte per second",
+        labelsKMB: false,
+        labelsKMG2: true,
+        stackedGraph: true
+      },
+      category: 'postgres'
+    },
+    "WBuffers": {
+      title: "Written buffers",
+      api: "w_buffers",
+      options: {
+        ylabel: "Written buffers",
+        stackedGraph: true
+      },
+      category: 'postgres'
+    },
+    "Locks": {
+      title: "Locks",
+      api: "locks",
+      options: {
+        ylabel: "Locks"
+      },
+      category: 'postgres'
+    },
+    "WLocks": {
+      title: "Waiting Locks",
+      api: "waiting_locks",
+      options: {
+        ylabel: "Waiting Locks"
+      },
+      category: 'postgres'
+    }
+  };
+
+  Vue.component('monitoring-chart', {
+    props: ['graph'],
+    mounted: function() {
+      newGraph(this.graph);
+    },
+    watch: {
+      graph: function() {
+        // recreate the chart if metric changes
+        newGraph(this.graph);
+      }
+    },
+    template: '<div class="monitoring-chart"></div>'
+  });
+
+  function isVisible(metric) {
+    return this.graphs.map(function(graph) {return graph.id;}).indexOf(metric) != -1;
   }
 
-  return hashParams;
-}
-
-function synchronize_zoom(start_date, end_date, api_url, silent)
-{
-  var picker = $('#daterange').data('daterangepicker');
-  if (!silent) {
-    // update picker
-    picker.setStartDate(moment(start_date));
-    picker.setEndDate(moment(end_date));
+  function setVisible(metric, event) {
+    if (event.target.checked) {
+      this.graphs.splice(0, 0, {
+        id: metric,
+        chart: null
+      });
+    } else {
+      this.removeGraph(metric);
+    }
   }
 
-  // get new date from picker (may be rounded)
-  start_date = picker.startDate;
-  end_date = picker.endDate;
+  function selectAll(event) {
+    loadGraphs(Object.keys(metrics));
+  }
 
-  updateDateRange(start_date, end_date);
+  function unselectAll(event) {
+    loadGraphs([]);
+  }
 
-  for(var i in sync_graphs)
-  {
-    // update the date range
-    sync_graphs[i].dygraph.updateOptions({
-      dateWindow: [start_date, end_date]
+  function removeGraph(graph) {
+    var index = -1;
+    this.graphs.forEach(function(item, index) {
+      if (item.id == graph) {
+        this.graphs.splice(index, 1);
+      }
+    }.bind(this));
+  }
+
+  function loadGraphs(list) {
+    v.graphs = list.map(function(item) {
+      return {
+        id: item,
+        chart: null
+      };
     });
-    // load the date for the given range
-    sync_graphs[i].dygraph.updateOptions({
-      file: api_url+"/"+sync_graphs[i].api+"?start="+timestampToIsoDate(start_date)+"&end="+timestampToIsoDate(end_date)+"&noerror=1"
-    }, false);
   }
-}
+
+  var v = new Vue({
+    el: '#charts-container',
+    data: {
+      // each graph is an Object with id and chart properties
+      graphs: [],
+      metrics: metrics,
+      themes: [{
+        title: 'Performance',
+        graphs: ['Loadavg', 'CPU', 'TPS', 'Sessions']
+      }, {
+        title: 'Locks',
+        graphs: ['Locks', 'WLocks', 'Sessions']
+      }, {
+        title: 'Size',
+        graphs: ['FsSize', 'InstanceSize', 'TblspcSize', 'WalFilesSize']
+      }]
+    },
+    methods: {
+      isVisible: isVisible,
+      setVisible: setVisible,
+      selectAll: selectAll,
+      unselectAll: unselectAll,
+      removeGraph: removeGraph,
+      loadGraphs: loadGraphs
+    },
+    watch: {
+      graphs: function(val) {
+        localStorage.setItem('graphs', JSON.stringify(val.map(function(item) {return item.id;})));
+      }
+    }
+  });
+
+  v.loadGraphs(JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
+
+  function newGraph(graph) {
+    var id = graph.id;
+    var picker = $('#daterange').data('daterangepicker');
+    var startDate = picker.startDate;
+    var endDate = picker.endDate;
+
+    var defaultOptions = {
+        axisLabelFontSize: 10,
+        yLabelWidth: 14,
+        legend: "always",
+        labelsDiv: "legend"+id,
+        labelsKMB: true,
+        animatedZooms: true,
+        gridLineColor: '#DDDDDD',
+        dateWindow: [
+          new Date(startDate).getTime(),
+          new Date(endDate).getTime()
+        ],
+        xValueParser: function(x) {
+          var m = moment(x);
+          return m.toDate().getTime();
+        },
+        drawCallback: function(g, isInitial) {
+          if (g.numRows() === 0) {
+            $('#info'+id).html('<center><i>No data available</i></center>');
+            $('#legend'+id).hide();
+            $('#chart'+id).hide();
+            $('#visibility'+id).hide();
+          } else {
+            addVisibilityCb(id, g, isInitial);
+            $('#info'+id).html('');
+            $('#legend'+id).show();
+            $('#chart'+id).show();
+            $('#visibility'+id).show();
+          }
+        },
+        zoomCallback: function(minDate, maxDate, yRanges) {
+          synchronizeZoom(minDate, maxDate);
+        },
+        // change interaction model in order to be able to capture the end of
+        // panning
+        // Dygraphs doesn't provide any panCallback unfortunately
+        interactionModel: {
+          mousedown: function (event, g, context) {
+            context.initializeMouseDown(event, g, context);
+            if (event.shiftKey) {
+              Dygraph.startPan(event, g, context);
+            } else {
+              Dygraph.startZoom(event, g, context);
+            }
+          },
+          mousemove: function (event, g, context) {
+            if (context.isPanning) {
+              Dygraph.movePan(event, g, context);
+            } else if (context.isZooming) {
+              Dygraph.moveZoom(event, g, context);
+            }
+          },
+          mouseup: function (event, g, context) {
+            if (context.isPanning) {
+              Dygraph.endPan(event, g, context);
+              var dates = g.dateWindow_;
+              // synchronize charts on pan end
+              synchronizeZoom(dates[0], dates[1]);
+            } else if (context.isZooming) {
+              Dygraph.endZoom(event, g, context);
+              // don't do the same since zoom is animated
+              // zoomCallback will do the job
+            }
+          }
+        }
+    };
+
+    for (var attrname in graph.options) {
+      defaultOptions[attrname] = metrics[id].options[attrname];
+    }
+    graph.chart = new Dygraph(
+      document.getElementById("chart"+id),
+      apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
+      defaultOptions
+    );
+  }
+
+  function timestampToIsoDate(epochMs) {
+    var ndate = new Date(epochMs);
+    return ndate.toISOString();
+  }
+
+  function addVisibilityCb(chartId, g, isInitial) {
+    if (!isInitial)
+      return;
+
+    var nbLegendItem = 0;
+    var visibilityHtml = ''
+    var cbIds = [];
+    $('#legend'+chartId).children('span').each(function() {
+      visibilityHtml += '<input type="checkbox" id="'+chartId+'CB'+nbLegendItem+'" checked>';
+      visibilityHtml += '<label for="'+chartId+'CB'+nbLegendItem+'" style="'+$(this).attr('style')+'"> '+$(this).text()+'</label>  ';
+      cbIds.push(chartId+'CB'+nbLegendItem);
+      nbLegendItem++;
+    });
+    $('#visibility'+chartId).html(visibilityHtml);
+    cbIds.forEach(function(id) {
+      $('#'+id).change(function() {
+        g.setVisibility(parseInt($(this).attr('id').replace(chartId+'CB', '')), $(this).is(':checked'));
+      });
+    })
+  }
+
+
+  function updateDateRange(start, end) {
+    $('#daterange span').html(
+      start.format(dateFormat) + ' - ' + end.format(dateFormat));
+    window.location.hash = 'start=' + start + '&end=' + end;
+  }
+
+  function getHashParams() {
+
+    var hashParams = {};
+    var e;
+    var a = /\+/g;  // Regex for replacing addition symbol with a space
+    var r = /([^&;=]+)=?([^&;]*)/g;
+    var d = function (s) {
+      return decodeURIComponent(s.replace(a, " "));
+    };
+    var q = window.location.hash.substring(1);
+
+    while (e = r.exec(q)) {
+      hashParams[d(e[1])] = d(e[2]);
+    }
+
+    return hashParams;
+  }
+
+  function synchronizeZoom(startDate, endDate, silent) {
+    var picker = $('#daterange').data('daterangepicker');
+    if (!silent) {
+      // update picker
+      picker.setStartDate(moment(startDate));
+      picker.setEndDate(moment(endDate));
+    }
+
+    // get new date from picker (may be rounded)
+    startDate = picker.startDate;
+    endDate = picker.endDate;
+
+    updateDateRange(startDate, endDate);
+
+    v.graphs.forEach(function(graph) {
+      var id = graph.id;
+      var chart = graph.chart;
+      // update the date range
+      chart.updateOptions({
+        dateWindow: [startDate, endDate]
+      });
+      // load the date for the given range
+      chart.updateOptions({
+        file: apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+      }, false);
+    });
+  }
+});
