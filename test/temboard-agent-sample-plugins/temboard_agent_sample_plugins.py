@@ -140,9 +140,8 @@ def get_hello_from_config(http_context, app):
     return {"content": "Hello %s!" % app.config.hello.name}
 
 
-def worker_hello(pickled_app, *a, **kw):
-    app = unpickle(pickled_app)
-    with app.postgres.connect() as conn:
+def worker_hello(*a, **kw):
+    with APP.postgres.connect() as conn:
         conn.execute("""SELECT 'Hello World' AS message, NOW() AS time;""")
         row = list(conn.get_rows())[0]
     logger.info("Hello from worker.")
@@ -178,11 +177,18 @@ def get_hello_from_worker(http_context, app):
 
 
 def hello_task_manager_bootstrap(context):
+    try:
+        interval = APP.config.hello.background_worker_interval
+    except AttributeError as e:
+        logger.warn("Unable to get hello config: %s entry does not exists", e)
+        logger.warn("Is hellong plugin loaded?")
+        return
+
     yield taskmanager.Task(
         worker_name=worker_hello.__name__,
         id=worker_hello.__name__,
-        options={'pickled_app': pickle(APP)},
-        redo_interval=APP.config.hello.background_worker_interval,
+        options={},
+        redo_interval=interval,
     )
 
 
