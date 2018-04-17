@@ -1,24 +1,31 @@
 from temboardagent.errors import UserError
-from temboardagent.routing import add_route
+from temboardagent.routing import RouteSet
 
 from . import functions as activity_functions
 
 
+routes = RouteSet()
+
+
+@routes.get(b'/activity')
 def get_activity(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity(conn)
 
 
+@routes.get(b'/activity/waiting')
 def get_activity_waiting(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity_waiting(conn)
 
 
+@routes.get(b'/activity/blocking')
 def get_activity_blocking(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity_blocking(conn)
 
 
+@routes.post(b'/activity/kill')
 def post_activity_kill(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.post_activity_kill(conn, app.config,
@@ -38,10 +45,7 @@ class ActivityPlugin(object):
                 self.__class__.__name__)
             raise UserError(msg)
 
-        add_route('GET', '/activity')(get_activity)
-        add_route('GET', '/activity/waiting')(get_activity_waiting)
-        add_route('GET', '/activity/blocking')(get_activity_blocking)
-        add_route('POST', '/activity/kill')(post_activity_kill)
+        self.app.router.add(routes)
 
     def unload(self):
-        pass
+        self.app.router.remove(routes)

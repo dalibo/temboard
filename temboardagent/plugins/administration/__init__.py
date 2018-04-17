@@ -1,7 +1,7 @@
 import logging
 import time
 
-from temboardagent.routing import add_route
+from temboardagent.routing import RouteSet
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import UserError
 from temboardagent.spc import error
@@ -18,13 +18,16 @@ from .types import T_CONTROL
 
 
 logger = logging.getLogger(__name__)
+routes = RouteSet()
 
 
+@routes.get(b'/administration/pg_version')
 def api_pg_version(http_context, app):
     with app.postgres.connect() as conn:
         return admin_functions.pg_version(conn)
 
 
+@routes.post(b'/administration/control')
 def post_pg_control(http_context, app):
     # Control instance
     validate_parameters(http_context['post'], [
@@ -89,13 +92,13 @@ def post_pg_control(http_context, app):
 
 class AdministrationPlugin(object):
     PG_MIN_VERSION = 90400
+    options_specs = [
+        OptionSpec('administration', 'pg_ctl', default=None, validator=quoted),
+    ]
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'administration'
-        self.app.config.add_specs([
-            OptionSpec(s, 'pg_ctl', default=None, validator=quoted),
-        ])
+        self.app.config.add_specs(self.options_specs)
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()
@@ -104,8 +107,8 @@ class AdministrationPlugin(object):
                 self.__class__.__name__)
             raise UserError(msg)
 
-        add_route('GET', '/administration/pg_version')(api_pg_version)
-        add_route('POST', '/administration/control')(post_pg_control)
+        self.app.router.add(routes)
 
     def unload(self):
-        pass
+        self.app.router.remove(routes)
+        self.app.config.remove_specs(self.options_specs)

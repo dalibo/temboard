@@ -6,7 +6,7 @@ import urllib2
 from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.scheduler import taskmanager
-from temboardagent.routing import add_route
+from temboardagent.routing import RouteSet
 from temboardagent.configuration import OptionSpec
 from temboardagent.validators import file_, list_
 from temboardagent.queue import Queue, Message
@@ -40,59 +40,76 @@ logger = logging.getLogger(__name__)
 CONFIG = None
 
 
+routes = RouteSet(prefix=b'/monitoring/probe')
+
+
+@routes.get(b'/sessions')
 def get_probe_sessions(http_context, app):
     return api_run_probe(probe_sessions(app.config.monitoring), app.config)
 
 
+@routes.get(b'/xacts')
 def get_probe_xacts(http_context, app):
     return api_run_probe(probe_xacts(app.config.monitoring), app.config)
 
 
+@routes.get(b'/locks')
 def get_probe_locks(http_context, app):
     return api_run_probe(probe_locks(app.config.monitoring), app.config)
 
 
+@routes.get(b'/blocks')
 def get_probe_blocks(http_context, app):
     return api_run_probe(probe_blocks(app.config.monitoring), app.config)
 
 
+@routes.get(b'/bgwriter')
 def get_probe_bgwriter(http_context, app):
     return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
 
 
+@routes.get(b'/db_size')
 def get_probe_db_size(http_context, app):
     return api_run_probe(probe_db_size(app.config.monitoring), app.config)
 
 
+@routes.get(b'/tblspc_size')
 def get_probe_tblspc_size(http_context, app):
     return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
 
 
+@routes.get(b'/filesystems_size')
 def get_probe_filesystems_size(http_context, app):
     return api_run_probe(probe_filesystems_size(app.config.monitoring),
                          app.config)
 
 
+@routes.get(b'/cpu')
 def get_probe_cpu(http_context, app):
     return api_run_probe(probe_cpu(app.config.monitoring), app.config)
 
 
+@routes.get(b'/process')
 def get_probe_process(http_context, app):
     return api_run_probe(probe_process(app.config.monitoring), app.config)
 
 
+@routes.get(b'/memory')
 def get_probe_memory(http_context, app):
     return api_run_probe(probe_memory(app.config.monitoring), app.config)
 
 
+@routes.get(b'/loadavg')
 def get_probe_loadavg(http_context, app):
     return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
 
 
+@routes.get(b'/wal_files')
 def get_probe_wal_files(http_context, app):
     return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
+@routes.get(b'/replication')
 def get_probe_replication(http_context, app):
     return api_run_probe(probe_replication(app.config.monitoring), app.config)
 
@@ -245,27 +262,11 @@ class MonitoringPlugin(object):
                 self.__class__.__name__)
             raise UserError(msg)
 
-        add_route('GET', '/monitoring/probe/sessions')(get_probe_sessions)
-        add_route('GET', '/monitoring/probe/xacts')(get_probe_xacts)
-        add_route('GET', '/monitoring/probe/locks')(get_probe_locks)
-        add_route('GET', '/monitoring/probe/blocks')(get_probe_blocks)
-        add_route('GET', '/monitoring/probe/bgwriter')(get_probe_bgwriter)
-        add_route('GET', '/monitoring/probe/db_size')(get_probe_db_size)
-        add_route('GET', '/monitoring/probe/tblspc_size')(
-            get_probe_tblspc_size)
-        add_route('GET', '/monitoring/probe/filesystems_size')(
-            get_probe_filesystems_size)
-        add_route('GET', '/monitoring/probe/cpu')(get_probe_cpu)
-        add_route('GET', '/monitoring/probe/process')(get_probe_process)
-        add_route('GET', '/monitoring/probe/memory')(get_probe_memory)
-        add_route('GET', '/monitoring/probe/loadavg')(get_probe_loadavg)
-        add_route('GET', '/monitoring/probe/wal_files')(get_probe_wal_files)
-        add_route('GET', '/monitoring/probe/replication')(
-            get_probe_replication)
+        self.app.router.add(routes)
 
         taskmanager.worker(pool_size=1)(monitoring_collector_worker)
         taskmanager.worker(pool_size=1)(monitoring_sender_worker)
         taskmanager.bootstrap()(monitoring_bootstrap)
 
     def unload(self):
-        pass
+        self.app.router.remove(routes)
