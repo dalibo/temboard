@@ -12,9 +12,9 @@ from temboardagent.scheduler import taskmanager
 from temboardagent.routing import RouteSet
 
 logger = logging.getLogger(__name__)
-APP = None
 
 
+workers = taskmanager.WorkerSet()
 routes = RouteSet()
 
 
@@ -148,8 +148,10 @@ def get_hello_from_config(http_context, app):
     return {"content": "Hello %s!" % app.config.hello.name}
 
 
-def worker_hello(*a, **kw):
-    with APP.postgres.connect() as conn:
+@workers.register(pool_size=1)
+@workers.schedule(id='background_hello', redo_interval=5)
+def worker_hello(app, *a, **kw):
+    with app.postgres.connect() as conn:
         conn.execute("""SELECT 'Hello World' AS message, NOW() AS time;""")
         row = list(conn.get_rows())[0]
     logger.info("Hello from worker.")
@@ -185,22 +187,6 @@ def get_hello_from_worker(http_context, app):
     return task_data['output']
 
 
-def hello_task_manager_bootstrap(context):
-    try:
-        interval = APP.config.hello.background_worker_interval
-    except AttributeError as e:
-        logger.warn("Unable to get hello config: %s entry does not exists", e)
-        logger.warn("Is hellong plugin loaded?")
-        return
-
-    yield taskmanager.Task(
-        worker_name=worker_hello.__name__,
-        id=worker_hello.__name__,
-        options={},
-        redo_interval=interval,
-    )
-
-
 class Hello(object):
     pg_min_version = 90400
     my_options_specs = [
@@ -214,19 +200,17 @@ class Hello(object):
         self.app.config.add_specs(self.my_options_specs)
 
     def load(self):
-        global APP
-        APP = self.app
-
         pg_version = self.app.postgres.fetch_version()
         if pg_version < self.pg_min_version:
             raise UserError("hellong is incompatible with Postgres below 9.4")
 
         self.app.router.add(routes)
-
-        taskmanager.worker(pool_size=1)(worker_hello)
-        taskmanager.bootstrap()(hello_task_manager_bootstrap)
+        self.app.worker_pool.add(workers)
+        self.app.scheduler.add(workers)
 
     def unload(self):
+        self.app.scheduler.remove(workers)
+        self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
         self.app.config.remove_specs(self.my_options_specs)
         logger.info("Good by from hellong!")
