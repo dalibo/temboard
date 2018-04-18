@@ -15,13 +15,20 @@ $(function() {
     }
   }
 
+  var checkboxTooltip = "Select to terminate";
+  var checkboxDisabledTooltip = "Disable auto-refresh and select to terminate";
+
   var columns = [
     {
       orderable: false,
       className: 'text-center',
       data: function(row, type, val, meta) {
         var disabled = intervalId ? 'disabled' : '';
-        return '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"/>';
+        var title = disabled ? checkboxDisabledTooltip : checkboxTooltip;
+        var html = '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"';
+        html += 'title="' + title + '"';
+        html += ' />';
+        return html;
       }
     },
     {title: 'PID', data: 'pid', className: 'text-right', orderable: false},
@@ -109,7 +116,6 @@ $(function() {
   });
 
   function load() {
-    $('#killButton').addClass('d-none');
     var url_end = activityMode != 'running' ?  '/' + activityMode : '';
     // abort any pending request
     request && request.abort();
@@ -194,6 +200,7 @@ $(function() {
     $('#refreshButton').prop('disabled', false);
     $('#tableActivity input[type=checkbox]').each(function () {
       $(this).attr('disabled', false);
+      $(this).attr('title', checkboxTooltip);
     });
     window.clearInterval(intervalId);
     intervalId = null;
@@ -202,11 +209,13 @@ $(function() {
   function play() {
     $('#autoRefreshCheckbox').prop('checked', true)
     $('#refreshButton').prop('disabled', true);
+    $('#killButton').addClass('disabled');
     $('#tableActivity input:checked').each(function () {
       $(this).attr('checked', false);
     });
     $('#tableActivity input[type=checkbox]').each(function () {
       $(this).attr('disabled', true);
+      $(this).attr('title', checkboxDisabledTooltip);
     });
     load();
     intervalId = window.setInterval(load, intervalDuration * 1000);
@@ -227,7 +236,7 @@ $(function() {
 
   // show the kill button only when backends have been selected
   $(document.body).on('click', 'input[type=checkbox]', function() {
-    $('#killButton').toggleClass('d-none', $('#tableActivity input:checked').length === 0);
+    $('#killButton').toggleClass('disabled', $('#tableActivity input:checked').length === 0);
   });
 
   $('#killButton').click(function terminate() {
