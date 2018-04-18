@@ -12,7 +12,7 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 # 2 space indentation for UI
-[*.{css,html,js,json,scss,yml}]
+[*.{css,html,js,json,scss,yml,sql}]
 indent_size = 2
 
 [Makefile]
