@@ -411,11 +411,6 @@ $glow-color-end: lighten($primary, 30%);
   animation: glowing 1500ms infinite;
 }
 
-.btn-danger {
-  color: darken($danger, 5%);
-  background-color: white;
-}
-
 .table-no-margin {
   margin-bottom: 0;
 }

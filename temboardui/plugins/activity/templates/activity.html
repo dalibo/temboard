@@ -24,8 +24,9 @@
 {% include menu.html %}
 <div class="row d-flex justify-content-between">
   <div class="col-auto">
-    <button type="button" class="btn btn-danger d-none" id="killButton"><i class="fa fa-stop"></i> Terminate</button>
-    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+    <span class="d-inline-block" data-toggle="tooltip" title="Terminate the backends selected below">
+      <button type="button" class="btn btn-danger disabled" id="killButton">Terminate</button>
+    </span>
   </div>
   <div class="col-auto">
     <div class="form-row align-items-center">
@@ -44,10 +45,10 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-8 text-muted">
-    Tip: disable auto-refresh to select and terminate backends below
-  </div>
-  <div class="col-4 text-right">
+  <div class="col-12 d-flex justify-content-between">
+    <div>
+      <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+    </div>
     <a class="collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#filters" role="button" aria-expanded="false" aria-controls="filters">
       filters
     </a>
