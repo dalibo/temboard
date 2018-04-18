@@ -30,14 +30,13 @@ class Service(object):
         # Must be None for children or ServicesManager instance for main
         # service. Used to propagate signals. See reload() method.
         self.services = services
-        self.pid = None
         self.parentpid = None
         # Tells whether this service is run in this process. Must be updated in
         # parent process once the service is forked.
         self.is_my_process = True
 
     def __unicode__(self):
-        return '%s (pid=%s)' % (self.name, self.pid)
+        return self.name
 
     def __enter__(self):
         self.sigchld = False
