@@ -82,7 +82,6 @@ class AlertingDataCheckResultsHandler(CsvHandler):
         try:
             instance = None
             role = None
-            no_error = 0
 
             self.load_auth_cookie()
             self.start_db_session()
