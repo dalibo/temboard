@@ -70,6 +70,9 @@ class Service(object):
         logger.info("Terminated.")
         sys.exit(1)
 
+    def apply_config(self):
+        pass
+
     def run(self):
         if self.name:
             setproctitle('temboard-agent: %s' % self.name)
