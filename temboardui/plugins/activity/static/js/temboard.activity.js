@@ -101,6 +101,16 @@ $(function() {
       },
       createdCell: function(td, cellData) {
         $(td).attr('data-toggle', 'popover').attr('data-trigger', 'hover');
+        $(td).mouseover(function() {
+          var copyEl = $('<span>', {
+            'class': 'copy position-absolute right-0 pr-1 pl-1 bg-secondary text-white rounded',
+            html: 'Click to copy'
+          });
+          $(this).prepend(copyEl);
+        });
+        $(td).mouseout(function() {
+          $(this).find('.copy').remove();
+        });
       }
     }
   ]);
@@ -167,7 +177,7 @@ $(function() {
     $('[data-toggle="popover"]').popover({
       html: true,
       content: function() {
-        return $(this).html();
+        return $(this).find('pre').html();
       },
       template: '<div class="popover sql" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
@@ -343,6 +353,18 @@ $(function() {
     }
     return undefined;
   }
+
+  // copy to clipboard on sql cell click
+  $('#tableActivity').on('click', '.sql', function(e) {
+    e.preventDefault();
+    var range = document.createRange();
+    var sel = window.getSelection();
+    range.selectNodeContents(this);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand("copy");
+    $(this).parents('td').find('.copy').html('Copied to clipboard');
+  });
 });
 
 var entityMap = {
