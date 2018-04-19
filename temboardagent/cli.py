@@ -9,7 +9,11 @@ import os
 import pdb
 import sys
 
-from .configuration import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 from .postgres import Postgres
 from .log import setup_logging
 from .errors import UserError
