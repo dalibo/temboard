@@ -131,14 +131,16 @@ def dashboard_collector_worker(app):
 
 class DashboardPlugin(object):
     PG_MIN_VERSION = 90400
+    s = 'dashboard'
+    option_specs = [
+        OptionSpec(s, 'scheduler_interval', default=2, validator=int),
+        OptionSpec(s, 'history_length', default=150, validator=int),
+    ]
+    del s
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'dashboard'
-        self.app.config.add_specs([
-            OptionSpec(s, 'scheduler_interval', default=2, validator=int),
-            OptionSpec(s, 'history_length', default=150, validator=int),
-        ])
+        self.app.config.add_specs(self.option_specs)
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()
@@ -159,3 +161,4 @@ class DashboardPlugin(object):
         self.app.scheduler.remove(workers)
         self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
+        self.app.config.remove_specs(self.option_specs)
