@@ -1,11 +1,5 @@
 import logging
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
-import os.path
+import os
 
 from temboardagent.errors import ConfigurationError
 from .utils import DotDict
@@ -15,51 +9,8 @@ from .errors import UserError
 logger = logging.getLogger(__name__)
 
 
-class PluginConfiguration(configparser.RawConfigParser):
-    """
-    Customized configuration parser for plugins.
-    """
-    def __init__(self, configfile, *args, **kwargs):
-        configparser.RawConfigParser.__init__(self, *args, **kwargs)
-        self.configfile = configfile
-        self.confdir = os.path.dirname(self.configfile)
-
-        try:
-            with open(self.configfile) as fd:
-                self.readfp(fd)
-        except IOError:
-            raise ConfigurationError("Configuration file %s can't be opened."
-                                     % (self.configfile))
-        except configparser.MissingSectionHeaderError:
-            raise ConfigurationError("Configuration file does not contain "
-                                     "section headers.")
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError("Section '%s' not found in configuration "
-                                     "file %s" % (section, self.configfile))
-
-    def abspath(self, path):
-        if path.startswith('/'):
-            return path
-        else:
-            return os.path.realpath('/'.join([self.confdir, path]))
-
-    def getfile(self, section, name):
-        path = self.abspath(self.get(section, name))
-        try:
-            with open(path) as fd:
-                fd.read()
-        except Exception as e:
-            logger.warn("Failed to open %s: %s", path, e)
-            raise ConfigurationError("%s file can't be opened." % (path,))
-        return path
-
-
-# Here begin the new API
-#
-# The purpose of the new API is to merge args, file, environment and defaults
-# safely, even when reloading.
+# The configuration API merges args, file, environment and defaults safely,
+# even when reloading.
 #
 # The API must be very simple, IoC-free. Implementation must be highly testable
 # and tested.
