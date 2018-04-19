@@ -1,10 +1,8 @@
 import logging
 import json
 import os
-from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.scheduler import taskmanager
-from temboardagent.spc import connector
 from temboardagent.configuration import OptionSpec
 from temboardagent.routing import RouteSet
 from temboardagent.queue import Queue, Message
@@ -14,8 +12,8 @@ from . import metrics
 
 
 logger = logging.getLogger(__name__)
-CONFIG = None
 routes = RouteSet(prefix=b'/dashboard')
+workers = taskmanager.WorkerSet()
 
 
 @routes.get(b'')
@@ -114,39 +112,21 @@ def dashboard_max_connections(http_context, app):
         return metrics.get_max_connections(conn)
 
 
-def dashboard_collector_worker(pickled_config):
+@workers.register(pool_size=1)
+def dashboard_collector_worker(app):
     logger.debug("Starting to collect dashboard data")
-    config = unpickle(pickled_config)
-    conn = connector(
-        host=config.postgresql.host,
-        port=config.postgresql.port,
-        user=config.postgresql.user,
-        password=config.postgresql.password,
-        database=config.postgresql.dbname,
-    )
-    conn.connect()
-    # Collect data
-    data = metrics.get_metrics(conn, config)
-    conn.close()
+    with app.postgres.connect() as conn:
+        data = metrics.get_metrics(conn, app.config)
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)
-    q = Queue(os.path.join(config.temboard.home, 'dashboard.q'),
-              max_length=(config.dashboard.history_length + 1),
+    q = Queue(os.path.join(app.config.temboard.home, 'dashboard.q'),
+              max_length=(app.config.dashboard.history_length + 1),
               overflow_mode='slide')
 
     q.push(Message(content=json.dumps(data)))
     logger.debug(data)
     logger.debug("End")
-
-
-def dashboard_collector_bootstrap(context):
-    yield taskmanager.Task(
-        worker_name='dashboard_collector_worker',
-        id='dashboard_collector',
-        options={'pickled_config': pickle(CONFIG)},
-        redo_interval=CONFIG.dashboard.scheduler_interval,
-    )
 
 
 class DashboardPlugin(object):
@@ -161,9 +141,6 @@ class DashboardPlugin(object):
         ])
 
     def load(self):
-        global CONFIG
-        CONFIG = self.app.config
-
         pg_version = self.app.postgres.fetch_version()
         if pg_version < self.PG_MIN_VERSION:
             msg = "%s is incompatible with Postgres below 9.4" % (
@@ -171,8 +148,14 @@ class DashboardPlugin(object):
             raise UserError(msg)
 
         self.app.router.add(routes)
-        taskmanager.worker(pool_size=1)(dashboard_collector_worker)
-        taskmanager.bootstrap()(dashboard_collector_bootstrap)
+        self.app.worker_pool.add(workers)
+        workers.schedule(
+            id='dashboard_collector',
+            redo_interval=self.app.config.dashboard.scheduler_interval
+        )(dashboard_collector_worker)
+        self.app.scheduler.add(workers)
 
     def unload(self):
+        self.app.scheduler.remove(workers)
+        self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
