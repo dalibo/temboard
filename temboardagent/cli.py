@@ -66,6 +66,7 @@ class Application(object):
         # This dict stores env, args and parser for hot reloading of
         # configuration.
         self.config_sources = dict()
+        self.services = []
 
     def __repr__(self):
         return '<%s>' % (self.__class__.__name__)
@@ -103,6 +104,8 @@ class Application(object):
 
         self.setup_logging()
         self.postgres = Postgres(**self.config.postgresql)
+        for service in self.services:
+            service.apply_config()
 
         if not self.with_plugins:
             return

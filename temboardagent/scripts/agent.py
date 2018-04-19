@@ -2,8 +2,10 @@
 
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
+import functools
 import logging
 import os
+import sys
 
 from ..scheduler import taskmanager
 
@@ -28,33 +30,55 @@ class SchedulerService(Service):
         super(SchedulerService, self).__init__(**kw)
         self.task_queue = task_queue
         self.event_queue = event_queue
-        self.scheduler = taskmanager.Scheduler(
-            address=os.path.join(self.app.config.temboard.home, '.tm.socket'),
-            task_path=os.path.join(
-                self.app.config.temboard.home, '.tm.task_list'),
-            authkey=None)
+        self.scheduler = None
+
+    def apply_config(self):
+        # Setup scheduler as soon as configuration is loaded, before
+        # plugins, so that tasklist is created before plugins.
+        if not self.scheduler:
+            self.scheduler = taskmanager.Scheduler(
+                address=os.path.join(
+                    self.app.config.temboard.home, '.tm.socket'),
+                task_path=os.path.join(
+                    self.app.config.temboard.home, '.tm.task_list'),
+                authkey=None)
+            self.scheduler.task_queue = self.task_queue
+            self.scheduler.event_queue = self.event_queue
+            self.scheduler.setup_task_list()
 
     def setup(self):
         if os.path.exists(self.scheduler.address):
             os.unlink(self.scheduler.address)
 
-        self.scheduler.set_context('config', {
-            'plugins': self.app.config.plugins.data,
-            'temboard': self.app.config.temboard.data,
-            'postgresql': self.app.config.postgresql.data,
-            'logging': self.app.config.logging.data,
-        })
-        self.scheduler.task_queue = self.task_queue
-        self.scheduler.event_queue = self.event_queue
         self.scheduler.setup()
 
     def serve1(self):
         self.scheduler.serve1()
 
+    def add(self, workerset):
+        if not self.is_my_process:
+            return
+
+        for task in workerset.list_tasks():
+            try:
+                self.scheduler.task_list.rm(task.id)
+                logger.debug("Overwriting task %s.", task.id)
+            except Exception:
+                pass
+
+            self.scheduler.task_list.push(task)
+
     def reload(self):
         self.app.reload()
         # Apply configuration changes to bootstraped Tasks
         self.scheduler.sync_bootstrap_options()
+
+    def remove(self, workerset):
+        if not self.is_my_process:
+            return
+
+        for task in workerset.list_tasks():
+            self.scheduler.task_list.rm(task.id)
 
 
 class WorkerPoolService(Service):
@@ -73,6 +97,40 @@ class WorkerPoolService(Service):
         except Exception:
             logger.exception("Unhandled error in worker:")
             logger.error("Not stopping worker process.")
+
+    def create_task_function_app_wrapper(self, function):
+        @functools.wraps(function)
+        def wrapper(*a, **kw):
+            return function(app=self.app, *a, **kw)
+        wrapper._tm_function = function
+        return wrapper
+
+    def add(self, workerset):
+        if not self.is_my_process:
+            return
+
+        for function in workerset:
+            conf = function._tm_worker
+            wrapper = self.create_task_function_app_wrapper(function)
+
+            # Inject wrapper in module so taskmanager will find it.
+            mod = sys.modules[conf['module']]
+            wrapper_name = '_tm_wrapper_' + function.__name__
+            setattr(mod, wrapper_name, wrapper)
+            conf['function'] = wrapper_name
+
+            # Add to current workers
+            logger.debug("Activate worker %s", conf['name'])
+            self.worker_pool.add(conf)
+
+    def remove(self, workerset):
+        if not self.is_my_process:
+            return
+
+        for function in workerset:
+            conf = function._tm_worker
+            logger.debug("Disable worker %s", conf['name'])
+            self.worker_pool.workers.pop(conf['name'], None)
 
 
 def define_arguments(parser):
@@ -123,8 +181,21 @@ def main(argv, environ):
     )
     define_arguments(parser)
     args = parser.parse_args(argv)
+
     app = Application(specs=list_options_specs())
     app.router = Router()
+
+    task_queue = taskmanager.Queue()
+    event_queue = taskmanager.Queue()
+    app.worker_pool = WorkerPoolService(
+        app=app, name=u'worker pool',
+        task_queue=task_queue, event_queue=event_queue)
+    app.services.append(app.worker_pool)
+    app.scheduler = SchedulerService(
+        app=app, name=u'scheduler',
+        task_queue=task_queue, event_queue=event_queue)
+    app.services.append(app.scheduler)
+
     app.bootstrap(args=args, environ=environ)
     config = app.config
 
@@ -140,14 +211,8 @@ def main(argv, environ):
                     )
 
     services = ServicesManager()
-    task_queue = taskmanager.Queue()
-    event_queue = taskmanager.Queue()
-    services.add(SchedulerService(
-        app=app, name=u'scheduler',
-        task_queue=task_queue, event_queue=event_queue))
-    services.add(WorkerPoolService(
-        app=app, name=u'worker pool',
-        task_queue=task_queue, event_queue=event_queue))
+    services.add(app.worker_pool)
+    services.add(app.scheduler)
 
     with services:
         httpd = HTTPDService(app, name=u'main process', services=services)

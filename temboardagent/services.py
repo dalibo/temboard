@@ -30,11 +30,13 @@ class Service(object):
         # Must be None for children or ServicesManager instance for main
         # service. Used to propagate signals. See reload() method.
         self.services = services
-        self.pid = None
         self.parentpid = None
+        # Tells whether this service is run in this process. Must be updated in
+        # parent process once the service is forked.
+        self.is_my_process = True
 
     def __unicode__(self):
-        return '%s (pid=%s)' % (self.name, self.pid)
+        return self.name
 
     def __enter__(self):
         self.sigchld = False
@@ -69,6 +71,9 @@ class Service(object):
     def sigterm_handler(self, *a):
         logger.info("Terminated.")
         sys.exit(1)
+
+    def apply_config(self):
+        pass
 
     def run(self):
         if self.name:
@@ -142,18 +147,20 @@ class ServicesManager(object):
 
     def add(self, service):
         service.parentpid = self.pid
-        self.processes.append(Process(target=service.run, name=service.name))
+        self.processes.append(
+            (service, Process(target=service.run, name=service.name)))
 
     def start(self):
-        for process in self.processes:
+        for service, process in self.processes:
             process.start()
+            service.is_my_process = False
 
     def reload(self):
-        for process in self.processes:
+        for _, process in self.processes:
             os.kill(process.pid, signal.SIGHUP)
 
     def check(self):
-        for p in self.processes[:]:
+        for _, p in self.processes[:]:
             logger.debug("Checking child %s (%s).", p.name, p.pid)
             if not p.is_alive():
                 logger.debug("%s (%s) is dead.", p.name, p.pid)
@@ -162,17 +169,17 @@ class ServicesManager(object):
                 raise UserError(msg)
 
     def stop(self):
-        for process in self.processes:
+        for _, process in self.processes:
             process.terminate()
 
     def kill(self, timeout=5, step=0.5):
         while timeout > 0:
-            processes = [p for p in self.processes if p.is_alive()]
+            processes = [p for _, p in self.processes if p.is_alive()]
             if not processes:
                 break
             sleep(step)
             timeout -= step
 
-        for process in processes:
+        for _, process in processes:
             logger.warn("Killing %s.", process)
             os.kill(process.pid, signal.SIGKILL)
