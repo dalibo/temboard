@@ -78,6 +78,7 @@ class Service(object):
     def run(self):
         if self.name:
             setproctitle('temboard-agent: %s' % self.name)
+            logger.info("Starting %s.", self.name)
 
         self.setup()
         try:

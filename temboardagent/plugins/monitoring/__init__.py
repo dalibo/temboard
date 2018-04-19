@@ -3,7 +3,6 @@ import os
 import logging
 import json
 import urllib2
-from pickle import dumps as pickle, loads as unpickle
 
 from temboardagent.scheduler import taskmanager
 from temboardagent.routing import RouteSet
@@ -37,9 +36,7 @@ from .probes import (
 from .output import send_output, remove_passwords
 
 logger = logging.getLogger(__name__)
-CONFIG = None
-
-
+workers = taskmanager.WorkerSet()
 routes = RouteSet(prefix=b'/monitoring/probe')
 
 
@@ -138,12 +135,13 @@ def api_run_probe(probe_instance, config):
     return run_probes([probe_instance], [instance], delta=False)
 
 
-def monitoring_collector_worker(pickled_config):
+@workers.register(pool_size=1)
+def monitoring_collector_worker(app):
     """
     Run probes and push collected metrics in a queue.
     """
     logger.debug("Starting monitoring collector")
-    config = unpickle(pickled_config)
+    config = app.config
     conninfo = dict(
         host=config.postgresql.host,
         port=config.postgresql.port,
@@ -179,8 +177,9 @@ def monitoring_collector_worker(pickled_config):
     logger.debug("Done")
 
 
-def monitoring_sender_worker(pickled_config):
-    config = unpickle(pickled_config)
+@workers.register(pool_size=1)
+def monitoring_sender_worker(app):
+    config = app.config
     c = 0
     logger.debug("Starting sender")
     q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
@@ -222,40 +221,23 @@ def monitoring_sender_worker(pickled_config):
     logger.debug("Done")
 
 
-def monitoring_bootstrap(context):
-    yield taskmanager.Task(
-        worker_name='monitoring_collector_worker',
-        id='monitoring_collector',
-        options={'pickled_config': pickle(CONFIG)},
-        redo_interval=CONFIG.monitoring.scheduler_interval,
-    )
-    yield taskmanager.Task(
-        worker_name='monitoring_sender_worker',
-        id='monitoring_sender',
-        options={'pickled_config': pickle(CONFIG)},
-        redo_interval=CONFIG.monitoring.scheduler_interval,
-    )
-
-
 class MonitoringPlugin(object):
     PG_MIN_VERSION = 90400
+    s = 'monitoring'
+    option_specs = [
+        OptionSpec(s, 'dbnames', default='*', validator=list_),
+        OptionSpec(s, 'scheduler_interval', default=60, validator=int),
+        OptionSpec(s, 'probes', default='*', validator=list_),
+        OptionSpec(s, 'collector_url'),
+        OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
+    ]
+    del s
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'monitoring'
-        default_col = os.environ.get('TEMBOARD_MONITORING_COLLECTOR_URL', None)
-        self.app.config.add_specs([
-            OptionSpec(s, 'dbnames', default='*', validator=list_),
-            OptionSpec(s, 'scheduler_interval', default=60, validator=int),
-            OptionSpec(s, 'probes', default='*', validator=list_),
-            OptionSpec(s, 'collector_url', default=default_col),
-            OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
-        ])
+        self.app.config.add_specs(self.option_specs)
 
     def load(self):
-        global CONFIG
-        CONFIG = self.app.config
-
         pg_version = self.app.postgres.fetch_version()
         if pg_version < self.PG_MIN_VERSION:
             msg = "%s is incompatible with Postgres below 9.4" % (
@@ -263,10 +245,19 @@ class MonitoringPlugin(object):
             raise UserError(msg)
 
         self.app.router.add(routes)
-
-        taskmanager.worker(pool_size=1)(monitoring_collector_worker)
-        taskmanager.worker(pool_size=1)(monitoring_sender_worker)
-        taskmanager.bootstrap()(monitoring_bootstrap)
+        self.app.worker_pool.add(workers)
+        workers.schedule(
+            id='monitoring_collector',
+            redo_interval=self.app.config.monitoring.scheduler_interval,
+        )(monitoring_collector_worker)
+        workers.schedule(
+            id='monitoring_sender',
+            redo_interval=self.app.config.monitoring.scheduler_interval,
+        )(monitoring_sender_worker)
+        self.app.scheduler.add(workers)
 
     def unload(self):
+        self.app.scheduler.remove(workers)
+        self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
+        self.app.config.remove_specs(self.option_specs)
