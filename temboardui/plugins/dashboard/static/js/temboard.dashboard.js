@@ -242,7 +242,7 @@ $(function() {
     {
       type: 'doughnut',
       data: {
-        labels: ["Active backends", ""],
+        labels: ["Active backends", "Free"],
         datasets: [
           {
             backgroundColor: ["#29cc36", "#eeeeee"]
