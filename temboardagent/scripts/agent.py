@@ -68,11 +68,6 @@ class SchedulerService(Service):
 
             self.scheduler.task_list.push(task)
 
-    def reload(self):
-        self.app.reload()
-        # Apply configuration changes to bootstraped Tasks
-        self.scheduler.sync_bootstrap_options()
-
     def remove(self, workerset):
         if not self.is_my_process:
             return
@@ -187,10 +182,12 @@ def main(argv, environ):
 
     task_queue = taskmanager.Queue()
     event_queue = taskmanager.Queue()
+
     app.worker_pool = WorkerPoolService(
         app=app, name=u'worker pool',
         task_queue=task_queue, event_queue=event_queue)
     app.services.append(app.worker_pool)
+
     app.scheduler = SchedulerService(
         app=app, name=u'scheduler',
         task_queue=task_queue, event_queue=event_queue)
