@@ -223,18 +223,19 @@ def monitoring_sender_worker(app):
 
 class MonitoringPlugin(object):
     PG_MIN_VERSION = 90400
+    s = 'monitoring'
+    option_specs = [
+        OptionSpec(s, 'dbnames', default='*', validator=list_),
+        OptionSpec(s, 'scheduler_interval', default=60, validator=int),
+        OptionSpec(s, 'probes', default='*', validator=list_),
+        OptionSpec(s, 'collector_url'),
+        OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
+    ]
+    del s
 
     def __init__(self, app, **kw):
         self.app = app
-        s = 'monitoring'
-        default_col = os.environ.get('TEMBOARD_MONITORING_COLLECTOR_URL', None)
-        self.app.config.add_specs([
-            OptionSpec(s, 'dbnames', default='*', validator=list_),
-            OptionSpec(s, 'scheduler_interval', default=60, validator=int),
-            OptionSpec(s, 'probes', default='*', validator=list_),
-            OptionSpec(s, 'collector_url', default=default_col),
-            OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
-        ])
+        self.app.config.add_specs(self.option_specs)
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()
@@ -259,3 +260,4 @@ class MonitoringPlugin(object):
         self.app.scheduler.remove(workers)
         self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
+        self.app.config.remove_specs(self.option_specs)
