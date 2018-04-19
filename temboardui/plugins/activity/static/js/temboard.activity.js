@@ -62,11 +62,12 @@ $(function() {
     ]);
   }
 
+  var stateMaxLength = 12;
   columns = columns.concat([
     {
       title: 'State',
       data: function(row, type, val, meta) {
-        return row.state && row.state.trunc(12);
+        return row.state && row.state.trunc(stateMaxLength);
       },
       className: 'text-center',
       createdCell: function(td, cellData, rowData, row, col) {
@@ -81,6 +82,9 @@ $(function() {
             break;
         }
         $(td).addClass(cls);
+        if (rowData.state.length > stateMaxLength) {
+          $(td).attr('title', rowData.state);
+        }
       }
     },
     {
