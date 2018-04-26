@@ -20,6 +20,7 @@ $(function() {
   var now = moment();
   var minus24h = now.clone().subtract(24, 'hours');
   var p = getHashParams();
+  var g;
 
   if (p.start && p.end) {
     start = moment(parseInt(p.start, 10));
@@ -64,7 +65,8 @@ $(function() {
         colors: [colors.blue, colors.orange, colors.green],
         ylabel: "Loadaverage"
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'loadaverage'
     },
     "CPU": {
       title: "CPU Usage",
@@ -74,7 +76,8 @@ $(function() {
         ylabel: "%",
         stackedGraph: true
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'cpu'
     },
     "CtxForks": {
       title: "Context switches and forks per second",
@@ -94,7 +97,8 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'memory'
     },
     "Swap": {
       title: "Swap usage",
@@ -106,7 +110,8 @@ $(function() {
         labelsKMG2: true,
         stackedGraph: true
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'swap'
     },
     "FsSize": {
       title: "Filesystems size",
@@ -116,7 +121,8 @@ $(function() {
         labelsKMB: false,
         labelsKMG2: true
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'fs'
     },
     "FsUsage": {
       title: "Filesystems usage",
@@ -124,7 +130,8 @@ $(function() {
       options: {
         ylabel: "%"
       },
-      category: 'system'
+      category: 'system',
+      alertsApi: 'fs'
     },
     // PostgreSQL
     "TPS": {
@@ -167,7 +174,8 @@ $(function() {
         ylabel: "Sessions",
         stackedGraph: true
       },
-      category: 'postgres'
+      category: 'postgres',
+      alertsApi: 'sessions'
     },
     "Blocks": {
       title: "Blocks Hit vs Read per second",
@@ -176,7 +184,8 @@ $(function() {
         colors: [colors.red, colors.green],
         ylabel: "Blocks"
       },
-      category: 'postgres'
+      category: 'postgres',
+      alerts: 'hitratio'
     },
     "HRR": {
       title: "Blocks Hit vs Read ratio",
@@ -185,7 +194,8 @@ $(function() {
         colors: [colors.blue],
         ylabel: "%"
       },
-      category: 'postgres'
+      category: 'postgres',
+      alerts: 'hitratio'
     },
     "Checkpoints": {
       title: "Checkpoints",
@@ -222,7 +232,8 @@ $(function() {
         colors: [colors.blue, colors.blue2],
         ylabel: "WAL files"
       },
-      category: 'postgres'
+      category: 'postgres',
+      alertsApi: 'wal_files'
     },
     "WalFilesRate": {
       title: "WAL Files written rate",
@@ -259,7 +270,8 @@ $(function() {
       options: {
         ylabel: "Waiting Locks"
       },
-      category: 'postgres'
+      category: 'postgres',
+      alertsApi: 'waiting'
     }
   };
 
@@ -428,11 +440,18 @@ $(function() {
     for (var attrname in graph.options) {
       defaultOptions[attrname] = metrics[id].options[attrname];
     }
-    graph.chart = new Dygraph(
+    g = new Dygraph(
       document.getElementById("chart"+id),
       apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
       defaultOptions
     );
+
+    g.ready(function(g) {
+      if (metrics[id].alertsApi) {
+        loadAlerts(g, metrics[id].alertsApi);
+      }
+    });
+    graph.chart = g;
   }
 
   function timestampToIsoDate(epochMs) {
@@ -513,4 +532,73 @@ $(function() {
       }, false);
     });
   }
+
+  // 'this' is the dygraph chart
+  function loadAlerts(g, api) {
+    var colors = {
+      'OK': 'green',
+      'WARNING': 'rgba(255, 120, 0, .2)',
+      'CRITICAL': 'rgba(255, 0, 0, .2)'
+    };
+    $.ajax({
+      url: alertingUrl+"/state_changes/" + api + ".json?start="+timestampToIsoDate(start)+"&end="+timestampToIsoDate(end)+"&noerror=1",
+    }).success(function(data) {
+      data = data.reverse();
+      g.setAnnotations(data.map(function(alert) {
+        var x = getClosestX(g, alert[0]);
+        return {
+          series: g.getLabels()[1],
+          x: x,
+          shortText: '♥',
+          cssClass: 'alert-' + alert[1].toLowerCase(),
+          text: alert[1],
+          tickColor: colors[alert[1]],
+          attachAtBottom: true
+        }
+      }));
+
+      g.updateOptions({
+        underlayCallback: function(canvas, area, g) {
+          data.forEach(function(alert, index) {
+            if (alert[1] == 'OK') {
+              return;
+            }
+
+            var bottom_left = g.toDomCoords(new Date(alert[0]), 0);
+            // Right boundary is next alert or end of visible series
+            var right;
+            if (index == data.length - 1) {
+              var rows = g.numRows();
+              right = g.getValue(rows - 1, 0);
+            } else {
+              right = new Date(data[index + 1][0]);
+            }
+            var top_right = g.toDomCoords(right, 10);
+            var left = bottom_left[0];
+            var right = top_right[0];
+
+            canvas.fillStyle = colors[alert[1]];
+            canvas.fillRect(left, area.y, right - left, area.h);
+          });
+        }
+      });
+    });
+  }
+
+  // Find the corresponding x in already existing data
+  // If not available, return the closest (left hand) x
+  function getClosestX(g, x) {
+    // x already exist in chart
+    if (g.getRowForX(x)) {
+      return x;
+    }
+    // find the closest (left hand)
+    var rows = g.numRows();
+    for (var i = 0, l = rows - 1; i < l; i++) {
+      if (g.getValue(i, 0) > new Date(x).getTime()) {
+        return g.getValue(i - 1, 0);
+      }
+    }
+    return x;
+  };
 });
