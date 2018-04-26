@@ -212,7 +212,7 @@ def test_reload(mocker):
 
 
 def test_fetch_plugin(mocker):
-    iter_ep = mocker.patch('temboardagent.cli.iter_entry_points')
+    iter_ep = mocker.patch('temboardagent.cli.pkg_resources.iter_entry_points')
     from temboardagent.cli import Application
 
     app = Application()
@@ -225,7 +225,7 @@ def test_fetch_plugin(mocker):
 
 
 def test_fetch_failing(mocker):
-    iter_ep = mocker.patch('temboardagent.cli.iter_entry_points')
+    iter_ep = mocker.patch('temboardagent.cli.pkg_resources.iter_entry_points')
     from temboardagent.cli import Application, UserError
 
     app = Application()
@@ -238,7 +238,7 @@ def test_fetch_failing(mocker):
 
 
 def test_fetch_missing(mocker):
-    iter_ep = mocker.patch('temboardagent.cli.iter_entry_points')
+    iter_ep = mocker.patch('temboardagent.cli.pkg_resources.iter_entry_points')
     from temboardagent.cli import Application, UserError
 
     app = Application()

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from argparse import Action as ArgAction
-from pkg_resources import iter_entry_points
+import pkg_resources
 from distutils.util import strtobool
 from glob import glob
 import logging
@@ -185,7 +185,7 @@ class Application(object):
 
     def fetch_plugin(self, name):
         logger.debug("Looking for plugin %s.", name)
-        for ep in iter_entry_points(self.with_plugins, name):
+        for ep in pkg_resources.iter_entry_points(self.with_plugins, name):
             logger.info("Found plugin %s.", ep)
             try:
                 return ep.load()
