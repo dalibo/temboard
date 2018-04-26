@@ -129,7 +129,7 @@ def history_tables_worker(config):
         raise(e)
 
 
-@taskmanager.worker(pool_size=10)
+@taskmanager.worker(pool_size=1)
 def check_data_worker(dbconf, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
     specs = check_specs
