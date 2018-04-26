@@ -249,8 +249,10 @@ def test_fetch_missing(mocker):
 
 
 def test_create_plugins(mocker):
-    mocker.patch(
-        'temboardagent.cli.Application.fetch_plugin', autospec=True)
+    mod = 'temboardagent.cli'
+    mocker.patch(mod + '.refresh_distributions')
+    mocker.patch(mod + '.refresh_pythonpath')
+    mocker.patch(mod + '.Application.fetch_plugin', autospec=True)
     from temboardagent.cli import Application
 
     app = Application()

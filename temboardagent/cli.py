@@ -7,12 +7,22 @@ from glob import glob
 import logging
 import os
 import pdb
+from site import main as refresh_pythonpath
 import sys
 
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+try:
+    from pkg_resources import (
+        _initialize_master_working_set as refresh_distributions
+    )
+except ImportError:
+    def refresh_distributions():
+        logger.warn("setuptools is too old. Can't reload installed packages.")
+        logger.warn("Restart temboard-agent if you it can't find new plugins.")
 
 from .postgres import Postgres
 from .log import setup_logging
@@ -208,6 +218,10 @@ class Application(object):
             n for n in ng_plugins
             if n not in self.plugins
         ]
+
+        # Refresh sys.path and working_set to ensure new code is loadable.
+        refresh_pythonpath()
+        refresh_distributions()
 
         for name in unloaded_names:
             cls = self.fetch_plugin(name)
