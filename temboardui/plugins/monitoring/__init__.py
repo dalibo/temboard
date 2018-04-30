@@ -144,6 +144,7 @@ def check_data_worker(dbconf, host_id, instance_id, data):
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
+
     for raw in data:
         datetime = raw.get('datetime')
         name = raw.get('name')
@@ -184,13 +185,12 @@ def check_data_worker(dbconf, host_id, instance_id, data):
                 ).one()
             cs.state = unicode(state)
             worker_session.merge(cs)
-            worker_session.commit()
         except NoResultFound:
             cs = CheckState(check_id=c.check_id, key=unicode(key),
                             state=unicode(state))
             worker_session.add(cs)
-            worker_session.commit()
 
+        worker_session.flush()
         # Append state change if any to history
         worker_session.execute("SELECT monitoring.append_state_changes(:d, :i,"
                                ":s, :k, :v, :w, :c)",
@@ -199,6 +199,7 @@ def check_data_worker(dbconf, host_id, instance_id, data):
                                 'c': critical})
 
         worker_session.commit()
+        worker_session.expunge_all()
 
     worker_session.close()
 
