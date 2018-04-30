@@ -20,7 +20,8 @@ from .alerting import (
 from .handlers.alerting import (
     AlertingJSONChecksHandler,
     AlertingJSONCheckStatesHandler,
-    AlertingDataCheckResultsHandler,
+    AlertingJSONStateChangesHandler,
+    AlertingJSONCheckChangesHandler,
 )
 from .handlers.monitoring import (
     MonitoringHTMLHandler,
@@ -54,12 +55,14 @@ def get_routes(config):
          MonitoringDataProbeHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/json/state",
+        (r"/server/(.*)/([0-9]{1,5})/alerting/state.json",
          AlertingJSONCheckStatesHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/data/([a-z\-_.0-9]{1,64})$",
-         AlertingDataCheckResultsHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/json/checks",
+        (r"/server/(.*)/([0-9]{1,5})/alerting/state_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
+         AlertingJSONStateChangesHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting/checks.json",
          AlertingJSONChecksHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting/check_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
+         AlertingJSONCheckChangesHandler, handler_conf),
     ]
     return routes
 
@@ -114,10 +117,6 @@ def history_tables_worker(config):
             for row in res.fetchall():
                 logger.debug("table=%s insert=%s"
                              % (row['tblname'], row['nb_rows']))
-            logger.debug("Running SQL monitoring.history_check_results()")
-            res = conn.execute("SELECT * FROM history_check_results()")
-            row = res.fetchone()
-            logger.debug("table=history_check_results insert=%s" % row[0])
             conn.execute("COMMIT")
             return
     except Exception as e:
@@ -130,7 +129,7 @@ def history_tables_worker(config):
         raise(e)
 
 
-@taskmanager.worker(pool_size=10)
+@taskmanager.worker(pool_size=1)
 def check_data_worker(dbconf, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
     specs = check_specs
@@ -192,8 +191,8 @@ def check_data_worker(dbconf, host_id, instance_id, data):
             worker_session.add(cs)
             worker_session.commit()
 
-        # Append check result to history
-        worker_session.execute("SELECT monitoring.insert_check_result(:d, :i,"
+        # Append state change if any to history
+        worker_session.execute("SELECT monitoring.append_state_changes(:d, :i,"
                                ":s, :k, :v, :w, :c)",
                                {'d': datetime, 'i': c.check_id, 's': cs.state,
                                 'k': cs.key, 'v': value, 'w': warning,

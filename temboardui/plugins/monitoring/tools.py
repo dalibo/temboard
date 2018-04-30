@@ -532,7 +532,7 @@ def get_host_checks(session, host_id):
     # Returns enabled alerting checks as list of tuples:
     # (name, warning threshold, critical threshold)
     checks = session.query(Check).filter(Check.host_id == host_id)
-    return [(c.name, c.threshold_w, c.threshold_c)
+    return [(c.name, c.warning, c.critical)
             for c in checks if c.enabled]
 
 
@@ -548,8 +548,8 @@ def populate_host_checks(session, host_id, instance_id, hostinfo):
                   instance_id=instance_id,
                   name=bc[0],
                   enabled=True,
-                  threshold_w=bc[1],
-                  threshold_c=bc[2],
+                  warning=bc[1],
+                  critical=bc[2],
                   description=specs.get(bc[0]).get('description'))
         session.add(c)
     session.commit()
