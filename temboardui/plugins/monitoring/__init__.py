@@ -26,7 +26,7 @@ from .handlers.alerting import (
 from .handlers.monitoring import (
     MonitoringHTMLHandler,
     MonitoringCollectorHandler,
-    MonitoringDataProbeHandler,
+    MonitoringDataMetricHandler,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def get_routes(config):
         (r"/supervision/collector",
          MonitoringCollectorHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/data/([a-z\-_.0-9]{1,64})$",
-         MonitoringDataProbeHandler, handler_conf),
+         MonitoringDataMetricHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
         (r"/server/(.*)/([0-9]{1,5})/alerting/state.json",
