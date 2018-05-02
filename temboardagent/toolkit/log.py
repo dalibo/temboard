@@ -38,7 +38,7 @@ class MultilineFormatter(logging.Formatter):
         d = record.__dict__.copy()
         for i, line in enumerate(lines[1:]):
             record.message = line
-            lines[1+i] = self._fmt % record.__dict__
+            lines[1 + i] = self._fmt % record.__dict__
         record.__dict__ = d
 
         return '\n'.join(lines)

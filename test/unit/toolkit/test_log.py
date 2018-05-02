@@ -1,7 +1,7 @@
 def test_temboard_debug(mocker):
-    mocker.patch('temboardagent.log.sys.stderr.isatty')
+    mocker.patch('temboardagent.toolkit.log.sys.stderr.isatty')
 
-    from temboardagent.log import generate_logging_config
+    from temboardagent.toolkit.log import generate_logging_config
 
     config = generate_logging_config()
     assert 'minimal' == config['handlers']['configured']['formatter']
@@ -23,7 +23,7 @@ def test_temboard_debug(mocker):
 
 
 def test_limit_debug():
-    from temboardagent.log import generate_logging_config
+    from temboardagent.toolkit.log import generate_logging_config
 
     config = generate_logging_config(
         level='INFO', debug='myplugins,temboardagent.cli')
