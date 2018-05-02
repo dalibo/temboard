@@ -77,6 +77,21 @@ def setup_logging(**kw):
     dictConfig(logging_config)
 
 
+def configure_debug(logging_config, core, debug):
+    # If --debug or DEBUG=1, apply DEBUG to all core loggers
+    if debug in (True, '__debug__'):
+        debug = core
+
+    if hasattr(debug, 'split'):
+        debug = filter(None, debug.split(','))
+
+    # Now apply debug level.
+    if debug:
+        for loggername in debug:
+            logger = logging_config['loggers'].setdefault(loggername, {})
+            logger['level'] = 'DEBUG'
+
+
 def generate_logging_config(
         level=None, destination=None, facility='local0',
         method='stderr', debug=None, **kw):
@@ -153,17 +168,5 @@ def generate_logging_config(
     # Apply level to temboard loggers only
     logging_config['loggers'][core] = dict(level=level)
 
-    # If --debug or DEBUG=1, apply DEBUG to all core loggers
-    if debug in (True, '__debug__'):
-        debug = core
-
-    if hasattr(debug, 'split'):
-        debug = filter(None, debug.split(','))
-
-    # Now apply debug level.
-    if debug:
-        for loggername in debug:
-            logger = logging_config['loggers'].setdefault(loggername, {})
-            logger['level'] = 'DEBUG'
-
+    configure_debug(logging_config, core, debug)
     return logging_config
