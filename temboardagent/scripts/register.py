@@ -168,7 +168,7 @@ def main(argv, environ):
         if code != 200:
             raise HTTPError(code, content)
         print("Done.")
-    except (ConfigurationError, HTTPError, Exception) as e:
+    except (HTTPError, Exception) as e:
         if isinstance(e, urllib2.HTTPError):
             err = json.loads(e.read())
             stderr.write("FATAL: %s\n" % err['error'])
