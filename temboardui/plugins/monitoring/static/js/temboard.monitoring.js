@@ -425,7 +425,7 @@ $(function() {
         }
     };
 
-    for (var attrname in graph.options) {
+    for (var attrname in metrics[id].options) {
       defaultOptions[attrname] = metrics[id].options[attrname];
     }
     graph.chart = new Dygraph(
