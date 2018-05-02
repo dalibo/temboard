@@ -92,7 +92,7 @@ def main(argv, environ):
         prog='temboard-agent-register',
         description=(
             "Register a couple PostgreSQL instance/agent "
-            "to a Temboard UI."
+            "to a temBoard UI."
         ),
         add_help=False,
         argument_default=UNDEFINED_ARGUMENT,
