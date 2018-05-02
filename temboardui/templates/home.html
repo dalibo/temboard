@@ -107,7 +107,7 @@
                 );
                 var g = new Dygraph(
                   document.getElementById("{{chart_loadavg_id}}"),
-                  api_url + "/data/loadavg?interval=load5&start=" + start + "&end=" + end,
+                  api_url + "/data/load1?start=" + start + "&end=" + end,
                   $.extend({
                     colors: ['#FAA43A']
                   }, defaultOptions)

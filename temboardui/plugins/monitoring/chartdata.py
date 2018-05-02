@@ -1,6 +1,524 @@
 import cStringIO
 import datetime
 from .pivot import pivot_timeserie
+from psycopg2.extensions import AsIs
+
+
+METRICS = dict(
+    blocks=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    ROUND(SUM((record).blks_read)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_read_s,
+    ROUND(SUM((record).blks_hit)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_hit_s
+FROM expand_data_by_instance_id('metric_blocks', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_blocks_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    ROUND(SUM((record).blks_read)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_read_s,
+    ROUND(SUM((record).blks_hit)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_hit_s
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='blocks',
+    ),
+    checkpoints=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).checkpoints_timed AS timed,
+    (record).checkpoints_req AS req,
+    ROUND(((record).checkpoint_write_time/1000)::numeric, 1) AS write_time,
+    ROUND(((record).checkpoint_sync_time/1000)::numeric,1) AS sync_time
+FROM expand_data_by_instance_id('metric_bgwriter', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_bgwriter_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).checkpoints_timed AS timed,
+    (record).checkpoints_req AS req,
+    ROUND(((record).checkpoint_write_time/1000)::numeric, 1) AS write_time,
+    ROUND(((record).checkpoint_sync_time/1000)::numeric,1) AS sync_time
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='bgwriter',
+    ),
+    cpu=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round((SUM((record).time_user)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS user,
+    round((SUM((record).time_system)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS system,
+    round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
+    round((SUM((record).time_steal)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS steal
+FROM expand_data_by_host_id('metric_cpu', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, cpu text, record metric_cpu_record)
+GROUP BY datetime, host_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round((SUM((record).time_user)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS user,
+    round((SUM((record).time_system)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS system,
+    round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
+    round((SUM((record).time_steal)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS steal
+FROM %(tablename)s
+WHERE host_id = %(host_id) AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, host_id ORDER BY datetime
+        """,  # noqa
+        probename='cpu',
+    ),
+    ctxforks=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).context_switches)/(extract('epoch' from MIN((record).measure_interval)))) AS context_switches_s,
+    round(SUM((record).forks)/(extract('epoch' from MIN((record).measure_interval)))) AS forks_s
+FROM expand_data_by_host_id('metric_process', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_process_record)
+GROUP BY datetime ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).context_switches)/(extract('epoch' from MIN((record).measure_interval)))) AS context_switches_s,
+    round(SUM((record).forks)/(extract('epoch' from MIN((record).measure_interval)))) AS forks_s
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime ORDER BY datetime
+        """,  # noqa,
+        probename='process',
+    ),
+    db_size=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    dbname,
+    (record).size
+FROM expand_data_by_instance_id('metric_db_size', tstzrange(%(start)s, %(end)s), %(instance_id))
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_db_size_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    dbname,
+    (record).size
+FROM %(tablename)s
+WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime, dbname
+        """,  # noqa
+        probename='db_size',
+        pivot=dict(
+            index='date',
+            key='dbname',
+            value='size',
+        )
+    ),
+    fs_size=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    mount_point,
+    (record).used AS size
+FROM expand_data_by_host_id('metric_filesystems_size', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    mount_point,
+    (record).used AS size
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='filesystems_size',
+        pivot=dict(
+            index='date',
+            key='mount_point',
+            value='size',
+        ),
+    ),
+    fs_usage=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    mount_point,
+    round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
+FROM expand_data_by_host_id('metric_filesystems_size', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    mount_point,
+    round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa,
+        probename='filesystems_size',
+        pivot=dict(
+            index='date',
+            key='mount_point',
+            value='usage',
+        ),
+    ),
+    hitreadratio=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    CASE WHEN (SUM((record).blks_hit) + SUM((record).blks_read)) > 0
+    THEN ROUND((SUM((record).blks_hit)::FLOAT/(SUM((record).blks_hit) + SUM((record).blks_read)::FLOAT) * 100)::numeric, 2)
+    ELSE 100 END AS hit_read_ratio
+FROM expand_data_by_instance_id('metric_blocks', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_blocks_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    CASE WHEN (SUM((record).blks_hit) + SUM((record).blks_read)) > 0
+    THEN ROUND((SUM((record).blks_hit)::FLOAT/(SUM((record).blks_hit) + SUM((record).blks_read)::FLOAT) * 100)::numeric, 2)
+    ELSE 100 END AS hit_read_ratio
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='blocks',
+    ),
+    instance_size=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    SUM((record).size) AS size
+FROM expand_data_by_instance_id('metric_db_size', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_db_size_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    SUM((record).size) AS size
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='db_size',
+    ),
+    loadavg=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).load1,
+    (record).load5,
+    (record).load15
+FROM expand_data_by_host_id( 'metric_loadavg', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_loadavg_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).load1,
+    (record).load5,
+    (record).load15
+FROM %(tablename)s WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime ASC
+        """,  # noqa
+        probename='loadavg',
+    ),
+    load1=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).load1
+FROM expand_data_by_host_id( 'metric_loadavg', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_loadavg_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).load1
+FROM %(tablename)s WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime ASC
+        """,  # noqa
+        probename='loadavg',
+    ),
+    locks=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    SUM((record).access_share) AS access_share,
+    SUM((record).row_share) AS row_share,
+    SUM((record).row_exclusive) AS row_exclusive,
+    SUM((record).share_update_exclusive) AS share_update_exclusive,
+    SUM((record).share) AS share,
+    SUM((record).share_row_exclusive) AS share_row_exclusive,
+    SUM((record).exclusive) AS exclusive,
+    SUM((record).access_exclusive) AS access_exclusive,
+    SUM((record).siread) AS siread
+FROM expand_data_by_instance_id('metric_locks', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_locks_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    SUM((record).access_share) AS access_share,
+    SUM((record).row_share) AS row_share,
+    SUM((record).row_exclusive) AS row_exclusive,
+    SUM((record).share_update_exclusive) AS share_update_exclusive,
+    SUM((record).share) AS share,
+    SUM((record).share_row_exclusive) AS share_row_exclusive,
+    SUM((record).exclusive) AS exclusive,
+    SUM((record).access_exclusive) AS access_exclusive,
+    SUM((record).siread) AS siread
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC        """,  # noqa
+        probename='locks',
+    ),
+    memory=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).mem_free AS free,
+    (record).mem_cached AS cached,
+    (record).mem_buffers AS buffers,
+    ((record).mem_used - (record).mem_cached - (record).mem_buffers) AS other
+FROM expand_data_by_host_id('metric_memory', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_memory_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).mem_free AS free,
+    (record).mem_cached AS cached,
+    (record).mem_buffers AS buffers,
+    ((record).mem_used - (record).mem_cached - (record).mem_buffers) AS other
+FROM %(tablename)s
+WHERE host_id = %(host_id) AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime
+        """,  # noqa
+        probename='memory',
+    ),
+    sessions=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    SUM((record).active) AS active,
+    SUM((record).waiting) AS waiting,
+    SUM((record).idle) AS idle,
+    SUM((record).idle_in_xact) AS idle_in_xact,
+    SUM((record).idle_in_xact_aborted) AS idle_in_xact_aborted,
+    SUM((record).fastpath) AS fastpath,
+    SUM((record).disabled) AS disabled
+FROM expand_data_by_instance_id('metric_sessions', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_sessions_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    SUM((record).active) AS active,
+    SUM((record).waiting) AS waiting,
+    SUM((record).idle) AS idle,
+    SUM((record).idle_in_xact) AS idle_in_xact,
+    SUM((record).idle_in_xact_aborted) AS idle_in_xact_aborted,
+    SUM((record).fastpath) AS fastpath,
+    SUM((record).disabled) AS disabled
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa,
+        probename='sessions',
+    ),
+    swap=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).swap_used AS used
+FROM expand_data_by_host_id('metric_memory', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_memory_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).swap_used AS used
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime
+        """,  # noqa
+        probename='memory',
+    ),
+    tblspc_size=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    spcname,
+    (record).size
+FROM expand_data_by_instance_id('metric_tblspc_size', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, spcname text, record metric_tblspc_size_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    spcname,
+    (record).size
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa,
+        probename='tblspc_size',
+        pivot=dict(
+            index='date',
+            key='spcname',
+            value='size',
+        ),
+    ),
+    tps=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
+    round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
+FROM expand_data_by_instance_id('metric_xacts', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_xacts_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
+    round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
+FROM %(tablename)s
+WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        probename='xacts',
+    ),
+    waiting_locks=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    SUM((record).waiting_access_share) AS access_share,
+    SUM((record).waiting_row_share) AS row_share,
+    SUM((record).waiting_row_exclusive) AS row_exclusive,
+    SUM((record).waiting_share_update_exclusive) AS share_update_exclusive,
+    SUM((record).waiting_share) AS share,
+    SUM((record).waiting_share_row_exclusive) AS share_row_exclusive,
+    SUM((record).waiting_exclusive) AS exclusive,
+    SUM((record).waiting_access_exclusive) AS access_exclusive
+FROM expand_data_by_instance_id('metric_locks', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_locks_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    SUM((record).waiting_access_share) AS access_share,
+    SUM((record).waiting_row_share) AS row_share,
+    SUM((record).waiting_row_exclusive) AS row_exclusive,
+    SUM((record).waiting_share_update_exclusive) AS share_update_exclusive,
+    SUM((record).waiting_share) AS share,
+    SUM((record).waiting_share_row_exclusive) AS share_row_exclusive,
+    SUM((record).waiting_exclusive) AS exclusive,
+    SUM((record).waiting_access_exclusive) AS access_exclusive
+FROM %(tablename)s
+WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='locks'
+    ),
+    wal_files_size=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).written_size,
+    (record).total_size
+FROM expand_data_by_instance_id('metric_wal_files', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_wal_files_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).written_size,
+    (record).total_size
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='wal_files',
+    ),
+    wal_files_count=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).archive_ready,
+    (record).total
+FROM expand_data_by_instance_id('metric_wal_files', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_wal_files_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).archive_ready,
+    (record).total
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='wal_files',
+    ),
+    wal_files_rate=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).written_size)/(extract('epoch' from MIN((record).measure_interval)))) AS written_size_s
+FROM expand_data_by_instance_id('metric_wal_files', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_wal_files_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(SUM((record).written_size)/(extract('epoch' from MIN((record).measure_interval)))) AS written_size_s
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='wal_files',
+    ),
+    w_buffers=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).buffers_checkpoint AS checkpoint,
+    (record).buffers_clean AS clean,
+    (record).buffers_backend AS backend
+FROM expand_data_by_instance_id('metric_bgwriter', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_bgwriter_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).buffers_checkpoint AS checkpoint,
+    (record).buffers_clean AS clean,
+    (record).buffers_backend AS backend
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='bgwriter',
+    ),
+)
 
 
 def zoom_level(start, end):
@@ -19,8 +537,7 @@ def zoom_level(start, end):
     return zoom
 
 
-def get_tablename(probename, start, end):
-    zoom = zoom_level(start, end)
+def get_tablename(probename, zoom):
     if zoom == 1:
         return 'metric_%s_30m_current' % (probename)
     elif zoom == 2:
@@ -29,10 +546,12 @@ def get_tablename(probename, start, end):
         return
 
 
-def get_loadaverage(session, host_id, start, end, interval):
-    """
-    Loadaverage data loader for chart rendering.
-    """
+def get_metric_data_csv(session, metric_name, start, end, host_id=None,
+                        instance_id=None):
+    if metric_name not in METRICS:
+        raise IndexError("Metric '%s' not found" % metric_name)
+
+    metric = METRICS.get(metric_name)
     # Instanciate a new string buffer needed by copy_expert()
     data_buffer = cStringIO.StringIO()
     # Get a new psycopg2 cursor from the current sqlalchemy session
@@ -40,1137 +559,33 @@ def get_loadaverage(session, host_id, start, end, interval):
     # Change working schema to 'monitoring'
     cur.execute("SET search_path TO monitoring")
     # Get the "zoom level", depending on the time interval
-    zl = zoom_level(start, end)
-    if interval == 'all':
-        interval = ['load1', 'load5', 'load15']
-    else:
-        interval = [interval]
-    interval_sql = (',').join(['(record).%s' % i for i in interval])
-    # Usage of COPY .. TO STDOUT WITH CSV for data extraction
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        %s
-    FROM""" % (interval_sql)
-    if zl == 0:
-        # Look up in non-aggregated data
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_loadavg',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        record metric_loadavg_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('loadavg', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY datetime ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
+    level = zoom_level(start, end)
+    # Load query template
+    q_tpl = metric.get('sql_nozoom') if level == 0 else metric.get('sql_zoom')
+    tablename = get_tablename(metric.get('probename'), level)
+    query = cur.mogrify(q_tpl, dict(host_id=host_id, instance_id=instance_id,
+                                    start=start, end=end,
+                                    tablename=AsIs(tablename)))
     # Retreive data using copy_expert()
-    cur.copy_expert(query, data_buffer)
+    cur.copy_expert("COPY(" + query + ") TO STDOUT WITH CSV HEADER",
+                    data_buffer)
     cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
 
-
-def get_cpu(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        round((SUM((record).time_user)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS user,
-        round((SUM((record).time_system)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS system,
-        round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
-        round((SUM((record).time_steal)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS steal
-    FROM"""  # noqa
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_cpu',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        cpu text,
-        record metric_cpu_record)
-    GROUP BY datetime, host_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
+    if metric.get('pivot'):
+        # Apply pivot rotation
+        data_pivot = cStringIO.StringIO()
+        pivot_timeserie(
+            data_buffer,
+            index=metric.get('pivot').get('index'),
+            key=metric.get('pivot').get('key'),
+            value=metric.get('pivot').get('value'),
+            output=data_pivot
         )
+
+        data = data_pivot.getvalue()
+        data_buffer.close()
+        data_pivot.close()
     else:
-        tablename = get_tablename('cpu', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, host_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_tps(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
-        round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
-    FROM"""  # noqa
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_xacts',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_xacts_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('xacts', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_db_size(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    data_pivot = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        dbname,
-        (record).size
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_db_size',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_db_size_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('db_size', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-
-    pivot_timeserie(
-        data_buffer,
-        index='date',
-        key='dbname',
-        value='size',
-        output=data_pivot
-    )
-
-    data = data_pivot.getvalue()
-    data_buffer.close()
-    data_pivot.close()
-    return data
-
-
-def get_instance_size(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        SUM((record).size) AS size
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_db_size',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_db_size_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('db_size', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_memory(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).mem_free AS free,
-        (record).mem_cached AS cached,
-        (record).mem_buffers AS buffers,
-        ((record).mem_used - (record).mem_cached - (record).mem_buffers) AS other
-    FROM"""  # noqa
-
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_memory',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        record metric_memory_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('memory', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_swap(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).swap_used AS used
-    FROM"""
-
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_memory',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        record metric_memory_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('memory', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_sessions(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        SUM((record).active) AS active,
-        SUM((record).waiting) AS waiting,
-        SUM((record).idle) AS idle,
-        SUM((record).idle_in_xact) AS idle_in_xact,
-        SUM((record).idle_in_xact_aborted) AS idle_in_xact_aborted,
-        SUM((record).fastpath) AS fastpath,
-        SUM((record).disabled) AS disabled
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_sessions',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_sessions_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('sessions', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_blocks(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        ROUND(SUM((record).blks_read)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_read_s,
-        ROUND(SUM((record).blks_hit)/(extract('epoch' from MIN((record).measure_interval)))) AS blks_hit_s
-    FROM"""  # noqa
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_blocks',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_blocks_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('blocks', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_hitreadratio(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        CASE
-            WHEN (SUM((record).blks_hit) + SUM((record).blks_read)) > 0
-                THEN ROUND((SUM((record).blks_hit)::FLOAT/(SUM((record).blks_hit) + SUM((record).blks_read)::FLOAT) * 100)::numeric, 2)
-                ELSE 100 END AS hit_read_ratio
-    FROM"""  # noqa
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_blocks',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_blocks_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('blocks', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_checkpoints(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).checkpoints_timed AS timed,
-        (record).checkpoints_req AS req,
-        ROUND(((record).checkpoint_write_time/1000)::numeric, 1) AS write_time,
-        ROUND(((record).checkpoint_sync_time/1000)::numeric,1) AS sync_time
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_bgwriter',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        record metric_bgwriter_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('bgwriter', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_written_buffers(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).buffers_checkpoint AS checkpoint,
-        (record).buffers_clean AS clean,
-        (record).buffers_backend AS backend
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_bgwriter',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-            instance_id integer,
-            record metric_bgwriter_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('bgwriter', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_locks(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        SUM((record).access_share) AS access_share,
-        SUM((record).row_share) AS row_share,
-        SUM((record).row_exclusive) AS row_exclusive,
-        SUM((record).share_update_exclusive) AS share_update_exclusive,
-        SUM((record).share) AS share,
-        SUM((record).share_row_exclusive) AS share_row_exclusive,
-        SUM((record).exclusive) AS exclusive,
-        SUM((record).access_exclusive) AS access_exclusive,
-        SUM((record).siread) AS siread
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_locks',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-            instance_id integer,
-            dbname text,
-            record metric_locks_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('locks', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_waiting_locks(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        SUM((record).waiting_access_share) AS access_share,
-        SUM((record).waiting_row_share) AS row_share,
-        SUM((record).waiting_row_exclusive) AS row_exclusive,
-        SUM((record).waiting_share_update_exclusive) AS share_update_exclusive,
-        SUM((record).waiting_share) AS share,
-        SUM((record).waiting_share_row_exclusive) AS share_row_exclusive,
-        SUM((record).waiting_exclusive) AS exclusive,
-        SUM((record).waiting_access_exclusive) AS access_exclusive
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_locks',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        dbname text,
-        record metric_locks_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('locks', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_fs_size(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    data_pivot = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        mount_point,
-        (record).used AS size
-    FROM
-"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_filesystems_size',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        mount_point text,
-        record metric_filesystems_size_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('filesystems_size', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-
-    pivot_timeserie(
-        data_buffer,
-        index='date',
-        key='mount_point',
-        value='size',
-        output=data_pivot
-    )
-
-    data = data_pivot.getvalue()
-    data_buffer.close()
-    data_pivot.close()
-    return data
-
-
-def get_fs_usage(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    data_pivot = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        mount_point,
-        round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
-    FROM"""  # noqa
-
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_filesystems_size',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        mount_point text,
-        record metric_filesystems_size_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('filesystems_size', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-
-    pivot_timeserie(
-        data_buffer,
-        index='date',
-        key='mount_point',
-        value='usage',
-        output=data_pivot
-    )
-
-    data = data_pivot.getvalue()
-    data_buffer.close()
-    data_pivot.close()
-    return data
-
-
-def get_ctxforks(session, host_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        round(SUM((record).context_switches)/(extract('epoch' from MIN((record).measure_interval)))) AS context_switches_s,
-        round(SUM((record).forks)/(extract('epoch' from MIN((record).measure_interval)))) AS forks_s
-    FROM"""  # noqa
-
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_host_id(
-            'metric_process',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        host_id integer,
-        record metric_process_record)
-    GROUP BY datetime
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            host_id
-        )
-    else:
-        tablename = get_tablename('process', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        host_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            host_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_tblspc_size(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    data_pivot = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        spcname,
-        (record).size
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_tblspc_size',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        spcname text,
-        record metric_tblspc_size_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('tblspc_size', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-
-    pivot_timeserie(
-        data_buffer,
-        index='date',
-        key='spcname',
-        value='size',
-        output=data_pivot
-    )
-
-    data = data_pivot.getvalue()
-    data_buffer.close()
-    data_pivot.close()
-    return data
-
-
-def get_wal_files_size(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).written_size,
-        (record).total_size
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_wal_files',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        record metric_wal_files_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('wal_files', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_wal_files_count(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        (record).archive_ready,
-        (record).total
-    FROM"""
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_wal_files',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        record metric_wal_files_record))
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('wal_files', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
-    return data
-
-
-def get_wal_files_rate(session, instance_id, start, end):
-    data_buffer = cStringIO.StringIO()
-    cur = session.connection().connection.cursor()
-    cur.execute("SET search_path TO monitoring")
-    zl = zoom_level(start, end)
-    query = """
-COPY (
-    SELECT
-        datetime AS date,
-        round(SUM((record).written_size)/(extract('epoch' from MIN((record).measure_interval)))) AS written_size_s
-    FROM"""  # noqa
-    if zl == 0:
-        query += """
-        monitoring.expand_data_by_instance_id(
-            'metric_wal_files',
-            tstzrange('%s', '%s'),
-            %s)
-    AS (datetime timestamp with time zone,
-        instance_id integer,
-        record metric_wal_files_record)
-    GROUP BY datetime, instance_id
-    ORDER BY datetime)
-TO STDOUT WITH CSV HEADER""" % (
-            start,
-            end,
-            instance_id
-        )
-    else:
-        tablename = get_tablename('wal_files', start, end)
-        query += """
-        monitoring.%s
-    WHERE
-        instance_id = %s
-        AND datetime >= '%s'
-        AND datetime <= '%s'
-    GROUP BY datetime, instance_id
-    ORDER BY 1,2 ASC)
-TO STDOUT WITH CSV HEADER""" % (
-            tablename,
-            instance_id,
-            start,
-            end
-        )
-    cur.copy_expert(query, data_buffer)
-    cur.close()
-    data = data_buffer.getvalue()
-    data_buffer.close()
+        data = data_buffer.getvalue()
+        data_buffer.close()
     return data

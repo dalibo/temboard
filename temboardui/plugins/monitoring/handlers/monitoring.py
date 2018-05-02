@@ -21,30 +21,7 @@ from temboardui.async import (
     CSVAsyncResult,
 )
 
-from ..chartdata import (
-    get_blocks,
-    get_checkpoints,
-    get_cpu,
-    get_ctxforks,
-    get_db_size,
-    get_fs_size,
-    get_fs_usage,
-    get_hitreadratio,
-    get_instance_size,
-    get_loadaverage,
-    get_locks,
-    get_memory,
-    get_sessions,
-    get_swap,
-    get_tblspc_size,
-    get_tps,
-    get_waiting_locks,
-    get_wal_files_count,
-    get_wal_files_rate,
-    get_wal_files_size,
-    get_written_buffers,
-)
-
+from ..chartdata import get_metric_data_csv
 from ..tools import (
     check_agent_key,
     check_host_key,
@@ -186,9 +163,9 @@ class MonitoringCollectorHandler(JsonHandler):
         run_background(self.push_data, self.async_callback)
 
 
-class MonitoringDataProbeHandler(CsvHandler):
+class MonitoringDataMetricHandler(CsvHandler):
 
-    def get_data_probe(self, agent_address, agent_port, probe_name):
+    def get_data_metric(self, agent_address, agent_port, metric_name):
         try:
             instance = None
             role = None
@@ -231,75 +208,15 @@ class MonitoringDataProbeHandler(CsvHandler):
                     end_time = dt_parser.parse(end)
                 except ValueError as e:
                     raise TemboardUIError(406, 'Datetime not valid.')
-
-            if probe_name == 'loadavg':
-                interval = self.get_argument('interval', default='all')
-                if interval not in ['load1', 'load5', 'load15', 'all']:
-                    raise TemboardUIError(400, 'Interval not available')
-                data = get_loadaverage(
-                    self.db_session, host_id, start_time, end_time, interval)
-            elif probe_name == 'db_size':
-                data = get_db_size(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'cpu':
-                data = get_cpu(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'tps':
-                data = get_tps(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'memory':
-                data = get_memory(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'swap':
-                data = get_swap(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'ctxforks':
-                data = get_ctxforks(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'sessions':
-                data = get_sessions(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'blocks':
-                data = get_blocks(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'hitreadratio':
-                data = get_hitreadratio(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'checkpoints':
-                data = get_checkpoints(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'w_buffers':
-                data = get_written_buffers(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'instance_size':
-                data = get_instance_size(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'locks':
-                data = get_locks(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'waiting_locks':
-                data = get_waiting_locks(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'fs_size':
-                data = get_fs_size(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'fs_usage':
-                data = get_fs_usage(
-                    self.db_session, host_id, start_time, end_time)
-            elif probe_name == 'tblspc_size':
-                data = get_tblspc_size(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'wal_files_size':
-                data = get_wal_files_size(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'wal_files_count':
-                data = get_wal_files_count(
-                    self.db_session, instance_id, start_time, end_time)
-            elif probe_name == 'wal_files_rate':
-                data = get_wal_files_rate(
-                    self.db_session, instance_id, start_time, end_time)
-            else:
-                raise TemboardUIError(404, 'Unknown probe.')
+            try:
+                # Try to load data from the repository
+                data = get_metric_data_csv(self.db_session, metric_name,
+                                           start_time, end_time,
+                                           host_id=host_id,
+                                           instance_id=instance_id)
+            except IndexError as e:
+                logger.exception(str(e))
+                raise TemboardUIError(404, 'Unknown metric.')
 
             self.db_session.commit()
             self.db_session.close()
@@ -322,9 +239,9 @@ class MonitoringDataProbeHandler(CsvHandler):
                                           data={'error': e.message})
 
     @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, probe_name):
-        run_background(self.get_data_probe, self.async_callback,
-                       (agent_address, agent_port, probe_name))
+    def get(self, agent_address, agent_port, metric_name):
+        run_background(self.get_data_metric, self.async_callback,
+                       (agent_address, agent_port, metric_name))
 
 
 class MonitoringHTMLHandler(BaseHandler):

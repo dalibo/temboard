@@ -65,8 +65,8 @@ checks = Table(
            ),
     Column('enabled', Boolean, nullable=False),
     Column('name', UnicodeText, nullable=False),
-    Column('threshold_w', REAL),
-    Column('threshold_c', REAL),
+    Column('warning', REAL),
+    Column('critical', REAL),
     Column('description', UnicodeText),
     schema="monitoring")
 

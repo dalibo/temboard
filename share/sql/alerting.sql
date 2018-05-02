@@ -3,11 +3,10 @@ SET search_path TO monitoring, public;
 BEGIN;
 
 DROP TYPE IF EXISTS check_state_type CASCADE;
-DROP TYPE IF EXISTS check_results_record CASCADE;
-DROP TABLE IF EXISTS check_results_current;
-DROP TABLE IF EXISTS check_results_history;
-DROP TABLE IF EXISTS check_states;
-DROP TABLE IF EXISTS checks;
+DROP TABLE IF EXISTS state_changes CASCADE;
+DROP TABLE IF EXISTS check_changes CASCADE;
+DROP TABLE IF EXISTS check_states CASCADE;
+DROP TABLE IF EXISTS checks CASCADE;
 
 CREATE TYPE check_state_type AS ENUM('OK', 'WARNING', 'CRITICAL', 'UNDEF');
 
@@ -17,8 +16,8 @@ CREATE TABLE checks (
   instance_id INTEGER REFERENCES instances (instance_id),
   enabled BOOLEAN NOT NULL DEFAULT false,
   name VARCHAR(64) NOT NULL,
-  threshold_w REAL,
-  threshold_c REAL,
+  warning REAL,
+  critical REAL,
   description TEXT
 );
 CREATE INDEX idx_checks_host_instance ON checks (host_id, instance_id);
@@ -31,8 +30,10 @@ CREATE TABLE check_states (
   PRIMARY KEY (check_id, key)
 );
 
-CREATE TYPE check_results_record AS (
+
+CREATE TABLE state_changes (
   datetime TIMESTAMPTZ,
+  check_id INTEGER NOT NULL REFERENCES checks (check_id),
   state check_state_type,
   key VARCHAR(64),
   value REAL,
@@ -40,62 +41,104 @@ CREATE TYPE check_results_record AS (
   critical REAL
 );
 
+CREATE INDEX idx_state_changes ON state_changes (datetime, check_id, key);
 
-
-CREATE TABLE check_results_current (
+CREATE TABLE check_changes (
   datetime TIMESTAMPTZ,
   check_id INTEGER NOT NULL REFERENCES checks (check_id),
-  record check_results_record
+  enabled BOOLEAN NOT NULL DEFAULT false,
+  warning REAL,
+  critical REAL,
+  description TEXT
 );
+CREATE INDEX idx_check_changes ON check_changes (datetime, check_id);
 
-CREATE INDEX idx_check_results_current ON check_results_current (datetime, check_id);
 
-CREATE TABLE check_results_history (
-  history_range TSTZRANGE NOT NULL,
-  check_id INTEGER NOT NULL REFERENCES checks (check_id),
-  records check_results_record[]
-);
-
-CREATE INDEX idx_check_results_history ON check_results_history (history_range, check_id);
-
-CREATE OR REPLACE FUNCTION history_check_results() RETURNS BIGINT
+CREATE OR REPLACE FUNCTION append_state_changes(i_datetime TIMESTAMPTZ, i_check_id INTEGER,  i_state check_state_type, i_key VARCHAR(64), i_value REAL, i_warning REAL, i_critical REAL) RETURNS BOOL
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  i INTEGER;
+  r RECORD;
 BEGIN
-  LOCK TABLE check_results_current IN SHARE MODE;
-  INSERT INTO check_results_history
-    SELECT
-      tstzrange(min(datetime), max(datetime)),
-      check_id,
-      array_agg(set_datetime_record(datetime, record)::check_results_record) AS records
-    FROM check_results_current
-    GROUP BY date_trunc('day', datetime), 2
-    ORDER BY 1,2 ASC;
-  GET DIAGNOSTICS i = ROW_COUNT;
-  TRUNCATE check_results_current;
-  RETURN i;
+  SELECT * INTO r FROM monitoring.state_changes WHERE check_id = i_check_id AND key = i_key ORDER BY datetime DESC LIMIT 1;
+  IF NOT FOUND OR r.state != i_state
+  THEN
+    -- Store results only if state has changed
+    INSERT INTO monitoring.state_changes (datetime, check_id, state, key, value, warning, critical)
+    VALUES (i_datetime, i_check_id, i_state, i_key, i_value, i_warning, i_critical);
+    RETURN true;
+  ELSE
+   RETURN false;
+  END IF;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION insert_check_result(i_datetime TIMESTAMPTZ, i_check_id INTEGER,  i_state check_state_type, i_key VARCHAR(64), i_value REAL, i_warning REAL, i_critical REAL) RETURNS BOOL
-LANGUAGE plpgsql
-AS $$
-DECLARE
-BEGIN
-  INSERT INTO monitoring.check_results_current (datetime, check_id, record)
-  VALUES (i_datetime, i_check_id, (i_datetime, i_state, i_key, i_value, i_warning, i_critical)::monitoring.check_results_record);
-  RETURN true;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION get_check_results(i_host_id INTEGER, i_instance_id INTEGER, i_check_name VARCHAR(64), i_key VARCHAR(64), i_start_dt TIMESTAMPTZ, i_end_dt TIMESTAMPTZ) RETURNS SETOF check_results_record
+CREATE OR REPLACE FUNCTION get_state_changes(i_host_id INTEGER, i_instance_id INTEGER, i_check_name VARCHAR(64), i_key VARCHAR(64), i_start_dt TIMESTAMPTZ, i_end_dt TIMESTAMPTZ) RETURNS SETOF state_changes
 LANGUAGE plpgsql
 AS $$
 DECLARE
   v_check_id INTEGER;
-  r check_results_record%ROWTYPE;
+  r RECORD;
+BEGIN
+  -- Find check_id using check's name, host_id and instance_id
+  SELECT check_id INTO v_check_id
+  FROM monitoring.checks
+  WHERE host_id = i_host_id AND instance_id = i_instance_id AND name = i_check_name;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Check % not found for this host', i_check_name;
+  END IF;
+  IF i_key IS NULL THEN
+    FOR r IN
+      SELECT * FROM monitoring.state_changes
+      WHERE check_id = v_check_id AND datetime <@ tstzrange(i_start_dt, i_end_dt)
+      ORDER BY datetime DESC
+    LOOP
+      RETURN NEXT r;
+    END LOOP;
+  ELSE
+    FOR r IN
+      SELECT * FROM monitoring.state_changes
+      WHERE check_id = v_check_id AND key = i_key AND datetime <@ tstzrange(i_start_dt, i_end_dt)
+      ORDER BY datetime DESC
+    LOOP
+      RETURN NEXT r;
+    END LOOP;
+  END IF;
+  RETURN;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION history_check_changes() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT'
+  THEN
+    INSERT INTO monitoring.check_changes (datetime, check_id, enabled, warning, critical, description)
+    VALUES (NOW(), NEW.check_id, NEW.enabled, NEW.warning, NEW.critical, NEW.description);
+    RETURN NULL;
+  END IF;
+  IF TG_OP = 'UPDATE' AND (NEW.enabled != OLD.enabled OR NEW.warning != OLD.warning OR
+                           NEW.critical != OLD.critical OR NEW.description != OLD.description)
+  THEN
+    INSERT INTO monitoring.check_changes (datetime, check_id, enabled, warning, critical, description)
+    VALUES (NOW(), NEW.check_id, NEW.enabled, NEW.warning, NEW.critical, NEW.description);
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER tgr_history_check_changes AFTER INSERT OR UPDATE ON checks FOR EACH ROW EXECUTE PROCEDURE history_check_changes();
+
+
+CREATE OR REPLACE FUNCTION get_check_changes(i_host_id INTEGER, i_instance_id INTEGER, i_check_name VARCHAR(64), i_start_dt TIMESTAMPTZ, i_end_dt TIMESTAMPTZ) RETURNS SETOF check_changes
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_check_id INTEGER;
+  r RECORD;
 BEGIN
   -- Find check_id using check's name, host_id and instance_id
   SELECT check_id INTO v_check_id
@@ -106,32 +149,12 @@ BEGIN
   END IF;
 
   FOR r IN
-    -- Lookup into _current and _history tables
-    WITH expand AS (
-      SELECT datetime, check_id, record
-      FROM monitoring.check_results_current
-      WHERE check_id = v_check_id AND datetime <@ tstzrange(i_start_dt, i_end_dt)
-      UNION
-      SELECT (hist_query.record).datetime, check_id, hist_query.record
-      FROM (
-        SELECT check_id, unnest(records)::check_results_record AS record
-        FROM monitoring.check_results_history
-        WHERE check_id = v_check_id AND history_range && tstzrange(i_start_dt, i_end_dt)
-      ) AS hist_query
-    )
-    SELECT (record).datetime, (record).state, (record).key, (record).value, (record).warning, (record).critical
-    FROM expand
-    WHERE datetime <@ tstzrange(i_start_dt, i_end_dt)
-    ORDER BY datetime ASC
+    SELECT datetime, check_id, enabled, warning, critical, description
+    FROM monitoring.check_changes
+    WHERE check_id = v_check_id AND datetime <@ tstzrange(i_start_dt, i_end_dt)
+    ORDER BY datetime DESC
   LOOP
-    -- Filter results on key if any
-    IF i_key IS NOT NULL THEN
-      IF r.key = i_key THEN
-        RETURN NEXT r;
-      END IF;
-    ELSE
-      RETURN NEXT r;
-    END IF;
+    RETURN NEXT r;
   END LOOP;
   RETURN;
 END;
