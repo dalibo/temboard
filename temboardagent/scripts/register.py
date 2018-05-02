@@ -127,7 +127,7 @@ def main(argv, environ):
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/login" % (args.ui_address),
+                "%s/json/login" % (args.ui_address.rstrip('/')),
                 headers={
                     "Content-type": "application/json"
                 },
@@ -149,7 +149,7 @@ def main(argv, environ):
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/register/instance" % (args.ui_address),
+                "%s/json/register/instance" % (args.ui_address.rstrip('/')),
                 headers={
                     "Content-type": "application/json",
                     "Cookie": temboard_cookie
