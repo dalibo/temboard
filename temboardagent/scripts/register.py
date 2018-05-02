@@ -13,6 +13,7 @@ from ..cli import bootstrap, cli, define_core_arguments
 from ..errors import (
     ConfigurationError,
     HTTPError,
+    UserError,
 )
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
@@ -20,6 +21,7 @@ from ..httpsclient import https_request
 from agent import list_options_specs
 
 logger = logging.getLogger(__name__)
+
 
 def ask_password():
     try:
@@ -168,13 +170,13 @@ def main(argv, environ):
         if code != 200:
             raise HTTPError(code, content)
         print("Done.")
-    except (HTTPError, Exception) as e:
-        if isinstance(e, urllib2.HTTPError):
-            err = json.loads(e.read())
-            stderr.write("FATAL: %s\n" % err['error'])
-        else:
-            stderr.write("FATAL: %s\n" % str(e))
-        return 1
+    except UserError:
+        raise
+    except HTTPError as e:
+        err = json.loads(e.read())
+        raise UserError(err['error'])
+    except Exception as e:
+        raise UserError(str(e) or repr(e))
 
     return 0
 
