@@ -28,7 +28,7 @@ def daemonize(pidfile):
     try:
         with open(pidfile, 'r') as pf:
             pid = int(pf.read().strip())
-    except IOError:
+    except (IOError, ValueError):
         pid = None
 
     # If pidfile exists, yet another process is probably running.

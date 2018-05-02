@@ -13,6 +13,7 @@ from ..cli import bootstrap, cli, define_core_arguments
 from ..errors import (
     ConfigurationError,
     HTTPError,
+    UserError,
 )
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
@@ -20,6 +21,7 @@ from ..httpsclient import https_request
 from agent import list_options_specs
 
 logger = logging.getLogger(__name__)
+
 
 def ask_password():
     try:
@@ -92,7 +94,7 @@ def main(argv, environ):
         prog='temboard-agent-register',
         description=(
             "Register a couple PostgreSQL instance/agent "
-            "to a Temboard UI."
+            "to a temBoard UI."
         ),
         add_help=False,
         argument_default=UNDEFINED_ARGUMENT,
@@ -125,7 +127,7 @@ def main(argv, environ):
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/login" % (args.ui_address),
+                "%s/json/login" % (args.ui_address.rstrip('/')),
                 headers={
                     "Content-type": "application/json"
                 },
@@ -147,7 +149,7 @@ def main(argv, environ):
         (code, content, cookies) = https_request(
                 None,
                 'POST',
-                "%s/json/register/instance" % (args.ui_address),
+                "%s/json/register/instance" % (args.ui_address.rstrip('/')),
                 headers={
                     "Content-type": "application/json",
                     "Cookie": temboard_cookie
@@ -168,13 +170,13 @@ def main(argv, environ):
         if code != 200:
             raise HTTPError(code, content)
         print("Done.")
-    except (ConfigurationError, HTTPError, Exception) as e:
-        if isinstance(e, urllib2.HTTPError):
-            err = json.loads(e.read())
-            stderr.write("FATAL: %s\n" % err['error'])
-        else:
-            stderr.write("FATAL: %s\n" % str(e))
-        return 1
+    except UserError:
+        raise
+    except HTTPError as e:
+        err = json.loads(e.read())
+        raise UserError(err['error'])
+    except Exception as e:
+        raise UserError(str(e) or repr(e))
 
     return 0
 

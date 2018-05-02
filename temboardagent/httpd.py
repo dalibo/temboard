@@ -11,6 +11,7 @@ except ImportError:
 import json
 import sys
 from urllib import unquote_plus
+from socket import error as SocketError
 import ssl
 
 from temboardagent.routing import get_routes
@@ -19,6 +20,7 @@ from temboardagent import __version__ as temboard_version
 from .sharedmemory import Sessions
 from .services import Service
 from .api import check_sessionid
+from .errors import UserError
 
 
 logger = logging.getLogger(__name__)
@@ -239,9 +241,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 class HTTPDService(Service):
     def setup(self):
         self.sessions = Sessions(size=100)
-        self.httpd = ThreadedHTTPServer(
-            (self.app.config.temboard.address, self.app.config.temboard.port),
-            self.handle_request)
+        try:
+            self.httpd = ThreadedHTTPServer(
+                (self.app.config.temboard.address,
+                 self.app.config.temboard.port),
+                self.handle_request)
+        except SocketError as e:
+            raise UserError(str(e))
         self.httpd.socket = ssl.wrap_socket(
             self.httpd.socket,
             keyfile=self.app.config.temboard.ssl_key_file,

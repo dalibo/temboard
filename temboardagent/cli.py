@@ -51,7 +51,7 @@ def define_core_arguments(parser):
     parser.add_argument(
         '--debug',
         action=StoreDefinedAction, dest='logging_debug', nargs='?',
-        metavar='LOGGER,LOGGER,…',
+        metavar='LOGGER,LOGGER,...',
         help=(
             "Shows debug messages for these loggers. "
             "If no loggers defined, debug all core loggers."),
