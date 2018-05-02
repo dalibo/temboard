@@ -45,9 +45,11 @@ class MultilineFormatter(logging.Formatter):
 
 
 class LastnameFilter(logging.Filter):
+    root, _, _ = __name__.partition('.')
+
     def filter(self, record):
         record.lastname = record.name
-        if record.name.startswith('temboardagent.'):
+        if record.name.startswith(self.root + '.'):
             _, record.lastname = record.name.rsplit('.', 1)
         # Always log, we are just enriching records.
         return 1
@@ -79,6 +81,8 @@ def generate_logging_config(
         level=None, destination=None, facility='local0',
         method='stderr', debug=None, **kw):
 
+    core = LastnameFilter.root
+
     if level is None:
         level = 'DEBUG' if debug else 'INFO'
 
@@ -101,7 +105,7 @@ def generate_logging_config(
         '%(asctime)s [%(process)5d] [%(lastname)-16.16s] ' + minimal_fmt
     )
     syslog_fmt = (
-        "temboard-agent[%(process)d]: "
+        core + "[%(process)d]: "
         "[%(lastname)s] %(levelname)s: %(message)s"
     )
 
@@ -147,13 +151,11 @@ def generate_logging_config(
     }
 
     # Apply level to temboard loggers only
-    core_loggers = ['temboardagent', 'taskmanager']
-    for logger in core_loggers:
-        logging_config['loggers'][logger] = dict(level=level)
+    logging_config['loggers'][core] = dict(level=level)
 
     # If --debug or DEBUG=1, apply DEBUG to all core loggers
     if debug in (True, '__debug__'):
-        debug = core_loggers
+        debug = core
 
     if hasattr(debug, 'split'):
         debug = filter(None, debug.split(','))
