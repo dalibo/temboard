@@ -147,7 +147,7 @@ def generate_logging_config(
     }
 
     # Apply level to temboard loggers only
-    core_loggers = ['temboardagent', 'taskmanager', 'dashboard', 'monitoring']
+    core_loggers = ['temboardagent', 'taskmanager']
     for logger in core_loggers:
         logging_config['loggers'][logger] = dict(level=level)
 
