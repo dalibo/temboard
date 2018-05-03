@@ -1,3 +1,4 @@
+/* global apiUrl, dateMath, rangeUtils, moment, Vue, Dygraph */
 $(function() {
   var colors = {
     blue: "#5DA5DA",
@@ -8,53 +9,31 @@ $(function() {
     light_gray: "#AAAAAA",
     orange: "#FAA43A"
   };
-  var dateFormat = 'DD/MM/YYYY HH:mm';
 
   /**
    * Parse location hash to get start and end date
    * If dates are not provided, falls back to the date range corresponding to
    * the last 24 hours.
    */
-  var start;
-  var end;
-  var now = moment();
-  var minus24h = now.clone().subtract(24, 'hours');
+  var refreshTimeoutId;
+  var refreshInterval = 60 * 1000;
+  var fromPicker;
+  var toPicker;
   var p = getHashParams();
+  var start = p.start || 'now-24h';
+  var end = p.end || 'now';
+  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
+  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
 
-  if (p.start && p.end) {
-    start = moment(parseInt(p.start, 10));
-    end = moment(parseInt(p.end, 10));
-  }
-  start = start && start.isValid() ? start : minus24h;
-  end = end && end.isValid() ? end : now;
+  var fromDate;
+  var toDate;
 
-  $("#daterange").daterangepicker({
-    startDate: start,
-    endDate: end,
-    alwaysShowCalendars: true,
+  var pickerOptions = {
+    singleDatePicker: true,
     timePicker: true,
-    timePickerIncrement: 5,
     timePicker24Hour: true,
-    opens: 'left',
-    locale: {
-      format: dateFormat
-    },
-    ranges: {
-      'Last Hour': [now.clone().subtract(1, 'hours'), now],
-      'Last 24 Hours': [minus24h, now],
-      'Last 7 Days': [now.clone().subtract(7, 'days'), now],
-      'Last 30 Days': [now.clone().subtract(30, 'days'), now],
-      'Last 12 Months': [now.clone().subtract(12, 'months'), now]
-    }
-  });
-  updateDateRange(start, end);
-  $('#daterange').on('apply.daterangepicker', function(ev, picker) {
-    synchronizeZoom(
-      picker.startDate,
-      picker.endDate,
-      true
-    );
-  });
+    timePickerSeconds: false
+  };
 
   var metrics = {
     "Loadavg": {
@@ -292,16 +271,15 @@ $(function() {
     }
   }
 
-  function selectAll(event) {
+  function selectAll() {
     loadGraphs(Object.keys(metrics));
   }
 
-  function unselectAll(event) {
+  function unselectAll() {
     loadGraphs([]);
   }
 
   function removeGraph(graph) {
-    var index = -1;
     this.graphs.forEach(function(item, index) {
       if (item.id == graph) {
         this.graphs.splice(index, 1);
@@ -354,75 +332,73 @@ $(function() {
 
   function newGraph(graph) {
     var id = graph.id;
-    var picker = $('#daterange').data('daterangepicker');
-    var startDate = picker.startDate;
-    var endDate = picker.endDate;
+
+    var startDate = dateMath.parse(rangePickerVue.from);
+    var endDate = dateMath.parse(rangePickerVue.to, true);
 
     var defaultOptions = {
-        axisLabelFontSize: 10,
-        yLabelWidth: 14,
-        legend: "always",
-        labelsDiv: "legend"+id,
-        labelsKMB: true,
-        animatedZooms: true,
-        gridLineColor: '#DDDDDD',
-        dateWindow: [
-          new Date(startDate).getTime(),
-          new Date(endDate).getTime()
-        ],
-        xValueParser: function(x) {
-          var m = moment(x);
-          return m.toDate().getTime();
-        },
-        drawCallback: function(g, isInitial) {
-          if (g.numRows() === 0) {
-            $('#info'+id).html('<center><i>No data available</i></center>');
-            $('#legend'+id).hide();
-            $('#chart'+id).hide();
-            $('#visibility'+id).hide();
+      axisLabelFontSize: 10,
+      yLabelWidth: 14,
+      legend: "always",
+      labelsDiv: "legend"+id,
+      labelsKMB: true,
+      animatedZooms: true,
+      gridLineColor: '#DDDDDD',
+      dateWindow: [
+        new Date(startDate).getTime(),
+        new Date(endDate).getTime()
+      ],
+      xValueParser: function(x) {
+        var m = moment(x);
+        return m.toDate().getTime();
+      },
+      drawCallback: function(g, isInitial) {
+        if (g.numRows() === 0) {
+          $('#info'+id).html('<center><i>No data available</i></center>');
+          $('#legend'+id).hide();
+          $('#chart'+id).hide();
+          $('#visibility'+id).hide();
+        } else {
+          addVisibilityCb(id, g, isInitial);
+          $('#info'+id).html('');
+          $('#legend'+id).show();
+          $('#chart'+id).show();
+          $('#visibility'+id).show();
+        }
+      },
+      zoomCallback: onChartZoom,
+      // change interaction model in order to be able to capture the end of
+      // panning
+      // Dygraphs doesn't provide any panCallback unfortunately
+      interactionModel: {
+        mousedown: function (event, g, context) {
+          context.initializeMouseDown(event, g, context);
+          if (event.shiftKey) {
+            Dygraph.startPan(event, g, context);
           } else {
-            addVisibilityCb(id, g, isInitial);
-            $('#info'+id).html('');
-            $('#legend'+id).show();
-            $('#chart'+id).show();
-            $('#visibility'+id).show();
+            Dygraph.startZoom(event, g, context);
           }
         },
-        zoomCallback: function(minDate, maxDate, yRanges) {
-          synchronizeZoom(minDate, maxDate);
+        mousemove: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.movePan(event, g, context);
+          } else if (context.isZooming) {
+            Dygraph.moveZoom(event, g, context);
+          }
         },
-        // change interaction model in order to be able to capture the end of
-        // panning
-        // Dygraphs doesn't provide any panCallback unfortunately
-        interactionModel: {
-          mousedown: function (event, g, context) {
-            context.initializeMouseDown(event, g, context);
-            if (event.shiftKey) {
-              Dygraph.startPan(event, g, context);
-            } else {
-              Dygraph.startZoom(event, g, context);
-            }
-          },
-          mousemove: function (event, g, context) {
-            if (context.isPanning) {
-              Dygraph.movePan(event, g, context);
-            } else if (context.isZooming) {
-              Dygraph.moveZoom(event, g, context);
-            }
-          },
-          mouseup: function (event, g, context) {
-            if (context.isPanning) {
-              Dygraph.endPan(event, g, context);
-              var dates = g.dateWindow_;
-              // synchronize charts on pan end
-              synchronizeZoom(dates[0], dates[1]);
-            } else if (context.isZooming) {
-              Dygraph.endZoom(event, g, context);
-              // don't do the same since zoom is animated
-              // zoomCallback will do the job
-            }
+        mouseup: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.endPan(event, g, context);
+            var dates = g.dateWindow_;
+            // synchronize charts on pan end
+            synchronizeZoom(dates[0], dates[1]);
+          } else if (context.isZooming) {
+            Dygraph.endZoom(event, g, context);
+            // don't do the same since zoom is animated
+            // zoomCallback will do the job
           }
         }
+      }
     };
 
     for (var attrname in metrics[id].options) {
@@ -445,7 +421,7 @@ $(function() {
       return;
 
     var nbLegendItem = 0;
-    var visibilityHtml = ''
+    var visibilityHtml = '';
     var cbIds = [];
     $('#legend'+chartId).children('span').each(function() {
       visibilityHtml += '<input type="checkbox" id="'+chartId+'CB'+nbLegendItem+'" checked>';
@@ -458,14 +434,7 @@ $(function() {
       $('#'+id).change(function() {
         g.setVisibility(parseInt($(this).attr('id').replace(chartId+'CB', '')), $(this).is(':checked'));
       });
-    })
-  }
-
-
-  function updateDateRange(start, end) {
-    $('#daterange span').html(
-      start.format(dateFormat) + ' - ' + end.format(dateFormat));
-    window.location.hash = 'start=' + start + '&end=' + end;
+    });
   }
 
   function getHashParams() {
@@ -486,23 +455,29 @@ $(function() {
     return hashParams;
   }
 
+  function onChartZoom(min, max) {
+    rangePickerVue.from = moment(min);
+    rangePickerVue.to = moment(max);
+    rangePickerVue.editRawFrom = rangePickerVue.from.clone();
+    rangePickerVue.editRawTo = rangePickerVue.to.clone();
+    refreshDates();
+  }
+
   function synchronizeZoom(startDate, endDate, silent) {
-    var picker = $('#daterange').data('daterangepicker');
     if (!silent) {
       // update picker
-      picker.setStartDate(moment(startDate));
-      picker.setEndDate(moment(endDate));
+      rangePickerVue.from = moment(startDate);
+      rangePickerVue.to = moment(endDate);
+      rangePickerVue.editRawFrom = rangePickerVue.from.clone();
+      rangePickerVue.editRawTo = rangePickerVue.to.clone();
     }
-
-    // get new date from picker (may be rounded)
-    startDate = picker.startDate;
-    endDate = picker.endDate;
-
-    updateDateRange(startDate, endDate);
 
     v.graphs.forEach(function(graph) {
       var id = graph.id;
       var chart = graph.chart;
+      if (!chart) {
+        return;
+      }
       // update the date range
       chart.updateOptions({
         dateWindow: [startDate, endDate]
@@ -513,4 +488,105 @@ $(function() {
       }, false);
     });
   }
+
+  var rangePickerVue = new Vue({
+    el: '#daterange',
+    data: {
+      ranges: rangeUtils.getRelativeTimesList(),
+      rangeString: function() {
+        return rangeUtils.describeTimeRange({from: this.from, to: this.to});
+      },
+      from: start,
+      to: end,
+      editRawFrom: null,
+      editRawTo: null,
+      isPickerOpen: false
+    },
+    computed: {
+      autoRefresh: function() {
+        return this.from.toString().indexOf('now') != -1 ||
+          this.to.toString().indexOf('now') != -1;
+      }
+    },
+    methods: {
+      loadRangeShortcut: loadRangeShortcut,
+      describeTimeRange: rangeUtils.describeTimeRange,
+      showHidePicker: showHidePicker,
+      pickerApply: pickerApply
+    }
+  });
+
+  function loadRangeShortcut(range) {
+    this.from = this.editRawFrom = range.from;
+    this.to = this.editRawTo = range.to;
+    this.isPickerOpen = false;
+    refreshDates();
+  }
+
+  function showHidePicker() {
+    // Make sure input values correspond to current from/to
+    // especially when not applying picked dates
+    this.editRawFrom = this.from;
+    this.editRawTo = this.to;
+    this.isPickerOpen = !this.isPickerOpen;
+  }
+
+  function pickerApply() {
+    this.from = this.editRawFrom;
+    this.to = this.editRawTo;
+    this.isPickerOpen = false;
+    refreshDates();
+  }
+
+  function refreshDates() {
+    window.location.hash = 'start=' + rangePickerVue.from + '&end=' + rangePickerVue.to;
+    try {
+      fromDate = dateMath.parse(rangePickerVue.from);
+      toDate = dateMath.parse(rangePickerVue.to, true);
+    } catch(e) {
+      // do nothing
+    }
+    synchronizeZoom(fromDate, toDate, true);
+    window.clearTimeout(refreshTimeoutId);
+    if (rangePickerVue.autoRefresh) {
+      refreshTimeoutId = window.setTimeout(refreshDates, refreshInterval);
+    }
+    synchronizePickers();
+  }
+
+  /*
+   * Make sure that date pickers are up-to-date
+   * especially with any 'now-like' dates
+   */
+  function synchronizePickers() {
+    // update 'from' date picker only if not currently open
+    // and 'from' is updating (ie. contains 'now')
+    if (!fromPicker || !fromPicker.data('daterangepicker').isShowing) {
+      fromPicker = $('#fromPicker').daterangepicker(
+        $.extend({
+          startDate: dateMath.parse(rangePickerVue.editRawFrom)
+        }, pickerOptions),
+        onPickerApply
+      );
+    }
+    // update 'to' date picker only if not currently open
+    // and 'to' is updating (ie. contains 'now')
+    if (!toPicker || !toPicker.data('daterangepicker').isShowing) {
+      toPicker = $('#toPicker').daterangepicker(
+        $.extend({
+          startDate: dateMath.parse(rangePickerVue.editRawTo),
+          minDate: dateMath.parse(rangePickerVue.editRawFrom)
+        }, pickerOptions),
+        onPickerApply
+      );
+    }
+  }
+
+  function onPickerApply(start) {
+    var target = $(this.element).attr('data-target');
+    rangePickerVue[target] = start;
+    refreshDates();
+  }
+
+  refreshDates();
 });
