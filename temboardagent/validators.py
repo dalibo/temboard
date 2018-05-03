@@ -15,7 +15,7 @@ import re
 from distutils.util import strtobool
 from logging.handlers import SysLogHandler
 
-from .log import HANDLERS as LOG_METHODS
+from .toolkit.log import HANDLERS as LOG_METHODS
 
 
 _address_re = re.compile(
