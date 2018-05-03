@@ -1,3 +1,60 @@
+def test_color(mocker):
+    import logging
+    from temboardagent.toolkit.log import ColoredStreamHandler
+
+    handler = ColoredStreamHandler()
+    record = logging.getLogger().makeRecord(
+        name='toto', level=logging.DEBUG,
+        fn='toto.py', lno=42,
+        msg='Message', args=(),
+        exc_info=None,
+    )
+    s = handler.format(record)
+    assert '\033[0m' in s
+    assert 'Message' in s
+
+
+def test_multiline(mocker):
+    import logging
+    from temboardagent.toolkit.log import MultilineFormatter
+
+    formatter = MultilineFormatter('PREFIX: %(message)s')
+    record = logging.getLogger().makeRecord(
+        name='toto', level=logging.DEBUG,
+        fn='toto.py', lno=42,
+        msg='Line1\nLine2', args=(),
+        exc_info=None,
+    )
+    s = formatter.format(record)
+
+    assert 'PREFIX: Line1' in s
+    assert 'PREFIX: Line2' in s
+
+    record.msg = 'Single'
+    s = formatter.format(record)
+    assert 'PREFIX: Single' in s
+
+
+def test_lastname():
+    import logging
+    from temboardagent.toolkit.log import LastnameFilter
+
+    filter_ = LastnameFilter()
+    record = logging.getLogger().makeRecord(
+        name='toto', level=logging.DEBUG,
+        fn='toto.py', lno=42,
+        msg='Message', args=(),
+        exc_info=None,
+    )
+    ret = filter_.filter(record)
+    assert ret
+    assert 'toto' == record.lastname
+
+    record.name = 'temboardagent.titi'
+    ret = filter_.filter(record)
+    assert 'titi' == record.lastname
+
+
 def test_temboard_debug(mocker):
     mocker.patch('temboardagent.toolkit.log.sys.stderr.isatty')
 
@@ -31,3 +88,10 @@ def test_limit_debug():
     assert 'INFO' == config['loggers']['temboardagent']['level']
     assert 'DEBUG' == config['loggers']['myplugins']['level']
     assert 'DEBUG' == config['loggers']['temboardagent.cli']['level']
+
+
+def test_setup(mocker):
+    dc = mocker.patch('temboardagent.toolkit.log.dictConfig', autospec=True)
+    from temboardagent.toolkit.log import setup_logging
+    setup_logging()
+    assert dc.called is True
