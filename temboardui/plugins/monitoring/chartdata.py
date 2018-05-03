@@ -70,8 +70,34 @@ SELECT
     round((SUM((record).time_iowait)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS iowait,
     round((SUM((record).time_steal)/(SUM((record).time_user)+SUM((record).time_system)+SUM((record).time_idle)+SUM((record).time_iowait)+SUM((record).time_steal))::float*100)::numeric, 1) AS steal
 FROM %(tablename)s
-WHERE host_id = %(host_id) AND datetime >= %(start)s AND datetime <= %(end)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, host_id ORDER BY datetime
+        """,  # noqa
+        probename='cpu',
+    ),
+    cpu_core=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(((record).time_user/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS user,
+    round(((record).time_system/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS system,
+    round(((record).time_iowait/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS iowait,
+    round(((record).time_steal/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS steal
+FROM expand_data_by_host_id('metric_cpu', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, cpu text, record metric_cpu_record)
+WHERE cpu = %(key)s
+ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(((record).time_user/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS user,
+    round(((record).time_system/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS system,
+    round(((record).time_iowait/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS iowait,
+    round(((record).time_steal/((record).time_user+(record).time_system+(record).time_idle+(record).time_iowait+(record).time_steal)::float*100)::numeric, 1) AS steal
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND cpu = %(key)s
+ORDER BY datetime
         """,  # noqa
         probename='cpu',
     ),
@@ -111,7 +137,7 @@ SELECT
     dbname,
     (record).size
 FROM %(tablename)s
-WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime, dbname
         """,  # noqa
         probename='db_size',
@@ -171,6 +197,25 @@ ORDER BY 1,2 ASC
             value='usage',
         ),
     ),
+    fs_usage_mountpoint=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
+FROM expand_data_by_host_id('metric_filesystems_size', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)
+WHERE mount_point = %(keys)s
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND mount_point = %(key)s
+ORDER BY 1,2 ASC
+        """,  # noqa,
+        probename='filesystems_size',
+    ),
     hitreadratio=dict(
         sql_nozoom="""
 SELECT
@@ -191,6 +236,30 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='blocks',
+    ),
+    hitreadratio_db=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    CASE WHEN ((record).blks_hit + (record).blks_read) > 0
+    THEN ROUND((((record).blks_hit::FLOAT/((record).blks_hit + (record).blks_read)::FLOAT) * 100)::numeric, 2)
+    ELSE 100 END AS hit_read_ratio
+FROM expand_data_by_instance_id('metric_blocks', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_blocks_record)
+WHERE dbname = %(key)s
+ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    CASE WHEN ((record).blks_hit + (record).blks_read) > 0
+    THEN ROUND((((record).blks_hit::FLOAT/((record).blks_hit + (record).blks_read)::FLOAT) * 100)::numeric, 2)
+    ELSE 100 END AS hit_read_ratio
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
+ORDER BY 1,2 ASC
         """,  # noqa
         probename='blocks',
     ),
@@ -304,10 +373,30 @@ SELECT
     (record).mem_buffers AS buffers,
     ((record).mem_used - (record).mem_cached - (record).mem_buffers) AS other
 FROM %(tablename)s
-WHERE host_id = %(host_id) AND datetime >= %(start)s AND datetime <= %(end)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
         """,  # noqa
         probename='memory',
+    ),
+    rollback_db=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).n_rollback AS rollback
+FROM expand_data_by_instance_id('metric_xacts', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_xacts_record)
+WHERE dbname = %(key)s
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).n_rollback AS rollback
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND key = %(key)s
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        probename='xacts',
     ),
     sessions=dict(
         sql_nozoom="""
@@ -340,6 +429,25 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa,
         probename='sessions',
     ),
+    sessions_usage=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(((SUM((record).active + (record).waiting + (record).idle + (record).idle_in_xact + (record).idle_in_xact_aborted + (record).fastpath + (record).disabled)::FLOAT/(SELECT setting FROM pg_settings WHERE name = 'max_connections')::FLOAT)*100)::numeric, 1) AS session_usage
+FROM expand_data_by_instance_id('metric_sessions', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_sessions_record)
+GROUP BY datetime, instance_id ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(((SUM((record).active + (record).waiting + (record).idle + (record).idle_in_xact + (record).idle_in_xact_aborted + (record).fastpath + (record).disabled)::FLOAT/(SELECT setting FROM pg_settings WHERE name = 'max_connections')::FLOAT)*100)::numeric, 1) AS session_usage
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa,
+        probename='sessions',
+    ),
     swap=dict(
         sql_nozoom="""
 SELECT
@@ -352,6 +460,24 @@ AS (datetime timestamp with time zone, host_id integer, record metric_memory_rec
 SELECT
     datetime AS date,
     (record).swap_used AS used
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime
+        """,  # noqa
+        probename='memory',
+    ),
+    swap_usage=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round((((record).swap_used::FLOAT/(record).swap_total::FLOAT)*100)::numeric, 1) AS usage
+FROM expand_data_by_host_id('metric_memory', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_memory_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round((((record).swap_used::FLOAT/(record).swap_total::FLOAT)*100)::numeric, 1) AS usage
 FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
@@ -399,7 +525,7 @@ SELECT
     round(SUM((record).n_commit)/(extract('epoch' from MIN((record).measure_interval)))) AS commit,
     round(SUM((record).n_rollback)/(extract('epoch' from MIN((record).measure_interval)))) AS rollback
 FROM %(tablename)s
-WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY datetime
         """,  # noqa
         probename='xacts',
@@ -432,10 +558,30 @@ SELECT
     SUM((record).waiting_exclusive) AS exclusive,
     SUM((record).waiting_access_exclusive) AS access_exclusive
 FROM %(tablename)s
-WHERE instance_id = %(instance_id) AND datetime >= %(start)s AND datetime <= %(end)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
         probename='locks'
+    ),
+    waiting_session_db=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).waiting
+FROM expand_data_by_instance_id('metric_session', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_locks_record)
+WHERE dbname = %(key)s
+ORDER BY datetime
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).waiting
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='sessions'
     ),
     wal_files_size=dict(
         sql_nozoom="""
@@ -451,6 +597,24 @@ SELECT
     datetime AS date,
     (record).written_size,
     (record).total_size
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='wal_files',
+    ),
+    wal_files_archive=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).archive_ready
+FROM expand_data_by_instance_id('metric_wal_files', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_wal_files_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).archive_ready
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
@@ -493,6 +657,24 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
+        """,  # noqa
+        probename='wal_files',
+    ),
+    wal_files_total=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    (record).total
+FROM expand_data_by_instance_id('metric_wal_files', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, record metric_wal_files_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    (record).total
+FROM %(tablename)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY 1,2 ASC
         """,  # noqa
         probename='wal_files',
     ),
@@ -547,7 +729,7 @@ def get_tablename(probename, zoom):
 
 
 def get_metric_data_csv(session, metric_name, start, end, host_id=None,
-                        instance_id=None):
+                        instance_id=None, key=None):
     if metric_name not in METRICS:
         raise IndexError("Metric '%s' not found" % metric_name)
 
@@ -564,7 +746,7 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
     q_tpl = metric.get('sql_nozoom') if level == 0 else metric.get('sql_zoom')
     tablename = get_tablename(metric.get('probename'), level)
     query = cur.mogrify(q_tpl, dict(host_id=host_id, instance_id=instance_id,
-                                    start=start, end=end,
+                                    start=start, end=end, key=key,
                                     tablename=AsIs(tablename)))
     # Retreive data using copy_expert()
     cur.copy_expert("COPY(" + query + ") TO STDOUT WITH CSV HEADER",

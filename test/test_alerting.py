@@ -2,11 +2,11 @@ def test_preproc():
     from temboardui.plugins.monitoring.alerting import check_specs
 
     data = dict(
-        loadaverage=dict(
+        load1=dict(
             data={'loadavg': [{'load1': 1}]},
             expected=1.0,
         ),
-        cpu=dict(
+        cpu_core=dict(
             data={'cpu': [{'cpu': 'cpu0', 'time_system': 1, 'time_steal': 1,
                            'time_iowait': 1, 'time_user': 1, 'time_idle': 1}]},
             expected={'cpu0': 80.0},
@@ -16,33 +16,33 @@ def test_preproc():
                               'mem_cached': 3}]},
             expected=50.0,
         ),
-        swap=dict(
+        swap_usage=dict(
             data={'memory': [{'swap_total': 10, 'swap_used': 5}]},
             expected=50.0,
         ),
-        fs=dict(
+        fs_usage_mountpoint=dict(
             data={'filesystems_size': [{'mount_point': '.', 'total': 10,
                   'used': 5}]},
             expected={'.': 50.0},
         ),
-        archive_ready=dict(
+        wal_files_archive=dict(
             data={'wal_files': [{'archive_ready': 10}]},
             expected=10,
         ),
-        wal_files=dict(
+        wal_files_total=dict(
             data={'wal_files': [{'total': 10}]},
             expected=10,
         ),
-        xacts_rollback=dict(
+        rollback_db=dict(
             data={'xacts': [{'dbname': 'toto', 'n_rollback': 10}]},
             expected={'toto': 10},
         ),
-        hitratio=dict(
+        hitreadratio_db=dict(
             data={'blocks': [{'dbname': 'toto', 'hitmiss_ratio': 10,
                               'blks_read': 10, 'blks_hit': 10}]},
             expected={'toto': 10},
         ),
-        sessions=dict(
+        sessions_usage=dict(
             data={'sessions': [{'dbname': 'toto', 'idle_in_xact': 1,
                                 'idle_in_xact_aborted': 1, 'no_priv': 1,
                                 'idle': 1, 'disabled': 1, 'waiting': 1,
@@ -50,7 +50,7 @@ def test_preproc():
                   'max_connections': 20},
             expected=40.0,
         ),
-        waiting=dict(
+        waiting_session_db=dict(
             data={'sessions': [{'dbname': 'toto', 'waiting': 1}]},
             expected={'toto': 1},
         ),
@@ -65,8 +65,9 @@ def test_bootstrap_checks():
 
     for c in bootstrap_checks({'n_cpu': 1}):
         assert len(c) == 3
-        assert c[0] in ['loadaverage', 'cpu', 'memory', 'swap', 'fs',
-                        'archive_ready', 'wal_files', 'xacts_rollback',
-                        'hitratio', 'sessions', 'waiting']
+        assert c[0] in ['load1', 'cpu_core', 'memory', 'swap_usage',
+                        'fs_usage_mountpoint', 'wal_files_archive',
+                        'wal_files_total', 'rollback_db', 'hitreadratio_db',
+                        'sessions_usage', 'waiting_session_db']
         assert type(c[1]) in (int, float)
         assert type(c[2]) in (int, float)

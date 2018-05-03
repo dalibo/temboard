@@ -6,37 +6,37 @@ def bootstrap_checks(hostinfo):
 
     # Loadaverage (value)
     # Global to host
-    yield ("loadaverage", hostinfo['n_cpu'] / float(2), hostinfo['n_cpu'])
+    yield ("load1", hostinfo['n_cpu'] / float(2), hostinfo['n_cpu'])
     # CPU (percent)
     # One per CPU
-    yield ("cpu", 50, 80)
+    yield ("cpu_core", 50, 80)
     # Memory usage (percent)
     # global
     yield ("memory", 50, 80)
     # Swap usage (percent)
     # Global to host
-    yield ("swap", 30, 50)
+    yield ("swap_usage", 30, 50)
     # Filesystems usage (percent)
     # One per filesystem
-    yield ("fs", 80, 90)
+    yield ("fs_usage_mountpoint", 80, 90)
     # Number of WAL files ready to be archived (value)
     # Global to postgres instance
-    yield ("archive_ready", 10, 20)
+    yield ("wal_files_archive", 10, 20)
     # Number of WAL files (value)
     # Global to postgres instance
-    yield ("wal_files", 50, 100)
+    yield ("wal_files_total", 50, 100)
     # Number of transaction rollback (value)
     # One per DB
-    yield ("xacts_rollback", 10, 20)
+    yield ("rollback_db", 10, 20)
     # Cache hitratio (percent)
     # One per DB
-    yield ("hitratio", 90, 80)
+    yield ("hitreadratio_db", 90, 80)
     # Client sessions vs max_connections (percent)
     # Global to postgres instance
-    yield ("sessions", 80, 90)
+    yield ("sessions_usage", 80, 90)
     # Waiting sessions (value)
     # One per DB
-    yield ("waiting", 5, 10)
+    yield ("waiting_session_db", 5, 10)
 
 
 class PreProcess(object):
@@ -130,14 +130,14 @@ class PreProcess(object):
 
 
 check_specs = dict(
-    loadaverage=dict(
+    load1=dict(
         type='system',
         description='Loadaverage',
         preprocess=PreProcess.loadaverage,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    cpu=dict(
+    cpu_core=dict(
         type='system',
         description='CPU usage',
         preprocess=PreProcess.cpu,
@@ -151,56 +151,56 @@ check_specs = dict(
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
     ),
-    swap=dict(
+    swap_usage=dict(
         type='system',
         description='Swap usage',
         preprocess=PreProcess.swap,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
     ),
-    fs=dict(
+    fs_usage_mountpoint=dict(
         type='system',
         description='File systems usage',
         preprocess=PreProcess.fs,
         message='{key}: {value}% is greater than {threshold}%',
         operator=operator.gt,
     ),
-    archive_ready=dict(
+    wal_files_archive=dict(
         type='postgres',
         description='WAL files ready to be archived',
         preprocess=PreProcess.archive_ready,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    wal_files=dict(
+    wal_files_total=dict(
         type='postgres',
         description='WAL files',
         preprocess=PreProcess.wal_files,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    xacts_rollback=dict(
+    rollback_db=dict(
         type='postgres',
         description='Rollbacked transactions',
         preprocess=PreProcess.xacts_rollback,
         message='{key}: {value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    hitratio=dict(
+    hitreadratio_db=dict(
         type='postgres',
         description='Cache Hit Ratio',
         preprocess=PreProcess.hitratio,
         message='{key}: {value} is less than {threshold}',
         operator=operator.lt,
     ),
-    sessions=dict(
+    sessions_usage=dict(
         type='postgres',
         description='Client sessions',
         preprocess=PreProcess.sessions,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    waiting=dict(
+    waiting_session_db=dict(
         type='postgres',
         description='Waiting sessions',
         preprocess=PreProcess.waiting,

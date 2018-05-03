@@ -194,6 +194,7 @@ class MonitoringDataMetricHandler(CsvHandler):
 
             start = self.get_argument('start', default=None)
             end = self.get_argument('end', default=None)
+            key = self.get_argument('key', default=None)
             # Return 200 with empty list when an error occurs
             no_error = int(self.get_argument('noerror', default=0))
             start_time = None
@@ -213,7 +214,7 @@ class MonitoringDataMetricHandler(CsvHandler):
                 data = get_metric_data_csv(self.db_session, metric_name,
                                            start_time, end_time,
                                            host_id=host_id,
-                                           instance_id=instance_id)
+                                           instance_id=instance_id, key=key)
             except IndexError as e:
                 logger.exception(str(e))
                 raise TemboardUIError(404, 'Unknown metric.')
