@@ -1,7 +1,8 @@
 import cStringIO
 import datetime
-from .pivot import pivot_timeserie
 from psycopg2.extensions import AsIs
+
+from .pivot import pivot_timeserie
 
 
 METRICS = dict(

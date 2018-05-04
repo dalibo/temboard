@@ -18,8 +18,9 @@ from .alerting import (
     check_specs,
 )
 from .handlers.alerting import (
+    AlertingJSONOverviewHandler,
+    AlertingJSONDetailHandler,
     AlertingJSONChecksHandler,
-    AlertingJSONCheckStatesHandler,
     AlertingJSONStateChangesHandler,
     AlertingJSONCheckChangesHandler,
 )
@@ -55,14 +56,16 @@ def get_routes(config):
          MonitoringDataMetricHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/state.json",
-         AlertingJSONCheckStatesHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/state_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
          AlertingJSONStateChangesHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/checks.json",
          AlertingJSONChecksHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/check_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
          AlertingJSONCheckChangesHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting/overview.json",
+         AlertingJSONOverviewHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting/show/([a-z\-_.0-9]{1,64}).json",
+         AlertingJSONDetailHandler, handler_conf),
     ]
     return routes
 
