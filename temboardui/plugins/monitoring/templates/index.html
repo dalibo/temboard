@@ -25,13 +25,13 @@
       <i class="fa fa-area-chart"></i>
       Metrics
     </a>
-    <div id="daterange">
+    <div id="daterange" v-cloak>
       <span class="text-muted small" v-if="autoRefresh">auto refresh</span>
       <button class="btn btn-secondary" v-on:click="showHidePicker()">
         <i class="fa fa-clock-o"></i>
-        <span>{{! rangeString() }}</span>
+        <span v-cloak>{{! rangeString() }}</span>
       </button>
-      <div class="row position-absolute bg-light border rounded card-body picker-dropdown-panel m-1 w-100" v-show="isPickerOpen">
+      <div class="row position-absolute bg-light border rounded card-body picker-dropdown-panel m-1 w-100" v-show="isPickerOpen" v-cloak>
         <div class="col-4">
           <h3>
             Custom range
