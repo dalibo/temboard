@@ -131,20 +131,6 @@ def test_load(mocker):
     assert 'FILEVAL' == config.temboard.fromfile
 
 
-def test_load_invalid_default(mocker):
-    validator = mocker.Mock(side_effect=ValueError())
-
-    from temboardagent.configuration import OptionSpec, MergedConfiguration
-
-    specs = [
-        OptionSpec('section', 'name', default='invalid', validator=validator),
-    ]
-
-    config = MergedConfiguration(specs=specs)
-    with pytest.raises(ValueError):
-        config.load(environ={})
-
-
 def test_load_configparser():
     from temboardagent.configuration import iter_configparser_values
     from temboardagent.cli import configparser

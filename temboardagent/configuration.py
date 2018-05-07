@@ -190,8 +190,8 @@ class MergedConfiguration(DotDict):
                     os.chdir(oldpwd)
                 except OSError as e:
                     logger.debug("Can't move back to %s: %s", oldpwd, e)
+            self.add_values(iter_defaults(self.specs))
         except ValueError as e:
             raise UserError("Failed to load configuration.")
 
-        self.add_values(iter_defaults(self.specs))
         self.check_required()
