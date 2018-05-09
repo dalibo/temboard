@@ -224,7 +224,7 @@ def checks_info(session, host_id, instance_id):
     """
     query = """
 SELECT c.name, c.warning, c.critical, c.description, c.enabled,
-json_agg(cs.state) AS keys_states
+json_agg(json_build_object('key', cs.key, 'state', cs.state)) AS state_by_key
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 WHERE host_id = :host_id AND instance_id = :instance_id
 GROUP BY 1,2,3,4,5 ORDER BY 1
@@ -234,8 +234,8 @@ GROUP BY 1,2,3,4,5 ORDER BY 1
     ret = []
     for row in res.fetchall():
         c_row = dict(row)
-        c_row['state'] = get_highest_state(c_row['keys_states'])
-        del c_row['keys_states']
+        c_row['state'] = get_highest_state([o['state']
+                                            for o in c_row['state_by_key']])
         ret.append(c_row)
     return ret
 

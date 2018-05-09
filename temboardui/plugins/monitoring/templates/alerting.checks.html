@@ -1,0 +1,38 @@
+{% extends ../../../templates/base.html %}
+
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Monitoring{% end %}
+
+{% block content %}
+
+<div class="text-right text-muted small">Auto refresh every 1 min</div>
+<div id="checks-container" class="row" v-cloak>
+  <div class="col-3" v-for="check in checks">
+    <div v-bind:class="'card mb-3 w-100 border border-' + getBorderColor(check.state)">
+      <div class="card-body p-2">
+        <div>
+          <span v-bind:class="'badge badge-' + getColor(check.state)">
+            {{! check.state }}
+          </span>
+          {{! check.description }}
+        </div>
+        <hr class="mt-1 mb-1">
+        <ul class="list-unstyled small ml-2 mb-0" style="max-height: 100px; overflow-y: auto;">
+          <li v-for="key in check.state_by_key">
+            <span v-bind:class="'badge badge-' + key.state.toLowerCase()">
+              {{!key.state}}
+            </span>
+            {{!key.key}}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/vue.min.js"></script>
+<script src="/js/monitoring/temboard.checks.js"></script>
+<script>
+var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
+</script>
+
+{% end %}

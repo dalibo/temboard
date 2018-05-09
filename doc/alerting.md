@@ -62,19 +62,26 @@ Returns the list of attached `checks` and their corresponding current state.
 **Content example**
 
 ```json
-[
-  {"name": "cpu_core", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "CPU usage"},
-  {"name": "fs_usage_mountpoint", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "File systems usage"},
-  {"name": "hitreadratio_db", "enabled":true, "state": "OK", "warning":90, "critical":80, "description": "Cache Hit Ratio"},
-  {"name": "load1", "enabled":true, "state": "WARNING", "warning":2, "critical":4, "description": "Loadaverage"},
-  {"name": "memory", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "Memory usage"},
-  {"name": "rollback_db", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "Rollbacked transactions"},
-  {"name": "sessions_usage", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "Client sessions"},
-  {"name": "swap_usage", "enabled":true, "state": "OK", "warning":30, "critical":50, "description": "Swap usage"},
-  {"name": "waiting_sessions_db", "enabled":true, "state": "OK", "warning":5, "critical":10, "description": "Waiting sessions"},
-  {"name": "wal_files_archive", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "WAL files ready to be archived"},
-  {"name": "wal_files_total", "enabled":true, "state": "OK", "warning":50, "critical":100, "description": "WAL files"}
-]
+
+[{
+    "state_by_key": [{
+        "state": "OK", "key": "cpu3"
+    }, {
+        "state": "OK", "key": "cpu2"
+    }, {
+        "state": "OK", "key": "cpu1"
+    }, {
+        "state": "OK", "key": "cpu0"
+    }],
+    "name": "cpu_core",
+    "enabled": true,
+    "state": "OK",
+    "warning": 50.0,
+    "critical": 80.0,
+    "description": "CPU usage"
+}, {
+    ...
+}]
 ```
 
 

@@ -18,6 +18,7 @@ from .alerting import (
     check_specs,
 )
 from .handlers.alerting import (
+    AlertingHTMLHandler,
     AlertingJSONAlertsHandler,
     AlertingJSONDetailHandler,
     AlertingJSONChecksHandler,
@@ -46,6 +47,8 @@ def get_routes(config):
     routes = [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/alerting",
+         AlertingHTMLHandler, handler_conf),
         (r"/monitoring/collector",
          MonitoringCollectorHandler, handler_conf),
         # for compatibility with older agents keep an eye on requests on
