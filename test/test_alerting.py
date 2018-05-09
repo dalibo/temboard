@@ -71,3 +71,15 @@ def test_bootstrap_checks():
                         'sessions_usage', 'waiting_session_db']
         assert type(c[1]) in (int, float)
         assert type(c[2]) in (int, float)
+
+
+def test_get_global_state():
+    from temboardui.plugins.monitoring.alerting import get_global_state
+
+    checks = [{'state': 'OK'},
+              {'state': 'WARNING'},
+              {'state': 'CRITICAL'}]
+    assert get_global_state(checks) == 'CRITICAL'
+
+    checks = [{'state': 'OK'}, {'state': 'WARNING'}]
+    assert get_global_state(checks) == 'WARNING'

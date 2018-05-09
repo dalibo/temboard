@@ -210,18 +210,9 @@ check_specs = dict(
 )
 
 
-def get_global_state(state_list):
-    global_state = 'UNDEF'
-    for s in state_list:
-        if s['state'] == 'OK' and \
-                global_state not in ('OK', 'WARNING', 'CRITICAL'):
-            global_state = 'OK'
-        if s['state'] == 'WARNING' and \
-                global_state not in ('WARNING', 'CRITICAL'):
-            global_state = 'WARNING'
-        if s['state'] == 'CRITICAL' and global_state != 'CRITICAL':
-            global_state = 'CRITICAL'
-    return global_state
+def get_global_state(checks):
+    levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL']
+    return levels[max([levels.index(c['state']) for c in checks])]
 
 
 def status_overview(session, host_id, instance_id):
