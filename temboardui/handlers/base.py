@@ -1,6 +1,7 @@
 import tornado.web
 import json
 from sqlalchemy.orm import sessionmaker, scoped_session
+from functools import wraps
 
 from temboardui.errors import TemboardUIError
 from tornado.template import Loader
@@ -9,9 +10,10 @@ from temboardui.async import (
     HTMLAsyncResult,
     JSONAsyncResult,
 )
+from temboardui.temboardclient import TemboardError
 from temboardui.model.tables import MetaData
 from temboardui.model.orm import Roles
-from temboardui.application import get_role_by_cookie
+from temboardui.application import get_role_by_cookie, get_instance
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -21,6 +23,10 @@ class BaseHandler(tornado.web.RequestHandler):
         self.ssl_ca_cert_file = ssl_ca_cert_file
         self.auth_cookie = None
         self.db_session = None
+        self.instance = None
+
+    def on_finish(self):
+        self.tearDown()
 
     @property
     def logger(self,):
@@ -102,6 +108,89 @@ class BaseHandler(tornado.web.RequestHandler):
             self.render(async_result.template_file, **async_result.data)
             return
 
+    def require_instance(self):
+        if not self.instance:
+            raise TemboardUIError(404, "Instance not found.")
+
+    def check_active_plugin(self, name):
+        '''
+        Ensure that the plugin is active for given instance
+        '''
+        if name not in [p.plugin_name for p in self.instance.plugins]:
+            raise TemboardUIError(408, "Plugin not activated.")
+
+    @staticmethod
+    def catch_errors(func):
+        '''
+        Decorator to catch and handle exceptions
+        '''
+        @wraps(func)
+        def func_wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+
+            except (TemboardUIError, TemboardError, Exception) as e:
+                self.logger.exception(str(e))
+                self.logger.info("Failed.")
+                return self.handle_exceptions(e)
+        return func_wrapper
+
+    def handle_exceptions(self, e):
+        '''
+        Generic method to handle exceptions.
+        May be overriden by inherited classes.
+        '''
+        try:
+            self.tearDown()
+        except Exception:
+            pass
+        if (isinstance(e, TemboardUIError) or
+           isinstance(e, TemboardError)):
+            if e.code == 401:
+                return HTMLAsyncResult(
+                    http_code=401,
+                    redirection="/server/%s/%s/login" %
+                                (self.instance.agent_address,
+                                 self.instance.agent_port))
+            elif e.code == 302:
+                return HTMLAsyncResult(http_code=401,
+                                       redirection="/login")
+            code = e.code
+        else:
+            code = 500
+        return HTMLAsyncResult(
+                    http_code=code,
+                    template_file='error.html',
+                    data={
+                        'nav': True,
+                        'role': self.role,
+                        'instance': self.instance,
+                        'code': e.code,
+                        'error': e.message
+                    })
+
+    def setUp(self, address, port):
+        '''
+        Start DB Session.
+        Get instance and ensure that it exists.
+        Authenticate user.
+        '''
+        self.start_db_session()
+        self.load_auth_cookie()
+        if not self.current_user:
+            raise TemboardUIError(302, "Current role unknown.")
+        self.role = self.current_user
+        self.instance = get_instance(self.db_session, address, port)
+        self.require_instance()
+
+    def tearDown(self):
+        try:
+            self.db_session.expunge_all()
+            self.db_session.commit()
+            self.db_session.close()
+        except Exception:
+            pass
+
 
 class Error404Handler(tornado.web.RequestHandler):
     def prepare(self,):
@@ -166,6 +255,20 @@ class JsonHandler(BaseHandler):
             self.write(json.dumps({'error': async_result.data['error']}))
         self.finish()
 
+    def handle_exceptions(self, e):
+        try:
+            self.db_session.rollback()
+            self.db_session.close()
+        except Exception:
+            pass
+        if (isinstance(e, TemboardUIError) or
+           isinstance(e, TemboardError)):
+            return JSONAsyncResult(http_code=e.code,
+                                   data={'error': e.message})
+        else:
+            return JSONAsyncResult(http_code=500,
+                                   data={'error': e.message})
+
 
 class CsvHandler(BaseHandler):
     def async_callback(self, async_result):
@@ -179,3 +282,19 @@ class CsvHandler(BaseHandler):
             self.set_status(async_result.http_code)
             self.write(async_result.data['error'])
         self.finish()
+
+    def handle_exceptions(self, e):
+        try:
+            self.db_session.rollback()
+            self.db_session.close()
+        except Exception:
+            pass
+        if int(self.get_argument('noerror', default=0)) == 1:
+            return CSVAsyncResult(http_code=200, data=u'')
+        else:
+            if (isinstance(e, TemboardUIError)):
+                return CSVAsyncResult(http_code=e.code,
+                                      data={'error': e.message})
+            else:
+                return CSVAsyncResult(http_code=500,
+                                      data={'error': e.message})

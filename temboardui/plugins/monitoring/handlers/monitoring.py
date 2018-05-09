@@ -13,7 +13,6 @@ from temboardui.scheduler import taskmanager
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.temboardclient import TemboardError, temboard_profile
 from temboardui.errors import TemboardUIError
-from temboardui.application import get_instance
 from temboardui.async import (
     run_background,
     HTMLAsyncResult,
@@ -165,79 +164,43 @@ class MonitoringCollectorHandler(JsonHandler):
 
 class MonitoringDataMetricHandler(CsvHandler):
 
+    @CsvHandler.catch_errors
     def get_data_metric(self, agent_address, agent_port, metric_name):
+
+        self.setUp(agent_address, agent_port)
+        self.check_active_plugin('monitoring')
+
+        # Find host_id & instance_id
+        host_id = get_host_id(self.db_session, self.instance.hostname)
+        instance_id = get_instance_id(self.db_session, host_id,
+                                      self.instance.pg_port)
+
+        start = self.get_argument('start', default=None)
+        end = self.get_argument('end', default=None)
+        key = self.get_argument('key', default=None)
+        start_time = None
+        end_time = None
+        if start:
+            try:
+                start_time = dt_parser.parse(start)
+            except ValueError as e:
+                raise TemboardUIError(406, 'Datetime not valid.')
+        if end:
+            try:
+                end_time = dt_parser.parse(end)
+            except ValueError as e:
+                raise TemboardUIError(406, 'Datetime not valid.')
         try:
-            instance = None
-            role = None
-            no_error = 0
+            # Try to load data from the repository
+            data = get_metric_data_csv(self.db_session, metric_name,
+                                       start_time, end_time,
+                                       host_id=host_id,
+                                       instance_id=instance_id, key=key)
+        except IndexError as e:
+            logger.exception(str(e))
+            raise TemboardUIError(404, 'Unknown metric.')
 
-            self.load_auth_cookie()
-            self.start_db_session()
-
-            role = self.current_user
-            if not role:
-                raise TemboardUIError(302, "Current role unknown.")
-
-            instance = get_instance(self.db_session, agent_address, agent_port)
-            if not instance:
-                raise TemboardUIError(404, "Instance not found.")
-            if 'monitoring' not in [plugin.plugin_name
-                                    for plugin in instance.plugins]:
-                raise TemboardUIError(408, "Plugin not active.")
-
-            # Find host_id & instance_id
-            host_id = get_host_id(self.db_session, instance.hostname)
-            instance_id = get_instance_id(self.db_session, host_id,
-                                          instance.pg_port)
-
-            self.db_session.expunge_all()
-
-            start = self.get_argument('start', default=None)
-            end = self.get_argument('end', default=None)
-            key = self.get_argument('key', default=None)
-            # Return 200 with empty list when an error occurs
-            no_error = int(self.get_argument('noerror', default=0))
-            start_time = None
-            end_time = None
-            if start:
-                try:
-                    start_time = dt_parser.parse(start)
-                except ValueError as e:
-                    raise TemboardUIError(406, 'Datetime not valid.')
-            if end:
-                try:
-                    end_time = dt_parser.parse(end)
-                except ValueError as e:
-                    raise TemboardUIError(406, 'Datetime not valid.')
-            try:
-                # Try to load data from the repository
-                data = get_metric_data_csv(self.db_session, metric_name,
-                                           start_time, end_time,
-                                           host_id=host_id,
-                                           instance_id=instance_id, key=key)
-            except IndexError as e:
-                logger.exception(str(e))
-                raise TemboardUIError(404, 'Unknown metric.')
-
-            self.db_session.commit()
-            self.db_session.close()
-
-            return CSVAsyncResult(http_code=200, data=data)
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            try:
-                self.db_session.close()
-            except Exception:
-                pass
-            if no_error == 1:
-                return CSVAsyncResult(http_code=200, data=u'')
-            else:
-                if (isinstance(e, TemboardUIError)):
-                    return CSVAsyncResult(http_code=e.code,
-                                          data={'error': e.message})
-                else:
-                    return CSVAsyncResult(http_code=500,
-                                          data={'error': e.message})
+        return CSVAsyncResult(http_code=200, data=data)
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port, metric_name):
@@ -246,85 +209,44 @@ class MonitoringDataMetricHandler(CsvHandler):
 
 
 class MonitoringHTMLHandler(BaseHandler):
+
+    @BaseHandler.catch_errors
     def get_index(self, agent_address, agent_port):
+
+        self.setUp(agent_address, agent_port)
+        self.check_active_plugin('monitoring')
+
+        xsession = self.get_secure_cookie(
+            "temboard_%s_%s" % (agent_address, agent_port))
+
+        # Here we want to get the current agent username if a session
+        # already exists.
+        # Monitoring plugin doesn't require agent authentication since we
+        # already have the data.
+        # Don't fail if there's a session error (for example when the agent
+        # has been restarted)
+        agent_username = None
         try:
-            instance = None
-            role = None
+            if xsession:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                agent_address,
+                                                agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
+        except TemboardError:
+            pass
 
-            self.load_auth_cookie()
-            self.start_db_session()
-
-            role = self.current_user
-            if not role:
-                raise TemboardUIError(302, "Current role unknown.")
-
-            instance = get_instance(self.db_session, agent_address, agent_port)
-            if not instance:
-                raise TemboardUIError(404, "Instance not found.")
-            if 'monitoring' not in [plugin.plugin_name
-                                    for plugin in instance.plugins]:
-                raise TemboardUIError(408, "Plugin not active.")
-            self.db_session.expunge_all()
-            self.db_session.commit()
-            self.db_session.close()
-
-            xsession = self.get_secure_cookie(
-                "temboard_%s_%s" %
-                (instance.agent_address, instance.agent_port))
-
-            # Here we want to get the current agent username if a session
-            # already exists.
-            # Monitoring plugin doesn't require agent authentication since we
-            # already have the data.
-            # Don't fail if there's a session error (for example when the agent
-            # has been restarted)
-            agent_username = None
-            try:
-                if xsession:
-                    data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                                    instance.agent_address,
-                                                    instance.agent_port,
-                                                    xsession)
-                    agent_username = data_profile['username']
-            except TemboardError:
-                pass
-
-            return HTMLAsyncResult(
-                    http_code=200,
-                    template_path=self.template_path,
-                    template_file='index.html',
-                    data={
-                        'nav': True,
-                        'role': role,
-                        'instance': instance,
-                        'plugin': 'monitoring',
-                        'agent_username': agent_username
-                    })
-
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            try:
-                self.db_session.expunge_all()
-                self.db_session.rollback()
-                self.db_session.close()
-            except Exception:
-                pass
-            if (isinstance(e, TemboardUIError)):
-                if e.code == 302:
-                    return HTMLAsyncResult(http_code=401, redirection="/login")
-                code = e.code
-            else:
-                code = 500
-            return HTMLAsyncResult(
-                        http_code=code,
-                        template_file='error.html',
-                        data={
-                            'nav': True,
-                            'role': role,
-                            'instance': instance,
-                            'code': e.code,
-                            'error': e.message
-                        })
+        return HTMLAsyncResult(
+                http_code=200,
+                template_path=self.template_path,
+                template_file='index.html',
+                data={
+                    'nav': True,
+                    'role': self.current_user,
+                    'instance': self.instance,
+                    'plugin': 'monitoring',
+                    'agent_username': agent_username
+                })
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
