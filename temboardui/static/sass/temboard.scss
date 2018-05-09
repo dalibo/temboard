@@ -334,12 +334,9 @@ table.table-activity {
   font-size: 12px;
 }
 
-#daterange {
-  width: 320px;
-  cursor: pointer;
-  border: 1px solid $input-border-color;
-  border-radius: $input-border-radius;
-  padding: $input-btn-padding-y $input-btn-padding-x;
+.picker-dropdown-panel {
+  right: 0;
+  z-index: $zindex-dropdown;
 }
 
 #HBATable {
@@ -462,4 +459,7 @@ canvas {
   .card-body > * {
     opacity: 0;
   }
+}
+[v-cloak] {
+  display: none;
 }
