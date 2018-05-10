@@ -182,7 +182,7 @@ class Application(object):
     def read_file(self, parser, filename):
         logger.debug('Reading %s.', filename)
         try:
-            with open(filename, 'ro') as fp:
+            with open(filename, 'r') as fp:
                 parser.readfp(fp)
         except IOError as e:
             raise UserError(str(e))
