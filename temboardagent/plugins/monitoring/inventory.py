@@ -83,7 +83,7 @@ def instance_info(conninfo, hostname):
         instance_info['dbnames'] = []
         for db in conninfo['dbnames']:
             if db == '*':
-                instance_info['dbnames'] = dbs.values()
+                instance_info['dbnames'] = list(dbs.values())
                 break
             if db in dbs.keys():
                 instance_info['dbnames'].append(dbs[db])
