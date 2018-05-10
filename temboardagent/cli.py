@@ -279,7 +279,7 @@ def bootstrap(args, environ, **kw):
 
 
 def detect_debug_mode(environ):
-    debug = environ.get('DEBUG', b'0')
+    debug = environ.get('DEBUG', '0')
     try:
         debug = bool(strtobool(debug))
         if debug:
