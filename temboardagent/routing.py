@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def make_route(function, method, path, check_session):
     splitpath = []
-    elts = path.split('/')
+    elts = path.split(b'/')
     pos = 0
     root = None
     # Seeking for regexp in the path, because we need to compile it.
