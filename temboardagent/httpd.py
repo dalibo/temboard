@@ -3,14 +3,14 @@ import logging
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from socketserver import ThreadingMixIn
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import urlparse, parse_qs, unquote_plus
 except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
     from SocketServer import ThreadingMixIn
     from urlparse import urlparse, parse_qs
+    from urllib import unquote_plus
 import json
 import sys
-from urllib import unquote_plus
 from socket import error as SocketError
 import ssl
 
