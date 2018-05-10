@@ -118,6 +118,6 @@ def setproctitle(title):
     # Truncate title to fit in argv memory segment.
     title = title[:size - 1]
     # Pad argv with NULL
-    title = title.ljust(size, '\0')
+    title = title.ljust(size, b'\0')
     # Overwrite argv segment with proc title
     libc.memcpy(address, title, size)
