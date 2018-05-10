@@ -312,12 +312,12 @@ def test_debug_var():
     from temboardagent.cli import detect_debug_mode
 
     assert not detect_debug_mode(dict())
-    assert not detect_debug_mode(dict(DEBUG=b'N'))
+    assert not detect_debug_mode(dict(DEBUG='N'))
 
-    env = dict(DEBUG=b'1')
+    env = dict(DEBUG='1')
     assert detect_debug_mode(env) is True
-    assert b'__debug__' == env['TEMBOARD_LOGGING_DEBUG']
+    assert '__debug__' == env['TEMBOARD_LOGGING_DEBUG']
 
-    env = dict(DEBUG=b'mymodule')
+    env = dict(DEBUG='mymodule')
     assert detect_debug_mode(env)
-    assert b'mymodule' == env['TEMBOARD_LOGGING_DEBUG']
+    assert 'mymodule' == env['TEMBOARD_LOGGING_DEBUG']

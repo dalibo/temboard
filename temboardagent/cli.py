@@ -283,9 +283,9 @@ def detect_debug_mode(environ):
     try:
         debug = bool(strtobool(debug))
         if debug:
-            environ['TEMBOARD_LOGGING_DEBUG'] = b'__debug__'
+            environ['TEMBOARD_LOGGING_DEBUG'] = '__debug__'
     except ValueError:
-        environ['TEMBOARD_LOGGING_DEBUG'] = debug
+        environ['TEMBOARD_LOGGING_DEBUG'] = str(debug)
     return debug
 
 
