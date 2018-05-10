@@ -132,7 +132,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def get_route(self, method, path):
         # Returns the right route according to method/path
-        s_path = path.split('/')[1:]
+        s_path = path.split(b'/')[1:]
         root = s_path[0]
         for route in get_routes():
             # Check that HTTP method and url root are matching.
@@ -144,7 +144,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Check each element in the path.
             for elt in s_path:
                 try:
-                    if type(route['splitpath'][p]) is not str:
+                    if type(route['splitpath'][p]) not in (str, bytes):
                         # Then this is a regular expression.
                         res = route['splitpath'][p].match(elt)
                         if not res:
@@ -164,8 +164,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Parse an URL path when route's path contains regepx
         p = 0
         urlvars = list()
-        for elt in path.split('/')[1:]:
-            if type(route['splitpath'][p]) is not str:
+        for elt in path.split(b'/')[1:]:
+            if type(route['splitpath'][p]) not in (str, bytes):
                 # Then this is a regular expression.
                 res = route['splitpath'][p].match(elt)
                 if res is not None:
@@ -189,9 +189,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.query = parse_qs(up.query)
 
         # Get the route
-        route = self.get_route(self.http_method, path)
+        route = self.get_route(self.http_method, path.encode('utf-8'))
         # Parse URL path
-        urlvars = self.parse_path(path, route)
+        urlvars = self.parse_path(path.encode('utf-8'), route)
         post_raw = None
         # Load POST content if any
         if self.http_method == 'POST':
