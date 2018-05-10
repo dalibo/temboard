@@ -111,7 +111,7 @@ def writeabledir(raw):
 
 
 def list_(raw):
-    return [w.strip() for w in raw.split(b',') if len(w.strip())]
+    return [w.strip() for w in raw.split(',') if len(w.strip())]
 
 
 def quoted(raw):
