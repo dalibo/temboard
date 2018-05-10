@@ -2,7 +2,10 @@ import time
 import os
 import logging
 import json
-import urllib2
+try:
+    from urllib2 import HTTPError
+except ImportError:
+    from urllib.error import HTTPError
 
 from temboardagent.scheduler import taskmanager
 from temboardagent.routing import RouteSet
@@ -204,7 +207,7 @@ def monitoring_sender_worker(app):
                 config.temboard.key,
                 msg.content
             )
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             # On error 409 (DB Integrity) we just drop the message and move to
             # the next message.
             if int(e.code) != 409:

@@ -1,5 +1,11 @@
-import httplib
-import urllib2
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
 import ssl
 import socket
 import json
