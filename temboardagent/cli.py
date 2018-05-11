@@ -306,7 +306,7 @@ def cli(main):
         try:
             try:
                 setup_logging(debug=debug)
-                logger.debug("Starting temBoard agent.")
+                logger.debug("Starting temBoard agent %s.", __version__)
                 retcode = main(argv, environ) or 1
             except pdb.bdb.BdbQuit:
                 logger.info("Graceful exit from debugger.")
