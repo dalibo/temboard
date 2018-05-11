@@ -116,7 +116,10 @@ class Application(object):
         # Once config is loaded or reloaded, update application state to match
         # new configuration.
 
-        self.setup_logging()
+        try:
+            self.setup_logging()
+        except Exception as e:
+            raise UserError("Failed to setup logging: %s." % (e,))
         self.postgres = Postgres(**self.config.postgresql)
         for service in self.services:
             service.apply_config()
