@@ -17,7 +17,11 @@ def make_route(function, method, path, check_session):
         if len(elt) == 0:
             continue
         # regexp have to start with a ( end is terminated by a ).
-        if elt[0] == '(' and elt[-1] == ')':
+        if type(elt) is bytes and type(elt) is not str:
+            if chr(elt[0]) == '(' and chr(elt[-1]) == ')':
+                # Append it compiled.
+                splitpath.append(re.compile(elt.decode('utf-8')))
+        if type(elt) is str and elt[0] == '(' and elt[-1] == ')':
             # Append it compiled.
             splitpath.append(re.compile(elt))
         # string case
