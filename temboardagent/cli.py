@@ -318,6 +318,7 @@ def cli(main):
                 if debug:
                     pdb.post_mortem(sys.exc_info()[2])
                 else:
+                    logger.error("temboard-agent version is %s.", __version__)
                     logger.error("This is a bug!")
                     logger.error(
                         "Please report traceback to "
