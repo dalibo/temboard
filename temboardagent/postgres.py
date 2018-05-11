@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 from .spc import connector
+from .spc import error as PostgresError
+from .errors import UserError
 
 
 class ConnectionManager(object):
@@ -17,7 +19,10 @@ class ConnectionManager(object):
             password=self.postgres.password,
             database=self.postgres.dbname
         )
-        self.conn.connect()
+        try:
+            self.conn.connect()
+        except PostgresError as e:
+            raise UserError("Failed to connect to Postgres: %s" % (e,))
         return self.conn
 
     def __exit__(self, *a):
