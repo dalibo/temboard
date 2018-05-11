@@ -247,7 +247,7 @@ class HTTPDService(Service):
                  self.app.config.temboard.port),
                 self.handle_request)
         except SocketError as e:
-            raise UserError(str(e))
+            raise UserError("Failed to start HTTPS server: %s." % (e,))
         self.httpd.socket = ssl.wrap_socket(
             self.httpd.socket,
             keyfile=self.app.config.temboard.ssl_key_file,
