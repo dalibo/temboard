@@ -231,7 +231,7 @@ class MonitoringPlugin(object):
         OptionSpec(s, 'dbnames', default='*', validator=list_),
         OptionSpec(s, 'scheduler_interval', default=60, validator=int),
         OptionSpec(s, 'probes', default='*', validator=list_),
-        OptionSpec(s, 'collector_url'),
+        OptionSpec(s, 'collector_url', default=OptionSpec.REQUIRED),
         OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
     ]
     del s
