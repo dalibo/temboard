@@ -248,7 +248,7 @@ class Application(object):
 
     def purge_plugins(self):
         old_plugins = self.plugins.copy()
-        for name in self.plugins.keys():
+        for name in list(self.plugins):
             if name in self.config.temboard.plugins:
                 continue
             del self.plugins[name]
