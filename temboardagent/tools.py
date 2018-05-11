@@ -29,6 +29,8 @@ def validate_parameters(values, types):
     """
     for (key, typ, is_list) in types:
         try:
+            if type(typ) == bytes and hasattr(typ, 'decode'):
+                typ = str(typ.decode('utf-8'))
             if not is_list:
                 # If 'typ' is a string, it must be considered as a regexp
                 # pattern.
