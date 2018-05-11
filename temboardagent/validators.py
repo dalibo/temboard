@@ -93,7 +93,7 @@ def loglevel(raw):
 
 def logmethod(raw):
     if raw not in LOG_METHODS:
-        raise ValueError('unkown method')
+        raise ValueError('unknown logging method %s' % (raw,))
     return raw
 
 
