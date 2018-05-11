@@ -15,6 +15,12 @@ from ..tools import validate_parameters
 from .agent import list_options_specs
 
 
+try:
+    input = raw_input
+except NameError:
+    pass
+
+
 def ask_password():
     raw_pass1 = getpass("Password: ")
     raw_pass2 = getpass("Retype password: ")
@@ -33,7 +39,7 @@ def ask_password():
 
 def ask_username(config):
     stdout.write("Username: ".encode('utf-8'))
-    raw_username = raw_input()
+    raw_username = input()
     try:
         get_user(config.temboard['users'], raw_username)
     except HTTPError:
