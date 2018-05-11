@@ -146,7 +146,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 try:
                     if type(route['splitpath'][p]) not in (str, bytes):
                         # Then this is a regular expression.
-                        res = route['splitpath'][p].match(elt)
+                        res = route['splitpath'][p].match(elt.decode('utf-8'))
                         if not res:
                             break
                     else:
@@ -167,7 +167,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         for elt in path.split(b'/')[1:]:
             if type(route['splitpath'][p]) not in (str, bytes):
                 # Then this is a regular expression.
-                res = route['splitpath'][p].match(elt)
+                res = route['splitpath'][p].match(elt.decode('utf-8'))
                 if res is not None:
                     # If the regexp matches, we want to get the
                     # value and append it in urlvars.
@@ -213,7 +213,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         try:
             # Load POST content expecting it is in JSON format.
-            if post_raw:
+            if self.http_method == 'POST':
                 self.post_json = json.loads(post_raw.decode('utf-8'))
         except Exception as e:
             logger.exception(str(e))
