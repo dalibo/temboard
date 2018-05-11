@@ -489,7 +489,7 @@ class ConfigurationFileHandler(BaseHandler):
                                 {'action': 'reload'})
             except (TemboardError, Exception) as e:
                 self.logger.exception(str(e))
-                if isinstance(TemboardError, e):
+                if isinstance(e, TemboardError):
                     error_code = e.code
                     error_message = e.message
                 else:
@@ -746,7 +746,7 @@ class ConfigurationFileVersioningHandler(BaseHandler):
                                 {'action': 'reload'})
             except (TemboardError, Exception) as e:
                 self.logger.exception(str(e))
-                if isinstance(TemboardError, e):
+                if isinstance(e, TemboardError):
                     error_code = e.code
                     error_message = e.message
                 else:
