@@ -2,23 +2,27 @@ from __future__ import unicode_literals
 
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 import os
-from sys import stdout, stderr
+from sys import stdout
 from getpass import getpass
 import re
-import urllib2
 import json
 import logging
 
 from ..cli import bootstrap, cli, define_core_arguments
 from ..errors import (
-    ConfigurationError,
     HTTPError,
     UserError,
 )
 from ..types import T_PASSWORD, T_USERNAME
 from ..tools import validate_parameters
 from ..httpsclient import https_request
-from agent import list_options_specs
+from .agent import list_options_specs
+
+
+try:
+    input = raw_input
+except NameError:
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +47,7 @@ def ask_username():
     try:
         raw_username = os.environ['TEMBOARD_UI_USER']
     except KeyError:
-        raw_username = raw_input(" Username: ")
+        raw_username = input(" Username: ")
 
     try:
         username = raw_username
@@ -113,25 +117,27 @@ def main(argv, environ):
         print("Getting system & PostgreSQL informations from the agent "
               "(https://%s:%s/discover) ..." % (args.host, args.port))
         (code, content, cookies) = https_request(
-                None,
-                'GET',
-                "https://%s:%s/discover" % (args.host, args.port),
-                headers={
-                    "Content-type": "application/json"
-                })
+            None,
+            'GET',
+            "https://%s:%s/discover" % (args.host, args.port),
+            headers={
+                "Content-type": "application/json"
+            }
+        )
         infos = json.loads(content)
 
         print("Login at %s ..." % (args.ui_address))
         username = ask_username()
         password = ask_password()
         (code, content, cookies) = https_request(
-                None,
-                'POST',
-                "%s/json/login" % (args.ui_address.rstrip('/')),
-                headers={
-                    "Content-type": "application/json"
-                },
-                data={'username': username, 'password': password})
+            None,
+            'POST',
+            "%s/json/login" % (args.ui_address.rstrip('/')),
+            headers={
+                "Content-type": "application/json"
+            },
+            data={'username': username, 'password': password}
+        )
         temboard_cookie = None
         for cookie in cookies.split("\n"):
             cookie_content = cookie.split(";")[0]
@@ -147,26 +153,27 @@ def main(argv, environ):
         # POSTing new instance
         print("Registering instance/agent to %s ..." % (args.ui_address))
         (code, content, cookies) = https_request(
-                None,
-                'POST',
-                "%s/json/register/instance" % (args.ui_address.rstrip('/')),
-                headers={
-                    "Content-type": "application/json",
-                    "Cookie": temboard_cookie
-                },
-                data={
-                    'hostname': infos['hostname'],
-                    'agent_key': app.config.temboard['key'],
-                    'agent_address': args.host,
-                    'agent_port': str(app.config.temboard['port']),
-                    'cpu': infos['cpu'],
-                    'memory_size': infos['memory_size'],
-                    'pg_port': infos['pg_port'],
-                    'pg_data': infos['pg_data'],
-                    'pg_version': infos['pg_version'],
-                    'plugins': infos['plugins'],
-                    'groups': groups
-                })
+            None,
+            'POST',
+            "%s/json/register/instance" % (args.ui_address.rstrip('/')),
+            headers={
+                "Content-type": "application/json",
+                "Cookie": temboard_cookie
+            },
+            data={
+                'hostname': infos['hostname'],
+                'agent_key': app.config.temboard['key'],
+                'agent_address': args.host,
+                'agent_port': str(app.config.temboard['port']),
+                'cpu': infos['cpu'],
+                'memory_size': infos['memory_size'],
+                'pg_port': infos['pg_port'],
+                'pg_data': infos['pg_data'],
+                'pg_version': infos['pg_version'],
+                'plugins': infos['plugins'],
+                'groups': groups
+            }
+        )
         if code != 200:
             raise HTTPError(code, content)
         print("Done.")
