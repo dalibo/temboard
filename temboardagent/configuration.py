@@ -114,6 +114,8 @@ def iter_environ_values(environ):
 def iter_defaults(specs):
     # Walk specs flat dict and yield default values.
     for spec in specs.values():
+        if spec.required:
+            continue
         yield Value(str(spec), spec.default, 'defaults')
 
 
