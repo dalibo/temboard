@@ -306,7 +306,7 @@ def cli(main):
         try:
             try:
                 setup_logging(debug=debug)
-                logger.debug("Starting temBoard agent.")
+                logger.debug("Starting temBoard agent %s.", __version__)
                 retcode = main(argv, environ) or 1
             except pdb.bdb.BdbQuit:
                 logger.info("Graceful exit from debugger.")
@@ -318,6 +318,7 @@ def cli(main):
                 if debug:
                     pdb.post_mortem(sys.exc_info()[2])
                 else:
+                    logger.error("temboard-agent version is %s.", __version__)
                     logger.error("This is a bug!")
                     logger.error(
                         "Please report traceback to "
