@@ -13,7 +13,7 @@ from temboardui.application import get_instance
 from temboardui.async import run_background, JSONAsyncResult
 
 from ..tools import get_host_id, get_instance_id
-from ..alerting import status_overview, status_detail, check_specs
+from ..alerting import checks_info, check_state_detail, check_specs
 
 
 logger = logging.getLogger(__name__)
@@ -141,19 +141,10 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
     def get_checks(self, address, port):
         try:
             self.setup_env(address, port)
-
-            query = self.db_session.query(Check).filter(
-                        Check.host_id == self.host_id,
-                        Check.instance_id == self.instance_id,
-                    ).order_by(
-                        Check.name,
-                    )
-            data = [{'name': r.name, 'enabled': r.enabled,
-                     'warning': r.warning, 'critical': r.critical,
-                     'description': r.description}
-                    for r in query]
-
+            data = checks_info(self.db_session, self.host_id,
+                               self.instance_id)
             self.close_env()
+
             return JSONAsyncResult(http_code=200, data=data)
 
         except Exception as e:
@@ -278,25 +269,6 @@ class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
                        (address, port, check_name))
 
 
-class AlertingJSONOverviewHandler(AlertingJSONHandler):
-
-    def get_overview(self, address, port):
-        try:
-            self.setup_env(address, port)
-            overview = status_overview(self.db_session, self.host_id,
-                                       self.instance_id)
-            self.close_env()
-
-            return JSONAsyncResult(http_code=200, data=overview)
-
-        except Exception as e:
-            return self.handle_exception(e)
-
-    @tornado.web.asynchronous
-    def get(self, address, port):
-        run_background(self.get_overview, self.async_callback, (address, port))
-
-
 class AlertingJSONDetailHandler(AlertingJSONHandler):
 
     def get_detail(self, address, port, check_name):
@@ -306,8 +278,8 @@ class AlertingJSONDetailHandler(AlertingJSONHandler):
             if check_name not in check_specs:
                 raise TemboardUIError(404, "Unknown check '%s'" % check_name)
 
-            detail = status_detail(self.db_session, self.host_id,
-                                   self.instance_id, check_name)
+            detail = check_state_detail(self.db_session, self.host_id,
+                                        self.instance_id, check_name)
             self.close_env()
 
             return JSONAsyncResult(http_code=200, data=detail)
