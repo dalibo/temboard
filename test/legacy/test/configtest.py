@@ -61,10 +61,7 @@ dbnames = '*'
 collector_url = http://localhost:8888/collector/
 # probes = ''
 # interval = 60
-ssl_ca_cert_file = %(ssl_ca_cert_file)s
-"""
-
-AGENT_CONFIG_MONITORING = """\
+ssl_ca_cert_file = %(monitoring_ssl_ca_cert_file)s
 """
 
 AGENT_SSL_CERT = """-----BEGIN CERTIFICATE-----

@@ -116,7 +116,10 @@ class Application(object):
         # Once config is loaded or reloaded, update application state to match
         # new configuration.
 
-        self.setup_logging()
+        try:
+            self.setup_logging()
+        except Exception as e:
+            raise UserError("Failed to setup logging: %s." % (e,))
         self.postgres = Postgres(**self.config.postgresql)
         for service in self.services:
             service.apply_config()
@@ -304,28 +307,27 @@ def cli(main):
 
         retcode = 1
         try:
-            try:
-                setup_logging(debug=debug)
-                logger.debug("Starting temBoard agent %s.", __version__)
-                retcode = main(argv, environ) or 1
-            except pdb.bdb.BdbQuit:
-                logger.info("Graceful exit from debugger.")
-            except UserError as e:
-                retcode = e.retcode
-                logger.critical("%s", e)
-            except Exception:
-                logger.exception('Unhandled error:')
-                if debug:
-                    pdb.post_mortem(sys.exc_info()[2])
-                else:
-                    logger.error("temboard-agent version is %s.", __version__)
-                    logger.error("This is a bug!")
-                    logger.error(
-                        "Please report traceback to "
-                        "https://github.com/dalibo/temboard-agent/issues! "
-                        "Thanks!"
-                    )
+            setup_logging(debug=debug)
+            logger.debug("Starting temBoard agent %s.", __version__)
+            retcode = main(argv, environ) or 1
         except KeyboardInterrupt:
             logger.info('Terminated.')
+        except pdb.bdb.BdbQuit:
+            logger.info("Graceful exit from debugger.")
+        except UserError as e:
+            retcode = e.retcode
+            logger.critical("%s", e)
+        except Exception:
+            logger.exception('Unhandled error:')
+            if debug:
+                pdb.post_mortem(sys.exc_info()[2])
+            else:
+                logger.error("temboard-agent version is %s.", __version__)
+                logger.error("This is a bug!")
+                logger.error(
+                    "Please report traceback to "
+                    "https://github.com/dalibo/temboard-agent/issues! "
+                    "Thanks!"
+                )
         exit(retcode)
     return cli_wrapper
