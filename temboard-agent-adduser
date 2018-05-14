@@ -1,2 +1,2 @@
 #!/bin/sh
-exec python2 -m temboardagent.scripts.adduser $@
+exec python -m temboardagent.scripts.adduser $@

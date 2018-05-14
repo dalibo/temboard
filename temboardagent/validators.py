@@ -81,7 +81,12 @@ def port(raw):
 
 def loglevel(raw):
     raw = raw.upper()
-    if raw not in logging._levelNames:
+    levelnames = list()
+    if hasattr(logging, '_levelNames'):
+        levelnames = logging._levelNames
+    elif hasattr(logging, '_nameToLevel'):
+        levelnames = logging._nameToLevel
+    if raw not in levelnames:
         raise ValueError('unkown log level')
     return raw
 
@@ -106,7 +111,7 @@ def writeabledir(raw):
 
 
 def list_(raw):
-    return [w.strip() for w in raw.split(b',') if len(w.strip())]
+    return [w.strip() for w in raw.split(',') if len(w.strip())]
 
 
 def quoted(raw):

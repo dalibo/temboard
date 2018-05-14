@@ -3,14 +3,14 @@ import logging
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from socketserver import ThreadingMixIn
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import urlparse, parse_qs, unquote_plus
 except ImportError:
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
     from SocketServer import ThreadingMixIn
     from urlparse import urlparse, parse_qs
+    from urllib import unquote_plus
 import json
 import sys
-from urllib import unquote_plus
 from socket import error as SocketError
 import ssl
 
@@ -132,7 +132,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def get_route(self, method, path):
         # Returns the right route according to method/path
-        s_path = path.split('/')[1:]
+        s_path = path.split(b'/')[1:]
         root = s_path[0]
         for route in get_routes():
             # Check that HTTP method and url root are matching.
@@ -144,9 +144,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Check each element in the path.
             for elt in s_path:
                 try:
-                    if type(route['splitpath'][p]) is not str:
+                    if type(route['splitpath'][p]) not in (str, bytes):
                         # Then this is a regular expression.
-                        res = route['splitpath'][p].match(elt)
+                        res = route['splitpath'][p].match(elt.decode('utf-8'))
                         if not res:
                             break
                     else:
@@ -164,10 +164,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Parse an URL path when route's path contains regepx
         p = 0
         urlvars = list()
-        for elt in path.split('/')[1:]:
-            if type(route['splitpath'][p]) is not str:
+        for elt in path.split(b'/')[1:]:
+            if type(route['splitpath'][p]) not in (str, bytes):
                 # Then this is a regular expression.
-                res = route['splitpath'][p].match(elt)
+                res = route['splitpath'][p].match(elt.decode('utf-8'))
                 if res is not None:
                     # If the regexp matches, we want to get the
                     # value and append it in urlvars.
@@ -189,9 +189,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.query = parse_qs(up.query)
 
         # Get the route
-        route = self.get_route(self.http_method, path)
+        route = self.get_route(self.http_method, path.encode('utf-8'))
         # Parse URL path
-        urlvars = self.parse_path(path, route)
+        urlvars = self.parse_path(path.encode('utf-8'), route)
         post_raw = None
         # Load POST content if any
         if self.http_method == 'POST':
@@ -213,7 +213,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         try:
             # Load POST content expecting it is in JSON format.
-            if post_raw:
+            if self.http_method == 'POST':
                 self.post_json = json.loads(post_raw.decode('utf-8'))
         except Exception as e:
             logger.exception(str(e))

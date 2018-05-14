@@ -1,5 +1,11 @@
-import httplib
-import urllib2
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
 import ssl
 import socket
 import json
@@ -83,11 +89,12 @@ def https_request(in_ca_cert_file, method, url, headers=None, data=None):
         https_handler = UnverifiedHTTPSHandler()
     url_opener = urllib2.build_opener(https_handler)
     headers_list = []
-    for key, val in headers.iteritems():
+    for key, val in headers.items():
         headers_list.append((key, val))
     url_opener.addheaders = headers_list
     if data:
-        request = RequestWithMethod(url, data=json.dumps(data), method=method)
+        request = RequestWithMethod(url, data=json.dumps(data).encode('utf-8'),
+                                    method=method)
     else:
         request = RequestWithMethod(url, method=method)
     handle = url_opener.open(request)

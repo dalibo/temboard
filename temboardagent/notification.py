@@ -23,6 +23,10 @@ class Notification(object):
             self.date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         else:
             self.date = date
+        if type(username) == bytes:
+            username = username.decode('utf-8')
+        if type(message) == bytes:
+            message = message.decode('utf-8')
         self.username = username
         self.message = message
 

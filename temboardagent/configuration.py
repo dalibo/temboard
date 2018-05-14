@@ -102,7 +102,8 @@ def iter_environ_values(environ):
             continue
 
         k = k.lower()
-        v = v.decode('utf-8')
+        if hasattr(v, 'decode'):
+            v = v.decode('utf-8')
 
         # Yield the value with temboard prefix so we don't have to define
         # TEMBOARD_TEMBOARD_* to set a value in temboard section.

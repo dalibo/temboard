@@ -42,7 +42,7 @@ def check_sessionid(http_header, sessions):
         raise HTTPError(401, "Invalid session.")
 
 
-@add_route('POST', '/login', check_session=False)
+@add_route('POST', b'/login', check_session=False)
 def login(http_context, app, sessions):
     post = http_context['post']
     # Add an unconditional sleeping time to reduce brute-force risks
@@ -83,7 +83,7 @@ def login(http_context, app, sessions):
         raise HTTPError(500, "Internal error.")
 
 
-@add_route('GET', '/logout')
+@add_route('GET', b'/logout')
 def logout(http_context, app, sessions):
     headers = http_context['headers']
     logger.info("Removing session: %s" % (headers['X-Session']))
@@ -102,7 +102,7 @@ def logout(http_context, app, sessions):
         raise HTTPError(500, "Internal error.")
 
 
-@add_route('GET', '/discover', check_session=False)
+@add_route('GET', b'/discover', check_session=False)
 def get_discover(http_context, app, sessions):
     logger.info('Starting discovery.')
     try:
@@ -131,7 +131,7 @@ def get_discover(http_context, app, sessions):
             raise HTTPError(500, "Internal error.")
 
 
-@add_route('GET', '/profile')
+@add_route('GET', b'/profile')
 def profile(http_context, app, sessions):
     headers = http_context['headers']
     logger.info("Get user profile.")
@@ -146,7 +146,7 @@ def profile(http_context, app, sessions):
         raise HTTPError(401, "Invalid session.")
 
 
-@add_route('GET', '/notifications')
+@add_route('GET', b'/notifications')
 def notifications(http_context, app, sessions):
     logger.info("Get notifications.")
     try:

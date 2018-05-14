@@ -5,9 +5,9 @@ import logging
 import sys
 
 try:
-    from UserDict import UserDict
+    from UserDict import IterableUserDict
 except ImportError:
-    from collections import UserDict
+    from collections import UserDict as IterableUserDict
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def dict_factory(iterable=_UNDEFINED, **kw):
         return dict(iterable, **kw)
 
 
-class DotDict(UserDict):
+class DotDict(IterableUserDict):
     # A wrapper around dict that allows read and write through dot style
     # accessors.
 
@@ -53,10 +53,7 @@ class DotDict(UserDict):
     def setdefault(self, name, default):
         if hasattr(default, 'items'):
             default = DotDict(default)
-        return UserDict.setdefault(self, name, default)
-
-    def __iter__(self):
-        return iter(self.keys())
+        return IterableUserDict.setdefault(self, name, default)
 
 
 libc = ctypes.CDLL('libc.so.6')
@@ -121,6 +118,6 @@ def setproctitle(title):
     # Truncate title to fit in argv memory segment.
     title = title[:size - 1]
     # Pad argv with NULL
-    title = title.ljust(size, '\0')
+    title = title.ljust(size, b'\0')
     # Overwrite argv segment with proc title
     libc.memcpy(address, title, size)

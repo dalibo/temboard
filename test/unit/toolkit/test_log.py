@@ -73,7 +73,7 @@ def test_temboard_debug(mocker):
     assert 'verbose' == config['handlers']['configured']['formatter']
     assert 'DEBUG' == config['loggers']['temboardagent']['level']
 
-    config = generate_logging_config(level='INFO', debug=b'__debug__')
+    config = generate_logging_config(level='INFO', debug='__debug__')
 
     assert 'verbose' == config['handlers']['configured']['formatter']
     assert 'DEBUG' == config['loggers']['temboardagent']['level']

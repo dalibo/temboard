@@ -182,7 +182,7 @@ class Application(object):
     def read_file(self, parser, filename):
         logger.debug('Reading %s.', filename)
         try:
-            with open(filename, 'ro') as fp:
+            with open(filename, 'r') as fp:
                 parser.readfp(fp)
         except IOError as e:
             raise UserError(str(e))
@@ -248,7 +248,7 @@ class Application(object):
 
     def purge_plugins(self):
         old_plugins = self.plugins.copy()
-        for name in self.plugins.keys():
+        for name in list(self.plugins):
             if name in self.config.temboard.plugins:
                 continue
             del self.plugins[name]
@@ -279,13 +279,13 @@ def bootstrap(args, environ, **kw):
 
 
 def detect_debug_mode(environ):
-    debug = environ.get('DEBUG', b'0')
+    debug = environ.get('DEBUG', '0')
     try:
         debug = bool(strtobool(debug))
         if debug:
-            environ['TEMBOARD_LOGGING_DEBUG'] = b'__debug__'
+            environ['TEMBOARD_LOGGING_DEBUG'] = '__debug__'
     except ValueError:
-        environ['TEMBOARD_LOGGING_DEBUG'] = debug
+        environ['TEMBOARD_LOGGING_DEBUG'] = str(debug)
     return debug
 
 
