@@ -15,10 +15,10 @@ ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.s
 
 RUN chmod 0755 /usr/local/bin/wait-for-it \
     && groupadd --system docker \
-    && useradd --home-dir /var/lib/temboard --create-home --system --groups docker temboard
+    && useradd --home-dir /var/lib/postgresql --create-home --system --groups docker postgres
 
-VOLUME /var/lib/temboard
-WORKDIR /var/lib/temboard
+VOLUME /var/lib/temboard-agent
+WORKDIR /var/lib/temboard-agent
 VOLUME /etc/temboard-agent
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["temboard-agent"]
