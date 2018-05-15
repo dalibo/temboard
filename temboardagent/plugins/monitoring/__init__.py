@@ -214,7 +214,7 @@ def monitoring_sender_worker(app):
                 logger.error("Failed to send data to collector: %s", e)
                 logger.error(
                     "You should find more details in temBoard UI logs.")
-                raise
+                raise Exception(str(e))
 
         # If everything's fine then remove current msg from the queue
         # Integrity check is made using check_msg
