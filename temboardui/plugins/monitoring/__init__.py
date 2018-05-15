@@ -18,7 +18,6 @@ from .alerting import (
     check_specs,
 )
 from .handlers.alerting import (
-    AlertingJSONOverviewHandler,
     AlertingJSONDetailHandler,
     AlertingJSONChecksHandler,
     AlertingJSONStateChangesHandler,
@@ -62,9 +61,7 @@ def get_routes(config):
          AlertingJSONChecksHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/check_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
          AlertingJSONCheckChangesHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/overview.json",
-         AlertingJSONOverviewHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/show/([a-z\-_.0-9]{1,64}).json",
+        (r"/server/(.*)/([0-9]{1,5})/alerting/states/([a-z\-_.0-9]{1,64}).json",  # noqa
          AlertingJSONDetailHandler, handler_conf),
     ]
     return routes

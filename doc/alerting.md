@@ -47,7 +47,7 @@ Summary:
 
 ### `checks` list
 
-Returns the list of attached `checks`.
+Returns the list of attached `checks` and their corresponding current state.
 
 **URL** : `/server/<address>/<port>/alerting/checks.json`
 
@@ -63,17 +63,17 @@ Returns the list of attached `checks`.
 
 ```json
 [
-  {"warning": 50.0, "enabled": true, "name": "cpu_core", "critical": 80.0, "description": "CPU usage"},
-  {"warning": 80.0, "enabled": true, "name": "fs_usage_mountpoint", "critical": 90.0, "description": "File systems usage"},
-  {"warning": 90.0, "enabled": true, "name": "hitreadratio_db", "critical": 80.0, "description": "Cache Hit Ratio"},
-  {"warning": 0.5, "enabled": true, "name": "load1", "critical": 1.0, "description": "Loadaverage"},
-  {"warning": 50.0, "enabled": true, "name": "memory", "critical": 80.0, "description": "Memory usage"},
-  {"warning": 10.0, "enabled": true, "name": "rollback_db", "critical": 20.0, "description": "Rollbacked transactions"},
-  {"warning": 80.0, "enabled": true, "name": "sessions_usage", "critical": 90.0, "description": "Client sessions"},
-  {"warning": 30.0, "enabled": true, "name": "swap_usage", "critical": 50.0, "description": "Swap usage"},
-  {"warning": 5.0, "enabled": true, "name": "waiting_session_db", "critical": 10.0, "description": "Waiting sessions"},
-  {"warning": 10.0, "enabled": true, "name": "wal_files_archive", "critical": 20.0, "description": "WAL files ready to be archived"},
-  {"warning": 50.0, "enabled": true, "name": "wal_files_total", "critical": 100.0, "description": "WAL files"}
+  {"name": "cpu_core", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "CPU usage"},
+  {"name": "fs_usage_mountpoint", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "File systems usage"},
+  {"name": "hitreadratio_db", "enabled":true, "state": "OK", "warning":90, "critical":80, "description": "Cache Hit Ratio"},
+  {"name": "load1", "enabled":true, "state": "WARNING", "warning":2, "critical":4, "description": "Loadaverage"},
+  {"name": "memory", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "Memory usage"},
+  {"name": "rollback_db", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "Rollbacked transactions"},
+  {"name": "sessions_usage", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "Client sessions"},
+  {"name": "swap_usage", "enabled":true, "state": "OK", "warning":30, "critical":50, "description": "Swap usage"},
+  {"name": "waiting_session_db", "enabled":true, "state": "OK", "warning":5, "critical":10, "description": "Waiting sessions"},
+  {"name": "wal_files_archive", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "WAL files ready to be archived"},
+  {"name": "wal_files_total", "enabled":true, "state": "OK", "warning":50, "critical":100, "description": "WAL files"}
 ]
 ```
 
@@ -182,11 +182,11 @@ GET /server/192.168.122.21/2345/alerting/check_changes/cpu_core.json?start=2017-
 ```
 
 
-### State overview
+### State by `check`
 
-Provides overview on global alerting state. Returns list of `checks` and their current state.
+Gives details (state for each key) about `check`.
 
-**URL** : `/server/<address>/<port>/alerting/overview.json`
+**URL** : `/server/<address>/<port>/alerting/states/<check>.json`
 
 **Method** : `GET`
 
@@ -200,68 +200,11 @@ Provides overview on global alerting state. Returns list of `checks` and their c
 
 ```json
 [
-  {
-    "state_overview": [
-      {"state": "CRITICAL", "key": "cpu0"}
-    ],
-    "name": "cpu_core",
-    "global_state": "CRITICAL",
-    "enabled": true,
-    "warning": 70.0,
-    "critical": 80.0,
-    "description": "CPU usage"
-  },
-  {
-    "state_overview": [
-      {"state": "OK", "key": "/run/user/0"},
-      {"state": "OK", "key": "/dev/shm"},
-      {"state": "OK", "key": "/dev"},
-      {"state": "OK", "key": "/boot"},
-      {"state": "OK", "key": "/sys/fs/cgroup"},
-      {"state": "OK", "key": "/"},
-      {"state": "OK", "key": "/run"},
-      {"state": "OK", "key": "/run/user/1000"}
-    ],
-    "name": "fs_usage_mountpoint",
-    "global_state": "OK",
-    "enabled": false,
-    "warning": 80.0,
-    "critical": 90.0,
-    "description": "File systems usage"
-  },
-  ...
+  {"value":36, "datetime": "2018-05-14T12:25:39+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu2"},
+  {"value":49, "datetime": "2018-05-14T12:14:33+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu1"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu3"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu0"}
 ]
-```
-
-
-### State by `check`
-
-Gives details about `check` current state.
-
-**URL** : `/server/<address>/<port>/alerting/show/<check>.json`
-
-**Method** : `GET`
-
-**Auth required** : YES
-
-#### Success Response
-
-**Code** : `200 OK`
-
-**Content example**
-
-```json
-{
-  "name": "cpu_core",
-  "state_detail": [
-    {"value": 25, "datetime": "2018-05-09T16:34:28+02:00", "state": "OK", "warning": 70, "critical": 80, "key": "cpu0"}
-  ],
-  "enabled": true,
-  "warning": 70.0,
-  "critical": 80.0,
-  "global_state": "OK",
-  "description": "CPU usage"
-}
 ```
 
 #### Error Response

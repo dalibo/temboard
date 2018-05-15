@@ -210,18 +210,21 @@ check_specs = dict(
 )
 
 
-def get_global_state(checks):
-    levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL']
-    return levels[max([levels.index(c['state']) for c in checks])]
-
-
-def status_overview(session, host_id, instance_id):
+def get_highest_state(states):
     """
-    Returns alerting status overiew by host_id/instance_id
+    Returns the highest state.
+    """
+    levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL']
+    return levels[max([levels.index(state) for state in states])]
+
+
+def checks_info(session, host_id, instance_id):
+    """
+    Returns alerting checks with current state by host_id/instance_id
     """
     query = """
 SELECT c.name, c.warning, c.critical, c.description, c.enabled,
-json_agg(json_build_object('key', cs.key, 'state', cs.state)) AS state_overview
+json_agg(cs.state) AS keys_states
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 WHERE host_id = :host_id AND instance_id = :instance_id
 GROUP BY 1,2,3,4,5 ORDER BY 1
@@ -231,17 +234,17 @@ GROUP BY 1,2,3,4,5 ORDER BY 1
     ret = []
     for row in res.fetchall():
         c_row = dict(row)
-        c_row['global_state'] = get_global_state(c_row['state_overview'])
+        c_row['state'] = get_highest_state(c_row['keys_states'])
+        del c_row['keys_states']
         ret.append(c_row)
     return ret
 
 
-def status_detail(session, host_id, instance_id, check_name):
+def check_state_detail(session, host_id, instance_id, check_name):
     query = """
-SELECT c.name, c.warning, c.critical, c.description, c.enabled,
-json_agg(json_build_object('key', cs.key, 'state', cs.state, 'datetime',
-                           sc.datetime, 'value', sc.value, 'warning',
-                           sc.warning, 'critical', sc.critical)) AS state_detail
+SELECT json_agg(json_build_object('key', cs.key, 'state', cs.state, 'datetime',
+                                  sc.datetime, 'value', sc.value, 'warning',
+                                  sc.warning, 'critical', sc.critical)) AS state_detail
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.key
                                      AND sc.datetime = (SELECT MAX(datetime)
@@ -250,12 +253,10 @@ JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.ke
                                                         AND sc2.key = cs.key
                                                         AND sc2.state = cs.state))
 WHERE host_id = :host_id AND instance_id = :instance_id AND c.name = :check_name
-GROUP BY 1,2,3,4,5
     """  # noqa
     res = session.execute(query,
                           dict(host_id=host_id, instance_id=instance_id,
                                check_name=check_name))
     row = res.fetchone()
     c_row = dict(row)
-    c_row['global_state'] = get_global_state(c_row['state_detail'])
-    return c_row
+    return c_row['state_detail']
