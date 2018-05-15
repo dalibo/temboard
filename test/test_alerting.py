@@ -73,13 +73,11 @@ def test_bootstrap_checks():
         assert type(c[2]) in (int, float)
 
 
-def test_get_global_state():
-    from temboardui.plugins.monitoring.alerting import get_global_state
+def test_get_highest_state():
+    from temboardui.plugins.monitoring.alerting import get_highest_state
 
-    checks = [{'state': 'OK'},
-              {'state': 'WARNING'},
-              {'state': 'CRITICAL'}]
-    assert get_global_state(checks) == 'CRITICAL'
+    checks = ['OK', 'WARNING', 'CRITICAL']
+    assert get_highest_state(checks) == 'CRITICAL'
 
-    checks = [{'state': 'OK'}, {'state': 'WARNING'}]
-    assert get_global_state(checks) == 'WARNING'
+    checks = ['OK', 'WARNING']
+    assert get_highest_state(checks) == 'WARNING'
