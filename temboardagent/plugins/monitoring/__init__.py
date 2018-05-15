@@ -210,11 +210,21 @@ def monitoring_sender_worker(app):
         except HTTPError as e:
             # On error 409 (DB Integrity) we just drop the message and move to
             # the next message.
-            if int(e.code) != 409:
-                logger.error("Failed to send data to collector: %s", e)
-                logger.error(
-                    "You should find more details in temBoard UI logs.")
-                raise Exception(str(e))
+            if int(e.code) == 409:
+                continue
+
+            try:
+                data = e.read()
+                data = json.loads(data)
+                message = data['error']
+            except Exception as e:
+                logger.debug("Can't get error details: %s", e)
+                message = str(e)
+
+            logger.error("Failed to send data to collector: %s", message)
+            logger.error("You should find details in temBoard UI logs.")
+
+            raise Exception("Failed to send data to collector.")
 
         # If everything's fine then remove current msg from the queue
         # Integrity check is made using check_msg
