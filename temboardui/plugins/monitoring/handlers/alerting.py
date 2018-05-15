@@ -7,12 +7,14 @@ import tornado.web
 import tornado.escape
 
 from temboardui.handlers.base import JsonHandler
-from temboardui.plugins.monitoring.model.orm import Check, CheckState
+from temboardui.plugins.monitoring.model.orm import Check
 from temboardui.errors import TemboardUIError
 from temboardui.application import get_instance
 from temboardui.async import run_background, JSONAsyncResult
 
 from ..tools import get_host_id, get_instance_id
+from ..alerting import checks_info, check_state_detail, check_specs
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,37 +72,6 @@ class AlertingJSONHandler(JsonHandler):
                                    data={'error': message})
 
 
-class AlertingJSONCheckStatesHandler(AlertingJSONHandler):
-
-    def get_check_states(self, address, port):
-        try:
-            self.setup_env(address, port)
-
-            query = self.db_session.query(
-                        Check.name, CheckState.key, CheckState.state
-                    ).filter(
-                        Check.host_id == self.host_id,
-                        Check.instance_id == self.instance_id,
-                        Check.check_id == CheckState.check_id
-                    ).order_by(
-                        Check.name,
-                        CheckState.key
-                    )
-            data = [{'name': r.name, 'key': r.key, 'state': r.state}
-                    for r in query]
-
-            self.close_env()
-            return JSONAsyncResult(http_code=200, data=data)
-
-        except Exception as e:
-            return self.handle_exception(e)
-
-    @tornado.web.asynchronous
-    def get(self, address, port):
-        run_background(self.get_check_states, self.async_callback,
-                       (address, port))
-
-
 class AlertingJSONStateChangesHandler(AlertingJSONHandler):
 
     def get_state_changes(self, address, port, check_name):
@@ -113,6 +84,8 @@ class AlertingJSONStateChangesHandler(AlertingJSONHandler):
             key = self.get_argument('key', default=None)
             # Return 200 with empty list when an error occurs
             no_error = int(self.get_argument('noerror', default=0))
+            if check_name not in check_specs:
+                raise TemboardUIError(404, "Unknown check '%s'" % check_name)
 
             start_time = None
             end_time = None
@@ -168,19 +141,10 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
     def get_checks(self, address, port):
         try:
             self.setup_env(address, port)
-
-            query = self.db_session.query(Check).filter(
-                        Check.host_id == self.host_id,
-                        Check.instance_id == self.instance_id,
-                    ).order_by(
-                        Check.name,
-                    )
-            data = [{'name': r.name, 'enabled': r.enabled,
-                     'warning': r.warning, 'criticial': r.critical,
-                     'description': r.description}
-                    for r in query]
-
+            data = checks_info(self.db_session, self.host_id,
+                               self.instance_id)
             self.close_env()
+
             return JSONAsyncResult(http_code=200, data=data)
 
         except Exception as e:
@@ -198,6 +162,11 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
             post = tornado.escape.json_decode(self.request.body)
             if 'checks' not in post or type(post.get('checks')) is not list:
                 raise TemboardUIError(400, "Post data not valid.")
+
+            for row in post['checks']:
+                if row.get('name') not in check_specs:
+                    raise TemboardUIError(404, "Unknown check '%s'"
+                                               % row.get('name'))
 
             for row in post['checks']:
                 # Find the check from its name
@@ -247,6 +216,8 @@ class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
             end = self.get_argument('end', default=None)
             # Return 200 with empty list when an error occurs
             no_error = int(self.get_argument('noerror', default=0))
+            if check_name not in check_specs:
+                raise TemboardUIError(404, "Unknown check '%s'" % check_name)
 
             start_time = None
             end_time = None
@@ -295,4 +266,28 @@ class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
     @tornado.web.asynchronous
     def get(self, address, port, check_name):
         run_background(self.get_check_changes, self.async_callback,
+                       (address, port, check_name))
+
+
+class AlertingJSONDetailHandler(AlertingJSONHandler):
+
+    def get_detail(self, address, port, check_name):
+        try:
+            self.setup_env(address, port)
+
+            if check_name not in check_specs:
+                raise TemboardUIError(404, "Unknown check '%s'" % check_name)
+
+            detail = check_state_detail(self.db_session, self.host_id,
+                                        self.instance_id, check_name)
+            self.close_env()
+
+            return JSONAsyncResult(http_code=200, data=detail)
+
+        except Exception as e:
+            return self.handle_exception(e)
+
+    @tornado.web.asynchronous
+    def get(self, address, port, check_name):
+        run_background(self.get_detail, self.async_callback,
                        (address, port, check_name))

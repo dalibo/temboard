@@ -208,3 +208,55 @@ check_specs = dict(
         operator=operator.gt,
     ),
 )
+
+
+def get_highest_state(states):
+    """
+    Returns the highest state.
+    """
+    levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL']
+    return levels[max([levels.index(state) for state in states])]
+
+
+def checks_info(session, host_id, instance_id):
+    """
+    Returns alerting checks with current state by host_id/instance_id
+    """
+    query = """
+SELECT c.name, c.warning, c.critical, c.description, c.enabled,
+json_agg(cs.state) AS keys_states
+FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
+WHERE host_id = :host_id AND instance_id = :instance_id
+GROUP BY 1,2,3,4,5 ORDER BY 1
+    """  # noqa
+    res = session.execute(query,
+                          dict(host_id=host_id, instance_id=instance_id))
+    ret = []
+    for row in res.fetchall():
+        c_row = dict(row)
+        c_row['state'] = get_highest_state(c_row['keys_states'])
+        del c_row['keys_states']
+        ret.append(c_row)
+    return ret
+
+
+def check_state_detail(session, host_id, instance_id, check_name):
+    query = """
+SELECT json_agg(json_build_object('key', cs.key, 'state', cs.state, 'datetime',
+                                  sc.datetime, 'value', sc.value, 'warning',
+                                  sc.warning, 'critical', sc.critical)) AS state_detail
+FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
+JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.key
+                                     AND sc.datetime = (SELECT MAX(datetime)
+                                                        FROM monitoring.state_changes sc2
+                                                        WHERE sc2.check_id=c.check_id
+                                                        AND sc2.key = cs.key
+                                                        AND sc2.state = cs.state))
+WHERE host_id = :host_id AND instance_id = :instance_id AND c.name = :check_name
+    """  # noqa
+    res = session.execute(query,
+                          dict(host_id=host_id, instance_id=instance_id,
+                               check_name=check_name))
+    row = res.fetchone()
+    c_row = dict(row)
+    return c_row['state_detail']

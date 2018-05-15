@@ -71,3 +71,13 @@ def test_bootstrap_checks():
                         'sessions_usage', 'waiting_session_db']
         assert type(c[1]) in (int, float)
         assert type(c[2]) in (int, float)
+
+
+def test_get_highest_state():
+    from temboardui.plugins.monitoring.alerting import get_highest_state
+
+    checks = ['OK', 'WARNING', 'CRITICAL']
+    assert get_highest_state(checks) == 'CRITICAL'
+
+    checks = ['OK', 'WARNING']
+    assert get_highest_state(checks) == 'WARNING'
