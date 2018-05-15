@@ -211,7 +211,10 @@ def monitoring_sender_worker(app):
             # On error 409 (DB Integrity) we just drop the message and move to
             # the next message.
             if int(e.code) != 409:
-                raise e
+                logger.error("Failed to send data to collector: %s", e)
+                logger.error(
+                    "You should find more details in temBoard UI logs.")
+                raise
 
         # If everything's fine then remove current msg from the queue
         # Integrity check is made using check_msg
