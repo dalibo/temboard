@@ -169,7 +169,7 @@ class BaseHandler(tornado.web.RequestHandler):
                         'error': e.message
                     })
 
-    def setUp(self, address, port):
+    def setUp(self, address=None, port=None):
         '''
         Start DB Session.
         Get instance and ensure that it exists.
@@ -180,13 +180,14 @@ class BaseHandler(tornado.web.RequestHandler):
         if not self.current_user:
             raise TemboardUIError(302, "Current role unknown.")
         self.role = self.current_user
-        self.instance = get_instance(self.db_session, address, port)
-        self.require_instance()
+        if address is not None and port is not None:
+            self.instance = get_instance(self.db_session, address, port)
+            self.require_instance()
 
-    def tearDown(self):
+    def tearDown(self, commit=True):
         try:
-            self.db_session.expunge_all()
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
             self.db_session.close()
         except Exception:
             pass

@@ -18,16 +18,13 @@ class HomeHandler(BaseHandler):
     @BaseHandler.catch_errors
     def get_home(self):
         self.logger.info("Loading home.")
-        self.load_auth_cookie()
-        self.start_db_session()
+        self.setUp()
         role = self.current_user
         if not role:
             raise TemboardUIError(302, 'Current role unknown.')
         instance_list = get_instances_by_role_name(self.db_session,
                                                    role.role_name)
-        self.db_session.expunge_all()
-        self.db_session.commit()
-        self.db_session.close()
+        self.tearDown(commit=False)
         self.logger.info("Done.")
         return HTMLAsyncResult(
                 http_code=200,
@@ -40,8 +37,6 @@ class HomeHandler(BaseHandler):
 
     def handle_exceptions(self, e):
         try:
-            self.db_session.expunge_all()
-            self.db_session.rollback()
             self.db_session.close()
         except Exception:
             pass

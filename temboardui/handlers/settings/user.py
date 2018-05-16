@@ -45,16 +45,13 @@ class SettingsUserJsonHandler(JsonHandler):
     def get_role(self, username):
         try:
             self.logger.info("Getting role by name.")
-            self.load_auth_cookie()
-            self.start_db_session()
+            self.setUp()
             self.check_admin()
 
             role = get_role(self.db_session, username)
             groups = get_group_list(self.db_session)
 
-            self.db_session.expunge_all()
-            self.db_session.commit()
-            self.db_session.close()
+            self.tearDown(commit=False)
             self.logger.info("Done.")
             return JSONAsyncResult(
                 200,
@@ -86,9 +83,8 @@ class SettingsUserJsonHandler(JsonHandler):
     def post_role(self, username):
         try:
             self.logger.info("Posting role.")
+            self.setUp()
             role = None
-            self.load_auth_cookie()
-            self.start_db_session()
             self.check_admin()
             if username:
                 # Update role case.
@@ -170,7 +166,7 @@ class SettingsUserJsonHandler(JsonHandler):
                     add_role_in_group(self.db_session, role.role_name,
                                       group_name)
 
-            self.db_session.commit()
+            self.tearDown()
             self.logger.info("Done.")
             return JSONAsyncResult(200, {'ok': True})
 
@@ -197,8 +193,7 @@ class SettingsDeleteUserJsonHandler(JsonHandler):
     def delete_role(self):
         try:
             self.logger.info("Deleting role.")
-            self.load_auth_cookie()
-            self.start_db_session()
+            self.setUp()
             self.check_admin()
 
             data = tornado.escape.json_decode(self.request.body)
@@ -207,8 +202,7 @@ class SettingsDeleteUserJsonHandler(JsonHandler):
             if 'username' not in data or data['username'] == '':
                 raise TemboardUIError(400, "Username field is missing.")
             delete_role(self.db_session, data['username'])
-            self.db_session.commit()
-            self.db_session.close()
+            self.tearDown()
             self.logger.info("Done.")
             return JSONAsyncResult(200, {'delete': True})
 
@@ -235,16 +229,12 @@ class SettingsUserHandler(BaseHandler):
     def get_index(self):
         try:
             self.logger.info("Getting user list.")
-            self.load_auth_cookie()
-            self.start_db_session()
+            self.setUp()
             self.check_admin()
 
             role_list = get_role_list(self.db_session)
             self.logger.debug(role_list)
-
-            self.db_session.expunge_all()
-            self.db_session.commit()
-            self.db_session.close()
+            self.tearDown(commit=False)
             self.logger.info("Done.")
             return HTMLAsyncResult(
                     200,
@@ -256,7 +246,6 @@ class SettingsUserHandler(BaseHandler):
             self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception:
                 pass
