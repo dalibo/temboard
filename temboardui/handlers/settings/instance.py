@@ -52,12 +52,13 @@ class SettingsInstanceJsonHandler(JsonHandler):
     @JsonHandler.catch_errors
     def get_instance(self, agent_address, agent_port):
         self.logger.info("Getting instance.")
+        self.setUp(agent_address, agent_port)
 
-        self.require_instance()
         self.check_admin()
 
         groups = get_group_list(self.db_session, 'instance')
         self.logger.info("Done.")
+        self.tearDown(commit=False)
         return JSONAsyncResult(
             200,
             {
@@ -85,6 +86,7 @@ class SettingsInstanceJsonHandler(JsonHandler):
     @JsonHandler.catch_errors
     def post_instance(self, agent_address, agent_port):
         self.logger.info("Posting instance.")
+        self.setUp()
         instance = None
         self.check_admin()
         if agent_address and agent_port:
@@ -198,7 +200,7 @@ class SettingsInstanceJsonHandler(JsonHandler):
                     else:
                         raise TemboardUIError(
                             404, "Unknown plugin %s." % (plugin_name))
-        self.db_session.commit()
+        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {"message": "OK"})
 
@@ -212,6 +214,7 @@ class SettingsDeleteInstanceJsonHandler(JsonHandler):
     @JsonHandler.catch_errors
     def delete_instance(self):
         self.logger.info("Deleting instance.")
+        self.setUp()
         self.check_admin()
 
         data = tornado.escape.json_decode(self.request.body)
@@ -222,8 +225,7 @@ class SettingsDeleteInstanceJsonHandler(JsonHandler):
             raise TemboardUIError(400, "Agent port field is missing.")
         delete_instance(
             self.db_session, data['agent_address'], data['agent_port'])
-        self.db_session.commit()
-        self.db_session.close()
+        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {'delete': True})
 
@@ -236,14 +238,11 @@ class SettingsInstanceHandler(BaseHandler):
 
     def get_index(self):
         try:
-            self.load_auth_cookie()
-            self.start_db_session()
+            self.setUp()
             self.check_admin()
 
             instance_list = get_instance_list(self.db_session)
-            self.db_session.expunge_all()
-            self.db_session.commit()
-            self.db_session.close()
+            self.tearDown(commit=False)
             return HTMLAsyncResult(
                     200,
                     None,
@@ -256,7 +255,6 @@ class SettingsInstanceHandler(BaseHandler):
         except (TemboardUIError, Exception) as e:
             self.logger.error(str(e))
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception:
                 pass
@@ -287,11 +285,12 @@ class DiscoverInstanceJsonHandler(JsonHandler):
     @JsonHandler.catch_errors
     def get_discover(self, agent_address, agent_port):
         self.logger.info("Getting discovery.")
+        self.setUp()
         self.check_admin()
-        self.db_session.close()
 
-        res = temboard_discover(
-            self.ssl_ca_cert_file, agent_address, agent_port)
+        res = temboard_discover(self.ssl_ca_cert_file, agent_address,
+                                agent_port)
+        self.tearDown(commit=False)
         self.logger.info("Done.")
         return JSONAsyncResult(200, res)
 
