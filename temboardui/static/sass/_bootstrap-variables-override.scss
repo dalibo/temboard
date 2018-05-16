@@ -18,3 +18,11 @@ $grid-breakpoints: (
   xl: 1200px,
   xxl: 1500px
 ) !default;
+
+$red: #dc3545 !default;
+$danger: $red !default;
+
+$theme-colors: (
+  "ok": $success,
+  "critical": $danger,
+) !default;

@@ -124,21 +124,67 @@
 </div>
 <div class="row">
   <div class="col-6">
-    <div class="card mb-4">
-      <div class="card-header small p-1 chart-title">
+    <div>
+      <div class="text-center small">
         Notifications
       </div>
-      <div class="card-body p-2 small" id="divNotif10">
+      <div class="small" id="divNotif10">
         <div class="text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
       </div>
     </div>
   </div>
+  {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
+  <div class="col-6">
+    <div class="text-center small">
+      Last alerts
+    </div>
+    <div class="small" id="divAlerts" style="max-height:400px; overflow-y:auto;">
+      <div class="text-center" v-if="alerts.length == 0">
+        <div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div>
+      </div>
+      <div v-cloak class="mb-0">
+        <template v-for="alert in alerts">
+          <div class="bg-light mb-1" :data-toggle-popover="alert.state == 'WARNING' || alert.state == 'CRITICAL'" data-trigger="hover">
+            <div class="p-1">
+              <div class="float-right text-muted text-right">
+                {{!moment(alert.datetime).fromNow()}}<br>
+              </div>
+              <div>
+                <span class="font-weight-bold">
+                  {{!alert.description}}
+                </span>
+                <span v-if="alert.key">
+                  -
+                  {{!alert.key}}
+                </span>
+              </div>
+              <div v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{!alert.state}}</div>
+              <div class="popover-content text-muted d-none" v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'">
+                {{!moment(alert.datetime).format()}}<br>
+                <span class="font-weight-bold">
+                  {{!alert.value}}
+                </span>
+                <br>
+                Thresholds:
+                warning {{!alert.warning}}
+                /
+                critical {{!alert.critical}}
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    {% end %}
+  </div>
 </div>
 
 <!-- <script src="/js/Chart.js"></script> -->
+<script src="/js/vue.min.js"></script>
 <script src="/js/Chart.min.js"></script>
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script src="/js/filesize.min.js"></script>
+<script src="/js/moment.min.js"></script>
 <script>
   var config = JSON.parse('{% raw config %}');
   var jdata_history = JSON.parse('{% raw history %}');

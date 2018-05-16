@@ -40,7 +40,7 @@ Summary:
 | `checks` list                  | `GET`  | `/server/<address>/<port>/alerting/checks.json`
 | Update `checks`                | `POST` | `/server/<address>/<port>/alerting/checks.json`
 | `checks` configuration changes | `GET`  | `/server/<address>/<port>/alerting/check_changes/<check>.json?start=<start>&end=<end>`
-| State overview                 | `GET`  | `/server/<address>/<port>/alerting/overview.json`
+| Alerts                         | `GET`  | `/server/<address>/<port>/alerting/alerts.json`
 | State by `check`               | `GET`  | `/server/<address>/<port>/alerting/show/<check>.json`
 | State changes                  | `GET`  | `/server/<address>/<port>/alerting/state_changes/<check>.json?key=<key>&start=<start>&end=<end>`
 
@@ -179,6 +179,54 @@ GET /server/192.168.122.21/2345/alerting/check_changes/cpu_core.json?start=2017-
 {
   "error": "Unknown check 'cpu'"
 }
+```
+
+
+### Alerts
+
+List of `alerts` (ie. state changes with a warning or critical state value) according to the time interval defined by `start` and `end` arguments (ISO 8601). If no time interval specified, returns the whole history.
+
+**URL** : `/server/<address>/<port>/alerting/alerts.json?start=<start>&end=<end>`
+
+**Method** : `GET`
+
+**Auth required** : YES
+
+**Data example**
+
+```http
+GET /server/192.168.122.21/2345/alerting/alerts.json?start=2017-01-01T00:00:00Z&end=2018-05-10T00:00:00Z
+```
+
+#### Success Response
+
+**Code** : `200 OK`
+
+**Content example**
+
+```json
+[
+    {
+        "datetime": "2017-01-01T00:01:00+02:00",
+        "warning": 50,
+        "critical": 70,
+        "value": 55,
+        "state": "WARNING",
+        "description": "CPU Usage",
+        "key": "cpu0",
+        "check": "cpu_core"
+    },
+    {
+        "datetime": "2017-01-01T00:05:35.342568+02:00",
+        "warning": 50,
+        "critical": 70,
+        "value": 72,
+        "state": "CRITICAL",
+        "description": "CPU Usage",
+        "key": "cpu0",
+        "check": "cpu_core"
+    }
+]
 ```
 
 

@@ -1,3 +1,4 @@
+/* global Vue, moment */
 $(function() {
   "use strict";
 
@@ -179,6 +180,40 @@ $(function() {
     }
     notif_html += '</ul>';
     $('#divNotif10').html(notif_html);
+  }
+
+  var v = new Vue({
+    el: '#divAlerts',
+    data: {
+      alerts: [],
+      moment: moment
+    }
+  });
+
+  function updateAlerts() {
+    $.ajax({
+      url: '/server/'+agent_address+'/'+agent_port+'/alerting/alerts.json',
+    }).success(function(data) {
+      // remove any previous popover to avoid conflicts with
+      // recycled div elements
+      $('#divAlerts div').popover('dispose');
+      v.alerts = data;
+      window.setTimeout(function() {
+        $('#divAlerts [data-toggle-popover]').popover({
+          placement: 'top',
+          container: 'body',
+          boundary: 'window',
+          content: function() {
+            return $(this).find('.popover-content')[0].outerHTML.replace('d-none', '');
+          },
+          html: true
+        });
+      }, 1);
+    }).error(function(error) {
+      // FIXME handle error
+      console.error(error);
+    });
+
   }
 
   var options = {
@@ -365,6 +400,12 @@ $(function() {
   var refreshInterval = config.scheduler_interval * 1000;
   window.setInterval(refreshDashboard, refreshInterval);
   refreshDashboard();
+
+  if ($('#divAlerts')) { // monitoring plugin enabled
+    var alertRefreshInterval = 60 * 1000;
+    window.setInterval(updateAlerts, alertRefreshInterval);
+    updateAlerts();
+  }
 });
 
 var entityMap = {

@@ -56,6 +56,51 @@ class AlertingJSONHandler(JsonHandler):
                                    data={'error': message})
 
 
+class AlertingJSONAlertsHandler(AlertingJSONHandler):
+
+    @BaseHandler.catch_errors
+    def get_alerts(self, address, port):
+        self.setUp(address, port)
+
+        data_buffer = cStringIO.StringIO()
+        cur = self.db_session.connection().connection.cursor()
+        cur.execute("SET search_path TO monitoring")
+        query = """
+        COPY (
+            SELECT array_to_json(array_agg(x))
+            FROM (
+                SELECT json_build_object('description', c.description, 'name', c.name, 'key', sc.key, 'state', sc.state, 'datetime', sc.datetime, 'value', sc.value, 'warning', sc.warning, 'critical', sc.critical) as x
+                FROM monitoring.state_changes sc JOIN monitoring.checks c ON (sc.check_id = c.check_id)
+                WHERE c.host_id = %s
+                  AND c.instance_id = %s
+                  AND (sc.state = 'WARNING' OR sc.state = 'CRITICAL')
+                ORDER BY sc.datetime desc
+                LIMIT 20
+            ) as tab
+        ) TO STDOUT
+        """  # noqa
+        # build the query
+        query = cur.mogrify(query, (self.host_id, self.instance_id))
+
+        cur.copy_expert(query, data_buffer)
+        cur.close()
+        data = data_buffer.getvalue()
+        data_buffer.close()
+        try:
+            data = json.loads(data)
+        except Exception as e:
+            logger.exception(str(e))
+            logger.debug(data)
+            data = []
+
+        return JSONAsyncResult(http_code=200, data=data)
+
+    @tornado.web.asynchronous
+    def get(self, address, port):
+        run_background(self.get_alerts, self.async_callback,
+                       (address, port))
+
+
 class AlertingJSONStateChangesHandler(AlertingJSONHandler):
 
     @BaseHandler.catch_errors
