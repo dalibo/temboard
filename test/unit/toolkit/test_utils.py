@@ -1,5 +1,5 @@
 def test_dict_factory():
-    from temboardagent.utils import dict_factory
+    from temboardagent.toolkit.utils import dict_factory
 
     my = dict_factory()
     assert isinstance(my, dict)
@@ -22,7 +22,7 @@ def test_dict_factory():
 
 
 def test_dotdict():
-    from temboardagent.utils import DotDict
+    from temboardagent.toolkit.utils import DotDict
 
     my = DotDict(dict(a=1, b=dict(c=2)))
 
@@ -50,7 +50,7 @@ def test_dotdict():
 
 def test_pickle_dotdict():
     from pickle import dumps as pickle, loads as unpickle
-    from temboardagent.utils import DotDict
+    from temboardagent.toolkit.utils import DotDict
 
     orig = DotDict(dict(a=1, b=dict(c=2)))
     copy = unpickle(pickle(orig))

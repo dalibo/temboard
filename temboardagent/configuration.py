@@ -2,7 +2,7 @@ import logging
 import os
 
 from temboardagent.errors import ConfigurationError
-from .utils import DotDict
+from .toolkit.utils import DotDict
 from .errors import UserError
 
 
