@@ -61,14 +61,14 @@ jobs:
         paths:
          - dist/rpm/noarch/*.rpm
 
-  0-unit:
+  0-unit-py27:
     docker:
       - image: python:2.7
-        environment:
+        environment: &unit_env
           TERM: linux
           TERMINFO: /etc/terminfo
     working_directory: /home/ubuntu/temboard-agent
-    steps:
+    steps: &unit_steps
       - checkout
       - run: git submodule update --init
       - restore_cache:
@@ -88,6 +88,13 @@ jobs:
           key: temboard-agent-{{ .Branch }}
           paths:
             - "~/.cache/pip/"
+
+  0-unit-py36:
+    docker:
+      - image: python:3.6
+        environment: *unit_env
+    working_directory: /home/ubuntu/temboard-agent
+    steps: *unit_steps
 
   1-func-centos7-pg10:
     docker:
@@ -125,12 +132,13 @@ workflows:
     - 0-doc
     - 0-rpm-centos6
     - 0-rpm-centos7
-    - 0-unit
+    - 0-unit-py27
+    - 0-unit-py36
     - 1-func-centos7-pg10:
-        requires: [0-rpm-centos7, 0-unit]
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg96:
-        requires: [0-rpm-centos7, 0-unit]
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg95:
-        requires: [0-rpm-centos7, 0-unit]
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos6-pg94:
-        requires: [0-rpm-centos6, 0-unit]
+        requires: [0-rpm-centos6, 0-unit-py27]
