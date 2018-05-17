@@ -182,22 +182,26 @@ $(function() {
     $('#divNotif10').html(notif_html);
   }
 
-  var v = new Vue({
+  var alertsView = new Vue({
     el: '#divAlerts',
     data: {
       alerts: [],
+      states: [],
       moment: moment
     }
   });
 
+  /**
+   * Update status and alerts
+   */
   function updateAlerts() {
     $.ajax({
       url: '/server/'+agent_address+'/'+agent_port+'/alerting/alerts.json',
     }).success(function(data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
-      $('#divAlerts div').popover('dispose');
-      v.alerts = data;
+      $('#divAlerts [data-toggle-popover]').popover('dispose');
+      alertsView.alerts = data;
       window.setTimeout(function() {
         $('#divAlerts [data-toggle-popover]').popover({
           placement: 'top',
@@ -209,6 +213,15 @@ $(function() {
           html: true
         });
       }, 1);
+    }).error(function(error) {
+      // FIXME handle error
+      console.error(error);
+    });
+
+    $.ajax({
+      url: '/server/'+agent_address+'/'+agent_port+'/alerting/checks.json',
+    }).success(function(data) {
+      alertsView.states = data;
     }).error(function(error) {
       // FIXME handle error
       console.error(error);

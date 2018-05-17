@@ -134,11 +134,26 @@
     </div>
   </div>
   {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
-  <div class="col-6">
+  <div class="col-6" id="divAlerts">
+    <div class="text-center small">
+      Current status
+    </div>
+    <div class="row small mb-2">
+      <template v-for="state in states">
+        <div class="col-3 col-xxl-2 pb-1">
+          <div v-bind:class="'text-nowrap border-bottom border-' + state.state.toLowerCase()"
+               style="overflow: hidden; text-overflow: ellipsis"
+               v-bind:title="state.description">
+            <i v-bind:class="'fa fa-heart text-' + state.state.toLowerCase()"></i>
+            {{!state.description}}
+          </div>
+        </div>
+      </template>
+    </div>
     <div class="text-center small">
       Last alerts
     </div>
-    <div class="small" id="divAlerts" style="max-height:400px; overflow-y:auto;">
+    <div class="small" style="max-height:400px; overflow-y:auto;">
       <div class="text-center" v-if="alerts.length == 0">
         <div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div>
       </div>
