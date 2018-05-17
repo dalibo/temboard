@@ -12,14 +12,11 @@
   </ol>
   <div class="text-right text-muted small">Auto refresh every 1 min</div>
 
-  {{!moment(start).format()}}
-  {{!moment(end).format()}}
-
   <ul class="list-unstyled">
     <li v-for="key in keys">
       <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
       {{!key.key}}
-      <monitoring-chart check="{{check_name}}" :key_="key.key" :id="'chart' + key.key" :start="start" :end="end"></monitoring-chart>
+      <monitoring-chart check="{{check_name}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
     </li>
   </ul>
 </div>

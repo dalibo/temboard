@@ -4,16 +4,12 @@ $(function() {
   var v = new Vue({
     el: '#check-container',
     data: {
-      keys: null,
-      start: null,
-      end: null
+      keys: null
     },
     watch: {}
   });
 
   function refresh() {
-    v.start = moment().subtract('2', 'hour');
-    v.end = moment();
     $.ajax({
       url: apiUrl + "/states/" + checkName + ".json"
     }).success(function(data) {
@@ -30,67 +26,35 @@ $(function() {
   refresh();
 
   Vue.component('monitoring-chart', {
-    props: ['check', 'key_', 'start', 'end'],
-    data: function() {
-      return {
-        changes: null
-      }
+    props: ['check', 'key_'],
+    mounted: function() {
+      newGraph(this.check, this.key_);
     },
-    methods: {
-      asPercentStartToFirst: function() {
-        if (!this.changes) {
-          return 0;
-        }
-        var firstChange = this.changes[0];
-        var total = this.end - this.start;
-        var fromStart = moment(firstChange.datetime) - this.start;
-        return fromStart / total * 100;
-      },
-      asPercent: function(index) {
-        if (!this.changes) {
-          return 0;
-        }
-        var change = this.changes[index];
-        var total = this.end - this.start;
-        var next = index != this.changes.length - 1 ? moment(this.changes[index + 1].datetime) : this.end;
-        var toNext = next - moment(change.datetime);
-        return toNext / total * 100;
-      }
-    },
-    watch: {
-      start: loadStateChanges
-    },
-    mounted: loadStateChanges,
-    template: `
-      <div>
-        <div class="progress">
-          <div class="progress-bar bg-light"
-              role="progressbar"
-              v-bind:style="'width: ' + asPercentStartToFirst() + '%'"
-              :aria-valuenow="asPercentStartToFirst()"
-              aria-valuemin="0"
-              aria-valuemax="100"></div>
-          <div v-bind:class="'progress-bar bg-' + change.state.toLowerCase()"
-              v-for="(change, index) in changes"
-              role="progressbar"
-              v-bind:style="'width: ' + asPercent(index) + '%'"
-              :aria-valuenow="asPercent(index)"
-              aria-valuemin="0"
-              aria-valuemax="100"></div>
-        </div>
-      </div>
-    `
+    template: '<div class="monitoring-chart"></div>'
   });
 
-  function loadStateChanges() {
-    var self = this;
-    $.ajax({
-      url: apiUrl+"/state_changes/"+ this.check + ".json?key=" + this.key_ + "&start="+timestampToIsoDate(this.start)+"&end="+timestampToIsoDate(this.end)
-    }).success(function(data) {
-      self.changes = data.reverse();
-    }).error(function(error) {
+  function newGraph(check, key) {
+    var startDate = moment().subtract(2, 'hour');
+    var endDate = moment();
 
-    });
+    var defaultOptions = {
+      axisLabelFontSize: 10,
+      yLabelWidth: 14,
+      dateWindow: [
+        new Date(startDate).getTime(),
+        new Date(endDate).getTime()
+      ],
+      xValueParser: function(x) {
+        var m = moment(x);
+        return m.toDate().getTime();
+      },
+    };
+
+    new Dygraph(
+      document.getElementById("chart" + key),
+      apiUrl+"/../monitoring/data/"+ check + "?key=" + key + "&start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate),
+      defaultOptions
+    );
   }
 
   function timestampToIsoDate(epochMs) {
