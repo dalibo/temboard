@@ -1,0 +1,35 @@
+{% extends ../../../templates/base.html %}
+
+{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Monitoring{% end %}
+
+{% block content %}
+
+
+<div id="check-container" v-cloak>
+  <ol class="breadcrumb p-1">
+    <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{check['description']}}</li>
+  </ol>
+  <div class="text-right text-muted small">Auto refresh every 1 min</div>
+
+  {{!moment(start).format()}}
+  {{!moment(end).format()}}
+
+  <ul class="list-unstyled">
+    <li v-for="key in keys">
+      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
+      {{!key.key}}
+      <monitoring-chart check="{{check_name}}" :key_="key.key" :id="'chart' + key.key" :start="start" :end="end"></monitoring-chart>
+    </li>
+  </ul>
+</div>
+<script src="/js/vue.min.js"></script>
+<script src="/js/dygraph.min.js"></script>
+<script src="/js/moment.min.js"></script>
+<script src="/js/monitoring/temboard.check.js"></script>
+<script>
+var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
+var checkName = "{{check_name}}";
+</script>
+
+{% end %}

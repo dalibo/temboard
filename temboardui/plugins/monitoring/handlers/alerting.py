@@ -69,6 +69,54 @@ class AlertingHTMLHandler(BaseHandler):
                        (agent_address, agent_port))
 
 
+class AlertingCheckHTMLHandler(BaseHandler):
+
+    @BaseHandler.catch_errors
+    def get_index(self, agent_address, agent_port, check_name):
+        self.setUp(agent_address, agent_port)
+        xsession = self.get_secure_cookie(
+            "temboard_%s_%s" % (agent_address, agent_port))
+
+        if check_name not in check_specs:
+            raise TemboardUIError(404, "Unknown check '%s'" % check_name)
+
+        # Here we want to get the current agent username if a session
+        # already exists.
+        # Monitoring plugin doesn't require agent authentication since we
+        # already have the data.
+        # Don't fail if there's a session error (for example when the agent
+        # has been restarted)
+        agent_username = None
+        try:
+            if xsession:
+                data_profile = temboard_profile(self.ssl_ca_cert_file,
+                                                agent_address,
+                                                agent_port,
+                                                xsession)
+                agent_username = data_profile['username']
+        except TemboardError:
+            pass
+
+        return HTMLAsyncResult(
+                http_code=200,
+                template_path=self.template_path,
+                template_file='alerting.check.html',
+                data={
+                    'nav': True,
+                    'role': self.role,
+                    'instance': self.instance,
+                    'check_name': check_name,
+                    'check': check_specs[check_name],
+                    'plugin': 'alerting',  # we cheat here
+                    'agent_username': agent_username
+                })
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port, check_name):
+        run_background(self.get_index, self.async_callback,
+                       (agent_address, agent_port, check_name))
+
+
 class AlertingJSONHandler(JsonHandler):
 
     def setUp(self, address, port):
@@ -180,8 +228,12 @@ class AlertingJSONStateChangesHandler(AlertingJSONHandler):
         cur.execute("SET search_path TO monitoring")
         query = """
         COPY (
-            SELECT array_to_json(array_agg(json_build_array(
-                f.datetime, f.state, f.key, f.value, f.warning, f.critical
+            SELECT array_to_json(array_agg(json_build_object(
+                'datetime', f.datetime,
+                'state', f.state,
+                'value', f.value,
+                'warning', f.warning,
+                'critical', f.critical
             ))) FROM get_state_changes(%s, %s, %s, %s, %s, %s) f
         ) TO STDOUT
         """  # noqa

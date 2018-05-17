@@ -8,21 +8,8 @@ $(function() {
     },
     methods: {
       getBorderColor: function(state) {
-        switch(state) {
-        case "WARNING":
-          return 'warning';
-        case "CRTICAL":
-          return 'danger';
-        }
-      },
-      getColor: function(state) {
-        switch(state) {
-        case "OK":
-          return 'success';
-        case "WARNING":
-          return 'warning';
-        case "CRTICAL":
-          return 'danger';
+        if (state != 'OK') {
+          return state.toLowerCase();
         }
       }
     },

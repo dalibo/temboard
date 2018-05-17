@@ -10,10 +10,12 @@
     <div v-bind:class="'card mb-3 w-100 border border-' + getBorderColor(check.state)">
       <div class="card-body p-2">
         <div>
-          <span v-bind:class="'badge badge-' + getColor(check.state)">
-            {{! check.state }}
-          </span>
-          {{! check.description }}
+          <a v-bind:href="'alerting/' + check.name">
+            <span v-bind:class="'badge badge-' + check.state.toLowerCase()">
+              {{! check.state }}
+            </span>
+            {{! check.description }}
+          </a>
         </div>
         <hr class="mt-1 mb-1">
         <ul class="list-unstyled small ml-2 mb-0" style="max-height: 100px; overflow-y: auto;">
