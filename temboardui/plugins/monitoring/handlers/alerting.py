@@ -351,8 +351,12 @@ class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
         cur.execute("SET search_path TO monitoring")
         query = """
         COPY (
-            SELECT array_to_json(array_agg(json_build_array(
-                f.datetime, f.enabled, f.warning, f.critical, f.description
+            SELECT array_to_json(array_agg(json_build_object(
+                'datetime', f.datetime,
+                'enabled', f.enabled,
+                'warning', f.warning,
+                'critical', f.critical,
+                'description', f.description
             ))) FROM get_check_changes(%s, %s, %s, %s, %s) f
         ) TO STDOUT
         """  # noqa

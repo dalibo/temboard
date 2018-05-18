@@ -169,8 +169,27 @@ GET /server/192.168.122.21/2345/alerting/check_changes/cpu_core.json?start=2017-
 
 ```json
 [
-  ["2018-05-09T15:00:02.451555+02:00", true, 70, 80, "CPU usage"],
-  ["2018-05-02T15:05:35.342568+02:00", true, 50, 80, "CPU usage"]
+    {
+        "datetime": "2017-01-01T00:00:00+02:00",
+        "enabled": true,
+        "warning": 70,
+        "critical": 80,
+        "description": "CPU Usage"
+    },
+    {
+        "datetime": "2018-05-02T15:05:35.342568+02:00",
+        "enabled": true,
+        "warning": 50,
+        "critical": 80,
+        "description": "CPU Usage"
+    },
+    {
+        "datetime": "2018-05-10T00:00:00+02:00",
+        "enabled": true,
+        "warning": 50,
+        "critical": 80,
+        "description": "CPU Usage"
+    }
 ]
 ```
 
