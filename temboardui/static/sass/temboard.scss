@@ -328,6 +328,22 @@ table.table-activity {
 .monitoring-chart {
   width: 100%;
   height: 300px;
+
+  .alert-ok,
+  .alert-warning,
+  .alert-critical {
+    border: 0;
+    background-color: transparent;
+  }
+  .alert-ok {
+    color: $success !important;
+  }
+  .alert-warning {
+    color: $warning !important;
+  }
+  .alert-critical {
+    color: $danger !important;
+  }
 }
 
 .legend-chart, .visibility-chart {
