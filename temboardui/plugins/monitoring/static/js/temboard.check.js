@@ -49,9 +49,18 @@ $(function() {
         var m = moment(x);
         return m.toDate().getTime();
       },
+      connectSeparatedPoints: true,
+      series: {
+        warning: {
+          stepPlot: true
+        },
+        critical: {
+          stepPlot: true
+        }
+      }
       // since we show only one key at a time we actually
       // want the series to be stacked
-      stackedGraph: true
+      //stackedGraph: true
     };
 
     var chart = new Dygraph(
@@ -61,6 +70,54 @@ $(function() {
     );
     chart.ready(function(chart) {
       loadAlerts.call(chart, check, key);
+      loadThresholds.call(chart, check);
+    });
+  }
+
+  /**
+   * Load threshold changes
+   * `this` correspond to the chart
+   *
+   * Arguments:
+   *  - check: the monitoring check (ex: cpu_core)
+   */
+  function loadThresholds(check) {
+    var chart = this;
+    var labels = chart.getLabels();
+    // number of series (we also exclude date)
+    var seriesCount = labels.length - 1;
+    var newData = chart.rawData_;
+    newData.forEach(function(item, index) {
+      item[0] = new Date(item[0]);
+      item = item.concat([null, null]);
+      newData[index] = item;
+    });
+
+    $.ajax({
+      url: apiUrl+"/check_changes/" + check + ".json?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+    }).success(function(data) {
+      data.forEach(function(item) {
+        var datum = [new Date(item.datetime)];
+        // add null values in place of series
+        datum = datum.concat(initArray(seriesCount, null));
+        // then add the threshold data
+        datum = datum.concat([item.warning, item.critical]);
+        newData.push(datum);
+      });
+
+      // sort
+      newData.sort(function(a, b) {
+        return a[0] - b[0];
+      });
+
+      labels = labels.concat(['warning', 'critical']);
+      chart.updateOptions({
+        file: newData,
+        labels: labels,
+        colors: chart.getColors().concat(['orange', 'red'])
+      });
+    }).error(function(error) {
+      console.log (error);
     });
   }
 
@@ -144,5 +201,10 @@ $(function() {
   function timestampToIsoDate(epochMs) {
     var ndate = new Date(epochMs);
     return ndate.toISOString();
+  }
+
+  function initArray(n, v) {
+    var arr = Array.apply(null, Array(n));
+    return arr.map(function() { return v; });
   }
 });
