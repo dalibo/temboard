@@ -26,6 +26,15 @@
             {{!key.key}}
           </li>
         </ul>
+        <hr class="mt-1 mb-1">
+        <div>
+          <ul class="list-inline small text-muted mb-0">
+            <li v-if="check.enabled" class="list-inline-item">Enabled: <i class="fa fa-check"></i></li>
+            <li v-if="!check.enabled" class="list-inline-item">Disabled</li>
+            <li class="list-inline-item">Warning: {{! check.warning }}</li>
+            <li class="list-inline-item">Critical: {{! check.critical }}</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
