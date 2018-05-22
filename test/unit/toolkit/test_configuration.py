@@ -27,7 +27,7 @@ def test_spec_lifetime(mocker):
 
     config = MergedConfiguration()
 
-    environ = dict(TEMBOARD_MY_OPT='__ERROR__')
+    environ = dict(TEMBOARD_MY_OPT=b'__ERROR__')
 
     # Start with an empty configuration, nothing is loaded.
     config.load(environ=environ)
@@ -166,9 +166,11 @@ def test_pwd_denied(mocker):
 def test_required():
     from temboardagent.toolkit.configuration import (
         MergedConfiguration, OptionSpec, UserError,
+        iter_defaults,
     )
 
     spec = OptionSpec('section', 'req', default=OptionSpec.REQUIRED)
     config = MergedConfiguration(specs=[spec])
+    assert not list(iter_defaults(config.specs))
     with pytest.raises(UserError):
         config.check_required()
