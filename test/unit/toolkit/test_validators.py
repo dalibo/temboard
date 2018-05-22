@@ -90,6 +90,13 @@ def test_logmethod():
         v.logmethod('pouet')
 
 
+def test_syslog_facility():
+    assert 'local0' == v.syslogfacility('local0')
+
+    with pytest.raises(ValueError):
+        v.syslogfacility('pouet')
+
+
 def test_port():
     assert 8080 == v.port('8080')
 
@@ -101,3 +108,9 @@ def test_port():
 
     with pytest.raises(ValueError):
         v.port('pouet')
+
+
+def test_quoted():
+    assert 'double-quoted' == v.quoted('"double-quoted"')
+    assert 'single-quoted' == v.quoted("'single-quoted'")
+    assert '"not quoted' == v.quoted('"not quoted')
