@@ -188,6 +188,14 @@ $(function() {
       alerts: [],
       states: [],
       moment: moment
+    },
+    methods: {
+      getBorderColor: function(state) {
+        if (state != 'OK') {
+          return 'border border-2 border-' + state.toLowerCase();
+        }
+        return 'border border-light';
+      }
     }
   });
 

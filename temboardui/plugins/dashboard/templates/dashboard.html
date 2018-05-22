@@ -143,12 +143,20 @@
     </div>
     <div class="row small mb-2">
       <template v-for="state in states">
-        <div class="col-3 col-xxl-2 pb-1">
-          <div v-bind:class="'text-nowrap border-bottom border-' + state.state.toLowerCase()"
-               style="overflow: hidden; text-overflow: ellipsis"
-               v-bind:title="state.description">
-            <i v-bind:class="'fa fa-heart text-' + state.state.toLowerCase()"></i>
-            {{!state.description}}
+        <div class="col-3 col-xxl-2 p-1 text-center">
+          <div v-bind:class="'p-1 rounded ' + getBorderColor(state.state)">
+            <a v-bind:href="'alerting/' + state.name">
+              <div class="text-nowrap font-weight-bold"
+                   style="overflow: hidden; text-overflow: ellipsis"
+                   v-bind:title="state.description">
+                {{!state.description}}
+              </div>
+              <div class="text-center">
+                <span v-bind:class="'text-' + state.state.toLowerCase()">
+                  <i class="fa fa-heart"></i>
+                </span>
+              </div>
+            </a>
           </div>
         </div>
       </template>
@@ -156,7 +164,7 @@
     <div class="text-center small">
       Last alerts
     </div>
-    <div class="small" style="max-height:400px; overflow-y:auto;">
+    <div class="small" style="max-height:300px; overflow-y:auto;">
       <div class="text-center" v-if="alerts.length == 0">
         <div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div>
       </div>
@@ -168,17 +176,23 @@
                 {{!moment(alert.datetime).fromNow()}}<br>
               </div>
               <div>
-                <span class="font-weight-bold">
+                <a v-bind:href="'alerting/' + alert.name">
+                <span v-bind:class="'small text-' + alert.state.toLowerCase()">
+                  <i class="fa fa-heart"></i>
+                </span>
+                <span>
                   {{!alert.description}}
                 </span>
                 <span v-if="alert.key">
                   -
                   {{!alert.key}}
                 </span>
+                </a>
               </div>
-              <div v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{!alert.state}}</div>
               <div class="popover-content text-muted d-none" v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'">
                 {{!moment(alert.datetime).format()}}<br>
+                <span v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{! alert.state }}</span>
+                <br>
                 <span class="font-weight-bold">
                   {{!alert.value}}
                 </span>
