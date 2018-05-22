@@ -207,4 +207,61 @@ $(function() {
     var arr = Array.apply(null, Array(n));
     return arr.map(function() { return v; });
   }
+
+  $('#submitFormUpdateCheck').click(function() {
+    $('#updateForm').submit();
+  });
+
+  $('#updateForm').submit(function(event) {
+    event.preventDefault();
+    updateCheck();
+  });
+
+  function updateCheck() {
+    $.ajax({
+      url: apiUrl + "/checks.json",
+      method: 'post',
+      dataType: "json",
+      beforeSend: showWaiter,
+      data: JSON.stringify({
+        checks: [{
+          name: checkName,
+          description: $('#descriptionInput').val(),
+          warning: parseFloat($('#warningThresholdInput').val()),
+          critical: parseFloat($('#criticalThresholdInput').val()),
+          enabled: $('#enabledInput').is(':checked')
+        }]
+      })
+    }).success(function() {
+      $('#modalInfo').html('');
+      hideWaiter();
+      window.location.reload();
+    }).error(function(xhr) {
+      hideWaiter();
+      $('#modalInfo').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
+    });
+  }
+
+  var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': '&quot;',
+    "'": '&#39;',
+    "/": '&#x2F;'
+  };
+
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'\/]/g, function (s) {
+      return entityMap[s];
+    });
+  }
+
+  function showWaiter() {
+    $('#updateModal .loader').removeClass('d-none');
+  }
+
+  function hideWaiter() {
+    $('#updateModal .loader').addClass('d-none');
+  }
 });

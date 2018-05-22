@@ -10,13 +10,73 @@
     <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{check['description']}}</li>
   </ol>
+  <div>
+    <div class="float-right">
+    </div>
+    <ul class="list-inline small text-muted mb-0">
+      {% if check['enabled'] %}
+      <li class="list-inline-item">Enabled: <i class="fa fa-check"></i></li>
+      {% else %}
+      <li class="list-inline-item">Disabled</li>
+      {% end %}
+      <li class="list-inline-item">Warning: {{ check['warning'] }}</li>
+      <li class="list-inline-item">Critical: {{ check['critical'] }}</li>
+      <li class="list-inline-item">
+        <a data-toggle="modal" data-target="#updateModal" href>
+        Edit
+        </a>
+      </li>
+    </ul>
+
+    <!-- Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateModalLabel">Edit alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="modalInfo"></div>
+            <form id="updateForm">
+              <div class="form-group">
+                <label for="descriptionInput">Name</label>
+                <input type="text" class="form-control" id="descriptionInput" value="{{ check['description'] }}">
+              </div>
+              <hr>
+
+              <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="enabledInput" {% if check['enabled'] %}checked{% end %}>
+                <label class="form-check-label" for="enabledInput">Enabled</label>
+              </div>
+              <div class="form-group">
+                <label for="warningThresholdInput">Warning threshold</label>
+                <input type="text" class="form-control" id="warningThresholdInput" value="{{ check['warning'] }}">
+              </div>
+              <div class="form-group">
+                <label for="criticalThresholdInput">Critical threshold</label>
+                <input type="text" class="form-control" id="criticalThresholdInput" value="{{ check['critical'] }}">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <i class="fa fa-spinner fa-spin loader d-none"></i>
+            <button type="submit" id="submitFormUpdateCheck" class="btn btn-success ml-auto">Save</button>
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="text-right text-muted small">Auto refresh every 1 min</div>
 
   <ul class="list-unstyled">
     <li v-for="key in keys">
       <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
       {{!key.key}}
-      <monitoring-chart check="{{check_name}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
+      <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
     </li>
   </ul>
 </div>
@@ -26,7 +86,7 @@
 <script src="/js/monitoring/temboard.check.js"></script>
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
-var checkName = "{{check_name}}";
+var checkName = "{{check['name']}}";
 </script>
 
 {% end %}

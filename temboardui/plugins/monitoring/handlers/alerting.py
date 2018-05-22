@@ -97,6 +97,25 @@ class AlertingCheckHTMLHandler(BaseHandler):
         except TemboardError:
             pass
 
+        # Find host_id & instance_id
+        self.host_id = get_host_id(self.db_session, self.instance.hostname)
+        self.instance_id = get_instance_id(self.db_session, self.host_id,
+                                           self.instance.pg_port)
+
+        query = """
+        SELECT *
+        FROM monitoring.checks
+        WHERE host_id = :host_id
+          AND instance_id = :instance_id
+          AND name = :check_name
+        """
+        res = self.db_session.execute(
+            query,
+            dict(host_id=self.host_id,
+                 instance_id=self.instance_id,
+                 check_name=check_name))
+        check = res.fetchone()
+
         return HTMLAsyncResult(
                 http_code=200,
                 template_path=self.template_path,
@@ -105,8 +124,7 @@ class AlertingCheckHTMLHandler(BaseHandler):
                     'nav': True,
                     'role': self.role,
                     'instance': self.instance,
-                    'check_name': check_name,
-                    'check': check_specs[check_name],
+                    'check': check,
                     'plugin': 'alerting',  # we cheat here
                     'agent_username': agent_username
                 })
