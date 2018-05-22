@@ -82,9 +82,9 @@ def port(raw):
 def loglevel(raw):
     raw = raw.upper()
     levelnames = list()
-    if hasattr(logging, '_levelNames'):
+    if hasattr(logging, '_levelNames'):  # pragma: nocover_py3
         levelnames = logging._levelNames
-    elif hasattr(logging, '_nameToLevel'):
+    elif hasattr(logging, '_nameToLevel'):  # pragma: nocover_py2
         levelnames = logging._nameToLevel
     if raw not in levelnames:
         raise ValueError('unkown log level')
