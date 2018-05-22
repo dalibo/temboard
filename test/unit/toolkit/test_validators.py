@@ -6,7 +6,7 @@ import os.path
 
 import pytest
 
-from temboardagent import validators as v
+from temboardagent.toolkit import validators as v
 
 
 def test_address():
@@ -34,12 +34,19 @@ def test_boolean():
 
 
 def test_directory(mocker):
-    access = mocker.patch('temboardagent.validators.os.access')
+    access = mocker.patch('temboardagent.toolkit.validators.os.access')
+    isdir = mocker.patch('temboardagent.toolkit.validators.os.path.isdir')
 
     access.return_value = True
+    isdir.return_value = True
     assert v.writeabledir(os.path.dirname(__file__))
 
     access.return_value = False
+    with pytest.raises(ValueError):
+        v.writeabledir('/usr')
+
+    access.return_value = True
+    isdir.return_value = False
     with pytest.raises(ValueError):
         v.writeabledir('/usr')
 
@@ -64,6 +71,10 @@ def test_jsonlist():
         v.jsonlist('["!"]')
 
 
+def test_commalist():
+    assert ['a', 'b'] == v.commalist('a,,b')
+
+
 def test_loglevel():
     assert 'DEBUG' == v.loglevel('DEBUG')
     assert 'INFO' == v.loglevel('info')
@@ -79,6 +90,13 @@ def test_logmethod():
         v.logmethod('pouet')
 
 
+def test_syslog_facility():
+    assert 'local0' == v.syslogfacility('local0')
+
+    with pytest.raises(ValueError):
+        v.syslogfacility('pouet')
+
+
 def test_port():
     assert 8080 == v.port('8080')
 
@@ -90,3 +108,9 @@ def test_port():
 
     with pytest.raises(ValueError):
         v.port('pouet')
+
+
+def test_quoted():
+    assert 'double-quoted' == v.quoted('"double-quoted"')
+    assert 'single-quoted' == v.quoted("'single-quoted'")
+    assert '"not quoted' == v.quoted('"not quoted')

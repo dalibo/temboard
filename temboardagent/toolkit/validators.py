@@ -15,7 +15,7 @@ import re
 from distutils.util import strtobool
 from logging.handlers import SysLogHandler
 
-from .toolkit.log import HANDLERS as LOG_METHODS
+from .log import HANDLERS as LOG_METHODS
 
 
 _address_re = re.compile(
@@ -82,9 +82,9 @@ def port(raw):
 def loglevel(raw):
     raw = raw.upper()
     levelnames = list()
-    if hasattr(logging, '_levelNames'):
+    if hasattr(logging, '_levelNames'):  # pragma: nocover_py3
         levelnames = logging._levelNames
-    elif hasattr(logging, '_nameToLevel'):
+    elif hasattr(logging, '_nameToLevel'):  # pragma: nocover_py2
         levelnames = logging._nameToLevel
     if raw not in levelnames:
         raise ValueError('unkown log level')
@@ -110,8 +110,8 @@ def writeabledir(raw):
     return raw
 
 
-def list_(raw):
-    return [w.strip() for w in raw.split(',') if len(w.strip())]
+def commalist(raw):
+    return list(filter(None, [w.strip() for w in raw.split(',')]))
 
 
 def quoted(raw):

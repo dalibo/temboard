@@ -10,7 +10,7 @@ from temboardagent.command import (
     exec_script,
 )
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.validators import quoted
+from temboardagent.toolkit.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 
 from . import functions as admin_functions

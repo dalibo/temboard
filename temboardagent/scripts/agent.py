@@ -17,7 +17,7 @@ from ..httpd import HTTPDService
 from ..routing import Router
 from ..services import Service, ServicesManager
 from ..queue import purge_queue_dir
-from .. import validators as v
+from ..toolkit import validators as v
 
 
 logger = logging.getLogger('temboardagent.scripts.agent')
