@@ -9,7 +9,7 @@ from temboardagent.command import (
     oneline_cmd_to_array,
     exec_script,
 )
-from temboardagent.configuration import OptionSpec
+from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 

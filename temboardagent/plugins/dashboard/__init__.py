@@ -3,7 +3,7 @@ import json
 import os
 
 from temboardagent.scheduler import taskmanager
-from temboardagent.configuration import OptionSpec
+from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.routing import RouteSet
 from temboardagent.queue import Queue, Message
 from temboardagent.errors import UserError

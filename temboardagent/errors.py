@@ -1,7 +1,10 @@
-class UserError(Exception):
-    def __init__(self, message, retcode=1):
-        super(UserError, self).__init__(message)
-        self.retcode = retcode
+from .toolkit.errors import UserError
+
+__all__ = ['UserError']
+
+
+class ConfigurationError(UserError):
+    pass
 
 
 class HTTPError(Exception):
@@ -10,10 +13,6 @@ class HTTPError(Exception):
         Exception.__init__(self, message)
         self.code = code
         self.message = {'error': str(message)}
-
-
-class ConfigurationError(UserError):
-    pass
 
 
 class SharedItem_not_found(Exception):
