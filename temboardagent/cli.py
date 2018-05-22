@@ -28,7 +28,7 @@ from .postgres import Postgres
 from .toolkit.configuration import MergedConfiguration, OptionSpec
 from .toolkit.log import setup_logging
 from .errors import UserError
-from . import validators as v
+from .toolkit import validators as v
 from .version import __version__
 
 logger = logging.getLogger(__name__)

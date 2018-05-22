@@ -10,7 +10,7 @@ except ImportError:
 from temboardagent.scheduler import taskmanager
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.validators import file_, list_
+from temboardagent.toolkit.validators import file_, list_
 from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
