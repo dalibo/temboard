@@ -70,15 +70,15 @@
       </div>
     </div>
   </div>
-  <div class="text-right text-muted small">Auto refresh every 1 min</div>
 
-  <ul class="list-unstyled">
-    <li v-for="key in keys">
+  <div v-for="key in keys">
+    <div class="text-center">
       <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
-      {{!key.key}}
-      <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
-    </li>
-  </ul>
+      <span v-if="key.key != ''">{{!key.key}}</span>
+      <span v-if="key.key == ''">{{check['name']}}</span>
+    </div>
+    <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
+  </div>
 </div>
 <script src="/js/vue.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
