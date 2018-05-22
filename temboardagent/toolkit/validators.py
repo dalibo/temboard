@@ -110,8 +110,8 @@ def writeabledir(raw):
     return raw
 
 
-def list_(raw):
-    return [w.strip() for w in raw.split(',') if len(w.strip())]
+def commalist(raw):
+    return list(filter(None, [w.strip() for w in raw.split(',')]))
 
 
 def quoted(raw):

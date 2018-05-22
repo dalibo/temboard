@@ -10,7 +10,7 @@ except ImportError:
 from temboardagent.scheduler import taskmanager
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.toolkit.validators import file_, list_
+from temboardagent.toolkit.validators import file_, commalist
 from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
@@ -241,9 +241,9 @@ class MonitoringPlugin(object):
     PG_MIN_VERSION = 90400
     s = 'monitoring'
     option_specs = [
-        OptionSpec(s, 'dbnames', default='*', validator=list_),
+        OptionSpec(s, 'dbnames', default='*', validator=commalist),
         OptionSpec(s, 'scheduler_interval', default=60, validator=int),
-        OptionSpec(s, 'probes', default='*', validator=list_),
+        OptionSpec(s, 'probes', default='*', validator=commalist),
         OptionSpec(s, 'collector_url', default=OptionSpec.REQUIRED),
         OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
     ]

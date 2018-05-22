@@ -71,6 +71,10 @@ def test_jsonlist():
         v.jsonlist('["!"]')
 
 
+def test_commalist():
+    assert ['a', 'b'] == v.commalist('a,,b')
+
+
 def test_loglevel():
     assert 'DEBUG' == v.loglevel('DEBUG')
     assert 'INFO' == v.loglevel('info')
