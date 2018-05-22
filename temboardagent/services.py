@@ -10,7 +10,6 @@ from time import sleep
 import sys
 
 from .errors import UserError
-from .utils import setproctitle
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,7 @@ class Service(object):
     # service is responsible to duplicate signals to children with
     # ServicesManager.
 
-    def __init__(self, app, name=None, services=None):
+    def __init__(self, app, name=None, services=None, setproctitle=None):
         self.app = app
         self.name = name
         # Must be None for children or ServicesManager instance for main
@@ -34,6 +33,7 @@ class Service(object):
         # Tells whether this service is run in this process. Must be updated in
         # parent process once the service is forked.
         self.is_my_process = True
+        self.setproctitle = setproctitle
 
     def __unicode__(self):
         return self.name
@@ -77,7 +77,8 @@ class Service(object):
 
     def run(self):
         if self.name:
-            setproctitle('temboard-agent: %s' % self.name)
+            if self.setproctitle:
+                self.setproctitle(self.name)
             logger.info("Starting %s.", self.name)
 
         self.setup()

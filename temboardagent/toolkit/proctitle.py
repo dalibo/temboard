@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def compute_main_module_name(mod):
-    # Fix __main__ module to find it's importable name
+    # Fix __main__ module to find its importable name.
 
     if mod.__name__ == '__main__':
         dir_, file_ = mod.__file__.rsplit('/', 1)
@@ -61,14 +61,27 @@ def get_argv_memory():
     return address, size
 
 
-def setproctitle(title):
-    # cf. https://chromium.googlesource.com/infra/infra/+/69eb0279c12bcede5937ce9298020dd4581e38dd%5E!/
-    address, size = get_argv_memory()
-    logger.debug("argv is at %#x, len=%d.", ctypes.addressof(address), size)
-    title = title.encode('utf-8')
-    # Truncate title to fit in argv memory segment.
-    title = title[:size - 1]
-    # Pad argv with NULL
-    title = title.ljust(size, b'\0')
-    # Overwrite argv segment with proc title
-    libc.memcpy(address, title, size)
+class ProcTitleManager(object):
+    def __init__(self, prefix):
+        self.prefix = prefix
+        self.address = self.size = None
+
+    def setup(self):
+        self.address, self.size = get_argv_memory()
+        logger.debug(
+            "argv is at %#x, len=%d.",
+            ctypes.addressof(self.address), self.size)
+
+    def settitle(self, title):
+        # cf. https://chromium.googlesource.com/infra/infra/+/69eb0279c12bcede5937ce9298020dd4581e38dd%5E!/
+        title = self.prefix + title
+        title = title.encode('utf-8')
+        # Truncate title to fit in argv memory segment.
+        title = title[:self.size - 1]
+        # Pad argv with NULL
+        title = title.ljust(self.size, b'\0')
+        # Overwrite argv segment with proc title
+        libc.memcpy(self.address, title, self.size)
+
+    def __call__(self, title):
+        return self.settitle(title)
