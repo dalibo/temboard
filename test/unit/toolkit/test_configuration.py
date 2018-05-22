@@ -4,7 +4,7 @@ import pytest
 
 
 def test_spec_and_value():
-    from temboardagent.configuration import OptionSpec, Value
+    from temboardagent.toolkit.configuration import OptionSpec, Value
 
     spec = OptionSpec(section='temboard', name='verbose', default=False)
     assert repr(spec)
@@ -16,7 +16,7 @@ def test_spec_and_value():
 
 
 def test_spec_lifetime(mocker):
-    from temboardagent.configuration import (
+    from temboardagent.toolkit.configuration import (
         OptionSpec, MergedConfiguration, UserError,
     )
 
@@ -59,7 +59,7 @@ def test_spec_lifetime(mocker):
 
 
 def test_remove_specs():
-    from temboardagent.configuration import (
+    from temboardagent.toolkit.configuration import (
         OptionSpec, MergedConfiguration
     )
 
@@ -91,10 +91,12 @@ def test_remove_specs():
 
 
 def test_load(mocker):
-    mocker.patch('temboardagent.configuration.os.chdir')
+    mocker.patch('temboardagent.toolkit.configuration.os.chdir')
 
     from argparse import Namespace
-    from temboardagent.configuration import OptionSpec, MergedConfiguration
+    from temboardagent.toolkit.configuration import (
+        OptionSpec, MergedConfiguration,
+    )
     from temboardagent.cli import configparser
 
     s = 'temboard'
@@ -132,7 +134,7 @@ def test_load(mocker):
 
 
 def test_load_configparser():
-    from temboardagent.configuration import iter_configparser_values
+    from temboardagent.toolkit.configuration import iter_configparser_values
     from temboardagent.cli import configparser
 
     parser = configparser.RawConfigParser()
@@ -148,10 +150,11 @@ def test_load_configparser():
 
 
 def test_pwd_denied(mocker):
-    mocker.patch('temboardagent.configuration.iter_configparser_values')
-    cd = mocker.patch('temboardagent.configuration.os.chdir')
+    mod = 'temboardagent.toolkit.configuration'
+    mocker.patch(mod + '.iter_configparser_values')
+    cd = mocker.patch(mod + '.os.chdir')
 
-    from temboardagent.configuration import MergedConfiguration
+    from temboardagent.toolkit.configuration import MergedConfiguration
 
     config = MergedConfiguration()
     config.temboard = dict(configfile='pouet')
@@ -161,11 +164,11 @@ def test_pwd_denied(mocker):
 
 
 def test_required():
-    from temboardagent.configuration import (
-        ConfigurationError, MergedConfiguration, OptionSpec,
+    from temboardagent.toolkit.configuration import (
+        MergedConfiguration, OptionSpec, UserError,
     )
 
     spec = OptionSpec('section', 'req', default=OptionSpec.REQUIRED)
     config = MergedConfiguration(specs=[spec])
-    with pytest.raises(ConfigurationError):
+    with pytest.raises(UserError):
         config.check_required()

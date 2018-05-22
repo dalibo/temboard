@@ -25,9 +25,9 @@ except ImportError:
         logger.warn("Restart temboard-agent if you it can't find new plugins.")
 
 from .postgres import Postgres
+from .toolkit.configuration import MergedConfiguration, OptionSpec
 from .toolkit.log import setup_logging
 from .errors import UserError
-from .configuration import MergedConfiguration, OptionSpec
 from . import validators as v
 from .version import __version__
 

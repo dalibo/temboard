@@ -11,7 +11,7 @@ from ..scheduler import taskmanager
 
 from ..cli import Application
 from ..cli import cli, define_core_arguments
-from ..configuration import OptionSpec
+from ..toolkit.configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
 from ..routing import Router

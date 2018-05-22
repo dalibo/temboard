@@ -1,19 +1,14 @@
+# The configuration API merges args, file, environment and defaults safely,
+# even when reloading.
+
 import logging
 import os
 
-from temboardagent.errors import ConfigurationError
-from .toolkit.utils import DotDict
+from .utils import DotDict
 from .errors import UserError
 
 
 logger = logging.getLogger(__name__)
-
-
-# The configuration API merges args, file, environment and defaults safely,
-# even when reloading.
-#
-# The API must be very simple, IoC-free. Implementation must be highly testable
-# and tested.
 
 
 class OptionSpec(object):
@@ -169,7 +164,7 @@ class MergedConfiguration(DotDict):
             spec = self.specs[name]
             if spec.required:
                 msg = "Missing %s:%s configuration" % (spec.section, spec.name)
-                raise ConfigurationError(msg)
+                raise UserError(msg)
 
     def load(self, args=None, environ=None, parser=None, pwd=None,
              reload_=False):
