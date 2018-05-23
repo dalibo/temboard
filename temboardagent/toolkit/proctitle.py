@@ -16,6 +16,8 @@
 # Finding the actual address and size of argv is tricky. Once the memory chunk
 # is located, we can just write process title in it and pad it with \0.
 
+from __future__ import print_function
+
 import ctypes
 import logging
 import sys
@@ -177,3 +179,25 @@ class ProcTitleManager(object):
 
     def __call__(self, title):
         return self.settitle(title)
+
+
+if '__main__' == __name__:  # pragma: nocover
+    logging.basicConfig(level=logging.DEBUG)
+    setproctitle = ProcTitleManager(prefix='temboard-process: ')
+    setproctitle.setup()
+    setproctitle('test process')
+    with open('/proc/self/cmdline') as fo:
+        cmdline = fo.read()
+    logger.debug('/proc/self/cmdline is %r', cmdline)
+    wanted = 'temboard-process: test process'
+    assert wanted in cmdline
+
+    if os.environ.get('WAIT'):
+        logger.debug("Process title should be %r", wanted)
+        print("Hit RET to terminate.", file=sys.stderr, end='')
+        if PY3:
+            input()
+        else:
+            raw_input()
+
+    logger.info("OK")

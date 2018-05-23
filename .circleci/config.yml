@@ -82,6 +82,7 @@ jobs:
             pip install --upgrade --requirement requirement-ci.txt --editable .
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboard-agent/
+            python -m temboardagent.toolkit.proctitle
             pytest test/unit/
             codecov
       - save_cache:
