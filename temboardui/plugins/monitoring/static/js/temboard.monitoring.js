@@ -1,4 +1,4 @@
-/* global apiUrl, dateMath, rangeUtils, moment, Vue, Dygraph */
+/* global apiUrl, dateMath, moment, Vue, Dygraph */
 $(function() {
   var colors = {
     blue: "#5DA5DA",
@@ -17,23 +17,11 @@ $(function() {
    */
   var refreshTimeoutId;
   var refreshInterval = 60 * 1000;
-  var fromPicker;
-  var toPicker;
   var p = getHashParams();
   var start = p.start || 'now-24h';
   var end = p.end || 'now';
   start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
   end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
-
-  var fromDate;
-  var toDate;
-
-  var pickerOptions = {
-    singleDatePicker: true,
-    timePicker: true,
-    timePicker24Hour: true,
-    timePickerSeconds: false
-  };
 
   var metrics = {
     "Loadavg": {
@@ -243,14 +231,21 @@ $(function() {
   };
 
   Vue.component('monitoring-chart', {
-    props: ['graph'],
+    props: ['graph', 'from', 'to'],
     mounted: function() {
-      newGraph(this.graph);
+      createOrUpdateChart.call(this, true);
     },
     watch: {
       graph: function() {
         // recreate the chart if metric changes
-        newGraph(this.graph);
+        createOrUpdateChart.call(this, true);
+      },
+      // only one watcher for from + to
+      fromTo: createOrUpdateChart
+    },
+    computed: {
+      fromTo: function() {
+        return this.from, this.to, new Date();
       }
     },
     template: '<div class="monitoring-chart"></div>'
@@ -301,6 +296,10 @@ $(function() {
     data: {
       // each graph is an Object with id and chart properties
       graphs: [],
+      from: null,
+      to: null,
+      fromDate: null,
+      toDate: null,
       metrics: metrics,
       themes: [{
         title: 'Performance',
@@ -319,22 +318,31 @@ $(function() {
       selectAll: selectAll,
       unselectAll: unselectAll,
       removeGraph: removeGraph,
-      loadGraphs: loadGraphs
+      loadGraphs: loadGraphs,
+      onPickerUpdate: onPickerUpdate
+    },
+    computed: {
+      fromTo: function() {
+        return this.from, this.to, new Date();
+      }
     },
     watch: {
       graphs: function(val) {
         localStorage.setItem('graphs', JSON.stringify(val.map(function(item) {return item.id;})));
+      },
+      fromTo: function() {
+        window.location.hash = 'start=' + v.from + '&end=' + v.to;
       }
     }
   });
 
   v.loadGraphs(JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
 
-  function newGraph(graph) {
-    var id = graph.id;
+  function createOrUpdateChart(create) {
+    var id = this.graph.id;
 
-    var startDate = dateMath.parse(rangePickerVue.from);
-    var endDate = dateMath.parse(rangePickerVue.to, true);
+    var startDate = dateMath.parse(v.fromDate);
+    var endDate = dateMath.parse(v.toDate, true);
 
     var defaultOptions = {
       axisLabelFontSize: 10,
@@ -391,7 +399,7 @@ $(function() {
             Dygraph.endPan(event, g, context);
             var dates = g.dateWindow_;
             // synchronize charts on pan end
-            synchronizeZoom(dates[0], dates[1]);
+            onChartZoom(dates[0], dates[1]);
           } else if (context.isZooming) {
             Dygraph.endZoom(event, g, context);
             // don't do the same since zoom is animated
@@ -404,11 +412,24 @@ $(function() {
     for (var attrname in metrics[id].options) {
       defaultOptions[attrname] = metrics[id].options[attrname];
     }
-    graph.chart = new Dygraph(
-      document.getElementById("chart"+id),
-      apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
-      defaultOptions
-    );
+    if (!this.graph.chart || create) {
+      this.graph.chart = new Dygraph(
+        document.getElementById("chart"+id),
+        apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
+        defaultOptions
+      );
+    } else {
+      this.graph.chart.ready(function() {
+        // update the date range
+        this.graph.chart.updateOptions({
+          dateWindow: [startDate, endDate]
+        });
+        // load the data for the given range
+        this.graph.chart.updateOptions({
+          file: apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+        }, false);
+      }.bind(this));
+    }
   }
 
   function timestampToIsoDate(epochMs) {
@@ -456,137 +477,27 @@ $(function() {
   }
 
   function onChartZoom(min, max) {
-    rangePickerVue.from = moment(min);
-    rangePickerVue.to = moment(max);
-    rangePickerVue.editRawFrom = rangePickerVue.from.clone();
-    rangePickerVue.editRawTo = rangePickerVue.to.clone();
+    v.from = moment(min);
+    v.to = moment(max);
     refreshDates();
   }
 
-  function synchronizeZoom(startDate, endDate, silent) {
-    if (!silent) {
-      // update picker
-      rangePickerVue.from = moment(startDate);
-      rangePickerVue.to = moment(endDate);
-      rangePickerVue.editRawFrom = rangePickerVue.from.clone();
-      rangePickerVue.editRawTo = rangePickerVue.to.clone();
-    }
-
-    v.graphs.forEach(function(graph) {
-      var id = graph.id;
-      var chart = graph.chart;
-      if (!chart) {
-        return;
-      }
-      // update the date range
-      chart.updateOptions({
-        dateWindow: [startDate, endDate]
-      });
-      // load the date for the given range
-      chart.updateOptions({
-        file: apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
-      }, false);
-    });
-  }
-
-  var rangePickerVue = new Vue({
-    el: '#daterange',
-    data: {
-      ranges: rangeUtils.getRelativeTimesList(),
-      rangeString: function() {
-        return rangeUtils.describeTimeRange({from: this.from, to: this.to});
-      },
-      from: start,
-      to: end,
-      editRawFrom: null,
-      editRawTo: null,
-      isPickerOpen: false
-    },
-    computed: {
-      autoRefresh: function() {
-        return this.from.toString().indexOf('now') != -1 ||
-          this.to.toString().indexOf('now') != -1;
-      }
-    },
-    methods: {
-      loadRangeShortcut: loadRangeShortcut,
-      describeTimeRange: rangeUtils.describeTimeRange,
-      showHidePicker: showHidePicker,
-      pickerApply: pickerApply
-    }
-  });
-
-  function loadRangeShortcut(range) {
-    this.from = this.editRawFrom = range.from;
-    this.to = this.editRawTo = range.to;
-    this.isPickerOpen = false;
-    refreshDates();
-  }
-
-  function showHidePicker() {
-    // Make sure input values correspond to current from/to
-    // especially when not applying picked dates
-    this.editRawFrom = this.from;
-    this.editRawTo = this.to;
-    this.isPickerOpen = !this.isPickerOpen;
-  }
-
-  function pickerApply() {
-    this.from = this.editRawFrom;
-    this.to = this.editRawTo;
-    this.isPickerOpen = false;
+  function onPickerUpdate(from, to) {
+    this.from = from;
+    this.to = to;
     refreshDates();
   }
 
   function refreshDates() {
-    window.location.hash = 'start=' + rangePickerVue.from + '&end=' + rangePickerVue.to;
-    try {
-      fromDate = dateMath.parse(rangePickerVue.from);
-      toDate = dateMath.parse(rangePickerVue.to, true);
-    } catch(e) {
-      // do nothing
-    }
-    synchronizeZoom(fromDate, toDate, true);
+    v.fromDate = dateMath.parse(v.from);
+    v.toDate = dateMath.parse(v.to, true);
     window.clearTimeout(refreshTimeoutId);
-    if (rangePickerVue.autoRefresh) {
+    if (v.from.toString().indexOf('now') != -1 ||
+        v.to.toString().indexOf('now') != -1) {
       refreshTimeoutId = window.setTimeout(refreshDates, refreshInterval);
     }
-    synchronizePickers();
   }
-
-  /*
-   * Make sure that date pickers are up-to-date
-   * especially with any 'now-like' dates
-   */
-  function synchronizePickers() {
-    // update 'from' date picker only if not currently open
-    // and 'from' is updating (ie. contains 'now')
-    if (!fromPicker || !fromPicker.data('daterangepicker').isShowing) {
-      fromPicker = $('#fromPicker').daterangepicker(
-        $.extend({
-          startDate: dateMath.parse(rangePickerVue.editRawFrom)
-        }, pickerOptions),
-        onPickerApply
-      );
-    }
-    // update 'to' date picker only if not currently open
-    // and 'to' is updating (ie. contains 'now')
-    if (!toPicker || !toPicker.data('daterangepicker').isShowing) {
-      toPicker = $('#toPicker').daterangepicker(
-        $.extend({
-          startDate: dateMath.parse(rangePickerVue.editRawTo),
-          minDate: dateMath.parse(rangePickerVue.editRawFrom)
-        }, pickerOptions),
-        onPickerApply
-      );
-    }
-  }
-
-  function onPickerApply(start) {
-    var target = $(this.element).attr('data-target');
-    rangePickerVue[target] = start;
-    refreshDates();
-  }
-
+  v.from = start;
+  v.to = end;
   refreshDates();
 });
