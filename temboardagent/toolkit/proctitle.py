@@ -157,14 +157,21 @@ class ProcTitleManager(object):
         self.address = self.size = None
 
     def setup(self):
-        argv, self.address, self.size = find_argv_memory_from_pythonapi()
-        if sys.version_info > (2,):
-            # On CPython3, PythonAPI returns a copy of argv. Find argv address
-            # from /proc/self/maps.
-            self.address = find_argv_memory_from_proc(argv=argv)
-        logger.debug("argv is at %#x, len=%d.", self.address, self.size)
+        try:
+            argv, self.address, self.size = find_argv_memory_from_pythonapi()
+            if sys.version_info > (2,):  # pragma: nocover_py2
+                # On CPython3, PythonAPI returns a copy of argv. Find argv
+                # address from /proc/self/maps.
+                self.address = find_argv_memory_from_proc(argv=argv)
+            logger.debug("argv is at %#x, len=%d.", self.address, self.size)
+        except Exception as e:
+            self.address = self.size = False
+            logger.debug("Failed to find argv memory segment: %s", e)
 
     def settitle(self, title):
+        if not self.address:
+            return
+
         # cf. https://chromium.googlesource.com/infra/infra/+/69eb0279c12bcede5937ce9298020dd4581e38dd%5E!/
         title = self.prefix + title
         title = title.encode('utf-8')
