@@ -49,18 +49,9 @@ $(function() {
         var m = moment(x);
         return m.toDate().getTime();
       },
-      connectSeparatedPoints: true,
-      series: {
-        warning: {
-          stepPlot: true
-        },
-        critical: {
-          stepPlot: true
-        }
-      }
       // since we show only one key at a time we actually
       // want the series to be stacked
-      //stackedGraph: true
+      stackedGraph: true
     };
 
     var chart = new Dygraph(
@@ -68,58 +59,124 @@ $(function() {
       apiUrl+"/../monitoring/data/"+ check + "?key=" + key + "&start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate),
       defaultOptions
     );
-    chart.ready(function(chart) {
-      loadAlerts.call(chart, check, key);
-      loadThresholds.call(chart, check);
+
+    chart.ready(function() {
+      // Wait for both state changes and check changes to load
+      // before drawing alerts and thresholds
+      $.when(loadStateChanges(check, key),
+             loadCheckChanges(check))
+        .done(function(states, checks) {
+          var statesData = states[0].reverse();
+          drawAlerts(chart, statesData);
+
+          var checksData = checks[0].reverse();
+
+          chart.updateOptions({
+            underlayCallback: function(canvas, area) {
+              drawThreshold(chart, checksData, canvas);
+              drawAlertsBg(chart, statesData, canvas, area);
+            }
+          });
+        })
+        .fail(function() {
+          console.error("Something went wrong");
+        });
+    });
+  }
+
+  function drawThreshold(chart, data, canvas) {
+    data.forEach(function(alert, index) {
+      if (index == data.length - 1) {
+        return;
+      }
+
+      ['warning', 'critical'].forEach(function(level) {
+        var y = alert[level];
+        var left = chart.toDomCoords(new Date(alert.datetime), y);
+        var right = chart.toDomCoords(new Date(data[index + 1].datetime), y);
+        canvas.beginPath();
+        canvas.strokeStyle = colors[level];
+        if (!alert.enabled) {
+          canvas.setLineDash([5, 5]);
+        }
+        canvas.moveTo(left[0], left[1]);
+        canvas.lineTo(right[0], right[1]);
+        canvas.stroke();
+        canvas.setLineDash([]);
+        canvas.closePath();
+      });
+    });
+  }
+
+  function drawAlerts(chart, data) {
+    var annotations = data.map(function(alert) {
+      var x = getClosestX(chart, alert.datetime);
+      return {
+        series: chart.getLabels()[1],
+        x: x,
+        shortText: '♥',
+        cssClass: 'alert-' + alert.state.toLowerCase(),
+        text: alert.state,
+        tickColor: bgColors[alert.state.toLowerCase()],
+        attachAtBottom: true
+      };
+    });
+    chart.setAnnotations(annotations);
+  }
+
+  function drawAlertsBg(chart, data, canvas, area) {
+    data.forEach(function(alert, index) {
+      if (alert.state == 'OK') {
+        return;
+      }
+
+      var bottom_left = chart.toDomCoords(new Date(alert.datetime), 0);
+      // Right boundary is next alert or end of visible series
+      var right;
+      if (index == data.length - 1) {
+        var rows = chart.numRows();
+        right = chart.getValue(rows - 1, 0);
+      } else {
+        right = new Date(data[index + 1].datetime);
+      }
+      var top_right = chart.toDomCoords(right, 10);
+      var left = bottom_left[0];
+      right = top_right[0];
+
+      canvas.fillStyle = bgColors[alert.state.toLowerCase()];
+      canvas.fillRect(left, area.y, right - left, area.h);
     });
   }
 
   /**
-   * Load threshold changes
+   * Load check changes
    * `this` correspond to the chart
    *
    * Arguments:
    *  - check: the monitoring check (ex: cpu_core)
    */
-  function loadThresholds(check) {
-    var chart = this;
-    var labels = chart.getLabels();
-    // number of series (we also exclude date)
-    var seriesCount = labels.length - 1;
-    var newData = chart.rawData_;
-    newData.forEach(function(item, index) {
-      item[0] = new Date(item[0]);
-      item = item.concat([null, null]);
-      newData[index] = item;
-    });
-
-    $.ajax({
-      url: apiUrl+"/check_changes/" + check + ".json?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
-    }).success(function(data) {
-      data.forEach(function(item) {
-        var datum = [new Date(item.datetime)];
-        // add null values in place of series
-        datum = datum.concat(initArray(seriesCount, null));
-        // then add the threshold data
-        datum = datum.concat([item.warning, item.critical]);
-        newData.push(datum);
-      });
-
-      // sort
-      newData.sort(function(a, b) {
-        return a[0] - b[0];
-      });
-
-      labels = labels.concat(['warning', 'critical']);
-      chart.updateOptions({
-        file: newData,
-        labels: labels,
-        colors: chart.getColors().concat(['orange', 'red'])
-      });
-    }).error(function(error) {
-      console.log (error);
-    });
+  function loadCheckChanges(check) {
+    var url = apiUrl + "/check_changes/" + check + ".json";
+    var params = {
+      start: timestampToIsoDate(startDate),
+      end: timestampToIsoDate(endDate),
+      noerror: 1
+    };
+    url += '?' + $.param(params);
+    return $.ajax({url: url});
   }
+
+  var colors = {
+    'ok': 'green',
+    'warning': 'orange',
+    'critical': 'red'
+  };
+
+  var bgColors = {
+    'ok': 'green',
+    'warning': 'rgba(255, 120, 0, .2)',
+    'critical': 'rgba(255, 0, 0, .2)'
+  };
 
   /**
    * Load and display alerts in chart
@@ -129,56 +186,16 @@ $(function() {
    *  - check: the monitoring check (ex: cpu_core)
    *  - key : the check key (ex: cpu1)
    */
-  function loadAlerts(check, key) {
-    var chart = this;
-    var colors = {
-      'OK': 'green',
-      'WARNING': 'rgba(255, 120, 0, .2)',
-      'CRITICAL': 'rgba(255, 0, 0, .2)'
+  function loadStateChanges(check, key) {
+    var url = apiUrl + "/state_changes/" + check + ".json";
+    var params = {
+      key: key,
+      start: timestampToIsoDate(startDate),
+      end: timestampToIsoDate(endDate),
+      noerror: 1
     };
-    $.ajax({
-      url: apiUrl+"/state_changes/" + check + ".json?key=" + key + "&start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
-    }).success(function(data) {
-      data = data.reverse();
-      chart.setAnnotations(data.map(function(alert) {
-        var x = getClosestX(chart, alert.datetime);
-        return {
-          series: chart.getLabels()[1],
-          x: x,
-          shortText: '♥',
-          cssClass: 'alert-' + alert.state.toLowerCase(),
-          text: alert.state,
-          tickColor: colors[alert.state],
-          attachAtBottom: true
-        };
-      }));
-
-      chart.updateOptions({
-        underlayCallback: function(canvas, area, g) {
-          data.forEach(function(alert, index) {
-            if (alert.state == 'OK') {
-              return;
-            }
-
-            var bottom_left = g.toDomCoords(new Date(alert.datetime), 0);
-            // Right boundary is next alert or end of visible series
-            var right;
-            if (index == data.length - 1) {
-              var rows = g.numRows();
-              right = g.getValue(rows - 1, 0);
-            } else {
-              right = new Date(data[index + 1].datetime);
-            }
-            var top_right = g.toDomCoords(right, 10);
-            var left = bottom_left[0];
-            right = top_right[0];
-
-            canvas.fillStyle = colors[alert.state];
-            canvas.fillRect(left, area.y, right - left, area.h);
-          });
-        }
-      });
-    });
+    url += '?' + $.param(params);
+    return $.ajax({url: url});
   }
 
   // Find the corresponding x in already existing data
@@ -201,11 +218,6 @@ $(function() {
   function timestampToIsoDate(epochMs) {
     var ndate = new Date(epochMs);
     return ndate.toISOString();
-  }
-
-  function initArray(n, v) {
-    var arr = Array.apply(null, Array(n));
-    return arr.map(function() { return v; });
   }
 
   $('#submitFormUpdateCheck').click(function() {
