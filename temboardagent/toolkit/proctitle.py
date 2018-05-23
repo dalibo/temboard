@@ -60,6 +60,8 @@ def fix_argv(argv):
         else:  # pragma: nocover_py3
             argv.insert(m_ind + 1, modname)
 
+    return argv
+
 
 def find_argv_memory_from_pythonapi():
     """ Return pointer and size of argv memory segment. """
@@ -111,22 +113,21 @@ def reverse_find_nulstring(walker):
             string = c + string
 
 
-def find_stack_segment_from_proc():
-    with open('/proc/self/maps') as fo:
-        for line in fo:
-            if not line.endswith('[stack]\n'):
-                continue
-            # See proc(3) for a description of /proc/self/maps format.
-            segment = line.split()
-            address_range = segment[0]
-            start, end = address_range.split('-')
-            return int(start, base=16), int(end, base=16)
-        else:
-            raise Exception("Can't find stack segment")
+def find_stack_segment_from_maps(lines):
+    for line in lines:
+        if not line.endswith('[stack]\n'):
+            continue
+        # See proc(3) for a description of /proc/self/maps format.
+        segment = line.split()
+        address_range = segment[0]
+        start, end = address_range.split('-')
+        return int(start, base=16), int(end, base=16)
+    else:
+        raise Exception("Can't find stack segment")
 
 
-def find_argv_memory_from_proc(argv, environ=os.environ):
-    stack_start, stack_end = find_stack_segment_from_proc()
+def find_argv_memory_from_maps(maps, argv, environ=os.environ):
+    stack_start, stack_end = find_stack_segment_from_maps(maps)
     argv = argv[:]
     # Stack ends with argv, environ and a single path. These are all null
     # terminated strings.
@@ -162,7 +163,9 @@ class ProcTitleManager(object):
             if sys.version_info > (2,):  # pragma: nocover_py2
                 # On CPython3, PythonAPI returns a copy of argv. Find argv
                 # address from /proc/self/maps.
-                self.address = find_argv_memory_from_proc(argv=argv)
+                with open('/proc/self/maps') as fo:
+                    self.address = find_argv_memory_from_maps(
+                        argv=argv, maps=fo)
             logger.debug("argv is at %#x, len=%d.", self.address, self.size)
         except Exception as e:
             self.address = self.size = False
