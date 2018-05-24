@@ -4,15 +4,18 @@
 
 {% block content %}
 
-
 <div id="check-container" v-cloak>
-  <ol class="breadcrumb p-1">
-    <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{check['description']}}</li>
-  </ol>
-  <div>
-    <div class="float-right">
+  <div class="row form-group mb-2">
+    <div class="col-12 d-flex justify-content-between">
+      <ol class="breadcrumb py-1 mb-0 align-items-center">
+        <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{check['description']}}</li>
+      </ol>
+      <daterangepicker :from="from" :to="to" v-on:update="onPickerUpdate"></daterangepicker>
     </div>
+  </div>
+
+  <div>
     <ul class="list-inline small text-muted mb-0">
       {% if check['enabled'] %}
       <li class="list-inline-item">Enabled: <i class="fa fa-check"></i></li>
@@ -77,12 +80,17 @@
       <span v-if="key.key != ''">{{!key.key}}</span>
       <span v-if="key.key == ''">{{check['name']}}</span>
     </div>
-    <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key"></monitoring-chart>
+    <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
   </div>
 </div>
 <script src="/js/vue.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script src="/js/moment.min.js"></script>
+<script src="/js/daterangepicker.js"></script>
+<script src="/js/lodash.min.js"></script>
+<script src="/js/monitoring/datemath.js"></script>
+<script src="/js/monitoring/rangeutils.js"></script>
+<script src="/js/monitoring/daterangepicker.vue.js"></script>
 <script src="/js/monitoring/temboard.check.js"></script>
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"

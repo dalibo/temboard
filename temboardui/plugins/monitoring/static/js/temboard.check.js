@@ -1,42 +1,74 @@
-/* global apiUrl, checkName, Vue, Dygraph, moment */
+/* global apiUrl, checkName, Vue, Dygraph, moment, dateMath */
 $(function() {
+
+  /**
+   * Parse location hash to get start and end date
+   * If dates are not provided, falls back to the date range corresponding to
+   * the last 24 hours.
+   */
+  var refreshTimeoutId;
+  var refreshInterval = 60 * 1000;
+  var p = getHashParams();
+  var start = p.start || 'now-24h';
+  var end = p.end || 'now';
+  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
+  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
 
   var v = new Vue({
     el: '#check-container',
     data: {
-      keys: null
+      keys: null,
+      from: null,
+      to: null,
+      fromDate: null,
+      toDate: null
     },
-    watch: {}
+    methods: {
+      onPickerUpdate: onPickerUpdate
+    },
+    computed: {
+      fromTo: function() {
+        return this.from, this.to, new Date();
+      }
+    },
+    watch: {
+      fromTo: function() {
+        window.location.hash = 'start=' + v.from + '&end=' + v.to;
+      }
+    }
   });
 
-  var startDate = moment().subtract(2, 'hour');
-  var endDate = moment();
-
-  function refresh() {
-    $.ajax({
-      url: apiUrl + "/states/" + checkName + ".json"
-    }).success(function(data) {
-      v.keys = data;
-    }).error(function(error) {
-      console.error(error);
-    });
-  }
-
-  // refresh every 1 min
-  window.setInterval(function() {
-    refresh();
-  }, 60 * 1000);
-  refresh();
+  $.ajax({
+    url: apiUrl + "/states/" + checkName + ".json"
+  }).success(function(data) {
+    v.keys = data;
+  }).error(function(error) {
+    console.error(error);
+  });
 
   Vue.component('monitoring-chart', {
-    props: ['check', 'key_'],
-    mounted: function() {
-      newGraph(this.check, this.key_);
+    props: ['check', 'key_', 'from', 'to'],
+    mounted: createOrUpdateChart,
+    data: function() {
+      return {
+        chart: null
+      };
+    },
+    watch: {
+      // only one watcher for from + to
+      fromTo: createOrUpdateChart
+    },
+    computed: {
+      fromTo: function() {
+        return this.from, this.to;
+      }
     },
     template: '<div class="monitoring-chart"></div>'
   });
 
-  function newGraph(check, key) {
+  function createOrUpdateChart() {
+    var startDate = dateMath.parse(v.fromDate);
+    var endDate = dateMath.parse(v.toDate, true);
 
     var defaultOptions = {
       axisLabelFontSize: 10,
@@ -51,20 +83,69 @@ $(function() {
       },
       // since we show only one key at a time we actually
       // want the series to be stacked
-      stackedGraph: true
+      stackedGraph: true,
+      zoomCallback: onChartZoom,
+      // change interaction model in order to be able to capture the end of
+      // panning
+      // Dygraphs doesn't provide any panCallback unfortunately
+      interactionModel: {
+        mousedown: function (event, g, context) {
+          context.initializeMouseDown(event, g, context);
+          if (event.shiftKey) {
+            Dygraph.startPan(event, g, context);
+          } else {
+            Dygraph.startZoom(event, g, context);
+          }
+        },
+        mousemove: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.movePan(event, g, context);
+          } else if (context.isZooming) {
+            Dygraph.moveZoom(event, g, context);
+          }
+        },
+        mouseup: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.endPan(event, g, context);
+            var dates = g.dateWindow_;
+            // synchronize charts on pan end
+            onChartZoom(dates[0], dates[1]);
+          } else if (context.isZooming) {
+            Dygraph.endZoom(event, g, context);
+            // don't do the same since zoom is animated
+            // zoomCallback will do the job
+          }
+        }
+      }
     };
 
-    var chart = new Dygraph(
-      document.getElementById("chart" + key),
-      apiUrl+"/../monitoring/data/"+ check + "?key=" + key + "&start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate),
-      defaultOptions
-    );
+    var url = apiUrl + "/../monitoring/data/" + this.check + "?";
+    url += $.param({
+      key: this.key_,
+      start: timestampToIsoDate(startDate),
+      end: timestampToIsoDate(endDate)
+    });
 
+    var chart = this.chart;
+    if (!this.chart) {
+      chart = new Dygraph(
+        document.getElementById("chart" + this.key_),
+        url,
+        defaultOptions
+      );
+    } else {
+      chart.updateOptions({
+        dateWindow: [startDate, endDate],
+        file: url
+      });
+    }
+
+    var self = this;
     chart.ready(function() {
       // Wait for both state changes and check changes to load
       // before drawing alerts and thresholds
-      $.when(loadStateChanges(check, key),
-             loadCheckChanges(check))
+      $.when(loadStateChanges(self.check, self.key_, startDate, endDate),
+             loadCheckChanges(self.check, startDate, endDate))
         .done(function(states, checks) {
           var statesData = states[0].reverse();
           drawAlerts(chart, statesData);
@@ -154,12 +235,14 @@ $(function() {
    *
    * Arguments:
    *  - check: the monitoring check (ex: cpu_core)
+   *  - from: the start date
+   *  - to: the end date
    */
-  function loadCheckChanges(check) {
+  function loadCheckChanges(check, from, to) {
     var url = apiUrl + "/check_changes/" + check + ".json";
     var params = {
-      start: timestampToIsoDate(startDate),
-      end: timestampToIsoDate(endDate),
+      start: timestampToIsoDate(from),
+      end: timestampToIsoDate(to),
       noerror: 1
     };
     url += '?' + $.param(params);
@@ -185,13 +268,15 @@ $(function() {
    * Arguments:
    *  - check: the monitoring check (ex: cpu_core)
    *  - key : the check key (ex: cpu1)
+   *  - from: the start date
+   *  - to: the end date
    */
-  function loadStateChanges(check, key) {
+  function loadStateChanges(check, key, from, to) {
     var url = apiUrl + "/state_changes/" + check + ".json";
     var params = {
       key: key,
-      start: timestampToIsoDate(startDate),
-      end: timestampToIsoDate(endDate),
+      start: timestampToIsoDate(from),
+      end: timestampToIsoDate(to),
       noerror: 1
     };
     url += '?' + $.param(params);
@@ -276,4 +361,47 @@ $(function() {
   function hideWaiter() {
     $('#updateModal .loader').addClass('d-none');
   }
+
+  function getHashParams() {
+
+    var hashParams = {};
+    var e;
+    var a = /\+/g;  // Regex for replacing addition symbol with a space
+    var r = /([^&;=]+)=?([^&;]*)/g;
+    var d = function (s) {
+      return decodeURIComponent(s.replace(a, " "));
+    };
+    var q = window.location.hash.substring(1);
+
+    while (e = r.exec(q)) {
+      hashParams[d(e[1])] = d(e[2]);
+    }
+
+    return hashParams;
+  }
+
+  function onChartZoom(min, max) {
+    v.from = moment(min);
+    v.to = moment(max);
+    refreshDates();
+  }
+
+  function onPickerUpdate(from, to) {
+    this.from = from;
+    this.to = to;
+    refreshDates();
+  }
+
+  function refreshDates() {
+    v.fromDate = dateMath.parse(v.from);
+    v.toDate = dateMath.parse(v.to, true);
+    window.clearTimeout(refreshTimeoutId);
+    if (v.from.toString().indexOf('now') != -1 ||
+        v.to.toString().indexOf('now') != -1) {
+      refreshTimeoutId = window.setTimeout(refreshDates, refreshInterval);
+    }
+  }
+  v.from = start;
+  v.to = end;
+  refreshDates();
 });
