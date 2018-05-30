@@ -564,7 +564,7 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
         probename='locks'
     ),
-    waiting_session_db=dict(
+    waiting_sessions_db=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,

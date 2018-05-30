@@ -50,7 +50,7 @@ def test_preproc():
                   'max_connections': 20},
             expected=40.0,
         ),
-        waiting_session_db=dict(
+        waiting_sessions_db=dict(
             data={'sessions': [{'dbname': 'toto', 'waiting': 1}]},
             expected={'toto': 1},
         ),
@@ -68,7 +68,7 @@ def test_bootstrap_checks():
         assert c[0] in ['load1', 'cpu_core', 'memory', 'swap_usage',
                         'fs_usage_mountpoint', 'wal_files_archive',
                         'wal_files_total', 'rollback_db', 'hitreadratio_db',
-                        'sessions_usage', 'waiting_session_db']
+                        'sessions_usage', 'waiting_sessions_db']
         assert type(c[1]) in (int, float)
         assert type(c[2]) in (int, float)
 
