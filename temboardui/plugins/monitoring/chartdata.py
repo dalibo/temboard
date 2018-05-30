@@ -205,7 +205,7 @@ SELECT
     round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
 FROM expand_data_by_host_id('metric_filesystems_size', tstzrange(%(start)s, %(end)s), %(host_id)s)
 AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)
-WHERE mount_point = %(keys)s
+WHERE mount_point = %(key)s
         """,  # noqa
         sql_zoom="""
 SELECT
