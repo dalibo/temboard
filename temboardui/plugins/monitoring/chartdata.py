@@ -383,7 +383,7 @@ ORDER BY datetime
         sql_nozoom="""
 SELECT
     datetime AS date,
-    (record).n_rollback AS rollback
+    SUM((record).n_rollback) AS rollback
 FROM expand_data_by_instance_id('metric_xacts', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_xacts_record)
 WHERE dbname = %(key)s
@@ -392,7 +392,7 @@ GROUP BY datetime, instance_id ORDER BY datetime
         sql_zoom="""
 SELECT
     datetime AS date,
-    (record).n_rollback AS rollback
+    SUM((record).n_rollback) AS rollback
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND key = %(key)s
 GROUP BY datetime, instance_id ORDER BY datetime
