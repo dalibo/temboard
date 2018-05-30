@@ -564,13 +564,13 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
         probename='locks'
     ),
-    waiting_session_db=dict(
+    waiting_sessions_db=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,
     (record).waiting
-FROM expand_data_by_instance_id('metric_session', tstzrange(%(start)s, %(end)s), %(instance_id)s)
-AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_locks_record)
+FROM expand_data_by_instance_id('metric_sessions', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_sessions_record)
 WHERE dbname = %(key)s
 ORDER BY datetime
         """,  # noqa
