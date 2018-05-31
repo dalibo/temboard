@@ -73,6 +73,7 @@ $(function() {
     var defaultOptions = {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
+      includeZero: true,
       dateWindow: [
         new Date(startDate).getTime(),
         new Date(endDate).getTime()
