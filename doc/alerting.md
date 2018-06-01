@@ -29,7 +29,7 @@ Here's the list of current implemented `checks` and default thresholds:
 | **rollback_db**         | `10`          | `20 `     | Number of rollback'd transactions per database
 | **hitreadratio_db**     | `90`          | `80 `     | Hit/read ratio per database (%)
 | **sessions_usage**      | `80`          | `90 `     | Client session usage (%)
-| **waiting_sessions_db | `5`           | `10`      | Waiting sessions per database
+| **waiting_sessions_db** | `5`           | `10`      | Waiting sessions per database
 
 ## HTTP API
 
