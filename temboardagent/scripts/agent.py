@@ -18,6 +18,7 @@ from ..routing import Router
 from ..services import Service, ServicesManager
 from ..queue import purge_queue_dir
 from ..toolkit import validators as v
+from ..toolkit.proctitle import ProcTitleManager
 
 
 logger = logging.getLogger('temboardagent.scripts.agent')
@@ -177,6 +178,9 @@ def main(argv, environ):
     define_arguments(parser)
     args = parser.parse_args(argv)
 
+    setproctitle = ProcTitleManager(prefix='temboard-agent: ')
+    setproctitle.setup()
+
     app = Application(specs=list_options_specs())
     app.router = Router()
 
@@ -184,12 +188,12 @@ def main(argv, environ):
     event_queue = taskmanager.Queue()
 
     app.worker_pool = WorkerPoolService(
-        app=app, name=u'worker pool',
+        app=app, setproctitle=setproctitle, name=u'worker pool',
         task_queue=task_queue, event_queue=event_queue)
     app.services.append(app.worker_pool)
 
     app.scheduler = SchedulerService(
-        app=app, name=u'scheduler',
+        app=app, setproctitle=setproctitle, name=u'scheduler',
         task_queue=task_queue, event_queue=event_queue)
     app.services.append(app.scheduler)
 
@@ -212,7 +216,9 @@ def main(argv, environ):
     services.add(app.scheduler)
 
     with services:
-        httpd = HTTPDService(app, name=u'main process', services=services)
+        httpd = HTTPDService(
+            app, setproctitle=setproctitle, name=u'main process',
+            services=services)
         httpd.run()
 
     return 0
