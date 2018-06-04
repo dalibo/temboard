@@ -22,8 +22,18 @@
       {% else %}
       <li class="list-inline-item">Disabled</li>
       {% end %}
-      <li class="list-inline-item">Warning: {{ check['warning'] }}</li>
-      <li class="list-inline-item">Critical: {{ check['critical'] }}</li>
+      <li class="list-inline-item">
+        <span class="text-warning">
+          &horbar;
+        </span>
+        Warning: {{ check['warning'] }}
+      </li>
+      <li class="list-inline-item">
+        <span class="text-critical">
+          &horbar;
+        </span>
+        Critical: {{ check['critical'] }}
+      </li>
       <li class="list-inline-item">
         <a data-toggle="modal" data-target="#updateModal" href>
         Edit
