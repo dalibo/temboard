@@ -74,6 +74,7 @@ $(function() {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
       includeZero: true,
+      gridLineColor: 'rgba(128, 128, 128, 0.3)',
       dateWindow: [
         new Date(startDate).getTime(),
         new Date(endDate).getTime()
