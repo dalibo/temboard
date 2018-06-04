@@ -17,11 +17,9 @@
 
   <div>
     <ul class="list-inline small text-muted mb-0">
-      {% if check['enabled'] %}
-      <li class="list-inline-item">Enabled: <i class="fa fa-check"></i></li>
-      {% else %}
-      <li class="list-inline-item">Disabled</li>
-      {% end %}
+      <li class="list-inline-item" {{'style="text-decoration:line-through;"'}}>
+      Enabled: <i class="fa {{'fa-check' if check['enabled'] else 'fa-times' }}"></i>
+      </li>
       <li class="list-inline-item">
         <span class="text-warning">
           &horbar;
@@ -86,7 +84,8 @@
 
   <div v-for="key in keys">
     <div class="text-center">
-      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
+      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()" v-if="key.enabled"></i>
+      <i class="fa fa-heart text-muted" v-if="!key.enabled"></i>
       <span v-if="key.key != ''">{{!key.key}}</span>
       <span v-if="key.key == ''">{{check['name']}}</span>
     </div>

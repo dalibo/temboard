@@ -11,6 +11,11 @@ $(function() {
         if (state != 'OK') {
           return state.toLowerCase();
         }
+      },
+      getStateClass: function(state) {
+        if (state.enabled) {
+          return 'text-' + state.state.toLowerCase();
+        }
       }
     },
     watch: {}

@@ -480,3 +480,8 @@ canvas {
 [v-cloak] {
   display: none;
 }
+
+.striped {
+  background-image: linear-gradient(45deg,rgba(255,255,255,.5) 5%,transparent 5%,transparent 50%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.5) 75%,transparent 75%,transparent);
+  background-size: 1rem 1rem;
+}

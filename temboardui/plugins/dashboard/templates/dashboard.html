@@ -144,17 +144,16 @@
     <div class="row small mb-2">
       <template v-for="state in states">
         <div class="col-3 col-xxl-2 p-1 text-center">
-          <div v-bind:class="'p-1 rounded ' + getBorderColor(state.state)">
-            <a v-bind:href="'alerting/' + state.name">
+          <div class="p-1 rounded" v-bind:class="[getBorderColor(state.state), {'striped bg-light': !state.enabled }]">
+            <a v-bind:href="'alerting/' + state.name"
+               v-bind:class="{'text-muted': !state.enabled}">
               <div class="text-nowrap font-weight-bold"
                    style="overflow: hidden; text-overflow: ellipsis"
                    v-bind:title="state.description">
                 {{!state.description}}
               </div>
               <div class="text-center">
-                <span v-bind:class="'text-' + state.state.toLowerCase()">
-                  <i class="fa fa-heart"></i>
-                </span>
+                <i class="fa fa-heart" v-bind:class="getStateClass(state)"></i>
               </div>
             </a>
           </div>

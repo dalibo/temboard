@@ -242,9 +242,13 @@ GROUP BY 1,2,3,4,5 ORDER BY 1
 
 def check_state_detail(session, host_id, instance_id, check_name):
     query = """
-SELECT json_agg(json_build_object('key', cs.key, 'state', cs.state, 'datetime',
-                                  sc.datetime, 'value', sc.value, 'warning',
-                                  sc.warning, 'critical', sc.critical)) AS state_detail
+SELECT json_agg(json_build_object('key', cs.key,
+                                  'state', cs.state,
+                                  'enabled', c.enabled,
+                                  'datetime', sc.datetime,
+                                  'value', sc.value,
+                                  'warning', sc.warning,
+                                  'critical', sc.critical)) AS state_detail
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.key
                                      AND sc.datetime = (SELECT MAX(datetime)

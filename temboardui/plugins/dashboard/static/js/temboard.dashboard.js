@@ -195,6 +195,11 @@ $(function() {
           return 'border border-2 border-' + state.toLowerCase();
         }
         return 'border border-light';
+      },
+      getStateClass: function(state) {
+        if (state.enabled) {
+          return 'text-' + state.state.toLowerCase();
+        }
       }
     }
   });
