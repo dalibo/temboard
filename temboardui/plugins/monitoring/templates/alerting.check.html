@@ -89,6 +89,7 @@
       <span v-if="key.key != ''">{{!key.key}}</span>
       <span v-if="key.key == ''">{{check['name']}}</span>
     </div>
+    <div :id="'legend' + key.key" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
     <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
   </div>
 </div>

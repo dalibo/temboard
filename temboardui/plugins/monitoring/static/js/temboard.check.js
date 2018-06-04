@@ -74,6 +74,9 @@ $(function() {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
       includeZero: true,
+      legend: 'always',
+      labelsDiv: "legend" + this.key_,
+      labelsKMB: true,
       gridLineColor: 'rgba(128, 128, 128, 0.3)',
       dateWindow: [
         new Date(startDate).getTime(),
