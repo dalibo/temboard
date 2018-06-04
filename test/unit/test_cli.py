@@ -7,7 +7,7 @@ def test_ok():
     from temboardagent.cli import cli
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         assert 'TESTVALUE' in argv
         return 0xcafe
 
@@ -22,7 +22,7 @@ def test_bdb_quit():
     from bdb import BdbQuit
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         raise BdbQuit()
 
     with pytest.raises(SystemExit) as ei:
@@ -35,7 +35,7 @@ def test_interrupt():
     from temboardagent.cli import cli
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         raise KeyboardInterrupt()
 
     with pytest.raises(SystemExit) as ei:
@@ -49,7 +49,7 @@ def test_user_error():
     from temboardagent.errors import UserError
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         raise UserError('POUET', retcode=0xd0d0)
 
     with pytest.raises(SystemExit) as ei:
@@ -62,7 +62,7 @@ def test_unhandled_error_prod():
     from temboardagent.cli import cli
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         raise KeyError('name')
 
     with pytest.raises(SystemExit) as ei:
@@ -76,7 +76,7 @@ def test_unhandled_error_debug(mocker):
     pm = mocker.patch('temboardagent.cli.pdb.post_mortem')
 
     @cli
-    def main(argv, environ):
+    def main(app, argv, environ):
         raise KeyError('name')
 
     with pytest.raises(SystemExit) as ei:
@@ -99,7 +99,7 @@ def test_bootstrap(mocker):
 
     assert repr(app)
 
-    app = bootstrap(args=None, environ={})
+    app, args = bootstrap(parser=mocker.Mock(), argv=None, environ={})
 
     assert app.apply_config.called is True
 

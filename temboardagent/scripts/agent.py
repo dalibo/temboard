@@ -10,7 +10,7 @@ import sys
 from ..scheduler import taskmanager
 
 from ..cli import Application
-from ..cli import cli, define_core_arguments
+from ..cli import define_core_arguments
 from ..toolkit.configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
@@ -168,61 +168,65 @@ def list_options_specs():
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
 
 
-@cli
-def main(argv, environ):
-    parser = ArgumentParser(
-        prog='temboard-agent',
-        description="temBoard agent.",
-        argument_default=UNDEFINED_ARGUMENT,
-    )
-    define_arguments(parser)
-    args = parser.parse_args(argv)
+class AgentApplication(Application):
+    PROGRAM = "temboard-agent"
 
-    setproctitle = ProcTitleManager(prefix='temboard-agent: ')
-    setproctitle.setup()
+    def main(self, argv, environ):
+        parser = ArgumentParser(
+            prog='temboard-agent',
+            description="temBoard agent.",
+            argument_default=UNDEFINED_ARGUMENT,
+        )
+        define_arguments(parser)
+        args = parser.parse_args(argv)
 
-    app = Application(specs=list_options_specs())
-    app.router = Router()
+        setproctitle = ProcTitleManager(prefix='temboard-agent: ')
+        setproctitle.setup()
 
-    task_queue = taskmanager.Queue()
-    event_queue = taskmanager.Queue()
+        self.router = Router()
 
-    app.worker_pool = WorkerPoolService(
-        app=app, setproctitle=setproctitle, name=u'worker pool',
-        task_queue=task_queue, event_queue=event_queue)
-    app.services.append(app.worker_pool)
+        task_queue = taskmanager.Queue()
+        event_queue = taskmanager.Queue()
 
-    app.scheduler = SchedulerService(
-        app=app, setproctitle=setproctitle, name=u'scheduler',
-        task_queue=task_queue, event_queue=event_queue)
-    app.services.append(app.scheduler)
+        self.worker_pool = WorkerPoolService(
+            app=self, setproctitle=setproctitle, name=u'worker pool',
+            task_queue=task_queue, event_queue=event_queue)
+        self.services.append(self.worker_pool)
 
-    app.bootstrap(args=args, environ=environ)
-    config = app.config
+        self.scheduler = SchedulerService(
+            app=self, setproctitle=setproctitle, name=u'scheduler',
+            task_queue=task_queue, event_queue=event_queue)
+        self.services.append(self.scheduler)
 
-    # Run temboard-agent as a background daemon.
-    if (config.temboard.daemonize):
-        daemonize(config.temboard.pidfile)
+        self.bootstrap(args=args, environ=environ)
+        config = self.config
 
-    logger.info("Starting main process.")
+        # Run temboard-agent as a background daemon.
+        if (config.temboard.daemonize):
+            daemonize(config.temboard.pidfile)
 
-    # Purge all data queues at start time excepting metrics & notifications.
-    purge_queue_dir(config.temboard['home'],
-                    ['metrics.q', 'notifications.q', 'notifications_last_10.q']
-                    )
+        logger.info("Starting main process.")
 
-    services = ServicesManager()
-    services.add(app.worker_pool)
-    services.add(app.scheduler)
+        # Purge all data queues at start time excepting metrics &
+        # notifications.
+        purge_queue_dir(
+            config.temboard['home'],
+            ['metrics.q', 'notifications.q', 'notifications_last_10.q']
+        )
 
-    with services:
-        httpd = HTTPDService(
-            app, setproctitle=setproctitle, name=u'main process',
-            services=services)
-        httpd.run()
+        services = ServicesManager()
+        services.add(self.worker_pool)
+        services.add(self.scheduler)
 
-    return 0
+        with services:
+            httpd = HTTPDService(
+                self, setproctitle=setproctitle, name=u'main process',
+                services=services)
+            httpd.run()
 
+        return 0
+
+main = AgentApplication(specs=list_options_specs())
 
 if __name__ == '__main__':  # pragma: no cover
     main()

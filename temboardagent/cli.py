@@ -71,12 +71,15 @@ class BaseApplication(object):
     # the state of the app : config, plugins, etc. Each script or plugin can
     # add an object, it will be shared with other.
 
+    PROGRAM = "temboard"
+    VERSION = "unknown"
+
     DEFAULT_CONFIGFILE = '/etc/%s/%s.conf' % (
         LastnameFilter.root, LastnameFilter.root)
     DEFAULT_PLUGINS_EP = LastnameFilter.root + '.plugins'
     DEFAULT_PLUGINS = []
 
-    def __init__(self, specs=None, with_plugins=DEFAULT_PLUGINS_EP):
+    def __init__(self, specs=None, with_plugins=DEFAULT_PLUGINS_EP, main=None):
         self.specs = list(specs) if specs else []
         # If `None`, plugin loading is disabled.
         self.with_plugins = with_plugins
@@ -86,6 +89,7 @@ class BaseApplication(object):
         # configuration.
         self.config_sources = dict()
         self.services = []
+        self._main = main
 
     def __repr__(self):
         return '<%s>' % (self.__class__.__name__)
@@ -258,11 +262,53 @@ class BaseApplication(object):
     def setup_logging(self):
         setup_logging(**self.config.logging)
 
+    def __call__(self, argv=sys.argv[1:], environ=os.environ):
+        return self.entrypoint(argv, environ)
+
+    def entrypoint(self, argv, environ):
+        debug = detect_debug_mode(environ)
+
+        retcode = 1
+        try:
+            setup_logging(debug=debug)
+            logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
+            retcode = self.main(argv, environ) or 1
+        except KeyboardInterrupt:
+            logger.info('Terminated.')
+        except pdb.bdb.BdbQuit:
+            logger.info("Graceful exit from debugger.")
+        except UserError as e:
+            retcode = e.retcode
+            logger.critical("%s", e)
+        except Exception:
+            logger.exception('Unhandled error:')
+            if debug:
+                pdb.post_mortem(sys.exc_info()[2])
+            else:
+                logger.error(
+                    "%s version is %s.", LastnameFilter.root, self.VERSION)
+                logger.error("This is a bug!")
+                logger.error(
+                    "Please report traceback to "
+                    "https://github.com/dalibo/temboard-agent/issues! "
+                    "Thanks!"
+                )
+        exit(retcode)
+
+    def main(self, argv, environ):
+        if self._main is None:
+            raise NotImplemented
+        else:
+            return self._main(self, argv, environ)
+
 
 class Application(BaseApplication):
     # Agent specialisation of application.
     #
     # This include some defaults and Postgres connection throught spc.
+
+    PROGRAM = "temboard-agent"
+    VERSION = __version__
 
     DEFAULT_CONFIGFILE = '/etc/temboard-agent/temboard-agent.conf'
     DEFAULT_PLUGINS = [
@@ -292,11 +338,13 @@ class Application(BaseApplication):
         return super(Application, self).apply_config()
 
 
-def bootstrap(args, environ, **kw):
+def bootstrap(parser, environ, argv=sys.argv[1:], **kw):
     # Fastpath for simple script without extra context.
     app = Application(**kw)
+    define_core_arguments(parser)
+    args = parser.parse_args(argv)
     app.bootstrap(args=args, environ=environ)
-    return app
+    return app, args
 
 
 def detect_debug_mode(environ):
@@ -311,41 +359,4 @@ def detect_debug_mode(environ):
 
 
 def cli(main):
-    # A decorator to add consistent CLI behaviour.
-    #
-    # Decorated function must accept argv and environ arguments and return an
-    # exit code.
-    #
-    # The decorator adds basic logging setup and error management. The
-    # decorated function can just raise exception and log using logging module
-    # as usual.
-
-    def cli_wrapper(argv=sys.argv[1:], environ=os.environ):
-        debug = detect_debug_mode(environ)
-
-        retcode = 1
-        try:
-            setup_logging(debug=debug)
-            logger.debug("Starting temBoard agent %s.", __version__)
-            retcode = main(argv, environ) or 1
-        except KeyboardInterrupt:
-            logger.info('Terminated.')
-        except pdb.bdb.BdbQuit:
-            logger.info("Graceful exit from debugger.")
-        except UserError as e:
-            retcode = e.retcode
-            logger.critical("%s", e)
-        except Exception:
-            logger.exception('Unhandled error:')
-            if debug:
-                pdb.post_mortem(sys.exc_info()[2])
-            else:
-                logger.error("temboard-agent version is %s.", __version__)
-                logger.error("This is a bug!")
-                logger.error(
-                    "Please report traceback to "
-                    "https://github.com/dalibo/temboard-agent/issues! "
-                    "Thanks!"
-                )
-        exit(retcode)
-    return cli_wrapper
+    return Application(main=main)
