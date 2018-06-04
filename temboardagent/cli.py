@@ -26,7 +26,7 @@ except ImportError:
 
 from .postgres import Postgres
 from .toolkit.configuration import MergedConfiguration, OptionSpec
-from .toolkit.log import setup_logging
+from .toolkit.log import setup_logging, LastnameFilter
 from .toolkit.errors import UserError
 from .toolkit import validators as v
 from .version import __version__
@@ -63,7 +63,7 @@ def define_core_arguments(parser):
     )
 
 
-class Application(object):
+class BaseApplication(object):
     # This object contains application context and logic.
     #
     # The core logic is managing configuration and plugins, this is the
@@ -71,7 +71,12 @@ class Application(object):
     # the state of the app : config, plugins, etc. Each script or plugin can
     # add an object, it will be shared with other.
 
-    def __init__(self, specs=None, with_plugins='temboardagent.plugins'):
+    DEFAULT_CONFIGFILE = '/etc/%s/%s.conf' % (
+        LastnameFilter.root, LastnameFilter.root)
+    DEFAULT_PLUGINS_EP = LastnameFilter.root + '.plugins'
+    DEFAULT_PLUGINS = []
+
+    def __init__(self, specs=None, with_plugins=DEFAULT_PLUGINS_EP):
         self.specs = list(specs) if specs else []
         # If `None`, plugin loading is disabled.
         self.with_plugins = with_plugins
@@ -112,6 +117,35 @@ class Application(object):
 
         return self.config
 
+    def bootstrap_specs(self):
+        # Generate options specs required for bootstrap from args and environ:
+        # configfile.
+        yield OptionSpec(
+            'temboard', 'configfile',
+            default=self.DEFAULT_CONFIGFILE,
+            validator=v.file_,
+        )
+
+    def core_specs(self):
+        # Generate options specs required for bootstrap from args and environ
+        # and file : logging, plugins, postgresql.
+
+        s = 'temboard'
+        if self.with_plugins:
+            yield OptionSpec(
+                s, 'plugins', default=self.DEFAULT_PLUGINS,
+                validator=v.jsonlist,
+            )
+
+        s = 'logging'
+        yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
+        yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
+        yield OptionSpec(
+            s, 'facility', default='local0', validator=v.syslogfacility,
+        )
+        yield OptionSpec(s, 'destination', default='/dev/log')
+        yield OptionSpec(s, 'debug', default=False)
+
     def apply_config(self):
         # Once config is loaded or reloaded, update application state to match
         # new configuration.
@@ -120,7 +154,6 @@ class Application(object):
             self.setup_logging()
         except Exception as e:
             raise UserError("Failed to setup logging: %s." % (e,))
-        self.postgres = Postgres(**self.config.postgresql)
         for service in self.services:
             service.apply_config()
 
@@ -133,54 +166,6 @@ class Application(object):
             logger.debug("Reading new plugins configuration.")
             self.config.load(**self.config_sources)
         self.update_plugins(old_plugins=old_plugins)
-
-    def bootstrap_specs(self):
-        # Generate options specs required for bootstrap from args and environ:
-        # configfile.
-
-        s = 'temboard'
-        yield OptionSpec(
-            s, 'configfile',
-            default='/etc/temboard-agent/temboard-agent.conf',
-            validator=v.file_,
-        )
-
-    def core_specs(self):
-        # Generate options specs required for bootstrap from args and environ
-        # and file : logging, plugins, postgresql.
-
-        s = 'temboard'
-        if self.with_plugins:
-            all_plugins = [
-                "activity",
-                "administration",
-                "dashboard",
-                "monitoring",
-                "pgconf",
-            ]
-            yield OptionSpec(
-                s, 'plugins', default=all_plugins, validator=v.jsonlist,
-            )
-
-        s = 'logging'
-        yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
-        yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
-        yield OptionSpec(
-            s, 'facility', default='local0', validator=v.syslogfacility,
-        )
-        yield OptionSpec(s, 'destination', default='/dev/log')
-        yield OptionSpec(s, 'debug', default=False)
-
-        # These options are *core* because they are needed for legacy plugin
-        # loading.
-        s = 'postgresql'
-        yield OptionSpec(
-            s, 'host', default='/var/run/postgresql', validator=v.dir_)
-        yield OptionSpec(s, 'instance', default='main')
-        yield OptionSpec(s, 'port', default=5432, validator=v.port)
-        yield OptionSpec(s, 'user', default='postgres')
-        yield OptionSpec(s, 'password')
-        yield OptionSpec(s, 'dbname', default='postgres')
 
     def read_file(self, parser, filename):
         logger.debug('Reading %s.', filename)
@@ -272,6 +257,39 @@ class Application(object):
 
     def setup_logging(self):
         setup_logging(**self.config.logging)
+
+
+class Application(BaseApplication):
+    # Agent specialisation of application.
+    #
+    # This include some defaults and Postgres connection throught spc.
+
+    DEFAULT_CONFIGFILE = '/etc/temboard-agent/temboard-agent.conf'
+    DEFAULT_PLUGINS = [
+        "activity",
+        "administration",
+        "dashboard",
+        "monitoring",
+        "pgconf",
+    ]
+
+    def core_specs(self):
+        for spec in super(Application, self).core_specs():
+            yield spec
+
+        # These are *core* because they are needed to load plugins.
+        s = 'postgresql'
+        yield OptionSpec(
+            s, 'host', default='/var/run/postgresql', validator=v.dir_)
+        yield OptionSpec(s, 'instance', default='main')
+        yield OptionSpec(s, 'port', default=5432, validator=v.port)
+        yield OptionSpec(s, 'user', default='postgres')
+        yield OptionSpec(s, 'password')
+        yield OptionSpec(s, 'dbname', default='postgres')
+
+    def apply_config(self):
+        self.postgres = Postgres(**self.config.postgresql)
+        return super(Application, self).apply_config()
 
 
 def bootstrap(args, environ, **kw):
