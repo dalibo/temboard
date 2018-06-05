@@ -1,4 +1,4 @@
-/* global apiUrl, Vue */
+/* global apiUrl, Vue, _ */
 $(function() {
 
   var v = new Vue({
@@ -11,6 +11,9 @@ $(function() {
         if (state != 'OK' && state != 'UNDEF') {
           return state.toLowerCase();
         }
+      },
+      sorted: function(items, key) {
+        return _.orderBy(items, key);
       }
     },
     watch: {}

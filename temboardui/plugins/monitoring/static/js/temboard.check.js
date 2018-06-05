@@ -17,7 +17,7 @@ $(function() {
   var v = new Vue({
     el: '#check-container',
     data: {
-      keys: null,
+      keys: [],
       from: null,
       to: null,
       fromDate: null,
@@ -29,6 +29,11 @@ $(function() {
     computed: {
       fromTo: function() {
         return this.from, this.to, new Date();
+      },
+      sortedKeys: function() {
+        return this.keys.sort(function(a, b) {
+          return a.key > b.key;
+        });
       }
     },
     watch: {
