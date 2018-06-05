@@ -38,14 +38,6 @@ $(function() {
     }
   });
 
-  $.ajax({
-    url: apiUrl + "/states/" + checkName + ".json"
-  }).success(function(data) {
-    v.keys = data;
-  }).error(function(error) {
-    console.error(error);
-  });
-
   Vue.component('monitoring-chart', {
     props: ['check', 'key_', 'from', 'to'],
     mounted: createOrUpdateChart,
@@ -390,25 +382,33 @@ $(function() {
   function onChartZoom(min, max) {
     v.from = moment(min);
     v.to = moment(max);
-    refreshDates();
+    refresh();
   }
 
   function onPickerUpdate(from, to) {
     this.from = from;
     this.to = to;
-    refreshDates();
+    refresh();
   }
 
-  function refreshDates() {
+  function refresh() {
+    $.ajax({
+      url: apiUrl + "/states/" + checkName + ".json"
+    }).success(function(data) {
+      v.keys = data;
+    }).error(function(error) {
+      console.error(error);
+    });
+
     v.fromDate = dateMath.parse(v.from);
     v.toDate = dateMath.parse(v.to, true);
     window.clearTimeout(refreshTimeoutId);
     if (v.from.toString().indexOf('now') != -1 ||
         v.to.toString().indexOf('now') != -1) {
-      refreshTimeoutId = window.setTimeout(refreshDates, refreshInterval);
+      refreshTimeoutId = window.setTimeout(refresh, refreshInterval);
     }
   }
   v.from = start;
   v.to = end;
-  refreshDates();
+  refresh();
 });
