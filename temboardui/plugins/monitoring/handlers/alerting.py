@@ -1,6 +1,7 @@
 import logging
 import cStringIO
 from dateutil import parser as dt_parser
+from datetime import datetime
 import json
 
 import tornado.web
@@ -11,7 +12,10 @@ from temboardui.handlers.base import (
     JsonHandler,
 )
 from temboardui.temboardclient import TemboardError, temboard_profile
-from temboardui.plugins.monitoring.model.orm import Check
+from temboardui.plugins.monitoring.model.orm import (
+    Check,
+    CheckState,
+)
 from temboardui.errors import TemboardUIError
 from temboardui.async import (
     run_background,
@@ -312,9 +316,13 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
                         Check.name == unicode(row.get('name')),
                         Check.host_id == self.host_id,
                         Check.instance_id == self.instance_id).first()
+            enabled_before = check.enabled
 
             if u'enabled' in row:
-                check.enabled = bool(row.get(u'enabled'))
+                enabled_after = bool(row.get(u'enabled'))
+                check.enabled = enabled_after
+                # detect any change from enabled to disabled
+                is_getting_disabled = enabled_before and not enabled_after
             if u'warning' in row:
                 warning = row.get(u'warning')
                 if type(warning) not in (int, float):
@@ -329,6 +337,20 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
                 check.description = row.get(u'description')
 
             self.db_session.merge(check)
+
+            if is_getting_disabled:
+                cs = self.db_session.query(CheckState).filter(
+                    CheckState.check_id == check.check_id,
+                )
+                for i in cs:
+                    i.state = unicode('UNDEF')
+                    self.db_session.merge(i)
+                    self.db_session.execute(
+                        "SELECT monitoring.append_state_changes(:d, :i,"
+                        ":s, :k, :v, :w, :c)",
+                        {'d': datetime.utcnow(), 'i': check.check_id,
+                         's': 'UNDEF', 'k': i.key, 'v': None,
+                         'w': check.warning, 'c': check.critical})
 
         self.db_session.commit()
 

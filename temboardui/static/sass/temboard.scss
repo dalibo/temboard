@@ -331,7 +331,8 @@ table.table-activity {
 
   .alert-ok,
   .alert-warning,
-  .alert-critical {
+  .alert-critical,
+  .alert-undef {
     border: 0;
     background-color: transparent;
     font-size: 1rem !important;
@@ -344,6 +345,9 @@ table.table-activity {
   }
   .alert-critical {
     color: $danger !important;
+  }
+  .alert-undef {
+    color: $undef !important;
   }
 }
 

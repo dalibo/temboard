@@ -257,13 +257,15 @@ $(function() {
   var colors = {
     'ok': 'green',
     'warning': 'orange',
-    'critical': 'red'
+    'critical': 'red',
+    'undef': '#ccc'
   };
 
   var bgColors = {
     'ok': 'green',
     'warning': 'rgba(255, 120, 0, .2)',
-    'critical': 'rgba(255, 0, 0, .2)'
+    'critical': 'rgba(255, 0, 0, .2)',
+    'undef': 'rgba(192, 192, 192, .2)'
   };
 
   /**

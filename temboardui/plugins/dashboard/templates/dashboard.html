@@ -153,7 +153,7 @@
                 {{!state.description}}
               </div>
               <div class="text-center">
-                <i class="fa fa-heart" v-bind:class="getStateClass(state)"></i>
+                <i class="fa fa-heart" v-bind:class="'text-' + state.state.toLowerCase()"></i>
               </div>
             </a>
           </div>

@@ -8,13 +8,8 @@ $(function() {
     },
     methods: {
       getBorderColor: function(state) {
-        if (state != 'OK') {
+        if (state != 'OK' && state != 'UNDEF') {
           return state.toLowerCase();
-        }
-      },
-      getStateClass: function(state) {
-        if (state.enabled) {
-          return 'text-' + state.state.toLowerCase();
         }
       }
     },

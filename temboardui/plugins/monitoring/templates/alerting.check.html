@@ -84,8 +84,7 @@
 
   <div v-for="key in keys">
     <div class="text-center">
-      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()" v-if="key.enabled"></i>
-      <i class="fa fa-heart text-muted" v-if="!key.enabled"></i>
+      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
       <span v-if="key.key != ''">{{!key.key}}</span>
       <span v-if="key.key == ''">{{check['name']}}</span>
     </div>

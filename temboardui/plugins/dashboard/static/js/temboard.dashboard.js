@@ -191,15 +191,10 @@ $(function() {
     },
     methods: {
       getBorderColor: function(state) {
-        if (state != 'OK') {
+        if (state != 'OK' && state != 'UNDEF') {
           return 'border border-2 border-' + state.toLowerCase();
         }
         return 'border border-light';
-      },
-      getStateClass: function(state) {
-        if (state.enabled) {
-          return 'text-' + state.state.toLowerCase();
-        }
       }
     }
   });

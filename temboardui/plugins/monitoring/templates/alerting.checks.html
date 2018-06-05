@@ -12,8 +12,8 @@
         <div>
           <a v-bind:href="'alerting/' + check.name"
              v-bind:class="{'text-muted': !check.enabled}">
-            <span v-bind:class="'badge badge-' + (check.enabled ? check.state.toLowerCase() : 'secondary')">
-              {{! check.enabled ? check.state : 'N/A' }}
+            <span v-bind:class="'badge badge-' + check.state.toLowerCase()">
+              {{! check.state }}
             </span>
             {{! check.description }}
           </a>
@@ -21,8 +21,8 @@
         <hr class="mt-1 mb-1">
         <ul class="list-unstyled small ml-2 mb-0" style="max-height: 100px; overflow-y: auto;">
           <li v-for="key in check.state_by_key">
-            <span v-bind:class="'badge badge-' + (check.enabled ? key.state.toLowerCase() : 'secondary')">
-              {{! check.enabled ? key.state : 'N/A' }}
+            <span v-bind:class="'badge badge-' + key.state.toLowerCase()">
+              {{! key.state }}
             </span>
             {{!key.key}}
           </li>
