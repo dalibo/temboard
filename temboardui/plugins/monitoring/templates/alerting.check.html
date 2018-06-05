@@ -24,13 +24,13 @@
         <span class="text-warning">
           &horbar;
         </span>
-        Warning: {{ check['warning'] }}
+        Warning: {{ '{0:g}'.format(float(check['warning'])) }}
       </li>
       <li class="list-inline-item">
         <span class="text-critical">
           &horbar;
         </span>
-        Critical: {{ check['critical'] }}
+        Critical: {{ '{0:g}'.format(float(check['critical'])) }}
       </li>
       <li class="list-inline-item">
         <a data-toggle="modal" data-target="#updateModal" href>
@@ -64,11 +64,11 @@
               </div>
               <div class="form-group">
                 <label for="warningThresholdInput">Warning threshold</label>
-                <input type="text" class="form-control" id="warningThresholdInput" value="{{ check['warning'] }}">
+                <input type="text" class="form-control" id="warningThresholdInput" value="{{ '{0:g}'.format(float(check['warning'])) }}">
               </div>
               <div class="form-group">
                 <label for="criticalThresholdInput">Critical threshold</label>
-                <input type="text" class="form-control" id="criticalThresholdInput" value="{{ check['critical'] }}">
+                <input type="text" class="form-control" id="criticalThresholdInput" value="{{ '{0:g}'.format(float(check['critical'])) }}">
               </div>
             </form>
           </div>
@@ -82,14 +82,18 @@
     </div>
   </div>
 
-  <div v-for="key in keys">
-    <div class="text-center">
-      <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
-      <span v-if="key.key != ''">{{!key.key}}</span>
-      <span v-if="key.key == ''">{{check['name']}}</span>
+  <div class="card w-100 mb-2" v-for="key in keys">
+    <div class="p-2">
+      <div class="text-center">
+        <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
+        <span v-if="key.key != ''">{{!key.key}}</span>
+        <span v-if="key.key == ''">{{check['name']}}</span>
+      </div>
     </div>
-    <div :id="'legend' + key.key" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
-    <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
+    <div class="card-body pt-0">
+      <div :id="'legend' + key.key" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
+      <monitoring-chart check="{{check['name']}}" :key_="key.key" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
+    </div>
   </div>
 </div>
 <script src="/js/vue.min.js"></script>
