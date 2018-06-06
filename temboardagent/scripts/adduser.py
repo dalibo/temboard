@@ -38,8 +38,7 @@ def ask_password():
 
 
 def ask_username(config):
-    stdout.write("Username: ".encode('utf-8'))
-    raw_username = input()
+    raw_username = input("Username: ")
     try:
         get_user(config.temboard['users'], raw_username)
     except HTTPError:
