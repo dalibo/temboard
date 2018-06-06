@@ -1,10 +1,28 @@
-/* global instances, Vue, Dygraph, moment */
+/* global instances, Vue, Dygraph, moment, _ */
 $(function() {
 
   Vue.component('sparkline', {
     props: ['instance', 'metric'],
     mounted: createChart,
     template: '<div></div>'
+  });
+
+  Vue.component('checks', {
+    props: ['instance'],
+    data: function() {
+      return {
+        checks: {}
+      };
+    },
+    mounted: loadChecks,
+    template: `
+    <div>
+    Status:
+    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL">OK</span>
+    <span class="badge badge-warning" v-if="checks.WARNING">WARNING: {{ checks.WARNING }}</span>
+    <span class="badge badge-critical" v-if="checks.CRITICAL">CRITICAL: {{ checks.CRITICAL }}</span>
+    </div>
+    `
   });
 
   new Vue({
@@ -72,5 +90,12 @@ $(function() {
       api_url + "/data/" + this.metric + "?start=" + start + "&end=" + end,
       options
     );
+  }
+
+  function loadChecks() {
+    var url = ['/server', this.instance.agent_address, this.instance.agent_port, 'alerting/checks.json'].join('/');
+    $.ajax(url).success(function(data) {
+      this.checks = _.countBy(data.map(function(check) { return check.state; }));
+    }.bind(this));
   }
 });
