@@ -36,7 +36,10 @@ def get_user(filepath, username):
     Get a user/passwd form the file.
     """
     for line in read_password_file(filepath):
-        (l_username, l_hpasswd) = line.strip().split(':')
+        line = line.strip()
+        if not line:
+            continue
+        l_username, l_hpasswd = line.split(':')
         if username == l_username:
             return (l_username, l_hpasswd)
     raise HTTPError(404, 'Invalid username/password.')
