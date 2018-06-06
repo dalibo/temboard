@@ -119,6 +119,7 @@ class AlertingCheckHTMLHandler(BaseHandler):
                  instance_id=self.instance_id,
                  check_name=check_name))
         check = res.fetchone()
+        spec = check_specs[check_name]
 
         return HTMLAsyncResult(
                 http_code=200,
@@ -129,6 +130,7 @@ class AlertingCheckHTMLHandler(BaseHandler):
                     'role': self.role,
                     'instance': self.instance,
                     'check': check,
+                    'threshold_type': spec.get('threshold_type', None),
                     'plugin': 'alerting',  # we cheat here
                     'agent_username': agent_username
                 })
@@ -289,6 +291,12 @@ class AlertingJSONChecksHandler(AlertingJSONHandler):
         self.setUp(address, port)
         data = checks_info(self.db_session, self.host_id,
                            self.instance_id)
+        for datum in data:
+            spec = check_specs[datum['name']]
+            if 'threshold_type' in spec:
+                datum['threshold_type'] = spec['threshold_type']
+            if 'value_type' in spec:
+                datum['value_type'] = spec['value_type']
 
         return JSONAsyncResult(http_code=200, data=data)
 
@@ -434,6 +442,12 @@ class AlertingJSONDetailHandler(AlertingJSONHandler):
 
         detail = check_state_detail(self.db_session, self.host_id,
                                     self.instance_id, check_name)
+        for d in detail:
+            spec = check_specs[check_name]
+            if 'threshold_type' in spec:
+                d['threshold_type'] = spec['threshold_type']
+            if 'value_type' in spec:
+                d['value_type'] = spec['value_type']
         return JSONAsyncResult(http_code=200, data=detail)
 
     @tornado.web.asynchronous

@@ -44,7 +44,15 @@ $(function() {
   });
 
   Vue.component('monitoring-chart', {
-    props: ['check', 'key_', 'from', 'to'],
+    props: [
+      'check',
+      'key_',
+      'thresholdType',
+      'valueType',
+      'foo',
+      'from',
+      'to'
+    ],
     mounted: createOrUpdateChart,
     data: function() {
       return {
@@ -70,10 +78,10 @@ $(function() {
     var defaultOptions = {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
+      ylabel: (this.thresholdType == 'percent' && this.valueType == 'percent') ? '%' : '',
       includeZero: true,
       legend: 'always',
       labelsDiv: "legend" + this.key_,
-      labelsKMB: true,
       gridLineColor: 'rgba(128, 128, 128, 0.3)',
       dateWindow: [
         new Date(startDate).getTime(),
@@ -120,6 +128,15 @@ $(function() {
         }
       }
     };
+
+    switch (this.valueType) {
+    case 'percent':
+      defaultOptions.valueRange = [0, 105];
+      break;
+    case 'memory':
+      defaultOptions.labelsKMG2 = true;
+      break;
+    }
 
     var url = apiUrl + "/../monitoring/data/" + this.check + "?";
     url += $.param({

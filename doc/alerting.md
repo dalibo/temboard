@@ -78,7 +78,9 @@ Returns the list of attached `checks` and their corresponding current state.
     "state": "OK",
     "warning": 50.0,
     "critical": 80.0,
-    "description": "CPU usage"
+    "description": "CPU usage",
+    "threshold_type": "percent",
+    "value_type": "percent"
 }, {
     ...
 }]
@@ -274,10 +276,10 @@ Gives details (state for each key) about `check`.
 
 ```json
 [
-  {"value":36, "datetime": "2018-05-14T12:25:39+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu2"},
-  {"value":49, "datetime": "2018-05-14T12:14:33+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu1"},
-  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu3"},
-  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu0"}
+  {"value":36, "datetime": "2018-05-14T12:25:39+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu2", "threshold_type": "percent", "value_type": "percent"},
+  {"value":49, "datetime": "2018-05-14T12:14:33+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu1", "threshold_type": "percent", "value_type": "percent"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu3", "threshold_type": "percent", "value_type": "percent"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu0", "threshold_type": "percent", "value_type": "percent"}
 ]
 ```
 
