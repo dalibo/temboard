@@ -8,7 +8,7 @@ import re
 import json
 import logging
 
-from ..cli import bootstrap, cli, define_core_arguments
+from ..cli import define_core_arguments, Application
 from ..errors import (
     HTTPError,
     UserError,
@@ -60,12 +60,12 @@ def ask_username():
 
 
 def define_arguments(parser):
+    define_core_arguments(parser)
+
     parser.add_argument(
         '-?', '--help',
         action='help',
         help='show this help message and exit')
-
-    define_core_arguments(parser)
 
     parser.add_argument(
         '-h', '--host',
@@ -92,25 +92,26 @@ def define_arguments(parser):
     )
 
 
-@cli
-def main(argv, environ):
-    parser = ArgumentParser(
-        prog='temboard-agent-register',
-        description=(
-            "Register a couple PostgreSQL instance/agent "
-            "to a temBoard UI."
-        ),
-        add_help=False,
-        argument_default=UNDEFINED_ARGUMENT,
-    )
-    define_arguments(parser)
+class RegisterApplication(Application):
+    PROGRAM = "temboard-agent-register"
 
-    args = parser.parse_args(argv)
-    app = bootstrap(
-        specs=list_options_specs(), with_plugins=False,
-        args=args, environ=environ,
-    )
+    def main(self, argv, environ):
+        parser = ArgumentParser(
+            prog='temboard-agent-register',
+            description=(
+                "Register a couple PostgreSQL instance/agent "
+                "to a temBoard UI."
+            ),
+            add_help=False,
+            argument_default=UNDEFINED_ARGUMENT,
+        )
+        define_arguments(parser)
+        args = parser.parse_args(argv)
+        self.bootstrap(argv=argv, environ=environ)
+        return wrapped_main(args, self)
 
+
+def wrapped_main(args, app):
     # Load configuration from the configuration file.
     try:
         # Getting system/instance informations using agent's discovering API
@@ -187,6 +188,8 @@ def main(argv, environ):
 
     return 0
 
+
+main = RegisterApplication(specs=list_options_specs(), with_plugins=False)
 
 if __name__ == '__main__':  # pragma: no cover
     main()

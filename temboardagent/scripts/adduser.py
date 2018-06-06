@@ -6,7 +6,7 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout
 from getpass import getpass
 
-from ..cli import bootstrap, cli, define_core_arguments
+from ..cli import Application, define_core_arguments
 from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError, UserError
 from ..usermgmt import get_user
@@ -59,32 +59,33 @@ def ask_username(config):
     return username
 
 
-@cli
-def main(argv, environ):
-    parser = ArgumentParser(
-        prog='temboard-agent-adduser',
-        description="Add a new temboard-agent user.",
-        argument_default=UNDEFINED_ARGUMENT,
-    )
-    define_core_arguments(parser)
-    args = parser.parse_args(argv)
-    app = bootstrap(
-        specs=list_options_specs(), with_plugins=False,
-        args=args, environ=environ,
-    )
+class AddUserApplication(Application):
+    PROGRAM = "temboard-agent-adduser"
 
-    # Load configuration from the configuration file.
-    username = ask_username(app.config)
-    password = ask_password()
-    hash_ = hash_password(username, password).decode('utf-8')
-    try:
-        with open(app.config.temboard.users, 'a') as fd:
-            fd.write("%s:%s\n" % (username, hash_))
-    except IOError as e:
-        raise UserError(str(e))
-    else:
-        stdout.write("Done.\n")
+    def main(self, argv, environ):
+        parser = ArgumentParser(
+            prog='temboard-agent-adduser',
+            description="Add a new temboard-agent user.",
+            argument_default=UNDEFINED_ARGUMENT,
+        )
+        define_core_arguments(parser)
+        args = parser.parse_args(argv)
+        self.bootstrap(args=args, environ=environ)
 
+        # Load configuration from the configuration file.
+        username = ask_username(self.config)
+        password = ask_password()
+        hash_ = hash_password(username, password).decode('utf-8')
+        try:
+            with open(self.config.temboard.users, 'a') as fd:
+                fd.write("%s:%s\n" % (username, hash_))
+        except IOError as e:
+            raise UserError(str(e))
+        else:
+            stdout.write("Done.\n")
+
+
+main = AddUserApplication(specs=list_options_specs(), with_plugins=False)
 
 if __name__ == '__main__':
     main()
