@@ -97,7 +97,7 @@ def test_load(mocker):
     from temboardagent.toolkit.configuration import (
         OptionSpec, MergedConfiguration,
     )
-    from temboardagent.cli import configparser
+    from temboardagent.toolkit.app import configparser
 
     s = 'temboard'
     specs = [
@@ -135,7 +135,7 @@ def test_load(mocker):
 
 def test_load_configparser():
     from temboardagent.toolkit.configuration import iter_configparser_values
-    from temboardagent.cli import configparser
+    from temboardagent.toolkit.app import configparser
 
     parser = configparser.RawConfigParser()
     parser.add_section('section0')
