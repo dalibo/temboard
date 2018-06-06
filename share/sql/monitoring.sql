@@ -217,6 +217,22 @@ AS $$
 DECLARE
   v_query JSON;
   v_conf JSON;
+  q_metric_sessions_agg TEXT;
+  q_metric_xacts_agg TEXT;
+  q_metric_locks_agg TEXT;
+  q_metric_blocks_agg TEXT;
+  q_metric_bgwriter_agg TEXT;
+  q_metric_db_size_agg TEXT;
+  q_metric_tblspc_size_agg TEXT;
+  q_metric_filesystems_size_agg TEXT;
+  q_metric_temp_files_size_tblspc_agg TEXT;
+  q_metric_temp_files_size_db_agg TEXT;
+  q_metric_wal_files_agg TEXT;
+  q_metric_cpu_agg TEXT;
+  q_metric_process_agg TEXT;
+  q_metric_memory_agg TEXT;
+  q_metric_loadavg_agg TEXT;
+  q_metric_vacuum_analyze_agg TEXT;
 BEGIN
   --
   -- Query template list for the actions: 'history' and 'expand'
@@ -270,6 +286,511 @@ BEGIN
   --   "aggregate": "<query_tpl_aggregate>"
   -- }
 
+  q_metric_sessions_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).active),
+      AVG((r).waiting),
+      AVG((r).idle),
+      AVG((r).idle_in_xact),
+      AVG((r).idle_in_xact_aborted),
+      AVG((r).fastpath),
+      AVG((r).disabled),
+      AVG((r).no_priv)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+   )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_xacts_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).n_commit),
+      SUM((r).n_rollback)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+  AS (
+    datetime timestamp with time zone,
+    instance_id integer,
+    dbname text,
+    r #record_type#
+  )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_locks_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).access_share),
+      AVG((r).row_share),
+      AVG((r).row_exclusive),
+      AVG((r).share_update_exclusive),
+      AVG((r).share),
+      AVG((r).share_row_exclusive),
+      AVG((r).exclusive),
+      AVG((r).access_exclusive),
+      AVG((r).siread),
+      AVG((r).waiting_access_share),
+      AVG((r).waiting_row_share),
+      AVG((r).waiting_row_exclusive),
+      AVG((r).waiting_share_update_exclusive),
+      AVG((r).waiting_share),
+      AVG((r).waiting_share_row_exclusive),
+      AVG((r).waiting_exclusive),
+      AVG((r).waiting_access_exclusive)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_blocks_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).blks_read),
+      SUM((r).blks_hit),
+      AVG((r).hitmiss_ratio)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_bgwriter_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).checkpoints_timed),
+      SUM((r).checkpoints_req),
+      SUM((r).checkpoint_write_time),
+      SUM((r).checkpoint_sync_time),
+      SUM((r).buffers_checkpoint),
+      SUM((r).buffers_clean),
+      SUM((r).maxwritten_clean),
+      SUM((r).buffers_backend),
+      SUM((r).buffers_backend_fsync),
+      SUM((r).buffers_alloc),
+      NULL
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, instance_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_db_size_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).size)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_tblspc_size_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    spcname,
+    ROW(
+      NULL,
+      AVG((r).size)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      spcname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, spcname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_filesystems_size_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    host_id,
+    mount_point,
+    ROW(
+      NULL,
+      AVG((r).used),
+      AVG((r).total),
+      (r).device
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      host_id integer,
+      mount_point text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3,(r).device
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, host_id, mount_point)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_temp_files_size_tblspc_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    spcname,
+    ROW(
+      NULL,
+      AVG((r).size)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      spcname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, spcname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_temp_files_size_db_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).size)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_wal_files_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      MAX((r).written_size),
+      MIN((r).current_location::pg_lsn)::TEXT,
+      MAX((r).total),
+      MAX((r).archive_ready),
+      MAX((r).total_size)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, instance_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_cpu_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    host_id,
+    cpu,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).time_user),
+      SUM((r).time_system),
+      SUM((r).time_idle),
+      SUM((r).time_iowait),
+      SUM((r).time_steal)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      host_id integer,
+      cpu text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, host_id, cpu)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_process_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    host_id,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).context_switches),
+      SUM((r).forks),
+      AVG((r).procs_running),
+      AVG((r).procs_blocked),
+      AVG((r).procs_total)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      host_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, host_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_memory_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    host_id,
+    ROW(
+      NULL,
+      AVG((r).mem_total),
+      AVG((r).mem_used),
+      AVG((r).mem_free),
+      AVG((r).mem_buffers),
+      AVG((r).mem_cached),
+      AVG((r).swap_total),
+      AVG((r).swap_used)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      host_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, host_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_loadavg_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    host_id,
+    ROW(
+      NULL,
+      ROUND(AVG((r).load1)::NUMERIC, 2),
+      ROUND(AVG((r).load5)::NUMERIC, 2),
+      ROUND(AVG((r).load15)::NUMERIC, 2)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      host_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, host_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+  q_metric_vacuum_analyze_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      SUM((r).measure_interval),
+      SUM((r).n_vacuum),
+      SUM((r).n_analyze),
+      SUM((r).n_autovacuum),
+      SUM((r).n_autoanalyze)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data('#name#', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW()))
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
   SELECT ('{
   "metric_sessions": {
     "name": "metric_sessions",
@@ -281,7 +802,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).active), AVG((r).waiting), AVG((r).idle), AVG((r).idle_in_xact), AVG((r).idle_in_xact_aborted), AVG((r).fastpath), AVG((r).disabled), AVG((r).no_priv))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_sessions_agg||'
   },
   "metric_xacts": {
     "name": "metric_xacts",
@@ -293,7 +814,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).n_commit), SUM((r).n_rollback))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_xacts_agg||'
   },
   "metric_locks": {
     "name": "metric_locks",
@@ -305,7 +826,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).access_share), AVG((r).row_share), AVG((r).row_exclusive), AVG((r).share_update_exclusive), AVG((r).share), AVG((r).share_row_exclusive), AVG((r).exclusive), AVG((r).access_exclusive), AVG((r).siread), AVG((r).waiting_access_share), AVG((r).waiting_row_share), AVG((r).waiting_row_exclusive), AVG((r).waiting_share_update_exclusive), AVG((r).waiting_share), AVG((r).waiting_share_row_exclusive), AVG((r).waiting_exclusive), AVG((r).waiting_access_exclusive))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_locks_agg||'
   },
   "metric_blocks": {
     "name": "metric_blocks",
@@ -317,7 +838,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).blks_read), SUM((r).blks_hit), AVG((r).hitmiss_ratio))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_blocks_agg||'
   },
   "metric_bgwriter": {
     "name": "metric_bgwriter",
@@ -328,7 +849,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'instance_id')||'",
     "expand": "'||(v_query->'expand'->>'instance_id')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, ROW(NULL, SUM((r).measure_interval), SUM((r).checkpoints_timed), SUM((r).checkpoints_req), SUM((r).checkpoint_write_time), SUM((r).checkpoint_sync_time), SUM((r).buffers_checkpoint), SUM((r).buffers_clean), SUM((r).maxwritten_clean), SUM((r).buffers_backend), SUM((r).buffers_backend_fsync), SUM((r).buffers_alloc), NULL)::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, instance_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_bgwriter_agg||'
   },
   "metric_db_size": {
     "name": "metric_db_size",
@@ -340,7 +861,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_db_size_agg||'
   },
   "metric_tblspc_size": {
     "name": "metric_tblspc_size",
@@ -352,7 +873,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'spcname')||'",
     "expand": "'||(v_query->'expand'->>'spcname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, spcname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, spcname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, spcname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_tblspc_size_agg||'
   },
   "metric_filesystems_size": {
     "name": "metric_filesystems_size",
@@ -364,7 +885,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'mount_point')||'",
     "expand": "'||(v_query->'expand'->>'mount_point')||'",
-  "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, mount_point, ROW(NULL, AVG((r).used), AVG((r).total), (r).device)::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, mount_point text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3,(r).device ORDER BY 1,2,3 ON CONFLICT (datetime, host_id, mount_point) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_filesystems_size_agg||'
   },
   "metric_temp_files_size_tblspc": {
     "name": "metric_temp_files_size_tblspc",
@@ -376,7 +897,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'spcname')||'",
     "expand": "'||(v_query->'expand'->>'spcname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, spcname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, spcname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, spcname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_temp_files_size_tblspc_agg||'
   },
   "metric_temp_files_size_db": {
     "name": "metric_temp_files_size_db",
@@ -388,7 +909,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, AVG((r).size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_temp_files_size_db_agg||'
   },
   "metric_wal_files": {
     "name": "metric_wal_files",
@@ -399,7 +920,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'instance_id')||'",
     "expand": "'||(v_query->'expand'->>'instance_id')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, ROW(NULL, SUM((r).measure_interval), MAX((r).written_size), MIN((r).current_location::pg_lsn)::TEXT, MAX((r).total), MAX((r).archive_ready), MAX((r).total_size))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, instance_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_wal_files_agg||'
   },
   "metric_cpu": {
     "name": "metric_cpu",
@@ -411,7 +932,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'cpu')||'",
     "expand": "'||(v_query->'expand'->>'cpu')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, cpu, ROW(NULL, SUM((r).measure_interval), SUM((r).time_user), SUM((r).time_system), SUM((r).time_idle), SUM((r).time_iowait), SUM((r).time_steal))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, cpu text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, host_id, cpu) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_cpu_agg||'
   },
   "metric_process": {
     "name": "metric_process",
@@ -422,7 +943,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'host_id')||'",
     "expand": "'||(v_query->'expand'->>'host_id')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, SUM((r).measure_interval), SUM((r).context_switches), SUM((r).forks), AVG((r).procs_running), AVG((r).procs_blocked), AVG((r).procs_total))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_process_agg||'
   },
   "metric_memory": {
     "name": "metric_memory",
@@ -433,7 +954,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'host_id')||'",
     "expand": "'||(v_query->'expand'->>'host_id')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, AVG((r).mem_total), AVG((r).mem_used), AVG((r).mem_free), AVG((r).mem_buffers), AVG((r).mem_cached), AVG((r).swap_total), AVG((r).swap_used))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_memory_agg||'
   },
   "metric_loadavg": {
     "name": "metric_loadavg",
@@ -444,7 +965,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'host_id')||'",
     "expand": "'||(v_query->'expand'->>'host_id')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, host_id, ROW(NULL, ROUND(AVG((r).load1)::NUMERIC, 2), ROUND(AVG((r).load5)::NUMERIC, 2), ROUND(AVG((r).load15)::NUMERIC, 2))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, host_id integer, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2 ORDER BY 1,2 ON CONFLICT (datetime, host_id) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_loadavg_agg||'
   },
   "metric_vacuum_analyze": {
     "name": "metric_vacuum_analyze",
@@ -456,7 +977,7 @@ BEGIN
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": "INSERT INTO #agg_table# SELECT truncate_time(datetime, ''#interval#'') AS datetime, instance_id, dbname, ROW(NULL, SUM((r).measure_interval), SUM((r).n_vacuum), SUM((r).n_analyze), SUM((r).n_autovacuum), SUM((r).n_autoanalyze))::#record_type#, COUNT(*) AS w FROM expand_data(''#name#'', tstzrange((SELECT MAX(datetime) FROM #agg_table#), NOW())) AS (datetime timestamp with time zone, instance_id integer, dbname text, r #record_type#) WHERE truncate_time(datetime, ''#interval#'') < truncate_time(NOW(), ''#interval#'') GROUP BY 1,2,3 ORDER BY 1,2,3 ON CONFLICT (datetime, instance_id, dbname) DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record WHERE #agg_table#.w < EXCLUDED.w;"
+    "aggregate": '||q_metric_vacuum_analyze_agg||'
   }}')::JSON INTO v_conf;
   RETURN v_conf;
 
