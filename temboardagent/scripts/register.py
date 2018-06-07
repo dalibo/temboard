@@ -107,7 +107,7 @@ class RegisterApplication(Application):
         )
         define_arguments(parser)
         args = parser.parse_args(argv)
-        self.bootstrap(argv=argv, environ=environ)
+        self.bootstrap(args=args, environ=environ)
         return wrapped_main(args, self)
 
 
