@@ -1,6 +1,3 @@
-[submodule "temboardagent/scheduler"]
-	path = temboardagent/scheduler
-	url = https://github.com/dalibo/temboard-sched.git
 [submodule "temboardagent/toolkit"]
 	path = temboardagent/toolkit
 	url = https://github.com/dalibo/temboard-toolkit.git

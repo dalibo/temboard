@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 
-from ..scheduler import taskmanager
+from ..toolkit import taskmanager
 
 from ..cli import Application
 from ..cli import define_core_arguments
