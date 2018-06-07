@@ -529,7 +529,7 @@ INSERT INTO #agg_table#
       NULL,
       AVG((r).used),
       AVG((r).total),
-      (r).device
+      NULL
     )::#record_type#,
     COUNT(*) AS w
   FROM
@@ -542,7 +542,7 @@ INSERT INTO #agg_table#
     )
   WHERE
     truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
-  GROUP BY 1,2,3,(r).device
+  GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, host_id, mount_point)
 DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
