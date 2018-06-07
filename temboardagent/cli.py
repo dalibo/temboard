@@ -37,6 +37,7 @@ class Application(BaseApplication):
 
     PROGRAM = "temboard-agent"
     VERSION = __version__
+    REPORT_URL = "https://github.com/dalibo/temboard-agent"
 
     DEFAULT_CONFIGFILE = '/etc/temboard-agent/temboard-agent.conf'
     DEFAULT_PLUGINS = [
