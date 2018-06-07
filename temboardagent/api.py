@@ -139,7 +139,7 @@ def profile(http_context, app, sessions):
         xsession = headers['X-Session'].encode('utf-8')
         session = sessions.get_by_sessionid(xsession)
         logger.info("Done.")
-        return {'username': session.username}
+        return {'username': session.username.decode('utf-8')}
     except SharedItem_not_found as e:
         logger.exception(e)
         logger.info("Failed.")
