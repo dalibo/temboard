@@ -141,35 +141,34 @@ class BaseHandler(tornado.web.RequestHandler):
         May be overriden by inherited classes.
         '''
         try:
-            self.tearDown()
-        except Exception:
-            pass
-        if (isinstance(e, TemboardUIError) or
-           isinstance(e, TemboardError)):
-            if e.code == 401:
-                return HTMLAsyncResult(
-                    http_code=401,
-                    redirection="/server/%s/%s/login" %
-                                (self.instance.agent_address,
-                                 self.instance.agent_port))
-            elif e.code == 302:
-                return HTMLAsyncResult(http_code=401,
-                                       redirection="/login")
-            code = e.code
-        else:
-            code = 500
-        return HTMLAsyncResult(
-                    http_code=code,
-                    template_file='error.html',
-                    data={
-                        'nav': True,
-                        'role': self.role,
-                        'instance': self.instance,
-                        'code': e.code,
-                        'error': e.message
-                    })
+            if (isinstance(e, TemboardUIError) or
+               isinstance(e, TemboardError)):
+                if e.code == 401:
+                    return HTMLAsyncResult(
+                        http_code=401,
+                        redirection="/server/%s/%s/login" %
+                                    (self.instance.agent_address,
+                                     self.instance.agent_port))
+                elif e.code == 302:
+                    return HTMLAsyncResult(http_code=401,
+                                           redirection="/login")
+                code = e.code
+            else:
+                code = 500
+            return HTMLAsyncResult(
+                        http_code=code,
+                        template_file='error.html',
+                        data={
+                            'nav': True,
+                            'role': self.role,
+                            'instance': self.instance,
+                            'code': e.code,
+                            'error': e.message
+                        })
+        except Exception as e:
+            self.logger.error(str(e))
 
-    def setUp(self, address, port):
+    def setUp(self, address=None, port=None):
         '''
         Start DB Session.
         Get instance and ensure that it exists.
@@ -180,13 +179,14 @@ class BaseHandler(tornado.web.RequestHandler):
         if not self.current_user:
             raise TemboardUIError(302, "Current role unknown.")
         self.role = self.current_user
-        self.instance = get_instance(self.db_session, address, port)
-        self.require_instance()
+        if address is not None and port is not None:
+            self.instance = get_instance(self.db_session, address, port)
+            self.require_instance()
 
-    def tearDown(self):
+    def tearDown(self, commit=True):
         try:
-            self.db_session.expunge_all()
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
             self.db_session.close()
         except Exception:
             pass

@@ -46,14 +46,14 @@ Then in an other terminal, run the following commands:
 ```
 $ docker-compose exec agent bash # enters the agent machine
 # pip install -e /usr/local/src/temboard-agent/ # installs temboard-agent in dev mode
-# sudo -u temboard temboard-agent
+# sudo -u postgres temboard-agent
 ```
 
 The last thing to do is to register the instance so that you don't have to do
 it manually in the interface. In an other terminal, use the following commands:
 ```
 $ docker-compose exec agent bash # enters the agent machine
-# sudo -u temboard temboard-agent-register --host $TEMBOARD_REGISTER_HOST --port $TEMBOARD_REGISTER_PORT --groups default $TEMBOARD_UI_URL
+# sudo -u postgres temboard-agent-register --host $TEMBOARD_REGISTER_HOST --port $TEMBOARD_REGISTER_PORT --groups default $TEMBOARD_UI_URL
 ```
 
 ## CSS

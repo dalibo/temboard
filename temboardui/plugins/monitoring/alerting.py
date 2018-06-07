@@ -36,7 +36,7 @@ def bootstrap_checks(hostinfo):
     yield ("sessions_usage", 80, 90)
     # Waiting sessions (value)
     # One per DB
-    yield ("waiting_session_db", 5, 10)
+    yield ("waiting_sessions_db", 5, 10)
 
 
 class PreProcess(object):
@@ -200,7 +200,7 @@ check_specs = dict(
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
-    waiting_session_db=dict(
+    waiting_sessions_db=dict(
         type='postgres',
         description='Waiting sessions',
         preprocess=PreProcess.waiting,

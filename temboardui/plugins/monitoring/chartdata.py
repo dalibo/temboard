@@ -205,7 +205,7 @@ SELECT
     round((((record).used::FLOAT/(record).total::FLOAT)*100)::numeric, 1) AS usage
 FROM expand_data_by_host_id('metric_filesystems_size', tstzrange(%(start)s, %(end)s), %(host_id)s)
 AS (datetime timestamp with time zone, host_id integer, mount_point text, record metric_filesystems_size_record)
-WHERE mount_point = %(keys)s
+WHERE mount_point = %(key)s
         """,  # noqa
         sql_zoom="""
 SELECT
@@ -383,7 +383,7 @@ ORDER BY datetime
         sql_nozoom="""
 SELECT
     datetime AS date,
-    (record).n_rollback AS rollback
+    SUM((record).n_rollback) AS rollback
 FROM expand_data_by_instance_id('metric_xacts', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_xacts_record)
 WHERE dbname = %(key)s
@@ -392,7 +392,7 @@ GROUP BY datetime, instance_id ORDER BY datetime
         sql_zoom="""
 SELECT
     datetime AS date,
-    (record).n_rollback AS rollback
+    SUM((record).n_rollback) AS rollback
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND key = %(key)s
 GROUP BY datetime, instance_id ORDER BY datetime
@@ -564,13 +564,13 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
         probename='locks'
     ),
-    waiting_session_db=dict(
+    waiting_sessions_db=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,
     (record).waiting
-FROM expand_data_by_instance_id('metric_session', tstzrange(%(start)s, %(end)s), %(instance_id)s)
-AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_locks_record)
+FROM expand_data_by_instance_id('metric_sessions', tstzrange(%(start)s, %(end)s), %(instance_id)s)
+AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_sessions_record)
 WHERE dbname = %(key)s
 ORDER BY datetime
         """,  # noqa

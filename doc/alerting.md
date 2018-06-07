@@ -29,7 +29,7 @@ Here's the list of current implemented `checks` and default thresholds:
 | **rollback_db**         | `10`          | `20 `     | Number of rollback'd transactions per database
 | **hitreadratio_db**     | `90`          | `80 `     | Hit/read ratio per database (%)
 | **sessions_usage**      | `80`          | `90 `     | Client session usage (%)
-| **waiting_session_db**  | `5`           | `10`      | Waiting session per database
+| **waiting_sessions_db** | `5`           | `10`      | Waiting sessions per database
 
 ## HTTP API
 
@@ -71,7 +71,7 @@ Returns the list of attached `checks` and their corresponding current state.
   {"name": "rollback_db", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "Rollbacked transactions"},
   {"name": "sessions_usage", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "Client sessions"},
   {"name": "swap_usage", "enabled":true, "state": "OK", "warning":30, "critical":50, "description": "Swap usage"},
-  {"name": "waiting_session_db", "enabled":true, "state": "OK", "warning":5, "critical":10, "description": "Waiting sessions"},
+  {"name": "waiting_sessions_db", "enabled":true, "state": "OK", "warning":5, "critical":10, "description": "Waiting sessions"},
   {"name": "wal_files_archive", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "WAL files ready to be archived"},
   {"name": "wal_files_total", "enabled":true, "state": "OK", "warning":50, "critical":100, "description": "WAL files"}
 ]

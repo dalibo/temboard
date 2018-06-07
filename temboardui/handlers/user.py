@@ -47,8 +47,6 @@ class LoginHandler(BaseHandler):
             self.start_db_session()
 
             role = self.current_user
-            self.db_session.expunge_all()
-            self.db_session.commit()
             self.db_session.close()
         except Exception as e:
             self.logger.exception(str(e))
@@ -76,8 +74,6 @@ class LoginHandler(BaseHandler):
             role = get_role_by_auth(self.db_session, p_role_name,
                                     role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
-            self.db_session.expunge_all()
-            self.db_session.commit()
             self.db_session.close()
             sleep(1)
             self.logger.info("Done.")
@@ -93,7 +89,6 @@ class LoginHandler(BaseHandler):
                                           role_hash_password)})
         except (TemboardUIError, Exception) as e:
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception:
                 pass
@@ -124,8 +119,6 @@ class AgentLoginHandler(BaseHandler):
                 raise TemboardUIError(302, "Current role unknown.")
 
             instance = get_instance(self.db_session, agent_address, agent_port)
-            self.db_session.expunge_all()
-            self.db_session.commit()
             self.db_session.close()
             xsession = self.get_secure_cookie(
                 "temboard_%s_%s" % (instance.agent_address,
@@ -153,7 +146,6 @@ class AgentLoginHandler(BaseHandler):
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception as e:
                 pass
@@ -191,8 +183,6 @@ class AgentLoginHandler(BaseHandler):
                 raise TemboardUIError(302, "Current role unknown.")
 
             instance = get_instance(self.db_session, agent_address, agent_port)
-            self.db_session.expunge_all()
-            self.db_session.commit()
             self.db_session.close()
 
             xsession = temboard_login(
@@ -219,7 +209,6 @@ class AgentLoginHandler(BaseHandler):
             self.logger.exception(str(e))
             self.logger.info("Failed.")
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception as e:
                 pass
@@ -252,8 +241,6 @@ class LoginJsonHandler(JsonHandler):
             role = get_role_by_auth(self.db_session, p_role_name,
                                     role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
-            self.db_session.expunge_all()
-            self.db_session.commit()
             self.db_session.close()
             sleep(1)
             self.logger.info("Done.")
@@ -268,7 +255,6 @@ class LoginJsonHandler(JsonHandler):
 
         except (TemboardUIError, Exception) as e:
             try:
-                self.db_session.rollback()
                 self.db_session.close()
             except Exception:
                 pass
