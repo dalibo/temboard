@@ -2,7 +2,7 @@ import logging
 import json
 import os
 
-from temboardagent.scheduler import taskmanager
+from temboardagent.toolkit import taskmanager
 from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.routing import RouteSet
 from temboardagent.queue import Queue, Message

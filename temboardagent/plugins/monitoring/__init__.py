@@ -7,7 +7,7 @@ try:
 except ImportError:
     from urllib.error import HTTPError
 
-from temboardagent.scheduler import taskmanager
+from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.toolkit.validators import file_, commalist
