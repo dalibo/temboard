@@ -153,7 +153,7 @@
                 {{!state.description}}
               </div>
               <div class="text-center">
-                <i class="fa fa-heart" v-bind:class="'text-' + state.state.toLowerCase()"></i>
+                <span class="badge" v-bind:class="'badge-' + state.state.toLowerCase()">{{! state.state }}</span>
               </div>
             </a>
           </div>
@@ -176,8 +176,8 @@
               </div>
               <div>
                 <a v-bind:href="'alerting/' + alert.name">
-                <span v-bind:class="'small text-' + alert.state.toLowerCase()">
-                  <i class="fa fa-heart"></i>
+                <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">
+                  <i class="fa fa-square"></i>
                 </span>
                 <span>
                   {{!alert.description}}
