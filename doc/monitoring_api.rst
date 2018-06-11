@@ -18,7 +18,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/sessions HTTP/1.1
+    GET /monitoring/probe/sessions HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -89,7 +89,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/xacts HTTP/1.1
+    GET /monitoring/probe/xacts HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -131,7 +131,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/locks HTTP/1.1
+    GET /monitoring/probe/locks HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -189,7 +189,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/blocks HTTP/1.1
+    GET /monitoring/probe/blocks HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -233,7 +233,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/bgwriter HTTP/1.1
+    GET /monitoring/probe/bgwriter HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -284,7 +284,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/db_size HTTP/1.1
+    GET /monitoring/probe/db_size HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -332,7 +332,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/tblspc_size HTTP/1.1
+    GET /monitoring/probe/tblspc_size HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -386,7 +386,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/filesystems_size HTTP/1.1
+    GET /monitoring/probe/filesystems_size HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -436,7 +436,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/cpu HTTP/1.1
+    GET /monitoring/probe/cpu HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -512,7 +512,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/process HTTP/1.1
+    GET /monitoring/probe/process HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -557,7 +557,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/memory HTTP/1.1
+    GET /monitoring/probe/memory HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -603,7 +603,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/loadavg HTTP/1.1
+    GET /monitoring/probe/loadavg HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
@@ -645,7 +645,7 @@ Monitoring plugin API
 
 .. sourcecode:: http
 
-    GET /monotoring/probe/wal_files HTTP/1.1
+    GET /monitoring/probe/wal_files HTTP/1.1
     X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 
