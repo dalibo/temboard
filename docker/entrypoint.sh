@@ -42,7 +42,7 @@ export TEMBOARD_UI_USER=${TEMBOARD_UI_USER-admin}
 export TEMBOARD_UI_PASSWORD=${TEMBOARD_UI_PASSWORD-admin}
 
 COMPOSE_PROJECT=$(docker inspect --format "{{ index .Config.Labels \"com.docker.compose.project\"}}" $HOSTNAME)
-links=($(docker inspect --format "{{range .NetworkSettings.Networks.${COMPOSE_PROJECT}_default.Links }}{{.}} {{end}}" $HOSTNAME))
+links=($(docker inspect --format '{{ $net := index .NetworkSettings.Networks "'"${COMPOSE_PROJECT}_default"'" }}{{range $net.Links }}{{.}} {{end}}' $HOSTNAME))
 links=(${links[@]%%:${TEMBOARD_HOSTNAME}})
 PGCONTAINER=${links[@]%%*:*}
 COMPOSE_SERVICE=$(docker inspect --format "{{ index .Config.Labels \"com.docker.compose.service\"}}" $HOSTNAME)
