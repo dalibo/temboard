@@ -487,16 +487,15 @@ class probe_cpu(HostProbe):
     hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
 
     def run(self):
+        to_delta = {}
         stat = open('/proc/stat')
-        out = []
         for line in stat:
             cols = line.split()
             if len(cols) == 0:
                 continue
-            if re.match(r'^cpu\d+$', cols[0]):
+            if cols[0] == 'cpu':
                 # Convert values to int then in milliseconds,
-                # before computing the delta
-                (interval, metrics) = self.delta(cols[0], {
+                to_delta = {
                     'time_user': (int(cols[1]) + int(cols[2]))
                     * 1000 / self.hz,
                     'time_system': (int(cols[3]) + int(cols[6]) + int(cols[7]))
@@ -504,20 +503,21 @@ class probe_cpu(HostProbe):
                     'time_idle': int(cols[4]) * 1000 / self.hz,
                     'time_iowait': int(cols[5]) * 1000 / self.hz,
                     'time_steal': int(cols[8]) * 1000 / self.hz
-                })
-
-                if interval is None:
-                    continue
-
-                metrics['measure_interval'] = interval
-                metrics['datetime'] = now()
-                metrics['cpu'] = cols[0]
-
-                out.append(metrics)
-
+                }
         stat.close()
 
-        return out
+        # Compute deltas for values of /proc/stat since boot time
+        (interval, metrics) = self.delta('global', to_delta)
+
+        # No deltas on the first call
+        if interval is None:
+            return []
+
+        metrics['measure_interval'] = interval
+        metrics['datetime'] = now()
+        metrics['cpu'] = 'global'
+
+        return [metrics]
 
 
 class probe_process(HostProbe):
