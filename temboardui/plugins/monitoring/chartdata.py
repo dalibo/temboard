@@ -379,6 +379,24 @@ ORDER BY datetime
         """,  # noqa
         probename='memory',
     ),
+    memory_usage=dict(
+        sql_nozoom="""
+SELECT
+    datetime AS date,
+    round(((((record).mem_total - (record).mem_free - (record).mem_cached)::FLOAT/(record).mem_total::FLOAT)*100)::numeric, 1) AS usage
+FROM expand_data_by_host_id('metric_memory', tstzrange(%(start)s, %(end)s), %(host_id)s)
+AS (datetime timestamp with time zone, host_id integer, record metric_memory_record)
+        """,  # noqa
+        sql_zoom="""
+SELECT
+    datetime AS date,
+    round(((((record).mem_total - (record).mem_free - (record).mem_cached)::FLOAT/(record).mem_total::FLOAT)*100)::numeric, 1) AS usage
+FROM %(tablename)s
+WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
+ORDER BY datetime
+        """,  # noqa
+        probename='memory',
+    ),
     rollback_db=dict(
         sql_nozoom="""
 SELECT
