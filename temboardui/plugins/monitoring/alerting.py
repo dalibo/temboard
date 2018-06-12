@@ -12,7 +12,7 @@ def bootstrap_checks(hostinfo):
     yield ("cpu_core", 50, 80)
     # Memory usage (percent)
     # global
-    yield ("memory", 50, 80)
+    yield ("memory_usage", 50, 80)
     # Swap usage (percent)
     # Global to host
     yield ("swap_usage", 30, 50)
@@ -146,14 +146,14 @@ check_specs = dict(
         threshold_type='percent',
         value_type='percent',
     ),
-    memory=dict(
+    memory_usage=dict(
         category='system',
         description='Memory usage',
         preprocess=PreProcess.memory,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
         threshold_type='percent',
-        value_type='memory'
+        value_type='percent'
     ),
     swap_usage=dict(
         category='system',
