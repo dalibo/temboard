@@ -161,3 +161,7 @@ END;
 $$;
 
 COMMIT;
+
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA monitoring TO temboard;
+GRANT ALL ON ALL TABLES IN SCHEMA monitoring TO temboard;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA monitoring TO temboard;
