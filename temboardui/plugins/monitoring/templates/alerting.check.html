@@ -88,7 +88,7 @@
   <div class="card w-100 mb-2" v-for="key in sortedKeys">
     <div class="p-2">
       <div class="text-center">
-        <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"></i>
+        <i v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()" data-toggle="tooltip" v-bind:title="'Current status: ' + key.state.toLowerCase()"></i>
         <span v-if="key.key != ''">{{!key.key}}</span>
         <span v-if="key.key == ''">{{check['name']}}</span>
       </div>

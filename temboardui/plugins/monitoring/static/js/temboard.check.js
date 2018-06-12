@@ -182,6 +182,7 @@ $(function() {
           console.error("Something went wrong");
         });
     });
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   function drawThreshold(chart, data, canvas) {
@@ -211,17 +212,44 @@ $(function() {
   function drawAlerts(chart, data) {
     var annotations = data.map(function(alert) {
       var x = getClosestX(chart, alert.datetime);
+      var text = [
+        '<span class="badge badge-',
+        alert.state.toLowerCase(),
+        '">',
+        alert.state,
+        '</span><br>'
+      ];
+      if (alert.state == 'WARNING' || alert.state == 'CRITICAL') {
+        text = text.concat([
+          alert.value,
+          ' > ',
+          alert[alert.state.toLowerCase()],
+          '<br>'
+        ]);
+      }
+      text.push(alert.datetime);
       return {
         series: chart.getLabels()[1],
         x: x,
         shortText: '♥',
         cssClass: 'alert-' + alert.state.toLowerCase(),
-        text: alert.state,
+        text: text.join(''),
         tickColor: bgColors[alert.state.toLowerCase()],
         attachAtBottom: true
       };
     });
     chart.setAnnotations(annotations);
+    window.setTimeout(function() {
+      $('.dygraph-annotation').each(function() {
+        $(this).attr('data-content', $(this).attr('title'));
+        $(this).attr('title', '');
+      });
+      $('.dygraph-annotation').popover({
+        trigger: 'hover',
+        placement: 'top',
+        html: true
+      });
+    }, 1);
   }
 
   function drawAlertsBg(chart, data, canvas, area) {
@@ -414,6 +442,8 @@ $(function() {
   }
 
   function refresh() {
+    // remove any previous popover on annotation
+    $('.dygraph-annotation').popover('dispose');
     $.ajax({
       url: apiUrl + "/states/" + checkName + ".json"
     }).success(function(data) {
