@@ -47,7 +47,6 @@ $(function() {
     props: [
       'check',
       'key_',
-      'thresholdType',
       'valueType',
       'foo',
       'from',
@@ -78,7 +77,7 @@ $(function() {
     var defaultOptions = {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
-      ylabel: (this.thresholdType == 'percent' && this.valueType == 'percent') ? '%' : '',
+      ylabel: this.valueType == 'percent' ? '%' : '',
       includeZero: true,
       legend: 'always',
       labelsDiv: "legend" + this.key_,

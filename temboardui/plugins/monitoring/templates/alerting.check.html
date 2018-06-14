@@ -24,13 +24,13 @@
         <span class="text-warning">
           &horbar;
         </span>
-        Warning: {{ '{0:g}'.format(float(check['warning'])) }}{% if threshold_type == 'percent' %}%{% end %}
+        Warning: {{ '{0:g}'.format(float(check['warning'])) }}{% if value_type == 'percent' %}%{% end %}
       </li>
       <li class="list-inline-item">
         <span class="text-critical">
           &horbar;
         </span>
-        Critical: {{ '{0:g}'.format(float(check['critical'])) }}{% if threshold_type == 'percent' %}%{% end %}
+        Critical: {{ '{0:g}'.format(float(check['critical'])) }}{% if value_type == 'percent' %}%{% end %}
       </li>
       <li class="list-inline-item">
         <a data-toggle="modal" data-target="#updateModal" href>
@@ -95,7 +95,7 @@
     </div>
     <div class="card-body pt-0">
       <div :id="'legend' + key.key" class="legend-chart"><div class="row"><div class="col-md-4 col-md-offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Loading, please wait ...</div></div></div></div></div>
-      <monitoring-chart check="{{check['name']}}" :key_="key.key" :threshold-type="key.threshold_type" :value-type="key.value_type" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
+      <monitoring-chart check="{{check['name']}}" :key_="key.key" :value-type="key.value_type" :id="'chart' + key.key" :from="fromDate" :to="toDate"></monitoring-chart>
     </div>
   </div>
 </div>

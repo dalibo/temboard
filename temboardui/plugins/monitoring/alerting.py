@@ -143,7 +143,6 @@ check_specs = dict(
         preprocess=PreProcess.cpu,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
-        threshold_type='percent',
         value_type='percent',
     ),
     memory_usage=dict(
@@ -152,7 +151,6 @@ check_specs = dict(
         preprocess=PreProcess.memory,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
-        threshold_type='percent',
         value_type='percent'
     ),
     swap_usage=dict(
@@ -161,7 +159,6 @@ check_specs = dict(
         preprocess=PreProcess.swap,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
-        threshold_type='percent',
         value_type='percent',
     ),
     fs_usage_mountpoint=dict(
@@ -170,7 +167,6 @@ check_specs = dict(
         preprocess=PreProcess.fs,
         message='{key}: {value}% is greater than {threshold}%',
         operator=operator.gt,
-        threshold_type='percent',
         value_type='percent',
     ),
     wal_files_archive=dict(
@@ -200,6 +196,7 @@ check_specs = dict(
         preprocess=PreProcess.hitratio,
         message='{key}: {value} is less than {threshold}',
         operator=operator.lt,
+        value_type='percent',
     ),
     sessions_usage=dict(
         category='postgres',
@@ -207,6 +204,7 @@ check_specs = dict(
         preprocess=PreProcess.sessions,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
+        value_type='percent',
     ),
     waiting_sessions_db=dict(
         category='postgres',
