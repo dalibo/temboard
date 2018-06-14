@@ -286,10 +286,12 @@ class PgInfo(Inventory):
         q = "SELECT version(), setting AS server FROM pg_settings WHERE " \
             "name = 'server_version'"
         self.db_conn.execute(q)
+        row = list(self.db_conn.get_rows())[0]
         return {
-            'full': list(self.db_conn.get_rows())[0]['version'],
-            'server': list(self.db_conn.get_rows())[0]['server'],
-            'num': self.db_conn.get_pg_version()
+            'full': row['version'],
+            'server': row['server'],
+            'num': self.db_conn.get_pg_version(),
+            'summary': ' '.join(row['version'].split(' ')[0:2]),
         }
 
     def is_in_recovery(self):
