@@ -115,6 +115,7 @@ def get_discover(http_context, app, sessions):
                 memory_size=sysinfo.memory_size(),
                 pg_port=pginfo.setting('port'),
                 pg_version=pginfo.version()['full'],
+                pg_version_summary=pginfo.version()['summary'],
                 pg_data=pginfo.setting('data_directory'),
                 plugins=[plugin_name for plugin_name in
                          app.config.temboard['plugins']]
