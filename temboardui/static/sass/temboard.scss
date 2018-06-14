@@ -328,6 +328,31 @@ table.table-activity {
 .monitoring-chart {
   width: 100%;
   height: 300px;
+
+  .alert-ok,
+  .alert-warning,
+  .alert-critical,
+  .alert-undef {
+    border: 0;
+    background-color: transparent;
+    font-size: 1rem !important;
+  }
+  .alert-ok {
+    color: $success !important;
+  }
+  .alert-warning {
+    color: $warning !important;
+  }
+  .alert-critical {
+    color: $danger !important;
+  }
+  .alert-undef {
+    color: $undef !important;
+  }
+
+  .dygraph-annotation {
+    cursor: pointer;
+  }
 }
 
 .legend-chart, .visibility-chart {
@@ -462,4 +487,9 @@ canvas {
 }
 [v-cloak] {
   display: none;
+}
+
+.striped {
+  background-image: linear-gradient(45deg,rgba(255,255,255,.5) 5%,transparent 5%,transparent 50%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.5) 75%,transparent 75%,transparent);
+  background-size: 1rem 1rem;
 }

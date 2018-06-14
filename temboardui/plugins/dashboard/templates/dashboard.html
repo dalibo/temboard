@@ -124,21 +124,101 @@
 </div>
 <div class="row">
   <div class="col-6">
-    <div class="card mb-4">
-      <div class="card-header small p-1 chart-title">
+    <div>
+      <div class="text-center small">
         Notifications
       </div>
-      <div class="card-body p-2 small" id="divNotif10">
+      <div class="small" id="divNotif10">
         <div class="text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
       </div>
     </div>
   </div>
+  {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
+  <div class="col-6" id="divAlerts">
+    <div class="text-center small">
+      Current status
+      <div class="position-absolute top-0 right-0 pr-2">
+        <a href="alerting" class="small text-muted">More&hellip;</a>
+      </div>
+    </div>
+    <div class="row small mb-2">
+      <template v-for="state in states">
+        <div class="col-3 col-xxl-2 p-1 text-center">
+          <div class="p-1 rounded" v-bind:class="[getBorderColor(state.state), {'striped bg-light': !state.enabled }]">
+            <a v-bind:href="'alerting/' + state.name"
+               v-bind:class="{'text-muted': !state.enabled}">
+              <div class="text-nowrap font-weight-bold"
+                   style="overflow: hidden; text-overflow: ellipsis"
+                   v-bind:title="state.description">
+                {{!state.description}}
+              </div>
+              <div class="text-center">
+                <span class="badge" v-bind:class="'badge-' + state.state.toLowerCase()">{{! state.state }}</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div class="text-center small">
+      Last alerts
+    </div>
+    <div class="small" style="max-height:300px; overflow-y:auto;">
+      <div class="text-center" v-if="!alerts">
+        <div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div>
+      </div>
+      <div class="text-muted" v-if="alerts.length == 0">
+        No alerts
+      </div>
+      <div v-cloak class="mb-0">
+        <template v-for="alert in alerts">
+          <div class="bg-light mb-1" :data-toggle-popover="alert.state == 'WARNING' || alert.state == 'CRITICAL'" data-trigger="hover">
+            <div class="p-1">
+              <div class="float-right text-muted text-right">
+                {{!moment(alert.datetime).fromNow()}}<br>
+              </div>
+              <div>
+                <a v-bind:href="'alerting/' + alert.name">
+                <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">
+                  <i class="fa fa-square"></i>
+                </span>
+                <span>
+                  {{!alert.description}}
+                </span>
+                <span v-if="alert.key">
+                  -
+                  {{!alert.key}}
+                </span>
+                </a>
+              </div>
+              <div class="popover-content text-muted d-none" v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'">
+                {{!moment(alert.datetime).format()}}<br>
+                <span v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{! alert.state }}</span>
+                <br>
+                <span class="font-weight-bold">
+                  {{!alert.value}}
+                </span>
+                <br>
+                Thresholds:
+                warning {{!alert.warning}}
+                /
+                critical {{!alert.critical}}
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    {% end %}
+  </div>
 </div>
 
 <!-- <script src="/js/Chart.js"></script> -->
+<script src="/js/vue.min.js"></script>
 <script src="/js/Chart.min.js"></script>
 <script src="/js/dashboard/temboard.dashboard.js"></script>
 <script src="/js/filesize.min.js"></script>
+<script src="/js/moment.min.js"></script>
 <script>
   var config = JSON.parse('{% raw config %}');
   var jdata_history = JSON.parse('{% raw history %}');

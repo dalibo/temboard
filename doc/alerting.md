@@ -40,7 +40,7 @@ Summary:
 | `checks` list                  | `GET`  | `/server/<address>/<port>/alerting/checks.json`
 | Update `checks`                | `POST` | `/server/<address>/<port>/alerting/checks.json`
 | `checks` configuration changes | `GET`  | `/server/<address>/<port>/alerting/check_changes/<check>.json?start=<start>&end=<end>`
-| State overview                 | `GET`  | `/server/<address>/<port>/alerting/overview.json`
+| Alerts                         | `GET`  | `/server/<address>/<port>/alerting/alerts.json`
 | State by `check`               | `GET`  | `/server/<address>/<port>/alerting/show/<check>.json`
 | State changes                  | `GET`  | `/server/<address>/<port>/alerting/state_changes/<check>.json?key=<key>&start=<start>&end=<end>`
 
@@ -62,19 +62,27 @@ Returns the list of attached `checks` and their corresponding current state.
 **Content example**
 
 ```json
-[
-  {"name": "cpu_core", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "CPU usage"},
-  {"name": "fs_usage_mountpoint", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "File systems usage"},
-  {"name": "hitreadratio_db", "enabled":true, "state": "OK", "warning":90, "critical":80, "description": "Cache Hit Ratio"},
-  {"name": "load1", "enabled":true, "state": "WARNING", "warning":2, "critical":4, "description": "Loadaverage"},
-  {"name": "memory", "enabled":true, "state": "OK", "warning":50, "critical":80, "description": "Memory usage"},
-  {"name": "rollback_db", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "Rollbacked transactions"},
-  {"name": "sessions_usage", "enabled":true, "state": "OK", "warning":80, "critical":90, "description": "Client sessions"},
-  {"name": "swap_usage", "enabled":true, "state": "OK", "warning":30, "critical":50, "description": "Swap usage"},
-  {"name": "waiting_sessions_db", "enabled":true, "state": "OK", "warning":5, "critical":10, "description": "Waiting sessions"},
-  {"name": "wal_files_archive", "enabled":true, "state": "OK", "warning":10, "critical":20, "description": "WAL files ready to be archived"},
-  {"name": "wal_files_total", "enabled":true, "state": "OK", "warning":50, "critical":100, "description": "WAL files"}
-]
+
+[{
+    "state_by_key": [{
+        "state": "OK", "key": "cpu3"
+    }, {
+        "state": "OK", "key": "cpu2"
+    }, {
+        "state": "OK", "key": "cpu1"
+    }, {
+        "state": "OK", "key": "cpu0"
+    }],
+    "name": "cpu_core",
+    "enabled": true,
+    "state": "OK",
+    "warning": 50.0,
+    "critical": 80.0,
+    "description": "CPU usage",
+    "value_type": "percent"
+}, {
+    ...
+}]
 ```
 
 
@@ -162,8 +170,27 @@ GET /server/192.168.122.21/2345/alerting/check_changes/cpu_core.json?start=2017-
 
 ```json
 [
-  ["2018-05-09T15:00:02.451555+02:00", true, 70, 80, "CPU usage"],
-  ["2018-05-02T15:05:35.342568+02:00", true, 50, 80, "CPU usage"]
+    {
+        "datetime": "2017-01-01T00:00:00+02:00",
+        "enabled": true,
+        "warning": 70,
+        "critical": 80,
+        "description": "CPU Usage"
+    },
+    {
+        "datetime": "2018-05-02T15:05:35.342568+02:00",
+        "enabled": true,
+        "warning": 50,
+        "critical": 80,
+        "description": "CPU Usage"
+    },
+    {
+        "datetime": "2018-05-10T00:00:00+02:00",
+        "enabled": true,
+        "warning": 50,
+        "critical": 80,
+        "description": "CPU Usage"
+    }
 ]
 ```
 
@@ -179,6 +206,54 @@ GET /server/192.168.122.21/2345/alerting/check_changes/cpu_core.json?start=2017-
 {
   "error": "Unknown check 'cpu'"
 }
+```
+
+
+### Alerts
+
+List of `alerts` (ie. state changes with a warning or critical state value) according to the time interval defined by `start` and `end` arguments (ISO 8601). If no time interval specified, returns the whole history.
+
+**URL** : `/server/<address>/<port>/alerting/alerts.json?start=<start>&end=<end>`
+
+**Method** : `GET`
+
+**Auth required** : YES
+
+**Data example**
+
+```http
+GET /server/192.168.122.21/2345/alerting/alerts.json?start=2017-01-01T00:00:00Z&end=2018-05-10T00:00:00Z
+```
+
+#### Success Response
+
+**Code** : `200 OK`
+
+**Content example**
+
+```json
+[
+    {
+        "datetime": "2017-01-01T00:01:00+02:00",
+        "warning": 50,
+        "critical": 70,
+        "value": 55,
+        "state": "WARNING",
+        "description": "CPU Usage",
+        "key": "cpu0",
+        "check": "cpu_core"
+    },
+    {
+        "datetime": "2017-01-01T00:05:35.342568+02:00",
+        "warning": 50,
+        "critical": 70,
+        "value": 72,
+        "state": "CRITICAL",
+        "description": "CPU Usage",
+        "key": "cpu0",
+        "check": "cpu_core"
+    }
+]
 ```
 
 
@@ -200,10 +275,10 @@ Gives details (state for each key) about `check`.
 
 ```json
 [
-  {"value":36, "datetime": "2018-05-14T12:25:39+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu2"},
-  {"value":49, "datetime": "2018-05-14T12:14:33+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu1"},
-  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu3"},
-  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu0"}
+  {"value":36, "datetime": "2018-05-14T12:25:39+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu2", "value_type": "percent"},
+  {"value":49, "datetime": "2018-05-14T12:14:33+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu1", "value_type": "percent"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu3", "value_type": "percent"},
+  {"value":50, "datetime": "2018-05-14T12:20:37+00:00", "state": "OK", "warning":50, "critical":80, "key": "cpu0", "value_type": "percent"}
 ]
 ```
 

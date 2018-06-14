@@ -3,131 +3,81 @@
 {% block title %}temBoard - Home{% end %}
 
 {% block content %}
+{% import json %}
+{% from temboardui import json_encoder %}
+<script src="/js/lodash.min.js"></script>
+<script src="/js/vue.min.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
+<script>
+var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
+</script>
+<script src="/js/home.js"></script>
 <div class="row">
   <div class="col-md-12">
-    {% if len(instance_list) > 0 %}
-    <ul class="list-group instance-list">
-    {% for instance in instance_list %}
-      <li class="list-group-item">
+    <ul id="instances" class="list-group instance-list">
+      <li class="list-group-item" v-for="instance in instances" v-cloak>
         <div class="row">
           <div class="col-md-12">
             <div class="pull-right">
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
+              <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')"
                  class="btn btn-outline-secondary btn-sm">
                 View
               </a>
             </div>
             <strong>
-              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
-              {{instance.hostname}}
+              <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')">
+              {{!instance.hostname}}
               </a>
             </strong>
+            <checks :instance="instance"></checks>
           </div>
         </div>
         <div class="row">
           <div class="col-md-5 small">
             <dl class="row mb-0">
               <dt class="col-sm-3">Host: </dt>
-              <dd class="col-sm-9 mb-0">{{instance.agent_address}}</dd>
+              <dd class="col-sm-9 mb-0">{{!instance.agent_address}}</dd>
               <dt class="col-sm-3">Data: </dt>
-              <dd class="col-sm-9 mb-0">{{instance.pg_data}}</dd>
+              <dd class="col-sm-9 mb-0">{{!instance.pg_data}}</dd>
               <dt class="col-sm-3">Port: </dt>
-              <dd class="col-sm-9 mb-0">{{instance.pg_port}}</dd>
+              <dd class="col-sm-9 mb-0">{{!instance.pg_port}}</dd>
               <dt class="col-sm-3">Version: </dt>
-              <dd class="col-sm-9 mb-0">{{instance.pg_version}}</dd>
+              <dd class="col-sm-9 mb-0">{{!instance.pg_version}}</dd>
             </dl>
           </div>
           <div class="col-md-3">
-            <span>{% for group in instance.groups %} <span class="badge badge-secondary">{{group.group_name}}</span>{% end %}</span>
+            <div>
+            <span v-for="group in instance.groups" class="badge badge-secondary">{{!group.group_name}}</span>
+            </div>
+            <br>
           </div>
           <div class="col-md-4">
             <br>
-            {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
-            {% set chart_loadavg_id = "chart-" + instance.hostname + "-loadavg" %}
-            {% set chart_tps_id = "chart-" + instance.hostname + "-tps" %}
-            <div class="row">
+            <div class="row" v-if="hasMonitoring(instance)">
               <div class="col-md-12">
-                <div id="{{chart_tps_id}}"
-                     class="sparkline-container"
+                <sparkline class="sparkline-container"
+                     :instance="instance"
+                     :metric="'tps'"
                      data-toggle="tooltip"
                      data-title="Transations / sec (last hour)"
                      data-placement="bottom">
-                </div>
-                <div id="{{chart_loadavg_id}}"
+                </sparkline>
+                <sparkline
                      class="sparkline-container"
+                     :instance="instance"
+                     :metric="'load1'"
                      data-toggle="tooltip"
                      data-title="Load average (last hour)"
                      data-placement="bottom">
-                </div>
-              </div>
-              <script>
-              $(document).ready(function() {
-                var api_url = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-
-                var start = moment().subtract(1, 'hours').toISOString();
-                var end = moment().toISOString();
-                var defaultOptions = {
-                  axes: {
-                    x: {
-                      drawGrid: false,
-                      axisLabelFontSize: 9,
-                      axisLabelColor: '#999',
-                      pixelsPerLabel: 40,
-                      gridLineColor: '#dfdfdf',
-                      axisLineColor: '#dfdfdf'
-                      //drawAxis: false
-                    },
-                    y: {
-                      axisLabelFontSize: 9,
-                      axisLabelColor: '#999',
-                      axisLabelWidth: 15,
-                      pixelsPerLabel: 10,
-                      drawAxesAtZero: true,
-                      includeZero: true,
-                      axisLineColor: '#dfdfdf',
-                      gridLineColor: '#dfdfdf'
-                    }
-                  },
-                  legend: 'never',
-                  xValueParser: function(x) {
-                    var m = moment(x);
-                    return m.toDate().getTime();
-                  },
-                  highlightCircleSize: 0,
-                  interactionModel: {}
-                };
-                var g = new Dygraph(
-                  document.getElementById("{{chart_tps_id}}"),
-                  api_url + "/data/tps?start=" + start + "&end=" + end,
-                  $.extend({
-                    colors: ['#50BD68', '#F15854']
-                  }, defaultOptions)
-                );
-                var g = new Dygraph(
-                  document.getElementById("{{chart_loadavg_id}}"),
-                  api_url + "/data/load1?start=" + start + "&end=" + end,
-                  $.extend({
-                    colors: ['#FAA43A']
-                  }, defaultOptions)
-                );
-              });
-              </script>
-            </div>
-            {% else %}
-            <div class="row">
-              <div class="col-md-12 text-center text-muted small">
-                <em>Monitoring plugin not active</em>
+                </sparkline>
               </div>
             </div>
-            {% end %}
           </div>
         </div>
       </li>
-    {% end %}
     </ul>
-    {% else %}
+    {% if len(instance_list.all()) == 0 %}
     <p>
     {% try %}
       {% if role.is_admin %}

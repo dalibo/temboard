@@ -12,7 +12,7 @@ def bootstrap_checks(hostinfo):
     yield ("cpu_core", 50, 80)
     # Memory usage (percent)
     # global
-    yield ("memory", 50, 80)
+    yield ("memory_usage", 50, 80)
     # Swap usage (percent)
     # Global to host
     yield ("swap_usage", 30, 50)
@@ -131,77 +131,83 @@ class PreProcess(object):
 
 check_specs = dict(
     load1=dict(
-        type='system',
+        category='system',
         description='Loadaverage',
         preprocess=PreProcess.loadaverage,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
     cpu_core=dict(
-        type='system',
+        category='system',
         description='CPU usage',
         preprocess=PreProcess.cpu,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
+        value_type='percent',
     ),
-    memory=dict(
-        type='system',
+    memory_usage=dict(
+        category='system',
         description='Memory usage',
         preprocess=PreProcess.memory,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
+        value_type='percent'
     ),
     swap_usage=dict(
-        type='system',
+        category='system',
         description='Swap usage',
         preprocess=PreProcess.swap,
         message='{value}% is greater than {threshold}%',
         operator=operator.gt,
+        value_type='percent',
     ),
     fs_usage_mountpoint=dict(
-        type='system',
+        category='system',
         description='File systems usage',
         preprocess=PreProcess.fs,
         message='{key}: {value}% is greater than {threshold}%',
         operator=operator.gt,
+        value_type='percent',
     ),
     wal_files_archive=dict(
-        type='postgres',
+        category='postgres',
         description='WAL files ready to be archived',
         preprocess=PreProcess.archive_ready,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
     wal_files_total=dict(
-        type='postgres',
+        category='postgres',
         description='WAL files',
         preprocess=PreProcess.wal_files,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
     ),
     rollback_db=dict(
-        type='postgres',
+        category='postgres',
         description='Rollbacked transactions',
         preprocess=PreProcess.xacts_rollback,
         message='{key}: {value} is greater than {threshold}',
         operator=operator.gt,
     ),
     hitreadratio_db=dict(
-        type='postgres',
+        category='postgres',
         description='Cache Hit Ratio',
         preprocess=PreProcess.hitratio,
         message='{key}: {value} is less than {threshold}',
         operator=operator.lt,
+        value_type='percent',
     ),
     sessions_usage=dict(
-        type='postgres',
+        category='postgres',
         description='Client sessions',
         preprocess=PreProcess.sessions,
         message='{value} is greater than {threshold}',
         operator=operator.gt,
+        value_type='percent',
     ),
     waiting_sessions_db=dict(
-        type='postgres',
+        category='postgres',
         description='Waiting sessions',
         preprocess=PreProcess.waiting,
         message='{key}: {value} is greater than {threshold}',
@@ -224,7 +230,7 @@ def checks_info(session, host_id, instance_id):
     """
     query = """
 SELECT c.name, c.warning, c.critical, c.description, c.enabled,
-json_agg(cs.state) AS keys_states
+json_agg(json_build_object('key', cs.key, 'state', cs.state)) AS state_by_key
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 WHERE host_id = :host_id AND instance_id = :instance_id
 GROUP BY 1,2,3,4,5 ORDER BY 1
@@ -234,17 +240,21 @@ GROUP BY 1,2,3,4,5 ORDER BY 1
     ret = []
     for row in res.fetchall():
         c_row = dict(row)
-        c_row['state'] = get_highest_state(c_row['keys_states'])
-        del c_row['keys_states']
+        c_row['state'] = get_highest_state([o['state']
+                                            for o in c_row['state_by_key']])
         ret.append(c_row)
     return ret
 
 
 def check_state_detail(session, host_id, instance_id, check_name):
     query = """
-SELECT json_agg(json_build_object('key', cs.key, 'state', cs.state, 'datetime',
-                                  sc.datetime, 'value', sc.value, 'warning',
-                                  sc.warning, 'critical', sc.critical)) AS state_detail
+SELECT json_agg(json_build_object('key', cs.key,
+                                  'state', cs.state,
+                                  'enabled', c.enabled,
+                                  'datetime', sc.datetime,
+                                  'value', sc.value,
+                                  'warning', sc.warning,
+                                  'critical', sc.critical)) AS state_detail
 FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.check_id)
 JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.key
                                      AND sc.datetime = (SELECT MAX(datetime)

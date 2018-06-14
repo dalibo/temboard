@@ -154,6 +154,15 @@
                 </a>
               </li>
               {% end %}
+              {% if 'monitoring' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
+                   class="{{'active' if plugin == 'alerting' else ''}} nav-link">
+                  <i class="fa fa-heart fa-fw"></i>
+                  Status
+                </a>
+              </li>
+              {% end %}
               {% if 'pgconf' in plugin_names %}
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"

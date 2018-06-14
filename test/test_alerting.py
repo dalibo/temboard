@@ -11,7 +11,7 @@ def test_preproc():
                            'time_iowait': 1, 'time_user': 1, 'time_idle': 1}]},
             expected={'cpu0': 80.0},
         ),
-        memory=dict(
+        memory_usage=dict(
             data={'memory': [{'mem_total': 10, 'mem_free': 2,
                               'mem_cached': 3}]},
             expected=50.0,
@@ -65,7 +65,7 @@ def test_bootstrap_checks():
 
     for c in bootstrap_checks({'n_cpu': 1}):
         assert len(c) == 3
-        assert c[0] in ['load1', 'cpu_core', 'memory', 'swap_usage',
+        assert c[0] in ['load1', 'cpu_core', 'memory_usage', 'swap_usage',
                         'fs_usage_mountpoint', 'wal_files_archive',
                         'wal_files_total', 'rollback_db', 'hitreadratio_db',
                         'sessions_usage', 'waiting_sessions_db']

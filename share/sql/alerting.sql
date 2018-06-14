@@ -148,10 +148,31 @@ BEGIN
     RAISE EXCEPTION 'Check % not found for this host', i_check_name;
   END IF;
 
+
   FOR r IN
-    SELECT datetime, check_id, enabled, warning, critical, description
-    FROM monitoring.check_changes
-    WHERE check_id = v_check_id AND datetime <@ tstzrange(i_start_dt, i_end_dt)
+    -- get the most recent state before range start
+    (
+      SELECT i_start_dt as datetime, check_id, enabled, warning, critical, description
+      FROM monitoring.check_changes cc
+      WHERE cc.check_id = v_check_id AND cc.datetime <= i_start_dt
+      ORDER BY cc.datetime DESC
+      LIMIT 1
+    )
+    UNION
+    (
+      SELECT datetime, check_id, enabled, warning, critical, description
+      FROM monitoring.check_changes
+      WHERE check_id = v_check_id AND datetime <@ tstzrange(i_start_dt, i_end_dt)
+    )
+    UNION
+    -- get the most recent state before range stop
+    (
+      SELECT i_end_dt as datetime, check_id, enabled, warning, critical, description
+      FROM monitoring.check_changes cc
+      WHERE cc.check_id = v_check_id AND cc.datetime <= i_end_dt
+      ORDER BY cc.datetime DESC
+      LIMIT 1
+    )
     ORDER BY datetime DESC
   LOOP
     RETURN NEXT r;
