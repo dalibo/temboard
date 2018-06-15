@@ -408,6 +408,11 @@ def delete_instance(session, agent_address, agent_port):
 
 def add_instance_in_group(session, agent_address, agent_port, group_name):
     try:
+        # Create instance group if not exists
+        group = Groups(group_name=unicode(group_name), group_kind=u'instance')
+        session.merge(group)
+        session.flush()
+
         instance_group = InstanceGroups(
             agent_address=unicode(agent_address),
             agent_port=agent_port,
