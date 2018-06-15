@@ -153,6 +153,7 @@ def check_data_worker(dbconf, host_id, instance_id, data):
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
+    keys = dict()
 
     for raw in data:
         datetime = raw.get('datetime')
@@ -207,9 +208,19 @@ def check_data_worker(dbconf, host_id, instance_id, data):
                                 'k': cs.key, 'v': value, 'w': warning,
                                 'c': critical})
 
+        if c.check_id not in keys:
+            keys[c.check_id] = list()
+        keys[c.check_id].append(cs.key)
+
         worker_session.commit()
         worker_session.expunge_all()
 
+    # Purge CheckState
+    for check_id, ks in keys.items():
+        worker_session.execute("DELETE FROM monitoring.check_states WHERE "
+                               "check_id = :check_id AND NOT (key = ANY(:ks))",
+                               {'check_id': check_id, 'ks': ks})
+        worker_session.commit()
     worker_session.close()
 
 

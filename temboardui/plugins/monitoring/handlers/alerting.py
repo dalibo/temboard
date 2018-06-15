@@ -239,12 +239,12 @@ class AlertingJSONStateChangesHandler(AlertingJSONHandler):
         if start:
             try:
                 start_time = dt_parser.parse(start)
-            except ValueError as e:
+            except ValueError:
                 raise TemboardUIError(406, 'Datetime not valid.')
         if end:
             try:
                 end_time = dt_parser.parse(end)
-            except ValueError as e:
+            except ValueError:
                 raise TemboardUIError(406, 'Datetime not valid.')
 
         data_buffer = cStringIO.StringIO()
@@ -271,9 +271,8 @@ class AlertingJSONStateChangesHandler(AlertingJSONHandler):
         data_buffer.close()
         try:
             data = json.loads(data)
-        except Exception as e:
-            logger.exception(str(e))
-            logger.debug(data)
+        except Exception:
+            # No data
             data = []
 
         return JSONAsyncResult(http_code=200, data=data)
