@@ -6,6 +6,8 @@ import functools
 import logging
 import os
 import sys
+import datetime
+import getpass
 
 from ..toolkit import taskmanager
 
@@ -207,6 +209,11 @@ class AgentApplication(Application):
 
         logger.info("Starting main process.")
 
+        self.start_datetime = datetime.datetime.now()
+        self.reload_datetime = None
+        self.pid = os.getpid()
+        self.user = getpass.getuser()
+
         # Purge all data queues at start time excepting metrics &
         # notifications.
         purge_queue_dir(
@@ -225,6 +232,10 @@ class AgentApplication(Application):
             httpd.run()
 
         return 0
+
+    def reload(self):
+        super(AgentApplication, self).reload()
+        self.reload_datetime = datetime.datetime.now()
 
 main = AgentApplication(specs=list_options_specs())
 

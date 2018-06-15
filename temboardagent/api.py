@@ -20,6 +20,7 @@ from temboardagent.usermgmt import auth_user, gen_sessionid
 from temboardagent.spc import error
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.inventory import SysInfo, PgInfo
+from .version import __version__ as version
 
 
 logger = logging.getLogger(__name__)
@@ -158,3 +159,32 @@ def notifications(http_context, app, sessions):
         logger.exception(e)
         logger.info("Failed.")
         raise HTTPError(500, "Internal error.")
+
+
+@add_route('GET', b'/status', check_session=False)
+def get_status(http_context, app, sessions):
+    logger.info('Starting /status.')
+    try:
+        start_datetime=time.strftime(
+                            "%Y-%m-%dT%H:%M:%S%Z",
+                            app.start_datetime.timetuple())
+        reload_datetime=time.strftime(
+                            "%Y-%m-%dT%H:%M:%S%Z",
+                            app.start_datetime.timetuple())
+        ret = dict(
+            pid=app.pid,
+            user=app.user,
+            start_datetime=start_datetime,
+            reload_datetime=reload_datetime,
+            configfile=app.config.temboard.configfile,
+            version=version,
+        )
+        logger.info('Ending /status.')
+        return ret
+    except (error, Exception, HTTPError) as e:
+        logger.exception(str(e))
+        logger.info('Status failed.')
+        if isinstance(e, HTTPError):
+            raise e
+        else:
+            raise HTTPError(500, "Internal error.")

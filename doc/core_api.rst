@@ -260,3 +260,39 @@ Core API
     Content-type: application/json
 
     {"error": "Parameter 'X-Session' is malformed."}
+
+
+.. http:get:: /status
+
+    Get informations about the agent
+
+    :status 200: no error
+    :status 500: internal error
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    GET /status HTTP/1.1
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/2.0+master Python/2.7.5
+    Date: Fri, 15 Jun 2018 13:42:57 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "start_datetime": "2018-06-15T15:42:42",
+        "version": "2.0+master",
+        "user": "postgres",
+        "reload_datetime": "2018-06-15T15:42:42",
+        "pid": 32669,
+        "configfile": "/etc/temboard-agent/temboard-agent.conf"
+    }
