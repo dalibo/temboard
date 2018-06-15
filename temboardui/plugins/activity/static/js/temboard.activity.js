@@ -11,7 +11,7 @@ $(function() {
 
   function onCreatedCellDangerY(td, cellData) {
     if (cellData == 'Y') {
-      $(td).addClass('bg-danger');
+      $(td).addClass('text-danger font-weight-bold');
     }
   }
 
@@ -74,11 +74,11 @@ $(function() {
         var cls = '';
         switch (rowData.state) {
           case 'active':
-            cls = 'bg-success';
+            cls = 'text-success font-weight-bold';
             break;
           case 'idle in transaction':
           case 'idle in transaction (aborted)':
-            cls = 'bg-danger';
+            cls = 'text-danger font-weight-bold';
             break;
         }
         $(td).addClass(cls);
