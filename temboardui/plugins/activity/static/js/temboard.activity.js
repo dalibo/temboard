@@ -36,8 +36,26 @@ $(function() {
     {title: 'User', data: 'user', orderable: false},
     {title: 'CPU', data: 'cpu', className: 'text-right'},
     {title: 'mem', data: 'memory', className: 'text-right'},
-    {title: 'Read/s', data: 'read_s', className: 'text-right'},
-    {title: 'Write/s', data: 'write_s', className: 'text-right'},
+    {
+      title: 'Read/s',
+      data: function(row) {
+        return row.read_s.human2bytes();
+      },
+      render: function(data, type, row) {
+        return type == 'display' ? row.read_s : data;
+      },
+      className: 'text-right'
+    },
+    {
+      title: 'Write/s',
+      data: function(row) {
+        return row.write_s.human2bytes();
+      },
+      render: function(data, type, row) {
+        return type == 'display' ? row.write_s : data;
+      },
+      className: 'text-right'
+    },
     {
       title: 'IOW',
       data: 'iow',
@@ -388,4 +406,14 @@ function escapeHtml(string) {
 
 String.prototype.trunc = String.prototype.trunc || function(n){
   return (this.length > n) ? this.substr(0, n-1) + '&hellip;' : this;
+};
+
+String.prototype.human2bytes = String.prototype.human2bytes || function() {
+  var val = parseFloat(this);
+  if (typeof val == 'number') {
+    var suffix = this.slice(-1);
+    var suffixes = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+    return val * Math.pow(2, suffixes.indexOf(suffix) * 10);
+  }
+  return this;
 };
