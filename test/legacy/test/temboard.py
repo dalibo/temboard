@@ -225,15 +225,7 @@ def _mkdir(path):
     Create a directory and its parents is they do not exist.
     Returns the path.
     """
-    c_path = ''
-    for f in path.split('/'):
-        c_path += '/' + f
-        if not os.path.exists(c_path):
-            os.mkdir(c_path)
-        elif os.path.exists(c_path) and os.path.isdir(c_path):
-            continue
-        elif os.path.exists(c_path) and not os.path.isdir(c_path):
-            os.mkdir(c_path)
+    os.makedirs(path)
     return path
 
 
