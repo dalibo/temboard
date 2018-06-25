@@ -2,6 +2,11 @@
 
 You can quickly set up a dev env with virtualenv and Docker Compose.
 
+Get the temBoard and submodules sources:
+
+$ git clone --recursive https://github.com/dalibo/temboard.git
+
+
 First, create a virtualenv for Python2.7, activate it. Then install temBoard and
 run it with:
 
