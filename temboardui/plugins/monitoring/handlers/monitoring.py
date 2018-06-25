@@ -137,6 +137,7 @@ class MonitoringCollectorHandler(JsonHandler):
                 'check_data_worker',
                 options=task_options,
                 listener_addr=str(config.temboard['tm_sock_path']),
+                expire=0,
             )
 
             return JSONAsyncResult(http_code=200, data={'done': True})
