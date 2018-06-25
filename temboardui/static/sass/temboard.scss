@@ -359,6 +359,21 @@ table.table-activity {
   font-size: 12px;
 }
 
+#charts-container .card-body {
+  position: relative;
+}
+
+.nodata-chart {
+  position: absolute;
+  z-index: 3;
+  top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  width: 200px;
+}
+
 .picker-dropdown-panel {
   right: 0;
   z-index: $zindex-dropdown;
