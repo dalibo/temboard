@@ -104,7 +104,7 @@ def bootstrap():
 
 def schedule_task(worker_name, id=None, options=None, start=None,
                   redo_interval=None, listener_addr=TM_DEF_LISTENER_ADDR,
-                  authkey=None):
+                  authkey=None, expire=3600):
     # Schedule a new task
     return TaskManager.send_message(
                 listener_addr,
@@ -116,6 +116,7 @@ def schedule_task(worker_name, id=None, options=None, start=None,
                         options=options,
                         start_datetime=start or datetime.utcnow(),
                         redo_interval=redo_interval,
+                        expire=expire,
                     )
                 ),
                 authkey=authkey
@@ -138,7 +139,8 @@ class Task(object):
 
     def __init__(self, worker_name=None, options=None, id=None,
                  status=TASK_STATUS_DEFAULT, start_datetime=None,
-                 redo_interval=None, stop_datetime=None, output=None):
+                 redo_interval=None, stop_datetime=None, output=None,
+                 expire=3600):
         self.worker_name = worker_name
         self.options = options
         self.status = status
@@ -147,6 +149,10 @@ class Task(object):
         self.stop_datetime = stop_datetime
         self.id = id
         self.output = output
+        # Task expiration timeout in seconds.
+        # Ended Tasks are removed from memory when current time exceeds
+        # self.stop_datetime + self.expire.
+        self.expire = expire
 
     def __repr__(self):
         return str(self.__dict__)
@@ -428,7 +434,7 @@ class Scheduler(object):
                                     redo_interval=t.redo_interval,
                             )
                         except Exception as e:
-                            logger.exception(e)
+                            logger.exception(str(e))
                             logger.error("Could not update Task %s with"
                                          " options=%s" % (t.id, t.options))
                     else:
@@ -609,7 +615,7 @@ class Scheduler(object):
                 continue
 
             if (not redo and t.stop_datetime and
-                    t.stop_datetime + timedelta(seconds=3600) < now and
+                    t.stop_datetime + timedelta(seconds=t.expire) < now and
                     t.status & (TASK_STATUS_DONE | TASK_STATUS_FAILED |
                                 TASK_STATUS_ABORTED |
                                 TASK_STATUS_CANCELED)):
