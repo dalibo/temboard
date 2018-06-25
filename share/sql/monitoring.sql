@@ -249,12 +249,12 @@ BEGIN
       "cpu":         "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, cpu, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;"
     },
     "expand": {
-      "host_id": "WITH expand AS (SELECT datetime, host_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, hist_query.record FROM (SELECT host_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
-      "instance_id": "WITH expand AS (SELECT datetime, instance_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, hist_query.record FROM (SELECT instance_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
-      "dbname": "WITH expand AS (SELECT datetime, instance_id, dbname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, dbname, hist_query.record FROM (SELECT instance_id, dbname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
-      "spcname":"WITH expand AS (SELECT datetime, instance_id, spcname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, spcname, hist_query.record FROM (SELECT instance_id, spcname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
-      "mount_point": "WITH expand AS (SELECT datetime, host_id, mount_point, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, mount_point, hist_query.record FROM (SELECT host_id, mount_point, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;",
-      "cpu": "WITH expand AS (SELECT datetime, host_id, cpu, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, cpu, hist_query.record FROM (SELECT host_id, cpu, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC;"
+      "host_id": "WITH expand AS (SELECT datetime, host_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, hist_query.record FROM (SELECT host_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "instance_id": "WITH expand AS (SELECT datetime, instance_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, hist_query.record FROM (SELECT instance_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "dbname": "WITH expand AS (SELECT datetime, instance_id, dbname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, dbname, hist_query.record FROM (SELECT instance_id, dbname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "spcname":"WITH expand AS (SELECT datetime, instance_id, spcname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, spcname, hist_query.record FROM (SELECT instance_id, spcname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "mount_point": "WITH expand AS (SELECT datetime, host_id, mount_point, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, mount_point, hist_query.record FROM (SELECT host_id, mount_point, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "cpu": "WITH expand AS (SELECT datetime, host_id, cpu, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, cpu, hist_query.record FROM (SELECT host_id, cpu, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC"
     }
   }'::JSON INTO v_query;
 
@@ -305,7 +305,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -313,7 +313,7 @@ INSERT INTO #agg_table#
       r #record_type#
    )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -335,7 +335,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
   AS (
     datetime timestamp with time zone,
     instance_id integer,
@@ -343,7 +343,7 @@ INSERT INTO #agg_table#
     r #record_type#
   )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -379,7 +379,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -387,7 +387,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -410,7 +410,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -418,7 +418,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -448,14 +448,14 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2
   ORDER BY 1,2
 ON CONFLICT (datetime, instance_id)
@@ -475,7 +475,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -483,7 +483,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -503,7 +503,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -511,7 +511,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, spcname)
@@ -533,7 +533,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       host_id integer,
@@ -541,7 +541,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, host_id, mount_point)
@@ -561,7 +561,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -569,7 +569,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, spcname)
@@ -589,7 +589,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -597,7 +597,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -621,14 +621,14 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2
   ORDER BY 1,2
 ON CONFLICT (datetime, instance_id)
@@ -653,7 +653,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       host_id integer,
@@ -661,7 +661,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, host_id, cpu)
@@ -685,14 +685,14 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       host_id integer,
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2
   ORDER BY 1,2
 ON CONFLICT (datetime, host_id)
@@ -717,14 +717,14 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       host_id integer,
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2
   ORDER BY 1,2
 ON CONFLICT (datetime, host_id)
@@ -745,14 +745,14 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       host_id integer,
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2
   ORDER BY 1,2
 ON CONFLICT (datetime, host_id)
@@ -776,7 +776,7 @@ INSERT INTO #agg_table#
     )::#record_type#,
     COUNT(*) AS w
   FROM
-    expand_data('#name#', (SELECT tstzrange(MAX(datetime), MAX(datetime) + '1 day'::interval) FROM #agg_table#))
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
     AS (
       datetime timestamp with time zone,
       instance_id integer,
@@ -784,7 +784,7 @@ INSERT INTO #agg_table#
       r #record_type#
     )
   WHERE
-    truncate_time(datetime, '#interval#') < truncate_time((SELECT MAX(datetime) + '1 day'::interval FROM #agg_table#), '#interval#')
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
   GROUP BY 1,2,3
   ORDER BY 1,2,3
 ON CONFLICT (datetime, instance_id, dbname)
@@ -1086,7 +1086,7 @@ END;
 $$;
 
 
-CREATE OR REPLACE FUNCTION expand_data(i_name TEXT, i_range TSTZRANGE) RETURNS SETOF RECORD
+CREATE OR REPLACE FUNCTION build_expand_data_query(i_name TEXT, i_range TSTZRANGE) RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
 
@@ -1107,11 +1107,44 @@ BEGIN
   v_query := replace(v_query, '#where_current#', 'datetime <@ '''||i_range::TEXT||'''::TSTZRANGE');
   v_query := replace(v_query, '#where_history#', 'history_range && '''||i_range::TEXT||'''::TSTZRANGE');
   v_query := replace(v_query, '#tstzrange#', ''''||i_range::TEXT||'''::TSTZRANGE');
+  RETURN v_query;
+END;
+
+$$;
+
+
+CREATE OR REPLACE FUNCTION expand_data(i_name TEXT, i_range TSTZRANGE) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
+
+DECLARE
+  v_query TEXT;
+BEGIN
+  -- Build and execute 'expand' query
+  SELECT monitoring.build_expand_data_query(i_name, i_range) INTO v_query;
   RAISE NOTICE '%', v_query;
   RETURN QUERY EXECUTE v_query;
 END;
 
 $$;
+
+
+CREATE OR REPLACE FUNCTION expand_data_limit(i_name TEXT, i_range TSTZRANGE, i_limit INTEGER) RETURNS SETOF RECORD
+LANGUAGE plpgsql
+AS $$
+
+DECLARE
+  v_query TEXT;
+BEGIN
+  -- Build and execute 'expand' query
+  SELECT monitoring.build_expand_data_query(i_name, i_range) INTO v_query;
+  v_query := v_query||' LIMIT '||i_limit::TEXT;
+  RAISE NOTICE '%', v_query;
+  RETURN QUERY EXECUTE v_query;
+END;
+
+$$;
+
 
 CREATE OR REPLACE FUNCTION expand_data_by_host_id(i_name TEXT, i_range TSTZRANGE, host_id INTEGER) RETURNS SETOF RECORD
 LANGUAGE plpgsql
