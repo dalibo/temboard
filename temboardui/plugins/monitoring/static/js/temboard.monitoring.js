@@ -361,17 +361,11 @@ $(function() {
         return m.toDate().getTime();
       },
       drawCallback: function(g, isInitial) {
+        addVisibilityCb(id, g, isInitial);
         if (g.numRows() === 0) {
-          $('#info'+id).html('<center><i>No data available</i></center>');
-          $('#legend'+id).hide();
-          $('#chart'+id).hide();
-          $('#visibility'+id).hide();
+          $('#nodata'+id).removeClass('d-none');
         } else {
-          addVisibilityCb(id, g, isInitial);
-          $('#info'+id).html('');
-          $('#legend'+id).show();
-          $('#chart'+id).show();
-          $('#visibility'+id).show();
+          $('#nodata'+id).addClass('d-none');
         }
       },
       zoomCallback: onChartZoom,
