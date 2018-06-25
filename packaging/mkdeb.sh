@@ -35,7 +35,7 @@ apt-get install -y --no-install-recommends \
 
 pip install -U pip
 hash -r pip
-pip install -U packaging pep440deb
+pip install -U packaging pep440deb setuptools
 gem install --no-ri --no-rdoc fpm
 
 mkdir -p $DESTDIR
