@@ -33,6 +33,7 @@ def exec_command(command_args, comm=True, **kwargs):
     kwargs.setdefault("stderr", PIPE)
     kwargs.setdefault("stdin", PIPE)
     kwargs.setdefault("close_fds", True)
+    kwargs.setdefault('cwd', '/tmp')
     try:
         process = Popen(command_args, **kwargs)
     except OSError as err:
