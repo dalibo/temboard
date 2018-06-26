@@ -2,6 +2,8 @@
 /* global instances, Vue, Dygraph, moment, _ */
 $(function() {
 
+  var refreshInterval = 60 * 1000;
+
   Vue.component('sparkline', {
     props: ['instance', 'metric'],
     mounted: createChart,
@@ -93,6 +95,11 @@ $(function() {
       api_url + "/data/" + this.metric + "?start=" + start + "&end=" + end,
       options
     );
+
+    // auto refresh
+    window.setTimeout(function() {
+      createChart.call(this);
+    }.bind(this), refreshInterval);
   }
 
   function loadChecks() {
@@ -100,6 +107,11 @@ $(function() {
     $.ajax(url).success(function(data) {
       this.checks = _.countBy(data.map(function(check) { return check.state; }));
     }.bind(this));
+
+    // auto refresh
+    window.setTimeout(function() {
+      loadChecks.call(this);
+    }.bind(this), refreshInterval);
   }
 
   function abbreviateNumber(number) {
