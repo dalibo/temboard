@@ -55,7 +55,6 @@ $(function() {
           pixelsPerLabel: 40,
           gridLineColor: '#dfdfdf',
           axisLineColor: '#dfdfdf'
-          //drawAxis: false
         },
         y: {
           axisLabelFontSize: 9,
