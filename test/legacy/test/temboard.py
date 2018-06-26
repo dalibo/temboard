@@ -86,7 +86,8 @@ def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):
             pg_port,
             pg_socket_dir
             )
-    exec_command(cmd, comm=False, shell=True)
+    ret_code, out, err = exec_command(cmd, shell=True)
+    assert 0 == ret_code, out + err
 
 
 def pg_drop(pg_data):
@@ -369,14 +370,17 @@ def drop_env(test_env):
         agent_stop(test_env['agent']['pid_file'])
     except Exception:
         pass
+
     try:
         # Try to stop PG cluster
         pg_stop(test_env['pg']['bin'],
                 test_env['pg']['port'],
                 test_env['pg']['socket_dir'],
                 test_env['pg']['pg_data'])
-        # Wait a second before trying to remove the data dir
-        time.sleep(1)
+    except Exception as e:
+        pass
+
+    try:
         # Remove PostgreSQL data dir
         pg_drop(test_env['pg']['pg_data'])
     except Exception:
