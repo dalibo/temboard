@@ -1,3 +1,4 @@
+/* eslint-env es6 */
 /* global instances, Vue, Dygraph, moment, _ */
 $(function() {
 
