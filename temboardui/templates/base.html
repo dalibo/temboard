@@ -112,7 +112,14 @@
             </p>
             <table class="table table-sm table-no-margin small">
               <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
-              <tr><td>Data: </td><td class="text-right">{{instance.pg_data}}</td></tr>
+              <tr>
+                <td>Data: </td>
+                <td class="text-right auto-width">
+                  <div title="{{instance.pg_data}}">
+                    {{instance.pg_data}}
+                  </div>
+                </td>
+              </tr>
               <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
               <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
             </table>
