@@ -25,7 +25,7 @@ if tbda_dir not in sys.path:
 from temboardagent.spc import connector, error  # noqa
 
 
-def exec_command(command_args, comm=True, **kwargs):
+def exec_command(command_args, **kwargs):
     """
     Execute a system command with Popen.
     """
@@ -39,11 +39,8 @@ def exec_command(command_args, comm=True, **kwargs):
     except OSError as err:
         return (err.errno, None, err.strerror)
 
-    if comm:
-        (stdout, stderrout) = process.communicate()
-        return (process.returncode, stdout, stderrout)
-    else:
-        return process
+    stdout, stderrout = process.communicate()
+    return process.returncode, stdout, stderrout
 
 
 def pg_init(pg_bin, pg_data, pg_settings):
@@ -72,7 +69,7 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
             pg_port,
             pg_socket_dir
             )
-    code, out, err = exec_command(cmd, comm=True, shell=True)
+    code, out, err = exec_command(cmd, shell=True)
     assert 0 == code, out + err
 
 
@@ -195,7 +192,7 @@ def agent_start(pid_file, conf_file):
             pid_file
             )
 
-    retcode, stdout, stderr = exec_command(cmd, comm=True, shell=True)
+    retcode, stdout, stderr = exec_command(cmd, shell=True)
     assert retcode == 0, stderr
 
 
