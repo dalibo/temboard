@@ -72,7 +72,8 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
             pg_port,
             pg_socket_dir
             )
-    exec_command(cmd, comm=False, shell=True)
+    code, out, err = exec_command(cmd, comm=True, shell=True)
+    assert 0 == code, out + err
 
 
 def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):
@@ -318,8 +319,6 @@ def init_env(test_env):
              test_env['pg']['socket_dir'],
              test_env['pg']['pg_data'],
              test_env['pg']['log_file'])
-    # Sleep a bit
-    time.sleep(1)
     # Super-user creation.
     pg_add_super_user(test_env['pg']['bin'],
                       test_env['pg']['user'],
