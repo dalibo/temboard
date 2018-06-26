@@ -1,3 +1,4 @@
+/* eslint-env es6 */
 /* global instances, Vue, Dygraph, moment, _ */
 $(function() {
 
@@ -54,17 +55,19 @@ $(function() {
           pixelsPerLabel: 40,
           gridLineColor: '#dfdfdf',
           axisLineColor: '#dfdfdf'
-          //drawAxis: false
         },
         y: {
           axisLabelFontSize: 9,
           axisLabelColor: '#999',
-          axisLabelWidth: 15,
+          axisLabelWidth: 20,
           pixelsPerLabel: 10,
           drawAxesAtZero: true,
           includeZero: true,
           axisLineColor: '#dfdfdf',
-          gridLineColor: '#dfdfdf'
+          gridLineColor: '#dfdfdf',
+          axisLabelFormatter: function(d) {
+            return abbreviateNumber(d);
+          }
         }
       },
       legend: 'never',
@@ -97,5 +100,26 @@ $(function() {
     $.ajax(url).success(function(data) {
       this.checks = _.countBy(data.map(function(check) { return check.state; }));
     }.bind(this));
+  }
+
+  function abbreviateNumber(number) {
+    var abbrev = [ "k", "m", "b", "t" ];
+
+    for (var i = abbrev.length - 1; i >= 0; i--) {
+
+      var size = Math.pow(10, (i + 1) * 3);
+
+      if(size <= number) {
+        number = Math.round(number * 10 / size) / 10;
+        if((number == 1000) && (i < abbrev.length - 1)) {
+          number = 1;
+          i++;
+        }
+        number += abbrev[i];
+        break;
+      }
+    }
+
+    return number;
   }
 });
