@@ -343,6 +343,7 @@ def init_env(test_env):
     # Ensure that agent is started, wait for 5 secs, then give up
     start = time.time()
     started = False
+    message = 'Agent could not start on time'
     while time.time() - start < 5:
         try:
             (status, res) = temboard_request(
@@ -356,9 +357,9 @@ def init_env(test_env):
                 started = True
                 break
         except urllib2.URLError as e:
-            pass
+            message = str(e)
         time.sleep(0.1)
-    assert started is True, 'Agent could not start on time'
+    assert started is True, message
 
 
 def drop_env(test_env):
