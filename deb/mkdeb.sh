@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 
+UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/..)
 
 WORKDIR=$(readlink -m build)
@@ -63,6 +64,7 @@ dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i $deb
 
-mv -fv $deb /dist/
-ln -fs $(basename $deb) /dist/last_build.deb
-chown -R $(stat -c %u:%g $0) /dist/
+mkdir -p ../dist/
+mv -fv $deb ../dist/
+ln -fs $(basename $deb) ../dist/last_build.deb
+chown -R ${UID_GID} ../dist/
