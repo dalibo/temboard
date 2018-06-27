@@ -40,7 +40,7 @@ Here is a sample output of build log tail::
     Purging configuration files for temboard-agent (1.0~a2-0dlb1) ...
     dpkg: warning: while removing temboard-agent, directory '/usr/lib/systemd/system' not empty so not removed
     make changes-stretch
-    make[1]: Entering directory '/home/src/dalibo/temboard-agent-wip/packaging'
+    make[1]: Entering directory '/home/src/dalibo/temboard-agent-wip/deb'
     ./mkchanges.sh /home/src/dalibo/temboard-agent-wip/dist/temboard-agent_1.0~a2-0dlb1_all.deb stretch
     DEBUG    Working in /tmp/tmpK0U50r.
     INFO     Extracting control file.
@@ -49,7 +49,7 @@ Here is a sample output of build log tail::
      signfile changes /home/src/dalibo/temboard-agent-wip/dist/temboard-agent_1.0~a2-0dlb1_all_stretch.changes Étienne BERSAC <etienne.bersac@dalibo.com>
 
     Successfully signed changes file
-    make[1]: Leaving directory '/home/src/dalibo/temboard-agent-wip/packaging'
+    make[1]: Leaving directory '/home/src/dalibo/temboard-agent-wip/deb'
 
 
 temBoard agent depends only on Python2.7. You can easily install the package
@@ -65,7 +65,7 @@ Run docker container for interactive usage:
 
    docker-compose run --rm debian /bin/bash
 
-``packaging/`` is mounted as ``/workspace/`` and ``dist/`` is mounted as
+``deb/`` is mounted as ``/workspace/`` and ``dist/`` is mounted as
 ``/dist/``. Just call ``/workspace/mkdeb.sh`` to build debian package.
 
 If you get no output just after the run, type ``ENTER`` or ``CTRL+L`` to redraw.
@@ -106,7 +106,7 @@ Use ``deb http://temboard-repository.docker/debian jessie main`` in
 .. code-block::
 
     # echo deb http://temboard-repository.docker/debian $(lsb_release -sc) main >/etc/apt/sources.list.d/temboard.list
-    # apt-key add path/to/temboard-agent/packaging/reprepro-config/reprepro_pub.gpg
+    # apt-key add path/to/temboard-agent/deb/reprepro-config/reprepro_pub.gpg
     # apt-get update -y
     # apt-cache policy temboard-agent
     temboard-agent:
