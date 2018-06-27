@@ -25,7 +25,7 @@ if tbda_dir not in sys.path:
 from temboardagent.spc import connector, error  # noqa
 
 
-def exec_command(command_args, comm=True, **kwargs):
+def exec_command(command_args, **kwargs):
     """
     Execute a system command with Popen.
     """
@@ -33,16 +33,14 @@ def exec_command(command_args, comm=True, **kwargs):
     kwargs.setdefault("stderr", PIPE)
     kwargs.setdefault("stdin", PIPE)
     kwargs.setdefault("close_fds", True)
+    kwargs.setdefault('cwd', '/tmp')
     try:
         process = Popen(command_args, **kwargs)
     except OSError as err:
         return (err.errno, None, err.strerror)
 
-    if comm:
-        (stdout, stderrout) = process.communicate()
-        return (process.returncode, stdout, stderrout)
-    else:
-        return process
+    stdout, stderrout = process.communicate()
+    return process.returncode, stdout, stderrout
 
 
 def pg_init(pg_bin, pg_data, pg_settings):
@@ -71,7 +69,8 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
             pg_port,
             pg_socket_dir
             )
-    exec_command(cmd, comm=False, shell=True)
+    code, out, err = exec_command(cmd, shell=True)
+    assert 0 == code, out + err
 
 
 def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):
@@ -84,7 +83,8 @@ def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):
             pg_port,
             pg_socket_dir
             )
-    exec_command(cmd, comm=False, shell=True)
+    ret_code, out, err = exec_command(cmd, shell=True)
+    assert 0 == ret_code, out + err
 
 
 def pg_drop(pg_data):
@@ -192,7 +192,7 @@ def agent_start(pid_file, conf_file):
             pid_file
             )
 
-    retcode, stdout, stderr = exec_command(cmd, comm=True, shell=True)
+    retcode, stdout, stderr = exec_command(cmd, shell=True)
     assert retcode == 0, stderr
 
 
@@ -220,31 +220,12 @@ def agent_write_ssl_files(key_file, key_content, cert_file, cert_content):
 
 
 def _mkdir(path):
-    """
-    Create a directory and its parents is they do not exist.
-    Returns the path.
-    """
-    c_path = ''
-    for f in path.split('/'):
-        c_path += '/' + f
-        if not os.path.exists(c_path):
-            os.mkdir(c_path)
-        elif os.path.exists(c_path) and os.path.isdir(c_path):
-            continue
-        elif os.path.exists(c_path) and not os.path.isdir(c_path):
-            os.mkdir(c_path)
+    if not os.path.exists(path):
+        os.makedirs(path)
     return path
 
 
-def init_env():
-    """
-    Testing environnement setup:
-        * creation of the tree directory
-        * write configuration files
-        * PostgreSQL cluster initdb
-        * start PostgreSQL cluster and agent
-    """
-
+def build_env_dict():
     # Overwrite some variables from testconfig.py by env. variables.
 
     # PostgreSQL binaries path
@@ -287,85 +268,103 @@ def init_env():
             'log_file': None
         }
     }
-    try:
-        # Folders creation
-        root_dir = _mkdir(tbd_workpath+'/tests_temboard/')
-        agent_dir = _mkdir(root_dir+'/temboard-agent')
-        log_dir = _mkdir(root_dir+'/logs')
+    # Folders creation
+    root_dir = tbd_workpath + '/tests_temboard'
+    agent_dir = root_dir + '/temboard-agent'
+    log_dir = root_dir + '/logs'
 
-        # PG env. vars
-        test_env['pg']['pg_data'] = _mkdir(root_dir+'/pg/data')
-        test_env['pg']['socket_dir'] = _mkdir(root_dir+'/pg/run')
-        test_env['pg']['log_file'] = log_dir+'/postgresql.log'
+    # PG env. vars
+    test_env['pg']['pg_data'] = root_dir + '/pg/data'
+    test_env['pg']['socket_dir'] = root_dir + '/pg/run'
+    test_env['pg']['log_file'] = log_dir+'/postgresql.log'
 
-        # agent env. vars
-        test_env['agent']['conf_file'] = agent_dir+'/temboard-agent.conf'
-        test_env['agent']['conf_dir'] = agent_dir+'/temboard-agent.conf.d'
-        test_env['agent']['pid_file'] = agent_dir+'/temboard-agent.pid'
-        test_env['agent']['users'] = agent_dir+'/users'
-        test_env['agent']['log_file'] = log_dir+'/temboard-agent.log'
-        test_env['agent']['ssl_key_file'] = agent_dir+'/temboard-agent.key'
-        test_env['agent']['ssl_cert_file'] = agent_dir+'/temboard-agent.pem'
-        test_env['agent']['ssl_ca_cert_file'] = agent_dir+'/temboard-agent.pem'
-        test_env['agent']['home'] = _mkdir(agent_dir+'/home')
+    # agent env. vars
+    test_env['agent']['conf_file'] = agent_dir+'/temboard-agent.conf'
+    test_env['agent']['conf_dir'] = agent_dir+'/temboard-agent.conf.d'
+    test_env['agent']['pid_file'] = agent_dir+'/temboard-agent.pid'
+    test_env['agent']['users'] = agent_dir+'/users'
+    test_env['agent']['log_file'] = log_dir+'/temboard-agent.log'
+    test_env['agent']['ssl_key_file'] = agent_dir+'/temboard-agent.key'
+    test_env['agent']['ssl_cert_file'] = agent_dir+'/temboard-agent.pem'
+    test_env['agent']['ssl_ca_cert_file'] = agent_dir+'/temboard-agent.pem'
+    test_env['agent']['home'] = agent_dir + '/home'
 
-        # PG Cluster creation
-        pg_init(test_env['pg']['bin'],
-                test_env['pg']['pg_data'],
-                test_conf.PG_SETTINGS)
-        # Let's start the PG cluster
-        pg_start(test_env['pg']['bin'],
-                 test_env['pg']['port'],
-                 test_env['pg']['socket_dir'],
-                 test_env['pg']['pg_data'],
-                 test_env['pg']['log_file'])
-        # Sleep a bit
-        time.sleep(1)
-        # Super-user creation.
-        pg_add_super_user(test_env['pg']['bin'],
-                          test_env['pg']['user'],
-                          test_env['pg']['socket_dir'],
-                          test_env['pg']['port'],
-                          test_env['pg']['password'])
-        # Agent user creation.
-        agent_add_user(test_env['agent']['users'],
-                       test_env['agent']['user'],
-                       test_env['agent']['password'])
-        # Write SSL files.
-        agent_write_ssl_files(test_env['agent']['ssl_key_file'],
-                              test_conf.AGENT_SSL_KEY,
-                              test_env['agent']['ssl_cert_file'],
-                              test_conf.AGENT_SSL_CERT)
-        # Write agent configuration file.
-        agent_write_conf(test_env)
-        # Start the agent
-        agent_start(test_env['agent']['pid_file'],
-                    test_env['agent']['conf_file'])
-        # Ensure that agent is started, wait for 5 secs, then give up
-        start = time.time()
-        started = False
-        while time.time() - start < 5:
-            try:
-                (status, res) = temboard_request(
-                        test_env['agent']['ssl_cert_file'],
-                        method='GET',
-                        url='https://%s:%s/discover' % (
-                            test_env['agent']['host'],
-                            test_env['agent']['port']),
-                        )
-                if status == 200:
-                    started = True
-                    break
-            except urllib2.URLError:
-                pass
-            time.sleep(0.1)
-        assert started is True, 'Agent could not start on time'
-        return test_env
-    except Exception:
-        # If anything goes wrong during the setup
-        # then we drop the whole testing environnement.
-        drop_env(test_env)
-        raise
+    return test_env
+
+
+def init_env(test_env):
+    """
+    Testing environnement setup:
+        * creation of the tree directory
+        * write configuration files
+        * PostgreSQL cluster initdb
+        * start PostgreSQL cluster and agent
+    """
+
+    # Folders creation
+    _mkdir(test_env['pg']['pg_data'])
+    _mkdir(test_env['pg']['socket_dir'])
+    _mkdir(os.path.dirname(test_env['pg']['log_file']))
+    _mkdir(test_env['agent']['home'])
+
+    # PG Cluster creation
+    pg_init(test_env['pg']['bin'],
+            test_env['pg']['pg_data'],
+            test_conf.PG_SETTINGS)
+    # Let's start the PG cluster
+    pg_start(test_env['pg']['bin'],
+             test_env['pg']['port'],
+             test_env['pg']['socket_dir'],
+             test_env['pg']['pg_data'],
+             test_env['pg']['log_file'])
+    for i in range(10):
+        code, out, err = exec_command([
+            test_env['pg']['bin'] + '/pg_ctl', 'status',
+            '-D', test_env['pg']['pg_data']])
+        # Seems that pg_ctl outputs postgres cmd when ready.
+        if out and 'bin/postgres' in out:
+            break
+        print(code, out, err, 'bin/postgres' in out)
+    # Super-user creation.
+    pg_add_super_user(test_env['pg']['bin'],
+                      test_env['pg']['user'],
+                      test_env['pg']['socket_dir'],
+                      test_env['pg']['port'],
+                      test_env['pg']['password'])
+    # Agent user creation.
+    agent_add_user(test_env['agent']['users'],
+                   test_env['agent']['user'],
+                   test_env['agent']['password'])
+    # Write SSL files.
+    agent_write_ssl_files(test_env['agent']['ssl_key_file'],
+                          test_conf.AGENT_SSL_KEY,
+                          test_env['agent']['ssl_cert_file'],
+                          test_conf.AGENT_SSL_CERT)
+    # Write agent configuration file.
+    agent_write_conf(test_env)
+    # Start the agent
+    agent_start(test_env['agent']['pid_file'],
+                test_env['agent']['conf_file'])
+    # Ensure that agent is started, wait for 5 secs, then give up
+    start = time.time()
+    started = False
+    message = 'Agent could not start on time'
+    while time.time() - start < 5:
+        try:
+            (status, res) = temboard_request(
+                    test_env['agent']['ssl_cert_file'],
+                    method='GET',
+                    url='https://%s:%s/discover' % (
+                        test_env['agent']['host'],
+                        test_env['agent']['port']),
+                    )
+            if status == 200:
+                started = True
+                break
+        except urllib2.URLError as e:
+            message = str(e)
+        time.sleep(0.1)
+    assert started is True, message
 
 
 def drop_env(test_env):
@@ -377,14 +376,17 @@ def drop_env(test_env):
         agent_stop(test_env['agent']['pid_file'])
     except Exception:
         pass
+
     try:
         # Try to stop PG cluster
         pg_stop(test_env['pg']['bin'],
                 test_env['pg']['port'],
                 test_env['pg']['socket_dir'],
                 test_env['pg']['pg_data'])
-        # Wait a second before trying to remove the data dir
-        time.sleep(1)
+    except Exception as e:
+        pass
+
+    try:
         # Remove PostgreSQL data dir
         pg_drop(test_env['pg']['pg_data'])
     except Exception:

@@ -1,6 +1,6 @@
 import pytest
 
-from test.temboard import init_env, drop_env
+from test.temboard import build_env_dict, drop_env, init_env
 
 
 ENV = {}
@@ -8,11 +8,11 @@ ENV = {}
 
 @pytest.fixture(autouse=True, scope='session')
 def env():
-    env = init_env()
+    env = build_env_dict()
+    drop_env(env)
+    init_env(env)
     ENV.update(env)
     try:
-        yield env
-    except Exception:
-        raise
+        yield ENV
     finally:
         drop_env(env)
