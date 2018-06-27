@@ -2,7 +2,7 @@ version: '2'
 
 services:
   debian:
-    image: buildpack-deps:stretch
+    image: dalibo/temboard-agent-sdk:stretch
     environment:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}

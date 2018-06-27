@@ -20,24 +20,6 @@ teardown () {
 trap teardown EXIT INT TERM
 teardown
 
-if [ -z "$(find /var/lib/apt/lists/ -type f)" ] ; then
-   apt-get update -y
-fi
-
-apt-get install -y --no-install-recommends \
-        build-essential \
-        python2.7 \
-        python-pip \
-        ruby \
-        ruby-dev \
-        rubygems \
-        ${NULL-}
-
-pip install -U pip
-hash -r pip
-pip install -U packaging pep440deb setuptools
-gem install --no-ri --no-rdoc fpm
-
 mkdir -p $DESTDIR
 versions=($(pep440deb --echo --pypi temboard-agent))
 pep440v=${versions[0]}
