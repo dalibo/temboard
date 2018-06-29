@@ -196,7 +196,7 @@ class AgentLoginHandler(BaseHandler):
                 "temboard_%s_%s" %
                 (instance.agent_address, instance.agent_port),
                 xsession,
-                expires_days=0.5
+                expires_days=30
             )
             self.logger.info("Done.")
             redirection = self.get_secure_cookie('referer_uri') \

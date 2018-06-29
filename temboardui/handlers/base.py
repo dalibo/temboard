@@ -87,11 +87,11 @@ class BaseHandler(tornado.web.RequestHandler):
            'content' in async_result.secure_cookie:
             self.set_secure_cookie(async_result.secure_cookie['name'],
                                    async_result.secure_cookie['content'],
-                                   expires_days=0.5)
+                                   expires_days=30)
         if async_result.http_code in (301, 302, 401) and \
            async_result.redirection is not None:
             self.set_secure_cookie('referer_uri', self.request.uri,
-                                   expires_days=0.5)
+                                   expires_days=30)
             self.redirect(async_result.redirection)
             return
         if async_result.http_code == 200:
@@ -246,7 +246,7 @@ class JsonHandler(BaseHandler):
            'content' in async_result.secure_cookie:
             self.set_secure_cookie(async_result.secure_cookie['name'],
                                    async_result.secure_cookie['content'],
-                                   expires_days=0.5)
+                                   expires_days=30)
         if async_result.http_code == 200:
             self.write(json.dumps(async_result.data))
         else:
