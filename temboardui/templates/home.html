@@ -6,6 +6,7 @@
 {% import json %}
 {% from temboardui import json_encoder %}
 <script src="/js/lodash.min.js"></script>
+<script src="/js/utils.js"></script>
 <script src="/js/vue.min.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
@@ -13,10 +14,15 @@
 var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
 </script>
 <script src="/js/home.js"></script>
-<div class="row">
+<div id="instances" class="row">
   <div class="col-md-12">
-    <ul id="instances" class="list-group instance-list">
-      <li class="list-group-item" v-for="instance in instances" v-cloak>
+    <form class="form-inline">
+      <input type="text" class="form-control mb-2 mr-sm-2" placeholder="Search instances" v-model="search">
+    </form>
+  </div>
+  <div class="col-md-12">
+    <ul class="list-group instance-list">
+      <li class="list-group-item" v-for="instance in filteredInstances" v-cloak>
         <div class="row">
           <div class="col-md-12">
             <div class="pull-right">

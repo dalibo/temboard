@@ -1,5 +1,5 @@
 /* eslint-env es6 */
-/* global instances, Vue, Dygraph, moment, _ */
+/* global instances, Vue, Dygraph, moment, _, getParameterByName */
 $(function() {
 
   var refreshInterval = 60 * 1000;
@@ -31,7 +31,8 @@ $(function() {
   new Vue({
     el: '#instances',
     data: {
-      instances: instances
+      instances: instances,
+      search: ''
     },
     methods: {
       hasMonitoring: function(instance) {
@@ -40,8 +41,35 @@ $(function() {
         });
         return plugins.indexOf('monitoring') != -1;
       }
+    },
+    mounted: function() {
+      this.search = getParameterByName('q') || '';
+    },
+    computed: {
+      filteredInstances: function() {
+        var self = this;
+        var searchRegex = new RegExp(self.search, 'i');
+        return this.instances.filter(function(instance) {
+          return searchRegex.test(instance.hostname) ||
+                 searchRegex.test(instance.agent_address) ||
+                 searchRegex.test(instance.pg_data) ||
+                 searchRegex.test(instance.pg_port) ||
+                 searchRegex.test(instance.pg_version);
+        });
+      }
+    },
+    watch: {
+      'search': updateQueryParams
     }
   });
+
+  function updateQueryParams() {
+    var params = $.param({
+      q: this.search
+    });
+    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params;
+    window.history.replaceState({path: newurl}, '', newurl);
+  }
 
   function createChart() {
     var api_url = ['/server', this.instance.agent_address, this.instance.agent_port, 'monitoring'].join('/');
