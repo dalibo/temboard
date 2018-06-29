@@ -47,9 +47,12 @@ var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.n
             </dl>
           </div>
           <div class="col-md-3">
-            <div>
-            <span v-for="group in instance.groups" class="badge badge-secondary">{{!group.group_name}}</span>
-            </div>
+            <template v-for="(group, index) in instance.groups">
+              <span class="badge badge-secondary">
+                {{!group.group_name}}
+              </span>
+              {{!index === (instance.groups.length - 1) ? '' : ' '}}
+            </template>
             <br>
           </div>
           <div class="col-md-4">
