@@ -5,19 +5,27 @@ $(function() {
   var refreshInterval = 60 * 1000;
 
   Vue.component('sparkline', {
-    props: ['instance', 'metric'],
+    props: ['instance', 'metric', 'update'],
     mounted: createChart,
+    watch: {
+      instance: createChart,
+      update: createChart
+    },
     template: '<div></div>'
   });
 
   Vue.component('checks', {
-    props: ['instance'],
+    props: ['instance', 'update'],
     data: function() {
       return {
         checks: {}
       };
     },
     mounted: loadChecks,
+    watch: {
+      instance: loadChecks,
+      update: loadChecks
+    },
     template: `
     <div>
     Status:
@@ -28,11 +36,17 @@ $(function() {
     `
   });
 
-  new Vue({
+  var search = getParameterByName('q') || '';
+  var sort = getParameterByName('sort') || 'hostname';
+
+  var instancesVue = new Vue({
     el: '#instances',
     data: {
       instances: instances,
-      search: ''
+      search: search,
+      sort: sort,
+      // Property updated in order to refresh charts and checks
+      update: moment()
     },
     methods: {
       hasMonitoring: function(instance) {
@@ -42,20 +56,21 @@ $(function() {
         return plugins.indexOf('monitoring') != -1;
       }
     },
-    mounted: function() {
-      this.search = getParameterByName('q') || '';
-    },
     computed: {
       filteredInstances: function() {
         var self = this;
         var searchRegex = new RegExp(self.search, 'i');
-        return this.instances.filter(function(instance) {
+        var filtered = this.instances.filter(function(instance) {
           return searchRegex.test(instance.hostname) ||
                  searchRegex.test(instance.agent_address) ||
                  searchRegex.test(instance.pg_data) ||
                  searchRegex.test(instance.pg_port) ||
                  searchRegex.test(instance.pg_version);
         });
+        if (this.sort == 'status') {
+          return sortByStatus(filtered);
+        }
+        return _.sortBy(filtered, this.sort, 'asc');
       }
     },
     watch: {
@@ -63,12 +78,37 @@ $(function() {
     }
   });
 
+  window.setInterval(function() {
+    instancesVue.update = moment();
+  }, refreshInterval);
+
   function updateQueryParams() {
     var params = $.param({
       q: this.search
     });
     var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params;
     window.history.replaceState({path: newurl}, '', newurl);
+  }
+
+  function sortByStatus(items) {
+    return items.sort(function(a, b) {
+      return getStatusValue(b) - getStatusValue(a);
+    });
+  }
+
+  /*
+   * Util to compute a global status value given an instance
+   */
+  function getStatusValue(instance) {
+    var checks = instance.checks;
+    var value = 0;
+    if (checks.CRITICAL) {
+      value += checks.CRITICAL * 1000;
+    }
+    if (checks.WARNING) {
+      value += checks.WARNING;
+    }
+    return value;
   }
 
   function createChart() {
@@ -123,23 +163,14 @@ $(function() {
       api_url + "/data/" + this.metric + "?start=" + start + "&end=" + end,
       options
     );
-
-    // auto refresh
-    window.setTimeout(function() {
-      createChart.call(this);
-    }.bind(this), refreshInterval);
   }
 
   function loadChecks() {
     var url = ['/server', this.instance.agent_address, this.instance.agent_port, 'alerting/checks.json'].join('/');
     $.ajax(url).success(function(data) {
       this.checks = _.countBy(data.map(function(check) { return check.state; }));
+      this.instance.checks = this.checks;
     }.bind(this));
-
-    // auto refresh
-    window.setTimeout(function() {
-      loadChecks.call(this);
-    }.bind(this), refreshInterval);
   }
 
   function abbreviateNumber(number) {
