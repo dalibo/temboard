@@ -114,8 +114,8 @@ $(function() {
   function createChart() {
     var api_url = ['/server', this.instance.agent_address, this.instance.agent_port, 'monitoring'].join('/');
 
-    var start = moment().subtract(1, 'hours').toISOString();
-    var end = moment().toISOString();
+    var start = moment().subtract(1, 'hours');
+    var end = moment();
     var defaultOptions = {
       axes: {
         x: {
@@ -140,6 +140,7 @@ $(function() {
           }
         }
       },
+      dateWindow: [start, end],
       legend: 'never',
       xValueParser: function(x) {
         var m = moment(x);
@@ -160,7 +161,7 @@ $(function() {
     }
     new Dygraph(
       this.$el,
-      api_url + "/data/" + this.metric + "?start=" + start + "&end=" + end,
+      api_url + "/data/" + this.metric + "?start=" + start.toISOString() + "&end=" + end.toISOString(),
       options
     );
   }
