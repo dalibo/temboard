@@ -15,7 +15,9 @@ pages:
   - Repository setup: temboard-repository-setup.md
   - Upgrade 1.1 to 1.2 (RHEL/CentOS): temboard-upgrade-1.1-1.2.md
   - Upgrade 0.0.1 to 1.1 (RHEL/CentOS): temboard-upgrade-0.0.1-1.1.md
-- How To: temboard-howto.md
+- How To:
+  - temBoard UI howto: temboard-howto.md
+  - Alerting: temboard-howto-alerting.md
 
 # Markdown settings
 strict: yes
