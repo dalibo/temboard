@@ -21,6 +21,7 @@ teardown() {
 trap teardown EXIT INT TERM
 
 sudo yum-builddep -y rpm/temboard-agent.spec
+sudo sed -i s/.centos// /etc/rpm/macros.dist
 
 # Building sources in rpm/
 python setup.py sdist --dist-dir rpm/
