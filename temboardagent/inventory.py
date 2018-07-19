@@ -297,7 +297,7 @@ class PgInfo(Inventory):
     def is_in_recovery(self):
         if self.db_conn.get_pg_version() >= 90000:
             self.db_conn.execute("SELECT pg_is_in_recovery() AS standby;")
-            if list(self.db_conn.get_rows())[0]['standby'] == 't':
+            if list(self.db_conn.get_rows())[0]['standby'] is True:
                 return True
         return False
 
