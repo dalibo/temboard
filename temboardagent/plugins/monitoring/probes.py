@@ -682,9 +682,16 @@ class probe_replication(SqlProbe):
 
     def run(self, conninfo):
         if conninfo['standby']:
-            return self.run_sql(conninfo, """select
+            if version < 100000:
+                return self.run_sql(conninfo, """select
   current_timestamp as datetime,
   pg_last_xlog_receive_location() as receive_location,
   pg_last_xlog_replay_location() as replay_location""")
+            else:
+                return self.run_sql(conninfo, """select
+  current_timestamp as datetime,
+  pg_last_wal_receive_lsn() as receive_location,
+  pg_last_wal_replay_lsn() as replay_location""")
+
         else:
             return []
