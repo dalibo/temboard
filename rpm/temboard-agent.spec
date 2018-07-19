@@ -23,6 +23,7 @@ Requires:      openssl
 Requires: python-argparse
 Requires: python-logutils
 %endif
+Requires:      python-setuptools
 
 %description
 Administration & monitoring PostgreSQL agent.
