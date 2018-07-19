@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 
+UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/..)
 
 WORKDIR=$(readlink -m build)
@@ -19,24 +20,6 @@ teardown () {
 }
 trap teardown EXIT INT TERM
 teardown
-
-if [ -z "$(find /var/lib/apt/lists/ -type f)" ] ; then
-   apt-get update -y
-fi
-
-apt-get install -y --no-install-recommends \
-        build-essential \
-        python2.7 \
-        python-pip \
-        ruby \
-        ruby-dev \
-        rubygems \
-        ${NULL-}
-
-pip install -U pip
-hash -r pip
-pip install -U packaging pep440deb
-gem install --no-ri --no-rdoc fpm
 
 mkdir -p $DESTDIR
 versions=($(pep440deb --echo --pypi temboard-agent))
@@ -81,6 +64,7 @@ dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i $deb
 
-mv -fv $deb /dist/
-ln -fs $(basename $deb) /dist/last_build.deb
-chown -R $(stat -c %u:%g $0) /dist/
+mkdir -p ../dist/
+mv -fv $deb ../dist/
+ln -fs $(basename $deb) ../dist/last_build.deb
+chown -R ${UID_GID} ../dist/

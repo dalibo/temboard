@@ -30,7 +30,7 @@ if (( install_rpm == 1 ))
 then
     # Search for the proper RPM package
     rpmdist=$(rpm --eval '%dist')
-    rpm=$(readlink -e dist/rpm/noarch/temboard-agent-*${rpmdist}.noarch.rpm)
+    rpm=$(readlink -e dist/rpm/noarch/temboard-agent-*${rpmdist}*.noarch.rpm)
     yum -d1 install -y $rpm
     rpm --query --queryformat= temboard-agent
 else
