@@ -1,6 +1,4 @@
-# temBoard UI howto
-
-## First connection
+# First connection
 
 Once `temboard` is up and running, it's time to try a first connection to the web interface with a web browser using `https` at the address `https://<temboard-host>:8888/`.
 
