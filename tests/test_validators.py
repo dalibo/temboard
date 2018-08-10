@@ -56,6 +56,9 @@ def test_file():
     relpath = os.path.relpath(__file__)
     assert v.file_(relpath) == __file__
 
+    assert not v.file_(None)
+    assert not v.file_('')
+
     with pytest.raises(ValueError):
         v.file_(__file__ + 'ne pas créer')
 
