@@ -17,7 +17,6 @@ address = 0.0.0.0
 port = 8888
 ssl_cert_file = ${TEMBOARD_SSL_CERT-/usr/local/share/temboard/quickstart/temboard_CHANGEME.pem}
 ssl_key_file = ${TEMBOARD_SSL_KEY-/usr/local/share/temboard/quickstart/temboard_CHANGEME.key}
-ssl_ca_cert_file = ${TEMBOARD_SSL_CA-/usr/local/share/temboard/quickstart/temboard_ca_certs_CHANGEME.pem}
 cookie_secret = ${TEMBOARD_COOKIE_SECRET-SECRETKEYTOBECHANGED}
 
 [repository]
