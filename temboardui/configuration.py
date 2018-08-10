@@ -72,7 +72,7 @@ class Configuration(configparser.ConfigParser):
         path = self.get(section, name)
         if not path:
             return path
-        path = self.abspath()
+        path = self.abspath(path)
         try:
             with open(path) as fd:
                 fd.read()
