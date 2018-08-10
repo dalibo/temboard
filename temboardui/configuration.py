@@ -69,7 +69,10 @@ class Configuration(configparser.ConfigParser):
             return os.path.realpath('/'.join([self.configdir, path]))
 
     def getfile(self, section, name):
-        path = self.abspath(self.get(section, name))
+        path = self.get(section, name)
+        if not path:
+            return path
+        path = self.abspath()
         try:
             with open(path) as fd:
                 fd.read()
