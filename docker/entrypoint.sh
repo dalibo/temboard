@@ -78,7 +78,6 @@ EOF
 cat > /etc/temboard-agent/temboard-agent.conf.d/monitoring.conf << EOF
 [monitoring]
 collector_url = ${TEMBOARD_UI_URL%/}/monitoring/collector
-ssl_ca_cert_file = ${TEMBOARD_SSL_CA-/usr/local/share/temboard-agent/quickstart/temboard-agent_ca_certs_CHANGEME.pem}
 EOF
 
 cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf << EOF
