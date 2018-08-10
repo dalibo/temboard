@@ -24,6 +24,9 @@ $ docker-compose up
 Go to https://127.0.0.1:8888/ to access temBoard runing with your code! An agent
 is already set up to manage the PostgreSQL cluster of the UI.
 
+
+## Develop both UI and agent
+
 In case you are working on the agent at the same time, here are some more
 instructions otherwise you can jump to the next section.
 
@@ -39,8 +42,10 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+      TEMBOARD_MONITORING_SSL_CA_CERT_FILE: /usr/local/src/temboard/share/temboard_CHANGEME.pem
     volumes:
       - ../temboard-agent/:/usr/local/src/temboard-agent/
+      - .:/usr/local/src/temboard/
     command: tail -f /dev/null
 ```
 
