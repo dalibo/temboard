@@ -125,9 +125,7 @@ def get_settings(conn, http_context=None):
                        " OR extra_desc ILIKE '%{0}%'".format(filter)
     query = """
 SELECT
-    name, setting, current_setting(name) AS current_setting,
-    CASE WHEN name IN ('max_wal_size', 'min_wal_size')
-    THEN current_setting('wal_segment_size') ELSE unit END AS unit,
+    name, setting, current_setting(name) AS current_setting, unit,
     vartype, min_val, max_val, enumvals, context, category,
     short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val
 FROM pg_settings
