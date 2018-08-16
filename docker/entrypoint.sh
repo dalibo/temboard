@@ -82,7 +82,7 @@ EOF
 
 cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf << EOF
 [administration]
-pg_ctl = docker %s ${PGCONTAINER}
+pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
 EOF
 
 touch /etc/temboard-agent/users
