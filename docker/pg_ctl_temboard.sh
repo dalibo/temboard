@@ -8,6 +8,6 @@ case $COMMAND in
 		docker $COMMAND $PGCONTAINER
 		;;
 	*)
-		docker exec $PGCONTAINER su postgres -c "/usr/local/bin/pg_ctl $COMMAND"
+		docker exec $PGCONTAINER sh -c "SU_PATH=\$PATH su -m postgres -c \"PATH=\$PATH:\$SU_PATH; pg_ctl $COMMAND\""
 		;;
 esac
