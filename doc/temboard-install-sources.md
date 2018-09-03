@@ -1,4 +1,4 @@
-<h1>Server installation from sources</h1>
+<h1>Server installation from sources (pypi)</h1>
 
 ## Dependencies
 
@@ -14,8 +14,7 @@
 Proceed with the installation of the UI:
 
 ```
-cd temboard/
-sudo pip install .
+sudo pip install temboard
 ```
 
 ## Prepare directories and files
