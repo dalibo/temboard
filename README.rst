@@ -6,8 +6,6 @@ Monitor, optimize and configure multiple PostgreSQL instances.
 
 | |Demo|
 
-*Click on image to see a quick demo.*
-
 
 =========
  Install
@@ -70,8 +68,8 @@ temBoard is available under the `PostgreSQL License
    :target: https://codecov.io/gh/dalibo/temboard
    :alt: Code coverage
 
-.. |Demo| image:: https://github.com/dalibo/temboard/raw/gh-pages/imgs/temboard_poster.png
-   :target: http://temboard.io/imgs/temboard.mp4
+.. |Demo| image:: https://github.com/dalibo/temboard/raw/master/doc/sc/alerting_dashboard.png
+   :target: https://github.com/dalibo/temboard/raw/master/doc/sc/alerting_dashboard.png
    :alt: Screenshot temBoard
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/temboard.svg
