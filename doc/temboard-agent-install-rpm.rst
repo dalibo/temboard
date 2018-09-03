@@ -1,30 +1,25 @@
 Installation from RPM on RHEL6 and later
 ========================================
 
-RHEL / CentOS 6
----------------
+RHEL / CentOS 6/7
+-----------------
 
-Install the ``packages.temboard.io`` repository by creating the ``/etc/yum.repos.d/temboard.repo`` file with the following content:
+Install the ``dalibo-labs`` package with GPG key and .repo from https://yum.dalibo.org/labs/dalibo-labs-1-1.noarch.rpm
 
-.. code-block:: ini
+.. code-block:: bash
 
-    [temboard]
-    name=temBoard Packages for Enterprise Linux 6
-    baseurl=https://packages.temboard.io/yum/rhel6/
-    enabled=1
-    gpgcheck=0
+   sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-1-1.noarch.rpm
+   sudo yum makecache fast
+   sudo yum repolist
 
 
-RHEL / CentOS 7
----------------
-
-Install the ``packages.temboard.io`` repository by creating the ``/etc/yum.repos.d/temboard.repo`` file with the following content:
+You can also setup YUM manually with the following snippet in ``/etc/yum.repos.d/dalibolabs.repo``:
 
 .. code-block:: ini
 
-    [temboard]
-    name=temBoard Packages for Enterprise Linux 7
-    baseurl=https://packages.temboard.io/yum/rhel7/
+    [dalibolabs]
+    name=Dalibo Labs - CentOS/RHEL $releasever - $basearch
+    baseurl=https://yum.dalibo.org/labs/CentOS$releasever-$basearch
     enabled=1
     gpgcheck=0
 
