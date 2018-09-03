@@ -5,16 +5,24 @@
 The following YUM repository are required to install `temboard`:
 
 * [yum.postgresql.org](http://yum.postgresql.org/repopackages.php) for PostgreSQL
-* [temBoard package repository](https://packages.temboard.io/yum/) for temBoard
+* [Dalibo Labs package repository](http://yum.dalibo.org/labs/) for temBoard
 
 ### RHEL / CentOS 7
 
-Install the `packages.temboard.io` repository by creating the `/etc/yum.repos.d/temboard.repo` file with the following contents:
+Install the `dalibo-labs` package with GPG key and .repo from https://yum.dalibo.org/labs/dalibo-labs-1-1.noarch.rpm
 
+```console
+sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-1-1.noarch.rpm
+sudo yum makecache fast
+sudo yum repolist
 ```
-[temboard]
-name=temBoard Packages for Enterprise Linux 7
-baseurl=https://packages.temboard.io/yum/rhel7/
+
+You can also setup YUM manually with the following snippet in `/etc/yum.repos.d/dalibolabs.repo`:
+
+```ini
+[dalibolabs]
+name=Dalibo Labs - CentOS/RHEL $releasever - $basearch
+baseurl=https://yum.dalibo.org/labs/CentOS$releasever-$basearch
 enabled=1
 gpgcheck=0
 ```
