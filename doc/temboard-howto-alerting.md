@@ -5,7 +5,7 @@ to activate the `monitoring` plugin in order to take advantage of `alerting`.
 
 The main goal of the `alerting` in temBoard is to compare values for
 monitored metrics with **warning** or **critical** thresholds. It then allows
-users to get notified if something gets wrong on the Postgres instance.
+users to get notified if something goes wrong on the Postgres instance.
 
 ## Current status and previous alerts in dashboard
 
@@ -14,7 +14,7 @@ When activated, `alerting` can show some information on the dashboard page.
 First of all, the current status for the different probes are displayed.
 
 Also users will find the last 20 alerts. In this case, an "alert" means that
-a change from a status level to an higher one has been detected.
+a change from a status level to a higher one has been detected.
 
 ![Alerting in dashboard](sc/alerting_dashboard.png)
 
@@ -29,7 +29,7 @@ status page.
 
 ## Probe Status Over Time
 
-By clicking on probe name, one can also get access to an even more detailed
+By clicking on probe name, one can also access an even more detailed
 view for each probe. In this view, users will find:
 
  - the current status,
@@ -51,4 +51,4 @@ Please beware that the thresholds are configured for each instance.
 ## Auto-refresh
 
 Every UI component detailed above this section are refreshed every minute to
-match the last checks.
+match the latest checks.
