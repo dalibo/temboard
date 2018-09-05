@@ -251,7 +251,7 @@ class BaseApplication(object):
         try:
             setup_logging(debug=debug)
             logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
-            retcode = self.main(argv, environ) or 1
+            retcode = self.main(argv, environ)
         except KeyboardInterrupt:
             logger.info('Terminated.')
         except pdb.bdb.BdbQuit:
