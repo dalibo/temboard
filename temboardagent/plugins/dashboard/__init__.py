@@ -16,12 +16,12 @@ routes = RouteSet(prefix=b'/dashboard')
 workers = taskmanager.WorkerSet()
 
 
-@routes.get(b'')
+@routes.get(b'', check_key=True)
 def dashboard(http_context, app):
     return metrics.get_metrics_queue(app.config)
 
 
-@routes.get(b'/config')
+@routes.get(b'/config', check_key=True)
 def dashboard_config(http_context, app):
     return dict(
         scheduler_interval=app.config.dashboard.scheduler_interval,
@@ -29,84 +29,84 @@ def dashboard_config(http_context, app):
     )
 
 
-@routes.get(b'/live')
+@routes.get(b'/live', check_key=True)
 def dashboard_live(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_metrics(conn, app.config)
 
 
-@routes.get(b'/history')
+@routes.get(b'/history', check_key=True)
 def dashboard_history(http_context, app):
     return metrics.get_history_metrics_queue(app.config)
 
 
-@routes.get(b'/buffers')
+@routes.get(b'/buffers', check_key=True)
 def dashboard_buffers(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_buffers(conn)
 
 
-@routes.get(b'/hitratio')
+@routes.get(b'/hitratio', check_key=True)
 def dashboard_hitratio(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_hitratio(conn)
 
 
-@routes.get(b'/active_backends')
+@routes.get(b'/active_backends', check_key=True)
 def dashboard_active_backends(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_active_backends(conn)
 
 
-@routes.get(b'/cpu')
+@routes.get(b'/cpu', check_key=True)
 def dashboard_cpu(http_context, app):
     return metrics.get_cpu_usage()
 
 
-@routes.get(b'/loadaverage')
+@routes.get(b'/loadaverage', check_key=True)
 def dashboard_loadaverage(http_context, app):
     return metrics.get_loadaverage()
 
 
-@routes.get(b'/memory')
+@routes.get(b'/memory', check_key=True)
 def dashboard_memory(http_context, app):
     return metrics.get_memory_usage()
 
 
-@routes.get(b'/hostname')
+@routes.get(b'/hostname', check_key=True)
 def dashboard_hostname(http_context, app):
     return metrics.get_hostname(app.config)
 
 
-@routes.get(b'/os_version')
+@routes.get(b'/os_version', check_key=True)
 def dashboard_os_version(http_context, app):
     return metrics.get_os_version()
 
 
-@routes.get(b'/pg_version')
+@routes.get(b'/pg_version', check_key=True)
 def dashboard_pg_version(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_pg_version(conn)
 
 
-@routes.get(b'/n_cpu')
+@routes.get(b'/n_cpu', check_key=True)
 def dashboard_n_cpu(http_context, app):
     return metrics.get_n_cpu()
 
 
-@routes.get(b'/databases')
+@routes.get(b'/databases', check_key=True)
 def dashboard_databases(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_databases(conn)
 
 
-@routes.get(b'/info')
+@routes.get(b'/info', check_key=True)
 def dashboard_info(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_info(conn, app.config)
 
 
-@routes.get(b'/max_connections')
+@routes.get(b'/max_connections', check_key=True)
 def dashboard_max_connections(http_context, app):
     with app.postgres.connect() as conn:
         return metrics.get_max_connections(conn)

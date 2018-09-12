@@ -148,7 +148,7 @@ def profile(http_context, app, sessions):
         raise HTTPError(401, "Invalid session.")
 
 
-@add_route('GET', b'/notifications')
+@add_route('GET', b'/notifications', check_key=True)
 def notifications(http_context, app, sessions):
     logger.info("Get notifications.")
     try:
