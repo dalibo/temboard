@@ -204,6 +204,7 @@ Core API
 
     Get all notifications from the agent.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session ID
