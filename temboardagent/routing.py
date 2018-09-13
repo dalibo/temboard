@@ -7,7 +7,7 @@ WORKERS = []
 logger = logging.getLogger(__name__)
 
 
-def make_route(function, method, path, check_session):
+def make_route(function, method, path, check_session, check_key):
     splitpath = []
     elts = path.split(b'/')
     pos = 0
@@ -41,16 +41,18 @@ def make_route(function, method, path, check_session):
         module=function.__module__,
         function=function.__name__,
         check_session=check_session,
+        check_key=check_key,
     )
 
 
-def add_route(method, path, check_session=True):
+def add_route(method, path, check_session=True, check_key=False):
     """
     Function decorator for HTTP method/path -> API function mapping.
     """
     def func_wrapper(function):
         global ROUTES
-        ROUTES.append(make_route(function, method, path, check_session))
+        ROUTES.append(make_route(function, method, path, check_session,
+                                 check_key))
         return function
     return func_wrapper
 
@@ -82,23 +84,26 @@ class RouteSet(list):
     def __init__(self, prefix=b''):
         self.prefix = prefix
 
-    def delete(self, path, check_session=True):
+    def delete(self, path, check_session=True, check_key=False):
         def register_route(f):
             self.append(
-                make_route(f, 'DELETE', self.prefix + path, check_session))
+                make_route(f, 'DELETE', self.prefix + path, check_session,
+                           check_key))
             return f
         return register_route
 
-    def get(self, path, check_session=True):
+    def get(self, path, check_session=True, check_key=False):
         def register_route(f):
             self.append(
-                make_route(f, 'GET', self.prefix + path, check_session))
+                make_route(f, 'GET', self.prefix + path, check_session,
+                           check_key))
             return f
         return register_route
 
-    def post(self, path, check_session=True):
+    def post(self, path, check_session=True, check_key=False):
         def register_route(f):
             self.append(
-                make_route(f, 'POST', self.prefix + path, check_session))
+                make_route(f, 'POST', self.prefix + path, check_session,
+                           check_key))
             return f
         return register_route

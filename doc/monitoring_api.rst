@@ -7,6 +7,7 @@ Monitoring plugin API
 
     Run ``sessions`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -78,6 +79,7 @@ Monitoring plugin API
 
     Run ``xacts`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -121,6 +123,7 @@ Monitoring plugin API
 
     Run ``locks`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -178,6 +181,7 @@ Monitoring plugin API
 
     Run ``blocks`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -222,6 +226,7 @@ Monitoring plugin API
 
     Run ``bgwriter`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -273,6 +278,7 @@ Monitoring plugin API
 
     Run ``db_size`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -321,6 +327,7 @@ Monitoring plugin API
 
     Run ``tblspc_size`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -375,6 +382,7 @@ Monitoring plugin API
 
     Run ``filesystems_size`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -425,6 +433,7 @@ Monitoring plugin API
 
     Run ``cpu`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -501,6 +510,7 @@ Monitoring plugin API
 
     Run ``process`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -546,6 +556,7 @@ Monitoring plugin API
 
     Run ``memory`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -592,6 +603,7 @@ Monitoring plugin API
 
     Run ``loadavg`` monitoring probe.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session

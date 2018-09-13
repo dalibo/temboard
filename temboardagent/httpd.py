@@ -205,11 +205,30 @@ class RequestHandler(BaseHTTPRequestHandler):
                 logger.error('Unable to read post data')
                 raise HTTPError(400, 'Unable to read post data')
 
-        # Check session ID
-        if route['check_session']:
+        username = None
+        checked = False
+
+        # Authentication checking out
+
+        # 1. Try the auth' by key: if this method is available for this API
+        # and 'key' arg exists.
+        if route['check_key'] and 'key' in self.query:
+            if self.app.config.temboard.key is None:
+                raise HTTPError(401, "Authentication key not configured")
+            if self.query['key'][0] != self.app.config.temboard.key:
+                raise HTTPError(401, "Invalid key")
+            checked = True
+
+        # 2. Check session ID if available and not previously auth'd by key
+        if not checked and route['check_session']:
             username = check_sessionid(self.headers, self.sessions)
-        else:
-            username = None
+            checked = True
+
+        # 3. At this point, if not yet checked out and auth' by key is
+        # available then we need to raise an error because 'key' arg hasn't
+        # been passed and auth' by key is the only available method.
+        if not checked and route['check_key']:
+            raise HTTPError(401, "Missing key")
 
         try:
             # Load POST content expecting it is in JSON format.

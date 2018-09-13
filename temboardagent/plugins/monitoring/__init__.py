@@ -43,73 +43,73 @@ workers = taskmanager.WorkerSet()
 routes = RouteSet(prefix=b'/monitoring/probe')
 
 
-@routes.get(b'/sessions')
+@routes.get(b'/sessions', check_key=True)
 def get_probe_sessions(http_context, app):
     return api_run_probe(probe_sessions(app.config.monitoring), app.config)
 
 
-@routes.get(b'/xacts')
+@routes.get(b'/xacts', check_key=True)
 def get_probe_xacts(http_context, app):
     return api_run_probe(probe_xacts(app.config.monitoring), app.config)
 
 
-@routes.get(b'/locks')
+@routes.get(b'/locks', check_key=True)
 def get_probe_locks(http_context, app):
     return api_run_probe(probe_locks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/blocks')
+@routes.get(b'/blocks', check_key=True)
 def get_probe_blocks(http_context, app):
     return api_run_probe(probe_blocks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/bgwriter')
+@routes.get(b'/bgwriter', check_key=True)
 def get_probe_bgwriter(http_context, app):
     return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
 
 
-@routes.get(b'/db_size')
+@routes.get(b'/db_size', check_key=True)
 def get_probe_db_size(http_context, app):
     return api_run_probe(probe_db_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/tblspc_size')
+@routes.get(b'/tblspc_size', check_key=True)
 def get_probe_tblspc_size(http_context, app):
     return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/filesystems_size')
+@routes.get(b'/filesystems_size', check_key=True)
 def get_probe_filesystems_size(http_context, app):
     return api_run_probe(probe_filesystems_size(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/cpu')
+@routes.get(b'/cpu', check_key=True)
 def get_probe_cpu(http_context, app):
     return api_run_probe(probe_cpu(app.config.monitoring), app.config)
 
 
-@routes.get(b'/process')
+@routes.get(b'/process', check_key=True)
 def get_probe_process(http_context, app):
     return api_run_probe(probe_process(app.config.monitoring), app.config)
 
 
-@routes.get(b'/memory')
+@routes.get(b'/memory', check_key=True)
 def get_probe_memory(http_context, app):
     return api_run_probe(probe_memory(app.config.monitoring), app.config)
 
 
-@routes.get(b'/loadavg')
+@routes.get(b'/loadavg', check_key=True)
 def get_probe_loadavg(http_context, app):
     return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
 
 
-@routes.get(b'/wal_files')
+@routes.get(b'/wal_files', check_key=True)
 def get_probe_wal_files(http_context, app):
     return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
-@routes.get(b'/replication')
+@routes.get(b'/replication', check_key=True)
 def get_probe_replication(http_context, app):
     return api_run_probe(probe_replication(app.config.monitoring), app.config)
 

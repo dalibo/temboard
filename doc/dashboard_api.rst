@@ -7,6 +7,7 @@ Dashboard plugin API
 
     Get the whole last data set used to render dashboard view. Data have been collected async.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -97,6 +98,7 @@ Dashboard plugin API
 
     Get the dashboard plugin config.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -156,6 +158,7 @@ Dashboard plugin API
 
     Get the last ``n`` sets of dashboard data. ``n`` is defined by parameter ``history_length`` from the ``dashboard`` section of configuration file. Default value is ``150``.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -233,6 +236,7 @@ Dashboard plugin API
 
     Get the number of buffers allocated by PostgreSQL ``background writer`` process.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -263,6 +267,7 @@ Dashboard plugin API
 
     Get PostgreSQL global cache hit ratio.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -293,6 +298,7 @@ Dashboard plugin API
 
     Get the total number of active backends.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -329,6 +335,7 @@ Dashboard plugin API
 
     Get CPU usage.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -368,6 +375,7 @@ Dashboard plugin API
 
     System loadaverage.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -400,6 +408,7 @@ Dashboard plugin API
 
     Memory usage.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -438,6 +447,7 @@ Dashboard plugin API
 
     Machine hostname.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -470,6 +480,7 @@ Dashboard plugin API
 
     Operating system version.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -502,6 +513,7 @@ Dashboard plugin API
 
     Get PostgreSQL server version.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -534,6 +546,7 @@ Dashboard plugin API
 
     Number of CPU.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -566,6 +579,7 @@ Dashboard plugin API
 
     PostgreSQL cluster size & number of databases.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -606,6 +620,7 @@ Dashboard plugin API
 
     Get a bunch of global informations about system and PostgreSQL.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
@@ -643,6 +658,7 @@ Dashboard plugin API
 
     Get the max_connections settings value.
 
+    :query key: Agent's key for authentication (optional)
     :reqheader X-Session: Session ID
     :status 200: no error
     :status 401: invalid session
