@@ -6,7 +6,7 @@
 
 temBoard_ is a powerful management tool for PostgreSQL.
 
-temBoard agent is a Python2 service designed to run along PostgreSQL, exposing a
+temBoard agent is a Python service designed to run along PostgreSQL, exposing a
 REST API to implement various management tasks on PostgreSQL instance. See
 http://temboard.io/ for the big picture.
 
@@ -17,7 +17,7 @@ http://temboard.io/ for the big picture.
 
 - Non intrusive daemon dedicated to one PostgreSQL cluster.
 - No extra dependencies.
-- Written python2.7, supported by stable distribution releases.
+- Written python2.7 and python3, supported by stable distribution releases.
 - Secured REST API with SSL and credentials.
 - Extensible with plugins.
 
