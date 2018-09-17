@@ -18,6 +18,9 @@ SETUP_KWARGS = dict(
     url='http://temboard.io/',
     description='Administration & monitoring PostgreSQL agent.',
     classifiers=[
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.6",
         "Development Status :: 3 - Alpha",
         "Environment :: No Input/Output (Daemon)",
         "Intended Audience :: System Administrators",
