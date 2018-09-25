@@ -539,7 +539,8 @@ def get_host_checks(session, host_id):
 def populate_host_checks(session, host_id, instance_id, hostinfo):
     # Populate checks table with bootstraped checks if needed
     q = session.query(Check)
-    n = q.filter(Check.host_id == host_id).count()
+    n = q.filter(Check.host_id == host_id,
+                 Check.instance_id == instance_id).count()
     if n != 0:
         return
     specs = check_specs
