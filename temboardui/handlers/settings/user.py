@@ -51,7 +51,6 @@ class SettingsUserJsonHandler(JsonHandler):
             role = get_role(self.db_session, username)
             groups = get_group_list(self.db_session)
 
-            self.tearDown(commit=False)
             self.logger.info("Done.")
             return JSONAsyncResult(
                 200,
@@ -166,7 +165,6 @@ class SettingsUserJsonHandler(JsonHandler):
                     add_role_in_group(self.db_session, role.role_name,
                                       group_name)
 
-            self.tearDown()
             self.logger.info("Done.")
             return JSONAsyncResult(200, {'ok': True})
 
@@ -202,7 +200,6 @@ class SettingsDeleteUserJsonHandler(JsonHandler):
             if 'username' not in data or data['username'] == '':
                 raise TemboardUIError(400, "Username field is missing.")
             delete_role(self.db_session, data['username'])
-            self.tearDown()
             self.logger.info("Done.")
             return JSONAsyncResult(200, {'delete': True})
 
@@ -234,7 +231,6 @@ class SettingsUserHandler(BaseHandler):
 
             role_list = get_role_list(self.db_session)
             self.logger.debug(role_list)
-            self.tearDown(commit=False)
             self.logger.info("Done.")
             return HTMLAsyncResult(
                     200,

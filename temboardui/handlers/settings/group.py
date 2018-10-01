@@ -37,7 +37,6 @@ class SettingsGroupAllJsonHandler(JsonHandler):
         self.logger.debug(groups)
 
         self.logger.info("Done.")
-        self.tearDown(commit=False)
         return JSONAsyncResult(
             200,
             {
@@ -80,7 +79,6 @@ class SettingsGroupJsonHandler(JsonHandler):
         self.logger.debug(group)
 
         if group_kind == 'role':
-            self.tearDown(commit=False)
             self.logger.info("Done")
             return JSONAsyncResult(
                 200,
@@ -92,7 +90,6 @@ class SettingsGroupJsonHandler(JsonHandler):
             )
         else:
             user_groups = get_group_list(self.db_session)
-            self.tearDown(commit=False)
             self.logger.info("Done.")
             return JSONAsyncResult(
                 200,
@@ -158,7 +155,6 @@ class SettingsGroupJsonHandler(JsonHandler):
                 add_role_group_in_instance_group(
                     self.db_session, group_name, group.group_name)
 
-        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {'ok': True})
 
@@ -181,7 +177,6 @@ class SettingsDeleteGroupJsonHandler(JsonHandler):
         if 'group_name' not in data or data['group_name'] == '':
             raise TemboardUIError(400, "Group name field is missing.")
         delete_group(self.db_session, data['group_name'], group_kind)
-        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {'delete': True})
 
@@ -201,7 +196,6 @@ class SettingsGroupHandler(BaseHandler):
             group_list = get_group_list(self.db_session, group_kind)
             self.logger.debug(group_list)
 
-            self.tearDown(commit=False)
             self.logger.info("Done.")
             return HTMLAsyncResult(
                 200,

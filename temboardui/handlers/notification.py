@@ -36,7 +36,6 @@ class NotificationsHandler(BaseHandler):
                                                    agent_address,
                                                    agent_port,
                                                    xsession)
-        self.tearDown(commit=False)
         self.logger.info("Done.")
         return HTMLAsyncResult(
                 http_code=200,

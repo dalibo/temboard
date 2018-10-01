@@ -47,7 +47,6 @@ class LoginHandler(BaseHandler):
             self.start_db_session()
 
             role = self.current_user
-            self.db_session.close()
         except Exception as e:
             self.logger.exception(str(e))
         if role is not None:
@@ -74,7 +73,6 @@ class LoginHandler(BaseHandler):
             role = get_role_by_auth(self.db_session, p_role_name,
                                     role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
-            self.db_session.close()
             sleep(1)
             self.logger.info("Done.")
             redirection = self.get_secure_cookie('referer_uri') \
@@ -88,10 +86,6 @@ class LoginHandler(BaseHandler):
                     'content': gen_cookie(role.role_name,
                                           role_hash_password)})
         except (TemboardUIError, Exception) as e:
-            try:
-                self.db_session.close()
-            except Exception:
-                pass
             self.logger.exception(str(e))
             self.logger.info("Failed.")
             sleep(1)
@@ -119,7 +113,6 @@ class AgentLoginHandler(BaseHandler):
                 raise TemboardUIError(302, "Current role unknown.")
 
             instance = get_instance(self.db_session, agent_address, agent_port)
-            self.db_session.close()
             xsession = self.get_secure_cookie(
                 "temboard_%s_%s" % (instance.agent_address,
                                     instance.agent_port))
@@ -145,10 +138,6 @@ class AgentLoginHandler(BaseHandler):
                 })
         except (TemboardUIError, TemboardError, Exception) as e:
             self.logger.exception(str(e))
-            try:
-                self.db_session.close()
-            except Exception as e:
-                pass
             if (isinstance(e, TemboardUIError) or
                isinstance(e, TemboardError)):
                 if e.code == 302:
@@ -183,7 +172,6 @@ class AgentLoginHandler(BaseHandler):
                 raise TemboardUIError(302, "Current role unknown.")
 
             instance = get_instance(self.db_session, agent_address, agent_port)
-            self.db_session.close()
 
             xsession = temboard_login(
                         self.ssl_ca_cert_file,
@@ -208,10 +196,6 @@ class AgentLoginHandler(BaseHandler):
         except (TemboardError, TemboardUIError, Exception) as e:
             self.logger.exception(str(e))
             self.logger.info("Failed.")
-            try:
-                self.db_session.close()
-            except Exception as e:
-                pass
             return HTMLAsyncResult(
                     http_code=200,
                     template_file='agent-login.html',
@@ -241,7 +225,6 @@ class LoginJsonHandler(JsonHandler):
             role = get_role_by_auth(self.db_session, p_role_name,
                                     role_hash_password)
             self.logger.info("Role '%s' authentificated." % (role.role_name))
-            self.db_session.close()
             sleep(1)
             self.logger.info("Done.")
 
@@ -254,10 +237,6 @@ class LoginJsonHandler(JsonHandler):
                 })
 
         except (TemboardUIError, Exception) as e:
-            try:
-                self.db_session.close()
-            except Exception:
-                pass
             self.logger.exception(str(e))
             self.logger.info("Failed.")
             sleep(1)

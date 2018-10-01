@@ -26,7 +26,11 @@ class BaseHandler(tornado.web.RequestHandler):
         self.instance = None
 
     def on_finish(self):
-        self.tearDown()
+        try:
+            self.db_session.commit()
+            self.db_session.close()
+        except Exception:
+            pass
 
     @property
     def logger(self,):
@@ -182,14 +186,6 @@ class BaseHandler(tornado.web.RequestHandler):
         if address is not None and port is not None:
             self.instance = get_instance(self.db_session, address, port)
             self.require_instance()
-
-    def tearDown(self, commit=True):
-        try:
-            if commit:
-                self.db_session.commit()
-            self.db_session.close()
-        except Exception:
-            pass
 
 
 class Error404Handler(tornado.web.RequestHandler):

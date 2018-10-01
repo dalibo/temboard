@@ -24,7 +24,6 @@ class HomeHandler(BaseHandler):
             raise TemboardUIError(302, 'Current role unknown.')
         instance_list = get_instances_by_role_name(self.db_session,
                                                    role.role_name)
-        self.tearDown(commit=False)
         self.logger.info("Done.")
         return HTMLAsyncResult(
                 http_code=200,
