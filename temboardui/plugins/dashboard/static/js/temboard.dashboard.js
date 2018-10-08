@@ -137,11 +137,27 @@ $(function() {
     $('#total-sessions').html(html);
   }
 
+  function updateTimeRange(chart) {
+    // update date range
+    var timeConfig = chart.options.scales.xAxes[0].time;
+    var now = moment();
+    timeConfig.min = now.clone().subtract(timeRange, 's');
+    timeConfig.max = now;
+    chart.update();
+  }
+
   function updateLoadaverage(data) {
     /** Add the very new loadaverage value to the chart dataset ... **/
     var chart = loadaveragechart;
-    chart.data.datasets[0].data.push(data['loadaverage']);
-    chart.data.datasets[0].data.shift();
+    updateTimeRange(chart);
+    var dataset = chart.data.datasets[0];
+    dataset.data.push({
+      x: data.active_backends.time * 1000,
+      y: data.loadaverage
+    });
+    dataset = dataset.data.filter(function(datum) {
+      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
+    });
     $('#loadaverage').html(data['loadaverage']);
     chart.update();
   }
@@ -152,7 +168,9 @@ $(function() {
 
   function updateTps(data) {
     var chart = tpschart;
+    updateTimeRange(chart);
     var datasets = chart.data.datasets;
+
     var duration = data.timestamp - lastDatabasesDatum.timestamp;
     if (duration === 0) {
       return;
@@ -161,11 +179,15 @@ $(function() {
     var deltaRollback = computeDelta(data.total_rollback, lastDatabasesDatum.total_rollback, duration);
 
     var commitData = datasets[0].data;
-    commitData.push(deltaCommit);
+    commitData.push({x: data.timestamp * 1000, y: deltaCommit});
+    commitData = commitData.filter(function(datum) {
+      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
+    });
     var rollbackData = datasets[1].data;
-    rollbackData.push(deltaRollback);
-    commitData.shift();
-    rollbackData.shift();
+    rollbackData.push({x: data.timestamp * 1000, y: deltaRollback});
+    rollbackData = rollbackData.filter(function(datum) {
+      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
+    });
 
     $('#tps_commit').html(deltaCommit);
     $('#tps_rollback').html(deltaRollback);
@@ -310,29 +332,19 @@ $(function() {
   );
   updateTotalSessions();
 
-  var missingDataCount = config.history_length - jdata_history.length;
-  if (missingDataCount > 0) {
-    var missing = Array.apply(null, {length: missingDataCount});
-    jdata_history = missing.concat(jdata_history);
-  }
+  var now = moment();
+  var timeRange = config.history_length * config.scheduler_interval;
 
   var tpsData = jdata_history.map(function(a, index) {
-    if (a === undefined) {
-      return [null, null];
-    }
     if (index === 0) {
-      return [0, 0];
+      return [0, 0, a.databases.timestamp * 1000];
     }
     var curr = a.databases;
-    var prev = jdata_history[index - 1];
-    if (!prev) {
-      return [null, null];
-    }
-    prev = prev.databases;
+    var prev = jdata_history[index - 1].databases;
     var duration = curr.timestamp - prev.timestamp;
     var deltaCommit = computeDelta(curr.total_commit, prev.total_commit, duration);
     var deltaRollback = computeDelta(curr.total_rollback, prev.total_rollback, duration);
-    return [deltaCommit, deltaRollback];
+    return [deltaCommit, deltaRollback, curr.timestamp * 1000];
   });
 
   var lineChartsOptions = {
@@ -349,11 +361,14 @@ $(function() {
         }
       }],
       xAxes: [{
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
+        type: 'time',
+        time: {
+          min: now.clone().subtract(timeRange, 's'),
+          max: now,
+          displayFormats: {
+            second: 'h:mm a',
+            minute: 'h:mm a'
+          }
         }
       }]
     },
@@ -376,19 +391,22 @@ $(function() {
     {
       type: 'line',
       data: {
-        labels: Array.apply(null, Array(tpsData.length)),
         datasets : [
           {
             label: "Commit",
             backgroundColor: "rgba(0,188,18,0.2)",
             borderColor: "rgba(0,188,18,1)",
-            data: tpsData.map(function(a) {return a[0]})
+            data: tpsData.map(function(a) {
+              return {x: a[2], y: a[0]};
+            })
           },
           {
             label: "Rollback",
             backgroundColor: "rgba(188,0,0,0.2)",
             borderColor: "rgba(188,0,0,1)",
-            data: tpsData.map(function(a) {return a[1]})
+            data: tpsData.map(function(a) {
+              return {x: a[2], y: a[1]};
+            })
           }
         ]
       },
@@ -397,14 +415,24 @@ $(function() {
   );
 
   var loadaverageData = jdata_history.map(function(item) {
-    return item ? item.loadaverage : null;
+    // We don't have a timestamp for loadaverage, we use the one for active
+    // backends instead.
+    if (!item.active_backends) {
+      return {
+        x: item.timestamp * 1000,
+        y: null
+      }
+    }
+    return {
+      x: item.active_backends.time * 1000,
+      y: item.loadaverage
+    };
   });
   var loadaveragechart = new Chart(
     $('#chart-loadaverage').get(0).getContext('2d'),
     {
       type: 'line',
       data: {
-        labels: Array.apply(null, Array(jdata_history.length)),
         datasets : [
           {
             label: "Loadaverage",
