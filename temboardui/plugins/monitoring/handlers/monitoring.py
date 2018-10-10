@@ -101,8 +101,9 @@ class MonitoringCollectorHandler(JsonHandler):
             thread_session.close()
 
             # Add max_connections value to data
-            data['data']['max_connections'] = \
-                data['instances'][0]['max_connections']
+            if 'max_connections' in data['instances'][0].keys():
+                data['data']['max_connections'] = \
+                    data['instances'][0]['max_connections']
 
             task_options = dict(dbconf=config.repository,
                                 host_id=host_id,
