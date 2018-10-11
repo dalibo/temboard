@@ -3,10 +3,12 @@ version: '2'
 volumes:
   rdata:
   rrun:
+  data:
+  run:
 
 services:
   repository:
-    image: postgres:9.6
+    image: postgres:10-alpine
     ports:
       - 5432:5432
     environment:
@@ -20,19 +22,27 @@ services:
       - ./share/sql/alerting.sql:/docker-entrypoint-initdb.d/11-plugin-alerting.sql
       - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
 
+  instance:
+    image: postgres:10-alpine
+    ports:
+      - 5433:5432
+    volumes:
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql
+
   agent:
     image: dalibo/temboard-agent
     ports:
       - 2345:2345
     volumes:
-      - rdata:/var/lib/postgresql/data
-      - rrun:/var/run/postgresql
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - repository:repository.fqdn
+      - instance:instance.fqdn
     environment:
-      TEMBOARD_HOSTNAME: repository.fqdn
+      TEMBOARD_HOSTNAME: instance.fqdn
       TEMBOARD_KEY: key_for_agent0
       TEMBOARD_UI_URL: https://172.17.0.1:8888
       TEMBOARD_REGISTER_HOST: 0.0.0.0
