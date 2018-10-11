@@ -88,22 +88,17 @@ def aggregate_data_worker(config):
                     p=conf['port'],
                     db=conf['dbname'])
         engine = create_engine(dburi)
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.aggregate_data()")
             res = conn.execute("SELECT * FROM aggregate_data()")
             for row in res.fetchall():
                 logger.debug("table=%s insert=%s"
                              % (row['tblname'], row['nb_rows']))
-            conn.execute("COMMIT")
             return
     except Exception as e:
         logger.error('Could not aggregate montitoring data')
         logger.exception(e)
-        try:
-            conn.execute("ROLLBACK")
-        except Exception:
-            pass
         raise(e)
 
 

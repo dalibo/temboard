@@ -58,7 +58,6 @@ class SettingsInstanceJsonHandler(JsonHandler):
 
         groups = get_group_list(self.db_session, 'instance')
         self.logger.info("Done.")
-        self.tearDown(commit=False)
         return JSONAsyncResult(
             200,
             {
@@ -200,7 +199,6 @@ class SettingsInstanceJsonHandler(JsonHandler):
                     else:
                         raise TemboardUIError(
                             404, "Unknown plugin %s." % (plugin_name))
-        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {"message": "OK"})
 
@@ -225,7 +223,6 @@ class SettingsDeleteInstanceJsonHandler(JsonHandler):
             raise TemboardUIError(400, "Agent port field is missing.")
         delete_instance(
             self.db_session, data['agent_address'], data['agent_port'])
-        self.tearDown()
         self.logger.info("Done.")
         return JSONAsyncResult(200, {'delete': True})
 
@@ -242,7 +239,6 @@ class SettingsInstanceHandler(BaseHandler):
             self.check_admin()
 
             instance_list = get_instance_list(self.db_session)
-            self.tearDown(commit=False)
             return HTMLAsyncResult(
                     200,
                     None,
@@ -290,7 +286,6 @@ class DiscoverInstanceJsonHandler(JsonHandler):
 
         res = temboard_discover(self.ssl_ca_cert_file, agent_address,
                                 agent_port)
-        self.tearDown(commit=False)
         self.logger.info("Done.")
         return JSONAsyncResult(200, res)
 

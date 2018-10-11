@@ -54,12 +54,12 @@ class MonitoringCollectorHandler(JsonHandler):
             # Insert data in an other thread.
         except Exception as e:
             return JSONAsyncResult(http_code=500, data={'error': e.message})
+        # We need to use a scoped_session object here as far the
+        # code below is executed in its own thread.
+        session_factory = sessionmaker(bind=self.engine)
+        Session = scoped_session(session_factory)
+        thread_session = Session()
         try:
-            # We need to use a scoped_session object here as far the
-            # code below is executed in its own thread.
-            session_factory = sessionmaker(bind=self.engine)
-            Session = scoped_session(session_factory)
-            thread_session = Session()
 
             # Check the key
             if data['instances'][0]['available']:
@@ -98,7 +98,7 @@ class MonitoringCollectorHandler(JsonHandler):
                                  dict(n_cpu=data['hostinfo']['cpu_count']))
             # Getting checks for this host/instance
             enabled_checks = get_host_checks(thread_session, host_id)
-            thread_session.close()
+            thread_session.commit()
 
             # Add max_connections value to data
             if 'max_connections' in data['instances'][0].keys():
@@ -146,7 +146,6 @@ class MonitoringCollectorHandler(JsonHandler):
             self.logger.exception(str(e))
             try:
                 thread_session.rollback()
-                thread_session.close()
             except Exception:
                 pass
             return JSONAsyncResult(http_code=409, data={'error': e.message})
@@ -154,10 +153,11 @@ class MonitoringCollectorHandler(JsonHandler):
             self.logger.exception(str(e))
             try:
                 thread_session.rollback()
-                thread_session.close()
             except Exception:
                 pass
             return JSONAsyncResult(http_code=500, data={'error': e.message})
+        finally:
+            thread_session.close()
 
     @tornado.web.asynchronous
     def post(self,):
