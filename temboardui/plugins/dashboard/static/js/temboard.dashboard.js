@@ -36,8 +36,8 @@ $(function() {
       success: function (data) {
         $('#ErrorModal').modal('hide');
         updateDashboard(data, true);
-        updateTps(data.databases);
-        updateLoadaverage(data);
+        updateTps([data]);
+        updateLoadaverage([data]);
         updateNotifications(data.notifications);
       },
       error: function(xhr) {
@@ -62,17 +62,17 @@ $(function() {
 
   function updateDashboard(data) {
     /** Update time **/
-    $('#time').html(data['databases']['time']);
     $('#hostname').html(data['hostname']);
     $('#os_version').html(data['os_version']);
     $('#n_cpu').html(data['n_cpu']);
     $('#memory').html(filesize(data['memory']['total'] * 1000));
-    $('#pg_version').html(data['pg_version']);
-    $('#size').html(data['databases']['total_size']);
-    $('#nb_db').html(data['databases']['databases']);
+    $('#pg_version').html(data['pg_version'] || null);
+    var databases = data['databases'];
+    $('#size').html(databases ? databases.total_size : null);
+    $('#nb_db').html(databases ? databases.databases : null);
     $('#pg_data').html(data['pg_data']);
     $('#pg_port').html(data['pg_port']);
-    $('#pg_uptime').html(data['pg_uptime']);
+    $('#pg_uptime').html(data['pg_uptime'] || 'N/A');
 
     /** Update memory usage chart **/
     memorychart.data.datasets[0].data[0] = data['memory']['active'];
@@ -97,9 +97,10 @@ $(function() {
     updateTotalHit();
 
     /** Sessions chart **/
-    var active_backends = data['active_backends']['nb'];
-    sessionschart.data.datasets[0].data[0] = active_backends;
-    sessionschart.data.datasets[0].data[1] = data['max_connections'] - active_backends;
+    var active_backends = data.active_backends;
+    var nb_active_backends = active_backends ? active_backends.nb : null;
+    sessionschart.data.datasets[0].data[0] = nb_active_backends;
+    sessionschart.data.datasets[0].data[1] = data['max_connections'] - nb_active_backends;
     sessionschart.update();
     updateTotalSessions();
   }
@@ -125,7 +126,8 @@ $(function() {
   }
 
   function updateTotalHit() {
-    $('#total-hit').html(hitratiochart.data.datasets[0].data[0] + ' %');
+    var totalHit = hitratiochart.data.datasets[0].data[0];
+    $('#total-hit').html(totalHit ? totalHit + ' %' : 'N/A');
   }
 
   function updateTotalSessions() {
@@ -143,6 +145,15 @@ $(function() {
     var now = moment();
     timeConfig.min = now.clone().subtract(timeRange, 's');
     timeConfig.max = now;
+
+    // Remove old data
+    var datasets = chart.data.datasets;
+    for (var i = 0; i < datasets.length; i++) {
+      var dataset = datasets[i];
+      dataset.data = dataset.data.filter(function(datum) {
+        return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
+      });
+    }
     chart.update();
   }
 
@@ -150,15 +161,14 @@ $(function() {
     /** Add the very new loadaverage value to the chart dataset ... **/
     var chart = loadaveragechart;
     updateTimeRange(chart);
-    var dataset = chart.data.datasets[0];
-    dataset.data.push({
-      x: data.active_backends.time * 1000,
-      y: data.loadaverage
-    });
-    dataset = dataset.data.filter(function(datum) {
-      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
-    });
-    $('#loadaverage').html(data['loadaverage']);
+
+    for (var i = 0; i < data.length; i++) {
+      chart.data.datasets[0].data.push({
+        x: data[i].timestamp * 1000,
+        y: data[i].loadaverage
+      });
+    }
+    $('#loadaverage').html(data[data.length - 1]['loadaverage']);
     chart.update();
   }
 
@@ -166,33 +176,50 @@ $(function() {
     return Math.ceil((a - b) / duration);
   }
 
+  var lastDatabasesDatum = {};
+
   function updateTps(data) {
     var chart = tpschart;
     updateTimeRange(chart);
+
     var datasets = chart.data.datasets;
-
-    var duration = data.timestamp - lastDatabasesDatum.timestamp;
-    if (duration === 0) {
-      return;
-    }
-    var deltaCommit = computeDelta(data.total_commit, lastDatabasesDatum.total_commit, duration);
-    var deltaRollback = computeDelta(data.total_rollback, lastDatabasesDatum.total_rollback, duration);
-
     var commitData = datasets[0].data;
-    commitData.push({x: data.timestamp * 1000, y: deltaCommit});
-    commitData = commitData.filter(function(datum) {
-      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
-    });
     var rollbackData = datasets[1].data;
-    rollbackData.push({x: data.timestamp * 1000, y: deltaRollback});
-    rollbackData = rollbackData.filter(function(datum) {
-      return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
-    });
 
-    $('#tps_commit').html(deltaCommit);
-    $('#tps_rollback').html(deltaRollback);
+    var i = 0;
+    var len = data.length;
+    var timestamp;
+    var duration;
+    for (i; i < len; i++) {
+      var datum = data[i];
+      var databases = datum.databases;
+      if (!databases) {
+        commitData.push({x: datum.timestamp * 1000, y: NaN});
+        rollbackData.push({x: datum.timestamp * 1000, y: NaN});
+        lastDatabasesDatum = {
+          total_commit: NaN,
+          total_rollback: NaN,
+          timestamp: datum.timestamp
+        };
+      } else {
+        var duration = databases.timestamp - lastDatabasesDatum.timestamp;
+        if (duration === 0) {
+          continue;
+        }
+        var deltaCommit = computeDelta(databases.total_commit, lastDatabasesDatum.total_commit, duration);
+        var deltaRollback = computeDelta(databases.total_rollback, lastDatabasesDatum.total_rollback, duration);
+
+        commitData.push({x: databases.timestamp * 1000, y: deltaCommit});
+        rollbackData.push({x: databases.timestamp * 1000, y: deltaRollback});
+        lastDatabasesDatum = databases;
+      }
+    }
+
+    $('#tps_commit').html(commitData[commitData.length -1].y);
+    $('#tps_rollback').html(rollbackData[rollbackData.length - 1].y);
     chart.update();
-    lastDatabasesDatum = data;
+
+    $('#postgres-stopped-msg').toggleClass('d-none', !!data[data.length - 1].databases);
   }
 
   function updateNotifications(data) {
@@ -335,18 +362,6 @@ $(function() {
   var now = moment();
   var timeRange = config.history_length * config.scheduler_interval;
 
-  var tpsData = jdata_history.map(function(a, index) {
-    if (index === 0) {
-      return [0, 0, a.databases.timestamp * 1000];
-    }
-    var curr = a.databases;
-    var prev = jdata_history[index - 1].databases;
-    var duration = curr.timestamp - prev.timestamp;
-    var deltaCommit = computeDelta(curr.total_commit, prev.total_commit, duration);
-    var deltaRollback = computeDelta(curr.total_rollback, prev.total_rollback, duration);
-    return [deltaCommit, deltaRollback, curr.timestamp * 1000];
-  });
-
   var lineChartsOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -395,39 +410,20 @@ $(function() {
           {
             label: "Commit",
             backgroundColor: "rgba(0,188,18,0.2)",
-            borderColor: "rgba(0,188,18,1)",
-            data: tpsData.map(function(a) {
-              return {x: a[2], y: a[0]};
-            })
+            borderColor: "rgba(0,188,18,1)"
           },
           {
             label: "Rollback",
             backgroundColor: "rgba(188,0,0,0.2)",
-            borderColor: "rgba(188,0,0,1)",
-            data: tpsData.map(function(a) {
-              return {x: a[2], y: a[1]};
-            })
+            borderColor: "rgba(188,0,0,1)"
           }
         ]
       },
       options: lineChartsOptions
     }
   );
+  updateTps(jdata_history);
 
-  var loadaverageData = jdata_history.map(function(item) {
-    // We don't have a timestamp for loadaverage, we use the one for active
-    // backends instead.
-    if (!item.active_backends) {
-      return {
-        x: item.timestamp * 1000,
-        y: null
-      }
-    }
-    return {
-      x: item.active_backends.time * 1000,
-      y: item.loadaverage
-    };
-  });
   var loadaveragechart = new Chart(
     $('#chart-loadaverage').get(0).getContext('2d'),
     {
@@ -436,7 +432,6 @@ $(function() {
         datasets : [
           {
             label: "Loadaverage",
-            data: loadaverageData,
             backgroundColor: 'rgba(250, 164, 58, 0.2)',
             borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
           }
@@ -445,6 +440,7 @@ $(function() {
       options: lineChartsOptions
     }
   );
+  updateLoadaverage(jdata_history);
 
   var refreshInterval = config.scheduler_interval * 1000;
   window.setInterval(refreshDashboard, refreshInterval);

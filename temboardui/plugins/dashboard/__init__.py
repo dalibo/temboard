@@ -99,8 +99,6 @@ class DashboardHandler(BaseHandler):
                 'dashboard': last_data,
                 'config': json.dumps(config),
                 'history': history,
-                'buffers_delta': 0,
-                'readratio': (100 - last_data['hitratio']),
                 'xsession': xsession,
                 'agent_username': agent_username,
             })
