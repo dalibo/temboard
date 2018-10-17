@@ -241,7 +241,9 @@ $(function() {
         createOrUpdateChart.call(this, true);
       },
       // only one watcher for from + to
-      fromTo: createOrUpdateChart
+      fromTo: function() {
+        createOrUpdateChart.call(this, false);
+      }
     },
     computed: {
       fromTo: function() {
