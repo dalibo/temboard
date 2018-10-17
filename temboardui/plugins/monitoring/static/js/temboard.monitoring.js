@@ -408,10 +408,12 @@ $(function() {
     for (var attrname in metrics[id].options) {
       defaultOptions[attrname] = metrics[id].options[attrname];
     }
+
+    var url = apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1";
     if (!this.graph.chart || create) {
       this.graph.chart = new Dygraph(
         document.getElementById("chart"+id),
-        apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1",
+        url,
         defaultOptions
       );
     } else {
@@ -422,7 +424,7 @@ $(function() {
         });
         // load the data for the given range
         this.graph.chart.updateOptions({
-          file: apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1"
+          file: url
         }, false);
       }.bind(this));
     }
