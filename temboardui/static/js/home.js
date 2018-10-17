@@ -159,11 +159,36 @@ $(function() {
       options = $.extend({colors: ['#50BD68', '#F15854']}, options);
       break;
     }
-    new Dygraph(
-      this.$el,
-      api_url + "/data/" + this.metric + "?start=" + start.toISOString() + "&end=" + end.toISOString(),
-      options
-    );
+
+    var params = "?start=" + start.toISOString() + "&end=" + end.toISOString();
+    var metricsUrl = api_url + "/data/" + this.metric + params;
+    var data = null;
+    var dataReq = $.get(metricsUrl, function(_data) {
+      data = _data;
+    });
+    // Get the dates when the instance was unavailable
+    var unavailabilityData = '';
+    var promise = $.when(dataReq);
+    var unavailabilityUrl = api_url + '/unavailability' + params;
+    if (this.metric == 'tps') {
+
+      promise = $.when(dataReq,
+        $.get(unavailabilityUrl, function(_data) { unavailabilityData = _data; })
+      );
+    }
+    promise.then(function() {
+      // fill unavailability data with NaN
+      var colsCount = data.split('\n')[0].split(',').length;
+      var nanArray = new Array(colsCount - 1).fill('NaN');
+      nanArray.unshift('');
+      unavailabilityData = unavailabilityData.replace(/\n/g, nanArray.join(',') + '\n');
+
+      new Dygraph(
+        this.$el,
+        data + unavailabilityData,
+        options
+      );
+    }.bind(this));
   }
 
   function loadChecks() {

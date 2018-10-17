@@ -20,13 +20,17 @@ from temboardui.async import (
     CSVAsyncResult,
 )
 
-from ..chartdata import get_metric_data_csv
+from ..chartdata import (
+    get_unavailability_csv,
+    get_metric_data_csv,
+)
 from ..tools import (
     check_agent_key,
     check_host_key,
     get_host_checks,
     get_host_id,
     get_instance_id,
+    insert_availability,
     insert_metrics,
     merge_agent_info,
     populate_host_checks,
@@ -62,7 +66,8 @@ class MonitoringCollectorHandler(JsonHandler):
         try:
 
             # Check the key
-            if data['instances'][0]['available']:
+            available = data['instances'][0]['available']
+            if available:
                 check_agent_key(thread_session,
                                 data['hostinfo']['hostname'],
                                 data['instances'][0]['data_directory'],
@@ -83,6 +88,10 @@ class MonitoringCollectorHandler(JsonHandler):
             # be there.
             thread_session.flush()
             thread_session.commit()
+
+            insert_availability(
+                thread_session, host, data, self.logger,
+                data['hostinfo']['hostname'], data['instances'][0]['port'])
 
             # Insert metrics data
             insert_metrics(
@@ -164,11 +173,9 @@ class MonitoringCollectorHandler(JsonHandler):
         run_background(self.push_data, self.async_callback)
 
 
-class MonitoringDataMetricHandler(CsvHandler):
+class MonitoringCsvHandler(CsvHandler):
 
-    @CsvHandler.catch_errors
-    def get_data_metric(self, agent_address, agent_port, metric_name):
-
+    def build(self, agent_address, agent_port):
         self.setUp(agent_address, agent_port)
         self.check_active_plugin('monitoring')
 
@@ -179,19 +186,52 @@ class MonitoringDataMetricHandler(CsvHandler):
 
         start = self.get_argument('start', default=None)
         end = self.get_argument('end', default=None)
-        key = self.get_argument('key', default=None)
         start_time = None
         end_time = None
         if start:
             try:
                 start_time = dt_parser.parse(start)
-            except ValueError as e:
+            except ValueError:
                 raise TemboardUIError(406, 'Datetime not valid.')
         if end:
             try:
                 end_time = dt_parser.parse(end)
-            except ValueError as e:
+            except ValueError:
                 raise TemboardUIError(406, 'Datetime not valid.')
+        return host_id, instance_id, start_time, end_time
+
+
+class MonitoringUnavailabilityHandler(MonitoringCsvHandler):
+
+    @CsvHandler.catch_errors
+    def get_unavailability(self, agent_address, agent_port):
+        host_id, instance_id, start_time, end_time = self.build(
+            agent_address, agent_port)
+        try:
+            # Try to load data from the repository
+            data = get_unavailability_csv(self.db_session,
+                                          start_time, end_time,
+                                          host_id=host_id,
+                                          instance_id=instance_id)
+        except IndexError as e:
+            logger.exception(str(e))
+            raise TemboardUIError(404, 'Unknown metric.')
+
+        return CSVAsyncResult(http_code=200, data=data)
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port):
+        run_background(self.get_unavailability, self.async_callback,
+                       (agent_address, agent_port))
+
+
+class MonitoringDataMetricHandler(MonitoringCsvHandler):
+
+    @CsvHandler.catch_errors
+    def get_data_metric(self, agent_address, agent_port, metric_name):
+        host_id, instance_id, start_time, end_time = self.build(
+            agent_address, agent_port)
+        key = self.get_argument('key', default=None)
         try:
             # Try to load data from the repository
             data = get_metric_data_csv(self.db_session, metric_name,

@@ -127,6 +127,38 @@ def check_host_key(session, hostname, agent_key):
     raise Exception("Can't check agent's key.")
 
 
+def insert_availability(session, host, agent_data, logger, hostname, port):
+    try:
+        # Find host_id & instance_id
+        host_id = get_host_id(session, hostname)
+        instance_id = get_instance_id(session, host_id, port)
+    except Exception as e:
+        logger.info("Unable to find host & instance IDs")
+        logger.exception(str(e))
+        session.rollback()
+        return
+
+    cur = session.connection().connection.cursor()
+    cur.execute("SET search_path TO monitoring")
+    try:
+        query = """
+            SELECT insert_instance_availability(%s, %s, %s)
+        """
+        cur.execute(
+            query,
+            (
+                agent_data['datetime'],
+                instance_id,
+                agent_data['instances'][0]['available']
+            )
+        )
+        cur.close()
+    except Exception as e:
+        logger.info("Availability data not inserted")
+        logger.exception(str(e))
+        session.connection().connection.rollback()
+
+
 def insert_metrics(session, host, agent_data, logger, hostname, port):
     try:
         # Find host_id & instance_id

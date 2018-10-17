@@ -30,6 +30,7 @@ from .handlers.monitoring import (
     MonitoringHTMLHandler,
     MonitoringCollectorHandler,
     MonitoringDataMetricHandler,
+    MonitoringUnavailabilityHandler,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,8 @@ def get_routes(config):
          MonitoringCollectorHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/data/([a-z\-_.0-9]{1,64})$",
          MonitoringDataMetricHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",
+         MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
         (r"/server/(.*)/([0-9]{1,5})/alerting/alerts.json",

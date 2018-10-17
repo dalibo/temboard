@@ -790,3 +790,24 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
         data = data_buffer.getvalue()
         data_buffer.close()
     return data
+
+
+def get_unavailability_csv(session, start, end, host_id, instance_id):
+
+    # Tell when the instance was not available
+    cur = session.connection().connection.cursor()
+    cur.execute("SET search_path TO monitoring")
+    sql = """
+        SELECT datetime FROM instance_availability
+        WHERE instance_id = %(instance_id)s
+        AND available = 'f'
+        AND datetime >= %(start)s AND datetime <= %(end)s
+    """
+    query = cur.mogrify(sql, dict(instance_id=instance_id,
+                                  start=start, end=end))
+    data_buffer = cStringIO.StringIO()
+    cur.copy_expert("COPY(" + query + ") TO STDOUT", data_buffer)
+    data = data_buffer.getvalue()
+    data_buffer.close()
+
+    return data

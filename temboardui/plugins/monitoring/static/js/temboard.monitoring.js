@@ -409,25 +409,47 @@ $(function() {
       defaultOptions[attrname] = metrics[id].options[attrname];
     }
 
-    var url = apiUrl+"/"+metrics[id].api+"?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1";
-    if (!this.graph.chart || create) {
-      this.graph.chart = new Dygraph(
-        document.getElementById("chart"+id),
-        url,
-        defaultOptions
+    var params = "?start="+timestampToIsoDate(startDate)+"&end="+timestampToIsoDate(endDate)+"&noerror=1";
+    var data = null;
+    var dataReq = $.get(apiUrl+"/"+metrics[id].api+params, function(_data) {
+      data = _data;
+    });
+    // Get the dates when the instance was unavailable
+    var unavailabilityData = '';
+    var promise = $.when(dataReq);
+    if (metrics[id].category == 'postgres') {
+      promise = $.when(dataReq,
+        $.get(unavailabilityUrl + params, function(_data) { unavailabilityData = _data; })
       );
-    } else {
-      this.graph.chart.ready(function() {
-        // update the date range
-        this.graph.chart.updateOptions({
-          dateWindow: [startDate, endDate]
-        });
-        // load the data for the given range
-        this.graph.chart.updateOptions({
-          file: url
-        }, false);
-      }.bind(this));
     }
+    promise.then(function() {
+      // fill unavailability data with NaN
+      var colsCount = data.split('\n')[0].split(',').length;
+      var nanArray = new Array(colsCount - 1).fill('NaN');
+      nanArray.unshift('');
+      unavailabilityData = unavailabilityData.replace(/\n/g, nanArray.join(',') + '\n');
+
+      // do the job when all ajax request have succeeded
+      if (!this.graph.chart || create) {
+        this.graph.chart = new Dygraph(
+          document.getElementById("chart"+id),
+          data + unavailabilityData,
+          defaultOptions
+        );
+      } else {
+        this.graph.chart.ready(function() {
+          // update the date range
+          this.graph.chart.updateOptions({
+            dateWindow: [startDate, endDate]
+          });
+
+          // load the data for the given range
+          this.graph.chart.updateOptions({
+            file: data + unavailabilityData
+          }, false);
+        }.bind(this));
+      }
+    }.bind(this));
   }
 
   function timestampToIsoDate(epochMs) {
