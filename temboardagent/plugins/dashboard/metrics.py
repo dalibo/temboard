@@ -5,38 +5,53 @@ import re
 from temboardagent.queue import Queue
 from temboardagent.notification import NotificationMgmt
 from temboardagent.inventory import SysInfo, PgInfo
+from temboardagent.errors import UserError
 
 
-def get_metrics(conn, config):
-    dm = DashboardMetrics(conn)
+def get_metrics(app):
+    res = dict()
+    try:
+        with app.postgres.connect() as conn:
+            dm = DashboardMetrics(conn)
+            pginfo = PgInfo(conn)
+            res.update(dict(
+                buffers=dm.get_buffers(),
+                hitratio=dm.get_hitratio(),
+                active_backends=dm.get_active_backends(),
+                max_connections=dm.get_max_connections(),
+                databases=dm.get_stat_db(),
+                pg_uptime=dm.get_pg_uptime(),
+                pg_version=pginfo.version()['full'],
+                pg_data=pginfo.setting('data_directory'),
+                pg_port=pginfo.setting('port'),
+            ))
+    except UserError as e:
+        pass
+
+    dm = DashboardMetrics()
+    res.update(dict(
+        cpu=dm.get_cpu_usage(),
+        loadaverage=dm.get_load_average(),
+        memory=dm.get_memory_usage(),
+        notifications=dm.get_notifications(app.config),
+    ))
+
     sysinfo = SysInfo()
-    pginfo = PgInfo(conn)
 
     cpu_models = [cpu['model_name'] for cpu in sysinfo.cpu_info()['cpus']]
     cpu_models_counter = {}
     for elem in cpu_models:
         cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
 
-    return dict(
-        buffers=dm.get_buffers(),
-        hitratio=dm.get_hitratio(),
-        active_backends=dm.get_active_backends(),
-        max_connections=dm.get_max_connections(),
-        cpu=dm.get_cpu_usage(),
-        loadaverage=dm.get_load_average(),
-        memory=dm.get_memory_usage(),
-        hostname=sysinfo.hostname(config.temboard.hostname),
+    res.update(dict(
+        hostname=sysinfo.hostname(app.config.temboard.hostname),
         os_version=sysinfo.os_release,
         linux_distribution=sysinfo.linux_distribution(),
         cpu_models=cpu_models_counter,
-        databases=dm.get_stat_db(),
-        pg_uptime=dm.get_pg_uptime(),
         n_cpu=sysinfo.n_cpu(),
-        pg_version=pginfo.version()['full'],
-        pg_data=pginfo.setting('data_directory'),
-        pg_port=pginfo.setting('port'),
-        notifications=dm.get_notifications(config),
-    )
+        timestamp=time.time()
+    ))
+    return res
 
 
 def get_metrics_queue(config):
