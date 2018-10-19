@@ -29,9 +29,10 @@ $(function() {
     template: `
     <div>
     Status:
-    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL">OK</span>
+    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF">OK</span>
     <span class="badge badge-warning" v-if="checks.WARNING">WARNING: {{ checks.WARNING }}</span>
     <span class="badge badge-critical" v-if="checks.CRITICAL">CRITICAL: {{ checks.CRITICAL }}</span>
+    <span class="badge badge-undef" v-if="checks.UNDEF">UNDEF: {{ checks.UNDEF }}</span>
     </div>
     `
   });
@@ -103,10 +104,13 @@ $(function() {
     var checks = instance.checks;
     var value = 0;
     if (checks.CRITICAL) {
-      value += checks.CRITICAL * 1000;
+      value += checks.CRITICAL * 1000000;
     }
     if (checks.WARNING) {
-      value += checks.WARNING;
+      value += checks.WARNING* 1000;
+    }
+    if (checks.UNDEF) {
+      value += checks.UNDEF;
     }
     return value;
   }
