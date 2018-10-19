@@ -811,3 +811,18 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
     data_buffer.close()
 
     return data
+
+
+def get_availability(session, host_id, instance_id):
+
+    # Tell whether the instance is currently available or not
+    cur = session.connection().connection.cursor()
+    cur.execute("SET search_path TO monitoring")
+    sql = """
+        SELECT available FROM instance_availability
+        WHERE instance_id = :instance_id
+        ORDER BY datetime desc
+        LIMIT 1
+    """
+    result = session.execute(sql, {'instance_id': instance_id}).fetchone()
+    return bool(result[0]) if result else False

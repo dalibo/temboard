@@ -53,6 +53,9 @@ var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.n
               {{!instance.hostname}}
               </a>
             </strong>
+            <div v-if="instance.available === false">
+              <span class="badge badge-warning"><i class="fa fa-exclamation-triangle"></i> Unable to connect to postgres</span>
+            </div>
             <checks :instance="instance" :update="update"></checks>
           </div>
         </div>

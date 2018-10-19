@@ -40,6 +40,10 @@ $(function() {
   var search = getParameterByName('q') || '';
   var sort = getParameterByName('sort') || 'hostname';
 
+  $.each(instances, function(index, instance) {
+    instance.available = null;
+  });
+
   var instancesVue = new Vue({
     el: '#instances',
     data: {
@@ -79,8 +83,10 @@ $(function() {
     }
   });
 
+  checkAvailability();
   window.setInterval(function() {
     instancesVue.update = moment();
+    checkAvailability();
   }, refreshInterval);
 
   function updateQueryParams() {
@@ -222,5 +228,15 @@ $(function() {
     }
 
     return number;
+  }
+
+  function checkAvailability() {
+    instances.forEach(function(instance) {
+      var api_url = ['/server', instance.agent_address, instance.agent_port, 'monitoring'].join('/');
+      $.ajax(api_url + '/availability')
+      .success(function(data) {
+        instance.available = data.available;
+      });
+    });
   }
 });

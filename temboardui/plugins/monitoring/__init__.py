@@ -27,9 +27,10 @@ from .handlers.alerting import (
     AlertingJSONCheckChangesHandler,
 )
 from .handlers.monitoring import (
-    MonitoringHTMLHandler,
+    MonitoringAvailabilityHandler,
     MonitoringCollectorHandler,
     MonitoringDataMetricHandler,
+    MonitoringHTMLHandler,
     MonitoringUnavailabilityHandler,
 )
 
@@ -59,6 +60,8 @@ def get_routes(config):
          MonitoringCollectorHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/data/([a-z\-_.0-9]{1,64})$",
          MonitoringDataMetricHandler, handler_conf),
+        (r"/server/(.*)/([0-9]{1,5})/monitoring/availability",
+         MonitoringAvailabilityHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",
          MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",

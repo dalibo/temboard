@@ -21,6 +21,7 @@ from temboardui.async import (
 )
 
 from ..chartdata import (
+    get_availability,
     get_unavailability_csv,
     get_metric_data_csv,
 )
@@ -248,6 +249,33 @@ class MonitoringDataMetricHandler(MonitoringCsvHandler):
     def get(self, agent_address, agent_port, metric_name):
         run_background(self.get_data_metric, self.async_callback,
                        (agent_address, agent_port, metric_name))
+
+
+class MonitoringAvailabilityHandler(JsonHandler):
+
+    @BaseHandler.catch_errors
+    def get_availability(self, agent_address, agent_port):
+        self.setUp(agent_address, agent_port)
+        self.check_active_plugin('monitoring')
+
+        # Find host_id & instance_id
+        host_id = get_host_id(self.db_session, self.instance.hostname)
+        instance_id = get_instance_id(self.db_session, host_id,
+                                      self.instance.pg_port)
+        try:
+            data = get_availability(self.db_session,
+                                    host_id=host_id,
+                                    instance_id=instance_id)
+        except Exception as e:
+            logger.exception(str(e))
+            raise TemboardUIError(500, str(e))
+
+        return JSONAsyncResult(http_code=200, data={'available': data})
+
+    @tornado.web.asynchronous
+    def get(self, agent_address, agent_port):
+        run_background(self.get_availability, self.async_callback,
+                       (agent_address, agent_port))
 
 
 class MonitoringHTMLHandler(BaseHandler):
