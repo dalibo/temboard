@@ -112,6 +112,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             logger.error(e.message)
             code = e.code
             message = e.message
+        except UserError as e:
+            msg = str(e)
+            logger.exception(msg)
+            logger.error(msg)
+            code = 500
+            message = {'error': msg}
         except Exception as e:
             logger.exception(str(e))
             logger.error("Internal error")
