@@ -43,7 +43,6 @@ PgConf plugin API
                     "max_val": null,
                     "vartype": "bool",
                     "auto_val": "off",
-                    "auto_val_raw": "off",
                     "boot_val": "on",
                     "unit": null,
                     "desc": "Starts the autovacuum subprocess.",
@@ -51,8 +50,7 @@ PgConf plugin API
                     "min_val": null,
                     "setting": "off",
                     "setting_raw": "off",
-                    "file_val": null,
-                    "file_val_raw": null
+                    "pending_restart": "f"
                 }
             ]
         }
@@ -214,7 +212,6 @@ PgConf plugin API
                     "max_val": null,
                     "vartype": "bool",
                     "auto_val": "on",
-                    "auto_val_raw": "on",
                     "boot_val": "on",
                     "unit": null,
                     "desc": "Starts the autovacuum subprocess. ",
@@ -222,8 +219,7 @@ PgConf plugin API
                     "min_val": null,
                     "setting": "on",
                     "setting_raw": "on",
-                    "file_val": null,
-                    "file_val_raw": null
+                    "pending_restart": "f"
                 }
             ]
         }
@@ -232,7 +228,7 @@ PgConf plugin API
 
 .. http:get:: /pgconf/configuration/status
 
-    Shows settings waiting for PostgreSQL server reload and/or restart
+    Shows settings waiting for PostgreSQL server restart
 
     :reqheader X-Session: Session ID
     :status 200: no error
@@ -264,26 +260,21 @@ PgConf plugin API
         [
             {
                 "context": "postmaster",
-                "setting_raw": "128MB",
                 "enumvals": null,
                 "max_val": 1073741823,
                 "vartype": "integer",
                 "auto_val": 32768,
-                "file_val_raw": "128MB",
                 "boot_val": 1024,
                 "unit": "8kB",
                 "desc": "Sets the number of shared memory buffers used by the server. ",
                 "name": "shared_buffers",
-                "auto_val_raw": "256MB",
                 "min_val": 16,
                 "setting": 16384,
-                "file_val": 16384,
-                "pending_val": "256MB"
+                "setting_raw": "128MB",
+                "pending_restart": "t"
             }
         ],
-        "restart_pending": true,
-        "reload_pending": false,
-        "reload_changes": []
+        "restart_pending": true
     }
 
 

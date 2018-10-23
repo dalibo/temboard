@@ -116,7 +116,6 @@ class TestPgconf(object):
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
         assert 'auto_val' in dict_data[0]['rows'][0]
-        assert 'auto_val_raw' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
@@ -124,9 +123,8 @@ class TestPgconf(object):
         assert 'min_val' in dict_data[0]['rows'][0]
         assert 'setting' in dict_data[0]['rows'][0]
         assert 'setting_raw' in dict_data[0]['rows'][0]
-        assert 'file_val' in dict_data[0]['rows'][0]
-        assert 'file_val_raw' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 15
+        assert 'pending_restart' in dict_data[0]['rows'][0]
+        assert len(dict_data[0]['rows'][0]) == 13
 
     def test_02_get_pgconf_configuration_ko_401(self):
         """
@@ -273,8 +271,7 @@ WHERE
         # shared_buffers update requires the server to restart
         self._exec_query('postgres',
                          "ALTER SYSTEM SET shared_buffers TO '256MB'")
-        # autovacuum update requires the server to reload
-        self._exec_query('postgres', "ALTER SYSTEM SET autovacuum TO 'on'")
+        self._exec_query('postgres', "SELECT pg_reload_conf()")
         (status, res) = temboard_request(
             ENV['agent']['ssl_cert_file'],
             method='GET',
@@ -291,52 +288,25 @@ WHERE
         assert status == 200
         assert 'restart_pending' in dict_data
         assert 'restart_changes' in dict_data
-        assert 'reload_pending' in dict_data
-        assert 'reload_changes' in dict_data
         assert type(dict_data['restart_changes']) == list
-        assert type(dict_data['reload_changes']) == list
         assert dict_data['restart_pending'] is True
-        assert dict_data['reload_pending'] is True
         assert type(dict_data['restart_changes']) == list
-        assert type(dict_data['reload_changes']) == list
         assert len(dict_data['restart_changes']) == 1
-        assert len(dict_data['reload_changes']) == 1
         assert type(dict_data['restart_changes'][0]) == dict
-        assert type(dict_data['reload_changes'][0]) == dict
         assert 'context' in dict_data['restart_changes'][0]
         assert 'enumvals' in dict_data['restart_changes'][0]
         assert 'max_val' in dict_data['restart_changes'][0]
         assert 'vartype' in dict_data['restart_changes'][0]
         assert 'auto_val' in dict_data['restart_changes'][0]
-        assert 'auto_val_raw' in dict_data['restart_changes'][0]
         assert 'boot_val' in dict_data['restart_changes'][0]
         assert 'setting' in dict_data['restart_changes'][0]
         assert 'setting_raw' in dict_data['restart_changes'][0]
-        assert 'file_val' in dict_data['restart_changes'][0]
-        assert 'file_val_raw' in dict_data['restart_changes'][0]
         assert 'min_val' in dict_data['restart_changes'][0]
-        assert 'pending_val' in dict_data['restart_changes'][0]
         assert 'unit' in dict_data['restart_changes'][0]
         assert 'desc' in dict_data['restart_changes'][0]
         assert 'name' in dict_data['restart_changes'][0]
-        assert len(dict_data['restart_changes'][0]) == 16
-        assert 'context' in dict_data['reload_changes'][0]
-        assert 'enumvals' in dict_data['reload_changes'][0]
-        assert 'max_val' in dict_data['reload_changes'][0]
-        assert 'vartype' in dict_data['reload_changes'][0]
-        assert 'setting' in dict_data['restart_changes'][0]
-        assert 'setting_raw' in dict_data['restart_changes'][0]
-        assert 'auto_val' in dict_data['reload_changes'][0]
-        assert 'auto_val_raw' in dict_data['reload_changes'][0]
-        assert 'boot_val' in dict_data['reload_changes'][0]
-        assert 'file_val' in dict_data['reload_changes'][0]
-        assert 'file_val_raw' in dict_data['reload_changes'][0]
-        assert 'min_val' in dict_data['reload_changes'][0]
-        assert 'pending_val' in dict_data['reload_changes'][0]
-        assert 'unit' in dict_data['reload_changes'][0]
-        assert 'desc' in dict_data['reload_changes'][0]
-        assert 'name' in dict_data['reload_changes'][0]
-        assert len(dict_data['reload_changes'][0]) == 16
+        assert 'pending_restart' in dict_data['restart_changes'][0]
+        assert len(dict_data['restart_changes'][0]) == 13
 
     def test_09_get_pgconf_configuration_status_ko_406(self):
         """
@@ -464,7 +434,6 @@ WHERE
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
         assert 'auto_val' in dict_data[0]['rows'][0]
-        assert 'auto_val_raw' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
@@ -472,9 +441,8 @@ WHERE
         assert 'min_val' in dict_data[0]['rows'][0]
         assert 'setting' in dict_data[0]['rows'][0]
         assert 'setting_raw' in dict_data[0]['rows'][0]
-        assert 'file_val' in dict_data[0]['rows'][0]
-        assert 'file_val_raw' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 15
+        assert 'pending_restart' in dict_data[0]['rows'][0]
+        assert len(dict_data[0]['rows'][0]) == 13
 
     def test_15_get_pgconf_configuration_category_ko_401(self):
         """
