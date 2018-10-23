@@ -77,24 +77,16 @@
     <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
       <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
       <p> Some changes are pending and PostgreSQL should be restarted:</p>
-      <table class="table table-sm">
-        <tr>
-          <th width="30%">Name</th>
-          <th width="35%">Current value</th>
-          <th width="35%">Pending value</th>
-          <td></td>
-        </tr>
-        {% for change in configuration_status['restart_changes'] %}
-        <tr>
-          <td>{{change['name']}}</td>
-          <td>{% if change['setting'] %}{{change['setting_raw']}}{% end %}</td>
-          <td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
-          <td><button type="button" id="buttonReset_{{change['name']}}" data-toggle="popover" data-trigger="hover" data-placement="right" title="{{change['name']}}" data-html="true" data-content="Reset to: '{% if change['setting'] %}{{change['setting_raw']}}{% else %}{% end %}'">
-            <span class="fa fa-undo" aria-hidden="true"></span>
-          </button></td>
-        </tr>
-        {% end %}
-      </table>
+      <ul>
+      {% for change in configuration_status['restart_changes'] %}
+      <li>
+        {{change['name']}}
+        <button type="button" id="buttonCancelChange_{{change['name']}}" class="btn btn-link btn-sm">
+          <span class="fa fa-times" aria-hidden="true"></span> Cancel change
+        </button>
+      </li>
+      {% end %}
+      </ul>
       <div class="row">
         <div class="col-12 text-center">
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#restartModal">Restart PostgreSQL</button>
@@ -130,66 +122,6 @@ $('#restartYesButton').on(
   function(event) {
     event.preventDefault();
     modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/administration/control', 'post', '{{xsession}}', 'restartModal', {"action":"restart"});
-  }
-);
-</script>
-{% end %}
-{% if configuration_status['reload_pending'] is True %}
-<div class="row">
-  <div class="col-12">
-    <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
-      <p> Some changes are pending and PostgreSQL configuration should be reloaded:</p>
-      <table class="table table-sm">
-        <tr>
-          <th width="30%">Name</th>
-          <th width="35%">Current value</th>
-          <th width="35%">Pending value</th>
-        </tr>
-        {% for change in configuration_status['reload_changes'] %}
-        <tr>
-          <td>{{change['name']}}</td>
-          <td>{% if change['setting'] %}{{change['setting_raw']}}{% end %}</td>
-          <td><b>{% if change['pending_val'] %}{{change['pending_val']}}{% end %}</b></td>
-        </tr>
-        {% end %}
-      </table>
-      <div class="row">
-        <div class="col-12 text-center">
-          <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadModal">Reload configuration</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Reload Modal -->
-<div class="modal fade" id="reloadModal" tabindex="-1" role="dialog" aria-labelledby="reloadModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="reloadModalLabel">Are you sure you want to reload PostgreSQL configuration ?</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body" id="reloadModalBody">
-        <div class="alert alert-warning" role="alert">
-          <h4><i class="fa fa-warning fa-fw"></i>WARNING</h4>
-          <p>PostgreSQL configuration is going to be reloaded, please confirm.</p>
-        </div>
-      </div>
-      <div class="modal-footer" id="reloadModalFooter">
-        <button type="button" class="btn btn-success" id="reloadYesButton">Yes</button>
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-$('#reloadYesButton').on(
-  'click',
-  function(event) {
-    event.preventDefault();
-    modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/administration/control', 'post', '{{xsession}}', 'reloadModal', {"action":"reload"});
   }
 );
 </script>
@@ -268,8 +200,8 @@ $('#reloadYesButton').on(
               {% else %}
               <input data-toggle="popover" data-trigger="hover" data-placement="top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control form-control-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting_raw']}}{%end%}">
               {% end %}
-              {% if setting_row['setting_raw'] == setting_row['auto_val_raw'] and ((setting_row['file_val_raw'] and setting_row['setting_raw'] != setting_row['file_val_raw']) or (not setting_row['file_val_raw'] and setting_row['setting'] != setting_row['boot_val']))%}
-              <button type="button" class="btn btn-link" id="buttonReset_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{% if not setting_row['file_val_raw'] %} {%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%} {% else %} {%if setting_row['file_val_raw']%}{{setting_row['file_val_raw']}}{%end%} {% end %}'">
+              {% if setting_row['setting'] != setting_row['boot_val'] %}
+              <button type="button" class="btn btn-link" id="buttonResetDefault_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}'">
                 <span class="fa fa-undo" aria-hidden="true"></span>
                 Reset to default
               </button>
@@ -308,7 +240,7 @@ $(document).ready(function() {
 
 {% if configuration_status['restart_pending'] is True %}
   {% for change in configuration_status['restart_changes'] %}
-    $('#buttonReset_{{change['name']}}').click(function () {
+    $('#buttonCancelChange_{{change['name']}}').click(function () {
       $('#resetModal').modal('show');
       $('[data-toggle=popover]').popover('hide');
       $('#resetParamName').html('{{change['name']}}');
@@ -325,18 +257,13 @@ $(document).ready(function() {
 {% end %}
 {% for setting_group in data %}
   {% for setting_row in setting_group['rows'] %}
-    {% if setting_row['setting'] == setting_row['auto_val'] and ((setting_row['file_val'] and setting_row['setting'] != setting_row['file_val']) or (not setting_row['file_val'] and setting_row['setting'] != setting_row['boot_val']))%}
-    $('#buttonReset_{{setting_row['name']}}').click(function () {
+    {% if setting_row['setting'] != setting_row['boot_val'] %}
+    $('#buttonResetDefault_{{setting_row['name']}}').click(function () {
       $('#resetModal').modal('show');
       $('[data-toggle=popover]').popover('hide');
       $('#resetParamName').html('{{setting_row['name']}}');
-      {% if not setting_row['file_val'] %}
       $('#resetParamValue').html('{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}');
-        {% set setting_value = setting_row['boot_val'] %}
-      {% else %}
-      $('#resetParamValue').html('{%if setting_row['file_val_raw']%}{{setting_row['file_val_raw']}}{%end%}');
-        {% set setting_value = setting_row['file_val_raw'] %}
-      {% end %}
+      {% set setting_value = setting_row['boot_val'] %}
       $('#resetYesButton').on(
         'click',
         function(event) {
