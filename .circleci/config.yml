@@ -129,18 +129,11 @@ jobs:
         TBD_PGBIN: /usr/pgsql-9.6/bin
     <<: *func-job
 
-  1-func-centos7-pg95:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-9.5/bin
-    <<: *func-job
-
-  1-func-centos6-pg94:
+  1-func-centos6-pg95:
     docker:
     - image: dalibo/temboard-agent-sdk:centos6
       environment:
-        TBD_PGBIN: /usr/pgsql-9.4/bin
+        TBD_PGBIN: /usr/pgsql-9.5/bin
     <<: *func-job
 
 
@@ -158,7 +151,5 @@ workflows:
         requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg96:
         requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos7-pg95:
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos6-pg94:
+    - 1-func-centos6-pg95:
         requires: [0-rpm-centos6, 0-unit-py27]
