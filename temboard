@@ -195,9 +195,6 @@ def main():
             (r"/css/(.*)", tornado.web.StaticFileHandler, {
                 'path': base_path + '/static/css'
             }),
-            (r"/codemirror/(.*)", tornado.web.StaticFileHandler, {
-                'path': base_path + '/static/codemirror'
-            }),
             (r"/js/(.*)", tornado.web.StaticFileHandler, {
                 'path': base_path + '/static/js'
             }),
