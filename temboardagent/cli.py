@@ -2,15 +2,6 @@
 
 import logging
 
-try:
-    from pkg_resources import (
-        _initialize_master_working_set as refresh_distributions
-    )
-except ImportError:
-    def refresh_distributions():
-        logger.warn("setuptools is too old. Can't reload installed packages.")
-        logger.warn("Restart temboard-agent if you it can't find new plugins.")
-
 from .postgres import Postgres
 from .toolkit.app import BaseApplication
 from .toolkit.app import define_core_arguments as define_toolkit_arguments
