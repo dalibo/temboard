@@ -223,12 +223,20 @@ def check_data_worker(dbconf, host_id, instance_id, data):
                                {'check_id': check_id, 'ks': ks})
         worker_session.commit()
 
-    # Set to UNDEF every unchecked check
+    # check_ids for the given instance
+    req = worker_session.query(Check).filter(Check.instance_id == instance_id)
+    check_ids = [check.check_id for check in req]
+
+    # Set to UNDEF every unchecked check for the given instance
     # This may happen when postgres is unavailable for example
     worker_session.execute("UPDATE monitoring.check_states "
                            "SET state = 'UNDEF' "
-                           "WHERE NOT check_id = ANY(:check_ids)",
-                           {'check_ids': keys.keys()})
+                           "WHERE check_id = ANY(:all_check_ids) AND "
+                           "NOT check_id = ANY(:check_ids_to_keep)",
+                           {
+                               'all_check_ids': check_ids,
+                               'check_ids_to_keep': keys.keys()
+                           })
     worker_session.commit()
 
     worker_session.close()
