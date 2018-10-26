@@ -31,8 +31,7 @@ def dashboard_config(http_context, app):
 
 @routes.get(b'/live', check_key=True)
 def dashboard_live(http_context, app):
-    with app.postgres.connect() as conn:
-        return metrics.get_metrics(conn, app.config)
+    return metrics.get_metrics(app)
 
 
 @routes.get(b'/history', check_key=True)
@@ -115,8 +114,7 @@ def dashboard_max_connections(http_context, app):
 @workers.register(pool_size=1)
 def dashboard_collector_worker(app):
     logger.debug("Starting to collect dashboard data")
-    with app.postgres.connect() as conn:
-        data = metrics.get_metrics(conn, app.config)
+    data = metrics.get_metrics(app)
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)

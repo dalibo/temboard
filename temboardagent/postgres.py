@@ -22,7 +22,7 @@ class ConnectionManager(object):
         try:
             self.conn.connect()
         except PostgresError as e:
-            raise UserError("Failed to connect to Postgres: %s" % (e,))
+            raise UserError("Failed to connect to Postgres")
         return self.conn
 
     def __exit__(self, *a):
