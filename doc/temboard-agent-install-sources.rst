@@ -10,18 +10,9 @@ Dependencies
 Installation
 ------------
 
-First install Python ``setuptools`` with ``pip``:
-
 .. code-block:: bash
 
-    sudo pip install setuptools
-
-Proceed with the installation of the agent:
-
-.. code-block:: bash
-
-    cd temboard-agent/
-    sudo pip install .
+    sudo pip install temboard-agent
 
 
 Prepare directories and files
