@@ -65,11 +65,6 @@ def format_setting(setting, type, unit=None):
 
 
 def get_settings(conn, http_context=None):
-    # get auto config
-    data_directory = get_setting(conn, 'data_directory')
-    autoconfig_file = os.path.join(data_directory, 'postgresql.auto.conf')
-    auto_conf = parse_configuration_file(autoconfig_file, {})
-
     filter_query = ''
     if http_context and 'filter' in http_context['query']:
         # Check 'filter' parameters.
@@ -84,7 +79,7 @@ def get_settings(conn, http_context=None):
 SELECT
     name, setting, current_setting(name) AS current_setting, unit,
     vartype, min_val, max_val, enumvals, context, category,
-    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val,
+    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val, reset_val,
     pending_restart
 FROM pg_settings
 %s ORDER BY category, name
@@ -111,17 +106,12 @@ FROM pg_settings
             'min_val': row['min_val'],
             'max_val': row['max_val'],
             'boot_val': row['boot_val'],
-            'auto_val': None,
+            'reset_val': row['reset_val'],
             'enumvals': row['enumvals'],
             'context': row['context'],
             'desc': row['desc'],
             'pending_restart': row['pending_restart'],
         }
-
-        name = row['name']
-        if name in auto_conf:
-            setting = preformat(auto_conf[name].setting, row['vartype'])
-            row_dict['auto_val'] = setting
 
         if not cat_exists:
             ret.append({'category': row['category'], 'rows': [row_dict]})
@@ -180,27 +170,6 @@ def human_to_number(h_value, h_unit=None):
             return (int(p_num) / abs(mult[p_unit]))
 
     return h_value
-
-
-def parse_configuration_file(file_path, ret={}):
-    if not os.path.isfile(file_path):
-        return ret
-    try:
-        with open(file_path, 'r') as fp:
-            file_content = fp.read()
-        fp.close()
-        reg_conf_entry = re.compile(r'^\s*([\w\.]+)\s*=\s*([^#]+)\s*(#.*)?$')
-        lno = 0
-        for line in file_content.split('\n'):
-            lno += 1
-            m_conf = reg_conf_entry.match(line.strip())
-            if m_conf:
-                name = m_conf.group(1).strip()
-                setting = m_conf.group(2).strip()
-                ret[name] = FileSetting(name, setting, file_path, lno)
-        return ret
-    except IOError:
-        raise HTTPError(500, "Internal error.")
 
 
 def get_settings_status(conn):
