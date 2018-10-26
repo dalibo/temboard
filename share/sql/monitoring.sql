@@ -1292,17 +1292,19 @@ END;
 
 $$;
 
-CREATE OR REPLACE FUNCTION monitoring.insert_instance_availability(i_tstz TIMESTAMP WITH TIME ZONE, instance_id INTEGER, i_available BOOLEAN)
+CREATE OR REPLACE FUNCTION monitoring.insert_instance_availability(i_tstz TIMESTAMP WITH TIME ZONE, i_instance_id INTEGER, i_available BOOLEAN)
 RETURNS VOID
 LANGUAGE plpgsql
 AS $$
 DECLARE
   s_available BOOLEAN;
 BEGIN
-  SELECT available::BOOLEAN FROM monitoring.instance_availability ORDER BY datetime desc LIMIT 1 INTO s_available;
+  SELECT available::BOOLEAN FROM monitoring.instance_availability
+  WHERE instance_id = i_instance_id
+  ORDER BY datetime desc LIMIT 1 INTO s_available;
   IF s_available IS NULL OR i_available <> s_available THEN
     INSERT INTO monitoring.instance_availability (datetime, instance_id, available)
-    VALUES (i_tstz, instance_id, i_available);
+    VALUES (i_tstz, i_instance_id, i_available);
   END IF;
 END;
 $$;
