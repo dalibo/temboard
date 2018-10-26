@@ -232,11 +232,7 @@ Core API
     [
         {"date": "2016-04-11T16:12:38", "username": "alice", "message": "Login"},
         {"date": "2016-04-11T16:02:03", "username": "alice", "message": "Login"},
-        {"date": "2016-04-11T15:51:15", "username": "alice", "message": "HBA file version '2016-04-11T15:32:53' removed."},
-        {"date": "2016-04-11T15:51:10", "username": "alice", "message": "HBA file version '2016-04-11T15:47:26' removed."},
-        {"date": "2016-04-11T15:51:04", "username": "alice", "message": "HBA file version '2016-04-11T15:48:50' removed."},
         {"date": "2016-04-11T15:50:57", "username": "alice", "message": "PostgreSQL reload"},
-        {"date": "2016-04-11T15:50:57", "username": "alice", "message": "HBA file updated"},
         {"date": "2016-04-11T15:48:50", "username": "alice", "message": "PostgreSQL reload"}
     ]
 

@@ -35,61 +35,6 @@ def get_pg_conf_status(http_context, app):
         return pgconf_functions.get_settings_status(conn)
 
 
-@routes.get(b'/hba')
-def get_pg_hba(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba(conn, http_context)
-
-
-@routes.post(b'/hba')
-def post_pg_hba(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.post_hba(conn, app.config, http_context)
-
-
-@routes.delete(b'/hba')
-def delete_pg_hba(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.delete_hba_version(conn, app.config,
-                                                   http_context)
-
-
-@routes.get(b'/hba/raw')
-def get_pg_hba_raw(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba_raw(conn, http_context)
-
-
-@routes.post(b'/hba/raw')
-def post_pg_hba_raw(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.post_hba_raw(conn, app.config, http_context)
-
-
-@routes.get(b'/hba/options')
-def get_hba_options(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba_options(conn)
-
-
-@routes.get(b'/hba/versions')
-def get_pg_hba_versions(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_hba_versions(conn)
-
-
-@routes.get(b'/pg_ident')
-def get_pg_ident(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_pg_ident(conn)
-
-
-@routes.post(b'/pg_ident')
-def post_pg_ident(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.post_pg_ident(conn, app.config, http_context)
-
-
 class PgConfPlugin(object):
     PG_MIN_VERSION = 90500
 
