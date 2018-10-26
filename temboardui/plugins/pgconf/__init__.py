@@ -204,8 +204,7 @@ class ConfigurationHandler(BaseHandler):
         except TemboardError as e:
             error_code = e.code
             error_message = e.message
-        # Get PostgreSQL configuration status: needs restart, reload or is
-        # fine.
+        # Get PostgreSQL configuration status: needs restart or is fine.
         configuration_status = temboard_get_configuration_status(
                                     self.ssl_ca_cert_file,
                                     agent_address,
