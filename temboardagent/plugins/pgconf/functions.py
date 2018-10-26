@@ -79,7 +79,7 @@ def get_settings(conn, http_context=None):
 SELECT
     name, setting, current_setting(name) AS current_setting, unit,
     vartype, min_val, max_val, enumvals, context, category,
-    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val,
+    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val, reset_val,
     pending_restart
 FROM pg_settings
 %s ORDER BY category, name
@@ -106,6 +106,7 @@ FROM pg_settings
             'min_val': row['min_val'],
             'max_val': row['max_val'],
             'boot_val': row['boot_val'],
+            'reset_val': row['reset_val'],
             'enumvals': row['enumvals'],
             'context': row['context'],
             'desc': row['desc'],
