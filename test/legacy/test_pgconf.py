@@ -115,7 +115,6 @@ class TestPgconf(object):
         assert 'enumvals' in dict_data[0]['rows'][0]
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
-        assert 'auto_val' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
@@ -124,7 +123,7 @@ class TestPgconf(object):
         assert 'setting' in dict_data[0]['rows'][0]
         assert 'setting_raw' in dict_data[0]['rows'][0]
         assert 'pending_restart' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 13
+        assert len(dict_data[0]['rows'][0]) == 12
 
     def test_02_get_pgconf_configuration_ko_401(self):
         """
@@ -297,7 +296,6 @@ WHERE
         assert 'enumvals' in dict_data['restart_changes'][0]
         assert 'max_val' in dict_data['restart_changes'][0]
         assert 'vartype' in dict_data['restart_changes'][0]
-        assert 'auto_val' in dict_data['restart_changes'][0]
         assert 'boot_val' in dict_data['restart_changes'][0]
         assert 'setting' in dict_data['restart_changes'][0]
         assert 'setting_raw' in dict_data['restart_changes'][0]
@@ -306,7 +304,7 @@ WHERE
         assert 'desc' in dict_data['restart_changes'][0]
         assert 'name' in dict_data['restart_changes'][0]
         assert 'pending_restart' in dict_data['restart_changes'][0]
-        assert len(dict_data['restart_changes'][0]) == 13
+        assert len(dict_data['restart_changes'][0]) == 12
 
     def test_09_get_pgconf_configuration_status_ko_406(self):
         """
@@ -433,7 +431,6 @@ WHERE
         assert 'enumvals' in dict_data[0]['rows'][0]
         assert 'max_val' in dict_data[0]['rows'][0]
         assert 'vartype' in dict_data[0]['rows'][0]
-        assert 'auto_val' in dict_data[0]['rows'][0]
         assert 'boot_val' in dict_data[0]['rows'][0]
         assert 'unit' in dict_data[0]['rows'][0]
         assert 'desc' in dict_data[0]['rows'][0]
@@ -442,7 +439,7 @@ WHERE
         assert 'setting' in dict_data[0]['rows'][0]
         assert 'setting_raw' in dict_data[0]['rows'][0]
         assert 'pending_restart' in dict_data[0]['rows'][0]
-        assert len(dict_data[0]['rows'][0]) == 13
+        assert len(dict_data[0]['rows'][0]) == 12
 
     def test_15_get_pgconf_configuration_category_ko_401(self):
         """
