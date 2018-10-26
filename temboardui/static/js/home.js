@@ -29,15 +29,20 @@ $(function() {
     template: `
     <div>
     Status:
-    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL">OK</span>
+    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF">OK</span>
     <span class="badge badge-warning" v-if="checks.WARNING">WARNING: {{ checks.WARNING }}</span>
     <span class="badge badge-critical" v-if="checks.CRITICAL">CRITICAL: {{ checks.CRITICAL }}</span>
+    <span class="badge badge-undef" v-if="checks.UNDEF">UNDEF: {{ checks.UNDEF }}</span>
     </div>
     `
   });
 
   var search = getParameterByName('q') || '';
   var sort = getParameterByName('sort') || 'hostname';
+
+  $.each(instances, function(index, instance) {
+    instance.available = null;
+  });
 
   var instancesVue = new Vue({
     el: '#instances',
@@ -78,8 +83,10 @@ $(function() {
     }
   });
 
+  checkAvailability();
   window.setInterval(function() {
     instancesVue.update = moment();
+    checkAvailability();
   }, refreshInterval);
 
   function updateQueryParams() {
@@ -103,10 +110,13 @@ $(function() {
     var checks = instance.checks;
     var value = 0;
     if (checks.CRITICAL) {
-      value += checks.CRITICAL * 1000;
+      value += checks.CRITICAL * 1000000;
     }
     if (checks.WARNING) {
-      value += checks.WARNING;
+      value += checks.WARNING* 1000;
+    }
+    if (checks.UNDEF) {
+      value += checks.UNDEF;
     }
     return value;
   }
@@ -159,11 +169,36 @@ $(function() {
       options = $.extend({colors: ['#50BD68', '#F15854']}, options);
       break;
     }
-    new Dygraph(
-      this.$el,
-      api_url + "/data/" + this.metric + "?start=" + start.toISOString() + "&end=" + end.toISOString(),
-      options
-    );
+
+    var params = "?start=" + start.toISOString() + "&end=" + end.toISOString();
+    var metricsUrl = api_url + "/data/" + this.metric + params;
+    var data = null;
+    var dataReq = $.get(metricsUrl, function(_data) {
+      data = _data;
+    });
+    // Get the dates when the instance was unavailable
+    var unavailabilityData = '';
+    var promise = $.when(dataReq);
+    var unavailabilityUrl = api_url + '/unavailability' + params;
+    if (this.metric == 'tps') {
+
+      promise = $.when(dataReq,
+        $.get(unavailabilityUrl, function(_data) { unavailabilityData = _data; })
+      );
+    }
+    promise.then(function() {
+      // fill unavailability data with NaN
+      var colsCount = data.split('\n')[0].split(',').length;
+      var nanArray = new Array(colsCount - 1).fill('NaN');
+      nanArray.unshift('');
+      unavailabilityData = unavailabilityData.replace(/\n/g, nanArray.join(',') + '\n');
+
+      new Dygraph(
+        this.$el,
+        data + unavailabilityData,
+        options
+      );
+    }.bind(this));
   }
 
   function loadChecks() {
@@ -193,5 +228,15 @@ $(function() {
     }
 
     return number;
+  }
+
+  function checkAvailability() {
+    instances.forEach(function(instance) {
+      var api_url = ['/server', instance.agent_address, instance.agent_port, 'monitoring'].join('/');
+      $.ajax(api_url + '/availability')
+      .success(function(data) {
+        instance.available = data.available;
+      });
+    });
   }
 });

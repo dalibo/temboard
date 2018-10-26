@@ -121,7 +121,8 @@
 <script src="/js/monitoring/daterangepicker.vue.js"></script>
 <script src="/js/monitoring/temboard.monitoring.js"></script>
 <script>
-var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/data"
+var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/data";
+var unavailabilityUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/unavailability";
 </script>
 
 {% end %}

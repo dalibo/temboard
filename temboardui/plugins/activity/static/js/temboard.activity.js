@@ -161,9 +161,11 @@ $(function() {
       async: true,
       contentType: "application/json",
       success: function (data) {
+        $('#ErrorModal').modal('hide');
         updateActivity(data.rows);
       },
       error: function(xhr) {
+        $('#ErrorModal').modal('hide');
         if (xhr.status == 401) {
           $('#modalError').html(html_error_modal(401, 'Session expired'));
           $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
@@ -182,7 +184,6 @@ $(function() {
         }
       },
       complete: function() {
-        $('#ErrorModal').modal('hide');
         $('#loadingIndicator').addClass('d-none');
       }
     });
