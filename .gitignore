@@ -1,4 +1,5 @@
 *.pyc
+.pybuild/
 *.sw*
 !temboard.dev.conf
 *.egg-info/
