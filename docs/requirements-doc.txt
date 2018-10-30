@@ -1,4 +1,6 @@
-sphinx==1.5.6
+# Same pinning as RTD. Picked from build logs.
+# See also: https://github.com/rtfd/readthedocs.org/blob/61165bae4b55dc985041390a29e4ee95432ec3dd/readthedocs/doc_builder/python_environments.py#L247-L251
+sphinx<1.8
 docutils
 sphinxcontrib-httpdomain
 sphinx_rtd_theme
