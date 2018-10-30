@@ -3,7 +3,6 @@ site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
 copyright: Copyright 2015-2017 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/tree/master/doc
-docs_dir: doc
 theme:
 - name: readthedocs
 pages:
