@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 
 UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/..)
@@ -56,13 +56,14 @@ fpm --verbose \
     --url http://temboard.io/ \
     --category database \
     --depends python2.7 \
+    --depends python-pkg-resources \
     ${fpm_args[*]} \
     ./=/
 
 deb=$(ls temboard-agent_*-0dlb1_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
-dpkg -i $deb
+dpkg -i --ignore-depends=python-pkg-resources $deb
 
 mkdir -p ../dist/
 mv -fv $deb ../dist/
