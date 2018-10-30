@@ -39,8 +39,8 @@ def test_preproc():
         ),
         hitreadratio_db=dict(
             data={'blocks': [{'dbname': 'toto', 'hitmiss_ratio': 10,
-                              'blks_read': 10, 'blks_hit': 10}]},
-            expected={'toto': 10},
+                              'blks_read': 2, 'blks_hit': 8}]},
+            expected={'toto': 80},
         ),
         sessions_usage=dict(
             data={'sessions': [{'dbname': 'toto', 'idle_in_xact': 1,
