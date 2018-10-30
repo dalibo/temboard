@@ -332,20 +332,29 @@ $(function() {
   }
 
   // Find the corresponding x in already existing data
-  // If not available, return the closest (left hand) x
+  // If not available, return the closest x
   function getClosestX(g, x) {
     // x already exist in chart
     if (g.getRowForX(x)) {
       return x;
     }
-    // find the closest (left hand)
+    // find the closest
     var rows = g.numRows();
-    for (var i = 0, l = rows - 1; i < l; i++) {
-      if (g.getValue(i, 0) > new Date(x).getTime()) {
-        return g.getValue(i - 1, 0);
+    var gDiff = Infinity;
+    var goal = new Date(x).getTime();
+    var closest = x;
+    var curr;
+    var i = 0;
+    var l = rows - 1;
+    for (i; i < l; i++) {
+      curr = g.getValue(i, 0);
+      diff = Math.abs(curr - goal);
+      if (gDiff > diff) {
+        gDiff = diff;
+        closest = curr;
       }
     }
-    return x;
+    return closest;
   }
 
   function timestampToIsoDate(epochMs) {
