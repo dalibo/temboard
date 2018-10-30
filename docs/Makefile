@@ -14,6 +14,14 @@ help:
 
 .PHONY: help Makefile
 
+.PHONY: serve
+serve:
+	cd $(BUILDDIR)/html; python3 -m http.server
+
+.PHONY: watch
+watch:
+	find . -name "*.rst" | entr -cd $(MAKE) html
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
