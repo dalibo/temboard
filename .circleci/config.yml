@@ -1,6 +1,21 @@
 version: 2
 
 jobs:
+  0-doc:
+    docker: [{image: "python:3.5"}]
+    working_directory: ~/project
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        name: Build documentation with mkdocs
+        command: |
+          pip install --upgrade mkdocs
+          mkdocs
+    - store_artifacts:
+        path: README.html
+        destination: build/README.html
+
   0-lint:
     docker: [{image: "python:2.7"}]
     working_directory: /workspace
@@ -49,5 +64,6 @@ workflows:
   version: 2
   pipeline:
     jobs:
+    - 0-doc
     - 0-lint
     - 0-unit
