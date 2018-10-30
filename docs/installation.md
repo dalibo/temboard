@@ -1,5 +1,10 @@
 <h1>Installation</h1>
 
+temBoard is designed with three distinct components combined as in the following
+diagram:
+
+![temBoard architecture](sc/architecture.png)
+
 To install temBoard components, follow the steps below in order:
 
 - [Install agent from sources](http://temboard-agent.readthedocs.io/en/latest/temboard-agent-install-sources.html) or [Install agent from RPM](http://temboard-agent.readthedocs.io/en/latest/temboard-agent-install-rpm.html)
