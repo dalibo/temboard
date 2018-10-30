@@ -1,0 +1,2 @@
+# cf. https://docs.readthedocs.io/en/latest/guides/specifying-dependencies.html#specifying-a-requirements-file
+mkdocs

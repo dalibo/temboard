@@ -10,7 +10,7 @@ jobs:
     - run:
         name: Build documentation with mkdocs
         command: |
-          pip install --upgrade mkdocs
+          pip install --upgrade --requirement docs/requirements.txt
           mkdocs
     - store_artifacts:
         path: README.html
