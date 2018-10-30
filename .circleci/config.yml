@@ -29,18 +29,18 @@ jobs:
         paths:
          - dist/*.deb
 
-  0-doc:
+  0-docs:
     docker: [{image: "python:2.7"}]
-    working_directory: ~/temboard-agent
+    working_directory: ~/workspace
     steps:
     - checkout
     - run: git submodule update --init
     - run:
         name: Build documentation with Sphinx
         command: |
-          pip install --upgrade -r doc/requirements-doc.txt -e .
+          pip install --upgrade -r docs/requirements-doc.txt -e .
           python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
-          make -C doc/ clean html
+          make -C docs/ clean html
     - store_artifacts:
         path: README.html
         destination: build/README.html
@@ -142,7 +142,7 @@ workflows:
   pipeline:
     jobs:
     - 0-deb-stretch
-    - 0-doc
+    - 0-docs
     - 0-rpm-centos6
     - 0-rpm-centos7
     - 0-unit-py27
