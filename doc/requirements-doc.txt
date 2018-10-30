@@ -1,4 +1,0 @@
-sphinx==1.5.6
-docutils
-sphinxcontrib-httpdomain
-sphinx_rtd_theme

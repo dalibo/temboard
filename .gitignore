@@ -5,7 +5,6 @@ build/
 dist/
 docker-compose.override.yml
 docker-histfile
-doc/_build/
 *.egg-info/
 rpm/*.patch
 rpm/temboard-agent-*.tar.gz
