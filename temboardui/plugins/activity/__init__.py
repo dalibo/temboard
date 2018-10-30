@@ -98,17 +98,16 @@ class ActivityProxyHandler(JsonHandler):
             raise TemboardUIError(401, 'X-Session header missing')
 
         # Load activity.
-        if mode == 'waiting':
-            data_activity = temboard_activity_waiting(
+        data = dict(
+            waiting=temboard_activity_waiting(
+                self.ssl_ca_cert_file, agent_address, agent_port, xsession),
+            blocking=temboard_activity_blocking(
+                self.ssl_ca_cert_file, agent_address, agent_port, xsession),
+            running=temboard_activity(
                 self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-        elif mode == 'blocking':
-            data_activity = temboard_activity_blocking(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-        else:
-            data_activity = temboard_activity(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession)
+        )
         self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=data_activity)
+        return JSONAsyncResult(http_code=200, data=data)
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port, mode='running'):

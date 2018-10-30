@@ -3,9 +3,13 @@
     <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running" class="nav-link"> Running</a>
   </li>
   <li class="{{'active' if mode == 'waiting' else ''}} nav-item">
-    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/waiting" class="nav-link"> Waiting</a>
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/waiting" class="nav-link"> Waiting
+      <div id="waiting-count" class="badge badge-light" style="min-width: 2em;">&nbsp;</div>
+    </a>
   </li>
   <li class="{{'active' if mode == 'blocking' else ''}} nav-item">
-    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/blocking" class="nav-link">Blocking</a>
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/blocking" class="nav-link">Blocking
+      <div id="blocking-count" class="badge badge-light" style="min-width: 2em;">&nbsp;</div>
+    </a>
   </li>
 </ul>
