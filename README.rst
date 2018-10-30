@@ -81,7 +81,7 @@ temBoard is available under the `PostgreSQL License
    :alt: Versions of python supported
 
 .. |RTD| image:: https://readthedocs.org/projects/temboard/badge/?version=latest
-   :target: http://temboard.readthedocs.io/en/latest/?badge=latest
+   :target: https://temboard.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation
 
 .. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/doc/temboard.png
