@@ -70,7 +70,7 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
     for key, val in headers.iteritems():
         headers_list.append((key, val))
     url_opener.addheaders = headers_list
-    if data:
+    if data is not None:
         request = RequestWithMethod(url, data=json.dumps(data), method=method)
     else:
         request = RequestWithMethod(url, method=method)

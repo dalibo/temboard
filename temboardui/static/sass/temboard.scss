@@ -22,6 +22,10 @@ html {
   margin-bottom: 10px;
 }
 
+.bg-light2 {
+  background-color: $table-accent-bg;
+}
+
 @include media-breakpoint-up(lg) {
   $sidebar-width: 270px;
   $sidebar-width-collapsed: 60px;
@@ -281,13 +285,23 @@ table.table-activity {
       padding-right: $table-cell-padding-sm !important;
     }
   }
+}
 
+table.table-query {
   td, th {
     white-space: nowrap;
+    box-sizing: content-box;
   }
 
   th.query {
     width: 50%; /* query should be the widest column */
+  }
+
+  td.query {
+    max-width: 0;
+    overflow: hidden;
+    vertical-align: middle;
+    cursor: pointer;
   }
 
   pre, code {
@@ -300,13 +314,6 @@ table.table-activity {
   .hljs {
     background: none;
     white-space: nowrap;
-  }
-
-  td.query {
-    max-width: 0;
-    overflow: hidden;
-    vertical-align: middle;
-    cursor: pointer;
   }
 }
 
@@ -511,4 +518,18 @@ table td.auto-width {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.progress-no-size {
+  height: inherit;
+  font-size: inherit;
+}
+
+@mixin gradient-striped-small($color: rgba($white, .5), $angle: 45deg) {
+  background-image: linear-gradient($angle, $color 25%, transparent 25%, transparent 50%, $color 50%, $color 75%, transparent 75%, transparent);
+}
+
+.progress-bar-striped-small {
+  @include gradient-striped-small();
+  background-size: $progress-height/3*2 $progress-height/3*2;
 }
