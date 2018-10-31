@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # auto_configure.sh setup and start a temboard-agent to manage a Postgres cluster.
 #
@@ -89,6 +89,10 @@ setup_pq() {
 
 	sudo -u ${PGUSER} psql -tc "SELECT 'Postgres connection working.';"
 }
+
+if [ -n "${DEBUG-}" ] ; then
+	set -x
+fi
 
 cd $(readlink -m ${BASH_SOURCE[0]}/..)
 
