@@ -28,8 +28,8 @@ http://temboard.io/ for the big picture.
    :maxdepth: 2
 
    installation
-   temboard-agent-configuration
-   temboard-agent-upgrade
+   upgrade
+   configuration
    api
    contributing
 
