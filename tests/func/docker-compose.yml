@@ -9,4 +9,4 @@ services:
       - CI
       - TBD_PGBIN=/usr/pgsql-${POSTGRES_VERSION-10}/bin
       - TBD_INSTALL_RPM
-    command: /workspace/tests/legacy/run_tests_docker.sh
+    command: /workspace/tests/func/run_tests_docker.sh

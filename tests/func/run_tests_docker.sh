@@ -40,4 +40,4 @@ fi
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
 rm -rf /tmp/tests_temboard
-make -C tests/legacy pytest
+make -C tests/func/ pytest

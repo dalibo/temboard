@@ -8,7 +8,7 @@ version: 2
       at: /workspace
   - run:
       name: Execute the tests
-      command: TBD_INSTALL_RPM=1 tests/legacy/run_tests_docker.sh
+      command: TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh
 
 jobs:
   0-deb-stretch:
