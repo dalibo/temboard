@@ -127,5 +127,15 @@ generate_configuration $home $sslcert $sslkey $name | tee ${ETCDIR}/${name}/temb
 if [ -x /bin/systemctl ] ; then
 	unit=temboard-agent@${name//\//-}
 	systemctl enable $unit
-	systemctl start $unit
+	start_cmd="systemctl start $unit"
+else
+	start_cmd="sudo -u ${PGUSER} temboard-agent -c ${ETCDIR}/${name}/temboard-agent.conf"
 fi
+
+cat >/dev/stderr <<-EOMSG
+
+Success. You can now start temboard--agent using:
+
+    ${start_cmd}
+
+EOMSG
