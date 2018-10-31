@@ -1,7 +1,7 @@
 .. _temboard-agent-upgrade:
 
-Upgrade process (RHEL/CentOS)
-=============================
+Upgrade (RHEL/CentOS)
+=====================
 
 1.2 to 2.0
 ----------

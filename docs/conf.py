@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'temBoard agent'
-copyright = u'2017, Dalibo'
+copyright = u'2018, Dalibo'
 author = SETUP_KWARGS['author']
 
 # The version info for the project you're documenting, acts as replacement for

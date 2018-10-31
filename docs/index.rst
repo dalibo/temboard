@@ -1,27 +1,36 @@
-Welcome to temBoard agent documentation!
-========================================
+##########################################
+ Welcome to temBoard agent documentation!
+##########################################
+
+temBoard_ is a powerful management tool for PostgreSQL.
+
+temBoard agent is a Python service designed to run along PostgreSQL, exposing a
+REST API to implement various management tasks on PostgreSQL instance. See
+http://temboard.io/ for the big picture.
 
 
-Installation and configuration
-------------------------------
+==========
+ Features
+==========
+
+- Non intrusive daemon dedicated to one PostgreSQL cluster.
+- No extra dependencies.
+- Written python2.7 and python3, supported by stable distribution releases.
+- Secured REST API with SSL and credentials.
+- Extensible with plugins.
+
+
+===================
+ Table of Contents
+===================
 
 .. toctree::
    :maxdepth: 2
 
-   temboard-agent-install-sources
-   temboard-agent-install-rpm
+   installation
    temboard-agent-configuration
    temboard-agent-upgrade
+   api
    contributing
 
-
-REST API documentation
-----------------------
-
-.. toctree::
-   core_api
-   administration_api
-   activity_api
-   dashboard_api
-   monitoring_api
-   pgconf_api
+.. _`temBoard`: http://temboard.io/
