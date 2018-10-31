@@ -49,7 +49,7 @@ SETUP_KWARGS = dict(
             'share/temboard-agent.logrotate',
             'share/users',
         ]),
-        ('lib/systemd/system', ['deb/temboard-agent.service']),
+        ('lib/systemd/system', ['deb/temboard-agent@.service']),
     ],
     entry_points={
         'temboardagent.plugins': [
