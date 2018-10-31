@@ -39,7 +39,7 @@ services:
   agent:
     image: dalibo/temboard-agent
     environment:
-      HISTFILE: /usr/local/src/temboard-agent/docker-histfile
+      HISTFILE: /usr/local/src/temboard-agent/docker/histfile
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_HOSTNAME: instance.fqdn
       TEMBOARD_KEY: key_for_agent_dev
