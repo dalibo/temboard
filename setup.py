@@ -40,6 +40,7 @@ SETUP_KWARGS = dict(
         ('share/temboard-agent/', [
             'share/temboard-agent.conf',
             'share/temboard-agent.logrotate',
+            'share/auto_configure.sh',
         ]),
         ('share/temboard-agent/quickstart/', [
             'share/temboard-agent.conf',

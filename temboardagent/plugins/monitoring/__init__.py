@@ -183,6 +183,8 @@ def monitoring_collector_worker(app):
 @workers.register(pool_size=1)
 def monitoring_sender_worker(app):
     config = app.config
+    if not config.monitoring.collector_url:
+        return logger.info("No collector_url. Skip sending.")
     c = 0
     logger.debug("Starting sender")
     q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
@@ -244,7 +246,7 @@ class MonitoringPlugin(object):
         OptionSpec(s, 'dbnames', default='*', validator=commalist),
         OptionSpec(s, 'scheduler_interval', default=60, validator=int),
         OptionSpec(s, 'probes', default='*', validator=commalist),
-        OptionSpec(s, 'collector_url', default=OptionSpec.REQUIRED),
+        OptionSpec(s, 'collector_url'),
         OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
     ]
     del s
