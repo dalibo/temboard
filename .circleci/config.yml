@@ -116,6 +116,13 @@ jobs:
     steps: *unit_steps
 
   # Please keep tests/func/Makefile run-all test matrix sync with the following.
+  1-func-centos7-pg11:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-11/bin
+    <<: *func-job
+
   1-func-centos7-pg10:
     docker:
     - image: dalibo/temboard-agent-sdk:centos7
@@ -148,6 +155,8 @@ workflows:
     - 0-rpm-centos7
     - 0-unit-py27
     - 0-unit-py36
+    - 1-func-centos7-pg11:
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg10:
         requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg96:
