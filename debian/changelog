@@ -1,3 +1,9 @@
+temboard (2.1-0dlb1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Étienne BERSAC <etienne.bersac@dalibo.com>  Mon, 29 Oct 2018 10:38:17 +0100
+
 temboard (0.0.1-6) unstable; urgency=low
 
   * Some work again.

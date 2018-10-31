@@ -1,7 +1,7 @@
+# -*- shell-script -*-
 PGUSER='temboard'
 PGGROUP='temboard'
 CONFIGDIR='/etc/temboard'
-CONFIGDIRSSL=$CONFIGDIR'/ssl'
 CONFIGFILE=$CONFIGDIR'/temboard.conf'
 RUNDIR='/var/run/temboard'
 LOGDIR='/var/log/temboard'
@@ -17,28 +17,8 @@ if ! [ -d $CONFIGDIR ]; then
         /bin/mkdir $CONFIGDIR
 fi
 
-if ! [ -d $CONFIGDIRSSL ]; then
-        /bin/mkdir $CONFIGDIRSSL
-fi
-
 if ! [ -d $RUNDIR ]; then
-       /bin/mkdir $RUNDIR
-fi
-
-if ! [ -f $CONFIGFILE ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard/temboard.conf.sample $CONFIGFILE
-fi
-
-if ! [ -f $CONFIGDIRSSL/temboard_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard/temboard_CHANGEME.pem $CONFIGDIRSSL/temboard_CHANGEME.pem
-fi
-
-if ! [ -f $CONFIGDIRSSL/temboard_CHANGEME.key ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard/temboard_CHANGEME.key $CONFIGDIRSSL/temboard_CHANGEME.key
-fi
-
-if ! [ -f $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem ]; then
-	/usr/bin/install -m 0600 /usr/share/temboard/temboard_ca_certs_CHANGEME.pem $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem
+        /bin/mkdir $RUNDIR
 fi
 
 if ! [ -d $LOGDIR ]; then
@@ -50,13 +30,10 @@ if ! [ -f $LOGFILE ]; then
 fi
 
 if ! [ -f $LOGROTATEFILE ]; then
-	/usr/bin/install -m 644 /usr/share/temboard/temboard.logrotate $LOGROTATEFILE
+	/usr/bin/install -m 644 /usr/share/temboard/quickstart/temboard.logrotate $LOGROTATEFILE
 fi
 
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_ca_certs_CHANGEME.pem
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_CHANGEME.key
-/bin/chown $PGUSER.$PGGROUP $CONFIGDIRSSL/temboard_CHANGEME.pem
-/bin/chown $PGUSER.$PGGROUP $CONFIGFILE
-/bin/chown -R $PGUSER.$PGGROUP $LOGDIR
+/bin/chown -R $PGUSER.$PGGROUP $CONFIGDIR
 /bin/chown -R $PGUSER.$PGGROUP $RUNDIR
+/bin/chown -R $PGUSER.$PGGROUP $LOGDIR
 /bin/chown $PGUSER.$PGGROUP $LOGFILE
