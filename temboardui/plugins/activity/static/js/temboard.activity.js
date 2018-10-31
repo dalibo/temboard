@@ -162,7 +162,7 @@ $(function() {
       contentType: "application/json",
       success: function (data) {
         $('#ErrorModal').modal('hide');
-        updateActivity(data.rows);
+        updateActivity(data);
       },
       error: function(xhr) {
         $('#ErrorModal').modal('hide');
@@ -192,7 +192,7 @@ $(function() {
   function updateActivity(data) {
     $('[data-toggle=popover]').popover('hide');
     table.clear();
-    table.rows.add(data).draw();
+    table.rows.add(data[activityMode].rows).draw();
     $('pre code').each(function(i, block) {
       hljs.highlightBlock(block);
     });
@@ -204,6 +204,13 @@ $(function() {
       },
       template: '<div class="popover sql" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
+
+    $('#waiting-count').html(data['waiting'].rows.length || '&nbsp;')
+      .toggleClass('badge-warning', data['waiting'].rows.length > 0)
+      .toggleClass('badge-light', !data['waiting'].rows.length > 0);
+    $('#blocking-count').html(data['blocking'].rows.length || '&nbsp;')
+      .toggleClass('badge-warning', data['blocking'].rows.length > 0)
+      .toggleClass('badge-light', !data['blocking'].rows.length > 0);
   }
 
   function html_error_modal(code, error) {
