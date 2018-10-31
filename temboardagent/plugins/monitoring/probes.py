@@ -257,6 +257,7 @@ class SqlProbe(Probe):
         try:
             conn.connect()
             conn.execute(sql)
+            cluster_name = conninfo['instance'].replace('/', '')
             for r in conn.get_rows():
                 # Add the info of the instance (port) to the
                 # result to output one big list for all instances and
@@ -276,10 +277,9 @@ class SqlProbe(Probe):
 
                     # Create the store key for the delta
                     if self.delta_key is not None:
-                        key = conninfo['instance'] + database + \
-                            r[self.delta_key]
+                        key = cluster_name + database + r[self.delta_key]
                     else:
-                        key = conninfo['instance'] + database
+                        key = cluster_name + database
 
                     # Calculate delta
                     (interval, deltas) = self.delta(key, to_delta)
@@ -663,7 +663,7 @@ class probe_wal_files(SqlProbe):
             logger.error("Unable to convert xlog location to a number")
             return []
 
-        (interval, delta) = self.delta(conninfo['instance'],
+        (interval, delta) = self.delta(conninfo['instance'].replace('/', ''),
                                        {'written_size': current})
 
         # Empty the first time
