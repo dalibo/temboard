@@ -35,7 +35,7 @@ find $DESTDIR -name "*.service" -delete
 
 fpm_args=()
 if hash systemctl ; then
-    fpm_args+="--deb-systemd temboard-agent.service"
+    fpm_args+="--deb-systemd temboard-agent@.service"
 else
     fpm_args+="--deb-init temboard-agent.init"
 fi

@@ -1,0 +1,12 @@
+[Unit]
+Description=PostgreSQL Remote Control Agent %I
+After=network.target
+
+[Service]
+Type=simple
+User=postgres
+Group=postgres
+ExecStart=/usr/bin/env temboard-agent -c /etc/temboard-agent/%I/temboard-agent.conf
+
+[Install]
+WantedBy=multi-user.target

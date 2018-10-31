@@ -58,13 +58,15 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %if 0%{?rhel} <= 6
 %{__install} -d %{buildroot}%{_initrddir}
 %{__install} -m 755 %{SOURCE1} %{buildroot}%{_initrddir}/temboard-agent
-rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent.service
+rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent*.service
 %endif
 
 %if 0%{?rhel} >= 7
 %{__install} -d %{buildroot}%{_unitdir}
 %{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 %endif
+# For now, just ignore multi-instance service
+rm -f %{buildroot}%{_unitdir}/temboard-agent@.service
 
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard-agent

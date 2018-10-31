@@ -203,6 +203,9 @@ class AgentApplication(Application):
         self.bootstrap(args=args, environ=environ)
         config = self.config
 
+        if config.postgresql.instance:
+            setproctitle.prefix += config.postgresql.instance + ': '
+
         # Run temboard-agent as a background daemon.
         if (config.temboard.daemonize):
             daemonize(config.temboard.pidfile)
