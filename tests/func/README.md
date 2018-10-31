@@ -21,7 +21,7 @@ There are 3 environment variables that can be used to change the global behaviou
 
 To run the whole test suite:
 ``` console
-TBD_PGBIN="/path/to/pg/9.6/bin" TBD_WORKPATH="/tmp" pytest -v test/legacy/test_*.py
+TBD_PGBIN="/path/to/pg/9.6/bin" TBD_WORKPATH="/tmp" pytest -v tests/func/test_*.py
 ```
 
 ## Run the tests using docker
@@ -41,6 +41,6 @@ shell`
 $ TAG=centos7 POSTGRES_VERSION=9.5 make run
 …
 $ make shell
-[root@3e8037d18e8b /]# make -C test/legacy pytest PYTEST_ARGS="-x --pdb"
+[root@3e8037d18e8b /]# make -C tests/func/ pytest PYTEST_ARGS="-x --pdb"
 …
 ```

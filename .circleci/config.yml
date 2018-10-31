@@ -8,7 +8,7 @@ version: 2
       at: /workspace
   - run:
       name: Execute the tests
-      command: TBD_INSTALL_RPM=1 test/legacy/run_tests_docker.sh
+      command: TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh
 
 jobs:
   0-deb-stretch:
@@ -101,7 +101,7 @@ jobs:
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboard-agent/
             python -m temboardagent.toolkit.proctitle
-            pytest test/unit/
+            pytest tests/unit/
             codecov
       - save_cache:
           key: temboard-agent-{{ .Branch }}
@@ -114,6 +114,14 @@ jobs:
         environment: *unit_env
     working_directory: /home/ubuntu/temboard-agent
     steps: *unit_steps
+
+  # Please keep tests/func/Makefile run-all test matrix sync with the following.
+  1-func-centos7-pg11:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-11/bin
+    <<: *func-job
 
   1-func-centos7-pg10:
     docker:
@@ -147,6 +155,8 @@ workflows:
     - 0-rpm-centos7
     - 0-unit-py27
     - 0-unit-py36
+    - 1-func-centos7-pg11:
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg10:
         requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg96:
