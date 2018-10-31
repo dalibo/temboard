@@ -11,6 +11,25 @@
 #
 # Each agent has its own user file. This file is emptied by the script.
 
+
+catchall() {
+	if [ $? -gt 0 ] ; then
+		fatal "Failure. See ${LOGFILE} for details."
+	else
+		rm -f ${LOGFILE}
+	fi
+	trap - INT EXIT TERM
+}
+
+fatal() {
+	echo -e "\e[1;31m$@\e[0m" | tee -a /dev/fd/3 >&2
+	exit 1
+}
+
+log() {
+	echo "$@" | tee -a /dev/fd/3 >&2
+}
+
 query_pgsettings() {
 	# Usage: query_pgsettings name [default]
 
@@ -30,10 +49,11 @@ generate_configuration() {
 	local home=$1; shift
 	local sslcert=$1; shift
 	local sslkey=$1; shift
+	local key=$1; shift
 	local instance=$1; shift
 
 	local port=$(echo $PGPORT | rev)
-	local key=$(head -c 16 /dev/urandom | xxd -ps)
+	log "Configuring temboard-agent to run on port ${port}."
 	local pg_ctl=$(which pg_ctl)
 
 	cat <<-EOF
@@ -82,17 +102,35 @@ setup_pq() {
 	# Ensure used libpq vars are defined for configuration template.
 
 	export PGUSER=${PGUSER-postgres}
+	log "Configuring for user ${PGUSER}."
 	export PGDATABASE=${PGDATABASE-${PGUSER}}
 	export PGPORT=${PGPORT-5432}
+	log "Configuring for cluster on port ${PGPORT}."
 	export PGHOST=${PGHOST-$(query_pgsettings unix_socket_directories)}
+	if ! sudo -Eu ${PGUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
+		fatal "Can't connect to Postgres cluster."
+	fi
 	export PGDATA=$(query_pgsettings data_directory)
+	log "Configuring for cluster at ${PGDATA}."
 
-	sudo -u ${PGUSER} psql -tc "SELECT 'Postgres connection working.';"
+	if ! which pg_ctl &>/dev/null ; then
+		read pgversion < ${PGDATA}/PG_VERSION
+		bindir=$(search_bindir $pgversion)
+		log "Using ${bindir}/pg_ctl."
+		export PATH=$bindir:$PATH
+	fi
 }
-
 if [ -n "${DEBUG-}" ] ; then
-	set -x
+	exec 3>/dev/null
+else
+	LOGFILE=/var/log/temboard-agent-auto-configure.log
+	exec 3>&2 2>>${LOGFILE} 1>&2
+	chmod 0600 ${LOGFILE}
+	trap 'catchall' INT EXIT TERM
 fi
+
+# Now, log everything.
+set -x
 
 cd $(readlink -m ${BASH_SOURCE[0]}/..)
 
@@ -110,36 +148,37 @@ install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
 	${LOGDIR}/${name} ${home}
 
 # Start with default configuration
+log "Configuring temboard-agent in ${ETCDIR}/${name}."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
 install -o ${PGUSER} -g ${PGUSER} -m 060 users ${ETCDIR}/${name}/
 # By default, don't create users.
 truncate -s 0 ${ETCDIR}/${name}/users
 
-# Find pg_ctl
-if ! which pg_ctl &>/dev/null ; then
-	read pgversion < ${PGDATA}/PG_VERSION
-	bindir=$(search_bindir $pgversion)
-	export PATH=$bindir:$PATH
-fi
 sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
+log "Using SSL cert ${sslcert}."
 sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
+log "Using SSL privaty key ${sslkey}."
+key=$(head -c 16 /dev/urandom | xxd -ps)
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home $sslcert $sslkey $name | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+generate_configuration $home $sslcert $sslkey $key $name | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
-	unit=temboard-agent@${name//\//-}
+	unit=temboard-agent@${name//\//-}.service
 	systemctl enable $unit
+	log "Enabling systemd unit ${unit}."
 	start_cmd="systemctl start $unit"
 else
 	start_cmd="sudo -u ${PGUSER} temboard-agent -c ${ETCDIR}/${name}/temboard-agent.conf"
 fi
 
-cat >/dev/stderr <<-EOMSG
-
-Success. You can now start temboard--agent using:
-
-    ${start_cmd}
-
-EOMSG
+log
+log "Success. You can now start temboard--agent using:"
+log
+log "    ${start_cmd}"
+log
+log "Then, register agent in UI with secret key ${key}."
+log
+log "You must configure monitoring.collector_url to send monitoring metrics to"
+log "web UI. See documentation for detailed instructions."
