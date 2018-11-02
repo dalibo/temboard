@@ -14,13 +14,3 @@ changes-%:
 
 push:
 	find ../../dist/ -name "temboard-agent_*-0dlb*.changes" | xargs -rt dput dalibo
-
-reprepro:
-	test -f ./reprepro-config/reprepro-authorized_keys || cat ~/.ssh/*.pub > ./reprepro-config/reprepro-authorized_keys
-	$(MAKE) reprepro-up
-
-reprepro-%:
-	docker-compose -f docker-compose.reprepro.yml $*
-
-reprepro-trash:
-	docker-compose -f docker-compose.reprepro.yml down -v
