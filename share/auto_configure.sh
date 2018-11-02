@@ -41,7 +41,7 @@ query_pgsettings() {
 }
 
 generate_configuration() {
-	# Usage: generate_configuration homedir sslcert sslkey cluster_name
+	# Usage: generate_configuration homedir sslcert sslkey cluster_name collector_url
 
 	# Generates minimal configuration required to adapt default
 	# configuration to this cluster.
@@ -51,6 +51,7 @@ generate_configuration() {
 	local sslkey=$1; shift
 	local key=$1; shift
 	local instance=$1; shift
+	local collector_url=$1; shift
 
 	local port=$(echo $PGPORT | rev)
 	log "Configuring temboard-agent to run on port ${port}."
@@ -80,6 +81,9 @@ generate_configuration() {
 
 	[administration]
 	pg_ctl = '${pg_ctl} %s -D ${PGDATA}'
+
+	[monitoring]
+	collector_url = ${collector_url}
 	EOF
 }
 
@@ -159,9 +163,15 @@ log "Using SSL cert ${sslcert}."
 sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
 log "Using SSL privaty key ${sslkey}."
 key=$(head -c 16 /dev/urandom | xxd -ps)
+ui=${1-${TEMBOARD_UI}}
+if ! curl --silent --show-error --insecure --head ${ui} >/dev/null 2>&3; then
+	fatal "Can't contact ${ui}."
+fi
+collector_url=$ui/monitoring/collector
+log "Sending monitoring data to ${ui}."
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home $sslcert $sslkey $key $name | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+generate_configuration $home $sslcert $sslkey $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
