@@ -23,6 +23,9 @@ trap teardown EXIT INT TERM
 teardown
 
 mkdir -p $DESTDIR
+
+#       V E R S I O N S
+
 versions=($(pep440deb --echo --pypi temboard-agent))
 pep440v=${versions[0]}
 debianv=${versions[1]}
@@ -33,9 +36,13 @@ release=0dlb1${codename}1
 python=/usr/bin/python
 pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
+#       I N S T A L L
+
 pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
 # Fake --install-layout=deb, when using wheel.
 mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
+
+#       B U I L D
 
 fpm_args=()
 if ! [ -f /usr/bin/systemctl ] ; then
@@ -64,10 +71,14 @@ fpm --verbose \
     "$@" \
     ./=/
 
+#       T E S T
+
 deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i --ignore-depends=python-pkg-resources --ignore-depends=ssl-cert $deb
+
+#       S A V E
 
 mkdir -p ${DISTDIR}/
 mv -fv $deb ${DISTDIR}/
