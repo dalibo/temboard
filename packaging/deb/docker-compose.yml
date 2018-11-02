@@ -8,6 +8,6 @@ services:
       DEBFULLNAME: ${DEBFULLNAME}
       DEBEMAIL: ${DEBEMAIL}
     volumes:
-    - .:/workspace
-    - ../dist/:/dist
-    command: /workspace/mkdeb.sh
+    - ../..:/workspace
+    - ../../dist/:/dist
+    command: /workspace/packaging/deb/mkdeb.sh

@@ -5,6 +5,7 @@ cd $(readlink -m $0/..)
 
 WORKDIR=$(readlink -m build)
 DESTDIR=$WORKDIR/destdir
+DISTDIR=$(readlink -e ${PWD}/../../dist)
 
 teardown () {
     if [ "0" = "${CLEAN-1}" ] ; then
@@ -65,7 +66,8 @@ dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i --ignore-depends=python-pkg-resources $deb
 
-mkdir -p ../dist/
-mv -fv $deb ../dist/
-ln -fs $(basename $deb) ../dist/last_build.deb
-chown -R ${UID_GID} ../dist/
+mkdir -p ${DISTDIR}/
+mv -fv $deb ${DISTDIR}/
+# Point deb as latest build for changes generation.
+ln -fs $(basename $deb) ${DISTDIR}/last_build.deb
+chown -R ${UID_GID} ${DISTDIR}/
