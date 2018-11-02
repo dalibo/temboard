@@ -10,4 +10,4 @@ changes-%:
 
 push:
 	version=$$(dpkg-deb -f ../../dist/last_build.deb  Version | grep -Po '.*(?=-0dlb.*)'); \
-	find ../../dist/ -name "temboard-agent_$${version}-0dlb*.changes" | xargs -rt dput dalibo
+	find ../../dist/ -name "temboard-agent_$${version}-0dlb*.changes" | xargs -rt dput labs
