@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  debian:
+  stretch: &mkdeb
     image: dalibo/temboard-agent-sdk:stretch
     environment:
       # See dch(1)
@@ -11,3 +11,11 @@ services:
     - ../..:/workspace
     - ../../dist/:/dist
     command: /workspace/packaging/deb/mkdeb.sh
+
+  jessie:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:jessie
+
+  wheezy:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:wheezy

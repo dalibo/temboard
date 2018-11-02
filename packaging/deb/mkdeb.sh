@@ -5,7 +5,7 @@ cd $(readlink -m $0/..)
 
 WORKDIR=$(readlink -m build)
 DESTDIR=$WORKDIR/destdir
-DISTDIR=$(readlink -e ${PWD}/../../dist)
+DISTDIR=$(readlink -m ${PWD}/../../dist)
 
 teardown () {
     if [ "0" = "${CLEAN-1}" ] ; then
@@ -26,45 +26,48 @@ mkdir -p $DESTDIR
 versions=($(pep440deb --echo --pypi temboard-agent))
 pep440v=${versions[0]}
 debianv=${versions[1]}
+codename=$(lsb_release --codename --short)
+release=0dlb1${codename}1
+# Should match the interpreter used by scripts shebang. We should pin python
+# version used.
+python=/usr/bin/python
+pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
-pip install --pre --root $DESTDIR --no-deps --prefix /usr temboard-agent==$pep440v
-# Dirty fake of --install-layout=deb. This is required for wheezy and jessie
-# where PYTHONPATH does not include site-packages, but only dist-packages.
-mv $DESTDIR/usr/lib/python2.7/{site,dist}-packages/
-# Let FPM manage .service
-find $DESTDIR -name "*.service" -delete
+pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+# Fake --install-layout=deb, when using wheel.
+mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
 
 fpm_args=()
-if hash systemctl ; then
-    fpm_args+="--deb-systemd temboard-agent@.service"
-else
-    fpm_args+="--deb-init temboard-agent.init"
+if ! [ -f /usr/bin/systemctl ] ; then
+	fpm_args+=(--deb-init temboard-agent.init)
 fi
 
 fpm --verbose \
-    --chdir $DESTDIR \
+    --force \
     --debug-workspace \
+    --chdir $DESTDIR \
     --input-type dir \
     --output-type deb \
-    --force \
-    --architecture all \
     --name temboard-agent \
     --version $debianv \
-    --iteration 0dlb1 \
+    --iteration $release \
+    --architecture all \
+    --description "PostgreSQL Remote Control Agent" \
+    --category database \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
-    --description "Administration & monitoring PostgreSQL agent." \
     --url http://temboard.io/ \
-    --category database \
-    --depends python2.7 \
     --depends python-pkg-resources \
-    ${fpm_args[*]} \
+    --depends ssl-cert \
+    --depends python${pythonv} \
+    "${fpm_args[@]}" \
+    "$@" \
     ./=/
 
-deb=$(ls temboard-agent_*-0dlb1_all.deb)
+deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
-dpkg -i --ignore-depends=python-pkg-resources $deb
+dpkg -i --ignore-depends=python-pkg-resources --ignore-depends=ssl-cert $deb
 
 mkdir -p ${DISTDIR}/
 mv -fv $deb ${DISTDIR}/

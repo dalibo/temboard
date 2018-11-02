@@ -1,13 +1,11 @@
 all:
 
-build: deb
+build: stretch jessie wheezy
 
-deb:
+stretch jessie wheezy:
 	mkdir -p ../dist/
-	docker-compose run --rm debian
-	$(MAKE) changes-wheezy
-	$(MAKE) changes-jessie
-	$(MAKE) changes-stretch
+	docker-compose run --rm $@
+	$(MAKE) changes-$@
 
 changes-%:
 	./mkchanges.sh $(shell readlink -e ../../dist/last_build.deb) $*
