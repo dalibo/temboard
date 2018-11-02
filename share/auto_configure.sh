@@ -172,7 +172,7 @@ sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
 log "Using SSL cert ${sslcert}."
 sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
 log "Using SSL privaty key ${sslkey}."
-key=$(head -c 16 /dev/urandom | xxd -ps)
+key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 
 # Inject autoconfiguration in dedicated file.
 generate_configuration $home $sslcert $sslkey $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
