@@ -11,24 +11,6 @@ version: 2
       command: TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh
 
 jobs:
-  0-deb-stretch:
-    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
-    working_directory: ~/workspace
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - run:
-        command: ./deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
-    - store_artifacts:
-        path: ~/workspace/dist/
-    - persist_to_workspace:
-        root: .
-        paths:
-         - dist/*.deb
-
   0-docs:
     docker: [{image: "python:2.7"}]
     working_directory: ~/workspace
@@ -115,6 +97,24 @@ jobs:
     working_directory: /home/ubuntu/temboard-agent
     steps: *unit_steps
 
+  1-deb-stretch:
+    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        command: ./deb/mkdeb.sh
+        environment:
+          DEBFULLNAME: CircleCI
+          DEBEMAIL: none@example.com
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+         - dist/*.deb
+
   # Please keep tests/func/Makefile run-all test matrix sync with the following.
   1-func-centos7-pg11:
     docker:
@@ -149,12 +149,13 @@ workflows:
   version: 2
   pipeline:
     jobs:
-    - 0-deb-stretch
     - 0-docs
     - 0-rpm-centos6
     - 0-rpm-centos7
     - 0-unit-py27
     - 0-unit-py36
+    - 1-deb-stretch:
+        requires: [0-unit-py36]
     - 1-func-centos7-pg11:
         requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg10:
