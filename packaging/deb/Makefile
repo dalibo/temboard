@@ -9,4 +9,5 @@ changes-%:
 	./mkchanges.sh $(shell readlink -e ../../dist/last_build.deb) $*
 
 push:
-	find ../../dist/ -name "temboard-agent_$(shell dpkg-deb -f dist/last_build.deb  Version | grep -Po '.*(?=-0dlb.*)')-0dlb*.changes" | xargs -rt dput dalibo
+	version=$$(dpkg-deb -f ../../dist/last_build.deb  Version | grep -Po '.*(?=-0dlb.*)'); \
+	find ../../dist/ -name "temboard-agent_$${version}-0dlb*.changes" | xargs -rt dput dalibo
