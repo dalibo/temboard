@@ -8,12 +8,12 @@ an PyPI.
 Building and uploading
 ======================
 
-The ``build`` target builds **all** packages for every supported distributions.
-Once you have setup your host for building, just run:
+The ``all`` target builds packages for every supported distributions. Once you
+have setup your host for building, just run:
 
 .. code-block::
 
-   make build dput
+   make all dput
 
 You may be prompted for a passphrase to open your private key. The packages are
 stored in ``dist/`` at the root of the project.
