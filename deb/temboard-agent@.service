@@ -1,6 +1,6 @@
 [Unit]
 Description=PostgreSQL Remote Control Agent %I
-After=network.target
+After=network.target postgresql@%i.service
 
 [Service]
 Type=simple
