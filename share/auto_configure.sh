@@ -64,6 +64,7 @@ generate_configuration() {
 
 	[temboard]
 	home = ${home}
+	hostname = ${TEMBOARD_HOSTNAME}
 	port = ${port}
 	ssl_cert_file = ${sslcert}
 	ssl_key_file = ${sslkey}
@@ -153,6 +154,12 @@ cd $(readlink -m ${BASH_SOURCE[0]}/..)
 ETCDIR=${ETCDIR-/etc/temboard-agent}
 VARDIR=${VARDIR-/var/lib/temboard-agent}
 LOGDIR=${LOGDIR-/var/log/temboard-agent}
+
+export TEMBOARD_HOSTNAME=${TEMBOARD_HOSTNAME-$(hostname --fqdn)}
+if [ -n "${TEMBOARD_HOSTNAME##*.*}" ] ; then
+	fatal "FQDN is not properly configured. Set agent hostname with TEMBOARD_HOSTNAME env var.".
+fi
+log "Using hostname ${TEMBOARD_HOSTNAME}."
 
 ui=${1-${TEMBOARD_UI-}}
 if [ -z "${ui}" ] ; then
