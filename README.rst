@@ -68,8 +68,8 @@ temBoard is available under the `PostgreSQL License
    :target: https://codecov.io/gh/dalibo/temboard
    :alt: Code coverage
 
-.. |Demo| image:: https://github.com/dalibo/temboard/raw/master/doc/sc/alerting_dashboard.png
-   :target: https://github.com/dalibo/temboard/raw/master/doc/sc/alerting_dashboard.png
+.. |Demo| image:: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
+   :target: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
    :alt: Screenshot temBoard
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/temboard.svg
@@ -84,7 +84,7 @@ temBoard is available under the `PostgreSQL License
    :target: https://temboard.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation
 
-.. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/doc/temboard.png
+.. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/docs/temboard.png
    :target: http://temboard.io/
    :alt: temBoard logo: a woodpecker
 
