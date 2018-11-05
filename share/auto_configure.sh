@@ -34,10 +34,10 @@ query_pgsettings() {
 	# Usage: query_pgsettings name [default]
 
 	local name=$1; shift
-	local default=${2-}
-	val=$(sudo -u ${PGUSER} psql -tc "SELECT setting FROM pg_settings WHERE name = '${name}';")
+	local default=${1-}; shift
+	val=$(sudo -u ${PGUSER} psql -Atc "SELECT setting FROM pg_settings WHERE name = '${name}';")
 
-	echo ${val-${default}}
+	echo "${val:-${default}}"
 }
 
 generate_configuration() {
