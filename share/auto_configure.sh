@@ -142,6 +142,16 @@ ETCDIR=${ETCDIR-/etc/temboard-agent}
 VARDIR=${VARDIR-/var/lib/temboard-agent}
 LOGDIR=${LOGDIR-/var/log/temboard-agent}
 
+ui=${1-${TEMBOARD_UI-}}
+if [ -z "${ui}" ] ; then
+	fatal "Missing UI url."
+fi
+if ! curl --silent --show-error --insecure --head ${ui} >/dev/null 2>&3; then
+	fatal "Can't contact ${ui}."
+fi
+collector_url=$ui/monitoring/collector
+log "Sending monitoring data to ${ui}."
+
 setup_pq
 
 name=$(query_pgsettings cluster_name pg${PGPORT})
@@ -162,13 +172,7 @@ sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
 log "Using SSL cert ${sslcert}."
 sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
 log "Using SSL privaty key ${sslkey}."
-key=$(head -c 16 /dev/urandom | xxd -ps)
-ui=${1-${TEMBOARD_UI}}
-if ! curl --silent --show-error --insecure --head ${ui} >/dev/null 2>&3; then
-	fatal "Can't contact ${ui}."
-fi
-collector_url=$ui/monitoring/collector
-log "Sending monitoring data to ${ui}."
+key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 
 # Inject autoconfiguration in dedicated file.
 generate_configuration $home $sslcert $sslkey $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf

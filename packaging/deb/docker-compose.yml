@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  stretch: &mkdeb
+    image: dalibo/temboard-agent-sdk:stretch
+    environment:
+      # See dch(1)
+      DEBFULLNAME: ${DEBFULLNAME}
+      DEBEMAIL: ${DEBEMAIL}
+    volumes:
+    - ../..:/workspace
+    - ../../dist/:/dist
+    command: /workspace/packaging/deb/mkdeb.sh
+
+  jessie:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:jessie
+
+  wheezy:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:wheezy

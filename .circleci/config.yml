@@ -104,7 +104,7 @@ jobs:
     - checkout
     - run: git submodule update --init
     - run:
-        command: ./deb/mkdeb.sh
+        command: ./packaging/deb/mkdeb.sh
         environment:
           DEBFULLNAME: CircleCI
           DEBEMAIL: none@example.com
