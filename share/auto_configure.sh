@@ -174,14 +174,12 @@ install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
 	${LOGDIR}/${name} ${home}
 
 # Start with default configuration
-log "Configuring temboard-agent in ${ETCDIR}/${name}."
+log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
 install -b -o ${PGUSER} -g ${PGUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
 
 sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
-log "Using SSL cert ${sslcert}."
 sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
-log "Using SSL privaty key ${sslkey}."
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 
 # Inject autoconfiguration in dedicated file.
@@ -202,7 +200,5 @@ log "Success. You can now start temboard--agent using:"
 log
 log "    ${start_cmd}"
 log
-log "Then, register agent in UI with secret key ${key}."
-log
-log "You must configure monitoring.collector_url to send monitoring metrics to"
-log "web UI. See documentation for detailed instructions."
+log "For registration, use secret key ${key} ."
+log "See documentation for detailed instructions."
