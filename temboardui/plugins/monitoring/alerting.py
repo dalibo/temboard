@@ -103,8 +103,10 @@ class PreProcess(object):
     def hitratio(data):
         _data = dict()
         for r in data['blocks']:
-            _data[r['dbname']] = int(r['hitmiss_ratio']) \
-                if int(r['blks_read']) + int(r['blks_hit']) > 0 else 100
+            hit = int(r['blks_hit'])
+            read = int(r['blks_read'])
+            _data[r['dbname']] = (100 * hit / (hit + read)) \
+                if read + hit > 0 else 100
         return _data
 
     @staticmethod
