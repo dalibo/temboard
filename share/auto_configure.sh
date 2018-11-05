@@ -112,6 +112,7 @@ setup_pq() {
 	export PGPORT=${PGPORT-5432}
 	log "Configuring for cluster on port ${PGPORT}."
 	export PGHOST=${PGHOST-$(query_pgsettings unix_socket_directories)}
+	PGHOST=${PGHOST%%,*}
 	if ! sudo -Eu ${PGUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
