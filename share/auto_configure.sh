@@ -34,10 +34,10 @@ query_pgsettings() {
 	# Usage: query_pgsettings name [default]
 
 	local name=$1; shift
-	local default=${2-}
-	val=$(sudo -u ${PGUSER} psql -tc "SELECT setting FROM pg_settings WHERE name = '${name}';")
+	local default=${1-}; shift
+	val=$(sudo -u ${PGUSER} psql -Atc "SELECT setting FROM pg_settings WHERE name = '${name}';")
 
-	echo ${val-${default}}
+	echo "${val:-${default}}"
 }
 
 generate_configuration() {
@@ -64,6 +64,7 @@ generate_configuration() {
 
 	[temboard]
 	home = ${home}
+	hostname = ${TEMBOARD_HOSTNAME}
 	port = ${port}
 	ssl_cert_file = ${sslcert}
 	ssl_key_file = ${sslkey}
@@ -111,24 +112,64 @@ setup_pq() {
 	export PGPORT=${PGPORT-5432}
 	log "Configuring for cluster on port ${PGPORT}."
 	export PGHOST=${PGHOST-$(query_pgsettings unix_socket_directories)}
+	PGHOST=${PGHOST%%,*}
 	if ! sudo -Eu ${PGUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
 	export PGDATA=$(query_pgsettings data_directory)
 	log "Configuring for cluster at ${PGDATA}."
 
+	read PGVERSION < ${PGDATA}/PG_VERSION
 	if ! which pg_ctl &>/dev/null ; then
-		read pgversion < ${PGDATA}/PG_VERSION
-		bindir=$(search_bindir $pgversion)
+		bindir=$(search_bindir $PGVERSION)
 		log "Using ${bindir}/pg_ctl."
 		export PATH=$bindir:$PATH
 	fi
+
+	# Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
+	# use the tail of ${PGDATA} after ~postgres has been removed. If PGDATA
+	# is not in postgres home, compute a cluster name from version and port.
+	local home=$(eval readlink -e ~${PGUSER})
+	if [ -z "${PGDATA##${home}/*}" ] ; then
+		default_cluster_name=${PGDATA##${home}/}
+	else
+		default_cluster_name=$PGVERSION/pg${PGPORT}
+	fi
+	export PGCLUSTER_NAME=$(query_pgsettings cluster_name $default_cluster_name)
 }
+
+setup_ssl() {
+	local name=${1//\//-}; shift
+	local pki;
+	for d in /etc/pki/tls /etc/ssl /etc/temboard-agent/$name; do
+		if [ -d $d ] ; then
+			pki=$d
+			break
+		fi
+	done
+	if [ -z "${pki-}" ] ; then
+		fatal "Failed to find PKI directory."
+	fi
+
+	if [ -f $pki/certs/ssl-cert-snakeoil.pem -a -f $pki/private/ssl-cert-snakeoil.key ] ; then
+		log "Using snake-oil SSL certificate."
+		sslcert=$pki/certs/ssl-cert-snakeoil.pem
+		sslkey=$pki/private/ssl-cert-snakeoil.key
+	else
+		sslcert=$pki/certs/temboard-agent-$name.pem
+		sslkey=$pki/private/temboard-agent-$name.key
+		openssl req -new -x509 -days 365 -nodes \
+			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
+			-out $sslcert -keyout $sslkey
+	fi
+	echo $sslcert $sslkey
+}
+
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
 	LOGFILE=/var/log/temboard-agent-auto-configure.log
-	exec 3>&2 2>>${LOGFILE} 1>&2
+	exec 3>&2 2>${LOGFILE} 1>&2
 	chmod 0600 ${LOGFILE}
 	trap 'catchall' INT EXIT TERM
 fi
@@ -142,6 +183,12 @@ ETCDIR=${ETCDIR-/etc/temboard-agent}
 VARDIR=${VARDIR-/var/lib/temboard-agent}
 LOGDIR=${LOGDIR-/var/log/temboard-agent}
 
+export TEMBOARD_HOSTNAME=${TEMBOARD_HOSTNAME-$(hostname --fqdn)}
+if [ -n "${TEMBOARD_HOSTNAME##*.*}" ] ; then
+	fatal "FQDN is not properly configured. Set agent hostname with TEMBOARD_HOSTNAME env var.".
+fi
+log "Using hostname ${TEMBOARD_HOSTNAME}."
+
 ui=${1-${TEMBOARD_UI-}}
 if [ -z "${ui}" ] ; then
 	fatal "Missing UI url."
@@ -154,7 +201,7 @@ log "Sending monitoring data to ${ui}."
 
 setup_pq
 
-name=$(query_pgsettings cluster_name pg${PGPORT})
+name=${PGCLUSTER_NAME}
 home=${VARDIR}/${name}
 # Create directories
 install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
@@ -162,20 +209,15 @@ install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
 	${LOGDIR}/${name} ${home}
 
 # Start with default configuration
-log "Configuring temboard-agent in ${ETCDIR}/${name}."
+log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
-install -o ${PGUSER} -g ${PGUSER} -m 0600 users ${ETCDIR}/${name}/
-# By default, don't create users.
-truncate -s 0 ${ETCDIR}/${name}/users
+install -b -o ${PGUSER} -g ${PGUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
 
-sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
-log "Using SSL cert ${sslcert}."
-sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
-log "Using SSL privaty key ${sslkey}."
+sslfiles=($(set -eu; setup_ssl $name))
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home $sslcert $sslkey $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+generate_configuration $home "${sslfiles[@]}" $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
@@ -192,7 +234,5 @@ log "Success. You can now start temboard--agent using:"
 log
 log "    ${start_cmd}"
 log
-log "Then, register agent in UI with secret key ${key}."
-log
-log "You must configure monitoring.collector_url to send monitoring metrics to"
-log "web UI. See documentation for detailed instructions."
+log "For registration, use secret key ${key} ."
+log "See documentation for detailed instructions."
