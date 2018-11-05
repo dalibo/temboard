@@ -169,7 +169,7 @@ if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
 	LOGFILE=/var/log/temboard-agent-auto-configure.log
-	exec 3>&2 2>>${LOGFILE} 1>&2
+	exec 3>&2 2>${LOGFILE} 1>&2
 	chmod 0600 ${LOGFILE}
 	trap 'catchall' INT EXIT TERM
 fi
