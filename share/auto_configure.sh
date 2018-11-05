@@ -138,6 +138,33 @@ setup_pq() {
 	export PGCLUSTER_NAME=$(query_pgsettings cluster_name $default_cluster_name)
 }
 
+setup_ssl() {
+	local name=${1//\//-}; shift
+	local pki;
+	for d in /etc/pki/tls /etc/ssl /etc/temboard-agent/$name; do
+		if [ -d $d ] ; then
+			pki=$d
+			break
+		fi
+	done
+	if [ -z "${pki-}" ] ; then
+		fatal "Failed to find PKI directory."
+	fi
+
+	if [ -f $pki/certs/ssl-cert-snakeoil.pem -a -f $pki/private/ssl-cert-snakeoil.key ] ; then
+		log "Using snake-oil SSL certificate."
+		sslcert=$pki/certs/ssl-cert-snakeoil.pem
+		sslkey=$pki/private/ssl-cert-snakeoil.key
+	else
+		sslcert=$pki/certs/temboard-agent-$name.pem
+		sslkey=$pki/private/temboard-agent-$name.key
+		openssl req -new -x509 -days 365 -nodes \
+			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
+			-out $sslcert -keyout $sslkey
+	fi
+	echo $sslcert $sslkey
+}
+
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
@@ -186,12 +213,11 @@ log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
 install -b -o ${PGUSER} -g ${PGUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
 
-sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
-sslkey=/etc/ssl/private/ssl-cert-snakeoil.key
+sslfiles=($(set -eu; setup_ssl $name))
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home $sslcert $sslkey $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+generate_configuration $home "${sslfiles[@]}" $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
