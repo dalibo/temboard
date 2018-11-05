@@ -117,13 +117,25 @@ setup_pq() {
 	export PGDATA=$(query_pgsettings data_directory)
 	log "Configuring for cluster at ${PGDATA}."
 
+	read PGVERSION < ${PGDATA}/PG_VERSION
 	if ! which pg_ctl &>/dev/null ; then
-		read pgversion < ${PGDATA}/PG_VERSION
-		bindir=$(search_bindir $pgversion)
+		bindir=$(search_bindir $PGVERSION)
 		log "Using ${bindir}/pg_ctl."
 		export PATH=$bindir:$PATH
 	fi
+
+	# Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
+	# use the tail of ${PGDATA} after ~postgres has been removed. If PGDATA
+	# is not in postgres home, compute a cluster name from version and port.
+	local home=$(eval readlink -e ~${PGUSER})
+	if [ -z "${PGDATA##${home}/*}" ] ; then
+		default_cluster_name=${PGDATA##${home}/}
+	else
+		default_cluster_name=$PGVERSION/pg${PGPORT}
+	fi
+	export PGCLUSTER_NAME=$(query_pgsettings cluster_name $default_cluster_name)
 }
+
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
@@ -154,7 +166,7 @@ log "Sending monitoring data to ${ui}."
 
 setup_pq
 
-name=$(query_pgsettings cluster_name pg${PGPORT})
+name=${PGCLUSTER_NAME}
 home=${VARDIR}/${name}
 # Create directories
 install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
