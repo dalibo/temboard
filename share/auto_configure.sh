@@ -176,9 +176,7 @@ install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
-install -o ${PGUSER} -g ${PGUSER} -m 0600 users ${ETCDIR}/${name}/
-# By default, don't create users.
-truncate -s 0 ${ETCDIR}/${name}/users
+install -b -o ${PGUSER} -g ${PGUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
 
 sslcert=/etc/ssl/certs/ssl-cert-snakeoil.pem
 log "Using SSL cert ${sslcert}."
