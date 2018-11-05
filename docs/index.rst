@@ -30,7 +30,7 @@ http://temboard.io/ for the big picture.
    installation
    upgrade
    configuration
-   api
    contributing
+   api
 
 .. _`temBoard`: http://temboard.io/
