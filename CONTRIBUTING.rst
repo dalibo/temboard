@@ -9,4 +9,4 @@ refer to `temBoard UI CONTRIBUTING
 <https://github.com/dalibo/temboard/blob/master/CONTRIBUTING.md>`_ for workflow.
 
 For technical details to how to contribute codes to temBoard agent, please refer
-to `latest documentation <http://temboard-agent.readthedocs.io/en/stable/>`_.
+to `latest documentation <http://temboard-agent.readthedocs.io/>`_.
