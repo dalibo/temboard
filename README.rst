@@ -17,7 +17,7 @@ http://temboard.io/ for the big picture.
 
 - Non intrusive daemon dedicated to one PostgreSQL cluster.
 - No extra dependencies.
-- Written python2.7 and python3, supported by stable distribution releases.
+- Written python2.6 and python3, supported by stable distribution releases.
 - Secured REST API with SSL and credentials.
 - Extensible with plugins.
 
@@ -26,12 +26,8 @@ http://temboard.io/ for the big picture.
  Installation
 ==============
 
-.. code-block::
-
-   pip install temboard-agent
-   sudo -u postgres temboard-agent -c /usr/local/share/temboard-agent/quickstart/temboard-agent.conf
-
-See `temBoard full documentation`_ for details on configuration.
+See `temBoard documentation`_ for available installation methods and details on
+configuration.
 
 
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard-agent.svg?style=shield
@@ -55,4 +51,4 @@ See `temBoard full documentation`_ for details on configuration.
    :alt: Documentation
 
 .. _`temBoard`: http://temboard.io/
-.. _`temBoard full documentation`: http://temboard.readthedocs.io/
+.. _`temBoard documentation`: http://temboard.readthedocs.io/
