@@ -5,6 +5,8 @@ if ! hash systemctl &>/dev/null; then
 	exit 0
 fi
 
+systemctl daemon-reload
+
 prefix=temboard-agent@
 units="$(systemctl --plain list-units ${prefix}* | grep -Po ${prefix}.*\\.service)"
 
