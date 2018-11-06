@@ -23,8 +23,8 @@ Now choose the method matching best your target environment.
 .. raw:: html
 
    <ul class="tabs">
-     <li><a href="#rhel-centos"><img src="/_static/centos.svg" height="48" width="48"></img> RHEL / CentOS</a></li>
-     <li><a href="#pypi"><img src="/_static/pypi.svg" height="48" width="48"></img> PyPI</a></li>
+     <li><a href="#rhel-centos"><img src="_static/centos.svg" height="48" width="48"></img> RHEL / CentOS</a></li>
+     <li><a href="#pypi"><img src="_static/pypi.svg" height="48" width="48"></img> PyPI</a></li>
    </ul>
 
 
@@ -76,7 +76,7 @@ this system prefix.
 
 .. raw:: html
 
-   <script src="/_static/tabs.js" defer="defer"></script>
+   <script src="_static/tabs.js" defer="defer"></script>
    <style type="text/css">
    .tabs {
      text-align: center;
