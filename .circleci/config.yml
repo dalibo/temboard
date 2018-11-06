@@ -39,7 +39,7 @@ jobs:
             sudo yum install -y git
     - checkout
     - run: git submodule update --init
-    - run: ./rpm/build.sh
+    - run: ./packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
@@ -53,7 +53,7 @@ jobs:
     steps:
     - checkout
     - run: git submodule update --init
-    - run: ./rpm/build.sh
+    - run: ./packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:

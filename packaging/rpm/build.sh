@@ -1,12 +1,12 @@
 #!/bin/bash -eux
 
-cd $(readlink -m $0/../..)
+cd $(readlink -m $0/../../..)
 test -f setup.py
 
 teardown() {
     exit_code=$?
     # rpmbuild requires files to be owned by running uid
-    sudo chown --recursive $(id -u):$(id -g) rpm/
+    sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 
     trap - EXIT INT TERM
 
@@ -20,23 +20,24 @@ teardown() {
 
 trap teardown EXIT INT TERM
 
-sudo yum-builddep -y rpm/temboard-agent.spec
+sudo yum-builddep -y packaging/rpm/temboard-agent.spec
 sudo sed -i s/.centos// /etc/rpm/macros.dist
 
 # Building sources in rpm/
-python setup.py sdist --dist-dir rpm/
+python setup.py sdist --dist-dir packaging/rpm/
 ! diff -u \
-  --label ../share/temboard-agent.conf share/temboard-agent.conf \
-  rpm/temboard-agent.rpm.conf > rpm/temboard-agent.conf.patch
+  --label ../share/temboard-agent.conf \
+  share/temboard-agent.conf packaging/rpm/temboard-agent.rpm.conf \
+  > packaging/rpm/temboard-agent.conf.patch
 
 # rpmbuild requires files to be owned by running uid
-sudo chown --recursive $(id -u):$(id -g) rpm/
+sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 
 rpmbuild \
     --define "pkgversion $(python setup.py --version)" \
     --define "_topdir ${PWD}/dist/rpm" \
-    --define "_sourcedir ${PWD}/rpm" \
-    -ba rpm/temboard-agent.spec
+    --define "_sourcedir ${PWD}/packaging/rpm" \
+    -ba packaging/rpm/temboard-agent.spec
 
 # Test it
 if [ "${DIST}" = "el6" ] ; then

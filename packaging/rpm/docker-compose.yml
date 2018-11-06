@@ -4,8 +4,8 @@ services:
   centos6: &centos
     image: rpmbuild/centos6
     volumes:
-    - ../:/workspace
-    command: /workspace/rpm/build.sh
+    - ../../:/workspace
+    command: /workspace/packaging/rpm/build.sh
 
   centos7:
     <<: *centos
