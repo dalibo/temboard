@@ -3,6 +3,8 @@ version: '2'
 services:
   centos6: &centos
     image: rpmbuild/centos6
+    environment:
+    - VERSION
     volumes:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh

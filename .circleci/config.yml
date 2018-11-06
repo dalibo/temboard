@@ -32,14 +32,19 @@ jobs:
     working_directory: ~/workspace
     steps:
     - run:
-        name: Upgrade to descent git version
+        name: Upgrade to decent git version
         command: |
             set -ex
             sudo yum install -y http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
             sudo yum install -y git
     - checkout
     - run: git submodule update --init
-    - run: ./packaging/rpm/build.sh
+    - run: &build_rpm
+        name: Build RPM snapshot
+        command: |
+          sudo yum-builddep -y packaging/rpm/temboard-agent.spec
+          python setup.py sdist
+          VERSION=$(python setup.py --version) ./packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
@@ -53,7 +58,7 @@ jobs:
     steps:
     - checkout
     - run: git submodule update --init
-    - run: ./packaging/rpm/build.sh
+    - run: *build_rpm
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
