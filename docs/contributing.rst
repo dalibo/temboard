@@ -59,6 +59,7 @@ For the tooling, you need Git 1.8+, a recent setuptools with wheel, and twine.
 
 Please follow these steps:
 
+- Checkout the release branch, e.g. v2.
 - Choose the next version according to `PEP 440
   <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
 - Update ``temboardagent/version.py``, without committing.
