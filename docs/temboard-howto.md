@@ -71,12 +71,3 @@ Go to `Manage` -> `Instances`, then `+ Add a new instance`.
   * `Agent secret key`: Authentication key used by the agent to send data to the collector (`monitoring` plugin only);
   * `Groups`: Instance groups this instance belongs to.
   * `Active plugins`: `plugins` enabled for this instance. Selected `plugins` must be loaded by the `agent` too.
-
-Once `Agent address` and `Agent port` filled, if the `agent` is up & running, it's possible to retreive values of the following attributes by clicking on the button `Get instance's informations`.
-
-  * `Number of CPU`: Number of CPU/vCPU;
-  * `Memory size`: Memory size in bytes;
-  * `Hostname`: Machine hostname, FQDN. Must be unique.
-  * `PostgreSQL data directory`
-  * `PostgreSQL port`
-  * `PostgreSQL version`
