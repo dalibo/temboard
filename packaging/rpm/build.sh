@@ -23,13 +23,6 @@ trap teardown EXIT INT TERM
 sudo yum-builddep -y packaging/rpm/temboard-agent.spec
 sudo sed -i s/.centos// /etc/rpm/macros.dist
 
-# Building sources in rpm/
-python setup.py sdist --dist-dir packaging/rpm/
-! diff -u \
-  --label ../share/temboard-agent.conf \
-  share/temboard-agent.conf packaging/rpm/temboard-agent.rpm.conf \
-  > packaging/rpm/temboard-agent.conf.patch
-
 # rpmbuild requires files to be owned by running uid
 sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 

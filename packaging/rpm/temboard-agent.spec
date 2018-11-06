@@ -15,7 +15,7 @@ URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 Source1:       temboard-agent.init
 Source2:       temboard-agent.service
-Patch1:        temboard-agent.conf.patch
+Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 BuildRequires: python-setuptools
 Requires:      openssl
@@ -31,7 +31,6 @@ Administration & monitoring PostgreSQL agent.
 
 %prep
 %setup -q -n %{pkgname}-%{version}
-%patch1 -p1
 
 
 %build
@@ -51,7 +50,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
-%{__install} -m 600 %{buildroot}/usr/share/temboard-agent/temboard-agent.conf %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
+%{__install} -m 600 %{SOURCE2} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
 %{__install} -m 644 %{buildroot}/usr/share/temboard-agent/temboard-agent.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard-agent
 # init script
