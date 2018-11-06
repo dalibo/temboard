@@ -23,9 +23,31 @@ Now choose the method matching best your target environment.
 .. raw:: html
 
    <ul class="tabs">
+     <li><a href="#debian"><img src="_static/debian.svg" height="48" width="48"></img> Debian</a></li>
      <li><a href="#rhel-centos"><img src="_static/centos.svg" height="48" width="48"></img> RHEL / CentOS</a></li>
      <li><a href="#pypi"><img src="_static/pypi.svg" height="48" width="48"></img> PyPI</a></li>
    </ul>
+
+
+Debian
+======
+
+temBoard debs are published on `Dalibo Labs APT repository
+<https://apt.dalibo.org/labs/>`_. temBoard agent supports Debian stretch, jessie
+and wheezy. Start by enabling Dalibo Labs APT repository.
+
+.. code-block:: console
+
+   # echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
+   # curl https://apt.dalibo.org/labs/debian-dalibo.asc | apt-key add -
+   # apt update -y  # You may use apt-get here.
+
+You can install now temBoard agent with:
+
+.. code-block:: console
+
+   # apt install temboard-agent
+   # temboard-agent --version
 
 
 RHEL / CentOS
@@ -92,7 +114,7 @@ this system prefix.
      display: block;
      flex-grow: 1;
      margin: 0;
-     padding: 0;
+     padding: 4px;
    }
 
    .tabs li + li {
@@ -106,8 +128,8 @@ this system prefix.
 
    .tabs li a {
      display: inline-block;
-     padding: 8px 32px;
-     width: 216px;
+     width: 100%;
+     padding: 4px;
      font-size: 110%;
    }
 
