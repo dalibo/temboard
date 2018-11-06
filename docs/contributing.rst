@@ -39,11 +39,12 @@ Sphinx generates temBoard agent documentation.
 
 .. code-block:: console
 
-   $ cd doc/
+   $ cd docs/
    $ pip install -r requirements-doc.txt
-   $ make html
+   $ make watch
 
-temBoard agent documentation is at ``_build/html/``.
+Now run ``make serve`` in another terminal and point your web browser at
+http://0.0.0.0:8000/. There is no auto-refresh.
 
 
 Releasing

@@ -1,4 +1,4 @@
-# See doc/contributing.rst to figure out how to use this docker-compose file
+# See docs/contributing.rst to figure out how to use this docker-compose file
 
 version: '2'
 
