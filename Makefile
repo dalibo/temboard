@@ -4,7 +4,7 @@ all:
 	@echo Working on temboard-agent $(VERSION)
 
 release:
-	python2 setup.py egg_info
+	python setup.py egg_info
 	git commit temboardagent/version.py -m "Version $(VERSION)"
 	git tag --annotate --message "Version $(VERSION)" $(VERSION)
 	git push --follow-tags git@github.com:dalibo/temboard-agent.git
@@ -12,7 +12,7 @@ release:
 upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
-	python2 setup.py sdist bdist_wheel --universal
+	python setup.py sdist bdist_wheel --universal
 	twine upload dist/temboard-agent-$(VERSION).tar.gz $$(ls dist/temboard_agent-$(VERSION)-*.whl)
 
 shell:
