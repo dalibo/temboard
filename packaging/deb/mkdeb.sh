@@ -67,6 +67,7 @@ fpm --verbose \
     --depends python-pkg-resources \
     --depends ssl-cert \
     --depends python${pythonv} \
+    --after-install ../../share/restart-all.sh \
     "${fpm_args[@]}" \
     "$@" \
     ./=/
