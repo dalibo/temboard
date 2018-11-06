@@ -12,7 +12,8 @@ release:
 upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
-	python2 setup.py sdist bdist_wheel upload -r pypi
+	python2 setup.py sdist bdist_wheel --universal
+	twine upload dist/temboard-agent-$(VERSION).tar.gz $$(ls dist/temboard_agent-$(VERSION)-*.whl)
 
 shell:
 	docker-compose exec agent bash
