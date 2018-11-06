@@ -35,7 +35,7 @@ query_pgsettings() {
 
 	local name=$1; shift
 	local default=${1-}; shift
-	val=$(sudo -u ${PGUSER} psql -Atc "SELECT setting FROM pg_settings WHERE name = '${name}';")
+	val=$(sudo -Eu ${PGUSER} psql -Atc "SELECT setting FROM pg_settings WHERE name = '${name}';")
 
 	echo "${val:-${default}}"
 }
