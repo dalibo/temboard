@@ -5,10 +5,9 @@ all:
 
 release:
 	python2 setup.py egg_info
-	git commit setup.py -m "Version $(VERSION)"
-	git tag $(VERSION)
-	git push git@github.com:dalibo/temboard-agent.git
-	git push --tags git@github.com:dalibo/temboard-agent.git
+	git commit temboardagent/version.py -m "Version $(VERSION)"
+	git tag --annotate --message "Version $(VERSION)" $(VERSION)
+	git push --follow-tags git@github.com:dalibo/temboard-agent.git
 
 upload:
 	@echo Checking we are on a tag
