@@ -20,15 +20,19 @@ stored in `dist/` at the root of the project.
 ## Setup
 
 Package building requires Docker and Docker Compose for isolation. For .deb
-building, you need the `devscripts` package on debian and GPG to sign package.
+building, you need the `devscripts` package on debian and a GPG private key to
+sign package. For uploading, you require `dput`.
 
 ```
-sudo apt install devscripts
+sudo apt install devscripts dput
 ```
+
+Ensure dput is configured to send to Dalibo Labs APT repository with the
+configuration named `labs`.
 
 Now, export your full name and email address in `DEBFULLNAME` and `DEBEMAIL` env
-vars. The maintainer field of the package is formatted as `$DEBFULLNAME
-<$DEBEMAIL>`.
+vars before building the packages. The maintainer field of the package is
+formatted as `$DEBFULLNAME <$DEBEMAIL>`.
 
 `debsign` signs `.changes` with the GPG signature matching the maintainer field
 `$DEBFULLNAME <$DEBEMAIL>`.
