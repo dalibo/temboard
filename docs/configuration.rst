@@ -6,8 +6,8 @@ temBoard agent reads configuration from arguments, environment and file. Defaut
 configuration file is ``/etc/temboard-agent/temboard-agent.conf``. You can
 change this with ``TEMBOARD_CONFIGFILE`` envvar or ``--configfile`` switch.
 
-temBoard agent always searches for a directory whose name is constructed with
-the config file and the ``.d`` suffix. Thus the default config directory is
+temBoard agent always searches for a directory whose name is built with the
+config file and the ``.d`` suffix. Thus the default config directory is
 ``/etc/temboard-agent/temboard-agent.conf.d``. temBoard agent reads only files
 suffixed with ``.conf``. temBoard agent reads files in POSIX sort order :
 uppercase precedes lowercase.
