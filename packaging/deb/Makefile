@@ -1,7 +1,7 @@
 all: stretch jessie wheezy
 
 stretch jessie wheezy:
-	mkdir -p ../dist/
+	mkdir -p ../../dist/
 	docker-compose run --rm $@
 	$(MAKE) changes-$@
 
