@@ -81,7 +81,7 @@ openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.p
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
     /usr/share/temboard-agent/restart-all.sh
 %if 0%{?rhel} >= 7
-else
+elif systemctl is-system-running &>/dev/null ; then
     systemctl daemon-reload
     if systemctl is-active temboard-agent &>/dev/null; then
         systemctl restart temboard-agent
@@ -110,15 +110,19 @@ fi
 
 %preun
 %if 0%{?rhel} >= 7
-systemctl stop temboard-agent*
-systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
-systemctl reset-failed temboard-agent*
+if systemctl is-system-running &>/dev/null ; then
+    systemctl stop temboard-agent*
+    systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
+    systemctl reset-failed temboard-agent*
+fi
 %endif
 
 
 %postun
 %if 0%{?rhel} >= 7
-systemctl daemon-reload
+if systemctl is-system-running &>/dev/null ; then
+    systemctl daemon-reload
+fi
 %endif
 
 
