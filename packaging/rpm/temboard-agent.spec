@@ -64,8 +64,6 @@ rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent*.service
 %{__install} -d %{buildroot}%{_unitdir}
 %{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 %endif
-# For now, just ignore multi-instance service
-rm -f %{buildroot}%{_unitdir}/temboard-agent@.service
 
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard-agent
@@ -80,13 +78,16 @@ rm -f %{buildroot}%{_unitdir}/temboard-agent@.service
 openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.pem -keyout /etc/pki/tls/private/temboard-agent.key -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " >> /dev/null 2>&1
 
 
+if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
+    /usr/share/temboard-agent/restart-all.sh
 %if 0%{?rhel} >= 7
-systemctl daemon-reload
-if systemctl is-active temboard-agent &>/dev/null; then
-    systemctl restart temboard-agent
-fi
+else
+    systemctl daemon-reload
+    if systemctl is-active temboard-agent &>/dev/null; then
+        systemctl restart temboard-agent
+    fi
 %endif
-
+fi
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
@@ -100,7 +101,7 @@ fi
 %endif
 
 %if 0%{?rhel} >= 7
-%{_unitdir}/temboard-agent.service
+%{_unitdir}/temboard-agent*.service
 %endif
 
 %attr(-,postgres,postgres) /var/log/temboard-agent
@@ -109,8 +110,9 @@ fi
 
 %preun
 %if 0%{?rhel} >= 7
-systemctl stop temboard-agent
-systemctl disable temboard-agent
+systemctl stop temboard-agent*
+systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
+systemctl reset-failed temboard-agent*
 %endif
 
 
