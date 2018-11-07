@@ -66,6 +66,7 @@ Please follow these steps:
 - Update ``temboardagent/version.py``, without committing.
 - Generate commit and tag with ``make release``.
 - Push Python egg to PyPI using ``make upload``.
+- Build and push RPM packages using ``make -C packaging/rpm all push``.
 - Build and push debian packages using ``make -C packaging/deb all push``.
 - Trigger docker master build from
   https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/.
@@ -78,3 +79,4 @@ Other documentation for maintainers
    :maxdepth: 1
 
    packaging-deb
+   packaging-rpm

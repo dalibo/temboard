@@ -15,7 +15,7 @@ URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 Source1:       temboard-agent.init
 Source2:       temboard-agent.service
-Patch1:        temboard-agent.conf.patch
+Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 BuildRequires: python-setuptools
 Requires:      openssl
@@ -31,7 +31,6 @@ Administration & monitoring PostgreSQL agent.
 
 %prep
 %setup -q -n %{pkgname}-%{version}
-%patch1 -p1
 
 
 %build
@@ -51,7 +50,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
-%{__install} -m 600 %{buildroot}/usr/share/temboard-agent/temboard-agent.conf %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
+%{__install} -m 600 %{SOURCE2} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
 %{__install} -m 644 %{buildroot}/usr/share/temboard-agent/temboard-agent.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard-agent
 # init script
@@ -65,8 +64,6 @@ rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent*.service
 %{__install} -d %{buildroot}%{_unitdir}
 %{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 %endif
-# For now, just ignore multi-instance service
-rm -f %{buildroot}%{_unitdir}/temboard-agent@.service
 
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard-agent
@@ -81,13 +78,16 @@ rm -f %{buildroot}%{_unitdir}/temboard-agent@.service
 openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.pem -keyout /etc/pki/tls/private/temboard-agent.key -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " >> /dev/null 2>&1
 
 
+if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
+    /usr/share/temboard-agent/restart-all.sh
 %if 0%{?rhel} >= 7
-systemctl daemon-reload
-if systemctl is-active temboard-agent &>/dev/null; then
-    systemctl restart temboard-agent
-fi
+elif systemctl is-system-running &>/dev/null ; then
+    systemctl daemon-reload
+    if systemctl is-active temboard-agent &>/dev/null; then
+        systemctl restart temboard-agent
+    fi
 %endif
-
+fi
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
@@ -101,7 +101,7 @@ fi
 %endif
 
 %if 0%{?rhel} >= 7
-%{_unitdir}/temboard-agent.service
+%{_unitdir}/temboard-agent*.service
 %endif
 
 %attr(-,postgres,postgres) /var/log/temboard-agent
@@ -110,14 +110,19 @@ fi
 
 %preun
 %if 0%{?rhel} >= 7
-systemctl stop temboard-agent
-systemctl disable temboard-agent
+if systemctl is-system-running &>/dev/null ; then
+    systemctl stop temboard-agent*
+    systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
+    systemctl reset-failed temboard-agent*
+fi
 %endif
 
 
 %postun
 %if 0%{?rhel} >= 7
-systemctl daemon-reload
+if systemctl is-system-running &>/dev/null ; then
+    systemctl daemon-reload
+fi
 %endif
 
 

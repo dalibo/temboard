@@ -1,3 +1,0 @@
-The RPM spec file supports building a package for RHEL / CentOS
-version 6 and 7. To do so, it uses tests on the version, provided
-by the %{rhel} macro.
