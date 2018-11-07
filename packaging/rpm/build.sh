@@ -30,7 +30,7 @@ rpmbuild \
     --define "pkgversion $(python setup.py --version)" \
     --define "_topdir ${PWD}/dist/rpm" \
     --define "_sourcedir ${PWD}/packaging/rpm" \
-    -ba packaging/rpm/temboard-agent.spec
+    -bb packaging/rpm/temboard-agent.spec
 
 # Test it
 if [ "${DIST}" = "el6" ] ; then
