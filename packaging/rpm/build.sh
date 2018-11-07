@@ -7,6 +7,7 @@ teardown() {
     exit_code=$?
     # rpmbuild requires files to be owned by running uid
     sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
+    rm -f packaging/rpm/temboard-agent*.tar.gz
 
     trap - EXIT INT TERM
 
@@ -41,6 +42,7 @@ ln -f dist/${tarball} packaging/rpm/
 sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 
 rpmbuild \
+    --clean \
     --define "pkgversion ${VERSION}" \
     --define "_topdir ${PWD}/dist/rpm" \
     --define "_sourcedir ${PWD}/packaging/rpm" \
