@@ -317,14 +317,20 @@ def init_env(test_env):
              test_env['pg']['socket_dir'],
              test_env['pg']['pg_data'],
              test_env['pg']['log_file'])
+
     for i in range(10):
         code, out, err = exec_command([
             test_env['pg']['bin'] + '/pg_ctl', 'status',
             '-D', test_env['pg']['pg_data']])
         # Seems that pg_ctl outputs postgres cmd when ready.
-        if out and 'bin/postgres' in out:
+        if 0 == code:
             break
-        print(code, out, err, 'bin/postgres' in out)
+        else:
+            print(code, out, err, 'bin/postgres' in out)
+            time.sleep(i / 5.)
+    else:
+        assert False, "Failed to start Postgres"
+
     # Super-user creation.
     pg_add_super_user(test_env['pg']['bin'],
                       test_env['pg']['user'],
