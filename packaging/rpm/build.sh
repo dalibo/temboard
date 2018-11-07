@@ -46,10 +46,14 @@ rpmbuild \
     --define "_sourcedir ${PWD}/packaging/rpm" \
     -bb packaging/rpm/temboard-agent.spec
 
+# Pin rpm as latest built, for upload.
+rpm=$(ls dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.noarch.rpm)
+ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
+
 # Test it
 if [ "${DIST}" = "el6" ] ; then
     sudo yum install -y epel-release
 fi
 
-sudo yum install -y dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.noarch.rpm
+sudo yum install -y $rpm
 temboard-agent --help
