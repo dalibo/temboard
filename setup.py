@@ -35,6 +35,7 @@ SETUP_KWARGS = dict(
     ],
     data_files=[
         ('share/temboard', [
+            'share/auto_configure.sh',
             'share/create_repository.sh',
         ]),
         ('share/temboard/sql/', [
