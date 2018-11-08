@@ -7,11 +7,8 @@ jobs:
     steps:
     - checkout
     - run: git submodule update --init
-    - run:
-        name: Build documentation with mkdocs
-        command: |
-          pip install --upgrade --requirement docs/requirements.txt
-          mkdocs
+    - run: pip install --upgrade --requirement docs/requirements.txt
+    - run: mkdocs build
     - store_artifacts:
         path: README.html
         destination: build/README.html
