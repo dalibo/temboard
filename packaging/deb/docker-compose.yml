@@ -9,7 +9,6 @@ services:
       DEBEMAIL: ${DEBEMAIL}
     volumes:
     - ../..:/workspace
-    - ../../dist/:/dist
     command: /workspace/packaging/deb/mkdeb.sh
 
   jessie:
