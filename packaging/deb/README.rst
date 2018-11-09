@@ -1,26 +1,21 @@
-=======================================
- Packaging for GNU/Linux distributions
-=======================================
-
-temBoard uses FPM_ to build packages.
-
-First, export your full name and email address in ``NAME`` and ``EMAIL`` env
-vars. The maintainer field of the package is formatted as ``$NAME <$EMAIL>``.
-
-The ``build`` target builds **all** packages for every supported distributions.
-
-.. code-block::
-
-   make build
-
-The packages are stored in ``dist/<codename>/`` relative to the root of the
-project.
-
-.. _FPM: https://github.com/jordansissel/fpm
+============================
+ Packaging Debian GNU/Linux
+============================
 
 
-For Debian
-==========
+First, export your full name and email address in ``DEBFULLNAME`` and
+``DEBEMAIL`` env vars. The maintainer field of the package is formatted as
+``$NAME <$EMAIL>``.
+
+Then, once your host is setup, trigger build and upload with ``make all push``.
+
+The ``build`` target builds packages for every supported Debian variant.
+``push`` uploads packages to dput configuration named ``labs``. The packages are
+stored in ``dist/`` relative to the root of the project.
+
+
+Setup
+-----
 
 The ``mkdeb.sh`` script builds ``.deb`` for the latest version on PyPI. The
 ``Makefile`` uses docker to isolate the build environment.
@@ -47,8 +42,8 @@ temBoard depends only on Python2.7. All dependencies are bundled. You can easily
 install the package with a simple ``dpkg -i ../dist/stretch/temboard*.deb``.
 
 
-Development of Debian packaging
--------------------------------
+Development
+-----------
 
 Run docker image for interactive usage:
 
@@ -64,3 +59,5 @@ output is stored in ``/dist/$CODENAME/``.
             ``CTRL+L`` to redraw.
 
 Once you quit the shell, the container is destroyed.
+
+.. _FPM: https://github.com/jordansissel/fpm
