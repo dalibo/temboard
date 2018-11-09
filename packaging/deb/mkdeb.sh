@@ -1,6 +1,7 @@
 #!/bin/bash -eu
 
-cd $(readlink -m $0/..)
+cd $(readlink -m $0/../../..)
+test -f setup.py
 
 teardown () {
     if [ "0" = "${CLEAN-1}" ] ; then
@@ -9,7 +10,7 @@ teardown () {
 
     rm -rf $WORKDIR
 
-    echo "Cleaning previous installation." >&2
+    echo "Cleaning any installation." >&2
     if hash temboard ; then
         apt-get purge -y temboard
     fi
@@ -31,17 +32,17 @@ apt-get install -y --no-install-recommends \
         ${NULL-}
 
 CODENAME=$(lsb_release --short --codename)
-WORKDIR=$(readlink -m build-$CODENAME)
+WORKDIR=$(readlink -m build/deb-$CODENAME)
 DESTDIR=$WORKDIR/destdir
 
 trap teardown EXIT INT TERM
 teardown
+mkdir -p $DESTDIR
 
 pip install -U pip packaging pep440deb virtualenv virtualenv-tools
 hash -r pip
 gem install --no-ri --no-rdoc fpm
 
-mkdir -p $DESTDIR
 versions=($(pep440deb --echo --pypi temboard))
 pep440v=${versions[0]}
 debianv=${versions[1]}
@@ -64,13 +65,6 @@ rmdir $DESTDIR/opt/temboard/share/temboard
 # Let FPM manage .service
 find $DESTDIR -name "*.service" -delete
 
-fpm_args=()
-if hash systemctl ; then
-    fpm_args+="--deb-systemd temboard.service"
-else
-    fpm_args+="--deb-init temboard.init"
-fi
-
 fpm --verbose \
     --debug-workspace \
     --workdir=$WORKDIR \
@@ -87,7 +81,6 @@ fpm --verbose \
     --url http://temboard.io/ \
     --category database \
     --depends python2.7 \
-    ${fpm_args[*]} \
     $DESTDIR/=/
 
 deb=$(ls temboard_*-0dlb1*_*.deb)
@@ -95,6 +88,6 @@ dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i $deb
 
-mv -fv $deb /dist/
+mv -fv $deb dist/
 ln -fs $(basename $deb) /dist/last_build_$CODENAME.deb
 chown -R $(stat -c %u:%g $0) /dist/*
