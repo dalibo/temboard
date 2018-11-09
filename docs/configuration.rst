@@ -9,10 +9,10 @@ change this with ``TEMBOARD_CONFIGFILE`` envvar or ``--configfile`` switch.
 temBoard agent always searches for a directory whose name is built with the
 config file and the ``.d`` suffix. Thus the default config directory is
 ``/etc/temboard-agent/temboard-agent.conf.d``. temBoard agent reads only files
-suffixed with ``.conf``. temBoard agent reads files in POSIX sort order :
+suffixed with ``.conf``. temBoard agent reads files in POSIX sort order:
 uppercase precedes lowercase.
 
-Configuration file is mendatory while configuration directory may not exist.
+The configuration file is mandatory. The configuration directory is optional.
 
 
 The configuration file is in `INI-style format
