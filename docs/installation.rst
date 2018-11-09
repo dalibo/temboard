@@ -157,28 +157,28 @@ script, installed in ``/usr/share/temboard-agent``.
 
 You must run this script as root, with ``PG*`` env vars set to connect to the
 Postgres cluster you want to manage. By default, the script uses ``postgres``
-UNIX user to connect to Postgres cluster. The script receive the temBoard UI URL
+UNIX user to connect to Postgres cluster. The script receives the temBoard UI URL
 as single required argument.
 
 .. note::
 
    Each agent is identified by the fully qualified *hostname*. If ``hostname
-   --fqdn`` can't resolve the FQDN of your HOST, just overwrite it using
-   ``TEMBOARD_HOSTNAME`` envvar. Remember that ``localhost`` or event a short
-   hostname is not enough. ``auto_configure.sh`` enforce this.
+   --fqdn`` can't resolve the FQDN of your HOST, simply overwrite it using
+   ``TEMBOARD_HOSTNAME`` envvar. Remember that ``localhost`` or even a short
+   hostname is not enough. ``auto_configure.sh`` enforces this.
 
 .. code-block:: console
 
    # /usr/share/temboard-agent/auto_configure.sh https://temboard-ui.lan:8888
 
-The script show you some important informations for the next steps:
+The script shows you some important information for the next steps:
 
 - the path to the main configuration file like
   ``/etc/temboard-agent/11/main/temboard-agent.conf``.
 - TCP port like 2345.
 - secret key for registration like ``d52cb5d39d265f03ae570e1847b90e10``.
 
-You will need these informations later. Keep them near. Now add a first user
+You will need these information later. Keep them near. Now add a first user
 using ``temboard-agent-adduser``:
 
 .. code-block:: console
@@ -186,7 +186,7 @@ using ``temboard-agent-adduser``:
    # sudo -u postgres temboard-agent-adduser -c /etc/temboard-agent/11/main/temboard-agent.conf
 
 Adapt the configuration file to match the one created by ``auto_configure.sh``.
-Later, when the agent has been registered, you will need to authenticate against
+Later, once the agent is registered, you will need to authenticate against
 the agent with this user, right from the UI.
 
 Now start the agent using the command suggested by ``auto_configure.sh``. On
@@ -208,10 +208,10 @@ and temBoard UI address are likely to change from one installation to another.
 **NOT** the user on the agent.
 
 
-It's up !
-=========
+It's up!
+========
 
-Congratulation ! You can continue on the UI on see the agent appeared, and
+Congratulation! You can continue on the UI and see the agent appeared, and
 monitoring data being graphed.
 
-You can repeat the setup one instance for each instance on the same host.
+You can repeat the above setup for each instance on the same host.
