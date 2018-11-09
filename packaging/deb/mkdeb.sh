@@ -1,7 +1,12 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 
+UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/../../..)
 test -f setup.py
+
+WORKDIR=$(readlink -m build/debian)
+DESTDIR=$WORKDIR/destdir
+DISTDIR=$(readlink -m dist)
 
 teardown () {
     if [ "0" = "${CLEAN-1}" ] ; then
@@ -11,83 +16,74 @@ teardown () {
     rm -rf $WORKDIR
 
     echo "Cleaning any installation." >&2
-    if hash temboard ; then
+    if hash temboard &>/dev/null; then
         apt-get purge -y temboard
     fi
 }
-
-if [ -z "$(find /var/lib/apt/lists/ -type f)" ] ; then
-   apt-get update -y
-fi
-
-apt-get install -y --no-install-recommends \
-        build-essential \
-        lsb-release \
-        python2.7 \
-        python-pip \
-        python-setuptools \
-        ruby \
-        ruby-dev \
-        rubygems \
-        ${NULL-}
-
-CODENAME=$(lsb_release --short --codename)
-WORKDIR=$(readlink -m build/deb-$CODENAME)
-DESTDIR=$WORKDIR/destdir
-
 trap teardown EXIT INT TERM
 teardown
+
 mkdir -p $DESTDIR
 
-pip install -U pip packaging pep440deb virtualenv virtualenv-tools
-hash -r pip
-gem install --no-ri --no-rdoc fpm
+#       V E R S I O N S
 
 versions=($(pep440deb --echo --pypi temboard))
 pep440v=${versions[0]}
 debianv=${versions[1]}
+CODENAME=$(lsb_release --short --codename)
+release=0dlb1${CODENAME}1
 
-virtualenv --python=python2.7 $DESTDIR/opt/temboard
-export PATH=$DESTDIR/opt/temboard/bin:$PATH
+#       I N S T A L L
+
+export PIP_CACHE_DIR=build/pip-cache/
+VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
+virtualenv --python=python2.7 $VIRTUAL_ENV
+export PATH=${VIRTUAL_ENV}/bin:$PATH
 hash -r pip
-pip install -U pip setuptools
+pip install -U pip setuptools wheel
 pip install --pre temboard==$pep440v
-pushd $DESTDIR/opt/temboard
-virtualenv-tools --update-path /opt/temboard
-popd
+virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
 
-sed -i s,$DESTDIR,, $DESTDIR/opt/temboard/bin/temboard
+sed -i s,$DESTDIR,, ${VIRTUAL_ENV}/bin/temboard
 mkdir -p $DESTDIR/usr/bin
-ln -fsv /opt/temboard/bin/temboard $DESTDIR/usr/bin/temboard
-mv $DESTDIR/opt/temboard/share/temboard/* $DESTDIR/opt/temboard/share
-rmdir $DESTDIR/opt/temboard/share/temboard
+ln -fsv ../lib/temboard/bin/temboard ${DESTDIR}/usr/bin/temboard
+mv ${VIRTUAL_ENV}/share $DESTDIR/usr/share
+mv ${VIRTUAL_ENV}/lib/systemd $DESTDIR/usr/lib
+pip uninstall --yes pip wheel
+export PATH=${PATH#*/bin:}
 
-# Let FPM manage .service
-find $DESTDIR -name "*.service" -delete
+#       B U I L D
 
 fpm --verbose \
+    --force \
     --debug-workspace \
     --workdir=$WORKDIR \
     --input-type dir \
     --output-type deb \
-    --force \
-    --architecture $(dpkg-architecture --query DEB_HOST_ARCH) \
     --name temboard \
     --version $debianv \
-    --iteration 0dlb1${CODENAME}1 \
+    --iteration $release \
+    --architecture $(dpkg-architecture --query DEB_HOST_ARCH) \
+    --description "PostgreSQL Remote Control UI" \
+    --category database \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
-    --description "Administration & monitoring PostgreSQL." \
     --url http://temboard.io/ \
-    --category database \
     --depends python2.7 \
     $DESTDIR/=/
 
-deb=$(ls temboard_*-0dlb1*_*.deb)
+#       T E S T
+
+deb=$(ls temboard_${debianv}-${release}_*.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i $deb
+(cd /; temboard --version)
 
-mv -fv $deb dist/
-ln -fs $(basename $deb) /dist/last_build_$CODENAME.deb
-chown -R $(stat -c %u:%g $0) /dist/*
+#       S A V E
+
+mkdir -p ${DISTDIR}/
+mv -fv $deb ${DISTDIR}/
+# Point deb as latest build for changes generation.
+ln -fs $(basename $deb) ${DISTDIR}/last_build.deb
+chown -R ${UID_GID} ${DISTDIR}/*
