@@ -69,6 +69,7 @@ fpm --verbose \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
     --url http://temboard.io/ \
+    --after-install packaging/deb/postinst.sh \
     --depends python2.7 \
     $DESTDIR/=/
 
