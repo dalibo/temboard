@@ -5,7 +5,7 @@ all: jessie stretch
 
 jessie stretch:
 	mkdir -p $(DISTDIR)
-	CODENAME=$@ docker-compose run --rm debian
+	docker-compose run --rm $@
 	./mkchanges.sh $(shell readlink -e $(DISTDIR)/last_build_$@.deb) $@
 
 push:

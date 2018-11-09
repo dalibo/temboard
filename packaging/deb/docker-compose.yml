@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  debian:
-    image: buildpack-deps:${CODENAME}
+  stretch: &mkdeb
+    image: dalibo/temboard-agent-sdk:stretch
     environment:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}
@@ -11,3 +11,7 @@ services:
     - ../..:/workspace
     - ../../dist/:/dist
     command: /workspace/packaging/deb/mkdeb.sh
+
+  jessie:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:jessie
