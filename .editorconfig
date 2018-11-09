@@ -15,6 +15,6 @@ insert_final_newline = true
 [*.{css,html,js,json,scss,yml,sql}]
 indent_size = 2
 
-[Makefile]
+[{*.sh,Makefile}]
 indent_size = 8
 indent_style = tab
