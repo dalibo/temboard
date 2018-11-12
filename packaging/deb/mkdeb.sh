@@ -41,7 +41,11 @@ virtualenv --python=python2.7 $VIRTUAL_ENV
 export PATH=${VIRTUAL_ENV}/bin:$PATH
 hash -r pip
 pip install -U pip setuptools wheel
-pip install --pre temboard==$pep440v
+dist=${DISTDIR}/temboard-${pep440v}-py2-none-any.whl
+if ! [ -f $dist ] ; then
+	pip download --pre --dest ${DISTDIR}/ temboard==$pep440v
+fi
+pip install $dist
 virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
 
 sed -i s,$DESTDIR,, ${VIRTUAL_ENV}/bin/temboard
