@@ -27,7 +27,11 @@ mkdir -p $DESTDIR
 
 #       V E R S I O N S
 
-versions=($(pep440deb --echo --pypi temboard))
+if [ -n "${VERSION-}" ] ; then
+	versions=($(pep440deb --echo "${VERSION}"))
+else
+	versions=($(pep440deb --echo --pypi temboard))
+fi
 pep440v=${versions[0]}
 debianv=${versions[1]}
 CODENAME=$(lsb_release --short --codename)
