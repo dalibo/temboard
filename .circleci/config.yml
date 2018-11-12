@@ -56,6 +56,23 @@ jobs:
             codecov
       - *save_cache
 
+  1-deb-stretch:
+    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        command: ./packaging/deb/mkdeb.sh
+        environment:
+          DEBFULLNAME: CircleCI
+          DEBEMAIL: none@example.com
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths: [dist/*.deb]
+
 
 workflows:
   version: 2
@@ -64,3 +81,4 @@ workflows:
     - 0-doc
     - 0-lint
     - 0-unit
+    - 1-deb-stretch

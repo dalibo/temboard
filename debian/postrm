@@ -1,9 +1,0 @@
-CONFIGDIR='/etc/temboard'
-LOGDIR='/var/log/temboard'
-RUNDIR='/var/run/temboard'
-
-if [ "$1" = "purge" ]; then
-	/bin/rm -rf $CONFIGDIR
-	/bin/rm -rf $LOGDIR
-	/bin/rm -rf $RUNDIR
-fi
