@@ -120,7 +120,7 @@ distribution packaging, see ad-hoc documentation in `packaging/`.
 
 To release a new version:
 
-- Checkout release branch (like v2 or master for a major release).
+- Checkout release branch (like v2).
 - Choose the next version according to `PEP 440
   <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
 - Update `temboardui/version.py`, without committing.
