@@ -14,8 +14,6 @@ Group:         Applications/Databases
 License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
-Source1:       temboard.service
-Patch1:        temboard.conf.patch
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python-setuptools
@@ -32,32 +30,33 @@ This packages holds the web user interface
 
 %prep
 %setup -q -n %{pkgname}-%{version}
-%patch1 -p1
 
 %build
 %{__python} setup.py build
 
-
 %pre
-# We want a system user and group to run the tornado webapp
-groupadd -r temboard >/dev/null 2>&1 || :
-useradd -M -g temboard -r -d /var/empty/temboard -s /sbin/nologin \
-    -c "temBoard Web UI" temboard >/dev/null 2>&1 || :
-
-
-%post
-# auto-signed SSL cert. building
-openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard.pem -keyout /etc/pki/tls/private/temboard.key -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " >> /dev/null 2>&1
-
-# first install: register init script / service file
-if [ $1 -eq 1 ]; then
-  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+# Create system user now to let rpm chown %files.
+if ! getent passwd temboard &>/dev/null ; then
+  useradd \
+    --system --user-group --shell /sbin/nologin \
+    --home-dir /var/lib/temboard \
+    --comment "temBoard Web UI" temboard &>/dev/null
 fi
 
+%post
+systemctl daemon-reload &>/dev/null || :
+
+if systemctl is-active temboard >&/dev/null ; then
+	systemctl restart temboard
+elif ! [ -f /etc/temboard/temboard.conf ] && [ -x /usr/share/temboard/auto_configure.sh ] ; then
+	if ! /usr/share/temboard/auto_configure.sh ; then
+		echo "Auto-configuration failed. Skipping." &>2
+		error "See documentation for how to setup." &>2
+	fi
+fi
 
 %postun
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-
 
 %install
 PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
@@ -65,16 +64,9 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
-%{__install} -m 640 %{buildroot}/usr/share/temboard/quickstart/temboard.conf %{buildroot}/%{confdir}/temboard.conf
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
 %{__install} -m 644 %{buildroot}/usr/share/temboard/quickstart/temboard.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard
-
-install -d %{buildroot}%{_unitdir}
-install -m 644 %{SOURCE1} %{buildroot}%{_unitdir}/temboard.service
-
-# log directory
 %{__install} -d %{buildroot}/var/log/temboard
-# home directory
 %{__install} -d %{buildroot}/var/lib/temboard
 
 %files
