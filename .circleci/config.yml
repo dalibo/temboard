@@ -44,6 +44,25 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
+  0-rpm-centos7:
+    docker: [{image: "rpmbuild/centos7"}]
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        name: Build RPM snapshot
+        command: |
+          sudo yum-builddep -y packaging/rpm/temboard.spec
+          python setup.py sdist
+          VERSION=$(python setup.py --version) packaging/rpm/build.sh
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/rpm/noarch/*.rpm
+
   0-unit:
     docker: [{image: "python:2.7"}]
     working_directory: /workspace
@@ -83,5 +102,6 @@ workflows:
     jobs:
     - 0-doc
     - 0-lint
+    - 0-rpm-centos7
     - 0-unit
     - 1-deb-stretch
