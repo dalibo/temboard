@@ -47,7 +47,7 @@ hash -r pip
 pip install -U pip setuptools wheel
 dist=${DISTDIR}/temboard-${pep440v}-py2-none-any.whl
 if ! [ -f $dist ] ; then
-	pip download --pre --dest ${DISTDIR}/ temboard==$pep440v
+	pip download --no-deps --pre --dest ${DISTDIR}/ temboard==$pep440v
 fi
 pip install $dist
 virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
