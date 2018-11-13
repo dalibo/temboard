@@ -109,10 +109,11 @@ https://github.com/dalibo/temboard.
 
 # Releasing
 
-Releasing a new version of temBoard requires write access to master on `main
-repository <https://github.com/dalibo/temboard>`_, `PyPI project
-<https://pypi.org/project/temboard>`_ and `Docker Hub repository
-<https://hub.docker.com/r/dalibo/temboard>`_.
+Releasing a new version of temBoard requires write access to master on [main
+repository](https://github.com/dalibo/temboard), [PyPI
+project](https://pypi.org/project/temboard), [Docker Hub
+repository](https://hub.docker.com/r/dalibo/temboard) and Dalibo Labs YUM and
+APT repositories.
 
 For the tooling, you need Git 1.8+, a recent setuptools with wheel. For
 distribution packaging, see ad-hoc documentation in `packaging/`.
