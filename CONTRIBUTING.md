@@ -109,10 +109,11 @@ https://github.com/dalibo/temboard.
 
 # Releasing
 
-Releasing a new version of temBoard requires write access to master on `main
-repository <https://github.com/dalibo/temboard>`_, `PyPI project
-<https://pypi.org/project/temboard>`_ and `Docker Hub repository
-<https://hub.docker.com/r/dalibo/temboard>`_.
+Releasing a new version of temBoard requires write access to master on [main
+repository](https://github.com/dalibo/temboard), [PyPI
+project](https://pypi.org/project/temboard), [Docker Hub
+repository](https://hub.docker.com/r/dalibo/temboard) and Dalibo Labs YUM and
+APT repositories.
 
 For the tooling, you need Git 1.8+, a recent setuptools with wheel. For
 distribution packaging, see ad-hoc documentation in `packaging/`.
@@ -125,5 +126,6 @@ To release a new version:
 - Update `setup.py`, without committing.
 - Generate and push commit and tag with `make release`.
 - Push Python egg to PyPI using `make upload`.
+- Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
 - Update docker image with `make -C docker/ clean build push`
