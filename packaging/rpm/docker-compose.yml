@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  centos7:
+    image: rpmbuild/centos7
+    environment:
+    - VERSION
+    volumes:
+    - ../../:/workspace
+    command: /workspace/packaging/rpm/build.sh
