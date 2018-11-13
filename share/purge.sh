@@ -35,6 +35,7 @@ set -x
 if systemctl cat temboard &>/dev/null ; then
 	systemctl stop temboard
 	systemctl disable temboard
+	systemctl reset-failed temboard
 fi
 
 if getent passwd temboard ; then
