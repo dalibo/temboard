@@ -9,6 +9,7 @@ nav:
 - Home: index.md
 - Docker Quick Start: QUICKSTART.md
 - Installation: installation.md
+- Configuration: configuration.md
 - Upgrade:
   - Upgrade 1.2 to 2.0 (RHEL/CentOS): temboard-upgrade-1.2-2.0.md
   - Upgrade 1.1 to 1.2 (RHEL/CentOS): temboard-upgrade-1.1-1.2.md
