@@ -5,7 +5,7 @@ all:
 
 release:
 	python setup.py egg_info
-	git commit setup.py -m "Version $(VERSION)"
+	git commit temboardui/version.py -m "Version $(VERSION)"
 	git tag $(VERSION)
 	git push git@github.com:dalibo/temboard-agent.git
 	git push --tags git@github.com:dalibo/temboard-agent.git
