@@ -139,7 +139,8 @@ sudo -Eu ${PGUSER} ./create_repository.sh
 if ! getent passwd temboard ; then
 	log "Creating system user temBoard."
 	useradd \
-		--system --user-group --home-dir ${VARDIR} \
+		--system --user-group --shell /sbin/nologin \
+		--home-dir ${VARDIR} \
 		--comment "temBoard Web UI" temboard &>/dev/null
 fi
 
