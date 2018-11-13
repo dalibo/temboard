@@ -155,7 +155,7 @@ fi
 
 log "Configuring temboard in ${ETCDIR}."
 sslfiles=($(set -eu; setup_ssl))
-install -o temboard -g temboard -m 0750 -d ${ETCDIR}/temboard.conf.d/ ${LOGDIR} ${VARDIR}
+install -o temboard -g temboard -m 0750 -d ${ETCDIR} ${LOGDIR} ${VARDIR}
 install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
 
