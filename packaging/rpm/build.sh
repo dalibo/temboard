@@ -1,12 +1,13 @@
 #!/bin/bash -eux
 
-cd $(readlink -m $0/../..)
+cd $(readlink -m $0/../../..)
 test -f setup.py
 
 teardown() {
     exit_code=$?
     # rpmbuild requires files to be owned by running uid
-    sudo chown --recursive $(id -u):$(id -g) rpm/
+    sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
+    rm -f packaging/rpm/temboard*.tar.gz
 
     trap - EXIT INT TERM
 
@@ -20,7 +21,7 @@ teardown() {
 
 trap teardown EXIT INT TERM
 
-sudo yum-builddep -y rpm/temboard.spec
+sudo yum-builddep -y packaging/rpm/temboard.spec
 
 # Building sources in rpm/
 python setup.py sdist --dist-dir rpm/
@@ -29,10 +30,10 @@ python setup.py sdist --dist-dir rpm/
   rpm/temboard.rpm.conf > rpm/temboard.conf.patch
 
 # rpmbuild requires files to be owned by running uid
-sudo chown --recursive $(id -u):$(id -g) rpm/
+sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 
 rpmbuild \
     --define "pkgversion $(python setup.py --version)" \
     --define "_topdir ${PWD}/dist/rpm" \
-    --define "_sourcedir ${PWD}/rpm" \
-    -ba rpm/temboard.spec
+    --define "_sourcedir ${PWD}/packaging/rpm" \
+    -ba packaging/rpm/temboard.spec
