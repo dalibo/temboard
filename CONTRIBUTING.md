@@ -113,7 +113,7 @@ To release a new version:
 
 - Choose the next version according to `PEP 440
   <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
-- Update ``setup.py``, without committing.
-- Generate and push commit and tag with ``make release``.
-- Push Python egg to PyPI using ``make upload``.
+- Update `setup.py`, without committing.
+- Generate and push commit and tag with `make release`.
+- Push Python egg to PyPI using `make upload`.
 - Update docker image with `make -C docker/ clean build push`
