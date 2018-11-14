@@ -37,6 +37,15 @@ fail gracefully and let you handle the configuration later.
     parameter PostgreSQL cluster hosting the repository should be set to at least
     `16MB`.
 
+A simple way to check if auto configuration should work is to run:
+
+``` console
+# sudo -u postgres psql
+```
+
+If this fails, don't worry. You will have to run auto-configuration script with
+proper parameters, once temBoard package is installed.
+
 
 # Installation
 
