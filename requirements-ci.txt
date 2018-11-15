@@ -1,6 +1,6 @@
 codecov
 flake8
-pytest
+pytest<4
 pytest-cov
 pytest-mock
 pytest-tornado
