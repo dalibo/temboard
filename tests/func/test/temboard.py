@@ -256,7 +256,7 @@ def build_env_dict():
             'port': str(test_conf.AGENT_PORT),
             'user': test_conf.AGENT_USER,
             'password': test_conf.AGENT_PASSWORD,
-            'plugins': '["monitoring", "dashboard", "pgconf", "administration", "activity"]',  # noqa
+            'plugins': '["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance"]',  # noqa
         },
         'pg': {
             'bin': tbd_pgbin,

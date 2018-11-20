@@ -25,7 +25,8 @@ distributed under sections:
   - ``logging``: how and where to log;
   - ``dashboard``: parameters of the plugin ``dashboard``;
   - ``monitoring``: plugin ``monitoring``;
-  - ``administration``: plugin ``administration``.
+  - ``administration``: plugin ``administration``,
+  - ``maintenance``: plugin ``maintenance``.
 
 ``temboard`` section
 ^^^^^^^^^^^^^^^^^^^^
@@ -33,7 +34,7 @@ distributed under sections:
   - ``port``: port number that the agent will listen on to serve its ``HTTP API``. Default: ``2345``;
   - ``address``: IP v4 address that the agent will listen on. Default: ``0.0.0.0`` (all);
   - ``users``: Path to the file containing the list of the users allowed to use the ``HTTP API``. Default: ``/etc/temboard-agent/users``;
-  - ``plugins``: Array of plugin (name) to load. Default: ``["monitoring", "dashboard", "pgconf", "administration", "activity"]``;
+  - ``plugins``: Array of plugin (name) to load. Default: ``["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance"]``;
   - ``ssl_cert_file``: Path to SSL certificate file (.pem) for the embeded HTTPS process serving the API. Default: ``/etc/temboard-agent/temboard-agent_CHANGEME.pem``;
   - ``ssl_key_file``: Path to SSL private key file. Default: ``/etc/temboard-agent/temboard-agent_CHANGEME.key``;
   - ``home``: Path to agent home directory, it contains files used to store temporary data. When running multiple agents on the same host, each agent must have its own home directory. Default: ``/var/lib/temboard-agent/main``.
