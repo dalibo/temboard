@@ -13,10 +13,11 @@ fi
 systemctl daemon-reload
 
 prefix=temboard-agent@
-active_units="$(systemctl --plain list-units ${prefix}* | grep -Po ${prefix}.*\\.service)"
+active_units="$(systemctl --plain list-units ${prefix}* | grep -Po ${prefix}.*\\.service ||:)"
 
 if [ -z "${active_units}" ] ; then
-	echo No units found for temboard-agent.
+	echo No units found for temboard-agent. >&2
+	exit 0;
 fi
 
 exit_code=0
