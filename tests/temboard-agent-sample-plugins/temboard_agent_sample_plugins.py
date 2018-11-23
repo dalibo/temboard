@@ -7,7 +7,7 @@ from temboardagent.errors import UserError
 from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
-from temboardagent.configuration import OptionSpec
+from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
 
