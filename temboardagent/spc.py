@@ -694,10 +694,10 @@ class connector(object):
             msg = 'PostgreSQL backend error.'
             if message[1] is not None:
                 err_string = message[1]['string']
-                err_split = err_string.split('\x00')
-                msg = err_split[2][1:].decode()
+                err_split = err_string.split(b'\x00')
+                msg = err_split[3][1:].decode()
                 typ = err_split[0][0:].decode()
-                code = err_split[1][1:].decode()
+                code = err_split[2][1:].decode()
 
             raise error(code, typ, msg)
 
