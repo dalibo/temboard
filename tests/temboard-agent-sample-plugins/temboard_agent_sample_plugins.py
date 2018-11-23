@@ -7,7 +7,7 @@ from temboardagent.errors import UserError
 from temboardagent.command import exec_command
 from temboardagent.tools import validate_parameters
 from temboardagent.errors import HTTPError
-from temboardagent.configuration import OptionSpec
+from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
 
@@ -69,6 +69,26 @@ def get_hello_pathinfo(http_context, app):
     }
     """  # noqa
     return {"content": "Hello %s" % (http_context['urlvars'][0])}
+
+
+# Defining a new type to validate '1234'.
+T_INT4 = br'(^[1-9]{4}$)'
+
+
+@routes.get(b'/hello/' + T_SOMETHING + b'/' + T_INT4)
+def get_hello_pathinfo2(http_context, app):
+    """
+    "Hello <something> <int4>" using slug
+
+    Usage:
+    $ export XSESSION=`curl -s -k -X POST --data '{"username":"<user>", "password":"<password>"}' https://localhost:2345/login | sed -E "s/^.+\"([a-f0-9]+)\".+$/\1/"`
+    $ curl -s -k -H "X-Session:$XSESSION" "https://localhost:2345/hello/toto/1234" | python -m json.tool
+    {
+        "content": "Hello toto 1234"
+    }
+    """  # noqa
+    return {"content": "Hello %s %s" % (http_context['urlvars'][0],
+                                        http_context['urlvars'][1])}
 
 
 @routes.get(b'/hello2/say')

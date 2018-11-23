@@ -16,11 +16,13 @@ def make_route(function, method, path, check_session, check_key):
     for elt in elts:
         if len(elt) == 0:
             continue
+
+        # python 3
+        if type(elt) is bytes and type(elt) is not str and \
+           chr(elt[0]) == '(' and chr(elt[-1]) == ')':
+            elt = elt.decode('utf-8')
+
         # regexp have to start with a ( end is terminated by a ).
-        if type(elt) is bytes and type(elt) is not str:
-            if chr(elt[0]) == '(' and chr(elt[-1]) == ')':
-                # Append it compiled.
-                splitpath.append(re.compile(elt.decode('utf-8')))
         if type(elt) is str and elt[0] == '(' and elt[-1] == ')':
             # Append it compiled.
             splitpath.append(re.compile(elt))
