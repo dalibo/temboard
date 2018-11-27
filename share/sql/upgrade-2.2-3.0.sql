@@ -18,3 +18,5 @@ $$;
 
 CREATE TABLE monitoring.instance_availability(datetime TIMESTAMP WITH TIME ZONE NOT NULL, instance_id INTEGER NOT NULL, available BOOLEAN NOT NULL);
 CREATE INDEX idx_instance_availability ON monitoring.instance_availability (instance_id, datetime);
+
+GRANT ALL ON TABLE monitoring.instance_availability TO temboard;
