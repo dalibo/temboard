@@ -174,6 +174,8 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
     cur = session.connection().connection.cursor()
     for metric in agent_data.keys():
         # Do not try to insert empty lines
+        if agent_data[metric] is None:
+            continue
         if len(agent_data[metric]) == 0:
             continue
 
