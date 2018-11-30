@@ -10,10 +10,12 @@ def new_worker_pool(nb):
 
 
 def run_background(func, callback, args=(), kwds={}):
-    def _callback(result):
-        IOLoop.instance().add_callback(lambda: callback(result))
+    main_thread_loop = IOLoop.current()
 
-    _workers.apply_async(func, args, kwds, _callback)
+    def thread_callback(result):
+        main_thread_loop.add_callback(callback, result)
+
+    _workers.apply_async(func, args, kwds, thread_callback)
 
 
 class AsyncResult(object):
