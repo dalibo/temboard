@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound
 
-from temboardui.scheduler import taskmanager
+from temboardui.toolkit import taskmanager
 
 from .model.orm import (
     Check,
