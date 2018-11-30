@@ -9,7 +9,7 @@ from sqlalchemy.exc import (
     IntegrityError,
 )
 
-from temboardui.scheduler import taskmanager
+from temboardui.toolkit import taskmanager
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.temboardclient import TemboardError, temboard_profile
 from temboardui.errors import TemboardUIError
