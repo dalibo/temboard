@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
 import logging.config
 import os
@@ -13,36 +12,36 @@ from tornado import autoreload
 
 from sqlalchemy import create_engine
 
-from temboardui.toolkit import taskmanager
-from temboardui.logger import generate_logging_config
-from temboardui.handlers.base import (
+from .toolkit import taskmanager
+from .logger import generate_logging_config
+from .handlers.base import (
     BaseHandler,
     Error404Handler,
 )
-from temboardui.handlers.user import (
+from .handlers.user import (
     AgentLoginHandler,
     LoginHandler,
     LoginJsonHandler,
     LogoutHandler,
 )
-from temboardui.handlers.home import (
+from .handlers.home import (
     HomeHandler,
 )
-from temboardui.handlers.notification import (
+from .handlers.notification import (
     NotificationsHandler,
 )
-from temboardui.handlers.settings.user import (
+from .handlers.settings.user import (
     SettingsDeleteUserJsonHandler,
     SettingsUserHandler,
     SettingsUserJsonHandler,
 )
-from temboardui.handlers.settings.group import (
+from .handlers.settings.group import (
     SettingsDeleteGroupJsonHandler,
     SettingsGroupAllJsonHandler,
     SettingsGroupHandler,
     SettingsGroupJsonHandler,
 )
-from temboardui.handlers.settings.instance import (
+from .handlers.settings.instance import (
     DiscoverInstanceJsonHandler,
     RegisterInstanceJsonHandler,
     SettingsDeleteInstanceJsonHandler,
@@ -50,15 +49,16 @@ from temboardui.handlers.settings.instance import (
     SettingsInstanceJsonHandler,
 )
 
-from temboardui.async import new_worker_pool
-from temboardui.options import temboarduiOptions
-from temboardui.configuration import Configuration
-from temboardui.errors import ConfigurationError
-from temboardui.daemon import daemonize, httpd_sigterm_handler, remove_pidfile
-from temboardui.pluginsmgmt import load_plugins, plugins_bind_metadata
-from temboardui.autossl import AutoHTTPSServer
-from temboardui.utils import check_sqlalchemy_connectivity
-from temboardui.version import __version__
+from .async import new_worker_pool
+from .options import temboarduiOptions
+from .configuration import Configuration
+from .errors import ConfigurationError
+from .daemon import daemonize, httpd_sigterm_handler, remove_pidfile
+from .pluginsmgmt import load_plugins, plugins_bind_metadata
+from .autossl import AutoHTTPSServer
+from .utils import check_sqlalchemy_connectivity
+from .version import __version__
+
 
 logger = logging.getLogger('temboardui')
 
