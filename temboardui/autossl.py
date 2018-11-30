@@ -69,7 +69,10 @@ def protocol_switcher(request):
     try:
         host = request.headers['Host']
     except KeyError:
-        host = '%(address)s:%(port)s' % request.config.temboard
+        # We don't have FQDN. Fallback to socket address. This breaks
+        # name-based virtualhost.
+        host = '%(address)s:%(port)s' % dict(
+            request.config.temboard, address=request.host)
     new_url = 'https://%s%s' % (host, request.uri)
     headers = HTTPHeaders({
         'Content-Length': '0',
