@@ -35,6 +35,7 @@ from tornado.httputil import (
     ResponseStartLine,
 )
 from tornado.http1connection import HTTP1Connection
+from tornado.ioloop import IOLoop
 from tornado.iostream import (
     IOStream,
     SSLIOStream,
@@ -187,14 +188,23 @@ class AutoHTTPSServer(HTTPServer):
             else:
                 raise
         try:
+            io_loop = self.io_loop
+            kw = dict(io_loop=io_loop)
+        except AttributeError:
+            # We are on Tornado 5+. Just don't pass ioloop
+            kw = {}
+            io_loop = IOLoop.current()
+
+        try:
             stream = EasySSLIOStream(
-                connection, io_loop=self.io_loop,
+                connection,
                 max_buffer_size=self.max_buffer_size,
                 read_chunk_size=self.read_chunk_size,
+                **kw
             )
             future = self.handle_stream(stream, address)
             if future is not None:
-                self.io_loop.add_future(future, lambda f: f.result())
+                io_loop.add_future(future, lambda f: f.result())
         except Exception:
             app_log.error("Error in connection callback", exc_info=True)
 
