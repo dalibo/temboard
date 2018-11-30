@@ -10,3 +10,4 @@ docker-compose.override.yml
 temboard.pid
 task_list
 node_modules
+.tm.task_list
