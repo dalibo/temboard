@@ -275,7 +275,7 @@ class BaseApplication(object):
 
     def main(self, argv, environ):
         if self._main is None:
-            raise NotImplemented
+            raise NotImplementedError()
         else:
             return self._main(self, argv, environ)
 
