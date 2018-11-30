@@ -56,6 +56,7 @@ from .errors import ConfigurationError
 from .daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from .pluginsmgmt import load_plugins, plugins_bind_metadata
 from .autossl import AutoHTTPSServer
+from .toolkit.app import BaseApplication
 from .utils import check_sqlalchemy_connectivity
 from .version import __version__
 
@@ -111,7 +112,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             exit(1)
 
 
-def main():
+def temboard_main():
     optparser = temboarduiOptions(description="temBoard UI/web client.",
                                   version=__version__)
     (options, _) = optparser.parse_args()
@@ -133,9 +134,7 @@ def main():
     if (options.daemon):
         daemonize(options.pidfile, config)
     # Dirty way for getting static/ and templates/ absolute paths.
-    import temboardui
-    base_path = os.path.dirname(temboardui.__file__)
-    del temboardui
+    base_path = os.path.dirname(__file__)
 
     # Worker pool creation.
     new_worker_pool(12)
@@ -258,12 +257,16 @@ def main():
     tornado.ioloop.IOLoop.instance().start()
 
 
+class TemboardApplication(BaseApplication):
+    REPORT_URL = "https://github.com/dalibo/temboard/issues"
+    VERSION = __version__
+
+    def main(self, argv, environ):
+        return temboard_main()
+
+
+main = TemboardApplication()
+
+
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        sys.stderr.write("FATAL: %s\n" % e.message)
-        import traceback
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_tb(exc_traceback)
-        exit(1)
+    sys.exit(main())
