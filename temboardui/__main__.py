@@ -134,9 +134,7 @@ def temboard_main(*_):
     if (options.daemon):
         daemonize(options.pidfile, config)
     # Dirty way for getting static/ and templates/ absolute paths.
-    import temboardui
-    base_path = os.path.dirname(temboardui.__file__)
-    del temboardui
+    base_path = os.path.dirname(__file__)
 
     # Worker pool creation.
     new_worker_pool(12)
