@@ -668,10 +668,11 @@ class Scheduler(object):
 
         elif message.type == MSG_TYPE_TASK_CANCEL:
             # task cancellation
-            # first, we need to change its status
+            # first, we need to change its status and stop_datetime
             self.task_list.update(
                     message.content['task_id'],
                     status=TASK_STATUS_CANCELED,
+                    stop_datetime=datetime.utcnow(),
             )
             # send the cancelation order to WP
             t = Task(id=message.content['task_id'],
