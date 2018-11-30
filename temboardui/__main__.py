@@ -112,7 +112,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             exit(1)
 
 
-def temboard_main(*_):
+def temboard_main():
     optparser = temboarduiOptions(description="temBoard UI/web client.",
                                   version=__version__)
     (options, _) = optparser.parse_args()
@@ -257,7 +257,15 @@ def temboard_main(*_):
     tornado.ioloop.IOLoop.instance().start()
 
 
-main = BaseApplication(main=temboard_main)
+class TemboardApplication(BaseApplication):
+    REPORT_URL = "https://github.com/dalibo/temboard/issues"
+    VERSION = __version__
+
+    def main(self, argv, environ):
+        return temboard_main()
+
+
+main = TemboardApplication()
 
 
 if __name__ == "__main__":
