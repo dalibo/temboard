@@ -13,7 +13,6 @@ SETUP_KWARGS = dict(
     description='temBoard User Interface.',
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
-    scripts=['temboard'],
     install_requires=[
         'python-dateutil>=1.5',
         'psycopg2>=2.5.4',
@@ -57,7 +56,13 @@ SETUP_KWARGS = dict(
         ]),
         ('lib/systemd/system', ['packaging/temboard.service']),
     ],
+    entry_points={
+        'console_scripts': [
+            'temboard = temboardui.__main__:main',
+        ],
+    },
 )
+
 
 if __name__ == '__main__':
     setup(
