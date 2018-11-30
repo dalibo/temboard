@@ -15,7 +15,7 @@ SETUP_KWARGS = dict(
     license='PostgreSQL',
     install_requires=[
         'python-dateutil>=1.5',
-        'psycopg2>=2.5.4',
+        'psycopg2>=2.5.1',
         'sqlalchemy>=0.9.8',
         'tornado>=3.2,<5.0',
     ],
