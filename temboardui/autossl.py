@@ -221,8 +221,16 @@ class AutoHTTPSServer(HTTPServer):
         # Read the trailing HTTP request and process it with protocol_switcher.
         # We can't rely on ioloop to trigger read because it has been already
         # triggered for SSL handshake.
-        payload = yield conn.stream.read_bytes(1024, partial=True)
-        logger.debug("Received %r", payload[:128])
+        addr, port = conn.stream.socket.getsockname()
+        try:
+            # This is not blocking. Just read available bytes.
+            payload = conn.stream.socket.recv(1024)
+        except Exception:
+            # Exception includes EWOULDBLOCK, when no bytes are available. In
+            # this case just skip.
+            payload = ""
+        else:
+            logger.debug("Received %r", payload[:128])
         # Simulate conn._read_message side effect. This is required by
         # HTTP1Connection.write_headers()
         conn._request_start_line = parse_request_start_line('GET / HTTP/1.1')

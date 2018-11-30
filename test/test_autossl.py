@@ -293,8 +293,8 @@ def test_handle_http_connection_301(mocker):
     from temboardui.autossl import AutoHTTPSServer
 
     conn = Mock(name='conn')
-    conn.stream.read_bytes.return_value = fut = Future()
-    fut.set_result(" HTTP/1.1\n")
+    conn.stream.socket.getsockname.return_value = '127.0.0.1', 8888
+    conn.stream.socket.recv.return_value = " HTTP/1.1\n"
     conn.write_headers.return_value = fut = Future()
     fut.set_result(None)
 
@@ -302,7 +302,7 @@ def test_handle_http_connection_301(mocker):
 
     yield server.handle_http_connection(conn)
 
-    assert conn.stream.read_bytes.called is True
+    assert conn.stream.socket.recv.called is True
     assert HTTPRequest.called is True
     assert conn.write_headers.called is True
     _, kw = conn.write_headers.call_args
@@ -318,8 +318,8 @@ def test_handle_http_connection_500(mocker):
     from temboardui.autossl import AutoHTTPSServer
 
     conn = Mock(name='conn')
-    conn.stream.read_bytes.return_value = fut = Future()
-    fut.set_result(" HTTP/1.1\n")
+    conn.stream.socket.getsockname.return_value = '127.0.0.1', 8888
+    conn.stream.socket.recv.return_value = " HTTP/1.1\n"
     conn.write_headers.return_value = fut = Future()
     fut.set_result(None)
 
@@ -328,7 +328,7 @@ def test_handle_http_connection_500(mocker):
 
     yield server.handle_http_connection(conn)
 
-    assert conn.stream.read_bytes.called is True
+    assert conn.stream.socket.recv.called is True
     assert HTTPRequest.called is True
     assert conn.write_headers.called is True
     _, kw = conn.write_headers.call_args
