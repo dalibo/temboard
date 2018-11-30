@@ -190,6 +190,7 @@ class MergedConfiguration(DotDict):
                     logger.debug("Can't move back to %s: %s", oldpwd, e)
             self.add_values(iter_defaults(self.specs))
         except ValueError as e:
+            logger.debug("Bad value %s.", e)
             raise UserError("Failed to load configuration.")
 
         self.check_required()
