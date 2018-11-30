@@ -56,6 +56,7 @@ from .errors import ConfigurationError
 from .daemon import daemonize, httpd_sigterm_handler, remove_pidfile
 from .pluginsmgmt import load_plugins, plugins_bind_metadata
 from .autossl import AutoHTTPSServer
+from .toolkit.app import BaseApplication
 from .utils import check_sqlalchemy_connectivity
 from .version import __version__
 
@@ -111,7 +112,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             exit(1)
 
 
-def main():
+def temboard_main(*_):
     optparser = temboarduiOptions(description="temBoard UI/web client.",
                                   version=__version__)
     (options, _) = optparser.parse_args()
@@ -258,12 +259,8 @@ def main():
     tornado.ioloop.IOLoop.instance().start()
 
 
+main = BaseApplication(main=temboard_main)
+
+
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        sys.stderr.write("FATAL: %s\n" % e.message)
-        import traceback
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_tb(exc_traceback)
-        exit(1)
+    sys.exit(main())
