@@ -15,7 +15,7 @@ if ! psql -d postgres -c "SELECT 'SKIP' FROM pg_catalog.pg_database WHERE datnam
 fi
 
 if ! psql -c "SELECT 'INSTALLED' FROM pg_catalog.pg_class WHERE relname = 'instances' LIMIT 1;" | grep -q INSTALLED; then
-    psql="psql -aw --set ON_ERROR_STOP=on"
+    psql="psql -aw --set ON_ERROR_STOP=on --pset pager=off"
     $psql -f $SQLDIR/application.sql
     $psql -f $SQLDIR/monitoring.sql
     $psql -f $SQLDIR/alerting.sql
