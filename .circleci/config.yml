@@ -82,29 +82,39 @@ jobs:
         root: .
         paths: [dist/*.deb]
 
-  1-func:
+  1-func-stretch:
     docker:
-    - image: dalibo/temboard-agent-sdk:stretch
+    - &func-temboard
+      image: dalibo/temboard-agent-sdk:stretch
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
         TEMBOARD_PASSWORD: *PGPASSWORD
-    - image: postgres:10-alpine
+    - &func-postgres
+      image: postgres:10-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
-    steps:
+    steps: &func-steps
     - checkout
     - run: git submodule update --init
     - run:
         name: Setup
         command: |
             pip2.7 install --upgrade --editable .
-            pip3.5 install --upgrade --requirement tests/func/requirements.txt
+            pip2.7 install --upgrade --requirement tests/func/requirements.txt
     - run:
         name: Functionnal tests
         command: tests/func/run.sh
+
+  1-func-centos7:
+    docker:
+    - <<: *func-temboard
+      image: dalibo/temboard-agent-sdk:centos7
+    - *func-postgres
+    steps: *func-steps
+
 
 workflows:
   version: 2
@@ -114,5 +124,7 @@ workflows:
     - 0-unit
     - 0-rpm-centos7
     - 0-deb-stretch
-    - 1-func:
+    - 1-func-stretch:
+        requires: [0-unit]
+    - 1-func-centos7:
         requires: [0-unit]

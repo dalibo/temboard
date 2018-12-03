@@ -11,7 +11,7 @@ services:
     image: selenium/standalone-firefox
 
   ui:
-    image: dalibo/temboard-agent-sdk:stretch
+    image: dalibo/temboard-agent-sdk:${TAG-stretch}
     environment:
       HISTFILE: /workspace/tests/func/.docker-cache/bash_history
       PGHOST: repository
