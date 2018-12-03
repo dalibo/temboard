@@ -74,7 +74,7 @@ jobs:
       - run:
           name: Python tests
           command: |
-            pytest -vv --showlocals --strict --full-trace --cov=temboardui --cov-report=term --cov-report=xml test/
+            pytest -vv --showlocals --strict --full-trace --cov=temboardui --cov-report=term --cov-report=xml tests/unit/
             codecov
       - *save_cache
 
