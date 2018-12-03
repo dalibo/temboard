@@ -150,7 +150,7 @@ if getent group ssl-cert &>/dev/null; then
 fi
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
-if ! sudo -u temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
+if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
 fi
 
