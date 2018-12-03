@@ -139,7 +139,7 @@ cd $(readlink -m ${BASH_SOURCE[0]}/..)
 setup_logging
 setup_pq
 
-export TEMBOARD_PASSWORD=$(pwgen)
+export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
 log "Creating Postgres user, database and schema."
 if [ -d ${PGHOST-/tmp} ] ; then
 	# If local, sudo to PGUSER.
