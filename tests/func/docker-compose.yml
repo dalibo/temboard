@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  repository:
+    image: postgres:10-alpine
+    environment:
+      POSTGRES_USER: temboard
+      POSTGRES_PASSWORD: &PGPASSWORD confidentiel
+
+  selenium:
+    image: selenium/standalone-firefox
+
+  ui:
+    image: dalibo/temboard-agent-sdk:stretch
+    environment:
+      HISTFILE: /workspace/tests/func/.docker-cache/bash_history
+      PGHOST: repository
+      PGUSER: temboard
+      PGPASSWORD: *PGPASSWORD
+      TEMBOARD_PASSWORD: *PGPASSWORD
+      XDG_CACHE_HOME: /workspace/tests/func/.docker-cache/
+    volumes:
+    - ../..:/workspace
+    entrypoint: /workspace/tests/func/run.sh

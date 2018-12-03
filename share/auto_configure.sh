@@ -13,6 +13,7 @@ LOGFILE=${LOGFILE-/var/log/temboard-auto-configure.log}
 
 
 catchall() {
+	exec 3>&-
 	if [ $? -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
 	else
@@ -54,7 +55,12 @@ setup_pq() {
 	PGHOST=${PGHOST%%,*}
 	export PGPORT=${PGPORT-5432}
 	export PGUSER=${PGUSER-postgres}
-	if ! sudo -Eu ${PGUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
+	if [ -d ${PGHOST-/tmp} ] ; then
+		sudo="sudo -Eu ${PGUSER}"
+	else
+		sudo=
+	fi
+	if ! $sudo psql -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
 }
@@ -133,9 +139,15 @@ cd $(readlink -m ${BASH_SOURCE[0]}/..)
 setup_logging
 setup_pq
 
-export TEMBOARD_PASSWORD=$(pwgen)
+export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
 log "Creating Postgres user, database and schema."
-sudo -Eu ${PGUSER} ./create_repository.sh
+if [ -d ${PGHOST-/tmp} ] ; then
+	# If local, sudo to PGUSER.
+	sudo -Eu ${PGUSER} ./create_repository.sh
+else
+	./create_repository.sh
+fi
+
 if ! getent passwd temboard ; then
 	log "Creating system user temBoard."
 	useradd \
@@ -149,7 +161,7 @@ if getent group ssl-cert &>/dev/null; then
 fi
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
-if ! sudo -u temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
+if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
 fi
 
@@ -159,13 +171,18 @@ install -o temboard -g temboard -m 0750 -d ${ETCDIR} ${LOGDIR} ${VARDIR}
 install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
 
-systemctl daemon-reload
-systemctl enable temboard
+if hash systemctl &>/dev/null; then
+	systemctl daemon-reload
+	systemctl enable temboard
+	start_cmd="systemctl start temboard"
+else
+	start_cmd="temboard -c ${ETCDIR}/temboard.conf"
+fi
 
 log
 log "Success. You can now start temboard using:"
 log
-log "    systemctl start temboard"
+log "    ${start_cmd}"
 log
 log "Remember to replace default admin user!!!"
 log
