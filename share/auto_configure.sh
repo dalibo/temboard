@@ -172,9 +172,11 @@ install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
 
 if hash systemctl &>/dev/null; then
-	systemctl daemon-reload
-	systemctl enable temboard
 	start_cmd="systemctl start temboard"
+	if systemctl is-system-running &>/dev/null ; then
+		systemctl daemon-reload
+		systemctl enable temboard
+	fi
 else
 	start_cmd="temboard -c ${ETCDIR}/temboard.conf"
 fi
