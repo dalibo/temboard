@@ -160,13 +160,18 @@ install -o temboard -g temboard -m 0750 -d ${ETCDIR} ${LOGDIR} ${VARDIR}
 install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
 
-systemctl daemon-reload
-systemctl enable temboard
+if hash systemctl &>/dev/null; then
+	systemctl daemon-reload
+	systemctl enable temboard
+	start_cmd="systemctl start temboard"
+else
+	start_cmd="temboard -c ${ETCDIR}/temboard.conf"
+fi
 
 log
 log "Success. You can now start temboard using:"
 log
-log "    systemctl start temboard"
+log "    ${start_cmd}"
 log
 log "Remember to replace default admin user!!!"
 log
