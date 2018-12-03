@@ -55,7 +55,12 @@ setup_pq() {
 	PGHOST=${PGHOST%%,*}
 	export PGPORT=${PGPORT-5432}
 	export PGUSER=${PGUSER-postgres}
-	if ! sudo -Eu ${PGUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
+	if [ -d ${PGHOST-/tmp} ] ; then
+		sudo="sudo -Eu ${PGUSER}"
+	else
+		sudo=
+	fi
+	if ! $sudo psql -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
 }
@@ -136,7 +141,13 @@ setup_pq
 
 export TEMBOARD_PASSWORD=$(pwgen)
 log "Creating Postgres user, database and schema."
-sudo -Eu ${PGUSER} ./create_repository.sh
+if [ -d ${PGHOST-/tmp} ] ; then
+	# If local, sudo to PGUSER.
+	sudo -Eu ${PGUSER} ./create_repository.sh
+else
+	./create_repository.sh
+fi
+
 if ! getent passwd temboard ; then
 	log "Creating system user temBoard."
 	useradd \
