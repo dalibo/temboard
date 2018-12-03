@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
 import os
+import sys
+
+from setuptools import setup, find_packages
+
 
 # Load version number
 setup_path = os.path.dirname(os.path.realpath(__file__))
 execfile(os.path.join(setup_path,'temboardui','version.py'))
+
+
+# Accept Tornado 5.X on Python 2.7.9+
+BLEEDING_EDGE_TORNADO = '5' if sys.version_info < (2, 7, 9) else '6'
+
 
 SETUP_KWARGS = dict(
     name='temboard',
@@ -17,7 +25,7 @@ SETUP_KWARGS = dict(
         'python-dateutil>=1.5',
         'psycopg2>=2.5.1',
         'sqlalchemy>=0.9.8',
-        'tornado>=3.2,<5.0',
+        'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
     ],
     include_package_data=True,
     zip_safe=False,

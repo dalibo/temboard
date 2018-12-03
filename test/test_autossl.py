@@ -3,6 +3,22 @@ from mock import Mock
 import pytest
 
 
+@pytest.fixture
+def ioloop_mock(mocker):
+    from tornado.ioloop import IOLoop
+
+    ioloop = mocker.Mock(name='ioloop', spec=IOLoop)
+    old, IOLoop._instance = getattr(IOLoop, "_instance", False), ioloop
+    ioloop.WRITE = IOLoop.WRITE
+    # Make mock thread current loop
+    IOLoop._current.instance = ioloop
+    yield ioloop
+    del ioloop._instance
+    if old:
+        ioloop._instance = old
+        ioloop._current.instance = None
+
+
 def test_parse_headers_ok():
     from temboardui.autossl import parse_http_headers
 
@@ -33,8 +49,8 @@ def test_switch_response_no_headers():
     from temboardui.autossl import protocol_switcher
 
     response = protocol_switcher(Mock(
-        headers={}, uri='/',
-        config=Mock(temboard=dict(address='temboard.lan', port='443'))),
+        headers={}, uri='/', host='temboard.lan',
+        config=Mock(temboard=dict(port='443'))),
     )
 
     assert 'https://temboard.lan:443/' == response.headers['Location']
@@ -50,25 +66,20 @@ def test_redirect_response_host():
     assert 'https://temboard.lan/home' == response.headers['Location']
 
 
-def test_easy_handshake_ok():
-    from tornado import ioloop
+def test_easy_handshake_ok(ioloop_mock):
     from temboardui.autossl import (
         EasySSLIOStream,
         ssl,
     )
-
     socket = Mock(name='socket', spec=ssl.SSLSocket)
-    io_loop = Mock(name='io_loop', spec=ioloop.IOLoop)
-    io_loop.WRITE = ioloop.IOLoop.WRITE
-    stream = EasySSLIOStream(socket, io_loop=io_loop)
+    stream = EasySSLIOStream(socket)
 
     stream._do_ssl_handshake()
 
     assert stream._ssl_accepting is False
 
 
-def test_easy_handshake_ssl_errors():
-    from tornado import ioloop
+def test_easy_handshake_ssl_errors(ioloop_mock):
     from tornado.concurrent import Future
     from temboardui.autossl import (
         EasySSLIOStream,
@@ -77,9 +88,7 @@ def test_easy_handshake_ssl_errors():
     )
 
     socket = Mock(name='socket', spec=ssl.SSLSocket)
-    io_loop = Mock(name='io_loop', spec=ioloop.IOLoop)
-    io_loop.WRITE = ioloop.IOLoop.WRITE
-    stream = EasySSLIOStream(socket, io_loop=io_loop)
+    stream = EasySSLIOStream(socket)
 
     socket.do_handshake.side_effect = ssl.SSLError(123)
     stream.socket = socket
@@ -132,8 +141,7 @@ def test_easy_handshake_ssl_errors():
         fut.result()
 
 
-def test_easy_handshake_other_errors():
-    from tornado import ioloop
+def test_easy_handshake_other_errors(ioloop_mock):
     from temboardui.autossl import (
         EasySSLIOStream,
         errno,
@@ -142,9 +150,7 @@ def test_easy_handshake_other_errors():
     )
 
     socket_ = Mock(name='socket', spec=ssl.SSLSocket)
-    io_loop = Mock(name='io_loop', spec=ioloop.IOLoop)
-    io_loop.WRITE = ioloop.IOLoop.WRITE
-    stream = EasySSLIOStream(socket_, io_loop=io_loop)
+    stream = EasySSLIOStream(socket_)
 
     socket_.do_handshake.side_effect = Exception('Pouet')
     stream.socket = socket
@@ -177,7 +183,6 @@ def test_handle_connection(mocker):
 
     server = AutoHTTPSServer(
         request_callback=Mock('request_callback'),
-        io_loop=Mock(name='io_loop'),
     )
     server.ssl_options = {'certfile': '/pouet'}
     handle_stream.return_value = Future()
@@ -196,9 +201,7 @@ def test_handle_stream_ssl(mocker):
 
     from temboardui.autossl import AutoHTTPSServer
 
-    server = AutoHTTPSServer(
-        request_callback=Mock('request_callback'),
-    )
+    server = AutoHTTPSServer(request_callback=Mock('request_callback'))
 
     ssl_stream = Mock(name='ssl_stream')
     ssl_stream.wait_for_handshake.return_value = []
@@ -293,8 +296,8 @@ def test_handle_http_connection_301(mocker):
     from temboardui.autossl import AutoHTTPSServer
 
     conn = Mock(name='conn')
-    conn.stream.read_bytes.return_value = fut = Future()
-    fut.set_result(" HTTP/1.1\n")
+    conn.stream.socket.getsockname.return_value = '127.0.0.1', 8888
+    conn.stream.socket.recv.return_value = " HTTP/1.1\n"
     conn.write_headers.return_value = fut = Future()
     fut.set_result(None)
 
@@ -302,7 +305,7 @@ def test_handle_http_connection_301(mocker):
 
     yield server.handle_http_connection(conn)
 
-    assert conn.stream.read_bytes.called is True
+    assert conn.stream.socket.recv.called is True
     assert HTTPRequest.called is True
     assert conn.write_headers.called is True
     _, kw = conn.write_headers.call_args
@@ -318,8 +321,8 @@ def test_handle_http_connection_500(mocker):
     from temboardui.autossl import AutoHTTPSServer
 
     conn = Mock(name='conn')
-    conn.stream.read_bytes.return_value = fut = Future()
-    fut.set_result(" HTTP/1.1\n")
+    conn.stream.socket.getsockname.return_value = '127.0.0.1', 8888
+    conn.stream.socket.recv.return_value = " HTTP/1.1\n"
     conn.write_headers.return_value = fut = Future()
     fut.set_result(None)
 
@@ -328,7 +331,7 @@ def test_handle_http_connection_500(mocker):
 
     yield server.handle_http_connection(conn)
 
-    assert conn.stream.read_bytes.called is True
+    assert conn.stream.socket.recv.called is True
     assert HTTPRequest.called is True
     assert conn.write_headers.called is True
     _, kw = conn.write_headers.call_args

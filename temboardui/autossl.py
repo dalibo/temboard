@@ -35,6 +35,7 @@ from tornado.httputil import (
     ResponseStartLine,
 )
 from tornado.http1connection import HTTP1Connection
+from tornado.ioloop import IOLoop
 from tornado.iostream import (
     IOStream,
     SSLIOStream,
@@ -54,8 +55,9 @@ logger = logging.getLogger(__name__)
 def parse_http_headers(payload):
     # Implements simple HTTP1Connection._read_message but IO-free.
     lines = payload.splitlines()
-    # Drop start line
-    lines.pop(0)
+    if lines and 'HTTP/' in lines[0]:
+        # Drop start line
+        lines.pop(0)
     # Drop contents
     if '' in lines:
         lines[:] = lines[:lines.index('')]
@@ -69,7 +71,10 @@ def protocol_switcher(request):
     try:
         host = request.headers['Host']
     except KeyError:
-        host = '%(address)s:%(port)s' % request.config.temboard
+        # We don't have FQDN. Fallback to socket address. This breaks
+        # name-based virtualhost.
+        host = '%(address)s:%(port)s' % dict(
+            request.config.temboard, address=request.host)
     new_url = 'https://%s%s' % (host, request.uri)
     headers = HTTPHeaders({
         'Content-Length': '0',
@@ -183,14 +188,23 @@ class AutoHTTPSServer(HTTPServer):
             else:
                 raise
         try:
+            io_loop = self.io_loop
+            kw = dict(io_loop=io_loop)
+        except AttributeError:
+            # We are on Tornado 5+. Just don't pass ioloop
+            kw = {}
+            io_loop = IOLoop.current()
+
+        try:
             stream = EasySSLIOStream(
-                connection, io_loop=self.io_loop,
+                connection,
                 max_buffer_size=self.max_buffer_size,
                 read_chunk_size=self.read_chunk_size,
+                **kw
             )
             future = self.handle_stream(stream, address)
             if future is not None:
-                self.io_loop.add_future(future, lambda f: f.result())
+                io_loop.add_future(future, lambda f: f.result())
         except Exception:
             app_log.error("Error in connection callback", exc_info=True)
 
@@ -218,8 +232,16 @@ class AutoHTTPSServer(HTTPServer):
         # Read the trailing HTTP request and process it with protocol_switcher.
         # We can't rely on ioloop to trigger read because it has been already
         # triggered for SSL handshake.
-        payload = yield conn.stream.read_bytes(1024, partial=True)
-        logger.debug("Received %r", payload[:128])
+        addr, port = conn.stream.socket.getsockname()
+        try:
+            # This is not blocking. Just read available bytes.
+            payload = conn.stream.socket.recv(1024)
+        except Exception:
+            # Exception includes EWOULDBLOCK, when no bytes are available. In
+            # this case just skip.
+            payload = ""
+        else:
+            logger.debug("Received %r", payload[:128])
         # Simulate conn._read_message side effect. This is required by
         # HTTP1Connection.write_headers()
         conn._request_start_line = parse_request_start_line('GET / HTTP/1.1')
