@@ -37,10 +37,13 @@ teardown() {
 }
 trap teardown EXIT INT TERM
 
+# For CentOS
+export PYTHONPATH=/usr/local/python2.7/lib/site-packages
+
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
-	pip2.7 install --upgrade .
+	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade .
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
@@ -48,7 +51,11 @@ install_ui_py() {
 }
 
 install_ui_py
-pip3.5 install --upgrade --requirement tests/func/requirements.txt
+pip2.7 install \
+       --ignore-installed \
+       --prefix=/usr/local \
+       --upgrade \
+       --requirement tests/func/requirements.txt
 
 temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
