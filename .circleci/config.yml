@@ -22,7 +22,8 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init
-      - restore_cache:
+      - &pip-cache-restore
+        restore_cache:
           keys:
             - temboard-{{ .Branch }}
             - temboard-master
@@ -42,7 +43,8 @@ jobs:
           command: |
             pytest --full-trace --cov-report=xml tests/unit/
             codecov
-      - save_cache:
+      - &pip-cache-save
+        save_cache:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
@@ -99,6 +101,7 @@ jobs:
     steps: &func-steps
     - checkout
     - run: git submodule update --init
+    - *pip-cache-restore
     - run:
         name: Setup
         command: |
@@ -107,6 +110,7 @@ jobs:
     - run:
         name: Functionnal tests
         command: tests/func/run.sh
+    - *pip-cache-save
 
   1-func-centos7:
     docker:
