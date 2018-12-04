@@ -1,5 +1,7 @@
+import logging
+
+
 def test_color(mocker):
-    import logging
     from sampleproject.toolkit.log import ColoredStreamHandler
 
     handler = ColoredStreamHandler()
@@ -15,7 +17,6 @@ def test_color(mocker):
 
 
 def test_multiline(mocker):
-    import logging
     from sampleproject.toolkit.log import MultilineFormatter
 
     formatter = MultilineFormatter('PREFIX: %(message)s')
@@ -35,8 +36,21 @@ def test_multiline(mocker):
     assert 'PREFIX: Single' in s
 
 
+def test_systemd(mocker):
+    from sampleproject.toolkit.log import SystemdFormatter
+
+    formatter = SystemdFormatter('PREFIX: %(message)s')
+    record = logging.getLogger().makeRecord(
+        name='toto', level=logging.DEBUG,
+        fn='toto.py', lno=42,
+        msg='Line1\nLine2', args=(),
+        exc_info=None,
+    )
+    s = formatter.format(record)
+    assert s.startswith('<7>PREFIX')
+
+
 def test_lastname():
-    import logging
     from sampleproject.toolkit.log import LastnameFilter
 
     filter_ = LastnameFilter()
@@ -61,21 +75,21 @@ def test_temboard_debug(mocker):
     from sampleproject.toolkit.log import generate_logging_config
 
     config = generate_logging_config()
-    assert 'minimal' == config['handlers']['configured']['formatter']
+    assert '%(process)' not in config['formatters']['console']['format']
 
     config = generate_logging_config(level='DEBUG', debug=False)
 
-    assert 'verbose' == config['handlers']['configured']['formatter']
+    assert '%(process)' in config['formatters']['console']['format']
     assert 'DEBUG' == config['loggers']['sampleproject']['level']
 
     config = generate_logging_config(level='INFO', debug=True)
 
-    assert 'verbose' == config['handlers']['configured']['formatter']
+    assert '%(process)' in config['formatters']['console']['format']
     assert 'DEBUG' == config['loggers']['sampleproject']['level']
 
     config = generate_logging_config(level='INFO', debug='__debug__')
 
-    assert 'verbose' == config['handlers']['configured']['formatter']
+    assert '%(process)' in config['formatters']['console']['format']
     assert 'DEBUG' == config['loggers']['sampleproject']['level']
 
 

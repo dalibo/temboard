@@ -1,6 +1,6 @@
 import logging.config
-from logging.handlers import SysLogHandler
 import sys
+from logging.handlers import SysLogHandler
 
 try:
     from logging.config import dictConfig
@@ -44,6 +44,24 @@ class MultilineFormatter(logging.Formatter):
         return '\n'.join(lines)
 
 
+class SystemdFormatter(MultilineFormatter):
+    # cf. http://0pointer.de/blog/projects/journal-submit.html
+    priority_map = {
+        logging.NOTSET: 6,
+        logging.DEBUG: 7,
+        logging.INFO: 6,
+        logging.WARNING: 4,
+        logging.ERROR: 3,
+        logging.CRITICAL: 2,
+    }
+
+    def format(self, record):
+        s = MultilineFormatter.format(self, record)
+        prefix = '<%d>' % self.priority_map[record.levelno]
+        lines = [prefix + line for line in s.splitlines(True)]
+        return ''.join(lines)
+
+
 class LastnameFilter(logging.Filter):
     root, _, _ = __name__.partition('.')
 
@@ -66,9 +84,8 @@ HANDLERS = {
         'formatter': 'syslog',
     },
     'stderr': {
-        '()': 'logging.StreamHandler',
-        'formatter': 'minimal',
-    },
+        '()': 'logging.NullHandler',
+    }
 }
 
 
@@ -94,7 +111,13 @@ def configure_debug(logging_config, core, debug):
 
 def generate_logging_config(
         level=None, destination=None, facility='local0',
-        method='stderr', debug=None, **kw):
+        method='stderr', debug=None, systemd=False, **kw):
+    # Our logging strategy is to always log on stderr and allow to log on
+    # either syslog or a file, depending on user configuration.
+    #
+    # stderr mean either console when launching in a terminal, file when stderr
+    # is piped or systemd output. Thus we adapt stderr to these cases depending
+    # on systemd an isatty().
 
     core = LastnameFilter.root
 
@@ -104,24 +127,24 @@ def generate_logging_config(
     if debug is None:
         debug = level == 'DEBUG'
 
+    verbose = debug or level == 'DEBUG'
+
     facility = SysLogHandler.facility_names[facility]
     HANDLERS['syslog']['facility'] = facility
     HANDLERS['syslog']['address'] = destination
     HANDLERS['file']['filename'] = destination
 
-    fmt = 'verbose' if debug or level == 'DEBUG' else 'minimal'
-
-    HANDLERS['stderr']['formatter'] = fmt
+    stderr_handler = 'logging.StreamHandler'
     if sys.stderr.isatty():
-        HANDLERS['stderr']['()'] = __name__ + '.ColoredStreamHandler'
+        stderr_handler = __name__ + '.ColoredStreamHandler'
 
     minimal_fmt = '%(levelname)5.5s: %(message)s'
     verbose_fmt = (
         '%(asctime)s [%(process)5d] [%(lastname)-16.16s] ' + minimal_fmt
     )
     syslog_fmt = (
-        core + "[%(process)d]: "
-        "[%(lastname)s] %(levelname)s: %(message)s"
+        core +
+        "[%(process)d]: [%(lastname)s] %(levelname)s: %(message)s"
     )
 
     logging_config = {
@@ -133,34 +156,38 @@ def generate_logging_config(
             }
         },
         'formatters': {
+            'console': {
+                '()': __name__ + '.MultilineFormatter',
+                'format': verbose_fmt if verbose else minimal_fmt,
+            },
             'dated_syslog': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': '%(asctime)s ' + syslog_fmt,
-            },
-            'minimal': {
-                '()': __name__ + '.MultilineFormatter',
-                'format': minimal_fmt,
             },
             'syslog': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': syslog_fmt,
             },
-            'verbose': {
-                '()': __name__ + '.MultilineFormatter',
-                'format': verbose_fmt,
-            },
+            'systemd': {
+                '()': __name__ + '.SystemdFormatter',
+                'format': '%(message)s',
+            }
         },
         'handlers': {
             'configured': dict(
                 HANDLERS[method],
                 filters=['lastname'],
             ),
+            'stderr': {
+                '()': stderr_handler,
+                'formatter': 'systemd' if systemd else 'console',
+            },
         },
         'root': {
             'level': 'INFO',
             # Avoid instanciate all handlers, especially syslog which open
             # /dev/log
-            'handlers': ['configured'],
+            'handlers': ['stderr', 'configured'],
         },
         'loggers': {},
     }
@@ -169,4 +196,5 @@ def generate_logging_config(
     logging_config['loggers'][core] = dict(level=level)
 
     configure_debug(logging_config, core, debug)
+
     return logging_config

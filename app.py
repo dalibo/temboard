@@ -239,7 +239,7 @@ class BaseApplication(object):
         return self
 
     def setup_logging(self):
-        setup_logging(**self.config.logging)
+        setup_logging(systemd='SYSTEMD' in os.environ, **self.config.logging)
 
     def __call__(self, argv=sys.argv[1:], environ=os.environ):
         return self.entrypoint(argv, environ)
