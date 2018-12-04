@@ -51,8 +51,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
 %{__install} -m 600 %{SOURCE2} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
-%{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
-%{__install} -m 644 %{buildroot}/usr/share/temboard-agent/temboard-agent.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard-agent
+
 # init script
 %if 0%{?rhel} <= 6
 %{__install} -d %{buildroot}%{_initrddir}
@@ -91,7 +90,6 @@ fi
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
-%config(noreplace) %{_sysconfdir}/logrotate.d/temboard-agent
 %{python_sitelib}/*
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
