@@ -1,12 +1,14 @@
 #!/bin/bash -eux
 
-cd $(readlink -m $0/../../..)
+top_srcdir=$(readlink -m $0/../../..)
+cd $top_srcdir
 test -f setup.py
 
 teardown() {
     exit_code=$?
+    cd $top_srcdir
     # rpmbuild requires files to be owned by running uid
-    sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
+    sudo chown --recursive $(stat -c %u:%g setup.py) packaging/rpm/
     rm -f packaging/rpm/temboard-agent*.tar.gz
 
     trap - EXIT INT TERM
@@ -44,11 +46,13 @@ sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 rpmbuild \
     --clean \
     --define "pkgversion ${VERSION}" \
-    --define "_topdir ${PWD}/dist/rpm" \
+    --define "_rpmdir ${PWD}/dist/rpm" \
     --define "_sourcedir ${PWD}/packaging/rpm" \
+    --define "_topdir ${PWD}/dist/rpm" \
     -bb packaging/rpm/temboard-agent.spec
 
 # Pin rpm as latest built, for upload.
+DIST=$(rpm --eval %dist)
 rpm=$(ls dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.noarch.rpm)
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
@@ -58,4 +62,5 @@ if [ "${DIST}" = "el6" ] ; then
 fi
 
 sudo yum install -y $rpm
+cd /
 temboard-agent --help

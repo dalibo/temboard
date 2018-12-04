@@ -28,18 +28,12 @@ jobs:
         destination: build/README.html
 
   0-rpm-centos6:
-    docker: [{image: "rpmbuild/centos6"}]
+    docker: [{image: "dalibo/temboard-agent-sdk:centos6"}]
     working_directory: ~/workspace
-    steps:
-    - run:
-        name: Upgrade to decent git version
-        command: |
-            set -ex
-            sudo yum install -y http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
-            sudo yum install -y git
+    steps: &rpmbuild
     - checkout
     - run: git submodule update --init
-    - run: &build_rpm
+    - run:
         name: Build RPM snapshot
         command: |
           sudo yum-builddep -y packaging/rpm/temboard-agent.spec
@@ -53,18 +47,9 @@ jobs:
         - dist/rpm/noarch/*.rpm
 
   0-rpm-centos7:
-    docker: [{image: "rpmbuild/centos7"}]
+    docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - run: *build_rpm
-    - store_artifacts:
-        path: ~/workspace/dist/
-    - persist_to_workspace:
-        root: .
-        paths:
-         - dist/rpm/noarch/*.rpm
+    steps: *rpmbuild
 
   0-unit-py27:
     docker:
