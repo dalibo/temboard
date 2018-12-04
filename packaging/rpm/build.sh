@@ -53,7 +53,7 @@ rpmbuild \
 
 # Pin rpm as latest built, for upload.
 DIST=$(rpm --eval %dist)
-rpm=$(ls dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.noarch.rpm)
+rpm=$(ls dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.rpm)
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
