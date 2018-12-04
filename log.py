@@ -181,6 +181,7 @@ def generate_logging_config(
             'stderr': {
                 '()': stderr_handler,
                 'formatter': 'systemd' if systemd else 'console',
+                'filters': ['lastname'],
             },
         },
         'root': {
