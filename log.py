@@ -44,6 +44,17 @@ class MultilineFormatter(logging.Formatter):
         return '\n'.join(lines)
 
 
+class NullHandler(logging.Handler):
+    def handle(self, record):
+        pass
+
+    def emit(self, record):
+        pass
+
+    def createLock(self):
+        self.lock = None
+
+
 class SystemdFormatter(MultilineFormatter):
     # cf. http://0pointer.de/blog/projects/journal-submit.html
     priority_map = {
@@ -84,7 +95,7 @@ HANDLERS = {
         'formatter': 'syslog',
     },
     'stderr': {
-        '()': 'logging.NullHandler',
+        '()': __name__ + '.NullHandler',
     }
 }
 
