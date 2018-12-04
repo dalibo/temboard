@@ -12,6 +12,8 @@
 # Each agent has its own user file. This file is emptied by the script.
 
 
+set -o pipefail
+
 catchall() {
 	if [ $? -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
@@ -51,6 +53,7 @@ generate_configuration() {
 	local sslkey=$1; shift
 	local key=$1; shift
 	local instance=$1; shift
+	local logfile=$1; shift
 	local collector_url=$1; shift
 
 	local port=$(echo $PGPORT | rev)
@@ -71,7 +74,8 @@ generate_configuration() {
 	key = ${key}
 
 	[logging]
-	method = stderr
+	method = file
+	destination = ${logfile}
 
 	[postgresql]
 	host = ${PGHOST}
@@ -206,18 +210,23 @@ home=${VARDIR}/${name}
 # Create directories
 install -o ${PGUSER} -g ${PGUSER} -m 0750 -d \
 	${ETCDIR}/${name}/temboard-agent.conf.d/ \
-	${LOGDIR}/${name} ${home}
+	${LOGDIR} ${home}
 
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o ${PGUSER} -g ${PGUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
 install -b -o ${PGUSER} -g ${PGUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
+if ! [ -f /etc/logrotate.d/temboard-agent ] ; then
+	install -d -m 0755 /etc/logrotate.d
+	install -m 644 temboard-agent.logrotate /etc/logrotate.d/temboard-agent
+fi
 
 sslfiles=($(set -eu; setup_ssl $name))
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
+logfile=${LOGDIR}/${name//\//-}.log
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home "${sslfiles[@]}" $key $name $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
