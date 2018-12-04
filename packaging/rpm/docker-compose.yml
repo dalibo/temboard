@@ -2,7 +2,7 @@ version: '2'
 
 services:
   centos6: &centos
-    image: rpmbuild/centos6
+    image: dalibo/temboard-agent-sdk:centos6
     environment:
     - VERSION
     volumes:
@@ -11,4 +11,4 @@ services:
 
   centos7:
     <<: *centos
-    image: rpmbuild/centos7
+    image: dalibo/temboard-agent-sdk:centos6
