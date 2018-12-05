@@ -37,7 +37,6 @@ class Configuration(configparser.ConfigParser):
                 "activity",
                 "monitoring",
             ],
-            'plugins_orm_engine': ["monitoring"],
             'home': '/var/run/temboard'
         }
         self.logging = {
@@ -170,22 +169,6 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                 "'plugins' option must be a list of string (alphanum only) in "
                 "%s" % (self.configfile))
-
-        try:
-            plugins = json.loads(self.get('temboard', 'plugins_orm_engine'))
-            if not type(plugins) == list:
-                raise ValueError()
-            for plugin in plugins:
-                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
-                    raise ValueError
-            self.temboard['plugins_orm_engine'] = plugins
-        except configparser.NoOptionError:
-            pass
-        except ValueError:
-            raise ConfigurationError(
-                "'plugins_orm_engine' option must be a list of string"
-                " (alphanum only) in %s"
-                % (self.configfile))
 
         try:
             home = self.get('temboard', 'home')
