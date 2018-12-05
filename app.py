@@ -240,7 +240,6 @@ class BaseApplication(object):
 
     def setup_logging(self):
         setup_logging(
-            debug=self.debug,
             systemd='SYSTEMD' in os.environ,
             **self.config.logging)
 
