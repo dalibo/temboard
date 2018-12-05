@@ -307,7 +307,7 @@ def test_debug_arg():
     from sampleproject.toolkit.app import define_core_arguments
 
     parser = ArgumentParser(argument_default=SUPPRESS)
-    define_core_arguments(parser)
+    define_core_arguments(parser, appversion='1.0')
 
     args = parser.parse_args([])
     assert 'logging_debug' not in args
