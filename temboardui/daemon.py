@@ -76,13 +76,8 @@ def daemonize(pidfile, config):
     sys.stdout.flush()
     sys.stderr.flush()
     si = file('/dev/null', 'r')
-    so = se = None
-    if config.logging['method'] == 'file':
-        se = file(config.logging['destination'], 'a+', 0)
-        so = file(config.logging['destination'], 'a+')
-    else:
-        so = file('/dev/null', 'a+')
-        se = file('/dev/null', 'a+', 0)
+    so = file('/dev/null', 'a+')
+    se = file('/dev/null', 'a+', 0)
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
