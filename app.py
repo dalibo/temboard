@@ -21,8 +21,8 @@ try:
     )
 except ImportError:  # pragma: nocover
     def refresh_distributions():
-        logger.warn("setuptools is too old. Can't reload installed packages.")
-        logger.warn("Restart if new plugins can't be found.")
+        logger.info("setuptools is too old for plugin hotload.")
+        logger.info("If new plugin can't be found, just restart.")
 
 from .configuration import MergedConfiguration, OptionSpec
 from .log import setup_logging, LastnameFilter
