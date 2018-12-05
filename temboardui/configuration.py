@@ -191,7 +191,8 @@ class Configuration(configparser.ConfigParser):
             home = self.get('temboard', 'home')
             if not os.access(home, os.W_OK):
                 raise Exception()
-            self.temboard['home'] = self.get('temboard', 'home')
+            self.temboard['home'] = os.path.realpath(
+                self.get('temboard', 'home'))
         except Exception:
             raise ConfigurationError(
                 "Home directory %s not writable."

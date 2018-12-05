@@ -5,17 +5,6 @@ import sys
 PIDFILE = None
 
 
-def httpd_sigterm_handler(signum, frame):
-    """
-    SIGTERM signal handler for httpd process.
-    """
-    # Remove the pidfile.
-    remove_pidfile(PIDFILE)
-    # Exit roughly with os._exit() because httpd is multi-threaded and
-    # sys.exit() does not work in this context.
-    os._exit(1)
-
-
 def remove_pidfile(pidfile):
     """
     Delete the pidfile.
