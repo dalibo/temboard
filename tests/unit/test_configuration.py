@@ -38,4 +38,4 @@ home = .
 
     config.load()
 
-    assert '.' == config.temboard['home']
+    assert config.temboard['home']
