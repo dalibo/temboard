@@ -121,7 +121,7 @@ class BaseApplication(object):
             )
 
         s = 'logging'
-        yield OptionSpec(s, 'method', default='syslog', validator=v.logmethod)
+        yield OptionSpec(s, 'method', default='stderr', validator=v.logmethod)
         yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
         yield OptionSpec(
             s, 'facility', default='local0', validator=v.syslogfacility,
