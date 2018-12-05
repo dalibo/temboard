@@ -14,6 +14,7 @@ from sqlalchemy import create_engine
 
 from .toolkit import taskmanager
 from .toolkit.app import define_core_arguments
+from .toolkit.configuration import OptionSpec
 from .toolkit.services import (
     Service,
     ServicesManager,
@@ -115,36 +116,32 @@ class CustomTornadoWebApp(tornado.web.Application):
             exit(1)
 
 
-def temboard_bootstrap(args):
+def legacy_bootstrap(config):
     # Load configuration from the configuration file.
-    # Manage here default config file until we move to toolkit OptionSpec.
-    default_configfile = '/etc/temboard/temboard.conf'
-    configfile = getattr(args, 'temboard_configfile', default_configfile)
-    config = Configuration()
+    legacy_config = Configuration()
     try:
-        config.parsefile(configfile)
+        legacy_config.parsefile(config.temboard.configfile)
+        legacy_config.temboard['tm_sock_path'] = os.path.join(
+            legacy_config.temboard['home'], '.tm.socket')
     except (ConfigurationError, ImportError) as e:
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
 
     logging.config.dictConfig(generate_logging_config(
-        debug=args.logging_debug,
         systemd='SYSTEMD' in os.environ,
         **config.logging
     ))
     logger.info("Starting main process.")
-    autoreload.watch(configfile)
-    config.temboard['tm_sock_path'] = os.path.join(
-        config.temboard['home'], '.tm.socket')
+    autoreload.watch(config.temboard.configfile)
 
     # Run temboard as a background daemon.
-    if args.temboard_daemonize:
-        daemonize(args.temboard_pidfile, config)
+    if config.temboard.daemonize:
+        daemonize(config.temboard.pidfile, config)
 
-    return config
+    return legacy_config
 
 
-def make_tornado_app(config, args):
+def make_tornado_app(config, debug):
     base_path = os.path.dirname(__file__)
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
@@ -207,7 +204,7 @@ def make_tornado_app(config, args):
                 'path': base_path + '/static/fonts'
             })
         ],
-        debug=args.logging_debug,
+        debug=debug,
         cookie_secret=config.temboard['cookie_secret'],
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
@@ -224,7 +221,7 @@ class SchedulerService(taskmanager.SchedulerService):
     def apply_config(self):
         # Overwrite apply_config to use temboard UI config object.
         if not self.scheduler:
-            config = self.app.ui_config
+            config = self.app.legacy_config
             self.scheduler = taskmanager.Scheduler(
                 address=config.temboard['tm_sock_path'],
                 task_path=os.path.join(
@@ -247,7 +244,7 @@ class SchedulerService(taskmanager.SchedulerService):
 class TornadoService(Service):
     def setup(self):
         new_worker_pool(12)
-        config = self.app.ui_config
+        config = self.app.legacy_config
         ssl_ctx = {
             'certfile': config.temboard['ssl_cert_file'],
             'keyfile': config.temboard['ssl_key_file']
@@ -264,8 +261,8 @@ class TornadoService(Service):
         with self:
             logger.info(
                 "Serving temboardui on https://%s:%d",
-                self.app.ui_config.temboard['address'],
-                self.app.ui_config.temboard['port'], )
+                self.app.legacy_config.temboard['address'],
+                self.app.legacy_config.temboard['port'], )
             tornado.ioloop.IOLoop.instance().start()
 
 
@@ -274,18 +271,24 @@ def define_arguments(parser):
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
-        default=False,
         help="Run in background.",
     )
     parser.add_argument(
         '-p', '--pid-file',
         action='store', dest='temboard_pidfile',
-        default=None,
         help="PID file.", metavar='PIDFILE',
     )
 
 
+def list_options_specs():
+    s = 'temboard'
+    yield OptionSpec(s, 'daemonize', default=False)
+    yield OptionSpec(s, 'pidfile', default='/run/temboard.pid')
+
+
 class TemboardApplication(BaseApplication):
+    DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
+    PROGRAM = 'temboard'
     REPORT_URL = "https://github.com/dalibo/temboard/issues"
     VERSION = __version__
 
@@ -300,10 +303,10 @@ class TemboardApplication(BaseApplication):
         )
         define_arguments(parser)
         args = parser.parse_args(argv)
+        self.bootstrap(args=args, environ=environ)
         # Manage logging_debug default until we use toolkit OptionSpec.
-        args.logging_debug = getattr(args, 'logging_debug', self.debug)
-        config = temboard_bootstrap(args)
-        self.ui_config = config
+        config = legacy_bootstrap(self.config)
+        self.legacy_config = config
 
         services = ServicesManager()
 
@@ -328,14 +331,14 @@ class TemboardApplication(BaseApplication):
 
         # H T T P   S E R V E R
 
-        self.webapp = make_tornado_app(config, args)
+        self.webapp = make_tornado_app(config, debug=self.config.logging.debug)
         webservice = TornadoService(app=self, name=u'main')
 
         with services:
             webservice.run()
 
 
-main = TemboardApplication()
+main = TemboardApplication(specs=list_options_specs(), with_plugins=None)
 
 
 if __name__ == "__main__":
