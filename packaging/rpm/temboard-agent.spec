@@ -50,10 +50,10 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
-%{__install} -m 600 %{SOURCE3} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 
 # init script
 %if 0%{?rhel} <= 6
+%{__install} -m 600 %{SOURCE3} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 %{__install} -d %{buildroot}%{_initrddir}
 %{__install} -m 755 %{SOURCE1} %{buildroot}%{_initrddir}/temboard-agent
 rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent*.service
