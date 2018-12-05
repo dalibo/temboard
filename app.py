@@ -19,10 +19,10 @@ try:
     from pkg_resources import (
         _initialize_master_working_set as refresh_distributions
     )
-except ImportError:
+except ImportError:  # pragma: nocover
     def refresh_distributions():
-        logger.warn("setuptools is too old. Can't reload installed packages.")
-        logger.warn("Restart if new plugins can't be found.")
+        logger.info("setuptools is too old for plugin hotload.")
+        logger.info("If new plugin can't be found, just restart.")
 
 from .configuration import MergedConfiguration, OptionSpec
 from .log import setup_logging, LastnameFilter
@@ -226,7 +226,7 @@ class BaseApplication(object):
         return old_plugins
 
     def reload(self):
-        logger.warn("Reloading configuration.")
+        logger.warning("Reloading configuration.")
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
