@@ -26,7 +26,7 @@ class ColoredStreamHandler(logging.StreamHandler):
 class LastnameFilter(logging.Filter):
     def filter(self, record):
         record.lastname = record.name
-        if record.name.startswith('temboardagent.'):
+        if record.name.startswith('temboardui.'):
             _, record.lastname = record.name.rsplit('.', 1)
         # Always log, we are just enriching records.
         return 1
@@ -80,7 +80,7 @@ def generate_logging_config(config):
     minimal_fmt = '%(levelname)5.5s: %(message)s'
     verbose_fmt = '%(asctime)s [%(lastname)-16.16s] ' + minimal_fmt
     syslog_fmt = (
-        "temboard-agent[%(process)d]: "
+        "temboard[%(process)d]: "
         "[%(lastname)s] %(levelname)s: %(message)s"
     )
 
