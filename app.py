@@ -19,7 +19,7 @@ try:
     from pkg_resources import (
         _initialize_master_working_set as refresh_distributions
     )
-except ImportError:
+except ImportError:  # pragma: nocover
     def refresh_distributions():
         logger.warn("setuptools is too old. Can't reload installed packages.")
         logger.warn("Restart if new plugins can't be found.")
