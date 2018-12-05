@@ -304,7 +304,7 @@ class TemboardApplication(BaseApplication):
         args.logging_debug = getattr(args, 'logging_debug', self.debug)
         config = temboard_bootstrap(args)
         self.ui_config = config
-        self.webapp = make_tornado_app(config, args)
+
         services = ServicesManager()
 
         # T A S K   M A N A G E R
@@ -328,7 +328,9 @@ class TemboardApplication(BaseApplication):
 
         # H T T P   S E R V E R
 
+        self.webapp = make_tornado_app(config, args)
         webservice = TornadoService(app=self, name=u'main')
+
         with services:
             webservice.run()
 
