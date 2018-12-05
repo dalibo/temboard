@@ -295,7 +295,7 @@ def define_core_arguments(parser):
     parser.add_argument(
         '-c', '--config',
         action='store', dest='temboard_configfile',
-        help="Configuration file",
+        help="Configuration file", metavar='CONFIGFILE',
     )
     parser.add_argument(
         '--debug',
