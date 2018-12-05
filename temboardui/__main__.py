@@ -16,7 +16,7 @@ from .toolkit.services import (
     Service,
     ServicesManager,
 )
-from .logger import generate_logging_config
+from .toolkit.log import generate_logging_config
 from .handlers.base import (
     BaseHandler,
     Error404Handler,
@@ -126,10 +126,11 @@ def temboard_bootstrap():
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
 
-    if options.debug:
-        config.logging['level'] = 'DEBUG'
-
-    logging.config.dictConfig(generate_logging_config(config))
+    logging.config.dictConfig(generate_logging_config(
+        debug=options.debug,
+        systemd='SYSTEMD' in os.environ,
+        **config.logging
+    ))
     logger.info("Starting main process.")
     autoreload.watch(options.configfile)
     config.temboard['tm_sock_path'] = os.path.join(

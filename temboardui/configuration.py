@@ -11,7 +11,7 @@ import json
 import re
 from temboardui.errors import ConfigurationError
 
-from .logger import HANDLERS
+from .toolkit.log import HANDLERS
 
 
 logger = logging.getLogger(__name__)
