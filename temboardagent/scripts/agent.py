@@ -2,10 +2,8 @@
 
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from socket import getfqdn
-import functools
 import logging
 import os
-import sys
 import datetime
 import getpass
 
@@ -17,118 +15,13 @@ from ..toolkit.configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
 from ..routing import Router
-from ..services import Service, ServicesManager
+from ..services import ServicesManager
 from ..queue import purge_queue_dir
 from ..toolkit import validators as v
 from ..toolkit.proctitle import ProcTitleManager
 
 
 logger = logging.getLogger('temboardagent.scripts.agent')
-
-
-class SchedulerService(Service):
-    # Adapter from taskmanager.Scheduler to Service
-
-    def __init__(self, task_queue, event_queue, **kw):
-        super(SchedulerService, self).__init__(**kw)
-        self.task_queue = task_queue
-        self.event_queue = event_queue
-        self.scheduler = None
-
-    def apply_config(self):
-        # Setup scheduler as soon as configuration is loaded, before
-        # plugins, so that tasklist is created before plugins.
-        if not self.scheduler:
-            self.scheduler = taskmanager.Scheduler(
-                address=os.path.join(
-                    self.app.config.temboard.home, '.tm.socket'),
-                task_path=os.path.join(
-                    self.app.config.temboard.home, '.tm.task_list'),
-                authkey=None)
-            self.scheduler.task_queue = self.task_queue
-            self.scheduler.event_queue = self.event_queue
-            self.scheduler.setup_task_list()
-
-    def setup(self):
-        if os.path.exists(self.scheduler.address):
-            os.unlink(self.scheduler.address)
-
-        self.scheduler.setup()
-
-    def serve1(self):
-        self.scheduler.serve1()
-
-    def add(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for task in workerset.list_tasks():
-            try:
-                self.scheduler.task_list.rm(task.id)
-                logger.debug("Overwriting task %s.", task.id)
-            except Exception:
-                pass
-
-            self.scheduler.task_list.push(task)
-
-    def remove(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for task in workerset.list_tasks():
-            self.scheduler.task_list.rm(task.id)
-
-
-class WorkerPoolService(Service):
-    # Adapter from taskmanager.WorkerPool to Service
-
-    def __init__(self, task_queue, event_queue, **kw):
-        super(WorkerPoolService, self).__init__(**kw)
-        self.worker_pool = taskmanager.WorkerPool(task_queue, event_queue)
-
-    def setup(self):
-        self.worker_pool.setup()
-
-    def serve1(self):
-        try:
-            self.worker_pool.serve1()
-        except Exception:
-            logger.exception("Unhandled error in worker:")
-            logger.error("Not stopping worker process.")
-
-    def create_task_function_app_wrapper(self, function):
-        @functools.wraps(function)
-        def wrapper(*a, **kw):
-            return function(app=self.app, *a, **kw)
-        wrapper._tm_function = function
-        return wrapper
-
-    def add(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for function in workerset:
-            conf = function._tm_worker
-            wrapper = self.create_task_function_app_wrapper(function)
-
-            # Inject wrapper in module so taskmanager will find it.
-            mod = sys.modules[conf['module']]
-            wrapper_name = '_tm_wrapper_' + function.__name__
-            setattr(mod, wrapper_name, wrapper)
-            conf['function'] = wrapper_name
-
-            # Add to current workers
-            logger.debug("Activate worker %s", conf['name'])
-            self.worker_pool.add(conf)
-
-    def remove(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for function in workerset:
-            conf = function._tm_worker
-            logger.debug("Disable worker %s", conf['name'])
-            self.worker_pool.workers.pop(conf['name'], None)
 
 
 def define_arguments(parser):
@@ -190,12 +83,12 @@ class AgentApplication(Application):
         task_queue = taskmanager.Queue()
         event_queue = taskmanager.Queue()
 
-        self.worker_pool = WorkerPoolService(
+        self.worker_pool = taskmanager.WorkerPoolService(
             app=self, setproctitle=setproctitle, name=u'worker pool',
             task_queue=task_queue, event_queue=event_queue)
         self.services.append(self.worker_pool)
 
-        self.scheduler = SchedulerService(
+        self.scheduler = taskmanager.SchedulerService(
             app=self, setproctitle=setproctitle, name=u'scheduler',
             task_queue=task_queue, event_queue=event_queue)
         self.services.append(self.scheduler)
