@@ -57,7 +57,7 @@ from .options import temboarduiOptions
 from .configuration import Configuration
 from .errors import ConfigurationError
 from .daemon import daemonize
-from .pluginsmgmt import load_plugins, plugins_bind_metadata
+from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
 from .toolkit.app import BaseApplication
 from .utils import check_sqlalchemy_connectivity
@@ -215,8 +215,6 @@ def make_tornado_app(config, options):
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
     application.create_db_engine(options.pidfile)
-    plugins_bind_metadata(application.engine,
-                          config.temboard['plugins_orm_engine'])
 
     return application
 
