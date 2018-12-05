@@ -209,8 +209,6 @@ def temboard_main():
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
 
-    config.temboard['tm_sock_path'] = os.path.join(config.temboard['home'],
-                                                   '.tm.socket')
     application.set_config(config)
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
@@ -219,6 +217,8 @@ def temboard_main():
                           config.temboard['plugins_orm_engine'])
 
     # Task Manager
+    config.temboard['tm_sock_path'] = os.path.join(config.temboard['home'],
+                                                   '.tm.socket')
     if os.path.exists(config.temboard['tm_sock_path']):
         # unix socket cleaning
         os.unlink(config.temboard['tm_sock_path'])
