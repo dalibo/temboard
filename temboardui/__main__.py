@@ -96,7 +96,7 @@ class CustomTornadoWebApp(tornado.web.Application):
                                         request_time)
         self.logger.info(log_message)
 
-    def create_db_engine(self, pidfile):
+    def create_db_engine(self):
         dburi = "postgresql://{user}:{pwd}@:{p}/{db}?host={h}".format(
                     user=self.config.repository['user'],
                     pwd=self.config.repository['password'],
@@ -214,7 +214,7 @@ def make_tornado_app(config, options):
     application.set_config(config)
     application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
-    application.create_db_engine(options.pidfile)
+    application.create_db_engine()
 
     return application
 
