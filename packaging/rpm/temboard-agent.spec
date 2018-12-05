@@ -20,8 +20,8 @@ BuildArch:     noarch
 BuildRequires: python-setuptools
 Requires:      openssl
 %if 0%{?rhel} <= 6
-Requires: python-argparse
-Requires: python-logutils
+Requires:      python-argparse
+Requires:      python-logutils
 %endif
 Requires:      python-setuptools
 
