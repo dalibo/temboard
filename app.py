@@ -294,7 +294,13 @@ def detect_debug_mode(environ):
     return debug
 
 
-def define_core_arguments(parser):
+def define_core_arguments(parser, appversion=None):
+    if appversion:
+        parser.add_argument(
+            '-V', '--version',
+            action='version',
+            version=appversion,
+        )
     parser.add_argument(
         '-c', '--config',
         action='store', dest='temboard_configfile',
