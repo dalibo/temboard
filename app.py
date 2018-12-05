@@ -239,17 +239,20 @@ class BaseApplication(object):
         return self
 
     def setup_logging(self):
-        setup_logging(systemd='SYSTEMD' in os.environ, **self.config.logging)
+        setup_logging(
+            debug=self.debug,
+            systemd='SYSTEMD' in os.environ,
+            **self.config.logging)
 
     def __call__(self, argv=sys.argv[1:], environ=os.environ):
         return self.entrypoint(argv, environ)
 
     def entrypoint(self, argv, environ):
-        debug = detect_debug_mode(environ)
+        self.debug = detect_debug_mode(environ)
 
         retcode = 1
         try:
-            setup_logging(debug=debug)
+            setup_logging(debug=self.debug)
             logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
@@ -261,7 +264,7 @@ class BaseApplication(object):
             logger.critical("%s", e)
         except Exception:
             logger.exception('Unhandled error:')
-            if debug:
+            if self.debug:
                 pdb.post_mortem(sys.exc_info()[2])
             else:
                 logger.error(
