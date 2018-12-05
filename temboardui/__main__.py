@@ -13,6 +13,7 @@ from tornado import autoreload
 from sqlalchemy import create_engine
 
 from .toolkit import taskmanager
+from .toolkit.services import ServicesManager
 from .logger import generate_logging_config
 from .handlers.base import (
     BaseHandler,
@@ -112,7 +113,7 @@ class CustomTornadoWebApp(tornado.web.Application):
             exit(1)
 
 
-def temboard_main():
+def temboard_bootstrap():
     optparser = temboarduiOptions(description="temBoard UI/web client.",
                                   version=__version__)
     (options, _) = optparser.parse_args()
@@ -216,30 +217,6 @@ def temboard_main():
     plugins_bind_metadata(application.engine,
                           config.temboard['plugins_orm_engine'])
 
-    # Task Manager
-    config.temboard['tm_sock_path'] = os.path.join(config.temboard['home'],
-                                                   '.tm.socket')
-    if os.path.exists(config.temboard['tm_sock_path']):
-        # unix socket cleaning
-        os.unlink(config.temboard['tm_sock_path'])
-
-    tm = taskmanager.TaskManager(
-            task_path=str(os.path.join(config.temboard['home'],
-                                       '.tm.task_list')),
-            address=str(config.temboard['tm_sock_path'])
-         )
-    # copy configuration into context as a dict
-    tm.set_context(
-        'config',
-        {
-            'plugins': config.plugins,
-            'temboard': config.temboard,
-            'repository': config.repository,
-            'logging': config.logging
-        }
-    )
-    tm.start()
-
     # Add signal handlers on SIGTERM.
     signal.signal(signal.SIGTERM, httpd_sigterm_handler)
     server = AutoHTTPSServer(application, ssl_options=ssl_ctx)
@@ -250,11 +227,33 @@ def temboard_main():
         logger.error("FATAL: " + str(e) + '. Quit')
         sys.exit(3)
 
-    logger.info(
-        "Starting temboardui on https://%s:%d",
-        config.temboard['address'],
-        config.temboard['port'], )
-    tornado.ioloop.IOLoop.instance().start()
+    return config
+
+
+class SchedulerService(taskmanager.SchedulerService):
+    def apply_config(self):
+        # Overwrite apply_config to use temboard UI config object.
+        if not self.scheduler:
+            config = self.app.ui_config
+            config.temboard['tm_socket_path'] = os.path.join(
+                    config.temboard['home'], '.tm.socket')
+            self.scheduler = taskmanager.Scheduler(
+                address=config.temboard['tm_socket_path'],
+                task_path=os.path.join(
+                    config.temboard['home'], '.tm.task_list'),
+                authkey=None)
+            self.scheduler.task_queue = self.task_queue
+            self.scheduler.event_queue = self.event_queue
+            self.scheduler.setup_task_list()
+            self.scheduler.set_context(
+                'config',
+                {
+                    'plugins': config.plugins,
+                    'temboard': config.temboard,
+                    'repository': config.repository,
+                    'logging': config.logging
+                }
+            )
 
 
 class TemboardApplication(BaseApplication):
@@ -262,7 +261,35 @@ class TemboardApplication(BaseApplication):
     VERSION = __version__
 
     def main(self, argv, environ):
-        return temboard_main()
+        self.ui_config = config = temboard_bootstrap()
+
+        services = ServicesManager()
+
+        # T A S K   M A N A G E R
+
+        task_queue = taskmanager.Queue()
+        event_queue = taskmanager.Queue()
+
+        self.worker_pool = taskmanager.WorkerPoolService(
+            app=self, name=u'worker pool',
+            task_queue=task_queue, event_queue=event_queue,
+        )
+        self.worker_pool.apply_config()
+        services.add(self.worker_pool)
+
+        self.scheduler = SchedulerService(
+            app=self, name=u'scheduler',
+            task_queue=task_queue, event_queue=event_queue,
+        )
+        self.scheduler.apply_config()
+        services.add(self.scheduler)
+
+        with services:
+            logger.info(
+                "Starting temboardui on https://%s:%d",
+                config.temboard['address'],
+                config.temboard['port'], )
+            tornado.ioloop.IOLoop.instance().start()
 
 
 main = TemboardApplication()
