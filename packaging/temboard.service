@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=temboard
 Group=temboard
-ExecStart=/usr/bin/env temboard -c /etc/temboard/temboard.conf
+ExecStart=/usr/bin/env SYSTEMD=1 temboard -c /etc/temboard/temboard.conf
 
 [Install]
 WantedBy=multi-user.target
