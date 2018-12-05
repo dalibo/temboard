@@ -226,7 +226,7 @@ class BaseApplication(object):
         return old_plugins
 
     def reload(self):
-        logger.warn("Reloading configuration.")
+        logger.warning("Reloading configuration.")
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
