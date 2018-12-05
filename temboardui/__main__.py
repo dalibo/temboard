@@ -2,7 +2,6 @@
 
 import logging.config
 import os
-import signal
 import socket
 import sys
 
@@ -13,7 +12,10 @@ from tornado import autoreload
 from sqlalchemy import create_engine
 
 from .toolkit import taskmanager
-from .toolkit.services import ServicesManager
+from .toolkit.services import (
+    Service,
+    ServicesManager,
+)
 from .logger import generate_logging_config
 from .handlers.base import (
     BaseHandler,
@@ -54,7 +56,7 @@ from .async import new_worker_pool
 from .options import temboarduiOptions
 from .configuration import Configuration
 from .errors import ConfigurationError
-from .daemon import daemonize, httpd_sigterm_handler, remove_pidfile
+from .daemon import daemonize
 from .pluginsmgmt import load_plugins, plugins_bind_metadata
 from .autossl import AutoHTTPSServer
 from .toolkit.app import BaseApplication
@@ -109,7 +111,6 @@ class CustomTornadoWebApp(tornado.web.Application):
             self.logger.warn("Connection to the database failed: %s", e)
             self.logger.warn("Please check your configuration.")
             sys.stderr.write("FATAL: %s\n" % e.message)
-            remove_pidfile(pidfile)
             exit(1)
 
 
@@ -131,19 +132,18 @@ def temboard_bootstrap():
     logging.config.dictConfig(generate_logging_config(config))
     logger.info("Starting main process.")
     autoreload.watch(options.configfile)
+    config.temboard['tm_sock_path'] = os.path.join(
+        config.temboard['home'], '.tm.socket')
+
     # Run temboard as a background daemon.
     if (options.daemon):
         daemonize(options.pidfile, config)
-    # Dirty way for getting static/ and templates/ absolute paths.
+
+    return config, options
+
+
+def make_tornado_app(config, options):
     base_path = os.path.dirname(__file__)
-
-    # Worker pool creation.
-    new_worker_pool(12)
-
-    ssl_ctx = {
-        'certfile': config.temboard['ssl_cert_file'],
-        'keyfile': config.temboard['ssl_key_file']
-    }
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path': None
@@ -217,17 +217,7 @@ def temboard_bootstrap():
     plugins_bind_metadata(application.engine,
                           config.temboard['plugins_orm_engine'])
 
-    # Add signal handlers on SIGTERM.
-    signal.signal(signal.SIGTERM, httpd_sigterm_handler)
-    server = AutoHTTPSServer(application, ssl_options=ssl_ctx)
-    try:
-        server.listen(
-            config.temboard['port'], address=config.temboard['address'])
-    except socket.error as e:
-        logger.error("FATAL: " + str(e) + '. Quit')
-        sys.exit(3)
-
-    return config
+    return application
 
 
 class SchedulerService(taskmanager.SchedulerService):
@@ -235,10 +225,8 @@ class SchedulerService(taskmanager.SchedulerService):
         # Overwrite apply_config to use temboard UI config object.
         if not self.scheduler:
             config = self.app.ui_config
-            config.temboard['tm_socket_path'] = os.path.join(
-                    config.temboard['home'], '.tm.socket')
             self.scheduler = taskmanager.Scheduler(
-                address=config.temboard['tm_socket_path'],
+                address=config.temboard['tm_sock_path'],
                 task_path=os.path.join(
                     config.temboard['home'], '.tm.task_list'),
                 authkey=None)
@@ -256,13 +244,39 @@ class SchedulerService(taskmanager.SchedulerService):
             )
 
 
+class TornadoService(Service):
+    def setup(self):
+        new_worker_pool(12)
+        config = self.app.ui_config
+        ssl_ctx = {
+            'certfile': config.temboard['ssl_cert_file'],
+            'keyfile': config.temboard['ssl_key_file']
+        }
+        server = AutoHTTPSServer(self.app.webapp, ssl_options=ssl_ctx)
+        try:
+            server.listen(
+                config.temboard['port'], address=config.temboard['address'])
+        except socket.error as e:
+            logger.error("FATAL: " + str(e) + '. Quit')
+            sys.exit(3)
+
+    def serve(self):
+        with self:
+            logger.info(
+                "Serving temboardui on https://%s:%d",
+                self.app.ui_config.temboard['address'],
+                self.app.ui_config.temboard['port'], )
+            tornado.ioloop.IOLoop.instance().start()
+
+
 class TemboardApplication(BaseApplication):
     REPORT_URL = "https://github.com/dalibo/temboard/issues"
     VERSION = __version__
 
     def main(self, argv, environ):
-        self.ui_config = config = temboard_bootstrap()
-
+        config, options = temboard_bootstrap()
+        self.ui_config = config
+        self.webapp = make_tornado_app(config, options)
         services = ServicesManager()
 
         # T A S K   M A N A G E R
@@ -284,12 +298,11 @@ class TemboardApplication(BaseApplication):
         self.scheduler.apply_config()
         services.add(self.scheduler)
 
+        # H T T P   S E R V E R
+
+        webservice = TornadoService(app=self, name=u'main')
         with services:
-            logger.info(
-                "Starting temboardui on https://%s:%d",
-                config.temboard['address'],
-                config.temboard['port'], )
-            tornado.ioloop.IOLoop.instance().start()
+            webservice.run()
 
 
 main = TemboardApplication()
