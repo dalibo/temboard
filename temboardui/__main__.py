@@ -231,10 +231,9 @@ class SchedulerService(taskmanager.SchedulerService):
             self.scheduler.set_context(
                 'config',
                 {
-                    'plugins': config.plugins,
-                    'temboard': config.temboard,
-                    'repository': config.repository,
-                    'logging': config.logging
+                    'plugins': legacy_config.plugins,
+                    'temboard': dict(self.app.config.temboard),
+                    'repository': legacy_config.repository,
                 }
             )
 

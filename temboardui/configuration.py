@@ -4,14 +4,10 @@ except ImportError:
     import ConfigParser as configparser
 
 import logging
-from logging import _checkLevel as check_log_level
-from logging.handlers import SysLogHandler
 import os.path
 import json
 import re
 from temboardui.errors import ConfigurationError
-
-from .toolkit.log import HANDLERS
 
 
 logger = logging.getLogger(__name__)
@@ -38,12 +34,6 @@ class Configuration(configparser.ConfigParser):
                 "monitoring",
             ],
             'home': '/var/run/temboard'
-        }
-        self.logging = {
-            'method': 'syslog',
-            'facility': 'local0',
-            'destination': '/dev/log',
-            'level': 'DEBUG',
         }
         self.repository = {
             'host': os.environ.get('PGHOST', '/var/run/postgresql/'),
@@ -180,44 +170,6 @@ class Configuration(configparser.ConfigParser):
             raise ConfigurationError(
                 "Home directory %s not writable."
                 % (self.get('temboard', 'home')))
-        except configparser.NoOptionError:
-            pass
-
-        # Test if 'logging' section exists.
-        self.check_section('logging')
-        try:
-            method = self.get('logging', 'method')
-            if method not in HANDLERS:
-                raise ValueError()
-            self.logging['method'] = method
-        except ValueError:
-            raise ConfigurationError(
-                "Invalid 'method' option in 'logging' section in %s."
-                % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            facility = self.get('logging', 'facility')
-            if facility not in SysLogHandler.facility_names:
-                raise ValueError()
-            self.logging['facility'] = facility
-        except ValueError:
-            raise ConfigurationError(
-                "Invalid 'facility' option in 'logging' section in %s."
-                % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            self.logging['destination'] = self.get('logging', 'destination')
-        except configparser.NoOptionError:
-            pass
-        try:
-            level = self.get('logging', 'level')
-            self.logging['level'] = check_log_level(level)
-        except ValueError:
-            raise ConfigurationError(
-                "Invalid 'level' option in 'logging' section in %s."
-                % (self.configfile))
         except configparser.NoOptionError:
             pass
 
