@@ -73,9 +73,6 @@ class CustomTornadoWebApp(tornado.web.Application):
     config = None
     loaded_plugins = []
 
-    def set_config(self, config):
-        self.config = config
-
     def load_plugins(self, plugin_names):
         plugins = load_plugins(plugin_names, self.config)
         plugins_conf = dict()
@@ -198,7 +195,7 @@ def make_tornado_app(config):
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
 
-    application.set_config(config)
+    application.config = config
     config.plugins = application.load_plugins(config.temboard['plugins'])
     application.create_db_engine()
 
