@@ -42,7 +42,6 @@ jobs:
           name: Python tests
           command: |
             pytest --full-trace --cov-report=xml tests/unit/
-            codecov
       - &pip-cache-save
         save_cache:
           key: temboard-{{ .Branch }}

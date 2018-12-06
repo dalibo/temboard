@@ -2,7 +2,7 @@
 
 Monitor, optimize and configure multiple PostgreSQL instances.
 
-| |Python| |RTD| |Travis| |CircleCI| |Codecov| |PyPI|
+| |Python| |RTD| |Travis| |CircleCI| |PyPI|
 
 | |Demo|
 
@@ -63,10 +63,6 @@ temBoard is available under the `PostgreSQL License
 .. |CircleCI| image:: https://circleci.com/gh/dalibo/temboard.svg?style=shield
    :target: https://circleci.com/gh/dalibo/temboard
    :alt: CircleCI
-
-.. |CodeCov| image:: https://codecov.io/gh/dalibo/temboard/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/dalibo/temboard
-   :alt: Code coverage
 
 .. |Demo| image:: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
    :target: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
