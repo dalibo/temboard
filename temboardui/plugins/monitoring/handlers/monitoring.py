@@ -9,7 +9,6 @@ from sqlalchemy.exc import (
     IntegrityError,
 )
 
-from temboardui.toolkit import taskmanager
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.temboardclient import TemboardError, temboard_profile
 from temboardui.errors import TemboardUIError
@@ -144,10 +143,9 @@ class MonitoringCollectorHandler(JsonHandler):
                         critical=check[2]))
 
             # Create new task for checking preprocessed values
-            taskmanager.schedule_task(
+            self.application.temboard_app.scheduler.schedule_task(
                 'check_data_worker',
                 options=task_options,
-                listener_addr=str(config.temboard['tm_sock_path']),
                 expire=0,
             )
 

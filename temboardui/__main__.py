@@ -121,8 +121,6 @@ def legacy_bootstrap(config):
     legacy_config = Configuration()
     try:
         legacy_config.parsefile(config.temboard.configfile)
-        legacy_config.temboard['tm_sock_path'] = os.path.join(
-            legacy_config.temboard['home'], '.tm.socket')
     except (ConfigurationError, ImportError) as e:
         sys.stderr.write("FATAL: %s\n" % e.message)
         exit(1)
@@ -223,7 +221,7 @@ class SchedulerService(taskmanager.SchedulerService):
         if not self.scheduler:
             config = self.app.legacy_config
             self.scheduler = taskmanager.Scheduler(
-                address=config.temboard['tm_sock_path'],
+                address=os.path.join(config.temboard['home'], '.tm.socket'),
                 task_path=os.path.join(
                     config.temboard['home'], '.tm.task_list'),
                 authkey=None)
@@ -332,6 +330,7 @@ class TemboardApplication(BaseApplication):
         # H T T P   S E R V E R
 
         self.webapp = make_tornado_app(config, debug=self.config.logging.debug)
+        self.webapp.temboard_app = self
         webservice = TornadoService(app=self, name=u'main')
 
         with services:
