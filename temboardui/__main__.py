@@ -13,6 +13,7 @@ from tornado import autoreload
 from sqlalchemy import create_engine
 
 from .toolkit import taskmanager
+from .toolkit import validators as v
 from .toolkit.app import define_core_arguments
 from .toolkit.configuration import OptionSpec
 from .toolkit.services import (
@@ -56,8 +57,6 @@ from .handlers.settings.instance import (
 )
 
 from .async import new_worker_pool
-from .configuration import Configuration
-from .errors import ConfigurationError
 from .daemon import daemonize
 from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
@@ -117,13 +116,8 @@ class CustomTornadoWebApp(tornado.web.Application):
 
 
 def legacy_bootstrap(config):
-    # Load configuration from the configuration file.
-    legacy_config = Configuration()
-    try:
-        legacy_config.parsefile(config.temboard.configfile)
-    except (ConfigurationError, ImportError) as e:
-        sys.stderr.write("FATAL: %s\n" % e.message)
-        exit(1)
+    # Compat with legacy load_plugins
+    config.plugins = {}
 
     logging.config.dictConfig(generate_logging_config(
         systemd='SYSTEMD' in os.environ,
@@ -136,10 +130,10 @@ def legacy_bootstrap(config):
     if config.temboard.daemonize:
         daemonize(config.temboard.pidfile, config)
 
-    return legacy_config
+    return config
 
 
-def make_tornado_app(config, debug):
+def make_tornado_app(config):
     base_path = os.path.dirname(__file__)
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
@@ -202,7 +196,7 @@ def make_tornado_app(config, debug):
                 'path': base_path + '/static/fonts'
             })
         ],
-        debug=debug,
+        debug=config.logging.debug,
         cookie_secret=config.temboard['cookie_secret'],
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
@@ -217,24 +211,16 @@ def make_tornado_app(config, debug):
 
 class SchedulerService(taskmanager.SchedulerService):
     def apply_config(self):
-        # Overwrite apply_config to use temboard UI config object.
-        if not self.scheduler:
-            config = self.app.legacy_config
-            self.scheduler = taskmanager.Scheduler(
-                address=os.path.join(config.temboard['home'], '.tm.socket'),
-                task_path=os.path.join(
-                    config.temboard['home'], '.tm.task_list'),
-                authkey=None)
-            self.scheduler.task_queue = self.task_queue
-            self.scheduler.event_queue = self.event_queue
-            self.scheduler.setup_task_list()
+        super(SchedulerService, self).apply_config()
+        if self.scheduler:
+            # Set legacy config context.
             self.scheduler.set_context(
                 'config',
                 {
-                    'plugins': config.plugins,
-                    'temboard': config.temboard,
-                    'repository': config.repository,
-                    'logging': config.logging
+                    # Wrap settings in dict for JSON serializable.
+                    'plugins': dict(self.app.config.plugins),
+                    'temboard': dict(self.app.config.temboard),
+                    'repository': dict(self.app.config.repository),
                 }
             )
 
@@ -242,15 +228,15 @@ class SchedulerService(taskmanager.SchedulerService):
 class TornadoService(Service):
     def setup(self):
         new_worker_pool(12)
-        config = self.app.legacy_config
+        config = self.app.config
         ssl_ctx = {
-            'certfile': config.temboard['ssl_cert_file'],
-            'keyfile': config.temboard['ssl_key_file']
+            'certfile': config.temboard.ssl_cert_file,
+            'keyfile': config.temboard.ssl_key_file,
         }
         server = AutoHTTPSServer(self.app.webapp, ssl_options=ssl_ctx)
         try:
             server.listen(
-                config.temboard['port'], address=config.temboard['address'])
+                config.temboard.port, address=config.temboard.address)
         except socket.error as e:
             logger.error("FATAL: " + str(e) + '. Quit')
             sys.exit(3)
@@ -259,8 +245,8 @@ class TornadoService(Service):
         with self:
             logger.info(
                 "Serving temboardui on https://%s:%d",
-                self.app.legacy_config.temboard['address'],
-                self.app.legacy_config.temboard['port'], )
+                self.app.config.temboard.address,
+                self.app.config.temboard.port)
             tornado.ioloop.IOLoop.instance().start()
 
 
@@ -278,14 +264,55 @@ def define_arguments(parser):
     )
 
 
+def cookie_secret(raw):
+    length = len(raw)
+    if length < 10:
+        raise ValueError("cookie secret is shorter than 10 chars.")
+    if length > 128:
+        raise ValueError("cookie secret is longer than 128 chars.")
+    return raw
+
+
 def list_options_specs():
     s = 'temboard'
+    # Manage plugin list here until we use plugin entrypoint.
+    yield OptionSpec(
+        s, 'plugins',
+        default=TemboardApplication.DEFAULT_PLUGINS,
+        validator=v.jsonlist,
+    )
     yield OptionSpec(s, 'daemonize', default=False)
     yield OptionSpec(s, 'pidfile', default='/run/temboard.pid')
+    yield OptionSpec(s, 'address', default='0.0.0.0', validator=v.address)
+    yield OptionSpec(s, 'port', validator=v.port, default=8888)
+    yield OptionSpec(
+        s, 'ssl_cert_file',
+        default=OptionSpec.REQUIRED, validator=v.file_)
+    yield OptionSpec(
+        s, 'ssl_key_file',
+        default=OptionSpec.REQUIRED, validator=v.file_)
+    yield OptionSpec(s, 'ssl_ca_cert_file', validator=v.file_)
+    yield OptionSpec(s, 'cookie_secret', validator=cookie_secret)
+    home = os.environ.get('HOME', '/var/lib/temboard')
+    yield OptionSpec(s, 'home', default=home, validator=v.writeabledir)
+
+    s = 'repository'
+    yield OptionSpec(s, 'host', default='/var/run/postgresql')
+    yield OptionSpec(s, 'instance', default='main')
+    yield OptionSpec(s, 'port', default=5432, validator=v.port)
+    yield OptionSpec(s, 'user', default='temboard')
+    yield OptionSpec(s, 'password', default='temboard')
+    yield OptionSpec(s, 'dbname', default='temboard')
 
 
 class TemboardApplication(BaseApplication):
     DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
+    DEFAULT_PLUGINS = [
+        'activity',
+        'dashboard',
+        'monitoring',
+        'pgconf',
+    ]
     PROGRAM = 'temboard'
     REPORT_URL = "https://github.com/dalibo/temboard/issues"
     VERSION = __version__
@@ -303,8 +330,7 @@ class TemboardApplication(BaseApplication):
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
         # Manage logging_debug default until we use toolkit OptionSpec.
-        config = legacy_bootstrap(self.config)
-        self.legacy_config = config
+        legacy_bootstrap(self.config)
 
         services = ServicesManager()
 
@@ -329,9 +355,9 @@ class TemboardApplication(BaseApplication):
 
         # H T T P   S E R V E R
 
-        self.webapp = make_tornado_app(config, debug=self.config.logging.debug)
+        self.webapp = make_tornado_app(self.config)
         self.webapp.temboard_app = self
-        webservice = TornadoService(app=self, name=u'main')
+        webservice = TornadoService(app=self, name=u'main', services=services)
 
         with services:
             webservice.run()

@@ -114,7 +114,7 @@ class MonitoringCollectorHandler(JsonHandler):
                 data['data']['max_connections'] = \
                     data['instances'][0]['max_connections']
 
-            task_options = dict(dbconf=config.repository,
+            task_options = dict(dbconf=dict(config.repository),
                                 host_id=host_id,
                                 instance_id=instance_id,
                                 data=list())
