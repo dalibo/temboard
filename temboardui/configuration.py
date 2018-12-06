@@ -3,14 +3,9 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import logging
 import os.path
-import json
-import re
+
 from temboardui.errors import ConfigurationError
-
-
-logger = logging.getLogger(__name__)
 
 
 class Configuration(configparser.ConfigParser):
@@ -20,21 +15,6 @@ class Configuration(configparser.ConfigParser):
     def __init__(self, *args, **kwargs):
         configparser.ConfigParser.__init__(self, *args, **kwargs)
         # Default configuration values
-        self.temboard = {
-            'port': 8888,
-            'address': '0.0.0.0',
-            'ssl_cert_file': None,
-            'ssl_key_file': None,
-            'ssl_ca_cert_file': None,
-            'cookie_secret': None,
-            'plugins': [
-                "dashboard",
-                "pgconf",
-                "activity",
-                "monitoring",
-            ],
-            'home': '/var/run/temboard'
-        }
         self.repository = {
             'host': os.environ.get('PGHOST', '/var/run/postgresql/'),
             'port': int(os.environ.get('PGPORT', '5432')),
@@ -44,31 +24,6 @@ class Configuration(configparser.ConfigParser):
         }
 
         self.plugins = {}
-
-    def check_section(self, section):
-        if not self.has_section(section):
-            raise ConfigurationError(
-                    "Section '%s' not found in configuration file %s"
-                    % (section, self.configfile))
-
-    def abspath(self, path):
-        if path.startswith('/'):
-            return path
-        else:
-            return os.path.realpath('/'.join([self.configdir, path]))
-
-    def getfile(self, section, name):
-        path = self.get(section, name)
-        if not path:
-            return path
-        path = self.abspath(path)
-        try:
-            with open(path) as fd:
-                fd.read()
-        except Exception as e:
-            logger.warn("Failed to open %s: %s", path, e)
-            raise ConfigurationError("%s file can't be opened." % (path,))
-        return path
 
     def parsefile(self, configfile):
         self.configfile = os.path.realpath(configfile)
@@ -87,92 +42,6 @@ class Configuration(configparser.ConfigParser):
         self.load()
 
     def load(self):
-        # Test if 'temboard' section exists.
-        self.check_section('temboard')
-
-        try:
-            if not (self.getint('temboard', 'port') >= 0
-                    and self.getint('temboard', 'port') <= 65535):
-                raise ValueError()
-            self.temboard['port'] = self.getint('temboard', 'port')
-        except ValueError:
-            raise ConfigurationError(
-                "'port' option must be an integer [0-65535] in %s."
-                % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-        try:
-            if not re.match(
-                r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$',  # noqa
-                self.get('temboard', 'address')):
-                raise ValueError()
-            self.temboard['address'] = self.get('temboard', 'address')
-        except ValueError:
-            raise ConfigurationError(
-                "'address' option must be a valid IPv4 in %s."
-                % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_cert_file'] = self.getfile(
-                'temboard', 'ssl_cert_file')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_key_file'] = self.getfile(
-                'temboard', 'ssl_key_file')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            self.temboard['ssl_ca_cert_file'] = self.getfile(
-                'temboard', 'ssl_ca_cert_file')
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            if not re.match(r'.{10,128}$',
-               self.get('temboard', 'cookie_secret')):
-                raise ValueError()
-            val = self.get('temboard', 'cookie_secret').lstrip('"').rstrip('"')
-            self.temboard['cookie_secret'] = val
-        except ValueError:
-            raise ConfigurationError(
-                "'cookie_secret' parameter must be a valid string (.{10,128}) "
-                "in %s." % (self.configfile))
-        except configparser.NoOptionError:
-            pass
-
-        try:
-            plugins = json.loads(self.get('temboard', 'plugins'))
-            if not type(plugins) == list:
-                raise ValueError()
-            for plugin in plugins:
-                if not re.match('^[a-zA-Z0-9]+$', str(plugin)):
-                    raise ValueError
-            self.temboard['plugins'] = plugins
-        except configparser.NoOptionError:
-            pass
-        except ValueError:
-            raise ConfigurationError(
-                "'plugins' option must be a list of string (alphanum only) in "
-                "%s" % (self.configfile))
-
-        try:
-            home = self.get('temboard', 'home')
-            if not os.access(home, os.W_OK):
-                raise Exception()
-            self.temboard['home'] = os.path.realpath(
-                self.get('temboard', 'home'))
-        except Exception:
-            raise ConfigurationError(
-                "Home directory %s not writable."
-                % (self.get('temboard', 'home')))
-        except configparser.NoOptionError:
-            pass
-
         try:
             self.repository['host'] = self.get('repository', 'host')
         except (configparser.NoSectionError, configparser.NoOptionError):
