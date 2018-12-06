@@ -69,12 +69,9 @@ logger = logging.getLogger('temboardui')
 
 
 class CustomTornadoWebApp(tornado.web.Application):
-    logger = None
+    logger = logger
     config = None
     loaded_plugins = []
-
-    def set_logger(self, logger):
-        self.logger = logger
 
     def set_config(self, config):
         self.config = config
@@ -95,7 +92,7 @@ class CustomTornadoWebApp(tornado.web.Application):
         log_message = '%d %s %.2fms' % (handler.get_status(),
                                         handler._request_summary(),
                                         request_time)
-        self.logger.info(log_message)
+        logger.info(log_message)
 
     def create_db_engine(self):
         dburi = "postgresql://{user}:{pwd}@:{p}/{db}?host={h}".format(
@@ -109,8 +106,8 @@ class CustomTornadoWebApp(tornado.web.Application):
         try:
             check_sqlalchemy_connectivity(self.engine)
         except Exception as e:
-            self.logger.warn("Connection to the database failed: %s", e)
-            self.logger.warn("Please check your configuration.")
+            logger.warning("Connection to the database failed: %s", e)
+            logger.warning("Please check your configuration.")
             sys.stderr.write("FATAL: %s\n" % e.message)
             exit(1)
 
@@ -202,7 +199,6 @@ def make_tornado_app(config):
         default_handler_class=Error404Handler)
 
     application.set_config(config)
-    application.set_logger(logger)
     config.plugins = application.load_plugins(config.temboard['plugins'])
     application.create_db_engine()
 
