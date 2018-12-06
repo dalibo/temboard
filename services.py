@@ -112,6 +112,7 @@ class Service(object):
 
     def serve(self):
         with self:
+            logger.debug(u"Entering %s loop.", self)
             while True:
                 if not self.check_parent_running():
                     logger.warn(

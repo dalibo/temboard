@@ -484,8 +484,6 @@ class Scheduler(object):
         timeout = 1
         date_end = float(time.time()) + timeout
 
-        logger.debug("Select on Listener with t=%s", self.select_timeout)
-
         # wait for I/O on Listener and event Queue
         try:
             fds, _, _ = select(
@@ -517,7 +515,6 @@ class Scheduler(object):
                 date_end = float(time.time()) + timeout
         else:
             # we are here every 1 second
-            logger.debug("Scheduling")
             # schedule Tasks & maintain Tasks list
             self.schedule()
 
@@ -774,6 +771,24 @@ class SchedulerService(Service):
 
         for task in workerset.list_tasks():
             self.scheduler.task_list.rm(task.id)
+
+    def schedule_task(
+            self, worker_name, id=None, options=None, start=None,
+            redo_interval=None, expire=3600):
+        message = Message(MSG_TYPE_TASK_NEW, Task(
+            id=id,
+            worker_name=worker_name,
+            options=options,
+            start_datetime=start or datetime.utcnow(),
+            redo_interval=redo_interval,
+            expire=expire,
+        ))
+
+        conn = Client(self.scheduler.address, self.scheduler.authkey)
+        conn.send(message)
+        res = conn.recv()
+        conn.close()
+        return res
 
 
 class WorkerPool(object):
