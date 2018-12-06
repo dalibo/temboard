@@ -331,7 +331,7 @@ class TemboardApplication(BaseApplication):
 
         self.webapp = make_tornado_app(config, debug=self.config.logging.debug)
         self.webapp.temboard_app = self
-        webservice = TornadoService(app=self, name=u'main')
+        webservice = TornadoService(app=self, name=u'main', services=services)
 
         with services:
             webservice.run()
