@@ -484,8 +484,6 @@ class Scheduler(object):
         timeout = 1
         date_end = float(time.time()) + timeout
 
-        logger.debug("Select on Listener with t=%s", self.select_timeout)
-
         # wait for I/O on Listener and event Queue
         try:
             fds, _, _ = select(
@@ -517,7 +515,6 @@ class Scheduler(object):
                 date_end = float(time.time()) + timeout
         else:
             # we are here every 1 second
-            logger.debug("Scheduling")
             # schedule Tasks & maintain Tasks list
             self.schedule()
 
