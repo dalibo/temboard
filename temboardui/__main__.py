@@ -57,8 +57,6 @@ from .handlers.settings.instance import (
 )
 
 from .async import new_worker_pool
-from .configuration import Configuration
-from .errors import ConfigurationError
 from .daemon import daemonize
 from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
@@ -118,14 +116,8 @@ class CustomTornadoWebApp(tornado.web.Application):
 
 
 def legacy_bootstrap(config):
-    # Load configuration from the configuration file.
-    legacy_config = Configuration()
-    try:
-        legacy_config.parsefile(config.temboard.configfile)
-    except (ConfigurationError, ImportError) as e:
-        sys.stderr.write("FATAL: %s\n" % e.message)
-        exit(1)
-    legacy_config.temboard = dict(config.temboard)
+    # Compat with legacy load_plugins
+    config.plugins = {}
 
     logging.config.dictConfig(generate_logging_config(
         systemd='SYSTEMD' in os.environ,
@@ -138,10 +130,10 @@ def legacy_bootstrap(config):
     if config.temboard.daemonize:
         daemonize(config.temboard.pidfile, config)
 
-    return legacy_config
+    return config
 
 
-def make_tornado_app(config, debug):
+def make_tornado_app(config):
     base_path = os.path.dirname(__file__)
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
@@ -204,7 +196,7 @@ def make_tornado_app(config, debug):
                 'path': base_path + '/static/fonts'
             })
         ],
-        debug=debug,
+        debug=config.logging.debug,
         cookie_secret=config.temboard['cookie_secret'],
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler)
@@ -222,13 +214,13 @@ class SchedulerService(taskmanager.SchedulerService):
         super(SchedulerService, self).apply_config()
         if self.scheduler:
             # Set legacy config context.
-            legacy_config = self.app.legacy_config
             self.scheduler.set_context(
                 'config',
                 {
-                    'plugins': legacy_config.plugins,
-                    'temboard': legacy_config.temboard,
-                    'repository': legacy_config.repository,
+                    # Wrap settings in dict for JSON serializable.
+                    'plugins': dict(self.app.config.plugins),
+                    'temboard': dict(self.app.config.temboard),
+                    'repository': dict(self.app.config.repository),
                 }
             )
 
@@ -304,6 +296,14 @@ def list_options_specs():
     home = os.environ.get('HOME', '/var/lib/temboard')
     yield OptionSpec(s, 'home', default=home, validator=v.writeabledir)
 
+    s = 'repository'
+    yield OptionSpec(s, 'host', default='/var/run/postgresql')
+    yield OptionSpec(s, 'instance', default='main')
+    yield OptionSpec(s, 'port', default=5432, validator=v.port)
+    yield OptionSpec(s, 'user', default='temboard')
+    yield OptionSpec(s, 'password', default='temboard')
+    yield OptionSpec(s, 'dbname', default='temboard')
+
 
 class TemboardApplication(BaseApplication):
     DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
@@ -330,8 +330,7 @@ class TemboardApplication(BaseApplication):
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
         # Manage logging_debug default until we use toolkit OptionSpec.
-        config = legacy_bootstrap(self.config)
-        self.legacy_config = config
+        legacy_bootstrap(self.config)
 
         services = ServicesManager()
 
@@ -356,7 +355,7 @@ class TemboardApplication(BaseApplication):
 
         # H T T P   S E R V E R
 
-        self.webapp = make_tornado_app(config, debug=self.config.logging.debug)
+        self.webapp = make_tornado_app(self.config)
         self.webapp.temboard_app = self
         webservice = TornadoService(app=self, name=u'main', services=services)
 
