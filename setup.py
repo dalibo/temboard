@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 # Load version number
 setup_path = os.path.dirname(os.path.realpath(__file__))
-execfile(os.path.join(setup_path,'temboardui','version.py'))
+execfile(os.path.join(setup_path, 'temboardui/version.py'))
 
 
 # Accept Tornado 5.X on Python 2.7.9+
@@ -17,7 +17,7 @@ BLEEDING_EDGE_TORNADO = '5' if sys.version_info < (2, 7, 9) else '6'
 
 SETUP_KWARGS = dict(
     name='temboard',
-    version=__version__,
+    version=__version__,  # noqa, imported by execfile.
     description='temBoard User Interface.',
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
