@@ -1,3 +1,5 @@
+import logging
+
 import tornado.web
 import json
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -17,6 +19,7 @@ from temboardui.application import get_role_by_cookie, get_instance
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    logger = logging.getLogger('temboardui.web')
 
     def initialize(self, ssl_ca_cert_file, template_path):
         self.template_path = template_path
@@ -31,10 +34,6 @@ class BaseHandler(tornado.web.RequestHandler):
             self.db_session.close()
         except Exception:
             pass
-
-    @property
-    def logger(self,):
-        return self.application.logger
 
     def get(self):
         self.redirect('/home')
