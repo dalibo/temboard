@@ -1,5 +1,5 @@
-import pytest
 from StringIO import StringIO
+
 
 def test_pivot():
     from temboardui.plugins.monitoring.pivot import pivot_timeserie
