@@ -1,8 +1,6 @@
 from multiprocessing import Lock
 from multiprocessing.sharedctypes import Array
-from ctypes import (Structure, c_char, c_double, c_int, c_wchar,
-                    c_short)
-import os
+from ctypes import (Structure, c_char, c_double)
 import time
 
 from temboardagent.errors import (SharedItem_not_found, SharedItem_exists,
@@ -116,8 +114,8 @@ class Sessions(object):
                             (self.sessions[i].sessionid))
                 try:
                     NotificationMgmt.push(config, Notification(
-                                        username=self.sessions[i].username,
-                                        message="Session expired"))
+                        username=self.sessions[i].username,
+                        message="Session expired"))
                 except NotificationError as e:
                     logger.error(e.message)
 

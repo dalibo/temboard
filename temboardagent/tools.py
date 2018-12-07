@@ -125,7 +125,7 @@ def check_fqdn(name):
     letters, - and have dots.
     """
     # StackOverflow #11809631
-    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]'
+    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]'  # noqa W605
                 '{2,63}\.?$)', name):
         return True
     else:

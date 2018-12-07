@@ -25,7 +25,7 @@ def get_metrics(app):
                 pg_data=pginfo.setting('data_directory'),
                 pg_port=pginfo.setting('port'),
             ))
-    except UserError as e:
+    except UserError:
         pass
 
     dm = DashboardMetrics()
@@ -224,7 +224,7 @@ SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
         mem_cached = 0
         mem_free = 0
         mem_active = 0
-        pattern_line_meminfo = re.compile('^([^:]+):\s+([0-9]+) kB$')
+        pattern_line_meminfo = re.compile('^([^:]+):\s+([0-9]+) kB$')  # noqa W605
         with open('/proc/meminfo', 'r') as fd:
             for line in fd.readlines():
                 m = pattern_line_meminfo.match(line)

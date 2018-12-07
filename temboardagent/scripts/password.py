@@ -27,8 +27,7 @@ def main():
         display_usage()
     sys.stdout.write("%s:%s\n" % (
         expl[0],
-        hash_password(expl[0], expl[1]).decode('utf-8')
-        )
+        hash_password(expl[0], expl[1]).decode('utf-8'))
     )
     exit(0)
 

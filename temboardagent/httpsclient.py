@@ -74,7 +74,7 @@ class RequestWithMethod(urllib2.Request):
 
     def get_method(self):
         return self._method if self._method else \
-                super(RequestWithMethod, self).get_method()
+            super(RequestWithMethod, self).get_method()
 
 
 def https_request(in_ca_cert_file, method, url, headers=None, data=None):

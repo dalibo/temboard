@@ -61,9 +61,5 @@ def gen_sessionid(username):
     """
     bytes_sha_username = sha512(username.encode('utf-8')).digest()
     bytes_rand = hexlify(urandom(32))
-    bytes_time = hexlify(str(time.time()*1000).encode('utf-8'))
-    return sha256(
-                bytes_sha_username +
-                bytes_rand +
-                bytes_time
-            ).hexdigest()
+    bytes_time = hexlify(str(time.time() * 1000).encode('utf-8'))
+    return sha256(bytes_sha_username + bytes_rand + bytes_time).hexdigest()

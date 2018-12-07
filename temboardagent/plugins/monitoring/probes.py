@@ -11,6 +11,7 @@ from temboardagent.inventory import SysInfo
 
 logger = logging.getLogger(__name__)
 
+
 def load_probes(options, home):
     """Give a list of probe objects, ready to run."""
 
@@ -51,9 +52,8 @@ def run_probes(probes, instances, delta=True):
                 logger.debug("Running host probe %s", p.get_name())
                 try:
                     out = p.run()
-                except:
+                except Exception:
                     pass
-
 
         if p.level == 'instance' or p.level == 'database':
             out = []
@@ -65,7 +65,7 @@ def run_probes(probes, instances, delta=True):
                             p.level, p.get_name(), i['instance'])
                         try:
                             out += p.run(i)
-                        except:
+                        except Exception:
                             pass
 
         output[p.get_name()] = out
@@ -151,7 +151,7 @@ class Probe(object):
                     delta_values[k] = delta_value
 
                 delta = (delta_time, delta_values)
-        except Exception as e:
+        except Exception:
             delta = (None, None)
         try:
             q = Queue("%s/%s.q" % (self.home, store_key), max_length=1,
@@ -496,10 +496,10 @@ class probe_cpu(HostProbe):
             if cols[0] == 'cpu':
                 # Convert values to int then in milliseconds,
                 to_delta = {
-                    'time_user': (int(cols[1]) + int(cols[2]))
-                    * 1000 / self.hz,
-                    'time_system': (int(cols[3]) + int(cols[6]) + int(cols[7]))
-                    * 1000 / self.hz,
+                    'time_user': ((int(cols[1]) + int(cols[2])) * 1000 /
+                                  self.hz),
+                    'time_system': (int(cols[3]) + int(cols[6]) +
+                                    int(cols[7])) * 1000 / self.hz,
                     'time_idle': int(cols[4]) * 1000 / self.hz,
                     'time_iowait': int(cols[5]) * 1000 / self.hz,
                     'time_steal': int(cols[8]) * 1000 / self.hz
@@ -641,13 +641,13 @@ class probe_wal_files(SqlProbe):
             SELECT count(s.f) AS archive_ready
             FROM pg_ls_dir('pg_xlog/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'
-            """
+            """  # noqa W605
         else:
             sql = """
             SELECT count(s.f) AS archive_ready
             FROM pg_ls_dir('pg_wal/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'
-            """
+            """  # noqa W605
         rows = self.run_sql(conninfo, sql)
 
         metric['archive_ready'] = rows[0]['archive_ready']
@@ -681,6 +681,8 @@ class probe_replication(SqlProbe):
     min_version = 90000
 
     def run(self, conninfo):
+        version = self.get_version(conninfo)
+
         if conninfo['standby']:
             if version < 100000:
                 return self.run_sql(conninfo, """select

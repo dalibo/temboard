@@ -165,12 +165,10 @@ def notifications(http_context, app, sessions):
 def get_status(http_context, app, sessions):
     logger.info('Starting /status.')
     try:
-        start_datetime=time.strftime(
-                            "%Y-%m-%dT%H:%M:%S%Z",
-                            app.start_datetime.timetuple())
-        reload_datetime=time.strftime(
-                            "%Y-%m-%dT%H:%M:%S%Z",
-                            app.start_datetime.timetuple())
+        start_datetime = time.strftime("%Y-%m-%dT%H:%M:%S%Z",
+                                       app.start_datetime.timetuple())
+        reload_datetime = time.strftime("%Y-%m-%dT%H:%M:%S%Z",
+                                        app.start_datetime.timetuple())
         ret = dict(
             pid=app.pid,
             user=app.user,
