@@ -18,4 +18,11 @@ $(function() {
     if (element.is('li')) {
         element.addClass('active');
     }
+
+    $('#menu-collapse').click(function(event) {
+      $(document.body).toggleClass('sidebar-collapsed');
+      localStorage.setItem('sidebarCollapsed', $(document.body).hasClass('sidebar-collapsed'));
+      event.preventDefault();
+      window.dispatchEvent(new Event('resize'));
+    });
 });
