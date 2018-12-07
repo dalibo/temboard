@@ -32,9 +32,6 @@ from .handlers.user import (
     LoginJsonHandler,
     LogoutHandler,
 )
-from .handlers.home import (
-    HomeHandler,
-)
 from .handlers.notification import (
     NotificationsHandler,
 )
@@ -103,6 +100,9 @@ def setup_tornado_app(app, config):
     app.config = config
 
     base_path = os.path.dirname(__file__)
+    # Load handlers
+    __import__('temboardui.handlers.home')
+
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path': None
@@ -110,7 +110,6 @@ def setup_tornado_app(app, config):
 
     handlers = [
         (r"/", BaseHandler, handler_conf),
-        (r"/home", HomeHandler, handler_conf),
         (r"/login", LoginHandler, handler_conf),
         (r"/json/login", LoginJsonHandler, handler_conf),
         (r"/logout", LogoutHandler, handler_conf),
