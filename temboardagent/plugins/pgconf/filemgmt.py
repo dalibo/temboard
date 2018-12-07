@@ -105,14 +105,14 @@ def get_file_versions(filepath):
     for f in listdir(filedir):
         try:
             if f[:l_filename] == filename \
-               and check_version_format(f[l_filename+1:]):
+               and check_version_format(f[l_filename + 1:]):
                 """
                 Let's consider f as one of the  previous version of the file
                 if the first part of f's name is equal to original file name
                 and the rest of f's name (-1 for the seperating dot) is a
                 valid version number.
                 """
-                versions.append(f[l_filename+1:])
+                versions.append(f[l_filename + 1:])
         except Exception:
             pass
     # Return a sorted versions list.

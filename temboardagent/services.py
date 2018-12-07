@@ -122,7 +122,7 @@ class Service(object):
         # This method is called by the loop and must serve one request/task.
         # This method should not block for too long waiting for work to be
         # done. Reload is applied between two calls of this method.
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ServicesManager(object):

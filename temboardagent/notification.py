@@ -44,9 +44,9 @@ class NotificationMgmt():
 
             # Push the notification in the queue.
             q.push(Message(content=json.dumps({
-                                        'date': notification.date,
-                                        'username': notification.username,
-                                        'message': notification.message})))
+                'date': notification.date,
+                'username': notification.username,
+                'message': notification.message})))
         except (Exception) as e:
             raise NotificationError('Can not push new notification: %s' %
                                     e.message)

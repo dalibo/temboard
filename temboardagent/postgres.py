@@ -21,7 +21,7 @@ class ConnectionManager(object):
         )
         try:
             self.conn.connect()
-        except PostgresError as e:
+        except PostgresError:
             raise UserError("Failed to connect to Postgres")
         return self.conn
 

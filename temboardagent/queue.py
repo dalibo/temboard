@@ -104,7 +104,7 @@ class Queue(object):
                                 fcntl.flock(fd, fcntl.LOCK_UN)
                                 break
                             yield json.loads(
-                                    self.parse_row_message(segment).content)
+                                self.parse_row_message(segment).content)
                     segment = lines[0]
                     # Read each line.
                     for idx in range(len(lines) - 1, 0, -1):
@@ -114,7 +114,7 @@ class Queue(object):
                                 fcntl.flock(fd, fcntl.LOCK_UN)
                                 break
                             yield json.loads(
-                                    self.parse_row_message(lines[idx]).content)
+                                self.parse_row_message(lines[idx]).content)
 
                 if segment is not None:
                     yield json.loads(self.parse_row_message(segment).content)

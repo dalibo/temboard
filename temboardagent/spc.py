@@ -259,7 +259,7 @@ class protocol3(object):
             while pos < nb_fields:
                 eop = ndata.index(b'\x00')
                 name = ndata[0:eop].decode()
-                ndata = ndata[eop+1:]
+                ndata = ndata[eop + 1:]
                 (table_oid, col_oid, type_oid, type_size, typmod, format_code)\
                     = struct.unpack('!LhLhlh', ndata[0:18])
                 ndata = ndata[18:]
@@ -286,10 +286,10 @@ class protocol3(object):
             pos = 0
             cur = 7
             while pos < nb_fields:
-                col_length = struct.unpack('!l', data[cur:cur+4])[0]
+                col_length = struct.unpack('!l', data[cur:cur + 4])[0]
                 cur += 4
                 if col_length > 0:
-                    value = data[cur:cur+col_length].decode()
+                    value = data[cur:cur + col_length].decode()
                     cur += col_length
                 else:
                     value = None
@@ -382,9 +382,9 @@ class protocol3(object):
         Is the authentication method implemented ?
         """
         return message[0][0:1] == b'R' and (
-                message[1]['code'] == 3 or
-                message[1]['code'] == 5 or
-                message[1]['code'] == 0)
+            message[1]['code'] == 3 or
+            message[1]['code'] == 5 or
+            message[1]['code'] == 0)
 
     def is_parameter_status(self, typ):
         """
@@ -632,7 +632,7 @@ class connector(object):
         Convert the given hostname into a more convenient form.
         """
         # ip4
-        if re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
+        if re.match(r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'  # noqa W605
                     '(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)){3}$',
                     self._host):
             self._host_ip4 = self._host
@@ -666,11 +666,11 @@ class connector(object):
         while not self._message_buffer.is_eop(self._protocol.get_eop_tags()):
             try:
                 raw_data = self._socket.recv(self._socket_read_length)
-            except socket.timeout as err:
+            except socket.timeout:
                 raise error('PGC105', 'FATAL', "Timeout")
             except socket.error as err:
-                raise error('PGC106', 'FATAL', "Socket error: {msg}".format(
-                                                                    msg=err))
+                raise error('PGC106', 'FATAL',
+                            "Socket error: {msg}".format(msg=err))
             self._message_buffer.write(raw_data)
 
     def _get_messages(self, method):
@@ -718,8 +718,8 @@ class connector(object):
         if self._host_unix is not None:
             try:
                 tmp_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                tmp_socket.connect(self._host_unix + '/.s.PGSQL.'
-                                   + str(self._port))
+                tmp_socket.connect(self._host_unix + '/.s.PGSQL.' +
+                                   str(self._port))
                 return tmp_socket
             except socket.error:
                 raise error('PGC101', 'FATAL', "Could not connect to "
@@ -733,9 +733,9 @@ class connector(object):
                 return tmp_socket
             except socket.error:
                 if self._host_ip6 is None:
-                    raise error('PGC101', 'FATAL', "Could not connect to "
-                                                   "{host}".format(
-                                                        host=self._host_ip4))
+                    raise error('PGC101', 'FATAL',
+                                "Could not connect to {host}".format(
+                                    host=self._host_ip4))
 
         # Try with IPV6
         if self._host_ip6 is not None:
@@ -823,12 +823,12 @@ class connector(object):
         if self._protocol.is_auth_md5(messages[0]):
             # MD5
             password = "md5" + hashlib.md5(
-                                hashlib.md5(
-                                    self._password.encode()
-                                    + self._user.encode()
-                                ).hexdigest().encode()
-                                + self._protocol.get_salt(messages[0])
-                            ).hexdigest()
+                hashlib.md5(
+                    self._password.encode() +
+                    self._user.encode()
+                ).hexdigest().encode() +
+                self._protocol.get_salt(messages[0])
+            ).hexdigest()
             data = self._protocol.password_message(password)
             self._socket_send(data)
             self._socket_read()

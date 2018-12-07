@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 from collections import namedtuple
 
@@ -8,8 +7,6 @@ from temboardagent.errors import HTTPError, NotificationError
 from temboardagent.tools import validate_parameters
 from temboardagent.notification import NotificationMgmt, Notification
 from .types import (
-    T_FILE_VERSION,
-    T_NEW_VERSION,
     T_PGSETTINGS_FILTER,
 )
 
@@ -290,7 +287,7 @@ def post_settings(conn, config, http_context):
                         raise Exception()
         except HTTPError as e:
             raise HTTPError(e.code, e.message['error'])
-        except Exception as e:
+        except Exception:
             pass
         if not checked:
             raise HTTPError(406, 'Parameter %s can\'t be checked.' %
