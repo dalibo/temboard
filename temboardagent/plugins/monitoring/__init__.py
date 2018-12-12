@@ -30,6 +30,7 @@ from .probes import (
     probe_memory,
     probe_process,
     probe_replication_lag,
+    probe_replication_connection,
     probe_sessions,
     probe_temp_files_size_delta,
     probe_tblspc_size,
@@ -119,6 +120,12 @@ def get_probe_replication_lag(http_context, app):
 @routes.get(b'/temp_files_size_delta', check_key=True)
 def get_probe_temp_files_size_delta(http_context, app):
     return api_run_probe(probe_temp_files_size_delta(app.config.monitoring),
+                         app.config)
+
+
+@routes.get(b'/replication_connection', check_key=True)
+def get_probe_replication_connection(http_context, app):
+    return api_run_probe(probe_replication_connection(app.config.monitoring),
                          app.config)
 
 

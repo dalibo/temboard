@@ -86,6 +86,45 @@ def parse_primary_conninfo(pci):
     return (r.get('host'), r.get('port'), r.get('user'), r.get('password'))
 
 
+def get_primary_conninfo(conn):
+    # Read and parse primary_conninfo from recovery.conf file if any. It
+    # returns a tuple: (host, port, user, password)
+
+    # Check if we are in recovery mode *and* recovery.conf file exists
+    # Note: won't work with PG12
+    conn.execute(
+        "SELECT (pg_is_in_recovery() AND ("
+        "  length("
+        "    coalesce("
+        "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
+        "    )"
+        "  ) > 0"
+        ")) AS is_in_recovery"
+    )
+    r = list(conn.get_rows())
+    if not r[0]['is_in_recovery']:
+        raise Exception("Instance not in recovery or recovery.conf file is "
+                        "missing.")
+
+    # Fetch primary_conninfo from recovery.conf file
+    # Note: won't work with PG12
+    conn.execute(
+        "SELECT l FROM unnest("
+        "  string_to_array("
+        "    pg_read_file('recovery.conf'), E'\\n'"
+        "  )"
+        ") AS l "
+        "WHERE l LIKE '%primary\\_conninfo%'"
+    )
+    r = list(conn.get_rows())
+    if len(r) == 0:
+        raise Exception("Unable to get primary_conninfo from recovery.conf "
+                        "file.")
+    pci = r[0]['l']
+    # Parse and return primary_conninfo
+    return parse_primary_conninfo(pci)
+
+
 class Probe(object):
     """Base class for all plugins."""
     # At which level the information is gathered: host, instance or db
@@ -708,39 +747,9 @@ class probe_replication_lag(SqlProbe):
 
         try:
             conn.connect()
-            # Check if we are in recovery mode *and* recovery.conf file exists
-            # Note: won't work with PG12
-            conn.execute(
-                "SELECT (pg_is_in_recovery() AND ("
-                "  length("
-                "    coalesce("
-                "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
-                "    )"
-                "  ) > 0"
-                ")) AS is_in_recovery"
-            )
-            r = list(conn.get_rows())
-            if not r[0]['is_in_recovery']:
-                conn.close()
-                return []
 
-            # Fetch primary_conninfo from recovery.conf file
-            # Note: won't work with PG12
-            conn.execute(
-                "SELECT l FROM unnest("
-                "  string_to_array("
-                "    pg_read_file('recovery.conf'), E'\\n'"
-                "  )"
-                ") AS l "
-                "WHERE l LIKE '%primary\\_conninfo%'"
-            )
-            r = list(conn.get_rows())
-            if len(r) == 0:
-                conn.close()
-                return []
-            pci = r[0]['l']
             # Get primary parameters from primary_conninfo
-            (p_host, p_port, p_user, p_password) = parse_primary_conninfo(pci)
+            (p_host, p_port, p_user, p_password) = get_primary_conninfo(conn)
 
             # Let's fetch primary current wal position with IDENTIFY_SYSTEM
             # through streaming replication protocol.
@@ -801,3 +810,44 @@ WHERE d.datallowconn"""  # noqa
     delta_columns = ['size']
     delta_key = 'dbname'
     delta_interval_column = 'measure_interval'
+
+
+class probe_replication_connection(SqlProbe):
+    # Check if the instance is connected to streaming replication according to
+    # primary_conninfo from recovery.conf file.
+    level = 'instance'
+    min_version = 96000
+
+    def run(self, conninfo):
+        if not conninfo['standby']:
+            return []
+        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
+                         conninfo['password'], 'postgres')
+
+        try:
+            conn.connect()
+            # Get primary parameters from primary_conninfo
+            (p_host, p_port, p_user, p_password) = get_primary_conninfo(conn)
+
+            # pg_stat_wal_receiver lookup
+            conn.execute(
+                "SELECT '{p_host}' AS upstream, NOW() AS datetime, "
+                "CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected "
+                "FROM pg_stat_wal_receiver "
+                "WHERE status='streaming' AND "
+                "      conninfo LIKE '%host={p_host}%'".format(p_host=p_host)
+            )
+            r = list(conn.get_rows())
+            if len(r) == 0:
+                conn.close()
+                return []
+            conn.close()
+            return r
+
+        except Exception as e:
+            logger.exception(str(e))
+            try:
+                conn.close()
+            except Exception:
+                pass
+            return []
