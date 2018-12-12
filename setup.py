@@ -22,6 +22,7 @@ SETUP_KWARGS = dict(
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
     install_requires=[
+        'futures',
         'python-dateutil>=1.5',
         'psycopg2>=2.5.1',
         'sqlalchemy>=0.9.8',
