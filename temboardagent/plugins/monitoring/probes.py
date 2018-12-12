@@ -74,6 +74,18 @@ def run_probes(probes, instances, delta=True):
     return output
 
 
+def parse_primary_conninfo(pci):
+    # Parse primary_conninfo string picked up from recovery.conf file
+    r = dict()
+    m = re.match(r'.*primary_conninfo\s*=\s*\'(.*)\'[^\']*$', pci)
+    if m:
+        for f in re.findall(r"(\w+)\s*=\s*''(.+?)''", m.group(1)):
+            r[f[0]] = f[1]
+        for f in re.findall(r"(\w+)\s*=\s*(\w+)", m.group(1)):
+            r[f[0]] = f[1]
+    return (r.get('host'), r.get('port'), r.get('user'), r.get('password'))
+
+
 class Probe(object):
     """Base class for all plugins."""
     # At which level the information is gathered: host, instance or db
@@ -676,24 +688,101 @@ class probe_wal_files(SqlProbe):
         return [metric]
 
 
-class probe_replication(SqlProbe):
+class probe_replication_lag(SqlProbe):
+    # Streaming replication lag probe, in bytes
+    #
+    # The instance is in recovery mode ?
+    # + recovery.conf file exists ?
+    # + recovery.conf contains primary_conninfo ?
+    # + get primary node's current wal position with IDENTIFY_SYSTEM
+    #   through streaming repl. protocol
+    # + return primary wal position and current replay diff.
     level = 'instance'
     min_version = 90000
 
     def run(self, conninfo):
-        version = self.get_version(conninfo)
+        if not conninfo['standby']:
+            return []
+        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
+                         conninfo['password'], 'postgres')
 
-        if conninfo['standby']:
-            if version < 100000:
-                return self.run_sql(conninfo, """select
-  current_timestamp as datetime,
-  pg_last_xlog_receive_location() as receive_location,
-  pg_last_xlog_replay_location() as replay_location""")
+        try:
+            conn.connect()
+            # Check if we are in recovery mode *and* recovery.conf file exists
+            # Note: won't work with PG12
+            conn.execute(
+                "SELECT (pg_is_in_recovery() AND ("
+                "  length("
+                "    coalesce("
+                "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
+                "    )"
+                "  ) > 0"
+                ")) AS is_in_recovery"
+            )
+            r = list(conn.get_rows())
+            if not r[0]['is_in_recovery']:
+                conn.close()
+                return []
+
+            # Fetch primary_conninfo from recovery.conf file
+            # Note: won't work with PG12
+            conn.execute(
+                "SELECT l FROM unnest("
+                "  string_to_array("
+                "    pg_read_file('recovery.conf'), E'\\n'"
+                "  )"
+                ") AS l "
+                "WHERE l LIKE '%primary\\_conninfo%'"
+            )
+            r = list(conn.get_rows())
+            if len(r) == 0:
+                conn.close()
+                return []
+            pci = r[0]['l']
+            # Get primary parameters from primary_conninfo
+            (p_host, p_port, p_user, p_password) = parse_primary_conninfo(pci)
+
+            # Let's fetch primary current wal position with IDENTIFY_SYSTEM
+            # through streaming replication protocol.
+            p_conn = connector(p_host, int(p_port), p_user, p_password,
+                               database='replication')
+            p_conn._replication = 1
+            p_conn.connect()
+            p_conn.execute("IDENTIFY_SYSTEM")
+            r = list(p_conn.get_rows())
+            if len(r) == 0:
+                conn.close()
+                p_conn.close()
+                return []
+            xlogpos = r[0]['xlogpos']
+            p_conn.close()
+
+            # Proceed with LSN diff
+            if conn.get_pg_version() >= 100000:
+                conn.execute(
+                    "SELECT pg_wal_lsn_diff("
+                    "  '{xlogpos}'::pg_lsn,"
+                    "   pg_last_wal_replay_lsn()"
+                    ") AS lsn_diff, NOW() AS datetime".format(xlogpos=xlogpos)
+                )
             else:
-                return self.run_sql(conninfo, """select
-  current_timestamp as datetime,
-  pg_last_wal_receive_lsn() as receive_location,
-  pg_last_wal_replay_lsn() as replay_location""")
+                conn.execute(
+                    "SELECT pg_xlog_location_diff("
+                    "  '{xlogpos}'::TEXT,"
+                    "   pg_last_xlog_replay_location()"
+                    ") AS lsn_diff, NOW() AS datetime".format(xlogpos=xlogpos)
+                )
+            r = list(conn.get_rows())
+            conn.close()
+            if len(r) == 0:
+                return []
+            return [{'lag': int(r[0]['lsn_diff']),
+                     'datetime': r[0]['datetime']}]
 
-        else:
+        except Exception as e:
+            logger.exception(str(e))
+            try:
+                conn.close()
+            except Exception:
+                pass
             return []

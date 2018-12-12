@@ -340,16 +340,16 @@ class TestMonitoring:
             status = e.code
         assert status == 200
 
-    def test_14_monitoring_replication(self):
+    def test_14_monitoring_replication_lag(self):
         """
-        [monitoring] 14: GET /monitoring/probe/replication : Check HTTP code returned is 200
+        [monitoring] 14: GET /monitoring/probe/replication_lag : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/monitoring/probe/replication' % (
+                url='https://%s:%s/monitoring/probe/replication_lag' % (
                     ENV['agent']['host'],
                     ENV['agent']['port']
                 ),

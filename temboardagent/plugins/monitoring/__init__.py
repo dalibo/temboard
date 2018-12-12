@@ -29,7 +29,7 @@ from .probes import (
     probe_locks,
     probe_memory,
     probe_process,
-    probe_replication,
+    probe_replication_lag,
     probe_sessions,
     probe_tblspc_size,
     probe_wal_files,
@@ -109,9 +109,10 @@ def get_probe_wal_files(http_context, app):
     return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
-@routes.get(b'/replication', check_key=True)
-def get_probe_replication(http_context, app):
-    return api_run_probe(probe_replication(app.config.monitoring), app.config)
+@routes.get(b'/replication_lag', check_key=True)
+def get_probe_replication_lag(http_context, app):
+    return api_run_probe(probe_replication_lag(app.config.monitoring),
+                         app.config)
 
 
 def api_run_probe(probe_instance, config):
