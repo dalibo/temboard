@@ -361,3 +361,25 @@ class TestMonitoring:
         except HTTPError as e:
             status = e.code
         assert status == 200
+
+    def test_15_monitoring_temp_files_size_delta(self):
+        """
+        [monitoring] 15: GET /monitoring/probe/temp_files_size_delta : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/temp_files_size_delta' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200

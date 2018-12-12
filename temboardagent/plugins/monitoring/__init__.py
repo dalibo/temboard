@@ -31,6 +31,7 @@ from .probes import (
     probe_process,
     probe_replication_lag,
     probe_sessions,
+    probe_temp_files_size_delta,
     probe_tblspc_size,
     probe_wal_files,
     probe_xacts,
@@ -112,6 +113,12 @@ def get_probe_wal_files(http_context, app):
 @routes.get(b'/replication_lag', check_key=True)
 def get_probe_replication_lag(http_context, app):
     return api_run_probe(probe_replication_lag(app.config.monitoring),
+                         app.config)
+
+
+@routes.get(b'/temp_files_size_delta', check_key=True)
+def get_probe_temp_files_size_delta(http_context, app):
+    return api_run_probe(probe_temp_files_size_delta(app.config.monitoring),
                          app.config)
 
 

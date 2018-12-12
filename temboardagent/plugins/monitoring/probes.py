@@ -786,3 +786,18 @@ class probe_replication_lag(SqlProbe):
             except Exception:
                 pass
             return []
+
+
+class probe_temp_files_size_delta(SqlProbe):
+    # Temporary files probe
+    level = 'instance'
+    sql = """SELECT
+  current_timestamp AS datetime,
+  s.datname AS dbname,
+  temp_bytes AS size
+FROM pg_stat_database s
+JOIN pg_database d ON (d.oid = s.datid)
+WHERE d.datallowconn"""  # noqa
+    delta_columns = ['size']
+    delta_key = 'dbname'
+    delta_interval_column = 'measure_interval'
