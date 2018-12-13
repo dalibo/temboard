@@ -31,7 +31,7 @@ class Response(object):
         self.body = body or u''
 
 
-class Redirect(Response):
+class Redirect(Response, Exception):
     def __init__(self, location, permanent=False):
         super(Redirect, self).__init__(
             status_code=301 if permanent else 302,
@@ -94,7 +94,11 @@ class CallableHandler(RequestHandler):
 
     @coroutine
     def get(self, *args, **kwargs):
-        response = yield self.callable_(self.request, *args, **kwargs)
+        try:
+            response = yield self.callable_(self.request, *args, **kwargs)
+        except Redirect as response:
+            pass
+
         if response is None:
             response = u''
         if isinstance(response, unicode):
@@ -154,7 +158,16 @@ class WebApplication(TornadoApplication):
             # partial, and swallow app argument in the wrapper.
             @run_on_executor
             def wrapper(app, *args):
-                return func(*args)
+                try:
+                    return func(*args)
+                except (HTTPError, Redirect):
+                    raise
+                except Exception:
+                    # Since async traceback is useless, spit here traceback and
+                    # just raise HTTP 500.
+                    logger.exception("Unhandled Error:")
+                    raise HTTPError(500)
+
             wrapper = functools.partial(wrapper, self)
 
             self.wildcard_router.add_rules([(
