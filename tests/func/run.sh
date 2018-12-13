@@ -24,7 +24,8 @@ teardown() {
 	trap - EXIT INT TERM
 
 	if [ -f $LOGFILE ] ; then
-		cat $LOGFILE >&2
+		# Trim line from syslog-like prefix.
+		sed 's/.*\]: //g' $LOGFILE >&2
 	fi
 
 	# If not on CI and we are docker entrypoint (PID 1), let's wait forever on
@@ -63,7 +64,7 @@ pip2.7 install \
        --requirement tests/func/requirements.txt
 
 rm -f $LOGFILE
-TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=$LOGFILE \
+TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
 

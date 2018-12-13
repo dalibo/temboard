@@ -32,9 +32,6 @@ from .handlers.user import (
     LoginJsonHandler,
     LogoutHandler,
 )
-from .handlers.notification import (
-    NotificationsHandler,
-)
 from .handlers.settings.user import (
     SettingsDeleteUserJsonHandler,
     SettingsUserHandler,
@@ -102,6 +99,7 @@ def setup_tornado_app(app, config):
     base_path = os.path.dirname(__file__)
     # Load handlers
     __import__('temboardui.handlers.home')
+    __import__('temboardui.handlers.notification')
 
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
@@ -146,9 +144,6 @@ def setup_tornado_app(app, config):
          DiscoverInstanceJsonHandler, handler_conf),
         # Agent Login
         (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler,
-         handler_conf),
-        # Notifications
-        (r"/server/(.*)/([0-9]{1,5})/notifications", NotificationsHandler,
          handler_conf),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
