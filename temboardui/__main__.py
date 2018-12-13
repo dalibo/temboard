@@ -23,7 +23,6 @@ from .toolkit.services import (
 from .toolkit.log import generate_logging_config
 from .web import app
 from .handlers.base import (
-    BaseHandler,
     Error404Handler,
 )
 from .handlers.user import (
@@ -107,7 +106,6 @@ def setup_tornado_app(app, config):
     }
 
     handlers = [
-        (r"/", BaseHandler, handler_conf),
         (r"/login", LoginHandler, handler_conf),
         (r"/json/login", LoginJsonHandler, handler_conf),
         (r"/logout", LogoutHandler, handler_conf),

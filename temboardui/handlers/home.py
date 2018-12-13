@@ -2,6 +2,11 @@ from temboardui.application import get_instances_by_role_name
 from ..web import app, render_template, Redirect
 
 
+@app.route('/')
+def index(request):
+    return Redirect('/home')
+
+
 @app.route('/home')
 def home(request):
     role = request.current_user
