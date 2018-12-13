@@ -1,7 +1,7 @@
 NAME="dalibo/temboard-agent"
 
 build:
-	docker build --tag $(NAME) .
+	docker build --build-arg http_proxy --tag $(NAME) .
 
 clean:
 	docker images --quiet $(NAME) | xargs --no-run-if-empty --verbose docker rmi -f
