@@ -1,3 +1,4 @@
+import logging
 import tornado.web
 from time import sleep
 
@@ -22,7 +23,11 @@ from temboardui.errors import TemboardUIError
 from ..web import (
     Redirect,
     app,
+    render_template,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/logout')
@@ -32,69 +37,37 @@ def logout(request):
     return Redirect('/home')
 
 
-class LoginHandler(BaseHandler):
-
-    @tornado.web.asynchronous
-    def get(self):
-        run_background(self.get_login, self.async_callback)
-
-    @tornado.web.asynchronous
-    def post(self):
-        run_background(self.post_login, self.async_callback)
-
-    def get_login(self):
-        role = None
+@app.route('/login', methods=['GET', 'POST'])
+def login(request):
+    if 'GET' == request.method:
+        if request.current_user is None:
+            return render_template('login.html', nav=False)
+        else:
+            return Redirect('/home')
+    else:
+        # Ensure request take at least one second to mitigate dictionnaries
+        # attacks.
+        sleep(1)
         try:
-            self.load_auth_cookie()
-            self.start_db_session()
-
-            role = self.current_user
-        except Exception as e:
-            self.logger.exception(str(e))
-        if role is not None:
-            return HTMLAsyncResult(
-                http_code=302,
-                redirection='/home'
+            p_role_name = request.handler.get_argument('username')
+            p_role_password = request.handler.get_argument('password')
+            passhash = hash_password(p_role_name, p_role_password)
+            role = get_role_by_auth(request.db_session, p_role_name, passhash)
+            logger.info(u"Role '%s' authentificated.", role.role_name)
+            referer = request.handler.get_secure_cookie('referer_uri')
+            response = Redirect(referer or '/home')
+            cookie = gen_cookie(role.role_name, passhash)
+            response.secure_cookies['temboard'] = cookie
+            return response
+        except TemboardUIError as e:
+            logger.error(u"Login failed: %s", e)
+            response = render_template(
+                'login.html',
+                nav=False,
+                error=u"Wrong username/password.",
             )
-        return HTMLAsyncResult(
-            http_code=200,
-            template_file='login.html',
-            data={
-                'nav': False
-            }
-        )
-
-    def post_login(self):
-        try:
-            self.logger.info("Login.")
-            p_role_name = self.get_argument('username')
-            p_role_password = self.get_argument('password')
-            role_hash_password = hash_password(p_role_name, p_role_password)
-
-            self.start_db_session()
-            role = get_role_by_auth(self.db_session, p_role_name,
-                                    role_hash_password)
-            self.logger.info("Role '%s' authentificated." % (role.role_name))
-            sleep(1)
-            self.logger.info("Done.")
-            redirection = self.get_secure_cookie('referer_uri') \
-                if self.get_secure_cookie('referer_uri') is not None \
-                else '/home'
-            return HTMLAsyncResult(
-                http_code=302,
-                redirection=redirection,
-                secure_cookie={
-                    'name': 'temboard',
-                    'content': gen_cookie(role.role_name,
-                                          role_hash_password)})
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Failed.")
-            sleep(1)
-            return HTMLAsyncResult(
-                http_code=401,
-                template_file='login.html',
-                data={'nav': False, 'error': 'Wrong username/password.'})
+            response.status_code = 401
+            return response
 
 
 class AgentLoginHandler(BaseHandler):
