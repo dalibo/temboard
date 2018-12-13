@@ -12,7 +12,7 @@ execfile(os.path.join(setup_path, 'temboardui/version.py'))
 
 
 # Accept Tornado 5.X on Python 2.7.9+
-BLEEDING_EDGE_TORNADO = '5' if sys.version_info < (2, 7, 9) else '6'
+BLEEDING_EDGE_TORNADO = '4.5' if sys.version_info < (2, 7, 9) else '6'
 
 
 SETUP_KWARGS = dict(
