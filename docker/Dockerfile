@@ -1,4 +1,4 @@
-FROM python:3.6-slim
+FROM python:3.7-slim
 
 RUN apt-get update -y \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
@@ -12,10 +12,7 @@ RUN apt-get update -y \
     ;
 
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
-
-RUN chmod 0755 /usr/local/bin/wait-for-it \
-    && groupadd --system docker \
-    && useradd --home-dir /var/lib/postgresql --create-home --system --groups docker postgres
+RUN chmod 0755 /usr/local/bin/wait-for-it
 
 VOLUME /var/lib/temboard-agent
 WORKDIR /var/lib/temboard-agent

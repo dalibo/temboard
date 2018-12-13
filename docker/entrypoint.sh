@@ -10,24 +10,32 @@ catchall() {
 }
 trap catchall INT EXIT TERM
 
-# Stage 1, as root
+# Stage 1, as root: setup system user dans groups
 if [ $EUID = 0 ] ; then
-	# Fix UID and GID
-	groupmod -g $(stat -c "%g" /var/run/docker.sock) docker
-	usermod -u $(stat -c "%u" /var/lib/postgresql/data) postgres
-	group=$(stat -c "%G" /var/lib/postgresql/data)
-	if [ "${group}" = "UNKNOWN" ] ; then
-		groupmod -g $(stat -c "%g" /var/lib/postgresql/data) postgres
-		group=postgres
+	# Create postgres user matching postgres container one.
+	POSTGRES_UID=$(stat -c "%u" /var/lib/postgresql/data)
+	POSTGRES_GID=$(stat -c "%g" /var/lib/postgresql/data)
+	if ! getent passwd postgres &>/dev/null ; then
+		groupadd --system --gid ${POSTGRES_GID} postgres
+		useradd --system \
+			--home-dir /var/lib/postgresql --no-create-home \
+			--uid ${POSTGRES_UID} --gid postgres --shell /bin/bash \
+			postgres
 	fi
-	adduser postgres $group
 	chown -R postgres: ~postgres /etc/temboard-agent /var/lib/temboard-agent
 
-	# And reexec myself as temboard.
+	# Create docker group matching docker socket ownership.
+	DOCKER_GID=$(stat -c "%g" /var/run/docker.sock)
+	if ! getent group ${DOCKER_GID} &>/dev/null ; then
+		groupadd --system --gid ${DOCKER_GID} docker
+	fi
+	adduser postgres docker
+
+	# And reexec myself as postgres.
 	exec sudo -u postgres $0 "$@"
 fi
 
-# Now stage 2 as temboard user
+# Now stage 2 as postgres user
 
 command=${*-temboard-agent}
 
