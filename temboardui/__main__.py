@@ -27,7 +27,6 @@ from .handlers.base import (
 )
 from .handlers.user import (
     AgentLoginHandler,
-    LoginJsonHandler,
 )
 from .handlers.settings.user import (
     SettingsDeleteUserJsonHandler,
@@ -104,7 +103,6 @@ def setup_tornado_app(app, config):
     }
 
     handlers = [
-        (r"/json/login", LoginJsonHandler, handler_conf),
         # Manage users
         (r"/settings/users", SettingsUserHandler, handler_conf),
         (r"/json/settings/user$", SettingsUserJsonHandler, handler_conf),
