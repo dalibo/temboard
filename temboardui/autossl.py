@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 def parse_http_headers(payload):
     # Implements simple HTTP1Connection._read_message but IO-free.
     lines = payload.splitlines()
-    if lines and 'HTTP/' in lines[0]:
+    if lines and ':' not in lines[0]:
         # Drop start line
         lines.pop(0)
     # Drop contents

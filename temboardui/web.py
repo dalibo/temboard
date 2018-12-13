@@ -262,17 +262,26 @@ class WebApplication(TornadoApplication):
 
             wrapper = functools.partial(wrapper, self)
 
-            self.wildcard_router.add_rules([(
+            rules = [(
                 url, CallableHandler, dict(
                     callable_=wrapper,
                     methods=methods or ['GET'],
                     logger=logging.getLogger(logger_name),
                 ),
-            )])
-
+            )]
+            self.add_rules(rules)
             return func
 
         return decorator
+
+    def add_rules(self, rules):
+        if hasattr(self, 'wildcard_router'):  # Tornado 4.5+
+            self.wildcard_router.add_rules(rules)
+        elif not self.handlers:
+            self.add_handlers(r'.*$', rules)
+        else:
+            rules = [tornadoweb.URLSpec(*r) for r in rules]
+            self.handlers[0][1].extend(rules)
 
     def instance_route(self, url, methods=None):
         # Helper to declare a route with instance URL prefix and middleware.
