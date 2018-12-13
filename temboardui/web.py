@@ -10,12 +10,21 @@ from tornado.concurrent import run_on_executor
 from tornado.gen import coroutine
 from tornado.web import (
     Application as TornadoApplication,
+    HTTPError,
     RequestHandler,
 )
 from tornado.template import Loader as TemplateLoader
 
-from .application import get_role_by_cookie
+from .application import (
+    get_instance,
+    get_role_by_cookie,
+)
 from .model import Session as DBSession
+from .temboardclient import (
+    TemboardError,
+    temboard_profile,
+    temboard_get_notifications,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -126,6 +135,86 @@ class CallableHandler(RequestHandler):
         self.finish(response.body)
 
 
+class InstanceHelper(object):
+    # This helper class implements all operations related to instance dedicated
+    # request.
+
+    URL_PREFIX = r'/server/(.*)/([0-9]{1,5})'
+
+    @classmethod
+    def add_middleware(cls, callable_):
+        # Wraps an HTTP handler callable related to a Postgres instance
+
+        @functools.wraps(callable_)
+        def middleware(request, address, port, *args):
+            # Swallow adddress and port arguments.
+            request.instance = cls(request)
+            request.instance.fetch_instance(address, port)
+            return callable_(request, *args)
+
+        return middleware
+
+    def __init__(self, request):
+        self.request = request
+        self._xsession = False
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.instance.hostname)
+
+    def fetch_instance(self, address, port):
+        self.instance = get_instance(self.request.db_session, address, port)
+        if not self.instance:
+            raise HTTPError(404)
+
+    @property
+    def cookie_name(self):
+        return 'temboard_%s_%s' % (
+            self.instance.agent_address, self.instance.agent_port,
+        )
+
+    @property
+    def xsession(self):
+        if self._xsession is False:
+            self._xsession = self.request.handler.get_secure_cookie(
+                self.cookie_name)
+        return self._xsession
+
+    def redirect_login(self):
+        login_url = "/server/%s/%s/login" % (
+            self.instance.agent_address, self.instance.agent_port)
+        raise Redirect(location=login_url)
+
+    def get_xsession(self):
+        if not self.xsession:
+            self.redirect_login()
+        return self.xsession
+
+    def get_profile(self):
+        try:
+            return temboard_profile(
+                self.request.config.temboard.ssl_ca_cert_file,
+                self.instance.agent_address,
+                self.instance.agent_port,
+                self.get_xsession(),
+            )
+        except TemboardError as e:
+            if 401 == e.code:
+                self.redirect_login()
+            logger.error('Instance error: %s', e)
+            raise HTTPError(500)
+
+    def get_notifications(self):
+        return temboard_get_notifications(
+            self.request.config.temboard.ssl_ca_cert_file,
+            self.instance.agent_address,
+            self.instance.agent_port,
+            self.get_xsession(),
+        )
+
+
 class WebApplication(TornadoApplication):
     def __init__(self, *a, **kwargs):
         super(WebApplication, self).__init__(*a, **kwargs)
@@ -145,12 +234,15 @@ class WebApplication(TornadoApplication):
             self.settings.setdefault('static_hash_cache', False)
             self.settings.setdefault('serve_traceback', True)
 
-    def route(self, url, methods=None):
+    def route(self, url, methods=None, with_instance=False):
         # Implements flask-like route registration of a simple synchronous
         # callable.
 
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
+
+            if with_instance:
+                func = InstanceHelper.add_middleware(func)
 
             # run_on_executor searches for `executor` attribute of first
             # argument. Thus, we bind executor to application object for
@@ -181,6 +273,14 @@ class WebApplication(TornadoApplication):
             return func
 
         return decorator
+
+    def instance_route(self, url, methods=None):
+        # Helper to declare a route with instance URL prefix and middleware.
+        return self.route(
+            url=InstanceHelper.URL_PREFIX + url,
+            methods=methods,
+            with_instance=True,
+        )
 
 
 # Global app instance for registration of core handlers.
