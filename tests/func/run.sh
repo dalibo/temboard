@@ -44,7 +44,8 @@ teardown() {
 trap teardown EXIT INT TERM
 
 # For CentOS
-export PYTHONPATH=/usr/local/python2.7/lib/site-packages
+export PYTHONPATH=/usr/local/lib/python2.7/site-packages:/usr/local/lib64/python2.7/site-packages
+
 
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
