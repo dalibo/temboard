@@ -55,24 +55,19 @@ render_template = TemplateRenderer(template_path)
 
 
 class CallableHandler(RequestHandler):
-    # Run synchronous callable in thread.
-
-    def initialize(self, callable_, methods=None):
-        name = callable_.__module__ + '.' + callable_.__name__
-        self.logger = logging.getLogger(name)
-        self.SUPPORTED_METHODS = methods or ['GET']
-
-        callable_ = run_on_executor(callable_)
-        # run_on_executor searches for `executor` attribute of first argument.
-        # Thus, we bind executor to request object for run_on_executor and
-        # hardcode here request as the first argument.
-        self.request.executor = self.application.executor
-        self.callable_ = functools.partial(callable_, self.request)
+    # Adapt flask-like callable in Tornado Handler API.
 
     @property
     def executor(self):
         # To enable @run_on_executor methods, we must have executor property.
         return self.application.executor
+
+    def initialize(self, callable_, methods=None, logger=None):
+        self.callable_ = callable_
+        self.logger = logger or logging.getLogger(__name__)
+        self.request.handler = self
+        self.request.config = self.application.config
+        self.SUPPORTED_METHODS = methods or ['GET']
 
     def get_current_user(self):
         cookie = self.get_secure_cookie('temboard')
@@ -99,7 +94,7 @@ class CallableHandler(RequestHandler):
 
     @coroutine
     def get(self, *args, **kwargs):
-        response = yield self.callable_(*args, **kwargs)
+        response = yield self.callable_(self.request, *args, **kwargs)
         if response is None:
             response = u''
         if isinstance(response, unicode):
@@ -151,12 +146,25 @@ class WebApplication(TornadoApplication):
         # callable.
 
         def decorator(func):
+            logger_name = func.__module__ + '.' + func.__name__
+
+            # run_on_executor searches for `executor` attribute of first
+            # argument. Thus, we bind executor to application object for
+            # run_on_executor, hardcode here app as the first argument using
+            # partial, and swallow app argument in the wrapper.
+            @run_on_executor
+            def wrapper(app, *args):
+                return func(*args)
+            wrapper = functools.partial(wrapper, self)
+
             self.wildcard_router.add_rules([(
                 url, CallableHandler, dict(
-                    callable_=func,
+                    callable_=wrapper,
                     methods=methods or ['GET'],
+                    logger=logging.getLogger(logger_name),
                 ),
             )])
+
             return func
 
         return decorator

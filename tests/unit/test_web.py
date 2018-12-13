@@ -21,14 +21,14 @@ def test_app_route(mocker):
 
     app = WebApplication()
 
-    @app.route('/')
+    @app.route('/', methods=['GET', 'POST'])
     def index(request):
         pass
 
     request = mocker.Mock(name='request', host_name='0.0.0.0', path='/')
     handler = app.default_router.find_handler(request)
 
-    assert handler.handler_kwargs['callable_'] is index
+    assert handler.handler_kwargs['methods'] == ['GET', 'POST']
 
 
 def test_handler(executor, io_loop, mocker):
