@@ -19,15 +19,17 @@ from temboardui.application import (
     hash_password,
 )
 from temboardui.errors import TemboardUIError
+from ..web import (
+    Redirect,
+    app,
+)
 
 
-class LogoutHandler(BaseHandler):
-    def get(self):
-        try:
-            self.clear_cookie('temboard')
-        except Exception:
-            pass
-        self.redirect('/home')
+@app.route('/logout')
+def logout(request):
+    request.handler.clear_cookie('temboard')
+    # Redirect to /home so that /login referer is /home, not logout.
+    return Redirect('/home')
 
 
 class LoginHandler(BaseHandler):
