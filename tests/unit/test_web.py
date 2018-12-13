@@ -9,14 +9,11 @@ def executor():
 
 
 def test_app_configure(mocker):
-    autoreload = mocker.patch('temboardui.web.autoreload')
-
     from temboardui.web import WebApplication
 
     app = WebApplication()
     app.configure(debug=True)
-
-    assert autoreload.start.called is True
+    assert app.settings['autoreload'] is True
 
 
 def test_app_route(mocker):
