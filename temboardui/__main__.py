@@ -213,6 +213,12 @@ class TornadoService(Service):
 
     def serve(self):
         with self:
+            # Automatically reload modified modules (from Tornado's
+            # Application.__init__). This code must be done here *after*
+            # daemonize, because it instanciates ioloop for current PID.
+            if self.app.webapp.settings.get('autoreload'):
+                autoreload.start()
+
             logger.info(
                 "Serving temboardui on https://%s:%d",
                 self.app.config.temboard.address,

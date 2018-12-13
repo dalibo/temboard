@@ -5,7 +5,6 @@ import functools
 import logging
 import os
 
-from tornado import autoreload
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
 from tornado.gen import coroutine
@@ -146,10 +145,6 @@ class WebApplication(TornadoApplication):
             self.settings.setdefault('compiled_template_cache', False)
             self.settings.setdefault('static_hash_cache', False)
             self.settings.setdefault('serve_traceback', True)
-
-        # Automatically reload modified modules (from Tornado's __init__)
-        if self.settings.get('autoreload'):
-            autoreload.start()
 
     def route(self, url, methods=None):
         # Implements flask-like route registration of a simple synchronous

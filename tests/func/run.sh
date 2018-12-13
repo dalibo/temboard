@@ -3,6 +3,7 @@
 top_srcdir=$(readlink -m $0/../../..)
 cd $top_srcdir
 
+LOGFILE=temboard-func.log
 PIDFILE=$(readlink -m temboard-func.pid)
 
 retrykill() {
@@ -21,6 +22,10 @@ retrykill() {
 teardown() {
 	exit_code=$?
 	trap - EXIT INT TERM
+
+	if [ -f $LOGFILE ] ; then
+		cat $LOGFILE >&2
+	fi
 
 	# If not on CI and we are docker entrypoint (PID 1), let's wait forever on
 	# error. This allows user to enter the container and debug after a build
@@ -57,8 +62,11 @@ pip2.7 install \
        --upgrade \
        --requirement tests/func/requirements.txt
 
-temboard --daemon --debug --pid-file ${PIDFILE}
+rm -f $LOGFILE
+TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=$LOGFILE \
+		       temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
+
 pytest \
 	--driver Remote \
 	--host ${SELENIUM-selenium} \
