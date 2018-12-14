@@ -20,6 +20,7 @@ services:
       MANUAL: "${MANUAL-}"
       SELENIUM: http://selenium:4444
       TEMBOARD_PASSWORD: *PGPASSWORD
+      UI: https://ui:8888
       XDG_CACHE_HOME: /workspace/tests/func/.docker-cache/
     volumes:
     - ../..:/workspace

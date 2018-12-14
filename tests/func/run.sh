@@ -77,9 +77,10 @@ fi
 
 TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
-wait-for-it.sh 0.0.0.0:8888
+UI=${UI-https://0.0.0.0:8888}
+wait-for-it.sh ${UI#https://}
 
 pytest \
-	--base-url https://0.0.0.0:8888 \
+	--base-url ${UI} \
 	"$@" \
 	tests/func/
