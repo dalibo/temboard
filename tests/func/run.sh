@@ -58,6 +58,9 @@ install_ui_py() {
 	fi
 }
 
+rm -f $LOGFILE
+mkdir -p tests/func/home
+
 install_ui_py
 pip2.7 install \
        --ignore-installed \
@@ -65,8 +68,7 @@ pip2.7 install \
        --upgrade \
        --requirement tests/func/requirements.txt
 
-rm -f $LOGFILE
-TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
+TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
 
