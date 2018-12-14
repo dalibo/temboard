@@ -14,3 +14,8 @@ def test_home(selenium):
     # Wait for #instances to appear
     selenium.find_element_by_css_selector("#instances")
     assert 'Home' in selenium.title
+
+
+def test_api_login(http):
+    payload = dict(username='admin', password='admin')
+    http.post('/json/login', payload)
