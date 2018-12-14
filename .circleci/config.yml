@@ -105,11 +105,6 @@ jobs:
     - run: git submodule update --init
     - *pip-cache-restore
     - run:
-        name: Setup
-        command: |
-            pip2.7 install --upgrade --editable .
-            pip2.7 install --upgrade --requirement tests/func/requirements.txt
-    - run:
         name: Functionnal tests
         command: tests/func/run.sh
     - *pip-cache-save
