@@ -71,6 +71,10 @@ if [ -n "${SETUP-1}" ] ; then
 	       --requirement tests/func/requirements.txt
 fi
 
+if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
+	exec tail -f /dev/null
+fi
+
 TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
