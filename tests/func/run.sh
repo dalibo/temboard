@@ -49,7 +49,9 @@ export PYTHONPATH=/usr/local/python2.7/lib/site-packages
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
-	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade .
+	rm -f /tmp/temboard-*.tar.gz
+	python2 setup.py sdist --dist-dir /tmp
+	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade /tmp/temboard-*.tar.gz
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
