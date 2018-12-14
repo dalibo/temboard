@@ -91,12 +91,15 @@ jobs:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
+        SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
     - &func-postgres
       image: postgres:10-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
+    - &func-selenium
+      image: selenium/standalone-firefox
     steps: &func-steps
     - checkout
     - run: git submodule update --init
@@ -116,6 +119,7 @@ jobs:
     - <<: *func-temboard
       image: dalibo/temboard-agent-sdk:centos7
     - *func-postgres
+    - *func-selenium
     steps: *func-steps
 
 

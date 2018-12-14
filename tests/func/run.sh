@@ -76,6 +76,6 @@ TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DEST
 wait-for-it.sh 0.0.0.0:8888
 
 pytest \
-	--base-url https://ui:8888 \
+	--base-url https://0.0.0.0:8888 \
 	"$@" \
 	tests/func/
