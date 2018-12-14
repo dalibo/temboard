@@ -86,7 +86,7 @@ def legacy_enable_plugins(self, plugin_names):
     plugins_conf = dict()
     self.loaded_plugins = []
     for key, val in plugins.iteritems():
-        self.wildcard_router.add_rules(val['routes'])
+        self.add_rules(val['routes'])
         plugins_conf[key] = val['configuration']
         if key not in self.loaded_plugins:
             self.loaded_plugins.append(key)
@@ -169,7 +169,7 @@ def setup_tornado_app(app, config):
     config.plugins = legacy_enable_plugins(app, config.temboard['plugins'])
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
-    app.wildcard_router.add_rules(handlers)
+    app.add_rules(handlers)
 
     return app
 
