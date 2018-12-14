@@ -44,34 +44,38 @@ teardown() {
 trap teardown EXIT INT TERM
 
 # For CentOS
-export PYTHONPATH=/usr/local/python2.7/lib/site-packages
+export PYTHONPATH=/usr/local/lib/python2.7/site-packages:/usr/local/lib64/python2.7/site-packages
+
 
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
-	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade .
+	rm -f /tmp/temboard-*.tar.gz
+	python2 setup.py sdist --dist-dir /tmp
+	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade /tmp/temboard-*.tar.gz
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
 	fi
 }
 
-install_ui_py
-pip2.7 install \
-       --ignore-installed \
-       --prefix=/usr/local \
-       --upgrade \
-       --requirement tests/func/requirements.txt
-
 rm -f $LOGFILE
-TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
+mkdir -p tests/func/home
+
+if [ -n "${SETUP-1}" ] ; then
+	install_ui_py
+	pip2.7 install \
+	       --ignore-installed \
+	       --prefix=/usr/local \
+	       --upgrade \
+	       --requirement tests/func/requirements.txt
+fi
+
+TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
 wait-for-it.sh 0.0.0.0:8888
 
 pytest \
-	--driver Remote \
-	--host ${SELENIUM-selenium} \
-	--capability browserName firefox \
-	--base-url https://ui:8888 \
+	--base-url https://0.0.0.0:8888 \
 	"$@" \
 	tests/func/

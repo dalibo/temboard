@@ -91,21 +91,19 @@ jobs:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
+        SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
     - &func-postgres
       image: postgres:10-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
+    - &func-selenium
+      image: selenium/standalone-firefox
     steps: &func-steps
     - checkout
     - run: git submodule update --init
     - *pip-cache-restore
-    - run:
-        name: Setup
-        command: |
-            pip2.7 install --upgrade --editable .
-            pip2.7 install --upgrade --requirement tests/func/requirements.txt
     - run:
         name: Functionnal tests
         command: tests/func/run.sh
@@ -116,6 +114,7 @@ jobs:
     - <<: *func-temboard
       image: dalibo/temboard-agent-sdk:centos7
     - *func-postgres
+    - *func-selenium
     steps: *func-steps
 
 
