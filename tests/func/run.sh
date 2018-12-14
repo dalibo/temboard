@@ -61,12 +61,14 @@ install_ui_py() {
 rm -f $LOGFILE
 mkdir -p tests/func/home
 
-install_ui_py
-pip2.7 install \
-       --ignore-installed \
-       --prefix=/usr/local \
-       --upgrade \
-       --requirement tests/func/requirements.txt
+if [ -n "${SETUP-1}" ] ; then
+	install_ui_py
+	pip2.7 install \
+	       --ignore-installed \
+	       --prefix=/usr/local \
+	       --upgrade \
+	       --requirement tests/func/requirements.txt
+fi
 
 TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
