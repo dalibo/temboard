@@ -12,6 +12,7 @@ retrykill() {
 		if ! kill -0 $pid &>/dev/null; then
 			return 0
 		else
+			wait -n $pid || :
 			kill $pid
 			sleep $i
 		fi

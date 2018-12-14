@@ -24,4 +24,4 @@ services:
       XDG_CACHE_HOME: /workspace/tests/func/.docker-cache/
     volumes:
     - ../..:/workspace
-    entrypoint: /workspace/tests/func/run.sh
+    command: /workspace/tests/func/run.sh
