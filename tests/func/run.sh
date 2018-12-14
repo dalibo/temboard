@@ -76,9 +76,6 @@ TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DEST
 wait-for-it.sh 0.0.0.0:8888
 
 pytest \
-	--driver Remote \
-	--host ${SELENIUM-selenium} \
-	--capability browserName firefox \
 	--base-url https://ui:8888 \
 	"$@" \
 	tests/func/

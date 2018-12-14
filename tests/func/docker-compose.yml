@@ -17,6 +17,7 @@ services:
       PGHOST: repository
       PGUSER: temboard
       PGPASSWORD: *PGPASSWORD
+      SELENIUM: http://selenium:4444
       TEMBOARD_PASSWORD: *PGPASSWORD
       XDG_CACHE_HOME: /workspace/tests/func/.docker-cache/
     volumes:
