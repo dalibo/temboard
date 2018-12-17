@@ -199,10 +199,11 @@ class InstanceHelper(object):
                 self.cookie_name)
         return self._xsession
 
-    def redirect_login(self):
-        login_url = "/server/%s/%s/login" % (
-            self.instance.agent_address, self.instance.agent_port)
-        raise Redirect(location=login_url)
+    def format_url(self, path=''):
+        return "/server/%s/%s%s" % (self.agent_address, self.agent_port, path)
+
+    def redirect(self, path):
+        raise Redirect(location=self.format_url(path))
 
     def proxy(self, method, path, body=None):
         url = 'https://%s:%s%s' % (
@@ -235,7 +236,7 @@ class InstanceHelper(object):
 
     def require_xsession(self):
         if not self.xsession:
-            self.redirect_login()
+            self.redirect('/login')
         return self.xsession
 
     def get_profile(self):
@@ -248,7 +249,7 @@ class InstanceHelper(object):
             )
         except TemboardError as e:
             if 401 == e.code:
-                self.redirect_login()
+                self.redirect('/login')
             logger.error('Instance error: %s', e)
             raise HTTPError(500)
 
