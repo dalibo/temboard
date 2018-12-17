@@ -167,6 +167,13 @@ class InstanceHelper(object):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.instance.hostname)
 
+    def check_active_plugin(self, name):
+        '''
+        Ensure that the plugin is active for given instance
+        '''
+        if name not in [p.plugin_name for p in self.instance.plugins]:
+            raise HTTPError(408, "Plugin not activated.")
+
     def fetch_instance(self, address, port):
         self.instance = get_instance(self.request.db_session, address, port)
         if not self.instance:
