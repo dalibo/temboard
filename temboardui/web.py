@@ -257,7 +257,7 @@ class Blueprint(object):
                 except Redirect:
                     raise
                 except HTTPError as e:
-                    code = e.code
+                    code = e.status_code
                     message = str(e)
                 except Exception as e:
                     # Since async traceback is useless, spit here traceback and
