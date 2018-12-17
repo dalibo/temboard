@@ -305,6 +305,7 @@ class Blueprint(object):
                 func = InstanceHelper.add_middleware(func)
 
             @run_on_executor
+            @functools.wraps(func)
             def wrapper(request, *args):
                 try:
                     return func(request, *args)
