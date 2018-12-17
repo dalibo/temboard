@@ -25,9 +25,6 @@ from .web import app
 from .handlers.base import (
     Error404Handler,
 )
-from .handlers.user import (
-    AgentLoginHandler,
-)
 from .handlers.settings.user import (
     SettingsDeleteUserJsonHandler,
     SettingsUserHandler,
@@ -96,6 +93,7 @@ def setup_tornado_app(app, config):
     # Load handlers
     __import__('temboardui.handlers.home')
     __import__('temboardui.handlers.notification')
+    __import__('temboardui.handlers.user')
 
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
@@ -134,9 +132,6 @@ def setup_tornado_app(app, config):
         # Discover
         (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$",
          DiscoverInstanceJsonHandler, handler_conf),
-        # Agent Login
-        (r"/server/(.*)/([0-9]{1,5})/login", AgentLoginHandler,
-         handler_conf),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),
