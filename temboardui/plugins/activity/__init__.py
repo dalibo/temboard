@@ -11,12 +11,7 @@ from temboardui.async import (
     run_background,
 )
 from temboardui.errors import TemboardUIError
-from temboardui.temboardclient import (
-    temboard_activity,
-    temboard_activity_blocking,
-    temboard_activity_kill,
-    temboard_activity_waiting,
-)
+from temboardui.temboardclient import temboard_activity_kill
 
 
 blueprint = Blueprint()
@@ -34,10 +29,6 @@ def get_routes(config):
         'template_path': plugin_path + "/templates"
     }
     routes = blueprint.rules + [
-        (r"/proxy/(.*)/([0-9]{1,5})/activity",
-         ActivityProxyHandler, handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/activity/(blocking|waiting)$",
-         ActivityProxyHandler, handler_conf),
         (r"/proxy/(.*)/([0-9]{1,5})/activity/kill", ActivityKillProxyHandler,
          handler_conf),
         (r"/js/activity/(.*)", tornado.web.StaticFileHandler, {
@@ -63,35 +54,14 @@ def activity(request, mode):
     )
 
 
-class ActivityProxyHandler(JsonHandler):
-
-    @JsonHandler.catch_errors
-    def get_activity(self, agent_address, agent_port, mode):
-        self.logger.info("Getting activity (proxy).")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.request.headers.get('X-Session')
-        if not xsession:
-            raise TemboardUIError(401, 'X-Session header missing')
-
-        # Load activity.
-        data = dict(
-            waiting=temboard_activity_waiting(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession),
-            blocking=temboard_activity_blocking(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession),
-            running=temboard_activity(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-        )
-        self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, mode='running'):
-        run_background(self.get_activity, self.async_callback,
-                       (agent_address, agent_port, mode))
+@blueprint.instance_proxy(r'/activity(?:/blocking|/waiting)?')
+def activity_proxy(request):
+    request.instance.check_active_plugin(__name__)
+    return dict(
+        blocking=request.instance.proxy('GET', '/activity/blocking').body,
+        running=request.instance.proxy('GET', '/activity').body,
+        waiting=request.instance.proxy('GET', '/activity/waiting').body,
+    )
 
 
 class ActivityKillProxyHandler(JsonHandler):
