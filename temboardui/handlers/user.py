@@ -61,9 +61,7 @@ def login(request):
             password = request.handler.get_argument('password')
             cookies = login_common(request.db_session, rolename, password)
             referer = request.handler.get_secure_cookie('referer_uri')
-            response = Redirect(referer or '/home')
-            response.secure_cookies.update(cookies)
-            return response
+            return Redirect(referer or '/home', secure_cookies=cookies)
         except TemboardUIError as e:
             logger.error(u"Login failed: %s", e)
             response = render_template(

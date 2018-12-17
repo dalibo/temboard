@@ -44,11 +44,12 @@ class Response(object):
 
 
 class Redirect(Response, Exception):
-    def __init__(self, location, permanent=False):
+    def __init__(self, location, permanent=False, secure_cookies=None):
         super(Redirect, self).__init__(
             status_code=301 if permanent else 302,
             headers={'Location': location},
             body=u'Redirected to %s' % location,
+            secure_cookies=secure_cookies,
         )
 
 
