@@ -232,7 +232,7 @@ class InstanceHelper(object):
             body=json.loads(body),
         )
 
-    def get_xsession(self):
+    def require_xsession(self):
         if not self.xsession:
             self.redirect_login()
         return self.xsession
@@ -243,7 +243,7 @@ class InstanceHelper(object):
                 self.request.config.temboard.ssl_ca_cert_file,
                 self.instance.agent_address,
                 self.instance.agent_port,
-                self.get_xsession(),
+                self.require_xsession(),
             )
         except TemboardError as e:
             if 401 == e.code:
@@ -256,7 +256,7 @@ class InstanceHelper(object):
             self.request.config.temboard.ssl_ca_cert_file,
             self.instance.agent_address,
             self.instance.agent_port,
-            self.get_xsession(),
+            self.require_xsession(),
         )
 
 
