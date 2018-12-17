@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import functools
+import json
 import logging
 import os
 
@@ -24,6 +25,7 @@ from .temboardclient import (
     TemboardError,
     temboard_profile,
     temboard_get_notifications,
+    temboard_request,
 )
 
 
@@ -71,9 +73,10 @@ class CallableHandler(RequestHandler):
         # To enable @run_on_executor methods, we must have executor property.
         return self.application.executor
 
-    def initialize(self, callable_, methods=None, logger=None):
+    def initialize(self, callable_, blueprint=None, methods=None, logger=None):
         self.callable_ = callable_
         self.logger = logger or logging.getLogger(__name__)
+        self.request.blueprint = blueprint
         self.request.config = self.application.config
         # run_on_executor searches for `executor` attribute of first argument.
         # Thus, we bind executor to request object.
@@ -113,7 +116,7 @@ class CallableHandler(RequestHandler):
 
         if response is None:
             response = u''
-        if isinstance(response, unicode):
+        if isinstance(response, (dict, unicode)):
             response = Response(body=response)
         self.write_response(response)
 
@@ -142,7 +145,9 @@ class InstanceHelper(object):
     # This helper class implements all operations related to instance dedicated
     # request.
 
-    URL_PREFIX = r'/server/(.*)/([0-9]{1,5})'
+    INSTANCE_PARAMS = r'/(.*)/([0-9]{1,5})'
+    PROXY_PREFIX = r'/proxy' + INSTANCE_PARAMS
+    SERVER_PREFIX = r'/server' + INSTANCE_PARAMS
 
     @classmethod
     def add_middleware(cls, callable_):
@@ -197,6 +202,34 @@ class InstanceHelper(object):
             self.instance.agent_address, self.instance.agent_port)
         raise Redirect(location=login_url)
 
+    def proxy(self, method, path):
+        url = 'https://%s:%s%s' % (
+            self.instance.agent_address,
+            self.instance.agent_port,
+            path,
+        )
+
+        headers = {}
+        xsession = self.xsession
+        if xsession:
+            headers['X-Session'] = xsession
+
+        logger.debug("Proxying %s %s.", method, url)
+        try:
+            body = temboard_request(
+                self.request.config.temboard.ssl_ca_cert_file,
+                method=method,
+                url=url,
+                headers=headers,
+            )
+        except Exception as e:
+            logger.error("Proxied request failed: %s", e)
+            raise HTTPError(500)
+        return Response(
+            status_code=200,
+            body=json.loads(body),
+        )
+
     def get_xsession(self):
         if not self.xsession:
             self.redirect_login()
@@ -226,16 +259,33 @@ class InstanceHelper(object):
 
 
 class Blueprint(object):
-    def __init__(self):
+    def __init__(self, plugin_name=None):
+        self.plugin_name = plugin_name
         self.rules = []
 
     def add_rules(self, rules):
         self.rules.extend(rules)
 
+    def generic_proxy(self, url, methods=None):
+        # Pass-through implementation for /proxy/address/port/…
+        url = r'(%s)' % url
+
+        @self.instance_proxy(url, methods)
+        def generic_instance_proxy(request, path):
+            if request.blueprint and request.blueprint.plugin_name:
+                request.instance.check_active_plugin(
+                    request.blueprint.plugin_name)
+            return request.instance.proxy(request.method, path)
+
+    def instance_proxy(self, url, methods=None):
+        # decorator for /proxy/address/port/… handlers.
+        url = InstanceHelper.PROXY_PREFIX + url
+        return self.route(url, methods=methods, with_instance=True)
+
     def instance_route(self, url, methods=None):
         # Helper to declare a route with instance URL prefix and middleware.
         return self.route(
-            url=InstanceHelper.URL_PREFIX + url,
+            url=InstanceHelper.SERVER_PREFIX + url,
             methods=methods,
             with_instance=True,
         )
@@ -275,6 +325,7 @@ class Blueprint(object):
                 return response
             rules = [(
                 url, CallableHandler, dict(
+                    blueprint=self,
                     callable_=wrapper,
                     methods=methods or ['GET'],
                     logger=logging.getLogger(logger_name),
