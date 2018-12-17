@@ -8,6 +8,7 @@ import os
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
+from tornado.escape import json_decode
 from tornado.gen import coroutine
 from tornado.web import (
     Application as TornadoApplication,
@@ -202,7 +203,7 @@ class InstanceHelper(object):
             self.instance.agent_address, self.instance.agent_port)
         raise Redirect(location=login_url)
 
-    def proxy(self, method, path):
+    def proxy(self, method, path, body=None):
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
@@ -221,6 +222,7 @@ class InstanceHelper(object):
                 method=method,
                 url=url,
                 headers=headers,
+                data=body,
             )
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
@@ -275,7 +277,8 @@ class Blueprint(object):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(
                     request.blueprint.plugin_name)
-            return request.instance.proxy(request.method, path)
+            body = json_decode(request.body) if request.body else None
+            return request.instance.proxy(request.method, path, body=body)
 
     def instance_proxy(self, url, methods=None):
         # decorator for /proxy/address/port/… handlers.
