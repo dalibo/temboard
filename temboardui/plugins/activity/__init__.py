@@ -1,9 +1,12 @@
 from os import path
 import tornado.web
 
-from temboardui.handlers.base import JsonHandler, BaseHandler
+from temboardui.web import (
+    Blueprint,
+    TemplateRenderer,
+)
+from temboardui.handlers.base import JsonHandler
 from temboardui.async import (
-    HTMLAsyncResult,
     JSONAsyncResult,
     run_background,
 )
@@ -13,8 +16,12 @@ from temboardui.temboardclient import (
     temboard_activity_blocking,
     temboard_activity_kill,
     temboard_activity_waiting,
-    temboard_profile,
 )
+
+
+blueprint = Blueprint()
+plugin_path = path.dirname(path.realpath(__file__))
+render_template = TemplateRenderer(plugin_path + '/templates')
 
 
 def configuration(config):
@@ -22,14 +29,11 @@ def configuration(config):
 
 
 def get_routes(config):
-    plugin_path = path.dirname(path.realpath(__file__))
     handler_conf = {
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path': plugin_path + "/templates"
     }
-    routes = [
-        (r"/server/(.*)/([0-9]{1,5})/activity/(running|blocking|waiting)",
-         ActivityHandler, handler_conf),
+    routes = blueprint.rules + [
         (r"/proxy/(.*)/([0-9]{1,5})/activity",
          ActivityProxyHandler, handler_conf),
         (r"/proxy/(.*)/([0-9]{1,5})/activity/(blocking|waiting)$",
@@ -43,45 +47,20 @@ def get_routes(config):
     return routes
 
 
-class ActivityHandler(BaseHandler):
-
-    @BaseHandler.catch_errors
-    def get_activity(self, agent_address, agent_port, mode):
-        self.logger.info("Getting activity.")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.get_secure_cookie("temboard_%s_%s" %
-                                          (agent_address, agent_port))
-        if not xsession:
-            raise TemboardUIError(401, "Authentication cookie is missing.")
-        else:
-            data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                            agent_address,
-                                            agent_port,
-                                            xsession)
-            agent_username = data_profile['username']
-
-        self.logger.info("Done.")
-        return HTMLAsyncResult(
-            http_code=200,
-            template_path=self.template_path,
-            template_file='activity.html',
-            data={
-                'nav': True,
-                'role': self.current_user,
-                'instance': self.instance,
-                'plugin': __name__,
-                'mode': mode,
-                'xsession': xsession,
-                'agent_username': agent_username,
-            })
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, mode):
-        run_background(self.get_activity, self.async_callback,
-                       (agent_address, agent_port, mode))
+@blueprint.instance_route(r'/activity/(running|blocking|waiting)')
+def activity(request, mode):
+    request.instance.check_active_plugin(__name__)
+    profile = request.instance.get_profile()
+    return render_template(
+        'activity.html',
+        nav=True,
+        agent_username=profile['username'],
+        instance=request.instance,
+        plugin=__name__,
+        mode=mode,
+        xsession=request.instance.xsession,
+        role=request.current_user,
+    )
 
 
 class ActivityProxyHandler(JsonHandler):

@@ -74,8 +74,11 @@ class CallableHandler(RequestHandler):
     def initialize(self, callable_, methods=None, logger=None):
         self.callable_ = callable_
         self.logger = logger or logging.getLogger(__name__)
-        self.request.handler = self
         self.request.config = self.application.config
+        # run_on_executor searches for `executor` attribute of first argument.
+        # Thus, we bind executor to request object.
+        self.request.executor = self.executor
+        self.request.handler = self
         self.SUPPORTED_METHODS = methods or ['GET']
 
     def get_current_user(self):
@@ -164,6 +167,13 @@ class InstanceHelper(object):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.instance.hostname)
 
+    def check_active_plugin(self, name):
+        '''
+        Ensure that the plugin is active for given instance
+        '''
+        if name not in [p.plugin_name for p in self.instance.plugins]:
+            raise HTTPError(408, "Plugin not activated.")
+
     def fetch_instance(self, address, port):
         self.instance = get_instance(self.request.db_session, address, port)
         if not self.instance:
@@ -215,24 +225,20 @@ class InstanceHelper(object):
         )
 
 
-class WebApplication(TornadoApplication):
-    def __init__(self, *a, **kwargs):
-        super(WebApplication, self).__init__(*a, **kwargs)
+class Blueprint(object):
+    def __init__(self):
+        self.rules = []
 
-    def configure(self, **settings):
-        # Runtime configuration of application.
-        #
-        # This way, we can initialize app at import time to register handlers.
-        # Then configure it at run time once configuration is parsed.
+    def add_rules(self, rules):
+        self.rules.extend(rules)
 
-        self.settings.update(settings)
-
-        # This comme from Tornado's __init__
-        if self.settings.get('debug'):
-            self.settings.setdefault('autoreload', True)
-            self.settings.setdefault('compiled_template_cache', False)
-            self.settings.setdefault('static_hash_cache', False)
-            self.settings.setdefault('serve_traceback', True)
+    def instance_route(self, url, methods=None):
+        # Helper to declare a route with instance URL prefix and middleware.
+        return self.route(
+            url=InstanceHelper.URL_PREFIX + url,
+            methods=methods,
+            with_instance=True,
+        )
 
     def route(self, url, methods=None, with_instance=False):
         # Implements flask-like route registration of a simple synchronous
@@ -244,24 +250,29 @@ class WebApplication(TornadoApplication):
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
 
-            # run_on_executor searches for `executor` attribute of first
-            # argument. Thus, we bind executor to application object for
-            # run_on_executor, hardcode here app as the first argument using
-            # partial, and swallow app argument in the wrapper.
             @run_on_executor
-            def wrapper(app, *args):
+            def wrapper(request, *args):
                 try:
-                    return func(*args)
-                except (HTTPError, Redirect):
+                    return func(request, *args)
+                except Redirect:
                     raise
-                except Exception:
+                except HTTPError as e:
+                    code = e.code
+                    message = str(e)
+                except Exception as e:
                     # Since async traceback is useless, spit here traceback and
-                    # just raise HTTP 500.
+                    # mock HTTPError(500).
                     logger.exception("Unhandled Error:")
-                    raise HTTPError(500)
-
-            wrapper = functools.partial(wrapper, self)
-
+                    code = 500
+                    message = str(e)
+                response = render_template(
+                    'error.html',
+                    nav=True, instance=request.instance,
+                    role=request.current_user,
+                    code=code, error=message,
+                )
+                response.status_code = code
+                return response
             rules = [(
                 url, CallableHandler, dict(
                     callable_=wrapper,
@@ -274,6 +285,26 @@ class WebApplication(TornadoApplication):
 
         return decorator
 
+
+class WebApplication(TornadoApplication, Blueprint):
+    def __init__(self, *a, **kwargs):
+        super(WebApplication, self).__init__(*a, **kwargs)
+
+    def configure(self, **settings):
+        # Runtime configuration of application.
+        #
+        # This way, we can initialize app at import time to register handlers.
+        # Then configure it at run time once configuration is parsed.
+
+        self.settings.update(settings)
+
+        # This comes from Tornado's __init__
+        if self.settings.get('debug'):
+            self.settings.setdefault('autoreload', True)
+            self.settings.setdefault('compiled_template_cache', False)
+            self.settings.setdefault('static_hash_cache', False)
+            self.settings.setdefault('serve_traceback', True)
+
     def add_rules(self, rules):
         if hasattr(self, 'wildcard_router'):  # Tornado 4.5+
             self.wildcard_router.add_rules(rules)
@@ -282,14 +313,6 @@ class WebApplication(TornadoApplication):
         else:
             rules = [tornadoweb.URLSpec(*r) for r in rules]
             self.handlers[0][1].extend(rules)
-
-    def instance_route(self, url, methods=None):
-        # Helper to declare a route with instance URL prefix and middleware.
-        return self.route(
-            url=InstanceHelper.URL_PREFIX + url,
-            methods=methods,
-            with_instance=True,
-        )
 
 
 # Global app instance for registration of core handlers.
