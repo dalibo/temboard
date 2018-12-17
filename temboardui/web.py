@@ -251,17 +251,28 @@ class Blueprint(object):
                 func = InstanceHelper.add_middleware(func)
 
             @run_on_executor
-            def wrapper(*args):
+            def wrapper(request, *args):
                 try:
-                    return func(*args)
-                except (HTTPError, Redirect):
+                    return func(request, *args)
+                except Redirect:
                     raise
-                except Exception:
+                except HTTPError as e:
+                    code = e.code
+                    message = str(e)
+                except Exception as e:
                     # Since async traceback is useless, spit here traceback and
-                    # just raise HTTP 500.
+                    # mock HTTPError(500).
                     logger.exception("Unhandled Error:")
-                    raise HTTPError(500)
-
+                    code = 500
+                    message = str(e)
+                response = render_template(
+                    'error.html',
+                    nav=True, instance=request.instance,
+                    role=request.current_user,
+                    code=code, error=message,
+                )
+                response.status_code = code
+                return response
             rules = [(
                 url, CallableHandler, dict(
                     callable_=wrapper,
