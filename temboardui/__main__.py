@@ -30,9 +30,6 @@ from .handlers.settings.user import (
     SettingsUserHandler,
     SettingsUserJsonHandler,
 )
-from .handlers.settings.group import (
-    SettingsGroupHandler,
-)
 from .handlers.settings.instance import (
     DiscoverInstanceJsonHandler,
     RegisterInstanceJsonHandler,
@@ -90,6 +87,7 @@ def setup_tornado_app(app, config):
     # Load handlers
     __import__('temboardui.handlers.home')
     __import__('temboardui.handlers.notification')
+    __import__('temboardui.handlers.settings.group')
     __import__('temboardui.handlers.user')
 
     handler_conf = {
@@ -104,9 +102,6 @@ def setup_tornado_app(app, config):
         (r"/json/settings/user/([0-9a-z\-_\.]{3,16})$",
          SettingsUserJsonHandler, handler_conf),
         (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler,
-         handler_conf),
-        # Manage groups (users & instances)
-        (r"/settings/groups/(role|instance)$", SettingsGroupHandler,
          handler_conf),
         # Manage instances
         (r"/settings/instances", SettingsInstanceHandler, handler_conf),

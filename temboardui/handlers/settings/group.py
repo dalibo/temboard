@@ -1,19 +1,14 @@
 import logging
 
-import tornado.web
 from tornado.escape import json_decode
 
 from temboardui.web import (
     HTTPError,
     admin_required,
     app,
+    render_template,
 )
 
-from temboardui.handlers.base import BaseHandler
-from temboardui.async import (
-    HTMLAsyncResult,
-    run_background,
-)
 from temboardui.application import (
     get_group_list,
     get_group,
@@ -25,7 +20,6 @@ from temboardui.application import (
     add_role_group_in_instance_group,
     delete_group,
 )
-from temboardui.errors import TemboardUIError
 
 
 logger = logging.getLogger(__name__)
@@ -113,52 +107,12 @@ def delete_group_handler(request, kind):
     return {'delete': True}
 
 
-class SettingsGroupHandler(BaseHandler):
-
-    @tornado.web.asynchronous
-    def get(self, group_kind):
-        run_background(self.get_index, self.async_callback, (group_kind,))
-
-    def get_index(self, group_kind):
-        try:
-            self.logger.info("Group list.")
-            self.setUp()
-            self.check_admin()
-
-            group_list = get_group_list(self.db_session, group_kind)
-            self.logger.debug(group_list)
-
-            self.logger.info("Done.")
-            return HTMLAsyncResult(
-                200,
-                None,
-                {
-                    'nav': True,
-                    'role': self.current_user,
-                    'group_list': group_list,
-                    'group_kind': group_kind
-                },
-                template_file='settings/group.html'
-            )
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Failed.")
-            try:
-                self.db_session.rollback()
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                if e.code == 302:
-                    return HTMLAsyncResult(302, '/login')
-                elif e.code == 401:
-                    return HTMLAsyncResult(
-                            401,
-                            None,
-                            {'nav': False},
-                            template_file='unauthorized.html')
-            return HTMLAsyncResult(
-                        500,
-                        None,
-                        {'nav': False, 'error': e.message},
-                        template_file='settings/error.html')
+@app.route(r"/settings/groups/(role|instance)")
+@admin_required
+def groups(request, kind):
+    return render_template(
+        "settings/group.html",
+        nav=True, role=request.current_user,
+        group_kind=kind,
+        group_list=get_group_list(request.db_session, kind),
+    )
