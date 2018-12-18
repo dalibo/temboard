@@ -30,9 +30,6 @@ from .handlers.settings.user import (
     SettingsUserHandler,
     SettingsUserJsonHandler,
 )
-from .handlers.settings.instance import (
-    SettingsInstanceHandler,
-)
 
 from .async import new_worker_pool
 from .daemon import daemonize
@@ -84,6 +81,7 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.home')
     __import__('temboardui.handlers.notification')
     __import__('temboardui.handlers.settings.group')
+    __import__('temboardui.handlers.settings.instance')
     __import__('temboardui.handlers.user')
 
     handler_conf = {
@@ -99,8 +97,6 @@ def setup_tornado_app(app, config):
          SettingsUserJsonHandler, handler_conf),
         (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler,
          handler_conf),
-        # Manage instances
-        (r"/settings/instances", SettingsInstanceHandler, handler_conf),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),

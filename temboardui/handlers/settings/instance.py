@@ -1,12 +1,5 @@
-import tornado.web
-
 from tornado.escape import json_decode
 
-from temboardui.handlers.base import BaseHandler
-from temboardui.async import (
-    HTMLAsyncResult,
-    run_background,
-)
 from temboardui.application import (
     add_instance,
     add_instance_in_group,
@@ -21,7 +14,6 @@ from temboardui.application import (
     purge_instance_plugins,
     update_instance,
 )
-from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import temboard_discover
 from temboardui.web import (
     HTTPError,
@@ -180,6 +172,16 @@ def discover(request, address, port):
         request.config.temboard.ssl_ca_cert_file, address, port)
 
 
+@app.route(r"/settings/instances")
+@admin_required
+def instances(request):
+    return render_template(
+        'settings/instance.html',
+        nav=True, role=request.current_user,
+        instance_list=get_instance_list(request.db_session)
+    )
+
+
 @app.route(r"/json/register/instance", methods=['POST'])
 @admin_required
 def register(request):
@@ -198,46 +200,3 @@ def register(request):
         data,
     )
     return {"message": "OK"}
-
-
-class SettingsInstanceHandler(BaseHandler):
-
-    @tornado.web.asynchronous
-    def get(self):
-        run_background(self.get_index, self.async_callback)
-
-    def get_index(self):
-        try:
-            self.setUp()
-            self.check_admin()
-
-            instance_list = get_instance_list(self.db_session)
-            return HTMLAsyncResult(
-                    200,
-                    None,
-                    {
-                        'nav': True,
-                        'role': self.current_user,
-                        'instance_list': instance_list
-                    },
-                    template_file='settings/instance.html')
-        except (TemboardUIError, Exception) as e:
-            self.logger.error(str(e))
-            try:
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                if e.code == 302:
-                    return HTMLAsyncResult(302, '/login')
-                elif e.code == 401:
-                    return HTMLAsyncResult(
-                            401,
-                            None,
-                            {'nav': False},
-                            template_file='unauthorized.html')
-            return HTMLAsyncResult(
-                        500,
-                        None,
-                        {'nav': False, 'error': e.message},
-                        template_file='settings/error.html')
