@@ -39,6 +39,20 @@ def add_instance_in_groups(db_session, instance, groups):
             group_name)
 
 
+def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
+    for plugin_name in plugins or []:
+        # 'administration' plugin case: the plugin is not currently
+        # implemented on UI side
+        if plugin_name == 'administration':
+            continue
+        if plugin_name not in loaded_plugins:
+            raise HTTPError(404, "Unknown plugin %s." % plugin_name)
+
+        add_instance_plugin(
+            db_session, instance.agent_address,
+            instance.agent_port, plugin_name)
+
+
 def validate_instance_data(data):
     # Submited attributes checking.
     if not data.get('new_agent_address'):
@@ -77,19 +91,10 @@ def create_instance(request):
 
     instance = add_instance(request.db_session, **data)
     add_instance_in_groups(request.db_session, instance, groups)
-
-    # Add each selected plugin.
-    for plugin_name in plugins:
-        # 'administration' plugin case: the plugin is not currently
-        # implemented on UI side
-        if plugin_name == 'administration':
-            continue
-        if plugin_name not in request.handler.application.loaded_plugins:
-            raise HTTPError(404, "Unknown plugin %s." % plugin_name)
-
-        add_instance_plugin(
-            request.db_session, instance.agent_address,
-            instance.agent_port, plugin_name)
+    enable_instance_plugins(
+        request.db_session, instance, plugins,
+        request.handler.application.loaded_plugins,
+    )
     return {"message": "OK"}
 
 
@@ -144,19 +149,10 @@ def json_instance(request):
             instance.agent_port,
             **data)
         add_instance_in_groups(request.db_session, instance, groups)
-
-        # Add each selected plugin.
-        for plugin_name in plugins:
-            # 'administration' plugin case: the plugin is not currently
-            # implemented on UI side
-            if plugin_name == 'administration':
-                continue
-            if plugin_name not in request.handler.application.loaded_plugins:
-                raise HTTPError(404, "Unknown plugin %s." % plugin_name)
-
-            add_instance_plugin(
-                request.db_session, instance.agent_address,
-                instance.agent_port, plugin_name)
+        enable_instance_plugins(
+            request.db_session, instance, plugins,
+            request.handler.application.loaded_plugins,
+        )
         return {"message": "OK"}
 
 
