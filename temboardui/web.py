@@ -36,6 +36,22 @@ from .temboardclient import (
 logger = logging.getLogger(__name__)
 
 
+def admin_required(func):
+    # Similar to flask_security.roles_required, but limited to admin role.
+    func.__admin_required = True
+    return func
+
+
+def anonymous_allowed(func):
+    # Reverse of flask_security.login_required.
+    #
+    # In temboard, very few pages are anonymous. Thus we have implicit
+    # login_required. This behaviour can be disabled by using
+    # @anonymous_allowed.
+    func.__anonymous_allowed = True
+    return func
+
+
 class Response(object):
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
@@ -289,6 +305,40 @@ class InstanceHelper(object):
         )
 
 
+class UserHelper(object):
+    @classmethod
+    def add_middleware(cls, func):
+
+        @functools.wraps(func)
+        def middleware(request, *args):
+            try:
+                # Bypass current_user cached property in middleware.
+                role = request.handler.get_current_user()
+            except Exception:
+                role = None
+
+            anonymous_allowed = getattr(func, '__anonymous_allowed', False)
+            if not anonymous_allowed and role is None:
+                logger.debug("Redirecting anonymous to /login.")
+                raise Redirect('/login')
+
+            admin_required = getattr(func, '__admin_required', False)
+            if admin_required and not role.is_admin:
+                logger.debug("Refusing access to non-admin user.")
+                raise HTTPError(401)
+
+            return func(request, *args)
+
+        return middleware
+
+
+# Ensure @functools.wraps preserves User middleware attributes.
+functools.WRAPPER_UPDATES += (
+    '__admin_required',
+    '__anonymous_allowed',
+)
+
+
 class Blueprint(object):
     def __init__(self, plugin_name=None):
         self.plugin_name = plugin_name
@@ -329,6 +379,7 @@ class Blueprint(object):
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
 
+            func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
 
@@ -348,19 +399,9 @@ class Blueprint(object):
                     logger.exception("Unhandled Error:")
                     code = 500
                     message = str(e)
-                kwargs = dict(
-                    nav=True,
-                    role=request.current_user,
-                    code=code, error=message,
-                )
-                if with_instance:
-                    kwargs['instance'] = request.instance
-                response = render_template(
-                    'error.html',
-                    **kwargs
-                )
-                response.status_code = code
-                return response
+
+                return make_error(request, code, message)
+
             rules = [(
                 url, CallableHandler, dict(
                     blueprint=self,
@@ -402,6 +443,30 @@ class WebApplication(TornadoApplication, Blueprint):
         else:
             rules = [tornadoweb.URLSpec(*r) for r in rules]
             self.handlers[0][1].extend(rules)
+
+
+def make_error(request, code, message):
+    # If ?noerror=1 is set, only return HTTP error code.
+    if "1" == request.handler.get_argument('noerror', None):
+        logger.debug("Hide error %s %s for ?noerror=1.", code, message)
+        return Response(200)
+
+    data = dict(code=code, error=message)
+
+    # Dirty hack to determine fallback output format
+    if request.path.startswith('/json'):
+        return Response(code, body=data)
+
+    if hasattr(request, 'instance'):
+        data['instance'] = request.instance
+
+    response = render_template(
+        'error.html',
+        nav=True, role=request.current_user,
+        **data
+    )
+    response.status_code = code
+    return response
 
 
 # Global app instance for registration of core handlers.

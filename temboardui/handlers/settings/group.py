@@ -1,5 +1,12 @@
-import tornado.web
+import logging
 import json
+
+import tornado.web
+
+from temboardui.web import (
+    admin_required,
+    app,
+)
 
 from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import (
@@ -21,33 +28,21 @@ from temboardui.application import (
 from temboardui.errors import TemboardUIError
 
 
-class SettingsGroupAllJsonHandler(JsonHandler):
+logger = logging.getLogger(__name__)
 
-    @tornado.web.asynchronous
-    def get(self, group_kind):
-        run_background(self.get_all, self.async_callback, (group_kind,))
 
-    @JsonHandler.catch_errors
-    def get_all(self, group_kind):
-        self.logger.info("Getting group list.")
-        self.setUp()
-        self.check_admin()
-
-        groups = get_group_list(self.db_session, group_kind)
-        self.logger.debug(groups)
-
-        self.logger.info("Done.")
-        return JSONAsyncResult(
-            200,
-            {
-                'groups': [{
-                    'name': group.group_name,
-                    'kind': group.group_kind,
-                    'description': group.group_description
-                } for group in groups],
-                'loaded_plugins': self.application.loaded_plugins
-            }
-        )
+@app.route(r'/json/settings/all/group/(role|instance)$')
+@admin_required
+def all_group(request, kind):
+    groups = get_group_list(request.db_session, kind)
+    return {
+        'groups': [{
+            'name': group.group_name,
+            'kind': group.group_kind,
+            'description': group.group_description
+        } for group in groups],
+        'loaded_plugins': request.handler.application.loaded_plugins,
+    }
 
 
 class SettingsGroupJsonHandler(JsonHandler):
