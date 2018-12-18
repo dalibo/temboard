@@ -110,3 +110,25 @@ def test_csv():
 
     with pytest.raises(ValueError):
         csvify({'a': 'b'})
+
+
+def test_make_error(mocker):
+    rt = mocker.patch('temboardui.web.render_template')
+    from temboardui.web import make_error
+
+    # Errors are rendered with HTML template
+    response = make_error(
+        mocker.Mock(name='request', path='/home'),
+        code=401, message=None,
+    )
+    assert rt.called is True
+    assert 401 == response.status_code
+
+    # /json request has json errors
+    response = make_error(
+        mocker.Mock(name='request', path='/json/settings/roles'),
+        code=401, message='Pouet',
+    )
+
+    assert 'Pouet' == response.body['error']
+    assert 401 == response.status_code

@@ -387,19 +387,9 @@ class Blueprint(object):
                     logger.exception("Unhandled Error:")
                     code = 500
                     message = str(e)
-                kwargs = dict(
-                    nav=True,
-                    role=request.current_user,
-                    code=code, error=message,
-                )
-                if with_instance:
-                    kwargs['instance'] = request.instance
-                response = render_template(
-                    'error.html',
-                    **kwargs
-                )
-                response.status_code = code
-                return response
+
+                return make_error(request, code, message)
+
             rules = [(
                 url, CallableHandler, dict(
                     blueprint=self,
@@ -441,6 +431,25 @@ class WebApplication(TornadoApplication, Blueprint):
         else:
             rules = [tornadoweb.URLSpec(*r) for r in rules]
             self.handlers[0][1].extend(rules)
+
+
+def make_error(request, code, message):
+    data = dict(code=code, error=message)
+
+    # Dirty hack to determine fallback output format
+    if request.path.startswith('/json'):
+        return Response(code, body=data)
+
+    if hasattr(request, 'instance'):
+        data['instance'] = request.instance
+
+    response = render_template(
+        'error.html',
+        nav=True, role=request.current_user,
+        **data
+    )
+    response.status_code = code
+    return response
 
 
 # Global app instance for registration of core handlers.
