@@ -93,8 +93,13 @@ def agent_login(request):
             return Redirect('/login')
 
         if request.instance.xsession:
-            profile = request.instance.get_profile()
-            username = profile['username']
+            try:
+                profile = request.instance.get_profile()
+            except Exception as e:
+                logger.debug("Failed to get profile: %s.", e)
+                logger.debug("Is X-Session valid? Showing login form.")
+            else:
+                username = profile['username']
     else:
         try:
             xsession = request.instance.login(
