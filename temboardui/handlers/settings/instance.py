@@ -240,28 +240,16 @@ class SettingsInstanceJsonHandler(JsonHandler):
         return JSONAsyncResult(200, {"message": "OK"})
 
 
-class SettingsDeleteInstanceJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def post(self):
-        run_background(self.delete_instance, self.async_callback)
-
-    @JsonHandler.catch_errors
-    def delete_instance(self):
-        self.logger.info("Deleting instance.")
-        self.setUp()
-        self.check_admin()
-
-        data = tornado.escape.json_decode(self.request.body)
-        self.logger.debug(data)
-        if 'agent_address' not in data or data['agent_address'] == '':
-            raise TemboardUIError(400, "Agent address field is missing.")
-        if 'agent_port' not in data or data['agent_port'] == '':
-            raise TemboardUIError(400, "Agent port field is missing.")
-        delete_instance(
-            self.db_session, data['agent_address'], data['agent_port'])
-        self.logger.info("Done.")
-        return JSONAsyncResult(200, {'delete': True})
+@app.route(r"/json/settings/delete/instance$", methods=['POST'])
+@admin_required
+def json_delete_instance(request):
+    data = json_decode(request.body)
+    if not data.get('agent_address'):
+        raise HTTPError(400, "Agent address field is missing.")
+    if not data.get('agent_port'):
+        raise HTTPError(400, "Agent port field is missing.")
+    delete_instance(request.db_session, **data)
+    return {'delete': True}
 
 
 class SettingsInstanceHandler(BaseHandler):

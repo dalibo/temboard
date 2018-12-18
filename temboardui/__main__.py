@@ -33,7 +33,6 @@ from .handlers.settings.user import (
 from .handlers.settings.instance import (
     DiscoverInstanceJsonHandler,
     RegisterInstanceJsonHandler,
-    SettingsDeleteInstanceJsonHandler,
     SettingsInstanceHandler,
 )
 
@@ -106,8 +105,6 @@ def setup_tornado_app(app, config):
         (r"/settings/instances", SettingsInstanceHandler, handler_conf),
         (r"/json/register/instance$", RegisterInstanceJsonHandler,
          handler_conf),
-        (r"/json/settings/delete/instance$",
-         SettingsDeleteInstanceJsonHandler, handler_conf),
         # Discover
         (r"/json/discover/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$",
          DiscoverInstanceJsonHandler, handler_conf),
