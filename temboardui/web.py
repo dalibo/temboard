@@ -392,7 +392,7 @@ class Blueprint(object):
                     raise
                 except HTTPError as e:
                     code = e.status_code
-                    message = str(e)
+                    message = e.log_message
                 except Exception as e:
                     # Since async traceback is useless, spit here traceback and
                     # mock HTTPError(500).
