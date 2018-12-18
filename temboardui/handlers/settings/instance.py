@@ -32,6 +32,13 @@ from temboardui.web import (
 )
 
 
+def add_instance_in_groups(db_session, instance, groups):
+    for group_name in groups or []:
+        add_instance_in_group(
+            db_session, instance.agent_address, instance.agent_port,
+            group_name)
+
+
 def validate_instance_data(data):
     # Submited attributes checking.
     if not data.get('new_agent_address'):
@@ -65,16 +72,11 @@ def validate_instance_data(data):
 def create_instance(request):
     data = json_decode(request.body)
     validate_instance_data(data)
-    groups = data.pop('groups') or []
+    groups = data.pop('groups')
     plugins = data.pop('plugins') or []
 
     instance = add_instance(request.db_session, **data)
-
-    # Add instance into the new groups.
-    for group_name in groups:
-        add_instance_in_group(
-            request.db_session, instance.agent_address,
-            instance.agent_port, group_name)
+    add_instance_in_groups(request.db_session, instance, groups)
 
     # Add each selected plugin.
     for plugin_name in plugins:
@@ -120,7 +122,7 @@ def json_instance(request):
     else:  # POST (update)
         data = json_decode(request.body)
         validate_instance_data(data)
-        groups = data.pop('groups') or []
+        groups = data.pop('groups')
         plugins = data.pop('plugins') or []
 
         # First step is to remove the instance from the groups it belongs to.
@@ -141,12 +143,7 @@ def json_instance(request):
             instance.agent_address,
             instance.agent_port,
             **data)
-
-        # Add instance into the new groups.
-        for group_name in groups:
-            add_instance_in_group(
-                request.db_session, instance.agent_address,
-                instance.agent_port, group_name)
+        add_instance_in_groups(request.db_session, instance, groups)
 
         # Add each selected plugin.
         for plugin_name in plugins:
