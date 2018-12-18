@@ -31,7 +31,6 @@ from .handlers.settings.user import (
     SettingsUserJsonHandler,
 )
 from .handlers.settings.instance import (
-    RegisterInstanceJsonHandler,
     SettingsInstanceHandler,
 )
 
@@ -102,8 +101,6 @@ def setup_tornado_app(app, config):
          handler_conf),
         # Manage instances
         (r"/settings/instances", SettingsInstanceHandler, handler_conf),
-        (r"/json/register/instance$", RegisterInstanceJsonHandler,
-         handler_conf),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),

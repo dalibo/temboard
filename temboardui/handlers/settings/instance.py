@@ -2,10 +2,9 @@ import tornado.web
 
 from tornado.escape import json_decode
 
-from temboardui.handlers.base import BaseHandler, JsonHandler
+from temboardui.handlers.base import BaseHandler
 from temboardui.async import (
     HTMLAsyncResult,
-    JSONAsyncResult,
     run_background,
 )
 from temboardui.application import (
@@ -29,6 +28,7 @@ from temboardui.web import (
     InstanceHelper,
     admin_required,
     app,
+    render_template,
 )
 
 
@@ -37,6 +37,17 @@ def add_instance_in_groups(db_session, instance, groups):
         add_instance_in_group(
             db_session, instance.agent_address, instance.agent_port,
             group_name)
+
+
+def create_instance_helper(webapp, db_session, data):
+    validate_instance_data(data)
+    groups = data.pop('groups')
+    plugins = data.pop('plugins') or []
+    instance = add_instance(db_session, **data)
+    add_instance_in_groups(db_session, instance, groups)
+    enable_instance_plugins(
+        db_session, instance, plugins, webapp.loaded_plugins,
+    )
 
 
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
@@ -83,17 +94,10 @@ def validate_instance_data(data):
 
 @app.route(r"/json/settings/instance", methods=['POST'])
 @admin_required
-def create_instance(request):
-    data = json_decode(request.body)
-    validate_instance_data(data)
-    groups = data.pop('groups')
-    plugins = data.pop('plugins') or []
-
-    instance = add_instance(request.db_session, **data)
-    add_instance_in_groups(request.db_session, instance, groups)
-    enable_instance_plugins(
-        request.db_session, instance, plugins,
-        request.handler.application.loaded_plugins,
+def create_instance_handler(request):
+    create_instance_helper(
+        request.handler.application, request.db_session,
+        json_decode(request.body),
     )
     return {"message": "OK"}
 
@@ -156,90 +160,6 @@ def json_instance(request):
         return {"message": "OK"}
 
 
-class SettingsInstanceJsonHandler(JsonHandler):
-
-    @JsonHandler.catch_errors
-    def post_instance(self):
-        self.logger.info("Posting instance.")
-        self.setUp()
-        self.check_admin()
-
-        data = tornado.escape.json_decode(self.request.body)
-        self.logger.debug(data)
-
-        # Submited attributes checking.
-        if 'new_agent_address' not in data or \
-           data['new_agent_address'] == '':
-            raise TemboardUIError(
-                400, "Agent address is missing.")
-        if 'new_agent_port' not in data or data['new_agent_port'] == '':
-            raise TemboardUIError(
-                400, "Agent port is missing.")
-        if 'agent_key' not in data:
-            raise TemboardUIError(
-                400, "Agent key field is missing.")
-        if 'hostname' not in data:
-            raise TemboardUIError(
-                400, "Hostname field is missing.")
-        if 'cpu' not in data:
-            raise TemboardUIError(
-                400, "CPU field is missing.")
-        if 'memory_size' not in data:
-            raise TemboardUIError(
-                400, "Memory size field is missing.")
-        if 'pg_port' not in data:
-            raise TemboardUIError(
-                400, "PostgreSQL port field is missing.")
-        if 'pg_version' not in data:
-            raise TemboardUIError(
-                400, "PostgreSQL version field is missing.")
-        if 'pg_data' not in data:
-            raise TemboardUIError(
-                400, "PostgreSQL data directory field is missing.")
-        if 'groups' not in data:
-            raise TemboardUIError(
-                400, "Groups field is missing.")
-        if data['groups'] is not None and type(data['groups']) != list:
-            raise TemboardUIError(
-                400, "Invalid group list.")
-        check_agent_address(data['new_agent_address'])
-        check_agent_port(data['new_agent_port'])
-
-        instance = add_instance(
-            self.db_session,
-            data['new_agent_address'],
-            data['new_agent_port'],
-            data['hostname'],
-            data['agent_key'],
-            data['cpu'],
-            data['memory_size'],
-            data['pg_port'],
-            data['pg_version'],
-            data['pg_data'])
-
-        # Add user into the new groups.
-        if data['groups']:
-            for group_name in data['groups']:
-                add_instance_in_group(
-                    self.db_session, instance.agent_address,
-                    instance.agent_port, group_name)
-        # Add each selected plugin.
-        if data['plugins']:
-            for plugin_name in data['plugins']:
-                # 'administration' plugin case: the plugin is not currently
-                # implemented on UI side
-                if plugin_name != 'administration':
-                    if plugin_name in self.application.loaded_plugins:
-                        add_instance_plugin(
-                            self.db_session, instance.agent_address,
-                            instance.agent_port, plugin_name)
-                    else:
-                        raise TemboardUIError(
-                            404, "Unknown plugin %s." % (plugin_name))
-        self.logger.info("Done.")
-        return JSONAsyncResult(200, {"message": "OK"})
-
-
 @app.route(r"/json/settings/delete/instance$", methods=['POST'])
 @admin_required
 def json_delete_instance(request):
@@ -258,6 +178,26 @@ def json_delete_instance(request):
 def discover(request, address, port):
     return temboard_discover(
         request.config.temboard.ssl_ca_cert_file, address, port)
+
+
+@app.route(r"/json/register/instance", methods=['POST'])
+@admin_required
+def register(request):
+    data = json_decode(request.body)
+    agent_address = data.pop('agent_address', None)
+    if not agent_address:
+        # Try to find agent's IP
+        x_real_ip = request.headers.get("X-Real-IP")
+        agent_address = x_real_ip or request.remote_ip
+
+    data['new_agent_address'] = agent_address
+    data['new_agent_port'] = data.pop('agent_port', None)
+    create_instance_helper(
+        request.handler.application,
+        request.db_session,
+        data,
+    )
+    return {"message": "OK"}
 
 
 class SettingsInstanceHandler(BaseHandler):
@@ -301,24 +241,3 @@ class SettingsInstanceHandler(BaseHandler):
                         None,
                         {'nav': False, 'error': e.message},
                         template_file='settings/error.html')
-
-
-class RegisterInstanceJsonHandler(SettingsInstanceJsonHandler):
-    @tornado.web.asynchronous
-    def post(self):
-        run_background(self.post_register, self.async_callback)
-
-    @SettingsInstanceJsonHandler.catch_errors
-    def post_register(self,):
-        data = tornado.escape.json_decode(self.request.body)
-        if 'agent_address' not in data or data['agent_address'] is None:
-            # Try to find agent's IP
-            x_real_ip = self.request.headers.get("X-Real-IP")
-            data['new_agent_address'] = x_real_ip or self.request.remote_ip
-        else:
-            data['new_agent_address'] = data['agent_address']
-        data['new_agent_port'] = data['agent_port']
-        self.request.body = tornado.escape.json_encode(data)
-        self.logger.debug(data)
-        self.logger.debug(self.request.body)
-        return self.post_instance(None, None)
