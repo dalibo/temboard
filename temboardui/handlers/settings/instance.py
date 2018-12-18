@@ -252,6 +252,14 @@ def json_delete_instance(request):
     return {'delete': True}
 
 
+@app.route(
+    r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
+@admin_required
+def discover(request, address, port):
+    return temboard_discover(
+        request.config.temboard.ssl_ca_cert_file, address, port)
+
+
 class SettingsInstanceHandler(BaseHandler):
 
     @tornado.web.asynchronous
@@ -293,26 +301,6 @@ class SettingsInstanceHandler(BaseHandler):
                         None,
                         {'nav': False, 'error': e.message},
                         template_file='settings/error.html')
-
-
-class DiscoverInstanceJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(
-            self.get_discover, self.async_callback,
-            (agent_address, agent_port))
-
-    @JsonHandler.catch_errors
-    def get_discover(self, agent_address, agent_port):
-        self.logger.info("Getting discovery.")
-        self.setUp()
-        self.check_admin()
-
-        res = temboard_discover(self.ssl_ca_cert_file, agent_address,
-                                agent_port)
-        self.logger.info("Done.")
-        return JSONAsyncResult(200, res)
 
 
 class RegisterInstanceJsonHandler(SettingsInstanceJsonHandler):
