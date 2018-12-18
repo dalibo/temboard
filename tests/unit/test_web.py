@@ -95,3 +95,18 @@ def test_template(mocker):
     response = render_template('test.html', var='toto')
     assert loader.load.called is True
     assert 200 == response.status_code
+
+
+def test_csv():
+    from temboardui.web import csvify
+
+    response = csvify("1,2")
+    assert "1,2" == response.body
+    assert "text/csv" == response.headers['Content-Type']
+
+    response = csvify([(1, 2)])
+    assert "1,2" in response.body.splitlines()
+    assert "text/csv" == response.headers['Content-Type']
+
+    with pytest.raises(ValueError):
+        csvify({'a': 'b'})

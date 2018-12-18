@@ -5,6 +5,8 @@ import functools
 import json
 import logging
 import os
+from cStringIO import StringIO
+from csv import writer as CSVWriter
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
@@ -66,6 +68,22 @@ class TemplateRenderer(object):
 
 template_path = os.path.realpath(__file__ + '/../templates')
 render_template = TemplateRenderer(template_path)
+
+
+def csvify(data, status_code=200):
+    if isinstance(data, list):
+        fo = StringIO()
+        writer = CSVWriter(fo)
+        for row in data:
+            writer.writerow(row)
+        data = fo.getvalue()
+    elif not isinstance(data, (str, unicode)):
+        raise ValueError("Malformed CSV data")
+    return Response(
+        status_code=status_code,
+        headers={'Content-Type': 'text/csv'},
+        body=data,
+    )
 
 
 class CallableHandler(RequestHandler):

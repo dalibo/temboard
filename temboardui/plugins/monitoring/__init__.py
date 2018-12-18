@@ -17,6 +17,7 @@ from .model.orm import (
 from .alerting import (
     check_specs,
 )
+from .handlers import blueprint
 from .handlers.alerting import (
     AlertingCheckHTMLHandler,
     AlertingHTMLHandler,
@@ -29,7 +30,6 @@ from .handlers.alerting import (
 from .handlers.monitoring import (
     MonitoringAvailabilityHandler,
     MonitoringCollectorHandler,
-    MonitoringDataMetricHandler,
     MonitoringHTMLHandler,
     MonitoringUnavailabilityHandler,
 )
@@ -47,7 +47,7 @@ def get_routes(config):
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path':  plugin_path + "/templates"
     }
-    routes = [
+    routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting",
@@ -58,8 +58,6 @@ def get_routes(config):
         # supervision routes
         (r"/supervision/collector",
          MonitoringCollectorHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/data/([a-z\-_.0-9]{1,64})$",
-         MonitoringDataMetricHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/availability",
          MonitoringAvailabilityHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",

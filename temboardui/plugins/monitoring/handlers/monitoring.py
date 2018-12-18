@@ -18,7 +18,12 @@ from temboardui.async import (
     JSONAsyncResult,
     CSVAsyncResult,
 )
+from temboardui.web import (
+    HTTPError,
+    csvify,
+)
 
+from . import blueprint
 from ..chartdata import (
     get_availability,
     get_unavailability_csv,
@@ -172,6 +177,26 @@ class MonitoringCollectorHandler(JsonHandler):
         run_background(self.push_data, self.async_callback)
 
 
+def prepare_csv_request(request):
+    request.instance.check_active_plugin('monitoring')
+
+    host_id = get_host_id(request.db_session, request.instance.hostname)
+    instance_id = get_instance_id(
+        request.db_session, host_id, request.instance.pg_port)
+
+    start = request.handler.get_argument('start', default=None)
+    end = request.handler.get_argument('end', default=None)
+    try:
+        if start:
+            start = dt_parser.parse(start)
+        if end:
+            end = dt_parser.parse(end)
+    except ValueError:
+        raise TemboardUIError(406, 'Datetime not valid.')
+
+    return host_id, instance_id, start, end
+
+
 class MonitoringCsvHandler(CsvHandler):
 
     def build(self, agent_address, agent_port):
@@ -224,29 +249,22 @@ class MonitoringUnavailabilityHandler(MonitoringCsvHandler):
                        (agent_address, agent_port))
 
 
-class MonitoringDataMetricHandler(MonitoringCsvHandler):
+@blueprint.instance_route(r'/monitoring/data/([a-z\-_.0-9]{1,64})$')
+def data_metric(request, metric_name):
+    key = request.handler.get_argument('key', default=None)
+    host_id, instance_id, start, end = prepare_csv_request(request)
+    try:
+        data = get_metric_data_csv(
+            request.db_session, metric_name,
+            start, end,
+            host_id=host_id,
+            instance_id=instance_id,
+            key=key,
+        )
+    except IndexError:
+        raise HTTPError(404, 'Unknown metric.')
 
-    @CsvHandler.catch_errors
-    def get_data_metric(self, agent_address, agent_port, metric_name):
-        host_id, instance_id, start_time, end_time = self.build(
-            agent_address, agent_port)
-        key = self.get_argument('key', default=None)
-        try:
-            # Try to load data from the repository
-            data = get_metric_data_csv(self.db_session, metric_name,
-                                       start_time, end_time,
-                                       host_id=host_id,
-                                       instance_id=instance_id, key=key)
-        except IndexError as e:
-            logger.exception(str(e))
-            raise TemboardUIError(404, 'Unknown metric.')
-
-        return CSVAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, metric_name):
-        run_background(self.get_data_metric, self.async_callback,
-                       (agent_address, agent_port, metric_name))
+    return csvify(data=data)
 
 
 class MonitoringAvailabilityHandler(JsonHandler):
