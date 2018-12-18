@@ -109,8 +109,6 @@ def setup_tornado_app(app, config):
          handler_conf),
         (r"/json/register/instance$", RegisterInstanceJsonHandler,
          handler_conf),
-        (r"/json/settings/instance/([0-9a-zA-Z\-\._:]+)/([0-9]{1,5})$",
-         SettingsInstanceJsonHandler, handler_conf),
         (r"/json/settings/delete/instance$",
          SettingsDeleteInstanceJsonHandler, handler_conf),
         # Discover

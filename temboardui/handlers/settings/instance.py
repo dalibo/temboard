@@ -1,5 +1,6 @@
 import tornado.web
-import json
+
+from tornado.escape import json_decode
 
 from temboardui.handlers.base import BaseHandler, JsonHandler
 from temboardui.async import (
@@ -17,82 +18,131 @@ from temboardui.application import (
     delete_instance_from_group,
     get_group_list,
     get_groups_by_instance,
-    get_instance,
     get_instance_list,
     purge_instance_plugins,
     update_instance,
 )
 from temboardui.errors import TemboardUIError
 from temboardui.temboardclient import temboard_discover
+from temboardui.web import (
+    HTTPError,
+    InstanceHelper,
+    admin_required,
+    app,
+)
+
+
+def validate_instance_data(data):
+    # Submited attributes checking.
+    if not data.get('new_agent_address'):
+        raise HTTPError(400, "Agent address is missing.")
+    check_agent_address(data['new_agent_address'])
+    if 'new_agent_port' not in data or data['new_agent_port'] == '':
+        raise HTTPError(400, "Agent port is missing.")
+    check_agent_port(data['new_agent_port'])
+    if 'agent_key' not in data:
+        raise HTTPError(400, "Agent key field is missing.")
+    if 'hostname' not in data:
+        raise HTTPError(400, "Hostname field is missing.")
+    if 'cpu' not in data:
+        raise HTTPError(400, "CPU field is missing.")
+    if 'memory_size' not in data:
+        raise HTTPError(400, "Memory size field is missing.")
+    if 'pg_port' not in data:
+        raise HTTPError(400, "PostgreSQL port field is missing.")
+    if 'pg_version' not in data:
+        raise HTTPError(400, "PostgreSQL version field is missing.")
+    if 'pg_data' not in data:
+        raise HTTPError(400, "PostgreSQL data directory field is missing.")
+    if 'groups' not in data:
+        raise HTTPError(400, "Groups field is missing.")
+    if data['groups'] is not None and type(data['groups']) != list:
+        raise HTTPError(400, "Invalid group list.")
+
+
+@app.route(
+    r"/json/settings/instance" + InstanceHelper.INSTANCE_PARAMS,
+    methods=['GET', 'POST'], with_instance=True)
+@admin_required
+def json_instance(request):
+    instance = request.instance
+    if 'GET' == request.method:
+        groups = get_group_list(request.db_session, 'instance')
+        return {
+            'agent_address': instance.agent_address,
+            'agent_port': instance.agent_port,
+            'agent_key': instance.agent_key,
+            'hostname': instance.hostname,
+            'cpu': instance.cpu,
+            'memory_size': instance.memory_size,
+            'pg_port': instance.pg_port,
+            'pg_version': instance.pg_version,
+            'pg_data': instance.pg_data,
+            'in_groups': [g.group_name for g in instance.groups],
+            'enabled_plugins': [p.plugin_name for p in instance.plugins],
+            'groups': [{
+                'name': group.group_name,
+                'description': group.group_description
+            } for group in groups],
+            'loaded_plugins': request.handler.application.loaded_plugins
+        }
+    else:  # POST (update)
+        data = json_decode(request.body)
+        validate_instance_data(data)
+        groups = data.pop('groups') or []
+        plugins = data.pop('plugins') or []
+
+        # First step is to remove the instance from the groups it belongs to.
+        instance_groups = get_groups_by_instance(
+            request.db_session, instance.agent_address,
+            instance.agent_port)
+        for instance_group in instance_groups:
+            delete_instance_from_group(
+                request.db_session, instance.agent_address,
+                instance.agent_port, instance_group.group_name)
+        # Remove plugins
+        purge_instance_plugins(
+            request.db_session, instance.agent_address,
+            instance.agent_port)
+
+        instance = update_instance(
+            request.db_session,
+            instance.agent_address,
+            instance.agent_port,
+            **data)
+
+        # Add instance into the new groups.
+        for group_name in groups:
+            add_instance_in_group(
+                request.db_session, instance.agent_address,
+                instance.agent_port, group_name)
+
+        # Add each selected plugin.
+        for plugin_name in plugins:
+            # 'administration' plugin case: the plugin is not currently
+            # implemented on UI side
+            if plugin_name == 'administration':
+                continue
+            if plugin_name not in request.handler.application.loaded_plugins:
+                raise HTTPError(404, "Unknown plugin %s." % plugin_name)
+
+            add_instance_plugin(
+                request.db_session, instance.agent_address,
+                instance.agent_port, plugin_name)
+        return {"message": "OK"}
 
 
 class SettingsInstanceJsonHandler(JsonHandler):
 
     @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        if agent_address is None or agent_port is None:
-            self.set_status(500)
-            self.set_header("Content-Type", "application/json")
-            if agent_address is None:
-                self.logger.error("Agent address is missing.")
-                self.write(json.dumps({'error': "Agent address is missing."}))
-            else:
-                self.logger.error("Agent port is missing.")
-                self.write(json.dumps({'error': "Agent port is missing."}))
-            self.finish()
-        else:
-            run_background(self.get_instance, self.async_callback,
-                           (agent_address, agent_port,))
-
-    @tornado.web.asynchronous
-    def post(self, agent_address=None, agent_port=None):
-        run_background(self.post_instance, self.async_callback,
-                       (agent_address, agent_port))
+    def post(self):
+        run_background(self.post_instance, self.async_callback)
 
     @JsonHandler.catch_errors
-    def get_instance(self, agent_address, agent_port):
-        self.logger.info("Getting instance.")
-        self.setUp(agent_address, agent_port)
-
-        self.check_admin()
-
-        groups = get_group_list(self.db_session, 'instance')
-        self.logger.info("Done.")
-        return JSONAsyncResult(
-            200,
-            {
-                'agent_address': self.instance.agent_address,
-                'agent_port': self.instance.agent_port,
-                'agent_key': self.instance.agent_key,
-                'hostname': self.instance.hostname,
-                'cpu': self.instance.cpu,
-                'memory_size': self.instance.memory_size,
-                'pg_port': self.instance.pg_port,
-                'pg_version': self.instance.pg_version,
-                'pg_data': self.instance.pg_data,
-                'in_groups': [group.group_name for group
-                              in self.instance.groups],
-                'enabled_plugins': [plugin.plugin_name for plugin
-                                    in self.instance.plugins],
-                'groups': [{
-                    'name': group.group_name,
-                    'description': group.group_description
-                } for group in groups],
-                'loaded_plugins': self.application.loaded_plugins
-            }
-        )
-
-    @JsonHandler.catch_errors
-    def post_instance(self, agent_address, agent_port):
+    def post_instance(self):
         self.logger.info("Posting instance.")
         self.setUp()
-        instance = None
         self.check_admin()
-        if agent_address and agent_port:
-            # Update instance case.
-            instance = get_instance(self.db_session, agent_address, agent_port)
-            if not instance:
-                raise TemboardUIError(404, "Instance entry not found.")
 
         data = tornado.escape.json_decode(self.request.body)
         self.logger.debug(data)
@@ -135,50 +185,17 @@ class SettingsInstanceJsonHandler(JsonHandler):
         check_agent_address(data['new_agent_address'])
         check_agent_port(data['new_agent_port'])
 
-        # At this point we can proceed with DB operations.
-        # Update instance case.
-        if instance:
-            # First step is to remove the instance from the groups it
-            # belongs to.
-            instance_groups = get_groups_by_instance(
-                self.db_session, instance.agent_address,
-                instance.agent_port)
-            if instance_groups:
-                for instance_group in instance_groups:
-                    delete_instance_from_group(
-                        self.db_session, instance.agent_address,
-                        instance.agent_port, instance_group.group_name)
-            # Remove plugins
-            purge_instance_plugins(
-                self.db_session, instance.agent_address,
-                instance.agent_port)
-
-            instance = update_instance(
-                self.db_session,
-                instance.agent_address,
-                instance.agent_port,
-                data['new_agent_address'],
-                data['new_agent_port'],
-                data['agent_key'],
-                data['hostname'],
-                data['cpu'],
-                data['memory_size'],
-                data['pg_port'],
-                data['pg_version'],
-                data['pg_data'])
-        # New instance case.
-        else:
-            instance = add_instance(
-                self.db_session,
-                data['new_agent_address'],
-                data['new_agent_port'],
-                data['hostname'],
-                data['agent_key'],
-                data['cpu'],
-                data['memory_size'],
-                data['pg_port'],
-                data['pg_version'],
-                data['pg_data'])
+        instance = add_instance(
+            self.db_session,
+            data['new_agent_address'],
+            data['new_agent_port'],
+            data['hostname'],
+            data['agent_key'],
+            data['cpu'],
+            data['memory_size'],
+            data['pg_port'],
+            data['pg_version'],
+            data['pg_data'])
 
         # Add user into the new groups.
         if data['groups']:
