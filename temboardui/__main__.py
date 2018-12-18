@@ -35,7 +35,6 @@ from .handlers.settings.instance import (
     RegisterInstanceJsonHandler,
     SettingsDeleteInstanceJsonHandler,
     SettingsInstanceHandler,
-    SettingsInstanceJsonHandler,
 )
 
 from .async import new_worker_pool
@@ -105,8 +104,6 @@ def setup_tornado_app(app, config):
          handler_conf),
         # Manage instances
         (r"/settings/instances", SettingsInstanceHandler, handler_conf),
-        (r"/json/settings/instance$", SettingsInstanceJsonHandler,
-         handler_conf),
         (r"/json/register/instance$", RegisterInstanceJsonHandler,
          handler_conf),
         (r"/json/settings/delete/instance$",

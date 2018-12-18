@@ -60,6 +60,37 @@ def validate_instance_data(data):
         raise HTTPError(400, "Invalid group list.")
 
 
+@app.route(r"/json/settings/instance", methods=['POST'])
+@admin_required
+def create_instance(request):
+    data = json_decode(request.body)
+    validate_instance_data(data)
+    groups = data.pop('groups') or []
+    plugins = data.pop('plugins') or []
+
+    instance = add_instance(request.db_session, **data)
+
+    # Add instance into the new groups.
+    for group_name in groups:
+        add_instance_in_group(
+            request.db_session, instance.agent_address,
+            instance.agent_port, group_name)
+
+    # Add each selected plugin.
+    for plugin_name in plugins:
+        # 'administration' plugin case: the plugin is not currently
+        # implemented on UI side
+        if plugin_name == 'administration':
+            continue
+        if plugin_name not in request.handler.application.loaded_plugins:
+            raise HTTPError(404, "Unknown plugin %s." % plugin_name)
+
+        add_instance_plugin(
+            request.db_session, instance.agent_address,
+            instance.agent_port, plugin_name)
+    return {"message": "OK"}
+
+
 @app.route(
     r"/json/settings/instance" + InstanceHelper.INSTANCE_PARAMS,
     methods=['GET', 'POST'], with_instance=True)
@@ -133,10 +164,6 @@ def json_instance(request):
 
 
 class SettingsInstanceJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def post(self):
-        run_background(self.post_instance, self.async_callback)
 
     @JsonHandler.catch_errors
     def post_instance(self):
