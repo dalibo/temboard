@@ -33,7 +33,6 @@ from .handlers.settings.user import (
 from .handlers.settings.group import (
     SettingsDeleteGroupJsonHandler,
     SettingsGroupHandler,
-    SettingsGroupJsonHandler,
 )
 from .handlers.settings.instance import (
     DiscoverInstanceJsonHandler,
@@ -110,10 +109,6 @@ def setup_tornado_app(app, config):
         # Manage groups (users & instances)
         (r"/settings/groups/(role|instance)$", SettingsGroupHandler,
          handler_conf),
-        (r"/json/settings/group/(role|instance)$",
-         SettingsGroupJsonHandler, handler_conf),
-        (r"/json/settings/group/(role|instance)/([0-9a-z\-_\.]{3,16})$",
-         SettingsGroupJsonHandler, handler_conf),
         (r"/json/settings/delete/group/(role|instance)$",
          SettingsDeleteGroupJsonHandler, handler_conf),
         # Manage instances

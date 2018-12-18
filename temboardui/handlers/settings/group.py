@@ -1,9 +1,10 @@
 import logging
-import json
 
 import tornado.web
+from tornado.escape import json_decode
 
 from temboardui.web import (
+    HTTPError,
     admin_required,
     app,
 )
@@ -29,9 +30,10 @@ from temboardui.errors import TemboardUIError
 
 
 logger = logging.getLogger(__name__)
+PREFIX = r'/json/settings'
 
 
-@app.route(r'/json/settings/all/group/(role|instance)$')
+@app.route(PREFIX + r'/all/group/(role|instance)$')
 @admin_required
 def all_group(request, kind):
     groups = get_group_list(request.db_session, kind)
@@ -45,113 +47,60 @@ def all_group(request, kind):
     }
 
 
-class SettingsGroupJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def get(self, group_kind, group_name=None):
-        if group_name is None:
-            self.logger.error("Group name is missing.")
-            self.set_status(500)
-            self.set_header("Content-Type", "application/json")
-            self.write(json.dumps({'error': "Group name is missing."}))
-            self.finish()
-        else:
-            run_background(
-                self.get_group, self.async_callback, (group_kind, group_name,))
-
-    @tornado.web.asynchronous
-    def post(self, group_kind, group_name=None):
-        run_background(
-            self.post_group, self.async_callback, (group_kind, group_name,))
-
-    @JsonHandler.catch_errors
-    def get_group(self, group_kind, group_name):
-        self.logger.info("Getting group by name.")
-        self.setUp()
-        self.check_admin()
-
-        group = get_group(self.db_session, group_name, group_kind)
-        self.logger.debug(group)
-
-        if group_kind == 'role':
-            self.logger.info("Done")
-            return JSONAsyncResult(
-                200,
-                {
-                    'name': group.group_name,
-                    'kind': group.group_kind,
-                    'description': group.group_description
-                }
-            )
-        else:
-            user_groups = get_group_list(self.db_session)
-            self.logger.info("Done.")
-            return JSONAsyncResult(
-                200,
-                {
-                    'name': group.group_name,
-                    'kind': group.group_kind,
-                    'description': group.group_description,
-                    'user_groups': [{
-                        'name': user_group.group_name,
-                        'description': user_group.group_description
-                    } for user_group in user_groups],
-                    'in_groups': [ari.role_group_name for ari in group.ari]
-                }
-            )
-
-    @JsonHandler.catch_errors
-    def post_group(self, group_kind, group_name):
-        self.logger.info("Posting new group.")
-        self.setUp()
-        group = None
-        self.check_admin()
-        if group_name:
-            # Update group case.
-            group = get_group(self.db_session, group_name, group_kind)
-
-        data = tornado.escape.json_decode(self.request.body)
-        self.logger.debug(data)
-
-        # Submited attributes checking.
-        if 'new_group_name' not in data or data['new_group_name'] == '':
-            raise TemboardUIError(400, "Group name is missing.")
-        if 'description' not in data:
-            raise TemboardUIError(
-                400, "Group description field is missing.")
+@app.route(
+    PREFIX + r"/group/(role|instance)(?:/([0-9a-z\-_\.]{3,16}))?$",
+    methods=['GET', 'POST'])
+@admin_required
+def group(request, kind, name):
+    if 'GET' == request.method:
+        if not name:
+            raise HTTPError(404)
+        group = get_group(request.db_session, name, kind)
+        data = dict(
+            name=group.group_name,
+            kind=kind,
+            description=group.group_description,
+        )
+        if kind == 'instance':
+            data['user_groups'] = [
+                dict(name=g.group_name, description=g.group_description)
+                for g in get_group_list(request.db_session)
+            ]
+            data['in_groups'] = [a.role_group_name for a in group.ari]
+        return data
+    else:  # POST
+        data = json_decode(request.body)
+        if not data.get('new_group_name'):
+            raise HTTPError(400, "Missing group name.")
         check_group_name(data['new_group_name'])
+        if not data.get('description'):
+            raise HTTPError(400, "Missing description")
         check_group_description(data['description'])
 
-        # At this point we can proceed with DB operations.
-        # Update group case.
-        if group:
-            if group_kind == 'instance':
+        if name:  # Group update
+            group = get_group(request.db_session, name, kind)
+            if 'instance' == kind:
                 for ari in group.ari:
                     delete_role_group_from_instance_group(
-                        self.db_session, ari.role_group_name,
+                        request.db_session, ari.role_group_name,
                         group.group_name)
 
             group = update_group(
-                self.db_session,
-                group.group_name,
-                group_kind,
-                data['new_group_name'],
-                data['description'])
-        # New group case.
-        else:
+                request.db_session,
+                group.group_name, kind,
+                data['new_group_name'], data['description'])
+        else:  # Group creation
             group = add_group(
-                self.db_session,
-                data['new_group_name'],
-                data['description'],
-                group_kind)
+                request.db_session,
+                data['new_group_name'], data['description'],
+                kind)
 
         if 'user_groups' in data and data['user_groups']:
             for group_name in data['user_groups']:
                 add_role_group_in_instance_group(
-                    self.db_session, group_name, group.group_name)
+                    request.db_session, group_name, group.group_name)
 
-        self.logger.info("Done.")
-        return JSONAsyncResult(200, {'ok': True})
+        return {'ok': True}
 
 
 class SettingsDeleteGroupJsonHandler(JsonHandler):
