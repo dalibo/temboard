@@ -330,11 +330,16 @@ class Blueprint(object):
                     logger.exception("Unhandled Error:")
                     code = 500
                     message = str(e)
-                response = render_template(
-                    'error.html',
-                    nav=True, instance=request.instance,
+                kwargs = dict(
+                    nav=True,
                     role=request.current_user,
                     code=code, error=message,
+                )
+                if with_instance:
+                    kwargs['instance'] = request.instance
+                response = render_template(
+                    'error.html',
+                    **kwargs
                 )
                 response.status_code = code
                 return response
