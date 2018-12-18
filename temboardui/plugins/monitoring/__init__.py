@@ -17,6 +17,7 @@ from .model.orm import (
 from .alerting import (
     check_specs,
 )
+from .handlers import blueprint
 from .handlers.alerting import (
     AlertingCheckHTMLHandler,
     AlertingHTMLHandler,
@@ -47,7 +48,7 @@ def get_routes(config):
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path':  plugin_path + "/templates"
     }
-    routes = [
+    routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting",
