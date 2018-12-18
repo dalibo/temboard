@@ -12,6 +12,7 @@ from ..errors import TemboardUIError
 from ..web import (
     Redirect,
     Response,
+    anonymous_allowed,
     app,
     render_template,
 )
@@ -36,6 +37,7 @@ def login_common(db_session, rolename, password):
 
 
 @app.route('/login', methods=['GET', 'POST'])
+@anonymous_allowed
 def login(request):
     if 'GET' == request.method:
         if request.current_user is None:
@@ -64,6 +66,7 @@ def login(request):
 
 
 @app.route(r'/json/login', methods=['POST'])
+@anonymous_allowed
 def json_login(request):
     # Mitigate dictionnaries attacks.
     sleep(1)

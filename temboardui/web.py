@@ -36,6 +36,16 @@ from .temboardclient import (
 logger = logging.getLogger(__name__)
 
 
+def anonymous_allowed(func):
+    # Reverse of flask_security.login_required.
+    #
+    # In temboard, very few pages are anonymous. Thus we have implicit
+    # login_required. This behaviour can be disabled by using
+    # @anonymous_allowed.
+    func.__anonymous_allowed = True
+    return func
+
+
 class Response(object):
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
@@ -289,6 +299,34 @@ class InstanceHelper(object):
         )
 
 
+class UserHelper(object):
+    @classmethod
+    def add_middleware(cls, func):
+
+        @functools.wraps(func)
+        def middleware(request, *args):
+            try:
+                # Bypass current_user cached property in middleware.
+                role = request.handler.get_current_user()
+            except Exception:
+                role = None
+
+            anonymous_allowed = getattr(func, '__anonymous_allowed', False)
+            if not anonymous_allowed and role is None:
+                logger.debug("Redirecting anonymous to /login.")
+                raise Redirect('/login')
+
+            return func(request, *args)
+
+        return middleware
+
+
+# Ensure @functools.wraps preserves User middleware attributes.
+functools.WRAPPER_UPDATES += (
+    '__anonymous_allowed',
+)
+
+
 class Blueprint(object):
     def __init__(self, plugin_name=None):
         self.plugin_name = plugin_name
@@ -329,6 +367,7 @@ class Blueprint(object):
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
 
+            func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
 
