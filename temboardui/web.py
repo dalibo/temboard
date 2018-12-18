@@ -352,7 +352,7 @@ class Blueprint(object):
         url = r'(%s)' % url
 
         @self.instance_proxy(url, methods)
-        def generic_instance_proxy(request, path):
+        def generic_instance_proxy(request, path, *args):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(
                     request.blueprint.plugin_name)
