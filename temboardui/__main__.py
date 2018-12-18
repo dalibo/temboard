@@ -31,7 +31,6 @@ from .handlers.settings.user import (
     SettingsUserJsonHandler,
 )
 from .handlers.settings.group import (
-    SettingsDeleteGroupJsonHandler,
     SettingsGroupHandler,
 )
 from .handlers.settings.instance import (
@@ -109,8 +108,6 @@ def setup_tornado_app(app, config):
         # Manage groups (users & instances)
         (r"/settings/groups/(role|instance)$", SettingsGroupHandler,
          handler_conf),
-        (r"/json/settings/delete/group/(role|instance)$",
-         SettingsDeleteGroupJsonHandler, handler_conf),
         # Manage instances
         (r"/settings/instances", SettingsInstanceHandler, handler_conf),
         (r"/json/settings/instance$", SettingsInstanceJsonHandler,

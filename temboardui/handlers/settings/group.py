@@ -9,10 +9,9 @@ from temboardui.web import (
     app,
 )
 
-from temboardui.handlers.base import BaseHandler, JsonHandler
+from temboardui.handlers.base import BaseHandler
 from temboardui.async import (
     HTMLAsyncResult,
-    JSONAsyncResult,
     run_background,
 )
 from temboardui.application import (
@@ -103,26 +102,15 @@ def group(request, kind, name):
         return {'ok': True}
 
 
-class SettingsDeleteGroupJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def post(self, group_kind):
-        run_background(self.delete_group, self.async_callback, (group_kind,))
-
-    @JsonHandler.catch_errors
-    def delete_group(self, group_kind):
-        self.logger.info("Deleting group.")
-        self.setUp()
-        self.check_admin()
-
-        data = tornado.escape.json_decode(self.request.body)
-        self.logger.debug(data)
-
-        if 'group_name' not in data or data['group_name'] == '':
-            raise TemboardUIError(400, "Group name field is missing.")
-        delete_group(self.db_session, data['group_name'], group_kind)
-        self.logger.info("Done.")
-        return JSONAsyncResult(200, {'delete': True})
+@app.route(PREFIX + r"/delete/group/(role|instance)", methods=['POST'])
+@admin_required
+def delete_group_handler(request, kind):
+    data = json_decode(request.body)
+    name = data.get('group_name')
+    if not name:
+        raise HTTPError(400)
+    delete_group(request.db_session, name, kind)
+    return {'delete': True}
 
 
 class SettingsGroupHandler(BaseHandler):
