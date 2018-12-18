@@ -24,8 +24,9 @@ from .application import (
 from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
-    temboard_profile,
     temboard_get_notifications,
+    temboard_login,
+    temboard_profile,
     temboard_request,
 )
 
@@ -44,11 +45,12 @@ class Response(object):
 
 
 class Redirect(Response, Exception):
-    def __init__(self, location, permanent=False):
+    def __init__(self, location, permanent=False, secure_cookies=None):
         super(Redirect, self).__init__(
             status_code=301 if permanent else 302,
             headers={'Location': location},
             body=u'Redirected to %s' % location,
+            secure_cookies=secure_cookies,
         )
 
 
@@ -198,10 +200,11 @@ class InstanceHelper(object):
                 self.cookie_name)
         return self._xsession
 
-    def redirect_login(self):
-        login_url = "/server/%s/%s/login" % (
-            self.instance.agent_address, self.instance.agent_port)
-        raise Redirect(location=login_url)
+    def format_url(self, path=''):
+        return "/server/%s/%s%s" % (self.agent_address, self.agent_port, path)
+
+    def redirect(self, path):
+        raise Redirect(location=self.format_url(path))
 
     def proxy(self, method, path, body=None):
         url = 'https://%s:%s%s' % (
@@ -232,9 +235,9 @@ class InstanceHelper(object):
             body=json.loads(body),
         )
 
-    def get_xsession(self):
+    def require_xsession(self):
         if not self.xsession:
-            self.redirect_login()
+            self.redirect('/login')
         return self.xsession
 
     def get_profile(self):
@@ -243,11 +246,11 @@ class InstanceHelper(object):
                 self.request.config.temboard.ssl_ca_cert_file,
                 self.instance.agent_address,
                 self.instance.agent_port,
-                self.get_xsession(),
+                self.require_xsession(),
             )
         except TemboardError as e:
             if 401 == e.code:
-                self.redirect_login()
+                self.redirect('/login')
             logger.error('Instance error: %s', e)
             raise HTTPError(500)
 
@@ -256,7 +259,15 @@ class InstanceHelper(object):
             self.request.config.temboard.ssl_ca_cert_file,
             self.instance.agent_address,
             self.instance.agent_port,
-            self.get_xsession(),
+            self.require_xsession(),
+        )
+
+    def login(self, username, password):
+        return temboard_login(
+            self.request.config.temboard.ssl_ca_cert_file,
+            self.instance.agent_address,
+            self.instance.agent_port,
+            username, password,
         )
 
 
@@ -304,6 +315,7 @@ class Blueprint(object):
                 func = InstanceHelper.add_middleware(func)
 
             @run_on_executor
+            @functools.wraps(func)
             def wrapper(request, *args):
                 try:
                     return func(request, *args)
