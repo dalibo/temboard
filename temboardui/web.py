@@ -325,7 +325,7 @@ class UserHelper(object):
             admin_required = getattr(func, '__admin_required', False)
             if admin_required and not role.is_admin:
                 logger.debug("Refusing access to non-admin user.")
-                raise HTTPError(401)
+                raise HTTPError(403)
 
             return func(request, *args)
 
@@ -460,8 +460,9 @@ def make_error(request, code, message):
     if hasattr(request, 'instance'):
         data['instance'] = request.instance
 
+    template = 'unauthorized.html' if 403 == code else 'error.html'
     response = render_template(
-        'error.html',
+        template,
         nav=True, role=request.current_user,
         **data
     )
