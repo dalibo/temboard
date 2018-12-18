@@ -132,3 +132,14 @@ def test_make_error(mocker):
 
     assert 'Pouet' == response.body['error']
     assert 401 == response.status_code
+
+    # ?noerror=1 request always has empty 200 response
+    request = mocker.Mock(name='request', path='/json/settings/roles')
+    request.handler.get_argument.return_value = '1'
+    response = make_error(
+        request,
+        code=401, message='Pouet',
+    )
+
+    assert not response.body
+    assert 200 == response.status_code

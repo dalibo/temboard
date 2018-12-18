@@ -446,6 +446,11 @@ class WebApplication(TornadoApplication, Blueprint):
 
 
 def make_error(request, code, message):
+    # If ?noerror=1 is set, only return HTTP error code.
+    if "1" == request.handler.get_argument('noerror', None):
+        logger.debug("Hide error %s %s for ?noerror=1.", code, message)
+        return Response(200)
+
     data = dict(code=code, error=message)
 
     # Dirty hack to determine fallback output format
