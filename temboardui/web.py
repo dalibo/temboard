@@ -36,6 +36,12 @@ from .temboardclient import (
 logger = logging.getLogger(__name__)
 
 
+def admin_required(func):
+    # Similar to flask_security.roles_required, but limited to admin role.
+    func.__admin_required = True
+    return func
+
+
 def anonymous_allowed(func):
     # Reverse of flask_security.login_required.
     #
@@ -316,6 +322,11 @@ class UserHelper(object):
                 logger.debug("Redirecting anonymous to /login.")
                 raise Redirect('/login')
 
+            admin_required = getattr(func, '__admin_required', False)
+            if admin_required and not role.is_admin:
+                logger.debug("Refusing access to non-admin user.")
+                raise HTTPError(401)
+
             return func(request, *args)
 
         return middleware
@@ -323,6 +334,7 @@ class UserHelper(object):
 
 # Ensure @functools.wraps preserves User middleware attributes.
 functools.WRAPPER_UPDATES += (
+    '__admin_required',
     '__anonymous_allowed',
 )
 
