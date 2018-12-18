@@ -158,6 +158,7 @@ function load_delete_group_confirm(modal_id, group_kind, group_name)
     contentType: "application/json",
     dataType: "json",
     success: function (data) {
+      $('#'+modal_id+'Info').hide();
       if (group_kind == 'role')
       {
         $('#'+modal_id+'Label').html('Delete user group properties');
