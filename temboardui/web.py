@@ -281,7 +281,7 @@ class InstanceHelper(object):
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
-            url_escape(path),
+            url_escape(path, plus=False),
         )
 
         headers = {}
