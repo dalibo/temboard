@@ -80,7 +80,10 @@ class TemplateRenderer(object):
         self.loader = TemplateLoader(path)
 
     def __call__(self, template, **data):
-        return Response(body=self.loader.load(template).generate(**data))
+        return Response(
+            body=self.loader.load(template).generate(**data),
+            headers={'Content-Type': 'text/html; charset=UTF-8'},
+        )
 
 
 template_path = os.path.realpath(__file__ + '/../templates')
@@ -165,6 +168,7 @@ class CallableHandler(RequestHandler):
         for k, v in response.headers.items():
             if not isinstance(v, list):
                 v = [v]
+            self.clear_header(k)
             for v1 in v:
                 self.add_header(k, v1)
 
