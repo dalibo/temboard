@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import functools
-import json
 import logging
 import os
 from cStringIO import StringIO
@@ -274,7 +273,7 @@ class InstanceHelper(object):
             raise HTTPError(500)
         return Response(
             status_code=200,
-            body=json.loads(body),
+            body=json_decode(body),
         )
 
     def require_xsession(self):
