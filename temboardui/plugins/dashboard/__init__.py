@@ -17,6 +17,12 @@ from temboardui.async import (
     run_background,
 )
 from temboardui.errors import TemboardUIError
+from temboardui.web import (
+    Blueprint,
+)
+
+
+blueprint = Blueprint()
 
 
 def configuration(config):
@@ -29,7 +35,7 @@ def get_routes(config):
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path': plugin_path + "/templates"
     }
-    routes = [
+    routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler,
          handler_conf),
         (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler,
