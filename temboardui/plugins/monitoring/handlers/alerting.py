@@ -21,7 +21,10 @@ from temboardui.async import (
     run_background,
     JSONAsyncResult,
 )
-from temboardui.web import jsonify
+from temboardui.web import (
+    HTTPError,
+    jsonify,
+)
 
 from . import (
     blueprint,
@@ -174,66 +177,44 @@ class AlertingJSONHandler(JsonHandler):
                                    data={'error': message})
 
 
-class AlertingJSONStateChangesHandler(AlertingJSONHandler):
-
-    @BaseHandler.catch_errors
-    def get_state_changes(self, address, port, check_name):
-        self.setUp(address, port)
-
-        # Arguments
-        start = self.get_argument('start', default=None)
-        end = self.get_argument('end', default=None)
-        key = self.get_argument('key', default=None)
-        if check_name not in check_specs:
-            raise TemboardUIError(404, "Unknown check '%s'" % check_name)
-
-        start_time = None
-        end_time = None
+def parse_start_end(request):
+    start = request.handler.get_argument('start', default=None)
+    end = request.handler.get_argument('end', default=None)
+    try:
         if start:
-            try:
-                start_time = dt_parser.parse(start)
-            except ValueError:
-                raise TemboardUIError(406, 'Datetime not valid.')
+            start = dt_parser.parse(start)
         if end:
-            try:
-                end_time = dt_parser.parse(end)
-            except ValueError:
-                raise TemboardUIError(406, 'Datetime not valid.')
+            end = dt_parser.parse(end)
+    except ValueError:
+        raise HTTPError(406, 'Datetime not valid.')
 
-        data_buffer = cStringIO.StringIO()
-        cur = self.db_session.connection().connection.cursor()
-        cur.execute("SET search_path TO monitoring")
-        query = """
-        COPY (
-            SELECT array_to_json(array_agg(json_build_object(
-                'datetime', f.datetime,
-                'state', f.state,
-                'value', f.value,
-                'warning', f.warning,
-                'critical', f.critical
-            ))) FROM get_state_changes(%s, %s, %s, %s, %s, %s) f
-        ) TO STDOUT
-        """  # noqa
-        # build the query
-        query = cur.mogrify(query, (self.host_id, self.instance_id,
-                                    check_name, key, start_time, end_time))
+    return start, end
 
-        cur.copy_expert(query, data_buffer)
-        cur.close()
-        data = data_buffer.getvalue()
-        data_buffer.close()
-        try:
-            data = json.loads(data)
-        except Exception:
-            # No data
-            data = []
 
-        return JSONAsyncResult(http_code=200, data=data)
+@blueprint.instance_route(r"/alerting/state_changes/([a-z\-_.0-9]{1,64}).json")
+def state_changes(request, name):
+    host_id, instance_id = get_instance_ids(request)
+    start, end = parse_start_end(request)
+    key = request.handler.get_argument('key', default=None)
+    if name not in check_specs:
+        raise HTTPError(404, "Unknown check '%s'" % name)
 
-    @tornado.web.asynchronous
-    def get(self, address, port, check_name):
-        run_background(self.get_state_changes, self.async_callback,
-                       (address, port, check_name))
+    query = dedent("""\
+    COPY (
+        SELECT array_to_json(array_agg(json_build_object(
+            'datetime', f.datetime,
+            'state', f.state,
+            'value', f.value,
+            'warning', f.warning,
+            'critical', f.critical
+        ))) FROM monitoring.get_state_changes(%s, %s, %s, %s, %s, %s) f
+    ) TO STDOUT
+    """)
+
+    return jsonify(sql_json_query(
+        request, query,
+        host_id, instance_id, name, key, start, end,
+    ))
 
 
 class AlertingJSONChecksHandler(AlertingJSONHandler):
