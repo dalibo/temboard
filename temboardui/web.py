@@ -173,7 +173,7 @@ class DatabaseHelper(object):
         def database_middleware(request, *args):
             request.db_session = request.handler.db_session = DBSession()
             try:
-                return func(request, *args)
+                response = func(request, *args)
             except Exception:
                 request.db_session.rollback()
                 raise
@@ -183,7 +183,36 @@ class DatabaseHelper(object):
                 request.db_session.close()
                 del request.db_session
 
+            return response
+
         return database_middleware
+
+
+class ErrorHelper(object):
+    @classmethod
+    def add_middleware(cls, func):
+        @functools.wraps(func)
+        def error_middleware(request, *args):
+            try:
+                return func(request, *args)
+            except Redirect:
+                raise
+            except (TemboardError, TemboardUIError) as e:
+                code = e.code
+                message = e.message
+            except HTTPError as e:
+                code = e.status_code
+                message = e.log_message
+            except Exception as e:
+                # Show traceback for developer, and HTML page for user.
+                logger.exception("Unhandled Error:")
+                code = 500
+                message = str(e)
+
+            logger.error("Request failed: %s %s.", code, message)
+            return make_error(request, code, message)
+
+        return error_middleware
 
 
 class InstanceHelper(object):
@@ -393,6 +422,7 @@ class Blueprint(object):
             func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
+            func = ErrorHelper.add_middleware(func)
             func = DatabaseHelper.add_middleware(func)
 
             @run_on_executor
@@ -400,23 +430,13 @@ class Blueprint(object):
             def sync_request_wrapper(request, *args):
                 try:
                     return func(request, *args)
-                except Redirect:
+                except (Redirect, HTTPError):
                     raise
-                except (TemboardError, TemboardUIError) as e:
-                    code = e.code
-                    message = e.message
-                except HTTPError as e:
-                    code = e.status_code
-                    message = e.log_message
                 except Exception as e:
                     # Since async traceback is useless, spit here traceback and
-                    # mock HTTPError(500).
+                    # forge simple HTTPError(500), no HTML error.
                     logger.exception("Unhandled Error:")
-                    code = 500
-                    message = str(e)
-
-                logger.error("Request failed: %s %s.", code, message)
-                return make_error(request, code, message)
+                    raise HTTPError(500, str(e))
 
             rules = [(
                 url, CallableHandler, dict(
