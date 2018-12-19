@@ -21,6 +21,8 @@ from temboardui.async import (
     run_background,
     JSONAsyncResult,
 )
+from temboardui.web import jsonify
+
 from . import (
     blueprint,
     render_template,
@@ -28,8 +30,57 @@ from . import (
 from ..tools import get_host_id, get_instance_id
 from ..alerting import checks_info, check_state_detail, check_specs
 
-
 logger = logging.getLogger(__name__)
+
+
+def get_instance_ids(request):
+    host_id = get_host_id(request.db_session, request.instance.hostname)
+    instance_id = get_instance_id(
+        request.db_session, host_id, request.instance.pg_port)
+
+    return host_id, instance_id
+
+
+def sql_json_query(request, query, *args):
+    # Helper to query JSON output from PostgreSQL.
+
+    cur = request.db_session.connection().connection.cursor()
+    query = cur.mogrify(query, args)
+    data_buffer = cStringIO.StringIO()
+    cur.copy_expert(query, data_buffer)
+    cur.close()
+    data = data_buffer.getvalue()
+    data_buffer.close()
+    try:
+        return tornado.escape.json_decode(data)
+    except Exception as e:
+        logger.error("Failed to parse JSON from Postgres: %s", e)
+        logger.error("Postgres output is: %r", data)
+        return []
+
+
+@blueprint.instance_route(r"/alerting/alerts.json")
+def alerts(request):
+    host_id, instance_id = get_instance_ids(request)
+
+    query = dedent("""\
+    COPY (
+        SELECT array_to_json(array_agg(x))
+        FROM (
+            SELECT json_build_object('description', c.description, 'name', c.name, 'key', sc.key, 'state', sc.state, 'datetime', sc.datetime, 'value', sc.value, 'warning', sc.warning, 'critical', sc.critical) as x
+            FROM monitoring.state_changes sc JOIN monitoring.checks c ON (sc.check_id = c.check_id)
+            WHERE c.host_id = %s
+              AND c.instance_id = %s
+              AND (sc.state = 'WARNING' OR sc.state = 'CRITICAL')
+            ORDER BY sc.datetime desc
+            LIMIT 20
+        ) as tab
+    ) TO STDOUT
+    """)  # noqa
+
+    # Tornado refuses to send lists as JSON. We must explicitly use jsonify.
+    # Cf. https://github.com/tornadoweb/tornado/issues/1009
+    return jsonify(sql_json_query(request, query, host_id, instance_id))
 
 
 @blueprint.instance_route(r"/alerting")
@@ -62,10 +113,7 @@ def check(request, name):
         # has been restarted)
         agent_username = None
 
-    host_id = get_host_id(request.db_session, request.instance.hostname)
-    instance_id = get_instance_id(
-        request.db_session, host_id, request.instance.pg_port)
-
+    host_id, instance_id = get_instance_ids(request)
     query = dedent("""\
     SELECT *
     FROM monitoring.checks
@@ -124,51 +172,6 @@ class AlertingJSONHandler(JsonHandler):
                 message = "Internal error"
             return JSONAsyncResult(http_code=http_code,
                                    data={'error': message})
-
-
-class AlertingJSONAlertsHandler(AlertingJSONHandler):
-
-    @BaseHandler.catch_errors
-    def get_alerts(self, address, port):
-        self.setUp(address, port)
-
-        data_buffer = cStringIO.StringIO()
-        cur = self.db_session.connection().connection.cursor()
-        cur.execute("SET search_path TO monitoring")
-        query = """
-        COPY (
-            SELECT array_to_json(array_agg(x))
-            FROM (
-                SELECT json_build_object('description', c.description, 'name', c.name, 'key', sc.key, 'state', sc.state, 'datetime', sc.datetime, 'value', sc.value, 'warning', sc.warning, 'critical', sc.critical) as x
-                FROM monitoring.state_changes sc JOIN monitoring.checks c ON (sc.check_id = c.check_id)
-                WHERE c.host_id = %s
-                  AND c.instance_id = %s
-                  AND (sc.state = 'WARNING' OR sc.state = 'CRITICAL')
-                ORDER BY sc.datetime desc
-                LIMIT 20
-            ) as tab
-        ) TO STDOUT
-        """  # noqa
-        # build the query
-        query = cur.mogrify(query, (self.host_id, self.instance_id))
-
-        cur.copy_expert(query, data_buffer)
-        cur.close()
-        data = data_buffer.getvalue()
-        data_buffer.close()
-        try:
-            data = json.loads(data)
-        except Exception as e:
-            logger.exception(str(e))
-            logger.debug(data)
-            data = []
-
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, address, port):
-        run_background(self.get_alerts, self.async_callback,
-                       (address, port))
 
 
 class AlertingJSONStateChangesHandler(AlertingJSONHandler):

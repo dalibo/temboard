@@ -19,7 +19,6 @@ from .alerting import (
 )
 from .handlers import blueprint
 from .handlers.alerting import (
-    AlertingJSONAlertsHandler,
     AlertingJSONDetailHandler,
     AlertingJSONChecksHandler,
     AlertingJSONStateChangesHandler,
@@ -60,8 +59,6 @@ def get_routes(config):
          MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/alerts.json",
-         AlertingJSONAlertsHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/state_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
          AlertingJSONStateChangesHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/alerting/checks.json",
