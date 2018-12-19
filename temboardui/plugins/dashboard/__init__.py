@@ -1,22 +1,23 @@
-from os import path
+import logging
+from os.path import realpath
 import tornado.web
-import json
 
-from temboardui.handlers.base import JsonHandler, BaseHandler
+from tornado.escape import json_encode
+
 from temboardui.temboardclient import (
     TemboardError,
-    temboard_dashboard,
-    temboard_dashboard_config,
-    temboard_dashboard_history,
-    temboard_dashboard_live,
-    temboard_profile,
 )
-from temboardui.async import (
-    HTMLAsyncResult,
-    JSONAsyncResult,
-    run_background,
+from temboardui.web import (
+    Blueprint,
+    TemplateRenderer,
 )
-from temboardui.errors import TemboardUIError
+
+
+blueprint = Blueprint()
+blueprint.generic_proxy(r"/dashboard")
+logger = logging.getLogger(__name__)
+plugin_path = realpath(__file__ + '/..')
+render_template = TemplateRenderer(plugin_path + '/templates')
 
 
 def configuration(config):
@@ -24,16 +25,7 @@ def configuration(config):
 
 
 def get_routes(config):
-    plugin_path = path.dirname(path.realpath(__file__))
-    handler_conf = {
-        'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
-        'template_path': plugin_path + "/templates"
-    }
-    routes = [
-        (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler,
-         handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler,
-         handler_conf),
+    routes = blueprint.rules + [
         (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
             'path': plugin_path + "/static/js"
         }),
@@ -41,94 +33,35 @@ def get_routes(config):
     return routes
 
 
-class DashboardHandler(BaseHandler):
+@blueprint.instance_route(r"/dashboard")
+def dashboard(request):
+    request.instance.check_active_plugin(__name__)
+    profile = request.instance.get_profile()
 
-    @BaseHandler.catch_errors
-    def get_dashboard(self, agent_address, agent_port):
-        self.logger.info("Getting dashboard.")
+    try:
+        config = request.instance.proxy('GET', '/dashboard/config').body
+    except TemboardError as e:
+        if 404 != e.code:
+            raise
+        logger.debug("Fallback dashboard config.")
+        config = {
+            'history_length': 150,
+            'scheduler_interval': 2
+        }
 
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
+    history = request.instance.proxy('GET', '/dashboard/history').body
+    if history:
+        last_data = history[-1]
+    else:
+        last_data = request.instance.proxy('GET', '/dashboard/live').body
 
-        xsession = self.get_secure_cookie("temboard_%s_%s" %
-                                          (agent_address, agent_port))
-        if not xsession:
-            raise TemboardUIError(401, "Authentication cookie is missing.")
-        else:
-            data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                            agent_address, agent_port,
-                                            xsession)
-            agent_username = data_profile['username']
-
-        try:
-            config = temboard_dashboard_config(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-        except TemboardError as e:
-            # Agent may not be able to send config (old agent)
-            # Use a default one
-            if e.code == 404:
-                config = {
-                    'history_length': 150,
-                    'scheduler_interval': 2
-                }
-            else:
-                raise e
-
-        dashboard_history = temboard_dashboard_history(
-            self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-        if dashboard_history and isinstance(
-                dashboard_history, list) and len(dashboard_history) > 0:
-            last_data = dashboard_history[-1]
-            history = json.dumps(dashboard_history)
-        else:
-            # If dashboard history is empty, let's try to get data from the
-            # live data source.
-            last_data = temboard_dashboard_live(
-                self.ssl_ca_cert_file, agent_address, agent_port, xsession)
-            history = ''
-        self.logger.info("Done.")
-        return HTMLAsyncResult(
-            http_code=200,
-            template_file='dashboard.html',
-            template_path=self.template_path,
-            data={
-                'nav': True,
-                'role': self.current_user,
-                'instance': self.instance,
-                'plugin': __name__,
-                'dashboard': last_data,
-                'config': json.dumps(config),
-                'history': history,
-                'xsession': xsession,
-                'agent_username': agent_username,
-            })
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_dashboard, self.async_callback, (agent_address,
-                                                                 agent_port))
-
-
-class DashboardProxyHandler(JsonHandler):
-
-    @JsonHandler.catch_errors
-    def get_dashboard(self, agent_address, agent_port):
-        self.logger.info("Getting dashboard (proxy).")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.request.headers.get('X-Session')
-        if not xsession:
-            raise TemboardUIError(401, 'X-Session header missing')
-
-        dashboard_data = temboard_dashboard(self.ssl_ca_cert_file,
-                                            agent_address,
-                                            agent_port, xsession)
-        self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=dashboard_data)
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_dashboard, self.async_callback, (agent_address,
-                                                                 agent_port))
+    return render_template(
+        'dashboard.html',
+        nav=True, role=request.current_user,
+        instance=request.instance, agent_username=profile['username'],
+        plugin=__name__,
+        config=json_encode(config),
+        dashboard=last_data,
+        history=json_encode(history or ''),
+        xsession=request.instance.xsession,
+    )
