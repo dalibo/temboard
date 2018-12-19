@@ -23,6 +23,7 @@ from .application import (
     get_instance,
     get_role_by_cookie,
 )
+from .errors import TemboardUIError
 from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
@@ -131,19 +132,6 @@ class CallableHandler(RequestHandler):
         except Exception as e:
             self.logger.error("Failed to get role from cookie: %s ", e)
 
-    @run_on_executor
-    def prepare(self):
-        # This should be middlewares
-        self.request.db_session = self.db_session = DBSession()
-        self.request.current_user = self.current_user
-
-    @run_on_executor
-    def on_finish(self):
-        # This should be middlewares
-        self.request.db_session.commit()
-        self.request.db_session.close()
-        del self.request.db_session
-
     @coroutine
     def get(self, *args, **kwargs):
         try:
@@ -178,6 +166,26 @@ class CallableHandler(RequestHandler):
         self.finish(response.body)
 
 
+class DatabaseHelper(object):
+    @classmethod
+    def add_middleware(cls, func):
+        @functools.wraps(func)
+        def database_middleware(request, *args):
+            request.db_session = request.handler.db_session = DBSession()
+            try:
+                return func(request, *args)
+            except Exception:
+                request.db_session.rollback()
+                raise
+            else:
+                request.db_session.commit()
+            finally:
+                request.db_session.close()
+                del request.db_session
+
+        return database_middleware
+
+
 class InstanceHelper(object):
     # This helper class implements all operations related to instance dedicated
     # request.
@@ -191,13 +199,13 @@ class InstanceHelper(object):
         # Wraps an HTTP handler callable related to a Postgres instance
 
         @functools.wraps(callable_)
-        def middleware(request, address, port, *args):
+        def instance_middleware(request, address, port, *args):
             # Swallow adddress and port arguments.
             request.instance = cls(request)
             request.instance.fetch_instance(address, port)
             return callable_(request, *args)
 
-        return middleware
+        return instance_middleware
 
     def __init__(self, request):
         self.request = request
@@ -310,12 +318,8 @@ class UserHelper(object):
     def add_middleware(cls, func):
 
         @functools.wraps(func)
-        def middleware(request, *args):
-            try:
-                # Bypass current_user cached property in middleware.
-                role = request.handler.get_current_user()
-            except Exception:
-                role = None
+        def user_middleware(request, *args):
+            role = request.current_user = request.handler.current_user
 
             anonymous_allowed = getattr(func, '__anonymous_allowed', False)
             if not anonymous_allowed and role is None:
@@ -329,7 +333,7 @@ class UserHelper(object):
 
             return func(request, *args)
 
-        return middleware
+        return user_middleware
 
 
 # Ensure @functools.wraps preserves User middleware attributes.
@@ -382,14 +386,18 @@ class Blueprint(object):
             func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
+            func = DatabaseHelper.add_middleware(func)
 
             @run_on_executor
             @functools.wraps(func)
-            def wrapper(request, *args):
+            def sync_request_wrapper(request, *args):
                 try:
                     return func(request, *args)
                 except Redirect:
                     raise
+                except (TemboardError, TemboardUIError) as e:
+                    code = e.code
+                    message = e.message
                 except HTTPError as e:
                     code = e.status_code
                     message = e.log_message
@@ -400,12 +408,13 @@ class Blueprint(object):
                     code = 500
                     message = str(e)
 
+                logger.error("Request failed: %s %s.", code, message)
                 return make_error(request, code, message)
 
             rules = [(
                 url, CallableHandler, dict(
                     blueprint=self,
-                    callable_=wrapper,
+                    callable_=sync_request_wrapper,
                     methods=methods or ['GET'],
                     logger=logging.getLogger(logger_name),
                 ),

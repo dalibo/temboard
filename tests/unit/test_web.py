@@ -48,6 +48,7 @@ def test_handler(executor, io_loop, mocker):
     )
     # Mock handler._execute
     handler._transforms = {}
+    handler.db_session = mocker.Mock()
 
     io_loop.run_sync(handler.prepare)
     assert handler.request.db_session
