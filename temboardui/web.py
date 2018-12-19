@@ -10,7 +10,7 @@ from csv import writer as CSVWriter
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
-from tornado.escape import json_decode, url_escape
+from tornado.escape import json_decode, json_encode, url_escape
 from tornado.gen import coroutine
 from tornado.web import (
     Application as TornadoApplication,
@@ -56,11 +56,11 @@ def anonymous_allowed(func):
 class Response(object):
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
-            body=None,):
+            body=u''):
         self.status_code = status_code
         self.headers = headers or {}
         self.secure_cookies = secure_cookies or {}
-        self.body = body or u''
+        self.body = body
 
 
 class Redirect(Response, Exception):
@@ -80,7 +80,10 @@ class TemplateRenderer(object):
         self.loader = TemplateLoader(path)
 
     def __call__(self, template, **data):
-        return Response(body=self.loader.load(template).generate(**data))
+        return Response(
+            body=self.loader.load(template).generate(**data),
+            headers={'Content-Type': 'text/html; charset=UTF-8'},
+        )
 
 
 template_path = os.path.realpath(__file__ + '/../templates')
@@ -100,6 +103,14 @@ def csvify(data, status_code=200):
         status_code=status_code,
         headers={'Content-Type': 'text/csv'},
         body=data,
+    )
+
+
+def jsonify(data, status_code=200):
+    return Response(
+        status_code=status_code,
+        headers={'Content-Type': 'application/json; charset=UTF-8'},
+        body=json_encode(data),
     )
 
 
@@ -157,6 +168,7 @@ class CallableHandler(RequestHandler):
         for k, v in response.headers.items():
             if not isinstance(v, list):
                 v = [v]
+            self.clear_header(k)
             for v1 in v:
                 self.add_header(k, v1)
 

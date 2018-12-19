@@ -18,15 +18,6 @@ from .alerting import (
     check_specs,
 )
 from .handlers import blueprint
-from .handlers.alerting import (
-    AlertingCheckHTMLHandler,
-    AlertingHTMLHandler,
-    AlertingJSONAlertsHandler,
-    AlertingJSONDetailHandler,
-    AlertingJSONChecksHandler,
-    AlertingJSONStateChangesHandler,
-    AlertingJSONCheckChangesHandler,
-)
 from .handlers.monitoring import (
     MonitoringAvailabilityHandler,
     MonitoringCollectorHandler,
@@ -47,11 +38,10 @@ def get_routes(config):
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path':  plugin_path + "/templates"
     }
+    __import__(__name__ + '.handlers.alerting')
     routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting",
-         AlertingHTMLHandler, handler_conf),
         (r"/monitoring/collector",
          MonitoringCollectorHandler, handler_conf),
         # for compatibility with older agents keep an eye on requests on
@@ -64,18 +54,6 @@ def get_routes(config):
          MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/alerts.json",
-         AlertingJSONAlertsHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/state_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
-         AlertingJSONStateChangesHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/checks.json",
-         AlertingJSONChecksHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/([a-z\-_.0-9]{1,64})",
-         AlertingCheckHTMLHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/check_changes/([a-z\-_.0-9]{1,64}).json$",  # noqa
-         AlertingJSONCheckChangesHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/states/([a-z\-_.0-9]{1,64}).json",  # noqa
-         AlertingJSONDetailHandler, handler_conf),
     ]
     return routes
 
