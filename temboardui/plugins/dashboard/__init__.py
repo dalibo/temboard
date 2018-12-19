@@ -1,12 +1,10 @@
 import logging
 from os.path import realpath
-import tornado.web
 
+import tornado.web
 from tornado.escape import json_encode
 
-from temboardui.temboardclient import (
-    TemboardError,
-)
+from temboardui.temboardclient import TemboardError
 from temboardui.web import (
     Blueprint,
     TemplateRenderer,
