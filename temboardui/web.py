@@ -10,7 +10,7 @@ from csv import writer as CSVWriter
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
-from tornado.escape import json_decode, url_escape
+from tornado.escape import json_decode, json_encode, url_escape
 from tornado.gen import coroutine
 from tornado.web import (
     Application as TornadoApplication,
@@ -100,6 +100,14 @@ def csvify(data, status_code=200):
         status_code=status_code,
         headers={'Content-Type': 'text/csv'},
         body=data,
+    )
+
+
+def jsonify(data, status_code=200):
+    return Response(
+        status_code=status_code,
+        headers={'Content-Type': 'application/json; charset=UTF-8'},
+        body=json_encode(data),
     )
 
 
