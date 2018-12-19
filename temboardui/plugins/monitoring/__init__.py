@@ -18,9 +18,6 @@ from .alerting import (
     check_specs,
 )
 from .handlers import blueprint
-from .handlers.alerting import (
-    AlertingJSONDetailHandler,
-)
 from .handlers.monitoring import (
     MonitoringAvailabilityHandler,
     MonitoringCollectorHandler,
@@ -41,6 +38,7 @@ def get_routes(config):
         'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
         'template_path':  plugin_path + "/templates"
     }
+    __import__(__name__ + '.handlers.alerting')
     routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
@@ -56,8 +54,6 @@ def get_routes(config):
          MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-        (r"/server/(.*)/([0-9]{1,5})/alerting/states/([a-z\-_.0-9]{1,64}).json",  # noqa
-         AlertingJSONDetailHandler, handler_conf),
     ]
     return routes
 

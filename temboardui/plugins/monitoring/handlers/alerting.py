@@ -7,18 +7,9 @@ from textwrap import dedent
 import tornado.web
 import tornado.escape
 
-from temboardui.handlers.base import (
-    BaseHandler,
-    JsonHandler,
-)
 from temboardui.plugins.monitoring.model.orm import (
     Check,
     CheckState,
-)
-from temboardui.errors import TemboardUIError
-from temboardui.async import (
-    run_background,
-    JSONAsyncResult,
 )
 from temboardui.web import (
     HTTPError,
@@ -229,41 +220,6 @@ def check_changes(request, name):
     ))
 
 
-class AlertingJSONHandler(JsonHandler):
-
-    def setUp(self, address, port):
-
-        super(AlertingJSONHandler, self).setUp(address, port)
-
-        self.check_active_plugin('monitoring')
-
-        # Find host_id & instance_id
-        self.host_id = get_host_id(self.db_session, self.instance.hostname)
-        self.instance_id = get_instance_id(self.db_session, self.host_id,
-                                           self.instance.pg_port)
-
-    def handle_exception(self, e):
-        # Exception handler aimed to return JSONAsyncResult
-        self.logger.exception(str(e))
-        try:
-            self.db_session.close()
-        except Exception:
-            pass
-        # Return 200 with empty list when an error occurs
-        no_error = int(self.get_argument('noerror', default=0))
-        if no_error == 1:
-            return JSONAsyncResult(http_code=200, data=u'')
-        else:
-            if (isinstance(e, TemboardUIError)):
-                http_code = e.code
-                message = e.message
-            else:
-                http_code = 500
-                message = "Internal error"
-            return JSONAsyncResult(http_code=http_code,
-                                   data={'error': message})
-
-
 def parse_start_end(request):
     start = request.handler.get_argument('start', default=None)
     end = request.handler.get_argument('end', default=None)
@@ -304,24 +260,16 @@ def state_changes(request, name):
     ))
 
 
-class AlertingJSONDetailHandler(AlertingJSONHandler):
+@blueprint.instance_route(r"/alerting/states/([a-z\-_.0-9]{1,64}).json")
+def states(request, name):
+    host_id, instance_id = get_instance_ids(request)
+    if name not in check_specs:
+        raise HTTPError(404, "Unknown check '%s'" % name)
 
-    @BaseHandler.catch_errors
-    def get_detail(self, address, port, check_name):
-        self.setUp(address, port)
+    detail = check_state_detail(request.db_session, host_id, instance_id, name)
+    for d in detail:
+        spec = check_specs[name]
+        if 'value_type' in spec:
+            d['value_type'] = spec['value_type']
 
-        if check_name not in check_specs:
-            raise TemboardUIError(404, "Unknown check '%s'" % check_name)
-
-        detail = check_state_detail(self.db_session, self.host_id,
-                                    self.instance_id, check_name)
-        for d in detail:
-            spec = check_specs[check_name]
-            if 'value_type' in spec:
-                d['value_type'] = spec['value_type']
-        return JSONAsyncResult(http_code=200, data=detail)
-
-    @tornado.web.asynchronous
-    def get(self, address, port, check_name):
-        run_background(self.get_detail, self.async_callback,
-                       (address, port, check_name))
+    return jsonify(detail)
