@@ -284,8 +284,8 @@ Instances
 
 
 def add_instance(session,
-                 agent_address,
-                 agent_port,
+                 new_agent_address,
+                 new_agent_port,
                  hostname,
                  agent_key=None,
                  cpu=None,
@@ -295,8 +295,8 @@ def add_instance(session,
                  pg_data=None):
     try:
         instance = Instances(
-            agent_address=unicode(agent_address),
-            agent_port=int(agent_port),
+            agent_address=unicode(new_agent_address),
+            agent_port=int(new_agent_port),
             hostname=unicode(hostname))
         if agent_key is not None:
             instance.agent_key = unicode(agent_key)
@@ -317,7 +317,7 @@ def add_instance(session,
         if e.message.find('instances_pkey') > 0:
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') already exists." %
-                                  (agent_address, agent_port))
+                                  (new_agent_address, new_agent_port))
         else:
             raise TemboardUIError(400, e.message)
     except Exception as e:
