@@ -23,6 +23,7 @@ from .application import (
     get_instance,
     get_role_by_cookie,
 )
+from .errors import TemboardUIError
 from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
@@ -390,6 +391,9 @@ class Blueprint(object):
                     return func(request, *args)
                 except Redirect:
                     raise
+                except (TemboardError, TemboardUIError) as e:
+                    code = e.code
+                    message = e.message
                 except HTTPError as e:
                     code = e.status_code
                     message = e.log_message
@@ -400,6 +404,7 @@ class Blueprint(object):
                     code = 500
                     message = str(e)
 
+                logger.error("Request failed: %s %s.", code, message)
                 return make_error(request, code, message)
 
             rules = [(
