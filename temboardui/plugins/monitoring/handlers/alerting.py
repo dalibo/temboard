@@ -105,6 +105,72 @@ def index(request):
     )
 
 
+@blueprint.instance_route("/alerting/checks.json", methods=['GET', 'POST'])
+def checks(request):
+    host_id, instance_id = get_instance_ids(request)
+    if 'GET' == request.method:
+        data = checks_info(request.db_session, host_id, instance_id)
+        for datum in data:
+            spec = check_specs[datum['name']]
+            if 'value_type' in spec:
+                datum['value_type'] = spec['value_type']
+        return jsonify(data)
+    else:
+        post = tornado.escape.json_decode(request.body)
+        if 'checks' not in post or type(post.get('checks')) is not list:
+            raise HTTPError(400, "Post data not valid.")
+
+        for row in post['checks']:
+            if row.get('name') not in check_specs:
+                raise HTTPError(404, "Unknown check '%s'" % row.get('name'))
+
+        for row in post['checks']:
+            # Find the check from its name
+            check = request.db_session.query(Check).filter(
+                        Check.name == unicode(row.get('name')),
+                        Check.host_id == host_id,
+                        Check.instance_id == instance_id).first()
+            enabled_before = check.enabled
+
+            if u'enabled' in row:
+                enabled_after = bool(row.get(u'enabled'))
+                check.enabled = enabled_after
+                # detect any change from enabled to disabled
+                is_getting_disabled = enabled_before and not enabled_after
+            if u'warning' in row:
+                warning = row.get(u'warning')
+                if type(warning) not in (int, float):
+                    raise HTTPError(400, "Post data not valid.")
+                check.warning = warning
+            if u'critical' in row:
+                critical = row.get(u'critical')
+                if type(critical) not in (int, float):
+                    raise HTTPError(400, "Post data not valid.")
+                check.critical = critical
+            if u'description' in row:
+                check.description = row.get(u'description')
+
+            request.db_session.merge(check)
+
+            if is_getting_disabled:
+                cs = request.db_session.query(CheckState).filter(
+                    CheckState.check_id == check.check_id,
+                )
+                for i in cs:
+                    i.state = unicode('UNDEF')
+                    request.db_session.merge(i)
+                    request.db_session.execute(
+                        "SELECT monitoring.append_state_changes(:d, :i,"
+                        ":s, :k, :v, :w, :c)",
+                        {'d': datetime.utcnow(), 'i': check.check_id,
+                         's': 'UNDEF', 'k': i.key, 'v': None,
+                         'w': check.warning, 'c': check.critical})
+
+        request.db_session.commit()
+
+        return {}
+
+
 @blueprint.instance_route(r"/alerting/([a-z\-_.0-9]{1,64})")
 def check(request, name):
     try:
@@ -215,89 +281,6 @@ def state_changes(request, name):
         request, query,
         host_id, instance_id, name, key, start, end,
     ))
-
-
-class AlertingJSONChecksHandler(AlertingJSONHandler):
-
-    @BaseHandler.catch_errors
-    def get_checks(self, address, port):
-        self.setUp(address, port)
-        data = checks_info(self.db_session, self.host_id,
-                           self.instance_id)
-        for datum in data:
-            spec = check_specs[datum['name']]
-            if 'value_type' in spec:
-                datum['value_type'] = spec['value_type']
-
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, address, port):
-        run_background(self.get_checks, self.async_callback, (address, port))
-
-    @BaseHandler.catch_errors
-    def post_checks(self, address, port):
-        self.setUp(address, port)
-
-        # POST data reading
-        post = tornado.escape.json_decode(self.request.body)
-        if 'checks' not in post or type(post.get('checks')) is not list:
-            raise TemboardUIError(400, "Post data not valid.")
-
-        for row in post['checks']:
-            if row.get('name') not in check_specs:
-                raise TemboardUIError(404, "Unknown check '%s'"
-                                           % row.get('name'))
-
-        for row in post['checks']:
-            # Find the check from its name
-            check = self.db_session.query(Check).filter(
-                        Check.name == unicode(row.get('name')),
-                        Check.host_id == self.host_id,
-                        Check.instance_id == self.instance_id).first()
-            enabled_before = check.enabled
-
-            if u'enabled' in row:
-                enabled_after = bool(row.get(u'enabled'))
-                check.enabled = enabled_after
-                # detect any change from enabled to disabled
-                is_getting_disabled = enabled_before and not enabled_after
-            if u'warning' in row:
-                warning = row.get(u'warning')
-                if type(warning) not in (int, float):
-                    raise TemboardUIError(400, "Post data not valid.")
-                check.warning = warning
-            if u'critical' in row:
-                critical = row.get(u'critical')
-                if type(critical) not in (int, float):
-                    raise TemboardUIError(400, "Post data not valid.")
-                check.critical = critical
-            if u'description' in row:
-                check.description = row.get(u'description')
-
-            self.db_session.merge(check)
-
-            if is_getting_disabled:
-                cs = self.db_session.query(CheckState).filter(
-                    CheckState.check_id == check.check_id,
-                )
-                for i in cs:
-                    i.state = unicode('UNDEF')
-                    self.db_session.merge(i)
-                    self.db_session.execute(
-                        "SELECT monitoring.append_state_changes(:d, :i,"
-                        ":s, :k, :v, :w, :c)",
-                        {'d': datetime.utcnow(), 'i': check.check_id,
-                         's': 'UNDEF', 'k': i.key, 'v': None,
-                         'w': check.warning, 'c': check.critical})
-
-        self.db_session.commit()
-
-        return JSONAsyncResult(http_code=200, data=dict())
-
-    @tornado.web.asynchronous
-    def post(self, address, port):
-        run_background(self.post_checks, self.async_callback, (address, port))
 
 
 class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
