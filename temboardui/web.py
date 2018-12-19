@@ -173,7 +173,7 @@ class DatabaseHelper(object):
         def database_middleware(request, *args):
             request.db_session = request.handler.db_session = DBSession()
             try:
-                return func(request, *args)
+                response = func(request, *args)
             except Exception:
                 request.db_session.rollback()
                 raise
@@ -182,6 +182,8 @@ class DatabaseHelper(object):
             finally:
                 request.db_session.close()
                 del request.db_session
+
+            return response
 
         return database_middleware
 
