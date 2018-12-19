@@ -2,6 +2,7 @@ import logging
 import cStringIO
 from dateutil import parser as dt_parser
 from datetime import datetime
+from textwrap import dedent
 import json
 
 import tornado.web
@@ -11,7 +12,6 @@ from temboardui.handlers.base import (
     BaseHandler,
     JsonHandler,
 )
-from temboardui.temboardclient import TemboardError, temboard_profile
 from temboardui.plugins.monitoring.model.orm import (
     Check,
     CheckState,
@@ -19,7 +19,6 @@ from temboardui.plugins.monitoring.model.orm import (
 from temboardui.errors import TemboardUIError
 from temboardui.async import (
     run_background,
-    HTMLAsyncResult,
     JSONAsyncResult,
 )
 from . import (
@@ -52,72 +51,44 @@ def index(request):
     )
 
 
-class AlertingCheckHTMLHandler(BaseHandler):
-
-    @BaseHandler.catch_errors
-    def get_index(self, agent_address, agent_port, check_name):
-        self.setUp(agent_address, agent_port)
-        xsession = self.get_secure_cookie(
-            "temboard_%s_%s" % (agent_address, agent_port))
-
-        if check_name not in check_specs:
-            raise TemboardUIError(404, "Unknown check '%s'" % check_name)
-
-        # Here we want to get the current agent username if a session
-        # already exists.
+@blueprint.instance_route(r"/alerting/([a-z\-_.0-9]{1,64})")
+def check(request, name):
+    try:
+        agent_username = request.instance.get_profile()['username']
+    except Exception:
         # Monitoring plugin doesn't require agent authentication since we
         # already have the data.
         # Don't fail if there's a session error (for example when the agent
         # has been restarted)
         agent_username = None
-        try:
-            if xsession:
-                data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                                agent_address,
-                                                agent_port,
-                                                xsession)
-                agent_username = data_profile['username']
-        except TemboardError:
-            pass
 
-        # Find host_id & instance_id
-        self.host_id = get_host_id(self.db_session, self.instance.hostname)
-        self.instance_id = get_instance_id(self.db_session, self.host_id,
-                                           self.instance.pg_port)
+    host_id = get_host_id(request.db_session, request.instance.hostname)
+    instance_id = get_instance_id(
+        request.db_session, host_id, request.instance.pg_port)
 
-        query = """
-        SELECT *
-        FROM monitoring.checks
-        WHERE host_id = :host_id
-          AND instance_id = :instance_id
-          AND name = :check_name
-        """
-        res = self.db_session.execute(
-            query,
-            dict(host_id=self.host_id,
-                 instance_id=self.instance_id,
-                 check_name=check_name))
-        check = res.fetchone()
-        spec = check_specs[check_name]
+    query = dedent("""\
+    SELECT *
+    FROM monitoring.checks
+    WHERE host_id = :host_id
+      AND instance_id = :instance_id
+      AND name = :check_name
+    """)
+    res = request.db_session.execute(query, dict(
+        host_id=host_id,
+        instance_id=instance_id,
+        check_name=name,
+    ))
+    check = res.fetchone()
+    spec = check_specs[name]
 
-        return HTMLAsyncResult(
-                http_code=200,
-                template_path=self.template_path,
-                template_file='alerting.check.html',
-                data={
-                    'nav': True,
-                    'role': self.role,
-                    'instance': self.instance,
-                    'check': check,
-                    'value_type': spec.get('value_type', None),
-                    'plugin': 'alerting',  # we cheat here
-                    'agent_username': agent_username
-                })
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port, check_name):
-        run_background(self.get_index, self.async_callback,
-                       (agent_address, agent_port, check_name))
+    return render_template(
+        'alerting.check.html',
+        nav=True, role=request.current_user,
+        instance=request.instance, agent_username=agent_username,
+        plugin='alerting',  # we cheat here
+        check=check,
+        value_type=spec.get('value_type'),
+    )
 
 
 class AlertingJSONHandler(JsonHandler):
