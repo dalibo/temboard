@@ -132,19 +132,6 @@ class CallableHandler(RequestHandler):
         except Exception as e:
             self.logger.error("Failed to get role from cookie: %s ", e)
 
-    @run_on_executor
-    def prepare(self):
-        # This should be middlewares
-        self.request.db_session = self.db_session = DBSession()
-        self.request.current_user = self.current_user
-
-    @run_on_executor
-    def on_finish(self):
-        # This should be middlewares
-        self.request.db_session.commit()
-        self.request.db_session.close()
-        del self.request.db_session
-
     @coroutine
     def get(self, *args, **kwargs):
         try:
@@ -177,6 +164,26 @@ class CallableHandler(RequestHandler):
             self.set_secure_cookie(k, v, expires_days=30)
 
         self.finish(response.body)
+
+
+class DatabaseHelper(object):
+    @classmethod
+    def add_middleware(cls, func):
+        @functools.wraps(func)
+        def database_middleware(request, *args):
+            request.db_session = request.handler.db_session = DBSession()
+            try:
+                return func(request, *args)
+            except Exception:
+                request.db_session.rollback()
+                raise
+            else:
+                request.db_session.commit()
+            finally:
+                request.db_session.close()
+                del request.db_session
+
+        return database_middleware
 
 
 class InstanceHelper(object):
@@ -312,11 +319,7 @@ class UserHelper(object):
 
         @functools.wraps(func)
         def middleware(request, *args):
-            try:
-                # Bypass current_user cached property in middleware.
-                role = request.handler.get_current_user()
-            except Exception:
-                role = None
+            role = request.current_user = request.handler.current_user
 
             anonymous_allowed = getattr(func, '__anonymous_allowed', False)
             if not anonymous_allowed and role is None:
@@ -383,6 +386,7 @@ class Blueprint(object):
             func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
+            func = DatabaseHelper.add_middleware(func)
 
             @run_on_executor
             @functools.wraps(func)
