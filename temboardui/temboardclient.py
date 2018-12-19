@@ -104,23 +104,6 @@ def temboard_login(in_ca_cert_file, hostname, port, username, password):
         raise TemboardError(500, str(e))
 
 
-def temboard_dashboard(in_ca_cert_file, hostname, port, xsession):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='GET',
-            url='https://%s:%s/dashboard' % (hostname, port),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            })
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
 def temboard_dashboard_history(in_ca_cert_file, hostname, port, xsession):
     try:
         res = temboard_request(

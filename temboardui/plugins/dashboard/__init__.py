@@ -2,10 +2,9 @@ from os import path
 import tornado.web
 import json
 
-from temboardui.handlers.base import JsonHandler, BaseHandler
+from temboardui.handlers.base import BaseHandler
 from temboardui.temboardclient import (
     TemboardError,
-    temboard_dashboard,
     temboard_dashboard_config,
     temboard_dashboard_history,
     temboard_dashboard_live,
@@ -13,7 +12,6 @@ from temboardui.temboardclient import (
 )
 from temboardui.async import (
     HTMLAsyncResult,
-    JSONAsyncResult,
     run_background,
 )
 from temboardui.errors import TemboardUIError
@@ -23,6 +21,7 @@ from temboardui.web import (
 
 
 blueprint = Blueprint()
+blueprint.generic_proxy(r"/dashboard")
 
 
 def configuration(config):
@@ -37,8 +36,6 @@ def get_routes(config):
     }
     routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/dashboard", DashboardHandler,
-         handler_conf),
-        (r"/proxy/(.*)/([0-9]{1,5})/dashboard", DashboardProxyHandler,
          handler_conf),
         (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
             'path': plugin_path + "/static/js"
@@ -108,31 +105,6 @@ class DashboardHandler(BaseHandler):
                 'xsession': xsession,
                 'agent_username': agent_username,
             })
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_dashboard, self.async_callback, (agent_address,
-                                                                 agent_port))
-
-
-class DashboardProxyHandler(JsonHandler):
-
-    @JsonHandler.catch_errors
-    def get_dashboard(self, agent_address, agent_port):
-        self.logger.info("Getting dashboard (proxy).")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.request.headers.get('X-Session')
-        if not xsession:
-            raise TemboardUIError(401, 'X-Session header missing')
-
-        dashboard_data = temboard_dashboard(self.ssl_ca_cert_file,
-                                            agent_address,
-                                            agent_port, xsession)
-        self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=dashboard_data)
 
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
