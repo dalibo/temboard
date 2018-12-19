@@ -20,7 +20,6 @@ from .alerting import (
 from .handlers import blueprint
 from .handlers.alerting import (
     AlertingCheckHTMLHandler,
-    AlertingHTMLHandler,
     AlertingJSONAlertsHandler,
     AlertingJSONDetailHandler,
     AlertingJSONChecksHandler,
@@ -50,8 +49,6 @@ def get_routes(config):
     routes = blueprint.rules + [
         (r"/server/(.*)/([0-9]{1,5})/monitoring",
          MonitoringHTMLHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/alerting",
-         AlertingHTMLHandler, handler_conf),
         (r"/monitoring/collector",
          MonitoringCollectorHandler, handler_conf),
         # for compatibility with older agents keep an eye on requests on
