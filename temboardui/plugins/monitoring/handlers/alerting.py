@@ -3,7 +3,6 @@ import cStringIO
 from dateutil import parser as dt_parser
 from datetime import datetime
 from textwrap import dedent
-import json
 
 import tornado.web
 import tornado.escape
@@ -208,6 +207,28 @@ def check(request, name):
     )
 
 
+@blueprint.instance_route(r"/alerting/check_changes/([a-z\-_.0-9]{1,64}).json")
+def check_changes(request, name):
+    host_id, instance_id = get_instance_ids(request)
+    start, end = parse_start_end(request)
+
+    query = dedent("""\
+    COPY (
+        SELECT array_to_json(array_agg(json_build_object(
+            'datetime', f.datetime,
+            'enabled', f.enabled,
+            'warning', f.warning,
+            'critical', f.critical,
+            'description', f.description
+        ))) FROM monitoring.get_check_changes(%s, %s, %s, %s, %s) f
+    ) TO STDOUT
+    """)
+    return jsonify(sql_json_query(
+        request, query,
+        host_id, instance_id, name, start, end,
+    ))
+
+
 class AlertingJSONHandler(JsonHandler):
 
     def setUp(self, address, port):
@@ -281,68 +302,6 @@ def state_changes(request, name):
         request, query,
         host_id, instance_id, name, key, start, end,
     ))
-
-
-class AlertingJSONCheckChangesHandler(AlertingJSONHandler):
-
-    @BaseHandler.catch_errors
-    def get_check_changes(self, address, port, check_name):
-        self.setUp(address, port)
-
-        # Arguments
-        start = self.get_argument('start', default=None)
-        end = self.get_argument('end', default=None)
-        if check_name not in check_specs:
-            raise TemboardUIError(404, "Unknown check '%s'" % check_name)
-
-        start_time = None
-        end_time = None
-        if start:
-            try:
-                start_time = dt_parser.parse(start)
-            except ValueError as e:
-                raise TemboardUIError(406, 'Datetime not valid.')
-        if end:
-            try:
-                end_time = dt_parser.parse(end)
-            except ValueError as e:
-                raise TemboardUIError(406, 'Datetime not valid.')
-
-        data_buffer = cStringIO.StringIO()
-        cur = self.db_session.connection().connection.cursor()
-        cur.execute("SET search_path TO monitoring")
-        query = """
-        COPY (
-            SELECT array_to_json(array_agg(json_build_object(
-                'datetime', f.datetime,
-                'enabled', f.enabled,
-                'warning', f.warning,
-                'critical', f.critical,
-                'description', f.description
-            ))) FROM get_check_changes(%s, %s, %s, %s, %s) f
-        ) TO STDOUT
-        """  # noqa
-        # build the query
-        query = cur.mogrify(query, (self.host_id, self.instance_id,
-                                    check_name, start_time, end_time))
-
-        cur.copy_expert(query, data_buffer)
-        cur.close()
-        data = data_buffer.getvalue()
-        data_buffer.close()
-        try:
-            data = json.loads(data)
-        except Exception as e:
-            logger.exception(str(e))
-            logger.debug(data)
-            data = []
-
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, address, port, check_name):
-        run_background(self.get_check_changes, self.async_callback,
-                       (address, port, check_name))
 
 
 class AlertingJSONDetailHandler(AlertingJSONHandler):
