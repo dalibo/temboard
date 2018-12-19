@@ -199,13 +199,13 @@ class InstanceHelper(object):
         # Wraps an HTTP handler callable related to a Postgres instance
 
         @functools.wraps(callable_)
-        def middleware(request, address, port, *args):
+        def instance_middleware(request, address, port, *args):
             # Swallow adddress and port arguments.
             request.instance = cls(request)
             request.instance.fetch_instance(address, port)
             return callable_(request, *args)
 
-        return middleware
+        return instance_middleware
 
     def __init__(self, request):
         self.request = request
@@ -318,7 +318,7 @@ class UserHelper(object):
     def add_middleware(cls, func):
 
         @functools.wraps(func)
-        def middleware(request, *args):
+        def user_middleware(request, *args):
             role = request.current_user = request.handler.current_user
 
             anonymous_allowed = getattr(func, '__anonymous_allowed', False)
@@ -333,7 +333,7 @@ class UserHelper(object):
 
             return func(request, *args)
 
-        return middleware
+        return user_middleware
 
 
 # Ensure @functools.wraps preserves User middleware attributes.
@@ -390,7 +390,7 @@ class Blueprint(object):
 
             @run_on_executor
             @functools.wraps(func)
-            def wrapper(request, *args):
+            def sync_request_wrapper(request, *args):
                 try:
                     return func(request, *args)
                 except Redirect:
@@ -414,7 +414,7 @@ class Blueprint(object):
             rules = [(
                 url, CallableHandler, dict(
                     blueprint=self,
-                    callable_=wrapper,
+                    callable_=sync_request_wrapper,
                     methods=methods or ['GET'],
                     logger=logging.getLogger(logger_name),
                 ),
