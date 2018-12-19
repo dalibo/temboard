@@ -10,7 +10,7 @@ from csv import writer as CSVWriter
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
-from tornado.escape import json_decode
+from tornado.escape import json_decode, url_escape
 from tornado.gen import coroutine
 from tornado.web import (
     Application as TornadoApplication,
@@ -252,7 +252,7 @@ class InstanceHelper(object):
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
-            path,
+            url_escape(path),
         )
 
         headers = {}
