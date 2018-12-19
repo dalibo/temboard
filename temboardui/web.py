@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import functools
 import logging
 import os
+import urllib2
 from cStringIO import StringIO
 from csv import writer as CSVWriter
 
@@ -268,6 +269,13 @@ class InstanceHelper(object):
                 headers=headers,
                 data=body,
             )
+        except urllib2.HTTPError as e:
+            message = e.read()
+            try:
+                message = json_decode(message)['error']
+            except Exception as ee:
+                logger.debug("Failed to decode agent error: %s.", ee)
+            raise HTTPError(e.code, message)
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500)
