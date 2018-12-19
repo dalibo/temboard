@@ -56,11 +56,11 @@ def anonymous_allowed(func):
 class Response(object):
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
-            body=None,):
+            body=u''):
         self.status_code = status_code
         self.headers = headers or {}
         self.secure_cookies = secure_cookies or {}
-        self.body = body or u''
+        self.body = body
 
 
 class Redirect(Response, Exception):
