@@ -32,6 +32,7 @@ from ..tools import (
     insert_availability,
     insert_metrics,
     merge_agent_info,
+    parse_start_end,
     populate_host_checks,
 )
 from ..alerting import check_specs
@@ -168,26 +169,6 @@ def index(request):
     )
 
 
-def prepare_csv_request(request):
-    request.instance.check_active_plugin('monitoring')
-
-    host_id = get_host_id(request.db_session, request.instance.hostname)
-    instance_id = get_instance_id(
-        request.db_session, host_id, request.instance.pg_port)
-
-    start = request.handler.get_argument('start', default=None)
-    end = request.handler.get_argument('end', default=None)
-    try:
-        if start:
-            start = dt_parser.parse(start)
-        if end:
-            end = dt_parser.parse(end)
-    except ValueError:
-        raise TemboardUIError(406, 'Datetime not valid.')
-
-    return host_id, instance_id, start, end
-
-
 class MonitoringCsvHandler(CsvHandler):
 
     def build(self, agent_address, agent_port):
@@ -243,7 +224,8 @@ class MonitoringUnavailabilityHandler(MonitoringCsvHandler):
 @blueprint.instance_route(r'/monitoring/data/([a-z\-_.0-9]{1,64})$')
 def data_metric(request, metric_name):
     key = request.handler.get_argument('key', default=None)
-    host_id, instance_id, start, end = prepare_csv_request(request)
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
     try:
         data = get_metric_data_csv(
             request.db_session, metric_name,
