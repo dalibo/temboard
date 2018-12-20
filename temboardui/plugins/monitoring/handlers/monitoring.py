@@ -1,15 +1,5 @@
 import logging
-from dateutil import parser as dt_parser
 
-import tornado.web
-import tornado.escape
-
-from temboardui.handlers.base import CsvHandler
-from temboardui.errors import TemboardUIError
-from temboardui.async import (
-    run_background,
-    CSVAsyncResult,
-)
 from temboardui.web import (
     HTTPError,
     anonymous_allowed,
@@ -169,56 +159,13 @@ def index(request):
     )
 
 
-class MonitoringCsvHandler(CsvHandler):
-
-    def build(self, agent_address, agent_port):
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin('monitoring')
-
-        # Find host_id & instance_id
-        host_id = get_host_id(self.db_session, self.instance.hostname)
-        instance_id = get_instance_id(self.db_session, host_id,
-                                      self.instance.pg_port)
-
-        start = self.get_argument('start', default=None)
-        end = self.get_argument('end', default=None)
-        start_time = None
-        end_time = None
-        if start:
-            try:
-                start_time = dt_parser.parse(start)
-            except ValueError:
-                raise TemboardUIError(406, 'Datetime not valid.')
-        if end:
-            try:
-                end_time = dt_parser.parse(end)
-            except ValueError:
-                raise TemboardUIError(406, 'Datetime not valid.')
-        return host_id, instance_id, start_time, end_time
-
-
-class MonitoringUnavailabilityHandler(MonitoringCsvHandler):
-
-    @CsvHandler.catch_errors
-    def get_unavailability(self, agent_address, agent_port):
-        host_id, instance_id, start_time, end_time = self.build(
-            agent_address, agent_port)
-        try:
-            # Try to load data from the repository
-            data = get_unavailability_csv(self.db_session,
-                                          start_time, end_time,
-                                          host_id=host_id,
-                                          instance_id=instance_id)
-        except IndexError as e:
-            logger.exception(str(e))
-            raise TemboardUIError(404, 'Unknown metric.')
-
-        return CSVAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_unavailability, self.async_callback,
-                       (agent_address, agent_port))
+@blueprint.instance_route("/monitoring/unavailability")
+def unavailability(request):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+    data = get_unavailability_csv(
+        request.db_session, start, end, host_id, instance_id)
+    return csvify(data)
 
 
 @blueprint.instance_route(r'/monitoring/data/([a-z\-_.0-9]{1,64})$')
