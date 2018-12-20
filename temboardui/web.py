@@ -183,6 +183,15 @@ class CallableHandler(RequestHandler):
         self.finish(response.body)
 
 
+class Error404Handler(RequestHandler):
+    def write_error(self, status_code, **kwargs):
+        content_type = self.request.headers.get("Content-Type", '')
+        if content_type.startswith("application/json"):
+            self.write({'error': 'Not found.'})
+        else:
+            self.write('404: Not found.')
+
+
 class DatabaseHelper(object):
     @classmethod
     def add_middleware(cls, func):
