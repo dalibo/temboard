@@ -1,7 +1,5 @@
 import logging
 
-from tornado.escape import json_decode
-
 from temboardui.web import (
     HTTPError,
     admin_required,
@@ -62,7 +60,7 @@ def group(request, kind, name):
             data['in_groups'] = [a.role_group_name for a in group.ari]
         return data
     else:  # POST
-        data = json_decode(request.body)
+        data = request.json
         if not data.get('new_group_name'):
             raise HTTPError(400, "Missing group name.")
         check_group_name(data['new_group_name'])
@@ -99,8 +97,7 @@ def group(request, kind, name):
 @app.route(PREFIX + r"/delete/group/(role|instance)", methods=['POST'])
 @admin_required
 def delete_group_handler(request, kind):
-    data = json_decode(request.body)
-    name = data.get('group_name')
+    name = request.json.get('group_name')
     if not name:
         raise HTTPError(400)
     delete_group(request.db_session, name, kind)

@@ -1,5 +1,3 @@
-from tornado.escape import json_decode
-
 from temboardui.application import (
     add_instance,
     add_instance_in_group,
@@ -88,8 +86,7 @@ def validate_instance_data(data):
 @admin_required
 def create_instance_handler(request):
     create_instance_helper(
-        request.handler.application, request.db_session,
-        json_decode(request.body),
+        request.handler.application, request.db_session, request.json,
     )
     return {"message": "OK"}
 
@@ -121,7 +118,7 @@ def json_instance(request):
             'loaded_plugins': request.handler.application.loaded_plugins
         }
     else:  # POST (update)
-        data = json_decode(request.body)
+        data = request.json
         validate_instance_data(data)
         groups = data.pop('groups')
         plugins = data.pop('plugins') or []
@@ -155,7 +152,7 @@ def json_instance(request):
 @app.route(r"/json/settings/delete/instance$", methods=['POST'])
 @admin_required
 def json_delete_instance(request):
-    data = json_decode(request.body)
+    data = request.json
     if not data.get('agent_address'):
         raise HTTPError(400, "Agent address field is missing.")
     if not data.get('agent_port'):
@@ -185,7 +182,7 @@ def instances(request):
 @app.route(r"/json/register/instance", methods=['POST'])
 @admin_required
 def register(request):
-    data = json_decode(request.body)
+    data = request.json
     agent_address = data.pop('agent_address', None)
     if not agent_address:
         # Try to find agent's IP

@@ -115,11 +115,19 @@ def test_csv():
 
 def test_make_error(mocker):
     rt = mocker.patch('temboardui.web.render_template')
+    from tornado.httputil import HTTPServerRequest
     from temboardui.web import make_error
+
+    response_kw = dict(
+        name='request',
+        current_user=None,
+        handler=mocker.Mock(name='handler'),
+        spec=HTTPServerRequest,
+    )
 
     # Errors are rendered with HTML template
     response = make_error(
-        mocker.Mock(name='request', path='/home'),
+        mocker.Mock(path='/home', **response_kw),
         code=401, message=None,
     )
     assert rt.called is True
@@ -127,7 +135,7 @@ def test_make_error(mocker):
 
     # /json request has json errors
     response = make_error(
-        mocker.Mock(name='request', path='/json/settings/roles'),
+        mocker.Mock(json={'request': True}, **response_kw),
         code=401, message='Pouet',
     )
 
@@ -135,7 +143,7 @@ def test_make_error(mocker):
     assert 401 == response.status_code
 
     # ?noerror=1 request always has empty 200 response
-    request = mocker.Mock(name='request', path='/json/settings/roles')
+    request = mocker.Mock(path='/json/settings/roles', **response_kw)
     request.handler.get_argument.return_value = '1'
     response = make_error(
         request,
