@@ -88,15 +88,9 @@ def https_request(in_ca_cert_file, method, url, headers=None, data=None):
     else:
         https_handler = UnverifiedHTTPSHandler()
     url_opener = urllib2.build_opener(https_handler)
-    headers_list = []
-    for key, val in headers.items():
-        headers_list.append((key, val))
-    url_opener.addheaders = headers_list
     if data:
-        request = RequestWithMethod(url, data=json.dumps(data).encode('utf-8'),
-                                    method=method)
-    else:
-        request = RequestWithMethod(url, method=method)
+        data = json.dumps(data).encode('utf-8')
+    request = RequestWithMethod(url, data=data, method=method, headers=headers)
     handle = url_opener.open(request)
     response = handle.read()
     if 'Set-Cookie' in handle.info():
