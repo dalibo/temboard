@@ -46,7 +46,7 @@ def activity(request, mode):
 def activity_proxy(request):
     request.instance.check_active_plugin(__name__)
     return dict(
-        blocking=request.instance.proxy('GET', '/activity/blocking').body,
-        running=request.instance.proxy('GET', '/activity').body,
-        waiting=request.instance.proxy('GET', '/activity/waiting').body,
+        blocking=request.instance.get('/activity/blocking'),
+        running=request.instance.get('/activity'),
+        waiting=request.instance.get('/activity/waiting'),
     )

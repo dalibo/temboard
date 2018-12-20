@@ -28,7 +28,6 @@ from .errors import TemboardUIError
 from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
-    temboard_login,
     temboard_request,
 )
 
@@ -298,7 +297,7 @@ class InstanceHelper(object):
     def http(self, path, method='GET', query=None, body=None):
         # Dirty hack to avoid reencoding. Encoding should be done outside.
         if ' ' in path:
-            warnings.warn("Sending unencoded path to instance.", stacklevel=1)
+            warnings.warn("Sending unencoded path to instance.", stacklevel=2)
             path = url_escape(path, plus=False)
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
@@ -359,14 +358,6 @@ class InstanceHelper(object):
                 self.redirect('/login')
             logger.error('Instance error: %s', e)
             raise HTTPError(500)
-
-    def login(self, username, password):
-        return temboard_login(
-            self.request.config.temboard.ssl_ca_cert_file,
-            self.instance.agent_address,
-            self.instance.agent_port,
-            username, password,
-        )
 
 
 def add_json_middleware(func):

@@ -21,7 +21,7 @@ def configure(dsn, **kwargs):
     except Exception as e:
         logger.warning("Connection to the database failed: %s", e)
         logger.warning("Please check your configuration.")
-        sys.stderr.write("FATAL: %s\n" % e.message)
+        sys.stderr.write("FATAL: %s\n" % e)
         exit(10)
     Session.configure(bind=engine, **kwargs)
 
