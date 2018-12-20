@@ -54,7 +54,7 @@ def anonymous_allowed(func):
 def serialize_querystring(query):
     return "&".join([
         "%s=%s" % (url_escape(name), url_escape(value))
-        for name, value in sorted(query.items)
+        for name, value in sorted(query.items())
     ])
 
 
@@ -341,7 +341,7 @@ class InstanceHelper(object):
         return self.http(*args, **kwargs)
 
     def proxy(self, method, path, body=None):
-        return jsonify(self.http(method, path, body))
+        return jsonify(self.http(path, method, body=body))
 
     def require_xsession(self):
         if not self.xsession:
