@@ -5,6 +5,7 @@ import functools
 import logging
 import os
 import urllib2
+import warnings
 from cStringIO import StringIO
 from csv import writer as CSVWriter
 
@@ -54,7 +55,7 @@ def anonymous_allowed(func):
 def serialize_querystring(query):
     return "&".join([
         "%s=%s" % (url_escape(name), url_escape(value))
-        for name, value in sorted(query.items)
+        for name, value in sorted(query.items())
     ])
 
 
@@ -295,10 +296,14 @@ class InstanceHelper(object):
         raise Redirect(location=self.format_url(path))
 
     def http(self, path, method='GET', query=None, body=None):
+        # Dirty hack to avoid reencoding. Encoding should be done outside.
+        if ' ' in path:
+            warnings.warn("Sending unencoded path to instance.", stacklevel=1)
+            path = url_escape(path, plus=False)
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
-            url_escape(path, plus=False),
+            path,
         )
         if query:
             url += "?" + serialize_querystring(query)
@@ -338,7 +343,7 @@ class InstanceHelper(object):
         return self.http(*args, **kwargs)
 
     def proxy(self, method, path, body=None):
-        return jsonify(self.http(method, path, body))
+        return jsonify(self.http(path, method, body=body))
 
     def require_xsession(self):
         if not self.xsession:
