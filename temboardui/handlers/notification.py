@@ -7,7 +7,7 @@ from ..web import (
 @app.instance_route(r"/notifications")
 def notifications(request):
     agent_profile = request.instance.get_profile()
-    notifications = request.instance.get_notifications()
+    notifications = request.instance.get("/notifications")
     return render_template(
         'notifications.html',
         agent_username=agent_profile['username'],
