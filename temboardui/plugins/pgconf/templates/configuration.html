@@ -9,7 +9,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="restartModalLabel">Reset parameter:</h4>
+        <h4 class="modal-title" id="resetModalLabel">Reset parameter:</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body" id="resetModalBody">
@@ -86,44 +86,9 @@
       </li>
       {% end %}
       </ul>
-      <div class="row">
-        <div class="col-12 text-center">
-          <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#restartModal">Restart PostgreSQL</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>
-<!-- Restart Modal -->
-<div class="modal fade" id="restartModal" tabindex="-1" role="dialog" aria-labelledby="restartModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="restartModalLabel">Are you sure you want to restart PostgreSQL ?</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body" id="restartModalBody">
-        <div class="alert alert-warning" role="alert">
-          <h4><i class="fa fa-warning fa-fw"></i>WARNING</h4>
-          <p>PostgreSQL is going to be restarted, please confirm.</p>
-        </div>
-      </div>
-      <div class="modal-footer" id="restartModalFooter">
-        <button type="button" class="btn btn-danger" id="restartYesButton">Yes</button>
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-$('#restartYesButton').on(
-  'click',
-  function(event) {
-    event.preventDefault();
-    modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/administration/control', 'post', '{{xsession}}', 'restartModal', {"action":"restart"});
-  }
-);
-</script>
 {% end %}
 <div class="row form-group">
   <div class="col-3 mr-auto">

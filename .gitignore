@@ -13,3 +13,4 @@ task_list
 node_modules
 .tm.task_list
 .coverage
+package-lock.json

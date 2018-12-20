@@ -8,7 +8,6 @@ from temboardui.temboardclient import (
     temboard_get_configuration,
     temboard_get_configuration_categories,
     temboard_get_configuration_status,
-    temboard_post_administration_control,
     temboard_post_configuration,
     temboard_profile,
 )
@@ -39,11 +38,6 @@ def get_routes(config):
         (
             r"/server/(.*)/([0-9]{1,5})/pgconf/configuration/category/(.+)$",
             ConfigurationHandler,
-            handler_conf
-        ),
-        (
-            r"/proxy/(.*)/([0-9]{1,5})/administration/control",
-            AdminControlProxyHandler,
             handler_conf
         ),
         (
@@ -227,37 +221,6 @@ class ConfigurationHandler(BaseHandler):
 """
 Proxy Handlers
 """
-
-
-class AdminControlProxyHandler(JsonHandler):
-    """ /administration/control JSON handler """
-
-    @JsonHandler.catch_errors
-    def post_control(self, agent_address, agent_port):
-        self.logger.info("Posting control (proxy).")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.get_secure_cookie(
-            "temboard_%s_%s" %
-            (agent_address, agent_port))
-        if not xsession:
-            raise TemboardUIError(401, "Authentication cookie is missing.")
-
-        data = temboard_post_administration_control(
-                    self.ssl_ca_cert_file,
-                    agent_address,
-                    agent_port,
-                    xsession,
-                    tornado.escape.json_decode(self.request.body))
-        self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def post(self, agent_address, agent_port):
-        run_background(self.post_control, self.async_callback,
-                       (agent_address, agent_port))
 
 
 class ConfigurationProxyHandler(JsonHandler):
