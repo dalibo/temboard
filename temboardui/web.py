@@ -53,6 +53,13 @@ def anonymous_allowed(func):
     return func
 
 
+def serialize_querystring(query):
+    return "&".join([
+        "%s=%s" % (url_escape(name), url_escape(value))
+        for name, value in sorted(query.items)
+    ])
+
+
 class Response(object):
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
@@ -289,12 +296,14 @@ class InstanceHelper(object):
     def redirect(self, path):
         raise Redirect(location=self.format_url(path))
 
-    def proxy(self, method, path, body=None):
+    def http(self, path, method='GET', query=None, body=None):
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
             url_escape(path, plus=False),
         )
+        if query:
+            url += "?" + serialize_querystring(query)
 
         headers = {}
         xsession = self.xsession
@@ -320,10 +329,18 @@ class InstanceHelper(object):
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500)
-        return Response(
-            status_code=200,
-            body=json_decode(body),
-        )
+        return json_decode(body)
+
+    def get(self, *args, **kwargs):
+        kwargs['method'] = 'GET'
+        return self.http(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        kwargs['method'] = 'POST'
+        return self.http(*args, **kwargs)
+
+    def proxy(self, method, path, body=None):
+        return jsonify(self.http(method, path, body))
 
     def require_xsession(self):
         if not self.xsession:
