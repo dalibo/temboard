@@ -37,7 +37,7 @@ def dashboard(request):
     profile = request.instance.get_profile()
 
     try:
-        config = request.instance.proxy('GET', '/dashboard/config').body
+        config = request.instance.get('/dashboard/config')
     except TemboardError as e:
         if 404 != e.code:
             raise
@@ -47,11 +47,11 @@ def dashboard(request):
             'scheduler_interval': 2
         }
 
-    history = request.instance.proxy('GET', '/dashboard/history').body
+    history = request.instance.get('/dashboard/history')
     if history:
         last_data = history[-1]
     else:
-        last_data = request.instance.proxy('GET', '/dashboard/live').body
+        last_data = request.instance.get('/dashboard/live')
 
     return render_template(
         'dashboard.html',
