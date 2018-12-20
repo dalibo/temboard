@@ -298,7 +298,7 @@ class InstanceHelper(object):
     def http(self, path, method='GET', query=None, body=None):
         # Dirty hack to avoid reencoding. Encoding should be done outside.
         if ' ' in path:
-            warnings.warn("Sending unencoded path to instance.", stacklevel=1)
+            warnings.warn("Sending unencoded path to instance.", stacklevel=2)
             path = url_escape(path, plus=False)
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
