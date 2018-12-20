@@ -1,6 +1,5 @@
 import logging
 import cStringIO
-from dateutil import parser as dt_parser
 from datetime import datetime
 from textwrap import dedent
 
@@ -20,7 +19,7 @@ from . import (
     blueprint,
     render_template,
 )
-from ..tools import get_request_ids
+from ..tools import get_request_ids, parse_start_end
 from ..alerting import checks_info, check_state_detail, check_specs
 
 logger = logging.getLogger(__name__)
@@ -210,20 +209,6 @@ def check_changes(request, name):
         request, query,
         host_id, instance_id, name, start, end,
     ))
-
-
-def parse_start_end(request):
-    start = request.handler.get_argument('start', default=None)
-    end = request.handler.get_argument('end', default=None)
-    try:
-        if start:
-            start = dt_parser.parse(start)
-        if end:
-            end = dt_parser.parse(end)
-    except ValueError:
-        raise HTTPError(406, 'Datetime not valid.')
-
-    return start, end
 
 
 @blueprint.instance_route(r"/alerting/state_changes/([a-z\-_.0-9]{1,64}).json")
