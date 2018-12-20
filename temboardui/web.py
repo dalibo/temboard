@@ -28,7 +28,6 @@ from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
     temboard_login,
-    temboard_profile,
     temboard_request,
 )
 
@@ -348,12 +347,8 @@ class InstanceHelper(object):
 
     def get_profile(self):
         try:
-            return temboard_profile(
-                self.request.config.temboard.ssl_ca_cert_file,
-                self.instance.agent_address,
-                self.instance.agent_port,
-                self.require_xsession(),
-            )
+            self.require_xsession()
+            return self.get("/profile")
         except TemboardError as e:
             if 401 == e.code:
                 self.redirect('/login')
