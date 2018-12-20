@@ -20,23 +20,26 @@ def load_plugins(plugin_names, config):
     # Loop through declared plugins.
     for plugin_name in plugin_names:
         # Locate and load the module with imp.
-        logger.info("Loading plugin '%s'." % (plugin_name, ))
         fp, pathname, description = imp.find_module(plugin_name,
                                                     [path + '/plugins'])
         try:
             module = imp.load_module(plugin_name, fp, pathname, description)
-            # Try to run module's configuration() function.
-            logger.info("Loading plugin '%s' configuration." % (plugin_name, ))
-            ret.update({
-                module.__name__: {
-                    'configuration': getattr(module, 'configuration')(config),
-                    'routes': getattr(module, 'get_routes')(config)
-                }
-            })
-            fp.close()
-        except AttributeError as e:
+        except Exception:
+            logger.exception("Failed to load %s module.", plugin_name)
+            continue
+        finally:
             if fp:
                 fp.close()
-        except Exception as e:
-            logger.exception(str(e))
+
+        # Try to run module's configuration() function.
+        try:
+            ret.update({module.__name__: {
+                'configuration': getattr(module, 'configuration')(config),
+                'routes': getattr(module, 'get_routes')(config),
+            }})
+        except Exception:
+            logger.exception("Failed to load %s configuration.", plugin_name)
+            continue
+        logger.info("Loaded plugin '%s'." % (plugin_name, ))
+
     return ret
