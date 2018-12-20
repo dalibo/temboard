@@ -25,11 +25,6 @@ from .web import app
 from .handlers.base import (
     Error404Handler,
 )
-from .handlers.settings.user import (
-    SettingsDeleteUserJsonHandler,
-    SettingsUserHandler,
-    SettingsUserJsonHandler,
-)
 
 from .async import new_worker_pool
 from .daemon import daemonize
@@ -82,21 +77,10 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.notification')
     __import__('temboardui.handlers.settings.group')
     __import__('temboardui.handlers.settings.instance')
+    __import__('temboardui.handlers.settings.user')
     __import__('temboardui.handlers.user')
 
-    handler_conf = {
-        'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
-        'template_path': None
-    }
-
     handlers = [
-        # Manage users
-        (r"/settings/users", SettingsUserHandler, handler_conf),
-        (r"/json/settings/user$", SettingsUserJsonHandler, handler_conf),
-        (r"/json/settings/user/([0-9a-z\-_\.]{3,16})$",
-         SettingsUserJsonHandler, handler_conf),
-        (r"/json/settings/delete/user$", SettingsDeleteUserJsonHandler,
-         handler_conf),
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),

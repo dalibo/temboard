@@ -1,12 +1,3 @@
-import tornado.web
-import json
-
-from temboardui.handlers.base import BaseHandler, JsonHandler
-from temboardui.async import (
-    HTMLAsyncResult,
-    JSONAsyncResult,
-    run_background,
-)
 from temboardui.application import (
     add_role,
     add_role_in_group,
@@ -22,240 +13,144 @@ from temboardui.application import (
     hash_password,
     update_role,
 )
+from temboardui.web import (
+    HTTPError,
+    admin_required,
+    app,
+    render_template,
+)
 from temboardui.errors import TemboardUIError
 
 
-class SettingsUserJsonHandler(JsonHandler):
+@app.route(r'/settings/users')
+@admin_required
+def users(request):
+    role_list = get_role_list(request.db_session)
+    return render_template(
+        'settings/user.html',
+        nav=True, role=request.current_user,
+        role_list=role_list
+    )
 
-    @tornado.web.asynchronous
-    def get(self, username=None):
+
+@app.route(r'/json/settings/user', methods=['POST'])
+@admin_required
+def create_user(request):
+    data = request.json
+    validate_user_data(data)
+
+    h_passwd = handle_password(data)
+    role = add_role(request.db_session,
+                    data['new_username'],
+                    h_passwd,
+                    data['email'],
+                    data['is_active'],
+                    data['is_admin'])
+    add_user_to_groups(request, data, role)
+    return {'message': 'OK'}
+
+
+@app.route(r"/json/settings/user/([0-9a-z\-_\.]{3,16})$",
+           methods=['GET', 'POST'])
+@admin_required
+def json_user(request, username):
+    if 'GET' == request.method:
         if username is None:
-            self.logger.error("Username is missing.")
-            self.set_status(500)
-            self.set_header("Content-Type", "application/json")
-            self.write(json.dumps({'error': "Username is missing."}))
-            self.finish()
-        else:
-            run_background(self.get_role, self.async_callback, (username,))
+            raise HTTPError(500, "Username is missing")
+        role = get_role(request.db_session, username)
+        groups = get_group_list(request.db_session)
 
-    @tornado.web.asynchronous
-    def post(self, username=None):
-        run_background(self.post_role, self.async_callback, (username,))
+        return {
+            'role_name': role.role_name,
+            'role_email': role.role_email,
+            'is_active': role.is_active,
+            'is_admin': role.is_admin,
+            'in_groups': [group.group_name for group in role.groups],
+            'groups': [{
+                'name': group.group_name,
+                'description': group.group_description
+            } for group in groups]
+        }
+    elif 'POST' == request.method:  # update
+        data = request.json
+        role = get_role(request.db_session, username)
+        validate_user_data(data, role)
 
-    def get_role(self, username):
-        try:
-            self.logger.info("Getting role by name.")
-            self.setUp()
-            self.check_admin()
+        h_passwd = handle_password(data)
 
-            role = get_role(self.db_session, username)
-            groups = get_group_list(self.db_session)
+        # First step is to remove user from the groups he belongs to.
+        role_groups = get_groups_by_role(request.db_session,
+                                         role.role_name)
+        if role_groups:
+            for role_group in role_groups:
+                delete_role_from_group(request.db_session, role.role_name,
+                                       role_group.group_name)
+        role = update_role(
+            request.db_session,
+            role.role_name,
+            data['new_username'],
+            h_passwd,
+            data['email'],
+            data['is_active'],
+            data['is_admin'])
 
-            self.logger.info("Done.")
-            return JSONAsyncResult(
-                200,
-                {
-                    'role_name': role.role_name,
-                    'role_email': role.role_email,
-                    'is_active': role.is_active,
-                    'is_admin': role.is_admin,
-                    'in_groups': [group.group_name for group in role.groups],
-                    'groups': [{
-                        'name': group.group_name,
-                        'description': group.group_description
-                    } for group in groups]
-                }
-            )
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Failed.")
-            try:
-                self.db_session.rollback()
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                return JSONAsyncResult(e.code, {'error': e.message})
-            else:
-                return JSONAsyncResult(500, {'error': "Internal error."})
+        add_user_to_groups(request, data, role)
 
-    def post_role(self, username):
-        try:
-            self.logger.info("Posting role.")
-            self.setUp()
-            role = None
-            self.check_admin()
-            if username:
-                # Update role case.
-                role = get_role(self.db_session, username)
-
-            data = tornado.escape.json_decode(self.request.body)
-            self.logger.debug(data)
-
-            # Submited attributes checking.
-            if 'new_username' not in data or data['new_username'] == '':
-                raise TemboardUIError(400, "Username is missing.")
-            if 'email' not in data or data['email'] == '':
-                raise TemboardUIError(400, "Email is missing.")
-            if 'groups' not in data:
-                raise TemboardUIError(400, "Groups field is missing.")
-            if 'is_active' not in data:
-                raise TemboardUIError(400, "Active field is missing.")
-            if 'is_admin' not in data:
-                raise TemboardUIError(400, "Administrator field is missing.")
-
-            if role and role.role_name != data['new_username']:
-                if 'password' not in data or data['password'] == '':
-                    raise TemboardUIError(
-                        400, "Username will be changed, you need to change "
-                        "the password too.")
-            if role is None:
-                if 'password' not in data or data['password'] == '':
-                    raise TemboardUIError(400, "Password is missing.")
-            if ('password' in data and data['password'] != '') and \
-               ('password2' not in data or data['password2'] == ''):
-                raise TemboardUIError(400, "Password confirmation is missing.")
-            if 'password' in data and 'password2' in data:
-                if data['password'] != data['password2']:
-                    raise TemboardUIError(
-                        400, "Password confirmation can not be checked.")
-            if data['groups'] is not None and type(data['groups']) != list:
-                raise TemboardUIError(400, "Invalid group list.")
-
-            check_role_name(data['new_username'])
-            check_role_email(data['email'])
-            if data['password']:
-                check_role_password(data['password'])
-                h_passwd = hash_password(data['new_username'],
-                                         data['password'])
-            else:
-                h_passwd = None
-
-            # At this point we can proceed with DB operations.
-            # Update role case.
-            if role:
-                # First step is to remove user from the groups he belongs to.
-                role_groups = get_groups_by_role(self.db_session,
-                                                 role.role_name)
-                if role_groups:
-                    for role_group in role_groups:
-                        delete_role_from_group(self.db_session, role.role_name,
-                                               role_group.group_name)
-                role = update_role(
-                    self.db_session,
-                    role.role_name,
-                    data['new_username'],
-                    h_passwd,
-                    data['email'],
-                    data['is_active'],
-                    data['is_admin'])
-            # New role case.
-            else:
-                role = add_role(
-                    self.db_session,
-                    data['new_username'],
-                    h_passwd,
-                    data['email'],
-                    data['is_active'],
-                    data['is_admin'])
-
-            # Add user into the new groups.
-            if data['groups']:
-                for group_name in data['groups']:
-                    add_role_in_group(self.db_session, role.role_name,
-                                      group_name)
-
-            self.logger.info("Done.")
-            return JSONAsyncResult(200, {'ok': True})
-
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Done.")
-            try:
-                self.db_session.rollback()
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                return JSONAsyncResult(e.code, {'error': e.message})
-            else:
-                return JSONAsyncResult(500, {'error': "Internal error."})
+        return {"message": "OK"}
 
 
-class SettingsDeleteUserJsonHandler(JsonHandler):
-
-    @tornado.web.asynchronous
-    def post(self):
-        run_background(self.delete_role, self.async_callback)
-
-    def delete_role(self):
-        try:
-            self.logger.info("Deleting role.")
-            self.setUp()
-            self.check_admin()
-
-            data = tornado.escape.json_decode(self.request.body)
-            self.logger.debug(data)
-
-            if 'username' not in data or data['username'] == '':
-                raise TemboardUIError(400, "Username field is missing.")
-            delete_role(self.db_session, data['username'])
-            self.logger.info("Done.")
-            return JSONAsyncResult(200, {'delete': True})
-
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Failed.")
-            try:
-                self.db_session.rollback()
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                return JSONAsyncResult(e.code, {'error': e.message})
-            else:
-                return JSONAsyncResult(500, {'error': "Internal error."})
+@app.route(r'/json/settings/delete/user', methods=['POST'])
+@admin_required
+def delete_user(request):
+    data = request.json
+    if not data.get('username'):
+        raise HTTPError(400, "Username field is missing.")
+    delete_role(request.db_session, data['username'])
+    return {'delete': True}
 
 
-class SettingsUserHandler(BaseHandler):
+def validate_user_data(data, role=None):
+    # Submited attributes checking.
+    if not data.get('new_username'):
+        raise TemboardUIError(400, "Username is missing.")
+    if not data.get('email'):
+        raise TemboardUIError(400, "Email is missing.")
+    if 'groups' not in data:
+        raise TemboardUIError(400, "Groups field is missing.")
+    if 'is_active' not in data:
+        raise TemboardUIError(400, "Active field is missing.")
+    if 'is_admin' not in data:
+        raise TemboardUIError(400, "Administrator field is missing.")
 
-    @tornado.web.asynchronous
-    def get(self):
-        run_background(self.get_index, self.async_callback)
+    if role and role.role_name != data['new_username']:
+        if not data.get('password'):
+            raise TemboardUIError(
+                400, "Username will be changed, you need to change "
+                "the password too.")
+    if role is None:
+        if not data.get('password'):
+            raise TemboardUIError(400, "Password is missing.")
+    if data.get('password') and not data.get('password2'):
+        raise TemboardUIError(400, "Password confirmation is missing.")
+    if 'password' in data and 'password2' in data:
+        if data['password'] != data['password2']:
+            raise TemboardUIError(
+                400, "Password confirmation can not be checked.")
+    if data['groups'] is not None and type(data['groups']) != list:
+        raise TemboardUIError(400, "Invalid group list.")
 
-    def get_index(self):
-        try:
-            self.logger.info("Getting user list.")
-            self.setUp()
-            self.check_admin()
+    check_role_name(data['new_username'])
+    check_role_email(data['email'])
 
-            role_list = get_role_list(self.db_session)
-            self.logger.debug(role_list)
-            self.logger.info("Done.")
-            return HTMLAsyncResult(
-                    200,
-                    None,
-                    {'nav': True, 'role': self.current_user,
-                     'role_list': role_list},
-                    template_file='settings/user.html')
-        except (TemboardUIError, Exception) as e:
-            self.logger.exception(str(e))
-            self.logger.info("Failed.")
-            try:
-                self.db_session.close()
-            except Exception:
-                pass
-            if isinstance(e, TemboardUIError):
-                if e.code == 302:
-                    return HTMLAsyncResult(302, '/login')
-                elif e.code == 401:
-                    return HTMLAsyncResult(
-                            401,
-                            None,
-                            {'nav': False},
-                            template_file='unauthorized.html')
-            return HTMLAsyncResult(
-                        500,
-                        None,
-                        {'nav': False, 'error': e.message},
-                        template_file='settings/error.html')
+
+def handle_password(data):
+    if data['password']:
+        check_role_password(data['password'])
+        return hash_password(data['new_username'], data['password'])
+    return None
+
+
+def add_user_to_groups(request, data, role):
+    if data['groups']:
+        for group_name in data['groups']:
+            add_role_in_group(request.db_session, role.role_name, group_name)
