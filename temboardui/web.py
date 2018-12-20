@@ -353,11 +353,10 @@ class InstanceHelper(object):
         try:
             self.require_xsession()
             return self.get("/profile")
-        except TemboardError as e:
-            if 401 == e.code:
+        except HTTPError as e:
+            if 401 == e.status_code:
                 self.redirect('/login')
-            logger.error('Instance error: %s', e)
-            raise HTTPError(500)
+            raise
 
 
 def add_json_middleware(func):
