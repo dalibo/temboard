@@ -90,6 +90,13 @@ def get_instance_id(session, host_id, port):
                         "in monitoring.instances table." % (host_id, port))
 
 
+def get_request_ids(request):
+    host_id = get_host_id(request.db_session, request.instance.hostname)
+    instance_id = get_instance_id(
+        request.db_session, host_id, request.instance.pg_port)
+    return host_id, instance_id
+
+
 def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
     query = """
         SELECT agent_key
