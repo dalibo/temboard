@@ -4,11 +4,6 @@ from dateutil import parser as dt_parser
 import tornado.web
 import tornado.escape
 
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import (
-    IntegrityError,
-)
-
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
 from temboardui.errors import TemboardUIError
 from temboardui.async import (
@@ -18,6 +13,7 @@ from temboardui.async import (
 )
 from temboardui.web import (
     HTTPError,
+    anonymous_allowed,
     csvify,
 )
 
@@ -41,7 +37,109 @@ from ..tools import (
 from ..alerting import check_specs
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('temboardui.plugins.' + __name__)
+
+
+def check_agent_request(request, hostname, instance):
+    key = request.headers.get('X-Key')
+    if not key:
+        raise HTTPError(401, 'X-Key header missing')
+
+    if instance['available']:
+        check_agent_key(request.db_session,
+                        hostname,
+                        instance['data_directory'],
+                        instance['port'],
+                        key)
+    else:
+        # Case when PostgreSQL instance is not started.
+        check_host_key(request.db_session, hostname, key)
+
+
+def build_check_task_options(request, host_id, instance_id, checks):
+    options = dict(
+        dbconf=dict(request.config.repository),
+        host_id=host_id,
+        instance_id=instance_id,
+        data=list(),
+    )
+
+    # Populate data with preprocessed values
+    for check in checks:
+        spec = check_specs.get(check[0])
+        if not spec:
+            continue
+
+        try:
+            v = spec.get('preprocess')(request.json['data'])
+        except Exception as e:
+            logger.exception("Failed to preprocess '%s': %s", check[0], e)
+            continue
+
+        if not isinstance(v, dict):
+            v = {'': v}
+
+        for key, val in v.items():
+            options['data'].append(dict(
+                datetime=request.json['datetime'],
+                name=check[0],
+                key=key,
+                value=val,
+                warning=check[1],
+                critical=check[2]))
+    return options
+
+
+@blueprint.route(r"/(?:monitoring|supervision)/collector",
+                 methods=['POST'], json=True)
+@anonymous_allowed
+def collector(request):
+    data = request.json
+    hostname = data['hostinfo']['hostname']
+    # Ignore legacy multi-instance.
+    instance = data['instances'][0]
+
+    check_agent_request(request, hostname, instance)
+
+    # Update the inventory
+    host = merge_agent_info(request.db_session,
+                            data['hostinfo'],
+                            data['instances'])
+
+    # Send the write SQL commands to the database because the metrics are
+    # inserted with queries not the orm. Tables must be there.
+    request.db_session.commit()
+
+    insert_availability(
+        request.db_session, host, data, logger, hostname, instance['port'])
+    insert_metrics(
+        request.db_session, host, data['data'], logger, hostname,
+        instance['port'])
+
+    # ALERTING PART
+
+    host_id = get_host_id(request.db_session, hostname)
+    instance_id = get_instance_id(request.db_session,
+                                  host_id, instance['port'])
+    populate_host_checks(request.db_session, host_id, instance_id,
+                         dict(n_cpu=data['hostinfo']['cpu_count']))
+    request.db_session.commit()
+
+    if 'max_connections' in instance:
+        data['data']['max_connections'] = instance['max_connections']
+
+    # Create new task for checking preprocessed values
+    task_options = build_check_task_options(
+        request, host_id, instance_id,
+        get_host_checks(request.db_session, host_id),
+    )
+    request.handler.application.temboard_app.scheduler.schedule_task(
+        'check_data_worker',
+        options=task_options,
+        expire=0,
+    )
+
+    return {'done': True}
 
 
 @blueprint.instance_route("/monitoring")
@@ -60,137 +158,6 @@ def index(request):
         nav=True, role=request.current_user, instance=request.instance,
         plugin='monitoring', agent_username=agent_username,
     )
-
-
-class MonitoringCollectorHandler(JsonHandler):
-
-    @property
-    def engine(self):
-        return self.application.engine
-
-    def push_data(self,):
-        config = self.application.config
-        key = self.request.headers.get('X-Key')
-        if not key:
-            return JSONAsyncResult(http_code=401,
-                                   data={'error': 'X-Key header missing'})
-        try:
-            data = tornado.escape.json_decode(self.request.body)
-            # Insert data in an other thread.
-        except Exception as e:
-            return JSONAsyncResult(http_code=500, data={'error': e.message})
-        # We need to use a scoped_session object here as far the
-        # code below is executed in its own thread.
-        session_factory = sessionmaker(bind=self.engine)
-        Session = scoped_session(session_factory)
-        thread_session = Session()
-        try:
-
-            # Check the key
-            available = data['instances'][0]['available']
-            if available:
-                check_agent_key(thread_session,
-                                data['hostinfo']['hostname'],
-                                data['instances'][0]['data_directory'],
-                                data['instances'][0]['port'],
-                                key)
-            else:
-                # Case when PostgreSQL instance is not started.
-                check_host_key(thread_session,
-                               data['hostinfo']['hostname'],
-                               key)
-            # Update the inventory
-            host = merge_agent_info(thread_session,
-                                    data['hostinfo'],
-                                    data['instances'])
-
-            # Send the write SQL commands to the database because the
-            # metrics are inserted with queries not the orm. Tables must
-            # be there.
-            thread_session.flush()
-            thread_session.commit()
-
-            insert_availability(
-                thread_session, host, data, self.logger,
-                data['hostinfo']['hostname'], data['instances'][0]['port'])
-
-            # Insert metrics data
-            insert_metrics(
-                thread_session, host, data['data'], self.logger,
-                data['hostinfo']['hostname'], data['instances'][0]['port'])
-
-            # Alerting part
-            host_id = get_host_id(thread_session, data['hostinfo']['hostname'])
-            instance_id = get_instance_id(thread_session, host_id,
-                                          data['instances'][0]['port'])
-            # Populate host checks if needed
-            populate_host_checks(thread_session, host_id, instance_id,
-                                 dict(n_cpu=data['hostinfo']['cpu_count']))
-            # Getting checks for this host/instance
-            enabled_checks = get_host_checks(thread_session, host_id)
-            thread_session.commit()
-
-            # Add max_connections value to data
-            if 'max_connections' in data['instances'][0].keys():
-                data['data']['max_connections'] = \
-                    data['instances'][0]['max_connections']
-
-            task_options = dict(dbconf=dict(config.repository),
-                                host_id=host_id,
-                                instance_id=instance_id,
-                                data=list())
-            specs = check_specs
-            # Populate data with preprocessed values
-            for check in enabled_checks:
-                spec = specs.get(check[0])
-                if not spec:
-                    continue
-
-                try:
-                    v = spec.get('preprocess')(data['data'])
-                except Exception as e:
-                    logger.exception(e)
-                    logger.warn("Not able to preprocess '%s' data." % check[0])
-                    continue
-
-                v = {'': v} if not type(v) is dict else v
-                for key, val in v.items():
-                    task_options['data'].append(dict(
-                        datetime=data['datetime'],
-                        name=check[0],
-                        key=key,
-                        value=val,
-                        warning=check[1],
-                        critical=check[2]))
-
-            # Create new task for checking preprocessed values
-            self.application.temboard_app.scheduler.schedule_task(
-                'check_data_worker',
-                options=task_options,
-                expire=0,
-            )
-
-            return JSONAsyncResult(http_code=200, data={'done': True})
-        except IntegrityError as e:
-            self.logger.exception(str(e))
-            try:
-                thread_session.rollback()
-            except Exception:
-                pass
-            return JSONAsyncResult(http_code=409, data={'error': e.message})
-        except Exception as e:
-            self.logger.exception(str(e))
-            try:
-                thread_session.rollback()
-            except Exception:
-                pass
-            return JSONAsyncResult(http_code=500, data={'error': e.message})
-        finally:
-            thread_session.close()
-
-    @tornado.web.asynchronous
-    def post(self,):
-        run_background(self.push_data, self.async_callback)
 
 
 def prepare_csv_request(request):

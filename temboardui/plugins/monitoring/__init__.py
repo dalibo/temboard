@@ -20,7 +20,6 @@ from .alerting import (
 from .handlers import blueprint
 from .handlers.monitoring import (
     MonitoringAvailabilityHandler,
-    MonitoringCollectorHandler,
     MonitoringUnavailabilityHandler,
 )
 
@@ -39,12 +38,6 @@ def get_routes(config):
     }
     __import__(__name__ + '.handlers.alerting')
     routes = blueprint.rules + [
-        (r"/monitoring/collector",
-         MonitoringCollectorHandler, handler_conf),
-        # for compatibility with older agents keep an eye on requests on
-        # supervision routes
-        (r"/supervision/collector",
-         MonitoringCollectorHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/availability",
          MonitoringAvailabilityHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",
