@@ -361,6 +361,22 @@ class InstanceHelper(object):
         )
 
 
+def add_json_middleware(func):
+    @functools.wraps(func)
+    def json_middleware(request, *args):
+        if 'POST' == request.method:
+            try:
+                request.json = json_decode(request.body)
+            except Exception as e:
+                raise HTTPError(400, e.message)
+        else:
+            # Set empty body, make_error catch this to format error as JSON.
+            request.json = None
+
+        return func(request, *args)
+    return json_middleware
+
+
 class UserHelper(object):
     @classmethod
     def add_middleware(cls, func):
@@ -416,17 +432,22 @@ class Blueprint(object):
         url = InstanceHelper.PROXY_PREFIX + url
         return self.route(url, methods=methods, with_instance=True)
 
-    def instance_route(self, url, methods=None):
+    def instance_route(self, url, methods=None, **kwargs):
         # Helper to declare a route with instance URL prefix and middleware.
         return self.route(
             url=InstanceHelper.SERVER_PREFIX + url,
             methods=methods,
             with_instance=True,
+            **kwargs
         )
 
-    def route(self, url, methods=None, with_instance=False):
+    def route(self, url, methods=None, with_instance=False, json=None):
         # Implements flask-like route registration of a simple synchronous
         # callable.
+
+        # Enable JSON middleware on /json/ handlers.
+        if json is None:
+            json = url.startswith('/json/')
 
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
@@ -434,6 +455,8 @@ class Blueprint(object):
             func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
+            if json:
+                func = add_json_middleware(func)
             func = ErrorHelper.add_middleware(func)
             func = DatabaseHelper.add_middleware(func)
 
@@ -501,8 +524,7 @@ def make_error(request, code, message):
 
     data = dict(code=code, error=message)
 
-    # Dirty hack to determine fallback output format
-    if request.path.startswith('/json'):
+    if hasattr(request, 'json'):
         return Response(code, body=data)
 
     if hasattr(request, 'instance'):
