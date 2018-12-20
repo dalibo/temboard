@@ -2,7 +2,7 @@ from os import path
 import tornado.web
 import tornado.escape
 
-from temboardui.handlers.base import JsonHandler, BaseHandler
+from temboardui.handlers.base import BaseHandler
 from temboardui.temboardclient import (
     TemboardError,
     temboard_get_configuration,
@@ -13,7 +13,6 @@ from temboardui.temboardclient import (
 )
 from temboardui.async import (
     HTMLAsyncResult,
-    JSONAsyncResult,
     run_background,
 )
 from temboardui.errors import TemboardUIError
@@ -23,6 +22,7 @@ from temboardui.web import (
 
 
 blueprint = Blueprint()
+blueprint.generic_proxy("/pgconf/configuration", methods=["POST"])
 
 
 def configuration(config):
@@ -44,11 +44,6 @@ def get_routes(config):
         (
             r"/server/(.*)/([0-9]{1,5})/pgconf/configuration/category/(.+)$",
             ConfigurationHandler,
-            handler_conf
-        ),
-        (
-            r"/proxy/(.*)/([0-9]{1,5})/pgconf/configuration",
-            ConfigurationProxyHandler,
             handler_conf
         ),
         (
@@ -222,39 +217,3 @@ class ConfigurationHandler(BaseHandler):
     def post(self, agent_address, agent_port, category=None):
         run_background(self.post_configuration, self.async_callback,
                        (agent_address, agent_port, category))
-
-
-"""
-Proxy Handlers
-"""
-
-
-class ConfigurationProxyHandler(JsonHandler):
-    """ /pgconf/configuration JSON handler """
-
-    @JsonHandler.catch_errors
-    def post_configuration(self, agent_address, agent_port):
-        self.logger.info("Posting configuration (proxy).")
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin(__name__)
-
-        xsession = self.get_secure_cookie(
-            "temboard_%s_%s" %
-            (agent_address, agent_port))
-        if not xsession:
-            raise TemboardUIError(401, "Authentication cookie is missing.")
-
-        data = temboard_post_configuration(
-                    self.ssl_ca_cert_file,
-                    agent_address,
-                    agent_port,
-                    xsession,
-                    tornado.escape.json_decode(self.request.body))
-        self.logger.info("Done.")
-        return JSONAsyncResult(http_code=200, data=data)
-
-    @tornado.web.asynchronous
-    def post(self, agent_address, agent_port):
-        run_background(self.post_configuration, self.async_callback,
-                       (agent_address, agent_port))
