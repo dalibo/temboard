@@ -1,6 +1,5 @@
 import httplib
 import urllib2
-from urllib import quote
 import ssl
 import socket
 import json
@@ -86,90 +85,6 @@ class TemboardError(Exception):
         Exception.__init__(self, message)
         self.code = code
         self.message = message
-
-
-def temboard_get_configuration(in_ca_cert_file,
-                               hostname,
-                               port,
-                               xsession,
-                               enc_category=None,
-                               query_filter=None):
-    try:
-        if query_filter:
-            path = "/pgconf/configuration?filter=" + quote(query_filter)
-        elif enc_category:
-            path = "/pgconf/configuration/category/" + enc_category
-        else:
-            path = "/pgconf/configuration"
-        res = temboard_request(
-            in_ca_cert_file,
-            method='GET',
-            url='https://%s:%s%s' % (hostname, port, path),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            })
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
-def temboard_post_configuration(in_ca_cert_file, hostname, port, xsession,
-                                settings):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='POST',
-            url='https://%s:%s/pgconf/configuration' % (hostname, port),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            },
-            data=settings)
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
-def temboard_get_configuration_categories(in_ca_cert_file, hostname, port,
-                                          xsession):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='GET',
-            url='https://%s:%s/pgconf/configuration/categories' % (hostname,
-                                                                   port),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            })
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
-def temboard_get_configuration_status(in_ca_cert_file, hostname, port,
-                                      xsession):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='GET',
-            url='https://%s:%s/pgconf/configuration/status' % (hostname, port),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            })
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
 
 
 def temboard_discover(in_ca_cert_file, hostname, port):
