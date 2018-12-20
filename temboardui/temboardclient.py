@@ -188,25 +188,6 @@ def temboard_get_configuration_status(in_ca_cert_file, hostname, port,
         raise TemboardError(500, str(e))
 
 
-def temboard_post_administration_control(in_ca_cert_file, hostname, port,
-                                         xsession, action):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='POST',
-            url='https://%s:%s/administration/control' % (hostname, port),
-            headers={
-                "Content-type": "application/json",
-                "X-Session": xsession
-            },
-            data=action)
-        return json.loads(res)
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
 def temboard_activity(in_ca_cert_file, hostname, port, xsession):
     try:
         res = temboard_request(
