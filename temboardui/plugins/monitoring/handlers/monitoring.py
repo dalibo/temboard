@@ -4,11 +4,10 @@ from dateutil import parser as dt_parser
 import tornado.web
 import tornado.escape
 
-from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
+from temboardui.handlers.base import CsvHandler
 from temboardui.errors import TemboardUIError
 from temboardui.async import (
     run_background,
-    JSONAsyncResult,
     CSVAsyncResult,
 )
 from temboardui.web import (
@@ -29,6 +28,7 @@ from ..tools import (
     get_host_checks,
     get_host_id,
     get_instance_id,
+    get_request_ids,
     insert_availability,
     insert_metrics,
     merge_agent_info,
@@ -88,6 +88,14 @@ def build_check_task_options(request, host_id, instance_id, checks):
                 warning=check[1],
                 critical=check[2]))
     return options
+
+
+@blueprint.instance_route("/monitoring/availability")
+def availability(request):
+    request.instance.check_active_plugin('monitoring')
+    host_id, instance_id = get_request_ids(request)
+    data = get_availability(request.db_session, host_id, instance_id)
+    return {'available': data}
 
 
 @blueprint.route(r"/(?:monitoring|supervision)/collector",
@@ -248,30 +256,3 @@ def data_metric(request, metric_name):
         raise HTTPError(404, 'Unknown metric.')
 
     return csvify(data=data)
-
-
-class MonitoringAvailabilityHandler(JsonHandler):
-
-    @BaseHandler.catch_errors
-    def get_availability(self, agent_address, agent_port):
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin('monitoring')
-
-        # Find host_id & instance_id
-        host_id = get_host_id(self.db_session, self.instance.hostname)
-        instance_id = get_instance_id(self.db_session, host_id,
-                                      self.instance.pg_port)
-        try:
-            data = get_availability(self.db_session,
-                                    host_id=host_id,
-                                    instance_id=instance_id)
-        except Exception as e:
-            logger.exception(str(e))
-            raise TemboardUIError(500, str(e))
-
-        return JSONAsyncResult(http_code=200, data={'available': data})
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_availability, self.async_callback,
-                       (agent_address, agent_port))

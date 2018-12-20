@@ -19,9 +19,9 @@ from .alerting import (
 )
 from .handlers import blueprint
 from .handlers.monitoring import (
-    MonitoringAvailabilityHandler,
     MonitoringUnavailabilityHandler,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +38,6 @@ def get_routes(config):
     }
     __import__(__name__ + '.handlers.alerting')
     routes = blueprint.rules + [
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/availability",
-         MonitoringAvailabilityHandler, handler_conf),
         (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",
          MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
