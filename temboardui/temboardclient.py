@@ -88,22 +88,6 @@ class TemboardError(Exception):
         self.message = message
 
 
-def temboard_login(in_ca_cert_file, hostname, port, username, password):
-    try:
-        res = temboard_request(
-            in_ca_cert_file,
-            method='POST',
-            url='https://%s:%s/login' % (hostname, port),
-            headers={"Content-type": "application/json"},
-            data={'username': username,
-                  'password': password})
-        return json.loads(res)['session']
-    except urllib2.HTTPError as e:
-        raise TemboardError(e.code, json.loads(e.read())['error'])
-    except Exception as e:
-        raise TemboardError(500, str(e))
-
-
 def temboard_get_configuration(in_ca_cert_file,
                                hostname,
                                port,

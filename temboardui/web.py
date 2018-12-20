@@ -28,7 +28,6 @@ from .errors import TemboardUIError
 from .model import Session as DBSession
 from .temboardclient import (
     TemboardError,
-    temboard_login,
     temboard_request,
 )
 
@@ -359,14 +358,6 @@ class InstanceHelper(object):
                 self.redirect('/login')
             logger.error('Instance error: %s', e)
             raise HTTPError(500)
-
-    def login(self, username, password):
-        return temboard_login(
-            self.request.config.temboard.ssl_ca_cert_file,
-            self.instance.agent_address,
-            self.instance.agent_port,
-            username, password,
-        )
 
 
 def add_json_middleware(func):

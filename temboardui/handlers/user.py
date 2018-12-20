@@ -104,11 +104,13 @@ def agent_login(request):
             else:
                 username = profile['username']
     else:
+        creds = dict(
+            username=request.handler.get_argument('username'),
+            password=request.handler.get_argument('password'),
+        )
         try:
-            xsession = request.instance.login(
-                request.handler.get_argument('username'),
-                request.handler.get_argument('password'),
-            )
+            response = request.instance.post("/login", body=creds)
+            xsession = response['session']
         except Exception as e:
             error = str(e)
         else:
