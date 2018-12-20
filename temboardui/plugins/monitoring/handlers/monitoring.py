@@ -10,11 +10,9 @@ from sqlalchemy.exc import (
 )
 
 from temboardui.handlers.base import JsonHandler, BaseHandler, CsvHandler
-from temboardui.temboardclient import TemboardError, temboard_profile
 from temboardui.errors import TemboardUIError
 from temboardui.async import (
     run_background,
-    HTMLAsyncResult,
     JSONAsyncResult,
     CSVAsyncResult,
 )
@@ -23,7 +21,7 @@ from temboardui.web import (
     csvify,
 )
 
-from . import blueprint
+from . import blueprint, render_template
 from ..chartdata import (
     get_availability,
     get_unavailability_csv,
@@ -44,6 +42,24 @@ from ..alerting import check_specs
 
 
 logger = logging.getLogger(__name__)
+
+
+@blueprint.instance_route("/monitoring")
+def index(request):
+    try:
+        agent_username = request.instance.get_profile()['username']
+    except Exception:
+        # Monitoring plugin doesn't require agent authentication since we
+        # already have the data.
+        # Don't fail if there's a session error (for example when the agent
+        # has been restarted)
+        agent_username = None
+
+    return render_template(
+        'index.html',
+        nav=True, role=request.current_user, instance=request.instance,
+        plugin='monitoring', agent_username=agent_username,
+    )
 
 
 class MonitoringCollectorHandler(JsonHandler):
@@ -291,50 +307,4 @@ class MonitoringAvailabilityHandler(JsonHandler):
     @tornado.web.asynchronous
     def get(self, agent_address, agent_port):
         run_background(self.get_availability, self.async_callback,
-                       (agent_address, agent_port))
-
-
-class MonitoringHTMLHandler(BaseHandler):
-
-    @BaseHandler.catch_errors
-    def get_index(self, agent_address, agent_port):
-
-        self.setUp(agent_address, agent_port)
-        self.check_active_plugin('monitoring')
-
-        xsession = self.get_secure_cookie(
-            "temboard_%s_%s" % (agent_address, agent_port))
-
-        # Here we want to get the current agent username if a session
-        # already exists.
-        # Monitoring plugin doesn't require agent authentication since we
-        # already have the data.
-        # Don't fail if there's a session error (for example when the agent
-        # has been restarted)
-        agent_username = None
-        try:
-            if xsession:
-                data_profile = temboard_profile(self.ssl_ca_cert_file,
-                                                agent_address,
-                                                agent_port,
-                                                xsession)
-                agent_username = data_profile['username']
-        except TemboardError:
-            pass
-
-        return HTMLAsyncResult(
-                http_code=200,
-                template_path=self.template_path,
-                template_file='index.html',
-                data={
-                    'nav': True,
-                    'role': self.current_user,
-                    'instance': self.instance,
-                    'plugin': 'monitoring',
-                    'agent_username': agent_username
-                })
-
-    @tornado.web.asynchronous
-    def get(self, agent_address, agent_port):
-        run_background(self.get_index, self.async_callback,
                        (agent_address, agent_port))
