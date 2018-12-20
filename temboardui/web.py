@@ -295,10 +295,13 @@ class InstanceHelper(object):
         raise Redirect(location=self.format_url(path))
 
     def http(self, path, method='GET', query=None, body=None):
+        # Dirty hack to avoid reencoding. Encoding should be done outside.
+        if ' ' in path:
+            path = url_escape(path, plus=False)
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
-            url_escape(path, plus=False),
+            path,
         )
         if query:
             url += "?" + serialize_querystring(query)
