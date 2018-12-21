@@ -4,21 +4,12 @@ import logging
 
 from .postgres import Postgres
 from .toolkit.app import BaseApplication
-from .toolkit.app import define_core_arguments as define_toolkit_arguments
 from .toolkit.configuration import OptionSpec
 from .toolkit import validators as v
 from .version import __version__
 
+
 logger = logging.getLogger(__name__)
-
-
-def define_core_arguments(parser):
-    define_toolkit_arguments(parser)
-    parser.add_argument(
-        '-V', '--version',
-        action='version',
-        version=__version__
-    )
 
 
 class Application(BaseApplication):

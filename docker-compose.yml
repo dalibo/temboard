@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
     labels:
-      com.dnsdock.alias: postgres.temboard.docker
+      com.dnsdock.alias: postgres.tba.docker
 
   ui:
     image: dalibo/temboard:latest
@@ -26,7 +26,7 @@ services:
     ports:
       - "8888:8888"
     labels:
-      com.dnsdock.alias: www.temboard.docker
+      com.dnsdock.alias: ui.tba.docker
 
   instance:
     image: postgres:10-alpine
@@ -34,14 +34,14 @@ services:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
     labels:
-      com.dnsdock.alias: instance.temboard.docker
+      com.dnsdock.alias: instance.tba.docker
 
   agent:
     image: dalibo/temboard-agent
     environment:
       HISTFILE: /usr/local/src/temboard-agent/docker/histfile
       TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_HOSTNAME: instance.fqdn
+      TEMBOARD_HOSTNAME: instance.tba.docker
       TEMBOARD_KEY: key_for_agent_dev
       TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
@@ -53,7 +53,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/usr/local/src/temboard-agent/
     links:
-      - instance:instance.fqdn
+      - instance:instance.tba.docker
     command: tail -f /dev/null
     labels:
-      com.dnsdock.alias: agent.temboard.docker
+      com.dnsdock.alias: agent.tba.docker

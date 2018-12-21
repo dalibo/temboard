@@ -6,11 +6,12 @@ from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout
 from getpass import getpass
 
-from ..cli import Application, define_core_arguments
+from ..cli import Application
 from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError, UserError
 from ..usermgmt import get_user
 from ..types import T_PASSWORD, T_USERNAME
+from ..toolkit.app import define_core_arguments
 from ..tools import validate_parameters
 from .agent import list_options_specs
 
@@ -67,7 +68,7 @@ class AddUserApplication(Application):
             description="Add a new temboard-agent user.",
             argument_default=UNDEFINED_ARGUMENT,
         )
-        define_core_arguments(parser)
+        define_core_arguments(parser, appversion=Application.VERSION)
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
 
