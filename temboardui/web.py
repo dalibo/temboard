@@ -350,9 +350,6 @@ class InstanceHelper(object):
         kwargs['method'] = 'POST'
         return self.http(*args, **kwargs)
 
-    def proxy(self, method, path, body=None):
-        return jsonify(self.http(path, method, body=body))
-
     def require_xsession(self):
         if not self.xsession:
             self.redirect('/login')
@@ -431,13 +428,17 @@ class Blueprint(object):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(
                     request.blueprint.plugin_name)
-            body = json_decode(request.body) if request.body else None
-            return request.instance.proxy(request.method, path, body=body)
+            body = request.instance.http(
+                path=url_escape(path, plus=False),
+                method=request.method,
+                body=request.json,
+            )
+            return jsonify(body)
 
     def instance_proxy(self, url, methods=None):
         # decorator for /proxy/address/port/… handlers.
         url = InstanceHelper.PROXY_PREFIX + url
-        return self.route(url, methods=methods, with_instance=True)
+        return self.route(url, methods=methods, with_instance=True, json=True)
 
     def instance_route(self, url, methods=None, **kwargs):
         # Helper to declare a route with instance URL prefix and middleware.
