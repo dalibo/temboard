@@ -185,11 +185,12 @@ class ServicesManager(object):
             os.kill(process.pid, signal.SIGHUP)
 
     def check(self):
-        for _, p in self.processes[:]:
+        for i in self.processes[:]:
+            _, p = i
             logger.debug(u"Checking child %s (%s).", p.name, p.pid)
             if not p.is_alive():
                 logger.debug("%s (%s) is dead.", p.name, p.pid)
-                self.processes.remove(p)
+                self.processes.remove(i)
                 msg = u"Child %s (%s) died." % (p.name, p.pid)
                 raise UserError(msg)
 
