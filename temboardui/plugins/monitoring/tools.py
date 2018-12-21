@@ -1,4 +1,7 @@
 import logging
+from dateutil import parser as parse_datetime
+
+from temboardui.web import HTTPError
 
 from .model.orm import (
     Check,
@@ -88,6 +91,27 @@ def get_instance_id(session, host_id, port):
     except Exception:
         raise Exception("Can't find instance_id for \"%s/%s\" "
                         "in monitoring.instances table." % (host_id, port))
+
+
+def get_request_ids(request):
+    host_id = get_host_id(request.db_session, request.instance.hostname)
+    instance_id = get_instance_id(
+        request.db_session, host_id, request.instance.pg_port)
+    return host_id, instance_id
+
+
+def parse_start_end(request):
+    start = request.handler.get_argument('start', default=None)
+    end = request.handler.get_argument('end', default=None)
+    try:
+        if start:
+            start = parse_datetime.parse(start)
+        if end:
+            end = parse_datetime.parse(end)
+    except ValueError:
+        raise HTTPError(406, 'Datetime not valid.')
+
+    return start, end
 
 
 def check_agent_key(session, hostname, pg_data, pg_port, agent_key):

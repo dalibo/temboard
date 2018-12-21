@@ -1,6 +1,5 @@
 import logging
 import cStringIO
-from dateutil import parser as dt_parser
 from datetime import datetime
 from textwrap import dedent
 
@@ -20,18 +19,10 @@ from . import (
     blueprint,
     render_template,
 )
-from ..tools import get_host_id, get_instance_id
+from ..tools import get_request_ids, parse_start_end
 from ..alerting import checks_info, check_state_detail, check_specs
 
 logger = logging.getLogger(__name__)
-
-
-def get_instance_ids(request):
-    host_id = get_host_id(request.db_session, request.instance.hostname)
-    instance_id = get_instance_id(
-        request.db_session, host_id, request.instance.pg_port)
-
-    return host_id, instance_id
 
 
 def sql_json_query(request, query, *args):
@@ -54,7 +45,7 @@ def sql_json_query(request, query, *args):
 
 @blueprint.instance_route(r"/alerting/alerts.json")
 def alerts(request):
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
 
     query = dedent("""\
     COPY (
@@ -97,7 +88,7 @@ def index(request):
 
 @blueprint.instance_route("/alerting/checks.json", methods=['GET', 'POST'])
 def checks(request):
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
     if 'GET' == request.method:
         data = checks_info(request.db_session, host_id, instance_id)
         for datum in data:
@@ -172,7 +163,7 @@ def check(request, name):
         # has been restarted)
         agent_username = None
 
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
     query = dedent("""\
     SELECT *
     FROM monitoring.checks
@@ -200,7 +191,7 @@ def check(request, name):
 
 @blueprint.instance_route(r"/alerting/check_changes/([a-z\-_.0-9]{1,64}).json")
 def check_changes(request, name):
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     query = dedent("""\
@@ -220,23 +211,9 @@ def check_changes(request, name):
     ))
 
 
-def parse_start_end(request):
-    start = request.handler.get_argument('start', default=None)
-    end = request.handler.get_argument('end', default=None)
-    try:
-        if start:
-            start = dt_parser.parse(start)
-        if end:
-            end = dt_parser.parse(end)
-    except ValueError:
-        raise HTTPError(406, 'Datetime not valid.')
-
-    return start, end
-
-
 @blueprint.instance_route(r"/alerting/state_changes/([a-z\-_.0-9]{1,64}).json")
 def state_changes(request, name):
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
     key = request.handler.get_argument('key', default=None)
     if name not in check_specs:
@@ -262,7 +239,7 @@ def state_changes(request, name):
 
 @blueprint.instance_route(r"/alerting/states/([a-z\-_.0-9]{1,64}).json")
 def states(request, name):
-    host_id, instance_id = get_instance_ids(request)
+    host_id, instance_id = get_request_ids(request)
     if name not in check_specs:
         raise HTTPError(404, "Unknown check '%s'" % name)
 

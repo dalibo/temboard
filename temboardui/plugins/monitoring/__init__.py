@@ -18,12 +18,7 @@ from .alerting import (
     check_specs,
 )
 from .handlers import blueprint
-from .handlers.monitoring import (
-    MonitoringAvailabilityHandler,
-    MonitoringCollectorHandler,
-    MonitoringHTMLHandler,
-    MonitoringUnavailabilityHandler,
-)
+
 
 logger = logging.getLogger(__name__)
 
@@ -34,24 +29,9 @@ def configuration(config):
 
 def get_routes(config):
     plugin_path = os.path.dirname(os.path.realpath(__file__))
-    handler_conf = {
-        'ssl_ca_cert_file': config.temboard['ssl_ca_cert_file'],
-        'template_path':  plugin_path + "/templates"
-    }
     __import__(__name__ + '.handlers.alerting')
+    __import__(__name__ + '.handlers.monitoring')
     routes = blueprint.rules + [
-        (r"/server/(.*)/([0-9]{1,5})/monitoring",
-         MonitoringHTMLHandler, handler_conf),
-        (r"/monitoring/collector",
-         MonitoringCollectorHandler, handler_conf),
-        # for compatibility with older agents keep an eye on requests on
-        # supervision routes
-        (r"/supervision/collector",
-         MonitoringCollectorHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/availability",
-         MonitoringAvailabilityHandler, handler_conf),
-        (r"/server/(.*)/([0-9]{1,5})/monitoring/unavailability",
-         MonitoringUnavailabilityHandler, handler_conf),
         (r"/js/monitoring/(.*)",
          tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
     ]
