@@ -18,9 +18,9 @@ from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError
 from temboardagent import __version__ as temboard_version
 from .sharedmemory import Sessions
-from .services import Service
 from .api import check_sessionid
 from .errors import UserError
+from .toolkit.services import Service
 
 
 logger = logging.getLogger(__name__)
