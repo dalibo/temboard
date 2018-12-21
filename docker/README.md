@@ -15,9 +15,10 @@ This docker image targets development environment and demo.
   repository.
 
 
-## Updating docker image
+## Updating Docker image
 
-Refresh temBoard image with:
+Docker Hub triggers a new build on each push on master. Refresh manually
+temBoard image with:
 
 ``` console
 $ make clean build push
