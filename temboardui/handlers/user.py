@@ -10,6 +10,7 @@ from ..application import (
 )
 from ..errors import TemboardUIError
 from ..web import (
+    HTTPError,
     Redirect,
     Response,
     anonymous_allowed,
@@ -111,8 +112,8 @@ def agent_login(request):
         try:
             response = request.instance.post("/login", body=creds)
             xsession = response['session']
-        except Exception as e:
-            error = str(e)
+        except HTTPError as e:
+            error = e.log_message
         else:
             cookies = {request.instance.cookie_name: xsession}
             location = request.handler.get_secure_cookie('referer_uri')
