@@ -21,12 +21,8 @@ from .toolkit.services import (
     ServicesManager,
 )
 from .toolkit.log import generate_logging_config
-from .web import app
-from .handlers.base import (
-    Error404Handler,
-)
+from .web import Error404Handler, app
 
-from .async import new_worker_pool
 from .daemon import daemonize
 from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
@@ -128,7 +124,6 @@ class SchedulerService(taskmanager.SchedulerService):
 
 class TornadoService(Service):
     def setup(self):
-        new_worker_pool(12)
         config = self.app.config
         ssl_ctx = {
             'certfile': config.temboard.ssl_cert_file,

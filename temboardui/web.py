@@ -5,7 +5,6 @@ import functools
 import logging
 import os
 import urllib2
-import warnings
 from cStringIO import StringIO
 from csv import writer as CSVWriter
 
@@ -183,6 +182,15 @@ class CallableHandler(RequestHandler):
         self.finish(response.body)
 
 
+class Error404Handler(RequestHandler):
+    def write_error(self, status_code, **kwargs):
+        content_type = self.request.headers.get("Content-Type", '')
+        if content_type.startswith("application/json"):
+            self.write({'error': 'Not found.'})
+        else:
+            self.write('404: Not found.')
+
+
 class DatabaseHelper(object):
     @classmethod
     def add_middleware(cls, func):
@@ -295,10 +303,6 @@ class InstanceHelper(object):
         raise Redirect(location=self.format_url(path))
 
     def http(self, path, method='GET', query=None, body=None):
-        # Dirty hack to avoid reencoding. Encoding should be done outside.
-        if ' ' in path:
-            warnings.warn("Sending unencoded path to instance.", stacklevel=2)
-            path = url_escape(path, plus=False)
         url = 'https://%s:%s%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
@@ -340,9 +344,6 @@ class InstanceHelper(object):
     def post(self, *args, **kwargs):
         kwargs['method'] = 'POST'
         return self.http(*args, **kwargs)
-
-    def proxy(self, method, path, body=None):
-        return jsonify(self.http(path, method, body=body))
 
     def require_xsession(self):
         if not self.xsession:
@@ -422,13 +423,17 @@ class Blueprint(object):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(
                     request.blueprint.plugin_name)
-            body = json_decode(request.body) if request.body else None
-            return request.instance.proxy(request.method, path, body=body)
+            body = request.instance.http(
+                path=url_escape(path, plus=False),
+                method=request.method,
+                body=request.json,
+            )
+            return jsonify(body)
 
     def instance_proxy(self, url, methods=None):
         # decorator for /proxy/address/port/… handlers.
         url = InstanceHelper.PROXY_PREFIX + url
-        return self.route(url, methods=methods, with_instance=True)
+        return self.route(url, methods=methods, with_instance=True, json=True)
 
     def instance_route(self, url, methods=None, **kwargs):
         # Helper to declare a route with instance URL prefix and middleware.
