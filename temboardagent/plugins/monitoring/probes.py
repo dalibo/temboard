@@ -360,9 +360,17 @@ class SqlProbe(Probe):
             return self.run_sql(conninfo, self.sql)
 
         if self.level == 'database':
+            # Get current timestamp
+            now = self.run_sql(conninfo, "SELECT NOW()")[0]['now']
             output = []
             for db in conninfo['dbnames']:
-                output += self.run_sql(conninfo, self.sql, db['dbname'])
+                result = self.run_sql(conninfo, self.sql, db['dbname'])
+                # Update or set 'datetime' field to the current timestamp
+                # because we need to have the same datetime for the whole
+                # result set.
+                for i in range(0, len(result)):
+                    result[i].update(datetime=now)
+                output += result
             return output
 
 
@@ -851,3 +859,129 @@ class probe_replication_connection(SqlProbe):
             except Exception:
                 pass
             return []
+
+
+class probe_heap_bloat(SqlProbe):
+    # Heap bloat estimation probe
+    # Query coming from https://github.com/ioguix/pgsql-bloat-estimation/
+    level = 'database'
+    sql = """
+SELECT current_database() AS dbname,
+  SUM(bloat_size)::FLOAT/SUM(bs*tblpages)::FLOAT*100 AS ratio
+FROM (
+  SELECT
+  CASE WHEN tblpages - est_tblpages_ff > 0 THEN (tblpages-est_tblpages_ff)*bs ELSE 0 END AS bloat_size,
+  bs, tblpages
+  FROM (
+    SELECT
+      ceil( reltuples / ( (bs-page_hdr)*fillfactor/(tpl_size*100) ) ) + ceil( toasttuples / 4 ) AS est_tblpages_ff,
+      tblpages, bs
+    FROM (
+      SELECT
+        ( 4 + tpl_hdr_size + tpl_data_size + (2*ma)
+          - CASE WHEN tpl_hdr_size%ma = 0 THEN ma ELSE tpl_hdr_size%ma END
+          - CASE WHEN ceil(tpl_data_size)::int%ma = 0 THEN ma ELSE ceil(tpl_data_size)::int%ma END
+        ) AS tpl_size, bs - page_hdr AS size_per_block, (heappages + toastpages) AS tblpages, heappages,
+        toastpages, reltuples, toasttuples, bs, page_hdr, tblid, schemaname, tblname, fillfactor
+      FROM (
+        SELECT
+          tbl.oid AS tblid, ns.nspname AS schemaname, tbl.relname AS tblname,
+          tbl.reltuples, tbl.relpages AS heappages, coalesce(toast.relpages, 0) AS toastpages,
+          coalesce(toast.reltuples, 0) AS toasttuples,
+          coalesce(substring(
+            array_to_string(tbl.reloptions, ' ')
+            FROM 'fillfactor=([0-9]+)')::smallint, 100) AS fillfactor,
+          current_setting('block_size')::numeric AS bs,
+          CASE WHEN version()~'mingw32' OR version()~'64-bit|x86_64|ppc64|ia64|amd64' THEN 8 ELSE 4 END AS ma,
+          24 AS page_hdr,
+          23 + CASE WHEN MAX(coalesce(null_frac,0)) > 0 THEN ( 7 + count(*) ) / 8 ELSE 0::int END
+            + CASE WHEN tbl.relhasoids THEN 4 ELSE 0 END AS tpl_hdr_size,
+          sum( (1-coalesce(s.null_frac, 0)) * coalesce(s.avg_width, 1024) ) AS tpl_data_size
+        FROM pg_attribute AS att
+          JOIN pg_class AS tbl ON att.attrelid = tbl.oid
+          JOIN pg_namespace AS ns ON ns.oid = tbl.relnamespace
+          LEFT JOIN pg_stats AS s ON s.schemaname=ns.nspname
+            AND s.tablename = tbl.relname AND s.inherited=false AND s.attname=att.attname
+          LEFT JOIN pg_class AS toast ON tbl.reltoastrelid = toast.oid
+        WHERE att.attnum > 0 AND NOT att.attisdropped
+          AND tbl.relkind = 'r'
+        GROUP BY 1,2,3,4,5,6,7,8,9,10, tbl.relhasoids
+        ORDER BY 2,3
+      ) AS s
+    ) AS s2
+  ) AS s3
+) AS s4;
+    """  # noqa
+
+
+class probe_btree_bloat(SqlProbe):
+    # Btree index bloat estimation probe
+    # Query coming from https://github.com/ioguix/pgsql-bloat-estimation/
+    level = 'database'
+    sql = """
+SELECT current_database() AS dbname,
+  CASE WHEN SUM(relpages) > SUM(est_pages_ff)
+    THEN SUM(relpages-est_pages_ff)::FLOAT/SUM(relpages)::FLOAT*100
+    ELSE 0
+  END AS ratio
+FROM (
+  SELECT coalesce(1 +
+       ceil(reltuples/floor((bs-pageopqdata-pagehdr)/(4+nulldatahdrwidth)::float)), 0
+    ) AS est_pages,
+    coalesce(1 +
+       ceil(reltuples/floor((bs-pageopqdata-pagehdr)*fillfactor/(100*(4+nulldatahdrwidth)::float))), 0
+    ) AS est_pages_ff,
+    bs, nspname, table_oid, tblname, idxname, relpages, fillfactor, is_na
+  FROM (
+    SELECT maxalign, bs, nspname, tblname, idxname, reltuples, relpages, relam, table_oid, fillfactor,
+      ( index_tuple_hdr_bm +
+          maxalign - CASE -- Add padding to the index tuple header to align on MAXALIGN
+            WHEN index_tuple_hdr_bm%maxalign = 0 THEN maxalign
+            ELSE index_tuple_hdr_bm%maxalign
+          END
+        + nulldatawidth + maxalign - CASE -- Add padding to the data to align on MAXALIGN
+            WHEN nulldatawidth = 0 THEN 0
+            WHEN nulldatawidth::integer%maxalign = 0 THEN maxalign
+            ELSE nulldatawidth::integer%maxalign
+          END
+      )::numeric AS nulldatahdrwidth, pagehdr, pageopqdata, is_na
+    FROM (
+      SELECT
+        i.nspname, i.tblname, i.idxname, i.reltuples, i.relpages, i.relam, a.attrelid AS table_oid,
+        current_setting('block_size')::numeric AS bs, fillfactor,
+        CASE -- MAXALIGN: 4 on 32bits, 8 on 64bits (and mingw32 ?)
+          WHEN version() ~ 'mingw32' OR version() ~ '64-bit|x86_64|ppc64|ia64|amd64' THEN 8
+          ELSE 4
+        END AS maxalign,
+        24 AS pagehdr,
+        16 AS pageopqdata,
+        CASE WHEN max(coalesce(s.null_frac,0)) = 0
+          THEN 2 -- IndexTupleData size
+          ELSE 2 + (( 32 + 8 - 1 ) / 8) -- IndexTupleData size + IndexAttributeBitMapData size ( max num filed per index + 8 - 1 /8)
+        END AS index_tuple_hdr_bm,
+        sum( (1-coalesce(s.null_frac, 0)) * coalesce(s.avg_width, 1024)) AS nulldatawidth,
+        max( CASE WHEN a.atttypid = 'pg_catalog.name'::regtype THEN 1 ELSE 0 END ) > 0 AS is_na
+      FROM pg_attribute AS a
+        JOIN (
+          SELECT nspname, tbl.relname AS tblname, idx.relname AS idxname, idx.reltuples, idx.relpages, idx.relam,
+            indrelid, indexrelid, indkey::smallint[] AS attnum,
+            coalesce(substring(
+              array_to_string(idx.reloptions, ' ')
+               from 'fillfactor=([0-9]+)')::smallint, 90) AS fillfactor
+          FROM pg_index
+            JOIN pg_class idx ON idx.oid=pg_index.indexrelid
+            JOIN pg_class tbl ON tbl.oid=pg_index.indrelid
+            JOIN pg_namespace ON pg_namespace.oid = idx.relnamespace
+          WHERE pg_index.indisvalid AND tbl.relkind = 'r' AND idx.relpages > 0
+        ) AS i ON a.attrelid = i.indexrelid
+        JOIN pg_stats AS s ON s.schemaname = i.nspname
+          AND ((s.tablename = i.tblname AND s.attname = pg_catalog.pg_get_indexdef(a.attrelid, a.attnum, TRUE)) -- stats from tbl
+          OR   (s.tablename = i.idxname AND s.attname = a.attname))-- stats from functionnal cols
+        JOIN pg_type AS t ON a.atttypid = t.oid
+      WHERE a.attnum > 0
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
+    ) AS s1
+  ) AS s2
+    JOIN pg_am am ON s2.relam = am.oid WHERE am.amname = 'btree'
+) AS sub;
+    """  # noqa

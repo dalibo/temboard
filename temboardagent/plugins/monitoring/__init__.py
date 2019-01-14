@@ -25,6 +25,8 @@ from .probes import (
     probe_cpu,
     probe_db_size,
     probe_filesystems_size,
+    probe_heap_bloat,
+    probe_btree_bloat,
     probe_loadavg,
     probe_locks,
     probe_memory,
@@ -127,6 +129,16 @@ def get_probe_temp_files_size_delta(http_context, app):
 def get_probe_replication_connection(http_context, app):
     return api_run_probe(probe_replication_connection(app.config.monitoring),
                          app.config)
+
+
+@routes.get(b'/heap_bloat', check_key=True)
+def get_probe_heap_bloat(http_context, app):
+    return api_run_probe(probe_heap_bloat(app.config.monitoring), app.config)
+
+
+@routes.get(b'/btree_bloat', check_key=True)
+def get_probe_btree_bloat(http_context, app):
+    return api_run_probe(probe_btree_bloat(app.config.monitoring), app.config)
 
 
 def api_run_probe(probe_instance, config):

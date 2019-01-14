@@ -405,3 +405,47 @@ class TestMonitoring:
         except HTTPError as e:
             status = e.code
         assert status == 200
+
+    def test_17_monitoring_heap_bloat(self):
+        """
+        [monitoring] 17: GET /monitoring/probe/heap_bloat : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/heap_bloat' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
+
+    def test_18_monitoring_btree_bloat(self):
+        """
+        [monitoring] 18: GET /monitoring/probe/btree_bloat : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/btree_bloat' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
