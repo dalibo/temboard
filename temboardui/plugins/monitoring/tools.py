@@ -390,32 +390,12 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             )
                         )
                     )
-            elif metric == 'temp_files_size_tblspc':
-                for metric_data in agent_data['temp_files_size_tblspc']:
+            elif metric == 'temp_files_size_delta':
+                for metric_data in agent_data['temp_files_size_delta']:
                     query = """
-                        INSERT INTO
-                            monitoring.metric_temp_files_size_tblspc_current
+                        INSERT INTO monitoring.metric_temp_files_size_delta_current
                         VALUES (%s, %s, %s, %s)
-                    """
-                    cur.execute(
-                        query,
-                        (
-                            metric_data['datetime'],
-                            instance_id,
-                            metric_data['spcname'],
-                            (
-                                None,
-                                metric_data['size']
-                            )
-                        )
-                    )
-            elif metric == 'temp_files_size_db':
-                for metric_data in agent_data['temp_files_size_db']:
-                    query = """
-                        INSERT INTO
-                            monitoring.metric_temp_files_size_db_current
-                        VALUES (%s, %s, %s, %s)
-                    """
+                    """  # noqa
                     cur.execute(
                         query,
                         (
@@ -424,6 +404,7 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             metric_data['dbname'],
                             (
                                 None,
+                                str(metric_data['measure_interval']),
                                 metric_data['size']
                             )
                         )

@@ -124,11 +124,6 @@ CREATE TYPE metric_temp_files_size_tblspc_record AS (
   size BIGINT
 );
 
-CREATE TYPE metric_temp_files_size_db_record AS (
-  datetime TIMESTAMPTZ,
-  size BIGINT
-);
-
 CREATE TYPE metric_wal_files_record AS (
   datetime TIMESTAMPTZ,
   measure_interval INTERVAL,
@@ -196,6 +191,12 @@ CREATE TYPE metric_replication_connection_record AS (
   connected SMALLINT
 );
 
+CREATE TYPE metric_temp_files_size_delta_record AS (
+  datetime TIMESTAMPTZ,
+  measure_interval INTERVAL,
+  size BIGINT
+);
+
 
 -- Creation of the aggregate function: min(pg_lsn)
 CREATE OR REPLACE FUNCTION pg_lsn_smaller(in_pg_lsn1 pg_lsn, in_pg_lsn2 pg_lsn) RETURNS pg_lsn
@@ -229,8 +230,7 @@ DECLARE
   q_metric_db_size_agg TEXT;
   q_metric_tblspc_size_agg TEXT;
   q_metric_filesystems_size_agg TEXT;
-  q_metric_temp_files_size_tblspc_agg TEXT;
-  q_metric_temp_files_size_db_agg TEXT;
+  q_metric_temp_files_size_delta_agg TEXT;
   q_metric_wal_files_agg TEXT;
   q_metric_cpu_agg TEXT;
   q_metric_process_agg TEXT;
@@ -557,35 +557,7 @@ DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
 WHERE #agg_table#.w < EXCLUDED.w
 $_$::TEXT)::TEXT, '\n', ' ');
 
-  q_metric_temp_files_size_tblspc_agg := replace(to_json($_$
-INSERT INTO #agg_table#
-  SELECT
-    truncate_time(datetime, '#interval#') AS datetime,
-    instance_id,
-    spcname,
-    ROW(
-      NULL,
-      AVG((r).size)
-    )::#record_type#,
-    COUNT(*) AS w
-  FROM
-    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
-    AS (
-      datetime timestamp with time zone,
-      instance_id integer,
-      spcname text,
-      r #record_type#
-    )
-  WHERE
-    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
-  GROUP BY 1,2,3
-  ORDER BY 1,2,3
-ON CONFLICT (datetime, instance_id, spcname)
-DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
-WHERE #agg_table#.w < EXCLUDED.w
-$_$::TEXT)::TEXT, '\n', ' ');
-
-  q_metric_temp_files_size_db_agg := replace(to_json($_$
+  q_metric_temp_files_size_delta_agg := replace(to_json($_$
 INSERT INTO #agg_table#
   SELECT
     truncate_time(datetime, '#interval#') AS datetime,
@@ -593,7 +565,8 @@ INSERT INTO #agg_table#
     dbname,
     ROW(
       NULL,
-      AVG((r).size)
+      SUM((r).measure_interval),
+      SUM((r).size)
     )::#record_type#,
     COUNT(*) AS w
   FROM
@@ -951,21 +924,9 @@ $_$::TEXT)::TEXT, '\n', ' ');
     "expand": "'||(v_query->'expand'->>'mount_point')||'",
     "aggregate": '||q_metric_filesystems_size_agg||'
   },
-  "metric_temp_files_size_tblspc": {
-    "name": "metric_temp_files_size_tblspc",
-    "record_type": "metric_temp_files_size_tblspc_record",
-    "columns":
-    [
-      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
-      {"name": "spcname", "data_type": "TEXT NOT NULL"}
-    ],
-    "history": "'||(v_query->'history'->>'spcname')||'",
-    "expand": "'||(v_query->'expand'->>'spcname')||'",
-    "aggregate": '||q_metric_temp_files_size_tblspc_agg||'
-  },
-  "metric_temp_files_size_db": {
-    "name": "metric_temp_files_size_db",
-    "record_type": "metric_temp_files_size_db_record",
+  "metric_temp_files_size_delta": {
+    "name": "metric_temp_files_size_delta",
+    "record_type": "metric_temp_files_size_delta_record",
     "columns":
     [
       {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
@@ -973,7 +934,7 @@ $_$::TEXT)::TEXT, '\n', ' ');
     ],
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
-    "aggregate": '||q_metric_temp_files_size_db_agg||'
+    "aggregate": '||q_metric_temp_files_size_delta_agg||'
   },
   "metric_wal_files": {
     "name": "metric_wal_files",
