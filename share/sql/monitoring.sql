@@ -186,10 +186,9 @@ CREATE TYPE metric_vacuum_analyze_record AS (
   n_autoanalyze INTEGER
 );
 
-CREATE TYPE metric_replication_record AS (
+CREATE TYPE metric_replication_lag_record AS (
   datetime TIMESTAMPTZ,
-  receive_location TEXT,
-  replay_location TEXT
+  lag BIGINT
 );
 
 
@@ -233,6 +232,7 @@ DECLARE
   q_metric_memory_agg TEXT;
   q_metric_loadavg_agg TEXT;
   q_metric_vacuum_analyze_agg TEXT;
+  q_metric_replication_lag_agg TEXT;
 BEGIN
   --
   -- Query template list for the actions: 'history' and 'expand'
@@ -792,6 +792,33 @@ DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
 WHERE #agg_table#.w < EXCLUDED.w
 $_$::TEXT)::TEXT, '\n', ' ');
 
+  q_metric_replication_lag_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    ROW(
+      NULL,
+      AVG((r).lag)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2
+  ORDER BY 1,2
+ON CONFLICT (datetime, instance_id)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
+
   SELECT ('{
   "metric_sessions": {
     "name": "metric_sessions",
@@ -979,6 +1006,17 @@ $_$::TEXT)::TEXT, '\n', ' ');
     "history": "'||(v_query->'history'->>'dbname')||'",
     "expand": "'||(v_query->'expand'->>'dbname')||'",
     "aggregate": '||q_metric_vacuum_analyze_agg||'
+  },
+  "metric_replication_lag": {
+    "name": "metric_replication_lag",
+    "record_type": "metric_replication_lag_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"}
+    ],
+    "history": "'||(v_query->'history'->>'instance_id')||'",
+    "expand": "'||(v_query->'expand'->>'instance_id')||'",
+    "aggregate": '||q_metric_replication_lag_agg||'
   }}')::JSON INTO v_conf;
   RETURN v_conf;
 

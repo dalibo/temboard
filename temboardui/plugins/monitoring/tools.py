@@ -559,10 +559,10 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             )
                         )
                     )
-            elif metric == 'replication':
-                for metric_data in agent_data['replication']:
+            elif metric == 'replication_lag':
+                for metric_data in agent_data['replication_lag']:
                     query = """
-                        INSERT INTO monitoring.metric_replication_current
+                        INSERT INTO monitoring.metric_replication_lag_current
                         VALUES (%s, %s, %s)
                     """
                     cur.execute(
@@ -572,8 +572,7 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             instance_id,
                             (
                                 None,
-                                metric_data['receive_location'],
-                                metric_data['replay_location']
+                                metric_data['lag']
                             )
                         )
                     )
