@@ -42,6 +42,10 @@ $(function() {
       },
       error: function(xhr) {
         $('#ErrorModal').modal('hide');
+        if (xhr.status == 401 || xhr.status == 302) {
+          // force a reload of the page, should lead to the server login page
+          location.href = location.href;
+        }
         var code = xhr.status;
         var error = 'Internal error.';
         if (code > 0) {
@@ -50,11 +54,6 @@ $(function() {
           code = '';
         }
         $('#modalError').html(html_error_modal(code, error));
-
-        if (xhr.status == 401 || xhr.status == 302) {
-          $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
-          $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
-        }
         $('#ErrorModal').modal('show');
       }
     });
