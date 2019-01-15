@@ -30,6 +30,12 @@ CREATE TYPE metric_replication_lag_record AS (
   lag BIGINT
 );
 
+CREATE TYPE metric_replication_connection_record AS (
+  datetime TIMESTAMPTZ,
+  connected SMALLINT
+);
+
+
 CREATE OR REPLACE FUNCTION metric_tables_config() RETURNS json
 LANGUAGE plpgsql
 AS $$
@@ -54,6 +60,7 @@ DECLARE
   q_metric_loadavg_agg TEXT;
   q_metric_vacuum_analyze_agg TEXT;
   q_metric_replication_lag_agg TEXT;
+  q_metric_replication_connection_agg TEXT;
 BEGIN
   --
   -- Query template list for the actions: 'history' and 'expand'
@@ -67,7 +74,8 @@ BEGIN
       "dbname":      "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, dbname, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2 ASC;",
       "spcname":     "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, spcname, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;",
       "mount_point": "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, mount_point, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;",
-      "cpu":         "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, cpu, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;"
+      "cpu":         "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), host_id, cpu, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;",
+      "upstream":    "INSERT INTO #history_table# SELECT tstzrange(min(datetime), max(datetime)), instance_id, upstream, array_agg(set_datetime_record(datetime, record)::#record_type#) AS records FROM #current_table# AS deleted_rows GROUP BY date_trunc(''day'', datetime),2,3 ORDER BY 1,2,3 ASC;"
     },
     "expand": {
       "host_id": "WITH expand AS (SELECT datetime, host_id, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, hist_query.record FROM (SELECT host_id, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
@@ -75,7 +83,8 @@ BEGIN
       "dbname": "WITH expand AS (SELECT datetime, instance_id, dbname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, dbname, hist_query.record FROM (SELECT instance_id, dbname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
       "spcname":"WITH expand AS (SELECT datetime, instance_id, spcname, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, spcname, hist_query.record FROM (SELECT instance_id, spcname, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
       "mount_point": "WITH expand AS (SELECT datetime, host_id, mount_point, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, mount_point, hist_query.record FROM (SELECT host_id, mount_point, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
-      "cpu": "WITH expand AS (SELECT datetime, host_id, cpu, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, cpu, hist_query.record FROM (SELECT host_id, cpu, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC"
+      "cpu": "WITH expand AS (SELECT datetime, host_id, cpu, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, host_id, cpu, hist_query.record FROM (SELECT host_id, cpu, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC",
+      "upstream": "WITH expand AS (SELECT datetime, instance_id, upstream, record FROM #current_table# WHERE #where_current# UNION SELECT (hist_query.record).datetime, instance_id, upstream, hist_query.record FROM (SELECT instance_id, upstream, unnest(records)::#record_type# AS record FROM #history_table# WHERE #where_history#) AS hist_query) SELECT * FROM expand WHERE datetime <@ #tstzrange# ORDER BY datetime ASC"
     }
   }'::JSON INTO v_query;
 
@@ -639,6 +648,34 @@ DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
 WHERE #agg_table#.w < EXCLUDED.w
 $_$::TEXT)::TEXT, '\n', ' ');
 
+  q_metric_replication_connection_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    upstream,
+    ROW(
+      NULL,
+      AVG((r).connected)::INT
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      upstream text,
+      r #record_type#
+   )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, upstream)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
 
   SELECT ('{
   "metric_sessions": {
@@ -838,6 +875,18 @@ $_$::TEXT)::TEXT, '\n', ' ');
     "history": "'||(v_query->'history'->>'instance_id')||'",
     "expand": "'||(v_query->'expand'->>'instance_id')||'",
     "aggregate": '||q_metric_replication_lag_agg||'
+  },
+  "metric_replication_connection": {
+    "name": "metric_replication_connection",
+    "record_type": "metric_replication_connection_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "upstream", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'upstream')||'",
+    "expand": "'||(v_query->'expand'->>'upstream')||'",
+    "aggregate": '||q_metric_replication_connection_agg||'
   }}')::JSON INTO v_conf;
   RETURN v_conf;
 
@@ -846,10 +895,14 @@ END;
 $$;
 
 
-
 SELECT * FROM create_tables();
 
 GRANT ALL ON TABLE metric_replication_lag_current TO temboard ;
 GRANT ALL ON TABLE metric_replication_lag_30m_current TO temboard ;
 GRANT ALL ON TABLE metric_replication_lag_6h_current TO temboard ;
 GRANT ALL ON TABLE metric_replication_lag_history TO temboard ;
+
+GRANT ALL ON TABLE metric_replication_connection_current TO temboard ;
+GRANT ALL ON TABLE metric_replication_connection_history TO temboard ;
+GRANT ALL ON TABLE metric_replication_connection_30m_current TO temboard ;
+GRANT ALL ON TABLE metric_replication_connection_6h_current TO temboard ;

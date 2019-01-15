@@ -576,6 +576,24 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             )
                         )
                     )
+            elif metric == 'replication_connection':
+                for metric_data in agent_data['replication_connection']:
+                    query = """
+                        INSERT INTO monitoring.metric_replication_connection_current
+                        VALUES (%s, %s, %s, %s)
+                    """  # noqa
+                    cur.execute(
+                        query,
+                        (
+                            metric_data['datetime'],
+                            instance_id,
+                            metric_data['upstream'],
+                            (
+                                None,
+                                metric_data['connected']
+                            )
+                        )
+                    )
 
             session.connection().connection.commit()
         except Exception as e:
