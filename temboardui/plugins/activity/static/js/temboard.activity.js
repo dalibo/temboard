@@ -167,10 +167,8 @@ $(function() {
       error: function(xhr) {
         $('#ErrorModal').modal('hide');
         if (xhr.status == 401) {
-          $('#modalError').html(html_error_modal(401, 'Session expired'));
-          $('#ErrorModalFooter').html('<a class="btn btn-outline-secondary" id="aBackLogin">Back to login page</a>');
-          $('#aBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
-          $('#ErrorModal').modal('show');
+          // force a reload of the page, should lead to the server login page
+          location.href = location.href;
         } else {
           var code = xhr.status;
           var error = 'Internal error.';
@@ -316,14 +314,9 @@ $(function() {
           window.location.replace(url);
         },
         error: function(xhr) {
-          if (xhr.status == 401)
-          {
-            $('#ModalInfo').html('<div class="row"><div class="col-12"><div class="alert alert-danger" role="alert">Error: Session expired.</div></div></div>');
-            var footer_html = '';
-            footer_html += '<button type="button" id="buttonBackLogin" class="btn btn-success">Back to login page</button>';
-            footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
-            $('#ModalFooter').html(footer_html);
-            $('#buttonBackLogin').attr('href', '/server/'+agent_address+'/'+agent_port+'/login');
+          if (xhr.status == 401) {
+            // force a reload of the page, should lead to the server login page
+            location.href = location.href;
           }
           else
           {
