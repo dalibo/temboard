@@ -24,12 +24,41 @@ html {
 
 @include media-breakpoint-up(lg) {
   $sidebar-width: 270px;
+  $sidebar-width-collapsed: 60px;
   .sidebar-fixed-width {
     width: inherit;
-    min-width: $sidebar-width;
-    max-width: $sidebar-width;
+    transition: max-width .2s ease;
+    & > div {
+      min-width: $sidebar-width - $grid-gutter-width / 2;
+      max-width: $sidebar-width - $grid-gutter-width / 2;
+    }
     position:relative;
     overflow: auto;
+
+    .sidebar-collapsed & {
+      overflow: hidden;
+      min-width: $sidebar-width-collapsed;
+      max-width: $sidebar-width-collapsed;
+
+      .info {
+        visibility: hidden;
+      }
+      .nav-item span {
+        display: none;
+      }
+    }
+    .sidebar-collapsed &:hover {
+      max-width: $sidebar-width + $grid-gutter-width / 2;
+      box-shadow: 0 16px 10px 0 rgba(0,0,0,0.14), 0 11px 18px 0 rgba(0,0,0,0.12), 0 13px 5px -1px rgba(0,0,0,0.2);
+
+      .info {
+        visibility: visible;
+      }
+      .nav-item span {
+        display: inline;
+      }
+    }
+    z-index: 2;
   }
 
   .sidebar {
@@ -53,6 +82,10 @@ html {
   .main {
     width: calc(100% - #{$sidebar-width});
     max-width: none;
+
+    .sidebar-collapsed & {
+      width: calc(100% - #{$sidebar-width-collapsed});
+    }
   }
 }
 
