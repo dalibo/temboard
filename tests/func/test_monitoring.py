@@ -340,16 +340,104 @@ class TestMonitoring:
             status = e.code
         assert status == 200
 
-    def test_14_monitoring_replication(self):
+    def test_14_monitoring_replication_lag(self):
         """
-        [monitoring] 14: GET /monitoring/probe/replication : Check HTTP code returned is 200
+        [monitoring] 14: GET /monitoring/probe/replication_lag : Check HTTP code returned is 200
         """  # noqa
         status = 0
         try:
             (status, res) = temboard_request(
                 ENV['agent']['ssl_cert_file'],
                 method='GET',
-                url='https://%s:%s/monitoring/probe/replication' % (
+                url='https://%s:%s/monitoring/probe/replication_lag' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
+
+    def test_15_monitoring_temp_files_size_delta(self):
+        """
+        [monitoring] 15: GET /monitoring/probe/temp_files_size_delta : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/temp_files_size_delta' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
+
+    def test_16_monitoring_replication_connection(self):
+        """
+        [monitoring] 16: GET /monitoring/probe/replication_connection : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/replication_connection' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
+
+    def test_17_monitoring_heap_bloat(self):
+        """
+        [monitoring] 17: GET /monitoring/probe/heap_bloat : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/heap_bloat' % (
+                    ENV['agent']['host'],
+                    ENV['agent']['port']
+                ),
+                headers={
+                    "Content-type": "application/json",
+                    "X-Session": XSESSION
+                }
+            )
+        except HTTPError as e:
+            status = e.code
+        assert status == 200
+
+    def test_18_monitoring_btree_bloat(self):
+        """
+        [monitoring] 18: GET /monitoring/probe/btree_bloat : Check HTTP code returned is 200
+        """  # noqa
+        status = 0
+        try:
+            (status, res) = temboard_request(
+                ENV['agent']['ssl_cert_file'],
+                method='GET',
+                url='https://%s:%s/monitoring/probe/btree_bloat' % (
                     ENV['agent']['host'],
                     ENV['agent']['port']
                 ),
