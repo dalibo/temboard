@@ -60,7 +60,7 @@ CREATE TYPE monitoring.metric_bloat_ratio_record AS (
 );
 
 
-CREATE OR REPLACE FUNCTION metric_tables_config() RETURNS json
+CREATE OR REPLACE FUNCTION monitoring.metric_tables_config() RETURNS json
 LANGUAGE plpgsql
 AS $$
 
