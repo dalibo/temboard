@@ -25,37 +25,37 @@ GRANT ALL ON TABLE monitoring.instance_availability TO temboard;
 
 
 -- Remove garbage
-DROP TYPE metric_replication_record;
-DROP TABLE metric_temp_files_size_db_current;
-DROP TABLE metric_temp_files_size_db_30m_current;
-DROP TABLE metric_temp_files_size_db_6h_current;
-DROP TABLE metric_temp_files_size_db_history;
-DROP TABLE metric_temp_files_size_tblspc_current;
-DROP TABLE metric_temp_files_size_tblspc_30m_current;
-DROP TABLE metric_temp_files_size_tblspc_6h_current;
-DROP TABLE metric_temp_files_size_tblspc_history;
-DROP TYPE metric_temp_files_size_db_record;
-DROP TYPE metric_temp_files_size_tblspc_record;
+DROP TYPE monitoring.metric_replication_record;
+DROP TABLE monitoring.metric_temp_files_size_db_current;
+DROP TABLE monitoring.metric_temp_files_size_db_30m_current;
+DROP TABLE monitoring.metric_temp_files_size_db_6h_current;
+DROP TABLE monitoring.metric_temp_files_size_db_history;
+DROP TABLE monitoring.metric_temp_files_size_tblspc_current;
+DROP TABLE monitoring.metric_temp_files_size_tblspc_30m_current;
+DROP TABLE monitoring.metric_temp_files_size_tblspc_6h_current;
+DROP TABLE monitoring.metric_temp_files_size_tblspc_history;
+DROP TYPE monitoring.metric_temp_files_size_db_record;
+DROP TYPE monitoring.metric_temp_files_size_tblspc_record;
 
 
-CREATE TYPE metric_replication_lag_record AS (
+CREATE TYPE monitoring.metric_replication_lag_record AS (
   datetime TIMESTAMPTZ,
   lag BIGINT
 );
 
-CREATE TYPE metric_replication_connection_record AS (
+CREATE TYPE monitoring.metric_replication_connection_record AS (
   datetime TIMESTAMPTZ,
   connected SMALLINT
 );
 
-CREATE TYPE metric_temp_files_size_delta_record AS (
+CREATE TYPE monitoring.metric_temp_files_size_delta_record AS (
   datetime TIMESTAMPTZ,
   measure_interval INTERVAL,
   size BIGINT
 );
 
 
-CREATE OR REPLACE FUNCTION metric_tables_config() RETURNS json
+CREATE OR REPLACE FUNCTION monitoring.metric_tables_config() RETURNS json
 LANGUAGE plpgsql
 AS $$
 
@@ -873,20 +873,21 @@ END;
 
 $$;
 
+SET search_path TO monitoring;
 
-SELECT * FROM create_tables();
+SELECT * FROM monitoring.create_tables();
 
-GRANT ALL ON TABLE metric_replication_lag_current TO temboard ;
-GRANT ALL ON TABLE metric_replication_lag_30m_current TO temboard ;
-GRANT ALL ON TABLE metric_replication_lag_6h_current TO temboard ;
-GRANT ALL ON TABLE metric_replication_lag_history TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_lag_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_lag_30m_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_lag_6h_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_lag_history TO temboard ;
 
-GRANT ALL ON TABLE metric_replication_connection_current TO temboard ;
-GRANT ALL ON TABLE metric_replication_connection_history TO temboard ;
-GRANT ALL ON TABLE metric_replication_connection_30m_current TO temboard ;
-GRANT ALL ON TABLE metric_replication_connection_6h_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_connection_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_connection_history TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_connection_30m_current TO temboard ;
+GRANT ALL ON TABLE monitoring.metric_replication_connection_6h_current TO temboard ;
 
-GRANT ALL ON TABLE metric_temp_files_size_delta_current TO temboard;
-GRANT ALL ON TABLE metric_temp_files_size_delta_history TO temboard;
-GRANT ALL ON TABLE metric_temp_files_size_delta_30m_current TO temboard;
-GRANT ALL ON TABLE metric_temp_files_size_delta_6h_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_history TO temboard;
+GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_30m_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_6h_current TO temboard;
