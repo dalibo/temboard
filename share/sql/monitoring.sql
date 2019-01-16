@@ -197,6 +197,11 @@ CREATE TYPE metric_temp_files_size_delta_record AS (
   size BIGINT
 );
 
+CREATE TYPE metric_bloat_ratio_record AS (
+  datetime TIMESTAMPTZ,
+  ratio FLOAT
+);
+
 
 -- Creation of the aggregate function: min(pg_lsn)
 CREATE OR REPLACE FUNCTION pg_lsn_smaller(in_pg_lsn1 pg_lsn, in_pg_lsn2 pg_lsn) RETURNS pg_lsn
@@ -239,6 +244,7 @@ DECLARE
   q_metric_vacuum_analyze_agg TEXT;
   q_metric_replication_lag_agg TEXT;
   q_metric_replication_connection_agg TEXT;
+  q_metric_bloat_ratio_agg TEXT;
 BEGIN
   --
   -- Query template list for the actions: 'history' and 'expand'
@@ -827,6 +833,34 @@ DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
 WHERE #agg_table#.w < EXCLUDED.w
 $_$::TEXT)::TEXT, '\n', ' ');
 
+  q_metric_bloat_ratio_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).ratio)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
 
   SELECT ('{
   "metric_sessions": {
@@ -1026,6 +1060,30 @@ $_$::TEXT)::TEXT, '\n', ' ');
     "history": "'||(v_query->'history'->>'upstream')||'",
     "expand": "'||(v_query->'expand'->>'upstream')||'",
     "aggregate": '||q_metric_replication_connection_agg||'
+  },
+  "metric_heap_bloat": {
+    "name": "metric_heap_bloat",
+    "record_type": "metric_bloat_ratio_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": '||q_metric_bloat_ratio_agg||'
+  },
+  "metric_btree_bloat": {
+    "name": "metric_btree_bloat",
+    "record_type": "metric_bloat_ratio_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": '||q_metric_bloat_ratio_agg||'
   }}')::JSON INTO v_conf;
   RETURN v_conf;
 

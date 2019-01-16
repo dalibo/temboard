@@ -21,9 +21,9 @@ CREATE INDEX idx_instance_availability ON monitoring.instance_availability (inst
 
 GRANT ALL ON TABLE monitoring.instance_availability TO temboard;
 
+-------------------------------------------------------------------------------
 -- New probes
-
-
+--
 -- Remove garbage
 DROP TYPE monitoring.metric_replication_record;
 DROP TABLE monitoring.metric_temp_files_size_db_current;
@@ -54,8 +54,13 @@ CREATE TYPE monitoring.metric_temp_files_size_delta_record AS (
   size BIGINT
 );
 
+CREATE TYPE monitoring.metric_bloat_ratio_record AS (
+  datetime TIMESTAMPTZ,
+  ratio FLOAT
+);
 
-CREATE OR REPLACE FUNCTION monitoring.metric_tables_config() RETURNS json
+
+CREATE OR REPLACE FUNCTION metric_tables_config() RETURNS json
 LANGUAGE plpgsql
 AS $$
 
@@ -79,6 +84,7 @@ DECLARE
   q_metric_vacuum_analyze_agg TEXT;
   q_metric_replication_lag_agg TEXT;
   q_metric_replication_connection_agg TEXT;
+  q_metric_bloat_ratio_agg TEXT;
 BEGIN
   --
   -- Query template list for the actions: 'history' and 'expand'
@@ -667,6 +673,34 @@ DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
 WHERE #agg_table#.w < EXCLUDED.w
 $_$::TEXT)::TEXT, '\n', ' ');
 
+  q_metric_bloat_ratio_agg := replace(to_json($_$
+INSERT INTO #agg_table#
+  SELECT
+    truncate_time(datetime, '#interval#') AS datetime,
+    instance_id,
+    dbname,
+    ROW(
+      NULL,
+      AVG((r).ratio)
+    )::#record_type#,
+    COUNT(*) AS w
+  FROM
+    expand_data_limit('#name#', (SELECT tstzrange(MAX(datetime), NOW()) FROM #agg_table#), 100000)
+    AS (
+      datetime timestamp with time zone,
+      instance_id integer,
+      dbname text,
+      r #record_type#
+    )
+  WHERE
+    truncate_time(datetime, '#interval#') < truncate_time(NOW(), '#interval#')
+  GROUP BY 1,2,3
+  ORDER BY 1,2,3
+ON CONFLICT (datetime, instance_id, dbname)
+DO UPDATE SET w = EXCLUDED.w, record = EXCLUDED.record
+WHERE #agg_table#.w < EXCLUDED.w
+$_$::TEXT)::TEXT, '\n', ' ');
+
 
   SELECT ('{
   "metric_sessions": {
@@ -866,6 +900,30 @@ $_$::TEXT)::TEXT, '\n', ' ');
     "history": "'||(v_query->'history'->>'upstream')||'",
     "expand": "'||(v_query->'expand'->>'upstream')||'",
     "aggregate": '||q_metric_replication_connection_agg||'
+  },
+  "metric_heap_bloat": {
+    "name": "metric_heap_bloat",
+    "record_type": "metric_bloat_ratio_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": '||q_metric_bloat_ratio_agg||'
+  },
+  "metric_btree_bloat": {
+    "name": "metric_btree_bloat",
+    "record_type": "metric_bloat_ratio_record",
+    "columns":
+    [
+      {"name": "instance_id", "data_type": "INTEGER NOT NULL REFERENCES instances (instance_id)"},
+      {"name": "dbname", "data_type": "TEXT NOT NULL"}
+    ],
+    "history": "'||(v_query->'history'->>'dbname')||'",
+    "expand": "'||(v_query->'expand'->>'dbname')||'",
+    "aggregate": '||q_metric_bloat_ratio_agg||'
   }}')::JSON INTO v_conf;
   RETURN v_conf;
 
@@ -891,3 +949,13 @@ GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_current TO temboard;
 GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_history TO temboard;
 GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_30m_current TO temboard;
 GRANT ALL ON TABLE monitoring.metric_temp_files_size_delta_6h_current TO temboard;
+
+GRANT ALL ON TABLE monitoring.metric_heap_bloat_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_heap_bloat_history TO temboard;
+GRANT ALL ON TABLE monitoring.metric_heap_bloat_30m_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_heap_bloat_6h_current TO temboard;
+
+GRANT ALL ON TABLE monitoring.metric_btree_bloat_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_btree_bloat_history TO temboard;
+GRANT ALL ON TABLE monitoring.metric_btree_bloat_30m_current TO temboard;
+GRANT ALL ON TABLE monitoring.metric_btree_bloat_6h_current TO temboard;

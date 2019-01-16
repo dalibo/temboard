@@ -575,6 +575,42 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
                             )
                         )
                     )
+            elif metric == 'heap_bloat':
+                for metric_data in agent_data['heap_bloat']:
+                    query = """
+                        INSERT INTO monitoring.metric_heap_bloat_current
+                        VALUES (%s, %s, %s, %s)
+                    """
+                    cur.execute(
+                        query,
+                        (
+                            metric_data['datetime'],
+                            instance_id,
+                            metric_data['dbname'],
+                            (
+                                None,
+                                metric_data['ratio']
+                            )
+                        )
+                    )
+            elif metric == 'btree_bloat':
+                for metric_data in agent_data['btree_bloat']:
+                    query = """
+                        INSERT INTO monitoring.metric_btree_bloat_current
+                        VALUES (%s, %s, %s, %s)
+                    """
+                    cur.execute(
+                        query,
+                        (
+                            metric_data['datetime'],
+                            instance_id,
+                            metric_data['dbname'],
+                            (
+                                None,
+                                metric_data['ratio']
+                            )
+                        )
+                    )
 
             session.connection().connection.commit()
         except Exception as e:
