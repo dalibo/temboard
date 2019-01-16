@@ -37,6 +37,18 @@ def bootstrap_checks(hostinfo):
     # Waiting sessions (value)
     # One per DB
     yield ("waiting_sessions_db", 5, 10)
+    # Replication lag
+    # warning: 1MB, critical: 10MB
+    yield ("replication_lag", 1024 * 1024, 10 * 1024 * 1024)
+    # Replication connection
+    yield ("replication_connection", 0, 0)
+    # Temporary files size delta
+    # warning: 1MB, critical: 10MB
+    yield ("temp_files_size_delta", 1024 * 1024, 10 * 1024 * 1024)
+    # Heap bloat ratio
+    yield ("heap_bloat", 30, 50)
+    # Btree bloat ratio
+    yield ("btree_bloat", 30, 50)
 
 
 class PreProcess(object):
@@ -130,6 +142,37 @@ class PreProcess(object):
             _data[r['dbname']] = int(r['waiting'])
         return _data
 
+    @staticmethod
+    def replication_lag(data):
+        return int(data['replication_lag'][0]['lag'])
+
+    @staticmethod
+    def replication_connection(data):
+        k = data['replication_connection'][0]['upstream']
+        v = int(data['replication_connection'][0]['connected'])
+        return {k: v}
+
+    @staticmethod
+    def temp_files_size_delta(data):
+        _data = dict()
+        for r in data['temp_files_size_delta']:
+            _data[r['dbname']] = int(r['size'])
+        return _data
+
+    @staticmethod
+    def heap_bloat(data):
+        _data = dict()
+        for r in data['heap_bloat']:
+            _data[r['dbname']] = int(r['ratio'])
+        return _data
+
+    @staticmethod
+    def btree_bloat(data):
+        _data = dict()
+        for r in data['btree_bloat']:
+            _data[r['dbname']] = int(r['ratio'])
+        return _data
+
 
 check_specs = dict(
     load1=dict(
@@ -212,6 +255,41 @@ check_specs = dict(
         category='postgres',
         description='Waiting sessions',
         preprocess=PreProcess.waiting,
+        message='{key}: {value} is greater than {threshold}',
+        operator=operator.gt,
+    ),
+    replication_lag=dict(
+        category='postgres',
+        description='Streaming replication lag',
+        preprocess=PreProcess.replication_lag,
+        message='{key}: {value} is greater than {threshold}',
+        operator=operator.gt,
+    ),
+    replication_connection=dict(
+        category='postgres',
+        description='Streaming replication connection',
+        preprocess=PreProcess.replication_connection,
+        message='{key}: not connected',
+        operator=operator.eq,
+    ),
+    temp_files_size_delta=dict(
+        category='postgres',
+        description='Temporary files size (delta)',
+        preprocess=PreProcess.temp_files_size_delta,
+        message='{key}: {value} is greater than {threshold}',
+        operator=operator.gt,
+    ),
+    heap_bloat=dict(
+        category='postgres',
+        description='Heap bloat ratio estimation',
+        preprocess=PreProcess.heap_bloat,
+        message='{key}: {value} is greater than {threshold}',
+        operator=operator.gt,
+    ),
+    btree_bloat=dict(
+        category='postgres',
+        description='BTree index bloat ratio estimation',
+        preprocess=PreProcess.btree_bloat,
         message='{key}: {value} is greater than {threshold}',
         operator=operator.gt,
     ),
