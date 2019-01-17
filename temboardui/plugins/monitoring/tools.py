@@ -630,19 +630,19 @@ def get_host_checks(session, host_id):
 
 def populate_host_checks(session, host_id, instance_id, hostinfo):
     # Populate checks table with bootstraped checks if needed
-    q = session.query(Check)
-    n = q.filter(Check.host_id == host_id,
-                 Check.instance_id == instance_id).count()
-    if n != 0:
-        return
-    specs = check_specs
     for bc in bootstrap_checks(hostinfo):
+        # Do not try to add new check if exists
+        if session.query(Check).filter(
+                Check.host_id == host_id,
+                Check.instance_id == instance_id,
+                Check.name == bc[0]).count() > 0:
+            continue
         c = Check(host_id=host_id,
                   instance_id=instance_id,
                   name=bc[0],
                   enabled=True,
                   warning=bc[1],
                   critical=bc[2],
-                  description=specs.get(bc[0]).get('description'))
+                  description=check_specs.get(bc[0], {}).get('description'))
         session.add(c)
     session.commit()

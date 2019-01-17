@@ -54,6 +54,28 @@ def test_preproc():
             data={'sessions': [{'dbname': 'toto', 'waiting': 1}]},
             expected={'toto': 1},
         ),
+        replication_lag=dict(
+            data={'replication_lag': [{'lag': 123}]},
+            expected=123
+        ),
+        replication_connection=dict(
+            data={'replication_connection': [{'upstream': 'foo',
+                                              'connected': 1}]},
+            expected={'foo': 1}
+        ),
+        temp_files_size_delta=dict(
+            data={'temp_files_size_delta': [{'dbname': 'foo',
+                                             'size': 123}]},
+            expected={'foo': 123}
+        ),
+        heap_bloat=dict(
+            data={'heap_bloat': [{'dbname': 'foo', 'ratio': 12.34}]},
+            expected={'foo': 12}
+        ),
+        btree_bloat=dict(
+            data={'btree_bloat': [{'dbname': 'foo', 'ratio': 12.34}]},
+            expected={'foo': 12}
+        ),
     )
 
     for k, d in data.items():
@@ -68,7 +90,9 @@ def test_bootstrap_checks():
         assert c[0] in ['load1', 'cpu_core', 'memory_usage', 'swap_usage',
                         'fs_usage_mountpoint', 'wal_files_archive',
                         'wal_files_total', 'rollback_db', 'hitreadratio_db',
-                        'sessions_usage', 'waiting_sessions_db']
+                        'sessions_usage', 'waiting_sessions_db',
+                        'replication_lag', 'replication_connection',
+                        'temp_files_size_delta', 'heap_bloat', 'btree_bloat']
         assert type(c[1]) in (int, float)
         assert type(c[2]) in (int, float)
 

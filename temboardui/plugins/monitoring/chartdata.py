@@ -742,89 +742,71 @@ ORDER BY 1
         sql_nozoom="""
 SELECT
     datetime AS date,
-    upstream AS upstream,
     (record).connected AS connected
 FROM expand_data_by_instance_id('metric_replication_connection', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, upstream text, record metric_replication_connection_record)
-ORDER BY 1, 2
+WHERE upstream = %(key)s
+ORDER BY 1
         """,  # noqa
         sql_zoom="""
 SELECT
     datetime AS date,
-    upstream AS upstream,
     (record).connected AS connected
 FROM %(tablename)s
-WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
-ORDER BY 1, 2
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND upstream = %(key)s
+ORDER BY 1
         """,  # noqa
         probename='replication_connection',
-        pivot=dict(
-            index='date',
-            key='upstream',
-            value='connected',
-        ),
     ),
     temp_files_size_delta=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,
-    dbname,
     (record).size
 FROM expand_data_by_instance_id('metric_temp_files_size_delta', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_temp_files_size_delta_record)
-ORDER BY 1, 2
+WHERE dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         sql_zoom="""
 SELECT
     datetime AS date,
-    dbname,
     (record).size
 FROM %(tablename)s
-WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
-ORDER BY 1, 2
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         probename='temp_files_size_delta',
-        pivot=dict(
-            index='date',
-            key='dbname',
-            value='size',
-        )
     ),
     heap_bloat=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,
-    dbname,
     (record).ratio
 FROM expand_data_by_instance_id('metric_heap_bloat', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_bloat_ratio_record)
-ORDER BY 1, 2
+WHERE dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         sql_zoom="""
 SELECT
     datetime AS date,
-    dbname,
     (record).ratio
 FROM %(tablename)s
-WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
-ORDER BY 1, 2
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         probename='heap_bloat',
-        pivot=dict(
-            index='date',
-            key='dbname',
-            value='ratio',
-        )
     ),
     btree_bloat=dict(
         sql_nozoom="""
 SELECT
     datetime AS date,
-    dbname,
     (record).ratio
 FROM expand_data_by_instance_id('metric_btree_bloat', tstzrange(%(start)s, %(end)s), %(instance_id)s)
 AS (datetime timestamp with time zone, instance_id integer, dbname text, record metric_bloat_ratio_record)
-ORDER BY 1, 2
+WHERE dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         sql_zoom="""
 SELECT
@@ -832,15 +814,10 @@ SELECT
     dbname,
     (record).ratio
 FROM %(tablename)s
-WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
-ORDER BY 1, 2
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
+ORDER BY 1
         """,  # noqa
         probename='btree_bloat',
-        pivot=dict(
-            index='date',
-            key='dbname',
-            value='ratio',
-        )
     ),
 )
 
