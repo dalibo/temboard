@@ -57,7 +57,7 @@ def test_handler(executor, io_loop, mocker):
 
     # Test other get_current_user cases
     grbc.return_value = 'user'
-    assert handler.get_current_user() is 'user'
+    assert handler.get_current_user() == 'user'
 
     grbc.side_effect = Exception()
     assert handler.get_current_user() is None

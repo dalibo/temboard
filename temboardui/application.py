@@ -300,11 +300,11 @@ def add_instance(session,
             hostname=unicode(hostname))
         if agent_key is not None:
             instance.agent_key = unicode(agent_key)
-        if cpu is not None and cpu is not u'':
+        if cpu is not None and cpu != u'':
             instance.cpu = int(cpu)
-        if memory_size is not None and memory_size is not u'':
+        if memory_size is not None and memory_size != u'':
             instance.memory_size = int(memory_size)
-        if pg_port is not None and pg_port is not u'':
+        if pg_port is not None and pg_port != u'':
             instance.pg_port = int(pg_port)
         if pg_version is not None:
             instance.pg_version = unicode(pg_version)
@@ -360,15 +360,15 @@ def update_instance(session,
             instance.agent_address = unicode(new_agent_address)
         if new_agent_port is not None:
             instance.agent_port = int(new_agent_port)
-        if cpu is not None and cpu is not u'':
+        if cpu is not None and cpu != u'':
             instance.cpu = int(cpu)
         else:
             instance.cpu = None
-        if memory_size is not None and memory_size is not u'':
+        if memory_size is not None and memory_size != u'':
             instance.memory_size = int(memory_size)
         else:
             instance.memory_size = None
-        if pg_port is not None and pg_port is not u'':
+        if pg_port is not None and pg_port != u'':
             instance.pg_port = int(pg_port)
         else:
             instance.pg_port = None
