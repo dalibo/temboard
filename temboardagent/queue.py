@@ -96,7 +96,7 @@ class Queue(object):
                         # Case when we need to concatenate the first uncomplete
                         # line of the last loop iter. with the last one of this
                         # current iteration.
-                        if buffer[-1] is not '\n':
+                        if buffer[-1] != '\n':
                             lines[-1] += segment
                         else:
                             n_line += 1

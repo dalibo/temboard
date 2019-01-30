@@ -28,6 +28,7 @@ class Application(BaseApplication):
         "dashboard",
         "monitoring",
         "pgconf",
+        "maintenance",
     ]
 
     def core_specs(self):
