@@ -149,6 +149,13 @@
               </li>
               {% end %}
               <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
+                   class="{{'active' if plugin == 'maintenance' else ''}} nav-link">
+                  <i class="fa fa-wrench fa-fw"></i>
+                  <span>Maintenance</span>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
                    class="{{'active' if plugin == 'notifications' else ''}} nav-link">
                   <i class="fa fa-envelope fa-fw"></i>

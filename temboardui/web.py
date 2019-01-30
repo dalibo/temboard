@@ -162,6 +162,7 @@ class CallableHandler(RequestHandler):
 
     # Let's use one handler for all supported methods.
     post = get
+    delete = get
 
     def write_response(self, response):
         # Should be in a middleware.

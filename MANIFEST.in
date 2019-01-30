@@ -10,4 +10,6 @@ graft temboardui/plugins/dashboard/static
 graft temboardui/plugins/dashboard/templates
 graft temboardui/plugins/monitoring/static
 graft temboardui/plugins/monitoring/templates
+graft temboardui/plugins/maintenance/static
+graft temboardui/plugins/maintenance/templates
 graft share
