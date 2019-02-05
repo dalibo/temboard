@@ -304,13 +304,15 @@ class InstanceHelper(object):
         raise Redirect(location=self.format_url(path))
 
     def http(self, path, method='GET', query=None, body=None):
-        url = 'https://%s:%s%s' % (
+        url = 'https://%s:%s%s?key=%s' % (
             self.instance.agent_address,
             self.instance.agent_port,
             path,
+            self.instance.agent_key,
         )
+
         if query:
-            url += "?" + serialize_querystring(query)
+            url += "&" + serialize_querystring(query)
 
         headers = {}
         xsession = self.xsession
