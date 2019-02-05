@@ -34,7 +34,11 @@ def get_routes(config):
 @blueprint.instance_route(r"/dashboard")
 def dashboard(request):
     request.instance.check_active_plugin(__name__)
-    profile = request.instance.get_profile()
+
+    try:
+        agent_username = request.instance.get_profile()['username']
+    except Exception:
+        agent_username = None
 
     try:
         config = request.instance.get('/dashboard/config')
@@ -56,10 +60,10 @@ def dashboard(request):
     return render_template(
         'dashboard.html',
         nav=True, role=request.current_user,
-        instance=request.instance, agent_username=profile['username'],
+        instance=request.instance,
+        agent_username=agent_username,
         plugin=__name__,
         config=json_encode(config),
         dashboard=last_data,
         history=json_encode(history or ''),
-        xsession=request.instance.xsession,
     )
