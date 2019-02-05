@@ -86,7 +86,7 @@
       </div>
     </div>
   </div>
-  <draggable v-model="graphs" :options="{handle:'.card-header'}">
+  <draggable v-model="graphs" :options="{handle:'.card-header'}" v-cloak>
     <div class="card w-100 mb-2" v-for="graph in graphs">
       <div class="card-header">
         {{! metrics[graph.id].title }}
