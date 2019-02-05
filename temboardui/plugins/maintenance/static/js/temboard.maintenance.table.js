@@ -63,7 +63,6 @@ $(function() {
   function getData() {
     $.ajax({
       url: apiUrl,
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.table = data;
@@ -112,7 +111,6 @@ $(function() {
     var count = this.scheduledVacuums.length;
     $.ajax({
       url: apiUrl + '/vacuum/scheduled',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.scheduledVacuums = data;
@@ -179,7 +177,6 @@ $(function() {
     var count = this.scheduledAnalyzes.length;
     $.ajax({
       url: apiUrl + '/analyze/scheduled',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.scheduledAnalyzes = data;
