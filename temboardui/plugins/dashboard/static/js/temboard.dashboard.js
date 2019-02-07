@@ -30,7 +30,6 @@ $(function() {
     $.ajax({
       url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
       type: 'GET',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       async: true,
       contentType: "application/json",
       success: function (data) {
