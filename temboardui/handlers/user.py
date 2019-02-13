@@ -96,6 +96,10 @@ def agent_login(request):
         if not request.current_user:
             return Redirect('/login')
 
+        redirect_to = request.handler.get_query_argument('redirect_to', None)
+        if redirect_to:
+            request.handler.set_secure_cookie('referer_uri', redirect_to,
+                                              expires_days=30)
         if request.instance.xsession:
             try:
                 profile = request.instance.get_profile()
