@@ -56,7 +56,8 @@ $(function() {
       getLatestVacuum: getLatestX('vacuum'),
       getLatestAnalyze: getLatestX('analyze'),
       doReindex: doReindex,
-      cancelReindex: cancelReindex
+      cancelReindex: cancelReindex,
+      checkSession: checkSession
     }
   });
 
@@ -161,6 +162,9 @@ $(function() {
   }
 
   function cancelVacuum(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/vacuum/' + id,
@@ -227,6 +231,9 @@ $(function() {
   }
 
   function cancelAnalyze(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/analyze/' + id,
@@ -291,6 +298,9 @@ $(function() {
   }
 
   function cancelReindex(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/reindex/' + id,
@@ -328,5 +338,25 @@ $(function() {
   function indexSortBy(criteria, order) {
     this.indexSortCriteria = criteria;
     this.indexSortOrder = order || 'asc';
+  }
+
+  /**
+   * Redirects to agent login page if session is not provided
+   * Should be used in each action requiring xsession authentication.
+   *
+   * params:
+   * e - Optional browser event
+   *
+   */
+  function checkSession(e) {
+    if (!xsession) {
+      var params = $.param({redirect_to: window.location.href});
+      if (confirm('You need to be logged in the instance agent to perform this action')) {
+        window.location.href = agentLoginUrl + '?' + params;
+      }
+      e && e.stopPropagation();
+      return false;
+    }
+    return true;
   }
 });
