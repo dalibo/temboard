@@ -17,7 +17,7 @@ from .alerting import (
 logger = logging.getLogger(__name__)
 
 
-def merge_agent_info(session, host_info, instances_info):
+def merge_agent_info(session, host_info, instance_info):
     """Update the host, instance and database information with the
     data received from the agent."""
 
@@ -38,25 +38,24 @@ def merge_agent_info(session, host_info, instances_info):
     # Get host_id in any case
     host_id = get_host_id(session, host_info['hostname'])
 
-    for instance_info in instances_info:
-        # Only process instances marked as available, since only those
-        # have complete information
-        if instance_info['available']:
-            try:
-                # Try to get instance_id
-                instance_info['instance_id'] = get_instance_id(
-                    session, host_id, instance_info['port']
-                )
-            except Exception:
-                # instance not found
-                pass
-            instance_info['host_id'] = host_id
+    # Only process instances marked as available, since only those
+    # have complete information
+    if instance_info['available']:
+        try:
+            # Try to get instance_id
+            instance_info['instance_id'] = get_instance_id(
+                session, host_id, instance_info['port']
+            )
+        except Exception:
+            # instance not found
+            pass
+        instance_info['host_id'] = host_id
 
-            inst = Instance.from_dict(instance_info)
-            # Insert or update instance information
-            session.merge(inst)
-            session.flush()
-            session.commit()
+        inst = Instance.from_dict(instance_info)
+        # Insert or update instance information
+        session.merge(inst)
+        session.flush()
+        session.commit()
     return host
 
 
