@@ -304,7 +304,7 @@ class MonitoringPlugin(object):
         )(monitoring_collector_worker)
         workers.schedule(
             id='monitoring_sender',
-            redo_interval=self.app.config.monitoring.scheduler_interval,
+            redo_interval=5,
         )(monitoring_sender_worker)
         self.app.scheduler.add(workers)
 
