@@ -3,9 +3,9 @@ import os
 import logging
 import json
 try:
-    from urllib2 import HTTPError
+    from urllib2 import HTTPError, URLError
 except ImportError:
-    from urllib.error import HTTPError
+    from urllib.error import HTTPError, URLError
 
 from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
@@ -240,6 +240,7 @@ def monitoring_sender_worker(app):
             # On error 409 (DB Integrity) we just drop the message and move to
             # the next message.
             if int(e.code) == 409:
+                q.shift(delete=True, check_msg=msg)
                 continue
 
             try:
@@ -254,6 +255,12 @@ def monitoring_sender_worker(app):
             logger.error("You should find details in temBoard UI logs.")
 
             raise Exception("Failed to send data to collector.")
+        except URLError:
+            logger.error("Could not connect to %s"
+                         % config.monitoring.collector_url)
+            raise Exception("Failed to send data to collector.")
+        except ValueError:
+            logger.warning("Failed to read data. Ignoring row.")
 
         # If everything's fine then remove current msg from the queue
         # Integrity check is made using check_msg
