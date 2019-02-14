@@ -15,7 +15,7 @@ from ..chartdata import (
 from ..tools import (
     check_agent_key,
     check_host_key,
-    get_host_checks,
+    get_instance_checks,
     get_host_id,
     get_instance_id,
     get_request_ids,
@@ -135,7 +135,7 @@ def collector(request):
     # Create new task for checking preprocessed values
     task_options = build_check_task_options(
         request, host_id, instance_id,
-        get_host_checks(request.db_session, host_id),
+        get_instance_checks(request.db_session, instance_id),
     )
     request.handler.application.temboard_app.scheduler.schedule_task(
         'check_data_worker',

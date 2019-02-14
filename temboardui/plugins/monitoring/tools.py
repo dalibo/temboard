@@ -619,10 +619,10 @@ def insert_metrics(session, host, agent_data, logger, hostname, port):
             session.connection().connection.rollback()
 
 
-def get_host_checks(session, host_id):
+def get_instance_checks(session, instance_id):
     # Returns enabled alerting checks as list of tuples:
     # (name, warning threshold, critical threshold)
-    checks = session.query(Check).filter(Check.host_id == host_id)
+    checks = session.query(Check).filter(Check.instance_id == instance_id)
     return [(c.name, c.warning, c.critical)
             for c in checks if c.enabled]
 
