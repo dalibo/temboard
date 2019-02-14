@@ -63,8 +63,9 @@ def build_check_task_options(request, host_id, instance_id, checks):
 
         try:
             v = spec.get('preprocess')(request.json['data'])
-        except Exception as e:
-            logger.exception("Failed to preprocess '%s': %s", check[0], e)
+        except Exception:
+            logger.warning("Failed to preprocess alerting check '%s'"
+                           % check[0])
             continue
 
         if not isinstance(v, dict):
@@ -94,38 +95,42 @@ def availability(request):
 @anonymous_allowed
 def collector(request):
     data = request.json
-    hostname = data['hostinfo']['hostname']
-    # Ignore legacy multi-instance.
-    instance = data['instances'][0]
+
+    try:
+        # Ignore legacy multi-instance.
+        instance = data['instances'][0]
+        hostinfo = data['hostinfo']
+        hostname = hostinfo['hostname']
+        port = instance['port']
+        metrics_data = data['data']
+        n_cpu = hostinfo['cpu_count']
+        if 'max_connections' in instance:
+            data['data']['max_connections'] = instance['max_connections']
+    except (KeyError, IndexError) as e:
+        logger.exception(str(e))
+        raise HTTPError(409, "Not valid data")
 
     check_agent_request(request, hostname, instance)
 
     # Update the inventory
-    host = merge_agent_info(request.db_session,
-                            data['hostinfo'],
-                            data['instances'])
+    host = merge_agent_info(request.db_session, hostinfo, instance)
 
     # Send the write SQL commands to the database because the metrics are
     # inserted with queries not the orm. Tables must be there.
     request.db_session.commit()
 
     insert_availability(
-        request.db_session, host, data, logger, hostname, instance['port'])
+        request.db_session, host, data, logger, hostname, port)
     insert_metrics(
-        request.db_session, host, data['data'], logger, hostname,
-        instance['port'])
+        request.db_session, host, metrics_data, logger, hostname, port)
 
     # ALERTING PART
 
     host_id = get_host_id(request.db_session, hostname)
-    instance_id = get_instance_id(request.db_session,
-                                  host_id, instance['port'])
+    instance_id = get_instance_id(request.db_session, host_id, port)
     populate_host_checks(request.db_session, host_id, instance_id,
-                         dict(n_cpu=data['hostinfo']['cpu_count']))
+                         dict(n_cpu=n_cpu))
     request.db_session.commit()
-
-    if 'max_connections' in instance:
-        data['data']['max_connections'] = instance['max_connections']
 
     # Create new task for checking preprocessed values
     task_options = build_check_task_options(
