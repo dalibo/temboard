@@ -157,7 +157,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledVacuums.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -172,7 +173,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledVacuums.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -226,7 +228,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledAnalyzes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -241,7 +244,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledAnalyzes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -293,7 +297,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -308,7 +313,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -350,13 +356,23 @@ $(function() {
    */
   function checkSession(e) {
     if (!xsession) {
-      var params = $.param({redirect_to: window.location.href});
-      if (confirm('You need to be logged in the instance agent to perform this action')) {
-        window.location.href = agentLoginUrl + '?' + params;
-      }
+      showNeedsLoginMsg();
       e && e.stopPropagation();
       return false;
     }
     return true;
+  }
+
+  function showNeedsLoginMsg() {
+    if (confirm('You need to be logged in the instance agent to perform this action')) {
+      var params = $.param({redirect_to: window.location.href});
+      window.location.href = agentLoginUrl + '?' + params;
+    }
+  }
+
+  function onError(xhr) {
+    if (xhr.status == 401) {
+      showNeedsLoginMsg();
+    }
   }
 });
