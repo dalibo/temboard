@@ -52,15 +52,18 @@ def configuration_handler(request, category=None):
     if "GET" == request.method:
         status = request.instance.get(prefix + "/status")
         categories = request.instance.get(prefix + "/categories")
-        logger.debug("category=%s", category)
-        if category:
-            category = url_unescape(category)
-        else:
-            category = categories['categories'][0]
 
-        logger.debug("category=%s", category)
-        configuration_url = prefix + "/category/" + url_escape(category)
-        query = {'filter': query_filter} if query_filter else {}
+        if query_filter:
+            query = {'filter': query_filter}
+            configuration_url = prefix
+        else:
+            if category:
+                category = url_unescape(category)
+            else:
+                category = categories['categories'][0]
+            logger.debug("category=%s", category)
+            query = {}
+            configuration_url = prefix + "/category/" + url_escape(category)
         configuration = request.instance.get(configuration_url, query=query)
     else:
         settings = {'settings': [
