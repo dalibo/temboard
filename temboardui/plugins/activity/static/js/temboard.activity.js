@@ -155,7 +155,6 @@ $(function() {
       url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
       type: 'GET',
       beforeSend: function(xhr) {
-        xhr.setRequestHeader('X-Session', xsession);
         $('#loadingIndicator').removeClass('d-none');
       },
       async: true,
@@ -165,21 +164,15 @@ $(function() {
         updateActivity(data);
       },
       error: function(xhr) {
-        $('#ErrorModal').modal('hide');
-        if (xhr.status == 401) {
-          // force a reload of the page, should lead to the server login page
-          location.href = location.href;
+        var code = xhr.status;
+        var error = 'Internal error.';
+        if (code > 0) {
+          error = escapeHtml(JSON.parse(xhr.responseText).error);
         } else {
-          var code = xhr.status;
-          var error = 'Internal error.';
-          if (code > 0) {
-            error = escapeHtml(JSON.parse(xhr.responseText).error);
-          } else {
-            code = '';
-          }
-          $('#modalError').html(html_error_modal(code, error));
-          $('#ErrorModal').modal('show');
+          code = '';
         }
+        $('#modalError').html(html_error_modal(code, error));
+        $('#ErrorModal').modal('show');
       },
       complete: function() {
         $('#loadingIndicator').addClass('d-none');
@@ -278,6 +271,9 @@ $(function() {
   });
 
   $('#killButton').click(function terminate() {
+    if (!checkSession()) {
+      return;
+    }
     var pids = [];
     $('#tableActivity input:checked').each(function () {
       pids.push($(this).data('pid'));
@@ -315,8 +311,7 @@ $(function() {
         },
         error: function(xhr) {
           if (xhr.status == 401) {
-            // force a reload of the page, should lead to the server login page
-            location.href = location.href;
+            showNeedsLoginMsg();
           }
           else
           {
@@ -388,6 +383,30 @@ $(function() {
     document.execCommand("copy");
     $(this).parents('td').find('.copy').html('Copied to clipboard');
   });
+
+  /**
+   * Redirects to agent login page if session is not provided
+   * Should be used in each action requiring xsession authentication.
+   *
+   * params:
+   * e - Optional browser event
+   *
+   */
+  function checkSession(e) {
+    if (!xsession) {
+      showNeedsLoginMsg();
+      e && e.stopPropagation();
+      return false;
+    }
+    return true;
+  }
+
+  function showNeedsLoginMsg() {
+    if (confirm('You need to be logged in the instance agent to perform this action')) {
+      var params = $.param({redirect_to: window.location.href});
+      window.location.href = agentLoginUrl + '?' + params;
+    }
+  }
 });
 
 var entityMap = {
