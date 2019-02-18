@@ -56,14 +56,14 @@ $(function() {
       getLatestVacuum: getLatestX('vacuum'),
       getLatestAnalyze: getLatestX('analyze'),
       doReindex: doReindex,
-      cancelReindex: cancelReindex
+      cancelReindex: cancelReindex,
+      checkSession: checkSession
     }
   });
 
   function getData() {
     $.ajax({
       url: apiUrl,
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.table = data;
@@ -112,7 +112,6 @@ $(function() {
     var count = this.scheduledVacuums.length;
     $.ajax({
       url: apiUrl + '/vacuum/scheduled',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.scheduledVacuums = data;
@@ -158,11 +157,15 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledVacuums.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
   function cancelVacuum(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/vacuum/' + id,
@@ -170,7 +173,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledVacuums.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -179,7 +183,6 @@ $(function() {
     var count = this.scheduledAnalyzes.length;
     $.ajax({
       url: apiUrl + '/analyze/scheduled',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.scheduledAnalyzes = data;
@@ -225,11 +228,15 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledAnalyzes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
   function cancelAnalyze(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/analyze/' + id,
@@ -237,7 +244,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledAnalyzes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -289,11 +297,15 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
   function cancelReindex(id) {
+    if (!checkSession()) {
+      return;
+    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/reindex/' + id,
@@ -301,7 +313,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -331,5 +344,35 @@ $(function() {
   function indexSortBy(criteria, order) {
     this.indexSortCriteria = criteria;
     this.indexSortOrder = order || 'asc';
+  }
+
+  /**
+   * Redirects to agent login page if session is not provided
+   * Should be used in each action requiring xsession authentication.
+   *
+   * params:
+   * e - Optional browser event
+   *
+   */
+  function checkSession(e) {
+    if (!xsession) {
+      showNeedsLoginMsg();
+      e && e.stopPropagation();
+      return false;
+    }
+    return true;
+  }
+
+  function showNeedsLoginMsg() {
+    if (confirm('You need to be logged in the instance agent to perform this action')) {
+      var params = $.param({redirect_to: window.location.href});
+      window.location.href = agentLoginUrl + '?' + params;
+    }
+  }
+
+  function onError(xhr) {
+    if (xhr.status == 401) {
+      showNeedsLoginMsg();
+    }
   }
 });

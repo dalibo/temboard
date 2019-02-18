@@ -1,3 +1,4 @@
+{% autoescape None %}
 {% extends ../../../templates/base.html %}
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Maintenance{% end %}
@@ -130,7 +131,7 @@
           {{! table.analyze_count }} analyzes - {{! table.autoanalyze_count }} auto analyzes
         </small>
         <div>
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal">
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal" v-on:click="checkSession(event)">
             ANALYZE
           </button>
           <!-- Modal -->
@@ -222,7 +223,7 @@
           {{! table.vacuum_count }} vacuums - {{! table.autovacuum_count }} auto vacuums
         </small>
         <div>
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal">
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal" v-on:click="checkSession(event)">
             VACUUM
           </button>
           <!-- Modal -->
@@ -415,7 +416,7 @@
             <pre><code class="sql">{{! index.def }}</code></pre>
           </td>
           <td class="align-middle" width="5%">
-            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexIndexName=index.name">Reindex</button>
+            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexIndexName=index.name;checkSession(event)">Reindex</button>
             <ul class="list list-unstyled mb-0" v-if="scheduledReindexes.length > 0">
               <template v-for="scheduledReindex in scheduledReindexes">
               <li v-if="scheduledReindex.index == index.name">
@@ -459,7 +460,8 @@
 var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}/schema/{{ schema }}/table/{{ table }}';
 var schemaApiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}/schema/{{ schema }}';
 var maintenanceBaseUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
-var xsession = "{{xsession}}";
+var agentLoginUrl = '/server/{{ instance.agent_address }}/{{ instance.agent_port }}/login';
+var xsession = {{ json_encode(xsession) }};
 </script>
 
 {% end %}

@@ -39,7 +39,6 @@ $(function() {
   function getInstanceData() {
     $.ajax({
       url: apiUrl,
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       contentType: "application/json",
       success: (function(data) {
         this.instance = data.instance;
