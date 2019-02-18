@@ -7,19 +7,19 @@ from . import functions as activity_functions
 routes = RouteSet()
 
 
-@routes.get(b'/activity')
+@routes.get(b'/activity', check_key=True)
 def get_activity(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity(conn)
 
 
-@routes.get(b'/activity/waiting')
+@routes.get(b'/activity/waiting', check_key=True)
 def get_activity_waiting(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity_waiting(conn)
 
 
-@routes.get(b'/activity/blocking')
+@routes.get(b'/activity/blocking', check_key=True)
 def get_activity_blocking(http_context, app):
     with app.postgres.connect() as conn:
         return activity_functions.get_activity_blocking(conn)
