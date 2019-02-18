@@ -26,18 +26,26 @@ def get_routes(config):
     return routes
 
 
+def get_agent_username(request):
+    try:
+        return request.instance.get_profile()['username']
+    except Exception:
+        return None
+
+
 @blueprint.instance_route(r'/activity/(running|blocking|waiting)')
 def activity(request, mode):
     request.instance.check_active_plugin(__name__)
-    profile = request.instance.get_profile()
+    agent_username = get_agent_username(request)
+    xsession = request.instance.xsession if agent_username else None
     return render_template(
         'activity.html',
         nav=True,
-        agent_username=profile['username'],
+        agent_username=agent_username,
         instance=request.instance,
         plugin=__name__,
         mode=mode,
-        xsession=request.instance.xsession,
+        xsession=xsession,
         role=request.current_user,
     )
 
