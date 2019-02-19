@@ -163,7 +163,10 @@ $(function() {
         $('#ErrorModal').modal('hide');
         updateActivity(data);
       },
-      error: function(xhr) {
+      error: function(xhr, status) {
+        if (status == 'abort') {
+          return;
+        }
         var code = xhr.status;
         var error = 'Internal error.';
         if (code > 0) {
