@@ -174,6 +174,8 @@ $(function() {
         } else {
           code = '';
         }
+        // first hide to avoid duplication of the modal "backdrop"
+        $('#ErrorModal').modal('hide');
         $('#modalError').html(html_error_modal(code, error));
         $('#ErrorModal').modal('show');
       },
