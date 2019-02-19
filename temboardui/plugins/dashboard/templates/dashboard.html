@@ -3,7 +3,18 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Dashboard{% end %}
 
 {% block content %}
-
+<div class="position-absolute" style="z-index: 2;">
+  <a class="btn btn-link fullscreen" href data-toggle="popover" data-trigger="hover" data-content="Full screen" data-placement="bottom">
+    <i class="fa fa-expand"></i>
+  </a>
+</div>
+<div class="row d-fullscreen">
+  <div class="col d-flex justify-content-center">
+    <strong class="bg-secondary p-2 border-radius-2 rounded text-white">
+      {{ instance.hostname }}:{{ instance.pg_port }}
+    </strong>
+  </div>
+</div>
 <div class="row mb-3">
   <div class="col-xl-4 col-12 mb-3 mb-xl-0">
     <div class="row">

@@ -449,6 +449,18 @@ $(function() {
     window.setInterval(updateAlerts, alertRefreshInterval);
     updateAlerts();
   }
+
+  $('.fullscreen').on('click', function(e) {
+    $(this).parents('.main')[0].requestFullscreen();
+    e.preventDefault();
+    $(this).addClass('d-none');
+  });
+
+  $(document).on('fullscreenchange', function(event) {
+    if (!document.fullscreenElement) {
+      $('.fullscreen').removeClass('d-none');
+    }
+  });
 });
 
 var entityMap = {
