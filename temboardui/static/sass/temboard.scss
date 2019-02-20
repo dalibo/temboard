@@ -533,3 +533,15 @@ table td.auto-width {
   @include gradient-striped-small();
   background-size: $progress-height/3*2 $progress-height/3*2;
 }
+
+*:fullscreen {
+  background-color: white;
+}
+
+.d-fullscreen {
+  display: none;
+
+  *:fullscreen & {
+    display: initial;
+  }
+}
