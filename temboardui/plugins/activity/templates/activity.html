@@ -30,27 +30,15 @@
     </span>
   </div>
   <div class="col-auto">
-    <div class="form-row align-items-center">
-      <div class="col-auto">
-        <button type="button" class="btn btn-secondary" disabled id="refreshButton"><i class="fa fa-refresh"></i> Refresh</button>
-      </div>
-      <div class="col-auto">
-        <div class="form-check">
-          <input type="checkbox" checked class="form-check-input" id="autoRefreshCheckbox">
-          <label class="form-check-label" for="autoRefreshCheckbox">
-            Auto refresh every <span id="intervalDuration"></span>s
-          </label>
-        </div>
-      </div>
-    </div>
+    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+    <span id="autoRefreshPausedMsg" class="d-none text-muted">
+      <i class="fa fa-pause"></i>
+      Auto refresh paused
+      <a class="btn btn-link" id="resumeAutoRefresh" role="button" href><i class="fa fa-play"></i> resume</a>
+    </span>
   </div>
-</div>
-<div class="row">
-  <div class="col-12 d-flex justify-content-between">
-    <div>
-      <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-    </div>
-    <a class="collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#filters" role="button" aria-expanded="false" aria-controls="filters">
+  <div class="col-auto">
+    <a class="btn collapse-toggle dropdown-toggle collapsed" data-toggle="collapse" href="#filters" role="button" aria-expanded="false" aria-controls="filters">
       filters
     </a>
   </div>

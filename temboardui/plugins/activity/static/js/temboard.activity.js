@@ -231,9 +231,8 @@ $(function() {
   }
 
   function pause() {
+    $('#autoRefreshPausedMsg').removeClass('d-none');
     request && request.abort();
-    $('#autoRefreshCheckbox').prop('checked', false);
-    $('#refreshButton').prop('disabled', false);
     $('#tableActivity input[type=checkbox]').each(function () {
       $(this).attr('disabled', false);
       $(this).attr('title', checkboxTooltip);
@@ -243,9 +242,9 @@ $(function() {
   }
 
   function play() {
-    $('#autoRefreshCheckbox').prop('checked', true)
-    $('#refreshButton').prop('disabled', true);
+
     $('#killButton').addClass('disabled');
+    $('#autoRefreshPausedMsg').addClass('d-none');
     $('#tableActivity input:checked').each(function () {
       $(this).attr('checked', false);
     });
@@ -257,18 +256,8 @@ $(function() {
     intervalId = window.setInterval(load, intervalDuration * 1000);
   }
 
-  $('#autoRefreshCheckbox').change(function() {
-    if ($(this).prop('checked')) {
-      play();
-    } else {
-      pause();
-    }
-  });
-
   // Launch once
   play();
-
-  $('#refreshButton').click(load);
 
   // show the kill button only when backends have been selected
   $(document.body).on('click', 'input[type=checkbox]', function() {
@@ -387,6 +376,23 @@ $(function() {
     sel.addRange(range);
     document.execCommand("copy");
     $(this).parents('td').find('.copy').html('Copied to clipboard');
+  });
+
+  $('#tableActivity').on('mouseenter', function(e) {
+    pause();
+  });
+
+  $('#tableActivity').on('mouseleave', function(e) {
+    var checkedRows = $('#tableActivity input:checked');
+    if (checkedRows.size() == 0) {
+      // resume auto refresh only if there are no checked rows
+      play();
+    }
+  });
+
+  $('#resumeAutoRefresh').on('click', function(e) {
+    play();
+    e.preventDefault();
   });
 
   /**
