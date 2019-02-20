@@ -2,8 +2,9 @@ $(function() {
   "use strict";
 
   var request = null;
-  var intervalId;
   var intervalDuration = 2;
+  var loading = false;
+  var loadTimeout;
 
   $('#intervalDuration').html(intervalDuration);
 
@@ -23,7 +24,7 @@ $(function() {
       orderable: false,
       className: 'text-center',
       data: function(row, type, val, meta) {
-        var disabled = intervalId ? 'disabled' : '';
+        var disabled = loading ? 'disabled' : '';
         var title = disabled ? checkboxDisabledTooltip : checkboxTooltip;
         var html = '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"';
         html += 'title="' + title + '"';
@@ -148,14 +149,14 @@ $(function() {
   });
 
   function load() {
+    var lastLoad = new Date();
     var url_end = activityMode != 'running' ?  '/' + activityMode : '';
-    // abort any pending request
-    request && request.abort();
     request = $.ajax({
       url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
       type: 'GET',
       beforeSend: function(xhr) {
         $('#loadingIndicator').removeClass('d-none');
+        loading = true;
       },
       async: true,
       contentType: "application/json",
@@ -179,8 +180,11 @@ $(function() {
         $('#modalError').html(html_error_modal(code, error));
         $('#ErrorModal').modal('show');
       },
-      complete: function() {
+      complete: function(xhr, status) {
         $('#loadingIndicator').addClass('d-none');
+        loading = false;
+        var timeoutDelay = intervalDuration * 1000 - (new Date() - lastLoad);
+        loadTimeout = window.setTimeout(load, timeoutDelay);
       }
     });
   }
@@ -233,12 +237,11 @@ $(function() {
   function pause() {
     $('#autoRefreshPausedMsg').removeClass('d-none');
     request && request.abort();
+    window.clearTimeout(loadTimeout);
     $('#tableActivity input[type=checkbox]').each(function () {
       $(this).attr('disabled', false);
       $(this).attr('title', checkboxTooltip);
     });
-    window.clearInterval(intervalId);
-    intervalId = null;
   }
 
   function play() {
@@ -253,7 +256,6 @@ $(function() {
       $(this).attr('title', checkboxDisabledTooltip);
     });
     load();
-    intervalId = window.setInterval(load, intervalDuration * 1000);
   }
 
   // Launch once
