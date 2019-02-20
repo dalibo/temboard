@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 # Load version number
 setup_path = os.path.dirname(os.path.realpath(__file__))
-execfile(os.path.join(setup_path, 'temboardui/version.py'))
+exec(open(os.path.join(setup_path, 'temboardui', 'version.py'), 'r').read())
 
 
 # Accept Tornado 5.X on Python 2.7.9+
