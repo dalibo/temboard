@@ -3,6 +3,33 @@
 Upgrade (RHEL/CentOS)
 =====================
 
+2.X to 3.0
+----------
+
+Stop the agent:
+
+.. code-block:: bash
+
+    sudo systemctl stop temboard-agent
+
+
+Update the package:
+
+.. code-block:: bash
+
+    sudo yum install temboard-agent
+
+
+Load the maintenance plugin by adding "maintenance" in the list of plugins in your temboard-agent.conf file.
+
+
+Start the agent:
+
+.. code-block:: bash
+
+    sudo systemctl start temboard-agent
+
+
 1.2 to 2.0
 ----------
 
