@@ -55,6 +55,7 @@ SETUP_KWARGS = dict(
             'share/sql/upgrade-0.0.1-1.1.sql',
             'share/sql/upgrade-1.1-1.2.sql',
             'share/sql/upgrade-1.2-2.0.sql',
+            'share/sql/upgrade-2.2-3.0.sql',
         ]),
         ('share/temboard/quickstart/', [
             'share/temboard_CHANGEME.key',
