@@ -163,7 +163,10 @@ $(function() {
         $('#ErrorModal').modal('hide');
         updateActivity(data);
       },
-      error: function(xhr) {
+      error: function(xhr, status) {
+        if (status == 'abort') {
+          return;
+        }
         var code = xhr.status;
         var error = 'Internal error.';
         if (code > 0) {
@@ -171,6 +174,8 @@ $(function() {
         } else {
           code = '';
         }
+        // first hide to avoid duplication of the modal "backdrop"
+        $('#ErrorModal').modal('hide');
         $('#modalError').html(html_error_modal(code, error));
         $('#ErrorModal').modal('show');
       },
