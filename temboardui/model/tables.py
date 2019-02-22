@@ -43,6 +43,7 @@ instances = Table(
     Column('memory_size', BigInteger),
     Column('pg_port', Integer),
     Column('pg_version', UnicodeText),
+    Column('pg_version_summary', UnicodeText),
     Column('pg_data', UnicodeText),
     schema="application")
 

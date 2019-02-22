@@ -74,6 +74,8 @@ def validate_instance_data(data):
         raise HTTPError(400, "PostgreSQL port field is missing.")
     if 'pg_version' not in data:
         raise HTTPError(400, "PostgreSQL version field is missing.")
+    if 'pg_version_summary' not in data:
+        raise HTTPError(400, "PostgreSQL version summary field is missing.")
     if 'pg_data' not in data:
         raise HTTPError(400, "PostgreSQL data directory field is missing.")
     if 'groups' not in data:

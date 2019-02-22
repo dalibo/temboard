@@ -292,6 +292,7 @@ def add_instance(session,
                  memory_size=None,
                  pg_port=None,
                  pg_version=None,
+                 pg_version_summary=None,
                  pg_data=None):
     try:
         instance = Instances(
@@ -308,6 +309,8 @@ def add_instance(session,
             instance.pg_port = int(pg_port)
         if pg_version is not None:
             instance.pg_version = unicode(pg_version)
+        if pg_version_summary is not None:
+            instance.pg_version_summary = unicode(pg_version_summary)
         if pg_data is not None:
             instance.pg_data = unicode(pg_data)
         session.add(instance)
@@ -349,6 +352,7 @@ def update_instance(session,
                     memory_size=None,
                     pg_port=None,
                     pg_version=None,
+                    pg_version_summary=None,
                     pg_data=None):
     try:
         instance = session.query(Instances) \
@@ -375,6 +379,7 @@ def update_instance(session,
         instance.agent_key = unicode(agent_key)
         instance.hostname = unicode(hostname)
         instance.pg_version = unicode(pg_version)
+        instance.pg_version_summary = unicode(pg_version_summary)
         instance.pg_data = unicode(pg_data)
         session.merge(instance)
         session.flush()

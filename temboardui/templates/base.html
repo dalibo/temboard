@@ -185,7 +185,10 @@
                   </td>
                 </tr>
                 <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
-                <tr><td>Version: </td><td class="text-right">{{instance.pg_version}}</td></tr>
+                <tr>
+                  <td>Version: </td>
+                  <td class="text-right">{{instance.pg_version_summary or instance.pg_version}}</td>
+                </tr>
               </table>
               {% try %}
               {% if agent_username %}
