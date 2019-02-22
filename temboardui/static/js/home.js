@@ -15,33 +15,57 @@ $(function() {
   });
 
   Vue.component('checks', {
-    props: ['instance', 'update'],
-    data: function() {
-      return {
-        checks: {}
-      };
+    props: ['instance'],
+    computed: {
+      checks: function() {
+        return getChecksCount(this.instance);
+      }
     },
-    mounted: loadChecks,
-    watch: {
-      instance: loadChecks,
-      update: loadChecks
+    methods: {
+      popoverContent: function(instance) {
+        // don't show OK states
+        var filtered = instance.checks.filter(function(check) {
+          return check.state != 'OK';
+        });
+        var levels = ['CRITICAL', 'WARNING', 'UNDEF'];
+        // make sure we have higher levels checks first
+        var ordered = _.sortBy(filtered, function(check) {
+          return levels.indexOf(check.state);
+        });
+        var checksList = ordered.map(function(check) {
+          return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + '</span>';
+        });
+        return checksList.join('<br>');
+      }
     },
     template: `
-    <div>
-    Status:
-    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF">OK</span>
-    <span class="badge badge-warning" v-if="checks.WARNING">WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-critical" v-if="checks.CRITICAL">CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-undef" v-if="checks.UNDEF">UNDEF: {{ checks.UNDEF }}</span>
+    <div
+        class="d-inline-block"
+        data-toggle="popover"
+        :data-content="popoverContent(instance)"
+        data-trigger="hover"
+        data-placement="bottom"
+        data-container="body"
+        data-html="true">
+      <span class="badge badge-critical" v-if="checks.CRITICAL">
+        CRITICAL: {{ checks.CRITICAL }}</span>
+      <span class="badge badge-warning" v-if="checks.WARNING">
+        WARNING: {{ checks.WARNING }}</span>
+      <span class="badge badge-undef" v-if="checks.UNDEF">
+        UNDEF: {{ checks.UNDEF }}</span>
+      <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
     </div>
     `
   });
 
   var search = getParameterByName('q') || '';
-  var sort = getParameterByName('sort') || 'hostname';
+  // sort by status by default
+  var sort = getParameterByName('sort') || 'status';
 
   $.each(instances, function(index, instance) {
     instance.available = null;
+    instance.checks = [];
+    instance.loading = true;
   });
 
   var instancesVue = new Vue({
@@ -59,7 +83,8 @@ $(function() {
           return plugin.plugin_name;
         });
         return plugins.indexOf('monitoring') != -1;
-      }
+      },
+      getStatusValue: getStatusValue
     },
     computed: {
       filteredInstances: function() {
@@ -78,8 +103,10 @@ $(function() {
         return _.sortBy(filtered, this.sort, 'asc');
       }
     },
+    mounted: loadChecks,
     watch: {
-      'search': updateQueryParams
+      search: updateQueryParams,
+      update: loadChecks
     }
   });
 
@@ -107,7 +134,7 @@ $(function() {
    * Util to compute a global status value given an instance
    */
   function getStatusValue(instance) {
-    var checks = instance.checks;
+    var checks = getChecksCount(instance);
     var value = 0;
     if (checks.CRITICAL) {
       value += checks.CRITICAL * 1000000;
@@ -129,25 +156,12 @@ $(function() {
     var defaultOptions = {
       axes: {
         x: {
-          drawGrid: false,
-          axisLabelFontSize: 9,
-          axisLabelColor: '#999',
-          pixelsPerLabel: 40,
-          gridLineColor: '#dfdfdf',
-          axisLineColor: '#dfdfdf'
+          drawAxis: false,
+          drawGrid: false
         },
         y: {
-          axisLabelFontSize: 9,
-          axisLabelColor: '#999',
-          axisLabelWidth: 20,
-          pixelsPerLabel: 10,
-          drawAxesAtZero: true,
-          includeZero: true,
-          axisLineColor: '#dfdfdf',
-          gridLineColor: '#dfdfdf',
-          axisLabelFormatter: function(d) {
-            return abbreviateNumber(d);
-          }
+          drawAxis: false,
+          drawGrid: false
         }
       },
       dateWindow: [start, end],
@@ -193,20 +207,43 @@ $(function() {
       nanArray.unshift('');
       unavailabilityData = unavailabilityData.replace(/\n/g, nanArray.join(',') + '\n');
 
-      new Dygraph(
+      var chart = new Dygraph(
         this.$el,
         data + unavailabilityData,
         options
       );
+      var last;
+      if (this.metric == 'tps') {
+        var lastCommit = chart.getValue(chart.numRows() - 1, 1);
+        var lastRollback = chart.getValue(chart.numRows() - 1, 2);
+        last = lastCommit + lastRollback;
+      } else {
+        last = chart.getValue(chart.numRows() - 1, 1);
+      }
+      this.instance['current' + _.capitalize(this.metric)] = last;
+      instancesVue.$forceUpdate();
     }.bind(this));
   }
 
+  var firstLoad = true;
   function loadChecks() {
-    var url = ['/server', this.instance.agent_address, this.instance.agent_port, 'alerting/checks.json'].join('/');
-    $.ajax(url).success(function(data) {
-      this.checks = _.countBy(data.map(function(check) { return check.state; }));
-      this.instance.checks = this.checks;
-    }.bind(this));
+    // remove any shown popover
+    $('[data-toggle="popover"]').popover('hide');
+    $.each(this.instances, function(index, instance) {
+      instance.loading = true;
+      var url = ['/server', instance.agent_address, instance.agent_port, 'alerting/checks.json'].join('/');
+      $.ajax(url).success(function(data) {
+        instance.checks = data;
+        instance.loading = false;
+        window.setTimeout(function() {
+          $('[data-toggle="popover"]').popover();
+          // We hide any tooltip here, since doing it earlier may leave some
+          // tooltips shown
+          $('[data-toggle="tooltip"]').tooltip('hide');
+          $('[data-toggle="tooltip"]').tooltip();
+        }, 1);
+      }.bind(this));
+    });
   }
 
   function abbreviateNumber(number) {
@@ -239,4 +276,21 @@ $(function() {
       });
     });
   }
+
+
+  function getChecksCount(instance) {
+    return _.countBy(instance.checks.map(function(check) { return check.state; }));
+  }
+
+  $('.fullscreen').on('click', function(e) {
+    e.preventDefault();
+    $(this).parents('.container-fluid')[0].requestFullscreen();
+    $(this).addClass('d-none');
+  });
+
+  $(document).on('fullscreenchange', function(event) {
+    if (!document.fullscreenElement) {
+      $('.fullscreen').removeClass('d-none');
+    }
+  });
 });
