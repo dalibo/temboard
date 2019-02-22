@@ -204,7 +204,7 @@ Now you can register the agent in the UI using ``temboard-agent-register``:
 
 Don't forget to adapt this command line to your case. Configuration file, port
 and temBoard UI address are likely to change from one installation to another.
-``tembord-agent-register`` will ask you to login to the UI. Beware, it is
+``temboard-agent-register`` will ask you to login to the UI. Beware, it is
 **NOT** the user on the agent.
 
 
