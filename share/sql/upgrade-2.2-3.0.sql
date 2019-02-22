@@ -1,3 +1,5 @@
+SET search_path TO monitoring;
+
 -- Repository upgrade script from 2.2 to 3.0
 CREATE OR REPLACE FUNCTION monitoring.insert_instance_availability(i_tstz TIMESTAMP WITH TIME ZONE, i_instance_id INTEGER, i_available BOOLEAN)
 RETURNS VOID
@@ -930,8 +932,6 @@ $_$::TEXT)::TEXT, '\n', ' ');
 END;
 
 $$;
-
-SET search_path TO monitoring;
 
 SELECT * FROM monitoring.create_tables();
 
