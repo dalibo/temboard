@@ -284,13 +284,17 @@ $(function() {
 
   $('.fullscreen').on('click', function(e) {
     e.preventDefault();
-    $(this).parents('.container-fluid')[0].requestFullscreen();
     $(this).addClass('d-none');
+    const el = $(this).parents('.container-fluid')[0]
+    fscreen.requestFullscreen(el);
   });
 
-  $(document).on('fullscreenchange', function(event) {
-    if (!document.fullscreenElement) {
+  fscreen.onfullscreenchange = function onFullScreenChange(event) {
+    if (!fscreen.fullscreenElement) {
       $('.fullscreen').removeClass('d-none');
     }
-  });
+  }
+
+  // hide fullscreen button if not supported
+  $('.fullscreen').toggleClass('d-none', !fscreen.fullscreenEnabled);
 });
