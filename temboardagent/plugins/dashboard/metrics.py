@@ -256,13 +256,16 @@ SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
             delta_time_total += cpu_time_snap_1[k] - cpu_time_snap_0[k]
             delta[k] = cpu_time_snap_1[k] - cpu_time_snap_0[k]
         return {
-            'user': round(delta['time_user'] / delta_time_total * 100, 1),
-            'system': round(delta['time_system'] /
-                            delta_time_total * 100, 1),
-            'idle': round(delta['time_idle'] / delta_time_total * 100, 1),
-            'iowait': round(delta['time_iowait'] /
-                            delta_time_total * 100, 1),
-            'steal': round(delta['time_steal'] / delta_time_total * 100, 1)
+            'user': 0 if not delta_time_total else
+            round(delta['time_user'] / delta_time_total * 100, 1),
+            'system': 0 if not delta_time_total else
+            round(delta['time_system'] / delta_time_total * 100, 1),
+            'idle': 0 if not delta_time_total else
+            round(delta['time_idle'] / delta_time_total * 100, 1),
+            'iowait': 0 if not delta_time_total else
+            round(delta['time_iowait'] / delta_time_total * 100, 1),
+            'steal': 0 if not delta_time_total else
+            round(delta['time_steal'] / delta_time_total * 100, 1)
         }
 
     def _get_current_cpu_usage_linux(self,):
