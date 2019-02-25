@@ -74,6 +74,8 @@ $(function() {
       instances: instances,
       search: search,
       sort: sort,
+      groups: groups,
+      groupsFilter: [],
       // Property updated in order to refresh charts and checks
       update: moment()
     },
@@ -83,6 +85,14 @@ $(function() {
           return plugin.plugin_name;
         });
         return plugins.indexOf('monitoring') != -1;
+      },
+      toggleGroupFilter: function(group) {
+        var index = this.groupsFilter.indexOf(group);
+        if (index != -1) {
+          this.groupsFilter.splice(index, 1);
+        } else {
+          this.groupsFilter.push(group);
+        }
       },
       getStatusValue: getStatusValue
     },
@@ -97,10 +107,23 @@ $(function() {
                  searchRegex.test(instance.pg_port) ||
                  searchRegex.test(instance.pg_version);
         });
+        var sorted;
         if (this.sort == 'status') {
-          return sortByStatus(filtered);
+          sorted = sortByStatus(filtered);
+        } else {
+          sorted = _.sortBy(filtered, this.sort, 'asc');
         }
-        return _.sortBy(filtered, this.sort, 'asc');
+
+        var groupFiltered = sorted.filter((instance) => {
+          if (!this.groupsFilter.length) {
+            return true;
+          }
+          return this.groupsFilter.every((group) => {
+            var instance_groups = instance.groups.map((g) => g.group_name);
+            return instance_groups.indexOf(group) != -1;
+          });
+        });
+        return groupFiltered;
       }
     },
     mounted: loadChecks,
