@@ -451,16 +451,20 @@ $(function() {
   }
 
   $('.fullscreen').on('click', function(e) {
-    $(this).parents('.main')[0].requestFullscreen();
     e.preventDefault();
     $(this).addClass('d-none');
+    const el = $(this).parents('.main')[0];
+    fscreen.requestFullscreen(el);
   });
 
-  $(document).on('fullscreenchange', function(event) {
-    if (!document.fullscreenElement) {
+  fscreen.onfullscreenchange = function onFullScreenChange(event) {
+    if (!fscreen.fullscreenElement) {
       $('.fullscreen').removeClass('d-none');
     }
-  });
+  }
+
+  // hide fullscreen button if not supported
+  $('.fullscreen').toggleClass('d-none', !fscreen.fullscreenEnabled);
 });
 
 var entityMap = {
