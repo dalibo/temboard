@@ -538,10 +538,26 @@ table td.auto-width {
   background-color: white;
 }
 
+*:-moz-full-screen {
+  background-color: white;
+}
+
 .d-fullscreen {
   display: none;
 
+  // Note: doesn't work if grouped
   *:fullscreen & {
     display: initial;
   }
+  *:-webkit-full-screen & {
+    display: initial;
+  }
+  *:-moz-full-screen & {
+    display: initial;
+  }
+}
+
+*:-webkit-full-screen  {
+  width: 100% !important;
+  height: 100%;
 }
