@@ -91,7 +91,7 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
             </div>
             <div class="col-md-12 small">
               <template v-for="(group, index) in instance.groups">
-                <span class="badge border bg-light">
+                <span class="badge border text-muted">
                   {{!group.group_name}}
                 </span>
                 {{!index === (instance.groups.length - 1) ? '' : ' '}}
