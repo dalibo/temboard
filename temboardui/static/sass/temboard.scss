@@ -1,8 +1,13 @@
+@import "bootstrap-variables-override";
 @import "bootstrap";
 @import "daterangepicker-override";
 @import "daterangepicker";
 @import "dygraph";
 @import "../js/highlightjs/default";
+
+@each $color, $value in $theme-colors {
+  @include bg-variant(".bg-#{$color}-light", lighten($value, 43));
+}
 
 html {
   font-size: 14px;
@@ -24,6 +29,12 @@ html {
 
 .bg-light2 {
   background-color: $table-accent-bg;
+}
+
+.overflow-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @include media-breakpoint-up(lg) {
@@ -107,23 +118,12 @@ html {
  * Home page instance list
  */
 .instance-list {
-  .dl-horizontal {
-    margin-bottom: 0;
-  }
-  dd {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .list-group-item:hover {
-    background-color: $table-hover-bg;
-  }
-
   .sparkline-container {
-    height: 50px;
-    float: left;
-    width: 50%;
+    height: 30px;
+
+    .dygraph-axis-label {
+      color: $text-muted;
+    }
   }
 }
 
