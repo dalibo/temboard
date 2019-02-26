@@ -55,7 +55,7 @@
         <td>{{instance_item.pg_version}}</td>
         <td>{{instance_item.pg_port}}</td>
         <td>{{instance_item.pg_data}}</td>
-        <td>{% for group in instance_item.groups %} <span class="badge badge-secondary">{{group.group_name}}</span>{% end %}</td>
+        <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
         <td class="text-center">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-edit"></i></button>
         </td>
