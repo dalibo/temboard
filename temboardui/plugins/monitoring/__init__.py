@@ -21,6 +21,7 @@ from .handlers import blueprint
 
 
 logger = logging.getLogger(__name__)
+workers = taskmanager.WorkerSet()
 
 
 def configuration(config):
@@ -38,17 +39,17 @@ def get_routes(config):
     return routes
 
 
-@taskmanager.worker(pool_size=1)
-def aggregate_data_worker(config):
+@workers.register(pool_size=1)
+def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     try:
-        conf = config['repository']
+        dbconf = app.dbconfig.repository
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=conf['user'],
-                    pwd=conf['password'],
-                    h=conf['host'],
-                    p=conf['port'],
-                    db=conf['dbname'])
+                    user=dbconf['user'],
+                    pwd=dbconf['password'],
+                    h=dbconf['host'],
+                    p=dbconf['port'],
+                    db=dbconf['dbname'])
         engine = create_engine(dburi)
         with engine.begin() as conn:
             conn.execute("SET search_path TO monitoring")
@@ -64,17 +65,17 @@ def aggregate_data_worker(config):
         raise(e)
 
 
-@taskmanager.worker(pool_size=1)
-def history_tables_worker(config):
+@workers.register(pool_size=1)
+def history_tables_worker(app):
     # Worker in charge of history tables
     try:
-        conf = config['repository']
+        dbconf = app.dbconfig.repository
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=conf['user'],
-                    pwd=conf['password'],
-                    h=conf['host'],
-                    p=conf['port'],
-                    db=conf['dbname'])
+                    user=dbconf['user'],
+                    pwd=dbconf['password'],
+                    h=dbconf['host'],
+                    p=dbconf['port'],
+                    db=dbconf['dbname'])
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
@@ -95,10 +96,11 @@ def history_tables_worker(config):
         raise(e)
 
 
-@taskmanager.worker(pool_size=1)
-def check_data_worker(dbconf, host_id, instance_id, data):
+@workers.register(pool_size=1)
+def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
     specs = check_specs
+    dbconf = app.config.repository
     dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
                 user=dbconf['user'],
                 pwd=dbconf['password'],
@@ -200,16 +202,13 @@ def check_data_worker(dbconf, host_id, instance_id, data):
 
 @taskmanager.bootstrap()
 def monitoring_bootstrap(context):
-    config = context.get('config')
     yield taskmanager.Task(
             worker_name='aggregate_data_worker',
             id='aggregate_data',
-            options={'config': config},
             redo_interval=30 * 60  # Repeat each 30m,
     )
     yield taskmanager.Task(
             worker_name='history_tables_worker',
             id='history_tables',
-            options={'config': config},
             redo_interval=3 * 60 * 60  # Repeat each 3h
     )

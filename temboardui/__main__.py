@@ -55,10 +55,13 @@ def legacy_enable_plugins(self, plugin_names):
     # Load and enable legacy plugins in tornado app.
     plugins = load_plugins(plugin_names, self.config)
     plugins_conf = dict()
+    self.workersets = []
     self.loaded_plugins = []
     for key, val in plugins.iteritems():
         self.add_rules(val['routes'])
         plugins_conf[key] = val['configuration']
+        if val['workers']:
+            self.workersets.append(val['workers'])
         if key not in self.loaded_plugins:
             self.loaded_plugins.append(key)
     return plugins_conf
@@ -261,6 +264,9 @@ class TemboardApplication(BaseApplication):
         )
         self.worker_pool.apply_config()
         services.add(self.worker_pool)
+
+        for wset in self.webapp.workersets:
+            self.worker_pool.add(wset)
 
         self.scheduler = SchedulerService(
             app=self, name=u'scheduler',

@@ -49,7 +49,6 @@ def check_agent_request(request, hostname, instance):
 
 def build_check_task_options(request, host_id, instance_id, checks):
     options = dict(
-        dbconf=dict(request.config.repository),
         host_id=host_id,
         instance_id=instance_id,
         data=list(),
