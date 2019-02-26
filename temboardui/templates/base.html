@@ -169,7 +169,7 @@
               </b>
               <p>
               {% for group in instance.groups %}
-              <span class="badge badge-secondary small">
+              <span class="badge border text-muted">
                 {{group.group_name}}
               </span>&nbsp;
               {% end %}
@@ -203,7 +203,7 @@
       </div>
     </div>
     {% else %}
-    <div class="container pt-3">
+    <div class="container-fluid pt-3">
       {% block content %} {% end %}
     </div>
     {% end %} {# end if instance #}
