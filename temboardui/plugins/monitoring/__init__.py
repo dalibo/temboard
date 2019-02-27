@@ -9,10 +9,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.toolkit import taskmanager
+from temboardui.application import (
+    get_roles_by_instance,
+    send_mail,
+)
+from temboardui.model.orm import (
+    Instances,
+)
 
 from .model.orm import (
     Check,
     CheckState,
+    Host,
+    Instance,
 )
 from .alerting import (
     check_specs,
@@ -154,6 +163,19 @@ def check_data_worker(app, host_id, instance_id, data):
                     CheckState.check_id == c.check_id,
                     CheckState.key == unicode(key)
                 ).one()
+            # State has changed since last time
+            if cs.state != state:
+                taskmanager.schedule_task(
+                    'notify_state_change',
+                    listener_addr=os.path.join(app.config.temboard.home,
+                                               '.tm.socket'),
+                    options={
+                        'check_id': c.check_id,
+                        'key': key,
+                        'value': value,
+                    },
+                    expire=0,
+                )
             cs.state = unicode(state)
             worker_session.merge(cs)
         except NoResultFound:
@@ -200,6 +222,87 @@ def check_data_worker(app, host_id, instance_id, data):
     worker_session.commit()
 
     worker_session.close()
+
+
+@workers.register(pool_size=1)
+def notify_state_change(app, check_id, key, value):
+    # FIXME
+    # check if at least one notifications transport is configured
+    # if it's not the case pass
+
+    # Worker in charge of sending notifications
+    dbconf = app.config.repository
+    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
+                user=dbconf['user'],
+                pwd=dbconf['password'],
+                h=dbconf['host'],
+                p=dbconf['port'],
+                db=dbconf['dbname']
+            )
+    engine = create_engine(dburi)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    worker_session = Session()
+
+    cs = worker_session.query(CheckState).filter(
+        CheckState.check_id == check_id,
+        CheckState.key == unicode(key)
+    ).join(Check).join(Instance).join(Host).one()
+
+    port = cs.check.instance.port
+    hostname = cs.check.instance.host.hostname
+    instance = worker_session.query(Instances).filter(
+        Instances.pg_port == port,
+        Instances.hostname == hostname,
+    ).one()
+
+    specs = check_specs
+    spec = specs.get(cs.check.name)
+
+    message = ''
+    if cs.state != 'OK':
+        message = spec.get('message').format(
+            key=key,
+            check=cs.check.name,
+            value=value,
+            threshold=getattr(cs.check, cs.state.lower()),
+        )
+
+    description = spec.get('description')
+    subject = '[temBoard] {state} {hostname} - {description}' \
+        .format(hostname=hostname, state=cs.state, description=description)
+    link = 'https://%s:%d/server/%s/%d/alerting/%s' % (
+        app.config.temboard.address,
+        app.config.temboard.port,
+        instance.agent_address,
+        instance.agent_port,
+        cs.check.name)
+
+    body = '''
+    Instance: {hostname}:{port}
+    Description: {description}
+    Status: {state}
+    {message}
+    {link}
+    '''.format(
+        hostname=hostname,
+        port=instance.agent_port,
+        description=description,
+        state=cs.state,
+        message=message,
+        link=link,
+    )
+
+    roles = get_roles_by_instance(worker_session,
+                                  instance.agent_address,
+                                  instance.agent_port)
+
+    notifications_conf = app.config.notifications
+    smtp_host = notifications_conf.smtp_host
+    smtp_port = notifications_conf.smtp_port
+    emails = [role.role_email for role in roles if role.role_email]
+    if len(emails):
+        send_mail(smtp_host, smtp_port, subject, body, emails)
 
 
 @taskmanager.bootstrap()

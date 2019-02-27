@@ -209,6 +209,10 @@ def list_options_specs():
     yield OptionSpec(s, 'password', default='temboard')
     yield OptionSpec(s, 'dbname', default='temboard')
 
+    s = 'notifications'
+    yield OptionSpec(s, 'smtp_host', default=None)
+    yield OptionSpec(s, 'smtp_port', default=None)
+
 
 class TemboardApplication(BaseApplication):
     DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
