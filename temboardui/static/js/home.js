@@ -1,5 +1,5 @@
 /* eslint-env es6 */
-/* global instances, Vue, Dygraph, moment, _, getParameterByName */
+/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
 $(function() {
 
   var refreshInterval = 60 * 1000;
@@ -58,10 +58,6 @@ $(function() {
     `
   });
 
-  var search = getParameterByName('q') || '';
-  // sort by status by default
-  var sort = getParameterByName('sort') || 'status';
-
   $.each(instances, function(index, instance) {
     instance.available = null;
     instance.checks = [];
@@ -70,14 +66,22 @@ $(function() {
 
   var instancesVue = new Vue({
     el: '#instances',
-    data: {
-      instances: instances,
-      search: search,
-      sort: sort,
-      groups: groups,
-      groupsFilter: [],
-      // Property updated in order to refresh charts and checks
-      update: moment()
+    router: new VueRouter(),
+    data: function() {
+      try {
+        var groupsFilter = this.$route.query.groups.split(',');
+      } catch (e) {
+        var groupsFilter = [];
+      }
+      return {
+        instances: instances,
+        search: this.$route.query.q,
+        sort: this.$route.query.sort || 'status',
+        groups: groups,
+        groupsFilter: groupsFilter,
+        // Property updated in order to refresh charts and checks
+        update: moment()
+      }
     },
     methods: {
       hasMonitoring: function(instance) {
@@ -86,13 +90,18 @@ $(function() {
         });
         return plugins.indexOf('monitoring') != -1;
       },
-      toggleGroupFilter: function(group) {
+      toggleGroupFilter: function(group, e) {
+        e.preventDefault();
         var index = this.groupsFilter.indexOf(group);
         if (index != -1) {
           this.groupsFilter.splice(index, 1);
         } else {
           this.groupsFilter.push(group);
         }
+      },
+      changeSort: function(sort, e) {
+        e.preventDefault();
+        this.sort = sort;
       },
       getStatusValue: getStatusValue
     },
@@ -128,8 +137,16 @@ $(function() {
     },
     mounted: loadChecks,
     watch: {
-      search: updateQueryParams,
-      update: loadChecks
+      search: function(newVal) {
+        this.$router.replace({ query: _.assign({}, this.$route.query, {q: newVal })} );
+      },
+      sort: function(newVal) {
+        this.$router.replace({ query: _.assign({}, this.$route.query, {sort: newVal })} );
+      },
+      groupsFilter: function(newVal) {
+        this.$router.replace({ query: _.assign({}, this.$route.query, {groups: newVal.join(',') })} );
+      },
+      update: loadChecks,
     }
   });
 
@@ -138,14 +155,6 @@ $(function() {
     instancesVue.update = moment();
     checkAvailability();
   }, refreshInterval);
-
-  function updateQueryParams() {
-    var params = $.param({
-      q: this.search
-    });
-    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params;
-    window.history.replaceState({path: newurl}, '', newurl);
-  }
 
   function sortByStatus(items) {
     return items.sort(function(a, b) {
