@@ -36,6 +36,7 @@ def load_plugins(plugin_names, config):
             ret.update({module.__name__: {
                 'configuration': getattr(module, 'configuration')(config),
                 'routes': getattr(module, 'get_routes')(config),
+                'workers': getattr(module, 'workers', None),
             }})
         except Exception:
             logger.exception("Failed to load %s configuration.", plugin_name)
