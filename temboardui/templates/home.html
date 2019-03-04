@@ -66,6 +66,7 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
         :class="['card mb-2 mr-2', {'border-danger bg-danger-light': getStatusValue(instance) >= 1000000, 'border-warning bg-warning-light': getStatusValue(instance) >= 1000}]"
         style="width: 220px;"
         v-for="instance in filteredInstances"
+        :key="instance.hostname + instance.pg_port"
         v-cloak>
         <div class="position-absolute" v-if="instance.loading" style="right: 0;">
           <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
