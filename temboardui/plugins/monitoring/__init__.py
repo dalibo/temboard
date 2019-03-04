@@ -43,7 +43,7 @@ def get_routes(config):
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     try:
-        dbconf = app.dbconfig.repository
+        dbconf = app.config.repository
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
                     user=dbconf['user'],
                     pwd=dbconf['password'],
@@ -69,7 +69,7 @@ def aggregate_data_worker(app):
 def history_tables_worker(app):
     # Worker in charge of history tables
     try:
-        dbconf = app.dbconfig.repository
+        dbconf = app.config.repository
         dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
                     user=dbconf['user'],
                     pwd=dbconf['password'],
