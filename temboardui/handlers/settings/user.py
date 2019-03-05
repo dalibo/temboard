@@ -113,8 +113,8 @@ def validate_user_data(data, role=None):
     # Submited attributes checking.
     if not data.get('new_username'):
         raise TemboardUIError(400, "Username is missing.")
-    if not data.get('email'):
-        raise TemboardUIError(400, "Email is missing.")
+    if data.get('email'):
+        check_role_email(data['email'])
     if 'groups' not in data:
         raise TemboardUIError(400, "Groups field is missing.")
     if 'is_active' not in data:
@@ -140,7 +140,6 @@ def validate_user_data(data, role=None):
         raise TemboardUIError(400, "Invalid group list.")
 
     check_role_name(data['new_username'])
-    check_role_email(data['email'])
 
 
 def handle_password(data):

@@ -51,7 +51,7 @@
     {% for role_item in role_list %}
       <tr>
         <td>{{role_item.role_name}}</td>
-        <td>{{role_item.role_email}}</td>
+        <td>{{role_item.role_email or ''}}</td>
         <td class="text-center">{% if role_item.is_active is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
         <td class="text-center">{% if role_item.is_admin is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
         <td>{% for group in role_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>

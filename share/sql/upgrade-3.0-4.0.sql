@@ -15,4 +15,8 @@ SET pg_version_summary = (
   AND b.port = a.pg_port
 );
 
+ALTER TABLE application.roles
+ALTER COLUMN role_email DROP NOT NULL;
+
+
 COMMIT;
