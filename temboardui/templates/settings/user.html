@@ -97,5 +97,15 @@ $('[data-action=delete]').click(function () {
   load_delete_user_confirm('UserModal', $(this).data('username'));
 });
 
+$('#sendEmailForm').submit(function(e) {
+  e.preventDefault();
+  sendEmail();
+});
+
+$('#sendSmsForm').submit(function(e) {
+  e.preventDefault();
+  sendSms();
+});
+
 </script>
 {% end %}

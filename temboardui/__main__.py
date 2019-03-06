@@ -77,6 +77,7 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.settings.group')
     __import__('temboardui.handlers.settings.instance')
     __import__('temboardui.handlers.settings.user')
+    __import__('temboardui.handlers.settings.notifications')
     __import__('temboardui.handlers.user')
 
     handlers = [
