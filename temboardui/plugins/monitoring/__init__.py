@@ -262,6 +262,10 @@ def notify_state_change(app, check_id, key, value):
         Instances.hostname == hostname,
     ).one()
 
+    # don't notify if notifications are disabled for this instance
+    if not instance.notify:
+        return
+
     specs = check_specs
     spec = specs.get(cs.check.name)
 

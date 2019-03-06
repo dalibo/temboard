@@ -30,6 +30,7 @@ CREATE TABLE instances (
 	pg_version TEXT,
 	pg_version_summary TEXT,
 	pg_data TEXT,
+	notify BOOLEAN DEFAULT true,
 	PRIMARY KEY (agent_address, agent_port)
 );
 
