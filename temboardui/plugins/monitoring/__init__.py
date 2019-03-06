@@ -12,6 +12,7 @@ from temboardui.toolkit import taskmanager
 from temboardui.application import (
     get_roles_by_instance,
     send_mail,
+    send_sms,
 )
 from temboardui.model.orm import (
     Instances,
@@ -232,8 +233,10 @@ def notify_state_change(app, check_id, key, value):
     smtp_host = notifications_conf.smtp_host
     smtp_port = notifications_conf.smtp_port
 
-    if not smtp_host:
-        logger.info("No SMTP configure, notification not sent")
+    if not smtp_host and \
+       not notifications_conf.get('twilio_account_sid', None):
+        logger.info("No SMTP nor SMS service configured, "
+                    "notification not sent")
         return
 
     # Worker in charge of sending notifications
@@ -310,6 +313,10 @@ def notify_state_change(app, check_id, key, value):
     emails = [role.role_email for role in roles if role.role_email]
     if len(emails):
         send_mail(smtp_host, smtp_port, subject, body, emails)
+
+    phones = [role.role_phone for role in roles if role.role_phone]
+    if len(phones):
+        send_sms(app.config.notifications, body, phones)
 
 
 @taskmanager.bootstrap()

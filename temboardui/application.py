@@ -1,8 +1,11 @@
+from binascii import hexlify
+from hashlib import sha512
 import base64
+import json
 import logging
 import re
-from hashlib import sha512
-from binascii import hexlify
+import urllib
+import urllib2
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import (
@@ -705,10 +708,10 @@ def check_role_password(role_password):
 
 
 def check_role_phone(role_phone):
-    p_role_phone = r'^[0-9]+$'
+    p_role_phone = r'^[+][0-9]+$'
     r_role_phone = re.compile(p_role_phone)
     if not r_role_phone.match(role_phone):
-        raise TemboardUIError(400, "Phone must only contain digits")
+        raise TemboardUIError(400, "Phone must look like +14155552671")
 
 
 def check_group_name(group_name):
@@ -757,3 +760,33 @@ def send_mail(host, port, subject, content, emails):
             500,
             "Could not send mail; %s\n"
             "SMTP server may be misconfigured." % e)
+
+
+def send_sms(config, content, phones):
+    sid = config.twilio_account_sid
+    token = config.twilio_auth_token
+    from_ = config.twilio_from
+    uri = 'https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json' % sid
+    s = base64.b64encode('%s:%s' % (sid, token))
+
+    errors = []
+    for recipient in phones:
+        req = urllib2.Request(url=uri)
+        req.add_header('Authorization', 'Basic %s' % s)
+        data = {'From': from_, 'Body': content, 'To': recipient}
+        req.add_data(urllib.urlencode(data))
+        try:
+            urllib2.urlopen(req)
+        except urllib2.HTTPError as e:
+            response = json.loads(e.read())
+            logger.error("Could not send SMS; %s" % response.get('message'))
+            errors.append(recipient)
+        except Exception as e:
+            logger.error("Could not send SMS; %s" % e)
+            errors.append(recipient)
+
+    if errors:
+        raise TemboardUIError(
+            500,
+            "Could not send SMS to %s; \n See logs for more information" %
+            ', '.join(errors))
