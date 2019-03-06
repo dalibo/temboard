@@ -302,7 +302,8 @@ def add_instance(session,
                  pg_port=None,
                  pg_version=None,
                  pg_version_summary=None,
-                 pg_data=None):
+                 pg_data=None,
+                 notify=False):
     try:
         instance = Instances(
             agent_address=unicode(new_agent_address),
@@ -322,6 +323,7 @@ def add_instance(session,
             instance.pg_version_summary = unicode(pg_version_summary)
         if pg_data is not None:
             instance.pg_data = unicode(pg_data)
+        instance.notify = bool(notify)
         session.add(instance)
         session.flush()
         return instance
@@ -362,7 +364,8 @@ def update_instance(session,
                     pg_port=None,
                     pg_version=None,
                     pg_version_summary=None,
-                    pg_data=None):
+                    pg_data=None,
+                    notify=True):
     try:
         instance = session.query(Instances) \
             .filter_by(
@@ -390,6 +393,7 @@ def update_instance(session,
         instance.pg_version = unicode(pg_version)
         instance.pg_version_summary = unicode(pg_version_summary)
         instance.pg_data = unicode(pg_data)
+        instance.notify = bool(notify)
         session.merge(instance)
         session.flush()
         return instance

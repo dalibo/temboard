@@ -21,4 +21,7 @@ ALTER COLUMN role_email DROP NOT NULL;
 ALTER TABLE application.roles
 ADD COLUMN role_phone TEXT;
 
+ALTER TABLE application.instances
+ADD COLUMN notify BOOLEAN NOT NULL DEFAULT true;
+
 COMMIT;

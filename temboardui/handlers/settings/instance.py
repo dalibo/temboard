@@ -117,7 +117,8 @@ def json_instance(request):
                 'name': group.group_name,
                 'description': group.group_description
             } for group in groups],
-            'loaded_plugins': request.handler.application.loaded_plugins
+            'loaded_plugins': request.handler.application.loaded_plugins,
+            'notify': instance.notify,
         }
     else:  # POST (update)
         data = request.json
