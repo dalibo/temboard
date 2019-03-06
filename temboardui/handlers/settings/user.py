@@ -4,6 +4,7 @@ from temboardui.application import (
     check_role_email,
     check_role_name,
     check_role_password,
+    check_role_phone,
     delete_role,
     delete_role_from_group,
     get_group_list,
@@ -63,6 +64,7 @@ def json_user(request, username):
         return {
             'role_name': role.role_name,
             'role_email': role.role_email,
+            'role_phone': role.role_phone,
             'is_active': role.is_active,
             'is_admin': role.is_admin,
             'in_groups': [group.group_name for group in role.groups],
@@ -92,7 +94,8 @@ def json_user(request, username):
             h_passwd,
             data['email'],
             data['is_active'],
-            data['is_admin'])
+            data['is_admin'],
+            data['phone'])
 
         add_user_to_groups(request, data, role)
 
@@ -115,6 +118,8 @@ def validate_user_data(data, role=None):
         raise TemboardUIError(400, "Username is missing.")
     if data.get('email'):
         check_role_email(data['email'])
+    if data.get('phone'):
+        check_role_phone(data['phone'])
     if 'groups' not in data:
         raise TemboardUIError(400, "Groups field is missing.")
     if 'is_active' not in data:

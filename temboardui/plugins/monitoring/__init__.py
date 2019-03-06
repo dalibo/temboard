@@ -226,9 +226,15 @@ def check_data_worker(app, host_id, instance_id, data):
 
 @workers.register(pool_size=1)
 def notify_state_change(app, check_id, key, value):
-    # FIXME
     # check if at least one notifications transport is configured
     # if it's not the case pass
+    notifications_conf = app.config.notifications
+    smtp_host = notifications_conf.smtp_host
+    smtp_port = notifications_conf.smtp_port
+
+    if not smtp_host:
+        logger.info("No SMTP configure, notification not sent")
+        return
 
     # Worker in charge of sending notifications
     dbconf = app.config.repository
@@ -297,9 +303,6 @@ def notify_state_change(app, check_id, key, value):
                                   instance.agent_address,
                                   instance.agent_port)
 
-    notifications_conf = app.config.notifications
-    smtp_host = notifications_conf.smtp_host
-    smtp_port = notifications_conf.smtp_port
     emails = [role.role_email for role in roles if role.role_email]
     if len(emails):
         send_mail(smtp_host, smtp_port, subject, body, emails)

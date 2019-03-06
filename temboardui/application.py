@@ -67,7 +67,8 @@ def update_role(session,
                 role_password=None,
                 role_email=None,
                 is_active=None,
-                is_admin=None):
+                is_admin=None,
+                role_phone=None):
     try:
         role = session.query(Roles) \
             .filter_by(role_name=unicode(role_name)) \
@@ -78,6 +79,8 @@ def update_role(session,
             role.role_password = unicode(role_password)
         if role_email is not None:
             role.role_email = unicode(role_email)
+        if role_phone is not None:
+            role.role_phone = unicode(role_phone) if role_phone else None
         if is_active is not None:
             role.is_active = is_active
         if is_admin is not None:
@@ -97,7 +100,7 @@ def update_role(session,
     except AttributeError as e:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(500, e.message)
 
 
 def get_role(session, role_name):
@@ -695,6 +698,13 @@ def check_role_password(role_password):
     if not r_role_password.match(role_password):
         raise TemboardUIError(
             400, "Invalid password, it must contain at least 8 char.")
+
+
+def check_role_phone(role_phone):
+    p_role_phone = r'^[0-9]+$'
+    r_role_phone = re.compile(p_role_phone)
+    if not r_role_phone.match(role_phone):
+        raise TemboardUIError(400, "Phone must only contain digits")
 
 
 def check_group_name(group_name):

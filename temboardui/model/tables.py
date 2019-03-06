@@ -21,6 +21,7 @@ roles = Table(
     Column('role_name', UnicodeText, primary_key=True),
     Column('role_password', UnicodeText, nullable=False),
     Column('role_email', UnicodeText, nullable=False),
+    Column('role_phone', UnicodeText),
     Column('is_active', Boolean, nullable=False, server_default=text('True')),
     Column('is_admin', Boolean, nullable=False, server_default=text('False')),
     schema="application")

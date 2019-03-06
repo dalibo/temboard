@@ -29,7 +29,7 @@ function load_update_user_form(modal_id, username)
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputEmail" class="control-label">Email</label>';
       body_html += '      <input type="email" class="form-control" id="inputEmail" placeholder="Email" value="'+(data['role_email'] || '')+'">';
-      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications.</span>';
+      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications by email.</span>';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -75,6 +75,13 @@ function load_update_user_form(modal_id, username)
       }
       body_html += '        <option value="yes" '+sel_admin+'>Yes</options>';
       body_html += '      </select>';
+      body_html += '    </div>';
+      body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="form-group col-sm-6">';
+      body_html += '      <label for="inputPhone" class="control-label">Phone</label>';
+      body_html += '      <input type="text" class="form-control" id="inputPhone" placeholder="Phone" value="'+(data['role_phone'] || '')+'">';
+      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications by SMS.</span>';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '</form>';
@@ -127,6 +134,7 @@ function send_update_user_form(modal_id)
     data: JSON.stringify({
       'new_username': $('#inputNewUsername').val(),
       'email': $('#inputEmail').val(),
+      'phone': $('#inputPhone').val(),
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),
@@ -240,7 +248,7 @@ function load_add_user_form(modal_id)
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="inputEmail" class="control-label">Email</label>';
       body_html += '      <input type="email" class="form-control" id="inputEmail" placeholder="Email" />';
-      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications.</span>';
+      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications by email.</span>';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -270,6 +278,13 @@ function load_add_user_form(modal_id)
       body_html += '        <option value="No" selected>No</options>';
       body_html += '        <option value="yes">Yes</options>';
       body_html += '      </select>';
+      body_html += '    </div>';
+      body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="form-group col-sm-6">';
+      body_html += '      <label for="inputPhone" class="control-label">Phone</label>';
+      body_html += '      <input type="text" class="form-control" id="inputPhone" placeholder="Phone">';
+      body_html += '      <span class="form-text text-muted small">Leave blank to prevent user from receiving notifications by SMS.</span>';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '</form>';
@@ -321,6 +336,7 @@ function send_add_user_form(modal_id)
     data: JSON.stringify({
       'new_username': $('#inputNewUsername').val(),
       'email': $('#inputEmail').val(),
+      'phone': $('#inputPhone').val(),
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),

@@ -18,5 +18,7 @@ SET pg_version_summary = (
 ALTER TABLE application.roles
 ALTER COLUMN role_email DROP NOT NULL;
 
+ALTER TABLE application.roles
+ADD COLUMN role_phone TEXT;
 
 COMMIT;

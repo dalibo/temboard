@@ -6,6 +6,7 @@ CREATE TABLE roles (
 	role_name TEXT PRIMARY KEY,
 	role_password TEXT NOT NULL,
 	role_email TEXT UNIQUE,
+	role_phone TEXT,
 	is_active BOOLEAN NOT NULL DEFAULT true,
 	is_admin BOOLEAN NOT NULL DEFAULT false
 );
@@ -74,7 +75,7 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA application TO temboard;
 GRANT ALL ON SCHEMA application TO temboard;
 
 -- Default administrator: admin/admin
-INSERT INTO roles VALUES ('admin', 'xiet7KLumux50Q2dmV/FBue2zqtexElavkVAKnEYN/rw2YLIn51TQsXb3u8FPm4wiuHUTtEjjvBIrtBPAgRMsA==', 'admin@change.me', true, true);
+INSERT INTO roles VALUES ('admin', 'xiet7KLumux50Q2dmV/FBue2zqtexElavkVAKnEYN/rw2YLIn51TQsXb3u8FPm4wiuHUTtEjjvBIrtBPAgRMsA==', 'admin@change.me', NULL, true, true);
 INSERT INTO groups VALUES ('default', 'Default instance group', 'instance');
 INSERT INTO groups VALUES ('admin', 'Default admin role group', 'role');
 INSERT INTO role_groups VALUES ('admin', 'admin', 'role');
