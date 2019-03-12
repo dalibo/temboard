@@ -1,12 +1,13 @@
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
-copyright: Copyright 2015-2017 <a href="http://www.dalibo.com">dalibo</a>
+copyright: Copyright 2015-2019 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/tree/master/docs
 theme:
   name: readthedocs
 nav:
 - Home: index.md
+- Changelog: CHANGELOG.md
 - Docker Quick Start: QUICKSTART.md
 - Installation: installation.md
 - Configuration: configuration.md
