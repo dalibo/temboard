@@ -12,6 +12,7 @@ nav:
 - Installation: installation.md
 - Configuration: configuration.md
 - Upgrade:
+  - Upgrade 2.X to 3.0 (RHEL/CentOS): temboard-upgrade-2-3.0.md
   - Upgrade 1.2 to 2.0 (RHEL/CentOS): temboard-upgrade-1.2-2.0.md
   - Upgrade 1.1 to 1.2 (RHEL/CentOS): temboard-upgrade-1.1-1.2.md
   - Upgrade 0.0.1 to 1.1 (RHEL/CentOS): temboard-upgrade-0.0.1-1.1.md
