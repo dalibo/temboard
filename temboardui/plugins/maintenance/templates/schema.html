@@ -210,7 +210,7 @@
             <pre><code class="sql">{{! index.def }}</code></pre>
           </td>
           <td class="align-middle" width="5%">
-            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexIndexName=index.name; checkSession(event);">Reindex</button>
+            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexIndexName=index.name; checkSession($event);">Reindex</button>
             <ul class="list list-unstyled mb-0" v-if="scheduledReindexes.length > 0">
               <template v-for="scheduledReindex in scheduledReindexes">
               <li v-if="scheduledReindex.index == index.name">
