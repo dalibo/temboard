@@ -17,6 +17,7 @@ nav:
 - How To:
   - temBoard UI howto: temboard-howto.md
   - Alerting: temboard-howto-alerting.md
+  - Maintenance: temboard-howto-maintenance.md
 
 # Markdown settings
 strict: yes
