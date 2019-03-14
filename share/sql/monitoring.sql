@@ -294,6 +294,8 @@ BEGIN
   --   ],
   --   // Query template use to history data.
   --   "history": "<query_tpl_history>",
+  --   // Query template use to fetch most recent datetime from data from _current tables.
+  --   "most_recent": "<query_tpl_most_recent>",
   --   // Query template use to fetch data from both _current & _history tables.
   --   "expand": "<query_tpl_expand>",
   --   // Query template use to aggregate data.
@@ -1101,6 +1103,7 @@ DECLARE
   v_agg_periods TEXT[] := array['30m', '6h'];
   v_create_tbl_cols_cur TEXT;
   v_create_idx_cols_cur TEXT;
+  v_tbl_cols_hist_name TEXT;
   v_create_tbl_cols_hist TEXT;
   v_create_idx_cols_hist TEXT;
   v_tablename TEXT;
@@ -1127,9 +1130,10 @@ BEGIN
       RETURN QUERY SELECT v_tablename;
     END IF;
 
-    -- Creation of history table.
-    v_create_tbl_cols_hist := 'history_range TSTZRANGE NOT NULL';
-    v_create_idx_cols_hist := 'history_range';
+    -- Creation of history partitioned tables.
+    v_tbl_cols_hist_name := 'history_range';
+    v_create_tbl_cols_hist := v_tbl_cols_hist_name||' TSTZRANGE NOT NULL';
+    v_create_idx_cols_hist := v_tbl_cols_hist_name;
     FOR c IN SELECT json_array_elements(t->'columns') LOOP
       v_create_tbl_cols_hist := v_create_tbl_cols_hist||', '||trim((c->'name')::TEXT, '"')||' '||trim((c->'data_type')::TEXT, '"');
       v_create_idx_cols_hist := v_create_idx_cols_hist||', '||trim((c->'name')::TEXT, '"');
@@ -1138,7 +1142,7 @@ BEGIN
     v_tablename := trim((t->'name')::TEXT, '"')||'_history';
     PERFORM 1 FROM pg_tables WHERE tablename = v_tablename AND schemaname = current_schema();
     IF NOT FOUND THEN
-      EXECUTE 'CREATE TABLE '||v_tablename||' ('||v_create_tbl_cols_hist||', records '||trim((t->'record_type')::TEXT, '"')||'[])';
+      EXECUTE 'CREATE TABLE '||v_tablename||' ('||v_create_tbl_cols_hist||', records '||trim((t->'record_type')::TEXT, '"')||'[]) PARTITION BY RANGE (lower('||v_tbl_cols_hist_name||'))';
       EXECUTE 'CREATE INDEX idx_'||v_tablename||' ON '||v_tablename||' ('||v_create_idx_cols_hist||')';
       RETURN QUERY SELECT v_tablename;
     END IF;
@@ -1160,11 +1164,44 @@ BEGIN
 END;
 $$;
 
+
+CREATE OR REPLACE FUNCTION create_history_table_partition(parent_tablename TEXT, i_year INT, i_month INT) RETURNS TABLE(tblname TEXT)
+LANGUAGE plpgsql
+AS $FCT$
+DECLARE
+  t JSON;
+  c JSON;
+  v_tbl_cols_hist_name TEXT;
+  v_create_tbl_cols_hist TEXT;
+  v_string TEXT;
+  v_child_tablename TEXT;
+  v_next_month INT;
+  v_next_month_year INT;
+BEGIN
+  -- Creation of history partitioned tables.
+  v_child_tablename := parent_tablename||'_'||i_year||lpad(i_month::text,2,'0');
+  v_next_month := i_month+1;
+  v_next_month_year := i_year;
+  IF v_next_month = 13 THEN
+    v_next_month := 1;
+    v_next_month_year := i_year+1;
+  END IF;
+  -- Tables creation if they do not exist
+  PERFORM 1 FROM pg_tables WHERE tablename = v_child_tablename AND schemaname = current_schema();
+  IF NOT FOUND THEN
+    EXECUTE 'CREATE TABLE '||v_child_tablename||' PARTITION OF '||parent_tablename||$$ FOR VALUES FROM ('$$||i_year||'-'||i_month||$$-1 0:0:0 GMT') TO  ('$$||v_next_month_year||'-'||v_next_month||$$-1 0:0:0 GMT')$$;
+    RETURN QUERY SELECT v_child_tablename;
+  END IF;
+END;
+$FCT$;
+
+
 CREATE OR REPLACE FUNCTION history_tables() RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
 LANGUAGE plpgsql
 AS $$
 DECLARE
   t JSON;
+  v_most_recent TIMESTAMPTZ;
   v_table_current TEXT;
   v_table_history TEXT;
   v_query TEXT;
@@ -1174,16 +1211,22 @@ BEGIN
   FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
     v_table_current := trim((t->'name')::TEXT, '"')||'_current';
     v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+    i := 0;
     -- Lock _current table to prevent concurrent updates
     EXECUTE 'LOCK TABLE '||v_table_current||' IN SHARE MODE';
     v_query := replace(t->>'history', '#history_table#', v_table_history);
     v_query := replace(v_query, '#current_table#', v_table_current);
     v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
-    -- Move data into _history table
-    EXECUTE v_query;
-    GET DIAGNOSTICS i = ROW_COUNT;
-    -- Truncate _current table
-    EXECUTE 'TRUNCATE '||v_table_current;
+    -- Create table if not exist
+    EXECUTE 'SELECT min(datetime) FROM '||quote_ident(v_table_current) INTO v_most_recent;
+    IF v_most_recent THEN
+      EXECUTE 'SELECT create_history_table_partition('||v_table_history||', EXTRACT(YEAR FROM '||v_most_recent||'), EXTRACT(MONTH FROM '||v_most_recent||'))';
+      -- Move data into _history table
+      EXECUTE v_query;
+      GET DIAGNOSTICS i = ROW_COUNT;
+      -- Truncate _current table
+      EXECUTE 'TRUNCATE '||v_table_current;
+    END IF;
     -- Return each history table name and the number of rows inserted
     RETURN QUERY SELECT v_table_history, i;
   END LOOP;
