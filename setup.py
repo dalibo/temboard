@@ -3,13 +3,16 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, __version__ as setuptoolsv
 
 
 # Load version number
+__version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
 exec(open(os.path.join(setup_path, 'temboardui', 'version.py'), 'r').read())
 
+if setuptoolsv < '1.0':
+    __version__ = __version__.replace('+', '.')
 
 # Accept Tornado 5.X on Python 2.7.9+
 BLEEDING_EDGE_TORNADO = '4.5' if sys.version_info < (2, 7, 9) else '6'
