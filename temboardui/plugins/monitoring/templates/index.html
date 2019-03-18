@@ -90,6 +90,8 @@
     <div class="card w-100 mb-2" v-for="graph in graphs">
       <div class="card-header">
         {{! metrics[graph.id].title }}
+        <a :href='"#/?graphs=[\"" +  graph.id + "\"]&start=" + from + "&end=" + to' class="small ml-2" target="_blank" title="Link to this graph."><i class="fa fa-external-link"></i></a>
+        <span class="copy"></span>
         <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph.id)">
           <span aria-hidden="true">&times;</span>
         </button>
