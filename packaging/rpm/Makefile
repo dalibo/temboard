@@ -13,7 +13,7 @@ centos%:
 		docker-compose run --rm $@; \
 	fi
 	@mkdir -p $(YUM_LABS)/rpms/CentOS$*-x86_64
-	@cp -fl $$(readlink -e $(TOPDIR)/noarch/last_build.rpm) $(YUM_LABS)/rpms/CentOS$*-x86_64/
+	@cp -fl $$(readlink -e $(TOPDIR)/noarch/last_build.rpm) $(YUM_LABS)/rpms/CentOS$*-x86_64/.
 
 push:
 	@make -C $(YUM_LABS) push createrepos clean
