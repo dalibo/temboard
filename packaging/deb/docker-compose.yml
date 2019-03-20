@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services:
   stretch: &mkdeb
@@ -7,7 +7,6 @@ services:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}
       DEBEMAIL: ${DEBEMAIL}
-      VERSION: "${VERSION-}"
     volumes:
     - ../..:/workspace
     command: /workspace/packaging/deb/mkdeb.sh
