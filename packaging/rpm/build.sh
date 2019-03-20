@@ -54,4 +54,9 @@ ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
 sudo yum install -y $rpm
-temboard --version
+(
+	cd /;
+	temboard --version;
+	python -c 'import temboardui.toolkit';
+
+)
