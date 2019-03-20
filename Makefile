@@ -17,6 +17,7 @@ release:
 upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
+	python -c 'import temboardagent.toolkit'
 	python setup.py sdist bdist_wheel --universal
 	twine upload dist/temboard-agent-$(VERSION).tar.gz $$(ls dist/temboard_agent-$(VERSION)-*.whl)
 

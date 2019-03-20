@@ -63,5 +63,8 @@ if [ "${DIST}" = "el6" ] ; then
 fi
 
 sudo yum install -y $rpm
-cd /
-temboard-agent --help
+(
+	cd /
+	temboard-agent --version
+	python -c 'import temboardagent.toolkit'
+)

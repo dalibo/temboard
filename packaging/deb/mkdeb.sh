@@ -78,6 +78,11 @@ deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i --ignore-depends=python-pkg-resources --ignore-depends=ssl-cert $deb
+(
+	cd /
+	temboard-agent --version
+	python -c 'import temboardagent.toolkit'
+)
 
 #       S A V E
 
