@@ -5,6 +5,7 @@ test -f setup.py
 
 teardown() {
 	exit_code=$?
+	set +x;
 	# rpmbuild requires files to be owned by running uid
 	sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 	rm -f packaging/rpm/temboard*.tar.gz
@@ -15,6 +16,8 @@ teardown() {
 	# on error. This allows user to enter the container and debug after a
 	# build failure.
 	if [ -z "${CI-}" -a $$ = 1 -a $exit_code -gt 0 ] ; then
+		echo "Waiting forever. Debug with" >&2
+		echo "	docker exec -it $(hostname) /bin/bash"
 		tail -f /dev/null
 	fi
 }
@@ -54,4 +57,9 @@ ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
 sudo yum install -y $rpm
-temboard --version
+(
+	cd /;
+	temboard --version;
+	python -c 'import temboardui.toolkit';
+
+)
