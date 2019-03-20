@@ -9,16 +9,18 @@ DESTDIR=$WORKDIR/destdir
 DISTDIR=$(readlink -m dist)
 
 teardown () {
+    set +x
     if [ "0" = "${CLEAN-1}" ] ; then
         return
     fi
 
     rm -rf $WORKDIR
 
-    echo "Cleaning any installation." >&2
     if hash temboard &>/dev/null; then
-        apt-get purge -y temboard
+	echo "Cleaning previous installation." >&2
+        apt-get -qq purge -y temboard
     fi
+    set -x
 }
 trap teardown EXIT INT TERM
 teardown
