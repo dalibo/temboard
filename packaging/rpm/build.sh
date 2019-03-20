@@ -6,6 +6,7 @@ test -f setup.py
 
 teardown() {
     exit_code=$?
+    set +x
     cd $top_srcdir
     # rpmbuild requires files to be owned by running uid
     sudo chown --recursive $(stat -c %u:%g setup.py) packaging/rpm/
