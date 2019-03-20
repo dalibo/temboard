@@ -87,7 +87,11 @@ deb=$(ls temboard_${debianv}-${release}_*.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i $deb
-(cd /; temboard --version)
+(
+	cd /
+	temboard --version
+	python -c 'import temboardui.toolkit'
+)
 
 #       S A V E
 
