@@ -11,4 +11,4 @@ services:
 
   centos7:
     <<: *centos
-    image: dalibo/temboard-agent-sdk:centos6
+    image: dalibo/temboard-agent-sdk:centos7
