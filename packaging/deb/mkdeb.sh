@@ -8,16 +8,18 @@ DESTDIR=$WORKDIR/destdir
 DISTDIR=$(readlink -m ${PWD}/../../dist)
 
 teardown () {
+    set +x
     if [ "0" = "${CLEAN-1}" ] ; then
         return
     fi
 
     rm -rf $WORKDIR
 
-    echo "Cleaning previous installation." >&2
     if hash temboard-agent ; then
-        apt-get purge -y temboard-agent
+        echo "Cleaning previous installation." >&2
+        apt-get -qq purge -y temboard-agent
     fi
+    set -x
 }
 trap teardown EXIT INT TERM
 teardown
@@ -78,6 +80,11 @@ deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
 dpkg -i --ignore-depends=python-pkg-resources --ignore-depends=ssl-cert $deb
+(
+	cd /
+	temboard-agent --version
+	python -c 'import temboardagent.toolkit'
+)
 
 #       S A V E
 
