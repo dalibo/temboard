@@ -33,8 +33,10 @@ def get_routes(config):
     __import__(__name__ + '.handlers.alerting')
     __import__(__name__ + '.handlers.monitoring')
     routes = blueprint.rules + [
-        (r"/js/monitoring/(.*)",
-         tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
+        tornado.web.url(
+            r"/js/monitoring/(.*)",
+            tornado.web.StaticFileHandler,
+            {'path': plugin_path + "/static/js"}),
     ]
     return routes
 
