@@ -24,12 +24,12 @@ def configuration(config):
 
 def get_routes(config):
     routes = blueprint.rules + [
-        (
+        tornado.web.url(
             r"/js/pgconf/(.*)",
             tornado.web.StaticFileHandler,
             {'path': plugin_path + "/static/js"}
         ),
-        (
+        tornado.web.url(
             r"/css/pgconf/(.*)",
             tornado.web.StaticFileHandler,
             {'path': plugin_path + "/static/css"}
