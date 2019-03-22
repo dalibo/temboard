@@ -11,3 +11,4 @@
    dashboard_api
    monitoring_api
    pgconf_api
+   maintenance_api
