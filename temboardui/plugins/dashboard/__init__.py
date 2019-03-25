@@ -24,10 +24,9 @@ def configuration(config):
 
 def get_routes(config):
     routes = blueprint.rules + [
-        tornado.web.url(
-            r"/js/dashboard/(.*)",
-            tornado.web.StaticFileHandler,
-            {'path': plugin_path + "/static/js"}),
+        (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
+            'path': plugin_path + "/static/js"
+        }),
     ]
     return routes
 

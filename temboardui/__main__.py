@@ -81,16 +81,16 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.user')
 
     handlers = [
-        tornado.web.url(r"/css/(.*)", tornado.web.StaticFileHandler, {
+        (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),
-        tornado.web.url(r"/js/(.*)", tornado.web.StaticFileHandler, {
+        (r"/js/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/js'
         }),
-        tornado.web.url(r"/images/(.*)", tornado.web.StaticFileHandler, {
+        (r"/images/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/images'
         }),
-        tornado.web.url(r"/fonts/(.*)", tornado.web.StaticFileHandler, {
+        (r"/fonts/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/fonts'
         })
     ]
