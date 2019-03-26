@@ -151,6 +151,7 @@ function saveInstance(modal_id, saveUrl, address, port, key) {
           'pg_data': data['pg_data'],
           'pg_port': data['pg_port'],
           'pg_version': data['pg_version'],
+          'pg_version_summary': data['pg_version_summary'],
           'groups': $('#selectGroups').val(),
           'plugins': $('#selectPlugins').val()
         }),

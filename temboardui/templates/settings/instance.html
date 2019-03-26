@@ -52,7 +52,12 @@
       <tr>
         <td>{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
         <td>{{instance_item.hostname}}</td>
-        <td>{{instance_item.pg_version}}</td>
+        <td>
+          {{instance_item.pg_version_summary}}
+          <div class="overflow-ellipsis small text-muted" style="max-width: 200px;" title="{{instance_item.pg_version}}">
+            {{instance_item.pg_version}}
+          </div>
+        </td>
         <td>{{instance_item.pg_port}}</td>
         <td>{{instance_item.pg_data}}</td>
         <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>

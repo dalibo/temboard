@@ -27,6 +27,7 @@ CREATE TABLE instances (
 	memory_size BIGINT,
 	pg_port INTEGER,
 	pg_version TEXT,
+	pg_version_summary TEXT,
 	pg_data TEXT,
 	PRIMARY KEY (agent_address, agent_port)
 );
