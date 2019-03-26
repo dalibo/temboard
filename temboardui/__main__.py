@@ -77,19 +77,20 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.settings.group')
     __import__('temboardui.handlers.settings.instance')
     __import__('temboardui.handlers.settings.user')
+    __import__('temboardui.handlers.settings.notifications')
     __import__('temboardui.handlers.user')
 
     handlers = [
-        tornado.web.url(r"/css/(.*)", tornado.web.StaticFileHandler, {
+        (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
         }),
-        tornado.web.url(r"/js/(.*)", tornado.web.StaticFileHandler, {
+        (r"/js/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/js'
         }),
-        tornado.web.url(r"/images/(.*)", tornado.web.StaticFileHandler, {
+        (r"/images/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/images'
         }),
-        tornado.web.url(r"/fonts/(.*)", tornado.web.StaticFileHandler, {
+        (r"/fonts/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/fonts'
         })
     ]
@@ -208,6 +209,13 @@ def list_options_specs():
     yield OptionSpec(s, 'user', default='temboard')
     yield OptionSpec(s, 'password', default='temboard')
     yield OptionSpec(s, 'dbname', default='temboard')
+
+    s = 'notifications'
+    yield OptionSpec(s, 'smtp_host', default=None)
+    yield OptionSpec(s, 'smtp_port', default=None)
+    yield OptionSpec(s, 'twilio_account_sid', default=None)
+    yield OptionSpec(s, 'twilio_auth_token', default=None)
+    yield OptionSpec(s, 'twilio_from', default=None)
 
 
 class TemboardApplication(BaseApplication):

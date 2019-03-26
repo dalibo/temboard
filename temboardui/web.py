@@ -16,7 +16,6 @@ from tornado.web import (
     Application as TornadoApplication,
     HTTPError,
     RequestHandler,
-    url as tornado_url,
 )
 from tornado.template import Loader as TemplateLoader
 
@@ -458,7 +457,6 @@ class Blueprint(object):
 
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
-            rule_name = logger_name
 
             func = UserHelper.add_middleware(func)
             if with_instance:
@@ -481,14 +479,13 @@ class Blueprint(object):
                     logger.exception("Unhandled Error:")
                     raise HTTPError(500, str(e))
 
-            rules = [tornado_url(
+            rules = [(
                 url, CallableHandler, dict(
                     blueprint=self,
                     callable_=sync_request_wrapper,
                     methods=methods or ['GET'],
                     logger=logging.getLogger(logger_name),
                 ),
-                name=rule_name,
             )]
             self.add_rules(rules)
             return func
@@ -521,6 +518,7 @@ class WebApplication(TornadoApplication, Blueprint):
         elif not self.handlers:
             self.add_handlers(r'.*$', rules)
         else:
+            rules = [tornadoweb.URLSpec(*r) for r in rules]
             self.handlers[0][1].extend(rules)
 
 

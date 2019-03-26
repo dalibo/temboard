@@ -52,3 +52,49 @@ Please beware that the thresholds are configured for each instance.
 
 Every UI component detailed above this section are refreshed every minute to
 match the latest checks.
+
+## Notifications
+
+temBoard is able to send a notification (Email or SMS) when the status for
+a metric on an instance changes.
+
+
+### General Configuration
+
+First of all transport systems (SMTP or SMS Twilio service) need to be
+configured.
+
+In your `temBoard` configuration file you need to add the following section:
+
+```yaml
+[notifications]
+# SMTP host
+smtp_host = localhost
+# SMTP port
+# smtp_port =
+
+# Twilio SMS service configuration
+twilio_account_sid = ACCOUNTSIDTOBECHANGED
+twilio_auth_token = AUTHTOKENTOBECHANGED
+twilio_from = FROMNUMBERTOBECHANGED
+```
+
+Note: you can leave the settings commented if you don't want to use them.
+
+For the twilio settings, please refer to [Twilio Usage Documentation](https://www.twilio.com/docs/usage).
+
+Once the configuration seem to be OK, admin users can send test mails or SMS by
+clicking on the dedicated buttons in the `Alert notifications` tab.
+
+![Alerting notification test](sc/alerting_notification_test.png)
+
+### Users and Instances Settings
+
+In order to get notified, admin users have to set an *Email* or *Phone number*
+to the users.
+
+![Alerting notification set user](sc/alerting_notification_set_user.png)
+
+Notifications also have to be turned on at the instance level.
+
+![Alerting notification set instance](sc/alerting_notification_set_instance.png)

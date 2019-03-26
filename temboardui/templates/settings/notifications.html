@@ -1,0 +1,52 @@
+{% extends ../base.html %}
+
+{% block title %}temBoard - settings{% end %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-3 col-xl-2">
+    {% include menu.html %}
+  </div>
+  <div class="col-md-8 col-xl-10">
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Notifications</h3>
+        <p>
+          Users can be notified when the status for a metric changes either by email or SMS.
+        </p>
+        <p>
+        Notifications are sent to users with a valid email or phone number and for instances for which notifications are activated.
+        </p>
+        <p>Below you can test if notifications are correctly configured.</p>
+        <form class="form-inline" id="sendEmailForm">
+          <input type="email" class="form-control mr-2 mb-2" id="inputTestEmail" placeholder="Enter email address" value="{{role.role_email or ''}}">
+          <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not email_configured else '' }}>Test email notification</button>
+          {% if not email_configured %}
+          <p class="form-help mb-2 ml-2 text-danger">SMTP is not configured yet</p>
+          {% end %}
+        </form>
+        <form class="form-inline" id="sendSmsForm">
+          <input type="text" class="form-control mr-2 mb-2" id="inputTestPhone" placeholder="Enter phone number" value="{{role.role_phone or ''}}">
+          <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not sms_configured else '' }}>Test SMS notification</button>
+          {% if not sms_configured %}
+          <p class="form-help mb-2 ml-2 text-danger">Twilio is not configured yet</p>
+          {% end %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/temboard.settings.notifications.js"></script>
+<script>
+$('#sendEmailForm').submit(function(e) {
+  e.preventDefault();
+  sendEmail();
+});
+
+$('#sendSmsForm').submit(function(e) {
+  e.preventDefault();
+  sendSms();
+});
+
+</script>
+{% end %}

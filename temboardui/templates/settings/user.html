@@ -40,6 +40,7 @@
       <tr>
         <th>Username</th>
         <th>Email</th>
+        <th>Phone</th>
         <th width="40">Active</th>
         <th width="40">Admin.</th>
         <th>Groups</th>
@@ -51,7 +52,8 @@
     {% for role_item in role_list %}
       <tr>
         <td>{{role_item.role_name}}</td>
-        <td>{{role_item.role_email}}</td>
+        <td>{{role_item.role_email or ''}}</td>
+        <td>{{role_item.role_phone or ''}}</td>
         <td class="text-center">{% if role_item.is_active is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
         <td class="text-center">{% if role_item.is_admin is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
         <td>{% for group in role_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
@@ -93,6 +95,16 @@ $('[data-action=delete]').click(function () {
   $('#UserModal').modal('show');
   $('[data-toggle=popover]').popover('hide');
   load_delete_user_confirm('UserModal', $(this).data('username'));
+});
+
+$('#sendEmailForm').submit(function(e) {
+  e.preventDefault();
+  sendEmail();
+});
+
+$('#sendSmsForm').submit(function(e) {
+  e.preventDefault();
+  sendSms();
 });
 
 </script>

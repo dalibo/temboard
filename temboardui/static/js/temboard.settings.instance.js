@@ -74,6 +74,14 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="col-sm-12">';
+      body_html += '      <div class="form-check">';
+      body_html += '        <input type="checkbox" class="form-check-input" id="inputNotify" '+(data['notify'] ? 'checked': '')+'>';
+      body_html += '        <label for="inputNotify" class="control-label">Notify users of any status alert</label>';
+      body_html += '      </div>';
+      body_html += '    </div>';
+      body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<i class="fa fa-spinner fa-spin loader d-none"></i>';
@@ -111,7 +119,8 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
           agent_port,
           $('#inputNewAgentAddress').val(),
           $('#inputNewAgentPort').val(),
-          $('#inputAgentKey').val()
+          $('#inputAgentKey').val(),
+          $('#inputNotify').prop('checked')
         );
       });
     },
@@ -119,17 +128,17 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
   });
 }
 
-function addInstance(modal_id, address, port, key) {
+function addInstance(modal_id, address, port, key, notify) {
   var url = '/json/settings/instance';
-  saveInstance(modal_id, url, address, port, key);
+  saveInstance(modal_id, url, address, port, key, notify);
 }
 
-function updateInstance(modal_id, address, port, newAddress, newPort, key) {
+function updateInstance(modal_id, address, port, newAddress, newPort, key, notify) {
   var url = ['/json/settings/instance', address, port].join('/');
-  saveInstance(modal_id, url, newAddress, newPort, key);
+  saveInstance(modal_id, url, newAddress, newPort, key, notify);
 }
 
-function saveInstance(modal_id, saveUrl, address, port, key) {
+function saveInstance(modal_id, saveUrl, address, port, key, notify) {
   $.ajax({
     url: ['/json/discover/instance', address, port].join('/'),
     type: 'get',
@@ -153,7 +162,8 @@ function saveInstance(modal_id, saveUrl, address, port, key) {
           'pg_version': data['pg_version'],
           'pg_version_summary': data['pg_version_summary'],
           'groups': $('#selectGroups').val(),
-          'plugins': $('#selectPlugins').val()
+          'plugins': $('#selectPlugins').val(),
+          'notify': notify
         }),
         async: true,
         contentType: "application/json",
@@ -306,6 +316,14 @@ function load_add_instance_form(modal_id)
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="col-sm-12">';
+      body_html += '      <div class="form-check">';
+      body_html += '        <input type="checkbox" class="form-check-input" id="inputNotify" checked>';
+      body_html += '        <label for="inputNotify" class="control-label">Notify users of any status alert</label>';
+      body_html += '      </div>';
+      body_html += '    </div>';
+      body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<i class="fa fa-spinner fa-spin loader d-none"></i>';
@@ -336,7 +354,8 @@ function load_add_instance_form(modal_id)
           modal_id,
           $('#inputNewAgentAddress').val(),
           $('#inputNewAgentPort').val(),
-          $('#inputAgentKey').val()
+          $('#inputAgentKey').val(),
+          $('#inputNotify').prop('checked')
         );
       });
     },

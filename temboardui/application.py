@@ -1,7 +1,11 @@
-import base64
-import re
-from hashlib import sha512
 from binascii import hexlify
+from hashlib import sha512
+import base64
+import json
+import logging
+import re
+import urllib
+import urllib2
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import (
@@ -10,6 +14,8 @@ from sqlalchemy.orm.exc import (
 from sqlalchemy.exc import (
     IntegrityError,
 )
+from smtplib import SMTP
+from email.mime.text import MIMEText
 
 from temboardui.model.orm import (
     AccessRoleInstance,
@@ -21,6 +27,9 @@ from temboardui.model.orm import (
     RoleGroups,
 )
 from temboardui.errors import TemboardUIError
+
+logger = logging.getLogger(__name__)
+
 """
 Roles
 """
@@ -61,7 +70,8 @@ def update_role(session,
                 role_password=None,
                 role_email=None,
                 is_active=None,
-                is_admin=None):
+                is_admin=None,
+                role_phone=None):
     try:
         role = session.query(Roles) \
             .filter_by(role_name=unicode(role_name)) \
@@ -72,6 +82,8 @@ def update_role(session,
             role.role_password = unicode(role_password)
         if role_email is not None:
             role.role_email = unicode(role_email)
+        if role_phone is not None:
+            role.role_phone = unicode(role_phone) if role_phone else None
         if is_active is not None:
             role.is_active = is_active
         if is_admin is not None:
@@ -91,7 +103,7 @@ def update_role(session,
     except AttributeError as e:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(500, e.message)
 
 
 def get_role(session, role_name):
@@ -293,7 +305,8 @@ def add_instance(session,
                  pg_port=None,
                  pg_version=None,
                  pg_version_summary=None,
-                 pg_data=None):
+                 pg_data=None,
+                 notify=False):
     try:
         instance = Instances(
             agent_address=unicode(new_agent_address),
@@ -313,6 +326,7 @@ def add_instance(session,
             instance.pg_version_summary = unicode(pg_version_summary)
         if pg_data is not None:
             instance.pg_data = unicode(pg_data)
+        instance.notify = bool(notify)
         session.add(instance)
         session.flush()
         return instance
@@ -353,7 +367,8 @@ def update_instance(session,
                     pg_port=None,
                     pg_version=None,
                     pg_version_summary=None,
-                    pg_data=None):
+                    pg_data=None,
+                    notify=True):
     try:
         instance = session.query(Instances) \
             .filter_by(
@@ -381,6 +396,7 @@ def update_instance(session,
         instance.pg_version = unicode(pg_version)
         instance.pg_version_summary = unicode(pg_version_summary)
         instance.pg_data = unicode(pg_data)
+        instance.notify = bool(notify)
         session.merge(instance)
         session.flush()
         return instance
@@ -511,6 +527,18 @@ def get_groups_by_instance(session, agent_address, agent_port):
         InstanceGroups.agent_address == unicode(agent_address),
         InstanceGroups.agent_port == agent_port).order_by(
             InstanceGroups.group_name).all()
+
+
+def get_roles_by_instance(session, agent_address, agent_port):
+    return session.query(Roles) \
+        .filter(
+            AccessRoleInstance.role_group_name == RoleGroups.group_name,
+            InstanceGroups.group_name ==
+            AccessRoleInstance.instance_group_name,
+            Instances.agent_address == agent_address,
+            Instances.agent_port == agent_port,
+            RoleGroups.role_name == Roles.role_name,
+        )
 
 
 def add_role_group_in_instance_group(session, role_group_name,
@@ -679,6 +707,13 @@ def check_role_password(role_password):
             400, "Invalid password, it must contain at least 8 char.")
 
 
+def check_role_phone(role_phone):
+    p_role_phone = r'^[+][0-9]+$'
+    r_role_phone = re.compile(p_role_phone)
+    if not r_role_phone.match(role_phone):
+        raise TemboardUIError(400, "Phone must look like +14155552671")
+
+
 def check_group_name(group_name):
     p_group_name = r'^([a-z0-9_\-.]{3,16})$'
     r_group_name = re.compile(p_group_name)
@@ -709,3 +744,49 @@ def check_agent_port(value):
     r_check = re.compile(p_check)
     if not r_check.match(value):
         raise TemboardUIError(400, "Invalid agent port.")
+
+
+def send_mail(host, port, subject, content, emails):
+
+    msg = MIMEText(content)
+    msg['Subject'] = subject
+
+    try:
+        smtp = SMTP(host, port)
+        smtp.sendmail(None, emails, msg.as_string())
+        smtp.quit()
+    except Exception as e:
+        raise TemboardUIError(
+            500,
+            "Could not send mail; %s\n"
+            "SMTP server may be misconfigured." % e)
+
+
+def send_sms(config, content, phones):
+    sid = config.twilio_account_sid
+    token = config.twilio_auth_token
+    from_ = config.twilio_from
+    uri = 'https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json' % sid
+    s = base64.b64encode('%s:%s' % (sid, token))
+
+    errors = []
+    for recipient in phones:
+        req = urllib2.Request(url=uri)
+        req.add_header('Authorization', 'Basic %s' % s)
+        data = {'From': from_, 'Body': content, 'To': recipient}
+        req.add_data(urllib.urlencode(data))
+        try:
+            urllib2.urlopen(req)
+        except urllib2.HTTPError as e:
+            response = json.loads(e.read())
+            logger.error("Could not send SMS; %s" % response.get('message'))
+            errors.append(recipient)
+        except Exception as e:
+            logger.error("Could not send SMS; %s" % e)
+            errors.append(recipient)
+
+    if errors:
+        raise TemboardUIError(
+            500,
+            "Could not send SMS to %s; \n See logs for more information" %
+            ', '.join(errors))
