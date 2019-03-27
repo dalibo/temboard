@@ -85,13 +85,13 @@ $('#buttonLoadAddUserForm').click(function () {
   load_add_user_form('UserModal');
 });
 
-$('[data-action=edit]').click(function () {
+$(document).on('click', '[data-action=edit]', function () {
   $('#UserModal').modal('show');
   $('[data-toggle=popover]').popover('hide');
   load_update_user_form('UserModal', $(this).data('username'));
 });
 
-$('[data-action=delete]').click(function () {
+$(document).on('click', '[data-action=delete]', function () {
   $('#UserModal').modal('show');
   $('[data-toggle=popover]').popover('hide');
   load_delete_user_confirm('UserModal', $(this).data('username'));
