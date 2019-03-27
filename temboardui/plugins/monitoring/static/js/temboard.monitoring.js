@@ -256,14 +256,22 @@ $(function() {
     } else {
       this.removeGraph(metric);
     }
+    updateLocalStorage.call(this);
   }
 
   function selectAll() {
     loadGraphs(Object.keys(metrics));
+    updateLocalStorage.call(this);
   }
 
   function unselectAll() {
     loadGraphs([]);
+    updateLocalStorage.call(this);
+  }
+
+  function updateLocalStorage() {
+    var graphs = JSON.stringify(this.graphs.map(function(item) {return item.id;}))
+    localStorage.setItem('graphs', graphs);
   }
 
   function removeGraph(graph) {
@@ -322,7 +330,6 @@ $(function() {
     watch: {
       graphs: function(val) {
         var graphs = JSON.stringify(val.map(function(item) {return item.id;}))
-        localStorage.setItem('graphs', graphs);
         this.$router.replace({ query: _.assign({}, this.$route.query, {
           graphs: graphs
         })});
