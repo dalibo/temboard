@@ -19,6 +19,9 @@ ALTER TABLE application.roles
 ALTER COLUMN role_email DROP NOT NULL;
 
 ALTER TABLE application.roles
+DROP CONSTRAINT roles_role_email_key;
+
+ALTER TABLE application.roles
 ADD COLUMN role_phone TEXT;
 
 ALTER TABLE application.instances
