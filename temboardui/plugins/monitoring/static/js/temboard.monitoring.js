@@ -1,4 +1,4 @@
-/* global apiUrl, dateMath, moment, Vue, Dygraph */
+/* global apiUrl, dateMath, moment, Vue, VueRouter, Dygraph */
 $(function() {
   var colors = {
     blue: "#5DA5DA",
@@ -10,18 +10,8 @@ $(function() {
     orange: "#FAA43A"
   };
 
-  /**
-   * Parse location hash to get start and end date
-   * If dates are not provided, falls back to the date range corresponding to
-   * the last 24 hours.
-   */
   var refreshTimeoutId;
   var refreshInterval = 60 * 1000;
-  var p = getHashParams();
-  var start = p.start || 'now-24h';
-  var end = p.end || 'now';
-  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
-  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
 
   var metrics = {
     "Loadavg": {
@@ -266,14 +256,22 @@ $(function() {
     } else {
       this.removeGraph(metric);
     }
+    updateLocalStorage.call(this);
   }
 
   function selectAll() {
     loadGraphs(Object.keys(metrics));
+    updateLocalStorage.call(this);
   }
 
   function unselectAll() {
     loadGraphs([]);
+    updateLocalStorage.call(this);
+  }
+
+  function updateLocalStorage() {
+    var graphs = JSON.stringify(this.graphs.map(function(item) {return item.id;}))
+    localStorage.setItem('graphs', graphs);
   }
 
   function removeGraph(graph) {
@@ -295,6 +293,7 @@ $(function() {
 
   var v = new Vue({
     el: '#charts-container',
+    router: new VueRouter(),
     data: {
       // each graph is an Object with id and chart properties
       graphs: [],
@@ -330,15 +329,33 @@ $(function() {
     },
     watch: {
       graphs: function(val) {
-        localStorage.setItem('graphs', JSON.stringify(val.map(function(item) {return item.id;})));
+        var graphs = JSON.stringify(val.map(function(item) {return item.id;}))
+        this.$router.replace({ query: _.assign({}, this.$route.query, {
+          graphs: graphs
+        })});
       },
       fromTo: function() {
-        window.location.hash = 'start=' + v.from + '&end=' + v.to;
-      }
+        this.$router.replace({ query: _.assign({}, this.$route.query, {
+          start: '' + v.from,
+          end: '' + v.to
+        })});
+      },
     }
   });
 
-  v.loadGraphs(JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
+  /**
+   * Parse location to get start and end date
+   * If dates are not provided, falls back to the date range corresponding to
+   * the last 24 hours.
+   */
+  var start = v.$route.query.start || 'now-24h';
+  var end = v.$route.query.end || 'now';
+  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
+  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
+
+  var graphs = v.$route.query.graphs;
+  graphs = graphs ? JSON.parse(graphs) : (JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
+  v.loadGraphs(graphs);
 
   function createOrUpdateChart(create) {
     var id = this.graph.id;
@@ -476,24 +493,6 @@ $(function() {
         g.setVisibility(parseInt($(this).attr('id').replace(chartId+'CB', '')), $(this).is(':checked'));
       });
     });
-  }
-
-  function getHashParams() {
-
-    var hashParams = {};
-    var e;
-    var a = /\+/g;  // Regex for replacing addition symbol with a space
-    var r = /([^&;=]+)=?([^&;]*)/g;
-    var d = function (s) {
-      return decodeURIComponent(s.replace(a, " "));
-    };
-    var q = window.location.hash.substring(1);
-
-    while (e = r.exec(q)) {
-      hashParams[d(e[1])] = d(e[2]);
-    }
-
-    return hashParams;
   }
 
   function onChartZoom(min, max) {
