@@ -154,19 +154,9 @@
     </div>
   </div>
 </div>
-<div class="row">
-  <div class="col-6">
-    <div>
-      <div class="text-center small">
-        Notifications
-      </div>
-      <div class="small" id="divNotif10">
-        <div class="text-center"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div>
-      </div>
-    </div>
-  </div>
+<div class="row" id="divAlerts">
   {% if 'monitoring' in [plugin.plugin_name for plugin in instance.plugins] %}
-  <div class="col-6" id="divAlerts">
+  <div class="col-8">
     <div class="text-center small">
       Current status
       <div class="position-absolute top-0 right-0 pr-2">
@@ -192,6 +182,8 @@
         </div>
       </template>
     </div>
+  </div>
+  <div class="col-4">
     <div class="text-center small">
       Last alerts
     </div>

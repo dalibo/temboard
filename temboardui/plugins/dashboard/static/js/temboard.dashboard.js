@@ -37,7 +37,6 @@ $(function() {
         updateDashboard(data, true);
         updateTps([data]);
         updateLoadaverage([data]);
-        updateNotifications(data.notifications);
       },
       error: function(xhr) {
         $('#ErrorModal').modal('hide');
@@ -218,15 +217,6 @@ $(function() {
     chart.update();
 
     $('#postgres-stopped-msg').toggleClass('d-none', !!data[data.length - 1].databases);
-  }
-
-  function updateNotifications(data) {
-    var notif_html = '<ul class="notifications">';
-    for (var i in data) {
-      notif_html += '<li><span class="date-notification-db">'+data[i].date+'</span> <span class="badge badge-success">'+data[i].username+'</span> '+data[i].message+'</li>';
-    }
-    notif_html += '</ul>';
-    $('#divNotif10').html(notif_html);
   }
 
   var alertsView = new Vue({
