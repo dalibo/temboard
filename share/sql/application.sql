@@ -5,7 +5,7 @@ SET search_path TO application, public;
 CREATE TABLE roles (
 	role_name TEXT PRIMARY KEY,
 	role_password TEXT NOT NULL,
-	role_email TEXT UNIQUE,
+	role_email TEXT,
 	role_phone TEXT,
 	is_active BOOLEAN NOT NULL DEFAULT true,
 	is_admin BOOLEAN NOT NULL DEFAULT false
