@@ -668,17 +668,21 @@ def list_scheduled_vacuum(app, **kwargs):
     return list_scheduled_operation(app, 'vacuum', **kwargs)
 
 
-def schedule_analyze(conn, database, schema, table, datetimeutc, app):
-    return schedule_operation('analyze', conn, database, schema,
-                              datetimeutc, app, table=table)
+def schedule_analyze(conn, database, datetimeutc, app,
+                     schema=None, table=None):
+    return schedule_operation('analyze', conn, database, datetimeutc, app,
+                              schema=schema, table=table)
 
 
-def analyze(conn, dbname, schema, table):
+def analyze(conn, dbname, schema=None, table=None):
     # Run analyze statement
-    check_table_exists(conn, schema, table)
+    if table:
+        check_table_exists(conn, schema, table)
 
     # Build the SQL query
-    q = "ANALYZE {schema}.{table}".format(schema=schema, table=table)
+    q = "ANALYZE"
+    if schema and table:
+        q += " {schema}.{table}".format(schema=schema, table=table)
 
     try:
         # Try to execute the statement
@@ -688,7 +692,11 @@ def analyze(conn, dbname, schema, table):
     except error as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
-        raise UserError("Unable to run analyze %s on %s.%s" % (schema, table,))
+        message = "Unable to run analyze"
+        if schema and table:
+            message += " on %s.%s" % (schema, table,)
+
+        raise UserError(message)
 
 
 def list_scheduled_analyze(app, **kwargs):

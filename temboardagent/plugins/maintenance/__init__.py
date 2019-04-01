@@ -151,15 +151,24 @@ def vacuum_worker(config, dbname, mode, schema=None, table=None):
         return functions.vacuum(conn, dbname, mode, schema, table)
 
 
+@routes.post(b'/%s/analyze' % T_DATABASE_NAME)
+def post_analyze_database(http_context, app):
+    dbname = http_context['urlvars'][0]
+    return post_analyze(app, http_context['post'], dbname)
+
+
 @routes.post(b'/%s/schema/%s/table/%s/analyze' % (T_DATABASE_NAME,
                                                   T_SCHEMA_NAME,
                                                   T_TABLE_NAME))
-def post_analyze(http_context, app):
+def post_analyze_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
     table = http_context['urlvars'][2]
+    return post_analyze(app, http_context['post'], dbname, schema, table)
+
+
+def post_analyze(app, post, dbname, schema=None, table=None):
     # Parameters format validation
-    post = http_context['post']
     if 'datetime' in post:
         validate_parameters(post, [
             ('datetime', T_TIMESTAMP_UTC, False),
@@ -167,7 +176,14 @@ def post_analyze(http_context, app):
     dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
 
     with functions.get_postgres(app.config, dbname).connect() as conn:
-        return functions.schedule_analyze(conn, dbname, schema, table, dt, app)
+        return functions.schedule_analyze(conn, dbname, dt, app,
+                                          schema=schema, table=table)
+
+
+@routes.get(b'/%s/analyze/scheduled' % (T_DATABASE_NAME), check_key=True)
+def scheduled_analyze_database(http_context, app):
+    dbname = http_context['urlvars'][0]
+    return functions.list_scheduled_analyze(app, dbname=dbname)
 
 
 @routes.get(b'/%s/schema/%s/table/%s/analyze/scheduled' % (T_DATABASE_NAME,
@@ -194,7 +210,7 @@ def scheduled_analyze(http_context, app):
 
 
 @taskmanager.worker(pool_size=10)
-def analyze_worker(config, dbname, schema, table):
+def analyze_worker(config, dbname, schema=None, table=None):
     config = unpickle(config)
 
     with functions.get_postgres(config, dbname).connect() \
