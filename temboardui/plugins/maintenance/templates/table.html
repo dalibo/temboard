@@ -310,7 +310,7 @@
           <div>
             <ul class="list list-unstyled">
               <li v-for="scheduledVacuum in scheduledVacuums">
-                VACCUUM
+                VACUUM
                 <span v-if="scheduledVacuum.mode">({{! scheduledVacuum.mode.toUpperCase() }})</span>
                 <template v-if="scheduledVacuum.status == 'todo'">
                   <em v-if="scheduledVacuum.status == 'todo'">
