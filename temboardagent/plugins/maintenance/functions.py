@@ -511,8 +511,9 @@ def check_index_exists(conn, schema, index):
         raise UserError("Index %s.%s not found" % (schema, index))
 
 
-def schedule_operation(operation_type, conn, database, schema,
-                       datetimeutc, app, table=None, index=None, **kwargs):
+def schedule_operation(operation_type, conn, database,
+                       datetimeutc, app, table=None, index=None,
+                       schema=None, **kwargs):
     # Schedule a maintenance operation (vacuum or analyze) statement through
     # background worker
 
@@ -528,7 +529,7 @@ def schedule_operation(operation_type, conn, database, schema,
     m = hashlib.md5()
     m.update("{database}:{schema}:{table}{index}:{datetime}:{operation_type}"
              .format(database=database,
-                     schema=schema,
+                     schema=schema or '',
                      table=table or '',
                      index=index or '',
                      datetime=datetimeutc,
@@ -541,8 +542,9 @@ def schedule_operation(operation_type, conn, database, schema,
         options = {
             'config': pickle(app.config),
             'dbname': database,
-            'schema': schema,
         }
+        if schema:
+            options['schema'] = schema
         if table:
             options['table'] = table
         if index:
@@ -572,19 +574,24 @@ def schedule_operation(operation_type, conn, database, schema,
     return res.content
 
 
-def schedule_vacuum(conn, database, schema, table, mode, datetimeutc, app):
-    return schedule_operation('vacuum', conn, database, schema,
-                              datetimeutc, app, table=table, mode=mode)
+def schedule_vacuum(conn, database, mode, datetimeutc, app,
+                    schema=None, table=None):
+    return schedule_operation('vacuum', conn, database, datetimeutc, app,
+                              mode=mode, schema=schema, table=table)
 
 
-def vacuum(conn, dbname, schema, table, mode):
+def vacuum(conn, dbname, mode, schema=None, table=None):
     # Run vacuum statement
-    check_table_exists(conn, schema, table)
+
+    if table:
+        check_table_exists(conn, schema, table)
 
     # Build the SQL query
     q = "VACUUM"
     q += " (%s) " % mode.upper() if mode else ""
-    q += " {schema}.{table}".format(schema=schema, table=table)
+
+    if schema and table:
+        q += " {schema}.{table}".format(schema=schema, table=table)
 
     try:
         # Try to execute the statement
@@ -594,8 +601,11 @@ def vacuum(conn, dbname, schema, table, mode):
     except error as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
-        raise UserError("Unable to run vacuum %s on %s.%s"
-                        % (mode, schema, table,))
+        message = "Unable to run vacuum %s" % mode
+        if schema and table:
+            message += " on %s.%s" % (schema, table,)
+
+        raise UserError(message)
 
 
 def task_status_label(status):

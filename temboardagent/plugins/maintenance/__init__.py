@@ -79,15 +79,24 @@ def get_table(http_context, app):
         return ret
 
 
+@routes.post(b'/%s/vacuum' % T_DATABASE_NAME)
+def post_vacuum_database(http_context, app):
+    dbname = http_context['urlvars'][0]
+    return post_vacuum(app, http_context['post'], dbname)
+
+
 @routes.post(b'/%s/schema/%s/table/%s/vacuum' % (T_DATABASE_NAME,
                                                  T_SCHEMA_NAME,
                                                  T_TABLE_NAME))
-def post_vacuum(http_context, app):
+def post_vacuum_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
     table = http_context['urlvars'][2]
+    return post_vacuum(app, http_context['post'], dbname, schema, table)
+
+
+def post_vacuum(app, post, dbname, schema=None, table=None):
     # Parameters format validation
-    post = http_context['post']
     if 'datetime' in post:
         validate_parameters(post, [
             ('datetime', T_TIMESTAMP_UTC, False),
@@ -100,8 +109,14 @@ def post_vacuum(http_context, app):
     mode = post.get('mode', '')
 
     with functions.get_postgres(app.config, dbname).connect() as conn:
-        return functions.schedule_vacuum(conn, dbname, schema, table, mode,
-                                         dt, app)
+        return functions.schedule_vacuum(conn, dbname, mode, dt, app,
+                                         schema=schema, table=table)
+
+
+@routes.get(b'/%s/vacuum/scheduled' % (T_DATABASE_NAME), check_key=True)
+def scheduled_vacuum_database(http_context, app):
+    dbname = http_context['urlvars'][0]
+    return functions.list_scheduled_vacuum(app, dbname=dbname)
 
 
 @routes.get(b'/%s/schema/%s/table/%s/vacuum/scheduled' % (T_DATABASE_NAME,
@@ -128,12 +143,12 @@ def scheduled_vacuum(http_context, app):
 
 
 @taskmanager.worker(pool_size=10)
-def vacuum_worker(config, dbname, schema, table, mode):
+def vacuum_worker(config, dbname, mode, schema=None, table=None):
     config = unpickle(config)
 
     with functions.get_postgres(config, dbname).connect() \
             as conn:
-        return functions.vacuum(conn, dbname, schema, table, mode)
+        return functions.vacuum(conn, dbname, mode, schema, table)
 
 
 @routes.post(b'/%s/schema/%s/table/%s/analyze' % (T_DATABASE_NAME,
