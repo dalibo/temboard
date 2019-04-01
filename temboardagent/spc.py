@@ -843,6 +843,8 @@ class connector(object):
                         "Authentication method not supported")
 
         if self._protocol.is_auth_md5(messages[0]):
+            if not self._password:
+                raise error('PGC108', 'FATAL', "No password supplied")
             # MD5
             password = "md5" + hashlib.md5(
                 hashlib.md5(
