@@ -109,8 +109,8 @@ class protocol3(object):
         Startup packet.
         """
         data = struct.pack('!L', self._version) + b'user' + b'\x00' \
-            + user.encode() + b'\x00' + b'database' + b'\x00' \
-            + database.encode()
+            + user.encode(self._encoding) + b'\x00' + b'database' + b'\x00' \
+            + database.encode(self._encoding)
         if replication:
             data += b'\x00replication\x001'
         data += b'\x00\x00'
@@ -126,14 +126,14 @@ class protocol3(object):
         """
         PasswordMessage packet.
         """
-        data = password.encode() + b'\x00'
+        data = password.encode(self._encoding) + b'\x00'
         return b'p' + struct.pack('!L', len(data) + 4) + data
 
     def query(self, query):
         """
         Simple query mode.
         """
-        data = query.encode() + b'\x00'
+        data = query.encode(self._encoding) + b'\x00'
         return b'Q' + struct.pack('!L', len(data) + 4) + data
 
     def copy_data(self, sdata):
@@ -846,8 +846,8 @@ class connector(object):
             # MD5
             password = "md5" + hashlib.md5(
                 hashlib.md5(
-                    self._password.encode() +
-                    self._user.encode()
+                    self._password.encode(self._encoding) +
+                    self._user.encode(self._encoding)
                 ).hexdigest().encode() +
                 self._protocol.get_salt(messages[0])
             ).hexdigest()
