@@ -2,6 +2,9 @@
 $(function() {
   "use strict";
 
+  var getScheduledVacuumsTimeout;
+  var getScheduledAnalyzesTimeout;
+
   new Vue({
     el: '#app',
     data: {
@@ -18,7 +21,13 @@ $(function() {
         indexes_bloat_ratio: ['Indexes Bloat', 'desc'],
         toast_bytes: ['Toast Size', 'desc']
       },
-      loading: true
+      loading: true,
+      vacuumWhen: 'now',
+      vacuumScheduledTime: moment(),
+      scheduledVacuums: [],
+      analyzeWhen: 'now',
+      analyzeScheduledTime: moment(),
+      scheduledAnalyzes: []
     },
     created: function() {
       this.fetchData();
@@ -32,12 +41,21 @@ $(function() {
       }
     },
     methods: {
-      fetchData: getDatabaseData,
-      sortBy: sortBy
+      fetchData: function() {
+        getData.call(this);
+        getScheduledVacuums.call(this);
+        getScheduledAnalyzes.call(this);
+      },
+      sortBy: sortBy,
+      checkSession: checkSession,
+      doVacuum: doVacuum,
+      cancelVacuum: cancelVacuum,
+      doAnalyze: doAnalyze,
+      cancelAnalyze: cancelAnalyze
     }
   });
 
-  function getDatabaseData() {
+  function getData() {
     $.ajax({
       url: apiUrl,
       contentType: "application/json",
@@ -61,12 +79,200 @@ $(function() {
   }
 
   function postCreated() {
+    var options = {
+      singleDatePicker: true,
+      timePicker: true,
+      timePicker24Hour: true,
+      timePickerSeconds: false
+    };
+    $('#vacuumScheduledTime').daterangepicker($.extend({
+      startDate: this.vacuumScheduledTime
+    }, options), function(start) {
+      this.vacuumScheduledTime = start;
+    }.bind(this));
+    $('#analyzeScheduledTime').daterangepicker($.extend({
+      startDate: this.analyzeScheduledTime
+    }, options), function(start) {
+      this.analyzeScheduledTime = start;
+    }.bind(this));
     $('[data-toggle="popover"]').popover();
   }
 
   function sortBy(criteria, order) {
     this.sortCriteria = criteria;
     this.sortOrder = order || 'asc';
+  }
+
+  function getScheduledVacuums() {
+    window.clearTimeout(getScheduledVacuumsTimeout);
+    var count = this.scheduledVacuums.length;
+    $.ajax({
+      url: apiUrl + '/vacuum/scheduled',
+      contentType: "application/json",
+      success: (function(data) {
+        this.scheduledVacuums = data;
+        // refresh list
+        getScheduledVacuumsTimeout = window.setTimeout(function() {
+          getScheduledVacuums.call(this);
+        }.bind(this), 5000);
+
+        // There are less vacuums than before
+        // It may mean that a vacuum is finished
+        if (data.length < count) {
+          getData.call(this);
+        }
+      }).bind(this)
+    });
+  }
+
+  function doVacuum() {
+
+    var fields = $('#vacuumForm').serializeArray();
+    var mode = fields.filter(function(field) {
+      return field.name == 'mode';
+    }).map(function(field) {
+      return field.value;
+    }).join(',');
+    var data = {};
+    if (mode) {
+      data['mode'] = mode;
+    }
+    var datetime = fields.filter(function(field) {
+      return field.name == 'datetime';
+    }).map(function(field) {
+      return field.value;
+    }).join('');
+    if (datetime) {
+      data['datetime'] = datetime;
+    }
+    $.ajax({
+      method: 'POST',
+      url: apiUrl + '/vacuum',
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      data: JSON.stringify(data),
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledVacuums.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  function cancelVacuum(id) {
+    if (!checkSession()) {
+      return;
+    }
+    $.ajax({
+      method: 'DELETE',
+      url: maintenanceBaseUrl + '/vacuum/' + id,
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledVacuums.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  function getScheduledAnalyzes() {
+    window.clearTimeout(getScheduledAnalyzesTimeout);
+    var count = this.scheduledAnalyzes.length;
+    $.ajax({
+      url: apiUrl + '/analyze/scheduled',
+      contentType: "application/json",
+      success: (function(data) {
+        this.scheduledAnalyzes = data;
+        // refresh list
+        getScheduledAnalyzesTimeout = window.setTimeout(function() {
+          getScheduledAnalyzes.call(this);
+        }.bind(this), 5000);
+
+        // There are less analyzes than before
+        // It may mean that a analyze is finished
+        if (data.length < count) {
+          getData.call(this);
+        }
+      }).bind(this)
+    });
+  }
+
+  function doAnalyze() {
+
+    var fields = $('#analyzeForm').serializeArray();
+    var mode = fields.filter(function(field) {
+      return field.name == 'mode';
+    }).map(function(field) {
+      return field.value;
+    }).join(',');
+    var data = {};
+    if (mode) {
+      data['mode'] = mode;
+    }
+    var datetime = fields.filter(function(field) {
+      return field.name == 'datetime';
+    }).map(function(field) {
+      return field.value;
+    }).join('');
+    if (datetime) {
+      data['datetime'] = datetime;
+    }
+    $.ajax({
+      method: 'POST',
+      url: apiUrl + '/analyze',
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      data: JSON.stringify(data),
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledAnalyzes.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  function cancelAnalyze(id) {
+    if (!checkSession()) {
+      return;
+    }
+    $.ajax({
+      method: 'DELETE',
+      url: maintenanceBaseUrl + '/analyze/' + id,
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledAnalyzes.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  /**
+   * Redirects to agent login page if session is not provided
+   * Should be used in each action requiring xsession authentication.
+   *
+   * params:
+   * e - Optional browser event
+   *
+   */
+  function checkSession(e) {
+    if (!xsession) {
+      showNeedsLoginMsg();
+      e && e.stopPropagation();
+      return false;
+    }
+    return true;
+  }
+
+  function showNeedsLoginMsg() {
+    if (confirm('You need to be logged in the instance agent to perform this action')) {
+      var params = $.param({redirect_to: window.location.href});
+      window.location.href = agentLoginUrl + '?' + params;
+    }
+  }
+
+  function onError(xhr) {
+    if (xhr.status == 401) {
+      showNeedsLoginMsg();
+    }
   }
 
 });

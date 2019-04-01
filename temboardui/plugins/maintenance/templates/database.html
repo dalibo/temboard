@@ -1,3 +1,4 @@
+{% autoescape None %}
 {% extends ../../../templates/base.html %}
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Maintenance{% end %}
@@ -18,8 +19,210 @@
   <div class="text-center" v-if="loading">
     <img src="/images/ring-alt.svg" class="fa-fw fa-2x">
   </div>
-
   <div v-cloak v-if="!loading">
+    <div class="row">
+      <div class="col">
+        <div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal" v-on:click="checkSession">
+            ANALYZE
+          </button>
+          <!-- Modal -->
+          <div class="modal fade" id="analyzeModal" tabindex="-1" role="dialog" aria-labelledby="analyzeModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="analyzeModalLabel">ANALYZE</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form id="analyzeForm">
+                    <fieldset class="form-group">
+                      <div class="row">
+                        <legend class="col-form-label col-sm-2 pt-0">When</legend>
+                        <div class="col-sm-10">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="analyzeNow" v-model="analyzeWhen" v-bind:value="'now'" checked>
+                            <label class="form-check-label" for="analyzeNow">
+                              Now
+                            </label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <label class="form-check-label" for="analyzeScheduled">
+                            <input class="form-check-input" type="radio" id="analyzeScheduled" v-model="analyzeWhen" v-bind:value="'scheduled'">
+                              Scheduled
+                            </label>
+                          </div>
+                          <div v-show="analyzeWhen == 'scheduled'">
+                            <button type="button" id="analyzeScheduledTime" class="btn btn-outline-secondary">
+                              <i class="fa fa-clock-o"></i>
+                              &nbsp;
+                              <span>{{! analyzeScheduledTime.toString() }}</span>
+                            </button>
+                            <input type="hidden" name="datetime" v-bind:value="analyzeScheduledTime.utc().format('YYYY-MM-DDTHH:mm:ss[Z]')" :disabled="analyzeWhen != 'scheduled'">
+                          </div>
+                        </div>
+                      </div>
+                    </fieldset>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" v-on:click="doAnalyze()" data-dismiss="modal">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="list list-unstyled">
+              <li v-for="scheduledAnalyze in scheduledAnalyzes">
+                ANALYZE
+                <span v-if="scheduledAnalyze.table">
+                  <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema">{{! scheduledAnalyze.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema + '/table/' + scheduledAnalyze.table">{{! scheduledAnalyze.table }}</a>
+                </span>
+                <template v-if="scheduledAnalyze.status == 'todo'">
+                  <em v-if="scheduledAnalyze.status == 'todo'">
+                    <span class="text-muted" :title="scheduledAnalyze.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledAnalyze.datetime | relative_time(false) }}</span>
+                  </em>
+                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelAnalyze(scheduledAnalyze.id)" v-if="scheduledAnalyze.status == 'todo'">Cancel</button>
+                </template>
+                <template v-else-if="scheduledAnalyze.status == 'doing'">
+                  <em class="text-muted">
+                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+                    in progress
+                  </em>
+                </template>
+                <template v-else-if="scheduledAnalyze.status == 'canceled'">
+                  <em class="text-muted">canceled</em>
+                </template>
+                <template v-else>
+                  <em class="text-muted">{{! scheduledAnalyze.status }}</em>
+                </template>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal" v-on:click="checkSession">
+            VACUUM
+          </button>
+          <!-- Modal -->
+          <div class="modal fade" id="vacuumModal" tabindex="-1" role="dialog" aria-labelledby="vacuumModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="vacuumModalLabel">VACUUM</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form id="vacuumForm">
+                    <div class="form-group row">
+                      <div class="col-sm-2">Mode</div>
+                      <div class="col-sm-10">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="vacuumModeAnalyze" name="mode" value="analyze">
+                          <label class="form-check-label" for="vacuumModeAnalyze">
+                            ANALYZE
+                          </label>
+                          <small class="form-text text-muted">
+                            Updates statistics after the vacuum.
+                          </small>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="vacuumModeFull" name="mode" value="full">
+                          <label class="form-check-label" for="vacuumModeFull">
+                            FULL
+                          </label>
+                          <small class="form-text text-muted">
+                            Can reclaim more space but takes more time and exclusively locks the table.
+                            <span class="text-danger">Use with caution!</span>
+                          </small>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="vacuumModeFreeze" name="mode" value="freeze">
+                          <label class="form-check-label" for="vacuumModeFreeze">
+                            FREEZE
+                          </label>
+                          <small class="form-text text-muted">
+                            Selects aggressive "freezing" of tuples. Equivalent to performing VACUUM with the <em><code>vacuum_freeze_min_age</code></em> parameter set to zero.
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                    <fieldset class="form-group">
+                      <div class="row">
+                        <legend class="col-form-label col-sm-2 pt-0">When</legend>
+                        <div class="col-sm-10">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="vacuumNow" v-model="vacuumWhen" v-bind:value="'now'" checked>
+                            <label class="form-check-label" for="vacuumNow">
+                              Now
+                            </label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <label class="form-check-label" for="vacuumScheduled">
+                            <input class="form-check-input" type="radio" id="vacuumScheduled" v-model="vacuumWhen" v-bind:value="'scheduled'">
+                              Scheduled
+                            </label>
+                          </div>
+                          <div v-show="vacuumWhen == 'scheduled'">
+                            <button type="button" id="vacuumScheduledTime" class="btn btn-outline-secondary">
+                              <i class="fa fa-clock-o"></i>
+                              &nbsp;
+                              <span>{{! vacuumScheduledTime.toString() }}</span>
+                            </button>
+                            <input type="hidden" name="datetime" v-bind:value="vacuumScheduledTime.utc().format('YYYY-MM-DDTHH:mm:ss[Z]')" :disabled="vacuumWhen != 'scheduled'">
+                          </div>
+                        </div>
+                      </div>
+                    </fieldset>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" v-on:click="doVacuum()" data-dismiss="modal">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="list list-unstyled">
+              <li v-for="scheduledVacuum in scheduledVacuums">
+                VACUUM
+                <span v-if="scheduledVacuum.mode">({{! scheduledVacuum.mode.toUpperCase() }})</span>
+                <span v-if="scheduledVacuum.table">
+                  <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema">{{! scheduledVacuum.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema + '/table/' + scheduledVacuum.table">{{! scheduledVacuum.table }}</a>
+                </span>
+                <template v-if="scheduledVacuum.status == 'todo'">
+                  <em v-if="scheduledVacuum.status == 'todo'">
+                    <span class="text-muted" :title="scheduledVacuum.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledVacuum.datetime | relative_time(false) }}</span>
+                  </em>
+                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelVacuum(scheduledVacuum.id)" v-if="scheduledVacuum.status == 'todo'">Cancel</button>
+                </template>
+                <template v-else-if="scheduledVacuum.status == 'doing'">
+                  <em class="text-muted">
+                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+                    in progress
+                  </em>
+                </template>
+                <template v-else-if="scheduledVacuum.status == 'canceled'">
+                  <em class="text-muted">canceled</em>
+                </template>
+                <template v-else>
+                  <em class="text-muted">{{! scheduledVacuum.status }}</em>
+                </template>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="d-flex">
       <h4>
         Schemas <span class="text-muted small">({{! database.schemas.length }})</span>
@@ -156,11 +359,17 @@
 </div>
 
 <script src="/js/lodash.min.js"></script>
+<script src="/js/moment.min.js"></script>
 <script src="/js/vue.min.js"></script>
+<script src="/js/maintenance/vue.filter.relative-time.js"></script>
 <script src="/js/maintenance/vue.size-distribution-bar.js"></script>
+<script src="/js/daterangepicker.js"></script>
 <script src="/js/maintenance/temboard.maintenance.database.js"></script>
 <script>
 var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}';
+var maintenanceBaseUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
+var agentLoginUrl = '/server/{{ instance.agent_address }}/{{ instance.agent_port }}/login';
+var xsession = {{ json_encode(xsession) }};
 </script>
 
 {% end %}

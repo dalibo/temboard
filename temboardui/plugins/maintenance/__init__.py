@@ -11,6 +11,8 @@ blueprint = Blueprint()
 blueprint.generic_proxy(r'/maintenance/.*/schema/.*/table/.*/'
                         '(?:vacuum|analyze)',
                         methods=['POST'])
+blueprint.generic_proxy(r'/maintenance/.*/(?:vacuum|analyze)',
+                        methods=['POST'])
 blueprint.generic_proxy(r'/maintenance/.*/schema/.*/index/.*/(?:reindex)',
                         methods=['POST'])
 blueprint.generic_proxy(r'/maintenance/reindex/.*',
@@ -97,12 +99,15 @@ def schema(request, database, schema):
 @blueprint.instance_route(r'/maintenance/(.*)')
 def database(request, database):
     request.instance.check_active_plugin(__name__)
+    agent_username = get_agent_username(request)
+    xsession = request.instance.xsession if agent_username else None
     return render_template(
         'database.html',
         nav=True,
         agent_username=get_agent_username(request),
         instance=request.instance,
         plugin=__name__,
+        xsession=xsession,
         role=request.current_user,
         database=database,
     )
