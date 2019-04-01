@@ -10,6 +10,7 @@ import struct
 import re
 from io import BytesIO
 import datetime
+import codecs
 
 
 class perror(Exception):
@@ -70,7 +71,9 @@ class protocol3(object):
     _version = 196608
     _ssl_code = 80877103
 
-    def __init__(self,):
+    def __init__(self, encoding='UTF-8'):
+        # Client encoding
+        self._encoding = encoding
         # Response parsers mapping
         self._response_parsers = {
             b'R': 'parse_authentication_response',
@@ -92,6 +95,9 @@ class protocol3(object):
             b'I': 'ignore',  # Empty query
         }
 
+    def set_encoding(self, encoding):
+        self._encoding = encoding
+
     def ssl_request(self,):
         """
         SSLRequest for SSL negociation.
@@ -103,8 +109,8 @@ class protocol3(object):
         Startup packet.
         """
         data = struct.pack('!L', self._version) + b'user' + b'\x00' \
-            + user.encode() + b'\x00' + b'database' + b'\x00' \
-            + database.encode()
+            + user.encode(self._encoding) + b'\x00' + b'database' + b'\x00' \
+            + database.encode(self._encoding)
         if replication:
             data += b'\x00replication\x001'
         data += b'\x00\x00'
@@ -120,14 +126,14 @@ class protocol3(object):
         """
         PasswordMessage packet.
         """
-        data = password.encode() + b'\x00'
+        data = password.encode(self._encoding) + b'\x00'
         return b'p' + struct.pack('!L', len(data) + 4) + data
 
     def query(self, query):
         """
         Simple query mode.
         """
-        data = query.encode() + b'\x00'
+        data = query.encode(self._encoding) + b'\x00'
         return b'Q' + struct.pack('!L', len(data) + 4) + data
 
     def copy_data(self, sdata):
@@ -154,7 +160,7 @@ class protocol3(object):
         """
         if len(data) != 1:
             raise perror("Bad SSLRequest response")
-        if data.decode() == 'S':
+        if data.decode(self._encoding) == 'S':
             return True
         return False
 
@@ -178,7 +184,7 @@ class protocol3(object):
                 if len(raw) == 0:
                     continue
                 code = struct.unpack('!c', raw[0:1])[0]
-                string = raw[1:].decode()
+                string = raw[1:].decode(self._encoding)
                 ret.append((code, string))
         return (data[0:1], ret)
 
@@ -205,9 +211,9 @@ class protocol3(object):
         extra = {}
         for val in data[5:].split(b'\x00'):
             if (i % 2) == 0:
-                key = val.decode()
+                key = val.decode(self._encoding)
             else:
-                extra[key] = val.decode()
+                extra[key] = val.decode(self._encoding)
             i += 1
         return (data[0:1], extra)
 
@@ -230,7 +236,7 @@ class protocol3(object):
         length = struct.unpack('!L', data[1:5])[0]
         self._check_message_length(data, length)
         extra = {
-            'status': data[5:6].decode()
+            'status': data[5:6].decode(self._encoding)
         }
         return (data[0:1], extra)
 
@@ -242,7 +248,7 @@ class protocol3(object):
         self._check_message_length(data, length)
         if length == 4:
             return (data[0], None)
-        typ = data[5:6].decode()
+        typ = data[5:6].decode(self._encoding)
         string = data[6:]
         return (data[0:1], {'type': typ, 'string': string})
 
@@ -258,7 +264,7 @@ class protocol3(object):
             pos = 0
             while pos < nb_fields:
                 eop = ndata.index(b'\x00')
-                name = ndata[0:eop].decode()
+                name = ndata[0:eop].decode(self._encoding)
                 ndata = ndata[eop + 1:]
                 (table_oid, col_oid, type_oid, type_size, typmod, format_code)\
                     = struct.unpack('!LhLhlh', ndata[0:18])
@@ -289,7 +295,7 @@ class protocol3(object):
                 col_length = struct.unpack('!l', data[cur:cur + 4])[0]
                 cur += 4
                 if col_length > 0:
-                    value = data[cur:cur + col_length].decode()
+                    value = data[cur:cur + col_length].decode(self._encoding)
                     cur += col_length
                 else:
                     value = None
@@ -303,7 +309,7 @@ class protocol3(object):
         """
         length = struct.unpack('!L', data[1:5])[0]
         self._check_message_length(data, length)
-        body = data[5:].decode()
+        body = data[5:].decode(self._encoding)
         ret = {}
         if body[0:6] == 'INSERT':
             res = re.match('^INSERT ([0-9]+) ([0-9]+)', body)
@@ -626,6 +632,8 @@ class connector(object):
         self._pg_version = 0
         # replication
         self._replication = False
+        # client encoding
+        self._encoding = 'UTF-8'
 
     def _set_ip_type(self,):
         """
@@ -695,9 +703,9 @@ class connector(object):
             if message[1] is not None:
                 err_string = message[1]['string']
                 err_split = err_string.split(b'\x00')
-                msg = err_split[3][1:].decode()
-                typ = err_split[0][0:].decode()
-                code = err_split[2][1:].decode()
+                msg = err_split[3][1:].decode(self._encoding)
+                typ = err_split[0][0:].decode(self._encoding)
+                code = err_split[2][1:].decode(self._encoding)
 
             raise error(code, typ, msg)
 
@@ -795,6 +803,20 @@ class connector(object):
                 version = int(version) * 100
             self._pg_version = int(version)
 
+        if key == 'client_encoding':
+            # Change encoding to client_encoding
+
+            # Default encoding
+            encoding = 'UTF-8'
+            try:
+                codecs.lookup(value)
+                encoding = value
+            except LookupError:
+                pass
+
+            self._encoding = encoding
+            self._protocol.set_encoding(encoding)
+
     def connect(self,):
         """
         Connect to the database.
@@ -824,8 +846,8 @@ class connector(object):
             # MD5
             password = "md5" + hashlib.md5(
                 hashlib.md5(
-                    self._password.encode() +
-                    self._user.encode()
+                    self._password.encode(self._encoding) +
+                    self._user.encode(self._encoding)
                 ).hexdigest().encode() +
                 self._protocol.get_salt(messages[0])
             ).hexdigest()
