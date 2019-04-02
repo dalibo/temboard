@@ -703,16 +703,29 @@ def list_scheduled_analyze(app, **kwargs):
     return list_scheduled_operation(app, 'analyze', **kwargs)
 
 
-def schedule_reindex(conn, database, schema, index, datetimeutc, app):
-    return schedule_operation('reindex', conn, database, schema,
-                              datetimeutc, app, index=index)
+def schedule_reindex(conn, database, datetimeutc, app,
+                     schema=None, table=None, index=None):
+    return schedule_operation('reindex', conn, database, datetimeutc, app,
+                              schema=schema, table=table, index=index)
 
 
-def reindex(conn, dbname, schema, index):
-    check_index_exists(conn, schema, index)
+def reindex(conn, dbname, schema, table, index):
+    if index:
+        check_index_exists(conn, schema, index)
+    if table:
+        check_table_exists(conn, schema, table)
 
     # Build the SQL query
-    q = "REINDEX INDEX {schema}.{index}".format(schema=schema, index=index)
+    q = "REINDEX"
+    if table:
+        element = '{schema}.{table}'.format(schema=schema, table=table)
+        q += " TABLE {element}".format(element=element)
+    elif index:
+        element = '{schema}.{index}'.format(schema=schema, index=index)
+        q += " INDEX {element}".format(element=element)
+    else:
+        element = '{dbname}'.format(dbname=dbname)
+        q += " DATABASE {element}".format(element=element)
 
     try:
         # Try to execute the statement
@@ -722,7 +735,7 @@ def reindex(conn, dbname, schema, index):
     except error as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
-        raise UserError("Unable to run reindex %s on %s.%s" % (schema, index,))
+        raise UserError("Unable to run reindex on %s" % (element))
 
 
 def list_scheduled_reindex(app, **kwargs):
