@@ -4,6 +4,7 @@ $(function() {
 
   var getScheduledVacuumsTimeout;
   var getScheduledAnalyzesTimeout;
+  var getScheduledReindexesTimeout;
 
   new Vue({
     el: '#app',
@@ -27,7 +28,12 @@ $(function() {
       scheduledVacuums: [],
       analyzeWhen: 'now',
       analyzeScheduledTime: moment(),
-      scheduledAnalyzes: []
+      scheduledAnalyzes: [],
+      reindexWhen: 'now',
+      reindexScheduledTime: moment(),
+      scheduledReindexes: [],
+      reindexElementType: 'database',
+      reindexElementName: null
     },
     created: function() {
       this.fetchData();
@@ -45,13 +51,16 @@ $(function() {
         getData.call(this);
         getScheduledVacuums.call(this);
         getScheduledAnalyzes.call(this);
+        getScheduledReindexes.call(this);
       },
       sortBy: sortBy,
       checkSession: checkSession,
       doVacuum: doVacuum,
       cancelVacuum: cancelVacuum,
       doAnalyze: doAnalyze,
-      cancelAnalyze: cancelAnalyze
+      cancelAnalyze: cancelAnalyze,
+      doReindex: doReindex,
+      cancelReindex: cancelReindex
     }
   });
 
@@ -94,6 +103,11 @@ $(function() {
       startDate: this.analyzeScheduledTime
     }, options), function(start) {
       this.analyzeScheduledTime = start;
+    }.bind(this));
+    $('#reindexScheduledTime').daterangepicker($.extend({
+      startDate: this.reindexScheduledTime
+    }, options), function(start) {
+      this.reindexScheduledTime = start;
     }.bind(this));
     $('[data-toggle="popover"]').popover();
   }
@@ -240,6 +254,70 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledAnalyzes.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  function getScheduledReindexes() {
+    window.clearTimeout(getScheduledReindexesTimeout);
+    var count = this.scheduledReindexes.length;
+    $.ajax({
+      url: apiUrl + '/reindex/scheduled',
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      contentType: "application/json",
+      success: (function(data) {
+        this.scheduledReindexes = data;
+        // refresh list
+        getScheduledReindexesTimeout = window.setTimeout(function() {
+          getScheduledReindexes.call(this);
+        }.bind(this), 5000);
+
+        // There are less reindexes than before
+        // It may mean that a reindex is finished
+        if (data.length < count) {
+          getData.call(this);
+        }
+      }).bind(this)
+    });
+  }
+
+  function doReindex() {
+
+    var fields = $('#reindexForm').serializeArray();
+    var data = {};
+    var datetime = fields.filter(function(field) {
+      return field.name == 'datetime';
+    }).map(function(field) {
+      return field.value;
+    }).join('');
+    if (datetime) {
+      data['datetime'] = datetime;
+    }
+    $.ajax({
+      method: 'POST',
+      url: [apiUrl, 'reindex'].join('/'),
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      data: JSON.stringify(data),
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledReindexes.call(this);
+      }).bind(this),
+      error: onError
+    });
+  }
+
+  function cancelReindex(id) {
+    if (!checkSession()) {
+      return;
+    }
+    $.ajax({
+      method: 'DELETE',
+      url: maintenanceBaseUrl + '/reindex/' + id,
+      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      contentType: "application/json",
+      success: (function(data) {
+        getScheduledReindexes.call(this);
       }).bind(this),
       error: onError
     });

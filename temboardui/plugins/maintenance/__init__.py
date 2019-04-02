@@ -16,6 +16,8 @@ blueprint.generic_proxy(r'/maintenance/.*/(?:vacuum|analyze)',
 blueprint.generic_proxy(r'/maintenance/.*/schema/.*/(?:index|table)/.*/'
                         '(?:reindex)',
                         methods=['POST'])
+blueprint.generic_proxy(r'/maintenance/.*/(?:reindex)',
+                        methods=['POST'])
 blueprint.generic_proxy(r'/maintenance/reindex/.*',
                         methods=['DELETE'])
 blueprint.generic_proxy(r'/maintenance/(?:vacuum|analyze)/.*',
