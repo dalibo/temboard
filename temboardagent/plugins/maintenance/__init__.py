@@ -212,7 +212,6 @@ def post_reindex(http_context, app):
 def scheduled_reindex_index(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
-    # table = http_context['urlvars'][2]
     return functions.list_scheduled_reindex(app, dbname=dbname, schema=schema)
 
 
