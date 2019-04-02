@@ -28,7 +28,8 @@ $(function() {
       reindexWhen: 'now',
       reindexScheduledTime: moment(),
       scheduledReindexes: [],
-      reindexIndexName: null
+      reindexElementType: null,
+      reindexElementName: null
     },
     computed: {
       indexSortOrder: function() {
@@ -284,14 +285,21 @@ $(function() {
     if (datetime) {
       data['datetime'] = datetime;
     }
-    var index = fields.filter(function(field) {
-      return field.name == 'index';
+    // get the element type (either table or index)
+    var elementType = fields.filter(function(field) {
+      return field.name == 'elementType';
+    }).map(function(field) {
+      return field.value;
+    }).join('');
+    // get the element name
+    var element = fields.filter(function(field) {
+      return field.name == elementType;
     }).map(function(field) {
       return field.value;
     }).join('');
     $.ajax({
       method: 'POST',
-      url: schemaApiUrl + '/index/' + index + '/reindex',
+      url: [schemaApiUrl, elementType, element, 'reindex'].join('/'),
       beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       data: JSON.stringify(data),
       contentType: "application/json",

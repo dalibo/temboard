@@ -13,7 +13,8 @@ blueprint.generic_proxy(r'/maintenance/.*/schema/.*/table/.*/'
                         methods=['POST'])
 blueprint.generic_proxy(r'/maintenance/.*/(?:vacuum|analyze)',
                         methods=['POST'])
-blueprint.generic_proxy(r'/maintenance/.*/schema/.*/index/.*/(?:reindex)',
+blueprint.generic_proxy(r'/maintenance/.*/schema/.*/(?:index|table)/.*/'
+                        '(?:reindex)',
                         methods=['POST'])
 blueprint.generic_proxy(r'/maintenance/reindex/.*',
                         methods=['DELETE'])

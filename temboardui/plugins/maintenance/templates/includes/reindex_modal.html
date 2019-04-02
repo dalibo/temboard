@@ -37,7 +37,8 @@
               </div>
             </div>
           </fieldset>
-          <input type="hidden" name="index" v-model="reindexIndexName">
+          <input type="hidden" name="elementType" v-model="reindexElementType">
+          <input type="hidden" v-bind:name="reindexElementType" v-model="reindexElementName">
         </form>
       </div>
       <div class="modal-footer">

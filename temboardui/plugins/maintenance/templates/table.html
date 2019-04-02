@@ -130,58 +130,31 @@
         <small>
           {{! table.analyze_count }} analyzes - {{! table.autoanalyze_count }} auto analyzes
         </small>
+      </div>
+      <div class="col">
+        Last VACUUM:
+        <em :title="getLatestVacuum().date">
+          <strong v-if="getLatestVacuum().date">
+            {{! getLatestVacuum().date | relative_time }}
+          </strong>
+          <span v-else>N/A</span>
+          <span v-if="getLatestVacuum().auto">(auto)</span>
+        </em>
+        <br>
+        <small>
+          {{! table.vacuum_count }} vacuums - {{! table.autovacuum_count }} auto vacuums
+        </small>
+      </div>
+      <div class="col">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
         <div>
           <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal" v-on:click="checkSession">
             ANALYZE
           </button>
-          <!-- Modal -->
-          <div class="modal fade" id="analyzeModal" tabindex="-1" role="dialog" aria-labelledby="analyzeModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="analyzeModalLabel">ANALYZE</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <form id="analyzeForm">
-                    <fieldset class="form-group">
-                      <div class="row">
-                        <legend class="col-form-label col-sm-2 pt-0">When</legend>
-                        <div class="col-sm-10">
-                          <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="analyzeNow" v-model="analyzeWhen" v-bind:value="'now'" checked>
-                            <label class="form-check-label" for="analyzeNow">
-                              Now
-                            </label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <label class="form-check-label" for="analyzeScheduled">
-                            <input class="form-check-input" type="radio" id="analyzeScheduled" v-model="analyzeWhen" v-bind:value="'scheduled'">
-                              Scheduled
-                            </label>
-                          </div>
-                          <div v-show="analyzeWhen == 'scheduled'">
-                            <button type="button" id="analyzeScheduledTime" class="btn btn-outline-secondary">
-                              <i class="fa fa-clock-o"></i>
-                              &nbsp;
-                              <span>{{! analyzeScheduledTime.toString() }}</span>
-                            </button>
-                            <input type="hidden" name="datetime" v-bind:value="analyzeScheduledTime.utc().format('YYYY-MM-DDTHH:mm:ss[Z]')" :disabled="analyzeWhen != 'scheduled'">
-                          </div>
-                        </div>
-                      </div>
-                    </fieldset>
-                  </form>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" v-on:click="doAnalyze()" data-dismiss="modal">Apply</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {% include includes/analyze_modal.html %}
           <div>
             <ul class="list list-unstyled">
               <li v-for="scheduledAnalyze in scheduledAnalyzes">
@@ -210,103 +183,11 @@
         </div>
       </div>
       <div class="col">
-        Last VACUUM:
-        <em :title="getLatestVacuum().date">
-          <strong v-if="getLatestVacuum().date">
-            {{! getLatestVacuum().date | relative_time }}
-          </strong>
-          <span v-else>N/A</span>
-          <span v-if="getLatestVacuum().auto">(auto)</span>
-        </em>
-        <br>
-        <small>
-          {{! table.vacuum_count }} vacuums - {{! table.autovacuum_count }} auto vacuums
-        </small>
         <div>
           <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal" v-on:click="checkSession">
             VACUUM
           </button>
-          <!-- Modal -->
-          <div class="modal fade" id="vacuumModal" tabindex="-1" role="dialog" aria-labelledby="vacuumModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="vacuumModalLabel">VACUUM</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <form id="vacuumForm">
-                    <div class="form-group row">
-                      <div class="col-sm-2">Mode</div>
-                      <div class="col-sm-10">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="vacuumModeAnalyze" name="mode" value="analyze">
-                          <label class="form-check-label" for="vacuumModeAnalyze">
-                            ANALYZE
-                          </label>
-                          <small class="form-text text-muted">
-                            Updates statistics after the vacuum.
-                          </small>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="vacuumModeFull" name="mode" value="full">
-                          <label class="form-check-label" for="vacuumModeFull">
-                            FULL
-                          </label>
-                          <small class="form-text text-muted">
-                            Can reclaim more space but takes more time and exclusively locks the table.
-                            <span class="text-danger">Use with caution!</span>
-                          </small>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="vacuumModeFreeze" name="mode" value="freeze">
-                          <label class="form-check-label" for="vacuumModeFreeze">
-                            FREEZE
-                          </label>
-                          <small class="form-text text-muted">
-                            Selects aggressive "freezing" of tuples. Equivalent to performing VACUUM with the <em><code>vacuum_freeze_min_age</code></em> parameter set to zero.
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                    <fieldset class="form-group">
-                      <div class="row">
-                        <legend class="col-form-label col-sm-2 pt-0">When</legend>
-                        <div class="col-sm-10">
-                          <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="vacuumNow" v-model="vacuumWhen" v-bind:value="'now'" checked>
-                            <label class="form-check-label" for="vacuumNow">
-                              Now
-                            </label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <label class="form-check-label" for="vacuumScheduled">
-                            <input class="form-check-input" type="radio" id="vacuumScheduled" v-model="vacuumWhen" v-bind:value="'scheduled'">
-                              Scheduled
-                            </label>
-                          </div>
-                          <div v-show="vacuumWhen == 'scheduled'">
-                            <button type="button" id="vacuumScheduledTime" class="btn btn-outline-secondary">
-                              <i class="fa fa-clock-o"></i>
-                              &nbsp;
-                              <span>{{! vacuumScheduledTime.toString() }}</span>
-                            </button>
-                            <input type="hidden" name="datetime" v-bind:value="vacuumScheduledTime.utc().format('YYYY-MM-DDTHH:mm:ss[Z]')" :disabled="vacuumWhen != 'scheduled'">
-                          </div>
-                        </div>
-                      </div>
-                    </fieldset>
-                  </form>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" v-on:click="doVacuum()" data-dismiss="modal">Apply</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {% include includes/vacuum_modal.html %}
           <div>
             <ul class="list list-unstyled">
               <li v-for="scheduledVacuum in scheduledVacuums">
@@ -329,6 +210,38 @@
                 </template>
                 <template v-else>
                   <em class="text-muted">{{! scheduledVacuum.status }}</em>
+                </template>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div>
+          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementType='table';reindexElementName=table.name;checkSession($event)">
+            REINDEX
+          </button>
+          <div>
+            <ul class="list list-unstyled">
+              <li v-for="scheduledReindex in scheduledReindexes" v-if="!scheduledReindex.index">
+                REINDEX
+                <template v-if="scheduledReindex.status == 'todo'">
+                  <em v-if="scheduledReindex.status == 'todo'">
+                    <span class="text-muted" :title="scheduledReindex.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledReindex.datetime | relative_time(false) }}</span>
+                  </em>
+                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelReindex(scheduledReindex.id)" v-if="scheduledReindex.status == 'todo'">Cancel</button>
+                </template>
+                <template v-else-if="scheduledReindex.status == 'doing'">
+                  <em class="text-muted">
+                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+                    in progress
+                  </em>
+                </template>
+                <template v-else-if="scheduledReindex.status == 'canceled'">
+                  <em class="text-muted">canceled</em>
+                </template>
+                <template v-else>
+                  <em class="text-muted">{{! scheduledReindex.status }}</em>
                 </template>
               </li>
             </ul>
@@ -416,10 +329,9 @@
             <pre><code class="sql">{{! index.def }}</code></pre>
           </td>
           <td class="align-middle" width="5%">
-            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexIndexName=index.name;checkSession($event)">Reindex</button>
+            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementType='index';reindexElementName=index.name;checkSession($event)">Reindex</button>
             <ul class="list list-unstyled mb-0" v-if="scheduledReindexes.length > 0">
-              <template v-for="scheduledReindex in scheduledReindexes">
-              <li v-if="scheduledReindex.index == index.name">
+              <li v-for="scheduledReindex in scheduledReindexes" v-if="scheduledReindex.index == index.name">
                 <template v-if="scheduledReindex.status == 'todo'">
                   <em v-if="scheduledReindex.status == 'todo'">
                     <span class="text-muted" :title="scheduledReindex.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledReindex.datetime | relative_time(false) }}</span>
@@ -439,7 +351,6 @@
                   <em class="text-muted">{{! scheduledReindex.status }}</em>
                 </template>
               </li>
-              </template>
             </ul>
           </td>
         </tr>
