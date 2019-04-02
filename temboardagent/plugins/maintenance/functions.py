@@ -408,10 +408,10 @@ LEFT JOIN (
   GROUP BY schemaname, tblname
 ) AS ibloat
 ON ibloat.schemaname = table_schema AND ibloat.tblname = table_name
-WHERE table_schema = '{}';
+WHERE table_schema = '{schema}';
     """ # noqa
     ret = {'tables': []}
-    conn.execute(query.format(schema))
+    conn.execute(query.format(schema=schema))
     for row in conn.get_rows():
         ret['tables'].append(row)
     return ret
@@ -484,10 +484,10 @@ LEFT JOIN (
 ON ibloat.schemaname = table_schema AND ibloat.tblname = table_name
 JOIN pg_stat_all_tables
 ON relname = table_name
-WHERE table_schema = '{}'
-AND table_name = '{}';
+WHERE table_schema = '{schema}'
+AND table_name = '{table}';
     """
-    conn.execute(query.format(schema, table))
+    conn.execute(query.format(schema=schema, table=table))
     return dict(**next(conn.get_rows()))
 
 
