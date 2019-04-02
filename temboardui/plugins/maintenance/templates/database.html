@@ -21,110 +21,31 @@
   </div>
   <div v-cloak v-if="!loading">
     <div class="row">
-      <div class="col">
+      <div class="col-4">
         <div>
           <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal" v-on:click="checkSession">
             ANALYZE
           </button>
           {% include includes/analyze_modal.html %}
-          <div>
-            <ul class="list list-unstyled">
-              <li v-for="scheduledAnalyze in scheduledAnalyzes">
-                ANALYZE
-                <span v-if="scheduledAnalyze.table">
-                  <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema">{{! scheduledAnalyze.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema + '/table/' + scheduledAnalyze.table">{{! scheduledAnalyze.table }}</a>
-                </span>
-                <template v-if="scheduledAnalyze.status == 'todo'">
-                  <em v-if="scheduledAnalyze.status == 'todo'">
-                    <span class="text-muted" :title="scheduledAnalyze.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledAnalyze.datetime | relative_time(false) }}</span>
-                  </em>
-                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelAnalyze(scheduledAnalyze.id)" v-if="scheduledAnalyze.status == 'todo'">Cancel</button>
-                </template>
-                <template v-else-if="scheduledAnalyze.status == 'doing'">
-                  <em class="text-muted">
-                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-                    in progress
-                  </em>
-                </template>
-                <template v-else-if="scheduledAnalyze.status == 'canceled'">
-                  <em class="text-muted">canceled</em>
-                </template>
-                <template v-else>
-                  <em class="text-muted">{{! scheduledAnalyze.status }}</em>
-                </template>
-              </li>
-            </ul>
-          </div>
+          {% include includes/scheduled_analyze.html %}
         </div>
       </div>
-      <div class="col">
+      <div class="col-4">
         <div>
           <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal" v-on:click="checkSession">
             VACUUM
           </button>
           {% include includes/vacuum_modal.html %}
-          <div>
-            <ul class="list list-unstyled">
-              <li v-for="scheduledVacuum in scheduledVacuums">
-                VACUUM
-                <span v-if="scheduledVacuum.mode">({{! scheduledVacuum.mode.toUpperCase() }})</span>
-                <span v-if="scheduledVacuum.table">
-                  <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema">{{! scheduledVacuum.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema + '/table/' + scheduledVacuum.table">{{! scheduledVacuum.table }}</a>
-                </span>
-                <template v-if="scheduledVacuum.status == 'todo'">
-                  <em v-if="scheduledVacuum.status == 'todo'">
-                    <span class="text-muted" :title="scheduledVacuum.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledVacuum.datetime | relative_time(false) }}</span>
-                  </em>
-                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelVacuum(scheduledVacuum.id)" v-if="scheduledVacuum.status == 'todo'">Cancel</button>
-                </template>
-                <template v-else-if="scheduledVacuum.status == 'doing'">
-                  <em class="text-muted">
-                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-                    in progress
-                  </em>
-                </template>
-                <template v-else-if="scheduledVacuum.status == 'canceled'">
-                  <em class="text-muted">canceled</em>
-                </template>
-                <template v-else>
-                  <em class="text-muted">{{! scheduledVacuum.status }}</em>
-                </template>
-              </li>
-            </ul>
-          </div>
+          {% include includes/scheduled_vacuum.html %}
         </div>
       </div>
-      <div class="col">
+      <div class="col-4">
         <div>
           <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementType='database';reindexElementName=database.name;checkSession($event)">
             REINDEX
           </button>
           {% include includes/reindex_modal.html %}
-          <div>
-            <ul class="list list-unstyled">
-              <li v-for="scheduledReindex in scheduledReindexes" v-if="!scheduledReindex.index">
-                REINDEX
-                <template v-if="scheduledReindex.status == 'todo'">
-                  <em v-if="scheduledReindex.status == 'todo'">
-                    <span class="text-muted" :title="scheduledReindex.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledReindex.datetime | relative_time(false) }}</span>
-                  </em>
-                  <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelReindex(scheduledReindex.id)" v-if="scheduledReindex.status == 'todo'">Cancel</button>
-                </template>
-                <template v-else-if="scheduledReindex.status == 'doing'">
-                  <em class="text-muted">
-                    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-                    in progress
-                  </em>
-                </template>
-                <template v-else-if="scheduledReindex.status == 'canceled'">
-                  <em class="text-muted">canceled</em>
-                </template>
-                <template v-else>
-                  <em class="text-muted">{{! scheduledReindex.status }}</em>
-                </template>
-              </li>
-            </ul>
-          </div>
+          {% include includes/scheduled_reindex.html %}
         </div>
       </div>
     </div>

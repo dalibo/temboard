@@ -1,0 +1,24 @@
+<ul class="list list-unstyled">
+  <li v-for="scheduledAnalyze in scheduledAnalyzes" class="pb-1 text-muted">
+    <i class="fa fa-clock-o"></i>
+    <template v-if="scheduledAnalyze.status == 'todo'">
+      <em v-if="scheduledAnalyze.status == 'todo'">
+        <span :title="scheduledAnalyze.datetime.toString()">{{! scheduledAnalyze.datetime | relative_time(false) }}</span>
+      </em>
+      <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelAnalyze(scheduledAnalyze.id)" v-if="scheduledAnalyze.status == 'todo'">Cancel</button>
+    </template>
+    <template v-else-if="scheduledAnalyze.status == 'doing'">
+      <em>
+        <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+        in progress
+      </em>
+    </template>
+    <template v-else-if="scheduledAnalyze.status == 'canceled'">
+      <em>canceled</em>
+    </template>
+    <template v-else>
+      <em>{{! scheduledAnalyze.status }}</em>
+    </template>
+    <pre class="mb-0 text-truncate"><code class="bg-light small">ANALYZE<span v-if="scheduledAnalyze.table"> <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema">{{! scheduledAnalyze.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledAnalyze.schema + '/table/' + scheduledAnalyze.table">{{! scheduledAnalyze.table }}</a></span></code></pre>
+  </li>
+</ul>
