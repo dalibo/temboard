@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import os
 
@@ -172,6 +173,8 @@ def check_data_worker(app, host_id, instance_id, data):
                         'check_id': c.check_id,
                         'key': key,
                         'value': value,
+                        'state': state,
+                        'prev_state': cs.state
                     },
                     expire=0,
                 )
@@ -224,7 +227,7 @@ def check_data_worker(app, host_id, instance_id, data):
 
 
 @workers.register(pool_size=1)
-def notify_state_change(app, check_id, key, value):
+def notify_state_change(app, check_id, key, value, state, prev_state):
     # check if at least one notifications transport is configured
     # if it's not the case pass
     notifications_conf = app.config.notifications
@@ -251,13 +254,12 @@ def notify_state_change(app, check_id, key, value):
     Session = scoped_session(session_factory)
     worker_session = Session()
 
-    cs = worker_session.query(CheckState).filter(
-        CheckState.check_id == check_id,
-        CheckState.key == unicode(key)
-    ).join(Check).join(Instance).join(Host).one()
+    check = worker_session.query(Check).filter(
+        Check.check_id == check_id,
+    ).join(Instance).join(Host).one()
 
-    port = cs.check.instance.port
-    hostname = cs.check.instance.host.hostname
+    port = check.instance.port
+    hostname = check.instance.host.hostname
     instance = worker_session.query(Instances).filter(
         Instances.pg_port == port,
         Instances.hostname == hostname,
@@ -268,38 +270,42 @@ def notify_state_change(app, check_id, key, value):
         return
 
     specs = check_specs
-    spec = specs.get(cs.check.name)
+    spec = specs.get(check.name)
 
     message = ''
-    if cs.state != 'OK':
+    if state != 'OK':
         message = spec.get('message').format(
             key=key,
-            check=cs.check.name,
+            check=check.name,
             value=value,
-            threshold=getattr(cs.check, cs.state.lower()),
+            threshold=getattr(check, state.lower()),
         )
 
     description = spec.get('description')
     subject = '[temBoard] {state} {hostname} - {description}' \
-        .format(hostname=hostname, state=cs.state, description=description)
+        .format(hostname=hostname, state=state, description=description)
     link = 'https://%s:%d/server/%s/%d/alerting/%s' % (
         app.config.temboard.address,
         app.config.temboard.port,
         instance.agent_address,
         instance.agent_port,
-        cs.check.name)
+        check.name)
+
+    direction = '➚' if prev_state == 'OK' or state == 'CRITICAL' else '➘'
 
     body = '''
     Instance: {hostname}:{port}
     Description: {description}
-    Status: {state}
+    Status: {direction} {state} (prev. {prev_state})
     {message}
     {link}
     '''.format(
         hostname=hostname,
         port=instance.agent_port,
         description=description,
-        state=cs.state,
+        direction=direction,
+        state=state,
+        prev_state=prev_state,
         message=message,
         link=link,
     )
