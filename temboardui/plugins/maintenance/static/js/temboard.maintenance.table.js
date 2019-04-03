@@ -37,6 +37,13 @@ $(function() {
       },
       indexesSorted: function() {
         return _.orderBy(this.table.indexes, this.indexSortCriteria, this.indexSortOrder);
+      },
+      filteredScheduledReindexes: function() {
+        return _.filter(this.scheduledReindexes, function(reindex) {
+          // only reindexes with defined table
+          // others are for indexes
+          return reindex.table != null;
+        });
       }
     },
     created: function() {

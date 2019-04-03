@@ -44,6 +44,11 @@ $(function() {
       },
       schemasSorted: function() {
         return _.orderBy(this.database.schemas, this.sortCriteria, this.sortOrder);
+      },
+      filteredScheduledReindexes: function() {
+        // don't do anything
+        // only relevant for the table view
+        return this.scheduledReindexes;
       }
     },
     methods: {
