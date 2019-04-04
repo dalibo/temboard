@@ -378,6 +378,50 @@ Maintenance API
         "vacuum_count": 0
     }
 
+.. http:post:: /maintenance/<database_name>/vacuum
+
+    Launch a VACUUM on the database
+
+    The VACUUM can be scheduled if `datetime` is provided.
+
+    The mode parameter can be a combination of 'full', 'freeze' or 'analyze'.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed, Parameter 'mode' is malformed or Parameter 'datetime' is maformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    POST /maintenance/postgres/vacuum HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+    Content-type: application/json
+
+    {
+        "mode": "full,analyze",
+        "datetime": "2019-03-22T12:24:39Z"
+    }
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 11:08:02 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "id": "239cd9a0"
+    }
+
 .. http:post:: /maintenance/<database_name>/schema/<schema_name>/table/<table_name>/vacuum
 
     Launch a VACUUM on the table.
@@ -547,6 +591,99 @@ Maintenance API
         }
     ]
 
+.. http:get:: /maintenance/<database_name>/vacuum/scheduled
+
+    Get the id of all the scheduled VACUUM operations.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    GET /maintenance/postgres/vacuum/scheduled HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 14:39:01 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    [
+        {
+            "datetime": "2019-03-23T11:28:00Z",
+            "dbname": "postgres",
+            "id": "9ce6426b",
+            "index": null,
+            "mode": "full",
+            "schema": "public",
+            "status": "todo",
+            "table": "country"
+        },
+        {
+            "datetime": "2019-03-23T11:28:00Z",
+            "dbname": "postgres",
+            "id": "785b82c6",
+            "index": null,
+            "mode": "full",
+            "schema": "public",
+            "status": "todo",
+            "table": "city"
+        }
+    ]
+
+.. http:post:: /maintenance/<database_name>/analyze
+
+    Launch a ANALYZE on the database.
+
+    The ANALYZE can be scheduled if `datetime` is provided.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed, Parameter 'datetime' is maformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    POST /maintenance/postgres/analyze HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+    Content-type: application/json
+
+    {
+        "datetime": "2019-03-23T11:28:00Z"
+    }
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 15:12:02 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "id": "1ac59a5e"
+    }
+
 .. http:post:: /maintenance/<database_name>/schema/<schema_name>/table/<table_name>/analyze
 
     Launch a ANALYZE on the table.
@@ -587,6 +724,48 @@ Maintenance API
     {
         "id": "1045055e"
     }
+
+.. http:get:: /maintenance/<database_name>/analyze/scheduled
+
+    Get the id of the scheduled ANALYZE operations for the given database
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    GET /maintenance/postgres/analyze/scheduled HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 14:39:01 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    [
+        {
+            "datetime": "2019-03-23T11:28:00Z",
+            "dbname": "postgres",
+            "id": "1045055e",
+            "index": null,
+            "mode": null,
+            "schema": "public",
+            "status": "todo",
+            "table": "country"
+        }
+    ]
 
 .. http:get:: /maintenance/<database_name>/schema/<schema_name>/table/<table_name>/analyze/scheduled
 
@@ -713,6 +892,88 @@ Maintenance API
         }
     ]
 
+.. http:post:: /maintenance/<database_name>/reindex
+
+    Launch a REINDEX on the database.
+
+    The REINDEX can be scheduled if `datetime` is provided.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed, Parameter 'datetime' is maformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    POST /maintenance/postgres/reindex HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+    Content-type: application/json
+
+    {
+        "datetime": "2019-03-22T12:24:39Z"
+    }
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 11:08:02 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "id": "7f377004"
+    }
+
+.. http:post:: /maintenance/<database_name>/schema/<schema_name>/table/<table_name>/reindex
+
+    Launch a REINDEX on the table.
+
+    The REINDEX can be scheduled if `datetime` is provided.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed, Parameter 'datetime' is maformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    POST /maintenance/postgres/schema/public/table/country/reindex HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+    Content-type: application/json
+
+    {
+        "datetime": "2019-03-22T12:24:39Z"
+    }
+
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 11:08:02 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    {
+        "id": "7f377004"
+    }
+
 .. http:post:: /maintenance/<database_name>/schema/<schema_name>/index/<index_name>/reindex
 
     Launch a REINDEX on the index.
@@ -754,7 +1015,70 @@ Maintenance API
         "id": "7f377004"
     }
 
-.. http:get:: /maintenance/<database_name>/schema/<schema_name>/<index_name>/table/<table_name>reindex/scheduled
+.. http:get:: /maintenance/<database_name>/reindex/scheduled
+
+    Get the id of the scheduled REINDEX operations for the given database.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed.
+
+
+**Example request**:
+
+.. sourcecode:: http
+
+    GET /maintenance/postgres/reindex/scheduled HTTP/1.1
+    X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
+
+**Example response**:
+
+.. sourcecode:: http
+
+    HTTP/1.0 200 OK
+    Server: temboard-agent/4.0+master Python/3.7.2
+    Date: Fri, 22 Mar 2019 14:39:01 GMT
+    Access-Control-Allow-Origin: *
+    Content-type: application/json
+
+    [
+        {
+            "datetime": "2019-03-23T11:28:00Z",
+            "dbname": "postgres",
+            "id": "7f377004",
+            "index": "country_pkey",
+            "mode": null,
+            "schema": "public",
+            "status": "todo",
+            "table": null
+        },
+        {
+            "datetime": "2019-03-24T10:32:00Z",
+            "dbname": "postgres",
+            "id": "7a3cae05",
+            "index": null,
+            "mode": null,
+            "schema": null,
+            "status": "todo",
+            "table": null
+        }
+    ]
+
+.. http:get:: /maintenance/<database_name>/schema/<schema_name>/reindex/scheduled
+
+    Get the id of the scheduled REINDEX operations for the given schema.
+
+    :query key: Agent's key for authentication (optional)
+    :reqheader X-Session: Session ID
+    :status 200: no error
+    :status 401: invalid session
+    :status 500: internal error
+    :status 406: header ``X-Session`` is malformed.
+
+.. http:get:: /maintenance/<database_name>/schema/<schema_name>/<index_name>/table/<table_name>/reindex/scheduled
 
     Get the id of the scheduled REINDEX operations for the given schema.
     Alias for `/maintenance/<database_name>/schema/<schema_name>/reindex/scheduled` (See below).
