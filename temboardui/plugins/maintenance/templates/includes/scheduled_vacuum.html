@@ -1,0 +1,30 @@
+<div v-if="scheduledVacuums.length">
+  <a data-toggle="collapse" href="#collapseScheduledVacuums" aria-expanded="false" aria-controls="collapseScheduledVacuums">
+    <i class="fa fa-clock-o"></i>
+    {{! scheduledVacuums.length }} scheduled vacuums
+  </a>
+  <ul class="list list-unstyled collapse border rounded p-1" id="collapseScheduledVacuums">
+    <li v-for="scheduledVacuum in scheduledVacuums" class="pb-1 text-muted">
+      <pre class="mb-0 text-truncate"><code class="bg-light small">VACUUM<span v-if="scheduledVacuum.mode"> ({{! scheduledVacuum.mode.toUpperCase() }})</span><span v-if="scheduledVacuum.table"> <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema">{{! scheduledVacuum.schema }}</a>.<a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + scheduledVacuum.schema + '/table/' + scheduledVacuum.table">{{! scheduledVacuum.table }}</a></span></code></pre>
+      <template v-if="scheduledVacuum.status == 'todo'">
+        <em>
+          scheduled
+          <span :title="scheduledVacuum.datetime.toString()">{{! scheduledVacuum.datetime | relative_time(false) }}</span>
+        </em>
+        <button class="btn btn-sm btn-outline-secondary py-0" v-on:click="cancelVacuum(scheduledVacuum.id)" v-if="scheduledVacuum.status == 'todo'">Cancel</button>
+      </template>
+      <template v-else-if="scheduledVacuum.status == 'doing'">
+        <em>
+          <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+          in progress
+        </em>
+      </template>
+      <template v-else-if="scheduledVacuum.status == 'canceled'">
+        <em>canceled</em>
+      </template>
+      <template v-else>
+        <em>{{! scheduledVacuum.status }}</em>
+      </template>
+    </li>
+  </ul>
+</div>

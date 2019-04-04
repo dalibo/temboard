@@ -31,7 +31,8 @@ $(function() {
       reindexWhen: 'now',
       reindexScheduledTime: moment(),
       scheduledReindexes: [],
-      reindexIndexName: null
+      reindexElementType: 'index',
+      reindexElementName: null
     },
     computed: {
       sortOrder: function() {
@@ -147,20 +148,29 @@ $(function() {
     if (datetime) {
       data['datetime'] = datetime;
     }
-    var index = fields.filter(function(field) {
-      return field.name == 'index';
+
+    // get the element type (either table or index)
+    var elementType = fields.filter(function(field) {
+      return field.name == 'elementType';
+    }).map(function(field) {
+      return field.value;
+    }).join('');
+    // get the element name
+    var element = fields.filter(function(field) {
+      return field.name == elementType;
     }).map(function(field) {
       return field.value;
     }).join('');
     $.ajax({
       method: 'POST',
-      url: schemaApiUrl + '/index/' + index + '/reindex',
+      url: [schemaApiUrl, elementType, element, 'reindex'].join('/'),
       beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
       data: JSON.stringify(data),
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -207,5 +217,11 @@ $(function() {
       return false;
     }
     return true;
+  }
+
+  function onError(xhr) {
+    if (xhr.status == 401) {
+      showNeedsLoginMsg();
+    }
   }
 });
