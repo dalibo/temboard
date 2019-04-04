@@ -112,8 +112,14 @@ temBoard UI wheel and source tarball are published on
 [PyPI](https://pypi.org/project/temboard). Installing from PyPI requires
 Python2.7, pip and wheel. It's better to have a recent version of pip.
 
+Due to the [binary strategy of
+psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/)
+project, you have to choose how to install psycopg2: either from source (using
+`psycopg2` package) or from binary (using `psycopg2-binary` package). You can
+also use distribution package instead.
+
 ``` console
-$ sudo pip install temboard
+$ sudo pip install temboard psycopg2-binary
 $ temboard --version
 ```
 

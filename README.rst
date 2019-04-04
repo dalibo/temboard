@@ -23,7 +23,7 @@ metrics and other data.
 
 ::
 
-    pip install temboard
+    pip install temboard psycopg2-binary
     sudo -u postgres bash /usr/local/share/temboard/create_repository.sh
     temboard -c /usr/local/share/temboard/quickstart/temboard.conf
 
