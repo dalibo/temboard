@@ -55,6 +55,7 @@ fi
 # deprecated, we can safely change this line to 'psycopg2-binary' and ship
 # latest psycopg2.
 pip install $dist 'psycopg2<2.8'
+pip check
 virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
 
 sed -i s,$DESTDIR,, ${VIRTUAL_ENV}/bin/temboard
