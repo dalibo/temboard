@@ -12,7 +12,7 @@ First, create a virtualenv for Python2.7, activate it. Then install temBoard and
 run it with:
 
 ``` console
-$ pip install -e .
+$ pip install -e . psycopg2-binary
 $ temboard -c temboard.dev.conf --debug
 ```
 

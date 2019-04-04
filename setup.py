@@ -27,7 +27,11 @@ SETUP_KWARGS = dict(
     install_requires=[
         'futures',
         'python-dateutil>=1.5',
-        'psycopg2>=2.5.1',
+        # There is no hard dependency on psycopg2 to allow using
+        # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
+        # and there is no way to state an OR dependency in Python. It's up to
+        # the user or package manager to ensure psycopg2 dependency. See
+        # documentation.
         'sqlalchemy>=0.9.8',
         'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
     ],
