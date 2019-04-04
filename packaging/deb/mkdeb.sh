@@ -51,7 +51,12 @@ dist=${DISTDIR}/temboard-${pep440v}-py2-none-any.whl
 if ! [ -f $dist ] ; then
 	pip download --no-deps --pre --dest ${DISTDIR}/ temboard==$pep440v
 fi
-pip install $dist
+# We have to explicitly install either psycopg2 or psycopg2-binary starting from
+# temboard 4.0. For temboard 3.0, use psycopg-2.7 as it matches temboard 3.0
+# requirements and have wheel available on PyPI. Once temboard 3.0 is
+# deprecated, we can safely change this line to 'psycopg2-binary' and ship
+# latest psycopg2.
+pip install $dist 'psycopg2<2.8'
 virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
 
 sed -i s,$DESTDIR,, ${VIRTUAL_ENV}/bin/temboard
