@@ -748,7 +748,7 @@ def check_agent_port(value):
 
 def send_mail(host, port, subject, content, emails):
 
-    msg = MIMEText(content)
+    msg = MIMEText(content, 'plain', 'utf-8')
     msg['Subject'] = subject
 
     try:
