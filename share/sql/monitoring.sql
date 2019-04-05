@@ -137,11 +137,11 @@ CREATE TYPE metric_wal_files_record AS (
 CREATE TYPE metric_cpu_record AS (
   datetime TIMESTAMPTZ,
   measure_interval INTERVAL,
-  time_user INTEGER,
-  time_system INTEGER,
-  time_idle INTEGER,
-  time_iowait INTEGER,
-  time_steal INTEGER
+  time_user BIGINT,
+  time_system BIGINT,
+  time_idle BIGINT,
+  time_iowait BIGINT,
+  time_steal BIGINT
 );
 
 CREATE TYPE metric_process_record AS (
