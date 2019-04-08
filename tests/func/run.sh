@@ -53,7 +53,10 @@ install_ui_py() {
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
 	rm -f /tmp/temboard-*.tar.gz
 	python2 setup.py sdist --dist-dir /tmp
-	pip2.7 install --ignore-installed --prefix=/usr/local --upgrade /tmp/temboard-*.tar.gz
+	pip2.7 install \
+	       --prefix=/usr/local --ignore-installed --upgrade \
+	       /tmp/temboard-*.tar.gz \
+	       psycopg2-binary
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2

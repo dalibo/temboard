@@ -8,7 +8,7 @@ RUN apt-get update -y \
     ;
 
 RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard/ && \
-    pip install --no-cache-dir ./temboard && \
+    pip install --no-cache-dir ./temboard psycopg2-binary && \
     rm -rf temboard
 
 RUN python -c 'import urllib; urllib.urlretrieve("https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64", "/usr/local/bin/gosu")' \
