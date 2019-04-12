@@ -35,7 +35,7 @@ fi
 pep440v=${versions[0]}
 debianv=${versions[1]}
 CODENAME=$(lsb_release --short --codename)
-release=1dlb1${CODENAME}1
+release=0dlb1${CODENAME}1
 
 #       I N S T A L L
 
