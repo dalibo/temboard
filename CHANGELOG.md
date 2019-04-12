@@ -1,6 +1,19 @@
 # Changelog
 
-## [3.0] - 2019-03-XX
+## [3.1] - 2019-04-12
+
+### Changed
+
+- Allow to use either psycopg2 or psycopg2-binary by [@bersace](https://github.com/bersace)
+
+### Fixed
+
+- `temboard-agent`: SPC should raise an error if no password supplied with md5 auth. method by [@julmon](https://github.com/julmon)
+- `temboard-agent`: Configure encoding to server `client_encoding` parameter by [@julmon](https://github.com/julmon)
+- `temboard-agent`: Prevent ValueError in format for python2.6 by [@pgiraud](https://github.com/pgiraud)
+
+
+## [3.0] - 2019-03-20
 
 ### Added
 
