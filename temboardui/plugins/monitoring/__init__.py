@@ -122,8 +122,10 @@ def purge_history_worker(app):
         engine = create_engine(dburi)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
-            logger.debug("Running SQL function monitoring.purge_history_tables({0})".format(data_purge))
-            res = conn.execute("SELECT * FROM purge_history_tables({0})".format(data_purge))
+            logger.debug("Running SQL function monitoring.purge_history_tables"
+                         "({0})".format(data_purge))
+            res = conn.execute("SELECT * FROM purge_history_tables({0})"
+                               .format(data_purge))
             for row in res.fetchall():
                 logger.debug("table=%s dropped" % (row['tblname']))
             conn.execute("COMMIT")
