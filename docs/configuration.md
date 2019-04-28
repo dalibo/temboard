@@ -15,6 +15,7 @@ The configuration file `temboard.conf` is formated using INI format. Configurati
   - `ssl_ca_cert_file `: File where to store each agent's SSL certificate. Default: `/etc/temboard/ssl/temboard_ca_certs_CHANGEME.pem`;
   - `cookie_secret`: Secret key used to crypt cookie content. Default: `SECRETKEYTOBECHANGED`;
   - `plugins`: Array of plugin name to load. Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance"]`;
+  - `home`: Set home directory for `temboard`. Default: `/var/lib/temboard`
 
 ### `[repository]`
   - `host`: Repository host name or address. Default: `localhost`;
@@ -22,6 +23,7 @@ The configuration file `temboard.conf` is formated using INI format. Configurati
   - `user`: Connection user. Default: `temboard`;
   - `password`: User password. Default: `None`;
   - `dbname`: Database name. Default: `temboard`;
+  - `data_purge`: Automatic purge of older data, in months. Default: `6`
 
 ### `[logging]`
   - `method`: Method used to send the logs: `stderr`, `syslog` or `file`. Default: `syslog`;

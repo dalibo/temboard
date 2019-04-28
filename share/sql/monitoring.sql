@@ -1143,6 +1143,7 @@ BEGIN
     PERFORM 1 FROM pg_tables WHERE tablename = v_tablename AND schemaname = current_schema();
     IF NOT FOUND THEN
       EXECUTE 'CREATE TABLE '||v_tablename||' ('||v_create_tbl_cols_hist||', records '||trim((t->'record_type')::TEXT, '"')||'[]) PARTITION BY RANGE (lower('||v_tbl_cols_hist_name||'))';
+      EXECUTE 'CREATE TABLE '||v_tablename||'_default PARTITION OF '||v_tablename||' DEFAULT';
       EXECUTE 'CREATE INDEX idx_'||v_tablename||' ON '||v_tablename||' ('||v_create_idx_cols_hist||')';
       RETURN QUERY SELECT v_tablename;
     END IF;
@@ -1189,7 +1190,7 @@ BEGIN
   -- Tables creation if they do not exist
   PERFORM 1 FROM pg_tables WHERE tablename = v_child_tablename AND schemaname = current_schema();
   IF NOT FOUND THEN
-    EXECUTE 'CREATE TABLE '||v_child_tablename||' PARTITION OF '||parent_tablename||$$ FOR VALUES FROM ('$$||i_year||'-'||i_month||$$-1 0:0:0 GMT') TO  ('$$||v_next_month_year||'-'||v_next_month||$$-1 0:0:0 GMT')$$;
+    EXECUTE 'CREATE TABLE IF NOT EXISTS '||v_child_tablename||' PARTITION OF '||parent_tablename||$$ FOR VALUES FROM ('$$||i_year||'-'||i_month||$$-1 0:0:0 GMT') TO  ('$$||v_next_month_year||'-'||v_next_month||$$-1 0:0:0 GMT')$$;
     RETURN QUERY SELECT v_child_tablename;
   END IF;
 END;
@@ -1201,7 +1202,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   t JSON;
-  v_most_recent TIMESTAMPTZ;
+  v_oldest_entry TIMESTAMPTZ;
   v_table_current TEXT;
   v_table_history TEXT;
   v_query TEXT;
@@ -1218,9 +1219,9 @@ BEGIN
     v_query := replace(v_query, '#current_table#', v_table_current);
     v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
     -- Create table if not exist
-    EXECUTE 'SELECT min(datetime) FROM '||quote_ident(v_table_current) INTO v_most_recent;
-    IF v_most_recent THEN
-      EXECUTE 'SELECT create_history_table_partition('||v_table_history||', EXTRACT(YEAR FROM '||v_most_recent||'), EXTRACT(MONTH FROM '||v_most_recent||'))';
+    EXECUTE 'SELECT min(datetime) FROM '||quote_ident(v_table_current) INTO v_oldest_entry;
+    IF v_oldest_entry IS NOT NULL THEN
+      EXECUTE 'SELECT create_history_table_partition('''||v_table_history||''', EXTRACT(YEAR FROM '''||v_oldest_entry||'''::date)::int, EXTRACT(MONTH FROM '''||v_oldest_entry||'''::date)::int)';
       -- Move data into _history table
       EXECUTE v_query;
       GET DIAGNOSTICS i = ROW_COUNT;
@@ -1229,6 +1230,39 @@ BEGIN
     END IF;
     -- Return each history table name and the number of rows inserted
     RETURN QUERY SELECT v_table_history, i;
+  END LOOP;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION purge_history_tables(i_month_history_to_keep INT) RETURNS TABLE(tblname TEXT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  t JSON;
+  part_table TEXT;
+  part_table_date TEXT[];
+  part_table_year INT;
+  part_table_month INT;
+  v_most_recent TIMESTAMPTZ;
+  v_table_history TEXT;
+  v_query TEXT;
+  i INTEGER;
+BEGIN
+  -- History data from each _current table
+  FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
+    v_table_history := trim((t->'name')::TEXT, '"')||'_history';
+    i := 0;
+    -- Get table history partitions with '_YYYYMM' ending
+    FOR part_table IN SELECT c1.relname FROM pg_catalog.pg_class c1 join pg_catalog.pg_inherits i on c1.oid=i.inhrelid join pg_catalog.pg_class c2 on i.inhparent=c2.oid WHERE c2.relname=v_table_history AND regexp_match(c1.relname, '[a-z_]+_(\d{6})') IS NOT NULL LOOP
+      SELECT regexp_match(part_table, '[a-z_]+_(\d{4})(\d{2})') INTO part_table_date;
+      part_table_year := part_table_date[1];
+      part_table_month := part_table_date[2];
+      IF age(make_date(part_table_year, part_table_month, 1)) > (i_month_history_to_keep||' months')::interval THEN
+        EXECUTE 'DROP TABLE '||part_table;
+        RETURN QUERY SELECT part_table;
+      END IF;
+    END LOOP;
   END LOOP;
 END;
 $$;

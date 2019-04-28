@@ -98,7 +98,38 @@ def history_tables_worker(app):
             conn.execute("COMMIT")
             return
     except Exception as e:
-        logger.error('Could not history montitoring tables')
+        logger.error('Could not history monitoring tables')
+        logger.exception(e)
+        try:
+            conn.execute("ROLLBACK")
+        except Exception:
+            pass
+        raise(e)
+
+
+@workers.register(pool_size=1)
+def purge_history_worker(app):
+    # Worker in charge of purging the history tables
+    try:
+        dbconf = app.config.repository
+        data_purge = dbconf['data_purge']
+        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
+                    user=dbconf['user'],
+                    pwd=dbconf['password'],
+                    h=dbconf['host'],
+                    p=dbconf['port'],
+                    db=dbconf['dbname'])
+        engine = create_engine(dburi)
+        with engine.connect() as conn:
+            conn.execute("SET search_path TO monitoring")
+            logger.debug("Running SQL function monitoring.purge_history_tables({0})".format(data_purge))
+            res = conn.execute("SELECT * FROM purge_history_tables({0})".format(data_purge))
+            for row in res.fetchall():
+                logger.debug("table=%s dropped" % (row['tblname']))
+            conn.execute("COMMIT")
+            return
+    except Exception as e:
+        logger.error('Could not purge monitoring tables history')
         logger.exception(e)
         try:
             conn.execute("ROLLBACK")
@@ -341,4 +372,9 @@ def monitoring_bootstrap(context):
             id='history_tables',
             redo_interval=3 * 60 * 60,  # Repeat each 3h
             options={},
+    )
+    yield taskmanager.Task(
+            worker_name='purge_history_worker',
+            id='purge_history',
+            redo_interval=24 * 60 * 60  # Repeat each day
     )

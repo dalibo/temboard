@@ -209,6 +209,7 @@ def list_options_specs():
     yield OptionSpec(s, 'user', default='temboard')
     yield OptionSpec(s, 'password', default='temboard')
     yield OptionSpec(s, 'dbname', default='temboard')
+    yield OptionSpec(s, 'data_purge', default=6)
 
     s = 'notifications'
     yield OptionSpec(s, 'smtp_host', default=None)
