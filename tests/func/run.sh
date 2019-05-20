@@ -11,6 +11,9 @@ retrykill() {
 	for i in {0..10} ; do
 		if ! kill -0 $pid &>/dev/null; then
 			return 0
+		elif ps --no-headers -o state $pid | grep -q Z ; then
+			: $pid is zombie
+			return 0
 		else
 			wait -n $pid || :
 			kill $pid
