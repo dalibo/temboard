@@ -108,6 +108,8 @@ jobs:
         name: Functionnal tests
         command: tests/func/run.sh
     - *pip-cache-save
+    - store_artifacts:
+        path: temboard-func.logs
 
   1-func-centos7:
     docker:
