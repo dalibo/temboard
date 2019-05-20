@@ -328,10 +328,12 @@ def monitoring_bootstrap(context):
     yield taskmanager.Task(
             worker_name='aggregate_data_worker',
             id='aggregate_data',
-            redo_interval=30 * 60  # Repeat each 30m,
+            redo_interval=30 * 60,  # Repeat each 30m,
+            options={},
     )
     yield taskmanager.Task(
             worker_name='history_tables_worker',
             id='history_tables',
-            redo_interval=3 * 60 * 60  # Repeat each 3h
+            redo_interval=3 * 60 * 60,  # Repeat each 3h
+            options={},
     )
