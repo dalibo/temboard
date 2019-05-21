@@ -13,12 +13,14 @@ LOGFILE=${LOGFILE-/var/log/temboard-auto-configure.log}
 
 
 catchall() {
-	exec 3>&-
-	if [ $? -gt 0 ] ; then
+	local rc=$?
+	set +x
+	if [ $rc -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
 	else
 		rm -f ${LOGFILE}
 	fi
+	exec 3>&-
 	trap - INT EXIT TERM
 }
 
