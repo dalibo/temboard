@@ -13,8 +13,9 @@ LOGFILE=${LOGFILE-/var/log/temboard-auto-configure.log}
 
 
 catchall() {
+	local rc=$?
 	exec 3>&-
-	if [ $? -gt 0 ] ; then
+	if [ $rc -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
 	else
 		rm -f ${LOGFILE}
