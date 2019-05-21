@@ -63,6 +63,7 @@ install_ui_py() {
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
+		return 1
 	fi
 }
 
