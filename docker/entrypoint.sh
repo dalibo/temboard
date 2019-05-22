@@ -28,8 +28,8 @@ if [ $EUID = 0 ] ; then
 	DOCKER_GID=$(stat -c "%g" /var/run/docker.sock)
 	if ! getent group ${DOCKER_GID} &>/dev/null ; then
 		groupadd --system --gid ${DOCKER_GID} docker
+		adduser postgres docker
 	fi
-	adduser postgres docker
 
 	# And reexec myself as postgres.
 	exec sudo -u postgres $0 "$@"
