@@ -31,7 +31,6 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
-    command: -c "pg_track_slow_queries.log_min_duration=0" -c "pg_track_slow_queries.cost_analyze=0"
 
   agent:
     image: dalibo/temboard-agent
