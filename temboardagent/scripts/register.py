@@ -172,6 +172,7 @@ def wrapped_main(args, app):
                 'pg_port': infos['pg_port'],
                 'pg_data': infos['pg_data'],
                 'pg_version': infos['pg_version'],
+                'pg_version_summary': infos['pg_version_summary'],
                 'plugins': infos['plugins'],
                 'groups': groups
             }
