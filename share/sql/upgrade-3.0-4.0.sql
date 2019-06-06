@@ -89,4 +89,6 @@ DROP FUNCTION cast_metric_cpu_records_bigint(metric_cpu_record_OLD[]);
 DROP FUNCTION cast_metric_cpu_record_bigint(metric_cpu_record_OLD);
 DROP TYPE metric_cpu_record_OLD;
 
+\ir upgrade-monitoring-purge-instances.sql
+
 COMMIT;

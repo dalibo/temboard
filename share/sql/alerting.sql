@@ -12,8 +12,8 @@ CREATE TYPE check_state_type AS ENUM('OK', 'WARNING', 'CRITICAL', 'UNDEF');
 
 CREATE TABLE checks (
   check_id SERIAL PRIMARY KEY,
-  host_id INTEGER NOT NULL REFERENCES hosts (host_id),
-  instance_id INTEGER REFERENCES instances (instance_id),
+  host_id INTEGER NOT NULL REFERENCES hosts (host_id) ON DELETE CASCADE,
+  instance_id INTEGER REFERENCES instances (instance_id) ON DELETE CASCADE,
   enabled BOOLEAN NOT NULL DEFAULT false,
   name VARCHAR(64) NOT NULL,
   warning REAL,
@@ -24,7 +24,7 @@ CREATE INDEX idx_checks_host_instance ON checks (host_id, instance_id);
 
 
 CREATE TABLE check_states (
-  check_id INTEGER NOT NULL REFERENCES checks (check_id),
+  check_id INTEGER NOT NULL REFERENCES checks (check_id) ON DELETE CASCADE,
   key VARCHAR(64),
   state check_state_type DEFAULT 'UNDEF',
   PRIMARY KEY (check_id, key)
@@ -33,7 +33,7 @@ CREATE TABLE check_states (
 
 CREATE TABLE state_changes (
   datetime TIMESTAMPTZ,
-  check_id INTEGER NOT NULL REFERENCES checks (check_id),
+  check_id INTEGER NOT NULL REFERENCES checks (check_id) ON DELETE CASCADE,
   state check_state_type,
   key VARCHAR(64),
   value REAL,
@@ -45,7 +45,7 @@ CREATE INDEX idx_state_changes ON state_changes (datetime, check_id, key);
 
 CREATE TABLE check_changes (
   datetime TIMESTAMPTZ,
-  check_id INTEGER NOT NULL REFERENCES checks (check_id),
+  check_id INTEGER NOT NULL REFERENCES checks (check_id) ON DELETE CASCADE,
   enabled BOOLEAN NOT NULL DEFAULT false,
   warning REAL,
   critical REAL,

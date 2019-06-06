@@ -415,6 +415,11 @@ def update_instance(session,
 
 
 def delete_instance(session, agent_address, agent_port):
+    from temboardui.plugins.monitoring.model.orm import (
+        Host as MonitoringHost,
+        Instance as MonitoringInstance,
+    )
+
     try:
         instance = session.query(Instances).filter(
             Instances.agent_address == unicode(agent_address),
@@ -423,6 +428,35 @@ def delete_instance(session, agent_address, agent_port):
     except NoResultFound as e:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
+    except Exception as e:
+        raise TemboardUIError(400, e.message)
+
+    # Also delete any monitoring data
+    # First all instance data
+    try:
+        monitoring_instance = session.query(MonitoringInstance) \
+            .join(MonitoringHost) \
+            .filter(
+                MonitoringHost.hostname == instance.hostname,
+                MonitoringInstance.port == instance.pg_port).one()
+        session.delete(monitoring_instance)
+    except NoResultFound as e:
+        pass
+    except Exception as e:
+        raise TemboardUIError(400, e.message)
+
+    # Then host data
+    # Will not remove data if there's still an instance referenced for this
+    # host
+    # Using bulk delete query here to prevent errors on not null constraint on
+    # checks::host_id column (ON CASCADE DELETE not working)
+    # when using session.delete(host)
+    try:
+        session.query(MonitoringHost) \
+            .filter(MonitoringHost.hostname == instance.hostname) \
+            .delete()
+    except NoResultFound as e:
+        pass
     except Exception as e:
         raise TemboardUIError(400, e.message)
 
