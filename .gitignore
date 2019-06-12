@@ -3,9 +3,9 @@
 *.sw*
 !temboard.dev.conf
 *.egg-info/
-build/
-dist/
-site/
+/build/
+/dist/
+/site/
 docker-compose.override.yml
 temboard*.pid
 temboard-func.log

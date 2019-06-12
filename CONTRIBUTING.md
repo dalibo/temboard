@@ -67,7 +67,42 @@ $ docker-compose exec agent bash # enters the agent machine
 # sudo -u postgres temboard-agent-register --host $TEMBOARD_REGISTER_HOST --port $TEMBOARD_REGISTER_PORT --groups default $TEMBOARD_UI_URL
 ```
 
-## CSS
+## Static Assets
+
+### Javascript
+
+Javascript is built using webpack.
+
+Run `npm install` to install all required node modules.
+
+Each view should have its own single entry point. All dependencies are manage
+using `imports`.
+
+For example:
+
+``` js
+import { join } from 'lodash-es';
+import moment from 'moment';
+```
+
+The entry points are declared in the `entry` section of the webpack config
+(`webpack.config.js`).
+
+In the template for a view, you will then need to add the following:
+```
+{% raw load_assets('entry_point_name') %}
+```
+
+Build the chunks using the following command:
+
+```
+webpack-cli --watch
+```
+
+This will do the build using `production` mode. You can add
+`--mode development` for debugging purposes.
+
+### CSS
 
 temBoard UI mainly relies on `Bootstrap`. The CSS files are compiled with
 `SASS`.

@@ -30,6 +30,7 @@
   <link href="/css/temboard.css" rel="stylesheet">
   <!-- Toggle -->
   <link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
+  {% raw webpack_runtime() %}
 </head>
 <body>
   <script>
@@ -222,5 +223,6 @@
     })
   });
   </script>
+  {% raw load_assets('foo') %}
 </body>
 </html>

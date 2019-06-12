@@ -1,0 +1,8 @@
+{
+  "foo": {
+    "js": "/js/build/foo.f17b99f8.js"
+  },
+  "runtime": {
+    "js": "/js/build/runtime.294ac95e.js"
+  }
+}
