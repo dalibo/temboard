@@ -2,6 +2,7 @@
   "name": "temboard",
   "dependencies": {
     "bootstrap": "^4.1.1",
+    "datatables.net-bs4": "^1.10.19",
     "jquery": "^3.2.1",
     "popper.js": "^1.12.3"
   },
@@ -14,6 +15,7 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-postcss": "^0.8.0",
     "grunt-sass": "2.0.0",
+    "imports-loader": "^0.8.0",
     "webpack": "^4.33.0",
     "webpack-cli": "^3.3.4"
   }

@@ -1,8 +1,14 @@
 {
+  "activity": {
+    "js": "/js/build/activity.98e233a1.js"
+  },
   "foo": {
     "js": "/js/build/foo.f17b99f8.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
+  },
+  "vendors~activity": {
+    "js": "/js/build/vendors~activity.cf744453.js"
   }
 }

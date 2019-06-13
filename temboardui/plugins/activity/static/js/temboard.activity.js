@@ -1,3 +1,6 @@
+import dt from 'datatables.net-bs4';
+dt(window, $);
+
 $(function() {
   "use strict";
 
