@@ -27,13 +27,5 @@
   </div>
 </div>
 </div> <!-- end limiter -->
-<script src="/js/datatables/datatables.min.js"></script>
-<script>
-$(document).ready(function() {
-  $('#tableNotifications').DataTable({
-    order: [[0, 'desc']],
-    pageLength: 25
-  });
-});
-</script>
+{% raw load_assets('notifications') %}
 {% end %}

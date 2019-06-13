@@ -1,14 +1,17 @@
 {
   "activity": {
-    "js": "/js/build/activity.98e233a1.js"
+    "js": "/js/build/activity.0ff7d370.js"
   },
   "foo": {
     "js": "/js/build/foo.f17b99f8.js"
   },
+  "notifications": {
+    "js": "/js/build/notifications.63ee9fe9.js"
+  },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
-  "vendors~activity": {
-    "js": "/js/build/vendors~activity.cf744453.js"
+  "vendors~activity~notifications": {
+    "js": "/js/build/vendors~activity~notifications.9e9e6dbe.js"
   }
 }

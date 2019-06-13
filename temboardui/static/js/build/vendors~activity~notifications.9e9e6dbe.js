@@ -1,4 +1,4 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([["vendors~activity"],{"./node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js":function(e,t,n){var r;
+(window.webpackJsonp=window.webpackJsonp||[]).push([["vendors~activity~notifications"],{"./node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js":function(e,t,n){var r;
 /*! DataTables Bootstrap 4 integration
  * ©2011-2017 SpryMedia Ltd - datatables.net/license
  */

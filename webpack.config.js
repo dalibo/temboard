@@ -8,6 +8,7 @@ module.exports = {
   entry: {
     foo: './temboardui/static/js/foo.js',
     activity: './temboardui/plugins/activity/static/js/temboard.activity.js',
+    notifications: './temboardui/static/js/temboard.notifications.js',
   },
   output: {
     path: path.resolve(__dirname, 'temboardui/static/js/build'),
