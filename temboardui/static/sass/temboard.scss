@@ -260,17 +260,17 @@ table.dataTable thead {
       float: right;
       font-family: fontawesome;
       right: 0 !important;
-      content: '';
+      content: '' !important;
     }
   }
   .sorting_asc::before {
-    content: "\f0de";
+    content: "\f0de" !important;
   }
   .sorting_desc::after {
-    content: "\f0dd";
+    content: "\f0dd" !important;
   }
   .sorting::after {
-    content: "\f0dc";
+    content: "\f0dc" !important;
   }
 }
 
@@ -280,7 +280,6 @@ table.table-activity {
   border-collapse: collapse !important;
 
   &.table-sm th {
-    padding-right: 10px !important;
     &.sorting_disabled {
       padding-right: $table-cell-padding-sm !important;
     }

@@ -33,6 +33,10 @@ module.exports = {
         test: /datatables\.net.*/,
         loader: 'imports-loader?define=>false'
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      }
     ]
   },
   plugins: [

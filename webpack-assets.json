@@ -1,17 +1,17 @@
 {
   "activity": {
-    "js": "/js/build/activity.0ff7d370.js"
+    "js": "/js/build/activity.a2a46f68.js"
   },
   "foo": {
     "js": "/js/build/foo.f17b99f8.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.63ee9fe9.js"
+    "js": "/js/build/notifications.38f0838c.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "vendors~activity~notifications": {
-    "js": "/js/build/vendors~activity~notifications.9e9e6dbe.js"
+    "js": "/js/build/vendors~activity~notifications.5c437b5f.js"
   }
 }
