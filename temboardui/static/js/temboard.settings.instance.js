@@ -1,3 +1,7 @@
+import dt from 'datatables.net-bs4';
+import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
+dt(window, $);
+
 var waitMessage = '<div class="row mb-4"><div class="col-md-4 offset-md-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>';
 
 /*
@@ -46,7 +50,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
       var selected = '';
-      for (var group of data['groups'])
+      for (var group in data['groups'])
       {
         selected = '';
         if (data['in_groups'].indexOf(group['name']) > -1)
@@ -62,7 +66,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
       body_html += '      <select id="selectPlugins" multiple="multiple">';
       var selected = '';
-      for (var plugin_name of data['loaded_plugins'])
+      for (var plugin_name in data['loaded_plugins'])
       {
         selected = '';
         if (data['enabled_plugins'].indexOf(plugin_name) > -1)
@@ -298,7 +302,7 @@ function load_add_instance_form(modal_id)
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
-      for (var group of data['groups'])
+      for (var group in data['groups'])
       {
           body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
         descriptions[group['name']] = group['description'];
@@ -309,7 +313,7 @@ function load_add_instance_form(modal_id)
       body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
       body_html += '      <select id="selectPlugins" multiple="multiple">';
       var selected = '';
-      for (var plugin_name of data['loaded_plugins'])
+      for (var plugin_name in data['loaded_plugins'])
       {
         body_html += '      <option value="'+plugin_name+'" selected>'+plugin_name+'</option>';
       }
@@ -377,3 +381,27 @@ function escapeHtml(string) {
     return entityMap[s];
   });
 }
+
+$(document).ready(function() {
+  $('#tableInstances').DataTable({
+    stateSave: true
+  });
+
+  $('#buttonLoadAddInstanceForm').click(function () {
+    $('#InstanceModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_add_instance_form('InstanceModal');
+  });
+
+  $(document).on('click', '[data-action=edit]', function () {
+    $('#InstanceModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_update_instance_form('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+  });
+
+  $(document).on('click', '[data-action=delete]', function () {
+    $('#InstanceModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+  });
+});

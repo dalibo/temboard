@@ -79,33 +79,6 @@
     </table>
   </div>
 </div>
-<script src="/js/temboard.settings.instance.js"></script>
-<script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
-<script>
-$(document).ready(function() {
-  $('#tableInstances').DataTable({
-    stateSave: true
-  });
-
-  $('#buttonLoadAddInstanceForm').click(function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_add_instance_form('InstanceModal');
-  });
-
-  $(document).on('click', '[data-action=edit]', function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_update_instance_form('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
-  });
-
-  $(document).on('click', '[data-action=delete]', function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
-  });
-});
-
-</script>
+{% raw load_assets('settings.instance') %}
 {% end %}

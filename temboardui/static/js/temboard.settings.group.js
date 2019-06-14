@@ -1,3 +1,7 @@
+import dt from 'datatables.net-bs4';
+import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
+dt(window, $);
+
 /*
  * Load group properties using /json/settings/group/<group_kind>/<group_name> API
  * and build the update form.
@@ -38,7 +42,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         var selected = '';
-        for (var group of data['user_groups'])
+        for (var group in data['user_groups'])
         {
           selected = '';
           if (data['in_groups'].indexOf(group['name']) > -1)
@@ -285,7 +289,7 @@ function load_add_group_form(modal_id, group_kind)
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
-        for (var group of data['groups'])
+        for (var group in data['groups'])
         {
             body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
           descriptions[group['name']] = group['description'];
@@ -377,3 +381,27 @@ function send_add_group_form(modal_id, group_kind)
     }
   });
 }
+
+$(document).ready(function() {
+  $('#tableGroups').DataTable({
+    stateSave: true
+  });
+
+  $('#buttonLoadAddGroupForm').click(function () {
+    $('#GroupModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_add_group_form('GroupModal', '{{group_kind}}');
+  });
+
+  $(document).on('click', '[data-action=edit]', function () {
+    $('#GroupModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_update_group_form('GroupModal', '{{group_kind}}', $(this).data('group_name'));
+  });
+
+  $(document).on('click', '[data-action=delete]', function () {
+    $('#GroupModal').modal('show');
+    $('[data-toggle=popover]').popover('hide');
+    load_delete_group_confirm('GroupModal', '{{group_kind}}', $(this).data('group_name'));
+  });
+});

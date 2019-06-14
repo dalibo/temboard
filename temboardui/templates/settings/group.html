@@ -66,33 +66,6 @@
     </tbody>
   </table>
 </div>
-<script src="/js/temboard.settings.group.js"></script>
-<script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
-<script>
-$(document).ready(function() {
-  $('#tableGroups').DataTable({
-    stateSave: true
-  });
-});
-
-$('#buttonLoadAddGroupForm').click(function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_add_group_form('GroupModal', '{{group_kind}}');
-});
-
-$(document).on('click', '[data-action=edit]', function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_update_group_form('GroupModal', '{{group_kind}}', $(this).data('group_name'));
-});
-
-$(document).on('click', '[data-action=delete]', function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_delete_group_confirm('GroupModal', '{{group_kind}}', $(this).data('group_name'));
-});
-
-</script>
+{% raw load_assets('settings.group') %}
 {% end %}

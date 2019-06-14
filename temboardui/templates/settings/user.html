@@ -69,33 +69,6 @@
     </table>
   </div>
 </div>
-<script src="/js/temboard.settings.user.js"></script>
-<script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
-<script>
-$(document).ready(function() {
-  $('#tableUsers').DataTable({
-    stateSave: true
-  });
-});
-
-$('#buttonLoadAddUserForm').click(function () {
-  $('#UserModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_add_user_form('UserModal');
-});
-
-$(document).on('click', '[data-action=edit]', function () {
-  $('#UserModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_update_user_form('UserModal', $(this).data('username'));
-});
-
-$(document).on('click', '[data-action=delete]', function () {
-  $('#UserModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_delete_user_confirm('UserModal', $(this).data('username'));
-});
-
-</script>
+{% raw load_assets('settings.user') %}
 {% end %}
