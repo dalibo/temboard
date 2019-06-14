@@ -1,3 +1,5 @@
+import 'bootstrap';
+
 $(function() {
   //Loads the correct sidebar on window load,
   //collapses the sidebar on window resize.

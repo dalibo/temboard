@@ -47,6 +47,9 @@ module.exports = {
     new webpack.NamedModulesPlugin(),
     new AssetsPlugin({
       prettyPrint: true
+    }),
+    new webpack.ProvidePlugin({
+      $: 'jquery'
     })
   ]
 };

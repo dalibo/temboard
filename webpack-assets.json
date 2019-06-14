@@ -1,26 +1,32 @@
 {
   "activity": {
-    "js": "/js/build/activity.61dbe94c.js"
+    "js": "/js/build/activity.d5c20df0.js"
   },
   "base": {
-    "js": "/js/build/base.4c29a4b0.js"
+    "js": "/js/build/base.f9cdc0a6.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.5dc77b2c.js"
+    "js": "/js/build/notifications.cad75c78.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.01df4542.js"
+    "js": "/js/build/settings.group.2a62ba22.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.ff9986d9.js"
+    "js": "/js/build/settings.instance.7c82b966.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.76d3f69f.js"
+    "js": "/js/build/settings.user.cf62f7f9.js"
+  },
+  "vendors~activity~base~notifications~settings.group~settings.instance~settings.user": {
+    "js": "/js/build/vendors~activity~base~notifications~settings.group~settings.instance~settings.user.bf69ab3b.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
-    "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.c096fd32.js"
+    "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.41d52f8f.js"
+  },
+  "vendors~base": {
+    "js": "/js/build/vendors~base.72948b2f.js"
   }
 }

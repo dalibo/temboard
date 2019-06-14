@@ -390,7 +390,7 @@ $(function() {
 
   $('#tableActivity').on('mouseleave', function(e) {
     var checkedRows = $('#tableActivity input:checked');
-    if (checkedRows.size() == 0) {
+    if (checkedRows.length == 0) {
       // resume auto refresh only if there are no checked rows
       play();
     }
