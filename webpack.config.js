@@ -6,7 +6,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   mode: 'production',
   entry: {
-    foo: './temboardui/static/js/foo.js',
+    base: './temboardui/static/js/base.js',
     activity: './temboardui/plugins/activity/static/js/temboard.activity.js',
     notifications: './temboardui/static/js/temboard.notifications.js',
     'settings.group': './temboardui/static/js/temboard.settings.group.js',

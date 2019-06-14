@@ -2,8 +2,8 @@
   "activity": {
     "js": "/js/build/activity.61dbe94c.js"
   },
-  "foo": {
-    "js": "/js/build/foo.f17b99f8.js"
+  "base": {
+    "js": "/js/build/base.4c29a4b0.js"
   },
   "notifications": {
     "js": "/js/build/notifications.5dc77b2c.js"
