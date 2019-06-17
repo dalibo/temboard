@@ -88,7 +88,7 @@ def webpack_runtime():
     dir = os.path.dirname(os.path.realpath(__file__))
     path = dir + '/static' + assets['runtime']['js']
     with open(path, 'r') as file:
-        inline_js = file.read().replace('\n', '')
+        inline_js = file.read()
     return '<script>' + inline_js + '</script>'
 
 

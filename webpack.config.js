@@ -2,12 +2,14 @@ const path = require('path');
 const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 module.exports = {
   mode: 'production',
   entry: {
-    base: './temboardui/static/js/base.js',
     activity: './temboardui/plugins/activity/static/js/temboard.activity.js',
+    base: './temboardui/static/js/base.js',
+    home: './temboardui/static/js/temboard.home.js',
     notifications: './temboardui/static/js/temboard.notifications.js',
     'settings.group': './temboardui/static/js/temboard.settings.group.js',
     'settings.user': './temboardui/static/js/temboard.settings.user.js',
@@ -50,6 +52,13 @@ module.exports = {
     }),
     new webpack.ProvidePlugin({
       $: 'jquery'
-    })
-  ]
+    }),
+    // To strip all locales except “en”
+    new MomentLocalesPlugin()
+  ],
+  resolve: {
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js'
+    }
+  }
 };

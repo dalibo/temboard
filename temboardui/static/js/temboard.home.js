@@ -1,5 +1,14 @@
+import * as _ from 'lodash';
+import fscreen from 'fscreen';
+import getParameterByName from './utils';
+import moment from 'moment';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+
+Vue.use(VueRouter);
+
 /* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
+/* global instances, Dygraph */
 $(function() {
 
   var refreshInterval = 60 * 1000;
@@ -62,6 +71,10 @@ $(function() {
     instance.available = null;
     instance.checks = [];
     instance.loading = true;
+  });
+
+  new Vue({
+    el: '#foo'
   });
 
   var instancesVue = new Vue({
@@ -264,7 +277,7 @@ $(function() {
     $.each(this.instances, function(index, instance) {
       instance.loading = true;
       var url = ['/server', instance.agent_address, instance.agent_port, 'alerting/checks.json'].join('/');
-      $.ajax(url).success(function(data) {
+      $.ajax(url).done(function(data) {
         instance.checks = data;
         instance.loading = false;
         window.setTimeout(function() {
@@ -303,7 +316,7 @@ $(function() {
     instances.forEach(function(instance) {
       var api_url = ['/server', instance.agent_address, instance.agent_port, 'monitoring'].join('/');
       $.ajax(api_url + '/availability')
-      .success(function(data) {
+      .done(function(data) {
         instance.available = data.available;
       });
     });

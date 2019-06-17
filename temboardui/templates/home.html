@@ -5,18 +5,12 @@
 {% block content %}
 {% import json %}
 {% from temboardui import json_encoder %}
-<script src="/js/fscreen.js"></script>
-<script src="/js/lodash.min.js"></script>
-<script src="/js/utils.js"></script>
-<script src="/js/vue.min.js"></script>
-<script src="/js/vue-router.min.js"></script>
-<script src="/js/moment.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script>
 var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
 var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
 </script>
-<script src="/js/home.js"></script>
+{% raw load_assets('home') %}
 <div class="position-absolute" style="z-index: 2; right: 0;">
   <a class="btn btn-link fullscreen" href data-toggle="popover" data-trigger="hover" data-content="Full screen" data-placement="bottom">
     <i class="fa fa-expand"></i>
