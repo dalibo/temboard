@@ -78,20 +78,6 @@ class Redirect(Response, Exception):
         )
 
 
-def webpack_runtime():
-    try:
-        fn = 'webpack-assets.json'
-        with open(fn) as f:
-            assets = json.load(f)
-    except Exception:
-        pass
-    dir = os.path.dirname(os.path.realpath(__file__))
-    path = dir + '/static' + assets['runtime']['js']
-    with open(path, 'r') as file:
-        inline_js = file.read()
-    return '<script>' + inline_js + '</script>'
-
-
 def load_assets(name, type='js'):
     try:
         fn = 'webpack-assets.json'
@@ -115,7 +101,6 @@ class TemplateRenderer(object):
         self.loader = TemplateLoader(path)
 
     def __call__(self, template, **data):
-        data['webpack_runtime'] = webpack_runtime
         data['load_assets'] = load_assets
         return Response(
             body=self.loader.load(template).generate(**data),
