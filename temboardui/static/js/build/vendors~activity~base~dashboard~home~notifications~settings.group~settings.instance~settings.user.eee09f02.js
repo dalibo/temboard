@@ -1,4 +1,4 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([["vendors~activity~base~home~notifications~settings.group~settings.instance~settings.user"],{"./node_modules/jquery/dist/jquery.js":function(e,t,n){var r;
+(window.webpackJsonp=window.webpackJsonp||[]).push([["vendors~activity~base~dashboard~home~notifications~settings.group~settings.instance~settings.user"],{"./node_modules/jquery/dist/jquery.js":function(e,t,n){var r;
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/

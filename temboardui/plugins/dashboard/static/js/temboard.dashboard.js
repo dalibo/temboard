@@ -1,4 +1,9 @@
-/* global Vue, moment */
+import fscreen from 'fscreen';
+import moment from 'moment';
+import Vue from 'vue';
+import Chart from 'chart.js';
+import filesize from 'filesize/lib/filesize.es6.js';
+
 $(function() {
   "use strict";
 
@@ -242,7 +247,7 @@ $(function() {
   function updateAlerts() {
     $.ajax({
       url: '/server/'+agent_address+'/'+agent_port+'/alerting/alerts.json',
-    }).success(function(data) {
+    }).done(function(data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
       $('#divAlerts [data-toggle-popover]').popover('dispose');
@@ -258,16 +263,16 @@ $(function() {
           html: true
         });
       }, 1);
-    }).error(function(error) {
+    }).fail(function(error) {
       // FIXME handle error
       console.error(error);
     });
 
     $.ajax({
       url: '/server/'+agent_address+'/'+agent_port+'/alerting/checks.json',
-    }).success(function(data) {
+    }).done(function(data) {
       alertsView.states = data;
-    }).error(function(error) {
+    }).fail(function(error) {
       // FIXME handle error
       console.error(error);
     });
@@ -471,3 +476,10 @@ function escapeHtml(string) {
     return entityMap[s];
   });
 }
+
+$(document).ready(function() {
+  $('[data-type=size]').each(function(){
+    if ($(this).html() != 'None')
+      $(this).html(filesize($(this).html()));
+  });
+});
