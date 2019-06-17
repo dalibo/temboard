@@ -1,4 +1,11 @@
-/* global apiUrl, checkName, Vue, Dygraph, moment, dateMath */
+import * as _ from 'lodash';
+import moment from 'moment';
+import Vue from 'vue';
+import * as dateMath from './datemath.js';
+import './daterangepicker.vue.js';
+import Dygraph from 'dygraphs';
+
+/* global apiUrl, checkName */
 $(function() {
 
   /**
@@ -347,8 +354,8 @@ $(function() {
     var i = 0;
     var l = rows - 1;
     for (i; i < l; i++) {
-      curr = g.getValue(i, 0);
-      diff = Math.abs(curr - goal);
+      var curr = g.getValue(i, 0);
+      var diff = Math.abs(curr - goal);
       if (gDiff > diff) {
         gDiff = diff;
         closest = curr;
@@ -386,14 +393,14 @@ $(function() {
           enabled: $('#enabledInput').is(':checked')
         }]
       })
-    }).success(function() {
+    }).done(function() {
       $('#submitFormUpdateCheck').attr('disabled', true);
       $('#modalInfo').html('<div class="alert alert-success" role="alert">SUCESS: Will be taken into account shortly (next check)</div>');
       hideWaiter();
       window.setTimeout(function() {
         window.location.reload();
       }, 3000);
-    }).error(function(xhr) {
+    }).fail(function(xhr) {
       hideWaiter();
       $('#modalInfo').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
     });
@@ -457,9 +464,9 @@ $(function() {
     $('.dygraph-annotation').popover('dispose');
     $.ajax({
       url: apiUrl + "/states/" + checkName + ".json"
-    }).success(function(data) {
+    }).done(function(data) {
       v.keys = data;
-    }).error(function(error) {
+    }).fail(function(error) {
       console.error(error);
     });
 

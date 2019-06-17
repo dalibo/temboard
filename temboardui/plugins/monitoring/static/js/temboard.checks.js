@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import Vue from 'vue';
 
-/* global apiUrl, Vue, _ */
+/* global apiUrl */
 $(function() {
 
   var v = new Vue({

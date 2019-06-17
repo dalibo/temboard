@@ -13,6 +13,7 @@ module.exports = {
     home: './temboardui/static/js/temboard.home.js',
     monitoring: './temboardui/plugins/monitoring/static/js/temboard.monitoring.js',
     'monitoring.checks': './temboardui/plugins/monitoring/static/js/temboard.checks.js',
+    'monitoring.check': './temboardui/plugins/monitoring/static/js/temboard.check.js',
     notifications: './temboardui/static/js/temboard.notifications.js',
     'settings.group': './temboardui/static/js/temboard.settings.group.js',
     'settings.user': './temboardui/static/js/temboard.settings.user.js',

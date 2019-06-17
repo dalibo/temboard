@@ -1,39 +1,42 @@
 {
   "activity": {
-    "js": "/js/build/activity.9420c608.js"
+    "js": "/js/build/activity.4d2784a6.js"
   },
   "base": {
-    "js": "/js/build/base.dcb30dc2.js"
+    "js": "/js/build/base.65007af5.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.cc494a4e.js"
+    "js": "/js/build/dashboard.b6eff0ec.js"
   },
   "home": {
-    "js": "/js/build/home.b8175064.js"
+    "js": "/js/build/home.165df0f3.js"
   },
   "monitoring": {
-    "js": "/js/build/monitoring.9370f166.js"
+    "js": "/js/build/monitoring.9d9fe187.js"
+  },
+  "monitoring.check": {
+    "js": "/js/build/monitoring.check.23c8672d.js"
   },
   "monitoring.checks": {
-    "js": "/js/build/monitoring.checks.24206dd9.js"
+    "js": "/js/build/monitoring.checks.91a9ec90.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.e209c4dd.js"
+    "js": "/js/build/notifications.e00b9f99.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.ea6e4083.js"
+    "js": "/js/build/settings.group.ed08f189.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.0919bc3c.js"
+    "js": "/js/build/settings.instance.bcf75a66.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.639568fd.js"
+    "js": "/js/build/settings.user.34826676.js"
   },
-  "vendors~activity~base~dashboard~home~monitoring~monitoring.checks~notifications~settings.group~setti~e1ab67cd": {
-    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~monitoring.checks~notifications~settings.group~setti~e1ab67cd.c41a80ab.js"
+  "vendors~activity~base~dashboard~home~monitoring~monitoring.check~monitoring.checks~notifications~set~43ba588b": {
+    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~monitoring.check~monitoring.checks~notifications~set~43ba588b.9ea3049d.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.41d52f8f.js"
@@ -41,7 +44,7 @@
   "vendors~base": {
     "js": "/js/build/vendors~base.72948b2f.js"
   },
-  "vendors~dashboard~home~monitoring~monitoring.checks": {
-    "js": "/js/build/vendors~dashboard~home~monitoring~monitoring.checks.220cae68.js"
+  "vendors~dashboard~home~monitoring~monitoring.check~monitoring.checks": {
+    "js": "/js/build/vendors~dashboard~home~monitoring~monitoring.check~monitoring.checks.65d95013.js"
   }
 }
