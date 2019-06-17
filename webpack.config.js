@@ -31,7 +31,15 @@ module.exports = {
     // readable chunk ids even in production mode
     chunkIds: 'named',
     splitChunks: {
-      chunks: 'all'
+      chunks: 'all',
+      cacheGroups: {
+        // create a chunk with the most often used packages
+        vendor: {
+          test: /[\\/]node_modules[\\/](jquery|lodash)[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+        }
+      }
     },
   },
   module: {

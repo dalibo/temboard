@@ -1,42 +1,42 @@
 {
   "activity": {
-    "js": "/js/build/activity.4d2784a6.js"
+    "js": "/js/build/activity.6c840e03.js"
   },
   "base": {
-    "js": "/js/build/base.65007af5.js"
+    "js": "/js/build/base.ab49098e.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.b6eff0ec.js"
+    "js": "/js/build/dashboard.5fbfc325.js"
   },
   "home": {
-    "js": "/js/build/home.165df0f3.js"
+    "js": "/js/build/home.c0fd0ab1.js"
   },
   "monitoring": {
-    "js": "/js/build/monitoring.9d9fe187.js"
+    "js": "/js/build/monitoring.dad6b8b6.js"
   },
   "monitoring.check": {
-    "js": "/js/build/monitoring.check.23c8672d.js"
+    "js": "/js/build/monitoring.check.57247a18.js"
   },
   "monitoring.checks": {
-    "js": "/js/build/monitoring.checks.91a9ec90.js"
+    "js": "/js/build/monitoring.checks.f7514714.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.e00b9f99.js"
+    "js": "/js/build/notifications.c1c01d33.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.ed08f189.js"
+    "js": "/js/build/settings.group.1e04ad5f.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.bcf75a66.js"
+    "js": "/js/build/settings.instance.c623bdb3.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.34826676.js"
+    "js": "/js/build/settings.user.abd6c1c4.js"
   },
-  "vendors~activity~base~dashboard~home~monitoring~monitoring.check~monitoring.checks~notifications~set~43ba588b": {
-    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~monitoring.check~monitoring.checks~notifications~set~43ba588b.9ea3049d.js"
+  "vendor": {
+    "js": "/js/build/vendor.5acd7e9f.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.41d52f8f.js"
