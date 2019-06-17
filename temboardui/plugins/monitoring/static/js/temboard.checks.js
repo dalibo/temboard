@@ -1,3 +1,6 @@
+import * as _ from 'lodash';
+import Vue from 'vue';
+
 /* global apiUrl, Vue, _ */
 $(function() {
 
@@ -22,9 +25,9 @@ $(function() {
   function refresh() {
     $.ajax({
       url: apiUrl+"/checks.json"
-    }).success(function(data) {
+    }).done(function(data) {
       v.checks = data;
-    }).error(function(error) {
+    }).fail(function(error) {
       console.error(error);
     });
   }

@@ -1,36 +1,39 @@
 {
   "activity": {
-    "js": "/js/build/activity.98498be6.js"
+    "js": "/js/build/activity.9420c608.js"
   },
   "base": {
-    "js": "/js/build/base.a5444dea.js"
+    "js": "/js/build/base.dcb30dc2.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.3d7492f9.js"
+    "js": "/js/build/dashboard.cc494a4e.js"
   },
   "home": {
-    "js": "/js/build/home.7aca2361.js"
+    "js": "/js/build/home.b8175064.js"
   },
   "monitoring": {
-    "js": "/js/build/monitoring.4feb8b3c.js"
+    "js": "/js/build/monitoring.9370f166.js"
+  },
+  "monitoring.checks": {
+    "js": "/js/build/monitoring.checks.24206dd9.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.f01748a7.js"
+    "js": "/js/build/notifications.e209c4dd.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.622b221b.js"
+    "js": "/js/build/settings.group.ea6e4083.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.53113d91.js"
+    "js": "/js/build/settings.instance.0919bc3c.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.50ca308f.js"
+    "js": "/js/build/settings.user.639568fd.js"
   },
-  "vendors~activity~base~dashboard~home~monitoring~notifications~settings.group~settings.instance~setti~0ccca86f": {
-    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~notifications~settings.group~settings.instance~setti~0ccca86f.a52ab315.js"
+  "vendors~activity~base~dashboard~home~monitoring~monitoring.checks~notifications~settings.group~setti~e1ab67cd": {
+    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~monitoring.checks~notifications~settings.group~setti~e1ab67cd.c41a80ab.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.41d52f8f.js"
@@ -38,7 +41,7 @@
   "vendors~base": {
     "js": "/js/build/vendors~base.72948b2f.js"
   },
-  "vendors~dashboard~home~monitoring": {
-    "js": "/js/build/vendors~dashboard~home~monitoring.ebc664fb.js"
+  "vendors~dashboard~home~monitoring~monitoring.checks": {
+    "js": "/js/build/vendors~dashboard~home~monitoring~monitoring.checks.220cae68.js"
   }
 }
