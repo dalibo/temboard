@@ -51,7 +51,9 @@ module.exports = {
       prettyPrint: true
     }),
     new webpack.ProvidePlugin({
-      $: 'jquery'
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery'
     }),
     // To strip all locales except “en”
     new MomentLocalesPlugin()

@@ -2,6 +2,9 @@ import dt from 'datatables.net-bs4';
 import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 dt(window, $);
 
+import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
+import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
+
 /*
  * Load group properties using /json/settings/group/<group_kind>/<group_name> API
  * and build the update form.

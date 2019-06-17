@@ -15,13 +15,13 @@
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.417d833d.js"
+    "js": "/js/build/settings.group.59e2cb4b.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.97ab6b50.js"
+    "js": "/js/build/settings.instance.3edc0d29.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.95d27932.js"
+    "js": "/js/build/settings.user.895ebf01.js"
   },
   "vendors~activity~base~home~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~base~home~notifications~settings.group~settings.instance~settings.user.32c68d06.js"

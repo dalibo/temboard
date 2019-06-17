@@ -2,6 +2,9 @@ import dt from 'datatables.net-bs4';
 import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 dt(window, $);
 
+import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
+import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
+
 /*
  * Load user properties using '/json/settings/user/'+username API
  * and build the update form.
@@ -48,8 +51,7 @@ function load_update_user_form(modal_id, username)
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
       var selected = '';
-      for (var group in data['groups'])
-      {
+      $.each(data['groups'], function(index, group) {
         selected = '';
         if (data['in_groups'].indexOf(group['name']) > -1)
         {
@@ -57,12 +59,12 @@ function load_update_user_form(modal_id, username)
         }
           body_html += '      <option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
         descriptions[group['name']] = group['description'];
-      }
+      });
       body_html += '      </select><br />';
       body_html += '      <label for="selectActive" class="control-label">Active</label><br />';
       body_html += '      <select id="selectActive">';
       body_html += '        <option value="No">No</options>';
-      sel_active = '';
+      var sel_active = '';
       if (data['is_active'])
       {
         sel_active = 'selected';
@@ -72,7 +74,7 @@ function load_update_user_form(modal_id, username)
       body_html += '      <label for="selectAdmin" class="control-label">Administrator</label><br />';
       body_html += '      <select id="selectAdmin">';
       body_html += '        <option value="No">No</options>';
-      sel_admin = '';
+      var sel_admin = '';
       if (data['is_admin'])
       {
         sel_admin = 'selected';
@@ -266,11 +268,10 @@ function load_add_user_form(modal_id)
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
-      for (var group in data['groups'])
-      {
+      $.each(data['groups'], function(index, group) {
           body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
         descriptions[group['name']] = group['description'];
-      }
+      });
       body_html += '      </select><br />';
       body_html += '      <label for="selectActive" class="control-label">Active</label><br />';
       body_html += '      <select id="selectActive">';

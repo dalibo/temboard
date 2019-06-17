@@ -2,6 +2,9 @@ import dt from 'datatables.net-bs4';
 import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 dt(window, $);
 
+import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
+import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
+
 var waitMessage = '<div class="row mb-4"><div class="col-md-4 offset-md-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>';
 
 /*
@@ -50,31 +53,29 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
       var selected = '';
-      for (var group in data['groups'])
-      {
+      $.each(data['groups'], function(index, group) {
         selected = '';
         if (data['in_groups'].indexOf(group['name']) > -1)
         {
           selected = 'selected';
         }
-          body_html += '      <option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
+        body_html += '      <option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
         descriptions[group['name']] = group['description'];
-      }
+      });
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
       body_html += '      <select id="selectPlugins" multiple="multiple">';
       var selected = '';
-      for (var plugin_name in data['loaded_plugins'])
-      {
+      $.each(data['loaded_plugins'], function(index, plugin_name) {
         selected = '';
         if (data['enabled_plugins'].indexOf(plugin_name) > -1)
         {
           selected = 'selected';
         }
         body_html += '      <option value="'+plugin_name+'" '+selected+'>'+plugin_name+'</option>';
-      }
+      });
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '  </div>';
@@ -302,21 +303,19 @@ function load_add_instance_form(modal_id)
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
-      for (var group in data['groups'])
-      {
+      $.each(data['groups'], function(index, group) {
           body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
         descriptions[group['name']] = group['description'];
-      }
+      });
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '    <div class="form-group col-sm-6">';
       body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
       body_html += '      <select id="selectPlugins" multiple="multiple">';
       var selected = '';
-      for (var plugin_name in data['loaded_plugins'])
-      {
+      $.each(data['loaded_plugins'], function(index, plugin_name) {
         body_html += '      <option value="'+plugin_name+'" selected>'+plugin_name+'</option>';
-      }
+      });
       body_html += '      </select>';
       body_html += '    </div>';
       body_html += '  </div>';
