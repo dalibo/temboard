@@ -42,16 +42,15 @@ function load_update_group_form(modal_id, group_kind, group_name)
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
         var selected = '';
-        for (var group in data['user_groups'])
-        {
+        $.each(data['user_groups'], function(index, group) {
           selected = '';
           if (data['in_groups'].indexOf(group['name']) > -1)
           {
             selected = 'selected';
           }
-            body_html += '      <option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
+          body_html += '      <option value="'+group['name']+'" '+selected+'>'+group['name']+'</option>';
           descriptions[group['name']] = group['description'];
-        }
+        });
         body_html += '      </select>';
         body_html += '      <p class="form-text text-muted">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
@@ -289,11 +288,10 @@ function load_add_group_form(modal_id, group_kind)
         body_html += '      <label for="selectGroups" class="control-label">User groups</label><br />';
         body_html += '      <select id="selectGroups" multiple="multiple">';
         var descriptions = {};
-        for (var group in data['groups'])
-        {
-            body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
+        $.each(data['groups'], function(index, group) {
+          body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
           descriptions[group['name']] = group['description'];
-        }
+        });
         body_html += '      </select>';
         body_html += '      <p class="form-text text-muted">Please select the user groups allowed to view instances from this instance group.</p>';
         body_html += '    </div>';
@@ -390,18 +388,18 @@ $(document).ready(function() {
   $('#buttonLoadAddGroupForm').click(function () {
     $('#GroupModal').modal('show');
     $('[data-toggle=popover]').popover('hide');
-    load_add_group_form('GroupModal', '{{group_kind}}');
+    load_add_group_form('GroupModal', groupKind);
   });
 
   $(document).on('click', '[data-action=edit]', function () {
     $('#GroupModal').modal('show');
     $('[data-toggle=popover]').popover('hide');
-    load_update_group_form('GroupModal', '{{group_kind}}', $(this).data('group_name'));
+    load_update_group_form('GroupModal', groupKind, $(this).data('group_name'));
   });
 
   $(document).on('click', '[data-action=delete]', function () {
     $('#GroupModal').modal('show');
     $('[data-toggle=popover]').popover('hide');
-    load_delete_group_confirm('GroupModal', '{{group_kind}}', $(this).data('group_name'));
+    load_delete_group_confirm('GroupModal', groupKind, $(this).data('group_name'));
   });
 });
