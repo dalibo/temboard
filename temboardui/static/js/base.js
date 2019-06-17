@@ -1,4 +1,6 @@
 import 'bootstrap';
+import $ from 'jquery';
+window.jQuery = $; window.$ = $;
 
 $(function() {
   //Loads the correct sidebar on window load,

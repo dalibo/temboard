@@ -1,5 +1,10 @@
 /* eslint-env es6 */
-/* global Vue, rangeUtils, dateMath */
+import Vue from 'vue';
+import daterangepicker from 'daterangepicker';
+import css from 'daterangepicker/daterangepicker.css';
+import * as dateMath from './datemath.js';
+import * as rangeUtils from './rangeutils.js';
+
 (function() {
   var html = `
     <div v-cloak>

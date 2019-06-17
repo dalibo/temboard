@@ -1,3 +1,14 @@
+import * as _ from 'lodash';
+import moment from 'moment';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import * as dateMath from './datemath.js';
+import './daterangepicker.vue.js';
+import draggable from 'vuedraggable';
+import Dygraph from 'dygraphs';
+
+Vue.use(VueRouter);
+
 /* global apiUrl, dateMath, moment, Vue, VueRouter, Dygraph */
 $(function() {
   var colors = {
@@ -326,6 +337,9 @@ $(function() {
       fromTo: function() {
         return this.from, this.to, new Date();
       }
+    },
+    components: {
+      draggable: draggable
     },
     watch: {
       graphs: function(val) {

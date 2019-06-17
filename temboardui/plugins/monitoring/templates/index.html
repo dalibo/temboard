@@ -86,7 +86,7 @@
       </div>
     </div>
   </div>
-  <draggable v-model="graphs" :options="{handle:'.card-header'}" v-cloak>
+  <draggable v-model="graphs" handle='.card-header' v-cloak>
     <div class="card w-100 mb-2" v-for="graph in graphs">
       <div class="card-header">
         {{! metrics[graph.id].title }}
@@ -111,18 +111,7 @@
   </div>
 </div>
 
-<script src="/js/vue.min.js"></script>
-<script src="/js/vue-router.min.js"></script>
-<script src="/js/Sortable.min.js"></script>
-<script src="/js/vuedraggable.min.js"></script>
-<script src="/js/dygraph.min.js"></script>
-<script src="/js/moment.min.js"></script>
-<script src="/js/daterangepicker.js"></script>
-<script src="/js/lodash.min.js"></script>
-<script src="/js/monitoring/datemath.js"></script>
-<script src="/js/monitoring/rangeutils.js"></script>
-<script src="/js/monitoring/daterangepicker.vue.js"></script>
-<script src="/js/monitoring/temboard.monitoring.js"></script>
+{% raw load_assets('monitoring') %}
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/data";
 var unavailabilityUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/unavailability";

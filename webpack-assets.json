@@ -1,33 +1,36 @@
 {
   "activity": {
-    "js": "/js/build/activity.12e34659.js"
+    "js": "/js/build/activity.98498be6.js"
   },
   "base": {
-    "js": "/js/build/base.bb97f72a.js"
+    "js": "/js/build/base.a5444dea.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.fc7dfe6f.js"
+    "js": "/js/build/dashboard.3d7492f9.js"
   },
   "home": {
-    "js": "/js/build/home.2a466e59.js"
+    "js": "/js/build/home.7aca2361.js"
+  },
+  "monitoring": {
+    "js": "/js/build/monitoring.4feb8b3c.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.adc88baf.js"
+    "js": "/js/build/notifications.f01748a7.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.d72d1bf2.js"
+    "js": "/js/build/settings.group.622b221b.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.2a4bad41.js"
+    "js": "/js/build/settings.instance.53113d91.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.f2a859e1.js"
+    "js": "/js/build/settings.user.50ca308f.js"
   },
-  "vendors~activity~base~dashboard~home~notifications~settings.group~settings.instance~settings.user": {
-    "js": "/js/build/vendors~activity~base~dashboard~home~notifications~settings.group~settings.instance~settings.user.eee09f02.js"
+  "vendors~activity~base~dashboard~home~monitoring~notifications~settings.group~settings.instance~setti~0ccca86f": {
+    "js": "/js/build/vendors~activity~base~dashboard~home~monitoring~notifications~settings.group~settings.instance~setti~0ccca86f.a52ab315.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.41d52f8f.js"
@@ -35,7 +38,7 @@
   "vendors~base": {
     "js": "/js/build/vendors~base.72948b2f.js"
   },
-  "vendors~dashboard~home": {
-    "js": "/js/build/vendors~dashboard~home.d606dae5.js"
+  "vendors~dashboard~home~monitoring": {
+    "js": "/js/build/vendors~dashboard~home~monitoring.ebc664fb.js"
   }
 }

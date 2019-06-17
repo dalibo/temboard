@@ -11,6 +11,7 @@ module.exports = {
     base: './temboardui/static/js/base.js',
     dashboard: './temboardui/plugins/dashboard/static/js/temboard.dashboard.js',
     home: './temboardui/static/js/temboard.home.js',
+    monitoring: './temboardui/plugins/monitoring/static/js/temboard.monitoring.js',
     notifications: './temboardui/static/js/temboard.notifications.js',
     'settings.group': './temboardui/static/js/temboard.settings.group.js',
     'settings.user': './temboardui/static/js/temboard.settings.user.js',
