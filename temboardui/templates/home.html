@@ -5,7 +5,6 @@
 {% block content %}
 {% import json %}
 {% from temboardui import json_encoder %}
-<script src="/js/dygraph.min.js"></script>
 <script>
 var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
 var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};

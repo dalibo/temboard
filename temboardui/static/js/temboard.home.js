@@ -4,6 +4,7 @@ import getParameterByName from './utils';
 import moment from 'moment';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import Dygraph from 'dygraphs';
 
 Vue.use(VueRouter);
 
