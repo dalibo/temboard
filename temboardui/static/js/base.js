@@ -30,3 +30,12 @@ $(function() {
     })
   });
 });
+
+// Don't let popover sanitize tables in popovers
+// https://getbootstrap.com/docs/4.3/getting-started/javascript/#sanitizer
+$.fn.popover.Constructor.Default.whiteList.table = [];
+$.fn.popover.Constructor.Default.whiteList.tr = [];
+$.fn.popover.Constructor.Default.whiteList.td = [];
+$.fn.popover.Constructor.Default.whiteList.div = [];
+$.fn.popover.Constructor.Default.whiteList.tbody = [];
+$.fn.popover.Constructor.Default.whiteList.thead = [];

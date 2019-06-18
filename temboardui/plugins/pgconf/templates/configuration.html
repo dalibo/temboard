@@ -3,7 +3,6 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Configuration / Main Config {% end %}
 
 {% block content %}
-<link href="/css/pgconf/temboard.pgconf.css" rel="stylesheet">
 <!-- Reset Modal -->
 <div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel">
   <div class="modal-dialog" role="document">
@@ -126,12 +125,6 @@
         {% end %}
       </select>
     </div>
-    <script>
-    $('#selectConfCat').on('change', function(event) {
-      event.preventDefault();
-      window.location.replace($('#selectConfCat').find(':selected').attr('value'));
-    });
-    </script>
   </div>
 </div>
 {% if len(data) == 0 %}
@@ -185,8 +178,7 @@
   {% end %}
   </div>
 </div>
-<script src="/js/pgconf/temboard.pgconf.js"></script>
-<script src="/js/bootstrap-toggle.min.js"></script>
+{% raw load_assets('pgconf') %}
 <script>
 $(document).ready(function() {
 

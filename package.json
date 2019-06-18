@@ -3,6 +3,7 @@
   "dependencies": {
     "bootstrap": "^4.3.1",
     "bootstrap-multiselect": "^0.9.13-1",
+    "bootstrap-toggle": "^2.2.2",
     "chart.js": "^2.8.0",
     "datatables.net-bs4": "^1.10.19",
     "daterangepicker": "^3.0.5",

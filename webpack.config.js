@@ -15,6 +15,7 @@ module.exports = {
     'monitoring.checks': './temboardui/plugins/monitoring/static/js/temboard.checks.js',
     'monitoring.check': './temboardui/plugins/monitoring/static/js/temboard.check.js',
     notifications: './temboardui/static/js/temboard.notifications.js',
+    pgconf: './temboardui/plugins/pgconf/static/js/temboard.pgconf.js',
     'settings.group': './temboardui/static/js/temboard.settings.group.js',
     'settings.user': './temboardui/static/js/temboard.settings.user.js',
     'settings.instance': './temboardui/static/js/temboard.settings.instance.js',

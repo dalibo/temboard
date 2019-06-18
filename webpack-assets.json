@@ -3,7 +3,7 @@
     "js": "/js/build/activity.054ade65.js"
   },
   "base": {
-    "js": "/js/build/base.36749cbe.js"
+    "js": "/js/build/base.fa37f238.js"
   },
   "dashboard": {
     "js": "/js/build/dashboard.2977ae0f.js"
@@ -22,6 +22,9 @@
   },
   "notifications": {
     "js": "/js/build/notifications.947d28cd.js"
+  },
+  "pgconf": {
+    "js": "/js/build/pgconf.cf1acfb5.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"

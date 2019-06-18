@@ -1,3 +1,5 @@
+import bootstraptoggle from 'bootstrap-toggle';
+import css from '../css/temboard.pgconf.css';
 /*
  * Pgconf plugin
  */
@@ -33,6 +35,8 @@ function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal
     }
   });
 }
+// We need to expose modal_api_call for use in template script
+window.modal_api_call = modal_api_call;
 
 var entityMap = {
   "&": "&amp;",
@@ -63,3 +67,10 @@ function render_xhr_error(xhr)
   }
   return escapeHtml(error_msg);
 }
+
+$(function() {
+  $('#selectConfCat').on('change', function(event) {
+    event.preventDefault();
+    window.location.replace($('#selectConfCat').find(':selected').attr('value'));
+  });
+});
