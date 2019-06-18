@@ -96,11 +96,17 @@ In the template for a view, you will then need to add the following:
 Build the chunks using the following command:
 
 ```
-webpack-cli --watch
+npm run build
 ```
 
-This will do the build using `production` mode. You can add
-`--mode development` for debugging purposes.
+This will do the build using `production` mode.
+
+You can also use the following command while developing. But don't forget to
+build and test the production mode before committing your changes.
+
+```
+npm run build-dev
+```
 
 ### CSS
 

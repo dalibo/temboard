@@ -1,5 +1,10 @@
 {
   "name": "temboard",
+  "scripts": {
+    "build": "webpack-cli",
+    "watch": "webpack-cli --watch",
+    "build-dev": "webpack-cli --mode development --watch"
+  },
   "dependencies": {
     "bootstrap": "^4.3.1",
     "bootstrap-multiselect": "^0.9.13-1",
