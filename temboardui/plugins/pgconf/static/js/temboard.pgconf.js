@@ -1,4 +1,5 @@
 import bootstraptoggle from 'bootstrap-toggle';
+import 'bootstrap-toggle/css/bootstrap-toggle.min.css';
 import css from '../css/temboard.pgconf.css';
 /*
  * Pgconf plugin
