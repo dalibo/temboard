@@ -39,9 +39,9 @@ module.exports = {
       chunks: 'all',
       cacheGroups: {
         // create a chunk with the most often used packages
-        vendor: {
+        commons: {
           test: /[\\/]node_modules[\\/](jquery|lodash)[\\/]/,
-          name: 'vendor',
+          name: 'commons',
           chunks: 'all',
         }
       }

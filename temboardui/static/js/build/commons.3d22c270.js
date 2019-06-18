@@ -1,4 +1,4 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([["vendor"],{"./node_modules/jquery/dist/jquery.js":function(t,e,n){var r;
+(window.webpackJsonp=window.webpackJsonp||[]).push([["commons"],{"./node_modules/jquery/dist/jquery.js":function(t,e,n){var r;
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/

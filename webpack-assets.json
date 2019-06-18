@@ -1,57 +1,57 @@
 {
   "activity": {
-    "js": "/js/build/activity.054ade65.js"
+    "js": "/js/build/activity.0142b9d8.js"
   },
   "base": {
-    "js": "/js/build/base.fa37f238.js"
+    "js": "/js/build/base.2ff5d602.js"
+  },
+  "commons": {
+    "js": "/js/build/commons.3d22c270.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.8d09479f.js"
+    "js": "/js/build/dashboard.c65d406e.js"
   },
   "home": {
-    "js": "/js/build/home.6c5bf175.js"
+    "js": "/js/build/home.ef0f2d0a.js"
   },
   "maintenance": {
-    "js": "/js/build/maintenance.1e60495e.js"
+    "js": "/js/build/maintenance.e5df0c68.js"
   },
   "maintenance.database": {
-    "js": "/js/build/maintenance.database.b5b155f7.js"
+    "js": "/js/build/maintenance.database.10879342.js"
   },
   "maintenance.schema": {
-    "js": "/js/build/maintenance.schema.fda4600a.js"
+    "js": "/js/build/maintenance.schema.408a52d8.js"
   },
   "maintenance.table": {
-    "js": "/js/build/maintenance.table.d62b1e2e.js"
+    "js": "/js/build/maintenance.table.9389f4fd.js"
   },
   "monitoring": {
-    "js": "/js/build/monitoring.aa7880e8.js"
+    "js": "/js/build/monitoring.677758f4.js"
   },
   "monitoring.check": {
-    "js": "/js/build/monitoring.check.ec52dec2.js"
+    "js": "/js/build/monitoring.check.636de402.js"
   },
   "monitoring.checks": {
-    "js": "/js/build/monitoring.checks.f89a2fd2.js"
+    "js": "/js/build/monitoring.checks.2485e669.js"
   },
   "notifications": {
-    "js": "/js/build/notifications.947d28cd.js"
+    "js": "/js/build/notifications.51d418f9.js"
   },
   "pgconf": {
-    "js": "/js/build/pgconf.b1012956.js"
+    "js": "/js/build/pgconf.22ca6b20.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
   },
   "settings.group": {
-    "js": "/js/build/settings.group.4800b792.js"
+    "js": "/js/build/settings.group.047ca188.js"
   },
   "settings.instance": {
-    "js": "/js/build/settings.instance.5824c8d1.js"
+    "js": "/js/build/settings.instance.249d8b39.js"
   },
   "settings.user": {
-    "js": "/js/build/settings.user.626c5cb4.js"
-  },
-  "vendor": {
-    "js": "/js/build/vendor.006e3f3d.js"
+    "js": "/js/build/settings.user.b03c91c0.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.ed2a3758.js"
