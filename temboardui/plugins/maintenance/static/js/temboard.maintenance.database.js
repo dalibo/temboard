@@ -1,4 +1,10 @@
-/* global Vue */
+import * as _ from 'lodash';
+import moment from 'moment';
+import daterangepicker from 'daterangepicker';
+import css from 'daterangepicker/daterangepicker.css';
+import Vue from 'vue';
+import './vue.size-distribution-bar.js';
+
 $(function() {
   "use strict";
 

@@ -1,4 +1,7 @@
-/* global Vue */
+import * as _ from 'lodash';
+import Vue from 'vue';
+import './vue.size-distribution-bar.js';
+
 $(function() {
   "use strict";
 

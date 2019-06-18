@@ -1,4 +1,3 @@
-{% autoescape None %}
 {% extends ../../../templates/base.html %}
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Maintenance{% end %}
@@ -185,18 +184,12 @@
   </table>
 </div>
 
-<script src="/js/lodash.min.js"></script>
-<script src="/js/moment.min.js"></script>
-<script src="/js/vue.min.js"></script>
-<script src="/js/maintenance/vue.filter.relative-time.js"></script>
-<script src="/js/maintenance/vue.size-distribution-bar.js"></script>
-<script src="/js/daterangepicker.js"></script>
-<script src="/js/maintenance/temboard.maintenance.database.js"></script>
+{% raw load_assets('maintenance.database') %}
 <script>
 var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}';
 var maintenanceBaseUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
 var agentLoginUrl = '/server/{{ instance.agent_address }}/{{ instance.agent_port }}/login';
-var xsession = {{ json_encode(xsession) }};
+var xsession = {% raw json_encode(xsession) %};
 </script>
 
 {% end %}

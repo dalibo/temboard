@@ -6,25 +6,37 @@
     "js": "/js/build/base.fa37f238.js"
   },
   "dashboard": {
-    "js": "/js/build/dashboard.2977ae0f.js"
+    "js": "/js/build/dashboard.8d09479f.js"
   },
   "home": {
-    "js": "/js/build/home.32a75ca4.js"
+    "js": "/js/build/home.6c5bf175.js"
+  },
+  "maintenance": {
+    "js": "/js/build/maintenance.1e60495e.js"
+  },
+  "maintenance.database": {
+    "js": "/js/build/maintenance.database.b5b155f7.js"
+  },
+  "maintenance.schema": {
+    "js": "/js/build/maintenance.schema.fda4600a.js"
+  },
+  "maintenance.table": {
+    "js": "/js/build/maintenance.table.d62b1e2e.js"
   },
   "monitoring": {
-    "js": "/js/build/monitoring.cbcf4c78.js"
+    "js": "/js/build/monitoring.aa7880e8.js"
   },
   "monitoring.check": {
-    "js": "/js/build/monitoring.check.365bd378.js"
+    "js": "/js/build/monitoring.check.ec52dec2.js"
   },
   "monitoring.checks": {
-    "js": "/js/build/monitoring.checks.00aec445.js"
+    "js": "/js/build/monitoring.checks.f89a2fd2.js"
   },
   "notifications": {
     "js": "/js/build/notifications.947d28cd.js"
   },
   "pgconf": {
-    "js": "/js/build/pgconf.cf1acfb5.js"
+    "js": "/js/build/pgconf.b1012956.js"
   },
   "runtime": {
     "js": "/js/build/runtime.294ac95e.js"
@@ -39,7 +51,7 @@
     "js": "/js/build/settings.user.626c5cb4.js"
   },
   "vendor": {
-    "js": "/js/build/vendor.235c81d5.js"
+    "js": "/js/build/vendor.006e3f3d.js"
   },
   "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
     "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.ed2a3758.js"
@@ -47,7 +59,7 @@
   "vendors~base": {
     "js": "/js/build/vendors~base.bfc3d85e.js"
   },
-  "vendors~dashboard~home~monitoring~monitoring.check~monitoring.checks": {
-    "js": "/js/build/vendors~dashboard~home~monitoring~monitoring.check~monitoring.checks.65d95013.js"
+  "vendors~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.table~monitor~40b06deb": {
+    "js": "/js/build/vendors~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.table~monitor~40b06deb.fc484f7c.js"
   }
 }

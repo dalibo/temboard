@@ -151,10 +151,7 @@
   </table>
 </div>
 
-<script src="/js/lodash.min.js"></script>
-<script src="/js/vue.min.js"></script>
-<script src="/js/maintenance/vue.size-distribution-bar.js"></script>
-<script src="/js/maintenance/temboard.maintenance.js"></script>
+{% raw load_assets('maintenance') %}
 <script>
 var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
 </script>

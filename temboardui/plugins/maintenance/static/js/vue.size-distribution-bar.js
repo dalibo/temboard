@@ -1,4 +1,5 @@
-/* global Vue */
+import Vue from 'vue';
+
 $(function() {
   "use strict";
 
