@@ -53,6 +53,16 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
+      },
+      // Expose jQuery as window.$ so that it's available in unbuilt js
+      // (inlined in templates)
+      // https://github.com/webpack-contrib/expose-loader
+      {
+        test: require.resolve('jquery'),
+        use: [{
+          loader: 'expose-loader',
+          options: '$'
+        }]
       }
     ]
   },
