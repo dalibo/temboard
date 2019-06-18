@@ -71,7 +71,7 @@
 <script src="/js/highlightjs/highlight.pack.js"></script>
 {% raw load_assets('activity') %}
 <script>
-var xsession = {{ json_encode(xsession) }};
+var xsession = {% raw json_encode(xsession) %};
 var agent_address = "{{instance.agent_address}}";
 var agent_port = "{{instance.agent_port}}";
 var activityMode = "{{mode}}";
