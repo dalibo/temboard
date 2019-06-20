@@ -22,6 +22,7 @@ module.exports = {
     'settings.group': './temboardui/static/js/settings.group.js',
     'settings.user': './temboardui/static/js/settings.user.js',
     'settings.instance': './temboardui/static/js/settings.instance.js',
+    'settings.notifications': './temboardui/static/js/settings.notifications.js',
   },
   output: {
     path: path.resolve(__dirname, 'temboardui/static/js/build'),

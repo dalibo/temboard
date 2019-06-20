@@ -1,3 +1,5 @@
+require('base');
+
 function sendEmail() {
   $.ajax({
     url: '/json/test_email',
@@ -56,3 +58,15 @@ function escapeHtml(string) {
     return entityMap[s];
   });
 }
+
+$(function() {
+  $('#sendEmailForm').submit(function(e) {
+    e.preventDefault();
+    sendEmail();
+  });
+
+  $('#sendSmsForm').submit(function(e) {
+    e.preventDefault();
+    sendSms();
+  });
+});

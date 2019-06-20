@@ -36,17 +36,8 @@
     </div>
   </div>
 </div>
-<script src="/js/temboard.settings.notifications.js"></script>
+{% raw load_assets('settings.notifications') %}
 <script>
-$('#sendEmailForm').submit(function(e) {
-  e.preventDefault();
-  sendEmail();
-});
-
-$('#sendSmsForm').submit(function(e) {
-  e.preventDefault();
-  sendSms();
-});
 
 </script>
 {% end %}

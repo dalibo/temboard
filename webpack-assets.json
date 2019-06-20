@@ -2,78 +2,78 @@
   "activity": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/activity.556a2555.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/activity.c6416b35.js"
     ]
   },
   "dashboard": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/dashboard.295b0188.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/dashboard.56c15b46.js"
     ]
   },
   "home": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/home.cd3aa07b.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/home.2e0d26ed.js"
     ]
   },
   "maintenance": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/maintenance.dde59647.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/maintenance.067d8054.js"
     ]
   },
   "maintenance.database": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/maintenance.database.0fb068cb.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/maintenance.database.0641bec4.js"
     ]
   },
   "maintenance.schema": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/maintenance.schema.367bc549.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/maintenance.schema.63b834f5.js"
     ]
   },
   "maintenance.table": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/maintenance.table.849a151f.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/maintenance.table.f0d33b5a.js"
     ]
   },
   "monitoring": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/monitoring.b42f090d.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/monitoring.8d76c554.js"
     ]
   },
   "monitoring.checks": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/monitoring.checks.0c7cd223.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/monitoring.checks.ef40ef61.js"
     ]
   },
   "monitoring.check": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/monitoring.check.11f86ddd.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/monitoring.check.98142bb9.js"
     ]
   },
   "notifications": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/notifications.bcf5b455.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/notifications.7e6b3f97.js"
     ]
   },
   "pgconf": {
@@ -85,22 +85,29 @@
   "settings.group": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/settings.group.c937406b.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/settings.group.e07beb98.js"
     ]
   },
   "settings.user": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/settings.user.0307a00c.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/settings.user.33b9cb07.js"
     ]
   },
   "settings.instance": {
     "js": [
       "/js/build/commons.3d22c270.js",
-      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
-      "/js/build/settings.instance.fb5da615.js"
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/settings.instance.c7758597.js"
+    ]
+  },
+  "settings.notifications": {
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~efce5f3e.339eb9cc.js",
+      "/js/build/settings.notifications.31115695.js"
     ]
   }
 }
