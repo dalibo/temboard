@@ -1,7 +1,6 @@
 import logging
 from os.path import realpath
 
-import tornado.web
 from tornado.escape import json_encode
 
 from temboardui.temboardclient import TemboardError
@@ -23,12 +22,7 @@ def configuration(config):
 
 
 def get_routes(config):
-    routes = blueprint.rules + [
-        (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
-            'path': plugin_path + "/static/js"
-        }),
-    ]
-    return routes
+    return blueprint.rules
 
 
 @blueprint.instance_route(r"/dashboard")

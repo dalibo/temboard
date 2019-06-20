@@ -1,5 +1,4 @@
 from os import path
-import tornado.web
 
 from temboardui.web import (
     Blueprint,
@@ -18,12 +17,7 @@ def configuration(config):
 
 
 def get_routes(config):
-    routes = blueprint.rules + [
-        (r"/js/activity/(.*)", tornado.web.StaticFileHandler, {
-            'path': plugin_path + "/static/js"
-        }),
-    ]
-    return routes
+    return blueprint.rules
 
 
 def get_agent_username(request):

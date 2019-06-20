@@ -2,9 +2,6 @@
 import logging
 import os
 
-import tornado.web
-import tornado.escape
-
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound
@@ -40,14 +37,9 @@ def configuration(config):
 
 
 def get_routes(config):
-    plugin_path = os.path.dirname(os.path.realpath(__file__))
     __import__(__name__ + '.handlers.alerting')
     __import__(__name__ + '.handlers.monitoring')
-    routes = blueprint.rules + [
-        (r"/js/monitoring/(.*)",
-         tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-    ]
-    return routes
+    return blueprint.rules
 
 
 @workers.register(pool_size=1)

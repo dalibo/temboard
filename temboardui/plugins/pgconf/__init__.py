@@ -1,6 +1,5 @@
 import logging
 from os import path
-import tornado.web
 from tornado.escape import url_escape, url_unescape
 
 from temboardui.web import (
@@ -23,19 +22,7 @@ def configuration(config):
 
 
 def get_routes(config):
-    routes = blueprint.rules + [
-        (
-            r"/js/pgconf/(.*)",
-            tornado.web.StaticFileHandler,
-            {'path': plugin_path + "/static/js"}
-        ),
-        (
-            r"/css/pgconf/(.*)",
-            tornado.web.StaticFileHandler,
-            {'path': plugin_path + "/static/css"}
-        ),
-    ]
-    return routes
+    return blueprint.rules
 
 
 @blueprint.instance_route("/pgconf/configuration(?:/category/(.+))?",
