@@ -2,6 +2,9 @@ import dt from 'datatables.net-bs4';
 import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 dt(window, $);
 
+import hljs from 'highlight.js';
+import 'highlight.js/styles/default.css';
+
 $(function() {
   "use strict";
 

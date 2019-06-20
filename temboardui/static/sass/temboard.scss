@@ -1,7 +1,6 @@
 @import "bootstrap-variables-override";
 @import "bootstrap";
 @import "dygraph";
-@import "../js/highlightjs/default";
 
 @each $color, $value in $theme-colors {
   @include bg-variant(".bg-#{$color}-light", lighten($value, 43));
