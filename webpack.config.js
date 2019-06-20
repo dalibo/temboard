@@ -32,7 +32,7 @@ module.exports = {
   },
   optimization: {
     // one runtime for all entrypoints
-    //runtimeChunk: 'single',
+    runtimeChunk: 'single',
     // readable chunk ids even in production mode
     chunkIds: 'named',
     splitChunks: {
