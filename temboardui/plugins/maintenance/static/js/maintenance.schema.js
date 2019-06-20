@@ -3,10 +3,14 @@ import moment from 'moment';
 import daterangepicker from 'daterangepicker';
 import css from 'daterangepicker/daterangepicker.css';
 import Vue from 'vue';
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/default.css';
+import pgsql from 'highlight.js/lib/languages/pgsql';
+hljs.registerLanguage('pgsql', pgsql);
 import './vue.size-distribution-bar.js';
 import './vue.filter.relative-time.js';
+
+require('base');
 
 $(function() {
   "use strict";

@@ -5,6 +5,8 @@ dt(window, $);
 import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
 import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
 
+require('base');
+
 /*
  * Load user properties using '/json/settings/user/'+username API
  * and build the update form.

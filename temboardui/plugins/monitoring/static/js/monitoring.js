@@ -1,3 +1,4 @@
+import 'bootstrap';
 import * as _ from 'lodash';
 import moment from 'moment';
 import Vue from 'vue';
@@ -6,6 +7,8 @@ import * as dateMath from './datemath.js';
 import './daterangepicker.vue.js';
 import draggable from 'vuedraggable';
 import Dygraph from 'dygraphs';
+
+require('base');
 
 Vue.use(VueRouter);
 

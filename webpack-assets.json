@@ -1,65 +1,106 @@
 {
   "activity": {
-    "js": "/js/build/activity.6541ef50.js"
-  },
-  "base": {
-    "js": "/js/build/base.2ff5d602.js"
-  },
-  "commons": {
-    "js": "/js/build/commons.3d22c270.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/activity.556a2555.js"
+    ]
   },
   "dashboard": {
-    "js": "/js/build/dashboard.e7ecaf5f.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/dashboard.295b0188.js"
+    ]
   },
   "home": {
-    "js": "/js/build/home.88c4a079.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/home.cd3aa07b.js"
+    ]
   },
   "maintenance": {
-    "js": "/js/build/maintenance.6921a924.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/maintenance.dde59647.js"
+    ]
   },
   "maintenance.database": {
-    "js": "/js/build/maintenance.database.29864d97.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/maintenance.database.0fb068cb.js"
+    ]
   },
   "maintenance.schema": {
-    "js": "/js/build/maintenance.schema.ac8d564a.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/maintenance.schema.367bc549.js"
+    ]
   },
   "maintenance.table": {
-    "js": "/js/build/maintenance.table.c6384749.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/maintenance.table.849a151f.js"
+    ]
   },
   "monitoring": {
-    "js": "/js/build/monitoring.60659f1b.js"
-  },
-  "monitoring.check": {
-    "js": "/js/build/monitoring.check.8219f4c8.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/monitoring.b42f090d.js"
+    ]
   },
   "monitoring.checks": {
-    "js": "/js/build/monitoring.checks.1a8e760f.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/monitoring.checks.0c7cd223.js"
+    ]
+  },
+  "monitoring.check": {
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/monitoring.check.11f86ddd.js"
+    ]
   },
   "notifications": {
-    "js": "/js/build/notifications.4059cd8e.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/notifications.bcf5b455.js"
+    ]
   },
   "pgconf": {
-    "js": "/js/build/pgconf.402e3829.js"
-  },
-  "runtime": {
-    "js": "/js/build/runtime.294ac95e.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/pgconf.70ef3f77.js"
+    ]
   },
   "settings.group": {
-    "js": "/js/build/settings.group.0a15f005.js"
-  },
-  "settings.instance": {
-    "js": "/js/build/settings.instance.c485f400.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/settings.group.c937406b.js"
+    ]
   },
   "settings.user": {
-    "js": "/js/build/settings.user.6f22263a.js"
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/settings.user.0307a00c.js"
+    ]
   },
-  "vendors~activity~notifications~settings.group~settings.instance~settings.user": {
-    "js": "/js/build/vendors~activity~notifications~settings.group~settings.instance~settings.user.ed2a3758.js"
-  },
-  "vendors~base": {
-    "js": "/js/build/vendors~base.bfc3d85e.js"
-  },
-  "vendors~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.table~monitor~40b06deb": {
-    "js": "/js/build/vendors~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.table~monitor~40b06deb.fc484f7c.js"
+  "settings.instance": {
+    "js": [
+      "/js/build/commons.3d22c270.js",
+      "/js/build/vendors~activity~dashboard~home~maintenance~maintenance.database~maintenance.schema~maintenance.tabl~81f640ab.e391f31f.js",
+      "/js/build/settings.instance.fb5da615.js"
+    ]
   }
 }

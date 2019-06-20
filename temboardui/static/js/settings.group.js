@@ -5,6 +5,8 @@ dt(window, $);
 import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
 import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
 
+require('base');
+
 /*
  * Load group properties using /json/settings/group/<group_kind>/<group_name> API
  * and build the update form.

@@ -5,6 +5,8 @@ dt(window, $);
 import 'bootstrap-multiselect/dist/js/bootstrap-multiselect';
 import 'bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
 
+require('base');
+
 var waitMessage = '<div class="row mb-4"><div class="col-md-4 offset-md-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>';
 
 /*

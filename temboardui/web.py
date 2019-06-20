@@ -78,19 +78,18 @@ class Redirect(Response, Exception):
         )
 
 
-def load_assets(name, type='js'):
+def load_assets(entrypoint):
     try:
         fn = 'webpack-assets.json'
         with open(fn) as f:
-            assets = json.load(f)
+            entrypoints = json.load(f)
     except Exception:
         pass
     ret = []
     script = '<script src="{}"></script>'
-    for asset in assets:
-        if ('vendors' in asset) and (name in asset):
-            ret.append(script.format(assets[asset][type]))
-    ret.append(script.format(assets[name][type]))
+    assets = entrypoints[entrypoint]
+    for asset in assets['js']:
+        ret.append(script.format(asset))
     return '\n'.join(ret)
 
 

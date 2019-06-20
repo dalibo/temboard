@@ -2,6 +2,8 @@ import * as _ from 'lodash';
 import Vue from 'vue';
 import './vue.size-distribution-bar.js';
 
+require('base');
+
 $(function() {
   "use strict";
 

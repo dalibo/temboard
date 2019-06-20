@@ -1,10 +1,13 @@
 import * as _ from 'lodash';
+import 'bootstrap';
 import fscreen from 'fscreen';
 import getParameterByName from './utils';
 import moment from 'moment';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Dygraph from 'dygraphs';
+
+require('base');
 
 Vue.use(VueRouter);
 

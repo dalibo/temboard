@@ -1,8 +1,11 @@
+import 'bootstrap';
 import fscreen from 'fscreen';
 import moment from 'moment';
 import Vue from 'vue';
 import Chart from 'chart.js';
 import filesize from 'filesize/lib/filesize.es6.js';
+
+require('base');
 
 $(function() {
   "use strict";

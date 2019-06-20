@@ -5,6 +5,8 @@ import css from 'daterangepicker/daterangepicker.css';
 import Vue from 'vue';
 import './vue.size-distribution-bar.js';
 
+require('base');
+
 $(function() {
   "use strict";
 

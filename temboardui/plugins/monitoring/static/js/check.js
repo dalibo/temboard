@@ -5,6 +5,8 @@ import * as dateMath from './datemath.js';
 import './daterangepicker.vue.js';
 import Dygraph from 'dygraphs';
 
+require('base');
+
 /* global apiUrl, checkName */
 $(function() {
 

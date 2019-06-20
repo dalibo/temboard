@@ -8,7 +8,6 @@ module.exports = {
   mode: 'production',
   entry: {
     activity: './temboardui/plugins/activity/static/js/activity.js',
-    base: './temboardui/static/js/base.js',
     dashboard: './temboardui/plugins/dashboard/static/js/dashboard.js',
     home: './temboardui/static/js/home.js',
     maintenance: './temboardui/plugins/maintenance/static/js/maintenance.js',
@@ -32,7 +31,7 @@ module.exports = {
   },
   optimization: {
     // one runtime for all entrypoints
-    runtimeChunk: 'single',
+    //runtimeChunk: 'single',
     // readable chunk ids even in production mode
     chunkIds: 'named',
     splitChunks: {
@@ -75,7 +74,8 @@ module.exports = {
     new CleanWebpackPlugin(),
     new webpack.NamedModulesPlugin(),
     new AssetsPlugin({
-      prettyPrint: true
+      prettyPrint: true,
+      entrypoints: true
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
@@ -87,7 +87,11 @@ module.exports = {
   ],
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue.esm.js'
+      'vue$': 'vue/dist/vue.esm.js',
+      'base$': path.resolve(__dirname, 'temboardui/static/js/base.js'),
     }
+  },
+  performance: {
+    maxEntrypointSize: 600000
   }
 };

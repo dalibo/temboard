@@ -1,9 +1,14 @@
+import 'bootstrap';
 import dt from 'datatables.net-bs4';
 import css from 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 dt(window, $);
 
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/default.css';
+import pgsql from 'highlight.js/lib/languages/pgsql';
+hljs.registerLanguage('pgsql', pgsql);
+
+require('base');
 
 $(function() {
   "use strict";

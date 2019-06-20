@@ -1,6 +1,8 @@
 import * as _ from 'lodash';
 import Vue from 'vue';
 
+require('base');
+
 /* global apiUrl */
 $(function() {
 
