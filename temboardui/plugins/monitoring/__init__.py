@@ -233,6 +233,10 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
     notifications_conf = app.config.notifications
     smtp_host = notifications_conf.smtp_host
     smtp_port = notifications_conf.smtp_port
+    smtp_tls = notifications_conf.smtp_tls
+    smtp_login = notifications_conf.smtp_login
+    smtp_password = notifications_conf.smtp_password
+    smtp_from_addr = notifications_conf.smtp_from_addr
 
     if not smtp_host and \
        not notifications_conf.get('twilio_account_sid', None):
@@ -316,7 +320,8 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
 
     emails = [role.role_email for role in roles if role.role_email]
     if len(emails):
-        send_mail(smtp_host, smtp_port, subject, body, emails)
+        send_mail(smtp_host, smtp_port, subject, body, emails, smtp_tls,
+                  smtp_login, smtp_password,  smtp_from_addr)
 
     phones = [role.role_phone for role in roles if role.role_phone]
     if len(phones):
