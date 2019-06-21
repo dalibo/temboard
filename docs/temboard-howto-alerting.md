@@ -69,17 +69,25 @@ In your `temBoard` configuration file you need to add the following section:
 ```yaml
 [notifications]
 # SMTP host
-smtp_host = localhost
+smtp_host = smtp.gmail.com
 # SMTP port
-# smtp_port =
+smtp_port = 465
+smtp_tls = True
+smtp_login = <email>@gmail.com
+smtp_password = <password>
 
 # Twilio SMS service configuration
-twilio_account_sid = ACCOUNTSIDTOBECHANGED
-twilio_auth_token = AUTHTOKENTOBECHANGED
-twilio_from = FROMNUMBERTOBECHANGED
+twilio_account_sid = <account_id>
+twilio_auth_token = <auth_token>
+twilio_from = <from_number>
 ```
 
 Note: you can leave the settings commented if you don't want to use them.
+
+The above example shows how to configure the SMTP for sending emails via Google
+Mail. The password may be an application password in case you're using
+2-Step-Verification. See [Sign in using App
+Passwords](https://support.google.com/accounts/answer/185833).
 
 For the twilio settings, please refer to [Twilio Usage Documentation](https://www.twilio.com/docs/usage).
 
