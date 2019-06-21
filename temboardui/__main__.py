@@ -213,6 +213,10 @@ def list_options_specs():
     s = 'notifications'
     yield OptionSpec(s, 'smtp_host', default=None)
     yield OptionSpec(s, 'smtp_port', default=None)
+    yield OptionSpec(s, 'smtp_tls', default=False)
+    yield OptionSpec(s, 'smtp_login', default=None)
+    yield OptionSpec(s, 'smtp_password', default=None)
+    yield OptionSpec(s, 'smtp_from_addr', default=None)
     yield OptionSpec(s, 'twilio_account_sid', default=None)
     yield OptionSpec(s, 'twilio_auth_token', default=None)
     yield OptionSpec(s, 'twilio_from', default=None)

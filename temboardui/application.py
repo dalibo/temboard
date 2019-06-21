@@ -14,7 +14,7 @@ from sqlalchemy.orm.exc import (
 from sqlalchemy.exc import (
     IntegrityError,
 )
-from smtplib import SMTP
+from smtplib import SMTP, SMTP_SSL
 from email.mime.text import MIMEText
 
 from temboardui.model.orm import (
@@ -780,14 +780,22 @@ def check_agent_port(value):
         raise TemboardUIError(400, "Invalid agent port.")
 
 
-def send_mail(host, port, subject, content, emails):
+def send_mail(host, port, subject, content, emails, tls=False, login=None,
+              password=None, from_addr=None):
 
     msg = MIMEText(content, 'plain', 'utf-8')
     msg['Subject'] = subject
 
     try:
-        smtp = SMTP(host, port)
-        smtp.sendmail(None, emails, msg.as_string())
+        if not tls:
+            smtp = SMTP(host, port)
+        else:
+            smtp = SMTP_SSL(host, port)
+
+        if login is not None and password is not None:
+            smtp.login(login, password)
+
+        smtp.sendmail(from_addr, emails, msg.as_string())
         smtp.quit()
     except Exception as e:
         raise TemboardUIError(

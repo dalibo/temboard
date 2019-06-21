@@ -32,12 +32,17 @@ def send_test_email(request):
     notifications_conf = app.config.notifications
     smtp_host = notifications_conf.smtp_host
     smtp_port = notifications_conf.smtp_port
+    smtp_tls = notifications_conf.smtp_tls
+    smtp_login = notifications_conf.smtp_login
+    smtp_password = notifications_conf.smtp_password
+    smtp_from_addr = notifications_conf.smtp_from_addr
 
     if not smtp_host:
         raise HTTPError(500, "SMTP server is not configured")
 
     send_mail(smtp_host, smtp_port, 'temBoard notification test',
-              'This is a test', email)
+              'This is a test', email, smtp_tls, smtp_login, smtp_password,
+              smtp_from_addr)
     return {'message': 'OK'}
 
 
