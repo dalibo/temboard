@@ -79,12 +79,9 @@ class Redirect(Response, Exception):
 
 
 def load_assets(entrypoint):
-    try:
-        fn = 'webpack-assets.json'
-        with open(fn) as f:
-            entrypoints = json.load(f)
-    except Exception:
-        pass
+    fn = os.path.realpath(__file__ + '/../static/js/build/assets.json')
+    with open(fn) as f:
+        entrypoints = json.load(f)
     ret = []
     script = '<script src="{}"></script>'
     assets = entrypoints[entrypoint]

@@ -76,7 +76,8 @@ module.exports = {
     new webpack.NamedModulesPlugin(),
     new AssetsPlugin({
       prettyPrint: true,
-      entrypoints: true
+      entrypoints: true,
+      filename: 'temboardui/static/js/build/assets.json',
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
