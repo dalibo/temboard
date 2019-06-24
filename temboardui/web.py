@@ -22,6 +22,7 @@ from tornado.template import Loader as TemplateLoader
 from .application import (
     get_instance,
     get_role_by_cookie,
+    get_roles_by_instance,
 )
 from .errors import TemboardUIError
 from .model import Session as DBSession
@@ -379,6 +380,24 @@ def add_json_middleware(func):
     return json_middleware
 
 
+def add_user_instance_middleware(func):
+    # Ensures user is allowed to access to the instance
+    @functools.wraps(func)
+    def user_instance_middleware(request, address, port, *args):
+        user = request.current_user = request.handler.current_user
+
+        allowed_roles = get_roles_by_instance(request.handler.db_session,
+                                              address,
+                                              port)
+        roles = [role.role_name for role in allowed_roles if role]
+        if user.role_name not in roles:
+            raise HTTPError(403, "Restricted area.")
+
+        return func(request, address, port, *args)
+
+    return user_instance_middleware
+
+
 class UserHelper(object):
     @classmethod
     def add_middleware(cls, func):
@@ -461,6 +480,13 @@ class Blueprint(object):
             func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
+
+                if url.startswith('/server/') or url.startswith('/proxy/'):
+                    # Limit user/instance access control to /server/ and
+                    # /proxy/.
+                    # Admin area access control has already been performed
+                    func = add_user_instance_middleware(func)
+
             if json:
                 func = add_json_middleware(func)
             func = ErrorHelper.add_middleware(func)
