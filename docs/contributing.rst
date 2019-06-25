@@ -14,6 +14,16 @@ against ``master`` as usual.
 Docker Development Environment
 ==============================
 
+First, ensure you have properly cloned temboard-agend repository. The project
+uses a submodule. Either clone with ``--recursive`` flag or activate submodule.
+
+.. code-block:: console
+
+   $ git clone --recursive https://github.com/dalibo/temboard-agent.git
+   $ cd temboard-agent/
+   $ git submodule update --init
+
+
 With Docker & Compose, you can run your code like this:
 
 .. code-block:: console
