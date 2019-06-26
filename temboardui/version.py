@@ -1,1 +1,1 @@
-__version__ = "4.0+master"
+__version__ = "4.0b1"
