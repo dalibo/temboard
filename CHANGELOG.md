@@ -1,6 +1,31 @@
 # Changelog
 
-## [3.0] - 2019-03-XX
+## [4.0] - 2019-06-26
+
+### Added
+
+- Support for reindex on table and database by [@pgiraud](https://github.com/pgiraud)
+- Support for analyze/vacuum for database by [@pgiraud](https://github.com/pgiraud)
+- Send notifications by SMS or email on state changes by [@pgiraud](https://github.com/pgiraud)
+
+### Changed
+
+- Allow to use either psycopg2 or psycopg2-binary by [@bersace](https://github.com/bersace)
+- Monitoring shareable urls by [@pgiraud](https://github.com/pgiraud)
+- Use `pg_version_summary` when possible by [@pgiraud](https://github.com/pgiraud)
+
+### Removed
+
+- Removed user notifications from dashboard by [@pgiraud](https://github.com/pgiraud)
+
+### Fixed
+
+- Prevent endless chart height increase on Chrome 75 by [@pgiraud](https://github.com/pgiraud)
+- Restrict access to instance to authorized users by [@julmon](https://github.com/julmon)
+- Remove monitoring data when removing an instance by [@pgiraud](https://github.com/pgiraud)
+- Move `metric_cpu_record.time` to `BIGINT` by [@julmon](https://github.com/julmon)
+
+## [3.0] - 2019-03-20
 
 ### Added
 
