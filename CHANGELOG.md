@@ -13,6 +13,7 @@
 - Allow to use either psycopg2 or psycopg2-binary by [@bersace](https://github.com/bersace)
 - Monitoring shareable urls by [@pgiraud](https://github.com/pgiraud)
 - Use `pg_version_summary` when possible by [@pgiraud](https://github.com/pgiraud)
+- Database schema, please see the [upgrade documentation](temboard-upgrade-3.0-4.0.md)
 
 ### Removed
 
