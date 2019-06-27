@@ -391,12 +391,12 @@ def update_instance(session,
             instance.pg_port = int(pg_port)
         else:
             instance.pg_port = None
-        instance.agent_key = unicode(agent_key)
-        instance.hostname = unicode(hostname)
-        instance.pg_version = unicode(pg_version)
-        instance.pg_version_summary = unicode(pg_version_summary)
-        instance.pg_data = unicode(pg_data)
         instance.notify = bool(notify)
+
+        for prop in ['agent_key', 'hostname', 'pg_version',
+                     'pg_version_summary', 'pg_data']:
+            if locals().get(prop) is not None:
+                setattr(instance, prop, unicode(locals().get(prop)))
         session.merge(instance)
         session.flush()
         return instance

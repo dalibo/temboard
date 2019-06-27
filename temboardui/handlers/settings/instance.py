@@ -64,20 +64,6 @@ def validate_instance_data(data):
     check_agent_port(data['new_agent_port'])
     if 'agent_key' not in data:
         raise HTTPError(400, "Agent key field is missing.")
-    if 'hostname' not in data:
-        raise HTTPError(400, "Hostname field is missing.")
-    if 'cpu' not in data:
-        raise HTTPError(400, "CPU field is missing.")
-    if 'memory_size' not in data:
-        raise HTTPError(400, "Memory size field is missing.")
-    if 'pg_port' not in data:
-        raise HTTPError(400, "PostgreSQL port field is missing.")
-    if 'pg_version' not in data:
-        raise HTTPError(400, "PostgreSQL version field is missing.")
-    if 'pg_version_summary' not in data:
-        raise HTTPError(400, "PostgreSQL version summary field is missing.")
-    if 'pg_data' not in data:
-        raise HTTPError(400, "PostgreSQL data directory field is missing.")
     if 'groups' not in data:
         raise HTTPError(400, "Groups field is missing.")
     if data['groups'] is not None and type(data['groups']) != list:
