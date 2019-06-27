@@ -130,15 +130,26 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
 
 function addInstance(modal_id, address, port, key, notify) {
   var url = '/json/settings/instance';
-  saveInstance(modal_id, url, address, port, key, notify);
+  var onSuccess = function (data) {
+    saveInstance(modal_id, url, address, port, key, notify, data);
+  }
+  var onError = showError.bind(null, modal_id);
+  discoverInstance(modal_id, address, port, onSuccess, onError);
 }
 
 function updateInstance(modal_id, address, port, newAddress, newPort, key, notify) {
   var url = ['/json/settings/instance', address, port].join('/');
-  saveInstance(modal_id, url, newAddress, newPort, key, notify);
+  var onSuccess = function (data) {
+    saveInstance(modal_id, url, address, port, key, notify, data);
+  }
+  var onError = function () {
+    // save the instance anyway, without discovered data
+    saveInstance(modal_id, url, address, port, key, notify);
+  }
+  discoverInstance(modal_id, address, port, onSuccess, onError);
 }
 
-function saveInstance(modal_id, saveUrl, address, port, key, notify) {
+function discoverInstance(modal_id, address, port, onSuccess, onError) {
   $.ajax({
     url: ['/json/discover/instance', address, port].join('/'),
     type: 'get',
@@ -146,36 +157,46 @@ function saveInstance(modal_id, saveUrl, address, port, key, notify) {
     contentType: "application/json",
     dataType: "json",
     beforeSend: showWaiter.bind(null, modal_id),
-    success: function(data) {
-      $.ajax({
-        url: saveUrl,
-        type: 'post',
-        data: JSON.stringify({
-          'new_agent_address': address,
-          'new_agent_port': port,
-          'agent_key': $('#inputAgentKey').val(),
-          'hostname': data['hostname'],
-          'cpu': data['cpu'],
-          'memory_size': data['memory_size'],
-          'pg_data': data['pg_data'],
-          'pg_port': data['pg_port'],
-          'pg_version': data['pg_version'],
-          'pg_version_summary': data['pg_version_summary'],
-          'groups': $('#selectGroups').val(),
-          'plugins': $('#selectPlugins').val(),
-          'notify': notify
-        }),
-        async: true,
-        contentType: "application/json",
-        dataType: "json",
-        beforeSend: showWaiter.bind(null, modal_id),
-        success: function (data) {
-          $('#'+modal_id).modal('hide');
-          var url = window.location.href;
-          window.location.replace(url);
-        },
-        error: showError.bind(null, modal_id)
-      });
+    success: onSuccess,
+    error: onError
+  });
+}
+
+function saveInstance(modal_id, saveUrl, address, port, key, notify, discoverData) {
+  var data = {
+    'new_agent_address': address,
+    'new_agent_port': port.toString(),
+    'agent_key': key,
+    'groups': $('#selectGroups').val(),
+    'plugins': $('#selectPlugins').val(),
+    'notify': notify
+  };
+
+  // add discovered data in case we managed to get it from the agent
+  if (discoverData) {
+    data = _.assign({}, data, {
+      'hostname': discoverData['hostname'],
+      'cpu': discoverData['cpu'],
+      'memory_size': discoverData['memory_size'],
+      'pg_data': discoverData['pg_data'],
+      'pg_port': discoverData['pg_port'],
+      'pg_version': discoverData['pg_version'],
+      'pg_version_summary': discoverData['pg_version_summary'],
+    });
+  }
+
+  $.ajax({
+    url: saveUrl,
+    type: 'post',
+    data: JSON.stringify(data),
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    beforeSend: showWaiter.bind(null, modal_id),
+    success: function (data) {
+      $('#'+modal_id).modal('hide');
+      var url = window.location.href;
+      window.location.replace(url);
     },
     error: showError.bind(null, modal_id)
   });
