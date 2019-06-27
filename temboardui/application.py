@@ -445,20 +445,24 @@ def delete_instance(session, agent_address, agent_port):
     except Exception as e:
         raise TemboardUIError(400, e.message)
 
-    # Then host data
-    # Will not remove data if there's still an instance referenced for this
+    # Then delete host data if there's no instance left referenced for this
     # host
-    # Using bulk delete query here to prevent errors on not null constraint on
-    # checks::host_id column (ON CASCADE DELETE not working)
-    # when using session.delete(host)
-    try:
-        session.query(MonitoringHost) \
-            .filter(MonitoringHost.hostname == instance.hostname) \
-            .delete()
-    except NoResultFound as e:
-        pass
-    except Exception as e:
-        raise TemboardUIError(400, e.message)
+    count = session.query(MonitoringInstance.instance_id) \
+        .join(MonitoringHost) \
+        .filter(MonitoringHost.hostname == instance.hostname) \
+        .count()
+    if count == 0:
+        # Using bulk delete query here to prevent errors on not null constraint
+        # on checks::host_id column (ON CASCADE DELETE not working)
+        # when using session.delete(host)
+        try:
+            session.query(MonitoringHost) \
+                .filter(MonitoringHost.hostname == instance.hostname) \
+                .delete()
+        except NoResultFound as e:
+            pass
+        except Exception as e:
+            raise TemboardUIError(400, e.message)
 
 
 def add_instance_in_group(session, agent_address, agent_port, group_name):
