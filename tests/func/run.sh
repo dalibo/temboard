@@ -35,7 +35,7 @@ teardown() {
 	# If not on CI and we are docker entrypoint (PID 1), let's wait forever on
 	# error. This allows user to enter the container and debug after a build
 	# failure.
-	if [ -z "${CI-}" -a $$ = 1 -a $exit_code -gt 0 ] ; then
+	if [ -z "${CI-}" -a $PPID = 1 -a $exit_code -gt 0 ] ; then
 		tail -f /dev/null
 	fi
 
