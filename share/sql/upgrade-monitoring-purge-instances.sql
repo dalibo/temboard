@@ -141,6 +141,21 @@ DO $$
     LOOP
       RAISE NOTICE 'Droping data for instance %', r.instance_id;
       EXECUTE 'DELETE FROM instances WHERE instance_id = ' || r.instance_id;
+    END LOOP;
+  END$$;
+
+-- Now remove any information about a host if there's no instance left for this
+-- host
+DO $$
+  DECLARE
+    r record;
+  BEGIN
+    FOR r in
+      SELECT mh.host_id
+        FROM monitoring.hosts as mh
+        WHERE host_id NOT IN (select host_id from instances)
+    LOOP
+      RAISE NOTICE 'Droping host %', r.host_id;
       EXECUTE 'DELETE FROM hosts WHERE host_id = ' || r.host_id;
     END LOOP;
   END$$;
