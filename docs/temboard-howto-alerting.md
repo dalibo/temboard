@@ -89,6 +89,11 @@ Mail. The password may be an application password in case you're using
 2-Step-Verification. See [Sign in using App
 Passwords](https://support.google.com/accounts/answer/185833).
 
+If you use your own SMTP service, you may also want to set the sender FROM address:
+```yaml
+smtp_from_addr = <email>@mydomain.com
+```
+
 For the twilio settings, please refer to [Twilio Usage Documentation](https://www.twilio.com/docs/usage).
 
 Once the configuration seem to be OK, admin users can send test mails or SMS by
