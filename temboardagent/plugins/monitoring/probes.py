@@ -8,6 +8,7 @@ from temboardagent.spc import connector, error
 from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
+from temboardagent.plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
 
 logger = logging.getLogger(__name__)
 
@@ -916,81 +917,26 @@ FROM (
 
 class probe_btree_bloat(SqlProbe):
     # Btree index bloat estimation probe
-    # Query coming from https://github.com/ioguix/pgsql-bloat-estimation/
     level = 'database'
     sql = """
 SELECT
   current_database() AS dbname,
-  CASE WHEN SUM(relpages) > SUM(est_pages_ff)
-    THEN SUM(relpages-est_pages_ff)::FLOAT/SUM(relpages)::FLOAT*100
-    ELSE 0
-  END AS ratio
+  SUM(bloat_size) / SUM(indexes_size) * 100 AS ratio
+FROM (
+  SELECT
+    SUM(pg_relation_size(quote_ident(schemaname) || '.' || quote_ident(indexname)))::BIGINT AS indexes_size
+  FROM pg_catalog.pg_indexes
+  GROUP BY schemaname
+) AS indexes,
+(
+  SELECT
+    SUM(bloat_size) AS bloat_size,
+    schemaname
   FROM (
-    SELECT coalesce(1 +
-        ceil(reltuples/floor((bs-pageopqdata-pagehdr)/(4+nulldatahdrwidth)::float)), 0
-      ) AS est_pages,
-      coalesce(1 +
-        ceil(reltuples/floor((bs-pageopqdata-pagehdr)*fillfactor/(100*(4+nulldatahdrwidth)::float))), 0
-      ) AS est_pages_ff,
-      bs, nspname, table_oid, tblname, idxname, relpages, fillfactor, is_na
-    FROM (
-      SELECT maxalign, bs, nspname, tblname, idxname, reltuples, relpages, relam, table_oid, fillfactor,
-        ( index_tuple_hdr_bm +
-          maxalign - CASE -- Add padding to the index tuple header to align on MAXALIGN
-            WHEN index_tuple_hdr_bm%maxalign = 0 THEN maxalign
-            ELSE index_tuple_hdr_bm%maxalign
-            END
-          + nulldatawidth + maxalign - CASE -- Add padding to the data to align on MAXALIGN
-            WHEN nulldatawidth = 0 THEN 0
-            WHEN nulldatawidth::integer%maxalign = 0 THEN maxalign
-            ELSE nulldatawidth::integer%maxalign
-            END
-        )::numeric AS nulldatahdrwidth, pagehdr, pageopqdata, is_na
-    FROM (
-      SELECT
-        sq.nspname, sq.tblname, sq.idxname, sq.reltuples, sq.relpages, sq.relam, sq.attrelid AS table_oid,
-        current_setting('block_size')::numeric AS bs, sq.fillfactor,
-        CASE -- MAXALIGN: 4 on 32bits, 8 on 64bits (and mingw32 ?)
-          WHEN version() ~ 'mingw32' OR version() ~ '64-bit|x86_64|ppc64|ia64|amd64' THEN 8
-          ELSE 4
-        END AS maxalign,
-        /* per page header, fixed size: 20 for 7.X, 24 for others */
-        24 AS pagehdr,
-        /* per page btree opaque data */
-        16 AS pageopqdata,
-        /* per tuple header: add IndexAttributeBitMapData if some cols are null-able */
-        CASE WHEN max(coalesce(s.null_frac,0)) = 0
-          THEN 2 -- IndexTupleData size
-          ELSE 2 + (( 32 + 8 - 1 ) / 8) -- IndexTupleData size + IndexAttributeBitMapData size ( max num filed per index + 8 - 1 /8)
-        END AS index_tuple_hdr_bm,
-        /* data len: we remove null values save space using it fractionnal part from stats */
-        sum( (1-coalesce(s.null_frac, 0)) * coalesce(s.avg_width, 1024)) AS nulldatawidth,
-        max( CASE WHEN sq.atttypid = 'pg_catalog.name'::regtype THEN 1 ELSE 0 END ) > 0 AS is_na
-      FROM (
-        WITH q AS (
-          SELECT *
-          FROM (
-            SELECT nspname, tbl.relname AS tblname, idx.relname AS idxname, idx.reltuples, idx.relpages, idx.relam,
-              indrelid, indexrelid,
-              coalesce(substring(
-              array_to_string(idx.reloptions, ' ')
-                from 'fillfactor=([0-9]+)')::smallint, 90) AS fillfactor
-            FROM pg_index
-            JOIN pg_class idx ON idx.oid=pg_index.indexrelid
-            JOIN pg_class tbl ON tbl.oid=pg_index.indrelid
-            JOIN pg_namespace ON pg_namespace.oid = idx.relnamespace
-            WHERE pg_index.indisvalid AND tbl.relkind = 'r' AND idx.relpages > 0
-          )  AS i
-          JOIN pg_attribute AS a ON (a.attnum > 0 AND a.attrelid = i.indexrelid)
-        ) SELECT * FROM q
-      ) AS sq
-      JOIN pg_stats AS s ON s.schemaname = sq.nspname
-        AND ((s.tablename = sq.tblname AND s.attname = pg_catalog.pg_get_indexdef(sq.attrelid, sq.attnum, TRUE)) -- stats from tbl
-             OR (s.tablename = sq.idxname AND s.attname = sq.attname))-- stats from functionnal cols
-      JOIN pg_type AS t ON sq.atttypid = t.oid
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
-    ) AS s1
-  ) AS s2
-  JOIN pg_am am ON s2.relam = am.oid WHERE am.amname = 'btree'
-) AS sub;
-    """  # noqa
+    %s
+  ) AS a
+  GROUP BY schemaname
+) AS ibloat
+WHERE schemaname !~ '^pg_temp'
+AND schemaname !~ '^pg_toast';
+"""  % (INDEX_BTREE_BLOAT_SQL) # noqa
