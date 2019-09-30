@@ -15,7 +15,7 @@ In order to run temBoard agent, you require:
 - openssl.
 - Python 2.6+ or 3.5+. Check with ``python --version``.
 - A running temBoard UI.
-- bash and sudo for setup script.
+- bash, curl and sudo for setup script.
 
 
 Now choose the method matching best your target environment.
