@@ -240,7 +240,7 @@ else
 fi
 
 log
-log "Success. You can now start temboard--agent using:"
+log "Success. You can now start temboard-agent using:"
 log
 log "    ${start_cmd}"
 log
