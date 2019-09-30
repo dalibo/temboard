@@ -7,6 +7,7 @@ from glob import glob
 import logging
 import os
 import pdb
+from codecs import open
 from site import main as refresh_pythonpath
 import sys
 
@@ -153,7 +154,7 @@ class BaseApplication(object):
     def read_file(self, parser, filename):
         logger.debug('Reading %s.', filename)
         try:
-            with open(filename, 'r') as fp:
+            with open(filename, 'r', 'utf-8') as fp:
                 parser.readfp(fp)
         except IOError as e:
             raise UserError(str(e))
