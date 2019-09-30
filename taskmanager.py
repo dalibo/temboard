@@ -625,8 +625,8 @@ class Scheduler(object):
                 continue
 
         for task_id in remove_list:
-                logger.debug("Removing Task %s" % task_id)
-                self.task_list.rm(task_id)
+            logger.debug("Removing Task %s" % task_id)
+            self.task_list.rm(task_id)
 
     def handle_message(self, message):
         if message.type == MSG_TYPE_TASK_NEW:
