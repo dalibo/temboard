@@ -9,13 +9,17 @@ you may want to use trusted certificate and other enhancement.
 Prerequisites
 =============
 
-In order to run temBoard agent, you require:
+In order to run temBoard agent, you need:
 
-- PostgreSQL 9.4+, listening on UNIX socket, on the same host. Check with ``sudo -u postgres psql``.
+- PostgreSQL 9.4+, running on Linux and listening on UNIX socket. Check with ``sudo -u postgres psql``.
 - openssl.
 - Python 2.6+ or 3.5+. Check with ``python --version``.
 - A running temBoard UI.
 - bash and sudo for setup script.
+
+.. note::
+
+  Any configuration other than the agent on the same Linux server than the PostgreSQL instance is not supported. The agent will refuse to run.
 
 
 Now choose the method matching best your target environment.
