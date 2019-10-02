@@ -174,9 +174,14 @@ as single required argument.
 The script shows you some important information for the next steps:
 
 - the path to the main agent configuration file like
-  ``/etc/temboard-agent/11/main/temboard-agent.conf`` (note that some parts of the
+  ``/etc/temboard-agent/11/main/temboard-agent.conf``
+
+.. note::
+
+  Some parts of the
   configuration are in ``/etc/temboard-agent/11/main/temboard-agent.conf.d/auto.conf``
-  too and override the main configuration file)
+  too and override the main configuration file.
+
 - agent TCP port (usually 2345 if this is your first agent on this host)
 - secret key for registration like ``d52cb5d39d265f03ae570e1847b90e10``.
 
