@@ -6,10 +6,8 @@
 # default, the script configure an agent for the running cluster on port 5432,
 # using postgres UNIX and PostgreSQL user.
 #
-# The agent is running on a port computed by reversing Postgres port. e.g. 5432
-# generates 2345, 5433 generates 3345, etc.
-#
-# Each agent has its own user file. This file is emptied by the script.
+# The agent is running on the first free port starting from 2345. Each agent has
+# its own user file. This file is emptied by the script.
 
 
 set -o pipefail
@@ -42,6 +40,16 @@ query_pgsettings() {
 	echo "${val:-${default}}"
 }
 
+find_next_free_port() {
+	local used=($(ss -ln4t '( sport >= 2345 and sport <= 3000 )' | grep -Po ':\K\d+'))
+	used="${used[*]}"
+	for port in {2345..3000} ; do
+		if [[ " $used " =~ " $port " ]] ; then continue ; fi
+		echo $port;
+		break
+	done
+}
+
 generate_configuration() {
 	# Usage: generate_configuration homedir sslcert sslkey cluster_name collector_url
 
@@ -56,7 +64,7 @@ generate_configuration() {
 	local logfile=$1; shift
 	local collector_url=$1; shift
 
-	local port=${TEMBOARD_PORT-$(rev <<< $PGPORT)}
+	local port=${TEMBOARD_PORT-$(find_next_free_port)}
 	log "Configuring temboard-agent to run on port ${port}."
 	local pg_ctl=$(which pg_ctl)
 
