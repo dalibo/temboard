@@ -230,7 +230,8 @@ generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url
 
 # systemd
 if [ -x /bin/systemctl ] ; then
-	unit=temboard-agent@${name//\//-}.service
+	template=$(systemd-escape ${name})
+	unit=temboard-agent@${template}.service
 	systemctl enable $unit
 	log "Enabling systemd unit ${unit}."
 	start_cmd="systemctl start $unit"
@@ -239,7 +240,7 @@ else
 fi
 
 log
-log "Success. You can now start temboard--agent using:"
+log "Success. You can now start temboard-agent using:"
 log
 log "    ${start_cmd}"
 log

@@ -1,6 +1,7 @@
 [Unit]
 Description=PostgreSQL Remote Control Agent %I
 After=network.target postgresql@%i.service
+AssertPathExists=/etc/temboard-agent/%I/temboard-agent.conf
 
 [Service]
 Type=simple
