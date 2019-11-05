@@ -56,7 +56,7 @@ generate_configuration() {
 	local logfile=$1; shift
 	local collector_url=$1; shift
 
-	local port=$(echo $PGPORT | rev)
+	local port=${TEMBOARD_PORT-$(rev <<< $PGPORT)}
 	log "Configuring temboard-agent to run on port ${port}."
 	local pg_ctl=$(which pg_ctl)
 
