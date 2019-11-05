@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import os.path
 
 WORK_PATH = '/tmp'
@@ -49,6 +51,8 @@ level = DEBUG
 
 [administration]
 pg_ctl = '/usr/bin/sudo /etc/init.d/postgresql %%s 9.5'
+
+# üniçode comment.
 """  # noqa
 
 AGENT_CONFIG_PLUGINS = """\
