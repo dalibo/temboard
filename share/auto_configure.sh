@@ -186,7 +186,6 @@ cd $(readlink -m ${BASH_SOURCE[0]}/..)
 ETCDIR=${ETCDIR-/etc/temboard-agent}
 VARDIR=${VARDIR-/var/lib/temboard-agent}
 LOGDIR=${LOGDIR-/var/log/temboard-agent}
-# System user is hardcoded to postgres in .service. You should not modify it.
 SYSUSER=${SYSUSER-postgres}
 
 export TEMBOARD_HOSTNAME=${TEMBOARD_HOSTNAME-$(hostname --fqdn)}
@@ -232,9 +231,16 @@ generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url
 
 # systemd
 if [ -x /bin/systemctl ] ; then
-	template=$(systemd-escape ${name})
-	unit=temboard-agent@${template}.service
+	unit="temboard-agent@$(systemd-escape ${name}).service"
 	log "Enabling systemd unit ${unit}."
+	if [ "${SYSUSER}" != "postgres" ] ; then
+		mkdir -p /etc/systemd/system/${unit}.d/
+		cat > /etc/systemd/system/${unit}.d/user.conf <<-EOF
+		[Service]
+		User=${SYSUSER}
+		Group=${SYSGROUP}
+		EOF
+	fi
 	systemctl enable $unit
 	start_cmd="systemctl start $unit"
 else
