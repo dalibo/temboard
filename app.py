@@ -110,6 +110,10 @@ class BaseApplication(object):
             validator=v.file_,
         )
 
+        # Allow to enable debug as soon as possible. Other options will keep
+        # defaults.
+        yield OptionSpec('logging', 'debug', default=False)
+
     def core_specs(self):
         # Generate options specs required for bootstrap from args and environ
         # and file : logging, plugins, postgresql.
@@ -128,7 +132,6 @@ class BaseApplication(object):
             s, 'facility', default='local0', validator=v.syslogfacility,
         )
         yield OptionSpec(s, 'destination', default='/dev/log')
-        yield OptionSpec(s, 'debug', default=False)
 
     def apply_config(self):
         # Once config is loaded or reloaded, update application state to match
