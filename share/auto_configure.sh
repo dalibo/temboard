@@ -234,7 +234,9 @@ key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 logfile=${LOGDIR}/${name//\//-}.log
 
 # Inject autoconfiguration in dedicated file.
-generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url | tee ${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
+log "Saving auto-configuration in $conf"
+generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url | tee $conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then
