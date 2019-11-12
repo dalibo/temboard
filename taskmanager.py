@@ -19,6 +19,7 @@ except ImportError:
     from queue import Empty
 
 from .services import Service
+from .utils import PY2
 
 
 TM_WORKERS = []
@@ -51,6 +52,19 @@ TASK_STATUS_ABORTED = 128
 TASK_STATUS_ABORT = 256
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_str(value):
+    # This code is used to instanciate multiprocessing.connection.Client. It
+    # requires a str object in both Python 2 and 3.
+    if type(value) is str:
+        if PY2:
+            # From unicode to str.
+            value = value.encode('utf-8')
+        else:
+            # From bytes to str.
+            value = value.decode('utf-8')
+    return value
 
 
 def json_serial_datetime(obj):
@@ -346,7 +360,7 @@ class TaskManager(object):
 
     @staticmethod
     def send_message(address, message, authkey=''):
-        conn = Client(address, authkey=authkey)
+        conn = Client(ensure_str(address), authkey=authkey)
         conn.send(message)
         res = conn.recv()
         conn.close()
@@ -784,7 +798,8 @@ class SchedulerService(Service):
             expire=expire,
         ))
 
-        conn = Client(self.scheduler.address, self.scheduler.authkey)
+        conn = Client(
+            ensure_str(self.scheduler.address), self.scheduler.authkey)
         conn.send(message)
         res = conn.recv()
         conn.close()
