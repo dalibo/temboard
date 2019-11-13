@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
 def ensure_str(value):
     # This code is used to instanciate multiprocessing.connection.Client. It
     # requires a str object in both Python 2 and 3.
-    if type(value) is str:
+    if type(value) is not str:
         if PY2:
             # From unicode to str.
             value = value.encode('utf-8')
