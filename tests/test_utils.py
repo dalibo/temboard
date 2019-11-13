@@ -55,3 +55,10 @@ def test_pickle_dotdict():
     orig = DotDict(dict(a=1, b=dict(c=2)))
     copy = unpickle(pickle(orig))
     assert 2 == copy.b.c
+
+
+def test_ensure_str():
+    from sampleproject.toolkit.taskmanager import ensure_str
+
+    assert type(ensure_str(u'toto')) is str
+    assert type(ensure_str(b'toto')) is str
