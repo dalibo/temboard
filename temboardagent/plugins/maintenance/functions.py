@@ -263,7 +263,7 @@ SELECT i.tablename AS tablename,
        pg_size_pretty(ibloat.bloat_size::bigint) AS bloat_size
 FROM pg_index x
 JOIN (
-    SELECT *, oid, pg_total_relation_size(c.oid) AS total_bytes
+    select oid, relname, relam, pg_total_relation_size(c.oid) AS total_bytes
     FROM pg_class c
 ) AS c
 ON c.oid = x.indexrelid

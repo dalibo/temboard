@@ -897,7 +897,7 @@ FROM (
           24 AS page_hdr,
           23 + CASE WHEN MAX(coalesce(s.null_frac,0)) > 0 THEN ( 7 + count(s.attname) ) / 8 ELSE 0::int END
            + CASE WHEN bool_or(att.attname = 'oid' and att.attnum < 0) THEN 4 ELSE 0 END AS tpl_hdr_size,
-          sum( (1-coalesce(s.null_frac, 0)) * coalesce(s.avg_width, 0) ) AS tpl_data_size,
+          sum( (1-coalesce(s.null_frac, 0)) * coalesce(s.avg_width, 0) ) AS tpl_data_size
         FROM pg_attribute AS att
           JOIN pg_class AS tbl ON att.attrelid = tbl.oid
           JOIN pg_namespace AS ns ON ns.oid = tbl.relnamespace
