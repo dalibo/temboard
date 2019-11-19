@@ -220,7 +220,8 @@ to the temBoard UI.:
 Don't forget to adapt this command line to your case. Configuration file and
 temBoard UI address are likely to change from one installation to another.
 ``temboard-agent-register`` will ask you to login to the UI. Beware, it is
-**NOT** the user on the agent. The default agent user is ``admin``.
+**NOT** the user on the agent, it is an administrator account on temBoard
+UI. The default agent user is ``admin``.
 
 
 It's up!
