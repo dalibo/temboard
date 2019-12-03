@@ -88,39 +88,56 @@ def parse_primary_conninfo(pci):
 
 
 def get_primary_conninfo(conn):
-    # Read and parse primary_conninfo from recovery.conf file if any. It
-    # returns a tuple: (host, port, user, password)
+    # Read and parse primary_conninfo from recovery.conf file if any or from
+    # pg_settings if PG version is upper or equal to 12.
+    # It returns a tuple: (host, port, user, password)
 
-    # Check if we are in recovery mode *and* recovery.conf file exists
-    # Note: won't work with PG12
-    conn.execute(
-        "SELECT (pg_is_in_recovery() AND ("
-        "  length("
-        "    coalesce("
-        "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
-        "    )"
-        "  ) > 0"
-        ")) AS is_in_recovery"
-    )
+    # Check if we are in recovery mode *and* recovery file exists
+    if conn.get_pg_version() < 120000:
+        # Note: won't work with PG12
+        conn.execute(
+            "SELECT (pg_is_in_recovery() AND ("
+            "  length("
+            "    coalesce("
+            "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
+            "    )"
+            "  ) > 0"
+            ")) AS is_in_recovery"
+        )
+    else:
+        conn.execute(
+            "SELECT (pg_is_in_recovery() AND ("
+            "  length("
+            "    coalesce("
+            "      pg_stat_file('standby.signal', true)::TEXT, ''::TEXT"
+            "    )"
+            "  ) > 0"
+            ")) AS is_in_recovery"
+        )
     r = list(conn.get_rows())
     if not r[0]['is_in_recovery']:
-        raise Exception("Instance not in recovery or recovery.conf file is "
+        raise Exception("Instance not in recovery or recovery file is "
                         "missing.")
 
-    # Fetch primary_conninfo from recovery.conf file
-    # Note: won't work with PG12
-    conn.execute(
-        "SELECT l FROM unnest("
-        "  string_to_array("
-        "    pg_read_file('recovery.conf'), E'\\n'"
-        "  )"
-        ") AS l "
-        "WHERE l LIKE '%primary\\_conninfo%'"
-    )
+    if conn.get_pg_version() < 120000:
+        # Fetch primary_conninfo from recovery.conf file
+        # Note: won't work with PG12
+        conn.execute(
+            "SELECT l FROM unnest("
+            "  string_to_array("
+            "    pg_read_file('recovery.conf'), E'\\n'"
+            "  )"
+            ") AS l "
+            "WHERE l LIKE '%primary\\_conninfo%'"
+        )
+    else:
+        conn.execute(
+            "SELECT 'primary_conninfo='||quote_literal(setting) AS l"
+            "  FROM pg_settings WHERE name='primary_conninfo'"
+        )
     r = list(conn.get_rows())
     if len(r) == 0:
-        raise Exception("Unable to get primary_conninfo from recovery.conf "
-                        "file.")
+        raise Exception("Unable to get primary_conninfo.")
     pci = r[0]['l']
     # Parse and return primary_conninfo
     return parse_primary_conninfo(pci)
