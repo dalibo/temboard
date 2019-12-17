@@ -19,6 +19,7 @@ BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python-setuptools
 Requires:      python-futures
 Requires:      python-tornado >= 3.2
+Requires:      python-setuptools
 Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-psycopg2
 Requires:      python-dateutil >= 1.5
