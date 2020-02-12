@@ -39,7 +39,6 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
-      - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - instance:instance.fqdn
