@@ -7,6 +7,7 @@ RUN apt-get update -y \
         postgresql-client \
         sudo \
         git-core \
+        docker.io \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     ;
