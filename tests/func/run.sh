@@ -15,7 +15,6 @@ retrykill() {
 			: $pid is zombie
 			return 0
 		else
-			wait -n $pid || :
 			kill $pid
 			sleep $i
 		fi
