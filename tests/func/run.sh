@@ -15,7 +15,6 @@ retrykill() {
 			: $pid is zombie
 			return 0
 		else
-			wait -n $pid || :
 			kill $pid
 			sleep $i
 		fi
@@ -47,19 +46,16 @@ teardown() {
 }
 trap teardown EXIT INT TERM
 
-# For CentOS
-export PYTHONPATH=/usr/local/lib/python2.7/site-packages:/usr/local/lib64/python2.7/site-packages
-
-
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
 	rm -f /tmp/temboard-*.tar.gz
 	python2 setup.py sdist --dist-dir /tmp
 	pip2.7 install \
-	       --prefix=/usr/local --ignore-installed --upgrade \
-	       /tmp/temboard-*.tar.gz \
-	       psycopg2-binary
+		--progress-bar off \
+		--prefix=/usr/local --ignore-installed --upgrade \
+		/tmp/temboard-*.tar.gz \
+		psycopg2-binary
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
@@ -73,10 +69,11 @@ mkdir -p tests/func/home
 if [ -n "${SETUP-1}" ] ; then
 	install_ui_py
 	pip2.7 install \
-	       --ignore-installed \
-	       --prefix=/usr/local \
-	       --upgrade \
-	       --requirement tests/func/requirements.txt
+		--progress-bar off \
+		--ignore-installed \
+		--prefix=/usr/local \
+		--upgrade \
+		--requirement tests/func/requirements.txt
 fi
 
 if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
