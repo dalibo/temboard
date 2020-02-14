@@ -129,3 +129,4 @@ To release a new version:
 - Push Python egg to PyPI using `make upload`.
 - Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
+- Ensure docs/installation.md points to matching version of agent.
