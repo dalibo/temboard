@@ -140,18 +140,24 @@ $ sudo /usr/local/share/temboard/auto_configure.sh
 
 If postinst auto-configuration fails, you can still relaunch it with proper
 parameters. Call the script `/usr/share/temboard/auto_configure.sh` with
-libpq-style envvars.
+libpq-style envvars (eg. `sudo PGPORT=5433 /usr/share/temboard/auto_configure.sh`).
 
 The postinst script creates Postgres role, database and tables, as
 well as self-signed SSL certificate, UNIX user, configuration file and systemd
 unit. A few steps are left to the administrator.
+
+The configuration file `/etc/temboard/temboard.conf` should suit most people.
+See [Configuration](configuration.md) and customize if default port
+or directories don't match your local needs, or increase security by changing
+the certificate and the cookie secret key.
 
 !!! danger "Default admin user"
 
     By default, temBoard is set up with a dumb `admin` user with password `admin`. This
     is totally unsecured. It is **strongly recommended to change default password**! See below.
 
-First, start temboard using `systemctl start temboard`. Then log in as
+First, start temboard using `systemctl start temboard`.
+Then point your browser to <https://temboard_server_host:8888>, log in as
 `admin:admin` and change the password.
 
 !!! note "Using firewall"
