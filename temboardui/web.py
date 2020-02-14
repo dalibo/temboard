@@ -336,6 +336,9 @@ class InstanceHelper(object):
             except Exception as ee:
                 logger.debug("Failed to decode agent error: %s.", ee)
             raise HTTPError(e.code, message)
+        except urllib2.URLError as e:
+            logger.error("Proxied request failed: %s", e)
+            raise HTTPError(500, str(e.reason))
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500)
