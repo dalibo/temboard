@@ -117,3 +117,10 @@ def test_quoted():
     assert 'double-quoted' == v.quoted('"double-quoted"')
     assert 'single-quoted' == v.quoted("'single-quoted'")
     assert '"not quoted' == v.quoted('"not quoted')
+
+
+def test_nday():
+    with pytest.raises(ValueError):
+        v.nday(-1)
+
+    assert type(v.nday("1")) == int
