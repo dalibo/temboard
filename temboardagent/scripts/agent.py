@@ -66,6 +66,12 @@ def list_options_specs():
 class AgentApplication(Application):
     PROGRAM = "temboard-agent"
 
+    def bootstrap_plugins(self):
+        for plugin_name, plugin in self.plugins.items():
+            if hasattr(plugin, 'bootstrap'):
+                logger.debug("Boostraping plugin %s", plugin_name)
+                plugin.bootstrap()
+
     def main(self, argv, environ):
         parser = ArgumentParser(
             prog='temboard-agent',
@@ -109,6 +115,9 @@ class AgentApplication(Application):
         self.reload_datetime = None
         self.pid = os.getpid()
         self.user = getpass.getuser()
+
+        # Bootstraping plugins
+        self.bootstrap_plugins()
 
         # Purge all data queues at start time excepting metrics &
         # notifications.
