@@ -19,7 +19,7 @@ from ..toolkit import validators as v
 from ..toolkit.app import define_core_arguments
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import ServicesManager
-
+from ..notification import NotificationMgmt
 
 logger = logging.getLogger('temboardagent.scripts.agent')
 
@@ -118,6 +118,8 @@ class AgentApplication(Application):
 
         # Bootstraping plugins
         self.bootstrap_plugins()
+        # Boostraping action logs table
+        NotificationMgmt.bootstrap(config)
 
         # Purge all data queues at start time excepting metrics &
         # notifications.
