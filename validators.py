@@ -121,3 +121,12 @@ def quoted(raw):
         if raw.startswith(char) and raw.endswith(char):
             raw = raw[1:-1]
     return raw
+
+
+def nday(raw):
+    nday = int(raw)
+
+    if nday < 1:
+        raise ValueError('Number of day not valid')
+
+    return nday
