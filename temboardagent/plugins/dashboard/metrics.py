@@ -1,11 +1,13 @@
+import json
 import time
 import os
 import re
 
-from temboardagent.queue import Queue
 from temboardagent.notification import NotificationMgmt
 from temboardagent.inventory import SysInfo, PgInfo
 from temboardagent.errors import UserError
+
+from . import db
 
 
 def get_metrics(app):
@@ -55,16 +57,28 @@ def get_metrics(app):
 
 
 def get_metrics_queue(config):
-    q = Queue(os.path.join(config.temboard.home, 'dashboard.q'))
     dm = DashboardMetrics()
-    msg = q.get_last_message()
+    msg = dict()
+
+    row = db.get_last_metric(
+        config.temboard.home,
+        'dashboard.db'
+    )
+    if row:
+        msg = json.loads(row[0])
+
     msg['notifications'] = dm.get_notifications(config)
     return msg
 
 
 def get_history_metrics_queue(config):
-    q = Queue(os.path.join(config.temboard.home, 'dashboard.q'))
-    return q.get_content_all_messages()
+    return [
+        json.loads(d)
+        for d, in db.get_all_metrics(
+            config.temboard.home,
+            'dashboard.db'
+        )
+    ]
 
 
 def get_info(conn, config):
