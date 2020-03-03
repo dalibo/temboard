@@ -14,7 +14,6 @@ from ..toolkit.configuration import OptionSpec
 from ..daemon import daemonize
 from ..httpd import HTTPDService
 from ..routing import Router
-from ..queue import purge_queue_dir
 from ..toolkit import validators as v
 from ..toolkit.app import define_core_arguments
 from ..toolkit.proctitle import ProcTitleManager
@@ -121,12 +120,11 @@ class AgentApplication(Application):
         # Boostraping action logs table
         NotificationMgmt.bootstrap(config)
 
-        # Purge all data queues at start time excepting metrics &
-        # notifications.
-        purge_queue_dir(
-            config.temboard['home'],
-            ['metrics.q', 'notifications.q', 'notifications_last_10.q']
-        )
+        # Purge all legacy data queues
+        home = config.temboard['home']
+        if os.path.exists(home):
+            [os.remove(os.path.join(home, f))
+             for f in os.listdir(home) if f.endswith('.q')]
 
         services = ServicesManager()
         services.add(self.worker_pool)
