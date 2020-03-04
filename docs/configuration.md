@@ -130,3 +130,13 @@ This section groups SMTP and Twilio parameters to send notifications.
   - **twilio_from**
   Twilio from phone number
   Default: None
+
+
+### `monitoring`
+
+Parameters related to the monitoring plugin.
+
+
+  - **purge_after**
+  Set the amount of data to keep, expressed in days.
+  Default: None
