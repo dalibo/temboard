@@ -89,3 +89,44 @@ How and where to log.
   Log level, can be set to `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL`.
   Default: `INFO`
 
+
+### `notifications`
+
+This section groups SMTP and Twilio parameters to send notifications.
+
+
+  - **smtp_host**
+  SMTP host.
+  Default: None
+
+  - **smtp_port**
+  SMTP port.
+  Default: None
+
+  - **smtp_tls**
+  Enable TLS connexion.
+  Default: False
+
+  - **smtp_login**
+  SMTP login.
+  Default: None
+
+  - **smtp_password**
+  SMTP password.
+  Default: None
+
+  - **smtp_from_addr**
+  SMTP from address.
+  Default: None
+
+  - **twilio_account_sid**
+  Twillio account SID.
+  Default: None
+
+  - **twilio_auth_token**
+  Twilio authentication token.
+  Default: None
+
+  - **twilio_from**
+  Twilio from phone number
+  Default: None
