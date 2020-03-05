@@ -125,6 +125,10 @@ generate_configuration() {
 	[logging]
 	method = stderr
 	level = INFO
+
+	[monitoring]
+	# purge_after = 365
+
 	EOF
 }
 

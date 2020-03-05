@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+from textwrap import dedent
 
 import tornado.web
 import tornado.escape
@@ -8,6 +9,9 @@ import tornado.escape
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import ProgrammingError, IntegrityError
+from sqlalchemy.sql import text
+from psycopg2.extensions import AsIs
 
 from temboardui.toolkit import taskmanager
 from temboardui.application import (
@@ -227,6 +231,92 @@ def check_data_worker(app, host_id, instance_id, data):
 
 
 @workers.register(pool_size=1)
+def purge_data_worker(app):
+    """Background worker in charge of purging monitoring data. Purge policy
+    is based on purge_after parameter from monitoring section. purger_after
+    defines the number of day of data to keep, from now. Default value means
+    there is no purge policy.
+    """
+
+    logger.setLevel(app.config.logging.level)
+    logger.info("Starting monitoring data purge worker.")
+
+    if not app.config.monitoring.purge_after:
+        logger.info("No purge policy, end.")
+        return
+
+    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
+        user=app.config.repository['user'],
+        pwd=app.config.repository['password'],
+        h=app.config.repository['host'],
+        p=app.config.repository['port'],
+        db=app.config.repository['dbname'],
+    )
+    engine = create_engine(dburi)
+
+    with engine.connect() as conn:
+        # Get tablename list to purge from metric_tables_config()
+        res = conn.execute(
+            dedent("""
+                SELECT
+                    tablename
+                FROM (
+                    SELECT
+                        tablename_prefix||'_'||suffix AS tablename
+                    FROM
+                        json_object_keys(monitoring.metric_tables_config()) AS tablename_prefix,
+                        UNNEST(ARRAY['30m_current', '6h_current', 'current', 'history']) AS suffix
+                ) AS q
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM
+                        pg_catalog.pg_tables AS pgt
+                    WHERE
+                        pgt.tablename=q.tablename
+                        AND pgt.schemaname = 'monitoring'
+                )
+                ORDER BY tablename;
+            """)  # noqa
+        )
+        tablenames = [r['tablename'] for r in res.fetchall()]
+        tablenames.extend(['state_changes', 'check_changes'])
+
+        purge_query_base = "DELETE FROM :tablename WHERE "
+
+        for tablename in tablenames:
+
+            # With history tables, we have to deal with tstzrange
+            if tablename.endswith("_history"):
+                query = purge_query_base + \
+                        "NOT (history_range && tstzrange(NOW() " + \
+                        "- ':nday days'::INTERVAL, NOW()))"
+            else:
+                query = purge_query_base + \
+                        "datetime < (NOW() - ':nday days'::INTERVAL)"
+
+            logger.debug("Purging table %s", tablename)
+            t = conn.begin()
+            try:
+                res_delete = conn.execute(
+                    text(query),
+                    tablename=AsIs("monitoring.%s" % tablename),
+                    nday=app.config.monitoring.purge_after,
+                )
+                t.commit()
+            except (ProgrammingError, IntegrityError) as e:
+                logger.exception(e)
+                logger.error("Could not delete data from table %s", tablename)
+                t.rollback()
+                continue
+
+            if res_delete.rowcount > 0:
+                logger.info("Table %s purged, %s rows deleted",
+                            tablename, res_delete.rowcount)
+
+    logger.info("End of monitoring data purge worker.")
+
+
+@workers.register(pool_size=1)
 def notify_state_change(app, check_id, key, value, state, prev_state):
     # check if at least one notifications transport is configured
     # if it's not the case pass
@@ -340,5 +430,11 @@ def monitoring_bootstrap(context):
             worker_name='history_tables_worker',
             id='history_tables',
             redo_interval=3 * 60 * 60,  # Repeat each 3h
+            options={},
+    )
+    yield taskmanager.Task(
+            worker_name='purge_data_worker',
+            id='purge_data',
+            redo_interval=24 * 60 * 60,  # Repeat each 24h
             options={},
     )

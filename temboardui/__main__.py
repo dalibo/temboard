@@ -221,6 +221,9 @@ def list_options_specs():
     yield OptionSpec(s, 'twilio_auth_token', default=None)
     yield OptionSpec(s, 'twilio_from', default=None)
 
+    s = 'monitoring'
+    yield OptionSpec(s, 'purge_after', default=None, validator=v.nday)
+
 
 class TemboardApplication(BaseApplication):
     DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
