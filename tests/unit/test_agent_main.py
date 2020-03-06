@@ -20,7 +20,6 @@ def test_big_main(mocker):
     mocker.patch('temboardagent.scripts.agent.Application')
     mocker.patch('temboardagent.scripts.agent.daemonize')
     mocker.patch('temboardagent.scripts.agent.HTTPDService')
-    mocker.patch('temboardagent.scripts.agent.purge_queue_dir')
     mocker.patch('temboardagent.scripts.agent.taskmanager.TaskManager')
     mocker.patch('temboardagent.scripts.agent.ProcTitleManager')
 

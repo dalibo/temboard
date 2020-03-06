@@ -1,5 +1,4 @@
 import time
-import os
 import logging
 import json
 try:
@@ -11,12 +10,12 @@ from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.toolkit.validators import file_, commalist
-from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
 from temboardagent import __version__ as __VERSION__
 from temboardagent.errors import UserError
 
+from . import db
 from .inventory import host_info, instance_info
 from .probes import (
     load_probes,
@@ -184,7 +183,10 @@ def monitoring_collector_worker(app):
 
     system_info = host_info(config.temboard.hostname)
     # Load the probes to run
-    probes = load_probes(config.monitoring, config.temboard.home)
+    probes = load_probes(
+        config.monitoring,
+        config.temboard.home
+    )
 
     instance = instance_info(conninfo, system_info['hostname'])
 
@@ -201,9 +203,15 @@ def monitoring_collector_worker(app):
         version=__VERSION__,
     )
     logger.debug(output)
-    q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
-              max_size=1024 * 1024 * 10, overflow_mode='slide')
-    q.push(Message(content=json.dumps(output)))
+
+    # Add data to metrics table
+    db.add_metric(
+        config.temboard.home,
+        'monitoring.db',
+        time.time(),
+        output
+    )
+
     logger.debug("Done")
 
 
@@ -212,35 +220,34 @@ def monitoring_sender_worker(app):
     config = app.config
     if not config.monitoring.collector_url:
         return logger.info("No collector_url. Skip sending.")
-    c = 0
+
     logger.debug("Starting sender")
-    q = Queue(os.path.join(config.temboard.home, 'metrics.q'),
-              max_size=1024 * 1024 * 10, overflow_mode='slide')
-    while True:
+    for metric_time, metric_data in db.get_metrics(
+        config.temboard.home,
+        'monitoring.db'
+    ):
         # Let's do it smoothly..
         time.sleep(0.5)
-        msg = q.shift(delete=False)
-
-        if msg is None:
-            # If we get nothing from the queue then we get out from this while
-            # loop.
-            break
         try:
             # Try to send data to temboard collector API
             logger.debug("Trying to send data to collector")
             logger.debug(config.monitoring.collector_url)
-            logger.debug(msg.content)
+            logger.debug(metric_data)
             send_output(
                 config.monitoring.ssl_ca_cert_file,
                 config.monitoring.collector_url,
                 config.temboard.key,
-                msg.content
+                metric_data
             )
         except HTTPError as e:
-            # On error 409 (DB Integrity) we just drop the message and move to
-            # the next message.
+            # On error 409 (DB Integrity) we just drop the metric and move to
+            # the next one.
             if int(e.code) == 409:
-                q.shift(delete=True, check_msg=msg)
+                db.delete_metric(
+                    config.temboard.home,
+                    'monitoring.db',
+                    metric_time
+                )
                 continue
 
             try:
@@ -262,13 +269,12 @@ def monitoring_sender_worker(app):
         except ValueError:
             logger.warning("Failed to read data. Ignoring row.")
 
-        # If everything's fine then remove current msg from the queue
-        # Integrity check is made using check_msg
-        q.shift(delete=True, check_msg=msg)
-
-        if c > 60:
-            break
-        c += 1
+        # If everything's fine then remove the metric from the table
+        db.delete_metric(
+            config.temboard.home,
+            'monitoring.db',
+            metric_time
+        )
 
     logger.debug("Done")
 
@@ -288,6 +294,9 @@ class MonitoringPlugin(object):
     def __init__(self, app, **kw):
         self.app = app
         self.app.config.add_specs(self.option_specs)
+
+    def bootstrap(self):
+        db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()

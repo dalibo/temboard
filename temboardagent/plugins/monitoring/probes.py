@@ -5,10 +5,11 @@ import time
 import json
 
 from temboardagent.spc import connector, error
-from temboardagent.queue import Queue, Message
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
 from temboardagent.plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+
+from . import db
 
 logger = logging.getLogger(__name__)
 
@@ -182,12 +183,23 @@ class Probe(object):
         logger.error("Could not get the name of the probe")
         return None
 
-    def get_last_measure(self, store_key):
-        q = Queue("%s/%s.q" % (self.home, store_key), max_length=1,
-                  overflow_mode='slide')
-        msg = q.shift()
-        if msg:
-            return json.loads(msg.content)
+    def get_last_measure(self, key):
+        row = db.get_last_measure(
+            self.home,
+            'monitoring.db',
+            key
+        )
+        if row:
+            return dict(time=row[0], data=json.loads(row[1]))
+
+    def upsert_last_measure(self, time, key, data):
+        db.upsert_last_measure(
+            self.home,
+            'monitoring.db',
+            time,
+            key,
+            data
+        )
 
     def delta(self, key, current_values):
         """
@@ -209,12 +221,12 @@ class Probe(object):
         # Compute deltas and update last_* variables
         try:
             if last_measure:
-                delta_time = current_time - last_measure['measure_time']
+                delta_time = current_time - last_measure['time']
 
                 delta_values = {}
                 for k in current_values.keys():
                     delta_value = current_values[k] - \
-                        last_measure['measure'][k]
+                        last_measure['data'][k]
                     if delta_value < 0:
                         raise Exception('Negative delta value.')
                     delta_values[k] = delta_value
@@ -222,14 +234,14 @@ class Probe(object):
                 delta = (delta_time, delta_values)
         except Exception:
             delta = (None, None)
-        try:
-            q = Queue("%s/%s.q" % (self.home, store_key), max_length=1,
-                      overflow_mode='slide')
-            q.push(Message(content=json.dumps({
-                'measure_time': current_time,
-                'measure': dict(current_values)})))
-        except Exception as e:
-            logger.error(str(e))
+
+        # Update/insert last measure for next delta calculation
+        self.upsert_last_measure(
+            current_time,
+            store_key,
+            current_values
+        )
+
         return delta
 
     def __repr__(self):
@@ -381,8 +393,8 @@ class SqlProbe(Probe):
             # Get current timestamp
             now = self.run_sql(conninfo, "SELECT NOW()")[0]['now']
             output = []
-            for db in conninfo['dbnames']:
-                result = self.run_sql(conninfo, self.sql, db['dbname'])
+            for database in conninfo['dbnames']:
+                result = self.run_sql(conninfo, self.sql, database['dbname'])
                 # Update or set 'datetime' field to the current timestamp
                 # because we need to have the same datetime for the whole
                 # result set.

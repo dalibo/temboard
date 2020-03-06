@@ -1,15 +1,13 @@
 import logging
-import json
-import os
+import time
 
 from temboardagent.toolkit import taskmanager
 from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.routing import RouteSet
-from temboardagent.queue import Queue, Message
 from temboardagent.errors import UserError
 
+from . import db
 from . import metrics
-
 
 logger = logging.getLogger(__name__)
 routes = RouteSet(prefix=b'/dashboard')
@@ -113,18 +111,23 @@ def dashboard_max_connections(http_context, app):
 
 @workers.register(pool_size=1)
 def dashboard_collector_worker(app):
-    logger.debug("Starting to collect dashboard data")
+    logger.debug("Starting dashboard collector")
+
     data = metrics.get_metrics(app)
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)
-    q = Queue(os.path.join(app.config.temboard.home, 'dashboard.q'),
-              max_length=(app.config.dashboard.history_length + 1),
-              overflow_mode='slide')
-
-    q.push(Message(content=json.dumps(data)))
     logger.debug(data)
-    logger.debug("End")
+
+    db.add_metric(
+        app.config.temboard.home,
+        'dashboard.db',
+        time.time(),
+        data,
+        app.config.dashboard.history_length
+    )
+
+    logger.debug("Done")
 
 
 class DashboardPlugin(object):
@@ -139,6 +142,9 @@ class DashboardPlugin(object):
     def __init__(self, app, **kw):
         self.app = app
         self.app.config.add_specs(self.option_specs)
+
+    def bootstrap(self):
+        db.bootstrap(self.app.config.temboard.home, 'dashboard.db')
 
     def load(self):
         pg_version = self.app.postgres.fetch_version()

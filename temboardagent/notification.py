@@ -1,32 +1,40 @@
-from temboardagent.queue import Queue, Message
+# coding: utf-8
+
+from datetime import datetime
+import logging
+import os
+import sqlite3
+from textwrap import dedent
+import time
+
 from temboardagent.errors import NotificationError
-import json
-import datetime
 
-"""
-Notifications are messages stored in a Queue aimed to keep a track of each
-possible action impacting PostgreSQL server configuration or behaviour.
-
-For now, they are pushed when one of the following actions is triggered:
-  * PostgreSQL reload, stop, start, restart.
-  * Setting changes.
-  * HBA file update.
-
-Queue max size is set to 10MB, LIFO behaviour is expected.
-"""
+logger = logging.getLogger(__name__)
 
 
 class Notification(object):
+    """Notifications are log messages stored in a sqlite table aimed to keep a
+    track of each action impacting PostgreSQL server configuration or
+    its behavior.
 
-    def __init__(self, username, message, date=None):
-        if date is None:
-            self.date = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        else:
-            self.date = date
+    For now, they are pushed when one of the following actions is triggered:
+    - PostgreSQL reloaded.
+    - PostgreSQL setting changed.
+    - User login.
+    - User session expired.
+    - PostgreSQL backend termination.
+
+    Maximum number of record is 1000, FIFO behavior is expected.
+    """
+
+    def __init__(self, username, message):
+
         if type(username) == bytes:
             username = username.decode('utf-8')
         if type(message) == bytes:
             message = message.decode('utf-8')
+
+        self.time = time.time()
         self.username = username
         self.message = message
 
@@ -34,31 +42,76 @@ class Notification(object):
 class NotificationMgmt():
 
     @classmethod
+    def bootstrap(self, config):
+        db_path = os.path.join(config.temboard.home, 'core.db')
+        with sqlite3.connect(db_path) as conn:
+            c = conn.cursor()
+            c.execute(
+                dedent("""
+                    CREATE TABLE IF NOT EXISTS action_logs (
+                        time REAL,
+                        username TEXT,
+                        message TEXT
+                    )
+                """)
+            )
+            c.execute(
+                dedent("""
+                    CREATE INDEX IF NOT EXISTS idx_action_logs_time
+                    ON action_logs(time)
+                """)
+            )
+
+    @classmethod
     def push(self, config, notification):
         try:
-            # Notifications are stored in a "sliding" queue.
-            q = Queue(file_path='%s/notifications.q' % (
-                                config.temboard['home']),
-                      max_size=10 * 1024 * 1024,  # 10MB
-                      overflow_mode='slide')
 
-            # Push the notification in the queue.
-            q.push(Message(content=json.dumps({
-                'date': notification.date,
-                'username': notification.username,
-                'message': notification.message})))
-        except (Exception) as e:
-            raise NotificationError('Can not push new notification: %s' %
-                                    e.message)
+            db_path = os.path.join(config.temboard.home, 'core.db')
+            with sqlite3.connect(db_path) as conn:
+                c = conn.cursor()
+                c.execute(
+                    "INSERT INTO action_logs VALUES (?, ?, ?)",
+                    (notification.time, notification.username,
+                     notification.message)
+                )
+                # Purge action_logs, we want to keep only the last 100 messages
+                c.execute(
+                    dedent("""
+                        DELETE FROM action_logs
+                        WHERE time NOT IN (
+                            SELECT time
+                            FROM action_logs
+                            ORDER BY time DESC
+                            LIMIT 1000
+                        )
+                    """)
+                )
+
+        except sqlite3.Error as e:
+            logger.exception(str(e))
+            raise NotificationError('Can not push new notification')
 
     @classmethod
     def get_last_n(self, config, n):
+
+        limit = " LIMIT %s" % n if int(n) > -1 else ""
+
         try:
-            q_last = Queue(file_path='%s/notifications.q' % (
-                                     config.temboard['home']),
-                           max_length=10 * 1024 * 1024,
-                           overflow_mode='slide')
-            return q_last.get_last_n_messages(n)
-        except (Exception) as e:
-            raise NotificationError('Can not get last notifications: %s' %
-                                    e.message)
+
+            db_path = os.path.join(config.temboard.home, 'core.db')
+            with sqlite3.connect(db_path) as conn:
+                c = conn.cursor()
+                c.execute("SELECT time, username, message FROM action_logs "
+                          "ORDER BY time DESC " + limit)
+                for timestamp, username, message in c.fetchall():
+                    yield dict(
+                        date=datetime.utcfromtimestamp(
+                            int(timestamp)
+                        ).isoformat(),
+                        username=username,
+                        message=message
+                    )
+
+        except sqlite3.Error as e:
+            logger.exception(str(e))
+            raise NotificationError('Can not get last notifications')
