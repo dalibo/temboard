@@ -4,6 +4,7 @@ import json
 import os
 import sqlite3
 from textwrap import dedent
+from time import time as current_time
 
 
 def bootstrap(path, dbname):
@@ -46,6 +47,13 @@ def add_metric(path, dbname, time, data):
         c.execute(
             "INSERT INTO metrics VALUES(?, ?)",
             (time, json.dumps(data))
+        )
+        # When data are pulled from temboard server, we need to keep 6 hours of
+        # data history for recovery.
+        time_limit = current_time() - (60 * 60 * 6)
+        c.execute(
+            "DELETE FROM metrics WHERE time < ?",
+            (time_limit,)
         )
 
 
