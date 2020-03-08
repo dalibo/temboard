@@ -66,12 +66,27 @@ def delete_metric(path, dbname, time):
         )
 
 
-def get_metrics(path, dbname):
+def get_metrics(path, dbname, limit=50, start_timestamp=None):
+    query = "SELECT time, data FROM metrics"
+    args = ()
+    if start_timestamp:
+        query += " WHERE time >= ?"
+        args += (start_timestamp,)
+    else:
+        # By default we want only the most recent record. This could be
+        # achieved in a most elegant an simple way, but we want to keep the
+        # same logic wheter or not start_timestamp is in use.
+        query += " WHERE time >= (SELECT MAX(time) FROM metrics)"
+
+    query += " ORDER BY time ASC"
+
+    if limit:
+        query += " LIMIT ?"
+        args += (limit,)
+
     with sqlite3.connect(os.path.join(path, dbname)) as conn:
         c = conn.cursor()
-        c.execute(
-            "SELECT time, data FROM metrics ORDER BY time ASC LIMIT 50"
-        )
+        c.execute(query, args)
         return c.fetchall()
 
 
