@@ -1,3 +1,4 @@
+import logging
 import os
 import hashlib
 import time
@@ -5,6 +6,8 @@ import re
 import errno
 from time import strftime, gmtime
 from temboardagent.errors import HTTPError
+
+logger = logging.getLogger(__name__)
 
 
 def hash_id(id):
@@ -49,10 +52,13 @@ def validate_parameters(values, types):
                     if type(typ) != str and typ != type(value):
                         raise HTTPError(406, "Parameter '%s' is malformed."
                                              % (key))
+        except HTTPError as e:
+            raise e
         except KeyError:
             raise HTTPError(406, "Parameter '%s' not sent." % (key))
-        except Exception:
-            raise HTTPError(406, "Parameter '%s' is malformed." % (key))
+        except Exception as e:
+            logger.exception(str(e))
+            raise HTTPError(500, "Internal error.")
 
 
 MULTIPLIERS = ['', 'k', 'M', 'G', 'T', 'P']

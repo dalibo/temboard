@@ -161,7 +161,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 except IndexError:
                     break
                 p += 1
-            if p == len(s_path):
+            if p == len(s_path) == len(route['splitpath']):
                 logger.debug(route)
                 return route
         raise HTTPError(404, 'URL not found.')
