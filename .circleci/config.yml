@@ -94,7 +94,7 @@ jobs:
         SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
     - &func-postgres
-      image: postgres:10-alpine
+      image: postgres:12-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
@@ -115,7 +115,8 @@ jobs:
     docker:
     - <<: *func-temboard
       image: dalibo/temboard-agent-sdk:centos7
-    - *func-postgres
+    - <<: *func-postgres
+      image: postgres:9.5-alpine
     - *func-selenium
     steps: *func-steps
 
