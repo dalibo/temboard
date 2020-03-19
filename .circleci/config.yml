@@ -94,7 +94,7 @@ jobs:
         SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
     - &func-postgres
-      image: postgres:10-alpine
+      image: postgres:12-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
