@@ -23,9 +23,7 @@ services:
       - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
 
   instance:
-    build:
-      context: .
-      dockerfile: ./docker-dev/Dockerfile.instance
+    image: postgres:12-alpine
     ports:
       - 5433:5432
     volumes:
