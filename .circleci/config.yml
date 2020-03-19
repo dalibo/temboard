@@ -115,7 +115,8 @@ jobs:
     docker:
     - <<: *func-temboard
       image: dalibo/temboard-agent-sdk:centos7
-    - *func-postgres
+    - <<: *func-postgres
+      image: postgres:9.5-alpine
     - *func-selenium
     steps: *func-steps
 
