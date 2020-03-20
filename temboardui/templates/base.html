@@ -155,6 +155,15 @@
                   <span>Maintenance</span>
                 </a>
               </li>
+              {% if 'statements' in plugin_names %}
+              <li class="nav-item">
+                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
+                   class="{{'active' if plugin == 'statements' else ''}} nav-link">
+                  <i class="fa fa-tasks fa-fw"></i>
+                  <span>Statements</span>
+                </a>
+              </li>
+              {% end %}
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
                    class="{{'active' if plugin == 'notifications' else ''}} nav-link">
