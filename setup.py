@@ -61,6 +61,7 @@ SETUP_KWARGS = dict(
             'maintenance = temboardagent.plugins.maintenance:MaintenancePlugin',  # noqa
             'monitoring = temboardagent.plugins.monitoring:MonitoringPlugin',
             'pgconf = temboardagent.plugins.pgconf:PgConfPlugin',
+            'statements = temboardagent.plugins.statements:StatementsPlugin',
         ],
     },
 )
