@@ -39,7 +39,8 @@ This is the main section grouping core parameters :
 
   - **plugins**
   Array of plugin name to load.
-  Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance"]`
+  Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance",
+  "statements"]`
 
 
 ### `repository`
