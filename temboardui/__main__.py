@@ -247,6 +247,7 @@ class TemboardApplication(BaseApplication):
         'monitoring',
         'pgconf',
         'maintenance',
+        'statements',
     ]
     PROGRAM = 'temboard'
     REPORT_URL = "https://github.com/dalibo/temboard/issues"
