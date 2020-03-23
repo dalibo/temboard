@@ -62,7 +62,7 @@ def legacy_enable_plugins(self, plugin_names):
     return plugins_conf
 
 
-def setup_tornado_app(app, config):
+def bootstrap_tornado_app(app, config):
     app.config = config
 
     base_path = os.path.dirname(__file__)
@@ -75,6 +75,18 @@ def setup_tornado_app(app, config):
     __import__('temboardui.handlers.settings.notifications')
     __import__('temboardui.handlers.user')
 
+    app.configure(
+        cookie_secret=config.temboard['cookie_secret'],
+        debug=config.logging.debug,
+        template_path=base_path + "/templates",
+        default_handler_class=Error404Handler,
+    )
+
+    return app
+
+
+def finalize_tornado_app(app, config):
+    base_path = os.path.dirname(__file__)
     handlers = [
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/css'
@@ -90,19 +102,10 @@ def setup_tornado_app(app, config):
         })
     ]
 
-    app.configure(
-        cookie_secret=config.temboard['cookie_secret'],
-        debug=config.logging.debug,
-        template_path=base_path + "/templates",
-        default_handler_class=Error404Handler,
-    )
-
     config.plugins = legacy_enable_plugins(app, config.temboard['plugins'])
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
     app.add_rules(handlers)
-
-    return app
 
 
 class SchedulerService(taskmanager.SchedulerService):
@@ -234,15 +237,17 @@ class TemboardApplication(BaseApplication):
     VERSION = __version__
 
     def apply_config(self):
-        if not hasattr(self, 'webapp'):
+        bootstrap_tornado = not hasattr(self, 'webapp')
+        if bootstrap_tornado:
             # For now, just create web app once. One time, we'll be able to
             # unload plugin routes.
-            self.webapp = setup_tornado_app(app, self.config)
+            self.webapp = bootstrap_tornado_app(app, self.config)
             self.webapp.executor = ThreadPoolExecutor(12)
             self.webapp.temboard_app = self
 
         super(TemboardApplication, self).apply_config()
 
+        finalize_tornado_app(app, self.config)
         self.webapp.engine = configure_db_session(self.config.repository)
 
     def main(self, argv, environ):
