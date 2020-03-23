@@ -20,7 +20,6 @@ from .toolkit.services import (
     Service,
     ServicesManager,
 )
-from .toolkit.log import generate_logging_config
 from .web import Error404Handler, app
 
 from .daemon import daemonize
@@ -37,10 +36,6 @@ def legacy_bootstrap(config):
     # Compat with legacy load_plugins
     config.plugins = {}
 
-    logging.config.dictConfig(generate_logging_config(
-        systemd='SYSTEMD' in os.environ,
-        **config.logging
-    ))
     logger.info("Starting main process.")
     autoreload.watch(config.temboard.configfile)
 
