@@ -1,7 +1,9 @@
 import logging
 
-from temboardagent.errors import UserError
+from temboardagent.errors import HTTPError, UserError
 from temboardagent.routing import RouteSet
+from temboardagent.spc import connector, error
+from temboardagent.tools import now
 from temboardagent.toolkit.configuration import OptionSpec
 
 
@@ -11,7 +13,38 @@ routes = RouteSet(prefix=b"/statements")
 
 @routes.get(b"/", check_key=True)
 def get_statements(http_context, app):
-    return {}
+    """Return a snapshot of latest statistics of executed SQL statements and
+    reset gathered statistics.
+    """
+    config = app.config
+    dbname = config.statements.dbname
+    assert dbname == "postgres", dbname
+    conn = connector(
+        config.postgresql.host,
+        config.postgresql.port,
+        config.postgresql.user,
+        config.postgresql.password,
+        dbname,
+    )
+    snapshot_datetime = now()
+    try:
+        conn.connect()
+        conn.execute("SELECT * FROM pg_stat_statements")
+        data = list(conn.get_rows())
+        conn.execute("SELECT pg_stat_statements_reset()")
+    except error as e:
+        if 'relation "pg_stat_statements" does not exist' in str(e):
+            raise HTTPError(
+                404, "pg_stat_statements not enabled on database %s" % dbname
+            )
+        logger.error(
+            "Failed to get pg_stat_statements data on database %s: %s",
+            dbname,
+            e,
+        )
+        raise HTTPError(500, "Internal server error")
+    else:
+        return {"snapshot_datetime": snapshot_datetime, "data": data}
 
 
 class StatementsPlugin(object):

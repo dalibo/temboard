@@ -14,7 +14,8 @@ PG_USER = 'temboard'
 PG_PASSWORD = 'temboard'
 PG_SETTINGS = [
     "log_min_duration_statement = 0\n",
-    "log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '\n"
+    "log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '\n",
+    "shared_preload_libraries = pg_stat_statements\n",
 ]
 
 AGENT_HOST = "127.0.0.1"
