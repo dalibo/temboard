@@ -241,11 +241,9 @@ class TemboardApplication(BaseApplication):
             self.webapp.executor = ThreadPoolExecutor(12)
             self.webapp.temboard_app = self
 
-        engine = configure_db_session(self.config.repository)
-        # Reuse engine in legacy session maker.
-        self.webapp.engine = engine
-
         super(TemboardApplication, self).apply_config()
+
+        self.webapp.engine = configure_db_session(self.config.repository)
 
     def main(self, argv, environ):
 
