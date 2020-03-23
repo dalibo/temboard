@@ -3,12 +3,11 @@ import sys
 import time
 import uuid
 import logging
-import json
 import os.path
 import types
 import signal
 from select import select, error as SelectError
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import deque
 from multiprocessing import Process, Queue
 from multiprocessing.connection import Listener, Client, AuthenticationError
@@ -188,138 +187,75 @@ class Message(object):
 
 class TaskList(object):
 
-    def __init__(self, path):
-        self.path = path
-        self.tasks = dict()
-
-    def _backup(self):
-        if not self.path:
-            return
-        with open(self.path, 'w') as f:
-            for _, t in self.tasks.items():
-                try:
-
-                    # Convert output to string if not a JSON serializable type
-                    if type(t.output) not in (list, dict, str, type(None)):
-                        t.output = str(t.output)
-
-                    f.write(
-                        json.dumps(
-                            t.__dict__,
-                            default=json_serial_datetime
-                        ) + '\n'
-                    )
-                except TypeError:
-                    # Could not serialize Task to JSON
-                    logger.debug(t)
-                    logger.error("Could not serialize Task to JSON")
-                except Exception as e:
-                    logger.exception(str(e))
-                    logger.error("Could not write recovery file")
+    def __init__(self, engine):
+        self.engine = engine
 
     def recover(self):
-        if not self.path:
-            return
+        self.engine.recover(
+            st_doing=TASK_STATUS_DOING,
+            st_aborted=TASK_STATUS_ABORTED,
+            st_scheduled=TASK_STATUS_SCHEDULED,
+            st_default=TASK_STATUS_DEFAULT,
+            now=datetime.utcnow()
+        )
 
-        if not os.path.exists(self.path):
-            return
-
-        with open(self.path, 'r') as f:
-            for l in f.readlines():
-                try:
-                    raw_dict = json.loads(l)
-                    t = Task(
-                            worker_name=raw_dict.get('worker_name'),
-                            options=raw_dict.get('options'),
-                            id=raw_dict.get('id'),
-                            status=raw_dict.get('status'),
-                            start_datetime=raw_dict.get('start_datetime'),
-                            stop_datetime=raw_dict.get('stop_datetime'),
-                            output=raw_dict.get('output'),
-                            redo_interval=raw_dict.get('redo_interval')
-                    )
-                    # Convert isoformat to datetime
-                    for a in ('start_datetime', 'stop_datetime'):
-                        if getattr(t, a):
-                            dt = datetime.strptime(getattr(t, a),
-                                                   "%Y-%m-%dT%H:%M:%S.%f")
-                            setattr(t, a, dt)
-
-                    if t.status & TASK_STATUS_DOING:
-                        # reset status & stop_datetime because the job was
-                        # running the last time task list was synced.
-                        t.status = TASK_STATUS_ABORTED
-                        t.stop_datetime = datetime.utcnow()
-
-                    if t.status & TASK_STATUS_SCHEDULED:
-                        # reset status to default
-                        t.status = TASK_STATUS_DEFAULT
-
-                    logger.debug("SCHED: Recovered Task=%s" % t)
-                    self.push(t)
-                except Exception as e:
-                    logger.error("Could not unserialize Task from JSON")
-                    logger.debug(l)
-                    logger.exception(e)
-
-    def push(self, t):
+    def push(self, task):
         # Add a new task to the list
-        if not t.id:
-            t.id = self._gen_task_id()
-        if t.id in self.tasks:
-            raise KeyError("Task with id=%s already present" % t.id)
-        self.tasks[t.id] = t
-        # Save task list on disk
-        self._backup()
-        return t.id
+        if not task.id:
+            task.id = self._gen_task_id()
+        # Insert the task
+        self.engine.insert(task)
+        return task.id
 
-    def get(self, task_id):
-        if task_id not in self.tasks:
-            raise Exception("Task id=%s not found" % task_id)
-        return self.tasks[task_id]
+    def get(self, id):
+        return self.engine.get(id)
 
-    def update(self, task_id, **kwargs):
-        if task_id not in self.tasks:
-            raise Exception("Task id=%s not found" % task_id)
-        t = self.tasks[task_id]
+    def update(self, id, **kwargs):
+        task = self.engine.get(id)
+        if not task:
+            raise Exception("Task id=%s not found" % id)
+
         for k, v in kwargs.items():
             try:
-                getattr(t, k)
+                getattr(task, k)
             except AttributeError:
                 raise Exception("Task attribute %s does not exist" % k)
-            setattr(t, k, v)
-        self.tasks[task_id] = t
-        # Save task list on disk
-        self._backup()
+            setattr(task, k, v)
+        self.engine.update(task)
 
-    def rm(self, task_id):
-        if task_id not in self.tasks:
-            raise Exception("Task id=%s not found" % task_id)
-        del(self.tasks[task_id])
-        # Save task list on disk
-        self._backup()
+    def rm(self, id):
+        self.engine.delete(id)
 
     def _gen_task_id(self):
-        id = None
-        while id is None or id in self.tasks:
+        id = str(uuid.uuid4())[0:8]
+
+        while self.engine.exists(id):
+            # If a task with the same id exists, try with a new random id
             id = str(uuid.uuid4())[0:8]
+
         return id
 
     def get_n_todo(self):
         # Return the number of ongoing tasks (QUEUED | DOING)
-        n = 0
-        for id, task in self.tasks.items():
-            if task.status & (TASK_STATUS_QUEUED | TASK_STATUS_DOING):
-                n += 1
-        return n
+        return self.engine.count_by_status(
+            TASK_STATUS_QUEUED | TASK_STATUS_DOING
+        )
+
+    def list(self):
+        return self.engine.list()
+
+    def list_to_do(self, status, now, redo=False):
+        return self.engine.list_to_do(status, now, redo)
+
+    def purge(self, status, now):
+        return self.engine.purge(status, now)
 
 
 class TaskManager(object):
 
-    def __init__(self, address=TM_DEF_LISTENER_ADDR, task_path=None,
-                 authkey=None):
+    def __init__(self, address=TM_DEF_LISTENER_ADDR, authkey=None):
 
-        self.scheduler = Scheduler(address, task_path, authkey)
+        self.scheduler = Scheduler(address, authkey)
 
     def set_context(self, key, val):
         self.scheduler.set_context(key, val)
@@ -369,7 +305,7 @@ class TaskManager(object):
 
 class Scheduler(object):
 
-    def __init__(self, address, task_path, authkey):
+    def __init__(self, address, authkey):
         # Process objet from multiprocessing
         self.process = None
         # Listener for TM -> Scheduler IPC
@@ -378,8 +314,6 @@ class Scheduler(object):
         self.address = address
         # Listener authentication key
         self.authkey = authkey
-        # Path to TaskList on disk image file
-        self.task_path = task_path
         # Queue used to send Task orders (start, stop) to WorkerPool
         self.task_queue = None
         # Queue used to notify Scheduler about Task status
@@ -388,6 +322,7 @@ class Scheduler(object):
         self.context = dict()
         self.worker_pool = None
         self.shutdown = None
+        self.task_list_engine = None
 
     def set_context(self, key, val):
         self.context[key] = val
@@ -416,8 +351,7 @@ class Scheduler(object):
         logger.debug("Received Message=%s" % message)
 
         # handle incoming message and return a response
-        res = self.handle_message(message)
-        conn.send(res)
+        conn.send(self.handle_message(message))
         conn.close()
 
     def handle_event_queue_message(self):
@@ -495,15 +429,16 @@ class Scheduler(object):
         self.select_timeout = 1
 
     def serve1(self):
-        timeout = 1
-        date_end = float(time.time()) + timeout
 
         # wait for I/O on Listener and event Queue
         try:
             fds, _, _ = select(
                 [self.listener._listener._socket.fileno(),
                  self.event_queue._reader.fileno()],
-                [], [], self.select_timeout)
+                [],
+                [],
+                self.select_timeout
+            )
         except SelectError as e:
             errno, message = e.args
             if errno == os.errno.EINTR:
@@ -523,23 +458,12 @@ class Scheduler(object):
                 elif fd == self.event_queue._reader.fileno():
                     self.handle_event_queue_message()
 
-            self.select_timeout = date_end - float(time.time())
-            if self.select_timeout < 0:
-                self.select_timeout = timeout
-                date_end = float(time.time()) + timeout
-        else:
-            # we are here every 1 second
-            # schedule Tasks & maintain Tasks list
-            self.schedule()
-
-            # reinit select timeout value
-            self.select_timeout = timeout
-            date_end = float(time.time()) + timeout
-
     def setup_task_list(self):
         # Instanciate TaskList
-        self.task_list = TaskList(self.task_path)
-        # recover tasks from on disk image
+        self.task_list = TaskList(self.task_list_engine)
+        # Bootstrap storage
+        self.task_list.engine.bootstrap()
+        # Reset task status
         self.task_list.recover()
 
     def run(self):
@@ -554,9 +478,15 @@ class Scheduler(object):
 
         self.setup_task_list()
         self.setup()
+        self.last_schedule = time.time()
+
         while True:
             try:
                 self.serve1()
+
+                if self.last_schedule < (time.time() - 1):
+                    self.schedule()
+                    self.last_schedule = time.time()
 
                 if TM_SIGTERM:
                     # We perform shutdown on SIGTERM: we wait until all
@@ -587,7 +517,6 @@ class Scheduler(object):
                     # then we can stop
                     self.stop()
                     return
-
             except KeyboardInterrupt:
                 logger.error("KeyboardInterrupt")
                 self.stop()
@@ -599,48 +528,50 @@ class Scheduler(object):
 
     def schedule(self):
         now = datetime.utcnow()
-        remove_list = []
-        for task_id, t in self.task_list.tasks.items():
 
-            start = t.start_datetime
-            redo = t.redo_interval
+        self.task_list.purge(
+            (TASK_STATUS_DONE | TASK_STATUS_FAILED | TASK_STATUS_ABORTED |
+             TASK_STATUS_CANCELED),
+            now
+        )
 
-            if not self.shutdown and start < now \
-                    and t.status & TASK_STATUS_DEFAULT:
-                # new task
-                t.status = TASK_STATUS_SCHEDULED
-                self.task_list.tasks[task_id] = t
-                logger.debug("Pushing to WorkerPool Task=%s" % t)
-                self.task_queue.put(t, False)
-                continue
+        if self.shutdown:
+            return
 
-            if not self.shutdown \
-                    and (redo and start + timedelta(seconds=redo) < now
-                         and t.status & (TASK_STATUS_DONE | TASK_STATUS_FAILED
-                                         | TASK_STATUS_ABORTED)):
-                # redo task
-                # update task attributes
-                t.status = TASK_STATUS_SCHEDULED
-                t.start_datetime = now
-                t.stop_datetime = None
-                t.output = None
-                self.task_list.tasks[task_id] = t
-                # push the task to the worker pool
-                self.task_queue.put(t, False)
-                continue
+        for task in self.task_list.list_to_do(TASK_STATUS_DEFAULT, now):
 
-            if (not redo and t.stop_datetime and
-                    t.stop_datetime + timedelta(seconds=t.expire) < now and
-                    t.status & (TASK_STATUS_DONE | TASK_STATUS_FAILED |
-                                TASK_STATUS_ABORTED |
-                                TASK_STATUS_CANCELED)):
-                # remove old tasks
-                remove_list.append(t.id)
-                continue
+            task.status = TASK_STATUS_SCHEDULED
 
-        for task_id in remove_list:
-            logger.debug("Removing Task %s" % task_id)
-            self.task_list.rm(task_id)
+            logger.debug("Pushing task to the worker queue")
+            logger.debug(task)
+
+            self.task_queue.put(task, False)
+            self.task_list.update(
+                id=task.id,
+                status=task.status
+            )
+
+        for task in self.task_list.list_to_do(
+            (TASK_STATUS_DONE | TASK_STATUS_FAILED | TASK_STATUS_ABORTED),
+            now,
+            redo=True
+        ):
+            task.status = TASK_STATUS_SCHEDULED
+            task.start_datetime = now
+            task.stop_datetime = None
+            task.output = ''
+
+            logger.debug("Pushing task to the worker queue")
+            logger.debug(task)
+
+            self.task_queue.put(task, False)
+            self.task_list.update(
+                id=task.id,
+                status=task.status,
+                start_datetime=task.start_datetime,
+                stop_datetime=task.stop_datetime,
+                output=task.output,
+            )
 
     def handle_message(self, message):
         if message.type == MSG_TYPE_TASK_NEW:
@@ -671,9 +602,7 @@ class Scheduler(object):
 
         elif message.type == MSG_TYPE_TASK_LIST:
             # task list
-            task_list = [t.__dict__ for task_id, t
-                         in self.task_list.tasks.items()]
-            return sorted(task_list, key=lambda k: k['start_datetime'])
+            return list(self.task_list.list())
 
         elif message.type == MSG_TYPE_TASK_ABORT:
             # task abortation
@@ -742,6 +671,7 @@ class SchedulerService(Service):
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.scheduler = None
+        self.task_list_engine = None
 
     def apply_config(self):
         # Setup scheduler as soon as configuration is loaded, before
@@ -750,11 +680,10 @@ class SchedulerService(Service):
             self.scheduler = Scheduler(
                 address=os.path.join(
                     self.app.config.temboard.home, '.tm.socket'),
-                task_path=os.path.join(
-                    self.app.config.temboard.home, '.tm.task_list'),
                 authkey=None)
             self.scheduler.task_queue = self.task_queue
             self.scheduler.event_queue = self.event_queue
+            self.scheduler.task_list_engine = self.task_list_engine
             self.scheduler.setup_task_list()
 
     def setup(self):
