@@ -30,7 +30,7 @@ from .daemon import daemonize
 from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
 from .toolkit.app import BaseApplication
-from .version import __version__, format_version
+from .version import __version__, format_version, inspect_versions
 
 
 logger = logging.getLogger('temboardui')
@@ -40,7 +40,6 @@ def legacy_bootstrap(config):
     # Compat with legacy load_plugins
     config.plugins = {}
 
-    logger.info("Starting main process.")
     autoreload.watch(config.temboard.configfile)
 
     # Run temboard as a background daemon.
@@ -277,6 +276,19 @@ class TemboardApplication(BaseApplication):
         define_arguments(parser)
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
+
+        versions = inspect_versions()
+        logger.info(
+            "Starting temBoard %s on %s %s.",
+            versions['temboard'],
+            versions['distname'], versions['distversion'])
+        logger.info(
+            "Using Python %s (%s).",
+            versions['python'], versions['pythonbin'])
+        logger.info(
+            "Using Tornado %s and SQLAlchemy %s",
+            versions['tornado'], versions['sqlalchemy'],
+        )
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 
