@@ -27,3 +27,31 @@ renew_sslcert:
 	openssl req -batch -new -key share/temboard_CHANGEME.key -out request.pem
 	openssl x509 -req -in request.pem -CA share/temboard_ca_certs_CHANGEME.pem -CAkey share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out share/temboard_CHANGEME.pem
 	rm -f request.pem share/temboard_ca_certs_CHANGEME.srl
+
+# This is the default compose project name as computed by docker-compose. See
+# https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
+COMPOSE_PROJECT=$(notdir $(CURDIR))
+# Spawning a networks for each agent is costly. Default docker installation
+# supports a few dozens of networks limited by available IP. Reuse default
+# network from docker-compose.yml run.
+NETWORK=$(COMPOSE_PROJECT)_default
+
+mass-agents:
+	seq 2346 2400 | xargs --interactive -I% \
+		env \
+			TEMBOARD_REGISTER_PORT=% \
+			NETWORK=$(NETWORK) \
+		docker-compose \
+			--project-name temboardagent% \
+			--file docker/docker-compose.agent.yml \
+		up -d
+
+clean-agents:
+	seq 2346 2400 | xargs --verbose -I% \
+		env \
+			TEMBOARD_REGISTER_PORT=% \
+			NETWORK=$(subst -,,$(notdir $(CURDIR)))_default \
+		docker-compose \
+			--project-name temboardagent% \
+			--file docker/docker-compose.agent.yml \
+		down --volumes

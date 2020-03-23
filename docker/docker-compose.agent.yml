@@ -1,0 +1,40 @@
+# This compose file requires a few environment variables, see root Makefile for
+# details.
+version: '3'
+
+networks:
+  # By default, hook containers in network managed by root docker-compose.yml
+  default:
+    external:
+      name: ${NETWORK}
+
+volumes:
+  data:
+  run:
+
+services:
+  instance:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_PASSWORD: confinment
+    volumes:
+    - data:/var/lib/postgresql/data
+    - run:/var/run/postgresql
+
+  agent:
+    image: dalibo/temboard-agent
+    ports:
+      - ${TEMBOARD_REGISTER_PORT}:2345
+    volumes:
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance:instance-${TEMBOARD_REGISTER_PORT}.fqdn
+    environment:
+      TEMBOARD_HOSTNAME: instance-${TEMBOARD_REGISTER_PORT}.fqdn
+      TEMBOARD_KEY: key_for_agent0
+      TEMBOARD_UI_URL: https://172.17.0.1:8888
+      TEMBOARD_REGISTER_HOST: 172.17.0.1
+      TEMBOARD_REGISTER_PORT: ${TEMBOARD_REGISTER_PORT}
+      TEMBOARD_GROUPS: default

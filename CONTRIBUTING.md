@@ -91,6 +91,20 @@ grunt watch
 ```
 
 
+## Launching Multiple Agents
+
+Default development environment instanciate a single PostgreSQL instance and
+it's temBoard agent. Root Makefile offers two targets to help testing bigger
+infrastructure :
+
+- `make mass-agents` loops from 2345 to 2400 and instanciate a PostgreSQL
+  instance and an agent to monitor it. Each instanciation requires you to type
+  `y`. This allows to throttle instanciations and to stop when enough instances
+  are up.
+- `make clean-agents` trashes every existings instances from 2345 to 2400,
+  without interaction. **Agent are not unregistered!**
+
+
 # Coding style
 
 A `.editorconfig` file is included at the root of the repository configuring
