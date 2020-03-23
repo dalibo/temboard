@@ -33,7 +33,11 @@ def get_statements(http_context, app):
         data = list(conn.get_rows())
         conn.execute("SELECT pg_stat_statements_reset()")
     except error as e:
-        if 'relation "pg_stat_statements" does not exist' in str(e):
+        pg_version = app.postgres.fetch_version()
+        if (
+            pg_version < 90600 or
+            'relation "pg_stat_statements" does not exist' in str(e)
+        ):
             raise HTTPError(
                 404, "pg_stat_statements not enabled on database %s" % dbname
             )
