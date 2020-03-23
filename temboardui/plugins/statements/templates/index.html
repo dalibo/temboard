@@ -3,5 +3,54 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Statements{% end %}
 
 {% block content %}
-hey plugin statements
+
+<div id="app">
+  <b-col lg="6" class="my-1">
+    <b-form-group
+      label="Filter"
+      label-cols-sm="3"
+      label-align-sm="right"
+      label-size="sm"
+      label-for="filterInput"
+      class="mb-0"
+      >
+      <b-input-group size="sm">
+        <b-form-input
+          v-model="filter"
+          type="search"
+          id="filterInput"
+          placeholder="Type to Search"
+          ></b-form-input>
+        <b-input-group-append>
+          <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+        </b-input-group-append>
+      </b-input-group>
+    </b-form-group>
+  </b-col>
+  <b-table
+    striped
+    small
+    :items="statements"
+    :fields="fields"
+    :sort-by="sortBy"
+    :filter="filter"
+    class="table-query"
+  >
+    <template v-slot:cell(query)="data">
+      <pre class="sql" v-html="data.value"></pre>
+    </template>
+  </b-table>
+</div>
+<script src="/js/moment.min.js"></script>
+<script src="/js/moment.preciseDiff.js"></script>
+<script src="/js/highlightjs/highlight.pack.js"></script>
+<script src="/js/vue.min.js"></script>
+<script src="/js/statements/temboard.statements.js"></script>
+
+<link type="text/css" rel="stylesheet" href="/css/bootstrap-vue.min.css" />
+
+<script src="/js/bootstrap-vue.min.js"></script>
+<script>
+var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/statements/data";
+</script>
 {% end %}
