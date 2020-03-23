@@ -27,6 +27,7 @@ distributed under sections:
   - ``monitoring``: plugin ``monitoring``;
   - ``administration``: plugin ``administration``,
   - ``maintenance``: plugin ``maintenance``.
+  - ``statements``: plugin ``statements``;
 
 ``temboard`` section
 ^^^^^^^^^^^^^^^^^^^^
@@ -77,3 +78,9 @@ distributed under sections:
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
   - ``pg_ctl``: External command used to start/stop PostgreSQL. Default: ``None``.
+
+``statements`` plugin
+^^^^^^^^^^^^^^^^^^^^^
+
+  - ``dbname``: Name of the database hosting ``pg_stat_statements`` view,
+    enabled through creation of the eponymous extension. Default: ``postgres``.

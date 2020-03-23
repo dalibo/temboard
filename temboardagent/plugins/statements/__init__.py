@@ -2,6 +2,7 @@ import logging
 
 from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
+from temboardagent.toolkit.configuration import OptionSpec
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,9 @@ def get_statements(http_context, app):
 
 class StatementsPlugin(object):
     PG_MIN_VERSION = 90500
-    option_specs = []
+    s = "statements"
+    option_specs = [OptionSpec(s, "dbname", default="postgres")]
+    del s
 
     def __init__(self, app, **kw):
         self.app = app
