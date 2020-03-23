@@ -97,7 +97,6 @@ class BaseApplication(object):
         config.add_specs(self.core_specs())
         config.add_specs(self.specs)
         config.load(**self.config_sources)
-        self.apply_config()
 
         return self.config
 
