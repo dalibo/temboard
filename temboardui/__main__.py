@@ -20,6 +20,7 @@ from .toolkit import taskmanager
 from .toolkit import validators as v
 from .toolkit.app import define_core_arguments
 from .toolkit.configuration import OptionSpec
+from .toolkit.proctitle import ProcTitleManager
 from .toolkit.services import (
     Service,
     ServicesManager,
@@ -277,6 +278,9 @@ class TemboardApplication(BaseApplication):
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
 
+        setproctitle = ProcTitleManager(prefix='temboard: ')
+        setproctitle.setup()
+
         versions = inspect_versions()
         logger.info(
             "Starting temBoard %s on %s %s.",
@@ -302,6 +306,7 @@ class TemboardApplication(BaseApplication):
         self.worker_pool = taskmanager.WorkerPoolService(
             app=self, name=u'worker pool',
             task_queue=task_queue, event_queue=event_queue,
+            setproctitle=setproctitle,
         )
         self.worker_pool.apply_config()
         services.add(self.worker_pool)
@@ -312,13 +317,17 @@ class TemboardApplication(BaseApplication):
         self.scheduler = SchedulerService(
             app=self, name=u'scheduler',
             task_queue=task_queue, event_queue=event_queue,
+            setproctitle=setproctitle,
         )
         self.scheduler.apply_config()
         services.add(self.scheduler)
 
         # H T T P   S E R V E R
 
-        webservice = TornadoService(app=self, name=u'main', services=services)
+        webservice = TornadoService(
+            app=self, name=u'web', services=services,
+            setproctitle=setproctitle,
+        )
         with services:
             webservice.run()
 
