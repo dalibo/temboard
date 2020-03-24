@@ -8,18 +8,26 @@ Get the temBoard and submodules sources:
 $ git clone --recursive https://github.com/dalibo/temboard.git
 ```
 
-First, create a virtualenv for Python2.7, activate it. Then install temBoard and
-run it with:
+First, create a virtualenv for Python2.7, activate it. Then install temBoard:
 
 ``` console
 $ pip install -e . psycopg2-binary
-$ temboard -c temboard.dev.conf --debug
 ```
 
-temBoard is now waiting for PostgreSQL. Launch services:
+Now, bootstrap development with `make devenv` and launch temBoard.
 
 ``` console
-$ docker-compose up
+$ make devenv
+...
+2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.                                                                                                                                                       Initialized role temboard and database temboard.                                                                                                                                                                                        docker-compose up -d
+temboard_repository_1 is up-to-date
+Creating temboard_instance_1 ... done                                                                                                                                                                                                   Creating temboard_agent_1    ... done
+$ temboard
+...
+2020-03-24 17:11:55,997 [ 3551] [temboardui      ]  INFO: Starting temBoard 4.0+master on Debian GNU/Linux 10 (buster).
+...
+2020-03-24 17:11:56,015 [ 3551] [temboardui      ]  INFO: Serving temboardui on https://0.0.0.0:8888
+...
 ```
 
 Go to https://127.0.0.1:8888/ to access temBoard runing with your code! An agent

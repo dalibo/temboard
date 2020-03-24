@@ -28,6 +28,13 @@ renew_sslcert:
 	openssl x509 -req -in request.pem -CA share/temboard_ca_certs_CHANGEME.pem -CAkey share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out share/temboard_CHANGEME.pem
 	rm -f request.pem share/temboard_ca_certs_CHANGEME.srl
 
+devenv:
+	docker-compose up -d repository
+	sleep 1
+	psql -t -h 0.0.0.0 -c 'SELECT version();' "connect_timeout=15"
+	PGHOST=0.0.0.0 DEV=1 share/create_repository.sh
+	docker-compose up -d
+
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
 COMPOSE_PROJECT=$(notdir $(CURDIR))

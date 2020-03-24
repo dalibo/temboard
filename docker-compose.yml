@@ -17,10 +17,6 @@ services:
     volumes:
       - rdata:/var/lib/postgresql/data
       - rrun:/var/run/postgresql
-      - ./share/sql/application.sql:/docker-entrypoint-initdb.d/00-temboard.sql
-      - ./share/sql/monitoring.sql:/docker-entrypoint-initdb.d/10-plugin-monitoring.sql
-      - ./share/sql/alerting.sql:/docker-entrypoint-initdb.d/11-plugin-alerting.sql
-      - ./share/sql/dev-fixture.sql:/docker-entrypoint-initdb.d/90-dev-fixture.sql
 
   instance:
     image: postgres:12-alpine
