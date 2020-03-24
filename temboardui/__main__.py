@@ -4,7 +4,11 @@ import logging.config
 import os
 import socket
 import sys
-from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+from argparse import (
+    ArgumentParser,
+    SUPPRESS as UNDEFINED_ARGUMENT,
+    _VersionAction,
+)
 from concurrent.futures import ThreadPoolExecutor
 
 import tornado.ioloop
@@ -26,7 +30,7 @@ from .daemon import daemonize
 from .pluginsmgmt import load_plugins
 from .autossl import AutoHTTPSServer
 from .toolkit.app import BaseApplication
-from .version import __version__
+from .version import __version__, format_version, inspect_versions
 
 
 logger = logging.getLogger('temboardui')
@@ -36,7 +40,6 @@ def legacy_bootstrap(config):
     # Compat with legacy load_plugins
     config.plugins = {}
 
-    logger.info("Starting main process.")
     autoreload.watch(config.temboard.configfile)
 
     # Run temboard as a background daemon.
@@ -154,8 +157,19 @@ class TornadoService(Service):
             tornado.ioloop.IOLoop.instance().start()
 
 
+class VersionAction(_VersionAction):
+    def __call__(self, parser, *_):
+        print(format_version().strip())
+        parser.exit()
+
+
 def define_arguments(parser):
-    define_core_arguments(parser, appversion=__version__)
+    define_core_arguments(parser)
+    parser.add_argument(
+        '-V', '--version',
+        action=VersionAction,
+        help='show version and exit',
+    )
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
@@ -262,6 +276,19 @@ class TemboardApplication(BaseApplication):
         define_arguments(parser)
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
+
+        versions = inspect_versions()
+        logger.info(
+            "Starting temBoard %s on %s %s.",
+            versions['temboard'],
+            versions['distname'], versions['distversion'])
+        logger.info(
+            "Using Python %s (%s).",
+            versions['python'], versions['pythonbin'])
+        logger.info(
+            "Using Tornado %s and SQLAlchemy %s",
+            versions['tornado'], versions['sqlalchemy'],
+        )
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 
