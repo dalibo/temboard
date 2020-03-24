@@ -33,6 +33,9 @@ def test_fix_argv(mocker):
     wanted = ['python', 'my-script.py']
     assert wanted == fix_argv(['python', 'my-script.py'])
 
+    wanted = ['python', 'my-script.py', '-c', 'config']
+    assert wanted == fix_argv(['python', '-c', 'my-script.py', '-c', 'config'])
+
 
 def test_read_memory():
     import ctypes
