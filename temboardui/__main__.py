@@ -216,13 +216,8 @@ def list_options_specs():
     home = os.environ.get('HOME', '/var/lib/temboard')
     yield OptionSpec(s, 'home', default=home, validator=v.writeabledir)
 
-    s = 'repository'
-    yield OptionSpec(s, 'host', default='/var/run/postgresql')
-    yield OptionSpec(s, 'instance', default='main')
-    yield OptionSpec(s, 'port', default=5432, validator=v.port)
-    yield OptionSpec(s, 'user', default='temboard')
-    yield OptionSpec(s, 'password', default='temboard')
-    yield OptionSpec(s, 'dbname', default='temboard')
+    for o in list_repository_specs():
+        yield o
 
     s = 'notifications'
     yield OptionSpec(s, 'smtp_host', default=None)
@@ -237,6 +232,16 @@ def list_options_specs():
 
     s = 'monitoring'
     yield OptionSpec(s, 'purge_after', default=None, validator=v.nday)
+
+
+def list_repository_specs():
+    s = 'repository'
+    yield OptionSpec(s, 'host', default='/var/run/postgresql')
+    yield OptionSpec(s, 'instance', default='main')
+    yield OptionSpec(s, 'port', default=5432, validator=v.port)
+    yield OptionSpec(s, 'user', default='temboard')
+    yield OptionSpec(s, 'password', default='temboard')
+    yield OptionSpec(s, 'dbname', default='temboard')
 
 
 class TemboardApplication(BaseApplication):
