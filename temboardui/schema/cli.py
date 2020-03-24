@@ -14,7 +14,7 @@ from ..version import __version__
 from ..model import format_dsn
 from ..toolkit.app import BaseApplication
 from ..version import inspect_versions
-from .migrator import Migrator
+from .migrator import Migrator, check_schema
 
 
 logger = logging.getLogger('temboardui.schema.migrator')
@@ -46,6 +46,9 @@ class MigrateDBApplication(BaseApplication):
             versions['python'], versions['pythonbin'])
         logger.debug("Using psycopg2 %s.", versions['psycopg2'])
 
+        if args.check:
+            return check_schema(self.config.repository)
+
         migrator = Migrator()
         logger.debug("Inspecting expected schema version.")
         migrator.inspect_available_versions()
@@ -70,6 +73,11 @@ def define_arguments(parser):
         '-V', '--version',
         action=VersionAction,
         help='show version and exit',
+    )
+    parser.add_argument(
+        '--check',
+        action='store_true', default=False,
+        help='Check schema status only.'
     )
 
 

@@ -1,9 +1,36 @@
+import logging
 import os
+from contextlib import closing
 from glob import glob
 from textwrap import dedent
 
-from psycopg2 import ProgrammingError
+from psycopg2 import connect, ProgrammingError
 from psycopg2.errorcodes import UNDEFINED_TABLE
+
+from ..model import format_dsn
+from ..toolkit.errors import UserError
+
+
+logger = logging.getLogger(__name__)
+
+
+def check_schema(config):
+    migrator = Migrator()
+    logger.debug("Inspecting expected schema version.")
+    migrator.inspect_available_versions()
+    dsn = format_dsn(config)
+    with closing(connect(dsn)) as pgconn:
+        logger.debug("Connected to %s.", pgconn.dsn)
+        migrator.inspect_current_version(pgconn)
+        logger.info(
+            "Schema version is %s.",
+            migrator.current_version or "uninitialized")
+
+    if migrator.missing_versions:
+        raise UserError(
+            "Database is outdated. Please update with temboard-migratedb."
+        )
+>>>>>>> ba34229... Check schema without applying migration
 
 
 class Migrator(object):
