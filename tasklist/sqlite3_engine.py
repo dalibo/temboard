@@ -33,7 +33,7 @@ class TaskListSQLite3Engine(object):
         try:
             with self.conn:
                 c = self.conn.cursor()
-                c.execute("PRAGMA synchronous = 0")
+                c.execute("PRAGMA synchronous = 1")
                 c.execute(
                     dedent("""
                         CREATE TABLE IF NOT EXISTS tasks (
