@@ -75,7 +75,7 @@ def fix_argv(argv):
     return argv
 
 
-def find_argv_memory_from_pythonapi():
+def find_argv_memory_from_pythonapi():  # pragma: nocover
     """ Return pointer and size of argv memory segment. """
     # This implemententation works only on Python2. cf.
     # http://docs.cherrypy.org/en/latest/_modules/cherrypy/process/wspbus.html
@@ -169,7 +169,7 @@ class ProcTitleManager(object):
         self.prefix = prefix
         self.address = self.size = None
 
-    def setup(self):
+    def setup(self):  # pragma: nocover
         try:
             argv, self.address, self.size = find_argv_memory_from_pythonapi()
             if sys.version_info > (2,):  # pragma: nocover_py2
