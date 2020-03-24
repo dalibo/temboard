@@ -77,6 +77,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard
+/usr/bin/temboard-migratedb
 %attr(-,temboard,temboard) /var/log/temboard
 %{_unitdir}/temboard.service
 

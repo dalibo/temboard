@@ -80,6 +80,8 @@ if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
 	exec tail -f /dev/null
 fi
 
+temboard-migratedb --debug
+
 TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
 		       temboard --daemon --debug --pid-file ${PIDFILE}
 UI=${UI-https://0.0.0.0:8888}
