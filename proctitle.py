@@ -41,24 +41,36 @@ def compute_main_module_name(mod):
 
 
 def fix_argv(argv):
-    # Clean '-c' added by CPython.
-    try:
-        argv.remove('-c')
-    except ValueError:
-        pass
+    # CPython alters argv in sys.argv. This breaks searching for sys.argv in
+    # memory. This function reverses CPython alteration to libc original argv.
+    #
+    # Alterations are: adding a -c argument, trimming of main module name.
 
-    # Search for -m and read modname
-    try:
-        m_ind = argv.index('-m')
-    except ValueError:
-        pass
-    else:
-        modname = compute_main_module_name(sys.modules['__main__'])
-        if PY3:  # pragma: nocover_py2
-            # In PY3, -m module is replaced with -m -m.
-            argv[m_ind + 1] = modname
-        else:  # pragma: nocover_py3
-            argv.insert(m_ind + 1, modname)
+    # We'll loop over a copy of argv. On Python2, we'll insert a new element in
+    # argv, offsetting following elements compared to sys.argv. Track this
+    # offset here.
+    offset = 0
+    modname = None
+    for i, arg in enumerate(argv[:]):
+        if 0 == i:
+            # Python interpreter. Skip it.
+            continue
+        elif not arg.startswith('-'):
+            # Python argument. Next argv items are scripts arguments. Stop now.
+            break
+        elif '-c' == arg:
+            # Remove -c from Python args.
+            argv[offset+i:offset+i+1] = []
+        elif '-m' == arg and modname is None:
+            # Restore main module name.
+            modname = compute_main_module_name(sys.modules['__main__'])
+            if PY3:  # pragma: nocover_py2
+                # In PY3, -m module is replaced with -m -m.
+                argv[i+1:i+2] = [modname]
+            else:  # pragma: nocover_py3
+                argv.insert(i + 1, modname)
+                # new argv have one more element than Python argv.
+                offset += 1
 
     return argv
 
