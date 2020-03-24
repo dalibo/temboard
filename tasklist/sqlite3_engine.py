@@ -314,3 +314,12 @@ class TaskListSQLite3Engine(object):
         except sqlite3.Error as e:
             logger.exception(str(e))
             raise Exception("Could not purge task list.")
+
+    def vacuum(self):
+        try:
+            with self.conn:
+                c = self.conn.cursor()
+                c.execute("VACUUM")
+        except sqlite3.Error as e:
+            logger.exception(str(e))
+            raise Exception("Could not vacuum the database.")

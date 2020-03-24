@@ -479,6 +479,7 @@ class Scheduler(object):
         self.setup_task_list()
         self.setup()
         self.last_schedule = time.time()
+        self.last_vacuum = time.time()
 
         while True:
             try:
@@ -487,6 +488,10 @@ class Scheduler(object):
                 if self.last_schedule < (time.time() - 1):
                     self.schedule()
                     self.last_schedule = time.time()
+
+                if self.last_vacuum < (time.time() - 3600):
+                    self.task_list.engine.vacuum()
+                    self.last_vacuum = time.time()
 
                 if TM_SIGTERM:
                     # We perform shutdown on SIGTERM: we wait until all
