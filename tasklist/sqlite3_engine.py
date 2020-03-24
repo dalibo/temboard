@@ -7,6 +7,7 @@ import sqlite3
 from textwrap import dedent
 
 from ..taskmanager import Task
+from ..errors import StorageEngineError
 
 logger = logging.getLogger(__name__)
 
@@ -51,23 +52,21 @@ class TaskListSQLite3Engine(object):
                 )
         except sqlite3.OperationalError as e:
             logger.exception(str(e))
-            raise Exception("Could not bootstrap storage engine.")
+            raise StorageEngineError("Could not bootstrap storage engine.")
 
     def insert(self, task):
         try:
             with self.conn:
                 c = self.conn.cursor()
                 c.execute(
-                    dedent("""
-                        INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """),
+                    "INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         task.id,
                         task.worker_name,
                         datetime_to_epoch(task.start_datetime),
                         datetime_to_epoch(task.stop_datetime),
                         task.status,
-                        str(task.output) if task.output else '',
+                        str(task.output) if task.output else None,
                         json.dumps(task.options),
                         task.redo_interval or 0,
                         task.expire or 0
@@ -78,7 +77,7 @@ class TaskListSQLite3Engine(object):
             raise KeyError("Task with id=%s already exists" % task.id)
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not insert task.")
+            raise StorageEngineError("Could not insert task.")
 
     def update(self, task):
         try:
@@ -103,7 +102,7 @@ class TaskListSQLite3Engine(object):
                         datetime_to_epoch(task.start_datetime),
                         datetime_to_epoch(task.stop_datetime),
                         task.status,
-                        str(task.output) if task.output else '',
+                        str(task.output) if task.output else None,
                         json.dumps(task.options),
                         task.redo_interval or 0,
                         task.expire or 0,
@@ -112,22 +111,19 @@ class TaskListSQLite3Engine(object):
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not update task.")
+            raise StorageEngineError("Could not update task.")
 
     def delete(self, id):
         try:
             with self.conn:
                 c = self.conn.cursor()
                 c.execute(
-                    dedent("""
-                        DELETE FROM tasks
-                        WHERE id = ?
-                    """),
+                    "DELETE FROM tasks WHERE id = ?",
                     (id,)
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not delete task with id=%s" % id)
+            raise StorageEngineError("Could not delete task with id=%s" % id)
 
     def get(self, id):
         try:
@@ -146,26 +142,29 @@ class TaskListSQLite3Engine(object):
                 r = c.fetchone()
                 if not r:
                     return
+
                 try:
-                    return Task(
-                        id=r[0],
-                        worker_name=r[1],
-                        start_datetime=epoch_to_datetime(r[2]),
-                        stop_datetime=epoch_to_datetime(r[3]),
-                        status=r[4],
-                        output=r[5],
-                        options=json.loads(r[6]),
-                        redo_interval=r[7],
-                        expire=r[8]
-                    )
+                    options = json.loads(r[6])
                 except ValueError as e:
                     logger.exception(str(e))
                     logger.debug(r)
-                    raise Exception("Could not decode task options.")
+                    raise StorageEngineError("Could not decode task options.")
+
+                return Task(
+                    id=r[0],
+                    worker_name=r[1],
+                    start_datetime=epoch_to_datetime(r[2]),
+                    stop_datetime=epoch_to_datetime(r[3]),
+                    status=r[4],
+                    output=r[5],
+                    options=options,
+                    redo_interval=r[7],
+                    expire=r[8]
+                )
 
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not get task with id=%s" % id)
+            raise StorageEngineError("Could not get task with id=%s" % id)
 
     def list(self):
         try:
@@ -181,27 +180,30 @@ class TaskListSQLite3Engine(object):
                     """)
                 )
                 for r in c.fetchall():
+
                     try:
-                        yield Task(
-                            id=r[0],
-                            worker_name=r[1],
-                            start_datetime=epoch_to_datetime(r[2]),
-                            stop_datetime=epoch_to_datetime(r[3]),
-                            status=r[4],
-                            output=r[5],
-                            options=json.loads(r[6]),
-                            redo_interval=r[7],
-                            expire=r[8]
-                        )
+                        options = json.loads(r[6])
                     except ValueError as e:
                         logger.exception(str(e))
                         logger.error("Could not convert row to Task.")
                         logger.debug(r)
                         continue
 
+                    yield Task(
+                        id=r[0],
+                        worker_name=r[1],
+                        start_datetime=epoch_to_datetime(r[2]),
+                        stop_datetime=epoch_to_datetime(r[3]),
+                        status=r[4],
+                        output=r[5],
+                        options=options,
+                        redo_interval=r[7],
+                        expire=r[8]
+                    )
+
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not get task list.")
+            raise StorageEngineError("Could not get task list.")
 
     def exists(self, id):
         try:
@@ -211,7 +213,9 @@ class TaskListSQLite3Engine(object):
                 return (c.fetchone() is not None)
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not check that task with id=%s exists" % id)
+            raise StorageEngineError(
+                "Could not check that task with id=%s exists" % id
+            )
 
     def count_by_status(self, status):
         try:
@@ -224,7 +228,9 @@ class TaskListSQLite3Engine(object):
                 return c.fetchone()[0]
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not count tasks with status & %s" % status)
+            raise StorageEngineError(
+                "Could not count tasks with status & %s" % status
+            )
 
     def recover(self, st_doing, st_aborted, st_scheduled, st_default, now):
         try:
@@ -240,15 +246,12 @@ class TaskListSQLite3Engine(object):
                 )
                 # Reset scheduled task to default
                 c.execute(
-                    dedent("""
-                        UPDATE tasks SET status = ?
-                        WHERE status & ?
-                    """),
+                    "UPDATE tasks SET status = ? WHERE status & ?",
                     (st_default, st_scheduled)
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not recover tasks.")
+            raise StorageEngineError("Could not recover tasks.")
 
     def list_to_do(self, status, now, redo=False):
         query = dedent("""
@@ -275,27 +278,30 @@ class TaskListSQLite3Engine(object):
                 c = self.conn.cursor()
                 c.execute(query, (datetime_to_epoch(now), status,))
                 for r in c.fetchall():
+
                     try:
-                        yield Task(
-                            id=r[0],
-                            worker_name=r[1],
-                            start_datetime=epoch_to_datetime(r[2]),
-                            stop_datetime=epoch_to_datetime(r[3]),
-                            status=r[4],
-                            output=r[5],
-                            options=json.loads(r[6]),
-                            redo_interval=r[7],
-                            expire=r[8]
-                        )
+                        options = json.loads(r[6])
                     except ValueError as e:
                         logger.exception(str(e))
                         logger.error("Could not convert row to Task.")
                         logger.debug(r)
                         continue
 
+                    yield Task(
+                        id=r[0],
+                        worker_name=r[1],
+                        start_datetime=epoch_to_datetime(r[2]),
+                        stop_datetime=epoch_to_datetime(r[3]),
+                        status=r[4],
+                        output=r[5],
+                        options=options,
+                        redo_interval=r[7],
+                        expire=r[8]
+                    )
+
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not get task list.")
+            raise StorageEngineError("Could not get task list.")
 
     def purge(self, status, now):
         try:
@@ -313,7 +319,7 @@ class TaskListSQLite3Engine(object):
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not purge task list.")
+            raise StorageEngineError("Could not purge task list.")
 
     def vacuum(self):
         try:
@@ -322,4 +328,4 @@ class TaskListSQLite3Engine(object):
                 c.execute("VACUUM")
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise Exception("Could not vacuum the database.")
+            raise StorageEngineError("Could not vacuum the database.")

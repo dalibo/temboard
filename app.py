@@ -93,7 +93,7 @@ class BaseApplication(object):
             parser=parser, pwd=os.path.dirname(configfile)
         ))
 
-        # Stage 3: Add core and app specific options, load them and apply.
+        # Stage 3: Add core and app specific options and load them.
         config.add_specs(self.core_specs())
         config.add_specs(self.specs)
         config.load(**self.config_sources)

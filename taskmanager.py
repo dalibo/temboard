@@ -19,6 +19,7 @@ except ImportError:
 
 from .services import Service
 from .utils import PY2
+from .errors import StorageEngineError
 
 
 TM_WORKERS = []
@@ -192,7 +193,7 @@ class TaskList(object):
 
     def recover(self):
         self.engine.recover(
-            st_doing=TASK_STATUS_DOING,
+            st_doing=(TASK_STATUS_DOING | TASK_STATUS_QUEUED),
             st_aborted=TASK_STATUS_ABORTED,
             st_scheduled=TASK_STATUS_SCHEDULED,
             st_default=TASK_STATUS_DEFAULT,
@@ -406,12 +407,16 @@ class Scheduler(object):
                 for t in func:
                     if isinstance(t, Task):
                         try:
-                            self.task_list.push(t)
-                            logger.debug("Bootstrap Task=%s loaded" % t)
-                        except KeyError:
-                            logger.debug("Update Task %s with options=%s"
-                                         % (t.id, t.options))
-                            self.task_list.update(t.id, options=t.options)
+                            try:
+                                self.task_list.push(t)
+                                logger.debug("Bootstrap Task=%s loaded" % t)
+                            except KeyError:
+                                logger.debug("Update Task %s with options=%s"
+                                             % (t.id, t.options))
+                                self.task_list.update(t.id, options=t.options)
+                        except StorageEngineError as e:
+                            # Just log the error and continue with other tasks
+                            logger.error(e.message)
                     else:
                         logger.error("Bootstrap task not Task instance")
             else:
@@ -542,24 +547,31 @@ class Scheduler(object):
         if self.shutdown:
             return
 
-        for task in self.task_list.list_to_do(TASK_STATUS_DEFAULT, now):
+        to_do = self.task_list.list_to_do(TASK_STATUS_DEFAULT, now)
 
+        for task in to_do:
             task.status = TASK_STATUS_SCHEDULED
 
             logger.debug("Pushing task to the worker queue")
             logger.debug(task)
 
-            self.task_queue.put(task, False)
-            self.task_list.update(
-                id=task.id,
-                status=task.status
-            )
+            try:
+                self.task_list.update(
+                    id=task.id,
+                    status=task.status
+                )
+            except StorageEngineError as e:
+                logger.error(e.message)
+            else:
+                self.task_queue.put(task, False)
 
-        for task in self.task_list.list_to_do(
+        to_redo = self.task_list.list_to_do(
             (TASK_STATUS_DONE | TASK_STATUS_FAILED | TASK_STATUS_ABORTED),
             now,
             redo=True
-        ):
+        )
+
+        for task in to_redo:
             task.status = TASK_STATUS_SCHEDULED
             task.start_datetime = now
             task.stop_datetime = None
@@ -568,14 +580,18 @@ class Scheduler(object):
             logger.debug("Pushing task to the worker queue")
             logger.debug(task)
 
-            self.task_queue.put(task, False)
-            self.task_list.update(
-                id=task.id,
-                status=task.status,
-                start_datetime=task.start_datetime,
-                stop_datetime=task.stop_datetime,
-                output=task.output,
-            )
+            try:
+                self.task_list.update(
+                    id=task.id,
+                    status=task.status,
+                    start_datetime=task.start_datetime,
+                    stop_datetime=task.stop_datetime,
+                    output=task.output,
+                )
+            except StorageEngineError as e:
+                logger.error(e.message)
+            else:
+                self.task_queue.put(task, False)
 
     def handle_message(self, message):
         if message.type == MSG_TYPE_TASK_NEW:
@@ -586,27 +602,39 @@ class Scheduler(object):
             except KeyError:
                 return Message(MSG_TYPE_ERROR,
                                {'error': 'Task id already exists'})
+            except StorageEngineError as e:
+                logger.error(e.message)
+                return Message(MSG_TYPE_ERROR, {'error': e.message})
 
         elif message.type == MSG_TYPE_TASK_STATUS:
             # task status update
             status = message.content['status']
             # special case when task's status is TASK_STATUS_CANCELD, we dont'
             # want to change it's state.
-            t = self.task_list.get(message.content['task_id'])
-            if t.status & TASK_STATUS_CANCELED:
-                status = t.status
+            try:
+                t = self.task_list.get(message.content['task_id'])
+                if t.status & TASK_STATUS_CANCELED:
+                    status = t.status
 
-            self.task_list.update(
+                self.task_list.update(
                     t.id,
                     status=status,
                     output=message.content.get('output', None),
                     stop_datetime=message.content.get('stop_datetime', None),
-            )
-            return Message(MSG_TYPE_RESP, {'id': t.id})
+                )
+            except StorageEngineError as e:
+                logger.error(e.message)
+                return Message(MSG_TYPE_ERROR, {'error': e.message})
+            else:
+                return Message(MSG_TYPE_RESP, {'id': t.id})
 
         elif message.type == MSG_TYPE_TASK_LIST:
             # task list
-            return list(self.task_list.list())
+            try:
+                return list(self.task_list.list())
+            except StorageEngineError as e:
+                logger.error(e.message)
+                return Message(MSG_TYPE_ERROR, {'error': e.message})
 
         elif message.type == MSG_TYPE_TASK_ABORT:
             # task abortation
@@ -617,15 +645,19 @@ class Scheduler(object):
         elif message.type == MSG_TYPE_TASK_CANCEL:
             # task cancellation
             # first, we need to change its status and stop_datetime
-            self.task_list.update(
+            try:
+                self.task_list.update(
                     message.content['task_id'],
                     status=TASK_STATUS_CANCELED,
                     stop_datetime=datetime.utcnow(),
-            )
-            # send the cancelation order to WP
-            t = Task(id=message.content['task_id'],
-                     status=TASK_STATUS_CANCELED)
-            self.task_queue.put(t)
+                )
+            except StorageEngineError as e:
+                logger.error(e.message)
+            else:
+                # send the cancelation order to WP
+                t = Task(id=message.content['task_id'],
+                         status=TASK_STATUS_CANCELED)
+                self.task_queue.put(t)
         elif message.type == MSG_TYPE_CONTEXT:
             # context update
             if type(message.content) == dict:
@@ -705,19 +737,32 @@ class SchedulerService(Service):
 
         for task in workerset.list_tasks():
             try:
-                self.scheduler.task_list.rm(task.id)
-                logger.debug("Overwriting task %s.", task.id)
-            except Exception:
-                pass
+                task_from_db = self.scheduler.task_list.get(task.id)
 
-            self.scheduler.task_list.push(task)
+                if task_from_db:
+                    # If we've found the task in the DB, we'd keep its
+                    # stop_datetime and status before overwriting it because
+                    # we do not want this task to be re scheduled if it's not
+                    # necessary.
+                    task.stop_datetime = task_from_db.stop_datetime
+                    task.status = task_from_db.status
+
+                    self.scheduler.task_list.rm(task.id)
+                    logger.debug("Overwriting task %s.", task.id)
+
+                self.scheduler.task_list.push(task)
+            except StorageEngineError as e:
+                logger.error(e.message)
 
     def remove(self, workerset):
         if not self.is_my_process:
             return
 
         for task in workerset.list_tasks():
-            self.scheduler.task_list.rm(task.id)
+            try:
+                self.scheduler.task_list.rm(task.id)
+            except StorageEngineError as e:
+                logger.error(e.message)
 
     def schedule_task(
             self, worker_name, id=None, options=None, start=None,
