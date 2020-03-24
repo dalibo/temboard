@@ -36,6 +36,9 @@ $ temboard
 Go to https://127.0.0.1:8888/ to access temBoard runing with your code! An agent
 is already set up to manage the PostgreSQL cluster of the UI.
 
+If you want to trash development env, use `docker-compose down -v` and restart
+from `make devenv`.
+
 
 ## Develop both UI and agent
 
