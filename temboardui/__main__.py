@@ -286,8 +286,8 @@ class TemboardApplication(BaseApplication):
             "Using Python %s (%s).",
             versions['python'], versions['pythonbin'])
         logger.info(
-            "Using Tornado %s and SQLAlchemy %s",
-            versions['tornado'], versions['sqlalchemy'],
+            "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
+            versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
         )
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
