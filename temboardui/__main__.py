@@ -16,6 +16,7 @@ import tornado.web
 from tornado import autoreload
 
 from .model import configure as configure_db_session
+from .schema.migrator import check_schema
 from .toolkit import taskmanager
 from .toolkit import validators as v
 from .toolkit.app import define_core_arguments
@@ -299,6 +300,7 @@ class TemboardApplication(BaseApplication):
             "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
             versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
         )
+        check_schema(self.config.repository)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 
