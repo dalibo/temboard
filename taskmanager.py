@@ -323,6 +323,8 @@ class Scheduler(object):
         self.worker_pool = None
         self.shutdown = None
         self.task_list_engine = None
+        self.last_schedule = 0
+        self.last_vacuum = 0
 
     def set_context(self, key, val):
         self.context[key] = val
@@ -429,7 +431,6 @@ class Scheduler(object):
         self.select_timeout = 1
 
     def serve1(self):
-
         # wait for I/O on Listener and event Queue
         try:
             fds, _, _ = select(
@@ -458,6 +459,14 @@ class Scheduler(object):
                 elif fd == self.event_queue._reader.fileno():
                     self.handle_event_queue_message()
 
+        if self.last_schedule < (time.time() - 1):
+            self.schedule()
+            self.last_schedule = time.time()
+
+        if self.last_vacuum < (time.time() - 3600):
+            self.task_list.engine.vacuum()
+            self.last_vacuum = time.time()
+
     def setup_task_list(self):
         # Instanciate TaskList
         self.task_list = TaskList(self.task_list_engine)
@@ -478,20 +487,10 @@ class Scheduler(object):
 
         self.setup_task_list()
         self.setup()
-        self.last_schedule = time.time()
-        self.last_vacuum = time.time()
 
         while True:
             try:
                 self.serve1()
-
-                if self.last_schedule < (time.time() - 1):
-                    self.schedule()
-                    self.last_schedule = time.time()
-
-                if self.last_vacuum < (time.time() - 3600):
-                    self.task_list.engine.vacuum()
-                    self.last_vacuum = time.time()
 
                 if TM_SIGTERM:
                     # We perform shutdown on SIGTERM: we wait until all
