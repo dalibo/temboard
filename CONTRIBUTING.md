@@ -8,10 +8,13 @@ Get the temBoard and submodules sources:
 $ git clone --recursive https://github.com/dalibo/temboard.git
 ```
 
-First, create a virtualenv for Python2.7, activate it. Then install temBoard:
+First, create a virtualenv for Python2.7, activate it. Then install temBoard and
+pull docker images:
 
 ``` console
 $ pip install -e . psycopg2-binary
+...
+$ docker-compose pull
 ```
 
 Now, bootstrap development with `make devenv` and launch temBoard.
