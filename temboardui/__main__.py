@@ -25,6 +25,7 @@ from .toolkit.services import (
     Service,
     ServicesManager,
 )
+from .toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from .web import Error404Handler, app
 
 from .daemon import daemonize
@@ -308,17 +309,25 @@ class TemboardApplication(BaseApplication):
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
+        self.scheduler = SchedulerService(
+            app=self, name=u'scheduler',
+            task_queue=task_queue, event_queue=event_queue,
+            setproctitle=setproctitle,
+        )
+
+        # TaskList engine setup must be done before we load the plugins
+        self.scheduler.task_list_engine = TaskListSQLite3Engine(
+            os.path.join(self.config.temboard['home'], 'server_tasks.db')
+        )
+
+        self.apply_config()
+
         self.worker_pool.apply_config()
         services.add(self.worker_pool)
 
         for wset in self.webapp.workersets:
             self.worker_pool.add(wset)
 
-        self.scheduler = SchedulerService(
-            app=self, name=u'scheduler',
-            task_queue=task_queue, event_queue=event_queue,
-            setproctitle=setproctitle,
-        )
         self.scheduler.apply_config()
         services.add(self.scheduler)
 
