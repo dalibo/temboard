@@ -27,8 +27,10 @@ Statements plugin API
       "snapshot_datetime": "2020-03-17 17:31:25.0929+01",
       "data": [
         {
-          "username": "postgres",
-          "dbname ": "bench",
+          "rolname": "postgres",
+          "datname ": "bench",
+          "userid": 987342,
+          "dbid": 8737,
           "queryid": 125206108,
           "query": "SELECT pg_sleep($1)",
           "calls": 1,

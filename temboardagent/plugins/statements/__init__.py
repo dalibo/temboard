@@ -11,6 +11,17 @@ logger = logging.getLogger(__name__)
 routes = RouteSet(prefix=b"/statements")
 
 
+query = """\
+SELECT
+  rolname,
+  datname,
+  pg_stat_statements.*
+FROM pg_stat_statements
+JOIN pg_authid ON pg_stat_statements.userid = pg_authid.oid
+JOIN pg_database ON pg_stat_statements.dbid = pg_database.oid
+"""
+
+
 @routes.get(b"/", check_key=True)
 def get_statements(http_context, app):
     """Return a snapshot of latest statistics of executed SQL statements and
@@ -29,7 +40,7 @@ def get_statements(http_context, app):
     snapshot_datetime = now()
     try:
         conn.connect()
-        conn.execute("SELECT * FROM pg_stat_statements")
+        conn.execute(query)
         data = list(conn.get_rows())
         conn.execute("SELECT pg_stat_statements_reset()")
     except error as e:

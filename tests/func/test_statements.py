@@ -106,6 +106,7 @@ def test_statements(xsession, extension_enabled):
             u"blk_read_time",
             u"blk_write_time",
             u"calls",
+            u"datname",
             u"dbid",
             u"local_blks_dirtied",
             u"local_blks_hit",
@@ -116,6 +117,7 @@ def test_statements(xsession, extension_enabled):
             u"min_time",
             u"query",
             u"queryid",
+            u"rolname",
             u"rows",
             u"shared_blks_dirtied",
             u"shared_blks_hit",
@@ -129,6 +131,8 @@ def test_statements(xsession, extension_enabled):
         ]
     )
     assert all(set(d) == expected_keys for d in data)
+    assert "temboard" in set([d["rolname"] for d in data])
+    assert "postgres" in set([d["datname"] for d in data])
     queries = [d["query"] for d in data]
     assert "CREATE EXTENSION pg_stat_statements" in queries
 
@@ -147,6 +151,8 @@ def test_statements(xsession, extension_enabled):
     assert new_data
     assert all(set(d) == expected_keys for d in new_data)
     assert len(new_data) != len(data)
+    assert "temboard" in set([d["rolname"] for d in new_data])
+    assert "postgres" in set([d["datname"] for d in new_data])
     new_queries = [d["query"] for d in new_data]
     assert "SELECT pg_stat_statements_reset()" in new_queries
     if pg_version > (10,):
