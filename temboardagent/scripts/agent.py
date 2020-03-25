@@ -18,6 +18,7 @@ from ..toolkit import validators as v
 from ..toolkit.app import define_core_arguments
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import ServicesManager
+from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..notification import NotificationMgmt
 
 logger = logging.getLogger('temboardagent.scripts.agent')
@@ -100,6 +101,13 @@ class AgentApplication(Application):
 
         self.bootstrap(args=args, environ=environ)
         config = self.config
+
+        # TaskList engine setup must be done before we load the plugins
+        self.scheduler.task_list_engine = TaskListSQLite3Engine(
+            os.path.join(config.temboard['home'], 'agent_tasks.db')
+        )
+
+        self.apply_config()
 
         if config.postgresql.instance:
             setproctitle.prefix += config.postgresql.instance + ': '

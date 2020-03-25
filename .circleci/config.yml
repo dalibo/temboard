@@ -27,10 +27,10 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-rpm-centos6:
-    docker: [{image: "dalibo/temboard-agent-sdk:centos6"}]
+  0-rpm-centos7:
+    docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
-    steps: &rpmbuild
+    steps:
     - checkout
     - run: git submodule update --init
     - run:
@@ -45,11 +45,6 @@ jobs:
         root: .
         paths:
         - dist/rpm/noarch/*.rpm
-
-  0-rpm-centos7:
-    docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
-    working_directory: ~/workspace
-    steps: *rpmbuild
 
   0-unit-py27:
     docker:
@@ -127,20 +122,12 @@ jobs:
         TBD_PGBIN: /usr/pgsql-9.6/bin
     <<: *func-job
 
-  1-func-centos6-pg95:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos6
-      environment:
-        TBD_PGBIN: /usr/pgsql-9.5/bin
-    <<: *func-job
-
 
 workflows:
   version: 2
   pipeline:
     jobs:
     - 0-docs
-    - 0-rpm-centos6
     - 0-rpm-centos7
     - 0-unit-py27
     - 0-unit-py36
@@ -152,5 +139,3 @@ workflows:
         requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func-centos7-pg96:
         requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos6-pg95:
-        requires: [0-rpm-centos6, 0-unit-py27]
