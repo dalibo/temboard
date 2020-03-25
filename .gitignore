@@ -9,8 +9,7 @@ site/
 docker-compose.override.yml
 temboard*.pid
 temboard-func.log
-task_list
 node_modules
-.tm.task_list
+server_tasks.db
 .coverage
 package-lock.json
