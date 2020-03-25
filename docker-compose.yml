@@ -1,8 +1,6 @@
 version: '2'
 
 volumes:
-  rdata:
-  rrun:
   data:
   run:
 
@@ -14,9 +12,6 @@ services:
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
-    volumes:
-      - rdata:/var/lib/postgresql/data
-      - rrun:/var/run/postgresql
 
   instance:
     image: postgres:12-alpine
