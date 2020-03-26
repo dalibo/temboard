@@ -146,14 +146,6 @@ setup_logging
 setup_pq
 
 export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
-log "Creating Postgres user, database and schema."
-if [ -d ${PGHOST-/tmp} ] ; then
-	# If local, sudo to PGUSER.
-	sudo -Eu ${PGUSER} ./create_repository.sh
-else
-	./create_repository.sh
-fi
-
 if ! getent passwd temboard ; then
 	log "Creating system user temBoard."
 	useradd \
@@ -176,6 +168,14 @@ sslfiles=($(set -eu; setup_ssl))
 install -o temboard -g temboard -m 0750 -d ${ETCDIR} ${LOGDIR} ${VARDIR}
 install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
+
+log "Creating Postgres user, database and schema."
+if [ -d ${PGHOST-/tmp} ] ; then
+	# If local, sudo to PGUSER.
+	sudo -Eu ${PGUSER} ./create_repository.sh
+else
+	./create_repository.sh
+fi
 
 if hash systemctl &>/dev/null; then
 	start_cmd="systemctl start temboard"
