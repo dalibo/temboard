@@ -4,8 +4,13 @@ import sys
 from time import sleep
 
 import alembic.config
+import sqlalchemy.exc
+from alembic.runtime.environment import EnvironmentContext
+from alembic.script import ScriptDirectory
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy import create_engine
+
+from ..toolkit.errors import UserError
 
 
 Session = sessionmaker()
@@ -68,3 +73,37 @@ def worker_engine(dbconf):
     """
     dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
     return create_engine(dsn.format(**dbconf))
+
+
+def check_schema(config):
+    # Derived from alembic.command.current.
+
+    alembic_cfg = build_alembic_config(config)
+    script = ScriptDirectory.from_config(alembic_cfg)
+
+    def fn(current, context):
+        target = script.get_current_head()
+        current = context.get_current_revision()
+
+        if current:
+            current_obj = next(iter(script.get_all_current(current)))
+            logger.debug(
+                "temBoard database revision is %s.",
+                current_obj.cmd_format(verbose=False))
+        else:
+            logger.debug("temBoard database is uninitialized.")
+
+        if current != target:
+            raise UserError(
+                "Database is not up to date. Please use temboard-migratedb."
+            )
+        else:
+            logger.info("temBoard database is update to date.")
+
+        return []  # Tells MigrationContext to skip migrations.
+
+    with EnvironmentContext(alembic_cfg, script, fn=fn):
+        try:
+            script.run_env()
+        except sqlalchemy.exc.OperationalError as e:
+            raise UserError("Failed to check schema: %s." % e)

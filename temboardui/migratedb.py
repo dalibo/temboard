@@ -10,7 +10,7 @@ import alembic.config
 import sqlalchemy.exc
 
 from .__main__ import VersionAction
-from .model import build_alembic_config
+from .model import build_alembic_config, check_schema
 from .toolkit import validators as v
 from .toolkit.app import (
     BaseApplication,
@@ -58,6 +58,10 @@ class MigrateDBApplication(BaseApplication):
         except sqlalchemy.exc.OperationalError as e:
             raise UserError("Failed to query Postgres server: %s." % e)
 
+    def command_check(self, args):
+        logging.getLogger('alembic').setLevel(logging.WARN)
+        check_schema(self.config)
+
     def command_upgrade(self, args):
         alembic_cfg = build_alembic_config(self.config)
         alembic.command.upgrade(alembic_cfg, 'head')
@@ -75,6 +79,10 @@ def define_arguments(parser):
         metavar="COMMAND",
         dest="command",
         help="Operation to execute on temBoard database.")
+    sub.add_parser(
+        "check",
+        help='Check schema synchronisation status only.'
+    )
     sub.add_parser(
         "upgrade",
         help="Upgrade temBoard database to latest revision.",
