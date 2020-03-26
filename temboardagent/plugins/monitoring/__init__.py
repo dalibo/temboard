@@ -216,6 +216,18 @@ def get_monitoring(http_context, app):
     ]
 
 
+@routes.get(b'/config', check_key=True)
+def get_config(http_context, app):
+    """Returns monitoring plugin configuration.
+    """
+    return dict(
+        dbnames=app.config.monitoring.dbnames,
+        collector_url=app.config.monitoring.collector_url,
+        scheduler_interval=app.config.monitoring.scheduler_interval,
+        ssl_ca_cert_file=app.config.monitoring.ssl_ca_cert_file,
+    )
+
+
 @workers.register(pool_size=1)
 def monitoring_collector_worker(app):
     """
