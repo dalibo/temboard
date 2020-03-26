@@ -10,10 +10,14 @@ Session = sessionmaker()
 logger = logging.getLogger(__name__)
 
 
+def format_dsn(dsn):
+    fmt = "postgresql://{user}:{password}@:{port}/{dbname}?host={host}"
+    return fmt.format(**dsn)
+
+
 def configure(dsn, **kwargs):
     if hasattr(dsn, 'items'):
-        fmt = "postgresql://{user}:{password}@:{port}/{dbname}?host={host}"
-        dsn = fmt.format(**dsn)
+        dsn = format_dsn(dsn)
 
     try:
         engine = create_engine(dsn)
