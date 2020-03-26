@@ -25,6 +25,7 @@ SETUP_KWARGS = dict(
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
     install_requires=[
+        'alembic',
         'futures',
         'python-dateutil>=1.5',
         # There is no hard dependency on psycopg2 to allow using
@@ -79,6 +80,7 @@ SETUP_KWARGS = dict(
     entry_points={
         'console_scripts': [
             'temboard = temboardui.__main__:main',
+            'temboard-migratedb = temboardui.migratedb:main',
         ],
     },
 )

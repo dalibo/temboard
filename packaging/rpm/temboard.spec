@@ -17,6 +17,7 @@ Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python-setuptools
+Requires:      python-alembic
 Requires:      python-futures
 Requires:      python-tornado >= 3.2
 Requires:      python-setuptools
@@ -77,6 +78,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard
+/usr/bin/temboard-migratedb
 %attr(-,temboard,temboard) /var/log/temboard
 %{_unitdir}/temboard.service
 

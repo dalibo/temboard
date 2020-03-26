@@ -1,7 +1,9 @@
 import logging
+import os.path
 import sys
 from time import sleep
 
+import alembic.config
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy import create_engine
 
@@ -13,6 +15,19 @@ logger = logging.getLogger(__name__)
 def format_dsn(dsn):
     fmt = "postgresql://{user}:{password}@:{port}/{dbname}?host={host}"
     return fmt.format(**dsn)
+
+
+def build_alembic_config(temboard_config):
+    config = alembic.config.Config()
+    config.set_main_option(
+        'sqlalchemy.url',
+        format_dsn(temboard_config.repository),
+    )
+    config.set_main_option(
+        'script_location',
+        os.path.dirname(__file__) + '/alembic',
+    )
+    return config
 
 
 def configure(dsn, **kwargs):

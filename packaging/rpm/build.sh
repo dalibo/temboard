@@ -56,6 +56,7 @@ rpm=$(ls dist/rpm/noarch/temboard-${VERSION}-*${DIST}*.noarch.rpm)
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
+sudo yum install -y epel-release  # for alembic
 sudo yum install -y $rpm
 (
 	cd /;
