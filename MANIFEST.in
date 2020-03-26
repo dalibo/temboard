@@ -1,5 +1,6 @@
 include LICENSE
 include packaging/temboard.service
+graft temboardui/model/alembic
 graft temboardui/static
 graft temboardui/templates
 graft temboardui/plugins/pgconf/static
@@ -13,3 +14,4 @@ graft temboardui/plugins/monitoring/templates
 graft temboardui/plugins/maintenance/static
 graft temboardui/plugins/maintenance/templates
 graft share
+global-exclude *.pyc
