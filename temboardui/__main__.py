@@ -284,8 +284,7 @@ class TemboardApplication(BaseApplication):
 
         versions = inspect_versions()
         logger.info(
-            "Starting temBoard %s on %s %s.",
-            versions['temboard'],
+            "Running on %s %s.",
             versions['distname'], versions['distversion'])
         logger.info(
             "Using Python %s (%s).",
