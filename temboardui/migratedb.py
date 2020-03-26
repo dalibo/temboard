@@ -62,6 +62,12 @@ class MigrateDBApplication(BaseApplication):
         logging.getLogger('alembic').setLevel(logging.WARN)
         check_schema(self.config)
 
+    def command_stamp(self, args):
+        logging.getLogger('alembic').setLevel(logging.WARN)
+        alembic_cfg = build_alembic_config(self.config)
+        alembic.command.stamp(alembic_cfg, 'head')
+        logger.info("Database marked as up to date.")
+
     def command_upgrade(self, args):
         alembic_cfg = build_alembic_config(self.config)
         alembic.command.upgrade(alembic_cfg, 'head')
@@ -82,6 +88,10 @@ def define_arguments(parser):
     sub.add_parser(
         "check",
         help='Check schema synchronisation status only.'
+    )
+    sub.add_parser(
+        "stamp",
+        help="Mark database as uptodate without migrating.",
     )
     sub.add_parser(
         "upgrade",
