@@ -31,8 +31,8 @@ renew_sslcert:
 devenv:
 	docker-compose up -d repository
 	sleep 1
-	psql -t -h 0.0.0.0 -c 'SELECT version();' "connect_timeout=15"
-	PGHOST=0.0.0.0 DEV=1 share/create_repository.sh
+	PGPASSWORD=temboard PGUSER=temboard psql -t -h 0.0.0.0 -c 'SELECT version();' "connect_timeout=15"
+	PGPASSWORD=temboard PGUSER=temboard PGHOST=0.0.0.0 DEV=1 share/create_repository.sh
 	docker-compose up -d
 
 # This is the default compose project name as computed by docker-compose. See
