@@ -111,7 +111,7 @@ def history_tables_worker(app):
         raise(e)
 
 
-@workers.register(pool_size=1)
+@workers.register(pool_size=10)
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
     specs = check_specs
