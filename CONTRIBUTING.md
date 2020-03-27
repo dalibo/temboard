@@ -25,7 +25,8 @@ $ make devenv
 2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.                                                                                                                                                       Initialized role temboard and database temboard.                                                                                                                                                                                        docker-compose up -d
 temboard_repository_1 is up-to-date
 Creating temboard_instance_1 ... done                                                                                                                                                                                                   Creating temboard_agent_1    ... done
-$ temboard
+
+$ temboard -c temboard.dev.conf --debug
 ...
 2020-03-24 17:11:55,997 [ 3551] [temboardui      ]  INFO: Starting temBoard 4.0+master on Debian GNU/Linux 10 (buster).
 ...
