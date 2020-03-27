@@ -68,11 +68,11 @@ $(function() {
 
   function getFields() {
     return [{
-      key: 'username',
+      key: 'rolname',
       label: 'User',
       sortable: true
     }, {
-      key: 'dbname',
+      key: 'datname',
       label: 'DB',
       sortable: true
     }, {

@@ -1,11 +1,26 @@
-import json
 from sqlalchemy.ext.declarative import DeclarativeMeta
+from json import JSONEncoder as BaseJSONEncoder
+from datetime import datetime
+from decimal import Decimal
+
+
+class JSONEncoder(BaseJSONEncoder):
+    """
+    JSONEncoder used throughout the application.
+    Handle Decimal, datetime and JSONizable objects.
+    """
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        if isinstance(obj, datetime):
+            return obj.strftime("%Y-%m-%d %H:%M:%S%z")
+        return BaseJSONEncoder.default(self, obj)
 
 
 def new_alchemy_encoder():
     _visited_objs = []
 
-    class AlchemyEncoder(json.JSONEncoder):
+    class AlchemyEncoder(JSONEncoder):
         def default(self, obj):
             if isinstance(obj.__class__, DeclarativeMeta):
                 # don't re-visit self
@@ -23,6 +38,6 @@ def new_alchemy_encoder():
                 # a json-encodable dict
                 return fields
 
-            return json.JSONEncoder.default(self, obj)
+            return JSONEncoder.default(self, obj)
 
     return AlchemyEncoder
