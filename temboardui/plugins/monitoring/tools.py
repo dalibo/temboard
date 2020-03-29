@@ -4,6 +4,7 @@ from dateutil import parser as parse_datetime
 from temboardui.web import HTTPError
 
 from .model.orm import (
+    CollectorStatus,
     Check,
     Host,
     Instance,
@@ -645,3 +646,24 @@ def populate_host_checks(session, host_id, instance_id, hostinfo):
                   description=check_specs.get(bc[0], {}).get('description'))
         session.add(c)
     session.commit()
+
+
+def update_collector_status(session, instance_id, status, last_pull=None,
+                            last_push=None, last_insert=None):
+
+    cs = session.query(CollectorStatus).filter(
+        CollectorStatus.instance_id == instance_id
+    ).first()
+
+    new = (cs is None)
+
+    if new:
+        cs = CollectorStatus(instance_id=instance_id)
+
+    cs.status = status
+    cs.last_pull = last_pull
+    cs.last_push = last_push
+    cs.last_insert = last_insert
+
+    if new:
+        session.add(cs)

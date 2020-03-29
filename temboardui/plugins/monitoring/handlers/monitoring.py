@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 from temboardui.web import (
@@ -24,6 +25,7 @@ from ..tools import (
     merge_agent_info,
     parse_start_end,
     populate_host_checks,
+    update_collector_status,
 )
 from ..alerting import check_specs
 
@@ -123,10 +125,22 @@ def collector(request):
     insert_metrics(
         request.db_session, host, metrics_data, logger, hostname, port)
 
-    # ALERTING PART
-
     host_id = get_host_id(request.db_session, hostname)
     instance_id = get_instance_id(request.db_session, host_id, port)
+
+    # Update collector status
+    update_collector_status(
+        request.db_session,
+        instance_id,
+        'OK',
+        last_push=datetime.utcnow(),
+        # This is the datetime format used by the agent
+        last_insert=datetime.strptime(
+            data['datetime'], "%Y-%m-%d %H:%M:%S +0000"
+        ),
+    )
+
+    # ALERTING PART
     populate_host_checks(request.db_session, host_id, instance_id,
                          dict(n_cpu=n_cpu))
     request.db_session.commit()

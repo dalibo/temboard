@@ -1420,6 +1420,14 @@ CREATE INDEX idx_instance_availability ON monitoring.instance_availability (inst
 -- Create the tables if they don't exist
 SELECT * FROM create_tables();
 
+CREATE TABLE monitoring.collector_status (
+  instance_id INTEGER PRIMARY KEY REFERENCES monitoring.instances(instance_id) ON DELETE CASCADE,
+  last_pull TIMESTAMP WITHOUT TIME ZONE,
+  last_push TIMESTAMP WITHOUT TIME ZONE,
+  last_insert TIMESTAMP WITHOUT TIME ZONE,
+  status CHAR(12) CHECK (status = 'OK' OR status = 'FAIL')
+);
+
 COMMIT;
 
 GRANT ALL ON SCHEMA monitoring TO temboard;
