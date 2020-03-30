@@ -1,4 +1,5 @@
 import logging
+import sqlalchemy
 from dateutil import parser as parse_datetime
 
 from temboardui.web import HTTPError
@@ -667,3 +668,8 @@ def update_collector_status(session, instance_id, status, last_pull=None,
 
     if new:
         session.add(cs)
+
+
+def create_engine(dbconf):
+    dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
+    return sqlalchemy.create_engine(dsn.format(**dbconf))

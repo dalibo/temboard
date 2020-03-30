@@ -7,7 +7,6 @@ import tornado.web
 import tornado.escape
 
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import ProgrammingError, IntegrityError
 from sqlalchemy.sql import text
@@ -33,7 +32,7 @@ from .alerting import (
     check_specs,
 )
 from .handlers import blueprint
-
+from .tools import create_engine
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
@@ -58,14 +57,7 @@ def get_routes(config):
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     try:
-        dbconf = app.config.repository
-        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=dbconf['user'],
-                    pwd=dbconf['password'],
-                    h=dbconf['host'],
-                    p=dbconf['port'],
-                    db=dbconf['dbname'])
-        engine = create_engine(dburi)
+        engine = create_engine(app.config.repository)
         with engine.begin() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.aggregate_data()")
@@ -84,14 +76,7 @@ def aggregate_data_worker(app):
 def history_tables_worker(app):
     # Worker in charge of history tables
     try:
-        dbconf = app.config.repository
-        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=dbconf['user'],
-                    pwd=dbconf['password'],
-                    h=dbconf['host'],
-                    p=dbconf['port'],
-                    db=dbconf['dbname'])
-        engine = create_engine(dburi)
+        engine = create_engine(app.config.repository)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.history_tables()")
@@ -115,15 +100,7 @@ def history_tables_worker(app):
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
     specs = check_specs
-    dbconf = app.config.repository
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                user=dbconf['user'],
-                pwd=dbconf['password'],
-                h=dbconf['host'],
-                p=dbconf['port'],
-                db=dbconf['dbname']
-            )
-    engine = create_engine(dburi)
+    engine = create_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
@@ -245,14 +222,7 @@ def purge_data_worker(app):
         logger.info("No purge policy, end.")
         return
 
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-        user=app.config.repository['user'],
-        pwd=app.config.repository['password'],
-        h=app.config.repository['host'],
-        p=app.config.repository['port'],
-        db=app.config.repository['dbname'],
-    )
-    engine = create_engine(dburi)
+    engine = create_engine(app.config.repository)
 
     with engine.connect() as conn:
         # Get tablename list to purge from metric_tables_config()
@@ -335,15 +305,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         return
 
     # Worker in charge of sending notifications
-    dbconf = app.config.repository
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                user=dbconf['user'],
-                pwd=dbconf['password'],
-                h=dbconf['host'],
-                p=dbconf['port'],
-                db=dbconf['dbname']
-            )
-    engine = create_engine(dburi)
+    engine = create_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
