@@ -35,11 +35,25 @@
     :items="statements"
     :fields="fields"
     :sort-by="sortBy"
+    sort-desc="Descending"
+    sort-direction="desc"
     :filter="filter"
     class="table-query"
     >
+    <template v-slot:thead-top="data">
+      <b-tr>
+        <b-th colspan="4"></b-th>
+        <b-th variant="secondary" colspan="2">Time</b-th>
+        <b-th colspan="4">Local Blocks</b-th>
+        <b-th variant="secondary" colspan="4">Shared Blocks</b-th>
+        <b-th colspan="2">Temp Blocks</b-th>
+      </b-tr>
+    </template>
     <template v-slot:cell(query)="data">
       <pre class="sql" v-html="data.value"></pre>
+    </template>
+    <template v-slot:cell()="data">
+      <span v-html="data.value"></span>
     </template>
   </b-table>
 </div>
