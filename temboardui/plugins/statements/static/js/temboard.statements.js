@@ -70,16 +70,19 @@ $(function() {
     return [{
       key: 'rolname',
       label: 'User',
-      sortable: true
+      sortable: true,
+      sortDirection: 'asc'
     }, {
       key: 'datname',
       label: 'DB',
-      sortable: true
+      sortable: true,
+      sortDirection: 'asc'
     }, {
       key: 'query',
       label: 'Query',
       class: 'query',
-      sortable: true
+      sortable: true,
+      sortDirection: 'asc'
     }, {
       key: 'calls',
       label: 'Calls',
@@ -87,7 +90,7 @@ $(function() {
       sortable: true
     }, {
       key: 'total_time',
-      label: 'Time',
+      label: 'Total',
       formatter: formatDuration,
       class: 'text-right',
       sortable: true
@@ -97,11 +100,78 @@ $(function() {
       formatter: formatDuration,
       class: 'text-right',
       sortable: true
+    }, {
+      key: 'local_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_hit',
+      label: 'Hit',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_dirtied',
+      label: 'Dirt.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_hit',
+      label: 'Hit',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_dirtied',
+      label: 'Dirt.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'temp_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'temp_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
     }]
   }
 
   function formatDuration(value) {
     return moment(parseFloat(value, 10)).preciseDiff(moment(0), true);
+  }
+
+  function formatSize(bytes) {
+    var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes == 0) return '<span class="text-muted">0</span>';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
   }
 
   function postCreated() {
