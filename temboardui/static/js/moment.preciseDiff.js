@@ -1,7 +1,7 @@
-moment.fn.preciseDiff = function(d2, imprecise) {
-  return moment.preciseDiff(this, d2, imprecise);
+moment.fn.preciseDiff = function(d2, precision) {
+  return moment.preciseDiff(this, d2, precision);
 };
-moment.preciseDiff = function(d1, d2, imprecise) {
+moment.preciseDiff = function(d1, d2, precision) {
 
   var STRINGS = {
     nodiff: '0',
@@ -109,9 +109,9 @@ moment.preciseDiff = function(d1, d2, imprecise) {
   if(result.length == 0){
     return "0";
   }
-  // Keep only the first 2 results, more it too precise
-  if (imprecise) {
-    result = result.slice(0, 2);
+  // Keep only the first 'precision' results, more it too precise
+  if (precision) {
+    result = result.slice(0, precision);
   }
   return result.join(STRINGS.delimiter);
 };

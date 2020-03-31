@@ -164,7 +164,7 @@ $(function() {
   }
 
   function formatDuration(value) {
-    return moment(parseFloat(value, 10)).preciseDiff(moment(0), true);
+    return moment(parseFloat(value, 10)).preciseDiff(moment(0), 1);
   }
 
   function formatSize(bytes) {
