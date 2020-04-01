@@ -51,7 +51,7 @@ find_next_free_port() {
 }
 
 generate_configuration() {
-	# Usage: generate_configuration homedir sslcert sslkey cluster_name collector_url
+	# Usage: generate_configuration homedir sslcert sslkey cluster_name
 
 	# Generates minimal configuration required to adapt default
 	# configuration to this cluster.
@@ -62,7 +62,6 @@ generate_configuration() {
 	local key=$1; shift
 	local instance=$1; shift
 	local logfile=$1; shift
-	local collector_url=$1; shift
 
 	local port=${TEMBOARD_PORT-$(find_next_free_port)}
 	log "Configuring temboard-agent to run on port ${port}."
@@ -94,9 +93,6 @@ generate_configuration() {
 
 	[administration]
 	pg_ctl = '${pg_ctl} %s -D ${PGDATA}'
-
-	[monitoring]
-	collector_url = ${collector_url}
 	EOF
 }
 
@@ -209,7 +205,6 @@ fi
 if ! curl --silent --show-error --insecure --head ${ui} >/dev/null 2>&3; then
 	fatal "Can't contact ${ui}."
 fi
-collector_url=$ui/monitoring/collector
 log "Sending monitoring data to ${ui}."
 
 setup_pq
@@ -237,7 +232,7 @@ logfile=${LOGDIR}/${name//\//-}.log
 # Inject autoconfiguration in dedicated file.
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
-generate_configuration $home "${sslfiles[@]}" $key $name $logfile $collector_url | tee $conf
+generate_configuration $home "${sslfiles[@]}" $key $name $logfile | tee $conf
 
 # systemd
 if [ -x /bin/systemctl ] ; then

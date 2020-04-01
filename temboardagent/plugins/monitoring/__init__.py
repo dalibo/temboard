@@ -2,15 +2,11 @@ from datetime import datetime
 import time
 import logging
 import json
-try:
-    from urllib2 import HTTPError, URLError
-except ImportError:
-    from urllib.error import HTTPError, URLError
 
 from temboardagent.toolkit import taskmanager
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.toolkit.validators import file_, commalist
+from temboardagent.toolkit.validators import commalist
 from temboardagent.tools import now, validate_parameters
 from temboardagent.inventory import SysInfo
 from temboardagent import __version__ as __VERSION__
@@ -40,7 +36,7 @@ from .probes import (
     probe_xacts,
     run_probes,
 )
-from .output import send_output, remove_passwords
+from .output import remove_passwords
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
@@ -222,9 +218,7 @@ def get_config(http_context, app):
     """
     return dict(
         dbnames=app.config.monitoring.dbnames,
-        collector_url=app.config.monitoring.collector_url,
         scheduler_interval=app.config.monitoring.scheduler_interval,
-        ssl_ca_cert_file=app.config.monitoring.ssl_ca_cert_file,
     )
 
 
@@ -279,70 +273,6 @@ def monitoring_collector_worker(app):
     logger.debug("Done")
 
 
-@workers.register(pool_size=1)
-def monitoring_sender_worker(app):
-    config = app.config
-    if not config.monitoring.collector_url:
-        return logger.info("No collector_url. Skip sending.")
-
-    logger.debug("Starting sender")
-    for metric_time, metric_data in db.get_metrics(
-        config.temboard.home,
-        'monitoring.db'
-    ):
-        # Let's do it smoothly..
-        time.sleep(0.5)
-        try:
-            # Try to send data to temboard collector API
-            logger.debug("Trying to send data to collector")
-            logger.debug(config.monitoring.collector_url)
-            logger.debug(metric_data)
-            send_output(
-                config.monitoring.ssl_ca_cert_file,
-                config.monitoring.collector_url,
-                config.temboard.key,
-                metric_data
-            )
-        except HTTPError as e:
-            # On error 409 (DB Integrity) we just drop the metric and move to
-            # the next one.
-            if int(e.code) == 409:
-                db.delete_metric(
-                    config.temboard.home,
-                    'monitoring.db',
-                    metric_time
-                )
-                continue
-
-            try:
-                data = e.read()
-                data = json.loads(data)
-                message = data['error']
-            except Exception as e:
-                logger.debug("Can't get error details: %s", e)
-                message = str(e)
-
-            logger.error("Failed to send data to collector: %s", message)
-            logger.error("You should find details in temBoard UI logs.")
-
-            raise Exception("Failed to send data to collector.")
-        except URLError:
-            logger.error("Could not connect to %s"
-                         % config.monitoring.collector_url)
-            raise Exception("Failed to send data to collector.")
-        except ValueError:
-            logger.warning("Failed to read data. Ignoring row.")
-
-        # If everything's fine then remove the metric from the table
-        db.delete_metric(
-            config.temboard.home,
-            'monitoring.db',
-            metric_time
-        )
-
-    logger.debug("Done")
-
-
 class MonitoringPlugin(object):
     PG_MIN_VERSION = 90400
     s = 'monitoring'
@@ -350,8 +280,6 @@ class MonitoringPlugin(object):
         OptionSpec(s, 'dbnames', default='*', validator=commalist),
         OptionSpec(s, 'scheduler_interval', default=60, validator=int),
         OptionSpec(s, 'probes', default='*', validator=commalist),
-        OptionSpec(s, 'collector_url'),
-        OptionSpec(s, 'ssl_ca_cert_file', default=None, validator=file_),
     ]
     del s
 
@@ -375,10 +303,6 @@ class MonitoringPlugin(object):
             id='monitoring_collector',
             redo_interval=self.app.config.monitoring.scheduler_interval,
         )(monitoring_collector_worker)
-        workers.schedule(
-            id='monitoring_sender',
-            redo_interval=5,
-        )(monitoring_sender_worker)
         self.app.scheduler.add(workers)
 
     def unload(self):

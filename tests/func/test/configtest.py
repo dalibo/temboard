@@ -63,11 +63,8 @@ plugins = %(temboard_plugins)s
 AGENT_CONFIG_MONITORING = """\
 [monitoring]
 dbnames = '*'
-# agent_key = ''
-collector_url = http://localhost:8888/collector/
 # probes = ''
-# interval = 60
-ssl_ca_cert_file = %(monitoring_ssl_ca_cert_file)s
+# scheduler_interval = 60
 """
 
 sharedir = os.path.join(os.path.dirname(__file__), '../../../share')
