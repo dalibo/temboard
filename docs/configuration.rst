@@ -70,10 +70,8 @@ distributed under sections:
 ^^^^^^^^^^^^^^^^^^^^^
 
   - ``dbnames``: Database name list (comma separated) to supervise. * for all. Default: ``*``;
-  - ``collector_url``: Collector URL. Default: ``None``;
   - ``probes``: List of probes to run (comma separated). * for all. Default: ``*``;
   - ``scheduler_interval``: Interval, in second, between each run of the process executing the probes. Default: ``60``;
-  - ``ssl_ca_cert_file``: File where to store collector's SSL certificate. Default: ``None``.
 
 ``administration`` plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^
