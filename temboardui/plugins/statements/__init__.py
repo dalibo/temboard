@@ -72,7 +72,7 @@ def data(request):
           sum((record).blk_read_time) AS blk_read_time,
           sum((record).blk_write_time) AS blk_write_time,
           sum((record).calls) AS calls,
-          (record).datname,
+          statements.datname,
           sum((record).local_blks_dirtied) AS local_blks_dirtied,
           sum((record).local_blks_hit) AS local_blks_hit,
           sum((record).local_blks_read) AS local_blks_read,
@@ -80,8 +80,8 @@ def data(request):
           max((record).max_time) AS max_time,
           sum((record).total_time) / sum((record).calls) AS mean_time,
           min((record).min_time) AS min_time,
-          (record).query,
-          (record).rolname,
+          statements.query,
+          statements.rolname,
           sum((record).rows) AS rows,
           sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
           sum((record).shared_blks_hit) AS shared_blks_hit,
@@ -91,14 +91,20 @@ def data(request):
           sum((record).temp_blks_read) AS temp_blks_read,
           sum((record).temp_blks_written) AS temp_blks_written,
           sum((record).total_time) AS total_time
-        FROM statements.statements_history_current
-        WHERE agent_address = :agent_address
-        AND agent_port = :agent_port
-        AND datetime <@ tstzrange(:start, :end, '[]')
-        GROUP BY (record).queryid,
-                 (record).query,
-                 (record).datname,
-                 (record).rolname
+        FROM statements.statements_history_current AS history
+        JOIN statements.statements AS statements ON (
+          history.agent_address = statements.agent_address AND
+          history.agent_port = statements.agent_port AND
+          history.queryid = statements.queryid AND
+          history.dbid = statements.dbid AND
+          history.userid = statements.userid
+        )
+        WHERE statements.agent_address = :agent_address
+        AND statements.agent_port = :agent_port
+        AND history.datetime <@ tstzrange(:start, :end, '[]')
+        GROUP BY statements.query,
+                 statements.datname,
+                 statements.rolname
     """
     statements = request.db_session.execute(
         query,
@@ -129,8 +135,26 @@ def add_statement(session, instance, data):
         for statement in data.get('data'):
             cur = session.connection().connection.cursor()
             query = """
+                INSERT INTO statements.statements
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT DO NOTHING;
+            """
+            cur.execute(
+                query,
+                (
+                    instance.agent_address,
+                    instance.agent_port,
+                    statement['queryid'],
+                    statement['query'],
+                    statement['dbid'],
+                    statement['datname'],
+                    statement['userid'],
+                    statement['rolname'],
+                ),
+            )
+            query = """
                 INSERT INTO statements.statements_history_current
-                VALUES (%s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
             """
             cur.execute(
                 query,
@@ -138,12 +162,13 @@ def add_statement(session, instance, data):
                     data['snapshot_datetime'],
                     instance.agent_address,
                     instance.agent_port,
+                    statement['queryid'],
+                    statement['dbid'],
+                    statement['userid'],
                     (
                         statement['blk_read_time'],
                         statement['blk_write_time'],
                         statement['calls'],
-                        statement['datname'],
-                        statement['dbid'],
                         statement['local_blks_hit'],
                         statement['local_blks_read'],
                         statement['local_blks_dirtied'],
@@ -151,9 +176,6 @@ def add_statement(session, instance, data):
                         statement['max_time'],
                         statement['mean_time'],
                         statement['min_time'],
-                        statement['query'],
-                        statement['queryid'],
-                        statement['rolname'],
                         statement['rows'],
                         statement['shared_blks_hit'],
                         statement['shared_blks_read'],
@@ -163,7 +185,6 @@ def add_statement(session, instance, data):
                         statement['temp_blks_read'],
                         statement['temp_blks_written'],
                         statement['total_time'],
-                        statement['userid'],
                     )
                 )
             )
