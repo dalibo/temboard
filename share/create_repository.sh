@@ -19,6 +19,7 @@ if ! psql -c "SELECT 'INSTALLED' FROM pg_catalog.pg_class WHERE relname = 'insta
     $psql -f $SQLDIR/application.sql
     $psql -f $SQLDIR/monitoring.sql
     $psql -f $SQLDIR/alerting.sql
+    $psql -f $SQLDIR/statements.sql
     if [ -n "${DEV-}" ] ; then
         $psql -f $SQLDIR/dev-fixture.sql
     fi
