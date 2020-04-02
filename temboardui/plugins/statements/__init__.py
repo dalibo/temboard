@@ -63,7 +63,57 @@ def get_agent_username(request):
 
 
 @blueprint.instance_route(r'/statements/data')
-def data(request):
+def json_data(request):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    query = """
+        SELECT
+          statements.datname,
+          sum((record).blk_read_time) AS blk_read_time,
+          sum((record).blk_write_time) AS blk_write_time,
+          sum((record).calls) AS calls,
+          sum((record).local_blks_dirtied) AS local_blks_dirtied,
+          sum((record).local_blks_hit) AS local_blks_hit,
+          sum((record).local_blks_read) AS local_blks_read,
+          sum((record).local_blks_written) AS local_blks_written,
+          max((record).max_time) AS max_time,
+          sum((record).total_time) / sum((record).calls) AS mean_time,
+          min((record).min_time) AS min_time,
+          sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
+          sum((record).shared_blks_hit) AS shared_blks_hit,
+          sum((record).shared_blks_read) AS shared_blks_read,
+          sum((record).shared_blks_written) AS shared_blks_written,
+          sum((record).stddev_time) AS stddev_time,
+          sum((record).temp_blks_read) AS temp_blks_read,
+          sum((record).temp_blks_written) AS temp_blks_written,
+          sum((record).total_time) AS total_time
+        FROM statements.statements_history_current AS history
+        JOIN statements.statements AS statements ON (
+          history.agent_address = statements.agent_address AND
+          history.agent_port = statements.agent_port AND
+          history.queryid = statements.queryid AND
+          history.dbid = statements.dbid AND
+          history.userid = statements.userid
+        )
+        WHERE statements.agent_address = :agent_address
+        AND statements.agent_port = :agent_port
+        AND history.datetime <@ tstzrange(:start, :end, '[]')
+        GROUP BY statements.datname
+    """
+    statements = request.db_session.execute(
+        query,
+        dict(agent_address=request.instance.agent_address,
+             agent_port=request.instance.agent_port,
+             start=start,
+             end=end)) \
+        .fetchall()
+    statements = [dict(statement) for statement in statements]
+    return jsonify(dict(data=statements))
+
+
+@blueprint.instance_route(r'/statements/data/(.*)')
+def json_data_database(request, database):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
@@ -72,7 +122,6 @@ def data(request):
           sum((record).blk_read_time) AS blk_read_time,
           sum((record).blk_write_time) AS blk_write_time,
           sum((record).calls) AS calls,
-          statements.datname,
           sum((record).local_blks_dirtied) AS local_blks_dirtied,
           sum((record).local_blks_hit) AS local_blks_hit,
           sum((record).local_blks_read) AS local_blks_read,
@@ -101,6 +150,7 @@ def data(request):
         )
         WHERE statements.agent_address = :agent_address
         AND statements.agent_port = :agent_port
+        AND statements.datname = :database
         AND history.datetime <@ tstzrange(:start, :end, '[]')
         GROUP BY statements.query,
                  statements.datname,
@@ -110,6 +160,7 @@ def data(request):
         query,
         dict(agent_address=request.instance.agent_address,
              agent_port=request.instance.agent_port,
+             database=database,
              start=start,
              end=end)) \
         .fetchall()
