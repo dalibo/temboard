@@ -1,12 +1,18 @@
-import logging
-import sqlalchemy
 from dateutil import parser as parse_datetime
+import logging
+import os
+from textwrap import dedent
+
+import sqlalchemy
+from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.web import HTTPError
+from temboardui.toolkit import taskmanager
 
 from .model.orm import (
-    CollectorStatus,
     Check,
+    CheckState,
+    CollectorStatus,
     Host,
     Instance,
 )
@@ -651,25 +657,189 @@ def populate_host_checks(session, host_id, instance_id, hostinfo):
 
 def update_collector_status(session, instance_id, status, last_pull=None,
                             last_push=None, last_insert=None):
-
-    cs = session.query(CollectorStatus).filter(
-        CollectorStatus.instance_id == instance_id
-    ).first()
-
-    new = (cs is None)
-
-    if new:
-        cs = CollectorStatus(instance_id=instance_id)
-
+    cs = CollectorStatus()
+    cs.instance_id = instance_id
     cs.status = status
-    cs.last_pull = last_pull
-    cs.last_push = last_push
-    cs.last_insert = last_insert
+    if last_pull:
+        cs.last_pull = last_pull
+    if last_push:
+        cs.last_push = last_push
+    if last_insert:
+        cs.last_insert = last_insert
 
-    if new:
-        session.add(cs)
+    session.merge(cs)
 
 
 def create_engine(dbconf):
     dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
     return sqlalchemy.create_engine(dsn.format(**dbconf))
+
+
+def build_check_task_options(data, host_id, instance_id, checks, timestamp):
+    """Build Task options for check_data_worker worker."""
+
+    return dict(
+        host_id=host_id,
+        instance_id=instance_id,
+        data=preprocess_data(data, checks, timestamp),
+    )
+
+
+def preprocess_data(data, checks, timestamp):
+    """Preprocess metrics for alerting."""
+    ret = list()
+
+    for check in checks:
+        spec = check_specs.get(check[0])
+        if not spec:
+            continue
+
+        try:
+            res = spec.get('preprocess')(data)
+        except Exception:
+            logger.warning(
+                "Failed to preprocess alerting check '%s'", check[0]
+            )
+            continue
+
+        if not isinstance(res, dict):
+            res = {'': res}
+
+        for key, value in res.items():
+            ret.append(
+                dict(
+                    datetime=timestamp,
+                    name=check[0],
+                    key=key,
+                    value=value,
+                    warning=check[1],
+                    critical=check[2]
+                )
+            )
+    return ret
+
+
+def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
+    # Function in charge of checking preprocessed monitoring values
+    keys = dict()
+
+    for raw in ppdata:
+        dt = raw.get('datetime')
+        name = raw.get('name')
+        key = raw.get('key')
+        value = raw.get('value')
+        warning = raw.get('warning')
+        critical = raw.get('critical')
+
+        # Proceed with thresholds comparison
+        spec = check_specs.get(name)
+        state = 'UNDEF'
+        if not spec:
+            continue
+        if not (spec.get('operator')(value, warning)
+                or spec.get('operator')(value, critical)):
+            state = 'OK'
+        if spec.get('operator')(value, warning):
+            state = 'WARNING'
+        if spec.get('operator')(value, critical):
+            state = 'CRITICAL'
+
+        # Try to find enabled check for this host_id with the same name
+        try:
+            c = session.query(Check).filter(
+                Check.name == unicode(name),
+                Check.host_id == host_id,
+                Check.instance_id == instance_id,
+                Check.enabled == bool(True),
+            ).one()
+        except NoResultFound:
+            continue
+
+        # Update/insert check current state
+        try:
+            cs = session.query(CheckState).filter(
+                CheckState.check_id == c.check_id,
+                CheckState.key == unicode(key)
+            ).one()
+            # State has changed since last time
+            if cs.state != state:
+                taskmanager.schedule_task(
+                    'notify_state_change',
+                    listener_addr=os.path.join(home, '.tm.socket'),
+                    options={
+                        'check_id': c.check_id,
+                        'key': key,
+                        'value': value,
+                        'state': state,
+                        'prev_state': cs.state
+                    },
+                    expire=0,
+                )
+            cs.state = unicode(state)
+            session.merge(cs)
+
+        except NoResultFound:
+            cs = CheckState(
+                check_id=c.check_id, key=unicode(key), state=unicode(state)
+            )
+            session.add(cs)
+
+        session.flush()
+        # Append state change if any to history
+        session.execute(
+            dedent("""
+                SELECT monitoring.append_state_changes(
+                    :datetime, :check_id, :state, :key, :value, :warning,
+                    :critical
+                )
+            """),
+            dict(
+                datetime=dt,
+                check_id=c.check_id,
+                state=cs.state,
+                key=cs.key,
+                value=value,
+                warning=warning,
+                critical=critical
+            )
+        )
+
+        if c.check_id not in keys:
+            keys[c.check_id] = list()
+        keys[c.check_id].append(cs.key)
+
+        session.commit()
+        session.expunge_all()
+
+    # Purge CheckState
+    for check_id, ks in keys.items():
+        session.execute(
+            "DELETE FROM monitoring.check_states WHERE "
+            "check_id = :check_id AND NOT (key = ANY(:ks))",
+            dict(
+                check_id=check_id,
+                ks=ks
+            )
+        )
+        session.commit()
+
+    # Get the list of check_id for the given instance
+    req = session.query(Check).filter(Check.instance_id == instance_id)
+    all_check_ids = [check.check_id for check in req]
+
+    # Set to UNDEF each unchecked check for the given instance
+    # This may happen when postgres is not available
+    session.execute(
+        dedent("""
+            UPDATE monitoring.check_states
+            SET state = 'UNDEF'
+            WHERE
+                check_id = ANY(:all_check_ids)
+                AND NOT (check_id = ANY(:check_ids_to_keep))
+        """),
+        dict(
+            all_check_ids=all_check_ids,
+            check_ids_to_keep=keys.keys(),
+        )
+    )
+    session.commit()

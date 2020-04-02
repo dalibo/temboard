@@ -14,6 +14,7 @@ from ..chartdata import (
     get_metric_data_csv,
 )
 from ..tools import (
+    build_check_task_options,
     check_agent_key,
     check_host_key,
     get_instance_checks,
@@ -27,7 +28,6 @@ from ..tools import (
     populate_host_checks,
     update_collector_status,
 )
-from ..alerting import check_specs
 
 
 logger = logging.getLogger('temboardui.plugins.' + __name__)
@@ -47,40 +47,6 @@ def check_agent_request(request, hostname, instance):
     else:
         # Case when PostgreSQL instance is not started.
         check_host_key(request.db_session, hostname, key)
-
-
-def build_check_task_options(request, host_id, instance_id, checks):
-    options = dict(
-        host_id=host_id,
-        instance_id=instance_id,
-        data=list(),
-    )
-
-    # Populate data with preprocessed values
-    for check in checks:
-        spec = check_specs.get(check[0])
-        if not spec:
-            continue
-
-        try:
-            v = spec.get('preprocess')(request.json['data'])
-        except Exception:
-            logger.warning("Failed to preprocess alerting check '%s'"
-                           % check[0])
-            continue
-
-        if not isinstance(v, dict):
-            v = {'': v}
-
-        for key, val in v.items():
-            options['data'].append(dict(
-                datetime=request.json['datetime'],
-                name=check[0],
-                key=key,
-                value=val,
-                warning=check[1],
-                critical=check[2]))
-    return options
 
 
 @blueprint.instance_route("/monitoring/availability")
@@ -132,7 +98,7 @@ def collector(request):
     update_collector_status(
         request.db_session,
         instance_id,
-        'OK',
+        u'OK',
         last_push=datetime.utcnow(),
         # This is the datetime format used by the agent
         last_insert=datetime.strptime(
@@ -147,8 +113,9 @@ def collector(request):
 
     # Create new task for checking preprocessed values
     task_options = build_check_task_options(
-        request, host_id, instance_id,
+        request.json['data'], host_id, instance_id,
         get_instance_checks(request.db_session, instance_id),
+        request.json['datetime'],
     )
     request.handler.application.temboard_app.scheduler.schedule_task(
         'check_data_worker',
