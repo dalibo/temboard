@@ -104,7 +104,7 @@ $(function() {
       key: 'total_time',
       label: 'Total',
       formatter: formatDuration,
-      class: 'text-right',
+      class: 'text-right border-left',
       sortable: true
     }, {
       key: 'mean_time',
@@ -115,7 +115,7 @@ $(function() {
     }, {
       key: 'local_blks_read',
       label: 'Read',
-      class: 'text-right',
+      class: 'text-right border-left',
       formatter: formatSize,
       sortable: true
     }, {
@@ -139,7 +139,7 @@ $(function() {
     }, {
       key: 'shared_blks_read',
       label: 'Read',
-      class: 'text-right',
+      class: 'text-right border-left',
       formatter: formatSize,
       sortable: true
     }, {
@@ -163,7 +163,7 @@ $(function() {
     }, {
       key: 'temp_blks_read',
       label: 'Read',
-      class: 'text-right',
+      class: 'text-right border-left',
       formatter: formatSize,
       sortable: true
     }, {

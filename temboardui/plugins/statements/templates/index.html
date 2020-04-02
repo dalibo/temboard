@@ -50,10 +50,10 @@
     <template v-slot:thead-top="data">
       <b-tr>
         <b-th :colspan="database ? 3 : 2"></b-th>
-        <b-th variant="secondary" colspan="2">Time</b-th>
-        <b-th colspan="4">Local Blocks</b-th>
-        <b-th variant="secondary" colspan="4">Shared Blocks</b-th>
-        <b-th colspan="2">Temp Blocks</b-th>
+        <b-th class="text-center border-left" colspan="2">Time</b-th>
+        <b-th class="text-center border-left" colspan="4">Local Blocks</b-th>
+        <b-th class="text-center border-left" colspan="4">Shared Blocks</b-th>
+        <b-th class="text-center border-left" colspan="2">Temp Blocks</b-th>
       </b-tr>
     </template>
     <template v-slot:cell(query)="data">
