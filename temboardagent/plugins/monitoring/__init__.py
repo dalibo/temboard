@@ -164,7 +164,7 @@ def api_run_probe(probe_instance, config):
     return run_probes([probe_instance], [instance], delta=False)
 
 
-@routes.get(b'/', check_key=True)
+@routes.get(b'/history', check_key=True)
 def get_monitoring(http_context, app):
     """Monitoring root API aims to query metrics history.
     Data are sorted by collect timestamp, in ascending order. By default, only
