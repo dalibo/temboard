@@ -21,5 +21,3 @@ if ! temboard-migratedb check ; then
         $psql -f $SQLDIR/dev-fixture.sql
     fi
 fi
-
-echo Initialized role temboard and database $PGDATABASE. >&2
