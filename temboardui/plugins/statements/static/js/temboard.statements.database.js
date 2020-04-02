@@ -55,6 +55,7 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         this.statements = data.data;
+        window.setTimeout(postCreated, 1);
 
         window.clearTimeout(refreshTimeoutId);
         if (this.from.toString().indexOf('now') != -1 ||
@@ -67,10 +68,98 @@ $(function() {
 
   function getFields() {
     return [{
+      key: 'rolname',
+      label: 'User',
+      sortable: true,
+      sortDirection: 'asc'
+    }, {
       key: 'datname',
       label: 'DB',
       sortable: true,
       sortDirection: 'asc'
+    }, {
+      key: 'query',
+      label: 'Query',
+      class: 'query',
+      sortable: true,
+      sortDirection: 'asc'
+    }, {
+      key: 'calls',
+      label: 'Calls',
+      class: 'text-right',
+      sortable: true
+    }, {
+      key: 'total_time',
+      label: 'Total',
+      formatter: formatDuration,
+      class: 'text-right',
+      sortable: true
+    }, {
+      key: 'mean_time',
+      label: 'AVG',
+      formatter: formatDuration,
+      class: 'text-right',
+      sortable: true
+    }, {
+      key: 'local_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_hit',
+      label: 'Hit',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_dirtied',
+      label: 'Dirt.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'local_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_hit',
+      label: 'Hit',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_dirtied',
+      label: 'Dirt.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'shared_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'temp_blks_read',
+      label: 'Read',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
+    }, {
+      key: 'temp_blks_written',
+      label: 'Writ.',
+      class: 'text-right',
+      formatter: formatSize,
+      sortable: true
     }]
   }
 
@@ -83,6 +172,12 @@ $(function() {
     if (bytes == 0) return '<span class="text-muted">0</span>';
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+  }
+
+  function postCreated() {
+    $('.sql').each(function(i, block) {
+      hljs.highlightBlock(block);
+    });
   }
 
   function onPickerUpdate(from, to) {
