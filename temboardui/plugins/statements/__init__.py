@@ -63,7 +63,32 @@ def get_agent_username(request):
 
 
 @blueprint.instance_route(r'/statements/data')
-def data(request):
+def json_data(request):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    query = """
+        SELECT
+          (record).datname
+        FROM statements.statements_history_current
+        WHERE agent_address = :agent_address
+        AND agent_port = :agent_port
+        AND datetime <@ tstzrange(:start, :end, '[]')
+        GROUP BY (record).datname
+    """
+    statements = request.db_session.execute(
+        query,
+        dict(agent_address=request.instance.agent_address,
+             agent_port=request.instance.agent_port,
+             start=start,
+             end=end)) \
+        .fetchall()
+    statements = [dict(statement) for statement in statements]
+    return jsonify(dict(data=statements))
+
+
+@blueprint.instance_route(r'/statements/(.*)/data')
+def json_data_database(request, database):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
@@ -93,6 +118,7 @@ def data(request):
           sum((record).total_time) AS total_time
         FROM statements.statements_history_current
         WHERE agent_address = :agent_address
+        AND (record).datname = :database
         AND agent_port = :agent_port
         AND datetime <@ tstzrange(:start, :end, '[]')
         GROUP BY (record).queryid,
@@ -104,6 +130,7 @@ def data(request):
         query,
         dict(agent_address=request.instance.agent_address,
              agent_port=request.instance.agent_port,
+             database=database,
              start=start,
              end=end)) \
         .fetchall()
@@ -119,6 +146,20 @@ def statements(request):
         nav=True,
         agent_username=get_agent_username(request),
         instance=request.instance,
+        plugin=__name__,
+        role=request.current_user,
+    )
+
+
+@blueprint.instance_route(r'/statements/(.*)')
+def statements_database(request, database):
+    request.instance.check_active_plugin(__name__)
+    return render_template(
+        'database.html',
+        nav=True,
+        agent_username=get_agent_username(request),
+        instance=request.instance,
+        database=database,
         plugin=__name__,
         role=request.current_user,
     )
