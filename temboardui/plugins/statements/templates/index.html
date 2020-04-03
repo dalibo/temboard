@@ -56,13 +56,23 @@
         <b-th class="text-center border-left" colspan="2">Temp Blocks</b-th>
       </b-tr>
     </template>
-    <template v-slot:cell(query)="data">
-      <pre class="sql" v-html="data.value"></pre>
+    <template v-slot:cell(query)="row">
+      <pre class="sql hljs" v-html="highlight(row.value)" @click="row.toggleDetails"></pre>
     </template>
     <template v-slot:cell(datname)="data">
       <a href v-on:click.prevent="database=data.value">
         {{! data.value }}
       </a>
+    </template>
+    <template v-slot:row-details="row">
+      <b-card class="detail">
+        <b-row class="mb-2">
+          <b-col>
+            <pre class="sql hljs" v-html="highlight(row.item.query)"></pre>
+          </b-col>
+        </b-row>
+        <b-button size="sm" @click="row.toggleDetails">Hide Details</b-button>
+      </b-card>
     </template>
     <template v-slot:cell()="data">
       <span v-html="data.value"></span>
