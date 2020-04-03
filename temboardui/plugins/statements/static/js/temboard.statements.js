@@ -24,7 +24,8 @@ $(function() {
     },
     methods: {
       fetchData: fetchData,
-      onPickerUpdate: onPickerUpdate
+      onPickerUpdate: onPickerUpdate,
+      highlight: highlight
     },
     watch: {
       fromTo: function() {
@@ -67,7 +68,6 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         this.statements = data.data;
-        window.setTimeout(postCreated, 1);
 
         window.clearTimeout(refreshTimeoutId);
         if (this.from.toString().indexOf('now') != -1 ||
@@ -195,10 +195,8 @@ $(function() {
     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
   }
 
-  function postCreated() {
-    $('.sql').each(function(i, block) {
-      hljs.highlightBlock(block);
-    });
+  function highlight(src) {
+    return hljs.highlight('sql', src).value;
   }
 
   function onPickerUpdate(from, to) {

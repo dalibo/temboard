@@ -315,6 +315,14 @@ table.table-query {
     background: none;
     white-space: nowrap;
   }
+
+  .detail {
+    .hljs {
+      max-height: 400px;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+  }
 }
 
 .popover.sql {
