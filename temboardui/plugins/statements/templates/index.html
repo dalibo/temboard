@@ -6,6 +6,24 @@
 
 <div id="app">
   <div class="row mb-1">
+    <div class="col">
+      <nav aria-label="breadcrumb" class="d-inline-block">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href v-on:click.prevent="database = null" v-if="database">
+              All Databases
+            </a>
+            <span v-else>All Databases</span>
+          </li>
+          <li class="breadcrumb-item" v-if="database">
+            <em class="text-muted small">Database:</em>
+            <strong>{{! database }}</strong>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div class="row mb-1">
     <div class="col-12 d-flex">
       <b-form-group
         label="Filter"
@@ -26,13 +44,6 @@
           </b-input-group-append>
         </b-input-group>
       </b-form-group>
-      <div class="border rounded ml-2 col-form-label px-2" role="alert" v-if="database" v-cloak>
-        <em>Database:</em>
-        <strong>{{! database }}</strong>
-        <button type="button" class="close ml-2" data-dismiss="alert" aria-label="Close"v-on:click.prevent="database = null">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
       <daterangepicker class="ml-auto" :from="from" :to="to" v-on:update="onPickerUpdate"></daterangepicker>
     </div>
   </div>
