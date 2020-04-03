@@ -177,12 +177,12 @@ def pull_data_worker(app):
     # Worker in charge of retrieving statements data
     dbconf = app.config.repository
     dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                user=dbconf['user'],
-                pwd=dbconf['password'],
-                h=dbconf['host'],
-                p=dbconf['port'],
-                db=dbconf['dbname']
-            )
+        user=dbconf['user'],
+        pwd=dbconf['password'],
+        h=dbconf['host'],
+        p=dbconf['port'],
+        db=dbconf['dbname']
+    )
     engine = create_engine(dburi)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
