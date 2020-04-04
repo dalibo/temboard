@@ -86,13 +86,19 @@ def collector(request):
     # inserted with queries not the orm. Tables must be there.
     request.db_session.commit()
 
-    insert_availability(
-        request.db_session, host, data, logger, hostname, port)
-    insert_metrics(
-        request.db_session, host, metrics_data, logger, hostname, port)
-
     host_id = get_host_id(request.db_session, hostname)
     instance_id = get_instance_id(request.db_session, host_id, port)
+
+    insert_availability(
+        request.db_session,
+        data['datetime'],
+        instance_id,
+        data['instances'][0]['available']
+    )
+    request.db_session.commit()
+
+    insert_metrics(
+        request.db_session, host, metrics_data, logger, hostname, port)
 
     # Update collector status
     update_collector_status(

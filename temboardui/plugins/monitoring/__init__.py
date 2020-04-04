@@ -434,8 +434,12 @@ def collector(app, address, port, key):
         worker_session.commit()
         # Insert instance availability informations
         insert_availability(
-            worker_session, host, row, logger, hostname, port
+            worker_session,
+            row['datetime'],
+            instance_id,
+            row['instances'][0]['available']
         )
+        worker_session.commit()
         # Insert collected data
         insert_metrics(
             worker_session, host, data, logger, hostname, port
