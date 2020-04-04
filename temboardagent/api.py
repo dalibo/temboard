@@ -106,31 +106,57 @@ def logout(http_context, app, sessions):
 @add_route('GET', b'/discover', check_session=False)
 def get_discover(http_context, app, sessions):
     logger.info('Starting discovery.')
-    try:
-        sysinfo = SysInfo()
-        with app.postgres.connect() as conn:
-            pginfo = PgInfo(conn)
-            ret = dict(
-                hostname=sysinfo.hostname(app.config.temboard['hostname']),
-                cpu=sysinfo.n_cpu(),
-                memory_size=sysinfo.memory_size(),
-                pg_port=pginfo.setting('port'),
-                pg_version=pginfo.version()['full'],
-                pg_version_summary=pginfo.version()['summary'],
-                pg_data=pginfo.setting('data_directory'),
-                plugins=[plugin_name for plugin_name in
-                         app.config.temboard['plugins']]
-            )
-        logger.info('Discovery done.')
-        return ret
 
-    except (error, Exception, HTTPError) as e:
-        logger.exception(e)
-        logger.info('Discovery failed.')
+    discover = dict(
+        hostname=None,
+        cpu=None,
+        memory_size=None,
+        pg_port=None,
+        pg_version=None,
+        pg_version_summary=None,
+        pg_data=None,
+        plugins=[plugin for plugin in app.config.temboard['plugins']],
+    )
+
+    try:
+        # Gather system informations
+        sysinfo = SysInfo()
+        hostname = sysinfo.hostname(app.config.temboard['hostname'])
+        cpu = sysinfo.n_cpu()
+        memory_size = sysinfo.memory_size()
+
+    except (Exception, HTTPError) as e:
+        logger.exception(str(e))
+        logger.error('System discovery failed.')
+        # We stop here if system information has not been collected
         if isinstance(e, HTTPError):
             raise e
         else:
             raise HTTPError(500, "Internal error.")
+
+    discover.update(
+        hostname=hostname, cpu=cpu, memory_size=memory_size
+    )
+
+    try:
+        with app.postgres.connect() as conn:
+            pginfo = PgInfo(conn)
+            discover.update(
+                pg_port=pginfo.setting('port'),
+                pg_version=pginfo.version()['full'],
+                pg_version_summary=pginfo.version()['summary'],
+                pg_data=pginfo.setting('data_directory')
+            )
+
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error('Postgres discovery failed.')
+        # Do not raise HTTPError, just keeping null values for Postgres
+        # informations.
+
+    logger.info('Discovery done.')
+    logger.debug(discover)
+    return discover
 
 
 @add_route('GET', b'/profile')
