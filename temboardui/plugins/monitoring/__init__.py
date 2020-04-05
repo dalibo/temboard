@@ -12,8 +12,9 @@ import tornado.web
 import tornado.escape
 
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import ProgrammingError, IntegrityError
+from sqlalchemy.exc import ProgrammingError, IntegrityError, DataError
 from sqlalchemy.sql import text
+
 from psycopg2.extensions import AsIs
 
 from temboardui.toolkit import taskmanager
@@ -22,10 +23,8 @@ from temboardui.application import (
     send_mail,
     send_sms,
 )
-from temboardui.model.orm import (
-    Instances,
-)
 from temboardui.temboardclient import temboard_request
+from temboardui.model.orm import Instances
 
 from .model.orm import (
     Check,
@@ -33,6 +32,7 @@ from .model.orm import (
     Host,
     Instance,
 )
+from .model.db import insert_availability
 from .alerting import (
     check_specs,
 )
@@ -43,7 +43,6 @@ from .tools import (
     get_host_id,
     get_instance_checks,
     get_instance_id,
-    insert_availability,
     insert_metrics,
     merge_agent_info,
     populate_host_checks,
@@ -410,40 +409,68 @@ def collector(app, address, port, key):
                          "Please consider upgrading to version 5 at least.")
         else:
             logger.exception(str(e))
-        # Update collector status
-        update_collector_status(
-            worker_session,
-            instance_id,
-            u'FAIL',
-            last_pull=datetime.utcnow(),
-        )
-        worker_session.commit()
+            # Update collector status
+            update_collector_status(
+                worker_session,
+                instance_id,
+                u'FAIL',
+                last_pull=datetime.utcnow(),
+            )
+            worker_session.commit()
         return
 
     for row in json.loads(response):
         hostinfo = row['hostinfo']
         data = row['data']
         instance = row['instances'][0]
-        hostname = hostinfo['hostname']
         port = instance['port']
         if 'max_connections' in instance:
             row['data']['max_connections'] = instance['max_connections']
 
-        # Update the inventory
-        host = merge_agent_info(worker_session, hostinfo, instance)
-        worker_session.commit()
-        # Insert instance availability informations
-        insert_availability(
-            worker_session,
-            row['datetime'],
-            instance_id,
-            row['instances'][0]['available']
-        )
-        worker_session.commit()
-        # Insert collected data
-        insert_metrics(
-            worker_session, host, data, logger, hostname, port
-        )
+        try:
+            # Try to insert collected data
+
+            # Update the inventory
+            host = merge_agent_info(worker_session, hostinfo, instance)
+            # Insert instance availability informations
+            insert_availability(
+                worker_session,
+                row['datetime'],
+                instance_id,
+                row['instances'][0]['available']
+            )
+            # Insert collected metrics
+            insert_metrics(worker_session, host.host_id, instance_id, data)
+            worker_session.commit()
+
+        except DataError as e:
+            # Wrong data type or corrupted data could lead to DataError. In
+            # this case we should consider this row as unvalid and move to the
+            # next one.
+            try:
+                last_insert = datetime.strptime(
+                    row['datetime'], "%Y-%m-%d %H:%M:%S +0000"
+                )
+            except ValueError:
+                # If row datetime could not be parsed, we should fallback to
+                # current datetime. This will result to ignore potential valid
+                # rows between row datetime and now, but this is better than
+                # letting the collector stucked for ever on an invalid row.
+                last_insert = datetime.utcnow()
+
+            logger.exception(str(e))
+            worker_session.rollback()
+            # Set collector status to FAIL
+            update_collector_status(
+                worker_session,
+                instance_id,
+                u'FAIL',
+                last_pull=datetime.utcnow(),
+                last_insert=last_insert,
+            )
+            worker_session.commit()
+            # Continue with the next row
+            continue
 
         # Update collector status
         update_collector_status(
@@ -460,7 +487,7 @@ def collector(app, address, port, key):
         # ALERTING PART
         populate_host_checks(
             worker_session,
-            host_id,
+            host.host_id,
             instance_id,
             dict(n_cpu=hostinfo['cpu_count']),
         )

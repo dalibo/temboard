@@ -18,17 +18,15 @@ from ..tools import (
     check_agent_key,
     check_host_key,
     get_instance_checks,
-    get_host_id,
     get_instance_id,
     get_request_ids,
-    insert_availability,
     insert_metrics,
     merge_agent_info,
     parse_start_end,
     populate_host_checks,
     update_collector_status,
 )
-
+from ..model.db import insert_availability
 
 logger = logging.getLogger('temboardui.plugins.' + __name__)
 
@@ -86,8 +84,7 @@ def collector(request):
     # inserted with queries not the orm. Tables must be there.
     request.db_session.commit()
 
-    host_id = get_host_id(request.db_session, hostname)
-    instance_id = get_instance_id(request.db_session, host_id, port)
+    instance_id = get_instance_id(request.db_session, host.host_id, port)
 
     insert_availability(
         request.db_session,
@@ -97,8 +94,8 @@ def collector(request):
     )
     request.db_session.commit()
 
-    insert_metrics(
-        request.db_session, host, metrics_data, logger, hostname, port)
+    insert_metrics(request.db_session, host.host_id, instance_id, metrics_data)
+    request.db_session.commit()
 
     # Update collector status
     update_collector_status(
@@ -111,15 +108,16 @@ def collector(request):
             data['datetime'], "%Y-%m-%d %H:%M:%S +0000"
         ),
     )
+    request.db_session.commit()
 
     # ALERTING PART
-    populate_host_checks(request.db_session, host_id, instance_id,
+    populate_host_checks(request.db_session, host.host_id, instance_id,
                          dict(n_cpu=n_cpu))
     request.db_session.commit()
 
     # Create new task for checking preprocessed values
     task_options = build_check_task_options(
-        request.json['data'], host_id, instance_id,
+        request.json['data'], host.host_id, instance_id,
         get_instance_checks(request.db_session, instance_id),
         request.json['datetime'],
     )
