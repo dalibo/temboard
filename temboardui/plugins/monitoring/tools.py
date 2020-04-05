@@ -1,7 +1,6 @@
 from dateutil import parser as parse_datetime
 import logging
 import os
-from textwrap import dedent
 
 import sqlalchemy
 from sqlalchemy.orm.exc import NoResultFound
@@ -69,36 +68,26 @@ def merge_agent_info(session, host_info, instance_info):
 
 
 def get_host_id(session, hostname):
+    """Get host_id by the hostname.
     """
-    Get host_id from the hostname.
-    """
-    query = """
-        SELECT host_id FROM monitoring.hosts
-        WHERE hostname = :hostname
-    """
-    result = session.execute(query, {"hostname": hostname})
-    try:
-        return result.fetchone()[0]
-    except Exception:
-        raise Exception("Can't find host_id for \"%s\""
-                        " in monitoring.hosts table." % hostname)
+    host_id = db.get_host_id(session, hostname)
+    if not host_id:
+        raise Exception(
+            "Could not find registered host with hostname=%s" % hostname
+        )
+    return host_id
 
 
 def get_instance_id(session, host_id, port):
+    """Get instance_id by host_id and port.
     """
-    Get instance from host_id and port.
-    """
-    query = """
-        SELECT instance_id
-        FROM monitoring.instances
-        WHERE host_id = :host_id AND port = :port
-    """
-    result = session.execute(query, {"host_id": host_id, "port": port})
-    try:
-        return result.fetchone()[0]
-    except Exception:
-        raise Exception("Can't find instance_id for \"%s/%s\" "
-                        "in monitoring.instances table." % (host_id, port))
+    instance_id = db.get_instance_id(session, host_id, port)
+    if not instance_id:
+        raise Exception(
+            "Could not find registered instance with host_id=%s and port=%s"
+            % (host_id, port)
+        )
+    return instance_id
 
 
 def get_request_ids(request):
@@ -123,40 +112,27 @@ def parse_start_end(request):
 
 
 def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
-    query = """
-        SELECT agent_key
-        FROM application.instances
-        WHERE hostname = :hostname AND pg_data=:pgdata AND pg_port = :pgport
-        LIMIT 1
+    """Check that the given key matches with the registered one.
     """
-    result = session.execute(
-        query,
-        {"hostname": hostname, "pgdata": pg_data, "pgport": pg_port})
-    try:
-        row = result.fetchone()
-        if row[0] == agent_key:
-            return
-    except Exception:
-        raise Exception("Can't find the instance \"%s\" "
-                        "in application.instances table." % hostname)
-    raise Exception("Can't check agent's key.")
+    row_key = db.get_agent_key(session, hostname, pg_data, pg_port)
+
+    if not row_key:
+        raise Exception("Could not find agent key.")
+
+    if row_key != agent_key:
+        raise Exception("Agent key does not match.")
 
 
 def check_host_key(session, hostname, agent_key):
-    query = """
-        SELECT agent_key
-        FROM application.instances
-        WHERE hostname = :hostname
+    """Check that the given key matches with one of .
     """
-    result = session.execute(query, {"hostname": hostname})
-    try:
-        for row in result.fetchall():
-            if row[0] == agent_key:
-                return
-    except Exception:
-        raise Exception("Can't find the instance \"%s\" "
-                        "in application.instances table." % hostname)
-    raise Exception("Can't check agent's key.")
+    matched = False
+
+    if agent_key in db.get_agent_keys(session, hostname):
+        matched = True
+
+    if not matched:
+        raise Exception("Agent key does not match.")
 
 
 def insert_metrics(session, host_id, instance_id, data):
@@ -377,22 +353,15 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
 
         session.flush()
         # Append state change if any to history
-        session.execute(
-            dedent("""
-                SELECT monitoring.append_state_changes(
-                    :datetime, :check_id, :state, :key, :value, :warning,
-                    :critical
-                )
-            """),
-            dict(
-                datetime=dt,
-                check_id=c.check_id,
-                state=cs.state,
-                key=cs.key,
-                value=value,
-                warning=warning,
-                critical=critical
-            )
+        db.append_state_changes(
+            session,
+            dt,
+            c.check_id,
+            cs.state,
+            cs.key,
+            value,
+            warning,
+            critical,
         )
 
         if c.check_id not in keys:
@@ -404,14 +373,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
 
     # Purge CheckState
     for check_id, ks in keys.items():
-        session.execute(
-            "DELETE FROM monitoring.check_states WHERE "
-            "check_id = :check_id AND NOT (key = ANY(:ks))",
-            dict(
-                check_id=check_id,
-                ks=ks
-            )
-        )
+        db.purge_check_states(session, check_id, ks)
         session.commit()
 
     # Get the list of check_id for the given instance
@@ -420,17 +382,5 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
 
     # Set to UNDEF each unchecked check for the given instance
     # This may happen when postgres is not available
-    session.execute(
-        dedent("""
-            UPDATE monitoring.check_states
-            SET state = 'UNDEF'
-            WHERE
-                check_id = ANY(:all_check_ids)
-                AND NOT (check_id = ANY(:check_ids_to_keep))
-        """),
-        dict(
-            all_check_ids=all_check_ids,
-            check_ids_to_keep=keys.keys(),
-        )
-    )
+    db.undef_check_states(session, all_check_ids, keys.keys())
     session.commit()

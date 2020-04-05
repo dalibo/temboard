@@ -418,3 +418,104 @@ def insert_metric_btree_bloat(session, instance_id, metric):
             )
         )
     )
+
+
+def get_host_id(session, hostname):
+    row = session.execute(
+        "SELECT host_id FROM monitoring.hosts WHERE hostname = :hostname",
+        dict(hostname=hostname)
+    ).fetchone()
+    return row[0] if row else None
+
+
+def get_instance_id(session, host_id, port):
+    row = session.execute(
+        dedent("""
+            SELECT instance_id
+            FROM monitoring.instances
+            WHERE host_id = :host_id AND port = :port
+        """),
+        dict(host_id=host_id, port=port)
+    ).fetchone()
+    return row[0] if row else None
+
+
+def get_agent_key(session, hostname, pg_data, pg_port):
+    row = session.execute(
+        dedent("""
+            SELECT agent_key
+            FROM application.instances
+            WHERE hostname = :hostname AND pg_data=:pg_data
+            AND pg_port = :pg_port
+            LIMIT 1
+        """),
+        dict(
+            hostname=hostname,
+            pg_data=pg_data,
+            pg_port=pg_port
+        )
+    ).fetchone()
+    return row[0] if row else None
+
+
+def get_agent_keys(session, hostname):
+    return session.execute(
+        dedent("""
+            SELECT agent_key
+            FROM application.instances
+            WHERE hostname = :hostname
+        """),
+        dict(
+            hostname=hostname
+        )
+    ).fetchall()
+
+
+def append_state_changes(
+    session, dt, check_id, state, key, value, warning, critical
+):
+    session.execute(
+        dedent("""
+            SELECT monitoring.append_state_changes(
+                :datetime, :check_id, :state, :key, :value, :warning, :critical
+            )
+        """),
+        dict(
+            datetime=dt,
+            check_id=check_id,
+            state=state,
+            key=key,
+            value=value,
+            warning=warning,
+            critical=critical
+        )
+    )
+
+
+def purge_check_states(session, check_id, keys):
+    session.execute(
+        dedent("""
+            DELETE FROM monitoring.check_states
+            WHERE check_id = :check_id AND NOT (key = ANY(:keys))
+        """),
+        dict(
+            check_id=check_id,
+            keys=keys
+        )
+    )
+
+
+def undef_check_states(session, all_ids, to_keep_ids):
+    session.execute(
+        dedent("""
+            UPDATE monitoring.check_states
+            SET state = 'UNDEF'
+            WHERE
+                check_id = ANY(:all_ids)
+                AND NOT (check_id = ANY(:to_keep_ids))
+        """),
+        dict(
+            all_ids=all_ids,
+            to_keep_ids=to_keep_ids,
+        )
+    )
