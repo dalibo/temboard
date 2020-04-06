@@ -198,15 +198,6 @@ if [ -n "${TEMBOARD_HOSTNAME##*.*}" ] ; then
 fi
 log "Using hostname ${TEMBOARD_HOSTNAME}."
 
-ui=${1-${TEMBOARD_UI-}}
-if [ -z "${ui}" ] ; then
-	fatal "Missing UI url."
-fi
-if ! curl --silent --show-error --insecure --head ${ui} >/dev/null 2>&3; then
-	fatal "Can't contact ${ui}."
-fi
-log "Sending monitoring data to ${ui}."
-
 setup_pq
 
 name=${PGCLUSTER_NAME}
