@@ -50,9 +50,13 @@ def check_agent_request(request, hostname, instance):
 @blueprint.instance_route("/monitoring/availability")
 def availability(request):
     request.instance.check_active_plugin('monitoring')
-    host_id, instance_id = get_request_ids(request)
-    data = get_availability(request.db_session, host_id, instance_id)
-    return {'available': data}
+    try:
+        host_id, instance_id = get_request_ids(request)
+        data = get_availability(request.db_session, host_id, instance_id)
+        return {'available': data}
+    except Exception as e:
+        logger.exception(str(e))
+        return {'available': False}
 
 
 @blueprint.route(r"/(?:monitoring|supervision)/collector",
