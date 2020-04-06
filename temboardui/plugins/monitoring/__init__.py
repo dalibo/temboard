@@ -355,12 +355,19 @@ def collector(app, address, port, key):
     # First, we need to call discover API because we want to know the hostname
     url = 'https://%s:%s/discover' % (address, port)
     logger.debug("Calling %s" % url)
-    response = temboard_request(
-        app.config.temboard.ssl_ca_cert_file,
-        'GET',
-        url,
-        headers={"Content-type": "application/json"},
-    )
+
+    try:
+        response = temboard_request(
+            app.config.temboard.ssl_ca_cert_file,
+            'GET',
+            url,
+            headers={"Content-type": "application/json"},
+        )
+    except urllib2.HTTPError:
+        logger.error("Could not get response from %s" % url)
+        logger.error("Agent or host are down.")
+        return
+
     discover_data = json.loads(response)
     logger.debug(discover_data)
 
