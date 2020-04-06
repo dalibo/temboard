@@ -377,37 +377,50 @@ def collector(app, address, port, key):
     Session = scoped_session(session_factory)
     worker_session = Session()
 
-    # Find host_id and instance_id by hostname and PG port
-    host_id = get_host_id(worker_session, discover_data['hostname'])
-    instance_id = get_instance_id(
-        worker_session,
-        host_id,
-        discover_data['pg_port']
+    host_id = instance_id = None
+    # Agent monitoring API endpoint
+    history_url = 'https://%s:%s/monitoring/history?key=%s&limit=100' % (
+        address, port, quote(key)
     )
-    # Get last inserted data timestamp from collector status
-    collector_status = worker_session.query(CollectorStatus).filter(
-        CollectorStatus.instance_id == instance_id
-    ).first()
-    start = None
-    if collector_status and collector_status.last_insert:
-        start = (
-            collector_status.last_insert + timedelta(seconds=1)
-        ).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    try:
+        # Trying to find host_id, instance_id and the datetime of the latest
+        # inserted record.
+
+        # Find host_id and instance_id by hostname and PG port
+        host_id = get_host_id(worker_session, discover_data['hostname'])
+        instance_id = get_instance_id(
+            worker_session,
+            host_id,
+            discover_data['pg_port']
+        )
+    except Exception:
+        # This case happens on the very first pull when no data have been
+        # previously added.
+        logger.warning(
+            "Could not find host or instance records in monitoring inventory "
+            "tables."
+        )
+    else:
+        # Get last inserted data timestamp from collector status
+        collector_status = worker_session.query(CollectorStatus).filter(
+            CollectorStatus.instance_id == instance_id
+        ).first()
+
+        if collector_status and collector_status.last_insert:
+            start = (
+                collector_status.last_insert + timedelta(seconds=1)
+            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            history_url += "&start=%s" % start
 
     # Finally, let's call /monitoring/history agent API for getting metrics
     # history.
-    url = 'https://%s:%s/monitoring/history?key=%s&limit=100' % (
-        address, port, quote(key)
-    )
-    if start:
-        url += "&start=%s" % start
-
     try:
-        logger.debug("Calling %s" % url)
+        logger.debug("Calling %s" % history_url)
         response = temboard_request(
             app.config.temboard.ssl_ca_cert_file,
             'GET',
-            url,
+            history_url,
             headers={"Content-type": "application/json"},
         )
     except urllib2.HTTPError as e:
@@ -416,14 +429,15 @@ def collector(app, address, port, key):
                          "Please consider upgrading to version 5 at least.")
         else:
             logger.exception(str(e))
-            # Update collector status
-            update_collector_status(
-                worker_session,
-                instance_id,
-                u'FAIL',
-                last_pull=datetime.utcnow(),
-            )
-            worker_session.commit()
+            # Update collector status only if instance_id is known
+            if instance_id:
+                update_collector_status(
+                    worker_session,
+                    instance_id,
+                    u'FAIL',
+                    last_pull=datetime.utcnow(),
+                )
+                worker_session.commit()
         return
 
     for row in json.loads(response):
@@ -439,6 +453,7 @@ def collector(app, address, port, key):
 
             # Update the inventory
             host = merge_agent_info(worker_session, hostinfo, instance)
+            instance_id = get_instance_id(worker_session, host.host_id, port)
             # Insert instance availability informations
             insert_availability(
                 worker_session,
@@ -468,14 +483,15 @@ def collector(app, address, port, key):
             logger.exception(str(e))
             worker_session.rollback()
             # Set collector status to FAIL
-            update_collector_status(
-                worker_session,
-                instance_id,
-                u'FAIL',
-                last_pull=datetime.utcnow(),
-                last_insert=last_insert,
-            )
-            worker_session.commit()
+            if instance_id:
+                update_collector_status(
+                    worker_session,
+                    instance_id,
+                    u'FAIL',
+                    last_pull=datetime.utcnow(),
+                    last_insert=last_insert,
+                )
+                worker_session.commit()
             # Continue with the next row
             continue
 
