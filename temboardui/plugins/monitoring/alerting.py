@@ -6,49 +6,49 @@ def bootstrap_checks(hostinfo):
 
     # Loadaverage (value)
     # Global to host
-    yield ("load1", hostinfo['n_cpu'] / float(2), hostinfo['n_cpu'])
+    yield (u"load1", hostinfo['n_cpu'] / float(2), hostinfo['n_cpu'])
     # CPU (percent)
     # One per CPU
-    yield ("cpu_core", 50, 80)
+    yield (u"cpu_core", 50, 80)
     # Memory usage (percent)
     # global
-    yield ("memory_usage", 50, 80)
+    yield (u"memory_usage", 50, 80)
     # Swap usage (percent)
     # Global to host
-    yield ("swap_usage", 30, 50)
+    yield (u"swap_usage", 30, 50)
     # Filesystems usage (percent)
     # One per filesystem
-    yield ("fs_usage_mountpoint", 80, 90)
+    yield (u"fs_usage_mountpoint", 80, 90)
     # Number of WAL files ready to be archived (value)
     # Global to postgres instance
-    yield ("wal_files_archive", 10, 20)
+    yield (u"wal_files_archive", 10, 20)
     # Number of WAL files (value)
     # Global to postgres instance
-    yield ("wal_files_total", 50, 100)
+    yield (u"wal_files_total", 50, 100)
     # Number of transaction rollback (value)
     # One per DB
-    yield ("rollback_db", 10, 20)
+    yield (u"rollback_db", 10, 20)
     # Cache hitratio (percent)
     # One per DB
-    yield ("hitreadratio_db", 90, 80)
+    yield (u"hitreadratio_db", 90, 80)
     # Client sessions vs max_connections (percent)
     # Global to postgres instance
-    yield ("sessions_usage", 80, 90)
+    yield (u"sessions_usage", 80, 90)
     # Waiting sessions (value)
     # One per DB
-    yield ("waiting_sessions_db", 5, 10)
+    yield (u"waiting_sessions_db", 5, 10)
     # Replication lag
     # warning: 1MB, critical: 10MB
-    yield ("replication_lag", 1024 * 1024, 10 * 1024 * 1024)
+    yield (u"replication_lag", 1024 * 1024, 10 * 1024 * 1024)
     # Replication connection
-    yield ("replication_connection", 0, 0)
+    yield (u"replication_connection", 0, 0)
     # Temporary files size delta
     # warning: 1MB, critical: 10MB
-    yield ("temp_files_size_delta", 1024 * 1024, 10 * 1024 * 1024)
+    yield (u"temp_files_size_delta", 1024 * 1024, 10 * 1024 * 1024)
     # Heap bloat ratio
-    yield ("heap_bloat", 30, 50)
+    yield (u"heap_bloat", 30, 50)
     # Btree bloat ratio
-    yield ("btree_bloat", 30, 50)
+    yield (u"btree_bloat", 30, 50)
 
 
 class PreProcess(object):
