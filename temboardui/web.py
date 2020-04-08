@@ -389,6 +389,10 @@ def add_user_instance_middleware(func):
     def user_instance_middleware(request, address, port, *args):
         user = request.current_user = request.handler.current_user
 
+        if user is None:
+            # Not logged in
+            raise HTTPError(401, "Restricted area.")
+
         allowed_roles = get_roles_by_instance(request.handler.db_session,
                                               address,
                                               port)

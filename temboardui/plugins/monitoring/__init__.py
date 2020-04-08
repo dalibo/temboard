@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
+import json
+import hashlib
 import logging
 import os
 from textwrap import dedent
+from urllib import quote
+import urllib2
 
 import tornado.web
 import tornado.escape
 
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy import create_engine
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import ProgrammingError, IntegrityError
+from sqlalchemy.exc import ProgrammingError, IntegrityError, DataError
 from sqlalchemy.sql import text
+
 from psycopg2.extensions import AsIs
 
 from temboardui.toolkit import taskmanager
@@ -19,21 +23,32 @@ from temboardui.application import (
     send_mail,
     send_sms,
 )
-from temboardui.model.orm import (
-    Instances,
-)
+from temboardui.temboardclient import temboard_request
+from temboardui.model.orm import Instances
+from temboardui.model import worker_engine
 
 from .model.orm import (
     Check,
-    CheckState,
+    CollectorStatus,
     Host,
     Instance,
 )
+from .model.db import insert_availability
 from .alerting import (
     check_specs,
 )
 from .handlers import blueprint
-
+from .tools import (
+    check_preprocessed_data,
+    get_host_id,
+    get_instance_checks,
+    get_instance_id,
+    insert_metrics,
+    merge_agent_info,
+    populate_host_checks,
+    preprocess_data,
+    update_collector_status,
+)
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
@@ -58,14 +73,7 @@ def get_routes(config):
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     try:
-        dbconf = app.config.repository
-        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=dbconf['user'],
-                    pwd=dbconf['password'],
-                    h=dbconf['host'],
-                    p=dbconf['port'],
-                    db=dbconf['dbname'])
-        engine = create_engine(dburi)
+        engine = worker_engine(app.config.repository)
         with engine.begin() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.aggregate_data()")
@@ -84,14 +92,7 @@ def aggregate_data_worker(app):
 def history_tables_worker(app):
     # Worker in charge of history tables
     try:
-        dbconf = app.config.repository
-        dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                    user=dbconf['user'],
-                    pwd=dbconf['password'],
-                    h=dbconf['host'],
-                    p=dbconf['port'],
-                    db=dbconf['dbname'])
-        engine = create_engine(dburi)
+        engine = worker_engine(app.config.repository)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.history_tables()")
@@ -114,119 +115,20 @@ def history_tables_worker(app):
 @workers.register(pool_size=10)
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
-    specs = check_specs
-    dbconf = app.config.repository
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                user=dbconf['user'],
-                pwd=dbconf['password'],
-                h=dbconf['host'],
-                p=dbconf['port'],
-                db=dbconf['dbname']
-            )
-    engine = create_engine(dburi)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
-    keys = dict()
 
-    for raw in data:
-        datetime = raw.get('datetime')
-        name = raw.get('name')
-        key = raw.get('key')
-        value = raw.get('value')
-        warning = raw.get('warning')
-        critical = raw.get('critical')
+    check_preprocessed_data(
+        worker_session,
+        host_id,
+        instance_id,
+        data,
+        app.config.temboard.home
+    )
 
-        # Proceed with thresholds comparison
-        spec = specs.get(name)
-        state = 'UNDEF'
-        if not spec:
-            continue
-        if not (spec.get('operator')(value, warning)
-                or spec.get('operator')(value, critical)):
-            state = 'OK'
-        if spec.get('operator')(value, warning):
-            state = 'WARNING'
-        if spec.get('operator')(value, critical):
-            state = 'CRITICAL'
-
-        # Try to find enabled check for this host_id with the same name
-        try:
-            c = worker_session.query(Check).filter(
-                    Check.name == unicode(name),
-                    Check.host_id == host_id,
-                    Check.instance_id == instance_id,
-                    Check.enabled == bool(True),
-                ).one()
-        except NoResultFound:
-            continue
-
-        # Update/insert check current state
-        try:
-            cs = worker_session.query(CheckState).filter(
-                    CheckState.check_id == c.check_id,
-                    CheckState.key == unicode(key)
-                ).one()
-            # State has changed since last time
-            if cs.state != state:
-                taskmanager.schedule_task(
-                    'notify_state_change',
-                    listener_addr=os.path.join(app.config.temboard.home,
-                                               '.tm.socket'),
-                    options={
-                        'check_id': c.check_id,
-                        'key': key,
-                        'value': value,
-                        'state': state,
-                        'prev_state': cs.state
-                    },
-                    expire=0,
-                )
-            cs.state = unicode(state)
-            worker_session.merge(cs)
-        except NoResultFound:
-            cs = CheckState(check_id=c.check_id, key=unicode(key),
-                            state=unicode(state))
-            worker_session.add(cs)
-
-        worker_session.flush()
-        # Append state change if any to history
-        worker_session.execute("SELECT monitoring.append_state_changes(:d, :i,"
-                               ":s, :k, :v, :w, :c)",
-                               {'d': datetime, 'i': c.check_id, 's': cs.state,
-                                'k': cs.key, 'v': value, 'w': warning,
-                                'c': critical})
-
-        if c.check_id not in keys:
-            keys[c.check_id] = list()
-        keys[c.check_id].append(cs.key)
-
-        worker_session.commit()
-        worker_session.expunge_all()
-
-    # Purge CheckState
-    for check_id, ks in keys.items():
-        worker_session.execute("DELETE FROM monitoring.check_states WHERE "
-                               "check_id = :check_id AND NOT (key = ANY(:ks))",
-                               {'check_id': check_id, 'ks': ks})
-        worker_session.commit()
-
-    # check_ids for the given instance
-    req = worker_session.query(Check).filter(Check.instance_id == instance_id)
-    check_ids = [check.check_id for check in req]
-
-    # Set to UNDEF every unchecked check for the given instance
-    # This may happen when postgres is unavailable for example
-    worker_session.execute("UPDATE monitoring.check_states "
-                           "SET state = 'UNDEF' "
-                           "WHERE check_id = ANY(:all_check_ids) AND "
-                           "NOT check_id = ANY(:check_ids_to_keep)",
-                           {
-                               'all_check_ids': check_ids,
-                               'check_ids_to_keep': keys.keys()
-                           })
     worker_session.commit()
-
     worker_session.close()
 
 
@@ -245,14 +147,7 @@ def purge_data_worker(app):
         logger.info("No purge policy, end.")
         return
 
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-        user=app.config.repository['user'],
-        pwd=app.config.repository['password'],
-        h=app.config.repository['host'],
-        p=app.config.repository['port'],
-        db=app.config.repository['dbname'],
-    )
-    engine = create_engine(dburi)
+    engine = worker_engine(app.config.repository)
 
     with engine.connect() as conn:
         # Get tablename list to purge from metric_tables_config()
@@ -335,15 +230,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         return
 
     # Worker in charge of sending notifications
-    dbconf = app.config.repository
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-                user=dbconf['user'],
-                pwd=dbconf['password'],
-                h=dbconf['host'],
-                p=dbconf['port'],
-                db=dbconf['dbname']
-            )
-    engine = create_engine(dburi)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
@@ -418,6 +305,235 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         send_sms(app.config.notifications, body, phones)
 
 
+@workers.register(pool_size=1)
+def schedule_collector(app):
+    """Worker function in charge of scheduling collector (pull mode)."""
+
+    logger.setLevel(app.config.logging.level)
+    logger.info("Starting collector scheduler worker.")
+
+    engine = worker_engine(app.config.repository)
+    with engine.connect() as conn:
+        # Get the list of agents
+        res = conn.execute(
+            "SELECT agent_address, agent_port, agent_key "
+            "FROM application.instances ORDER BY 1, 2"
+        )
+
+        for agent_address, agent_port, agent_key in res.fetchall():
+            # For each registered agent, let's start a new data collector
+
+            # Build a unique Task id based on agent address and port
+            task_id = hashlib.md5(
+                "%s:%s" % (agent_address, agent_port)
+            ).hexdigest()[:8]
+
+            taskmanager.schedule_task(
+                'collector',
+                listener_addr=os.path.join(
+                    app.config.temboard.home, '.tm.socket'
+                ),
+                id=task_id,
+                options=dict(
+                    address=agent_address,
+                    port=agent_port,
+                    key=agent_key,
+                ),
+                expire=0,
+            )
+
+    logger.info("End of collector scheduler worker.")
+
+
+@workers.register(pool_size=20)
+def collector(app, address, port, key):
+    logger.setLevel(app.config.logging.level)
+    logger.info("Starting collector worker for %s:%s", address, port)
+
+    discover_data = dict()
+
+    # First, we need to call discover API because we want to know the hostname
+    url = 'https://%s:%s/discover' % (address, port)
+    logger.debug("Calling %s" % url)
+
+    try:
+        response = temboard_request(
+            app.config.temboard.ssl_ca_cert_file,
+            'GET',
+            url,
+            headers={"Content-type": "application/json"},
+        )
+    except urllib2.HTTPError:
+        logger.error("Could not get response from %s" % url)
+        logger.error("Agent or host are down.")
+        return
+
+    discover_data = json.loads(response)
+    logger.debug(discover_data)
+
+    # Start new ORM DB session
+    engine = worker_engine(app.config.repository)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    worker_session = Session()
+
+    host_id = instance_id = None
+    # Agent monitoring API endpoint
+    history_url = 'https://%s:%s/monitoring/history?key=%s&limit=100' % (
+        address, port, quote(key)
+    )
+
+    try:
+        # Trying to find host_id, instance_id and the datetime of the latest
+        # inserted record.
+
+        # Find host_id and instance_id by hostname and PG port
+        host_id = get_host_id(worker_session, discover_data['hostname'])
+        instance_id = get_instance_id(
+            worker_session,
+            host_id,
+            discover_data['pg_port']
+        )
+    except Exception:
+        # This case happens on the very first pull when no data have been
+        # previously added.
+        logger.warning(
+            "Could not find host or instance records in monitoring inventory "
+            "tables."
+        )
+    else:
+        # Get last inserted data timestamp from collector status
+        collector_status = worker_session.query(CollectorStatus).filter(
+            CollectorStatus.instance_id == instance_id
+        ).first()
+
+        if collector_status and collector_status.last_insert:
+            start = (
+                collector_status.last_insert + timedelta(seconds=1)
+            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            history_url += "&start=%s" % start
+
+    # Finally, let's call /monitoring/history agent API for getting metrics
+    # history.
+    try:
+        logger.debug("Calling %s" % history_url)
+        response = temboard_request(
+            app.config.temboard.ssl_ca_cert_file,
+            'GET',
+            history_url,
+            headers={"Content-type": "application/json"},
+        )
+    except urllib2.HTTPError as e:
+        if e.code == 404:
+            logger.error("Agent version does not support pull mode. "
+                         "Please consider upgrading to version 5 at least.")
+        else:
+            logger.exception(str(e))
+            # Update collector status only if instance_id is known
+            if instance_id:
+                update_collector_status(
+                    worker_session,
+                    instance_id,
+                    u'FAIL',
+                    last_pull=datetime.utcnow(),
+                )
+                worker_session.commit()
+        return
+
+    for row in json.loads(response):
+        hostinfo = row['hostinfo']
+        data = row['data']
+        instance = row['instances'][0]
+        port = instance['port']
+        if 'max_connections' in instance:
+            row['data']['max_connections'] = instance['max_connections']
+
+        try:
+            # Try to insert collected data
+
+            # Update the inventory
+            host = merge_agent_info(worker_session, hostinfo, instance)
+            instance_id = get_instance_id(worker_session, host.host_id, port)
+            # Insert instance availability informations
+            insert_availability(
+                worker_session,
+                row['datetime'],
+                instance_id,
+                row['instances'][0]['available']
+            )
+            # Insert collected metrics
+            insert_metrics(worker_session, host.host_id, instance_id, data)
+            worker_session.commit()
+
+        except DataError as e:
+            # Wrong data type or corrupted data could lead to DataError. In
+            # this case we should consider this row as unvalid and move to the
+            # next one.
+            try:
+                last_insert = datetime.strptime(
+                    row['datetime'], "%Y-%m-%d %H:%M:%S +0000"
+                )
+            except ValueError:
+                # If row datetime could not be parsed, we should fallback to
+                # current datetime. This will result to ignore potential valid
+                # rows between row datetime and now, but this is better than
+                # letting the collector stucked for ever on an invalid row.
+                last_insert = datetime.utcnow()
+
+            logger.exception(str(e))
+            worker_session.rollback()
+            # Set collector status to FAIL
+            if instance_id:
+                update_collector_status(
+                    worker_session,
+                    instance_id,
+                    u'FAIL',
+                    last_pull=datetime.utcnow(),
+                    last_insert=last_insert,
+                )
+                worker_session.commit()
+            # Continue with the next row
+            continue
+
+        # Update collector status
+        update_collector_status(
+            worker_session,
+            instance_id,
+            u'OK',
+            last_pull=datetime.utcnow(),
+            # This is the datetime format used by the agent
+            last_insert=datetime.strptime(
+                row['datetime'], "%Y-%m-%d %H:%M:%S +0000"
+            ),
+        )
+        worker_session.commit()
+        # ALERTING PART
+        populate_host_checks(
+            worker_session,
+            host.host_id,
+            instance_id,
+            dict(n_cpu=hostinfo['cpu_count']),
+        )
+        worker_session.commit()
+
+        # Apply alerting checks against preprocessed data
+        check_preprocessed_data(
+            worker_session,
+            host.host_id,
+            instance_id,
+            preprocess_data(
+                row['data'],
+                get_instance_checks(worker_session, instance_id),
+                row['datetime']
+            ),
+            app.config.temboard.home,
+        )
+
+        logger.debug("Row with datetime=%s inserted", row['datetime'])
+
+    logger.info("End of collector worker.")
+
+
 @taskmanager.bootstrap()
 def monitoring_bootstrap(context):
     yield taskmanager.Task(
@@ -436,5 +552,11 @@ def monitoring_bootstrap(context):
             worker_name='purge_data_worker',
             id='purge_data',
             redo_interval=24 * 60 * 60,  # Repeat each 24h
+            options={},
+    )
+    yield taskmanager.Task(
+            worker_name='schedule_collector',
+            id='schedule_collector',
+            redo_interval=60,  # Repeat each 60s
             options={},
     )

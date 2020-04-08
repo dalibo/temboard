@@ -12,11 +12,12 @@ from sqlalchemy.schema import (
     UniqueConstraint,
 )
 from sqlalchemy.types import (
-    Integer,
-    UnicodeText,
     BigInteger,
     Boolean,
+    DateTime,
+    Integer,
     REAL,
+    UnicodeText,
 )
 
 metadata = MetaData()
@@ -78,3 +79,16 @@ checkstates = Table(
     Column('key', UnicodeText, nullable=True, primary_key=True),
     Column('state', UnicodeText, nullable=False),
     schema="monitoring")
+
+collector_status = Table(
+    'collector_status',
+    metadata,
+    Column('instance_id', Integer,
+           ForeignKey("monitoring.instances.instance_id"),
+           primary_key=True),
+    Column('last_pull', DateTime, nullable=True),
+    Column('last_push', DateTime, nullable=True),
+    Column('last_insert', DateTime, nullable=True),
+    Column('status', UnicodeText),
+    schema="monitoring",
+)

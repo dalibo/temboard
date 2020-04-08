@@ -41,3 +41,11 @@ def check_connectivity(engine):
             logger.warn("Failed to connect to database: %s", e)
             logger.info("Retrying in %ss.", i)
             sleep(i)
+
+
+def worker_engine(dbconf):
+    """Create a new stand-alone SQLAlchemy engine to be instantiated in worker
+    context.
+    """
+    dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
+    return create_engine(dsn.format(**dbconf))

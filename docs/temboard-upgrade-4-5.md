@@ -10,6 +10,13 @@ New package installation:
 sudo yum install temboard
 ```
 
+Upgrade `repository` database schema:
+
+```shell
+$ sudo -u postgres psql -U postgres -1 -f \
+     /usr/share/temboard/sql/upgrade-4-5.sql temboard
+```
+
 To enable monitoring data purge policy, you need to update `temboard.conf` by
 adding the `[monitoring]` section and configure `purge_after` parameter. This
 parameter configures the amount of monitoring data, expressed in day, to keep

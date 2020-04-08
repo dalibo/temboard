@@ -73,3 +73,8 @@ class Check(Model):
 class CheckState(Model):
     __table__ = tables.checkstates
     check = relationship('Check', backref='states')
+
+
+class CollectorStatus(Model):
+    __table__ = tables.collector_status
+    instance = relationship('Instance', backref='collector_statuts')
