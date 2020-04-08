@@ -2,7 +2,6 @@ from dateutil import parser as parse_datetime
 import logging
 import os
 
-import sqlalchemy
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.web import HTTPError
@@ -235,11 +234,6 @@ def update_collector_status(session, instance_id, status, last_pull=None,
         cs.last_insert = last_insert
 
     session.merge(cs)
-
-
-def create_engine(dbconf):
-    dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
-    return sqlalchemy.create_engine(dsn.format(**dbconf))
 
 
 def build_check_task_options(data, host_id, instance_id, checks, timestamp):

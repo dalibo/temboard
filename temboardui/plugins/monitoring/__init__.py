@@ -25,6 +25,7 @@ from temboardui.application import (
 )
 from temboardui.temboardclient import temboard_request
 from temboardui.model.orm import Instances
+from temboardui.model import worker_engine
 
 from .model.orm import (
     Check,
@@ -39,7 +40,6 @@ from .alerting import (
 from .handlers import blueprint
 from .tools import (
     check_preprocessed_data,
-    create_engine,
     get_host_id,
     get_instance_checks,
     get_instance_id,
@@ -73,7 +73,7 @@ def get_routes(config):
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     try:
-        engine = create_engine(app.config.repository)
+        engine = worker_engine(app.config.repository)
         with engine.begin() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.aggregate_data()")
@@ -92,7 +92,7 @@ def aggregate_data_worker(app):
 def history_tables_worker(app):
     # Worker in charge of history tables
     try:
-        engine = create_engine(app.config.repository)
+        engine = worker_engine(app.config.repository)
         with engine.connect() as conn:
             conn.execute("SET search_path TO monitoring")
             logger.debug("Running SQL function monitoring.history_tables()")
@@ -115,7 +115,7 @@ def history_tables_worker(app):
 @workers.register(pool_size=10)
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
-    engine = create_engine(app.config.repository)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
@@ -147,7 +147,7 @@ def purge_data_worker(app):
         logger.info("No purge policy, end.")
         return
 
-    engine = create_engine(app.config.repository)
+    engine = worker_engine(app.config.repository)
 
     with engine.connect() as conn:
         # Get tablename list to purge from metric_tables_config()
@@ -230,7 +230,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         return
 
     # Worker in charge of sending notifications
-    engine = create_engine(app.config.repository)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
@@ -312,7 +312,7 @@ def schedule_collector(app):
     logger.setLevel(app.config.logging.level)
     logger.info("Starting collector scheduler worker.")
 
-    engine = create_engine(app.config.repository)
+    engine = worker_engine(app.config.repository)
     with engine.connect() as conn:
         # Get the list of agents
         res = conn.execute(
@@ -372,7 +372,7 @@ def collector(app, address, port, key):
     logger.debug(discover_data)
 
     # Start new ORM DB session
-    engine = create_engine(app.config.repository)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
