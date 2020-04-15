@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0] - 2020-04-16
+
+### Added
+
+- Purge policy for monitoring data by [@julmon](https://github.com/julmon)
+- Pull mode: temboard server can now pull monitoring data from the agents by [@julmon](https://github.com/julmon)
+
+### Removed
+
+- Agent does not support push mode anymore [@julmon](https://github.com/julmon)
+
+### Fixed
+
+- Performances improvements of asynchronous task management by [@julmon](https://github.com/julmon)
+
 ## [4.0] - 2019-06-26
 
 ### Added

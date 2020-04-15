@@ -1,4 +1,4 @@
-# Upgrade `4` to `5` (RHEL/CentOS)
+# Upgrade `4.x` to `5.0` (RHEL/CentOS)
 
 Stop `temboard` service:
 ```shell
@@ -26,3 +26,11 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
+
+## Pull mode
+
+Version 5 comes with a new way to collect monitoring data from the agents.
+Before this version, agents were pushing monitoring data to temboard server.
+Starting from version 5, temboard server is now able to pull monitoring data
+if the target agent has been deployed in version 5 or upper. The server still
+supports push mode for the agents still running in version 4.
