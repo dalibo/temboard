@@ -169,7 +169,7 @@ Then point your browser to <https://temboard_server_host:8888>, log in as
 
 Once the UI is up and running, you can proceed to agent installation and setup
 on each host you want to manage. See dedicated [agent
-installation](http://temboard-agent.readthedocs.io/en/v4/installation.html)
+installation](http://temboard-agent.readthedocs.io/en/v5/installation.html)
 documentation for this.
 
 Then, when all instances show up in temBoard, go further with the [How
