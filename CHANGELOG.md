@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1] - 2020-04-16
+
+### Fixed
+
+- Fix broken temboard-agent-register script by [@julmon](https://github.com/julmon)
+- Ship SQL upgrade script to v5 by [@julmon](https://github.com/julmon)
+
 ## [5.0] - 2020-04-16
 
 ### Added
