@@ -64,6 +64,7 @@ SETUP_KWARGS = dict(
             'share/sql/upgrade-1.2-2.0.sql',
             'share/sql/upgrade-2.2-3.0.sql',
             'share/sql/upgrade-3.0-4.0.sql',
+            'share/sql/upgrade-4-5.sql',
             'share/sql/upgrade-monitoring-purge-instances.sql',
         ]),
         ('share/temboard/quickstart/', [

@@ -13,6 +13,12 @@ sudo yum install temboard
 Upgrade `repository` database schema:
 
 ```shell
+$ curl https://raw.githubusercontent.com/dalibo/temboard/master/share/sql/upgrade-4-5.sql | sudo -u postgres psql temboard
+```
+
+or
+
+```shell
 $ sudo -u postgres psql -U postgres -1 -f \
      /usr/share/temboard/sql/upgrade-4-5.sql temboard
 ```
