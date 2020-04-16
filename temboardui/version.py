@@ -3,7 +3,7 @@ import sys
 from platform import python_version
 
 
-__version__ = "5.0"
+__version__ = "5.1"
 
 
 VERSION_FMT = """\
