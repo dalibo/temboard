@@ -220,13 +220,11 @@ to the temBoard UI.:
 
 .. code-block:: console
 
-   # sudo -u postgres temboard-agent-register -c /etc/temboard-agent/11/main/temboard-agent.conf --groups default https://temboard-ui.lan:8888
+   # sudo -u postgres temboard-agent-register -c /etc/temboard-agent/11/main/temboard-agent.conf --host $(hostname --fqdn) --port 2345 --groups default https://temboard-ui.lan:8888
 
-Don't forget to adapt this command line to your case. Configuration file and
-temBoard UI address are likely to change from one installation to another.
-``temboard-agent-register`` will ask you to login to the UI. Beware, it is
-**NOT** the user on the agent, it is an administrator account on temBoard
-UI. The default agent user is ``admin``.
+``temboard-agent-register`` will ask you to login to the UI
+(eg. ``admin`` if you've kept the default temBoard user).
+Beware, it is **NOT** the user set on the agent.
 
 
 It's up!
