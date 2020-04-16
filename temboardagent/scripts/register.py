@@ -70,13 +70,15 @@ def define_arguments(parser):
 
     parser.add_argument(
         '-h', '--host',
-        dest='temboard_address',
+        dest='host',
         help="Agent address. Default: %(default)s",
+        default='localhost'
     )
     parser.add_argument(
         '-p', '--port',
-        dest='temboard_port', type=int,
+        dest='port',
         help="Agent listening TCP port. Default: %(default)s",
+        default='2345',
     )
     parser.add_argument(
         '-g', '--groups',
@@ -114,13 +116,12 @@ def wrapped_main(args, app):
     # Load configuration from the configuration file.
     try:
         # Getting system/instance informations using agent's discovering API
-        url = "https://%(address)s:%(port)s/discover" % app.config['temboard']
         print("Getting system & PostgreSQL informations from the agent "
-              "(%s) ..." % (url,))
+              "(https://%s:%s/discover) ..." % (args.host, args.port))
         (code, content, cookies) = https_request(
             None,
             'GET',
-            url,
+            "https://%s:%s/discover" % (args.host, args.port),
             headers={
                 "Content-type": "application/json"
             }
@@ -164,7 +165,7 @@ def wrapped_main(args, app):
             data={
                 'hostname': infos['hostname'],
                 'agent_key': app.config.temboard['key'],
-                'agent_address': app.config.temboard['address'],
+                'agent_address': args.host,
                 'agent_port': str(app.config.temboard['port']),
                 'cpu': infos['cpu'],
                 'memory_size': infos['memory_size'],
