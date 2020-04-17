@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0] - 2020-XX-XX
+
+### Added
+
+- Search config `temboard.conf` default config file in working directory by [@bersace].
+
+### Changed
+
+- Default configuration file is not required, by [@bersace].
+
+
 ## [5.0] - 2020-04-16
 
 ### Added
@@ -73,3 +84,6 @@
 - Avoid monitoring data to get stuck in agent sending queue by [@julmon](https://github.com/julmon)
 - Documentation cleaning and updates by [@bersace](https://github.com/bersace)
 - Limit useless `rollback` statements on read only queries (repository database) by [@pgiraud](https://github.com/pgiraud)
+
+
+[bersace]: https://github.com/bersace
