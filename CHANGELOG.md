@@ -4,7 +4,8 @@
 
 ### Added
 
-- Search config `temboard.conf` default config file in working directory by [@bersace].
+- Search config `temboard.conf` default config file in working directory by
+  [@bersace].
 
 ### Changed
 
@@ -86,4 +87,4 @@
 - Limit useless `rollback` statements on read only queries (repository database) by [@pgiraud](https://github.com/pgiraud)
 
 
-[bersace]: https://github.com/bersace
+[@bersace]: https://github.com/bersace
