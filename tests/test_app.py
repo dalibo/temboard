@@ -88,8 +88,9 @@ def test_unhandled_error_debug(mocker):
     assert pm.called is True
 
 
-def test_bootstrap(mocker):
+def test_bootstrap(caplog, mocker):
     mod = 'sampleproject.toolkit.app'
+    fc = mocker.patch(mod + '.BaseApplication.find_config_file', autospec=True)
     mocker.patch(mod + '.BaseApplication.read_file', autospec=True)
     mocker.patch(mod + '.BaseApplication.read_dir', autospec=True)
     mocker.patch(mod + '.BaseApplication.apply_config', autospec=True)
@@ -97,10 +98,49 @@ def test_bootstrap(mocker):
     from sampleproject.toolkit.app import BaseApplication
 
     app = BaseApplication()
-    app.config.temboard.configfile = 'pouet'
+    fc.return_value = 'pouet'
     app.bootstrap(args=None, environ={})
+    assert not caplog.records
 
     assert repr(app)
+
+    # No config file is ok.
+    caplog.clear()
+    app.config.temboard.configfile = None
+    fc.return_value = None
+    app.bootstrap(args=None, environ={})
+    assert caplog.records
+    assert "No config file" in caplog.records[0].message
+
+
+def test_find_config_file(mocker):
+    mod = 'sampleproject.toolkit.app'
+    exists = mocker.patch(mod + '.os.path.exists', autospec=True)
+
+    from sampleproject.toolkit.app import BaseApplication
+
+    app = BaseApplication()
+    app.config.add_specs(app.bootstrap_specs())
+    app.config.load()
+    app.DEFAULT_CONFIGFILES = [
+        'notfound',
+        '/abs/notfound',
+        'found',
+        '/notsearched',
+    ]
+    exists.side_effect = [
+        False,
+        False,
+        True,
+        Exception("Not reached"),
+    ]
+    assert "/found" in app.find_config_file()
+
+    # No file found.
+    exists.reset_mock()
+    exists.side_effect = None
+    exists.return_value = False
+    assert app.find_config_file() is None
 
 
 def test_apply_config_bad_logging(mocker):

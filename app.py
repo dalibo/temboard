@@ -54,8 +54,10 @@ class BaseApplication(object):
     VERSION = "unknown"
     REPORT_URL = "https://github.com/dalibo/temboard-agent/issues"
 
-    DEFAULT_CONFIGFILE = '/etc/%s/%s.conf' % (
-        LastnameFilter.root, LastnameFilter.root)
+    DEFAULT_CONFIGFILES = [
+        '%s.conf' % (LastnameFilter.root),
+        '/etc/%s/%s.conf' % (LastnameFilter.root, LastnameFilter.root),
+    ]
     DEFAULT_PLUGINS_EP = LastnameFilter.root + '.plugins'
     DEFAULT_PLUGINS = []
 
@@ -86,12 +88,16 @@ class BaseApplication(object):
 
         # Stage 2: Now read configfile
         parser = configparser.RawConfigParser()
-        configfile = config.temboard.configfile
-        self.read_file(parser, configfile)
-        self.read_dir(parser, configfile + '.d')
-        self.config_sources.update(dict(
-            parser=parser, pwd=os.path.dirname(configfile)
-        ))
+        configfile = self.find_config_file()
+        if configfile is None:
+            logger.info("No config file found.")
+        else:
+            self.config.temboard['configfile'] = configfile
+            self.read_file(parser, configfile)
+            self.read_dir(parser, configfile + '.d')
+            self.config_sources.update(dict(
+                parser=parser, pwd=os.path.dirname(configfile),
+            ))
 
         # Stage 3: Add core and app specific options and load them.
         config.add_specs(self.core_specs())
@@ -105,7 +111,6 @@ class BaseApplication(object):
         # configfile.
         yield OptionSpec(
             'temboard', 'configfile',
-            default=self.DEFAULT_CONFIGFILE,
             validator=v.file_,
         )
 
@@ -152,6 +157,18 @@ class BaseApplication(object):
             logger.debug("Reading new plugins configuration.")
             self.config.load(**self.config_sources)
         self.update_plugins(old_plugins=old_plugins)
+
+    def find_config_file(self):
+        configfile = self.config.temboard.configfile
+        if configfile is None:
+            for configfile in self.DEFAULT_CONFIGFILES:
+                configfile = os.path.abspath(configfile)
+                if os.path.exists(configfile):
+                    logger.info("Found config file %s.", configfile)
+                    break
+            else:
+                configfile = None
+        return configfile
 
     def read_file(self, parser, filename):
         logger.debug('Reading %s.', filename)
