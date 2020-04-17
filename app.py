@@ -87,11 +87,19 @@ class BaseApplication(object):
         # Stage 2: Now read configfile
         parser = configparser.RawConfigParser()
         configfile = config.temboard.configfile
-        self.read_file(parser, configfile)
-        self.read_dir(parser, configfile + '.d')
-        self.config_sources.update(dict(
-            parser=parser, pwd=os.path.dirname(configfile)
-        ))
+        if configfile is None and os.path.exists(self.DEFAULT_CONFIGFILE):
+            configfile = self.DEFAULT_CONFIGFILE
+
+        if configfile is None:
+            logger.info(
+                "Skip loading default config file %s: absent.",
+                self.DEFAULT_CONFIGFILE)
+        else:
+            self.read_file(parser, configfile)
+            self.read_dir(parser, configfile + '.d')
+            self.config_sources.update(dict(
+                parser=parser, pwd=os.path.dirname(configfile)
+            ))
 
         # Stage 3: Add core and app specific options and load them.
         config.add_specs(self.core_specs())
@@ -105,7 +113,6 @@ class BaseApplication(object):
         # configfile.
         yield OptionSpec(
             'temboard', 'configfile',
-            default=self.DEFAULT_CONFIGFILE,
             validator=v.file_,
         )
 
