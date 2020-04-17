@@ -6,6 +6,7 @@
 
 - Search config `temboard.conf` default config file in working directory by
   [@bersace].
+- temBoard repository schema is now versionned, by [@bersace].
 
 ### Changed
 
