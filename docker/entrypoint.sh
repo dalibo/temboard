@@ -83,11 +83,6 @@ password = ${PGPASSWORD}
 instance = ${PGINSTANCE-main}
 EOF
 
-cat > /etc/temboard-agent/temboard-agent.conf.d/monitoring.conf << EOF
-[monitoring]
-collector_url = ${TEMBOARD_UI_URL%/}/monitoring/collector
-EOF
-
 cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf << EOF
 [administration]
 pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
