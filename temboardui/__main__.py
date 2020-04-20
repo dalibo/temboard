@@ -240,7 +240,10 @@ def list_options_specs():
 
 
 class TemboardApplication(BaseApplication):
-    DEFAULT_CONFIGFILE = '/etc/temboard/temboard.conf'
+    DEFAULT_CONFIGFILES = [
+        '/etc/temboard/temboard.conf',
+        'temboard.conf',
+    ]
     DEFAULT_PLUGINS = [
         'activity',
         'dashboard',
