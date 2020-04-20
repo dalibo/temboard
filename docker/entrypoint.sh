@@ -104,17 +104,17 @@ done
 wait-for-it ${PGHOST}:${PGPORT}
 
 register() {
-    set -x
-    hostportpath=${TEMBOARD_UI_URL#*://}
-    hostport=${hostportpath%%/*}
-    wait-for-it localhost:2345 -t 60
-    wait-for-it ${hostport} -t 60
+	set -x
+	hostportpath=${TEMBOARD_UI_URL#*://}
+	hostport=${hostportpath%%/*}
+	wait-for-it localhost:2345 -t 60
+	wait-for-it ${hostport} -t 60
 
-    temboard-agent-register \
-        --host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} \
-        --port ${TEMBOARD_REGISTER_PORT-2345} \
-        --groups ${TEMBOARD_GROUPS-local_instances} \
-        ${TEMBOARD_UI_URL%/}
+	temboard-agent-register \
+		--host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} \
+		--port ${TEMBOARD_REGISTER_PORT-2345} \
+		--groups ${TEMBOARD_GROUPS-local_instances} \
+		${TEMBOARD_UI_URL%/}
 }
 
 if [ -z "${command##temboard-agent*}" -a -n "${TEMBOARD_UI_USER}" ] ; then
