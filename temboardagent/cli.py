@@ -21,7 +21,10 @@ class Application(BaseApplication):
     VERSION = __version__
     REPORT_URL = "https://github.com/dalibo/temboard-agent"
 
-    DEFAULT_CONFIGFILE = '/etc/temboard-agent/temboard-agent.conf'
+    DEFAULT_CONFIGFILES = [
+        '/etc/temboard-agent/temboard-agent.conf',
+        'temboard-agent.conf',
+    ]
     DEFAULT_PLUGINS = [
         "activity",
         "administration",
