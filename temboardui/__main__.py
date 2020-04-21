@@ -4,6 +4,7 @@ import logging.config
 import os
 import socket
 import sys
+import imp
 from argparse import (
     ArgumentParser,
     SUPPRESS as UNDEFINED_ARGUMENT,
@@ -65,6 +66,24 @@ def legacy_enable_plugins(self, plugin_names):
         if key not in self.loaded_plugins:
             self.loaded_plugins.append(key)
     return plugins_conf
+
+
+def filter_legacy_plugins(plugins_names):
+    # check if the plugins are legacy plugins, meaning they are installed as
+    # modules in the plugins/ subdir
+    path = os.path.dirname(os.path.realpath(__file__))
+    legacy_plugins = []
+    for plugin_name in plugins_names:
+        try:
+            fp, pathname, description = imp.find_module(plugin_name,
+                                                        [path + '/plugins'])
+        except ImportError as e:
+            continue
+
+        if fp:
+            fp.close()
+        legacy_plugins.append(plugin_name)
+    return legacy_plugins
 
 
 def bootstrap_tornado_app(app, config):
@@ -264,9 +283,21 @@ class TemboardApplication(BaseApplication):
             self.webapp.executor = ThreadPoolExecutor(12)
             self.webapp.temboard_app = self
 
+        # filter legacy plugins
+        legacy_plugins = filter_legacy_plugins(self.config.temboard.plugins)
+        ep_plugins = []
+        for p in self.config.temboard.plugins:
+            if p not in legacy_plugins:
+                ep_plugins.append(p)
+
+        # apply_config() from BaseApplication can only load entry point plugins
+        self.config.temboard.plugins = ep_plugins
         super(TemboardApplication, self).apply_config()
 
+        # finalize_tornado_app() can only load legacy plugins
+        self.config.temboard.plugins = legacy_plugins
         finalize_tornado_app(app, self.config)
+
         self.webapp.engine = configure_db_session(self.config.repository)
 
     def main(self, argv, environ):
@@ -345,7 +376,7 @@ class TemboardApplication(BaseApplication):
             webservice.run()
 
 
-main = TemboardApplication(specs=list_options_specs(), with_plugins=None)
+main = TemboardApplication(specs=list_options_specs())
 
 
 if __name__ == "__main__":
