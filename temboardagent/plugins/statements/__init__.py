@@ -46,8 +46,7 @@ JOIN pg_database ON pgss.dbid = pg_database.oid
 
 @routes.get(b"/", check_key=True)
 def get_statements(http_context, app):
-    """Return a snapshot of latest statistics of executed SQL statements and
-    reset gathered statistics.
+    """Return a snapshot of latest statistics of executed SQL statements
     """
     config = app.config
     dbname = config.statements.dbname
@@ -64,7 +63,6 @@ def get_statements(http_context, app):
         conn.connect()
         conn.execute(query)
         data = list(conn.get_rows())
-        conn.execute("SELECT pg_stat_statements_reset()")
     except error as e:
         pg_version = app.postgres.fetch_version()
         if (

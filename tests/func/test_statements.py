@@ -136,8 +136,9 @@ def test_statements(xsession, extension_enabled):
     queries = [d["query"] for d in data]
     assert "CREATE EXTENSION pg_stat_statements" in queries
 
+    query = "SELECT 1+1"
     with conn() as cnx:
-        cnx.execute("SELECT 1+1")
+        cnx.execute(query)
 
     # sleep 1s to get a different snapshot timestamp
     time.sleep(1)
@@ -154,8 +155,19 @@ def test_statements(xsession, extension_enabled):
     assert "temboard" in set([d["rolname"] for d in new_data])
     assert "postgres" in set([d["datname"] for d in new_data])
     new_queries = [d["query"] for d in new_data]
-    assert "SELECT pg_stat_statements_reset()" in new_queries
-    if pg_version > (10,):
-        assert "SELECT $1+$2" in new_queries
-    else:
-        assert "SELECT ?+?" in new_queries
+
+    stmt_query = "SELECT $1+$2" if pg_version > (10,) else "SELECT ?+?"
+    assert stmt_query in new_queries
+    calls = [d["calls"] for d in new_data if d["query"] == stmt_query][0]
+    assert calls == 1
+
+    with conn() as cnx:
+        cnx.execute(query)
+
+    # sleep 1s to get a different snapshot timestamp
+    time.sleep(1)
+
+    result = get_statements()
+    third_data = result["data"]
+    calls = [d["calls"] for d in third_data if d["query"] == stmt_query][0]
+    assert calls == 2
