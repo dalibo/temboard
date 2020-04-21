@@ -71,7 +71,7 @@ def worker_engine(dbconf):
     """Create a new stand-alone SQLAlchemy engine to be instantiated in worker
     context.
     """
-    return create_engine(format_dsn(**dbconf))
+    return create_engine(format_dsn(dbconf))
 
 
 def check_schema(config):
