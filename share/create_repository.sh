@@ -14,11 +14,9 @@ if ! psql -d postgres -c "SELECT 'SKIP' FROM pg_catalog.pg_database WHERE datnam
     psql -ad postgres -awc "CREATE DATABASE temboard OWNER temboard;"
 fi
 
-if ! psql -c "SELECT 'INSTALLED' FROM pg_catalog.pg_class WHERE relname = 'instances' LIMIT 1;" | grep -q INSTALLED; then
+if ! temboard-migratedb check ; then
+    temboard-migratedb upgrade
     psql="psql -aw --set ON_ERROR_STOP=on --pset pager=off"
-    $psql -f $SQLDIR/application.sql
-    $psql -f $SQLDIR/monitoring.sql
-    $psql -f $SQLDIR/alerting.sql
     if [ -n "${DEV-}" ] ; then
         $psql -f $SQLDIR/dev-fixture.sql
     fi

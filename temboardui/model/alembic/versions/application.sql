@@ -1,4 +1,3 @@
-DROP SCHEMA IF EXISTS application CASCADE;
 CREATE SCHEMA application;
 SET search_path TO application, public;
 

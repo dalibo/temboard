@@ -1,7 +1,5 @@
 SET search_path TO monitoring, public;
 
-BEGIN;
-
 DROP TYPE IF EXISTS check_state_type CASCADE;
 DROP TABLE IF EXISTS state_changes CASCADE;
 DROP TABLE IF EXISTS check_changes CASCADE;
@@ -180,8 +178,6 @@ BEGIN
   RETURN;
 END;
 $$;
-
-COMMIT;
 
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA monitoring TO temboard;
 GRANT ALL ON ALL TABLES IN SCHEMA monitoring TO temboard;

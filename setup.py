@@ -25,6 +25,7 @@ SETUP_KWARGS = dict(
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
     install_requires=[
+        'alembic',
         'futures',
         'python-dateutil>=1.5',
         # There is no hard dependency on psycopg2 to allow using
@@ -55,16 +56,7 @@ SETUP_KWARGS = dict(
             'share/purge.sh',
         ]),
         ('share/temboard/sql/', [
-            'share/sql/application.sql',
             'share/sql/dev-fixture.sql',
-            'share/sql/monitoring.sql',
-            'share/sql/alerting.sql',
-            'share/sql/upgrade-0.0.1-1.1.sql',
-            'share/sql/upgrade-1.1-1.2.sql',
-            'share/sql/upgrade-1.2-2.0.sql',
-            'share/sql/upgrade-2.2-3.0.sql',
-            'share/sql/upgrade-3.0-4.0.sql',
-            'share/sql/upgrade-4-5.sql',
             'share/sql/upgrade-monitoring-purge-instances.sql',
         ]),
         ('share/temboard/quickstart/', [
@@ -79,6 +71,7 @@ SETUP_KWARGS = dict(
     entry_points={
         'console_scripts': [
             'temboard = temboardui.__main__:main',
+            'temboard-migratedb = temboardui.migratedb:main',
         ],
     },
 )

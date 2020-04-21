@@ -13,6 +13,7 @@ Python %(python)s (%(pythonbin)s)
 psycopg2 %(psycopg2)s
 Tornado %(tornado)s
 SQLAlchemy %(sqlalchemy)s
+alembic %(alembic)s
 """
 
 
@@ -21,6 +22,7 @@ def format_version():
 
 
 def inspect_versions():
+    from alembic import __version__ as alembic_version
     from psycopg2 import __version__ as psycopg2_version
     from tornado import version as tornado_version
     from sqlalchemy import __version__ as sqlalchemy_version
@@ -30,6 +32,7 @@ def inspect_versions():
 
     return dict(
         temboard=__version__,
+        alembic=alembic_version,
         psycopg2=psycopg2_version,
         python=python_version(),
         pythonbin=sys.executable,
