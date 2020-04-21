@@ -71,8 +71,7 @@ def worker_engine(dbconf):
     """Create a new stand-alone SQLAlchemy engine to be instantiated in worker
     context.
     """
-    dsn = 'postgresql://{user}:{password}@:{port}/{dbname}?host={host}'
-    return create_engine(dsn.format(**dbconf))
+    return create_engine(format_dsn(**dbconf))
 
 
 def check_schema(config):
