@@ -12,6 +12,8 @@ from sqlalchemy.orm import (
     scoped_session,
 )
 from sqlalchemy import create_engine
+from sqlalchemy.sql import (column, select, text,)
+from sqlalchemy.sql.functions import max, min
 from temboardui.model.orm import (
     Instances,
 )
@@ -63,45 +65,34 @@ def get_agent_username(request):
     return agent_username
 
 
+BASE_QUERY_STATDATA = text("""
+    (
+        SELECT
+          dbid,
+          datname,
+          (record).*
+        FROM statements.statements_history_current_db
+        WHERE agent_address = :agent_address
+        AND agent_port = :agent_port
+        AND (record).ts <@ tstzrange(:start, :end, '[]')
+    ) h
+""")
+
+
 @blueprint.instance_route(r'/statements/data')
 def json_data(request):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
-    query = """
-        SELECT
-          statements.datname,
-          sum((record).blk_read_time) AS blk_read_time,
-          sum((record).blk_write_time) AS blk_write_time,
-          sum((record).calls) AS calls,
-          sum((record).local_blks_dirtied) AS local_blks_dirtied,
-          sum((record).local_blks_hit) AS local_blks_hit,
-          sum((record).local_blks_read) AS local_blks_read,
-          sum((record).local_blks_written) AS local_blks_written,
-          max((record).max_time) AS max_time,
-          sum((record).total_time) / sum((record).calls) AS mean_time,
-          min((record).min_time) AS min_time,
-          sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
-          sum((record).shared_blks_hit) AS shared_blks_hit,
-          sum((record).shared_blks_read) AS shared_blks_read,
-          sum((record).shared_blks_written) AS shared_blks_written,
-          sum((record).stddev_time) AS stddev_time,
-          sum((record).temp_blks_read) AS temp_blks_read,
-          sum((record).temp_blks_written) AS temp_blks_written,
-          sum((record).total_time) AS total_time
-        FROM statements.statements_history_current AS history
-        JOIN statements.statements AS statements ON (
-          history.agent_address = statements.agent_address AND
-          history.agent_port = statements.agent_port AND
-          history.queryid = statements.queryid AND
-          history.dbid = statements.dbid AND
-          history.userid = statements.userid
-        )
-        WHERE statements.agent_address = :agent_address
-        AND statements.agent_port = :agent_port
-        AND history.datetime <@ tstzrange(:start, :end, '[]')
-        GROUP BY statements.datname
-    """
+    base_query = BASE_QUERY_STATDATA
+    diffs = get_diffs_forstatdata()
+    query = (select([
+        column("datname"),
+    ] + diffs)
+            .select_from(base_query)
+            .group_by(column("dbid"), column("datname"))
+            .having(max(column("calls")) - min(column("calls")) > 0))
+
     statements = request.db_session.execute(
         query,
         dict(agent_address=request.instance.agent_address,
@@ -113,34 +104,11 @@ def json_data(request):
     return jsonify(dict(data=statements))
 
 
-@blueprint.instance_route(r'/statements/data/(.*)')
-def json_data_database(request, database):
-    host_id, instance_id = get_request_ids(request)
-    start, end = parse_start_end(request)
-
-    query = """
+BASE_QUERY_STATDATA_DATABASE = text("""
+    (
         SELECT
-          sum((record).blk_read_time) AS blk_read_time,
-          sum((record).blk_write_time) AS blk_write_time,
-          sum((record).calls) AS calls,
-          sum((record).local_blks_dirtied) AS local_blks_dirtied,
-          sum((record).local_blks_hit) AS local_blks_hit,
-          sum((record).local_blks_read) AS local_blks_read,
-          sum((record).local_blks_written) AS local_blks_written,
-          max((record).max_time) AS max_time,
-          sum((record).total_time) / sum((record).calls) AS mean_time,
-          min((record).min_time) AS min_time,
-          statements.query,
-          statements.rolname,
-          sum((record).rows) AS rows,
-          sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
-          sum((record).shared_blks_hit) AS shared_blks_hit,
-          sum((record).shared_blks_read) AS shared_blks_read,
-          sum((record).shared_blks_written) AS shared_blks_written,
-          sum((record).stddev_time) AS stddev_time,
-          sum((record).temp_blks_read) AS temp_blks_read,
-          sum((record).temp_blks_written) AS temp_blks_written,
-          sum((record).total_time) AS total_time
+          statements.*,
+          (record).*
         FROM statements.statements_history_current AS history
         JOIN statements.statements AS statements ON (
           history.agent_address = statements.agent_address AND
@@ -152,11 +120,28 @@ def json_data_database(request, database):
         WHERE statements.agent_address = :agent_address
         AND statements.agent_port = :agent_port
         AND statements.datname = :database
-        AND history.datetime <@ tstzrange(:start, :end, '[]')
-        GROUP BY statements.query,
-                 statements.datname,
-                 statements.rolname
-    """
+        AND (record).ts <@ tstzrange(:start, :end, '[]')
+    ) h
+""")
+
+
+@blueprint.instance_route(r'/statements/data/(.*)')
+def json_data_database(request, database):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    base_query = BASE_QUERY_STATDATA_DATABASE
+    diffs = get_diffs_forstatdata()
+    query = (select([
+        column("query"),
+        column("datname"),
+        column("rolname"),
+    ] + diffs)
+            .select_from(base_query)
+            .group_by(column("query"), column("dbid"), column("datname"),
+                      column("rolname"))
+            .having(max(column("calls")) - min(column("calls")) > 0))
+
     statements = request.db_session.execute(
         query,
         dict(agent_address=request.instance.agent_address,
@@ -167,6 +152,29 @@ def json_data_database(request, database):
         .fetchall()
     statements = [dict(statement) for statement in statements]
     return jsonify(dict(data=statements))
+
+
+def diff(var):
+    return (max(column(var)) - min(column(var))).label(var)
+
+
+def get_diffs_forstatdata():
+    return [
+        diff("calls"),
+        diff("total_time").label("total_time"),
+        diff("shared_blks_read"),
+        diff("shared_blks_hit"),
+        diff("shared_blks_dirtied"),
+        diff("shared_blks_written"),
+        diff("local_blks_read"),
+        diff("local_blks_hit"),
+        diff("local_blks_dirtied"),
+        diff("local_blks_written"),
+        diff("temp_blks_read"),
+        diff("temp_blks_written"),
+        diff("blk_read_time"),
+        diff("blk_write_time")
+    ]
 
 
 @blueprint.instance_route(r'/statements')
@@ -184,62 +192,44 @@ def statements(request):
 
 def add_statement(session, instance, data):
     try:
+        cur = session.connection().connection.cursor()
         for statement in data.get('data'):
-            cur = session.connection().connection.cursor()
             query = """
-                INSERT INTO statements.statements
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING;
+                INSERT INTO statements.statements_src_tmp
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cur.execute(
                 query,
                 (
                     instance.agent_address,
                     instance.agent_port,
-                    statement['queryid'],
-                    statement['query'],
-                    statement['dbid'],
-                    statement['datname'],
+                    data['snapshot_datetime'],
                     statement['userid'],
                     statement['rolname'],
-                ),
-            )
-            query = """
-                INSERT INTO statements.statements_history_current
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """
-            cur.execute(
-                query,
-                (
-                    data['snapshot_datetime'],
-                    instance.agent_address,
-                    instance.agent_port,
-                    statement['queryid'],
                     statement['dbid'],
-                    statement['userid'],
-                    (
-                        statement['blk_read_time'],
-                        statement['blk_write_time'],
-                        statement['calls'],
-                        statement['local_blks_hit'],
-                        statement['local_blks_read'],
-                        statement['local_blks_dirtied'],
-                        statement['local_blks_written'],
-                        statement['max_time'],
-                        statement['mean_time'],
-                        statement['min_time'],
-                        statement['rows'],
-                        statement['shared_blks_hit'],
-                        statement['shared_blks_read'],
-                        statement['shared_blks_dirtied'],
-                        statement['shared_blks_written'],
-                        statement['stddev_time'],
-                        statement['temp_blks_read'],
-                        statement['temp_blks_written'],
-                        statement['total_time'],
-                    )
+                    statement['datname'],
+                    statement['queryid'],
+                    statement['query'],
+                    statement['calls'],
+                    statement['total_time'],
+                    statement['rows'],
+                    statement['shared_blks_hit'],
+                    statement['shared_blks_read'],
+                    statement['shared_blks_dirtied'],
+                    statement['shared_blks_written'],
+                    statement['local_blks_hit'],
+                    statement['local_blks_read'],
+                    statement['local_blks_dirtied'],
+                    statement['local_blks_written'],
+                    statement['temp_blks_read'],
+                    statement['temp_blks_written'],
+                    statement['blk_read_time'],
+                    statement['blk_write_time']
                 )
             )
+        query = """SELECT statements.statements_snapshot(%s, %s)"""
+        cur.execute(query, (instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
     except Exception as e:
         raise TemboardUIError(400, e.message)
