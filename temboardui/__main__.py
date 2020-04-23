@@ -77,7 +77,7 @@ def filter_legacy_plugins(plugins_names):
         try:
             fp, pathname, description = imp.find_module(plugin_name,
                                                         [path + '/plugins'])
-        except ImportError as e:
+        except ImportError:
             continue
 
         if fp:
