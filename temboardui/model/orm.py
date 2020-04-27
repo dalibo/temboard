@@ -8,6 +8,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import (
+    column,
+    extract,
+    func,
+)
 
 from temboardui.model import tables
 
@@ -60,6 +65,14 @@ validators = {
     DateTime: validate_datetime,
     Boolean: validate_boolean
 }
+
+
+def diff(var):
+    return (func.max(column(var)) - func.min(column(var))).label(var)
+
+
+def to_epoch(column):
+    return extract("epoch", column).label(column.name)
 
 
 @event.listens_for(Model, 'attribute_instrument')
@@ -134,3 +147,35 @@ class Groups(Model):
             AccessRoleInstance.instance_group_kind
         ]
     )
+
+
+class Biggest(object):
+
+    def __init__(self, base_columns, order_by):
+        self.base_columns = base_columns
+        self.order_by = order_by
+
+    def __call__(self, var, minval=0, label=None):
+        label = label or var
+        return func.greatest(
+            func.lead(column(var))
+            .over(order_by=self.order_by,
+                  partition_by=self.base_columns)
+            - column(var),
+            minval).label(label)
+
+
+class Biggestsum(object):
+
+    def __init__(self, base_columns, order_by):
+        self.base_columns = base_columns
+        self.order_by = order_by
+
+    def __call__(self, var, minval=0, label=None):
+        label = label or var
+        return func.greatest(
+            func.lead(func.sum(column(var)))
+            .over(order_by=self.order_by,
+                  partition_by=self.base_columns)
+            - func.sum(column(var)),
+            minval).label(label)
