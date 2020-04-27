@@ -12,10 +12,19 @@ from sqlalchemy.orm import (
     scoped_session,
 )
 from sqlalchemy import create_engine
-from sqlalchemy.sql import (column, select, text,)
-from sqlalchemy.sql.functions import max, min
+from sqlalchemy.sql import (
+    column,
+    extract,
+    func,
+    select,
+    text,
+)
 from temboardui.model.orm import (
+    Biggest,
+    Biggestsum,
     Instances,
+    diff,
+    to_epoch,
 )
 from temboardui.errors import TemboardUIError
 
@@ -154,10 +163,6 @@ def json_data_database(request, database):
     return jsonify(dict(data=statements))
 
 
-def diff(var):
-    return (max(column(var)) - min(column(var))).label(var)
-
-
 def get_diffs_forstatdata():
     return [
         diff("calls"),
@@ -175,6 +180,156 @@ def get_diffs_forstatdata():
         diff("blk_read_time"),
         diff("blk_write_time")
     ]
+
+
+BASE_QUERY_STATDATA_SAMPLE = text("""
+    (
+        SELECT *
+        FROM (
+          SELECT
+            row_number() OVER (
+              PARTITION BY dbid ORDER BY ts
+            ) AS number,
+            count(*) OVER (PARTITION BY dbid) AS total,
+            *
+            FROM (
+              SELECT agent_address, agent_port, dbid, datname, (record).*
+              FROM statements.statements_history_current_db
+              WHERE (record).ts <@ tstzrange(:start, :end, '[]')
+              AND agent_address = :agent_address
+              AND agent_port = :agent_port
+            ) AS statements_history
+        ) AS sh
+        WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
+    ) by_db
+""")
+
+
+BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
+    (
+        SELECT
+          agent_address, agent_port, dbid, datname, queryid, userid, base.*
+        FROM statements.statements,
+        LATERAL (
+          SELECT *
+          FROM (SELECT
+            row_number() OVER (
+              PARTITION BY dbid ORDER BY ts
+            ) AS number,
+            count(*) OVER (PARTITION BY queryid) AS total,
+            *
+            FROM (
+                SELECT (record).*
+                FROM statements.statements_history_current
+                WHERE (record).ts <@ tstzrange(:start, :end, '[]')
+                AND queryid = statements.statements.queryid
+                AND dbid = statements.statements.dbid
+                AND datname = :datname
+                AND userid = statements.statements.userid
+                AND agent_address = :agent_address
+                AND agent_port = :agent_port
+            ) AS statements_history
+          ) AS sh
+          WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
+        ) as base
+    ) by_db
+""")
+
+
+def getstatdata_sample(request, mode, start, end, database=None):
+    if mode == 'instance':
+        base_query = BASE_QUERY_STATDATA_SAMPLE
+        base_columns = []
+
+    elif mode == "db":
+        base_query = BASE_QUERY_STATDATA_SAMPLE_DATABASE
+        base_columns = [column("dbid")]
+
+    elif mode == "query":
+        pass
+
+    ts = column('ts')
+    biggest = Biggest(base_columns, ts)
+    biggestsum = Biggestsum(base_columns, ts)
+
+    subquery = (select(base_columns + [
+        ts,
+        biggest("ts", '0 s', "mesure_interval"),
+        biggestsum("calls"),
+        biggestsum("total_time", label="runtime"),
+        biggestsum("rows"),
+        biggestsum("shared_blks_read"),
+        biggestsum("shared_blks_hit"),
+        biggestsum("shared_blks_dirtied"),
+        biggestsum("shared_blks_written"),
+        biggestsum("local_blks_read"),
+        biggestsum("local_blks_hit"),
+        biggestsum("local_blks_dirtied"),
+        biggestsum("local_blks_written"),
+        biggestsum("temp_blks_read"),
+        biggestsum("temp_blks_written"),
+        biggestsum("blk_read_time"),
+        biggestsum("blk_write_time")])
+            .select_from(base_query)
+            .apply_labels()
+            .group_by(*(base_columns + [ts])))
+
+    subquery = subquery.alias()
+    c = subquery.c
+
+    greatest = func.greatest
+    cols = [
+        to_epoch(c.ts),
+        (
+            func.sum(c.calls) /
+            greatest(extract("epoch", c.mesure_interval), 1)
+        ).label("calls"),
+        (
+            func.sum(c.runtime) / greatest(func.sum(c.calls), 1.)
+        ).label("avg_runtime"),
+        (
+            func.sum(c.runtime) /
+            greatest(extract("epoch", c.mesure_interval), 1)
+        ).label("load"),
+    ]
+
+    query = (
+        select(cols)
+        .select_from(subquery)
+        .where(c.calls is not None)
+        .group_by(c.ts, c.mesure_interval)
+        .order_by(c.ts)
+    )
+
+    params = dict(agent_address=request.instance.agent_address,
+                  agent_port=request.instance.agent_port,
+                  samples=50,
+                  start=start,
+                  end=end)
+
+    if mode == 'db':
+        params['datname'] = database
+
+    rows = request.db_session.execute(query, params).fetchall()
+    return [dict(row) for row in rows]
+
+
+@blueprint.instance_route(r'/statements/chart')
+def json_chart_data_instance(request):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    data = getstatdata_sample(request, "instance", start, end)
+    return jsonify(dict(data=data))
+
+
+@blueprint.instance_route(r'/statements/chart/(.*)')
+def json_chart_data_db(request, database):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    data = getstatdata_sample(request, "db", start, end, database=database)
+    return jsonify(dict(data=data))
 
 
 @blueprint.instance_route(r'/statements')

@@ -58,15 +58,14 @@ $(function() {
     var startDate = dateMath.parse(this.from);
     var endDate = dateMath.parse(this.to, true);
 
-    $.ajax({
-      url: apiUrl + (this.database ? '/' + this.database : ''),
-      data: {
+    $.get(
+      apiUrl + (this.database ? '/' + this.database : ''),
+      {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
         noerror: 1
       },
-      contentType: "application/json",
-      success: (function(data) {
+      function(data) {
         this.statements = data.data;
 
         window.clearTimeout(refreshTimeoutId);
@@ -74,8 +73,18 @@ $(function() {
             this.to.toString().indexOf('now') != -1) {
           refreshTimeoutId = window.setTimeout(fetchData.bind(this), refreshInterval);
         }
-      }).bind(this)
-    });
+      }.bind(this)
+    );
+
+    $.get(
+      chartApiUrl + (this.database ? '/' + this.database : ''),
+      {
+        start: timestampToIsoDate(startDate),
+        end: timestampToIsoDate(endDate),
+        noerror: 1
+      },
+      createOrUpdateCharts
+    );
   }
 
   function getFields() {
@@ -207,6 +216,66 @@ $(function() {
   function timestampToIsoDate(epochMs) {
     var ndate = new Date(epochMs);
     return ndate.toISOString();
+  }
+
+  function createOrUpdateCharts(data) {
+    var startDate = dateMath.parse(v.from);
+    var endDate = dateMath.parse(v.to, true);
+    var defaultOptions = {
+      axisLabelFontSize: 10,
+      yLabelWidth: 14,
+      includeZero: true,
+      legend: 'always',
+      labelsKMB: true,
+      gridLineColor: 'rgba(128, 128, 128, 0.3)',
+      dateWindow: [
+        new Date(startDate).getTime(),
+        new Date(endDate).getTime()
+      ],
+      xValueParser: function(x) {
+        var m = moment(x);
+        return m.toDate().getTime();
+      }
+    };
+
+    var chart = this.chart;
+
+    var chart1Data = _.map(data.data, function(datum) {
+      return [
+        moment.unix(datum.ts).toDate(),
+        datum.calls
+      ];
+    });
+    new Dygraph(
+      document.getElementById('chart1'),
+      chart1Data,
+      Object.assign({}, defaultOptions, {
+        labels: ['time', 'Queries per sec'],
+        labelsDiv: 'legend-chart1'
+      })
+    );
+
+    var chart2Data = _.map(data.data, function(datum) {
+      return [
+        moment.unix(datum.ts).toDate(),
+        datum.load,
+        datum.avg_runtime
+      ];
+    });
+    new Dygraph(
+      document.getElementById('chart2'),
+      chart2Data,
+      Object.assign({}, defaultOptions, {
+        labels: ['time', 'Time per sec', 'Avg runtime'],
+        labelsDiv: 'legend-chart2',
+        axes: {
+          y: {
+            valueFormatter: formatDuration,
+            axisLabelFormatter: formatDuration
+          }
+        }
+      })
+    );
   }
 
   /**

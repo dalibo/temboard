@@ -23,6 +23,20 @@
       </nav>
     </div>
   </div>
+  <div class="row mb-1">
+    <div class="col">
+      <div id="legend-chart1" class="legend-chart"></div>
+      <div id="chart1" style="width: 100%; height: 150px;"></div>
+    </div>
+    <div class="col">
+      <div id="legend-chart2" class="legend-chart"></div>
+      <div id="chart2" style="width: 100%; height: 150px;"></div>
+    </div>
+    <div class="col">
+      <div id="legend-chart3" class="legend-chart"></div>
+      <div id="chart3" style="width: 100%; height: 150px;"></div>
+    </div>
+  </div>
   <div class="row mb-1" v-cloak>
     <div class="col-12 d-flex">
       <b-form-group
@@ -92,6 +106,7 @@
 </div>
 <script src="/js/vue.min.js"></script>
 <script src="/js/vue-router.min.js"></script>
+<script src="/js/dygraph.min.js"></script>
 <script src="/js/moment.min.js"></script>
 <script src="/js/moment.preciseDiff.js"></script>
 <script src="/js/highlightjs/highlight.pack.js"></script>
@@ -107,5 +122,6 @@
 <script src="/js/bootstrap-vue.min.js"></script>
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/statements/data";
+var chartApiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/statements/chart";
 </script>
 {% end %}
