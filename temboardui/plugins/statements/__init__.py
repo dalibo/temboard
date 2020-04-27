@@ -91,7 +91,7 @@ def json_data(request):
     ] + diffs)
             .select_from(base_query)
             .group_by(column("dbid"), column("datname"))
-            .having(max(column("calls")) - min(column("calls")) > 0))
+            .having(func.max(column("calls")) - func.min(column("calls")) > 0))
 
     statements = request.db_session.execute(
         query,
@@ -140,7 +140,7 @@ def json_data_database(request, database):
             .select_from(base_query)
             .group_by(column("query"), column("dbid"), column("datname"),
                       column("rolname"))
-            .having(max(column("calls")) - min(column("calls")) > 0))
+            .having(func.max(column("calls")) - func.min(column("calls")) > 0))
 
     statements = request.db_session.execute(
         query,
