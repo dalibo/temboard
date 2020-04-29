@@ -73,6 +73,8 @@ CREATE TABLE statements_history_current (
   record statements_history_record NOT NULL,
   FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE INDEX ON statements_history_current (agent_address, agent_port, dbid, userid, queryid);
+CREATE INDEX on statements_history_current USING GIST (tstzrange((record).ts, (record).ts, '[]'));
 
 CREATE TABLE statements_history_current_db (
   agent_address TEXT NOT NULL,
@@ -82,6 +84,9 @@ CREATE TABLE statements_history_current_db (
   record statements_history_record NOT NULL,
   FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE INDEX ON statements_history_current_db (agent_address, agent_port, dbid);
+CREATE INDEX ON statements_history_current_db (agent_address, agent_port);
+CREATE INDEX on statements_history_current_db USING GIST (tstzrange((record).ts, (record).ts, '[]'));
 
 CREATE OR REPLACE FUNCTION statements_snapshot(_address text, _port integer) RETURNS void AS $PROC$
 DECLARE
