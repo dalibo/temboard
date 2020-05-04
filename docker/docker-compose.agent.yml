@@ -1,6 +1,6 @@
 # This compose file requires a few environment variables, see root Makefile for
 # details.
-version: '3'
+version: '3.2'
 
 networks:
   # By default, hook containers in network managed by root docker-compose.yml
@@ -17,9 +17,13 @@ services:
     image: postgres:12-alpine
     environment:
       POSTGRES_PASSWORD: confinment
+    command: postgres -c shared_preload_libraries=pg_stat_statements
     volumes:
-    - data:/var/lib/postgresql/data
-    - run:/var/run/postgresql
+      - data:/var/lib/postgresql/data
+      - run:/var/run/postgresql
+      - type: bind
+        source: ../share/sql/pg_stat_statements-create-extension.sql
+        target: /docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
 
   agent:
     image: dalibo/temboard-agent
