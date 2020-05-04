@@ -6,7 +6,7 @@
 
 <div id="app">
   <div class="row mb-1">
-    <div class="col" v-cloak>
+    <div class="col d-flex" v-cloak>
       <nav aria-label="breadcrumb" class="d-inline-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
@@ -21,6 +21,7 @@
           </li>
         </ol>
       </nav>
+      <daterangepicker class="ml-auto" :from="from" :to="to" v-on:update="onPickerUpdate"></daterangepicker>
     </div>
   </div>
   <div class="row mb-1">
@@ -38,7 +39,7 @@
     </div>
   </div>
   <div class="row mb-1" v-cloak>
-    <div class="col-12 d-flex">
+    <div class="col-6 offset-6">
       <b-form-group
         label="Filter"
         label-cols-sm="3"
@@ -58,7 +59,6 @@
           </b-input-group-append>
         </b-input-group>
       </b-form-group>
-      <daterangepicker class="ml-auto" :from="from" :to="to" v-on:update="onPickerUpdate"></daterangepicker>
     </div>
   </div>
   <b-table
