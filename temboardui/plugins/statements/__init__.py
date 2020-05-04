@@ -167,6 +167,7 @@ def get_diffs_forstatdata():
     return [
         diff("calls"),
         diff("total_time").label("total_time"),
+        (diff("total_time") / diff("calls")).label("mean_time"),
         diff("shared_blks_read"),
         diff("shared_blks_hit"),
         diff("shared_blks_dirtied"),
