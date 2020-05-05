@@ -1,10 +1,11 @@
 # coding: utf-8
 
+import imp
 import logging.config
 import os
+import pkg_resources
 import socket
 import sys
-import imp
 from argparse import (
     ArgumentParser,
     SUPPRESS as UNDEFINED_ARGUMENT,
@@ -21,6 +22,7 @@ from .toolkit import taskmanager
 from .toolkit import validators as v
 from .toolkit.app import define_core_arguments
 from .toolkit.configuration import OptionSpec
+from .toolkit.errors import UserError
 from .toolkit.proctitle import ProcTitleManager
 from .toolkit.services import (
     Service,
@@ -68,24 +70,6 @@ def legacy_enable_plugins(self, plugin_names):
     return plugins_conf
 
 
-def filter_legacy_plugins(plugins_names):
-    # check if the plugins are legacy plugins, meaning they are installed as
-    # modules in the plugins/ subdir
-    path = os.path.dirname(os.path.realpath(__file__))
-    legacy_plugins = []
-    for plugin_name in plugins_names:
-        try:
-            fp, pathname, description = imp.find_module(plugin_name,
-                                                        [path + '/plugins'])
-        except ImportError:
-            continue
-
-        if fp:
-            fp.close()
-        legacy_plugins.append(plugin_name)
-    return legacy_plugins
-
-
 def bootstrap_tornado_app(app, config):
     app.config = config
 
@@ -109,7 +93,7 @@ def bootstrap_tornado_app(app, config):
     return app
 
 
-def finalize_tornado_app(app, config):
+def finalize_tornado_app(app, config, plugins):
     base_path = os.path.dirname(__file__)
     handlers = [
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
@@ -126,7 +110,7 @@ def finalize_tornado_app(app, config):
         })
     ]
 
-    config.plugins = legacy_enable_plugins(app, config.temboard['plugins'])
+    config.plugins = legacy_enable_plugins(app, plugins)
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
     app.add_rules(handlers)
@@ -274,6 +258,31 @@ class TemboardApplication(BaseApplication):
     REPORT_URL = "https://github.com/dalibo/temboard/issues"
     VERSION = __version__
 
+    def filter_plugins(self):
+        # Returns two lists of plugin names from config.temboard.plugins, the
+        # first list is legacy plugins, the second is external plugins.
+
+        legacy_plugins = []
+        ep_plugins = []
+
+        path = os.path.dirname(__file__) + '/plugins'
+
+        logger.debug("Looping over all plugins.")
+        for name in self.config.temboard.plugins:
+            if any(pkg_resources.iter_entry_points(self.with_plugins, name)):
+                logger.debug("%s is a new plugin.", name)
+                ep_plugins.append(name)
+            else:
+                try:
+                    fp, _, _ = imp.find_module(name, [path])
+                except ImportError:
+                    raise UserError("Missing plugin: %s." % name)
+                else:
+                    legacy_plugins.append(name)
+                    logger.debug("%s is a legacy plugin.", name)
+
+        return legacy_plugins, ep_plugins
+
     def apply_config(self):
         bootstrap_tornado = not hasattr(self, 'webapp')
         if bootstrap_tornado:
@@ -283,20 +292,12 @@ class TemboardApplication(BaseApplication):
             self.webapp.executor = ThreadPoolExecutor(12)
             self.webapp.temboard_app = self
 
-        # filter legacy plugins
-        legacy_plugins = filter_legacy_plugins(self.config.temboard.plugins)
-        ep_plugins = []
-        for p in self.config.temboard.plugins:
-            if p not in legacy_plugins:
-                ep_plugins.append(p)
-
-        # apply_config() from BaseApplication can only load entry point plugins
+        legacy_plugins, ep_plugins = self.filter_plugins()
         self.config.temboard.plugins = ep_plugins
+
         super(TemboardApplication, self).apply_config()
 
-        # finalize_tornado_app() can only load legacy plugins
-        self.config.temboard.plugins = legacy_plugins
-        finalize_tornado_app(app, self.config)
+        finalize_tornado_app(app, self.config, plugins=legacy_plugins)
 
         self.webapp.engine = configure_db_session(self.config.repository)
 
@@ -376,7 +377,10 @@ class TemboardApplication(BaseApplication):
             webservice.run()
 
 
-main = TemboardApplication(specs=list_options_specs())
+main = TemboardApplication(
+    specs=list_options_specs(),
+    with_plugins="temboard.plugins",
+)
 
 
 if __name__ == "__main__":

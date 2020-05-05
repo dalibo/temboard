@@ -61,6 +61,14 @@ install_ui_py() {
 		cat /var/log/temboard-auto-configure.log >&2
 		return 1
 	fi
+	mkdir -p /etc/temboard/temboard.conf.d
+	cat >> /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
+	[temboard]
+	plugins = ["dashboard", "pgconf", "activity", "monitoring", "maintenance", "extsample"]
+
+	[sample]
+	option = configured
+	EOF
 }
 
 rm -f $LOGFILE
@@ -73,7 +81,8 @@ if [ -n "${SETUP-1}" ] ; then
 		--ignore-installed \
 		--prefix=/usr/local \
 		--upgrade \
-		--requirement tests/func/requirements.txt
+		--requirement tests/func/requirements.txt \
+		"$top_srcdir/tests/func/sample-plugin"
 fi
 
 if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
