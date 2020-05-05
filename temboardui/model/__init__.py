@@ -97,7 +97,7 @@ def check_schema(config):
                 "Database is not up to date. Please use temboard-migratedb."
             )
         else:
-            logger.info("temBoard database is update to date.")
+            logger.info("temBoard database is up-to-date.")
 
         return []  # Tells MigrationContext to skip migrations.
 
