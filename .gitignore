@@ -1,7 +1,7 @@
 *.pyc
 .pybuild/
 *.sw*
-!temboard.dev.conf
+temboard.conf.d/
 *.egg-info/
 build/
 dist/
