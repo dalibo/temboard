@@ -7,6 +7,8 @@
 - Search config `temboard.conf` default config file in working directory by
   [@bersace].
 - temBoard repository schema is now versionned, by [@bersace].
+- Load external plugins from setuptools entrypoint `temboard.plugins`, by [@orgrim].
+
 
 ### Changed
 
@@ -89,3 +91,4 @@
 
 
 [@bersace]: https://github.com/bersace
+[@orgrim]: https://github.com/orgrim

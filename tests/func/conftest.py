@@ -29,6 +29,23 @@ class HTTPClient(object):
     def __init__(self, base_url):
         self.base_url = base_url
 
+    def get(self, path, headers=None):
+        url = urlparse(self.base_url + path)
+        conn = httplib.HTTPSConnection(
+            url.hostname, url.port,
+            timeout=5, context=ssl._create_unverified_context(),
+        )
+        headers = headers or {}
+        conn.request('GET', url.path, None, headers)
+        response = conn.getresponse()
+        response.headers = dict(response.getheaders())
+        response.body = response.read()
+        if '/json' in response.headers.get('content-type', ''):
+            response.json = json.loads(response.body)
+        if response.status >= 400:
+            raise self.Error(response)
+        return response
+
     def post(self, path, body, headers=None):
         url = urlparse(self.base_url + path)
         conn = httplib.HTTPSConnection(
