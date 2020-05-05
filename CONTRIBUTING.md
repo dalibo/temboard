@@ -22,9 +22,12 @@ Now, bootstrap development with `make devenv` and launch temBoard.
 ``` console
 $ make devenv
 ...
-2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.                                                                                                                                                       Initialized role temboard and database temboard.                                                                                                                                                                                        docker-compose up -d
+2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.
+Initialized role temboard and database temboard.
+docker-compose up -d
 temboard_repository_1 is up-to-date
-Creating temboard_instance_1 ... done                                                                                                                                                                                                   Creating temboard_agent_1    ... done
+Creating temboard_instance_1 ... done
+Creating temboard_agent_1    ... done
 
 $ temboard --debug
 ...
