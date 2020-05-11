@@ -66,7 +66,6 @@ class BaseApplication(object):
     DEFAULT_PLUGINS = []
 
     def __init__(self, specs=None, with_plugins=DEFAULT_PLUGINS_EP, main=None):
-        self.specs = list(specs) if specs else []
         # If `None`, plugin loading is disabled.
         self.with_plugins = with_plugins
         self.plugins = {}
@@ -74,6 +73,9 @@ class BaseApplication(object):
         # This dict stores env, args and parser for hot reloading of
         # configuration.
         self.config_sources = dict()
+        self.config_specs = self.init_specs(specs)
+        # Active options specs for multi-stage parsing.
+        self.active_config_specs = []
         self.services = []
         self._main = main
 
@@ -86,7 +88,7 @@ class BaseApplication(object):
 
         config = self.config
         # Stage 1: Read configfile option
-        config.add_specs(self.bootstrap_specs())
+        config.add_specs(self.list_stage1_specs())
         self.config_sources.update(dict(args=args, environ=environ))
         config.load(**self.config_sources)
 
@@ -104,42 +106,55 @@ class BaseApplication(object):
             ))
 
         # Stage 3: Add core and app specific options and load them.
-        config.add_specs(self.core_specs())
-        config.add_specs(self.specs)
+        config.add_specs(self.config_specs.values())
         config.load(**self.config_sources)
 
         return self.config
 
-    def bootstrap_specs(self):
-        # Generate options specs required for bootstrap from args and environ:
-        # configfile.
-        yield OptionSpec(
-            'temboard', 'configfile',
-            validator=v.file_,
-        )
+    def init_specs(self, app_specs):
+        # Declare all option specs.
 
-        # Allow to enable debug as soon as possible. Other options will keep
-        # defaults.
-        yield OptionSpec('logging', 'debug', default=False)
+        specs = dict()
 
-    def core_specs(self):
-        # Generate options specs required for bootstrap from args and environ
-        # and file : logging, plugins, postgresql.
+        def add_specs(*new_specs):
+            for spec in new_specs:
+                specs[str(spec)] = spec
 
         s = 'temboard'
+        add_specs(OptionSpec(
+            s, 'configfile',
+            validator=v.file_,
+        ))
         if self.with_plugins:
-            yield OptionSpec(
+            add_specs(OptionSpec(
                 s, 'plugins', default=self.DEFAULT_PLUGINS,
                 validator=v.jsonlist,
-            )
+            ))
 
         s = 'logging'
-        yield OptionSpec(s, 'method', default='stderr', validator=v.logmethod)
-        yield OptionSpec(s, 'level', default='INFO', validator=v.loglevel)
-        yield OptionSpec(
-            s, 'facility', default='local0', validator=v.syslogfacility,
+        add_specs(
+            OptionSpec(s, 'debug', default=False),
+            OptionSpec(s, 'method', default='stderr', validator=v.logmethod),
+            OptionSpec(s, 'level', default='INFO', validator=v.loglevel),
+            OptionSpec(
+                s, 'facility', default='local0', validator=v.syslogfacility),
+            OptionSpec(s, 'destination', default='/dev/log'),
         )
-        yield OptionSpec(s, 'destination', default='/dev/log')
+
+        if app_specs:
+            add_specs(*app_specs)
+
+        return specs
+
+    def list_stage1_specs(self):
+        # List options specs required for bootstrap from args and environ:
+        # configfile.
+        return [self.config_specs[name] for name in [
+            'temboard_configfile',
+            # Allow to enable debug as soon as possible. Other options will
+            # keep defaults.
+            'logging_debug',
+        ]]
 
     def create_parser(self, *a, **kw):
         kw.setdefault('argument_default', SUPPRESS_ARG)
