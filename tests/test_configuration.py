@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import argparse
+
 import pytest
 
 
@@ -56,6 +58,27 @@ def test_spec_lifetime(mocker):
     # Assert source is properly reread.
     config.load(environ=environ, reload_=True)
     assert 'new_envval' == config.my.opt
+
+
+def test_argument_for_spec():
+    from sampleproject.toolkit.configuration import OptionSpec
+
+    parser = argparse.ArgumentParser()
+    spec = OptionSpec('section', 'name', default='default')
+
+    spec.add_argument(
+        parser, "--section-name",
+        help="Name: %(default)s",
+    )
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(['--help'])
+
+    args = parser.parse_args([])
+    assert not hasattr(args, 'section_name')
+
+    args = parser.parse_args(['--section-name=toto'])
+    assert 'toto' == args.section_name
 
 
 def test_remove_specs():
