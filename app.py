@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from argparse import Action as ArgAction
 import pkg_resources
 from distutils.util import strtobool
 from glob import glob
@@ -10,6 +9,11 @@ import pdb
 from codecs import open
 from site import main as refresh_pythonpath
 import sys
+from argparse import (
+    ArgumentParser,
+    Action as ArgAction,
+    SUPPRESS as SUPPRESS_ARG,
+)
 
 try:
     import configparser
@@ -136,6 +140,12 @@ class BaseApplication(object):
             s, 'facility', default='local0', validator=v.syslogfacility,
         )
         yield OptionSpec(s, 'destination', default='/dev/log')
+
+    def create_parser(self, *a, **kw):
+        kw.setdefault('argument_default', SUPPRESS_ARG)
+        kw.setdefault('description', self.__class__.__doc__)
+        kw.setdefault('prog', self.PROGRAM)
+        return ArgumentParser(*a, **kw)
 
     def apply_config(self):
         # Once config is loaded or reloaded, update application state to match

@@ -342,6 +342,15 @@ def test_purge_plugins():
     assert 'destroyme' not in app.plugins
 
 
+def test_create_parser():
+    from sampleproject.toolkit.app import BaseApplication
+
+    app = BaseApplication()
+    parser = app.create_parser(add_help=False)
+    assert "temboard" == parser.prog
+    parser.add_argument("--help", action="help")
+
+
 def test_debug_arg():
     from argparse import ArgumentParser, SUPPRESS
     from sampleproject.toolkit.app import define_core_arguments
