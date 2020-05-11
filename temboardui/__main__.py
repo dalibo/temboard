@@ -329,7 +329,6 @@ class TemboardApplication(BaseApplication):
             versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
         )
         logging.getLogger('alembic').setLevel(logging.WARN)
-        check_schema(self.config)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 
@@ -357,6 +356,8 @@ class TemboardApplication(BaseApplication):
         )
 
         self.apply_config()
+
+        check_schema(self.config)
 
         self.worker_pool.apply_config()
         services.add(self.worker_pool)
