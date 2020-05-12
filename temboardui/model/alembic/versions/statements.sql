@@ -88,11 +88,19 @@ CREATE INDEX ON statements_history_current_db (agent_address, agent_port, dbid);
 CREATE INDEX ON statements_history_current_db (agent_address, agent_port);
 CREATE INDEX on statements_history_current_db USING GIST (tstzrange((record).ts, (record).ts, '[]'));
 
-CREATE OR REPLACE FUNCTION statements_snapshot(_address text, _port integer) RETURNS void AS $PROC$
+CREATE OR REPLACE FUNCTION process_statements(_address text, _port integer) RETURNS void AS $PROC$
 DECLARE
     v_rowcount    bigint;
 BEGIN
-    -- In this function, we capture statements, and also aggregate counters by database
+    -- In this function, we process statements that have just been rerieved
+    -- from agent, and also aggregate counters by database
+
+    -- Lock table to prevent multiple snapshots to work at the same time
+    -- and insert data from statements_src_tmp table multiple times
+    -- This would lead to incoherent data
+    -- Use NOWAIT to avoid waiting for lock to be released
+    LOCK TABLE statements.statements, statements.statements_history_current, statements.statements_history_current_db
+    IN SHARE MODE NOWAIT;
 
     WITH capture AS(
         SELECT *
@@ -137,6 +145,6 @@ BEGIN
 
     DELETE FROM statements.statements_src_tmp WHERE agent_address = _address AND agent_port = _port;
 END;
-$PROC$ language plpgsql; /* end of statements_snapshot */
+$PROC$ language plpgsql; /* end of process_statements */
 
 COMMIT;
