@@ -60,19 +60,22 @@ def test_spec_lifetime(mocker):
     assert 'new_envval' == config.my.opt
 
 
-def test_argument_for_spec():
+def test_argument_for_spec(capsys):
     from sampleproject.toolkit.configuration import OptionSpec
 
     parser = argparse.ArgumentParser()
-    spec = OptionSpec('section', 'name', default='default')
+    spec = OptionSpec('section', 'name', default=2345)
 
     spec.add_argument(
         parser, "--section-name",
-        help="Name: %(default)s",
+        help="Name: percent%% %(default)s",
     )
 
     with pytest.raises(SystemExit):
         parser.parse_args(['--help'])
+    out, _ = capsys.readouterr()
+    assert "--section-name SECTION_NAME" in out
+    assert "Name: percent% 2345" in out
 
     args = parser.parse_args([])
     assert not hasattr(args, 'section_name')

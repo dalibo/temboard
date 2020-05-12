@@ -54,10 +54,11 @@ class OptionSpec(object):
     def add_argument(self, parser, *a, **kw):
         help_ = kw.get('help')
         if help_:
-            kw['help'] = help_.replace(
-                "%(default)s",
-                "*required*" if self.required else self.default,
+            help_ = help_ % dict(
+                default="*required*" if self.required else self.default,
             )
+            # Escape % for Argparse formatting.
+            kw['help'] = help_.replace("%", "%%")
 
         kw.setdefault('dest', str(self))
         kw.setdefault('default', SUPPRESS_ARG)
