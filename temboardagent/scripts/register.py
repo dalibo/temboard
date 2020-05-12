@@ -113,7 +113,6 @@ class RegisterApplication(Application):
 
 
 def wrapped_main(args, app):
-    # Load configuration from the configuration file.
     try:
         # Getting system/instance informations using agent's discovering API
         print("Getting system & PostgreSQL informations from the agent "
