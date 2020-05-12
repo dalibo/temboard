@@ -30,6 +30,8 @@ services:
 
   instance:
     image: postgres:10-alpine
+    environment:
+      POSTGRES_PASSWORD: gobelet
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
