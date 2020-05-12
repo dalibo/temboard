@@ -183,77 +183,83 @@ def get_diffs_forstatdata():
     ]
 
 
-BASE_QUERY_STATDATA_SAMPLE = text("""
+BASE_QUERY_STATDATA_SAMPLE_INSTANCE = text("""
     (
-        SELECT *
+      SELECT *
+      FROM (
+        SELECT
+          row_number() OVER (ORDER BY ts) AS number,
+          count(*) OVER (PARTITION BY 1) AS total,
+          *
         FROM (
           SELECT
-            row_number() OVER (
-              PARTITION BY dbid ORDER BY ts
-            ) AS number,
-            count(*) OVER (PARTITION BY dbid) AS total,
-            *
-            FROM (
-              SELECT agent_address, agent_port, dbid, datname, (record).*
-              FROM statements.statements_history_current_db
-              WHERE (record).ts <@ tstzrange(:start, :end, '[]')
-              AND agent_address = :agent_address
-              AND agent_port = :agent_port
-            ) AS statements_history
-        ) AS sh
-        WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
-    ) by_db
+            (record).ts,
+            sum((record).calls) AS calls,
+            sum((record).total_time) AS total_time,
+            sum((record).rows) AS rows,
+            sum((record).shared_blks_hit) AS shared_blks_hit,
+            sum((record).shared_blks_read) AS shared_blks_read,
+            sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
+            sum((record).shared_blks_written) AS shared_blks_written,
+            sum((record).local_blks_hit) AS local_blks_hit,
+            sum((record).local_blks_read) AS local_blks_read,
+            sum((record).local_blks_dirtied) AS local_blks_dirtied,
+            sum((record).local_blks_written) AS local_blks_written,
+            sum((record).temp_blks_read) AS temp_blks_read,
+            sum((record).temp_blks_written) AS temp_blks_written,
+            sum((record).blk_read_time) AS blk_read_time,
+            sum((record).blk_write_time) AS blk_write_time
+          FROM statements.statements_history_current_db
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+            <@ tstzrange(:start, :end, '[]')
+          AND agent_address = :agent_address
+          AND agent_port = :agent_port
+          GROUP BY (record).ts
+        ) AS statements_history
+      ) AS sh
+      WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
+    ) by_instance
 """)
 
 
 BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
     (
+      SELECT *
+      FROM (
         SELECT
-          agent_address, agent_port, dbid, datname, queryid, userid, base.*
-        FROM statements.statements,
-        LATERAL (
-          SELECT *
-          FROM (SELECT
-            row_number() OVER (
-              PARTITION BY dbid ORDER BY ts
-            ) AS number,
-            count(*) OVER (PARTITION BY queryid) AS total,
-            *
-            FROM (
-                SELECT (record).*
-                FROM statements.statements_history_current
-                WHERE (record).ts <@ tstzrange(:start, :end, '[]')
-                AND queryid = statements.statements.queryid
-                AND dbid = statements.statements.dbid
-                AND datname = :datname
-                AND userid = statements.statements.userid
-                AND agent_address = :agent_address
-                AND agent_port = :agent_port
-            ) AS statements_history
-          ) AS sh
-          WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
-        ) as base
+          row_number() OVER (ORDER BY ts) AS number,
+          count(*) OVER (PARTITION BY 1) AS total,
+          *
+        FROM (
+          SELECT (record).*
+          FROM statements.statements_history_current_db
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+            <@ tstzrange(:start, :end, '[]')
+          AND datname = :datname
+          AND agent_address = :agent_address
+          AND agent_port = :agent_port
+        ) AS statements_history
+      ) AS sh
+      WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
     ) by_db
 """)
 
 
 def getstatdata_sample(request, mode, start, end, database=None):
     if mode == 'instance':
-        base_query = BASE_QUERY_STATDATA_SAMPLE
-        base_columns = []
+        base_query = BASE_QUERY_STATDATA_SAMPLE_INSTANCE
 
     elif mode == "db":
         base_query = BASE_QUERY_STATDATA_SAMPLE_DATABASE
-        base_columns = [column("dbid")]
 
     elif mode == "query":
         pass
 
     ts = column('ts')
-    biggest = Biggest(base_columns, ts)
-    biggestsum = Biggestsum(base_columns, ts)
+    biggest = Biggest(ts)
+    biggestsum = Biggestsum(ts)
 
-    subquery = (select(base_columns + [
+    subquery = (select([
         ts,
         biggest("ts", '0 s', "mesure_interval"),
         biggestsum("calls"),
@@ -270,10 +276,11 @@ def getstatdata_sample(request, mode, start, end, database=None):
         biggestsum("temp_blks_read"),
         biggestsum("temp_blks_written"),
         biggestsum("blk_read_time"),
-        biggestsum("blk_write_time")])
+        biggestsum("blk_write_time")
+        ])
             .select_from(base_query)
             .apply_labels()
-            .group_by(*(base_columns + [ts])))
+            .group_by(*([ts])))
 
     subquery = subquery.alias()
     c = subquery.c
@@ -384,7 +391,7 @@ def add_statement(session, instance, data):
                     statement['blk_write_time']
                 )
             )
-        query = """SELECT statements.statements_snapshot(%s, %s)"""
+        query = """SELECT statements.process_statements(%s, %s)"""
         cur.execute(query, (instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
     except Exception as e:

@@ -151,31 +151,29 @@ class Groups(Model):
 
 class Biggest(object):
 
-    def __init__(self, base_columns, order_by):
-        self.base_columns = base_columns
+    def __init__(self, order_by):
         self.order_by = order_by
 
     def __call__(self, var, minval=0, label=None):
         label = label or var
         return func.greatest(
-            func.lead(column(var))
-            .over(order_by=self.order_by,
-                  partition_by=self.base_columns)
-            - column(var),
-            minval).label(label)
+            column(var) -
+            func.lag(column(var))
+            .over(order_by=self.order_by),
+            minval
+        ).label(label)
 
 
 class Biggestsum(object):
 
-    def __init__(self, base_columns, order_by):
-        self.base_columns = base_columns
+    def __init__(self, order_by):
         self.order_by = order_by
 
     def __call__(self, var, minval=0, label=None):
         label = label or var
         return func.greatest(
-            func.lead(func.sum(column(var)))
-            .over(order_by=self.order_by,
-                  partition_by=self.base_columns)
-            - func.sum(column(var)),
-            minval).label(label)
+            func.sum(column(var)) -
+            func.lag(func.sum(column(var)))
+            .over(order_by=self.order_by),
+            minval
+        ).label(label)
