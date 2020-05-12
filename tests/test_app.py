@@ -120,7 +120,7 @@ def test_find_config_file(mocker):
     from sampleproject.toolkit.app import BaseApplication
 
     app = BaseApplication()
-    app.config.add_specs(app.bootstrap_specs())
+    app.config.add_specs(app.list_stage1_specs())
     app.config.load()
     app.DEFAULT_CONFIGFILES = [
         'notfound',
@@ -195,12 +195,10 @@ def test_application_specs():
     from sampleproject.toolkit.app import BaseApplication
 
     app = BaseApplication()
-    list(app.bootstrap_specs())
-    list(app.core_specs())
+    assert 'temboard_plugins' in app.config_specs
 
     app = BaseApplication(with_plugins=None)
-    specs = [str(s) for s in app.core_specs()]
-    assert 'temboard_plugins' not in specs
+    assert 'temboard_plugins' not in app.config_specs
 
 
 def test_app_pickle():
@@ -211,7 +209,6 @@ def test_app_pickle():
     orig = BaseApplication(specs=empty_generator)
     orig.config.update(dict(a=1))
     copy = unpickle(pickle(orig))
-    assert [] == copy.specs
     assert copy.config
 
 
@@ -340,6 +337,15 @@ def test_purge_plugins():
     app.config.update(dict(temboard=dict(plugins=['keepme'])))
     app.purge_plugins()
     assert 'destroyme' not in app.plugins
+
+
+def test_create_parser():
+    from sampleproject.toolkit.app import BaseApplication
+
+    app = BaseApplication()
+    parser = app.create_parser(add_help=False)
+    assert "temboard" == parser.prog
+    parser.add_argument("--help", action="help")
 
 
 def test_debug_arg():

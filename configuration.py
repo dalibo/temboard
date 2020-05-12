@@ -3,6 +3,7 @@
 
 import logging
 import os
+from argparse import SUPPRESS as SUPPRESS_ARG
 
 from .utils import DotDict
 from .errors import UserError
@@ -49,6 +50,19 @@ class OptionSpec(object):
     @property
     def required(self):
         return self.default is self.REQUIRED
+
+    def add_argument(self, parser, *a, **kw):
+        help_ = kw.get('help')
+        if help_:
+            kw['help'] = help_.replace(
+                "%(default)s",
+                "*required*" if self.required else self.default,
+            )
+
+        kw.setdefault('dest', str(self))
+        kw.setdefault('default', SUPPRESS_ARG)
+
+        return parser.add_argument(*a, **kw)
 
     def validate(self, value):
         if value.value is None or not self.validator:
