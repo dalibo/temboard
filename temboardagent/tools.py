@@ -132,7 +132,7 @@ def check_fqdn(name):
     """
     # StackOverflow #11809631
     if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]'  # noqa W605
-                '{2,63}\.?$)', name):
+                r'{2,63}\.?$)', name):
         return True
     else:
         return False
