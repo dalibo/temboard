@@ -198,6 +198,7 @@ $(function() {
   }
 
   function formatSize(bytes) {
+    bytes *= 8192;
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes == 0) return '<span class="text-muted">0</span>';
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
@@ -272,6 +273,28 @@ $(function() {
           y: {
             valueFormatter: formatDuration,
             axisLabelFormatter: formatDuration
+          }
+        }
+      })
+    );
+
+    var chart3Data = _.map(data.data, function(datum) {
+      return [
+        moment.unix(datum.ts).toDate(),
+        datum.total_blks_hit,
+        datum.total_blks_read
+      ];
+    });
+    new Dygraph(
+      document.getElementById('chart3'),
+      chart3Data,
+      Object.assign({}, defaultOptions, {
+        labels: ['time', 'Hit /s', 'Read /s'],
+        labelsDiv: 'legend-chart3',
+        axes: {
+          y: {
+            valueFormatter: formatSize,
+            axisLabelFormatter: formatSize
           }
         }
       })
