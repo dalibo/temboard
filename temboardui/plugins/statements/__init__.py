@@ -25,6 +25,8 @@ from temboardui.model.orm import (
     Instances,
     diff,
     to_epoch,
+    total_hit,
+    total_read,
 )
 from temboardui.errors import TemboardUIError
 
@@ -299,6 +301,8 @@ def getstatdata_sample(request, mode, start, end, database=None):
             func.sum(c.runtime) /
             greatest(extract("epoch", c.mesure_interval), 1)
         ).label("load"),
+        total_read(c),
+        total_hit(c)
     ]
 
     query = (

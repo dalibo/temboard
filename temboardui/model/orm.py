@@ -1,14 +1,15 @@
 import datetime
 from sqlalchemy import (
+    Boolean,
+    DateTime,
     Integer,
     String,
-    DateTime,
-    Boolean,
     event,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import (
+    case,
     column,
     extract,
     func,
@@ -73,6 +74,32 @@ def diff(var):
 
 def to_epoch(column):
     return extract("epoch", column).label(column.name)
+
+
+def total_measure_interval(column):
+    return extract(
+        "epoch",
+        case([(func.min(column) == '0 second', '1 second')],
+             else_=func.min(column)))
+
+
+# We use 8192 as default value for block size
+# Ideally we should get this value from agent
+block_size = 8192
+
+
+def total_read(c):
+    return (
+        func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read) /
+        total_measure_interval(c.mesure_interval)
+    ).label("total_blks_read")
+
+
+def total_hit(c):
+    return (
+        func.sum(c.shared_blks_hit + c.local_blks_hit) /
+        total_measure_interval(c.mesure_interval)
+    ).label("total_blks_hit")
 
 
 @event.listens_for(Model, 'attribute_instrument')
