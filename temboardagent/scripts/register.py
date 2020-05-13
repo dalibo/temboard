@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 import os
 from sys import stdout
 from getpass import getpass
@@ -60,68 +59,62 @@ def ask_username():
     return username
 
 
-def define_arguments(parser):
-    define_core_arguments(parser, appversion=Application.VERSION)
-
-    parser.add_argument(
-        '-?', '--help',
-        action='help',
-        help='show this help message and exit')
-
-    parser.add_argument(
-        '-h', '--host',
-        dest='host',
-        help="Agent address. Default: %(default)s",
-        default='localhost'
-    )
-    parser.add_argument(
-        '-p', '--port',
-        dest='port',
-        help="Agent listening TCP port. Default: %(default)s",
-        default='2345',
-    )
-    parser.add_argument(
-        '-g', '--groups',
-        dest='groups',
-        help="Instance groups list, comma separated. Default: %(default)s",
-        default=None,
-    )
-    parser.add_argument(
-        'ui_address',
-        metavar='TEMBOARD-UI-ADDRESS',
-        help="temBoard UI address to register to.",
-    )
-
-
 class RegisterApplication(Application):
+    """Register a couple PostgreSQL instance/agent to a temBoard UI."""
+
     PROGRAM = "temboard-agent-register"
 
     def main(self, argv, environ):
-        parser = ArgumentParser(
-            prog='temboard-agent-register',
-            description=(
-                "Register a couple PostgreSQL instance/agent "
-                "to a temBoard UI."
-            ),
-            add_help=False,
-            argument_default=UNDEFINED_ARGUMENT,
-        )
-        define_arguments(parser)
+        parser = self.create_parser(add_help=False)
+        self.define_arguments(parser)
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
         return wrapped_main(args, self)
 
+    def define_arguments(self, parser):
+        define_core_arguments(parser, appversion=Application.VERSION)
+
+        parser.add_argument(
+            '-?', '--help',
+            action='help',
+            help='show this help message and exit')
+
+        parser.add_argument(
+            '-h', '--host',
+            dest='host',
+            help="Agent address. Default: %(default)s",
+            default='localhost'
+        )
+        self.config_specs['temboard_port'].add_argument(
+            parser, '-p', '--port',
+            help="Agent listening TCP port. Default: %(default)s",
+        )
+
+        parser.add_argument(
+            '-g', '--groups',
+            dest='groups',
+            help="Instance groups list, comma separated. Default: %(default)s",
+            default=None,
+        )
+        parser.add_argument(
+            'ui_address',
+            metavar='TEMBOARD-UI-ADDRESS',
+            help="temBoard UI address to register to.",
+        )
+
 
 def wrapped_main(args, app):
-    # Load configuration from the configuration file.
+    discover_url = "https://%s:%s/discover" % (
+        args.host, app.config.temboard.port)
     try:
         # Getting system/instance informations using agent's discovering API
-        print("Getting system & PostgreSQL informations from the agent "
-              "(https://%s:%s/discover) ..." % (args.host, args.port))
+        logger.info(
+            "Getting system & PostgreSQL informations from the agent (%s) ...",
+            discover_url)
         (code, content, cookies) = https_request(
             None,
             'GET',
-            "https://%s:%s/discover" % (args.host, args.port),
+            discover_url,
             headers={
                 "Content-type": "application/json"
             }

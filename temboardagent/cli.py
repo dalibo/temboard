@@ -34,19 +34,34 @@ class Application(BaseApplication):
         "maintenance",
     ]
 
+    def init_specs(self, app_specs):
+        specs = super(Application, self).init_specs(app_specs)
+
+        def add_specs(*new_specs):
+            for spec in new_specs:
+                specs[str(spec)] = spec
+
+        # These are *core* because they are needed to load plugins.
+        s = 'postgresql'
+        add_specs(
+            OptionSpec(
+                s, 'host', default='/var/run/postgresql', validator=v.dir_),
+            OptionSpec(s, 'instance', default='main'),
+            OptionSpec(s, 'port', default=5432, validator=v.port),
+            OptionSpec(s, 'user', default='postgres'),
+            OptionSpec(s, 'password'),
+            OptionSpec(s, 'dbname', default='postgres'),
+        )
+
+        return specs
+
     def core_specs(self):
         for spec in super(Application, self).core_specs():
             yield spec
 
-        # These are *core* because they are needed to load plugins.
-        s = 'postgresql'
-        yield OptionSpec(
-            s, 'host', default='/var/run/postgresql', validator=v.dir_)
-        yield OptionSpec(s, 'instance', default='main')
-        yield OptionSpec(s, 'port', default=5432, validator=v.port)
-        yield OptionSpec(s, 'user', default='postgres')
-        yield OptionSpec(s, 'password')
-        yield OptionSpec(s, 'dbname', default='postgres')
+        for name, spec in self.config_specs.items():
+            if name.startswith('postgresql_'):
+                yield spec
 
     def apply_config(self):
         self.postgres = Postgres(**self.config.postgresql)
