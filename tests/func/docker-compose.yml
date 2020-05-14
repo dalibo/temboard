@@ -7,6 +7,6 @@ services:
     - ../../:/workspace
     environment:
       - CI
-      - TBD_PGBIN=/usr/pgsql-${POSTGRES_VERSION-11}/bin
+      - TBD_PGBIN=/usr/pgsql-${POSTGRES_VERSION-12}/bin
       - TBD_INSTALL_RPM
     command: /workspace/tests/func/run_tests_docker.sh

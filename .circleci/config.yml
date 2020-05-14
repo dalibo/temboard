@@ -101,6 +101,13 @@ jobs:
          - dist/*.deb
 
   # Please keep tests/func/Makefile run-all test matrix sync with the following.
+  1-func-centos7-pg12:
+    docker:
+    - image: dalibo/temboard-agent-sdk:centos7
+      environment:
+        TBD_PGBIN: /usr/pgsql-12/bin
+    <<: *func-job
+
   1-func-centos7-pg11:
     docker:
     - image: dalibo/temboard-agent-sdk:centos7
