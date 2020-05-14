@@ -113,7 +113,7 @@ FROM pg_settings
     return ret
 
 
-def human_to_number(h_value, h_unit=None):
+def human_to_number(h_value, h_unit=None, h_type=int):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'YB', 'ZB']
     re_unit = re.compile(r'([0-9.]+)\s*([KMGBTPEYZ]?B)$', re.IGNORECASE)
     m_value = re_unit.match(str(h_value))
@@ -157,9 +157,9 @@ def human_to_number(h_value, h_unit=None):
         p_num = m_unit.group(1)
         p_unit = m_unit.group(2)
         if mult[p_unit] > 0:
-            return (int(p_num) * mult[p_unit])
+            return (h_type(p_num) * mult[p_unit])
         else:
-            return (int(p_num) / abs(mult[p_unit]))
+            return (h_type(p_num) / abs(mult[p_unit]))
 
     return h_value
 
