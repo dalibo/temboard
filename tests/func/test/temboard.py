@@ -241,6 +241,10 @@ def build_env_dict():
     tbd_workpath = test_conf.WORK_PATH
     if 'TBD_WORKPATH' in os.environ:
         tbd_workpath = os.environ['TBD_WORKPATH']
+    # PostgreSQL version
+    tbd_pgversion = test_conf.PG_VERSION
+    if 'TBD_PGVERSION' in os.environ:
+        tbd_pgversion = os.environ['TBD_PGVERSION']
 
     test_env = {
         'agent': {
@@ -264,6 +268,7 @@ def build_env_dict():
             'socket_dir': None,
             'port': str(tbd_pgport),
             'user': test_conf.PG_USER,
+            'version': float(tbd_pgversion),
             'password': test_conf.PG_PASSWORD,
             'log_file': None
         }

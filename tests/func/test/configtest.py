@@ -8,6 +8,7 @@ WORK_PATH = '/tmp'
 # PG_BIN = '/usr/lib/postgresql/9.5/bin'
 # Gentoo / 9.5
 PG_BIN = '/usr/lib64/postgresql-9.5/bin'
+PG_VERSION = '9.5'
 PG_PORT = 5445
 PG_USER = 'temboard'
 PG_PASSWORD = 'temboard'
