@@ -138,10 +138,11 @@ def human_to_number(h_value, h_unit=None, h_type=int):
 
     # Valid time units are ms (milliseconds), s (seconds), min (minutes),
     # h (hours), and d (days
-    re_unit = re.compile(r'([0-9.]+)\s*(ms|s|min|h|d)$')
+    re_unit = re.compile(r'([0-9.]+)\s*(us|ms|s|min|h|d)$')
     m_unit = re_unit.match(str(h_value))
     if h_unit == 'ms':
-        mult = {'ms': 1, 's': 1000, 'min': 60000, 'h': 3600000, 'd': 86400000}
+        mult = {'us': 0.001, 'ms': 1, 's': 1000, 'min': 60000, 'h': 3600000,
+                'd': 86400000}
     elif h_unit == 's':
         mult = {'ms': -1000, 's': 1, 'min': 60, 'h': 3600, 'd': 86400}
     elif h_unit == 'min':
