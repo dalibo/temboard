@@ -257,9 +257,9 @@ def preprocess_data(data, checks, timestamp):
 
         try:
             res = spec.get('preprocess')(data)
-        except Exception:
+        except Exception as e:
             logger.warning(
-                "Failed to preprocess alerting check '%s'", check[0]
+                "Failed to preprocess alerting check '%s': %s", check[0], e,
             )
             continue
 

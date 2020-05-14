@@ -13,6 +13,7 @@
 ### Changed
 
 - Default configuration file is not required, by [@bersace].
+- Log error message when alert processing fails, by [@bersace].
 
 
 ## [5.0] - 2020-04-16
