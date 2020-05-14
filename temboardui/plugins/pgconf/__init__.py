@@ -49,23 +49,24 @@ def configuration_handler(request, category=None):
     prefix = "/pgconf/configuration"
     query_filter = request.handler.get_argument('filter', None, strip=True)
 
-    if "GET" == request.method:
-        status = request.instance.get(prefix + "/status")
-        categories = request.instance.get(prefix + "/categories")
+    status = request.instance.get(prefix + "/status")
+    categories = request.instance.get(prefix + "/categories")
 
-        if query_filter:
-            query = {'filter': query_filter}
-            configuration_url = prefix
-        else:
-            if category:
-                category = url_unescape(category)
-            else:
-                category = categories['categories'][0]
-            logger.debug("category=%s", category)
-            query = {}
-            configuration_url = prefix + "/category/" + url_escape(category)
-        configuration = request.instance.get(configuration_url, query=query)
+    if category:
+        category = url_unescape(category)
     else:
+        category = categories['categories'][0]
+    logger.debug("category=%s", category)
+
+    if query_filter:
+        query = {'filter': query_filter}
+        configuration_url = prefix
+    else:
+        query = {}
+        configuration_url = prefix + "/category/" + url_escape(category)
+    configuration = request.instance.get(configuration_url, query=query)
+
+    if "POST" == request.method:
         settings = {'settings': [
             {'name': name, 'setting': value[0]}
             for name, value in request.arguments.iteritems()
