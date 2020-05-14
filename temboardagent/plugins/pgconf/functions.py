@@ -231,6 +231,10 @@ def post_settings(conn, config, http_context):
                                 setting['setting'] = None
                             checked = True
                         if item['vartype'] == u'real':
+                            setting['setting'] \
+                                = human_to_number(setting['setting'],
+                                                  item['unit'],
+                                                  float)
                             # Real handling.
                             if item['min_val'] and \
                                (float(setting['setting']) <
@@ -242,7 +246,6 @@ def post_settings(conn, config, http_context):
                                    float(item['max_val'])):
                                 raise HTTPError(406, "%s: Invalid setting." %
                                                      (item['name']))
-                            setting['setting'] = float(setting['setting'])
                             checked = True
                         if item['vartype'] == u'bool':
                             # Boolean handling.
