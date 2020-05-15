@@ -21,8 +21,12 @@ catchall() {
 	trap - INT EXIT TERM
 }
 
+error() {
+	echo -e "\\e[1;31m$*\\e[0m" | tee -a /dev/fd/3 >&2
+}
+
 fatal() {
-	echo -e "\e[1;31m$@\e[0m" | tee -a /dev/fd/3 >&2
+	error "$@"
 	exit 1
 }
 
@@ -202,6 +206,16 @@ setup_pq
 
 name=${PGCLUSTER_NAME}
 home=${VARDIR}/${name}
+
+if [ -f "${ETCDIR}/${name}/temboard-agent.conf" ] ; then
+	error "${ETCDIR}/${name}/temboard-agent.conf already exists."
+	error "To clean previous installation, use"
+	error
+	error "    ${0/auto_configure/purge} ${name}"
+	error
+	fatal "Refusing to overwrite existing configuration."
+fi
+
 # Create directories
 install -o ${SYSUSER} -g ${SYSUSER} -m 0750 -d \
 	${ETCDIR}/${name}/temboard-agent.conf.d/ \
