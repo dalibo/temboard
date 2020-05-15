@@ -113,7 +113,7 @@ FROM pg_settings
     return ret
 
 
-def human_to_number(h_value, h_unit=None):
+def human_to_number(h_value, h_unit=None, h_type=int):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'YB', 'ZB']
     re_unit = re.compile(r'([0-9.]+)\s*([KMGBTPEYZ]?B)$', re.IGNORECASE)
     m_value = re_unit.match(str(h_value))
@@ -138,10 +138,11 @@ def human_to_number(h_value, h_unit=None):
 
     # Valid time units are ms (milliseconds), s (seconds), min (minutes),
     # h (hours), and d (days
-    re_unit = re.compile(r'([0-9.]+)\s*(ms|s|min|h|d)$')
+    re_unit = re.compile(r'([0-9.]+)\s*(us|ms|s|min|h|d)$')
     m_unit = re_unit.match(str(h_value))
     if h_unit == 'ms':
-        mult = {'ms': 1, 's': 1000, 'min': 60000, 'h': 3600000, 'd': 86400000}
+        mult = {'us': 0.001, 'ms': 1, 's': 1000, 'min': 60000, 'h': 3600000,
+                'd': 86400000}
     elif h_unit == 's':
         mult = {'ms': -1000, 's': 1, 'min': 60, 'h': 3600, 'd': 86400}
     elif h_unit == 'min':
@@ -157,9 +158,9 @@ def human_to_number(h_value, h_unit=None):
         p_num = m_unit.group(1)
         p_unit = m_unit.group(2)
         if mult[p_unit] > 0:
-            return (int(p_num) * mult[p_unit])
+            return (h_type(p_num) * mult[p_unit])
         else:
-            return (int(p_num) / abs(mult[p_unit]))
+            return (h_type(p_num) / abs(mult[p_unit]))
 
     return h_value
 
@@ -230,6 +231,10 @@ def post_settings(conn, config, http_context):
                                 setting['setting'] = None
                             checked = True
                         if item['vartype'] == u'real':
+                            setting['setting'] \
+                                = human_to_number(setting['setting'],
+                                                  item['unit'],
+                                                  float)
                             # Real handling.
                             if item['min_val'] and \
                                (float(setting['setting']) <
@@ -241,7 +246,6 @@ def post_settings(conn, config, http_context):
                                    float(item['max_val'])):
                                 raise HTTPError(406, "%s: Invalid setting." %
                                                      (item['name']))
-                            setting['setting'] = float(setting['setting'])
                             checked = True
                         if item['vartype'] == u'bool':
                             # Boolean handling.

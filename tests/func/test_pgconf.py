@@ -3,6 +3,7 @@ import os
 import sys
 from hashlib import md5
 import datetime
+import pytest
 
 from test.temboard import temboard_request
 from conftest import ENV
@@ -475,3 +476,52 @@ WHERE
             }
         )
         assert status == 406
+
+    @pytest.mark.skipif("ENV['pg']['version'] < 12")
+    def test_17_post_pgconf_configuration_ok_int_or_real(self):
+        """
+        [pgconf] 17: POST /pgconf/configuration : HTTP return code is 200 for
+        settings that are either integer or real depending on version
+        autovacuum_vacuum_cost_delay is of type real for PG12 but integer
+        before
+        """  # noqa
+        (status, res) = temboard_request(
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/pgconf/configuration' % (
+                ENV['agent']['host'], ENV['agent']['port']),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            },
+            data={
+                'settings': [
+                    {'name': 'autovacuum_vacuum_cost_delay',
+                     'setting': '2ms'}
+                ]
+            }
+        )
+        assert status == 200
+
+        (status, res) = temboard_request(
+            ENV['agent']['ssl_cert_file'],
+            method='POST',
+            url='https://%s:%s/pgconf/configuration' % (
+                ENV['agent']['host'], ENV['agent']['port']),
+            headers={
+                "Content-type": "application/json",
+                "X-Session": XSESSION
+            },
+            data={
+                'settings': [
+                    {'name': 'autovacuum_vacuum_cost_delay',
+                     'setting': '0.2ms'}
+                ]
+            }
+        )
+        assert status == 200
+
+        r = self._exec_query('postgres',
+                             "SELECT setting FROM pg_settings "
+                             "WHERE name = 'autovacuum_vacuum_cost_delay'")
+        assert 0.2 == float(r[0]['setting'])
