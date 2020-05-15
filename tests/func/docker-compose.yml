@@ -11,4 +11,5 @@ services:
       - TBD_PGBIN=/usr/pgsql-${POSTGRES_VERSION-12}/bin
       - TBD_INSTALL_RPM
       - PYTEST_ARGS
+    working_dir: /workspace/tests/func
     command: /workspace/tests/func/run_tests_docker.sh
