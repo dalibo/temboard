@@ -9,6 +9,9 @@
 - temBoard repository schema is now versionned, by [@bersace].
 - Load external plugins from setuptools entrypoint `temboard.plugins`, by [@orgrim].
 
+### Fixed
+
+- Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
 
 ### Changed
 
@@ -93,3 +96,4 @@
 
 [@bersace]: https://github.com/bersace
 [@orgrim]: https://github.com/orgrim
+[@pgiraud]: https://github.com/pgiraud
