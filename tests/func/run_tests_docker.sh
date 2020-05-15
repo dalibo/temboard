@@ -37,6 +37,8 @@ else
     pip2 install -e .
 fi
 
+export TBD_PGBIN=$(readlink -e /usr/pgsql-${TBD_PGVERSION}/bin /usr/lib/postgresql/${TBD_PGVERSION}/bin)
+
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
 rm -rf /tmp/tests_temboard
