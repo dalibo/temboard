@@ -34,7 +34,7 @@ then
     yum -d1 install -y $rpm
     rpm --query --queryformat= temboard-agent
 else
-    pip install -e .
+    pip2 install -e .
 fi
 
 # Remove any .pyc file to avoid errors with pytest and cache
