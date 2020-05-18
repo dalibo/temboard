@@ -413,7 +413,11 @@ class Scheduler(object):
                             except KeyError:
                                 logger.debug("Update Task %s with options=%s"
                                              % (t.id, t.options))
-                                self.task_list.update(t.id, options=t.options)
+                                self.task_list.update(
+                                    t.id,
+                                    options=t.options,
+                                    redo_interval=t.redo_interval,
+                                )
                         except StorageEngineError as e:
                             # Just log the error and continue with other tasks
                             logger.error(e.message)
