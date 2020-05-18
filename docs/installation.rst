@@ -234,3 +234,25 @@ Congratulation! You can continue on the UI and see the agent appeared, and
 monitoring data being graphed.
 
 You can repeat the above setup for each instance on the same host.
+
+
+Cleaning agent installation
+===========================
+
+If you need to clean a single agent installation either to uninstall it or to
+run ``auto_configure.sh`` again, use ``purge.sh`` with cluster name.
+
+.. code-block:: console
+
+   # /usr/share/temboard-agent/share/purge.sh 12/main
+   Stopping and disabling systemd service.
+   Removed /etc/systemd/system/multi-user.target.wants/temboard-agent@12-main.service.
+   Cleaning files and directories...
+   removed '/etc/temboard-agent/12/main/temboard-agent.conf'
+   removed '/etc/temboard-agent/12/main/temboard-agent.conf.d/auto.conf'
+   removed directory '/etc/temboard-agent/12/main/temboard-agent.conf.d'
+   removed '/etc/temboard-agent/12/main/users'
+   removed directory '/etc/temboard-agent/12/main/'
+   removed directory '/var/lib/temboard-agent/12/main/'
+   temBoard agent 12-main stopped and cleaned.
+   #
