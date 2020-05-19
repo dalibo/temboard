@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  0-docs:
+  stage0-docs:
     docker: [{image: "python:2.7"}]
     working_directory: ~/workspace
     steps:
@@ -17,7 +17,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-rpm-centos7:
+  stage0-rpm-centos7:
     docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
     steps:
@@ -36,7 +36,7 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  0-unit-py27:
+  stage0-unit-py27:
     docker:
       - image: python:2.7
         environment: &unit_env
@@ -65,14 +65,14 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  0-unit-py36:
+  stage0-unit-py36:
     docker:
       - image: python:3.6
         environment: *unit_env
     working_directory: /home/ubuntu/temboard-agent
     steps: *unit_steps
 
-  1-deb-stretch:
+  stage1-deb-stretch:
     docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
     working_directory: ~/workspace
     steps:
@@ -90,7 +90,7 @@ jobs:
         paths:
          - dist/*.deb
 
-  1-func:
+  stage1-func:
     parameters:
       dist:
         description: "Execution Linux distribution"
@@ -116,27 +116,27 @@ workflows:
   version: 2
   pipeline:
     jobs:
-    - 0-docs
-    - 0-rpm-centos7
-    - 0-unit-py27
-    - 0-unit-py36
-    - 1-deb-stretch:
-        requires: [0-unit-py36]
+    - stage0-docs
+    - stage0-rpm-centos7
+    - stage0-unit-py27
+    - stage0-unit-py36
+    - stage1-deb-stretch:
+        requires: [stage0-unit-py36]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
-    - 1-func:
+    - stage1-func:
         pgversion: "12"
         dist: centos7
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func:
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
         pgversion: "11"
         dist: centos7
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func:
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
         pgversion: "10"
         dist: centos7
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func:
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
         pgversion: "9.6"
         dist: centos7
-        requires: [0-rpm-centos7, 0-unit-py27]
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
