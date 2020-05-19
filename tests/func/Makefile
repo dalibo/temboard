@@ -6,7 +6,7 @@ run:
 run-all:
 	@# Please keep this matrix sync with .circleci/config.yml
 	TAG=centos7 TBD_PGVERSION=12 $(MAKE) run
-	TAG=centos7 TBD_PGVERSION=11 $(MAKE) run
+	TAG=stretch TBD_PGVERSION=11 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=10 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=9.6 $(MAKE) run
 

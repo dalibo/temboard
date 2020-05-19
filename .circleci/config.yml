@@ -95,7 +95,11 @@ jobs:
       dist:
         description: "Execution Linux distribution"
         type: enum
-        enum: [centos7]
+        enum: [centos7, stretch]
+      install_rpm:
+        description: "Whether to install agent from RPM"
+        type: integer
+        default: 1
       pgversion:
         description: "PostgreSQL dotted major version"
         type: string
@@ -105,11 +109,12 @@ jobs:
     working_directory: /workspace
     steps:
     - checkout
+    - run: git submodule update --init
     - attach_workspace:
         at: /workspace
     - run:
         name: Execute func tests
-        command: "TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh"
+        command: "TBD_INSTALL_RPM=<< parameters.install_rpm >> tests/func/run_tests_docker.sh"
 
 
 workflows:
@@ -129,9 +134,10 @@ workflows:
         dist: centos7
         requires: [stage0-rpm-centos7, stage0-unit-py27]
     - stage1-func:
+        dist: stretch
+        install_rpm: 0
         pgversion: "11"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
+        requires: [stage0-unit-py27]
     - stage1-func:
         pgversion: "10"
         dist: centos7
