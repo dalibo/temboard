@@ -1,14 +1,4 @@
-version: 2
-
-.func-job: &func-job
-  working_directory: /workspace
-  steps:
-  - checkout
-  - attach_workspace:
-      at: /workspace
-  - run:
-      name: Execute the tests
-      command: TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh
+version: 2.1
 
 jobs:
   0-docs:
@@ -100,34 +90,26 @@ jobs:
         paths:
          - dist/*.deb
 
-  # Please keep tests/func/Makefile run-all test matrix sync with the following.
-  1-func-centos7-pg12:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-12/bin
-    <<: *func-job
-
-  1-func-centos7-pg11:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-11/bin
-    <<: *func-job
-
-  1-func-centos7-pg10:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-10/bin
-    <<: *func-job
-
-  1-func-centos7-pg96:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-9.6/bin
-    <<: *func-job
+  1-func:
+    parameters:
+      dist:
+        description: "Execution Linux distribution"
+        type: enum
+        enum: [centos7]
+      pgversion:
+        description: "PostgreSQL dotted major version"
+        type: string
+    docker: [image: "dalibo/temboard-agent-sdk:<< parameters.dist >>"]
+    environment:
+      TBD_PGVERSION: "<< parameters.pgversion >>"
+    working_directory: /workspace
+    steps:
+    - checkout
+    - attach_workspace:
+        at: /workspace
+    - run:
+        name: Execute func tests
+        command: "TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh"
 
 
 workflows:
@@ -140,9 +122,15 @@ workflows:
     - 0-unit-py36
     - 1-deb-stretch:
         requires: [0-unit-py36]
-    - 1-func-centos7-pg11:
+    - 1-func:
+        pgversion: "11"
+        dist: centos7
         requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos7-pg10:
+    - 1-func:
+        pgversion: "10"
+        dist: centos7
         requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos7-pg96:
+    - 1-func:
+        pgversion: "9.6"
+        dist: centos7
         requires: [0-rpm-centos7, 0-unit-py27]
