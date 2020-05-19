@@ -1,6 +1,5 @@
-import imp
 import logging
-import os
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -14,26 +13,19 @@ def load_plugins(plugin_names, config):
         plugins = [ "plugin1", "plugin2" ]
     """
 
-    # Get this module's path.
-    path = os.path.dirname(os.path.realpath(__file__))
     ret = dict()
     # Loop through declared plugins.
     for plugin_name in plugin_names:
-        # Locate and load the module with imp.
-        fp, pathname, description = imp.find_module(plugin_name,
-                                                    [path + '/plugins'])
         try:
-            module = imp.load_module(plugin_name, fp, pathname, description)
+            __import__('temboardui.plugins', fromlist=[plugin_name])
+            module = sys.modules['temboardui.plugins.' + plugin_name]
         except Exception:
             logger.exception("Failed to load %s module.", plugin_name)
             continue
-        finally:
-            if fp:
-                fp.close()
 
         # Try to run module's configuration() function.
         try:
-            ret.update({module.__name__: {
+            ret.update({plugin_name: {
                 'configuration': getattr(module, 'configuration')(config),
                 'routes': getattr(module, 'get_routes')(config),
                 'workers': getattr(module, 'workers', None),
