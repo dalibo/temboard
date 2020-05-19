@@ -122,6 +122,12 @@ workflows:
     - 0-unit-py36
     - 1-deb-stretch:
         requires: [0-unit-py36]
+    # Please keep tests/func/Makefile run-all test matrix sync with the
+    # following.
+    - 1-func:
+        pgversion: "12"
+        dist: centos7
+        requires: [0-rpm-centos7, 0-unit-py27]
     - 1-func:
         pgversion: "11"
         dist: centos7

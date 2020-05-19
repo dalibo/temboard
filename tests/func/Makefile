@@ -4,6 +4,7 @@ run:
 	docker-compose up --exit-code-from test --abort-on-container-exit test
 
 run-all:
+	@# Please keep this matrix sync with .circleci/config.yml
 	TAG=centos7 TBD_PGVERSION=12 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=11 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=10 $(MAKE) run
