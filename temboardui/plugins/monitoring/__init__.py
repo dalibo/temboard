@@ -51,6 +51,7 @@ from .tools import (
 )
 
 logger = logging.getLogger(__name__)
+PLUGIN_NAME = 'monitoring'
 workers = taskmanager.WorkerSet()
 
 

@@ -28,7 +28,7 @@ from ..tools import (
 )
 from ..model.db import insert_availability
 
-logger = logging.getLogger('temboardui.plugins.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 def check_agent_request(request, hostname, instance):

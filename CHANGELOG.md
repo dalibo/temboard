@@ -12,6 +12,7 @@
 ### Fixed
 
 - Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
+- Double loading of legacy plugins, by [@bersace].
 
 ### Changed
 

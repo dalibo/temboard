@@ -7,6 +7,7 @@ from temboardui.web import (
 )
 
 
+PLUGIN_NAME = 'maintenance'
 blueprint = Blueprint()
 blueprint.generic_proxy(r'/maintenance/.*/schema/.*/table/.*/'
                         '(?:vacuum|analyze)',
@@ -51,20 +52,20 @@ def get_agent_username(request):
 
 @blueprint.instance_route(r'/maintenance')
 def maintenance(request):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     return render_template(
         'index.html',
         nav=True,
         agent_username=get_agent_username(request),
         instance=request.instance,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         role=request.current_user,
     )
 
 
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)/table/(.*)')
 def table(request, database, schema, table):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     agent_username = get_agent_username(request)
     xsession = request.instance.xsession if agent_username else None
     return render_template(
@@ -72,7 +73,7 @@ def table(request, database, schema, table):
         nav=True,
         agent_username=agent_username,
         instance=request.instance,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         xsession=xsession,
         role=request.current_user,
         database=database,
@@ -83,7 +84,7 @@ def table(request, database, schema, table):
 
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)')
 def schema(request, database, schema):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     agent_username = get_agent_username(request)
     xsession = request.instance.xsession if agent_username else None
     return render_template(
@@ -91,7 +92,7 @@ def schema(request, database, schema):
         nav=True,
         agent_username=agent_username,
         instance=request.instance,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         xsession=xsession,
         role=request.current_user,
         database=database,
@@ -101,7 +102,7 @@ def schema(request, database, schema):
 
 @blueprint.instance_route(r'/maintenance/(.*)')
 def database(request, database):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     agent_username = get_agent_username(request)
     xsession = request.instance.xsession if agent_username else None
     return render_template(
@@ -109,7 +110,7 @@ def database(request, database):
         nav=True,
         agent_username=get_agent_username(request),
         instance=request.instance,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         xsession=xsession,
         role=request.current_user,
         database=database,
