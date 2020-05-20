@@ -85,7 +85,8 @@ BASE_QUERY_STATDATA = text("""
         FROM statements.statements_history_current_db
         WHERE agent_address = :agent_address
         AND agent_port = :agent_port
-        AND (record).ts <@ tstzrange(:start, :end, '[]')
+        AND tstzrange((record).ts, (record).ts, '[]')
+          <@ tstzrange(:start, :end, '[]')
     ) h
 """)
 
@@ -131,7 +132,8 @@ BASE_QUERY_STATDATA_DATABASE = text("""
         WHERE statements.agent_address = :agent_address
         AND statements.agent_port = :agent_port
         AND statements.datname = :database
-        AND (record).ts <@ tstzrange(:start, :end, '[]')
+        AND tstzrange((record).ts, (record).ts, '[]')
+          <@ tstzrange(:start, :end, '[]')
     ) h
 """)
 
