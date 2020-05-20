@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 plugin_path = realpath(__file__ + '/..')
 render_template = TemplateRenderer(plugin_path + '/templates')
 
+PLUGIN_NAME = 'dashboard'
+
 
 def configuration(config):
     return {}
@@ -33,7 +35,7 @@ def get_routes(config):
 
 @blueprint.instance_route(r"/dashboard")
 def dashboard(request):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
 
     try:
         agent_username = request.instance.get_profile()['username']
@@ -62,7 +64,7 @@ def dashboard(request):
         nav=True, role=request.current_user,
         instance=request.instance,
         agent_username=agent_username,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         config=json_encode(config),
         dashboard=last_data,
         history=json_encode(history or ''),

@@ -11,6 +11,7 @@ from temboardui.web import (
 )
 
 
+PLUGIN_NAME = 'pgconf'
 logger = logging.getLogger(__name__)
 blueprint = Blueprint()
 blueprint.generic_proxy("/pgconf/configuration", methods=["POST"])
@@ -41,7 +42,7 @@ def get_routes(config):
 @blueprint.instance_route("/pgconf/configuration(?:/category/(.+))?",
                           methods=["GET", "POST"])
 def configuration_handler(request, category=None):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     profile = request.instance.get_profile()
     agent_username = profile['username']
     template_vars = {}
@@ -88,7 +89,7 @@ def configuration_handler(request, category=None):
         role=request.current_user,
         instance=request.instance,
         agent_username=agent_username,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         xsession=request.instance.xsession,
         current_cat=category,
         configuration_categories=categories,

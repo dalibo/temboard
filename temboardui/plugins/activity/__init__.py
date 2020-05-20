@@ -7,6 +7,7 @@ from temboardui.web import (
 )
 
 
+PLUGIN_NAME = 'activity'
 blueprint = Blueprint()
 blueprint.generic_proxy(r'/activity/kill', methods=['POST'])
 plugin_path = path.dirname(path.realpath(__file__))
@@ -35,7 +36,7 @@ def get_agent_username(request):
 
 @blueprint.instance_route(r'/activity/(running|blocking|waiting)')
 def activity(request, mode):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     agent_username = get_agent_username(request)
     xsession = request.instance.xsession if agent_username else None
     return render_template(
@@ -43,7 +44,7 @@ def activity(request, mode):
         nav=True,
         agent_username=agent_username,
         instance=request.instance,
-        plugin=__name__,
+        plugin=PLUGIN_NAME,
         mode=mode,
         xsession=xsession,
         role=request.current_user,
@@ -52,7 +53,7 @@ def activity(request, mode):
 
 @blueprint.instance_proxy(r'/activity(?:/blocking|/waiting)?')
 def activity_proxy(request):
-    request.instance.check_active_plugin(__name__)
+    request.instance.check_active_plugin(PLUGIN_NAME)
     return dict(
         blocking=request.instance.get('/activity/blocking'),
         running=request.instance.get('/activity'),
