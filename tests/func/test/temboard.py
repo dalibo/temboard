@@ -1,4 +1,5 @@
 from __future__ import print_function
+import logging
 import time
 import os
 import sys
@@ -13,6 +14,9 @@ import socket
 import json
 
 import configtest as test_conf
+
+
+logger = logging.getLogger(__name__)
 
 # Add main temboard-agent module dir into sys.path
 # The goal is to import spc module
@@ -71,6 +75,16 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
             )
     code, out, err = exec_command(cmd, shell=True)
     assert 0 == code, out + err
+
+    for i in range(10):
+        try:
+            socket.create_connection(('127.0.0.1', int(pg_port)), 1)
+            break
+        except socket.error as e:
+            logger.info("Connection error: %s", e)
+            time.sleep(i * 0.25)
+    else:
+        raise Exception("Failed to start Postgres")
 
 
 def pg_stop(pg_bin, pg_port, pg_socket_dir, pg_data):

@@ -1,17 +1,7 @@
-version: 2
-
-.func-job: &func-job
-  working_directory: /workspace
-  steps:
-  - checkout
-  - attach_workspace:
-      at: /workspace
-  - run:
-      name: Execute the tests
-      command: TBD_INSTALL_RPM=1 tests/func/run_tests_docker.sh
+version: 2.1
 
 jobs:
-  0-docs:
+  stage0-docs:
     docker: [{image: "python:2.7"}]
     working_directory: ~/workspace
     steps:
@@ -27,7 +17,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-rpm-centos7:
+  stage0-rpm-centos7:
     docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
     steps:
@@ -46,7 +36,7 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  0-unit-py27:
+  stage0-unit-py27:
     docker:
       - image: python:2.7
         environment: &unit_env
@@ -75,14 +65,14 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  0-unit-py36:
+  stage0-unit-py36:
     docker:
       - image: python:3.6
         environment: *unit_env
     working_directory: /home/ubuntu/temboard-agent
     steps: *unit_steps
 
-  1-deb-stretch:
+  stage1-deb-stretch:
     docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
     working_directory: ~/workspace
     steps:
@@ -100,49 +90,59 @@ jobs:
         paths:
          - dist/*.deb
 
-  # Please keep tests/func/Makefile run-all test matrix sync with the following.
-  1-func-centos7-pg12:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-12/bin
-    <<: *func-job
-
-  1-func-centos7-pg11:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-11/bin
-    <<: *func-job
-
-  1-func-centos7-pg10:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-10/bin
-    <<: *func-job
-
-  1-func-centos7-pg96:
-    docker:
-    - image: dalibo/temboard-agent-sdk:centos7
-      environment:
-        TBD_PGBIN: /usr/pgsql-9.6/bin
-    <<: *func-job
+  stage1-func:
+    parameters:
+      dist:
+        description: "Execution Linux distribution"
+        type: enum
+        enum: [centos7, stretch]
+      install_rpm:
+        description: "Whether to install agent from RPM"
+        type: integer
+        default: 1
+      pgversion:
+        description: "PostgreSQL dotted major version"
+        type: string
+    docker: [image: "dalibo/temboard-agent-sdk:<< parameters.dist >>"]
+    environment:
+      TBD_PGVERSION: "<< parameters.pgversion >>"
+    working_directory: /workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - attach_workspace:
+        at: /workspace
+    - run:
+        name: Execute func tests
+        command: "TBD_INSTALL_RPM=<< parameters.install_rpm >> tests/func/run_tests_docker.sh"
 
 
 workflows:
   version: 2
   pipeline:
     jobs:
-    - 0-docs
-    - 0-rpm-centos7
-    - 0-unit-py27
-    - 0-unit-py36
-    - 1-deb-stretch:
-        requires: [0-unit-py36]
-    - 1-func-centos7-pg11:
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos7-pg10:
-        requires: [0-rpm-centos7, 0-unit-py27]
-    - 1-func-centos7-pg96:
-        requires: [0-rpm-centos7, 0-unit-py27]
+    - stage0-docs
+    - stage0-rpm-centos7
+    - stage0-unit-py27
+    - stage0-unit-py36
+    - stage1-deb-stretch:
+        requires: [stage0-unit-py36]
+    # Please keep tests/func/Makefile run-all test matrix sync with the
+    # following.
+    - stage1-func:
+        pgversion: "12"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
+        dist: stretch
+        install_rpm: 0
+        pgversion: "11"
+        requires: [stage0-unit-py27]
+    - stage1-func:
+        pgversion: "10"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
+        pgversion: "9.6"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
