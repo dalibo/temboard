@@ -72,8 +72,7 @@ class TaskListSQLite3Engine(object):
                         task.expire or 0
                     )
                 )
-        except sqlite3.IntegrityError as e:
-            logger.debug(str(e))
+        except sqlite3.IntegrityError:
             raise KeyError("Task with id=%s already exists" % task.id)
         except sqlite3.Error as e:
             logger.exception(str(e))
