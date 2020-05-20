@@ -25,4 +25,4 @@ def sqlfile(name):
 
 
 def upgrade():
-    ${upgrades if upgrades else "pass"}
+    op.get_bind().execute(sqlfile("FIXME"))
