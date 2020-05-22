@@ -10,7 +10,8 @@ $(function() {
     router: new VueRouter(),
     data: {
       statements: [],
-      database: null,
+      dbid: null,
+      datname: null,
       sortBy: 'total_time',
       filter: '',
       from: null,
@@ -35,12 +36,12 @@ $(function() {
         })});
         this.fetchData();
       },
-      database: function() {
+      dbid: function() {
         var newQueryParams = _.assign({}, this.$route.query);
-        if (!this.database) {
-          delete newQueryParams.database;
+        if (!this.dbid) {
+          delete newQueryParams.dbid;
         } else {
-          newQueryParams.database = this.database;
+          newQueryParams.dbid = this.dbid;
         }
         this.$router.replace({ query: newQueryParams });
         this.fetchData();
@@ -59,13 +60,14 @@ $(function() {
     var endDate = dateMath.parse(this.to, true);
 
     $.get(
-      apiUrl + (this.database ? '/' + this.database : ''),
+      apiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
         noerror: 1
       },
       function(data) {
+        this.datname = data.datname;
         this.statements = data.data;
 
         window.clearTimeout(refreshTimeoutId);
@@ -77,7 +79,7 @@ $(function() {
     );
 
     $.get(
-      chartApiUrl + (this.database ? '/' + this.database : ''),
+      chartApiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
@@ -184,7 +186,7 @@ $(function() {
     }];
 
     var ignored = ['rolname', 'query'];
-    if (this.database) {
+    if (this.dbid) {
       ignored = ['datname'];
     }
 
@@ -313,5 +315,5 @@ $(function() {
 
   v.from = start;
   v.to = end;
-  v.database = v.$route.query.database;
+  v.dbid = v.$route.query.dbid;
 });

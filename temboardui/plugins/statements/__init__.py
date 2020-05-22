@@ -110,6 +110,7 @@ def json_data(request):
     diffs = get_diffs_forstatdata()
     query = (select([
         column("datname"),
+        column("dbid"),
     ] + diffs)
             .select_from(base_query)
             .group_by(column("dbid"), column("datname"))
@@ -149,9 +150,9 @@ BASE_QUERY_STATDATA_DATABASE = text("""
           unnested.dbid = statements.dbid AND
           unnested.userid = statements.userid
         )
-        WHERE statements.agent_address = :agent_address
-        AND statements.agent_port = :agent_port
-        AND statements.datname = :database
+        WHERE unnested.agent_address = :agent_address
+        AND unnested.agent_port = :agent_port
+        AND unnested.dbid = :dbid
         AND tstzrange((records).ts, (records).ts, '[]')
           <@ tstzrange(:start, :end, '[]')
 
@@ -168,9 +169,9 @@ BASE_QUERY_STATDATA_DATABASE = text("""
           history.dbid = statements.dbid AND
           history.userid = statements.userid
         )
-        WHERE statements.agent_address = :agent_address
-        AND statements.agent_port = :agent_port
-        AND statements.datname = :database
+        WHERE history.agent_address = :agent_address
+        AND history.agent_port = :agent_port
+        AND history.dbid = :dbid
         AND tstzrange((record).ts, (record).ts, '[]')
           <@ tstzrange(:start, :end, '[]')
     ) h
@@ -178,32 +179,44 @@ BASE_QUERY_STATDATA_DATABASE = text("""
 
 
 @blueprint.instance_route(r'/statements/data/(.*)')
-def json_data_database(request, database):
+def json_data_database(request, dbid):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
+
+    query = text("""
+        SELECT DISTINCT(datname)
+        FROM statements.statements
+        WHERE dbid = :dbid
+        AND agent_address = :agent_address
+        AND agent_port = :agent_port;
+    """)
+    datname = request.db_session.execute(
+        query,
+        dict(agent_address=request.instance.agent_address,
+             agent_port=request.instance.agent_port,
+             dbid=dbid)
+    ).fetchone()[0]
 
     base_query = BASE_QUERY_STATDATA_DATABASE
     diffs = get_diffs_forstatdata()
     query = (select([
         column("query"),
-        column("datname"),
         column("rolname"),
     ] + diffs)
             .select_from(base_query)
-            .group_by(column("query"), column("dbid"), column("datname"),
-                      column("rolname"))
+            .group_by(column("query"), column("dbid"), column("rolname"))
             .having(func.max(column("calls")) - func.min(column("calls")) > 0))
 
     statements = request.db_session.execute(
         query,
         dict(agent_address=request.instance.agent_address,
              agent_port=request.instance.agent_port,
-             database=database,
+             dbid=dbid,
              start=start,
              end=end)) \
         .fetchall()
     statements = [dict(statement) for statement in statements]
-    return jsonify(dict(data=statements))
+    return jsonify(dict(datname=datname, data=statements))
 
 
 def get_diffs_forstatdata():
@@ -295,7 +308,7 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
             SELECT psh.dbid, psh.coalesce_range, unnest(records) AS record
             FROM statements.statements_history_db psh
             WHERE coalesce_range && tstzrange(:start, :end,'[]')
-            AND    datname = :datname
+            AND    dbid = :dbid
             AND    agent_address = :agent_address
             AND    agent_port = :agent_port
           ) AS unnested
@@ -308,7 +321,7 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
           FROM statements.statements_history_current_db
           WHERE tstzrange((record).ts, (record).ts, '[]')
             <@ tstzrange(:start, :end, '[]')
-          AND datname = :datname
+          AND dbid = :dbid
           AND agent_address = :agent_address
           AND agent_port = :agent_port
         ) AS statements_history
@@ -318,7 +331,7 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
 """)
 
 
-def getstatdata_sample(request, mode, start, end, database=None):
+def getstatdata_sample(request, mode, start, end, dbid=None):
     if mode == 'instance':
         base_query = BASE_QUERY_STATDATA_SAMPLE_INSTANCE
 
@@ -391,7 +404,7 @@ def getstatdata_sample(request, mode, start, end, database=None):
                   end=end)
 
     if mode == 'db':
-        params['datname'] = database
+        params['dbid'] = dbid
 
     rows = request.db_session.execute(query, params).fetchall()
     return [dict(row) for row in rows]
@@ -407,11 +420,11 @@ def json_chart_data_instance(request):
 
 
 @blueprint.instance_route(r'/statements/chart/(.*)')
-def json_chart_data_db(request, database):
+def json_chart_data_db(request, dbid):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
-    data = getstatdata_sample(request, "db", start, end, database=database)
+    data = getstatdata_sample(request, "db", start, end, dbid=dbid)
     return jsonify(dict(data=data))
 
 
