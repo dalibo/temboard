@@ -140,7 +140,7 @@ AS $PROC$
 BEGIN
     BEGIN
         PERFORM 1
-        FROM statements.metas
+        FROM metas
         WHERE agent_address = _address AND agent_port = _port
         FOR UPDATE NOWAIT;
     EXCEPTION
@@ -227,13 +227,13 @@ BEGIN
     -- from agent, and also aggregate counters by database
 
     -- Create new meta for agent if doesn't already exist
-    INSERT INTO statements.metas (agent_address, agent_port) VALUES (_address, _port)
+    INSERT INTO metas (agent_address, agent_port) VALUES (_address, _port)
     ON CONFLICT DO NOTHING;
 
-    PERFORM statements.prevent_concurrent_snapshot(_address, _port);
+    PERFORM prevent_concurrent_snapshot(_address, _port);
 
     -- Update meta with info from the current proccess (snapshot)
-    UPDATE statements.metas
+    UPDATE metas
     SET coalesce_seq = coalesce_seq + 1,
         snapts = now()
     WHERE agent_address = _address AND agent_port = _port
@@ -241,38 +241,38 @@ BEGIN
 
     WITH capture AS(
         SELECT *
-        FROM statements.statements_src_tmp
+        FROM statements_src_tmp
         WHERE agent_address = _address AND agent_port = _port
     ),
 
     missing_statements AS (
-        INSERT INTO statements.statements (agent_address, agent_port, queryid, query, dbid, datname, userid, rolname)
+        INSERT INTO statements (agent_address, agent_port, queryid, query, dbid, datname, userid, rolname)
             SELECT _address, _port, queryid, query, dbid, datname, userid, rolname
             FROM capture c
             ON CONFLICT DO NOTHING
     ),
 
     by_query AS (
-        INSERT INTO statements.statements_history_current
+        INSERT INTO statements_history_current
             SELECT _address, _port, queryid, dbid, userid,
             ROW(
                 ts, calls, total_time, rows, shared_blks_hit, shared_blks_read,
                 shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read,
                 local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written,
                 blk_read_time, blk_write_time
-            )::statements.statements_history_record AS record
+            )::statements_history_record AS record
             FROM capture
     ),
 
     by_database AS (
-        INSERT INTO statements.statements_history_current_db
+        INSERT INTO statements_history_current_db
             SELECT _address, _port, dbid, datname,
             ROW(
                 ts, sum(calls), sum(total_time), sum(rows), sum(shared_blks_hit), sum(shared_blks_read),
                 sum(shared_blks_dirtied), sum(shared_blks_written), sum(local_blks_hit), sum(local_blks_read),
                 sum(local_blks_dirtied), sum(local_blks_written), sum(temp_blks_read), sum(temp_blks_written),
                 sum(blk_read_time), sum(blk_write_time)
-            )::statements.statements_history_record AS record
+            )::statements_history_record AS record
             FROM capture
             GROUP BY dbid, datname, ts
     )
@@ -283,10 +283,10 @@ BEGIN
     -- Coalesce datas if needed
     IF ( (agg_seq % v_coalesce ) = 0 )
     THEN
-      EXECUTE format('SELECT statements.statements_aggregate(''%s'', %s)', _address, _port);
+      EXECUTE format('SELECT statements_aggregate(''%s'', %s)', _address, _port);
     END IF;
 
-    DELETE FROM statements.statements_src_tmp WHERE agent_address = _address AND agent_port = _port;
+    DELETE FROM statements_src_tmp WHERE agent_address = _address AND agent_port = _port;
 END;
 $PROC$ language plpgsql; /* end of process_statements */
 
