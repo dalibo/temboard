@@ -10,14 +10,14 @@
       <nav aria-label="breadcrumb" class="d-inline-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href v-on:click.prevent="database = null" v-if="database">
+            <a href v-on:click.prevent="dbid = null" v-if="dbid">
               All Databases
             </a>
             <span v-else>All Databases</span>
           </li>
-          <li class="breadcrumb-item" v-if="database">
+          <li class="breadcrumb-item" v-if="dbid">
             <em class="text-muted small">Database:</em>
-            <strong>{{! database }}</strong>
+            <strong>{{! datname }}</strong>
           </li>
         </ol>
       </nav>
@@ -83,7 +83,7 @@
     >
     <template v-slot:thead-top="data">
       <b-tr>
-        <b-th :colspan="database ? 3 : 2"></b-th>
+        <b-th :colspan="dbid ? 3 : 2"></b-th>
         <b-th class="text-center border-left" colspan="2">Time</b-th>
         <b-th class="text-center border-left" colspan="4">Local Blocks</b-th>
         <b-th class="text-center border-left" colspan="4">Shared Blocks</b-th>
@@ -93,9 +93,9 @@
     <template v-slot:cell(query)="row">
       <pre class="sql hljs" v-html="highlight(row.value)" @click="row.toggleDetails"></pre>
     </template>
-    <template v-slot:cell(datname)="data">
-      <a href v-on:click.prevent="database=data.value">
-        {{! data.value }}
+    <template v-slot:cell(datname)="row">
+      <a href v-on:click.prevent="dbid=row.item.dbid">
+        {{! row.item.datname }}
       </a>
     </template>
     <template v-slot:row-details="row">
