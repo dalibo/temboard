@@ -444,9 +444,10 @@ def statements(request):
 def add_statement(session, instance, data):
     try:
         cur = session.connection().connection.cursor()
+        cur.execute("SET search_path TO statements")
         for statement in data.get('data'):
             query = """
-                INSERT INTO statements.statements_src_tmp
+                INSERT INTO statements_src_tmp
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
@@ -479,7 +480,7 @@ def add_statement(session, instance, data):
                     statement['blk_write_time']
                 )
             )
-        query = """SELECT statements.process_statements(%s, %s)"""
+        query = """SELECT process_statements(%s, %s)"""
         cur.execute(query, (instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
     except Exception as e:
