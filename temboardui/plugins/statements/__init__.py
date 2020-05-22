@@ -78,10 +78,20 @@ def get_agent_username(request):
 
 BASE_QUERY_STATDATA = text("""
     (
-        SELECT
-          dbid,
-          datname,
-          (record).*
+        SELECT dbid, datname, (record).*
+        FROM (
+          SELECT psh.dbid, psh.datname, unnest(records) AS record
+          FROM statements.statements_history_db psh
+          WHERE coalesce_range && tstzrange(:start, :end,'[]')
+          AND    agent_address = :agent_address
+          AND    agent_port = :agent_port
+        ) AS unnested
+        WHERE tstzrange((record).ts, (record).ts, '[]')
+              <@ tstzrange(:start, :end, '[]')
+
+        UNION ALL
+
+        SELECT dbid, datname, (record).*
         FROM statements.statements_history_current_db
         WHERE agent_address = :agent_address
         AND agent_port = :agent_port
@@ -118,6 +128,35 @@ def json_data(request):
 
 BASE_QUERY_STATDATA_DATABASE = text("""
     (
+        SELECT
+          statements.*,
+          (unnested.records).*
+        FROM (
+          SELECT
+            psh.agent_address,
+            psh.agent_port,
+            psh.dbid,
+            psh.userid,
+            psh.queryid,
+            unnest(records) AS records
+          FROM statements.statements_history psh
+          WHERE coalesce_range && tstzrange(:start, :end, '[]')
+        ) AS unnested
+        JOIN statements.statements AS statements ON (
+          unnested.agent_address = statements.agent_address AND
+          unnested.agent_port = statements.agent_port AND
+          unnested.queryid = statements.queryid AND
+          unnested.dbid = statements.dbid AND
+          unnested.userid = statements.userid
+        )
+        WHERE statements.agent_address = :agent_address
+        AND statements.agent_port = :agent_port
+        AND statements.datname = :database
+        AND tstzrange((records).ts, (records).ts, '[]')
+          <@ tstzrange(:start, :end, '[]')
+
+        UNION ALL
+
         SELECT
           statements.*,
           (record).*
@@ -197,28 +236,44 @@ BASE_QUERY_STATDATA_SAMPLE_INSTANCE = text("""
           *
         FROM (
           SELECT
-            (record).ts,
-            sum((record).calls) AS calls,
-            sum((record).total_time) AS total_time,
-            sum((record).rows) AS rows,
-            sum((record).shared_blks_hit) AS shared_blks_hit,
-            sum((record).shared_blks_read) AS shared_blks_read,
-            sum((record).shared_blks_dirtied) AS shared_blks_dirtied,
-            sum((record).shared_blks_written) AS shared_blks_written,
-            sum((record).local_blks_hit) AS local_blks_hit,
-            sum((record).local_blks_read) AS local_blks_read,
-            sum((record).local_blks_dirtied) AS local_blks_dirtied,
-            sum((record).local_blks_written) AS local_blks_written,
-            sum((record).temp_blks_read) AS temp_blks_read,
-            sum((record).temp_blks_written) AS temp_blks_written,
-            sum((record).blk_read_time) AS blk_read_time,
-            sum((record).blk_write_time) AS blk_write_time
-          FROM statements.statements_history_current_db
-          WHERE tstzrange((record).ts, (record).ts, '[]')
-            <@ tstzrange(:start, :end, '[]')
-          AND agent_address = :agent_address
-          AND agent_port = :agent_port
-          GROUP BY (record).ts
+            ts,
+            sum(calls) AS calls,
+            sum(total_time) AS total_time,
+            sum(rows) AS rows,
+            sum(shared_blks_hit) AS shared_blks_hit,
+            sum(shared_blks_read) AS shared_blks_read,
+            sum(shared_blks_dirtied) AS shared_blks_dirtied,
+            sum(shared_blks_written) AS shared_blks_written,
+            sum(local_blks_hit) AS local_blks_hit,
+            sum(local_blks_read) AS local_blks_read,
+            sum(local_blks_dirtied) AS local_blks_dirtied,
+            sum(local_blks_written) AS local_blks_written,
+            sum(temp_blks_read) AS temp_blks_read,
+            sum(temp_blks_written) AS temp_blks_written,
+            sum(blk_read_time) AS blk_read_time,
+            sum(blk_write_time) AS blk_write_time
+          FROM (
+            SELECT (record).*
+            FROM (
+              SELECT psh.dbid, psh.coalesce_range, unnest(records) AS record
+              FROM statements.statements_history_db psh
+              WHERE coalesce_range && tstzrange(:start, :end,'[]')
+              AND    agent_address = :agent_address
+              AND    agent_port = :agent_port
+            ) AS unnested
+            WHERE tstzrange((record).ts, (record).ts, '[]')
+                  <@ tstzrange(:start, :end, '[]')
+
+            UNION ALL
+
+            SELECT (record).*
+            FROM statements.statements_history_current_db
+            WHERE tstzrange((record).ts, (record).ts, '[]')
+              <@ tstzrange(:start, :end, '[]')
+            AND agent_address = :agent_address
+            AND agent_port = :agent_port
+          ) AS s
+          GROUP BY ts
         ) AS statements_history
       ) AS sh
       WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
@@ -235,6 +290,20 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
           count(*) OVER (PARTITION BY 1) AS total,
           *
         FROM (
+          SELECT (record).*
+          FROM (
+            SELECT psh.dbid, psh.coalesce_range, unnest(records) AS record
+            FROM statements.statements_history_db psh
+            WHERE coalesce_range && tstzrange(:start, :end,'[]')
+            AND    datname = :datname
+            AND    agent_address = :agent_address
+            AND    agent_port = :agent_port
+          ) AS unnested
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+                <@ tstzrange(:start, :end, '[]')
+
+          UNION ALL
+
           SELECT (record).*
           FROM statements.statements_history_current_db
           WHERE tstzrange((record).ts, (record).ts, '[]')

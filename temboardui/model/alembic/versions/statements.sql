@@ -1,9 +1,24 @@
 DROP SCHEMA IF EXISTS statements CASCADE;
 CREATE SCHEMA statements;
+-- Extension to allow GIST indexes on columns that otherwise wouldn't be
+-- possible
+CREATE EXTENSION btree_gist;
 SET search_path TO statements, public;
 
 
 BEGIN;
+
+CREATE TABLE metas(
+  agent_address TEXT NOT NULL,
+  agent_port INTEGER NOT NULL,
+  coalesce_seq bigint NOT NULL default (1),
+  snapts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
+  aggts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
+  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  PRIMARY KEY (agent_address, agent_port)
+);
 
 CREATE TABLE statements (
   agent_address TEXT NOT NULL,
@@ -64,6 +79,37 @@ CREATE UNLOGGED TABLE statements_src_tmp (
   blk_write_time DOUBLE PRECISION NOT NULL
 );
 
+CREATE TABLE statements_history (
+  agent_address TEXT NOT NULL,
+  agent_port INTEGER NOT NULL,
+  queryid BIGINT NOT NULL,
+  dbid oid NOT NULL,
+  userid oid NOT NULL,
+  coalesce_range tstzrange NOT NULL,
+  records statements_history_record[] NOT NULL,
+  mins_in_range statements_history_record NOT NULL,
+  maxs_in_range statements_history_record NOT NULL,
+  FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX ON statements_history USING gist (agent_address, agent_port, queryid, coalesce_range);
+
+CREATE TABLE statements_history_db (
+  agent_address TEXT NOT NULL,
+  agent_port INTEGER NOT NULL,
+  dbid oid NOT NULL,
+  datname TEXT NOT NULL,
+  coalesce_range tstzrange NOT NULL,
+  records statements_history_record[] NOT NULL,
+  mins_in_range statements_history_record NOT NULL,
+  maxs_in_range statements_history_record NOT NULL,
+  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX ON statements_history_db USING gist (agent_address, agent_port, dbid, coalesce_range);
+
 CREATE TABLE statements_history_current (
   agent_address TEXT NOT NULL,
   agent_port INTEGER NOT NULL,
@@ -88,19 +134,110 @@ CREATE INDEX ON statements_history_current_db (agent_address, agent_port, dbid);
 CREATE INDEX ON statements_history_current_db (agent_address, agent_port);
 CREATE INDEX on statements_history_current_db USING GIST (tstzrange((record).ts, (record).ts, '[]'));
 
+CREATE OR REPLACE FUNCTION prevent_concurrent_snapshot(_address text, _port integer)
+RETURNS void
+AS $PROC$
+BEGIN
+    BEGIN
+        PERFORM 1
+        FROM statements.metas
+        WHERE agent_address = _address AND agent_port = _port
+        FOR UPDATE NOWAIT;
+    EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Could not lock the statements metas record, '
+        'a concurrent process is probably running';
+    END;
+END;
+$PROC$ language plpgsql; /* end of prevent_concurrent_snapshot() */
+
+CREATE OR REPLACE FUNCTION statements_aggregate(_address text, _port integer)
+RETURNS void AS $PROC$
+BEGIN
+
+    UPDATE metas
+    SET aggts = now()
+    WHERE agent_address = _address AND agent_port = _port;
+
+    -- aggregate statements table
+    INSERT INTO statements_history
+        SELECT agent_address, agent_port, queryid, dbid, userid,
+            tstzrange(min((record).ts), max((record).ts),'[]'),
+            array_agg(record),
+            ROW(min((record).ts),
+                min((record).calls),min((record).total_time),min((record).rows),
+                min((record).shared_blks_hit),min((record).shared_blks_read),
+                min((record).shared_blks_dirtied),min((record).shared_blks_written),
+                min((record).local_blks_hit),min((record).local_blks_read),
+                min((record).local_blks_dirtied),min((record).local_blks_written),
+                min((record).temp_blks_read),min((record).temp_blks_written),
+                min((record).blk_read_time),min((record).blk_write_time))::statements_history_record,
+            ROW(max((record).ts),
+                max((record).calls),max((record).total_time),max((record).rows),
+                max((record).shared_blks_hit),max((record).shared_blks_read),
+                max((record).shared_blks_dirtied),max((record).shared_blks_written),
+                max((record).local_blks_hit),max((record).local_blks_read),
+                max((record).local_blks_dirtied),max((record).local_blks_written),
+                max((record).temp_blks_read),max((record).temp_blks_written),
+                max((record).blk_read_time),max((record).blk_write_time))::statements_history_record
+        FROM statements_history_current
+        WHERE agent_address = _address AND agent_port = _port
+        GROUP BY agent_address, agent_port, queryid, dbid, userid;
+
+    DELETE FROM statements_history_current
+    WHERE agent_address = _address AND agent_port = _port;
+
+    -- aggregate db table
+    INSERT INTO statements_history_db
+        SELECT agent_address, agent_port, dbid, datname,
+            tstzrange(min((record).ts), max((record).ts),'[]'),
+            array_agg(record),
+            ROW(min((record).ts),
+                min((record).calls),min((record).total_time),min((record).rows),
+                min((record).shared_blks_hit),min((record).shared_blks_read),
+                min((record).shared_blks_dirtied),min((record).shared_blks_written),
+                min((record).local_blks_hit),min((record).local_blks_read),
+                min((record).local_blks_dirtied),min((record).local_blks_written),
+                min((record).temp_blks_read),min((record).temp_blks_written),
+                min((record).blk_read_time),min((record).blk_write_time))::statements_history_record,
+            ROW(max((record).ts),
+                max((record).calls),max((record).total_time),max((record).rows),
+                max((record).shared_blks_hit),max((record).shared_blks_read),
+                max((record).shared_blks_dirtied),max((record).shared_blks_written),
+                max((record).local_blks_hit),max((record).local_blks_read),
+                max((record).local_blks_dirtied),max((record).local_blks_written),
+                max((record).temp_blks_read),max((record).temp_blks_written),
+                max((record).blk_read_time),max((record).blk_write_time))::statements_history_record
+        FROM statements_history_current_db
+        WHERE agent_address = _address AND agent_port = _port
+        GROUP BY agent_address, agent_port, dbid, datname;
+
+    DELETE FROM statements_history_current_db
+    WHERE agent_address = _address AND agent_port = _port;
+ END;
+$PROC$ LANGUAGE plpgsql; /* end of statements_aggregate */
+
 CREATE OR REPLACE FUNCTION process_statements(_address text, _port integer) RETURNS void AS $PROC$
 DECLARE
     v_rowcount    bigint;
+    v_coalesce    integer := 100;
+    agg_seq  bigint;
 BEGIN
     -- In this function, we process statements that have just been rerieved
     -- from agent, and also aggregate counters by database
 
-    -- Lock table to prevent multiple snapshots to work at the same time
-    -- and insert data from statements_src_tmp table multiple times
-    -- This would lead to incoherent data
-    -- Use NOWAIT to avoid waiting for lock to be released
-    LOCK TABLE statements.statements, statements.statements_history_current, statements.statements_history_current_db
-    IN SHARE MODE NOWAIT;
+    -- Create new meta for agent if doesn't already exist
+    INSERT INTO statements.metas (agent_address, agent_port) VALUES (_address, _port)
+    ON CONFLICT DO NOTHING;
+
+    PERFORM statements.prevent_concurrent_snapshot(_address, _port);
+
+    -- Update meta with info from the current proccess (snapshot)
+    UPDATE statements.metas
+    SET coalesce_seq = coalesce_seq + 1,
+        snapts = now()
+    WHERE agent_address = _address AND agent_port = _port
+    RETURNING coalesce_seq INTO agg_seq;
 
     WITH capture AS(
         SELECT *
@@ -142,6 +279,12 @@ BEGIN
 
     SELECT count(*) INTO v_rowcount
     FROM capture;
+
+    -- Coalesce datas if needed
+    IF ( (agg_seq % v_coalesce ) = 0 )
+    THEN
+      EXECUTE format('SELECT statements.statements_aggregate(''%s'', %s)', _address, _port);
+    END IF;
 
     DELETE FROM statements.statements_src_tmp WHERE agent_address = _address AND agent_port = _port;
 END;
