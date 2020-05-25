@@ -14,6 +14,7 @@ CREATE TABLE metas(
   coalesce_seq bigint NOT NULL default (1),
   snapts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
   aggts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
+  purgets timestamp with time zone NOT NULL default '-infinity'::timestamptz,
   FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -216,6 +217,20 @@ BEGIN
     WHERE agent_address = _address AND agent_port = _port;
  END;
 $PROC$ LANGUAGE plpgsql; /* end of statements_aggregate */
+
+CREATE OR REPLACE FUNCTION statements_purge(_ndays integer)
+RETURNS void AS $PROC$
+DECLARE
+    v_retention   interval := (_ndays || ' days')::interval;
+BEGIN
+    -- Delete obsolete datas.
+    DELETE FROM statements_history
+    WHERE upper(coalesce_range)< (now() - v_retention);
+
+    DELETE FROM statements_history_db
+    WHERE upper(coalesce_range)< (now() - v_retention);
+END;
+$PROC$ LANGUAGE plpgsql; /* end of statements_purge */
 
 CREATE OR REPLACE FUNCTION process_statements(_address text, _port integer) RETURNS void AS $PROC$
 DECLARE
