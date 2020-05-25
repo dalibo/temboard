@@ -124,30 +124,6 @@ $(function() {
       class: 'text-right',
       sortable: true
     }, {
-      key: 'local_blks_read',
-      label: 'Read',
-      class: 'text-right border-left',
-      formatter: formatSize,
-      sortable: true
-    }, {
-      key: 'local_blks_hit',
-      label: 'Hit',
-      class: 'text-right',
-      formatter: formatSize,
-      sortable: true
-    }, {
-      key: 'local_blks_dirtied',
-      label: 'Dirt.',
-      class: 'text-right',
-      formatter: formatSize,
-      sortable: true
-    }, {
-      key: 'local_blks_written',
-      label: 'Writ.',
-      class: 'text-right',
-      formatter: formatSize,
-      sortable: true
-    }, {
       key: 'shared_blks_read',
       label: 'Read',
       class: 'text-right border-left',
