@@ -141,3 +141,13 @@ Parameters related to the monitoring plugin.
   - **purge_after**
   Set the amount of data to keep, expressed in days.
   Default: *empty*
+
+
+### `statements`
+
+Parameters related to the statements plugin.
+
+
+  - **purge_after**
+  Set the amount of data to keep, expressed in days.
+  Default: 30

@@ -544,11 +544,50 @@ def pull_data_for_instance(app, session, instance):
         raise(e)
 
 
+@workers.register(pool_size=1)
+def purge_data_worker(app):
+    """Background worker in charge of purging statements data.
+    Purge policy is based on purge_after parameter from statements section.
+    purge_after sets the number of days of data to keep, from now. Default is
+    90 days if not set.
+    """
+    logger.setLevel(app.config.logging.level)
+    logger.info("Purging old statements data")
+
+    engine = worker_engine(app.config.repository)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    session = Session()
+
+    try:
+        purge_after = app.config.statements.purge_after
+    except AttributeError:
+        purge_after = 90
+
+    # Get tablename list to purge from metric_tables_config()
+    try:
+        cur = session.connection().connection.cursor()
+        cur.execute("SET search_path TO statements")
+        cur.execute("""SELECT statements_purge(%s)""", (purge_after,))
+        session.connection().connection.commit()
+    except Exception as e:
+        logger.error('Could not purge statements data')
+        logger.exception(e)
+        raise(e)
+
+
 @taskmanager.bootstrap()
 def statements_bootstrap(context):
     yield taskmanager.Task(
         worker_name='pull_data_worker',
         id='statementsdata',
         redo_interval=1 * 60,  # Repeat each 1m,
+        options={},
+    )
+    yield taskmanager.Task(
+        worker_name='purge_data_worker',
+        id='purge_data',
+        # redo_interval=24 * 60 * 60,  # Repeat each 24h,
+        redo_interval=1 * 20,  # Repeat each 1m,
         options={},
     )
