@@ -11,7 +11,6 @@ from sqlalchemy.orm import (
     sessionmaker,
     scoped_session,
 )
-from sqlalchemy import create_engine
 from sqlalchemy.sql import (
     column,
     extract,
@@ -19,6 +18,7 @@ from sqlalchemy.sql import (
     select,
     text,
 )
+from temboardui.model import worker_engine
 from temboardui.model.orm import (
     Biggest,
     Biggestsum,
@@ -489,19 +489,9 @@ def add_statement(session, instance, data):
 
 @workers.register(pool_size=1)
 def pull_data_worker(app):
-    # Worker in charge of retrieving statements data
-    dbconf = app.config.repository
-    dburi = 'postgresql://{user}:{pwd}@:{p}/{db}?host={h}'.format(
-        user=dbconf['user'],
-        pwd=dbconf['password'],
-        h=dbconf['host'],
-        p=dbconf['port'],
-        db=dbconf['dbname']
-    )
-    engine = create_engine(dburi)
+    engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
-
     worker_session = Session()
     instances = worker_session.query(Instances)
 
