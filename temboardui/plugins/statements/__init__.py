@@ -130,51 +130,47 @@ def json_data(request):
 BASE_QUERY_STATDATA_DATABASE = text("""
     (
         SELECT
-          statements.*,
-          (unnested.records).*
+            statements.query,
+            statements.rolname,
+            statements.datname,
+            h.*
         FROM (
-          SELECT
-            psh.agent_address,
-            psh.agent_port,
-            psh.dbid,
-            psh.userid,
-            psh.queryid,
-            unnest(records) AS records
-          FROM statements.statements_history psh
-          WHERE coalesce_range && tstzrange(:start, :end, '[]')
-        ) AS unnested
-        JOIN statements.statements AS statements ON (
-          unnested.agent_address = statements.agent_address AND
-          unnested.agent_port = statements.agent_port AND
-          unnested.queryid = statements.queryid AND
-          unnested.dbid = statements.dbid AND
-          unnested.userid = statements.userid
-        )
-        WHERE unnested.agent_address = :agent_address
-        AND unnested.agent_port = :agent_port
-        AND unnested.dbid = :dbid
-        AND tstzrange((records).ts, (records).ts, '[]')
-          <@ tstzrange(:start, :end, '[]')
+            SELECT
+              *,
+              (record).*
+            FROM (
+              SELECT
+                agent_address, agent_port, queryid, dbid, userid,
+                unnest(records) AS record
+              FROM statements.statements_history psh
+              WHERE coalesce_range && tstzrange(:start, :end, '[]')
+            ) AS unnested
+            WHERE agent_address = :agent_address
+            AND agent_port = :agent_port
+            AND dbid = :dbid
+            AND tstzrange((record).ts, (record).ts, '[]')
+              <@ tstzrange(:start, :end, '[]')
 
-        UNION ALL
+            UNION ALL
 
-        SELECT
-          statements.*,
-          (record).*
-        FROM statements.statements_history_current AS history
+            SELECT
+              *,
+              (record).*
+            FROM statements.statements_history_current
+            WHERE agent_address = :agent_address
+            AND agent_port = :agent_port
+            AND dbid = :dbid
+            AND tstzrange((record).ts, (record).ts, '[]')
+              <@ tstzrange(:start, :end, '[]')
+        ) AS h
         JOIN statements.statements AS statements ON (
-          history.agent_address = statements.agent_address AND
-          history.agent_port = statements.agent_port AND
-          history.queryid = statements.queryid AND
-          history.dbid = statements.dbid AND
-          history.userid = statements.userid
+          h.agent_address = statements.agent_address AND
+          h.agent_port = statements.agent_port AND
+          h.queryid = statements.queryid AND
+          h.dbid = statements.dbid AND
+          h.userid = statements.userid
         )
-        WHERE history.agent_address = :agent_address
-        AND history.agent_port = :agent_port
-        AND history.dbid = :dbid
-        AND tstzrange((record).ts, (record).ts, '[]')
-          <@ tstzrange(:start, :end, '[]')
-    ) h
+    ) hs
 """)
 
 
