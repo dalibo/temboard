@@ -10,7 +10,7 @@
       <nav aria-label="breadcrumb" class="d-inline-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href v-on:click.prevent="dbid = null" v-if="dbid">
+            <a href v-on:click.prevent="dbid = null; queryid = null; userid = null;" v-if="dbid">
               All Databases
             </a>
             <span v-else>All Databases</span>
@@ -105,6 +105,9 @@
           </b-col>
         </b-row>
         <b-button size="sm" @click="row.toggleDetails">Hide Details</b-button>
+        <a href v-on:click.prevent="dbid=row.item.dbid;queryid=row.item.queryid;userid=row.item.userid">
+          Details
+        </a>
       </b-card>
     </template>
     <template v-slot:cell()="data">

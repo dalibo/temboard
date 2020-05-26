@@ -7,6 +7,7 @@ from tornado.web import (
     HTTPError,
 )
 
+import sqlalchemy as sqla
 from sqlalchemy.orm import (
     sessionmaker,
     scoped_session,
@@ -197,20 +198,22 @@ def json_data_database(request, dbid):
     diffs = get_diffs_forstatdata()
     query = (select([
         column("query"),
+        sqla.cast(column("queryid"), sqla.String).label('queryid'),
+        column("dbid"),
+        column("userid"),
         column("rolname"),
     ] + diffs)
             .select_from(base_query)
-            .group_by(column("query"), column("dbid"), column("rolname"))
+            .group_by(column("query"), column("queryid"),
+                      column("dbid"), column("rolname"), column("userid"))
             .having(func.max(column("calls")) - func.min(column("calls")) > 0))
 
-    statements = request.db_session.execute(
-        query,
-        dict(agent_address=request.instance.agent_address,
-             agent_port=request.instance.agent_port,
-             dbid=dbid,
-             start=start,
-             end=end)) \
-        .fetchall()
+    params = dict(agent_address=request.instance.agent_address,
+                  agent_port=request.instance.agent_port,
+                  dbid=int(dbid),
+                  start=start,
+                  end=end)
+    statements = request.db_session.execute(query, params).fetchall()
     statements = [dict(statement) for statement in statements]
     return jsonify(dict(datname=datname, data=statements))
 
@@ -327,7 +330,49 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
 """)
 
 
-def getstatdata_sample(request, mode, start, end, dbid=None):
+BASE_QUERY_STATDATA_SAMPLE_QUERY = text("""
+    (
+      SELECT *
+      FROM (
+        SELECT
+          row_number() OVER (ORDER BY ts) AS number,
+          count(*) OVER (PARTITION BY 1) AS total,
+          *
+        FROM (
+          SELECT (record).*
+          FROM (
+            SELECT psh.dbid, psh.coalesce_range, unnest(records) AS record
+            FROM statements.statements_history psh
+            WHERE coalesce_range && tstzrange(:start, :end,'[]')
+            AND dbid = :dbid
+            AND queryid = :queryid
+            AND userid = :userid
+            AND agent_address = :agent_address
+            AND agent_port = :agent_port
+          ) AS unnested
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+                <@ tstzrange(:start, :end, '[]')
+
+          UNION ALL
+
+          SELECT (record).*
+          FROM statements.statements_history_current
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+            <@ tstzrange(:start, :end, '[]')
+          AND dbid = :dbid
+          AND queryid = :queryid
+          AND userid = :userid
+          AND agent_address = :agent_address
+          AND agent_port = :agent_port
+        ) AS statements_history
+      ) AS sh
+      WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
+    ) by_db
+""")
+
+
+def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
+                       userid=None):
     if mode == 'instance':
         base_query = BASE_QUERY_STATDATA_SAMPLE_INSTANCE
 
@@ -335,7 +380,7 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
         base_query = BASE_QUERY_STATDATA_SAMPLE_DATABASE
 
     elif mode == "query":
-        pass
+        base_query = BASE_QUERY_STATDATA_SAMPLE_QUERY
 
     ts = column('ts')
     biggest = Biggest(ts)
@@ -399,8 +444,11 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
                   start=start,
                   end=end)
 
-    if mode == 'db':
+    if mode == 'db' or mode == 'query':
         params['dbid'] = dbid
+    if mode == 'query':
+        params['queryid'] = queryid
+        params['userid'] = userid
 
     rows = request.db_session.execute(query, params).fetchall()
     return [dict(row) for row in rows]
@@ -415,7 +463,17 @@ def json_chart_data_instance(request):
     return jsonify(dict(data=data))
 
 
-@blueprint.instance_route(r'/statements/chart/(.*)')
+@blueprint.instance_route(r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
+def json_chart_data_query(request, dbid, queryid, userid):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    data = getstatdata_sample(request, "query", start, end, dbid=dbid,
+                              queryid=queryid, userid=userid)
+    return jsonify(dict(data=data))
+
+
+@blueprint.instance_route(r'/statements/chart/([0-9]*)')
 def json_chart_data_db(request, dbid):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)

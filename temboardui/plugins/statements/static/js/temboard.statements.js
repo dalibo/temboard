@@ -12,6 +12,8 @@ $(function() {
       statements: [],
       dbid: null,
       datname: null,
+      queryid: null,
+      userid: null,
       sortBy: 'total_time',
       filter: '',
       from: null,
@@ -21,6 +23,9 @@ $(function() {
       fields: getFields,
       fromTo: function() {
         return this.from, this.to, new Date();
+      },
+      queryidUserid: function() {
+        return this.queryid, this.userid, new Date();
       }
     },
     methods: {
@@ -45,6 +50,18 @@ $(function() {
         }
         this.$router.replace({ query: newQueryParams });
         this.fetchData();
+      },
+      queryidUserid: function() {
+        var newQueryParams = _.assign({}, this.$route.query);
+        if (!this.queryid) {
+          delete newQueryParams.queryid;
+          delete newQueryParams.userid;
+        } else {
+          newQueryParams.queryid = this.queryid;
+          newQueryParams.userid = this.userid;
+        }
+        this.$router.replace({ query: newQueryParams });
+        this.fetchData();
       }
     }
   });
@@ -59,8 +76,12 @@ $(function() {
     var startDate = dateMath.parse(this.from);
     var endDate = dateMath.parse(this.to, true);
 
+    var url = this.dbid ? '/' + this.dbid : '';
+    url += this.queryid ? '/' + this.queryid : '';
+    url += this.userid ? '/' + this.userid : '';
+
     $.get(
-      apiUrl + (this.dbid ? '/' + this.dbid : ''),
+      apiUrl + url,
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
@@ -79,7 +100,7 @@ $(function() {
     );
 
     $.get(
-      chartApiUrl + (this.dbid ? '/' + this.dbid : ''),
+      chartApiUrl + url,
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
