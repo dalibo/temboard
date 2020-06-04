@@ -12,12 +12,16 @@ workflows:
         matrix:
           parameters:
             codename: [stretch, jessie]
-    - func-stretch:
-        name: stage1-func-stretch
+    - func:
+        name: stage1-func-pg12-centos7
         requires: [stage0-unit]
-    - func-centos7:
-        name: stage1-func-centos7
+        dist: centos7
+        pgversion: "12"
+    - func:
+        name: stage1-func-pg9.5-stretch
         requires: [stage0-unit]
+        dist: stretch
+        pgversion: "9.5"
 
 jobs:
   doc:
@@ -107,24 +111,30 @@ jobs:
         root: .
         paths: [dist/*.deb]
 
-  func-stretch:
+  func:
+    parameters:
+      dist:
+        description: "Distribution"
+        type: enum
+        enum: [stretch, jessie, centos7]
+      pgversion:
+        description: "PostgreSQL version for repository."
+        type: enum
+        enum: ["12", "11", "10", "9.6", "9.5"]
     docker:
-    - &func-temboard
-      image: dalibo/temboard-agent-sdk:stretch
+    - image: dalibo/temboard-agent-sdk:<< parameters.dist >>
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
         SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
-    - &func-postgres
-      image: postgres:12-alpine
+    - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
-    - &func-selenium
-      image: selenium/standalone-firefox
-    steps: &func-steps
+    - image: selenium/standalone-firefox
+    steps:
     - checkout
     - run: git submodule update --init
     - *pip-cache-restore
@@ -134,12 +144,3 @@ jobs:
     - *pip-cache-save
     - store_artifacts:
         path: temboard-func.logs
-
-  func-centos7:
-    docker:
-    - <<: *func-temboard
-      image: dalibo/temboard-agent-sdk:centos7
-    - <<: *func-postgres
-      image: postgres:9.5-alpine
-    - *func-selenium
-    steps: *func-steps
