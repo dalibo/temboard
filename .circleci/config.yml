@@ -18,7 +18,7 @@ workflows:
         requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
-            codename: [stretch]
+            codename: [buster, stretch]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - func:
@@ -27,7 +27,13 @@ workflows:
         requires: [stage0-pkg-centos7, "stage0-unit-python:2.7"]
         matrix:
           parameters:
-            pgversion: ["9.6", "10", "12"]
+            pgversion: ["9.6", "12"]
+    - func:
+        name: stage1-func-pg11-buster
+        dist: buster
+        pgversion: "11"
+        install_rpm: 0
+        requires: ["stage0-unit-python:2.7"]
     - func:
         name: stage1-func-pg<< matrix.pgversion >>-stretch
         dist: stretch
@@ -35,7 +41,7 @@ workflows:
         requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
-            pgversion: ["11"]
+            pgversion: ["10"]
 
 jobs:
   docs:
@@ -112,7 +118,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [stretch]
+        enum: [buster, stretch]
     docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
@@ -135,7 +141,7 @@ jobs:
       dist:
         description: "Execution Linux distribution"
         type: enum
-        enum: [centos7, stretch]
+        enum: [centos7, buster, stretch]
       install_rpm:
         description: "Whether to install agent from RPM"
         type: integer
