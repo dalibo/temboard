@@ -10,8 +10,11 @@ workflows:
         matrix:
           parameters:
             docker: ["python:3.6", "python:2.7"]
-    - stage1-deb-stretch:
+    - stage1-deb:
         requires: ["stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            codename: [stretch]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - stage1-func:
@@ -102,8 +105,13 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  stage1-deb-stretch:
-    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+  stage1-deb:
+    parameters:
+      codename:
+        description: "Debian version"
+        type: enum
+        enum: [stretch]
+    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
