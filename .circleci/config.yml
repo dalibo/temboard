@@ -1,7 +1,44 @@
 version: 2.1
 
+workflows:
+  version: 2
+  default:
+    jobs:
+    - docs:
+        name: stage0-docs
+    - rpm-centos7:
+        name: stage0-pkg-centos7
+    - unit:
+        name: stage0-unit-<< matrix.docker >>
+        matrix:
+          parameters:
+            docker: ["python:3.6", "python:2.7"]
+    - deb:
+        name: stage1-pkg-<< matrix.codename >>
+        requires: ["stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            codename: [stretch]
+    # Please keep tests/func/Makefile run-all test matrix sync with the
+    # following.
+    - func:
+        name: stage1-func-pg<< matrix.pgversion >>-centos7
+        dist: centos7
+        requires: [stage0-pkg-centos7, "stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            pgversion: ["9.6", "10", "12"]
+    - func:
+        name: stage1-func-pg<< matrix.pgversion >>-stretch
+        dist: stretch
+        install_rpm: 0
+        requires: ["stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            pgversion: ["11"]
+
 jobs:
-  stage0-docs:
+  docs:
     docker: [{image: "python:2.7"}]
     working_directory: ~/workspace
     steps:
@@ -17,7 +54,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  stage0-rpm-centos7:
+  rpm-centos7:
     docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
     steps:
@@ -36,14 +73,19 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  stage0-unit-py27:
+  unit:
+    parameters:
+      docker:
+        description: "Python runtime"
+        type: enum
+        enum: ["python:2.7", "python:3.6"]
     docker:
-      - image: python:2.7
-        environment: &unit_env
+      - image: "<< parameters.docker >>"
+        environment:
           TERM: linux
           TERMINFO: /etc/terminfo
     working_directory: /home/ubuntu/temboard-agent
-    steps: &unit_steps
+    steps:
       - checkout
       - run: git submodule update --init
       - restore_cache:
@@ -65,15 +107,13 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  stage0-unit-py36:
-    docker:
-      - image: python:3.6
-        environment: *unit_env
-    working_directory: /home/ubuntu/temboard-agent
-    steps: *unit_steps
-
-  stage1-deb-stretch:
-    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+  deb:
+    parameters:
+      codename:
+        description: "Debian version"
+        type: enum
+        enum: [stretch]
+    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
@@ -90,7 +130,7 @@ jobs:
         paths:
          - dist/*.deb
 
-  stage1-func:
+  func:
     parameters:
       dist:
         description: "Execution Linux distribution"
@@ -115,34 +155,3 @@ jobs:
     - run:
         name: Execute func tests
         command: "TBD_INSTALL_RPM=<< parameters.install_rpm >> tests/func/run_tests_docker.sh"
-
-
-workflows:
-  version: 2
-  pipeline:
-    jobs:
-    - stage0-docs
-    - stage0-rpm-centos7
-    - stage0-unit-py27
-    - stage0-unit-py36
-    - stage1-deb-stretch:
-        requires: [stage0-unit-py36]
-    # Please keep tests/func/Makefile run-all test matrix sync with the
-    # following.
-    - stage1-func:
-        pgversion: "12"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
-    - stage1-func:
-        dist: stretch
-        install_rpm: 0
-        pgversion: "11"
-        requires: [stage0-unit-py27]
-    - stage1-func:
-        pgversion: "10"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
-    - stage1-func:
-        pgversion: "9.6"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
