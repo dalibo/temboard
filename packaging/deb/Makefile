@@ -1,9 +1,9 @@
 DISTDIR=../../dist
 DPUT=labs
 
-all: jessie stretch
+all: buster jessie stretch
 
-jessie stretch:
+buster jessie stretch:
 	mkdir -p $(DISTDIR)
 	docker-compose run --rm $@
 	./mkchanges.sh $$(readlink -e $(DISTDIR)/last_build.deb) $@
