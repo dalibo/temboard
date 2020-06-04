@@ -1,5 +1,18 @@
 version: 2
 
+workflows:
+  version: 2
+  default:
+    jobs:
+    - 0-doc
+    - 0-unit
+    - 0-rpm-centos7
+    - 0-deb-stretch
+    - 1-func-stretch:
+        requires: [0-unit]
+    - 1-func-centos7:
+        requires: [0-unit]
+
 jobs:
   0-doc:
     docker: [{image: "python:3.5"}]
@@ -119,17 +132,3 @@ jobs:
       image: postgres:9.5-alpine
     - *func-selenium
     steps: *func-steps
-
-
-workflows:
-  version: 2
-  pipeline:
-    jobs:
-    - 0-doc
-    - 0-unit
-    - 0-rpm-centos7
-    - 0-deb-stretch
-    - 1-func-stretch:
-        requires: [0-unit]
-    - 1-func-centos7:
-        requires: [0-unit]
