@@ -1,5 +1,35 @@
 version: 2.1
 
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+    - stage0-docs
+    - stage0-rpm-centos7
+    - stage0-unit-py27
+    - stage0-unit-py36
+    - stage1-deb-stretch:
+        requires: [stage0-unit-py36]
+    # Please keep tests/func/Makefile run-all test matrix sync with the
+    # following.
+    - stage1-func:
+        pgversion: "12"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
+        dist: stretch
+        install_rpm: 0
+        pgversion: "11"
+        requires: [stage0-unit-py27]
+    - stage1-func:
+        pgversion: "10"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+    - stage1-func:
+        pgversion: "9.6"
+        dist: centos7
+        requires: [stage0-rpm-centos7, stage0-unit-py27]
+
 jobs:
   stage0-docs:
     docker: [{image: "python:2.7"}]
@@ -115,34 +145,3 @@ jobs:
     - run:
         name: Execute func tests
         command: "TBD_INSTALL_RPM=<< parameters.install_rpm >> tests/func/run_tests_docker.sh"
-
-
-workflows:
-  version: 2
-  pipeline:
-    jobs:
-    - stage0-docs
-    - stage0-rpm-centos7
-    - stage0-unit-py27
-    - stage0-unit-py36
-    - stage1-deb-stretch:
-        requires: [stage0-unit-py36]
-    # Please keep tests/func/Makefile run-all test matrix sync with the
-    # following.
-    - stage1-func:
-        pgversion: "12"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
-    - stage1-func:
-        dist: stretch
-        install_rpm: 0
-        pgversion: "11"
-        requires: [stage0-unit-py27]
-    - stage1-func:
-        pgversion: "10"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
-    - stage1-func:
-        pgversion: "9.6"
-        dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
