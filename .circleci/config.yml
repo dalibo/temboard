@@ -4,39 +4,41 @@ workflows:
   version: 2
   pipeline:
     jobs:
-    - stage0-docs
-    - stage0-rpm-centos7
-    - stage0-unit:
+    - docs:
+        name: stage0-docs
+    - rpm-centos7:
+        name: stage0-pkg-centos7
+    - unit:
+        name: stage0-unit-<< matrix.docker >>
         matrix:
           parameters:
             docker: ["python:3.6", "python:2.7"]
-    - stage1-deb:
+    - deb:
+        name: stage1-pkg-<< matrix.codename >>
         requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
             codename: [stretch]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
-    - stage1-func:
-        pgversion: "12"
+    - func:
+        name: stage1-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
-        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
-    - stage1-func:
+        requires: [stage0-pkg-centos7, "stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            pgversion: ["9.6", "10", "12"]
+    - func:
+        name: stage1-func-pg<< matrix.pgversion >>-stretch
         dist: stretch
         install_rpm: 0
-        pgversion: "11"
         requires: ["stage0-unit-python:2.7"]
-    - stage1-func:
-        pgversion: "10"
-        dist: centos7
-        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
-    - stage1-func:
-        pgversion: "9.6"
-        dist: centos7
-        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            pgversion: ["11"]
 
 jobs:
-  stage0-docs:
+  docs:
     docker: [{image: "python:2.7"}]
     working_directory: ~/workspace
     steps:
@@ -52,7 +54,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  stage0-rpm-centos7:
+  rpm-centos7:
     docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
     working_directory: ~/workspace
     steps:
@@ -71,7 +73,7 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  stage0-unit:
+  unit:
     parameters:
       docker:
         description: "Python runtime"
@@ -105,7 +107,7 @@ jobs:
           paths:
             - "~/.cache/pip/"
 
-  stage1-deb:
+  deb:
     parameters:
       codename:
         description: "Debian version"
@@ -128,7 +130,7 @@ jobs:
         paths:
          - dist/*.deb
 
-  stage1-func:
+  func:
     parameters:
       dist:
         description: "Execution Linux distribution"
