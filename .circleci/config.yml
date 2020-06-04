@@ -2,7 +2,7 @@ version: 2.1
 
 workflows:
   version: 2
-  pipeline:
+  default:
     jobs:
     - docs:
         name: stage0-docs
