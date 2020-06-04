@@ -6,29 +6,31 @@ workflows:
     jobs:
     - stage0-docs
     - stage0-rpm-centos7
-    - stage0-unit-py27
-    - stage0-unit-py36
+    - stage0-unit:
+        matrix:
+          parameters:
+            docker: ["python:3.6", "python:2.7"]
     - stage1-deb-stretch:
-        requires: [stage0-unit-py36]
+        requires: ["stage0-unit-python:2.7"]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - stage1-func:
         pgversion: "12"
         dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
+        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
     - stage1-func:
         dist: stretch
         install_rpm: 0
         pgversion: "11"
-        requires: [stage0-unit-py27]
+        requires: ["stage0-unit-python:2.7"]
     - stage1-func:
         pgversion: "10"
         dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
+        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
     - stage1-func:
         pgversion: "9.6"
         dist: centos7
-        requires: [stage0-rpm-centos7, stage0-unit-py27]
+        requires: [stage0-rpm-centos7, "stage0-unit-python:2.7"]
 
 jobs:
   stage0-docs:
@@ -66,14 +68,19 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  stage0-unit-py27:
+  stage0-unit:
+    parameters:
+      docker:
+        description: "Python runtime"
+        type: enum
+        enum: ["python:2.7", "python:3.6"]
     docker:
-      - image: python:2.7
-        environment: &unit_env
+      - image: "<< parameters.docker >>"
+        environment:
           TERM: linux
           TERMINFO: /etc/terminfo
     working_directory: /home/ubuntu/temboard-agent
-    steps: &unit_steps
+    steps:
       - checkout
       - run: git submodule update --init
       - restore_cache:
@@ -94,13 +101,6 @@ jobs:
           key: temboard-agent-{{ .Branch }}
           paths:
             - "~/.cache/pip/"
-
-  stage0-unit-py36:
-    docker:
-      - image: python:3.6
-        environment: *unit_env
-    working_directory: /home/ubuntu/temboard-agent
-    steps: *unit_steps
 
   stage1-deb-stretch:
     docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
