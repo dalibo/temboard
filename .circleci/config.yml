@@ -1,7 +1,30 @@
-version: 2
+version: 2.1
+
+workflows:
+  version: 2
+  default:
+    jobs:
+    - doc: {name: stage0-doc}
+    - unit: {name: stage0-unit}
+    - rpm-centos7: {name: stage0-pkg-centos7}
+    - deb:
+        name: stage0-pkg-<< matrix.codename >>
+        matrix:
+          parameters:
+            codename: [stretch, jessie]
+    - func:
+        name: stage1-func-pg12-centos7
+        requires: [stage0-unit]
+        dist: centos7
+        pgversion: "12"
+    - func:
+        name: stage1-func-pg9.5-stretch
+        requires: [stage0-unit]
+        dist: stretch
+        pgversion: "9.5"
 
 jobs:
-  0-doc:
+  doc:
     docker: [{image: "python:3.5"}]
     working_directory: ~/project
     steps:
@@ -16,7 +39,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-unit:
+  unit:
     docker: [{image: "python:2.7"}]
     working_directory: /workspace
     steps:
@@ -47,7 +70,7 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
-  0-rpm-centos7:
+  rpm-centos7:
     docker: [{image: "rpmbuild/centos7"}]
     working_directory: ~/workspace
     steps:
@@ -66,8 +89,13 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  0-deb-stretch:
-    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+  deb:
+    parameters:
+      codename:
+        description: "Debian version"
+        type: enum
+        enum: [stretch, jessie]
+    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
@@ -83,24 +111,30 @@ jobs:
         root: .
         paths: [dist/*.deb]
 
-  1-func-stretch:
+  func:
+    parameters:
+      dist:
+        description: "Distribution"
+        type: enum
+        enum: [stretch, jessie, centos7]
+      pgversion:
+        description: "PostgreSQL version for repository."
+        type: enum
+        enum: ["12", "11", "10", "9.6", "9.5"]
     docker:
-    - &func-temboard
-      image: dalibo/temboard-agent-sdk:stretch
+    - image: dalibo/temboard-agent-sdk:<< parameters.dist >>
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
         SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
-    - &func-postgres
-      image: postgres:12-alpine
+    - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
-    - &func-selenium
-      image: selenium/standalone-firefox
-    steps: &func-steps
+    - image: selenium/standalone-firefox
+    steps:
     - checkout
     - run: git submodule update --init
     - *pip-cache-restore
@@ -110,26 +144,3 @@ jobs:
     - *pip-cache-save
     - store_artifacts:
         path: temboard-func.logs
-
-  1-func-centos7:
-    docker:
-    - <<: *func-temboard
-      image: dalibo/temboard-agent-sdk:centos7
-    - <<: *func-postgres
-      image: postgres:9.5-alpine
-    - *func-selenium
-    steps: *func-steps
-
-
-workflows:
-  version: 2
-  pipeline:
-    jobs:
-    - 0-doc
-    - 0-unit
-    - 0-rpm-centos7
-    - 0-deb-stretch
-    - 1-func-stretch:
-        requires: [0-unit]
-    - 1-func-centos7:
-        requires: [0-unit]
