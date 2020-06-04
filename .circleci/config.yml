@@ -7,7 +7,11 @@ workflows:
     - 0-doc
     - 0-unit
     - 0-rpm-centos7
-    - 0-deb-stretch
+    - deb:
+        name: 0-deb-<< matrix.codename >>
+        matrix:
+          parameters:
+            codename: [stretch, jessie]
     - 1-func-stretch:
         requires: [0-unit]
     - 1-func-centos7:
@@ -79,8 +83,13 @@ jobs:
         paths:
         - dist/rpm/noarch/*.rpm
 
-  0-deb-stretch:
-    docker: [{image: "dalibo/temboard-agent-sdk:stretch"}]
+  deb:
+    parameters:
+      codename:
+        description: "Debian version"
+        type: enum
+        enum: [stretch, jessie]
+    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
