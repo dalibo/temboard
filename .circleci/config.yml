@@ -1,24 +1,26 @@
-version: 2
+version: 2.1
 
 workflows:
   version: 2
   default:
     jobs:
-    - 0-doc
-    - 0-unit
-    - 0-rpm-centos7
+    - doc: {name: stage0-doc}
+    - unit: {name: stage0-unit}
+    - rpm-centos7: {name: stage0-pkg-centos7}
     - deb:
-        name: 0-deb-<< matrix.codename >>
+        name: stage0-pkg-<< matrix.codename >>
         matrix:
           parameters:
             codename: [stretch, jessie]
-    - 1-func-stretch:
-        requires: [0-unit]
-    - 1-func-centos7:
-        requires: [0-unit]
+    - func-stretch:
+        name: stage1-func-stretch
+        requires: [stage0-unit]
+    - func-centos7:
+        name: stage1-func-centos7
+        requires: [stage0-unit]
 
 jobs:
-  0-doc:
+  doc:
     docker: [{image: "python:3.5"}]
     working_directory: ~/project
     steps:
@@ -33,7 +35,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  0-unit:
+  unit:
     docker: [{image: "python:2.7"}]
     working_directory: /workspace
     steps:
@@ -64,7 +66,7 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
-  0-rpm-centos7:
+  rpm-centos7:
     docker: [{image: "rpmbuild/centos7"}]
     working_directory: ~/workspace
     steps:
@@ -105,7 +107,7 @@ jobs:
         root: .
         paths: [dist/*.deb]
 
-  1-func-stretch:
+  func-stretch:
     docker:
     - &func-temboard
       image: dalibo/temboard-agent-sdk:stretch
@@ -133,7 +135,7 @@ jobs:
     - store_artifacts:
         path: temboard-func.logs
 
-  1-func-centos7:
+  func-centos7:
     docker:
     - <<: *func-temboard
       image: dalibo/temboard-agent-sdk:centos7
