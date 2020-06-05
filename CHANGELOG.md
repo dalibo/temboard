@@ -8,6 +8,7 @@
   [@bersace].
 - temBoard repository schema is now versionned, by [@bersace].
 - Load external plugins from setuptools entrypoint `temboard.plugins`, by [@orgrim].
+- Debian Buster testing & packaging, by [@bersace].
 
 ### Fixed
 

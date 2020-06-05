@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  stretch: &mkdeb
-    image: dalibo/temboard-agent-sdk:stretch
+  buster: &mkdeb
+    image: dalibo/temboard-agent-sdk:buster
     environment:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}
@@ -10,6 +10,10 @@ services:
     volumes:
     - ../..:/workspace
     command: /workspace/packaging/deb/mkdeb.sh
+
+  stretch:
+    <<: *mkdeb
+    image: dalibo/temboard-agent-sdk:stretch
 
   jessie:
     <<: *mkdeb
