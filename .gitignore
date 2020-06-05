@@ -1,3 +1,5 @@
+# To clone agent as a subdirectory.
+agent/
 *.pyc
 .pybuild/
 *.sw*
