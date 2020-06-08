@@ -1,7 +1,7 @@
 from temboardui.plugins.monitoring.model import tables
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.inspection import inspect
 
 
@@ -77,4 +77,6 @@ class CheckState(Model):
 
 class CollectorStatus(Model):
     __table__ = tables.collector_status
-    instance = relationship('Instance', backref='collector_statuts')
+    instance = relationship('Instance',
+                            backref=backref('collector_statuts',
+                                            cascade='all, delete-orphan'))
