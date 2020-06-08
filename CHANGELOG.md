@@ -14,6 +14,7 @@
 
 - Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
 - Double loading of legacy plugins, by [@bersace].
+- Impossibility to delete instance (with SQLAlchemy < 1), by [@pgiraud]
 
 ### Changed
 
