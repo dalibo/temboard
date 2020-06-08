@@ -256,7 +256,6 @@ $(function() {
     }.bind(this));
   }
 
-  var firstLoad = true;
   function loadChecks() {
     // remove any shown popover
     $('[data-toggle="popover"]').popover('hide');
