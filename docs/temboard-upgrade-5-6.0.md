@@ -6,11 +6,9 @@ Stop `temboard` service:
 sudo systemctl stop temboard
 ```
 
-New package installation:
+Update temboard package with your [preferred installation
+method](installation.md#installation).
 
-``` shell
-sudo yum install temboard
-```
 
 Stamp `repository` database schema to latest version:
 
