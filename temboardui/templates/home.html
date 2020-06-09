@@ -13,8 +13,8 @@
 <script src="/js/moment.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script>
-var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
-var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
+var instances = {% raw json.dumps([i for i in instance_list]) %};
+var groups = {% raw json.dumps([i[0] for i in groups]) %};
 </script>
 <script src="/js/home.js"></script>
 <div class="position-absolute" style="z-index: 2; right: 0;">
@@ -94,7 +94,7 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
             <div class="col-md-12 small">
               <template v-for="(group, index) in instance.groups">
                 <span class="badge border text-muted">
-                  {{!group.group_name}}
+                  {{!group}}
                 </span>
                 {{!index === (instance.groups.length - 1) ? '' : ' '}}
               </template>
@@ -138,7 +138,7 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
           </div>
         </div>
       </div>
-      {% if len(instance_list.all()) == 0 %}
+      {% if len(instance_list) == 0 %}
       <p>
       {% try %}
       {% if role.is_admin %}

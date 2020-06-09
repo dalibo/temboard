@@ -84,10 +84,7 @@ $(function() {
     },
     methods: {
       hasMonitoring: function(instance) {
-        var plugins = instance.plugins.map(function(plugin) {
-          return plugin.plugin_name;
-        });
-        return plugins.indexOf('monitoring') != -1;
+        return instance.plugins.indexOf('monitoring') != -1;
       },
       toggleGroupFilter: function(group, e) {
         e.preventDefault();
@@ -127,8 +124,7 @@ $(function() {
             return true;
           }
           return this.groupsFilter.every((group) => {
-            var instance_groups = instance.groups.map((g) => g.group_name);
-            return instance_groups.indexOf(group) != -1;
+            return instance.groups.indexOf(group) != -1;
           });
         });
         return groupFiltered;
