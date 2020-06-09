@@ -34,7 +34,7 @@ jobs:
         name: Build documentation with mkdocs
         command: |
           pip install --upgrade --requirement docs/requirements.txt
-          mkdocs
+          mkdocs build --strict
     - store_artifacts:
         path: README.html
         destination: build/README.html

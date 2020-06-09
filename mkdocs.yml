@@ -12,6 +12,7 @@ nav:
 - Installation: installation.md
 - Configuration: configuration.md
 - Upgrade:
+  - Upgrade 5.X to 6.0: temboard-upgrade-5-6.0.md
   - Upgrade 4.X to 5.0 (RHEL/CentOS): temboard-upgrade-4-5.0.md
   - Upgrade 3.0 to 4.0 (RHEL/CentOS): temboard-upgrade-3.0-4.0.md
   - Upgrade 2.X to 3.0 (RHEL/CentOS): temboard-upgrade-2-3.0.md

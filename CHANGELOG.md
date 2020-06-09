@@ -2,24 +2,34 @@
 
 ## [6.0] - 2020-XX-XX
 
+This release requires a special step before restarting temBoard. Please read
+[upgrade to 6.0] documentation.
+
+[upgrade to 6.0]: temboard-upgrade-5-6.0.md
+
+
 ### Added
 
+- Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
 - Search config `temboard.conf` default config file in working directory by
   [@bersace].
 - temBoard repository schema is now versionned, by [@bersace].
 - Load external plugins from setuptools entrypoint `temboard.plugins`, by [@orgrim].
 - Debian Buster testing & packaging, by [@bersace].
+- Agent: `purge.sh` script to clean an agent installation, by [@bersace].
 
 ### Fixed
 
-- Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
 - Double loading of legacy plugins, by [@bersace].
-- Impossibility to delete instance (with SQLAlchemy < 1), by [@pgiraud]
+- Impossibility to delete instance with SQLAlchemy < 1, by [@pgiraud].
 
 ### Changed
 
 - Default configuration file is not required, by [@bersace].
 - Log error message when alert processing fails, by [@bersace].
+- Packaging for Debian Stretch, by [@bersace].
+- Agent: `auto_configure.sh` refuses to overwrite existing configuration, by
+  [@bersace].
 
 
 ## [5.0] - 2020-04-16
