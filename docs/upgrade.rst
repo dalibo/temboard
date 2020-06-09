@@ -4,6 +4,30 @@ Upgrade (RHEL/CentOS)
 =====================
 
 
+5.X to 6.0
+----------
+
+Stop the agent:
+
+.. code-block:: bash
+
+    sudo systemctl stop temboard-agent
+
+
+Update the package:
+
+.. code-block:: bash
+
+    sudo yum install temboard-agent
+
+
+Start the agent:
+
+.. code-block:: bash
+
+    sudo systemctl start temboard-agent
+
+
 4.X to 5.0
 ----------
 
