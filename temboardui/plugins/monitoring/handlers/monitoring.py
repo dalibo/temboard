@@ -9,7 +9,6 @@ from temboardui.web import (
 
 from . import blueprint, render_template
 from ..chartdata import (
-    get_availability,
     get_unavailability_csv,
     get_metric_data_csv,
 )
@@ -45,18 +44,6 @@ def check_agent_request(request, hostname, instance):
     else:
         # Case when PostgreSQL instance is not started.
         check_host_key(request.db_session, hostname, key)
-
-
-@blueprint.instance_route("/monitoring/availability")
-def availability(request):
-    request.instance.check_active_plugin('monitoring')
-    try:
-        host_id, instance_id = get_request_ids(request)
-        data = get_availability(request.db_session, host_id, instance_id)
-        return {'available': data}
-    except Exception as e:
-        logger.exception(str(e))
-        return {'available': False}
 
 
 @blueprint.route(r"/(?:monitoring|supervision)/collector",

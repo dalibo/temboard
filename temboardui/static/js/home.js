@@ -25,15 +25,15 @@ $(function() {
       popoverContent: function(instance) {
         // don't show OK states
         var filtered = instance.checks.filter(function(check) {
-          return check.state != 'OK';
+          return getHighestState(check.state_by_key) != 'OK';
         });
         var levels = ['CRITICAL', 'WARNING', 'UNDEF'];
         // make sure we have higher levels checks first
         var ordered = _.sortBy(filtered, function(check) {
-          return levels.indexOf(check.state);
+          return levels.indexOf(getHighestState(check.state_by_key)) !== -1;
         });
         var checksList = ordered.map(function(check) {
-          return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + '</span>';
+          return '<span class="badge badge-' + getHighestState(check.state_by_key).toLowerCase() + '">' + check.description + '</span>';
         });
         return checksList.join('<br>');
       }
@@ -58,11 +58,6 @@ $(function() {
     `
   });
 
-  $.each(instances, function(index, instance) {
-    instance.available = null;
-    instance.checks = [];
-    instance.loading = true;
-  });
 
   var instancesVue = new Vue({
     el: '#instances',
@@ -73,7 +68,8 @@ $(function() {
         groupsFilter = this.$route.query.groups.split(',');
       }
       return {
-        instances: instances,
+        loading: true,
+        instances: [],
         search: this.$route.query.q,
         sort: this.$route.query.sort || 'status',
         groups: groups,
@@ -130,7 +126,6 @@ $(function() {
         return groupFiltered;
       }
     },
-    mounted: loadChecks,
     watch: {
       search: function(newVal) {
         this.$router.replace({ query: _.assign({}, this.$route.query, {q: newVal })} );
@@ -140,15 +135,14 @@ $(function() {
       },
       groupsFilter: function(newVal) {
         this.$router.replace({ query: _.assign({}, this.$route.query, {groups: newVal.join(',') })} );
-      },
-      update: loadChecks,
+      }
     }
   });
 
-  checkAvailability();
+  fetchInstances.call(instancesVue);
   window.setInterval(function() {
     instancesVue.update = moment();
-    checkAvailability();
+    fetchInstances.call(instancesVue);
   }, refreshInterval);
 
   function sortByStatus(items) {
@@ -252,26 +246,6 @@ $(function() {
     }.bind(this));
   }
 
-  function loadChecks() {
-    // remove any shown popover
-    $('[data-toggle="popover"]').popover('hide');
-    $.each(this.instances, function(index, instance) {
-      instance.loading = true;
-      var url = ['/server', instance.agent_address, instance.agent_port, 'alerting/checks.json'].join('/');
-      $.ajax(url).success(function(data) {
-        instance.checks = data;
-        instance.loading = false;
-        window.setTimeout(function() {
-          $('[data-toggle="popover"]').popover();
-          // We hide any tooltip here, since doing it earlier may leave some
-          // tooltips shown
-          $('[data-toggle="tooltip"]').tooltip('hide');
-          $('[data-toggle="tooltip"]').tooltip();
-        }, 1);
-      }.bind(this));
-    });
-  }
-
   function abbreviateNumber(number) {
     var abbrev = [ "k", "m", "b", "t" ];
 
@@ -293,19 +267,27 @@ $(function() {
     return number;
   }
 
-  function checkAvailability() {
-    instances.forEach(function(instance) {
-      var api_url = ['/server', instance.agent_address, instance.agent_port, 'monitoring'].join('/');
-      $.ajax(api_url + '/availability')
-      .success(function(data) {
-        instance.available = data.available;
-      });
-    });
+  function fetchInstances() {
+    $.ajax(instancesUrl)
+     .success(function(data) {
+       this.instances = data;
+       this.loading = false;
+       $('[data-toggle="popover"]').popover();
+     }.bind(this));
   }
 
+  function getHighestState(states) {
+    var levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL'];
+    return levels[_.max(states.map(function(state) { return levels.indexOf(state.state); }))];
+  }
 
   function getChecksCount(instance) {
-    return _.countBy(instance.checks.map(function(check) { return check.state; }));
+    var count = _.countBy(
+      instance.checks.map(
+        function(check) { return getHighestState(check.state_by_key); }
+      )
+    );
+    return count;
   }
 
   $('.fullscreen').on('click', function(e) {
