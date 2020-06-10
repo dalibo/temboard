@@ -64,7 +64,7 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
       <div
         :class="['card mb-2 mr-2', {'border-danger bg-danger-light': getStatusValue(instance) >= 1000000, 'border-warning bg-warning-light': getStatusValue(instance) >= 1000}]"
         style="width: 220px;"
-        v-for="instance in filteredInstances"
+        v-for="instance, instanceIndex in filteredInstances"
         :key="instance.hostname + instance.pg_port"
         v-cloak>
         <div class="card-body p-2">
@@ -96,7 +96,7 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
               </template>
             </div>
           </div>
-          <div class="row" v-if="hasMonitoring(instance)">
+          <div class="row" v-if="hasMonitoring(instance) && instanceIndex < 10">
             <div class="col-md-6 mt-2 small text-center">
               <span class="text-muted">
                 TPS:
