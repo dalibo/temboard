@@ -25,15 +25,15 @@ $(function() {
       popoverContent: function(instance) {
         // don't show OK states
         var filtered = instance.checks.filter(function(check) {
-          return getHighestState(check.state_by_key) != 'OK';
+          return check.state != 'OK';
         });
         var levels = ['CRITICAL', 'WARNING', 'UNDEF'];
         // make sure we have higher levels checks first
         var ordered = _.sortBy(filtered, function(check) {
-          return levels.indexOf(getHighestState(check.state_by_key)) !== -1;
+          return levels.indexOf(check.state);
         });
         var checksList = ordered.map(function(check) {
-          return '<span class="badge badge-' + getHighestState(check.state_by_key).toLowerCase() + '">' + check.description + '</span>';
+          return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + '</span>';
         });
         return checksList.join('<br>');
       }
@@ -272,19 +272,16 @@ $(function() {
      .success(function(data) {
        this.instances = data;
        this.loading = false;
-       $('[data-toggle="popover"]').popover();
+       Vue.nextTick(function() {
+         $('[data-toggle="popover"]').popover();
+       });
      }.bind(this));
-  }
-
-  function getHighestState(states) {
-    var levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL'];
-    return levels[_.max(states.map(function(state) { return levels.indexOf(state.state); }))];
   }
 
   function getChecksCount(instance) {
     var count = _.countBy(
       instance.checks.map(
-        function(check) { return getHighestState(check.state_by_key); }
+        function(state) { return state.state; }
       )
     );
     return count;

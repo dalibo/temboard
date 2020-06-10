@@ -9,7 +9,7 @@ from ..web import (
     jsonify,
     render_template,
 )
-
+from ..plugins.monitoring.alerting import get_highest_state
 
 
 @app.route('/')
@@ -109,7 +109,15 @@ def home_instances(request):
         GROUP BY 1,2;
     """
     all_checks = request.db_session.execute(sql, {}).fetchall()
-    all_checks = {(i.hostname, i.port): i.checks for i in all_checks}
+    all_checks = {
+        (i.hostname, i.port): [{
+                'name': check['name'],
+                'state': get_highest_state([s['state']
+                                            for s in check['state_by_key']]),
+                'description': check['description']
+            } for check in i.checks]
+        for i in all_checks
+    }
 
     # set instances checks if any
     for instance in instances:
