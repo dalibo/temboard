@@ -5,11 +5,10 @@ $(function() {
   var refreshInterval = 60 * 1000;
 
   Vue.component('sparkline', {
-    props: ['instance', 'metric', 'update'],
+    props: ['instance', 'metric'],
     mounted: createChart,
     watch: {
-      instance: createChart,
-      update: createChart
+      instance: createChart
     },
     template: '<div></div>'
   });
@@ -73,9 +72,7 @@ $(function() {
         search: this.$route.query.q,
         sort: this.$route.query.sort || 'status',
         groups: groups,
-        groupsFilter: groupsFilter,
-        // Property updated in order to refresh charts and checks
-        update: moment()
+        groupsFilter: groupsFilter
       }
     },
     methods: {
@@ -141,7 +138,6 @@ $(function() {
 
   fetchInstances.call(instancesVue);
   window.setInterval(function() {
-    instancesVue.update = moment();
     fetchInstances.call(instancesVue);
   }, refreshInterval);
 
