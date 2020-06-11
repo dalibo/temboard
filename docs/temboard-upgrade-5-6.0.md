@@ -1,4 +1,4 @@
-# Upgrade `5.0` to `6.0`
+# Upgrade `5.X` to `6.0`
 
 Stop `temboard` service:
 
