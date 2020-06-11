@@ -27,7 +27,6 @@ This release requires a special step before restarting temBoard. Please read
 
 - Default configuration file is not required, by [@bersace].
 - Log error message when alert processing fails, by [@bersace].
-- Packaging for Debian Stretch, by [@bersace].
 - Agent: `auto_configure.sh` refuses to overwrite existing configuration, by
   [@bersace].
 
