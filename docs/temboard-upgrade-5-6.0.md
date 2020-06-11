@@ -9,8 +9,11 @@ sudo systemctl stop temboard
 Update temboard package with your [preferred installation
 method](installation.md#installation).
 
+The database structure hasn't changed in this release, however temBoard now
+requires to version the schema and checks it at startup. This will ease future
+updates a lot.
 
-Stamp `repository` database schema to latest version:
+The `repository` database schema must be stamped to the latest version with:
 
 ``` shell
 $ temboard-migratedb stamp
