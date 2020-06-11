@@ -68,10 +68,9 @@ $(function() {
     el: '#instances',
     router: new VueRouter(),
     data: function() {
-      try {
-        var groupsFilter = this.$route.query.groups.split(',');
-      } catch (e) {
-        var groupsFilter = [];
+      var groupsFilter = [];
+      if (this.$route.query.groups) {
+        groupsFilter = this.$route.query.groups.split(',');
       }
       return {
         instances: instances,
