@@ -650,10 +650,10 @@ def list_scheduled_operation(app, operation_type, **kwargs):
 
         # We only want tasks for the operation type ('vacuum', 'analyze',
         # 'reindex')
-        if task['worker_name'] != operation_type + '_worker':
+        if task.worker_name != operation_type + '_worker':
             continue
 
-        options = task['options']
+        options = task.options
         # Filter by db/schema/table if provided
         if (all(k in kwargs for k in ['dbname', 'schema']) and
             (kwargs.get('dbname') != options.get('dbname') or
@@ -666,14 +666,14 @@ def list_scheduled_operation(app, operation_type, **kwargs):
             continue
 
         ret.append(dict(
-            id=task['id'],
+            id=task.id,
             dbname=options.get('dbname'),
             schema=options.get('schema'),
             table=options.get('table'),
             index=options.get('index'),
             mode=options.get('mode'),
-            datetime=task['start_datetime'].strftime("%Y-%m-%dT%H:%M:%SZ"),
-            status=task_status_label(task['status'])
+            datetime=task.start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            status=task_status_label(task.status)
         ))
     return ret
 
