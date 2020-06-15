@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import hashlib
 import logging
 import os
-from pickle import dumps as pickle
 
 from temboardagent.errors import UserError, HTTPError
 from temboardagent.postgres import Postgres
@@ -554,7 +553,6 @@ def schedule_operation(operation_type, conn, database,
         dt = datetime.strptime(datetimeutc, '%Y-%m-%dT%H:%M:%SZ')
 
         options = {
-            'config': pickle(app.config),
             'dbname': database,
         }
         if schema:

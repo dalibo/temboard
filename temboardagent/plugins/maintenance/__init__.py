@@ -1,5 +1,4 @@
 from datetime import datetime
-from pickle import loads as unpickle
 
 from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
@@ -11,6 +10,7 @@ from . import functions
 
 
 routes = RouteSet(prefix=b'/maintenance')
+workers = taskmanager.WorkerSet()
 
 
 @routes.get(b'', check_key=True)
@@ -142,11 +142,9 @@ def scheduled_vacuum(http_context, app):
     return functions.list_scheduled_vacuum(app)
 
 
-@taskmanager.worker(pool_size=10)
-def vacuum_worker(config, dbname, mode, schema=None, table=None):
-    config = unpickle(config)
-
-    with functions.get_postgres(config, dbname).connect() \
+@workers.register(pool_size=10)
+def vacuum_worker(app, dbname, mode, schema=None, table=None):
+    with functions.get_postgres(app.config, dbname).connect() \
             as conn:
         return functions.vacuum(conn, dbname, mode, schema, table)
 
@@ -209,11 +207,9 @@ def scheduled_analyze(http_context, app):
     return functions.list_scheduled_analyze(app)
 
 
-@taskmanager.worker(pool_size=10)
-def analyze_worker(config, dbname, schema=None, table=None):
-    config = unpickle(config)
-
-    with functions.get_postgres(config, dbname).connect() \
+@workers.register(pool_size=10)
+def analyze_worker(app, dbname, schema=None, table=None):
+    with functions.get_postgres(app.config, dbname).connect() \
             as conn:
         return functions.analyze(conn, dbname, schema, table)
 
@@ -294,11 +290,9 @@ def scheduled_reindex(http_context, app):
     return functions.list_scheduled_reindex(app)
 
 
-@taskmanager.worker(pool_size=10)
-def reindex_worker(config, dbname, schema=None, table=None, index=None):
-    config = unpickle(config)
-
-    with functions.get_postgres(config, dbname).connect() as conn:
+@workers.register(pool_size=10)
+def reindex_worker(app, dbname, schema=None, table=None, index=None):
+    with functions.get_postgres(app.config, dbname).connect() as conn:
         return functions.reindex(conn, dbname, schema, table, index)
 
 
@@ -316,8 +310,10 @@ class MaintenancePlugin(object):
             raise UserError(msg)
 
         self.app.router.add(routes)
+        self.app.worker_pool.add(workers)
         for route in routes:
             print(route)
 
     def unload(self):
+        self.app.worker_pool.remove(workers)
         self.app.router.remove(routes)
