@@ -1,6 +1,11 @@
 # Changelog
 
-## [6.0] - 2020-XX-XX
+## [6.1] - 2020-06-15
+
+Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
+
+
+## [6.0] - 2020-06-15
 
 This release requires a special step before restarting temBoard. Please read
 [upgrade to 6.0] documentation.
@@ -22,12 +27,13 @@ This release requires a special step before restarting temBoard. Please read
 
 - Double loading of legacy plugins, by [@bersace].
 - Impossibility to delete instance with SQLAlchemy < 1, by [@pgiraud].
+- Impossibility to schedule ANALYZE, VACCUM or REINDEX, by [@bersace].
+- Fix list of scheduled tasks in maintenance plugin, by [@pgiraud].
 
 ### Changed
 
 - Default configuration file is not required, by [@bersace].
 - Log error message when alert processing fails, by [@bersace].
-- Packaging for Debian Stretch, by [@bersace].
 - Agent: `auto_configure.sh` refuses to overwrite existing configuration, by
   [@bersace].
 

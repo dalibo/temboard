@@ -85,10 +85,7 @@ def check_schema(config):
         current = context.get_current_revision()
 
         if current:
-            current_obj = next(iter(script.get_all_current(current)))
-            logger.debug(
-                "temBoard database revision is %s.",
-                current_obj.cmd_format(verbose=False))
+            logger.debug("temBoard database revision is %s.", current)
         else:
             logger.debug("temBoard database is uninitialized.")
 
