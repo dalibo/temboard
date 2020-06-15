@@ -1,6 +1,6 @@
 # Changelog
 
-## [6.0] - 2020-XX-XX
+## [6.0] - 2020-06-15
 
 This release requires a special step before restarting temBoard. Please read
 [upgrade to 6.0] documentation.
