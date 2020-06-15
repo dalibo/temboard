@@ -22,6 +22,8 @@ This release requires a special step before restarting temBoard. Please read
 
 - Double loading of legacy plugins, by [@bersace].
 - Impossibility to delete instance with SQLAlchemy < 1, by [@pgiraud].
+- Impossibility to schedule ANALYZE, VACCUM or REINDEX, by [@bersace].
+- Fix list of scheduled tasks in maintenance plugin, by [@pgiraud].
 
 ### Changed
 
