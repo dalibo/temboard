@@ -1,5 +1,10 @@
 # Changelog
 
+## [6.1] - 2020-06-15
+
+Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
+
+
 ## [6.0] - 2020-06-15
 
 This release requires a special step before restarting temBoard. Please read
