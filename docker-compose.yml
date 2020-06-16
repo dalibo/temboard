@@ -41,3 +41,8 @@ services:
       TEMBOARD_REGISTER_HOST: 0.0.0.0
       TEMBOARD_REGISTER_PORT: 2345
       TEMBOARD_GROUPS: default
+
+  smtp:
+    image: python:3
+    ports: [8025:8025]
+    command: [python3, -m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
