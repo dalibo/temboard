@@ -793,10 +793,10 @@ def send_mail(host, port, subject, content, emails, tls=False, login=None,
     msg['Subject'] = subject
 
     try:
-        if not tls:
-            smtp = SMTP(host, port)
-        else:
+        if tls:
             smtp = SMTP_SSL(host, port)
+        else:
+            smtp = SMTP(host, port)
 
         if login is not None and password is not None:
             smtp.login(login, password)
