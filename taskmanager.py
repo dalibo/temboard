@@ -886,6 +886,7 @@ class WorkerPool(object):
             # Put function result into output queue as a Message
             out.put(Message(MSG_TYPE_RESP, res))
         except Exception as e:
+            e = Exception("%s: %s" % (type(e), e))
             out.put(Message(MSG_TYPE_ERROR, e))
             logger.exception(e)
         except KeyboardInterrupt:
