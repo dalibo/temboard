@@ -798,7 +798,8 @@ def send_mail(host, port, subject, content, emails, tls=False, login=None,
         else:
             smtp = SMTP(host, port)
 
-        if login is not None and password is not None:
+        if login and password:
+            logger.debug("Authenticating to SMTP server as %s.", login)
             smtp.login(login, password)
 
         smtp.sendmail(from_addr, emails, msg.as_string())
