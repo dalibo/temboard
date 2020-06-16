@@ -22,20 +22,20 @@ This is the main section grouping core parameters :
 
   - **ssl_cert_file**
   Path to SSL certificate file (.pem).
-  Default: None
+  Default: *empty*
 
   - **ssl_key_file**
   Path to SSL private key file.
-  Default: None
+  Default: *empty*
 
   - **ssl_ca_cert_file**
   File where to store each agent's SSL certificate. Comment it to disable SSL
   certifcate checks.
-  Default: None
+  Default: *empty*
 
   - **cookie_secret**
   Secret key used to crypt cookie content.
-  Default: None;
+  Default: *empty*;
 
   - **plugins**
   Array of plugin name to load.
@@ -97,11 +97,11 @@ This section groups SMTP and Twilio parameters to send notifications.
 
   - **smtp_host**
   SMTP host.
-  Default: None
+  Default: *empty*
 
   - **smtp_port**
   SMTP port.
-  Default: None
+  Default: *empty*
 
   - **smtp_tls**
   Enable TLS connexion.
@@ -109,27 +109,27 @@ This section groups SMTP and Twilio parameters to send notifications.
 
   - **smtp_login**
   SMTP login.
-  Default: None
+  Default: *empty*
 
   - **smtp_password**
   SMTP password.
-  Default: None
+  Default: *empty*
 
   - **smtp_from_addr**
   SMTP from address.
-  Default: None
+  Default: *empty*
 
   - **twilio_account_sid**
   Twillio account SID.
-  Default: None
+  Default: *empty*
 
   - **twilio_auth_token**
   Twilio authentication token.
-  Default: None
+  Default: *empty*
 
   - **twilio_from**
   Twilio from phone number
-  Default: None
+  Default: *empty*
 
 
 ### `monitoring`
@@ -139,4 +139,4 @@ Parameters related to the monitoring plugin.
 
   - **purge_after**
   Set the amount of data to keep, expressed in days.
-  Default: None
+  Default: *empty*
