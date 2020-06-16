@@ -229,7 +229,7 @@ def list_options_specs():
 
     s = 'notifications'
     yield OptionSpec(s, 'smtp_host', default=None)
-    yield OptionSpec(s, 'smtp_port', default=None)
+    yield OptionSpec(s, 'smtp_port', default=None, validator=v.port)
     yield OptionSpec(s, 'smtp_tls', default=False, validator=v.boolean)
     yield OptionSpec(s, 'smtp_login', default=None)
     yield OptionSpec(s, 'smtp_password', default=None)
