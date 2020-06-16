@@ -793,12 +793,13 @@ def send_mail(host, port, subject, content, emails, tls=False, login=None,
     msg['Subject'] = subject
 
     try:
-        if not tls:
-            smtp = SMTP(host, port)
-        else:
+        if tls:
             smtp = SMTP_SSL(host, port)
+        else:
+            smtp = SMTP(host, port)
 
-        if login is not None and password is not None:
+        if login and password:
+            logger.debug("Authenticating to SMTP server as %s.", login)
             smtp.login(login, password)
 
         smtp.sendmail(from_addr, emails, msg.as_string())
@@ -807,7 +808,7 @@ def send_mail(host, port, subject, content, emails, tls=False, login=None,
         raise TemboardUIError(
             500,
             "Could not send mail; %s\n"
-            "SMTP server may be misconfigured." % e)
+            "SMTP connection may be misconfigured." % e)
 
 
 def send_sms(config, content, phones):
