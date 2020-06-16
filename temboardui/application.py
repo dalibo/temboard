@@ -808,7 +808,7 @@ def send_mail(host, port, subject, content, emails, tls=False, login=None,
         raise TemboardUIError(
             500,
             "Could not send mail; %s\n"
-            "SMTP server may be misconfigured." % e)
+            "SMTP connection may be misconfigured." % e)
 
 
 def send_sms(config, content, phones):
