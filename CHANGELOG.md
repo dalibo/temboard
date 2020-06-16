@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2] - 2020-XX-XX
+
+### Fixed
+
+- Always using TLS even if set to False, by [@bersace].
+
+
 ## [6.1] - 2020-06-15
 
 Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
