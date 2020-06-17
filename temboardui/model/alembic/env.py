@@ -3,8 +3,12 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.exc import ProgrammingError
 
 from alembic import context
+
+
+logger = logging.getLogger("temboardui.model.alembic.env")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -25,6 +29,8 @@ target_metadata = None
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+version_table_schema = 'application'
 
 
 def run_migrations_offline():
@@ -65,10 +71,25 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
+        # Hack for use custom schema for Alembic version.
+        connection.execute(
+            """CREATE SCHEMA IF NOT EXISTS "%s";"""
+            % version_table_schema
         )
+        try:
+            # To remove on temBoard 8.
+            connection.execute(
+                """ALTER TABLE public.alembic_version SET SCHEMA "%s";"""
+                % version_table_schema
+            )
+            logger.debug("Moved Alembic version table to application schema.")
+        except ProgrammingError:
+            pass
 
+        context.configure(
+            connection=connection, target_metadata=target_metadata,
+            version_table_schema=version_table_schema,
+        )
         with context.begin_transaction():
             context.run_migrations()
 
