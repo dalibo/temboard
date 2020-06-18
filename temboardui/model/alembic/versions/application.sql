@@ -1,4 +1,3 @@
-CREATE SCHEMA application;
 SET search_path TO application, public;
 
 CREATE TABLE roles (
