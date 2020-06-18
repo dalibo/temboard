@@ -2,6 +2,12 @@
 
 ## [6.2] - 2020-XX-XX
 
+
+### Changed
+
+- Alembic version table is now hosted in `application` schema, by [@bersace].
+
+
 ### Fixed
 
 - Always using TLS even if set to False, by [@bersace].
