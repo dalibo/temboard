@@ -21,7 +21,7 @@ updates a lot.
 The `repository` database schema must be stamped to the latest version with:
 
 ``` shell
-$ temboard-migratedb stamp
+$ sudo -u temboard temboard-migratedb stamp
 ```
 
 Start `temboard` service:
