@@ -44,5 +44,6 @@ services:
 
   smtp:
     image: python:3
-    ports: [8025:8025]
+    ports:
+      - 8025:8025
     command: [python3, -m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
