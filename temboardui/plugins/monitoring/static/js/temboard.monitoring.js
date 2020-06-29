@@ -261,12 +261,10 @@ $(function() {
 
   function selectAll() {
     loadGraphs(Object.keys(metrics));
-    updateLocalStorage.call(this);
   }
 
   function unselectAll() {
     loadGraphs([]);
-    updateLocalStorage.call(this);
   }
 
   function updateLocalStorage() {
@@ -289,6 +287,7 @@ $(function() {
         chart: null
       };
     });
+    updateLocalStorage.call(this);
   }
 
   var v = new Vue({
