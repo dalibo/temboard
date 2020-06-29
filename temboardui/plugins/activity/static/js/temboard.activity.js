@@ -6,8 +6,6 @@ $(function() {
   var loading = false;
   var loadTimeout;
 
-  $('#intervalDuration').html(intervalDuration);
-
   var el = $('#tableActivity');
 
   function onCreatedCellDangerY(td, cellData) {
@@ -155,7 +153,7 @@ $(function() {
       url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
       type: 'GET',
       beforeSend: function(xhr) {
-        $('#loadingIndicator').removeClass('d-none');
+        $('#loadingIndicator').removeClass('invisible');
         loading = true;
       },
       async: true,
@@ -181,7 +179,7 @@ $(function() {
         $('#ErrorModal').modal('show');
       },
       complete: function(xhr, status) {
-        $('#loadingIndicator').addClass('d-none');
+        $('#loadingIndicator').addClass('invisible');
         loading = false;
         var timeoutDelay = intervalDuration * 1000 - (new Date() - lastLoad);
         loadTimeout = window.setTimeout(load, timeoutDelay);
@@ -235,7 +233,8 @@ $(function() {
   }
 
   function pause() {
-    $('#autoRefreshPausedMsg').removeClass('d-none');
+    $('#autoRefreshPaused').removeClass('d-none');
+    $('#intervalDuration').addClass('d-none');
     request && request.abort();
     window.clearTimeout(loadTimeout);
     $('#tableActivity input[type=checkbox]').each(function () {
@@ -245,9 +244,11 @@ $(function() {
   }
 
   function play() {
-
     $('#killButton').addClass('disabled');
-    $('#autoRefreshPausedMsg').addClass('d-none');
+    $('#autoRefreshResume').addClass('d-none');
+    $('#autoRefreshMsg').removeClass('d-none');
+    $('#autoRefreshPaused').addClass('d-none');
+    $('#intervalDuration').removeClass('d-none');
     $('#tableActivity input:checked').each(function () {
       $(this).attr('checked', false);
     });
@@ -263,7 +264,10 @@ $(function() {
 
   // show the kill button only when backends have been selected
   $(document.body).on('click', 'input[type=checkbox]', function() {
-    $('#killButton').toggleClass('disabled', $('#tableActivity input:checked').length === 0);
+    var active = $('#tableActivity input:checked').length === 0;
+    $('#killButton').toggleClass('disabled', active);
+    $('#autoRefreshResume').toggleClass('d-none', active);
+    $('#autoRefreshMsg').toggleClass('d-none', !active);
   });
 
   $('#killButton').click(function terminate() {
