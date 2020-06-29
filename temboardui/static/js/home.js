@@ -5,11 +5,10 @@ $(function() {
   var refreshInterval = 60 * 1000;
 
   Vue.component('sparkline', {
-    props: ['instance', 'metric', 'update'],
+    props: ['instance', 'metric'],
     mounted: createChart,
     watch: {
-      instance: createChart,
-      update: createChart
+      instance: createChart
     },
     template: '<div></div>'
   });
@@ -58,11 +57,6 @@ $(function() {
     `
   });
 
-  $.each(instances, function(index, instance) {
-    instance.available = null;
-    instance.checks = [];
-    instance.loading = true;
-  });
 
   var instancesVue = new Vue({
     el: '#instances',
@@ -73,21 +67,17 @@ $(function() {
         groupsFilter = this.$route.query.groups.split(',');
       }
       return {
-        instances: instances,
+        loading: true,
+        instances: [],
         search: this.$route.query.q,
         sort: this.$route.query.sort || 'status',
         groups: groups,
-        groupsFilter: groupsFilter,
-        // Property updated in order to refresh charts and checks
-        update: moment()
+        groupsFilter: groupsFilter
       }
     },
     methods: {
       hasMonitoring: function(instance) {
-        var plugins = instance.plugins.map(function(plugin) {
-          return plugin.plugin_name;
-        });
-        return plugins.indexOf('monitoring') != -1;
+        return instance.plugins.indexOf('monitoring') != -1;
       },
       toggleGroupFilter: function(group, e) {
         e.preventDefault();
@@ -127,14 +117,12 @@ $(function() {
             return true;
           }
           return this.groupsFilter.every((group) => {
-            var instance_groups = instance.groups.map((g) => g.group_name);
-            return instance_groups.indexOf(group) != -1;
+            return instance.groups.indexOf(group) != -1;
           });
         });
         return groupFiltered;
       }
     },
-    mounted: loadChecks,
     watch: {
       search: function(newVal) {
         this.$router.replace({ query: _.assign({}, this.$route.query, {q: newVal })} );
@@ -144,15 +132,13 @@ $(function() {
       },
       groupsFilter: function(newVal) {
         this.$router.replace({ query: _.assign({}, this.$route.query, {groups: newVal.join(',') })} );
-      },
-      update: loadChecks,
+      }
     }
   });
 
-  checkAvailability();
+  fetchInstances.call(instancesVue);
   window.setInterval(function() {
-    instancesVue.update = moment();
-    checkAvailability();
+    fetchInstances.call(instancesVue);
   }, refreshInterval);
 
   function sortByStatus(items) {
@@ -256,27 +242,6 @@ $(function() {
     }.bind(this));
   }
 
-  var firstLoad = true;
-  function loadChecks() {
-    // remove any shown popover
-    $('[data-toggle="popover"]').popover('hide');
-    $.each(this.instances, function(index, instance) {
-      instance.loading = true;
-      var url = ['/server', instance.agent_address, instance.agent_port, 'alerting/checks.json'].join('/');
-      $.ajax(url).success(function(data) {
-        instance.checks = data;
-        instance.loading = false;
-        window.setTimeout(function() {
-          $('[data-toggle="popover"]').popover();
-          // We hide any tooltip here, since doing it earlier may leave some
-          // tooltips shown
-          $('[data-toggle="tooltip"]').tooltip('hide');
-          $('[data-toggle="tooltip"]').tooltip();
-        }, 1);
-      }.bind(this));
-    });
-  }
-
   function abbreviateNumber(number) {
     var abbrev = [ "k", "m", "b", "t" ];
 
@@ -298,19 +263,24 @@ $(function() {
     return number;
   }
 
-  function checkAvailability() {
-    instances.forEach(function(instance) {
-      var api_url = ['/server', instance.agent_address, instance.agent_port, 'monitoring'].join('/');
-      $.ajax(api_url + '/availability')
-      .success(function(data) {
-        instance.available = data.available;
-      });
-    });
+  function fetchInstances() {
+    $.ajax(instancesUrl)
+     .success(function(data) {
+       this.instances = data;
+       this.loading = false;
+       Vue.nextTick(function() {
+         $('[data-toggle="popover"]').popover();
+       });
+     }.bind(this));
   }
 
-
   function getChecksCount(instance) {
-    return _.countBy(instance.checks.map(function(check) { return check.state; }));
+    var count = _.countBy(
+      instance.checks.map(
+        function(state) { return state.state; }
+      )
+    );
+    return count;
   }
 
   $('.fullscreen').on('click', function(e) {

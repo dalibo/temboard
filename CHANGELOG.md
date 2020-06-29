@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.0] - 2020-XX-XX
+
+### Changed
+
+- Improved performance of the home page (instances list), by [@pgiraud]
+
+### Fixed
+
 ## [6.2] - 2020-XX-XX
 
 

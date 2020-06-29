@@ -624,15 +624,12 @@ def delete_role_group_from_instance_group(session, role_group_name,
 
 
 def get_instances_by_role_name(session, role_name):
-    return session.query(Instances).options(
-        joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
+    return session.query(Instances).filter(
             Instances.agent_address == InstanceGroups.agent_address,
             Instances.agent_port == InstanceGroups.agent_port,
             InstanceGroups.group_name ==
             AccessRoleInstance.instance_group_name,
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            Plugins.agent_address == Instances.agent_address,
-            Plugins.agent_port == Instances.agent_port,
             RoleGroups.role_name == unicode(role_name)).order_by(
                 InstanceGroups.group_name, Instances.agent_address)
 

@@ -4,7 +4,6 @@
 
 {% block content %}
 {% import json %}
-{% from temboardui import json_encoder %}
 <script src="/js/fscreen.js"></script>
 <script src="/js/lodash.min.js"></script>
 <script src="/js/utils.js"></script>
@@ -13,8 +12,8 @@
 <script src="/js/moment.min.js"></script>
 <script src="/js/dygraph.min.js"></script>
 <script>
-var instances = {% raw json.dumps([i for i in instance_list], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
-var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alchemy_encoder(), check_circular=False) %};
+var instancesUrl = '/home/instances';
+var groups = {% raw json.dumps([i[0] for i in groups]) %};
 </script>
 <script src="/js/home.js"></script>
 <div class="position-absolute" style="z-index: 2; right: 0;">
@@ -65,12 +64,9 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
       <div
         :class="['card mb-2 mr-2', {'border-danger bg-danger-light': getStatusValue(instance) >= 1000000, 'border-warning bg-warning-light': getStatusValue(instance) >= 1000}]"
         style="width: 220px;"
-        v-for="instance in filteredInstances"
+        v-for="instance, instanceIndex in filteredInstances"
         :key="instance.hostname + instance.pg_port"
         v-cloak>
-        <div class="position-absolute" v-if="instance.loading" style="right: 0;">
-          <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-        </div>
         <div class="card-body p-2">
           <div class="row">
             <div class="col-md-12">
@@ -94,13 +90,13 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
             <div class="col-md-12 small">
               <template v-for="(group, index) in instance.groups">
                 <span class="badge border text-muted">
-                  {{!group.group_name}}
+                  {{!group}}
                 </span>
                 {{!index === (instance.groups.length - 1) ? '' : ' '}}
               </template>
             </div>
           </div>
-          <div class="row" v-if="hasMonitoring(instance)">
+          <div class="row" v-if="hasMonitoring(instance) && instanceIndex < 10">
             <div class="col-md-6 mt-2 small text-center">
               <span class="text-muted">
                 TPS:
@@ -111,7 +107,6 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
               <sparkline class="sparkline-container"
                    :instance="instance"
                    :metric="'tps'"
-                   :update="update"
                    data-toggle="tooltip"
                    data-title="Transations / sec (last hour)"
                    data-container="body"
@@ -129,7 +124,6 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
                    class="sparkline-container"
                    :instance="instance"
                    :metric="'load1'"
-                   :update="update"
                    data-toggle="tooltip"
                    data-title="Load average (last hour)"
                    data-placement="bottom">
@@ -138,8 +132,7 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
           </div>
         </div>
       </div>
-      {% if len(instance_list.all()) == 0 %}
-      <p>
+      <p v-if="!loading && instances.length == 0" v-cloak>
       {% try %}
       {% if role.is_admin %}
       No instance is available yet.<br>
@@ -151,7 +144,6 @@ var groups = {% raw json.dumps([i[0] for i in groups], cls=json_encoder.new_alch
       {% except %}
       {% end %}
       </p>
-      {% end %}
     </div>
   </div>
 </div>
