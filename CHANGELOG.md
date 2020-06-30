@@ -5,6 +5,7 @@
 ### Changed
 
 - Improved performance of the home page (instances list), by [@pgiraud]
+- Activity filters are kept, by [@pgiraud]
 
 ### Fixed
 

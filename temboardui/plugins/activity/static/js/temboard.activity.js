@@ -325,7 +325,7 @@ $(function() {
 
   var stateFilters = $('#state-filter input[type=checkbox]');
 
-  function getStateFilters() {
+  function getCheckedStateFilters() {
     var states = [];
     stateFilters.each(function(index, el) {
       var input = $(el);
@@ -348,13 +348,17 @@ $(function() {
 
   // Store in localStorage the states filter selection
   stateFilters.change(function() {
-    localStorage.setItem('temboardActivityStateFilters', JSON.stringify(getStateFilters()));
+    if (stateFilters.length != getCheckedStateFilters().length) {
+      localStorage.setItem('temboardActivityStateFilters', JSON.stringify(getCheckedStateFilters()));
+    } else {
+      localStorage.removeItem('temboardActivityStateFilters');
+    }
   });
 
   /* State filtering function */
   $.fn.dataTable.ext.search.push(
     function stateFilter(settings, data, index, rawData) {
-      var states = getStateFilters();
+      var states = getCheckedStateFilters();
       return states.indexOf(rawData.state) > -1;
     }
   );
@@ -365,11 +369,15 @@ $(function() {
   var initSearchFilter = localStorage.getItem('temboardActivitySearchFilter');
   if (initSearchFilter) {
     searchFilter.val(initSearchFilter);
-
   }
   // Store in localStorage the states filter selection
   searchFilter.keyup(function() {
-    localStorage.setItem('temboardActivitySearchFilter', searchFilter.val());
+    var search = searchFilter.val();
+    if (search) {
+      localStorage.setItem('temboardActivitySearchFilter', searchFilter.val());
+    } else {
+      localStorage.removeItem('temboardActivitySearchFilter');
+    }
   });
 
   /* Custom filtering function */
@@ -386,6 +394,10 @@ $(function() {
       return false;
     }
   );
+
+  if (initStateFilters || searchFilter.val()) {
+    $('#filters').collapse('show');
+  }
 
   /**
    * Find the index of the column for a given title
