@@ -29,12 +29,15 @@
       <button type="button" class="btn btn-danger disabled" id="killButton">Terminate</button>
     </span>
   </div>
-  <div class="col-auto">
-    <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
-    <span id="autoRefreshPausedMsg" class="d-none text-muted">
-      <i class="fa fa-pause"></i>
-      Auto refresh paused
-      <a class="btn btn-link" id="resumeAutoRefresh" role="button" href><i class="fa fa-play"></i> resume</a>
+  <div class="col-auto align-self-center">
+    <span id="autoRefreshResume" class="d-none text-muted">
+      <a class="btn btn-secondary" id="resumeAutoRefresh" role="button" href><i class="fa fa-play"></i> resume auto refresh</a>
+    </span>
+    <span id="autoRefreshMsg" class="text-muted">
+      <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+      Auto refresh
+      <span id="intervalDuration">2s</span>
+      <span id="autoRefreshPaused">paused</span>
     </span>
   </div>
   <div class="col-auto">
