@@ -30,12 +30,6 @@ SETUP_KWARGS = dict(
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
-    scripts=[
-        'temboard-agent',
-        'temboard-agent-adduser',
-        'temboard-agent-password',
-        'temboard-agent-register',
-    ],
     data_files=[
         ('share/temboard-agent/', [
             'share/temboard-agent.conf',
@@ -55,6 +49,12 @@ SETUP_KWARGS = dict(
         ('lib/systemd/system', ['packaging/temboard-agent@.service']),
     ],
     entry_points={
+        'console_scripts': [
+            'temboard-agent = temboardagent.scripts.agent:main',
+            'temboard-agent-adduser = temboardagent.scripts.adduser:main',
+            'temboard-agent-password = temboardagent.scripts.password:main',
+            'temboard-agent-register = temboardagent.scripts.register:main',
+        ],
         'temboardagent.plugins': [
             'activity = temboardagent.plugins.activity:ActivityPlugin',
             'administration = temboardagent.plugins.administration:AdministrationPlugin',  # noqa
