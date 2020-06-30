@@ -8,6 +8,10 @@
 
 ### Fixed
 
+- Agent scripts now use the Python interpreter of their installation, not the
+  first found in env, by [@bersace].
+
+
 ## [6.2] - 2020-XX-XX
 
 
