@@ -324,18 +324,37 @@ $(function() {
   });
 
   var stateFilters = $('#state-filter input[type=checkbox]');
+
+  function getStateFilters() {
+    var states = [];
+    stateFilters.each(function(index, el) {
+      var input = $(el);
+      if (input.prop('checked')) {
+        states.push(input.val());
+      }
+    });
+    return states;
+  }
   stateFilters.change(table.draw);
+
+  var initStateFilters = localStorage.getItem('temboardActivityStateFilters');
+  if (initStateFilters) {
+    initStateFilters = JSON.parse(initStateFilters);
+    stateFilters.each(function(index, el) {
+      var input = $(el);
+      input.prop('checked', initStateFilters.indexOf(input.val()) != -1);
+    });
+  }
+
+  // Store in localStorage the states filter selection
+  stateFilters.change(function() {
+    localStorage.setItem('temboardActivityStateFilters', JSON.stringify(getStateFilters()));
+  });
 
   /* State filtering function */
   $.fn.dataTable.ext.search.push(
     function stateFilter(settings, data, index, rawData) {
-      var states = [];
-      stateFilters.each(function(index, el) {
-        var input = $(el);
-        if (input.prop('checked')) {
-          states.push(input.val());
-        }
-      });
+      var states = getStateFilters();
       return states.indexOf(rawData.state) > -1;
     }
   );
