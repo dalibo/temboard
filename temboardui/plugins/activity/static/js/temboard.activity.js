@@ -361,6 +361,17 @@ $(function() {
 
   var searchFilter = $('#searchFilter');
   searchFilter.keyup(table.draw);
+
+  var initSearchFilter = localStorage.getItem('temboardActivitySearchFilter');
+  if (initSearchFilter) {
+    searchFilter.val(initSearchFilter);
+
+  }
+  // Store in localStorage the states filter selection
+  searchFilter.keyup(function() {
+    localStorage.setItem('temboardActivitySearchFilter', searchFilter.val());
+  });
+
   /* Custom filtering function */
   $.fn.dataTable.ext.search.push(
     function searchFilterFn(settings, data) {
