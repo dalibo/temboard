@@ -12,14 +12,9 @@ from collections import deque
 from multiprocessing import Process, Queue
 from multiprocessing.connection import Listener, Client, AuthenticationError
 
-try:
-    from Queue import Empty
-except ImportError:
-    from queue import Empty
-
 from .services import Service
-from .utils import PY2
 from .errors import StorageEngineError
+from .pycompat import PY2, Empty
 
 
 TM_WORKERS = []

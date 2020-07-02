@@ -20,7 +20,8 @@ def test_fix_argv(mocker):
     cmmn = mocker.patch(
         'sampleproject.toolkit.proctitle.compute_main_module_name',
         autospec=True)
-    from sampleproject.toolkit.proctitle import PY3, fix_argv
+    from sampleproject.toolkit.pycompat import PY3
+    from sampleproject.toolkit.proctitle import fix_argv
 
     wanted = ['python', '-m', 'my.module']
     cmmn.return_value = 'my.module'

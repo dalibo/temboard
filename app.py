@@ -16,11 +16,6 @@ from argparse import (
 )
 
 try:
-    import configparser
-except ImportError:  # pragma: nocover_py3
-    import ConfigParser as configparser
-
-try:
     from pkg_resources import (
         _initialize_master_working_set as refresh_distributions
     )
@@ -33,6 +28,7 @@ from .configuration import MergedConfiguration, OptionSpec
 from .log import setup_logging, LastnameFilter
 from .errors import UserError
 from . import validators as v
+from .pycompat import configparser
 
 
 logger = logging.getLogger(__name__)

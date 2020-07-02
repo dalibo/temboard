@@ -23,9 +23,11 @@ import logging
 import sys
 import os
 
+from .pycompat import PY3
+
+
 libc = ctypes.CDLL('libc.so.6')
 logger = logging.getLogger(__name__)
-PY3 = sys.version_info >= (3,)
 
 
 def compute_main_module_name(mod):

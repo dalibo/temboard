@@ -1,14 +1,7 @@
 # coding: utf-8
-import sys
 
-try:
-    from UserDict import IterableUserDict
-except ImportError:
-    from collections import UserDict as IterableUserDict
+from .pycompat import IterableUserDict
 
-
-PY3 = sys.version_info > (3,)
-PY2 = not PY3
 
 _UNDEFINED = object()
 

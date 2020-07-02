@@ -2,10 +2,7 @@ import logging.config
 import sys
 from logging.handlers import SysLogHandler
 
-try:
-    from logging.config import dictConfig
-except ImportError:  # pragma: nocover
-    from logutils.dictconfig import dictConfig
+from .pycompat import dictConfig
 
 
 class ColoredStreamHandler(logging.StreamHandler):
