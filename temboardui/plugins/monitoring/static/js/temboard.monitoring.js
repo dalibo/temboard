@@ -261,12 +261,10 @@ $(function() {
 
   function selectAll() {
     loadGraphs(Object.keys(metrics));
-    updateLocalStorage.call(this);
   }
 
   function unselectAll() {
     loadGraphs([]);
-    updateLocalStorage.call(this);
   }
 
   function updateLocalStorage() {
@@ -289,6 +287,7 @@ $(function() {
         chart: null
       };
     });
+    updateLocalStorage.call(this);
   }
 
   var v = new Vue({
@@ -330,18 +329,38 @@ $(function() {
     watch: {
       graphs: function(val) {
         var graphs = JSON.stringify(val.map(function(item) {return item.id;}))
-        this.$router.replace({ query: _.assign({}, this.$route.query, {
-          graphs: graphs
-        })});
+        if (this.$route.query.graphs !== graphs) {
+          this.$router.push({ query: _.assign({}, this.$route.query, {
+            graphs: graphs
+          })});
+        }
       },
       fromTo: function() {
-        this.$router.replace({ query: _.assign({}, this.$route.query, {
-          start: '' + v.from,
-          end: '' + v.to
-        })});
+        if (this.$route.query.start !== v.from || this.$route.query.end !== v.to) {
+          this.$router.push({ query: _.assign({}, this.$route.query, {
+            start: '' + v.from,
+            end: '' + v.to
+          })});
+        }
       },
+      $route: function(to, from) {
+        if (to.query.graphs) {
+          loadGraphs.call(this, JSON.parse(to.query.graphs));
+        }
+        if (to.query.start) {
+          this.from = convertDate(to.query.start);
+        }
+        if (to.query.end) {
+          this.to = convertDate(to.query.end);
+        }
+        refreshDates();
+      }
     }
   });
+
+  function convertDate(date) {
+    return dateMath.parse(date).isValid() ? date : moment(parseInt(date, 10))
+  }
 
   /**
    * Parse location to get start and end date
@@ -350,8 +369,8 @@ $(function() {
    */
   var start = v.$route.query.start || 'now-24h';
   var end = v.$route.query.end || 'now';
-  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
-  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
+  start = convertDate(start);
+  end = convertDate(end);
 
   var graphs = v.$route.query.graphs;
   graphs = graphs ? JSON.parse(graphs) : (JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);

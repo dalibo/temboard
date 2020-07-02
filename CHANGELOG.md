@@ -6,6 +6,7 @@
 
 - Improved performance of the home page (instances list), by [@pgiraud]
 - Activity filters are kept, by [@pgiraud]
+- Better support for history navigation in monitoring, by [@pgiraud]
 
 ### Fixed
 
