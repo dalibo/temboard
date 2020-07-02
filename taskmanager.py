@@ -417,7 +417,7 @@ class Scheduler(object):
                                 )
                         except StorageEngineError as e:
                             # Just log the error and continue with other tasks
-                            logger.error(e.message)
+                            logger.error(str(e))
                     else:
                         logger.error("Bootstrap task not Task instance")
             else:
@@ -562,7 +562,7 @@ class Scheduler(object):
                     status=task.status
                 )
             except StorageEngineError as e:
-                logger.error(e.message)
+                logger.error(str(e))
             else:
                 self.task_queue.put(task, False)
 
@@ -590,7 +590,7 @@ class Scheduler(object):
                     output=task.output,
                 )
             except StorageEngineError as e:
-                logger.error(e.message)
+                logger.error(str(e))
             else:
                 self.task_queue.put(task, False)
 
@@ -604,8 +604,8 @@ class Scheduler(object):
                 return Message(MSG_TYPE_ERROR,
                                {'error': 'Task id already exists'})
             except StorageEngineError as e:
-                logger.error(e.message)
-                return Message(MSG_TYPE_ERROR, {'error': e.message})
+                logger.error(str(e))
+                return Message(MSG_TYPE_ERROR, {'error': str(e)})
 
         elif message.type == MSG_TYPE_TASK_STATUS:
             # task status update
@@ -624,8 +624,8 @@ class Scheduler(object):
                     stop_datetime=message.content.get('stop_datetime', None),
                 )
             except StorageEngineError as e:
-                logger.error(e.message)
-                return Message(MSG_TYPE_ERROR, {'error': e.message})
+                logger.error(str(e))
+                return Message(MSG_TYPE_ERROR, {'error': str(e)})
             else:
                 return Message(MSG_TYPE_RESP, {'id': t.id})
 
@@ -634,8 +634,8 @@ class Scheduler(object):
             try:
                 return list(self.task_list.list())
             except StorageEngineError as e:
-                logger.error(e.message)
-                return Message(MSG_TYPE_ERROR, {'error': e.message})
+                logger.error(str(e))
+                return Message(MSG_TYPE_ERROR, {'error': str(e)})
 
         elif message.type == MSG_TYPE_TASK_ABORT:
             # task abortation
@@ -653,7 +653,7 @@ class Scheduler(object):
                     stop_datetime=datetime.utcnow(),
                 )
             except StorageEngineError as e:
-                logger.error(e.message)
+                logger.error(str(e))
             else:
                 # send the cancelation order to WP
                 t = Task(id=message.content['task_id'],
@@ -753,7 +753,7 @@ class SchedulerService(Service):
 
                 self.scheduler.task_list.push(task)
             except StorageEngineError as e:
-                logger.error(e.message)
+                logger.error(str(e))
 
     def remove(self, workerset):
         if not self.is_my_process:
@@ -763,7 +763,7 @@ class SchedulerService(Service):
             try:
                 self.scheduler.task_list.rm(task.id)
             except StorageEngineError as e:
-                logger.error(e.message)
+                logger.error(str(e))
 
     def schedule_task(
             self, worker_name, id=None, options=None, start=None,
