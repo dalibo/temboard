@@ -1,3 +1,4 @@
+import errno
 import functools
 import sys
 import time
@@ -445,8 +446,8 @@ class Scheduler(object):
                 self.select_timeout
             )
         except SelectError as e:
-            errno, message = e.args
-            if errno == os.errno.EINTR:
+            errno_, message = e.args
+            if errno_ == errno.EINTR:
                 # Interrupted by e.g. SIGHUP. Just stop.
                 return
             else:
