@@ -95,7 +95,9 @@ $(function() {
             break;
           case 'idle in transaction':
           case 'idle in transaction (aborted)':
-            cls = 'text-danger font-weight-bold';
+            if (rowData.duration > intervalDuration) {
+              cls = 'text-danger font-weight-bold';
+            }
             break;
         }
         $(td).addClass(cls);

@@ -7,6 +7,7 @@
 - Improved performance of the home page (instances list), by [@pgiraud]
 - Activity filters are kept, by [@pgiraud]
 - Better support for history navigation in monitoring, by [@pgiraud]
+- Don't highlight short idle_in_transaction queries, by [@pgiraud]
 
 ### Fixed
 
