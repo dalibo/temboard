@@ -324,24 +324,62 @@ $(function() {
   });
 
   var stateFilters = $('#state-filter input[type=checkbox]');
+
+  function getCheckedStateFilters() {
+    var states = [];
+    stateFilters.each(function(index, el) {
+      var input = $(el);
+      if (input.prop('checked')) {
+        states.push(input.val());
+      }
+    });
+    return states;
+  }
   stateFilters.change(table.draw);
+
+  var initStateFilters = localStorage.getItem('temboardActivityStateFilters');
+  if (initStateFilters) {
+    initStateFilters = JSON.parse(initStateFilters);
+    stateFilters.each(function(index, el) {
+      var input = $(el);
+      input.prop('checked', initStateFilters.indexOf(input.val()) != -1);
+    });
+  }
+
+  // Store in localStorage the states filter selection
+  stateFilters.change(function() {
+    if (stateFilters.length != getCheckedStateFilters().length) {
+      localStorage.setItem('temboardActivityStateFilters', JSON.stringify(getCheckedStateFilters()));
+    } else {
+      localStorage.removeItem('temboardActivityStateFilters');
+    }
+  });
 
   /* State filtering function */
   $.fn.dataTable.ext.search.push(
     function stateFilter(settings, data, index, rawData) {
-      var states = [];
-      stateFilters.each(function(index, el) {
-        var input = $(el);
-        if (input.prop('checked')) {
-          states.push(input.val());
-        }
-      });
+      var states = getCheckedStateFilters();
       return states.indexOf(rawData.state) > -1;
     }
   );
 
   var searchFilter = $('#searchFilter');
   searchFilter.keyup(table.draw);
+
+  var initSearchFilter = localStorage.getItem('temboardActivitySearchFilter');
+  if (initSearchFilter) {
+    searchFilter.val(initSearchFilter);
+  }
+  // Store in localStorage the states filter selection
+  searchFilter.keyup(function() {
+    var search = searchFilter.val();
+    if (search) {
+      localStorage.setItem('temboardActivitySearchFilter', searchFilter.val());
+    } else {
+      localStorage.removeItem('temboardActivitySearchFilter');
+    }
+  });
+
   /* Custom filtering function */
   $.fn.dataTable.ext.search.push(
     function searchFilterFn(settings, data) {
@@ -356,6 +394,10 @@ $(function() {
       return false;
     }
   );
+
+  if (initStateFilters || searchFilter.val()) {
+    $('#filters').collapse('show');
+  }
 
   /**
    * Find the index of the column for a given title
