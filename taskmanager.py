@@ -9,8 +9,8 @@ import signal
 from select import select, error as SelectError
 from datetime import datetime
 from collections import deque
-from multiprocessing import Process, Queue
-from multiprocessing.connection import Listener, Client, AuthenticationError
+from multiprocessing import AuthenticationError, Process, Queue
+from multiprocessing.connection import Listener, Client
 
 from .services import Service
 from .errors import StorageEngineError
