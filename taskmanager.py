@@ -322,6 +322,7 @@ class Scheduler(object):
         self.task_list_engine = None
         self.last_schedule = 0
         self.last_vacuum = 0
+        self.select_timeout = None
 
     def set_context(self, key, val):
         self.context[key] = val
