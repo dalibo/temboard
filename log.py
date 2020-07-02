@@ -1,4 +1,4 @@
-import logging.config
+import logging
 import sys
 from logging.handlers import SysLogHandler
 
