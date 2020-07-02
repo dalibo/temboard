@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import bdb
 import pkg_resources
 from distutils.util import strtobool
 from glob import glob
@@ -297,7 +298,7 @@ class BaseApplication(object):
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
             logger.info('Terminated.')
-        except pdb.bdb.BdbQuit:
+        except bdb.BdbQuit:
             logger.info("Graceful exit from debugger.")
         except UserError as e:
             retcode = e.retcode
