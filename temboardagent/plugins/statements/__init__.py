@@ -2,7 +2,7 @@ import logging
 
 from temboardagent.errors import HTTPError, UserError
 from temboardagent.routing import RouteSet
-from temboardagent.spc import connector, error
+from temboardagent.postgres import Postgres
 from temboardagent.tools import now
 from temboardagent.toolkit.configuration import OptionSpec
 
@@ -51,19 +51,12 @@ def get_statements(http_context, app):
     config = app.config
     dbname = config.statements.dbname
     assert dbname == "postgres", dbname
-    conn = connector(
-        config.postgresql.host,
-        config.postgresql.port,
-        config.postgresql.user,
-        config.postgresql.password,
-        dbname,
-    )
     snapshot_datetime = now()
+    conninfo = dict(config.postgresql, dbname=dbname)
     try:
-        conn.connect()
-        conn.execute(query)
-        data = list(conn.get_rows())
-    except error as e:
+        with Postgres(**conninfo).connect() as conn:
+            data = list(conn.query(query))
+    except Exception as e:
         pg_version = app.postgres.fetch_version()
         if (
             pg_version < 90600 or

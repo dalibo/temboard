@@ -47,8 +47,9 @@ def get_hello_time(http_context, app):
     }
     """  # noqa
     with app.postgres.connect() as conn:
-        conn.execute("""SELECT 'Hello World' AS message, NOW() AS time""")
-        row = list(conn.get_rows())[0]
+        row = list(conn.queryone("""\
+        SELECT 'Hello World' AS message, NOW() AS time
+        """)
     return {"message": row['message'], "time": row['time']}
 
 

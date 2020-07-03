@@ -1,26 +1,17 @@
 from __future__ import absolute_import
 
 import json
-import os
-import sys
 from multiprocessing import Process
 import time
 
+from psycopg2 import OperationalError
 try:
     from urllib.request import HTTPError
 except ImportError:
     from urllib2 import HTTPError
 
 from .test.temboard import temboard_request
-from .conftest import ENV, text_type
-
-# Import spc
-tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
-
-if tbda_dir not in sys.path:
-    sys.path.insert(0, tbda_dir)
-
-from temboardagent.spc import connector, error  # noqa
+from .conftest import ENV, text_type, pgconnect
 
 XSESSION = ''
 
@@ -29,91 +20,57 @@ def pg_sleep(duration=1):
     """
     Start a new PG connection and run pg_sleep()
     """
-    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                     user=ENV['pg']['user'], password=ENV['pg']['password'],
-                     database='postgres')
-    try:
-        conn.connect()
-        conn.execute("SELECT pg_sleep(%s)" % (duration))
-        conn.close()
-    except error:
-        pass
+    with pgconnect() as conn:
+        try:
+            conn.execute("SELECT pg_sleep(%s)", (duration,))
+        except OperationalError:
+            pass  # Accept being killed
 
 
 def create_database(dbname):
     """
     Create a database.
     """
-    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                     user=ENV['pg']['user'], password=ENV['pg']['password'],
-                     database='postgres')
-    try:
-        conn.connect()
-        conn.execute("CREATE DATABASE %s" % (dbname))
-        conn.close()
-    except error:
-        pass
+    with pgconnect() as conn:
+        cur = conn.cursor()
+        cur.execute("CREATE DATABASE %s" % dbname)
 
 
 def create_table(dbname, tablename):
     """
     Create a table and insert 5 rows in it.
     """
-    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                     user=ENV['pg']['user'], password=ENV['pg']['password'],
-                     database=dbname)
-    try:
-        conn.connect()
-        conn.execute("CREATE TABLE %s (id INTEGER)" % (tablename))
+    with pgconnect(dbname=dbname) as conn:
+        conn.execute("CREATE TABLE %s (id INTEGER)" % (tablename,))
         conn.execute("INSERT INTO %s SELECT generate_series(1, 5)"
-                     % (tablename))
-        conn.close()
-    except error:
-        pass
+                     % (tablename,))
 
 
 def lock_table_exclusive(dbname, tablename, duration):
     """
     Lock a table in exclusive mode for a while (duration in seconds).
     """
-    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                     user=ENV['pg']['user'], password=ENV['pg']['password'],
-                     database=dbname)
-    try:
-        conn.connect()
+    with pgconnect(dbname=dbname) as conn:
         conn.execute("BEGIN")
         conn.execute("LOCK TABLE %s IN EXCLUSIVE MODE" % (tablename))
         time.sleep(float(duration))
         conn.execute("ROLLBACK")
-        conn.close()
-    except error:
-        pass
 
 
 def update_rows(dbname, tablename):
     """
     Update all rows of a table.
     """
-    conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                     user=ENV['pg']['user'], password=ENV['pg']['password'],
-                     database=dbname)
-    try:
-        conn.connect()
+    with pgconnect(dbname=dbname) as conn:
         conn.execute("UPDATE %s SET id = id + 1" % (tablename))
-        conn.close()
-    except error:
-        pass
 
 
 class TestActivity:
     def _exec_query(self, dbname, query):
-        conn = connector(host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
-                         user=ENV['pg']['user'],
-                         password=ENV['pg']['password'], database=dbname)
-        conn.connect()
-        conn.execute(query)
-        conn.close()
-        return list(conn.get_rows())
+        with pgconnect(dbname=dbname) as conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                return cur.fetchall()
 
     def _temboard_login(self):
         (status, res) = temboard_request(
@@ -133,21 +90,11 @@ class TestActivity:
         """
         [activity] 00: PostgreSQL instance is up & running
         """
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database='postgres'
-        )
-        try:
-            conn.connect()
-            conn.close()
-            global XSESSION
-            XSESSION = self._temboard_login()
-            assert True
-        except error:
-            assert False
+        with pgconnect():
+            pass
+
+        global XSESSION
+        XSESSION = self._temboard_login()
 
     def test_01_activity_root(self):
         """

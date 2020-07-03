@@ -31,10 +31,16 @@ then
     # Search for the proper RPM package
     rpmdist=$(rpm --eval '%dist')
     rpm=$(readlink -e dist/rpm/noarch/temboard-agent-*${rpmdist}*.noarch.rpm)
-    yum -d1 install -y $rpm
+    # Disable pgdg to use base pyscopg2 2.5 from Red Hat.
+    yum -d1 "--disablerepo=pgdg*"  install -y $rpm
     rpm --query --queryformat= temboard-agent
 else
     pip2 install -e .
+    if type -p yum ; then
+	    yum -q -y "--disablerepo=pgdg*" install python-psycopg2
+    else
+	    pip2 install psycopg2-binary
+    fi
 fi
 
 export TBD_PGBIN=$(readlink -e /usr/pgsql-${TBD_PGVERSION}/bin /usr/lib/postgresql/${TBD_PGVERSION}/bin)

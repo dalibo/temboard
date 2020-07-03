@@ -2,9 +2,52 @@
 
 from __future__ import unicode_literals
 
-from .spc import connector
-from .spc import error as PostgresError
+import re
+from textwrap import dedent
+
+import psycopg2.extensions
+from psycopg2 import connect
+from psycopg2.extensions import connection
+from psycopg2.extras import RealDictCursor
+
 from .errors import UserError
+from .toolkit.utils import PY2
+
+
+# See https://www.psycopg.org/docs/faq.html#faq-float
+DEC2FLOAT = psycopg2.extensions.new_type(
+    psycopg2.extensions.DECIMAL.values,
+    b'DEC2FLOAT' if PY2 else 'DEC2FLOAT',
+    lambda value, curs: float(value) if value is not None else None)
+psycopg2.extensions.register_type(DEC2FLOAT)
+
+
+def pg_escape(in_string, escapee_char=r"'"):
+    out_string = ''
+    out_string += escapee_char
+    out_string += re.sub(escapee_char, escapee_char * 2, in_string)
+    out_string += escapee_char
+    return out_string
+
+
+class ConnectionHelper(connection):
+    def execute(self, query, vars=None):
+        with self.cursor() as cur:
+            cur.execute(dedent(query), vars)
+
+    def query(self, query, vars=None):
+        with self.cursor() as cur:
+            cur.execute(dedent(query), vars)
+            for row in cur:
+                yield row
+
+    def queryone(self, query, vars=None):
+        with self.cursor() as cur:
+            cur.execute(dedent(query), vars)
+            return cur.fetchone()
+
+    def query_scalar(self, query, vars=None):
+        return next(iter(self.queryone(query, vars).values()))
 
 
 class ConnectionManager(object):
@@ -12,16 +55,18 @@ class ConnectionManager(object):
         self.postgres = postgres
 
     def __enter__(self):
-        self.conn = connector(
-            host=self.postgres.host,
-            port=self.postgres.port,
-            user=self.postgres.user,
-            password=self.postgres.password,
-            database=self.postgres.dbname
-        )
         try:
-            self.conn.connect()
-        except PostgresError as e:
+            self.conn = connect(
+                host=self.postgres.host,
+                port=self.postgres.port,
+                user=self.postgres.user,
+                password=self.postgres.password,
+                database=self.postgres.dbname,
+                connection_factory=ConnectionHelper,
+                cursor_factory=RealDictCursor,
+            )
+            self.conn.set_session(autocommit=True)
+        except Exception as e:
             raise UserError("Failed to connect to Postgres: %s" % e.message)
         return self.conn
 
@@ -37,6 +82,9 @@ class Postgres(object):
         self.port = port
         self.user = user
         self.password = password
+        # Compat with conninfo dict.
+        if 'database' in kw:
+            dbname = kw['database']
         self.dbname = dbname
         self._server_version = None
 
@@ -52,5 +100,5 @@ class Postgres(object):
     def fetch_version(self):
         if self._server_version is None:
             with self.connect() as conn:
-                self._server_version = conn.get_pg_version()
+                self._server_version = conn.server_version
         return self._server_version

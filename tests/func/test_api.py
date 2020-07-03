@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 import json
 import re
-import os
-import sys
 
 try:
     from urllib.request import HTTPError
@@ -11,15 +9,7 @@ except ImportError:
     from urllib2 import HTTPError
 
 from .test.temboard import rand_string, temboard_request
-from .conftest import ENV
-
-# Import spc
-tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
-
-if tbda_dir not in sys.path:
-    sys.path.insert(0, tbda_dir)
-
-from temboardagent.spc import connector, error  # noqa
+from .conftest import ENV, pgconnect
 
 
 class TestAPI:
@@ -27,19 +17,8 @@ class TestAPI:
         """
         [api] 00: PostgreSQL instance is up & running
         """
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database='postgres'
-        )
-        try:
-            conn.connect()
-            conn.close()
-            assert True
-        except error:
-            assert False
+        with pgconnect():
+            pass
 
     def test_01_login_ok(self):
         """

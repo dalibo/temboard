@@ -1,20 +1,11 @@
 from __future__ import absolute_import
 
 import json
-import os
-import sys
 import time
 
 from .test.temboard import temboard_request
-from .conftest import ENV, text_type
+from .conftest import ENV, text_type, pgconnect
 
-# Import spc
-tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
-
-if tbda_dir not in sys.path:
-    sys.path.insert(0, tbda_dir)
-
-from temboardagent.spc import connector, error  # noqa
 
 XSESSION = ''
 
@@ -38,21 +29,11 @@ class TestDashboard:
         """
         [dashboard] 00: PostgreSQL instance is up & running
         """
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database='postgres'
-        )
-        try:
-            conn.connect()
-            conn.close()
-            global XSESSION
-            XSESSION = self._temboard_login()
-            assert True
-        except error:
-            assert False
+        with pgconnect():
+            pass
+
+        global XSESSION
+        XSESSION = self._temboard_login()
 
     def test_01_dashboard_ok(self):
         """

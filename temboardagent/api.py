@@ -17,7 +17,6 @@ from temboardagent.types import (
 )
 from temboardagent.tools import validate_parameters
 from temboardagent.usermgmt import auth_user, gen_sessionid
-from temboardagent.spc import error
 from temboardagent.notification import NotificationMgmt, Notification
 from temboardagent.inventory import SysInfo, PgInfo
 from .version import __version__ as version
@@ -206,7 +205,7 @@ def get_status(http_context, app, sessions):
         )
         logger.info('Ending /status.')
         return ret
-    except (error, Exception, HTTPError) as e:
+    except (Exception, HTTPError) as e:
         logger.exception(str(e))
         logger.info('Status failed.')
         if isinstance(e, HTTPError):

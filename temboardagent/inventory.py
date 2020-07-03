@@ -3,7 +3,6 @@ import socket
 import os
 import re
 
-from temboardagent.spc import connector
 from temboardagent.tools import check_fqdn, which, to_bytes
 from temboardagent.command import exec_command
 
@@ -266,56 +265,58 @@ class SysInfo(Inventory):
 
 class PgInfo(Inventory):
     def __init__(self, db_conn):
-        if isinstance(db_conn, connector):
-            self.db_conn = db_conn
-        else:
-            raise Exception("db_conn should be an SPC connector instance.")
+        self.db_conn = db_conn
 
     def setting(self, name):
         """
         Returns PostgreSQL setting value based on its name.
         """
-        q = "SELECT setting FROM pg_settings WHERE name = %s"
-        self.db_conn.execute(q, (name,))
-        return list(self.db_conn.get_rows())[0]['setting']
+        return self.db_conn.query_scalar(
+            "SELECT setting FROM pg_settings WHERE name = %s",
+            (name,)
+        )
 
     def version(self):
         """
         Returns a dict with PostgreSQL full & numeric version.
         """
-        q = "SELECT version(), setting AS server FROM pg_settings WHERE " \
+        row = self.db_conn.queryone(
+            "SELECT version(), setting AS server FROM pg_settings WHERE "
             "name = 'server_version'"
-        self.db_conn.execute(q)
-        row = list(self.db_conn.get_rows())[0]
+        )
         return {
             'full': row['version'],
             'server': row['server'],
-            'num': self.db_conn.get_pg_version(),
+            'num': self.db_conn.server_version,
             'summary': ' '.join(row['version'].split(' ')[0:2]),
         }
 
     def is_in_recovery(self):
-        if self.db_conn.get_pg_version() >= 90000:
-            self.db_conn.execute("SELECT pg_is_in_recovery() AS standby;")
-            if list(self.db_conn.get_rows())[0]['standby'] is True:
-                return True
+        if self.db_conn.server_version >= 90000:
+            return self.db_conn.query_scalar(
+                "SELECT pg_is_in_recovery() AS standby;")
         return False
 
     def tablespaces(self, data_directory):
         # Grab the list of tablespaces
-        if self.db_conn.get_pg_version() < 90200:
-            self.db_conn.execute("SELECT spcname, spclocation, "
-                                 "pg_tablespace_size(oid) AS size FROM "
-                                 "pg_tablespace;")
+        if self.db_conn.server_version < 90200:
+            q = """\
+            SELECT spcname, spclocation, pg_tablespace_size(oid) AS size
+            FROM pg_tablespace;
+            """
         else:
-            self.db_conn.execute("SELECT spcname, pg_tablespace_location(oid) "
-                                 "AS spclocation, pg_tablespace_size(oid) AS "
-                                 "size FROM pg_tablespace;")
+            q = """\
+            SELECT
+              spcname,
+              pg_tablespace_location(oid) AS spclocation,
+              pg_tablespace_size(oid) AS size
+            FROM pg_tablespace;
+            """
 
         tablespaces = []
         sysinfo = SysInfo()
         fs = sysinfo.mount_points()
-        for row in self.db_conn.get_rows():
+        for row in self.db_conn.query(q):
             # when spclocation is empty, replace with data_directory
             if row['spclocation'] is None:
                 path = data_directory
@@ -330,12 +331,14 @@ class PgInfo(Inventory):
             })
 
     def databases(self):
-        self.db_conn.execute("""
-        SELECT datname AS dbname, pg_encoding_to_char(encoding) AS encoding,
-        pg_database_size(datname) AS size FROM pg_database WHERE datallowconn;
-        """)
+        q = """\
+        SELECT
+          datname AS dbname, pg_encoding_to_char(encoding) AS encoding,
+          pg_database_size(datname) AS size
+        FROM pg_database WHERE datallowconn;
+        """
 
         dbs = {}
-        for r in self.db_conn.get_rows():
+        for r in self.db_conn.query(q):
             dbs[r['dbname']] = r
         return dbs

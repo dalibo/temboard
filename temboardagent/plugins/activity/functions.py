@@ -15,7 +15,7 @@ def get_activity(conn):
     """
     mem_total = memory_total_size()
     page_size = getpagesize()
-    if conn.get_pg_version() >= 90600 and conn.get_pg_version() < 100000:
+    if conn.server_version >= 90600 and conn.server_version < 100000:
         query = """
 SELECT
   pg_stat_activity.pid AS pid,
@@ -35,7 +35,7 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
-    elif conn.get_pg_version() < 90600:
+    elif conn.server_version < 90600:
         query = """
 SELECT
   pg_stat_activity.pid AS pid,
@@ -54,7 +54,7 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
-    elif conn.get_pg_version() >= 100000:
+    elif conn.server_version >= 100000:
         query = """
 SELECT
   pg_stat_activity.pid AS pid,
@@ -76,9 +76,8 @@ ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
 
-    conn.execute(query)
     backend_list = []
-    for row in conn.get_rows():
+    for row in conn.query(query):
         try:
             backend_list.append({
                 'pid': row['pid'],
@@ -130,7 +129,8 @@ def post_activity_kill(conn, config, http_context):
     ])
     ret = {'backends': []}
     for pid in http_context['post']['pids']:
-        conn.execute("SELECT pg_terminate_backend(%s) AS killed" % (pid))
+        killed = conn.query_scalar(
+            "SELECT pg_terminate_backend(%s) AS killed" % (pid))
         # Push a notification.
         try:
             NotificationMgmt.push(
@@ -145,7 +145,7 @@ def post_activity_kill(conn, config, http_context):
 
         ret['backends'].append({
             'pid': pid,
-            'killed': list(conn.get_rows())[0]['killed']
+            'killed': killed,
         })
     return ret
 
@@ -178,9 +178,8 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
     """
-    conn.execute(query)
     backend_list = []
-    for row in conn.get_rows():
+    for row in conn.query(query):
         try:
             backend_list.append({
                 'pid': row['pid'],
@@ -289,9 +288,8 @@ GROUP BY pid, query, mode, locktype, duration, datname, usename, relation,
   state
 ORDER BY duration DESC
     """
-    conn.execute(query)
     backend_list = []
-    for row in conn.get_rows():
+    for row in conn.query(query):
         try:
             backend_list.append({
                 'pid': row['pid'],

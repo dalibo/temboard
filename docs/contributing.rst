@@ -30,7 +30,7 @@ With Docker & Compose, you can run your code like this:
 
    $ docker-compose up -d
    $ docker-compose exec agent bash
-   # pip install -e /usr/local/src/temboard-agent/
+   # pip install -e /usr/local/src/temboard-agent/ psycopg2-binary
    # sudo -u postgres temboard-agent
 
 Goto https://0.0.0.0:8888/ to add your instance with address ``agent``, port

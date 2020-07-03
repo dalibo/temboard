@@ -5,6 +5,8 @@ import sys
 import pytest
 
 from .test.temboard import build_env_dict, drop_env, init_env
+from temboardagent.postgres import Postgres
+
 
 
 ENV = {}
@@ -23,3 +25,13 @@ def env():
         yield ENV
     finally:
         drop_env(env)
+
+
+def pgconnect(**kw):
+    defaults = dict(
+        host=ENV['pg']['socket_dir'], port=ENV['pg']['port'],
+        user=ENV['pg']['user'], password=ENV['pg']['password'],
+        database='postgres',
+    )
+    kw = dict(defaults, **kw)
+    return Postgres(**kw).connect()

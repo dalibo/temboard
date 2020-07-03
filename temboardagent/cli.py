@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class Application(BaseApplication):
     # Agent specialisation of application.
     #
-    # This include some defaults and Postgres connection throught spc.
+    # This include some defaults and Postgres connection.
 
     PROGRAM = "temboard-agent"
     VERSION = __version__

@@ -2,10 +2,10 @@ import logging
 import re
 from collections import namedtuple
 
-from temboardagent.spc import pg_escape, error
 from temboardagent.errors import HTTPError, NotificationError
 from temboardagent.tools import validate_parameters
 from temboardagent.notification import NotificationMgmt, Notification
+from temboardagent.postgres import pg_escape
 from .types import (
     T_PGSETTINGS_FILTER,
 )
@@ -20,19 +20,14 @@ class FileSetting(namedtuple('FileSetting', ['name', 'setting', 'sourcefile',
 
 
 def get_settings_categories(conn):
-    query = """
-SELECT DISTINCT(category) FROM pg_settings ORDER BY category
-    """
-    ret = {'categories': []}
-    conn.execute(query)
-    for row in conn.get_rows():
-        ret['categories'].append(row['category'])
-    return ret
+    return {'categories': [row['category'] for row in conn.query("""\
+    SELECT DISTINCT(category) FROM pg_settings ORDER BY category
+    """)]}
 
 
 def get_setting(conn, name):
-    conn.execute("SELECT setting FROM pg_settings WHERE name = '%s'" % (name))
-    return list(conn.get_rows())[0]['setting']
+    return conn.query_scalar(
+        "SELECT setting FROM pg_settings WHERE name = %s", (name,))
 
 
 def preformat(setting, type):
@@ -76,9 +71,8 @@ SELECT
 FROM pg_settings
 %s ORDER BY category, name
     """ % (filter_query)
-    conn.execute(query)
     ret = []
-    for row in conn.get_rows():
+    for row in conn.query(query):
         if http_context and len(http_context['urlvars']) > 0:
             if http_context['urlvars'][0] != row['category']:
                 continue
@@ -329,7 +323,7 @@ def post_settings(conn, config, http_context):
 
             try:
                 conn.execute(query)
-            except error as e:
+            except Exception as e:
                 raise HTTPError(408, "%s: %s" % (setting['name'], e.message))
             ret['settings'].append({
                 'name': item['name'],

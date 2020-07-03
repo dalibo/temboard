@@ -1,39 +1,28 @@
 from __future__ import absolute_import
 
 import json
-import os
-import sys
 from hashlib import md5
 import datetime
 import pytest
 
+from psycopg2 import ProgrammingError
+
 from .test.temboard import temboard_request
-from .conftest import ENV
+from .conftest import ENV, pgconnect
 
-# Import spc
-tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
-
-if tbda_dir not in sys.path:
-    sys.path.insert(0, tbda_dir)
-
-from temboardagent.spc import connector, error  # noqa
 
 XSESSION = ''
 
 
 class TestPgconf(object):
     def _exec_query(self, dbname, query):
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database=dbname
-        )
-        conn.connect()
-        conn.execute(query)
-        conn.close()
-        return list(conn.get_rows())
+        with pgconnect(dbname=dbname) as conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                try:
+                    return cur.fetchall()
+                except ProgrammingError:
+                    return []
 
     def _read_file(self, filepath):
         try:
@@ -62,21 +51,11 @@ class TestPgconf(object):
         """
         [pgconf] 00: PostgreSQL instance is up & running
         """
-        conn = connector(
-            host=ENV['pg']['socket_dir'],
-            port=ENV['pg']['port'],
-            user=ENV['pg']['user'],
-            password=ENV['pg']['password'],
-            database='postgres'
-        )
-        try:
-            conn.connect()
-            conn.close()
-            global XSESSION
-            XSESSION = self._temboard_login()
-            assert True
-        except error:
-            assert False
+        with pgconnect():
+            pass
+
+        global XSESSION
+        XSESSION = self._temboard_login()
 
     def test_01_get_pgconf_configuration_ok(self):
         """

@@ -144,6 +144,8 @@ def api_run_probe(probe_instance, config):
     """
     Run a probe instance.
     """
+    # Validate connection information from the config, and ensure
+    # the instance is available
     conninfo = dict(
         host=config.postgresql.host,
         port=config.postgresql.port,
@@ -153,8 +155,6 @@ def api_run_probe(probe_instance, config):
         dbnames=config.monitoring.dbnames,
         instance=config.postgresql.instance,
     )
-    # Validate connection information from the config, and ensure
-    # the instance is available
     sysinfo = SysInfo()
     hostname = sysinfo.hostname(config.temboard.hostname)
     instance = instance_info(conninfo, hostname)
