@@ -105,6 +105,7 @@ def json_instance(request):
             } for group in groups],
             'loaded_plugins': request.handler.application.loaded_plugins,
             'notify': instance.notify,
+            'comment': instance.comment,
         }
     else:  # POST (update)
         data = request.json

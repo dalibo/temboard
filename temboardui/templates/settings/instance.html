@@ -44,6 +44,7 @@
         <th>PG Data</th>
         <th>Groups</th>
         <th>Notify</th>
+        <th>Comment</th>
         <th class="no-sort"></th>
         <th class="no-sort"></th>
       </tr>
@@ -55,7 +56,7 @@
         <td>{{instance_item.hostname}}</td>
         <td>
           {{instance_item.pg_version_summary}}
-          <div class="overflow-ellipsis small text-muted" style="max-width: 200px;" title="{{instance_item.pg_version}}">
+          <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance_item.pg_version}}">
             {{instance_item.pg_version}}
           </div>
         </td>
@@ -66,6 +67,12 @@
           {% if instance_item.notify %}
           <i class="fa fa-check"></i>
           {% end %}
+        </td>
+        <td>
+          {% set comment = instance_item.comment if instance_item.comment is not None else '' %}
+          <div class="overflow-ellipsis" style="max-width: 100px;" title="{{comment}}">
+            {{comment}}
+          </div>
         </td>
         <td class="text-center">
           <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-edit"></i></button>

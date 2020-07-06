@@ -306,7 +306,8 @@ def add_instance(session,
                  pg_version=None,
                  pg_version_summary=None,
                  pg_data=None,
-                 notify=False):
+                 notify=False,
+                 comment=None):
     try:
         instance = Instances(
             agent_address=unicode(new_agent_address),
@@ -327,6 +328,7 @@ def add_instance(session,
         if pg_data is not None:
             instance.pg_data = unicode(pg_data)
         instance.notify = bool(notify)
+        instance.comment = comment
         session.add(instance)
         session.flush()
         return instance
@@ -368,7 +370,8 @@ def update_instance(session,
                     pg_version=None,
                     pg_version_summary=None,
                     pg_data=None,
-                    notify=True):
+                    notify=True,
+                    comment=None):
     try:
         instance = session.query(Instances) \
             .filter_by(
@@ -392,6 +395,7 @@ def update_instance(session,
         else:
             instance.pg_port = None
         instance.notify = bool(notify)
+        instance.comment = comment
 
         for prop in ['agent_key', 'hostname', 'pg_version',
                      'pg_version_summary', 'pg_data']:

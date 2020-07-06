@@ -82,6 +82,12 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '      </div>';
       body_html += '    </div>';
       body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="form-group col-sm-12">';
+      body_html += '      <label for="inputComment" class="control-label">Comment</label>';
+      body_html += '      <textarea class="form-control" rows="3" id="inputComment">'+data['comment']+'</textarea>';
+      body_html += '    </div>';
+      body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<i class="fa fa-spinner fa-spin loader d-none"></i>';
@@ -120,7 +126,8 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
           $('#inputNewAgentAddress').val(),
           $('#inputNewAgentPort').val(),
           $('#inputAgentKey').val(),
-          $('#inputNotify').prop('checked')
+          $('#inputNotify').prop('checked'),
+          $('#inputComment').val()
         );
       });
     },
@@ -128,23 +135,23 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
   });
 }
 
-function addInstance(modal_id, address, port, key, notify) {
+function addInstance(modal_id, address, port, key, notify, comment) {
   var url = '/json/settings/instance';
   var onSuccess = function (data) {
-    saveInstance(modal_id, url, address, port, key, notify, data);
+    saveInstance(modal_id, url, address, port, key, notify, comment, data);
   }
   var onError = showError.bind(null, modal_id);
   discoverInstance(modal_id, address, port, onSuccess, onError);
 }
 
-function updateInstance(modal_id, address, port, newAddress, newPort, key, notify) {
+function updateInstance(modal_id, address, port, newAddress, newPort, key, notify, comment) {
   var url = ['/json/settings/instance', address, port].join('/');
   var onSuccess = function (data) {
-    saveInstance(modal_id, url, address, port, key, notify, data);
+    saveInstance(modal_id, url, address, port, key, notify, comment, data);
   }
   var onError = function () {
     // save the instance anyway, without discovered data
-    saveInstance(modal_id, url, address, port, key, notify);
+    saveInstance(modal_id, url, address, port, key, notify, comment);
   }
   discoverInstance(modal_id, address, port, onSuccess, onError);
 }
@@ -162,14 +169,15 @@ function discoverInstance(modal_id, address, port, onSuccess, onError) {
   });
 }
 
-function saveInstance(modal_id, saveUrl, address, port, key, notify, discoverData) {
+function saveInstance(modal_id, saveUrl, address, port, key, notify, comment, discoverData) {
   var data = {
     'new_agent_address': address,
     'new_agent_port': port.toString(),
     'agent_key': key,
     'groups': $('#selectGroups').val(),
     'plugins': $('#selectPlugins').val(),
-    'notify': notify
+    'notify': notify,
+    'comment': comment
   };
 
   // add discovered data in case we managed to get it from the agent
@@ -345,6 +353,12 @@ function load_add_instance_form(modal_id)
       body_html += '      </div>';
       body_html += '    </div>';
       body_html += '  </div>';
+      body_html += '  <div class="row">';
+      body_html += '    <div class="form-group col-sm-12">';
+      body_html += '      <label for="inputComment" class="control-label">Comment</label>';
+      body_html += '      <textarea class="form-control" rows="3" id="inputComment">'+data['comment']+'</textarea>';
+      body_html += '    </div>';
+      body_html += '  </div>';
       body_html += '</form>';
       var footer_html = '';
       footer_html += '<i class="fa fa-spinner fa-spin loader d-none"></i>';
@@ -376,7 +390,8 @@ function load_add_instance_form(modal_id)
           $('#inputNewAgentAddress').val(),
           $('#inputNewAgentPort').val(),
           $('#inputAgentKey').val(),
-          $('#inputNotify').prop('checked')
+          $('#inputNotify').prop('checked'),
+          $('#inputComment').val()
         );
       });
     },

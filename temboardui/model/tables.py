@@ -47,6 +47,7 @@ instances = Table(
     Column('pg_version_summary', UnicodeText),
     Column('pg_data', UnicodeText),
     Column('notify', Boolean, nullable=False, server_default=text('True')),
+    Column('comment', UnicodeText),
     schema="application")
 
 plugins = Table(
