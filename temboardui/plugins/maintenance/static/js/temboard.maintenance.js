@@ -43,7 +43,6 @@ $(function() {
       success: (function(data) {
         this.instance = data.instance;
         this.databases = data.databases;
-        this.loading = false;
 
         this.databases.forEach(function(database) {
           database.tables_bloat_ratio = 0;
@@ -56,7 +55,11 @@ $(function() {
           }
         });
         window.setTimeout(postCreated.bind(this), 1);
-      }).bind(this)
+      }).bind(this),
+      error: onError,
+      complete: function() {
+        this.loading = false;
+      }.bind(this)
     });
   }
 

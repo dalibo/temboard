@@ -75,7 +75,6 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         this.table = data;
-        this.loading = false;
         this.table.indexes.forEach(function(index) {
           index.bloat_ratio = 0;
           if (index.total_bytes) {
@@ -83,7 +82,11 @@ $(function() {
           }
         });
         window.setTimeout(postCreated.bind(this), 1);
-      }).bind(this)
+      }).bind(this),
+      error: onError,
+      complete: function() {
+        this.loading = false;
+      }.bind(this)
     });
   }
 
@@ -133,7 +136,8 @@ $(function() {
         if (data.length < count) {
           getData.call(this);
         }
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -204,7 +208,8 @@ $(function() {
         if (data.length < count) {
           getData.call(this);
         }
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -276,7 +281,8 @@ $(function() {
         if (data.length < count) {
           getData.call(this);
         }
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -359,35 +365,5 @@ $(function() {
   function indexSortBy(criteria, order) {
     this.indexSortCriteria = criteria;
     this.indexSortOrder = order || 'asc';
-  }
-
-  /**
-   * Redirects to agent login page if session is not provided
-   * Should be used in each action requiring xsession authentication.
-   *
-   * params:
-   * e - Optional browser event
-   *
-   */
-  function checkSession(e) {
-    if (!xsession) {
-      showNeedsLoginMsg();
-      e && e.stopPropagation();
-      return false;
-    }
-    return true;
-  }
-
-  function showNeedsLoginMsg() {
-    if (confirm('You need to be logged in the instance agent to perform this action')) {
-      var params = $.param({redirect_to: window.location.href});
-      window.location.href = agentLoginUrl + '?' + params;
-    }
-  }
-
-  function onError(xhr) {
-    if (xhr.status == 401) {
-      showNeedsLoginMsg();
-    }
   }
 });
