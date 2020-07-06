@@ -92,9 +92,12 @@ $(function() {
             hljs.highlightBlock(block);
           });
         }, 1);
-        this.loading = false;
         window.setTimeout(postCreated.bind(this), 1);
-      }).bind(this)
+      }).bind(this),
+      error: onError,
+      complete: function() {
+        this.loading = false;
+      }.bind(this)
     });
   }
 
@@ -132,7 +135,8 @@ $(function() {
         if (data.length < count) {
           getSchemaData.call(this);
         }
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -185,7 +189,8 @@ $(function() {
       contentType: "application/json",
       success: (function(data) {
         getScheduledReindexes.call(this);
-      }).bind(this)
+      }).bind(this),
+      error: onError
     });
   }
 
@@ -197,31 +202,5 @@ $(function() {
   function indexSortBy(criteria, order) {
     this.indexSortCriteria = criteria;
     this.indexSortOrder = order || 'asc';
-  }
-
-  /**
-   * Redirects to agent login page if session is not provided
-   * Should be used in each action requiring xsession authentication.
-   *
-   * params:
-   * e - Optional browser event
-   *
-   */
-  function checkSession(e) {
-    if (!xsession) {
-      var params = $.param({redirect_to: window.location.href});
-      if (confirm('You need to be logged in the instance agent to perform this action')) {
-        window.location.href = agentLoginUrl + '?' + params;
-      }
-      e && e.stopPropagation();
-      return false;
-    }
-    return true;
-  }
-
-  function onError(xhr) {
-    if (xhr.status == 401) {
-      showNeedsLoginMsg();
-    }
   }
 });
