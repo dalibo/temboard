@@ -230,6 +230,8 @@ class ErrorHelper(object):
             except HTTPError as e:
                 code = e.status_code
                 message = e.log_message
+                if code == 404:
+                    message += " Plugin may not be activated on agent side"
             except Exception as e:
                 # Show traceback for developer, and HTML page for user.
                 logger.exception("Unhandled Error:")
