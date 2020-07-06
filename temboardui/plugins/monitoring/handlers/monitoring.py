@@ -7,6 +7,7 @@ from temboardui.web import (
     csvify,
 )
 
+from .. import PLUGIN_NAME
 from . import blueprint, render_template
 from ..chartdata import (
     get_unavailability_csv,
@@ -123,6 +124,7 @@ def collector(request):
 
 @blueprint.instance_route("/monitoring")
 def index(request):
+    request.instance.check_active_plugin(PLUGIN_NAME)
     try:
         agent_username = request.instance.get_profile()['username']
     except Exception:
