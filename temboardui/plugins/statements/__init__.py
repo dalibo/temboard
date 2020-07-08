@@ -563,34 +563,20 @@ def pull_data_worker(app):
 
 
 def pull_data_for_instance(app, session, instance):
+    url = 'https://%s:%s%s?key=%s' % (
+        instance.agent_address,
+        instance.agent_port,
+        '/statements',
+        instance.agent_key,
+    )
+    headers = {}
     try:
-        url = 'https://%s:%s%s?key=%s' % (
-            instance.agent_address,
-            instance.agent_port,
-            '/statements',
-            instance.agent_key,
+        body = temboard_request(
+            app.config.temboard.ssl_ca_cert_file,
+            method='GET',
+            url=url,
+            headers=headers,
         )
-        headers = {}
-        try:
-            body = temboard_request(
-                app.config.temboard.ssl_ca_cert_file,
-                method='GET',
-                url=url,
-                headers=headers,
-            )
-        except urllib2.HTTPError as e:
-            message = e.read()
-            try:
-                message = json_decode(message)['error']
-            except Exception as ee:
-                logger.debug("Failed to decode agent error: %s.", ee)
-            raise HTTPError(e.code, message)
-        except urllib2.URLError as e:
-            logger.error("Proxied request failed: %s", e)
-            raise HTTPError(500, str(e.reason))
-        except Exception as e:
-            logger.error("Proxied request failed: %s", e)
-            raise HTTPError(500)
         add_statement(session, instance, json_decode(body))
     except Exception as e:
         logger.error('Could not get statements data')
