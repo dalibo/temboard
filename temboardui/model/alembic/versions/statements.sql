@@ -263,7 +263,7 @@ BEGIN
     missing_statements AS (
         INSERT INTO statements (agent_address, agent_port, queryid, query, dbid, datname, userid, rolname)
             SELECT _address, _port, queryid, query, dbid, datname, userid, rolname
-            FROM capture c
+            FROM capture
             ON CONFLICT DO NOTHING
     ),
 
@@ -275,7 +275,7 @@ BEGIN
                 shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read,
                 local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written,
                 blk_read_time, blk_write_time
-            )::statements_history_record AS record
+            )::statements_history_record
             FROM capture
     ),
 
@@ -287,7 +287,7 @@ BEGIN
                 sum(shared_blks_dirtied), sum(shared_blks_written), sum(local_blks_hit), sum(local_blks_read),
                 sum(local_blks_dirtied), sum(local_blks_written), sum(temp_blks_read), sum(temp_blks_written),
                 sum(blk_read_time), sum(blk_write_time)
-            )::statements_history_record AS record
+            )::statements_history_record
             FROM capture
             GROUP BY dbid, datname, ts
     )
