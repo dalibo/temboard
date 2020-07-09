@@ -142,6 +142,7 @@ def get_discover(http_context, app, sessions):
         with app.postgres.connect() as conn:
             pginfo = PgInfo(conn)
             discover.update(
+                pg_block_size=int(pginfo.setting('block_size')),
                 pg_port=pginfo.setting('port'),
                 pg_version=pginfo.version()['full'],
                 pg_version_summary=pginfo.version()['summary'],

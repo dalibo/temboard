@@ -175,6 +175,7 @@ class TestAPI:
             "cpu",
             "hostname",
             "memory_size",
+            "pg_block_size",
             "pg_data",
             "pg_port",
             "pg_version",
@@ -183,6 +184,7 @@ class TestAPI:
         }
         assert data["hostname"] == "test.temboard.io"
         assert data["pg_data"] == "/tmp/tests_temboard/pg/data"
+        assert data["pg_block_size"] == 8192
         assert set(data["plugins"]) == {
             "monitoring",
             "dashboard",
