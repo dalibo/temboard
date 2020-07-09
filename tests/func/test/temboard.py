@@ -497,7 +497,10 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
             headers_list.append((key, val))
     url_opener.addheaders = headers_list
     if data:
-        request = RequestWithMethod(url, data=json.dumps(data), method=method)
+        data = json.dumps(data)
+        if sys.version_info[0] >= 3:
+            data = data.encode("utf-8")
+        request = RequestWithMethod(url, data=data, method=method)
     else:
         request = RequestWithMethod(url, method=method)
     try:
