@@ -1,5 +1,6 @@
 from __future__ import absolute_import, print_function
 
+import io
 import logging
 import time
 import os
@@ -159,7 +160,7 @@ def agent_add_user(passwd_file_path, user, passwd):
     if ret_code != 0:
         raise Exception(str(stderr))
 
-    with open(passwd_file_path, "a") as fd:
+    with io.open(passwd_file_path, "ab") as fd:
         fd.write(stdout)
 
 
