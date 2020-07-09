@@ -12,7 +12,7 @@ except ImportError:
     from urllib2 import HTTPError
 
 from .test.temboard import temboard_request
-from .conftest import ENV
+from .conftest import ENV, text_type
 
 # Import spc
 tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
@@ -195,18 +195,18 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == unicode
-        assert type(dict_data['rows'][0]['user']) == unicode
+        assert type(dict_data['rows'][0]['database']) == text_type
+        assert type(dict_data['rows'][0]['user']) == text_type
         # can be float or 'N/A'
-        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
+        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == unicode
-        assert type(dict_data['rows'][0]['write_s']) == unicode
-        assert type(dict_data['rows'][0]['iow']) == unicode
-        assert type(dict_data['rows'][0]['wait']) == unicode
+        assert type(dict_data['rows'][0]['read_s']) == text_type
+        assert type(dict_data['rows'][0]['write_s']) == text_type
+        assert type(dict_data['rows'][0]['iow']) == text_type
+        assert type(dict_data['rows'][0]['wait']) == text_type
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
+        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
 
     def test_02_activity_kill(self):
         """
@@ -223,7 +223,7 @@ class TestActivity:
         # Get the pid of the backend running the long query
         r = self._exec_query('postgres',
                              "SELECT pid FROM pg_stat_activity "
-                             "WHERE query LIKE 'SELECT pg\_sleep%'")
+                             r"WHERE query LIKE 'SELECT pg\_sleep%'")
         backend_pid = r[0]['pid']
 
         status = 0
@@ -318,21 +318,21 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == unicode
-        assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
+        assert type(dict_data['rows'][0]['database']) == text_type
+        assert type(dict_data['rows'][0]['user']) == text_type
+        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == unicode
-        assert type(dict_data['rows'][0]['write_s']) == unicode
-        assert type(dict_data['rows'][0]['iow']) == unicode
-        assert type(dict_data['rows'][0]['relation']) == unicode
-        assert type(dict_data['rows'][0]['type']) == unicode
+        assert type(dict_data['rows'][0]['read_s']) == text_type
+        assert type(dict_data['rows'][0]['write_s']) == text_type
+        assert type(dict_data['rows'][0]['iow']) == text_type
+        assert type(dict_data['rows'][0]['relation']) == text_type
+        assert type(dict_data['rows'][0]['type']) == text_type
         assert dict_data['rows'][0]['type'] == u'relation'
-        assert type(dict_data['rows'][0]['mode']) == unicode
+        assert type(dict_data['rows'][0]['mode']) == text_type
         assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
+        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
 
     def test_04_activity_blocking(self):
         """
@@ -394,18 +394,18 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == unicode
-        assert type(dict_data['rows'][0]['user']) == unicode
-        assert type(dict_data['rows'][0]['cpu']) in (float, unicode)
+        assert type(dict_data['rows'][0]['database']) == text_type
+        assert type(dict_data['rows'][0]['user']) == text_type
+        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == unicode
-        assert type(dict_data['rows'][0]['write_s']) == unicode
-        assert type(dict_data['rows'][0]['iow']) == unicode
-        assert type(dict_data['rows'][0]['relation']) == unicode
-        assert type(dict_data['rows'][0]['type']) == unicode
+        assert type(dict_data['rows'][0]['read_s']) == text_type
+        assert type(dict_data['rows'][0]['write_s']) == text_type
+        assert type(dict_data['rows'][0]['iow']) == text_type
+        assert type(dict_data['rows'][0]['relation']) == text_type
+        assert type(dict_data['rows'][0]['type']) == text_type
         assert dict_data['rows'][0]['type'] == u'relation'
-        assert type(dict_data['rows'][0]['mode']) == unicode
+        assert type(dict_data['rows'][0]['mode']) == text_type
         assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (unicode, type(None))
-        assert type(dict_data['rows'][0]['query']) in (unicode, type(None))
+        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
