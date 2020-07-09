@@ -214,7 +214,8 @@ $(function() {
       xValueParser: function(x) {
         var m = moment(x);
         return m.toDate().getTime();
-      }
+      },
+      interactionModel: Dygraph.nonInteractiveModel
     };
 
     var chart = this.chart;
