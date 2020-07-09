@@ -493,7 +493,7 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
     url_opener = urllib2.build_opener(https_handler)
     headers_list = []
     if headers:
-        for key, val in headers.iteritems():
+        for key, val in headers.items():
             headers_list.append((key, val))
     url_opener.addheaders = headers_list
     if data:
