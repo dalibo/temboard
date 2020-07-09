@@ -505,8 +505,5 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
         response = handle.read()
         handle.close()
     except urllib2.HTTPError as e:
-        if sys.version < (2, 7, 0):
-            return (e.code, json.dumps({'error': e.code}))
-        else:
-            return (e.code, json.dumps({'error': e.reason}))
+        return (e.code, json.dumps({'error': e.reason}))
     return (handle.code, response)
