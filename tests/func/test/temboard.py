@@ -1,4 +1,5 @@
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 import logging
 import time
 import os
@@ -19,7 +20,7 @@ import ssl
 import socket
 import json
 
-import configtest as test_conf
+from . import configtest as test_conf
 
 
 logger = logging.getLogger(__name__)

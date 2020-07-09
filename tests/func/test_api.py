@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import json
 import re
 import os
@@ -8,8 +10,8 @@ try:
 except ImportError:
     from urllib2 import HTTPError
 
-from test.temboard import rand_string, temboard_request
-from conftest import ENV
+from .test.temboard import rand_string, temboard_request
+from .conftest import ENV
 
 # Import spc
 tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))

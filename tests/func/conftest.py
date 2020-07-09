@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 import pytest
 
-from test.temboard import build_env_dict, drop_env, init_env
+from .test.temboard import build_env_dict, drop_env, init_env
 
 
 ENV = {}

@@ -1,4 +1,6 @@
-from test.temboard import exec_command
+from __future__ import absolute_import
+
+from .test.temboard import exec_command
 
 
 def test_register_help():

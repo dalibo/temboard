@@ -1,10 +1,12 @@
+from __future__ import absolute_import
+
 import json
 import os
 import sys
 import time
 
-from test.temboard import temboard_request
-from conftest import ENV
+from .test.temboard import temboard_request
+from .conftest import ENV
 
 # Import spc
 tbda_dir = os.path.realpath(os.path.join(__file__, '..', '..'))
