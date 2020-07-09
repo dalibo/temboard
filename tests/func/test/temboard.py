@@ -7,8 +7,14 @@ import signal
 import random
 import string
 from subprocess import Popen, PIPE
-import httplib
-import urllib2
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 import ssl
 import socket
 import json

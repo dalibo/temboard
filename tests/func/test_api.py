@@ -3,7 +3,11 @@ import re
 import os
 import sys
 
-from urllib2 import HTTPError
+try:
+    from urllib.request import HTTPError
+except ImportError:
+    from urllib2 import HTTPError
+
 from test.temboard import rand_string, temboard_request
 from conftest import ENV
 
