@@ -72,22 +72,22 @@ class TestDashboard:
         )
 
         dict_data = json.loads(res)
-        assert status == 200 \
-            and 'active_backends' in dict_data \
-            and 'max_connections' in dict_data \
-            and 'loadaverage' in dict_data \
-            and 'os_version' in dict_data \
-            and 'linux_distribution' in dict_data \
-            and 'cpu_models' in dict_data \
-            and isinstance(dict_data['cpu_models'], dict) \
-            and 'pg_version' in dict_data \
-            and 'n_cpu' in dict_data \
-            and 'hitratio' in dict_data \
-            and 'databases' in dict_data \
-            and 'memory' in dict_data \
-            and 'hostname' in dict_data \
-            and 'cpu' in dict_data \
-            and 'buffers' in dict_data
+        assert status == 200
+        assert 'active_backends' in dict_data
+        assert 'max_connections' in dict_data
+        assert 'loadaverage' in dict_data
+        assert 'os_version' in dict_data
+        assert 'linux_distribution' in dict_data
+        assert 'cpu_models' in dict_data
+        assert isinstance(dict_data['cpu_models'], dict)
+        assert 'pg_version' in dict_data
+        assert 'n_cpu' in dict_data
+        assert 'hitratio' in dict_data
+        assert 'databases' in dict_data
+        assert 'memory' in dict_data
+        assert 'hostname' in dict_data
+        assert 'cpu' in dict_data
+        assert 'buffers' in dict_data
 
     def test_02_dashboard_buffers_ok(self):
         """
