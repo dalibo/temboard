@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -21,6 +22,7 @@ from .sharedmemory import Sessions
 from .api import check_sessionid
 from .errors import UserError
 from .toolkit.services import Service
+from .toolkit.utils import PY2
 
 
 logger = logging.getLogger(__name__)
@@ -295,3 +297,20 @@ class HTTPDService(Service):
 
     def handle_request(self, *args):
         return RequestHandler(self.app, self.sessions, *args)
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        else:
+            return super(JSONEncoder, self).default(obj)
+
+
+# Change default cls argument to custom encoder.
+if PY2:
+    defaults = list(json.dumps.func_defaults)
+    defaults[4] = JSONEncoder
+    json.dumps.func_defaults = tuple(defaults)
+else:
+    json.dumps.__kwdefaults__['cls'] = JSONEncoder
