@@ -192,4 +192,5 @@ class TestAPI:
             "administration",
             "activity",
             "maintenance",
+            "statements",
         }
