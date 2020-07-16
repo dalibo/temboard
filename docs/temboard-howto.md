@@ -13,7 +13,7 @@ Currently, when a logged in user changes its password, the error message `Restri
 
 # User and user group creation
 
-User acces controls to instances managed by `temboard` are based on `group` belonging. Each `instance` can belong to *N* `instance group`, each `user` can belong to *N* `user group`. Each `user group` is granted or not to acces an `instance group`.
+User access controls to instances managed by `temboard` are based on `group` belonging. Each `instance` can belong to *N* `instance group`, each `user` can belong to *N* `user group`. Each `user group` is granted or not to access an `instance group`.
 You must be logged in with a user having administration privileges to manage `users`.
 
 ## User group creation
@@ -56,7 +56,7 @@ To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ A
 
   * `Group name`: Groupe name, must be unique;
   * `Description`: Groupe description;
-  * `User Groups`: List of `user group` allowed to acces `instances` from this `instance group`.
+  * `User Groups`: List of `user group` allowed to access `instances` from this `instance group`.
 
 ## Add a new instance
 
