@@ -215,7 +215,39 @@ $(function() {
         var m = moment(x);
         return m.toDate().getTime();
       },
-      interactionModel: Dygraph.nonInteractiveModel
+      zoomCallback: onChartZoom,
+      // change interaction model in order to be able to capture the end of
+      // panning
+      // Dygraphs doesn't provide any panCallback unfortunately
+      interactionModel: {
+        mousedown: function (event, g, context) {
+          context.initializeMouseDown(event, g, context);
+          if (event.shiftKey) {
+            Dygraph.startPan(event, g, context);
+          } else {
+            Dygraph.startZoom(event, g, context);
+          }
+        },
+        mousemove: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.movePan(event, g, context);
+          } else if (context.isZooming) {
+            Dygraph.moveZoom(event, g, context);
+          }
+        },
+        mouseup: function (event, g, context) {
+          if (context.isPanning) {
+            Dygraph.endPan(event, g, context);
+            var dates = g.dateWindow_;
+            // synchronize charts on pan end
+            onChartZoom(dates[0], dates[1]);
+          } else if (context.isZooming) {
+            Dygraph.endZoom(event, g, context);
+            // don't do the same since zoom is animated
+            // zoomCallback will do the job
+          }
+        }
+      }
     };
 
     var chart = this.chart;
@@ -278,6 +310,11 @@ $(function() {
         }
       })
     );
+  }
+
+  function onChartZoom(min, max) {
+    v.from = moment(min);
+    v.to = moment(max);
   }
 
   /**
