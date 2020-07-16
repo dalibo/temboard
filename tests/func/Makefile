@@ -15,4 +15,4 @@ shell:
 
 PYTEST_ARGS?=
 pytest:
-	TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vs -p no:cacheprovider $(PYTEST_ARGS)
+	TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vvs -p no:cacheprovider $(PYTEST_ARGS)

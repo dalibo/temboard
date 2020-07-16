@@ -88,6 +88,11 @@ cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf << EOF
 pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
 EOF
 
+cat > /etc/temboard-agent/temboard-agent.conf.d/statements.conf << EOF
+[statements]
+dbname = ${PGDATABASE}
+EOF
+
 touch /etc/temboard-agent/users
 chmod 0600 /etc/temboard-agent/users
 for entry in ${TEMBOARD_USERS_LIST-alice:alice bob:bob} ; do

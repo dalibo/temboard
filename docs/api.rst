@@ -12,3 +12,4 @@
    monitoring_api
    pgconf_api
    maintenance_api
+   statements_api

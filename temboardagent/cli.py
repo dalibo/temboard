@@ -32,6 +32,7 @@ class Application(BaseApplication):
         "monitoring",
         "pgconf",
         "maintenance",
+        "statements",
     ]
 
     def init_specs(self, app_specs):
