@@ -2,6 +2,10 @@
 
 ## [7.0] - 2020-XX-XX
 
+### Added
+
+- Statements plugin by [@pgiraud] and [@dlax]
+
 ### Changed
 
 - Improved performance of the home page (instances list), by [@pgiraud]
@@ -148,3 +152,4 @@ This release requires a special step before restarting temBoard. Please read
 [@bersace]: https://github.com/bersace
 [@orgrim]: https://github.com/orgrim
 [@pgiraud]: https://github.com/pgiraud
+[@dlax]: https://github.com/dlax
