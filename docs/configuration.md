@@ -39,7 +39,8 @@ This is the main section grouping core parameters :
 
   - **plugins**
   Array of plugin name to load.
-  Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance"]`
+  Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance",
+  "statements"]`
 
 
 ### `repository`
@@ -140,3 +141,13 @@ Parameters related to the monitoring plugin.
   - **purge_after**
   Set the amount of data to keep, expressed in days.
   Default: *empty*
+
+
+### `statements`
+
+Parameters related to the statements plugin.
+
+
+  - **purge_after**
+  Set the amount of data to keep, expressed in days.
+  Default: 30

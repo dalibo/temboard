@@ -53,7 +53,7 @@ Assuming that `temboard-agent` code is cloned along with temboard, create a
 `docker-compose.override.yaml` file with the following content:
 
 ```
-version: '2'
+version: '2.4'
 
 services:
   agent:
