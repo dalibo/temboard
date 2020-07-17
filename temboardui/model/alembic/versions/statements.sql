@@ -118,7 +118,10 @@ CREATE TABLE statements_history_current (
   dbid OID NOT NULL,
   userid OID NOT NULL,
   record statements_history_record NOT NULL,
-  FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements ON DELETE CASCADE ON UPDATE CASCADE,
+  -- make sure we don't have several entries for the same record which would
+  -- then lead to weird data when displayed in the UI
+  UNIQUE (agent_address, agent_port, queryid, dbid, userid, record)
 );
 CREATE INDEX ON statements_history_current (agent_address, agent_port, dbid, userid, queryid);
 CREATE INDEX on statements_history_current USING GIST (tstzrange((record).ts, (record).ts, '[]'));
@@ -129,7 +132,10 @@ CREATE TABLE statements_history_current_db (
   dbid OID NOT NULL,
   datname TEXT NOT NULL,
   record statements_history_record NOT NULL,
-  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE,
+  -- make sure we don't have several entries for the same record which would
+  -- then lead to weird data when displayed in the UI
+  UNIQUE (agent_address, agent_port, dbid, record)
 );
 CREATE INDEX ON statements_history_current_db (agent_address, agent_port, dbid);
 CREATE INDEX ON statements_history_current_db (agent_address, agent_port);
