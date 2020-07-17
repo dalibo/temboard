@@ -17,8 +17,8 @@
     <tbody>
       {% for notification in notifications %}
       <tr>
-        <td class="date">{{notification['date']}}</td>
-        <td><span class="badge badge-success">{{notification['username']}}</span></td>
+        <td>{{notification['date']}}</td>
+        <td>{{notification['username']}}</td>
         <td>{{notification['message']}}</td>
       </tr>
       {% end %}
