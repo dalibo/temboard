@@ -565,7 +565,6 @@ def statements_bootstrap(context):
     yield taskmanager.Task(
         worker_name='purge_data_worker',
         id='purge_data',
-        # redo_interval=24 * 60 * 60,  # Repeat each 24h,
-        redo_interval=1 * 20,  # Repeat each 1m,
+        redo_interval=24 * 60 * 60,  # Repeat each 24h,
         options={},
     )
