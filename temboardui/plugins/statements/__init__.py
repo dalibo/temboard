@@ -384,7 +384,7 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
     query = (
         select(cols)
         .select_from(subquery)
-        .where(c.calls is not None)
+        .where(c.calls != 0)
         .group_by(c.ts, c.mesure_interval)
         .order_by(c.ts)
     )
