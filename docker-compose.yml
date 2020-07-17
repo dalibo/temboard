@@ -37,6 +37,7 @@ services:
       - run:/var/run/postgresql
     labels:
       com.dnsdock.alias: instance.tba.docker
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
 
   agent:
     image: dalibo/temboard-agent
