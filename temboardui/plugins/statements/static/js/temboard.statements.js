@@ -10,6 +10,7 @@ $(function() {
     router: new VueRouter(),
     data: {
       statements: [],
+      error: null,
       dbid: null,
       datname: null,
       sortBy: 'total_time',
@@ -69,6 +70,8 @@ $(function() {
       function(data) {
         this.datname = data.datname;
         this.statements = data.data;
+
+        this.error = data.metas.error;
 
         window.clearTimeout(refreshTimeoutId);
         if (this.from.toString().indexOf('now') != -1 ||

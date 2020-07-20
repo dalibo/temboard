@@ -25,6 +25,13 @@
     </div>
   </div>
   <div class="row mb-1">
+    <div class="col d-flex" v-cloak v-if="error">
+      <p class="alert alert-danger">
+        {{! error }}
+      </p>
+    </div>
+  </div>
+  <div class="row mb-1">
     <div class="col-sm-4">
       <div class="text-center">
         <strong>Calls</strong>
