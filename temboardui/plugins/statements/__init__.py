@@ -532,6 +532,40 @@ def pull_data_for_instance(app, session, instance):
     except Exception as e:
         logger.error('Could not get statements data')
         logger.exception(e)
+
+        # If statements data cannot be retrieved store the error in the
+        # statements metas table
+        cur = session.connection().connection.cursor()
+        cur.execute("SET search_path TO statements")
+        query = """
+            -- Create new meta for agent if doesn't already exist
+            INSERT INTO metas (agent_address, agent_port)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING;
+        """
+        cur.execute(
+            query,
+            (
+                instance.agent_address,
+                instance.agent_port,
+            )
+        )
+
+        query = """
+            UPDATE metas
+            SET error = %s
+            WHERE agent_address = %s AND agent_port = %s;
+        """
+        cur.execute(
+            query,
+            (
+                e.msg,
+                instance.agent_address,
+                instance.agent_port,
+            )
+        )
+        session.connection().connection.commit()
+
         raise(e)
 
 
