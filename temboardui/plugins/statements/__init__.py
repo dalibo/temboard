@@ -1,3 +1,4 @@
+import json
 import logging
 from os import path
 import tornado.web
@@ -552,6 +553,7 @@ def pull_data_for_instance(app, session, instance):
             )
         )
 
+        error = json.loads(e.read())['error']
         query = """
             UPDATE metas
             SET error = %s
@@ -560,13 +562,12 @@ def pull_data_for_instance(app, session, instance):
         cur.execute(
             query,
             (
-                e.msg,
+                error,
                 instance.agent_address,
                 instance.agent_port,
             )
         )
         session.connection().connection.commit()
-
         raise(e)
 
 
