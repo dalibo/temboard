@@ -83,11 +83,20 @@
     :items="statements"
     :fields="fields"
     :sort-by="sortBy"
+    :busy="isLoading"
     sort-desc="Descending"
     sort-direction="desc"
+    show-empty
+    v-cloak
     :filter="filter"
     class="table-query"
     >
+    <template v-slot:table-busy>
+      <div class="text-center text-danger my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <strong>Loading...</strong>
+      </div>
+    </template>
     <template v-slot:thead-top="data">
       <b-tr>
         <b-th :colspan="dbid ? 3 : 2"></b-th>
