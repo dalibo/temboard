@@ -10,7 +10,8 @@ $(function() {
     router: new VueRouter(),
     data: {
       statements: [],
-      error: null,
+      metas: null,
+      lastSnapshot: null,
       isLoading: true,
       dbid: null,
       datname: null,
@@ -74,7 +75,7 @@ $(function() {
         this.datname = data.datname;
         this.statements = data.data;
 
-        this.error = data.metas.error;
+        this.metas = data.metas;
 
         window.clearTimeout(refreshTimeoutId);
         if (this.from.toString().indexOf('now') != -1 ||

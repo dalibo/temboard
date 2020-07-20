@@ -25,9 +25,9 @@
     </div>
   </div>
   <div class="row mb-1">
-    <div class="col d-flex" v-cloak v-if="error">
+    <div class="col d-flex" v-cloak v-if="metas && metas.error">
       <p class="alert alert-danger">
-        {{! error }}
+        {{! metas.error }}
       </p>
     </div>
   </div>
@@ -125,6 +125,14 @@
     </template>
     <template v-slot:cell()="data">
       <span v-html="data.value"></span>
+    </template>
+    <template v-slot:empty="scope">
+      <div class="text-center">
+        There are no records to show.
+        <br>
+        <span class="text-muted" v-if="!metas || metas.coalesce_seq < 2">No snapshot has been done yet, please wait.</span>
+        <span class="text-muted" v-else-if="metas.error">There are errors</span>
+      </div>
     </template>
   </b-table>
 </div>

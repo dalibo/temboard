@@ -133,7 +133,8 @@ def json_data(request):
         METAS_QUERY,
         dict(agent_address=request.instance.agent_address,
              agent_port=request.instance.agent_port)).fetchone()
-    return jsonify(dict(data=statements, metas=dict(metas)))
+    metas = dict(metas) if metas is not None else None
+    return jsonify(dict(data=statements, metas=metas))
 
 
 BASE_QUERY_STATDATA_DATABASE = text("""
