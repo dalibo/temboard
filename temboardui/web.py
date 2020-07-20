@@ -2,11 +2,13 @@
 from __future__ import absolute_import
 
 import functools
+import json
 import logging
 import os
 import urllib2
 from cStringIO import StringIO
 from csv import writer as CSVWriter
+from datetime import datetime
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
@@ -30,6 +32,7 @@ from .temboardclient import (
     TemboardError,
     temboard_request,
 )
+from .toolkit.utils import PY2
 
 
 logger = logging.getLogger(__name__)
@@ -579,6 +582,23 @@ def make_error(request, code, message):
     )
     response.status_code = code
     return response
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        else:
+            return super(JSONEncoder, self).default(obj)
+
+
+# Change default cls argument to custom encoder.
+if PY2:
+    defaults = list(json.dumps.func_defaults)
+    defaults[4] = JSONEncoder
+    json.dumps.func_defaults = tuple(defaults)
+else:
+    json.dumps.__kwdefaults__['cls'] = JSONEncoder
 
 
 # Global app instance for registration of core handlers.

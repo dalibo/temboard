@@ -72,6 +72,14 @@ def get_agent_username(request):
     return agent_username
 
 
+METAS_QUERY = text("""
+    SELECT *
+    FROM statements.metas
+    WHERE agent_address = :agent_address
+    AND agent_port = :agent_port
+""")
+
+
 BASE_QUERY_STATDATA = text("""
     (
         SELECT dbid, datname, (record).*
@@ -120,7 +128,12 @@ def json_data(request):
              end=end)) \
         .fetchall()
     statements = [dict(statement) for statement in statements]
-    return jsonify(dict(data=statements))
+
+    metas = request.db_session.execute(
+        METAS_QUERY,
+        dict(agent_address=request.instance.agent_address,
+             agent_port=request.instance.agent_port)).fetchone()
+    return jsonify(dict(data=statements, metas=dict(metas)))
 
 
 BASE_QUERY_STATDATA_DATABASE = text("""
