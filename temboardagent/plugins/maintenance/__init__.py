@@ -23,10 +23,10 @@ def get_instance(http_context, app):
 
     databases = []
     for database in rows:
+        database = dict(database)
         # we need to connect with a different database
         dbname = database['datname']
-        with functions.get_postgres(app.config, dbname).connect() \
-                as conn:
+        with functions.get_postgres(app.config, dbname).connect() as conn:
             database.update(**functions.get_database(conn))
         databases.append(database)
 

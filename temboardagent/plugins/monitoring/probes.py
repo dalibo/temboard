@@ -4,12 +4,14 @@ import os
 import time
 import json
 
-from temboardagent.spc import connector, error
+from temboardagent.spc import connector
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
 from temboardagent.plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+from temboardagent.postgres import Postgres
 
 from . import db
+
 
 logger = logging.getLogger(__name__)
 
@@ -94,49 +96,49 @@ def get_primary_conninfo(conn):
     # It returns a tuple: (host, port, user, password)
 
     # Check if we are in recovery mode *and* recovery file exists
-    if conn.get_pg_version() < 120000:
+    if conn.server_version < 120000:
         # Note: won't work with PG12
-        conn.execute(
-            "SELECT (pg_is_in_recovery() AND ("
-            "  length("
-            "    coalesce("
-            "      pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT"
-            "    )"
-            "  ) > 0"
-            ")) AS is_in_recovery"
-        )
+        query = """\
+        SELECT (pg_is_in_recovery() AND (
+          length(
+            coalesce(
+              pg_stat_file('recovery.conf', true)::TEXT, ''::TEXT
+            )
+          ) > 0
+        )) AS is_in_recovery
+        """
     else:
-        conn.execute(
-            "SELECT (pg_is_in_recovery() AND ("
-            "  length("
-            "    coalesce("
-            "      pg_stat_file('standby.signal', true)::TEXT, ''::TEXT"
-            "    )"
-            "  ) > 0"
-            ")) AS is_in_recovery"
-        )
-    r = list(conn.get_rows())
-    if not r[0]['is_in_recovery']:
+        query = """\
+        SELECT (pg_is_in_recovery() AND (
+            length(
+            coalesce(
+                pg_stat_file('standby.signal', true)::TEXT, ''::TEXT
+            )
+            ) > 0
+        )) AS is_in_recovery
+        """
+    is_in_recovery = conn.query_scalar(query)
+    if not is_in_recovery:
         raise Exception("Instance not in recovery or recovery file is "
                         "missing.")
 
-    if conn.get_pg_version() < 120000:
+    if conn.server_version < 120000:
         # Fetch primary_conninfo from recovery.conf file
         # Note: won't work with PG12
-        conn.execute(
-            "SELECT l FROM unnest("
-            "  string_to_array("
-            "    pg_read_file('recovery.conf'), E'\\n'"
-            "  )"
-            ") AS l "
-            "WHERE l LIKE '%primary\\_conninfo%'"
-        )
+        query = """\
+        SELECT l FROM unnest(
+          string_to_array(
+            pg_read_file('recovery.conf'), E'\\n'
+          )
+        ) AS l
+        WHERE l LIKE '%primary\\_conninfo%'
+        """
     else:
-        conn.execute(
-            "SELECT 'primary_conninfo='||quote_literal(setting) AS l"
-            "  FROM pg_settings WHERE name='primary_conninfo'"
-        )
-    r = list(conn.get_rows())
+        query = """\
+        SELECT 'primary_conninfo='||quote_literal(setting) AS l
+            FROM pg_settings WHERE name='primary_conninfo'
+        """
+    r = list(conn.query(query))
     if len(r) == 0:
         raise Exception("Unable to get primary_conninfo.")
     pci = r[0]['l']
@@ -310,15 +312,10 @@ class SqlProbe(Probe):
         return True
 
     def get_version(self, conninfo):
-        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'], conninfo['database'])
-
         try:
-            conn.connect()
-            version = conn.get_pg_version()
-            conn.close()
-            return version
-        except error:
+            with Postgres(**conninfo).connect() as conn:
+                return conn.server_version
+        except Exception:
             logger.error("Unable to get server version")
 
     def run_sql(self, conninfo, sql, database=None):
@@ -331,54 +328,50 @@ class SqlProbe(Probe):
         if database is None:
             database = conninfo['database']
 
-        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'], database)
-
         output = []
         try:
-            conn.connect()
-            conn.execute(sql)
-            cluster_name = conninfo['instance'].replace('/', '')
-            for r in conn.get_rows():
-                # Add the info of the instance (port) to the
-                # result to output one big list for all instances and
-                # all databases
-                r['port'] = conninfo['port']
+            with Postgres(**conninfo).connect() as conn:
 
-                # Compute delta if the probe needs that
-                if self.delta_columns is not None:
-                    to_delta = {}
+                cluster_name = conninfo['instance'].replace('/', '')
+                for r in conn.query(sql):
+                    # Add the info of the instance (port) to the
+                    # result to output one big list for all instances and
+                    # all databases
+                    r['port'] = conninfo['port']
 
-                    # XXX. Convert results to float(), spc retrieves
-                    # everything as string. So far psycopg2 on the
-                    # server side handles to rest
-                    for k in self.delta_columns:
-                        if k in r.keys():
-                            to_delta[k] = float(r[k])
+                    # Compute delta if the probe needs that
+                    if self.delta_columns is not None:
+                        to_delta = {}
 
-                    # Create the store key for the delta
-                    if self.delta_key is not None:
-                        key = cluster_name + database + r[self.delta_key]
-                    else:
-                        key = cluster_name + database
+                        # XXX. Convert results to float(), spc retrieves
+                        # everything as string. So far psycopg2 on the
+                        # server side handles to rest
+                        for k in self.delta_columns:
+                            if k in r.keys():
+                                to_delta[k] = float(r[k])
 
-                    # Calculate delta
-                    (interval, deltas) = self.delta(key, to_delta)
+                        # Create the store key for the delta
+                        if self.delta_key is not None:
+                            key = cluster_name + database + r[self.delta_key]
+                        else:
+                            key = cluster_name + database
 
-                    # The first time, no delta is returned
-                    if interval is None:
-                        continue
+                        # Calculate delta
+                        (interval, deltas) = self.delta(key, to_delta)
 
-                    # Merge result and add the interval column
-                    r.update(deltas)
-                    r[self.delta_interval_column] = interval
+                        # The first time, no delta is returned
+                        if interval is None:
+                            continue
 
-                output.append(r)
-            conn.close()
-        except error:
+                        # Merge result and add the interval column
+                        r.update(deltas)
+                        r[self.delta_interval_column] = interval
+
+                    output.append(r)
+        except Exception as e:
             logger.error(
-                "Unable to run probe \"%s\" on \"%s\" on database \"%s\"",
-                self.get_name(), conninfo['instance'], database)
+                "Unable to run probe \"%s\" on \"%s\" on database \"%s\": %s",
+                e, self.get_name(), conninfo['instance'], database)
         return output
 
     def run(self, conninfo):
@@ -780,58 +773,51 @@ class probe_replication_lag(SqlProbe):
     def run(self, conninfo):
         if not conninfo['standby']:
             return []
-        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'], 'postgres')
 
         try:
-            conn.connect()
+            with Postgres(**conninfo).connect() as conn:
 
-            # Get primary parameters from primary_conninfo
-            (p_host, p_port, p_user, p_password) = get_primary_conninfo(conn)
+                # Get primary parameters from primary_conninfo
+                p_host, p_port, p_user, p_password = get_primary_conninfo(conn)
 
-            # Let's fetch primary current wal position with IDENTIFY_SYSTEM
-            # through streaming replication protocol.
-            p_conn = connector(p_host, int(p_port), p_user, p_password,
-                               database='replication')
-            p_conn._replication = 1
-            p_conn.connect()
-            p_conn.execute("IDENTIFY_SYSTEM")
-            r = list(p_conn.get_rows())
-            if len(r) == 0:
-                conn.close()
+                # Let's fetch primary current wal position with IDENTIFY_SYSTEM
+                # through streaming replication protocol.
+                p_conn = connector(p_host, int(p_port), p_user, p_password,
+                                   database='replication')
+                p_conn._replication = 1
+                p_conn.connect()
+                p_conn.execute("IDENTIFY_SYSTEM")
+                r = list(p_conn.get_rows())
+                if len(r) == 0:
+                    conn.close()
+                    p_conn.close()
+                    return []
+                xlogpos = r[0]['xlogpos']
                 p_conn.close()
-                return []
-            xlogpos = r[0]['xlogpos']
-            p_conn.close()
 
-            # Proceed with LSN diff
-            if conn.get_pg_version() >= 100000:
-                conn.execute(
-                    "SELECT pg_wal_lsn_diff("
-                    "  '{xlogpos}'::pg_lsn,"
-                    "   pg_last_wal_replay_lsn()"
-                    ") AS lsn_diff, NOW() AS datetime".format(xlogpos=xlogpos)
-                )
-            else:
-                conn.execute(
-                    "SELECT pg_xlog_location_diff("
-                    "  '{xlogpos}'::TEXT,"
-                    "   pg_last_xlog_replay_location()"
-                    ") AS lsn_diff, NOW() AS datetime".format(xlogpos=xlogpos)
-                )
-            r = list(conn.get_rows())
-            conn.close()
-            if len(r) == 0:
-                return []
-            return [{'lag': int(r[0]['lsn_diff']),
-                     'datetime': r[0]['datetime']}]
+                # Proceed with LSN diff
+                if conn.server_version >= 100000:
+                    rows = conn.query("""\
+                    SELECT pg_wal_lsn_diff(
+                      '{xlogpos}'::pg_lsn,
+                       pg_last_wal_replay_lsn()
+                    ) AS lsn_diff, NOW() AS datetime
+                    """.format(xlogpos=xlogpos))
+                else:
+                    rows = conn.query("""\
+                    SELECT pg_xlog_location_diff("
+                      '{xlogpos}'::TEXT,"
+                       pg_last_xlog_replay_location()"
+                    ) AS lsn_diff, NOW() AS datetime
+                    """.format(xlogpos=xlogpos))
+                r = list(rows)
+                if len(r) == 0:
+                    return []
+                return [{'lag': int(r[0]['lsn_diff']),
+                        'datetime': r[0]['datetime']}]
 
         except Exception as e:
             logger.exception(str(e))
-            try:
-                conn.close()
-            except Exception:
-                pass
             return []
 
 
@@ -859,35 +845,30 @@ class probe_replication_connection(SqlProbe):
     def run(self, conninfo):
         if not conninfo['standby']:
             return []
+
         conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
                          conninfo['password'], 'postgres')
 
         try:
-            conn.connect()
-            # Get primary parameters from primary_conninfo
-            (p_host, p_port, p_user, p_password) = get_primary_conninfo(conn)
+            with Postgres(**conninfo).connect() as conn:
+                # Get primary parameters from primary_conninfo
+                p_host, p_port, p_user, p_password = get_primary_conninfo(conn)
 
-            # pg_stat_wal_receiver lookup
-            conn.execute(
-                "SELECT '{p_host}' AS upstream, NOW() AS datetime, "
-                "CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected "
-                "FROM pg_stat_wal_receiver "
-                "WHERE status='streaming' AND "
-                "      conninfo LIKE '%host={p_host}%'".format(p_host=p_host)
-            )
-            r = list(conn.get_rows())
-            if len(r) == 0:
-                conn.close()
-                return []
-            conn.close()
-            return r
+                # pg_stat_wal_receiver lookup
+                rows = conn.query("""\
+                SELECT '{p_host}' AS upstream, NOW() AS datetime,
+                CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
+                FROM pg_stat_wal_receiver
+                WHERE status='streaming' AND
+                      conninfo LIKE '%host={p_host}%'
+                """.format(p_host=p_host))
+                r = list(rows)
+                if len(r) == 0:
+                    return []
+                return r
 
         except Exception as e:
             logger.exception(str(e))
-            try:
-                conn.close()
-            except Exception:
-                pass
             return []
 
 

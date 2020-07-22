@@ -170,11 +170,13 @@ class DashboardMetrics(object):
                 'time': current_time}
 
     def get_hitratio(self,):
-        query = """SELECT CASE sum(blks_hit+blks_read) WHEN 0 THEN NULL ELSE
-        trunc(sum(blks_hit)/sum(blks_hit+blks_read)*100) END
-        AS hitratio FROM pg_stat_database"""
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['hitratio']
+        return self.conn.query_scalar("""\
+        SELECT CASE sum(blks_hit+blks_read)
+          WHEN 0 THEN NULL
+          ELSE trunc(sum(blks_hit)/sum(blks_hit+blks_read)*100)::float
+        END AS hitratio
+        FROM pg_stat_database
+        """)
 
     def get_active_backends(self,):
         current_time = time.time()
@@ -183,11 +185,9 @@ class DashboardMetrics(object):
                 'time': current_time}
 
     def get_max_connections(self):
-        query = """
-SELECT setting FROM pg_settings WHERE name = 'max_connections'
-            """
-        self.conn.execute(query)
-        return int(list(self.conn.get_rows())[0]['setting'])
+        return int(self.conn.query_scalar("""\
+        SELECT setting FROM pg_settings WHERE name = 'max_connections'
+        """))
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()
@@ -203,22 +203,20 @@ SELECT setting FROM pg_settings WHERE name = 'max_connections'
             return self._get_memory_usage_linux()
 
     def get_stat_db(self,):
-        query = """
-SELECT
-  count(datid) as databases,
-  pg_size_pretty(sum(pg_database_size(
-    pg_database.datname))::bigint) as total_size,
-  to_char(now(),'HH24:MI') as time,
-  sum(xact_commit)::BIGINT as total_commit,
-  sum(xact_rollback)::BIGINT as total_rollback
-FROM
-  pg_database
-  JOIN pg_stat_database ON (pg_database.oid = pg_stat_database.datid)
-WHERE
-  datistemplate = 'f'
-        """
-        self.conn.execute(query)
-        row = list(self.conn.get_rows())[0]
+        row = self.conn.queryone("""\
+        SELECT
+        count(datid) as databases,
+        pg_size_pretty(sum(pg_database_size(
+            pg_database.datname))::bigint) as total_size,
+        to_char(now(),'HH24:MI') as time,
+        sum(xact_commit)::BIGINT as total_commit,
+        sum(xact_rollback)::BIGINT as total_rollback
+        FROM
+        pg_database
+        JOIN pg_stat_database ON (pg_database.oid = pg_stat_database.datid)
+        WHERE
+        datistemplate = 'f'
+        """)
         return {'databases': row['databases'],
                 'total_size': row['total_size'],
                 'time': row['time'],
@@ -227,11 +225,9 @@ WHERE
                 'timestamp': time.time()}
 
     def get_pg_uptime(self,):
-        query = """
-SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
-        """
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['uptime']
+        return self.conn.query_scalar("""\
+        SELECT EXTRACT(epoch FROM NOW() - pg_postmaster_start_time())::integer AS uptime
+        """)  # noqa
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
@@ -298,12 +294,12 @@ SELECT date_trunc('seconds', NOW() - pg_postmaster_start_time()) AS uptime
         return ret
 
     def _get_current_buffers(self,):
-        query = "SELECT buffers_alloc FROM pg_stat_bgwriter"
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['buffers_alloc']
+        return self.conn.query_scalar(
+            "SELECT buffers_alloc FROM pg_stat_bgwriter"
+        )
 
     def _get_current_active_backends(self,):
-        if self.conn.get_pg_version() >= 90200:
+        if self.conn.server_version >= 90200:
             query = """
 SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE state != 'idle'
             """
@@ -311,8 +307,7 @@ SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE state != 'idle'
             query = """
 SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE current_query != '<IDLE>'
             """
-        self.conn.execute(query)
-        return list(self.conn.get_rows())[0]['nb']
+        return self.conn.query_scalar(query)
 
     def get_notifications(self, config):
         return list(NotificationMgmt.get_last_n(config, 15))

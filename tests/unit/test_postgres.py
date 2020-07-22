@@ -1,5 +1,5 @@
 def test_postgres_connect(mocker):
-    mocker.patch('temboardagent.postgres.connector', autospec=True)
+    mocker.patch('temboardagent.postgres.connect', autospec=True)
 
     from temboardagent.postgres import Postgres
 
@@ -12,10 +12,10 @@ def test_postgres_connect(mocker):
 
 
 def test_postgres_fetch_version(mocker):
-    c = mocker.patch('temboardagent.postgres.connector', autospec=True)
+    c = mocker.patch('temboardagent.postgres.connect', autospec=True)
 
     conn = c.return_value
-    conn.get_pg_version.return_value = 90400
+    conn.server_version = 90400
 
     from temboardagent.postgres import Postgres
 

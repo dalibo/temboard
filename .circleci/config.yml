@@ -53,7 +53,7 @@ jobs:
     - run:
         name: Build documentation with Sphinx
         command: |
-          pip install --upgrade -r docs/requirements-doc.txt -e .
+          pip install --upgrade -r docs/requirements-doc.txt -e . psycopg2-binary
           python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
           make -C docs/ clean html
     - store_artifacts:
@@ -102,7 +102,7 @@ jobs:
           name: Python lint and tests
           command: |
             set -x
-            pip install --upgrade --requirement requirement-ci.txt --editable .
+            pip install --upgrade --requirement requirement-ci.txt --editable . psycopg2-binary
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 temboardagent
             python -m temboardagent.toolkit.proctitle

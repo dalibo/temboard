@@ -23,6 +23,7 @@ Requires:      openssl
 Requires:      python-argparse
 Requires:      python-logutils
 %endif
+Requires:      python-psycopg2
 Requires:      python-setuptools
 
 %description

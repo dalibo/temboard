@@ -294,77 +294,65 @@ def get_postgres(app_config, database):
 
 
 def get_instance(conn):
-    query = """
-SELECT SUM(pg_database_size(datname)) AS total_bytes,
-       pg_size_pretty(SUM(pg_database_size(datname))) AS total_size
-FROM pg_database
-WHERE NOT datistemplate;
-    """
-    conn.execute(query)
-    return conn.get_rows()
+    return conn.query("""\
+    SELECT SUM(pg_database_size(datname)) AS total_bytes,
+        pg_size_pretty(SUM(pg_database_size(datname))) AS total_size
+    FROM pg_database
+    WHERE NOT datistemplate;
+    """)
 
 
 def get_databases(conn):
-    query = """
-SELECT datname,
-       pg_database_size(datname) AS total_bytes,
-       pg_size_pretty(pg_database_size(datname)) AS total_size
-FROM pg_database
-WHERE NOT datistemplate;
-    """
-    conn.execute(query)
-    return conn.get_rows()
+    return list(conn.query("""\
+    SELECT datname,
+        pg_database_size(datname) AS total_bytes,
+        pg_size_pretty(pg_database_size(datname)) AS total_size
+    FROM pg_database
+    WHERE NOT datistemplate;
+    """))
 
 
 def get_database_size(conn):
-    query = """
-SELECT pg_size_pretty(pg_database_size(current_database())) AS total_size,
-       pg_database_size(current_database()) AS total_bytes"""
-    conn.execute(query)
-    return next(conn.get_rows())
+    return list(conn.queryone("""\
+    SELECT pg_size_pretty(pg_database_size(current_database())) AS total_size,
+        pg_database_size(current_database()) AS total_bytes
+    """))
 
 
 def get_database(conn):
-    query = """
-SELECT SUM(n_tables) AS n_tables,
-       SUM(tables_bytes) as tables_bytes,
-       pg_size_pretty(SUM(tables_bytes)) AS tables_size,
-       SUM(n_indexes) AS n_indexes,
-       SUM(indexes_bytes) AS indexes_bytes,
-       pg_size_pretty(SUM(indexes_bytes)) AS indexes_size,
-       SUM(tables_bloat_bytes) AS tables_bloat_bytes,
-       pg_size_pretty(SUM(tables_bloat_bytes)::bigint) AS tables_bloat_size,
-       SUM(indexes_bloat_bytes) AS indexes_bloat_bytes,
-       pg_size_pretty(SUM(indexes_bloat_bytes)::bigint) AS indexes_bloat_size,
-       SUM(toast_bytes) AS toast_bytes,
-       pg_size_pretty(SUM(toast_bytes)::bigint) AS toast_size
-FROM (%s) a""" % SCHEMAS_SQL
-    conn.execute(query)
-    return next(conn.get_rows())
+    return conn.queryone("""
+    SELECT SUM(n_tables) AS n_tables,
+        SUM(tables_bytes) as tables_bytes,
+        pg_size_pretty(SUM(tables_bytes)) AS tables_size,
+        SUM(n_indexes) AS n_indexes,
+        SUM(indexes_bytes) AS indexes_bytes,
+        pg_size_pretty(SUM(indexes_bytes)) AS indexes_size,
+        SUM(tables_bloat_bytes) AS tables_bloat_bytes,
+        pg_size_pretty(SUM(tables_bloat_bytes)::bigint) AS tables_bloat_size,
+        SUM(indexes_bloat_bytes) AS indexes_bloat_bytes,
+        pg_size_pretty(SUM(indexes_bloat_bytes)::bigint) AS indexes_bloat_size,
+        SUM(toast_bytes) AS toast_bytes,
+        pg_size_pretty(SUM(toast_bytes)::bigint) AS toast_size
+    FROM (%s) a""" % SCHEMAS_SQL)
 
 
 def get_schemas(conn):
-    query = SCHEMAS_SQL
-    conn.execute(query)
-    ret = []
-    for row in conn.get_rows():
-        ret.append(row)
-    return ret
+    return list(conn.query(SCHEMAS_SQL))
 
 
 def get_schema(conn, schema):
-    query = """
-SELECT pg_size_pretty(bytes) AS size,  COALESCE(bytes, 0) as total_bytes
-FROM (
-    SELECT schemaname, SUM(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::BIGINT AS bytes
-    FROM pg_tables
-    GROUP BY schemaname
-) a
-WHERE schemaname = '{schema}'
-"""  # noqa
-    conn.execute(query.format(schema=schema))
+    rows = conn.query("""\
+    SELECT pg_size_pretty(bytes) AS size,  COALESCE(bytes, 0) as total_bytes
+    FROM (
+        SELECT schemaname, SUM(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::BIGINT AS bytes
+        FROM pg_tables
+        GROUP BY schemaname
+    ) a
+    WHERE schemaname = '{schema}'
+    """.format(schema=schema)  # noqa
+    )
     try:
-        return next(conn.get_rows())
+        return next(rows)
     except StopIteration:
         return {}
 
@@ -423,30 +411,24 @@ LEFT JOIN (
 ON ibloat.schemaname = table_schema AND ibloat.tblname = table_name
 WHERE table_schema = '{schema}';
     """ # noqa
-    ret = {'tables': []}
-    conn.execute(query.format(schema=schema))
-    for row in conn.get_rows():
-        ret['tables'].append(row)
-    return ret
+    return {
+        'tables': list(conn.query(query.format(schema=schema)))
+    }
 
 
 def get_schema_indexes(conn, schema):
-    ret = {'indexes': []}
-    query = INDEXES_SQL
-    conn.execute(query.format(schema=schema, table_filter=''))
-    for row in conn.get_rows():
-        ret['indexes'].append(row)
-    return ret
+    return {'indexes': list(conn.query(
+        INDEXES_SQL.format(schema=schema, table_filter='')
+    ))}
 
 
 def get_table_indexes(conn, schema, table):
-    ret = {'indexes': []}
-    query = INDEXES_SQL
-    conn.execute(query.format(schema=schema,
-                              table_filter="AND i.tablename = '%s'" % table))
-    for row in conn.get_rows():
-        ret['indexes'].append(row)
-    return ret
+    return {'indexes': list(conn.query(
+        INDEXES_SQL.format(
+            schema=schema,
+            table_filter="AND i.tablename = '%s'" % table
+        )
+    ))}
 
 
 def get_table(conn, schema, table):
@@ -500,27 +482,26 @@ ON relname = table_name
 WHERE table_schema = '{schema}'
 AND table_name = '{table}';
     """
-    conn.execute(query.format(schema=schema, table=table))
-    return dict(**next(conn.get_rows()))
+    return dict(conn.queryone(query.format(schema=schema, table=table)))
 
 
 def check_table_exists(conn, schema, table):
     # Check that the specified table exists in schema
-    conn.execute(
+    rows = conn.query(
         "SELECT 1 FROM pg_tables WHERE tablename = '{table}' AND "
         "schemaname = '{schema}'".format(table=table, schema=schema)
     )
-    if not list(conn.get_rows()):
+    if not list(rows):
         raise UserError("Table %s.%s not found" % (schema, table))
 
 
 def check_index_exists(conn, schema, index):
     # Check that the specified table exists in schema
-    conn.execute(
+    rows = conn.query(
         "SELECT 1 FROM pg_indexes WHERE indexname = '{index}' AND "
         "schemaname = '{schema}'".format(index=index, schema=schema)
     )
-    if not list(conn.get_rows()):
+    if not list(rows):
         raise UserError("Index %s.%s not found" % (schema, index))
 
 

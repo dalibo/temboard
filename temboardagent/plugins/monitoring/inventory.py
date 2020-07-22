@@ -9,10 +9,7 @@ Currently, only Linux is supported.
 import os
 import logging
 import pwd
-from temboardagent.spc import (
-    connector,
-    error,
-)
+from temboardagent.postgres import Postgres
 from temboardagent.inventory import (
     SysInfo,
     PgInfo,
@@ -54,40 +51,38 @@ def instance_info(conninfo, hostname):
     }
 
     # Try the connection
-    conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                     conninfo['password'], conninfo['database'])
     try:
-        conn.connect()
-        # Get PostgreSQL informations using PgInfo
-        pginfo = PgInfo(conn)
-        pgv = pginfo.version()
-        # Gather the info while where are connected
-        instance_info['version_num'] = pgv['num']
-        instance_info['version'] = pgv['server']
-        instance_info['data_directory'] = pginfo.setting('data_directory')
+        with Postgres(**conninfo).connect() as conn:
+            # Get PostgreSQL informations using PgInfo
+            pginfo = PgInfo(conn)
+            pgv = pginfo.version()
+            # Gather the info while where are connected
+            instance_info['version_num'] = pgv['num']
+            instance_info['version'] = pgv['server']
+            instance_info['data_directory'] = pginfo.setting('data_directory')
 
-        # hot standby is available from 9.0
-        instance_info['standby'] = pginfo.is_in_recovery()
+            # hot standby is available from 9.0
+            instance_info['standby'] = pginfo.is_in_recovery()
 
-        # max_connections
-        instance_info['max_connections'] = pginfo.setting('max_connections')
+            # max_connections
+            instance_info['max_connections'] = pginfo.setting(
+                'max_connections')
 
-        # Grab the list of tablespaces
-        instance_info['tablespaces'] = pginfo.tablespaces(
-            instance_info['data_directory'])
+            # Grab the list of tablespaces
+            instance_info['tablespaces'] = pginfo.tablespaces(
+                instance_info['data_directory'])
 
-        # When the user has not given a dbnames list or '*' in the
-        # configuration file, we must get the list of databases. Since
-        # we have a working connection, let's do it now.
-        dbs = pginfo.databases()
-        instance_info['dbnames'] = []
-        for db in conninfo['dbnames']:
-            if db == '*':
-                instance_info['dbnames'] = list(dbs.values())
-                break
-            if db in dbs.keys():
-                instance_info['dbnames'].append(dbs[db])
-        conn.close()
+            # When the user has not given a dbnames list or '*' in the
+            # configuration file, we must get the list of databases. Since
+            # we have a working connection, let's do it now.
+            dbs = pginfo.databases()
+            instance_info['dbnames'] = []
+            for db in conninfo['dbnames']:
+                if db == '*':
+                    instance_info['dbnames'] = list(dbs.values())
+                    break
+                if db in dbs.keys():
+                    instance_info['dbnames'].append(dbs[db])
 
         # Now that we have the data_directory, find the owner
         try:
@@ -97,7 +92,7 @@ def instance_info(conninfo, hostname):
             logging.warning("Unable to get the owner of PGDATA: %s", str(e))
             instance_info['sysuser'] = None
 
-    except error as e:
+    except Exception as e:
         logging.exception(str(e))
         logging.warning("Unable to gather information for cluster \"%s\"",
                         conninfo['instance'])

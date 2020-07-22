@@ -22,19 +22,10 @@ import socket
 import json
 
 from . import configtest as test_conf
+from temboardagent.postgres import Postgres
 
 
 logger = logging.getLogger(__name__)
-
-# Add main temboard-agent module dir into sys.path
-# The goal is to import spc module
-tbda_dir = os.path.realpath(
-            os.path.join(__file__, '..', '..', '..', '..'))
-
-if tbda_dir not in sys.path:
-    sys.path.insert(0, tbda_dir)
-
-from temboardagent.spc import connector, error  # noqa
 
 
 def exec_command(command_args, **kwargs):
@@ -132,22 +123,14 @@ def pg_add_super_user(pg_bin, pg_user, pg_host, pg_port, pg_password=''):
     if ret_code != 0:
         raise Exception(str(stderr))
 
-    conn = connector(host=pg_host,
-                     port=pg_port,
-                     user=pg_user,
-                     database='postgres')
+    if not pg_password:
+        return
 
-    if len(pg_password) > 0:
-        try:
-            conn.connect()
-            query = "ALTER USER %s PASSWORD '%s'" % (
-                        pg_user,
-                        pg_password
-                        )
-            conn.execute(query)
-            conn.close()
-        except error as e:
-            raise Exception(str(e.message))
+    with Postgres(
+            host=pg_host, port=pg_port, user=pg_user, dbname='postgres',
+    ).connect() as conn:
+        query = "ALTER USER %s PASSWORD '%s'" % (pg_user, pg_password)
+        conn.execute(query)
 
 
 def agent_add_user(passwd_file_path, user, passwd):
