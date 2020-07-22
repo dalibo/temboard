@@ -77,7 +77,7 @@ def get_statements(http_context, app):
             dbname,
             e,
         )
-        raise HTTPError(500, "Internal server error")
+        raise HTTPError(500, e)
     else:
         return {"snapshot_datetime": snapshot_datetime, "data": data}
 
