@@ -25,5 +25,5 @@ ADD sudoers /etc/sudoers.d/temboard-agent
 ADD entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ADD pg_ctl_temboard.sh /usr/local/bin/pg_ctl_temboard.sh
 RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /tmp/temboard-agent && \
-    pip install --no-cache-dir /tmp/temboard-agent && \
+    pip install --no-cache-dir /tmp/temboard-agent psycopg2-binary && \
     rm -rf /tmp/temboard-agent
