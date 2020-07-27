@@ -10,6 +10,9 @@ $(function() {
     router: new VueRouter(),
     data: {
       statements: [],
+      metas: null,
+      lastSnapshot: null,
+      isLoading: true,
       dbid: null,
       datname: null,
       sortBy: 'total_time',
@@ -59,6 +62,7 @@ $(function() {
     var startDate = dateMath.parse(this.from);
     var endDate = dateMath.parse(this.to, true);
 
+    this.isLoading = true;
     $.get(
       apiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
@@ -67,8 +71,11 @@ $(function() {
         noerror: 1
       },
       function(data) {
+        this.isLoading = false;
         this.datname = data.datname;
         this.statements = data.data;
+
+        this.metas = data.metas;
 
         window.clearTimeout(refreshTimeoutId);
         if (this.from.toString().indexOf('now') != -1 ||

@@ -15,6 +15,7 @@ CREATE TABLE metas(
   snapts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
   aggts timestamp with time zone NOT NULL default '-infinity'::timestamptz,
   purgets timestamp with time zone NOT NULL default '-infinity'::timestamptz,
+  error text,
   FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -256,7 +257,8 @@ BEGIN
     -- Update meta with info from the current proccess (snapshot)
     UPDATE metas
     SET coalesce_seq = coalesce_seq + 1,
-        snapts = now()
+        snapts = now(),
+        error = NULL
     WHERE agent_address = _address AND agent_port = _port
     RETURNING coalesce_seq INTO agg_seq;
 

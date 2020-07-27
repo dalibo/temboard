@@ -1,3 +1,4 @@
+import json
 import logging
 from os import path
 import tornado.web
@@ -72,6 +73,14 @@ def get_agent_username(request):
     return agent_username
 
 
+METAS_QUERY = text("""
+    SELECT *
+    FROM statements.metas
+    WHERE agent_address = :agent_address
+    AND agent_port = :agent_port
+""")
+
+
 BASE_QUERY_STATDATA = text("""
     (
         SELECT dbid, datname, (record).*
@@ -120,7 +129,13 @@ def json_data(request):
              end=end)) \
         .fetchall()
     statements = [dict(statement) for statement in statements]
-    return jsonify(dict(data=statements))
+
+    metas = request.db_session.execute(
+        METAS_QUERY,
+        dict(agent_address=request.instance.agent_address,
+             agent_port=request.instance.agent_port)).fetchone()
+    metas = dict(metas) if metas is not None else None
+    return jsonify(dict(data=statements, metas=metas))
 
 
 BASE_QUERY_STATDATA_DATABASE = text("""
@@ -519,6 +534,40 @@ def pull_data_for_instance(app, session, instance):
     except Exception as e:
         logger.error('Could not get statements data')
         logger.exception(e)
+
+        # If statements data cannot be retrieved store the error in the
+        # statements metas table
+        cur = session.connection().connection.cursor()
+        cur.execute("SET search_path TO statements")
+        query = """
+            -- Create new meta for agent if doesn't already exist
+            INSERT INTO metas (agent_address, agent_port)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING;
+        """
+        cur.execute(
+            query,
+            (
+                instance.agent_address,
+                instance.agent_port,
+            )
+        )
+
+        error = json.loads(e.read())['error']
+        query = """
+            UPDATE metas
+            SET error = %s
+            WHERE agent_address = %s AND agent_port = %s;
+        """
+        cur.execute(
+            query,
+            (
+                error,
+                instance.agent_address,
+                instance.agent_port,
+            )
+        )
+        session.connection().connection.commit()
         raise(e)
 
 
