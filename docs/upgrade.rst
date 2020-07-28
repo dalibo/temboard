@@ -3,6 +3,42 @@
 Upgrade (RHEL/CentOS)
 =====================
 
+6.X to 7.0
+----------
+
+Stop the agent:
+
+.. code-block:: bash
+
+    sudo systemctl stop temboard-agent
+
+Update the package:
+
+.. code-block:: bash
+
+    sudo yum install temboard-agent
+
+Load the ``pg_stat_statements`` extension on the Postgres instance you are
+monitoring with the agent. Please refer to the
+`official documentation <https://www.postgresql.org/docs/current/pgstatstatements.html>`_.
+
+Notes:
+  - You may need to install the PostgreSQL contrib package;
+  - You will need to restart the instance.
+
+Enable the extension. Make sure you enable the extension on the database set in
+the agent configuration.
+
+.. code-block:: SQL
+
+    CREATE EXTENSION pg_stat_statements;
+
+Start the agent:
+
+.. code-block:: bash
+
+    sudo systemctl start temboard-agent
+
 
 5.X to 6.0
 ----------
