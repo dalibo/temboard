@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 
-def _test_apply_config_with_plugins(mocker):
+def test_apply_config_with_plugins(mocker):
     mod = 'temboardagent.cli.'
     mocker.patch(mod + 'Postgres', autospec=True)
     mocker.patch(mod + 'Application.setup_logging', autospec=True)
