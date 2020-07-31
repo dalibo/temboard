@@ -1,4 +1,3 @@
-from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
 
 from . import functions as activity_functions
@@ -33,18 +32,12 @@ def post_activity_kill(http_context, app):
 
 
 class ActivityPlugin(object):
-    PG_MIN_VERSION = 90400
+    PG_MIN_VERSION = (90400, 9.4)
 
     def __init__(self, app, **kw):
         self.app = app
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.4" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
 
     def unload(self):

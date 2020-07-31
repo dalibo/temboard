@@ -51,8 +51,9 @@ class ConnectionHelper(connection):
 
 
 class ConnectionManager(object):
-    def __init__(self, postgres):
+    def __init__(self, postgres, app):
         self.postgres = postgres
+        self.app = app
 
     def __enter__(self):
         try:
@@ -66,6 +67,8 @@ class ConnectionManager(object):
                 cursor_factory=RealDictCursor,
             )
             self.conn.set_session(autocommit=True)
+            if self.app is not None:
+                self.app.check_compatibility(self.conn.server_version)
         except Exception as e:
             raise UserError("Failed to connect to Postgres: %s" % e.message)
         return self.conn
@@ -77,6 +80,7 @@ class ConnectionManager(object):
 class Postgres(object):
     def __init__(
             self, host=None, port=5432, user=None, password=None, dbname=None,
+            app=None,
             **kw):
         self.host = host
         self.port = port
@@ -86,6 +90,7 @@ class Postgres(object):
         if 'database' in kw:
             dbname = kw['database']
         self.dbname = dbname
+        self.app = app
         self._server_version = None
 
     def __repr__(self):
@@ -95,7 +100,7 @@ class Postgres(object):
         )
 
     def connect(self):
-        return ConnectionManager(self)
+        return ConnectionManager(self, self.app)
 
     def fetch_version(self):
         if self._server_version is None:

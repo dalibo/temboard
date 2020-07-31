@@ -1,6 +1,6 @@
 import logging
 
-from temboardagent.errors import HTTPError, UserError
+from temboardagent.errors import HTTPError
 from temboardagent.routing import RouteSet
 from temboardagent.postgres import Postgres
 from temboardagent.tools import now
@@ -76,7 +76,7 @@ def get_statements(http_context, app):
 
 
 class StatementsPlugin(object):
-    PG_MIN_VERSION = 90500
+    PG_MIN_VERSION = (90500, 9.5)
     s = "statements"
     option_specs = [OptionSpec(s, "dbname", default="postgres")]
     del s
@@ -86,12 +86,6 @@ class StatementsPlugin(object):
         self.app.config.add_specs(self.option_specs)
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.5" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
 
     def unload(self):

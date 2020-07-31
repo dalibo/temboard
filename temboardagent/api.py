@@ -110,7 +110,7 @@ def get_discover(http_context, app, sessions):
         hostname=None,
         cpu=None,
         memory_size=None,
-        pg_port=None,
+        pg_port=app.config.postgresql['port'],
         pg_version=None,
         pg_version_summary=None,
         pg_data=None,
@@ -142,7 +142,6 @@ def get_discover(http_context, app, sessions):
             pginfo = PgInfo(conn)
             discover.update(
                 pg_block_size=int(pginfo.setting('block_size')),
-                pg_port=pginfo.setting('port'),
                 pg_version=pginfo.version()['full'],
                 pg_version_summary=pginfo.version()['summary'],
                 pg_data=pginfo.setting('data_directory')

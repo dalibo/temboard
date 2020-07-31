@@ -10,7 +10,7 @@ from temboardagent.toolkit.validators import commalist
 from temboardagent.tools import now, validate_parameters
 from temboardagent.inventory import SysInfo
 from temboardagent import __version__ as __VERSION__
-from temboardagent.errors import UserError, HTTPError as TemboardHTTPError
+from temboardagent.errors import HTTPError as TemboardHTTPError
 
 from . import db
 from .inventory import host_info, instance_info
@@ -274,7 +274,7 @@ def monitoring_collector_worker(app):
 
 
 class MonitoringPlugin(object):
-    PG_MIN_VERSION = 90400
+    PG_MIN_VERSION = (90400, 9.4)
     s = 'monitoring'
     option_specs = [
         OptionSpec(s, 'dbnames', default='*', validator=commalist),
@@ -291,12 +291,6 @@ class MonitoringPlugin(object):
         db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.4" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
         workers.schedule(

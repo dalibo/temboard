@@ -3,7 +3,6 @@ import time
 
 from temboardagent.routing import RouteSet
 from temboardagent.tools import validate_parameters
-from temboardagent.errors import UserError
 from temboardagent.spc import error
 from temboardagent.command import (
     oneline_cmd_to_array,
@@ -91,7 +90,7 @@ def post_pg_control(http_context, app):
 
 
 class AdministrationPlugin(object):
-    PG_MIN_VERSION = 90400
+    PG_MIN_VERSION = (90400, 9.4)
     options_specs = [
         OptionSpec('administration', 'pg_ctl', default=None, validator=quoted),
     ]
@@ -101,12 +100,6 @@ class AdministrationPlugin(object):
         self.app.config.add_specs(self.options_specs)
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.4" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
 
     def unload(self):

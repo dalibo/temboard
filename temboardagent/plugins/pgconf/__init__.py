@@ -1,4 +1,3 @@
-from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
 
 from . import functions as pgconf_functions
@@ -36,18 +35,12 @@ def get_pg_conf_status(http_context, app):
 
 
 class PgConfPlugin(object):
-    PG_MIN_VERSION = 90500
+    PG_MIN_VERSION = (90500, 9.5)
 
     def __init__(self, app, **kw):
         self.app = app
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.5" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
 
     def unload(self):
