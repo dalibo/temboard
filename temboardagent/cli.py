@@ -65,5 +65,14 @@ class Application(BaseApplication):
                 yield spec
 
     def apply_config(self):
-        self.postgres = Postgres(**self.config.postgresql)
+        self.postgres = Postgres(app=self, **self.config.postgresql)
         return super(Application, self).apply_config()
+
+    def check_compatibility(self, pg_version):
+        # check for compatibility with plugins
+        for name, plugin in self.plugins.items():
+            if pg_version < plugin.PG_MIN_VERSION[0]:
+                logger.error(
+                    "%s plugin is incompatible with Postgres below %s",
+                    name, plugin.PG_MIN_VERSION[1],
+                )

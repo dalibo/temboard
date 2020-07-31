@@ -4,7 +4,6 @@ import time
 from temboardagent.toolkit import taskmanager
 from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.routing import RouteSet
-from temboardagent.errors import UserError
 
 from . import db
 from . import metrics
@@ -131,7 +130,7 @@ def dashboard_collector_worker(app):
 
 
 class DashboardPlugin(object):
-    PG_MIN_VERSION = 90400
+    PG_MIN_VERSION = (90400, 9.4)
     s = 'dashboard'
     option_specs = [
         OptionSpec(s, 'scheduler_interval', default=2, validator=int),
@@ -147,12 +146,6 @@ class DashboardPlugin(object):
         db.bootstrap(self.app.config.temboard.home, 'dashboard.db')
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.4" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
         workers.schedule(

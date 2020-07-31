@@ -209,7 +209,7 @@ def get_hello_from_worker(http_context, app):
 
 
 class Hello(object):
-    pg_min_version = 90400
+    pg_min_version = (90400, 9.4)
     my_options_specs = [
         OptionSpec('hello', 'name', default='World'),
         OptionSpec(
@@ -221,10 +221,6 @@ class Hello(object):
         self.app.config.add_specs(self.my_options_specs)
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.pg_min_version:
-            raise UserError("hellong is incompatible with Postgres below 9.4")
-
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
         self.app.scheduler.add(workers)

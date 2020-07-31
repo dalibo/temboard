@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
 from temboardagent.toolkit import taskmanager
 from temboardagent.tools import validate_parameters
@@ -297,18 +296,12 @@ def reindex_worker(app, dbname, schema=None, table=None, index=None):
 
 
 class MaintenancePlugin(object):
-    PG_MIN_VERSION = 90400
+    PG_MIN_VERSION = (90400, 9.4)
 
     def __init__(self, app, **kw):
         self.app = app
 
     def load(self):
-        pg_version = self.app.postgres.fetch_version()
-        if pg_version < self.PG_MIN_VERSION:
-            msg = "%s is incompatible with Postgres below 9.4" % (
-                self.__class__.__name__)
-            raise UserError(msg)
-
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
         for route in routes:
