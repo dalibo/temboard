@@ -37,7 +37,7 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-12">';
       body_html += '      <label for="inputAgentKey" class="control-label">Agent secret key</label>';
-      body_html += '      <textarea class="form-control" rows="1" id="inputAgentKey">'+data['agent_key']+'</textarea>';
+      body_html += '      <input class="form-control" id="inputAgentKey" value="'+data['agent_key']+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -319,7 +319,7 @@ function load_add_instance_form(modal_id)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-12">';
       body_html += '      <label for="inputAgentKey" class="control-label">Agent secret key</label>';
-      body_html += '      <textarea class="form-control" rows="3" id="inputAgentKey"></textarea>';
+      body_html += '      <input class="form-control" id="inputAgentKey">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
