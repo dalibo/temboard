@@ -356,7 +356,7 @@ function load_add_instance_form(modal_id)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-12">';
       body_html += '      <label for="inputComment" class="control-label">Comment</label>';
-      body_html += '      <textarea class="form-control" rows="3" id="inputComment">'+data['comment']+'</textarea>';
+      body_html += '      <textarea class="form-control" rows="3" id="inputComment"></textarea>';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '</form>';
