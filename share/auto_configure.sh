@@ -158,10 +158,6 @@ if getent group ssl-cert &>/dev/null; then
 	adduser temboard ssl-cert
 fi
 
-dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
-if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
-	fatal "Can't configure access to Postgres database."
-fi
 
 log "Configuring temboard in ${ETCDIR}."
 sslfiles=($(set -eu; setup_ssl))
@@ -175,6 +171,10 @@ if [ -d ${PGHOST-/tmp} ] ; then
 	sudo -Eu ${PGUSER} ./create_repository.sh
 else
 	./create_repository.sh
+fi
+dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
+if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
+	fatal "Can't configure access to Postgres database."
 fi
 
 if hash systemctl &>/dev/null; then
