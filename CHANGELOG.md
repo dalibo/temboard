@@ -20,7 +20,7 @@
   first found in env, by [@bersace].
 
 
-## [6.2] - 2020-XX-XX
+## [6.2] - 2020-08-07
 
 
 ### Changed
@@ -34,7 +34,7 @@
 - SMTP port misinterpreted, by [@bersace].
 - Authenticate with empty login or password, by [@bersace].
 - Double error with unserializable error in worker, by [@bersace].
-
+- Test PG access by temboard role after repo creation, by [@l00ptr]
 
 ## [6.1] - 2020-06-15
 
@@ -153,3 +153,4 @@ This release requires a special step before restarting temBoard. Please read
 [@orgrim]: https://github.com/orgrim
 [@pgiraud]: https://github.com/pgiraud
 [@dlax]: https://github.com/dlax
+[@l00ptr]: https://github.com/l00ptr
