@@ -3,5 +3,4 @@
 .coverage
 build/
 dist/
-docker-compose.override.yml
 *.egg-info/

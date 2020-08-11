@@ -14,32 +14,8 @@ against ``master`` as usual.
 Docker Development Environment
 ==============================
 
-First, ensure you have properly cloned temboard-agend repository. The project
-uses a submodule. Either clone with ``--recursive`` flag or activate submodule.
-
-.. code-block:: console
-
-   $ git clone --recursive https://github.com/dalibo/temboard-agent.git
-   $ cd temboard-agent/
-   $ git submodule update --init
-
-
-With Docker & Compose, you can run your code like this:
-
-.. code-block:: console
-
-   $ docker-compose up -d
-   $ docker-compose exec agent bash
-   # pip install -e /usr/local/src/temboard-agent/ psycopg2-binary
-   # sudo -u postgres temboard-agent
-
-Goto https://0.0.0.0:8888/ to add your instance with address ``agent``, port
-``2345`` and key ``key_for_agent_dev``.
-
-That's it !
-
-The ``make shell`` target is a shorthand to ``docker-compose exec agent bash``
-if you prefer.
+Refer to temBoard UI `CONTRIBUTING
+<https://github.com/dalibo/temboard/blob/master/CONTRIBUTING.md>`_.
 
 
 Editing Documentation
