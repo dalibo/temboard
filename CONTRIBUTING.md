@@ -1,14 +1,18 @@
 # Development Environment Setup
 
-You can quickly set up a dev env with virtualenv and Docker Compose.
+You can quickly set up a dev env with virtualenv and Docker Compose. Running
+development version of UI and agent requires two shells, one for the UI and one
+for the agent.
 
-Get the temBoard and submodules sources:
+Get temBoard UI and agent sources:
 
 ```console
 $ git clone --recursive https://github.com/dalibo/temboard.git
+$ cd temboard/
+$ git clone --recursive https://github.com/dalibo/temboard-agent.git agent/
 ```
 
-First, create a virtualenv for Python2.7, activate it. Then install temBoard and
+Then, create a virtualenv for Python2.7, activate it. Then install temBoard and
 pull docker images:
 
 ``` console
@@ -17,7 +21,7 @@ $ pip install -e . psycopg2-binary
 $ docker-compose pull
 ```
 
-Now, bootstrap development with `make devenv` and launch temBoard.
+Then, bootstrap development with `make devenv`.
 
 ``` console
 $ make devenv
@@ -37,53 +41,30 @@ $ temboard --debug
 ...
 ```
 
-Go to https://127.0.0.1:8888/ to access temBoard runing with your code! An agent
-is already set up to manage the PostgreSQL cluster of the UI.
+Go to https://127.0.0.1:8888/ to access temBoard running with your code!
+
+You now need to run an agent and register it in UI. Open a second shell for
+managing the agent and execute the following commands.
+
+``` console
+$ docker-compose exec agent /bin/bash
+root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
+ INFO: Starting temboard-agent 8.0.dev0.
+ INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
+2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
+...
+```
+
+Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
+`key_for_agent`. The monitored Postgres instance is named `instance.fqdn`.
+
+
+## Throw your development environment
 
 If you want to trash development env, use `docker-compose down -v` and restart
 from `make devenv`.
 
-
-## Develop both UI and agent
-
-In case you are working on the agent at the same time, here are some more
-instructions otherwise you can jump to the next section.
-
-Assuming that `temboard-agent` code is cloned along with temboard, create a
-`docker-compose.override.yaml` file with the following content:
-
-```
-version: '2.4'
-
-services:
-  agent:
-    environment:
-      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
-      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
-      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
-      TEMBOARD_MONITORING_SSL_CA_CERT_FILE: /usr/local/src/temboard/share/temboard_CHANGEME.pem
-    volumes:
-      - ../temboard-agent/:/usr/local/src/temboard-agent/
-      - .:/usr/local/src/temboard/
-    command: tail -f /dev/null
-```
-
-You can then run the `$ docker-compose up` command again.
-
-Then in an other terminal, run the following commands:
-
-```
-$ docker-compose exec agent bash # enters the agent machine
-# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper # installs temboard-agent in dev mode
-# sudo -u postgres hupper -m temboardagent.scripts.agent --debug
-```
-
-The last thing to do is to register the instance so that you don't have to do
-it manually in the interface. In an other terminal, use the following commands:
-```
-$ docker-compose exec agent bash # enters the agent machine
-# sudo -u postgres temboard-agent-register --host $TEMBOARD_REGISTER_HOST --port $TEMBOARD_REGISTER_PORT --groups default $TEMBOARD_UI_URL
-```
 
 ## CSS
 
