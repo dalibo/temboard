@@ -74,8 +74,8 @@ Then in an other terminal, run the following commands:
 
 ```
 $ docker-compose exec agent bash # enters the agent machine
-# pip install -e /usr/local/src/temboard-agent/ # installs temboard-agent in dev mode
-# sudo -u postgres temboard-agent
+# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper # installs temboard-agent in dev mode
+# sudo -u postgres hupper -m temboardagent.scripts.agent --debug
 ```
 
 The last thing to do is to register the instance so that you don't have to do
