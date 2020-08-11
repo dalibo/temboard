@@ -313,10 +313,10 @@ def get_databases(conn):
 
 
 def get_database_size(conn):
-    return list(conn.queryone("""\
+    return conn.queryone("""\
     SELECT pg_size_pretty(pg_database_size(current_database())) AS total_size,
         pg_database_size(current_database()) AS total_bytes
-    """))
+    """)
 
 
 def get_database(conn):
