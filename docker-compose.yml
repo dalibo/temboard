@@ -41,6 +41,9 @@ services:
     links:
       - instance:instance.fqdn
     environment:
+      # Perists bash history. Eases reuse of pip install and hupper command when
+      # recreating container.
+      HISTFILE: /usr/local/src/temboard-agent/docker-bash_history
       TEMBOARD_HOSTNAME: instance.fqdn
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
