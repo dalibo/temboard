@@ -36,15 +36,21 @@ services:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
       - /var/run/docker.sock:/var/run/docker.sock
+      - .:/usr/local/src/temboard/
+      - ./agent/:/usr/local/src/temboard-agent/
     links:
       - instance:instance.fqdn
     environment:
+      # Perists bash history. Eases reuse of pip install and hupper command when
+      # recreating container.
+      HISTFILE: /usr/local/src/temboard-agent/docker-bash_history
       TEMBOARD_HOSTNAME: instance.fqdn
-      TEMBOARD_KEY: key_for_agent0
-      TEMBOARD_UI_URL: https://172.17.0.1:8888
-      TEMBOARD_REGISTER_HOST: 0.0.0.0
-      TEMBOARD_REGISTER_PORT: 2345
-      TEMBOARD_GROUPS: default
+      TEMBOARD_LOGGING_LEVEL: DEBUG
+      TEMBOARD_KEY: key_for_agent
+      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
+      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
+      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+    command: sleep infinity
 
   smtp:
     image: python:3
