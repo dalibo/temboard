@@ -83,6 +83,10 @@ FROM pg_settings
                 cat_exists = True
                 break
             i += 1
+        enumvals = row['enumvals']
+        if enumvals is not None:
+            # format enumvals as before switching from tpc to psycopg2
+            enumvals = '{%s}' % ','.join(enumvals)
         row_dict = {
             'name': row['name'],
             'setting': row['setting'],
@@ -93,7 +97,7 @@ FROM pg_settings
             'max_val': row['max_val'],
             'boot_val': row['boot_val'],
             'reset_val': row['reset_val'],
-            'enumvals': row['enumvals'],
+            'enumvals': enumvals,
             'context': row['context'],
             'desc': row['desc'],
             'pending_restart': row['pending_restart'],
