@@ -2,7 +2,7 @@
  * Bootstrap Multiselect (http://davidstutz.de/bootstrap-multiselect/)
  *
  * Apache License, Version 2.0:
- * Copyright (c) 2012 - 2017 David Stutz
+ * Copyright (c) 2012 - 2018 David Stutz
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a
@@ -15,7 +15,7 @@
  * under the License.
  *
  * BSD 3-Clause License:
- * Copyright (c) 2012 - 2017 David Stutz
+ * Copyright (c) 2012 - 2018 David Stutz
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -215,6 +215,7 @@
         this.buildContainer();
         this.buildButton();
         this.buildDropdown();
+        this.buildReset();
         this.buildSelectAll();
         this.buildDropdownOptions();
         this.buildFilter();
@@ -421,6 +422,7 @@
             enableFullValueFiltering: false,
             enableClickableOptGroups: false,
             enableCollapsibleOptGroups: false,
+            collapseOptGroupsByDefault: false,
             filterPlaceholder: 'Search',
             // possible options: 'text', 'value', 'both'
             filterBehavior: 'text',
@@ -433,6 +435,9 @@
             disableIfEmpty: false,
             disabledText: '',
             delimiterText: ', ',
+            includeResetOption: false,
+            includeResetDivider: false,
+            resetText: 'Reset',
             templates: {
                 button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"><span class="multiselect-selected-text"></span> <b class="caret"></b></button>',
                 ul: '<ul class="multiselect-container dropdown-menu"></ul>',
@@ -440,7 +445,8 @@
                 filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span>',
                 li: '<li><a tabindex="0"><label></label></a></li>',
                 divider: '<li class="multiselect-item divider"></li>',
-                liGroup: '<li class="multiselect-item multiselect-group"><label></label></li>'
+                liGroup: '<li class="multiselect-item multiselect-group"><label></label></li>',
+                resetButton: '<li class="multiselect-reset text-center"><div class="input-group"><a class="btn btn-default btn-block"></a></div></li>'
             }
         },
 
@@ -827,7 +833,7 @@
 
                     var visible = true;
                     $inputs.each(function() {
-                        visible = visible && $(this).is(':visible');
+                        visible = visible && !$(this).hasClass('multiselect-collapsible-hidden');
                     });
 
                     if (visible) {
@@ -866,7 +872,14 @@
             var $li = $(this.options.templates.li);
             var $label = $('label', $li);
             $label.addClass(inputType);
+            $label.attr("title", label);
             $li.addClass(classes);
+
+            // Hide all children items when collapseOptGroupsByDefault is true
+            if (this.options.collapseOptGroupsByDefault && $(element).parent().prop("tagName").toLowerCase() === "optgroup") {
+                $li.addClass("multiselect-collapsible-hidden");
+                $li.hide();
+            }
 
             if (this.options.enableHTML) {
                 $label.html(" " + label);
@@ -961,6 +974,35 @@
             $("option", group).each($.proxy(function($, group) {
                 this.createOptionValue(group);
             }, this))
+        },
+
+        /**
+         * Build the reset.
+         *
+         */
+        buildReset: function() {
+            if (this.options.includeResetOption) {
+
+                // Check whether to add a divider after the reset.
+                if (this.options.includeResetDivider) {
+                    this.$ul.prepend($(this.options.templates.divider));
+                }
+
+                var $resetButton = $(this.options.templates.resetButton);
+
+                if (this.options.enableHTML) {
+                    $('a', $resetButton).html(this.options.resetText);
+                }
+                else {
+                    $('a', $resetButton).text(this.options.resetText);
+                }
+
+                $('a', $resetButton).click($.proxy(function(){
+                    this.clearSelection();
+                }, this));
+
+                this.$ul.prepend($resetButton);
+            }
         },
 
         /**
@@ -1469,7 +1511,8 @@
 
                     $tag = $('<optgroup/>').attr({
                         label: option.label || 'Group ' + groupCounter,
-                        disabled: !!option.disabled
+                        disabled: !!option.disabled,
+                        value: option.value
                     });
 
                     forEach(option.children, function(subOption) { // add children option tags
