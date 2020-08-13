@@ -33,6 +33,9 @@ the agent configuration.
 
     CREATE EXTENSION pg_stat_statements;
 
+Update configuration file ``/etc/temboard-agent/temboard-agent.conf`` to add
+the ``statements`` plugin.
+
 Start the agent:
 
 .. code-block:: bash
