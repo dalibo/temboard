@@ -565,3 +565,13 @@ table td.auto-width {
   width: 100% !important;
   height: 100%;
 }
+
+.multiselect-container {
+  >li>a>label {
+    padding-left: 10px;
+  }
+
+  .dropdown-item.active {
+    background-color: #dfdfdf;
+  }
+}

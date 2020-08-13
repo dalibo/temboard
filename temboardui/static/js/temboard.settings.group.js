@@ -1,3 +1,10 @@
+var multiselectOptions = {
+  templates: {
+    button: '<button type="button" class="multiselect dropdown-toggle border-secondary" data-toggle="dropdown"><span class="multiselect-selected-text"></span> <b class="caret"></b></button>',
+    li: '<li class="dropdown-item"><a href="javascript:void(0);"><label></label></a></li>'
+  }
+};
+
 /*
  * Load group properties using /json/settings/group/<group_kind>/<group_name> API
  * and build the update form.
@@ -69,7 +76,7 @@ function load_update_group_form(modal_id, group_kind, group_name)
       if (group_kind == 'instance')
       {
         // Activate multiselect plugin for group selecting.
-        $('#selectGroups').multiselect();
+        $('#selectGroups').multiselect(multiselectOptions);
         // Add group's description as a tooltip.
         $('.multiselect-container li').not('.filter, .group').tooltip({
             placement: 'right',
@@ -308,7 +315,7 @@ function load_add_group_form(modal_id, group_kind)
         $('#'+modal_id+'Body').html(body_html);
         $('#'+modal_id+'Footer').html(footer_html);
         // Activate multiselect plugin for group selecting.
-        $('#selectGroups').multiselect();
+        $('#selectGroups').multiselect(multiselectOptions);
         // Add group's description as a tooltip.
         $('.multiselect-container li').not('.filter, .group').tooltip({
             placement: 'right',
