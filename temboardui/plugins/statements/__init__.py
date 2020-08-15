@@ -139,49 +139,232 @@ def json_data(request):
 
 
 BASE_QUERY_STATDATA_DATABASE = text("""
+WITH first_occurence AS (
+  -- first occurence for each statement
+  SELECT
+    distinct on (queryid) queryid,
+    ts,
+    calls,
+    total_time,
+    shared_blks_read,
+    shared_blks_hit,
+    shared_blks_dirtied,
+    shared_blks_written,
+    local_blks_read,
+    local_blks_hit,
+    local_blks_dirtied,
+    local_blks_written,
+    temp_blks_read,
+    temp_blks_written,
+    blk_read_time,
+    blk_write_time
+  FROM
     (
+      (
         SELECT
-            statements.query,
-            statements.rolname,
-            statements.datname,
-            h.*
-        FROM (
+          distinct on (queryid) queryid,
+          (record).*
+        FROM
+          (
             SELECT
-              *,
-              (record).*
-            FROM (
-              SELECT
-                agent_address, agent_port, queryid, dbid, userid,
-                unnest(records) AS record
-              FROM statements.statements_history psh
-              WHERE coalesce_range && tstzrange(:start, :end, '[]')
-            ) AS unnested
-            WHERE agent_address = :agent_address
+              distinct on (queryid) queryid,
+              unnest(records) AS record
+            FROM
+              statements.statements_history psh
+            WHERE
+              coalesce_range && tstzrange(
+                (:start) :: timestamptz,
+                (:end) :: timestamptz,
+                '[]'
+              )
+              AND agent_address = :agent_address
+              AND agent_port = :agent_port
+              AND dbid = :dbid
+            order by
+              queryid,
+              coalesce_range
+          ) AS unnested
+        WHERE
+          tstzrange(
+            (record).ts,
+            (record).ts,
+            '[]'
+          ) <@ tstzrange(
+            (:start) :: timestamptz,
+            (:end) :: timestamptz,
+            '[]'
+          )
+        order by
+          queryid,
+          ts
+      )
+      UNION ALL
+        (
+          SELECT
+            distinct on (queryid) queryid,
+            (record).*
+          FROM
+            statements.statements_history_current
+          WHERE
+            agent_address = :agent_address
             AND agent_port = :agent_port
             AND dbid = :dbid
-            AND tstzrange((record).ts, (record).ts, '[]')
-              <@ tstzrange(:start, :end, '[]')
-
-            UNION ALL
-
-            SELECT
-              *,
-              (record).*
-            FROM statements.statements_history_current
-            WHERE agent_address = :agent_address
-            AND agent_port = :agent_port
-            AND dbid = :dbid
-            AND tstzrange((record).ts, (record).ts, '[]')
-              <@ tstzrange(:start, :end, '[]')
-        ) AS h
-        JOIN statements.statements AS statements ON (
-          h.agent_address = statements.agent_address AND
-          h.agent_port = statements.agent_port AND
-          h.queryid = statements.queryid AND
-          h.dbid = statements.dbid AND
-          h.userid = statements.userid
+            AND tstzrange(
+              (record).ts,
+              (record).ts,
+              '[]'
+            ) <@ tstzrange(
+              (:start) :: timestamptz,
+              (:end) :: timestamptz,
+              '[]'
+            )
+          order by
+            queryid,
+            ts
         )
-    ) hs
+    ) as h
+  order by
+    queryid,
+    ts
+),
+last_occurence AS (
+  -- last occurence for each statement
+  SELECT
+    distinct on (queryid) queryid,
+    ts,
+    calls,
+    total_time,
+    shared_blks_read,
+    shared_blks_hit,
+    shared_blks_dirtied,
+    shared_blks_written,
+    local_blks_read,
+    local_blks_hit,
+    local_blks_dirtied,
+    local_blks_written,
+    temp_blks_read,
+    temp_blks_written,
+    blk_read_time,
+    blk_write_time
+  FROM
+    (
+      (
+        SELECT
+          distinct on (queryid) queryid,
+          (record).*
+        FROM
+          (
+            SELECT
+              distinct on (queryid) queryid,
+              unnest(records) AS record
+            FROM
+              statements.statements_history psh
+            WHERE
+              coalesce_range && tstzrange(
+                (:start) :: timestamptz,
+                (:end) :: timestamptz,
+                '[]'
+              )
+              AND agent_address = :agent_address
+              AND agent_port = :agent_port
+              AND dbid = :dbid
+            order by
+              queryid,
+              coalesce_range desc
+          ) AS unnested
+        WHERE
+          tstzrange(
+            (record).ts,
+            (record).ts,
+            '[]'
+          ) <@ tstzrange(
+            (:start) :: timestamptz,
+            (:end) :: timestamptz,
+            '[]'
+          )
+        order by
+          queryid,
+          ts desc
+      )
+      UNION ALL
+        (
+          SELECT
+            distinct on (queryid) queryid,
+            (record).*
+          FROM
+            statements.statements_history_current
+          WHERE
+            agent_address = :agent_address
+            AND agent_port = :agent_port
+            AND dbid = :dbid
+            AND tstzrange(
+              (record).ts,
+              (record).ts,
+              '[]'
+            ) <@ tstzrange(
+              (:start) :: timestamptz,
+              (:end) :: timestamptz,
+              '[]'
+            )
+          order by
+            queryid,
+            ts desc
+        )
+    ) as h
+  order by
+    queryid,
+    ts desc
+)
+SELECT
+  query,
+  rolname,
+  (lo.calls - fo.calls) AS calls,
+  (lo.total_time - fo.total_time) AS total_time,
+  (lo.total_time - fo.total_time) / (lo.calls - fo.calls) AS mean_time,
+  (
+    lo.shared_blks_read - fo.shared_blks_read
+  ) AS shared_blks_read,
+  (
+    lo.shared_blks_hit - fo.shared_blks_hit
+  ) AS shared_blks_hit,
+  (
+    lo.shared_blks_dirtied - fo.shared_blks_dirtied
+  ) AS shared_blks_dirtied,
+  (
+    lo.shared_blks_written - fo.shared_blks_written
+  ) AS shared_blks_written,
+  (
+    lo.local_blks_read - fo.local_blks_read
+  ) AS local_blks_read,
+  (
+    lo.local_blks_hit - fo.local_blks_hit
+  ) AS local_blks_hit,
+  (
+    lo.local_blks_dirtied - fo.local_blks_dirtied
+  ) AS local_blks_dirtied,
+  (
+    lo.local_blks_written - fo.local_blks_written
+  ) AS local_blks_written,
+  (
+    lo.temp_blks_read - fo.temp_blks_read
+  ) AS temp_blks_read,
+  (
+    lo.temp_blks_written - fo.temp_blks_written
+  ) AS temp_blks_written,
+  (
+    lo.blk_read_time - fo.blk_read_time
+  ) AS blk_read_time,
+  (
+    lo.blk_write_time - fo.blk_write_time
+  ) AS blk_write_time
+FROM
+  first_occurence AS fo
+  JOIN last_occurence AS lo ON fo.queryid = lo.queryid
+  JOIN statements.statements ON statements.queryid = fo.queryid
+  AND agent_address = :agent_address
+  AND agent_port = :agent_port
+  AND dbid = :dbid
+WHERE (lo.calls - fo.calls) > 0;
 """)
 
 
@@ -204,15 +387,7 @@ def json_data_database(request, dbid):
              dbid=dbid)
     ).fetchone()[0]
 
-    base_query = BASE_QUERY_STATDATA_DATABASE
-    diffs = get_diffs_forstatdata()
-    query = (select([
-        column("query"),
-        column("rolname"),
-    ] + diffs)
-            .select_from(base_query)
-            .group_by(column("query"), column("dbid"), column("rolname"))
-            .having(func.max(column("calls")) - func.min(column("calls")) > 0))
+    query = BASE_QUERY_STATDATA_DATABASE
 
     statements = request.db_session.execute(
         query,
