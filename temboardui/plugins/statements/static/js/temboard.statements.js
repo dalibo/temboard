@@ -5,6 +5,9 @@ $(function() {
   var refreshTimeoutId;
   var refreshInterval = 60 * 1000;
 
+  var dataRequest;
+  var chartRequest;
+
   var v = new Vue({
     el: '#app',
     router: new VueRouter(),
@@ -67,7 +70,8 @@ $(function() {
     var endDate = dateMath.parse(this.to, true);
 
     this.isLoading = true;
-    $.get(
+    dataRequest && dataRequest.abort();
+    dataRequest = $.get(
       apiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
@@ -90,7 +94,8 @@ $(function() {
       }.bind(this)
     );
 
-    $.get(
+    chartRequest && chartRequest.abort();
+    chartRequest = $.get(
       chartApiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
