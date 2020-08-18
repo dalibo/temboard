@@ -18,7 +18,10 @@ $(function() {
       sortBy: 'total_time',
       filter: '',
       from: null,
-      to: null
+      to: null,
+      totalRows: 1,
+      currentPage: 1,
+      perPage: 20
     },
     computed: {
       fields: getFields,
@@ -29,7 +32,8 @@ $(function() {
     methods: {
       fetchData: fetchData,
       onPickerUpdate: onPickerUpdate,
-      highlight: highlight
+      highlight: highlight,
+      onFiltered: onFiltered
     },
     watch: {
       fromTo: function() {
@@ -74,6 +78,7 @@ $(function() {
         this.isLoading = false;
         this.datname = data.datname;
         this.statements = data.data;
+        this.totalRows = this.statements.length;
 
         this.metas = data.metas;
 
@@ -197,6 +202,11 @@ $(function() {
   function onPickerUpdate(from, to) {
     this.from = from;
     this.to = to;
+  }
+
+  function onFiltered(filteredItems) {
+    this.totalRows = filteredItems.length;
+    this.currentPage = 1;
   }
 
   function timestampToIsoDate(epochMs) {
