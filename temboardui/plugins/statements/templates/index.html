@@ -84,11 +84,14 @@
     :fields="fields"
     :sort-by="sortBy"
     :busy="isLoading"
+    :current-page="currentPage"
+    :per-page="perPage"
     sort-desc="Descending"
     sort-direction="desc"
     show-empty
     v-cloak
     :filter="filter"
+    @filtered="onFiltered"
     class="table-query"
     >
     <template v-slot:table-busy>
@@ -135,6 +138,18 @@
       </div>
     </template>
   </b-table>
+  <div class="row">
+    <div class="col-6">
+      <b-pagination
+        v-model="currentPage"
+        :total-rows="totalRows"
+        :per-page="perPage"
+        align="fill"
+        size="sm"
+        class="my-0"
+        ></b-pagination>
+    </div>
+  </div>
 </div>
 <script src="/js/vue.min.js"></script>
 <script src="/js/vue-router.min.js"></script>
