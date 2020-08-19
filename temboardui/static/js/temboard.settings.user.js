@@ -1,3 +1,10 @@
+var multiselectOptions = {
+  templates: {
+    button: '<button type="button" class="multiselect dropdown-toggle border-secondary" data-toggle="dropdown"><span class="multiselect-selected-text"></span> <b class="caret"></b></button>',
+    li: '<li class="dropdown-item"><a href="javascript:void(0);"><label></label></a></li>'
+  }
+};
+
 /*
  * Load user properties using '/json/settings/user/'+username API
  * and build the update form.
@@ -96,7 +103,7 @@ function load_update_user_form(modal_id, username)
       });
 
       // Activate multiselect plugin for group selecting.
-      $('#selectGroups').multiselect();
+      $('#selectGroups').multiselect(multiselectOptions);
       // Add group's description as a tooltip.
       $('.multiselect-container li').not('.filter, .group').tooltip({
           placement: 'right',
@@ -107,8 +114,8 @@ function load_update_user_form(modal_id, username)
           }
       });
       // Use multiselect style for Active & Admin selects.
-      $('#selectActive').multiselect();
-      $('#selectAdmin').multiselect();
+      $('#selectActive').multiselect(multiselectOptions);
+      $('#selectAdmin').multiselect(multiselectOptions);
       $('#formUpdateUser').submit(function( event ) {
           event.preventDefault();
         send_update_user_form(modal_id);
@@ -299,7 +306,7 @@ function load_add_user_form(modal_id)
       });
 
       // Activate multiselect plugin for group selecting.
-      $('#selectGroups').multiselect();
+      $('#selectGroups').multiselect(multiselectOptions);
       // Add group's description as a tooltip.
       $('.multiselect-container li').not('.filter, .group').tooltip({
         placement: 'right',
@@ -310,8 +317,8 @@ function load_add_user_form(modal_id)
         }
       });
       // Use multiselect style for Active & Admin selects.
-      $('#selectActive').multiselect();
-      $('#selectAdmin').multiselect();
+      $('#selectActive').multiselect(multiselectOptions);
+      $('#selectAdmin').multiselect(multiselectOptions);
       $('#formAddUser').submit(function( event ) {
           event.preventDefault();
         send_add_user_form(modal_id);

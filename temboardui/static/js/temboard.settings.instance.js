@@ -1,5 +1,12 @@
 var waitMessage = '<div class="row mb-4"><div class="col-md-4 offset-md-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>';
 
+var multiselectOptions = {
+  templates: {
+    button: '<button type="button" class="multiselect dropdown-toggle border-secondary" data-toggle="dropdown"><span class="multiselect-selected-text"></span> <b class="caret"></b></button>',
+    li: '<li class="dropdown-item"><a href="javascript:void(0);"><label></label></a></li>'
+  }
+};
+
 /*
  * Load instance properties using /json/settings/instance API
  * and build the update form.
@@ -105,8 +112,8 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
         }
       });
       // Activate multiselect plugin for group selecting.
-      $('#selectGroups').multiselect();
-      $('#selectPlugins').multiselect();
+      $('#selectGroups').multiselect(multiselectOptions);
+      $('#selectPlugins').multiselect(multiselectOptions);
       // Add group's description as a tooltip.
       $('.multiselect-container li').not('.filter, .group').tooltip({
       placement: 'right',
@@ -372,8 +379,8 @@ function load_add_instance_form(modal_id)
         $('#formAddInstance').submit()
       });
       // Activate multiselect plugin for group selecting.
-      $('#selectGroups').multiselect();
-      $('#selectPlugins').multiselect();
+      $('#selectGroups').multiselect(multiselectOptions);
+      $('#selectPlugins').multiselect(multiselectOptions);
       // Add group's description as a tooltip.
       $('.multiselect-container li').not('.filter, .group').tooltip({
           placement: 'right',
