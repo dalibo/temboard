@@ -57,7 +57,7 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 ```
 
 Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
-`key_for_agent`. The monitored Postgres instance is named `instance.fqdn`.
+`key_for_agent`. The monitored Postgres instance is named `postgres.dev`.
 
 
 ## Throw your development environment

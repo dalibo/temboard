@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
 
-  instance:
+  postgres:
     image: postgres:12-alpine
     ports:
       - 5433:5432
@@ -39,12 +39,12 @@ services:
       - .:/usr/local/src/temboard/
       - ./agent/:/usr/local/src/temboard-agent/
     links:
-      - instance:instance.fqdn
+      - postgres:postgres.dev
     environment:
       # Perists bash history. Eases reuse of pip install and hupper command when
       # recreating container.
       HISTFILE: /usr/local/src/temboard/docker-agent-bash_history
-      TEMBOARD_HOSTNAME: instance.fqdn
+      TEMBOARD_HOSTNAME: postgres.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
       TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem

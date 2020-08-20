@@ -13,7 +13,7 @@ volumes:
   run:
 
 services:
-  instance:
+  postgres:
     image: postgres:12-alpine
     environment:
       POSTGRES_PASSWORD: confinment
@@ -34,9 +34,9 @@ services:
       - run:/var/run/postgresql
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance:instance-${TEMBOARD_REGISTER_PORT}.fqdn
+      - postgres:postgres-${TEMBOARD_REGISTER_PORT}.dev
     environment:
-      TEMBOARD_HOSTNAME: instance-${TEMBOARD_REGISTER_PORT}.fqdn
+      TEMBOARD_HOSTNAME: postgres-${TEMBOARD_REGISTER_PORT}.dev
       TEMBOARD_KEY: key_for_agent0
       TEMBOARD_UI_URL: https://172.17.0.1:8888
       TEMBOARD_REGISTER_HOST: 172.17.0.1
