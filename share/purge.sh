@@ -21,6 +21,7 @@ rm -rvf \
 	"${ETCDIR:?}/$instance_path/" \
 	"${LOGDIR:?}/$instance_path.log" \
 	"${VARDIR:?}/$instance_path/" \
+	"/etc/systemd/system/temboard-agent@${instance_path}.service.d" \
 ;
 
 echo "temBoard agent ${instance_name} stopped and cleaned." >&2
