@@ -66,6 +66,25 @@ If you want to trash development env, use `docker-compose down -v` and restart
 from `make devenv`.
 
 
+## Monitoring another version of PostgreSQL
+
+You can change the version of the monitored PostgreSQL instance by overriding
+docker image in `docker-compose.override.yml`.
+
+``` yml
+# file docker-compose.override.yml
+version: "2.4"
+
+services:
+  postgres:
+    image: postgres:9.5-alpine
+```
+
+Now apply changes with `make devenv`. Docker-compose will recreate `postgres`
+and `agent` containers, thus you need to install and start the agent as
+documented above.
+
+
 ## CSS
 
 temBoard UI mainly relies on `Bootstrap`. The CSS files are compiled with
