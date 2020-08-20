@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime
 
 try:
@@ -101,6 +102,26 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         logger.info("client: %s request: %s"
                     % (self.address_string(), format % args))
+
+    def handle_one_request(self, *a, **kw):
+        self.start_time = time.time()
+        return BaseHTTPRequestHandler.handle_one_request(self, *a, **kw)
+
+    def request_time(self):
+        return 1000. * (time.time() - self.start_time)
+
+    def log_request(self, code='-', size='-'):
+        """Log an accepted request.
+
+        This is called by send_response().
+
+        """
+        if hasattr(code, 'value'):
+            code = code.value
+        self.log_message(
+            '"%s" %s %s %.2fms',
+            self.requestline, str(code), str(size), self.request_time(),
+        )
 
     def response(self):
         """
