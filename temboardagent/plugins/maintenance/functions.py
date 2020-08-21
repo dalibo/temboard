@@ -161,7 +161,7 @@ FROM (
       ) AS rows_data_stats
   ) AS rows_hdr_pdg_stats
 ) AS relation_stats
-ORDER BY nspname, tblname, idxname;
+ORDER BY nspname, tblname, idxname
 """  # noqa
 
 
