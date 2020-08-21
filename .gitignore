@@ -9,6 +9,7 @@ build/
 dist/
 site/
 docker-compose.override.yml
+docker-agent-bash_history
 temboard*.pid
 temboard-func.log
 node_modules
