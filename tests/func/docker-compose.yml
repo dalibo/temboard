@@ -7,7 +7,7 @@ services:
     - ../../:/workspace
     environment:
       - CI
-      - TBD_PGVERSION=${TBD_PGVERSION-12}
+      - TBD_PGVERSION=${TBD_PGVERSION-13}
       - TBD_INSTALL_RPM
       - PYTEST_ARGS
     working_dir: /workspace/tests/func

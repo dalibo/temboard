@@ -21,7 +21,7 @@ There are 3 environment variables that can be used to change the global behaviou
 
 To run the whole test suite:
 ``` console
-TBD_PGBIN="/path/to/pg/9.6/bin" TBD_WORKPATH="/tmp" pytest -v tests/func/test_*.py
+$ sudo -u postgres TBD_PGBIN="/usr/pgsql-13/bin" TBD_WORKPATH="/tmp" pytest -v tests/func/test_*.py
 ```
 
 ## Run the tests using docker
