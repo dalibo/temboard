@@ -6,7 +6,7 @@ volumes:
 
 services:
   repository:
-    image: postgres:12-alpine
+    image: postgres:13-alpine
     ports:
       - 5432:5432
     environment:
@@ -14,7 +14,7 @@ services:
       POSTGRES_PASSWORD: temboard
 
   postgres:
-    image: postgres:12-alpine
+    image: postgres:13-alpine
     ports:
       - 5433:5432
     environment:

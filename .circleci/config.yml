@@ -120,7 +120,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["12", "11", "10", "9.6", "9.5"]
+        enum: ["13", "12", "11", "10", "9.6", "9.5"]
     docker:
     - image: dalibo/temboard-agent-sdk:<< parameters.dist >>
       environment:
