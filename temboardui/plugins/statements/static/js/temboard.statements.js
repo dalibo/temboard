@@ -5,6 +5,9 @@ $(function() {
   var refreshTimeoutId;
   var refreshInterval = 60 * 1000;
 
+  var dataRequest;
+  var chartRequest;
+
   var v = new Vue({
     el: '#app',
     router: new VueRouter(),
@@ -18,7 +21,10 @@ $(function() {
       sortBy: 'total_time',
       filter: '',
       from: null,
-      to: null
+      to: null,
+      totalRows: 1,
+      currentPage: 1,
+      perPage: 20
     },
     computed: {
       fields: getFields,
@@ -29,7 +35,8 @@ $(function() {
     methods: {
       fetchData: fetchData,
       onPickerUpdate: onPickerUpdate,
-      highlight: highlight
+      highlight: highlight,
+      onFiltered: onFiltered
     },
     watch: {
       fromTo: function() {
@@ -63,7 +70,8 @@ $(function() {
     var endDate = dateMath.parse(this.to, true);
 
     this.isLoading = true;
-    $.get(
+    dataRequest && dataRequest.abort();
+    dataRequest = $.get(
       apiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
@@ -74,6 +82,7 @@ $(function() {
         this.isLoading = false;
         this.datname = data.datname;
         this.statements = data.data;
+        this.totalRows = this.statements.length;
 
         this.metas = data.metas;
 
@@ -85,7 +94,8 @@ $(function() {
       }.bind(this)
     );
 
-    $.get(
+    chartRequest && chartRequest.abort();
+    chartRequest = $.get(
       chartApiUrl + (this.dbid ? '/' + this.dbid : ''),
       {
         start: timestampToIsoDate(startDate),
@@ -197,6 +207,11 @@ $(function() {
   function onPickerUpdate(from, to) {
     this.from = from;
     this.to = to;
+  }
+
+  function onFiltered(filteredItems) {
+    this.totalRows = filteredItems.length;
+    this.currentPage = 1;
   }
 
   function timestampToIsoDate(epochMs) {
