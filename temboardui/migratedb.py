@@ -9,7 +9,7 @@ import alembic.command
 import alembic.config
 import sqlalchemy.exc
 
-from .__main__ import VersionAction
+from .__main__ import VersionAction, map_pgvars
 from .model import build_alembic_config, check_schema
 from .toolkit import validators as v
 from .toolkit.app import (
@@ -108,28 +108,6 @@ def list_options_specs():
     yield OptionSpec(s, 'user', default='temboard')
     yield OptionSpec(s, 'password', default='temboard')
     yield OptionSpec(s, 'dbname', default='temboard')
-
-
-def map_pgvars(environ):
-    pgvar_map = dict(
-        PGHOST='TEMBOARD_REPOSITORY_HOST',
-        PGPORT='TEMBOARD_REPOSITORY_PORT',
-        PGUSER='TEMBOARD_REPOSITORY_USER',
-        PGPASSWORD='TEMBOARD_REPOSITORY_PASSWORD',
-        PGDATABASE='TEMBOARD_REPOSITORY_DBNAME',
-    )
-    mapped = environ.copy()
-    for pgvar, tbvar in pgvar_map.items():
-        if tbvar in environ:
-            continue
-
-        try:
-            mapped[tbvar] = environ[pgvar]
-            logger.debug("Read %s from environ.", pgvar)
-        except KeyError:
-            pass
-
-    return mapped
 
 
 main = MigrateDBApplication(specs=list_options_specs(), with_plugins=None)
