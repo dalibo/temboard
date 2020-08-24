@@ -65,6 +65,12 @@ setup_pq() {
 	if ! $sudo psql -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
+
+	# Bridge PG* vars for temboard-migratedb
+	export TEMBOARD_REPOSITORY_HOST="$PGHOST"
+	export TEMBOARD_REPOSITORY_PORT="$PGPORT"
+	export TEMBOARD_REPOSITORY_USER="$PGUSER"
+	export TEMBOARD_REPOSITORY_PASSWORD="${PGPASSWORD-}"
 }
 
 
