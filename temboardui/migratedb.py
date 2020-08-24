@@ -9,7 +9,7 @@ import alembic.command
 import alembic.config
 import sqlalchemy.exc
 
-from .__main__ import VersionAction
+from .__main__ import VersionAction, map_pgvars
 from .model import build_alembic_config, check_schema
 from .toolkit import validators as v
 from .toolkit.app import (
@@ -41,6 +41,7 @@ class MigrateDBApplication(BaseApplication):
         )
         define_arguments(parser)
         args = parser.parse_args(argv)
+        environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
         versions = inspect_versions()
