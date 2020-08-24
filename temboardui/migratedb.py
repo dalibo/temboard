@@ -41,6 +41,7 @@ class MigrateDBApplication(BaseApplication):
         )
         define_arguments(parser)
         args = parser.parse_args(argv)
+        environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
         versions = inspect_versions()
@@ -107,6 +108,28 @@ def list_options_specs():
     yield OptionSpec(s, 'user', default='temboard')
     yield OptionSpec(s, 'password', default='temboard')
     yield OptionSpec(s, 'dbname', default='temboard')
+
+
+def map_pgvars(environ):
+    pgvar_map = dict(
+        PGHOST='TEMBOARD_REPOSITORY_HOST',
+        PGPORT='TEMBOARD_REPOSITORY_PORT',
+        PGUSER='TEMBOARD_REPOSITORY_USER',
+        PGPASSWORD='TEMBOARD_REPOSITORY_PASSWORD',
+        PGDATABASE='TEMBOARD_REPOSITORY_DBNAME',
+    )
+    mapped = environ.copy()
+    for pgvar, tbvar in pgvar_map.items():
+        if tbvar in environ:
+            continue
+
+        try:
+            mapped[tbvar] = environ[pgvar]
+            logger.debug("Read %s from environ.", pgvar)
+        except KeyError:
+            pass
+
+    return mapped
 
 
 main = MigrateDBApplication(specs=list_options_specs(), with_plugins=None)
