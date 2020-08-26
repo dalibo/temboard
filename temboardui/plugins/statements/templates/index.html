@@ -6,7 +6,7 @@
 
 <div id="app">
   <div class="row mb-1">
-    <div class="col d-flex" v-cloak>
+    <div class="col-12 d-flex justify-content-between" v-cloak>
       <nav aria-label="breadcrumb" class="d-inline-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
@@ -21,7 +21,7 @@
           </li>
         </ol>
       </nav>
-      <daterangepicker class="ml-auto" :from="from" :to="to" v-on:update="onPickerUpdate"></daterangepicker>
+      <daterangepicker :from.sync="from" :to.sync="to" ref="daterangepicker"></daterangepicker>
     </div>
   </div>
   <div class="row mb-1">
