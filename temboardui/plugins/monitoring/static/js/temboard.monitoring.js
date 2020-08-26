@@ -1,4 +1,4 @@
-/* global apiUrl, dateMath, moment, Vue, VueRouter, Dygraph */
+/* global apiUrl, moment, Vue, VueRouter, Dygraph */
 $(function() {
   var colors = {
     blue: "#5DA5DA",
@@ -9,9 +9,6 @@ $(function() {
     light_gray: "#AAAAAA",
     orange: "#FAA43A"
   };
-
-  var refreshTimeoutId;
-  var refreshInterval = 60 * 1000;
 
   var metrics = {
     "Loadavg": {
@@ -298,8 +295,6 @@ $(function() {
       graphs: [],
       from: null,
       to: null,
-      fromDate: null,
-      toDate: null,
       metrics: metrics,
       themes: [{
         title: 'Performance',
@@ -318,8 +313,7 @@ $(function() {
       selectAll: selectAll,
       unselectAll: unselectAll,
       removeGraph: removeGraph,
-      loadGraphs: loadGraphs,
-      onPickerUpdate: onPickerUpdate
+      loadGraphs: loadGraphs
     },
     computed: {
       fromTo: function() {
@@ -335,42 +329,13 @@ $(function() {
           })});
         }
       },
-      fromTo: function() {
-        if (this.$route.query.start !== v.from || this.$route.query.end !== v.to) {
-          this.$router.push({ query: _.assign({}, this.$route.query, {
-            start: '' + v.from,
-            end: '' + v.to
-          })});
-        }
-      },
       $route: function(to, from) {
-        if (to.query.graphs) {
+        if (to.query.graphs !== from.query.graphs) {
           loadGraphs.call(this, JSON.parse(to.query.graphs));
         }
-        if (to.query.start) {
-          this.from = convertDate(to.query.start);
-        }
-        if (to.query.end) {
-          this.to = convertDate(to.query.end);
-        }
-        refreshDates();
       }
     }
   });
-
-  function convertDate(date) {
-    return dateMath.parse(date).isValid() ? date : moment(parseInt(date, 10))
-  }
-
-  /**
-   * Parse location to get start and end date
-   * If dates are not provided, falls back to the date range corresponding to
-   * the last 24 hours.
-   */
-  var start = v.$route.query.start || 'now-24h';
-  var end = v.$route.query.end || 'now';
-  start = convertDate(start);
-  end = convertDate(end);
 
   var graphs = v.$route.query.graphs;
   graphs = graphs ? JSON.parse(graphs) : (JSON.parse(localStorage.getItem('graphs')) || v.themes[0].graphs);
@@ -379,8 +344,8 @@ $(function() {
   function createOrUpdateChart(create) {
     var id = this.graph.id;
 
-    var startDate = dateMath.parse(v.fromDate);
-    var endDate = dateMath.parse(v.toDate, true);
+    var startDate = this.from;
+    var endDate = this.to;
 
     var defaultOptions = {
       axisLabelFontSize: 10,
@@ -515,27 +480,6 @@ $(function() {
   }
 
   function onChartZoom(min, max) {
-    v.from = moment(min);
-    v.to = moment(max);
-    refreshDates();
+    v.$refs.daterangepicker.setFromTo(moment(min), moment(max));
   }
-
-  function onPickerUpdate(from, to) {
-    this.from = from;
-    this.to = to;
-    refreshDates();
-  }
-
-  function refreshDates() {
-    v.fromDate = dateMath.parse(v.from);
-    v.toDate = dateMath.parse(v.to, true);
-    window.clearTimeout(refreshTimeoutId);
-    if (v.from.toString().indexOf('now') != -1 ||
-        v.to.toString().indexOf('now') != -1) {
-      refreshTimeoutId = window.setTimeout(refreshDates, refreshInterval);
-    }
-  }
-  v.from = start;
-  v.to = end;
-  refreshDates();
 });

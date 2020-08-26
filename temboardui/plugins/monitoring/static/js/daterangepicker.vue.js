@@ -3,7 +3,6 @@
 (function() {
   var html = `
     <div v-cloak>
-      <span class="text-muted small" v-if="autoRefresh">auto refresh</span>
       <button class="btn btn-secondary" v-on:click="showHidePicker()">
         <i class="fa fa-clock-o"></i>
         <span v-cloak>{{ rangeString() }}</span>
@@ -56,10 +55,26 @@
           </div>
         </div>
       </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" v-on:click="refresh()" :disabled="!isRefreshable">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" :disabled="!isRefreshable">
+          <span class="text-warning" v-if="isRefreshable">
+            {{ intervals[refreshInterval] }}
+          </span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+          <a class="dropdown-item" href v-on:click.prevent="refreshInterval = null">Off</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href v-on:click.prevent="refreshInterval = key" v-for="interval, key in intervals">{{ interval }}</a>
+        </div>
+      </div>
     </div>`;
 
   var fromPicker;
   var toPicker;
+  var refreshTimeoutId;
 
   Vue.component('daterangepicker', {
     props: ['from', 'to'],
@@ -67,53 +82,97 @@
       return {
         ranges: rangeUtils.getRelativeTimesList(),
         rangeString: function() {
-          if (!this.from || !this.to) {
+          if (!this.editRawFrom || !this.editRawTo) {
             return;
           }
-          return rangeUtils.describeTimeRange({from: this.from, to: this.to});
+          return rangeUtils.describeTimeRange({from: this.editRawFrom, to: this.editRawTo});
         },
         editRawFrom: null,
         editRawTo: null,
+        refreshInterval: null,
+        intervals: {
+          '60': '1m',
+          '300': '5m',
+          '900': '15m'
+        },
         isPickerOpen: false
       };
-    },
-    computed: {
-      autoRefresh: function() {
-        if (!this.from || !this.to) {
-          return;
-        }
-        return this.from.toString().indexOf('now') != -1 ||
-          this.to.toString().indexOf('now') != -1;
-      }
     },
     methods: {
       loadRangeShortcut: loadRangeShortcut,
       describeTimeRange: rangeUtils.describeTimeRange,
       showHidePicker: showHidePicker,
-      pickerApply: pickerApply
+      pickerApply: pickerApply,
+      setFromTo: setFromTo,
+      notify: notify,
+      refresh: refresh
     },
-    mounted: synchronizePickers,
-    template: html
+    computed: {
+      rawFromTo: function() {
+        return this.editRawFrom, this.editRawTo, new Date();
+      },
+      isRefreshable: function() {
+        return this.editRawFrom && this.editRawFrom.toString().indexOf('now') != -1 ||
+          this.editRawTo && this.editRawTo.toString().indexOf('now') != -1;
+      }
+    },
+    mounted: onMounted,
+    template: html,
+    watch: {
+      rawFromTo: function() {
+        if (this.$route.query.start !== this.editRawFrom || this.$route.query.end !== this.editRawTo) {
+          this.$router.push({ query: _.assign({}, this.$route.query, {
+            start: '' + this.editRawFrom,
+            end: '' + this.editRawTo
+          })});
+        }
+      },
+      refreshInterval: refresh,
+      $route: function(to, from) {
+        if (to.query.start) {
+          this.editRawFrom = convertDate(to.query.start);
+        }
+        if (to.query.end) {
+          this.editRawTo = convertDate(to.query.end);
+        }
+        this.refresh();
+      }
+    }
   });
+
+  function onMounted() {
+    /**
+     * Parse location to get start and end date
+     * If dates are not provided, falls back to the date range corresponding to
+     * the last 24 hours.
+     */
+    var start = this.$route.query.start || this.from || 'now-24h';
+    var end = this.$route.query.end || this.to || 'now';
+    this.editRawFrom = convertDate(start);
+    this.editRawTo = convertDate(end);
+    this.notify();
+
+    synchronizePickers.call(this);
+  }
+
+  function convertDate(date) {
+    return dateMath.parse(date).isValid() ? date : moment(parseInt(date, 10))
+  }
 
   function loadRangeShortcut(shortcut) {
     this.editRawFrom = shortcut.from;
     this.editRawTo = shortcut.to;
     this.isPickerOpen = false;
-    this.$emit('update', this.editRawFrom, this.editRawTo);
+    this.refresh();
   }
 
   function showHidePicker() {
-    // Make sure input values correspond to current from/to
-    // especially when not applying picked dates
-    this.editRawFrom = this.from;
-    this.editRawTo = this.to;
     this.isPickerOpen = !this.isPickerOpen;
   }
 
   function pickerApply() {
-    this.$emit('update', this.editRawFrom, this.editRawTo);
     this.isPickerOpen = false;
+    this.refresh();
   }
 
   var pickerOptions = {
@@ -153,5 +212,24 @@
 
   function onPickerApply(targetProperty, date) {
     this[targetProperty] = date;
+  }
+
+  function refresh() {
+    this.notify();
+    clearTimeout(refreshTimeoutId);
+    if (this.refreshInterval) {
+      refreshTimeoutId = window.setTimeout(this.refresh, this.refreshInterval * 1000);
+    }
+  }
+
+  function setFromTo(from, to) {
+    this.editRawFrom = from;
+    this.editRawTo = to;
+    this.refresh();
+  }
+
+  function notify() {
+    this.$emit('update:from', dateMath.parse(this.editRawFrom));
+    this.$emit('update:to', dateMath.parse(this.editRawTo));
   }
 })();

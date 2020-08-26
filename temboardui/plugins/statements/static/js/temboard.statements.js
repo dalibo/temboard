@@ -2,9 +2,6 @@
 $(function() {
   "use strict";
 
-  var refreshTimeoutId;
-  var refreshInterval = 60 * 1000;
-
   var dataRequest;
   var chartRequest;
 
@@ -39,18 +36,11 @@ $(function() {
     },
     methods: {
       fetchData: fetchData,
-      onPickerUpdate: onPickerUpdate,
       highlight: highlight,
       onFiltered: onFiltered
     },
     watch: {
-      fromTo: function() {
-        this.$router.replace({ query: _.assign({}, this.$route.query, {
-          start: '' + v.from,
-          end: '' + v.to
-        })});
-        this.fetchData();
-      },
+      fromTo: fetchData,
       dbid: function() {
         var newQueryParams = _.assign({}, this.$route.query);
         if (!this.dbid) {
@@ -76,15 +66,10 @@ $(function() {
     }
   });
 
-  var start = v.$route.query.start || 'now-24h';
-  var end = v.$route.query.end || 'now';
-  v.from = start;
-  v.to = end;
-
   function fetchData() {
     this.statements = [];
-    var startDate = dateMath.parse(this.from);
-    var endDate = dateMath.parse(this.to, true);
+    var startDate = this.from;
+    var endDate = this.to;
 
     var url = this.dbid ? '/' + this.dbid : '';
     url += this.queryid ? '/' + this.queryid : '';
@@ -110,12 +95,6 @@ $(function() {
         this.totalRows = this.statements.length;
 
         this.metas = data.metas;
-
-        window.clearTimeout(refreshTimeoutId);
-        if (this.from.toString().indexOf('now') != -1 ||
-            this.to.toString().indexOf('now') != -1) {
-          refreshTimeoutId = window.setTimeout(fetchData.bind(this), refreshInterval);
-        }
       }.bind(this)
     );
 
@@ -229,11 +208,6 @@ $(function() {
     return hljs.highlight('sql', src).value;
   }
 
-  function onPickerUpdate(from, to) {
-    this.from = from;
-    this.to = to;
-  }
-
   function onFiltered(filteredItems) {
     this.totalRows = filteredItems.length;
     this.currentPage = 1;
@@ -245,8 +219,8 @@ $(function() {
   }
 
   function createOrUpdateCharts(data) {
-    var startDate = dateMath.parse(v.from);
-    var endDate = dateMath.parse(v.to, true);
+    var startDate = v.from;
+    var endDate = v.to;
     var defaultOptions = {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
@@ -360,22 +334,9 @@ $(function() {
   }
 
   function onChartZoom(min, max) {
-    v.from = moment(min);
-    v.to = moment(max);
+    v.$refs.daterangepicker.setFromTo(moment(min), moment(max));
   }
 
-  /**
-   * Parse location to get start and end date
-   * If dates are not provided, falls back to the date range corresponding to
-   * the last 24 hours.
-   */
-  var start = v.$route.query.start || 'now-24h';
-  var end = v.$route.query.end || 'now';
-  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
-  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
-
-  v.from = start;
-  v.to = end;
   v.dbid = v.$route.query.dbid;
   v.queryid = v.$route.query.queryid;
   v.userid = v.$route.query.userid;
