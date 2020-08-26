@@ -116,6 +116,28 @@ def finalize_tornado_app(app, config, plugins):
     app.add_rules(handlers)
 
 
+def map_pgvars(environ):
+    pgvar_map = dict(
+        PGHOST='TEMBOARD_REPOSITORY_HOST',
+        PGPORT='TEMBOARD_REPOSITORY_PORT',
+        PGUSER='TEMBOARD_REPOSITORY_USER',
+        PGPASSWORD='TEMBOARD_REPOSITORY_PASSWORD',
+        PGDATABASE='TEMBOARD_REPOSITORY_DBNAME',
+    )
+    mapped = environ.copy()
+    for pgvar, tbvar in pgvar_map.items():
+        if tbvar in environ:
+            continue
+
+        try:
+            mapped[tbvar] = environ[pgvar]
+            logger.debug("Read %s from environ.", pgvar)
+        except KeyError:
+            pass
+
+    return mapped
+
+
 class SchedulerService(taskmanager.SchedulerService):
     def apply_config(self):
         super(SchedulerService, self).apply_config()
@@ -313,6 +335,7 @@ class TemboardApplication(BaseApplication):
         )
         define_arguments(parser)
         args = parser.parse_args(argv)
+        environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
         setproctitle = ProcTitleManager(prefix='temboard: ')
