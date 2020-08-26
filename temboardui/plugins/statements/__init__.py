@@ -646,7 +646,9 @@ def add_statement(session, instance, data):
                     statement['queryid'],
                     statement['query'],
                     statement['calls'],
-                    statement['total_time'],
+                    statement['total_exec_time']
+                    if 'total_exec_time' in statement
+                    else statement['total_time'],
                     statement['rows'],
                     statement['shared_blks_hit'],
                     statement['shared_blks_read'],
