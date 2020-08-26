@@ -10,14 +10,21 @@
       <nav aria-label="breadcrumb" class="d-inline-block">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href v-on:click.prevent="dbid = null" v-if="dbid">
+            <a href v-on:click.prevent="dbid = null; queryid = null; userid = null;" v-if="dbid">
               All Databases
             </a>
             <span v-else>All Databases</span>
           </li>
           <li class="breadcrumb-item" v-if="dbid">
             <em class="text-muted small">Database:</em>
-            <strong>{{! datname }}</strong>
+            <a href v-on:click.prevent="queryid = null; userid = null;" v-if="queryid && userid">
+              {{! datname }}
+            </a>
+            <strong v-else>{{! datname }}</strong>
+          </li>
+          <li class="breadcrumb-item" v-if="queryid && userid">
+            <em class="text-muted small">Query:</em>
+            <strong>{{! queryid }}</strong>
           </li>
         </ol>
       </nav>
@@ -109,7 +116,7 @@
       </b-tr>
     </template>
     <template v-slot:cell(query)="row">
-      <pre class="sql hljs" v-html="highlight(row.value)" @click="row.toggleDetails"></pre>
+      <pre class="sql hljs" v-html="highlight(row.value)" v-on:click.prevent="queryid=row.item.queryid; userid=row.item.userid"></pre>
     </template>
     <template v-slot:cell(datname)="row">
       <a href v-on:click.prevent="dbid=row.item.dbid">
@@ -123,7 +130,6 @@
             <pre class="sql hljs" v-html="highlight(row.item.query)"></pre>
           </b-col>
         </b-row>
-        <b-button size="sm" @click="row.toggleDetails">Hide Details</b-button>
       </b-card>
     </template>
     <template v-slot:cell()="data">
@@ -138,7 +144,7 @@
       </div>
     </template>
   </b-table>
-  <div class="row">
+  <div class="row" v-if="!queryid && !userid">
     <div class="col-6">
       <b-pagination
         v-model="currentPage"
