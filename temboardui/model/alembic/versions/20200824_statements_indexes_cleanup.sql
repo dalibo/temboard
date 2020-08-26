@@ -1,0 +1,18 @@
+SET search_path = 'statements';
+
+DROP INDEX IF EXISTS statements_history_agent_address_agent_port_dbid_coalesce_r_idx;
+DROP INDEX IF EXISTS statements_history_agent_address_agent_port_queryid_coalesc_idx;
+DROP INDEX IF EXISTS statements_history_current_agent_address_agent_port_dbid_us_idx;
+ALTER TABLE statements_history_current
+DROP CONSTRAINT IF EXISTS statements_history_current_agent_address_agent_port_queryid_key;
+DROP INDEX IF EXISTS statements_history_current_db_agent_address_agent_port_dbid_idx;
+DROP INDEX IF EXISTS statements_history_current_db_agent_address_agent_port_idx;
+ALTER TABLE statements_history_current_db
+DROP CONSTRAINT IF EXISTS statements_history_current_db_agent_address_agent_port_dbid_key;
+DROP INDEX IF EXISTS statements_history_db_agent_address_agent_port_dbid_coalesc_idx;
+DROP INDEX IF EXISTS statements_history_current_db_tstzrange_idx;
+DROP INDEX IF EXISTS statements_history_current_tstzrange_idx;
+
+CREATE INDEX ON statements_history_current (agent_address, agent_port, dbid);
+CREATE INDEX ON statements_history (agent_address, agent_port, dbid);
+CREATE INDEX ON statements_history USING GIST (coalesce_range);
