@@ -15,29 +15,7 @@ query = """\
 SELECT
   rolname,
   datname,
-  pgss.userid,
-  pgss.dbid,
-  pgss.queryid,
-  pgss.query,
-  pgss.calls,
-  pgss.total_time,
-  pgss.min_time,
-  pgss.max_time,
-  pgss.mean_time,
-  pgss.stddev_time,
-  pgss.rows,
-  pgss.shared_blks_hit,
-  pgss.shared_blks_read,
-  pgss.shared_blks_dirtied,
-  pgss.shared_blks_written,
-  pgss.local_blks_hit,
-  pgss.local_blks_read,
-  pgss.local_blks_dirtied,
-  pgss.local_blks_written,
-  pgss.temp_blks_read,
-  pgss.temp_blks_written,
-  pgss.blk_read_time,
-  pgss.blk_write_time
+  pgss.*
 FROM pg_stat_statements pgss
 JOIN pg_authid ON pgss.userid = pg_authid.oid
 JOIN pg_database ON pgss.dbid = pg_database.oid
