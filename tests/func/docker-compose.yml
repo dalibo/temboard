@@ -10,5 +10,5 @@ services:
       - TBD_PGVERSION=${TBD_PGVERSION-13}
       - TBD_INSTALL_RPM
       - PYTEST_ARGS
-    working_dir: /workspace/tests/func
+    working_dir: /workspace
     command: /workspace/tests/func/run_tests_docker.sh
