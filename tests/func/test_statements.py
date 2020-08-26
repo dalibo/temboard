@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import json
 from urllib2 import HTTPError
+import re
 import time
 
 import pytest
@@ -78,8 +79,10 @@ def test_statements(xsession, extension_enabled):
     with conn() as cnx:
         cnx.execute("SELECT version()")
         row, = cnx.get_rows()
+        m = re.match(r"PostgreSQL (\d+\.?\d*)", row["version"])
+        assert m
         pg_version = tuple(
-            int(x) for x in row["version"].split(" ", 2)[1].split(".")
+            int(x) for x in m.group(1).split(".")
         )
 
     def get_statements():
