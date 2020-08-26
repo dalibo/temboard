@@ -5,6 +5,7 @@
 ### Added
 
 - Statements plugin by [@pgiraud] and [@dlax]
+- Load `PG*` vars, by [@bersace].
 
 ### Changed
 
