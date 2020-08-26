@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- create_repository.sh accepts PGHOST, PGPORT and PGUSER vars, by [@bersace].
+
+
 ## [6.2] - 2020-08-07
 
 
