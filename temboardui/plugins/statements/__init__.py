@@ -145,7 +145,7 @@ WITH first_occurence AS (
     distinct on (queryid) queryid,
     ts,
     calls,
-    total_time,
+    total_exec_time,
     shared_blks_read,
     shared_blks_hit,
     shared_blks_dirtied,
@@ -233,7 +233,7 @@ last_occurence AS (
     distinct on (queryid) queryid,
     ts,
     calls,
-    total_time,
+    total_exec_time,
     shared_blks_read,
     shared_blks_hit,
     shared_blks_dirtied,
@@ -319,8 +319,9 @@ SELECT
   query,
   rolname,
   (lo.calls - fo.calls) AS calls,
-  (lo.total_time - fo.total_time) AS total_time,
-  (lo.total_time - fo.total_time) / (lo.calls - fo.calls) AS mean_time,
+  (lo.total_exec_time - fo.total_exec_time) AS total_exec_time,
+  (lo.total_exec_time - fo.total_exec_time) /
+    (lo.calls - fo.calls) AS mean_time,
   (
     lo.shared_blks_read - fo.shared_blks_read
   ) AS shared_blks_read,
@@ -404,8 +405,8 @@ def json_data_database(request, dbid):
 def get_diffs_forstatdata():
     return [
         diff("calls"),
-        diff("total_time").label("total_time"),
-        (diff("total_time") / diff("calls")).label("mean_time"),
+        diff("total_exec_time").label("total_exec_time"),
+        (diff("total_exec_time") / diff("calls")).label("mean_time"),
         diff("shared_blks_read"),
         diff("shared_blks_hit"),
         diff("shared_blks_dirtied"),
@@ -433,7 +434,7 @@ BASE_QUERY_STATDATA_SAMPLE_INSTANCE = text("""
           SELECT
             ts,
             sum(calls) AS calls,
-            sum(total_time) AS total_time,
+            sum(total_exec_time) AS total_exec_time,
             sum(rows) AS rows,
             sum(shared_blks_hit) AS shared_blks_hit,
             sum(shared_blks_read) AS shared_blks_read,
@@ -531,7 +532,7 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
         ts,
         biggest("ts", '0 s', "mesure_interval"),
         biggestsum("calls"),
-        biggestsum("total_time", label="runtime"),
+        biggestsum("total_exec_time", label="runtime"),
         biggestsum("rows"),
         biggestsum("shared_blks_read"),
         biggestsum("shared_blks_hit"),
@@ -631,7 +632,7 @@ def add_statement(session, instance, data):
             query = """
                 INSERT INTO statements_src_tmp
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cur.execute(
                 query,
@@ -646,7 +647,9 @@ def add_statement(session, instance, data):
                     statement['queryid'],
                     statement['query'],
                     statement['calls'],
-                    statement['total_time'],
+                    statement['total_exec_time']
+                    if 'total_exec_time' in statement
+                    else statement['total_time'],
                     statement['rows'],
                     statement['shared_blks_hit'],
                     statement['shared_blks_read'],
@@ -659,7 +662,19 @@ def add_statement(session, instance, data):
                     statement['temp_blks_read'],
                     statement['temp_blks_written'],
                     statement['blk_read_time'],
-                    statement['blk_write_time']
+                    statement['blk_write_time'],
+                    statement['total_plan_time']
+                    if 'total_plan_time' in statement
+                    else None,
+                    statement['wal_records']
+                    if 'wal_records' in statement
+                    else None,
+                    statement['wal_fpi']
+                    if 'wal_fpi' in statement
+                    else None,
+                    statement['wal_bytes']
+                    if 'wal_bytes' in statement
+                    else None,
                 )
             )
         query = """SELECT process_statements(%s, %s)"""
