@@ -15,13 +15,13 @@ Those tests are intented to be run in CircleCI.
 ## Run the tests
 
 There are 3 environment variables that can be used to change the global behaviour (default values are set into `test/configtest.py`):
-  * `TBD_PGBIN`: PostgreSQL binaries path
+  * `TBD_PGVERSION`: Major PostgreSQL version
   * `TBD_PGPORT`: PostgreSQL TCP listen port
   * `TBD_WORKPATH`: Work path where temp data are stored
 
 To run the whole test suite:
 ``` console
-$ sudo -u postgres TBD_PGBIN="/usr/pgsql-13/bin" TBD_WORKPATH="/tmp" pytest -v tests/func/test_*.py
+$ tests/func/run_tests_docker.sh  # --pdb -x pytest args
 ```
 
 ## Run the tests using docker
