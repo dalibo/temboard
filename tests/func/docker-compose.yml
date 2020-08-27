@@ -2,7 +2,7 @@ version: "3"
 
 services:
   repository:
-    image: postgres:10-alpine
+    image: postgres:13-alpine
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: &PGPASSWORD confidentiel
@@ -11,7 +11,7 @@ services:
     image: selenium/standalone-firefox
 
   ui:
-    image: dalibo/temboard-agent-sdk:${TAG-buster}
+    image: dalibo/labs-sdk:${TAG-buster}
     environment:
       HISTFILE: /workspace/tests/func/.docker-cache/bash_history
       PGHOST: repository

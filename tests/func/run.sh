@@ -64,7 +64,7 @@ install_ui_py() {
 	mkdir -p /etc/temboard/temboard.conf.d
 	cat >> /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
 	[temboard]
-	plugins = ["dashboard", "pgconf", "activity", "monitoring", "maintenance", "extsample"]
+	plugins = ["dashboard", "pgconf", "activity", "monitoring", "maintenance", "extsample", "statements"]
 
 	[sample]
 	option = configured
