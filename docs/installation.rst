@@ -162,8 +162,7 @@ script, installed in ``/usr/share/temboard-agent``.
 
 You must run this script as root, with ``PG*`` env vars set to connect to the
 Postgres cluster you want to manage. By default, the script uses ``postgres``
-UNIX user to connect to Postgres cluster. The script receives the temBoard UI URL
-as single required argument.
+UNIX user to connect to Postgres cluster.
 
 .. note::
 
@@ -174,7 +173,7 @@ as single required argument.
 
 .. code-block:: console
 
-   # /usr/share/temboard-agent/auto_configure.sh https://temboard-ui.lan:8888
+   # /usr/share/temboard-agent/auto_configure.sh
 
 The script shows you some important information for the next steps:
 

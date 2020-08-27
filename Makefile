@@ -21,9 +21,6 @@ upload:
 	python setup.py sdist bdist_wheel --universal
 	twine upload dist/temboard-agent-$(VERSION).tar.gz $$(ls dist/temboard_agent-$(VERSION)-*.whl)
 
-shell:
-	docker-compose exec agent bash
-
 renew_sslca:
 	openssl req -batch -x509 -new -nodes -key share/temboard-agent_CHANGEME.key -sha256 -days 1095 -out share/temboard-agent_ca_certs_CHANGEME.pem
 
