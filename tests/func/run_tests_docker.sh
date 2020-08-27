@@ -43,6 +43,8 @@ else
     fi
 fi
 
+pip2 install pytest
+
 export TBD_PGBIN=$(readlink -e /usr/pgsql-${TBD_PGVERSION}/bin /usr/lib/postgresql/${TBD_PGVERSION}/bin)
 
 # Remove any .pyc file to avoid errors with pytest and cache

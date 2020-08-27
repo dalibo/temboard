@@ -2,13 +2,14 @@ version: '3'
 
 services:
   test:
-    image: dalibo/temboard-agent-sdk:${TAG-centos7}
+    image: dalibo/labs-sdk:${TAG-centos7}
     volumes:
     - ../../:/workspace
     environment:
       - CI
-      - TBD_PGVERSION=${TBD_PGVERSION-12}
+      - TBD_PGVERSION=${TBD_PGVERSION-13}
       - TBD_INSTALL_RPM
       - PYTEST_ARGS
-    working_dir: /workspace/tests/func
+      - HISTFILE=/workspace/tests/func/docker-bash_history
+    working_dir: /workspace
     command: /workspace/tests/func/run_tests_docker.sh

@@ -29,9 +29,11 @@ workflows:
           parameters:
             pgversion: ["9.6", "12"]
     - func:
-        name: stage1-func-pg11-buster
+        name: stage1-func-pg<< matrix.pgversion >>-buster
         dist: buster
-        pgversion: "11"
+        matrix:
+          parameters:
+            pgversion: ["11", "13"]
         install_rpm: 0
         requires: ["stage0-unit-python:2.7"]
     - func:
@@ -149,7 +151,7 @@ jobs:
       pgversion:
         description: "PostgreSQL dotted major version"
         type: string
-    docker: [image: "dalibo/temboard-agent-sdk:<< parameters.dist >>"]
+    docker: [image: "dalibo/labs-sdk:<< parameters.dist >>"]
     environment:
       TBD_PGVERSION: "<< parameters.pgversion >>"
     working_directory: /workspace

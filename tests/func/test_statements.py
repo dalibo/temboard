@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import json
 from urllib2 import HTTPError
+import re
 import time
 
 import pytest
@@ -78,8 +79,10 @@ def test_statements(xsession, extension_enabled):
     with conn() as cnx:
         cnx.execute("SELECT version()")
         row, = cnx.get_rows()
+        m = re.match(r"PostgreSQL (\d+\.?\d*)", row["version"])
+        assert m
         pg_version = tuple(
-            int(x) for x in row["version"].split(" ", 2)[1].split(".")
+            int(x) for x in m.group(1).split(".")
         )
 
     def get_statements():
@@ -112,9 +115,6 @@ def test_statements(xsession, extension_enabled):
             u"local_blks_hit",
             u"local_blks_read",
             u"local_blks_written",
-            u"max_time",
-            u"mean_time",
-            u"min_time",
             u"query",
             u"queryid",
             u"rolname",
@@ -123,13 +123,39 @@ def test_statements(xsession, extension_enabled):
             u"shared_blks_hit",
             u"shared_blks_read",
             u"shared_blks_written",
-            u"stddev_time",
             u"temp_blks_read",
             u"temp_blks_written",
-            u"total_time",
             u"userid",
         ]
     )
+    if pg_version >= (13,):
+        expected_keys = expected_keys | set([
+            u'max_exec_time',
+            u'max_plan_time',
+            u'mean_exec_time',
+            u'mean_plan_time',
+            u'min_exec_time',
+            u'min_plan_time',
+            u'plans',
+            u'rolname',
+            u'rows',
+            u'stddev_exec_time',
+            u'stddev_plan_time',
+            u'total_exec_time',
+            u'total_plan_time',
+            u'wal_bytes',
+            u'wal_fpi',
+            u'wal_records',
+        ])
+    else:
+        expected_keys = expected_keys | set([
+            u"max_time",
+            u"mean_time",
+            u"min_time",
+            u"stddev_time",
+            u"total_time",
+        ])
+
     assert all(set(d) == expected_keys for d in data)
     assert "temboard" in set([d["rolname"] for d in data])
     assert "postgres" in set([d["datname"] for d in data])
