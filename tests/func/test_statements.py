@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 import json
-from urllib2 import HTTPError
 import re
 import time
 
@@ -8,12 +7,13 @@ import pytest
 
 from temboardagent.spc import connector
 
-from test.temboard import temboard_request
-from conftest import ENV
+from test.temboard import temboard_request, urllib2
 
+ENV = {}
 
 @pytest.fixture(scope="module")
-def xsession():
+def xsession(env):
+    ENV.update(env)
     conn = connector(
         host=ENV["pg"]["socket_dir"],
         port=ENV["pg"]["port"],
@@ -54,7 +54,8 @@ def conn():
 
 
 @pytest.fixture(scope="function")
-def extension_enabled():
+def extension_enabled(env):
+    ENV.update(env)
     with conn() as cnx:
         cnx.execute("CREATE EXTENSION pg_stat_statements")
     yield
@@ -70,7 +71,7 @@ def test_statements_not_enabled(xsession):
             url="https://{host}:{port}/statements".format(**ENV["agent"]),
             headers={"X-Session": xsession},
         )
-    except HTTPError as e:
+    except urllib2.HTTPError as e:
         status = e.code
     assert status == 404
 
@@ -93,7 +94,7 @@ def test_statements(xsession, extension_enabled):
                 url="https://{host}:{port}/statements".format(**ENV["agent"]),
                 headers={"X-Session": xsession},
             )
-        except HTTPError as e:
+        except urllib2.HTTPError as e:
             status = e.code
         assert status == 200
         return json.loads(res)

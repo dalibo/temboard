@@ -5,7 +5,10 @@ import sys
 
 import pytest
 
-from .test.temboard import build_env_dict, drop_env, init_env
+if True:  # hack flake8
+    sys.path.insert(0, os.path.dirname(__file__))
+
+from test.temboard import build_env_dict, drop_env, init_env
 from temboardagent.postgres import Postgres
 
 
