@@ -122,7 +122,7 @@ jobs:
         type: enum
         enum: ["13", "12", "11", "10", "9.6", "9.5"]
     docker:
-    - image: dalibo/temboard-agent-sdk:<< parameters.dist >>
+    - image: dalibo/labs-sdk:<< parameters.dist >>
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard
