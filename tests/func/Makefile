@@ -12,7 +12,3 @@ run-all:
 
 shell:
 	docker-compose exec test /bin/bash
-
-PYTEST_ARGS?=
-pytest:
-	TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vvs -p no:cacheprovider $(PYTEST_ARGS)

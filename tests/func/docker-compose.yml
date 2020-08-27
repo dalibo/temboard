@@ -7,9 +7,9 @@ services:
     - ../../:/workspace
     environment:
       - CI
+      - PYTHON
       - TBD_PGVERSION=${TBD_PGVERSION-13}
       - TBD_INSTALL_RPM
-      - PYTEST_ARGS
       - HISTFILE=/workspace/tests/func/docker-bash_history
     working_dir: /workspace
-    command: /workspace/tests/func/run_tests_docker.sh
+    entrypoint: [/usr/local/sbin/tini, /workspace/tests/func/run_tests_docker.sh, "--"]
