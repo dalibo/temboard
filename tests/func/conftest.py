@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 
+import os
 import sys
 
 import pytest
 
 from .test.temboard import build_env_dict, drop_env, init_env
 from temboardagent.postgres import Postgres
-
 
 
 ENV = {}
@@ -24,7 +24,20 @@ def env():
     try:
         yield ENV
     finally:
+        copy_file_to_stream(env['agent']['log_file'], sys.stderr)
+        copy_file_to_stream(env['pg']['log_file'], sys.stderr)
         drop_env(env)
+
+
+def copy_file_to_stream(path, stream):
+    stream.write("\n")
+    if not os.path.exists(path):
+        stream.write("%s does not exists.\n" % path)
+    else:
+        with open(path) as fo:
+            stream.write("%s:" % path)
+            for line in fo:
+                stream.write(line)
 
 
 def pgconnect(**kw):
