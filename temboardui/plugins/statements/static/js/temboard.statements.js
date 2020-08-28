@@ -17,6 +17,8 @@ $(function() {
       lastSnapshot: null,
       isLoading: true,
       dbid: null,
+      queryid: null,
+      userid: null,
       datname: null,
       sortBy: 'total_time',
       filter: '',
@@ -30,6 +32,9 @@ $(function() {
       fields: getFields,
       fromTo: function() {
         return this.from, this.to, new Date();
+      },
+      queryidUserid: function() {
+        return this.queryid, this.userid, new Date();
       }
     },
     methods: {
@@ -55,6 +60,18 @@ $(function() {
         }
         this.$router.replace({ query: newQueryParams });
         this.fetchData();
+      },
+      queryidUserid: function() {
+        var newQueryParams = _.assign({}, this.$route.query);
+        if (!this.queryid) {
+          delete newQueryParams.queryid;
+          delete newQueryParams.userid;
+        } else {
+          newQueryParams.queryid = this.queryid;
+          newQueryParams.userid = this.userid;
+        }
+        this.$router.replace({ query: newQueryParams });
+        this.fetchData();
       }
     }
   });
@@ -69,10 +86,14 @@ $(function() {
     var startDate = dateMath.parse(this.from);
     var endDate = dateMath.parse(this.to, true);
 
+    var url = this.dbid ? '/' + this.dbid : '';
+    url += this.queryid ? '/' + this.queryid : '';
+    url += this.userid ? '/' + this.userid : '';
+
     this.isLoading = true;
     dataRequest && dataRequest.abort();
     dataRequest = $.get(
-      apiUrl + (this.dbid ? '/' + this.dbid : ''),
+      apiUrl + url,
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
@@ -82,6 +103,10 @@ $(function() {
         this.isLoading = false;
         this.datname = data.datname;
         this.statements = data.data;
+        // automatically show detail if a single query is displayed
+        if (this.queryid) {
+          this.statements[0]._showDetails = true;
+        }
         this.totalRows = this.statements.length;
 
         this.metas = data.metas;
@@ -96,7 +121,7 @@ $(function() {
 
     chartRequest && chartRequest.abort();
     chartRequest = $.get(
-      chartApiUrl + (this.dbid ? '/' + this.dbid : ''),
+      chartApiUrl + url,
       {
         start: timestampToIsoDate(startDate),
         end: timestampToIsoDate(endDate),
@@ -352,4 +377,6 @@ $(function() {
   v.from = start;
   v.to = end;
   v.dbid = v.$route.query.dbid;
+  v.queryid = v.$route.query.queryid;
+  v.userid = v.$route.query.userid;
 });

@@ -107,7 +107,7 @@ BASE_QUERY_STATDATA = text("""
 
 
 @blueprint.instance_route(r'/statements/data')
-def json_data(request):
+def json_data_instance(request):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
@@ -138,7 +138,7 @@ def json_data(request):
     return jsonify(dict(data=statements, metas=metas))
 
 
-BASE_QUERY_STATDATA_DATABASE = text("""
+BASE_QUERY_STATDATA_DATABASE = """
 WITH first_occurence AS (
   -- first occurence for each statement
   SELECT
@@ -180,6 +180,7 @@ WITH first_occurence AS (
               AND agent_address = :agent_address
               AND agent_port = :agent_port
               AND dbid = :dbid
+              {queryidfilter}
             order by
               queryid,
               coalesce_range
@@ -218,6 +219,7 @@ WITH first_occurence AS (
               (:end) :: timestamptz,
               '[]'
             )
+            {queryidfilter}
           order by
             queryid,
             ts
@@ -268,6 +270,7 @@ last_occurence AS (
               AND agent_address = :agent_address
               AND agent_port = :agent_port
               AND dbid = :dbid
+              {queryidfilter}
             order by
               queryid,
               coalesce_range desc
@@ -306,6 +309,7 @@ last_occurence AS (
               (:end) :: timestamptz,
               '[]'
             )
+            {queryidfilter}
           order by
             queryid,
             ts desc
@@ -317,7 +321,9 @@ last_occurence AS (
 )
 SELECT
   query,
+  statements.queryid::text,
   rolname,
+  statements.userid::text,
   (lo.calls - fo.calls) AS calls,
   (lo.total_exec_time - fo.total_exec_time) AS total_exec_time,
   (lo.total_exec_time - fo.total_exec_time) /
@@ -366,11 +372,20 @@ FROM
   AND agent_port = :agent_port
   AND dbid = :dbid
 WHERE (lo.calls - fo.calls) > 0;
-""")
+"""
+
+
+@blueprint.instance_route(r'/statements/data/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
+def json_data_query(request, dbid, queryid, userid):
+    return json_data(request, dbid, queryid, userid)
 
 
 @blueprint.instance_route(r'/statements/data/(.*)')
 def json_data_database(request, dbid):
+    return json_data(request, dbid)
+
+
+def json_data(request, dbid, queryid=None, userid=None):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
@@ -388,16 +403,20 @@ def json_data_database(request, dbid):
              dbid=dbid)
     ).fetchone()[0]
 
-    query = BASE_QUERY_STATDATA_DATABASE
+    params = dict(agent_address=request.instance.agent_address,
+                  agent_port=request.instance.agent_port,
+                  dbid=dbid,
+                  start=start,
+                  end=end)
 
-    statements = request.db_session.execute(
-        query,
-        dict(agent_address=request.instance.agent_address,
-             agent_port=request.instance.agent_port,
-             dbid=dbid,
-             start=start,
-             end=end)) \
-        .fetchall()
+    query = BASE_QUERY_STATDATA_DATABASE
+    queryidfilter = ''
+    if queryid is not None and userid is not None:
+        queryidfilter = 'AND queryid = :queryid AND userid = :userid'
+        params.update(dict(queryid=queryid, userid=userid))
+    query = query.format(**dict(queryidfilter=queryidfilter))
+
+    statements = request.db_session.execute(query, params).fetchall()
     statements = [dict(statement) for statement in statements]
     return jsonify(dict(datname=datname, data=statements))
 
@@ -513,8 +532,49 @@ BASE_QUERY_STATDATA_SAMPLE_DATABASE = text("""
     ) by_db
 """)
 
+BASE_QUERY_STATDATA_SAMPLE_QUERY = text("""
+    (
+      SELECT *
+      FROM (
+        SELECT
+          row_number() OVER (ORDER BY ts) AS number,
+          count(*) OVER (PARTITION BY 1) AS total,
+          *
+        FROM (
+          SELECT (record).*
+          FROM (
+            SELECT psh.dbid, psh.coalesce_range, unnest(records) AS record
+            FROM statements.statements_history psh
+            WHERE coalesce_range && tstzrange(:start, :end,'[]')
+            AND dbid = :dbid
+            AND queryid = :queryid
+            AND userid = :userid
+            AND agent_address = :agent_address
+            AND agent_port = :agent_port
+          ) AS unnested
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+                <@ tstzrange(:start, :end, '[]')
 
-def getstatdata_sample(request, mode, start, end, dbid=None):
+          UNION ALL
+
+          SELECT (record).*
+          FROM statements.statements_history_current
+          WHERE tstzrange((record).ts, (record).ts, '[]')
+            <@ tstzrange(:start, :end, '[]')
+          AND dbid = :dbid
+          AND queryid = :queryid
+          AND userid = :userid
+          AND agent_address = :agent_address
+          AND agent_port = :agent_port
+        ) AS statements_history
+      ) AS sh
+      WHERE number % ( int8larger((total)/(:samples +1),1) ) = 0
+    ) by_db
+""")
+
+
+def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
+                       userid=None):
     if mode == 'instance':
         base_query = BASE_QUERY_STATDATA_SAMPLE_INSTANCE
 
@@ -522,7 +582,7 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
         base_query = BASE_QUERY_STATDATA_SAMPLE_DATABASE
 
     elif mode == "query":
-        pass
+        base_query = BASE_QUERY_STATDATA_SAMPLE_QUERY
 
     ts = column('ts')
     biggest = Biggest(ts)
@@ -586,8 +646,11 @@ def getstatdata_sample(request, mode, start, end, dbid=None):
                   start=start,
                   end=end)
 
-    if mode == 'db':
+    if mode == 'db' or mode == 'query':
         params['dbid'] = dbid
+    if mode == 'query':
+        params['queryid'] = queryid
+        params['userid'] = userid
 
     rows = request.db_session.execute(query, params).fetchall()
     return [dict(row) for row in rows]
@@ -599,6 +662,16 @@ def json_chart_data_instance(request):
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "instance", start, end)
+    return jsonify(dict(data=data))
+
+
+@blueprint.instance_route(r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
+def json_chart_data_query(request, dbid, queryid, userid):
+    host_id, instance_id = get_request_ids(request)
+    start, end = parse_start_end(request)
+
+    data = getstatdata_sample(request, "query", start, end, dbid=dbid,
+                              queryid=queryid, userid=userid)
     return jsonify(dict(data=data))
 
 
