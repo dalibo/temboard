@@ -5,6 +5,7 @@ run:
 
 run-all:
 	@# Please keep this matrix sync with .circleci/config.yml
+	TAG=buster PYTHON=python3 TBD_PGVERSION=13 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=12 $(MAKE) run
 	TAG=buster TBD_PGVERSION=11 $(MAKE) run
 	TAG=stretch TBD_PGVERSION=10 $(MAKE) run
@@ -12,7 +13,3 @@ run-all:
 
 shell:
 	docker-compose exec test /bin/bash
-
-PYTEST_ARGS?=
-pytest:
-	TBD_WORKPATH="/tmp" sudo -Eu testuser pytest -vvs -p no:cacheprovider $(PYTEST_ARGS)
