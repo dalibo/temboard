@@ -795,7 +795,9 @@ def pull_data_for_instance(app, session, instance):
         )
         add_statement(session, instance, json_decode(body))
     except Exception as e:
-        logger.error('Could not get statements data')
+        error = 'Error while fetching statements from instance: ' + \
+            json.loads(e.read())['error']
+        logger.error(error)
         logger.exception(e)
 
         # If statements data cannot be retrieved store the error in the
@@ -816,7 +818,6 @@ def pull_data_for_instance(app, session, instance):
             )
         )
 
-        error = json.loads(e.read())['error']
         query = """
             UPDATE metas
             SET error = %s
