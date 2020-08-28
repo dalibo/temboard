@@ -795,8 +795,12 @@ def pull_data_for_instance(app, session, instance):
         )
         add_statement(session, instance, json_decode(body))
     except Exception as e:
-        error = 'Error while fetching statements from instance: ' + \
-            json.loads(e.read())['error']
+        error = 'Error while fetching statements from instance: '
+        if hasattr(e, 'read'):
+            error += json.loads(e.read())['error']
+        else:
+            error += str(e)
+
         logger.error(error)
         logger.exception(e)
 
