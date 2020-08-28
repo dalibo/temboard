@@ -29,11 +29,16 @@ workflows:
           parameters:
             pgversion: ["9.6", "12"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-buster
+        name: stage1-func-pg13-py3-buster
         dist: buster
-        matrix:
-          parameters:
-            pgversion: ["11", "13"]
+        pgversion: "13"
+        install_rpm: 0
+        python: "python3"
+        requires: ["stage0-unit-python:3.6"]
+    - func:
+        name: stage1-func-pg11-py2-buster
+        dist: buster
+        pgversion: "11"
         install_rpm: 0
         requires: ["stage0-unit-python:2.7"]
     - func:
@@ -151,9 +156,14 @@ jobs:
       pgversion:
         description: "PostgreSQL dotted major version"
         type: string
+      python:
+        description: "Python interpreter"
+        type: string
+        default: "python2"
     docker: [image: "dalibo/labs-sdk:<< parameters.dist >>"]
     environment:
       TBD_PGVERSION: "<< parameters.pgversion >>"
+      PYTHON: "<< parameters.python >>"
     working_directory: /workspace
     steps:
     - checkout
