@@ -32,7 +32,7 @@ from .temboardclient import (
     TemboardError,
     temboard_request,
 )
-from .toolkit.utils import PY2
+from .toolkit.pycompat import PY2
 
 
 logger = logging.getLogger(__name__)
