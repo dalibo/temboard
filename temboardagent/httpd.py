@@ -23,7 +23,7 @@ from .sharedmemory import Sessions
 from .api import check_sessionid
 from .errors import UserError
 from .toolkit.services import Service
-from .toolkit.utils import PY2
+from .toolkit.pycompat import PY2
 
 
 logger = logging.getLogger(__name__)

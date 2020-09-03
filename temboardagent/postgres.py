@@ -11,7 +11,7 @@ from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
 
 from .errors import UserError
-from .toolkit.utils import PY2
+from .toolkit.pycompat import PY2
 
 
 # See https://www.psycopg.org/docs/faq.html#faq-float
