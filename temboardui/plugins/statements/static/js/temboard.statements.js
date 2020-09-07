@@ -17,7 +17,7 @@ $(function() {
       queryid: null,
       userid: null,
       datname: null,
-      sortBy: 'total_time',
+      sortBy: 'total_exec_time',
       filter: '',
       from: null,
       to: null,
@@ -133,7 +133,7 @@ $(function() {
       class: 'text-right',
       sortable: true
     }, {
-      key: 'total_time',
+      key: 'total_exec_time',
       label: 'Total',
       formatter: formatDuration,
       class: 'text-right border-left',
