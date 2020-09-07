@@ -14,6 +14,8 @@
 - Better support for history navigation in monitoring, by [@pgiraud].
 - Don't highlight short idle_in_transaction queries, by [@pgiraud].
 - Added comment field for instance settings, by [@pgiraud].
+- Allow users to choose the refresh interval (whenever a date range picker is
+  used), by [@pgiraud].
 
 ### Fixed
 
