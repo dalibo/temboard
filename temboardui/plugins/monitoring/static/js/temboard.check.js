@@ -1,30 +1,13 @@
-/* global apiUrl, checkName, Vue, Dygraph, moment, dateMath */
+/* global apiUrl, checkName, Vue, VueRouter, Dygraph, moment, dateMath */
 $(function() {
-
-  /**
-   * Parse location hash to get start and end date
-   * If dates are not provided, falls back to the date range corresponding to
-   * the last 24 hours.
-   */
-  var refreshTimeoutId;
-  var refreshInterval = 60 * 1000;
-  var p = getHashParams();
-  var start = p.start || 'now-24h';
-  var end = p.end || 'now';
-  start = dateMath.parse(start).isValid() ? start : moment(parseInt(start, 10));
-  end = dateMath.parse(end).isValid() ? end : moment(parseInt(end, 10));
 
   var v = new Vue({
     el: '#check-container',
+    router: new VueRouter(),
     data: {
       keys: [],
       from: null,
-      to: null,
-      fromDate: null,
-      toDate: null
-    },
-    methods: {
-      onPickerUpdate: onPickerUpdate
+      to: null
     },
     computed: {
       fromTo: function() {
@@ -34,11 +17,6 @@ $(function() {
         return this.keys.sort(function(a, b) {
           return a.key > b.key;
         });
-      }
-    },
-    watch: {
-      fromTo: function() {
-        window.location.hash = 'start=' + v.from + '&end=' + v.to;
       }
     }
   });
@@ -71,8 +49,8 @@ $(function() {
   });
 
   function createOrUpdateChart() {
-    var startDate = dateMath.parse(v.fromDate);
-    var endDate = dateMath.parse(v.toDate, true);
+    var startDate = v.from;
+    var endDate = v.to;
 
     var defaultOptions = {
       axisLabelFontSize: 10,
@@ -441,37 +419,16 @@ $(function() {
   }
 
   function onChartZoom(min, max) {
-    v.from = moment(min);
-    v.to = moment(max);
-    refresh();
+    v.$refs.daterangepicker.setFromTo(moment(min), moment(max));
   }
 
-  function onPickerUpdate(from, to) {
-    this.from = from;
-    this.to = to;
-    refresh();
-  }
-
-  function refresh() {
-    // remove any previous popover on annotation
-    $('.dygraph-annotation').popover('dispose');
-    $.ajax({
-      url: apiUrl + "/states/" + checkName + ".json"
-    }).success(function(data) {
-      v.keys = data;
-    }).error(function(error) {
-      console.error(error);
-    });
-
-    v.fromDate = dateMath.parse(v.from);
-    v.toDate = dateMath.parse(v.to, true);
-    window.clearTimeout(refreshTimeoutId);
-    if (v.from.toString().indexOf('now') != -1 ||
-        v.to.toString().indexOf('now') != -1) {
-      refreshTimeoutId = window.setTimeout(refresh, refreshInterval);
-    }
-  }
-  v.from = start;
-  v.to = end;
-  refresh();
+  // remove any previous popover on annotation
+  $('.dygraph-annotation').popover('dispose');
+  $.ajax({
+    url: apiUrl + "/states/" + checkName + ".json"
+  }).success(function(data) {
+    v.keys = data;
+  }).error(function(error) {
+    console.error(error);
+  });
 });
