@@ -857,7 +857,7 @@ def purge_data_worker(app):
     try:
         purge_after = app.config.statements.purge_after
     except AttributeError:
-        purge_after = 90
+        purge_after = 30
 
     # Get tablename list to purge from metric_tables_config()
     try:
