@@ -6,6 +6,8 @@ Upgrade (RHEL/CentOS)
 6.X to 7.0
 ----------
 
+First of all, beware that support for ``RHEL/CentOS 6`` has been dropped.
+
 Stop the agent:
 
 .. code-block:: bash
