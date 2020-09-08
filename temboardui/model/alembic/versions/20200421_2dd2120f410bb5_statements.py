@@ -1,8 +1,8 @@
-"""empty message
+"""statements
 
 Revision ID: d2120f410bb5
-Revises: d2ec76ec2c11
-Create Date: 2020-08-27 10:30:54.910664
+Revises: 48dc1c585e8
+Create Date: 2020-04-21 14:14:10.650409
 
 """
 import os.path
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'd2120f410bb5'
-down_revision = 'd2ec76ec2c11'
+down_revision = '48dc1c585e8'
 branch_labels = None
 depends_on = None
 
@@ -25,4 +25,4 @@ def sqlfile(name):
 
 
 def upgrade():
-    op.get_bind().execute(sqlfile("20200827_more_statements_columns"))
+    op.get_bind().execute(sqlfile('statements'))

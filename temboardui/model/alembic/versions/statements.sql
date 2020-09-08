@@ -38,7 +38,7 @@ CREATE TABLE statements (
 CREATE TYPE statements_history_record AS (
   ts TIMESTAMP WITH TIME ZONE,
   calls BIGINT,
-  total_time DOUBLE PRECISION,
+  total_exec_time DOUBLE PRECISION,
   rows BIGINT,
   shared_blks_hit BIGINT,
   shared_blks_read BIGINT,
@@ -51,7 +51,11 @@ CREATE TYPE statements_history_record AS (
   temp_blks_read BIGINT,
   temp_blks_written BIGINT,
   blk_read_time DOUBLE PRECISION,
-  blk_write_time DOUBLE PRECISION
+  blk_write_time DOUBLE PRECISION,
+  total_plan_time DOUBLE PRECISION,
+  wal_records BIGINT,
+  wal_fpi BIGINT,
+  wal_bytes NUMERIC
 );
 
 CREATE UNLOGGED TABLE statements_src_tmp (
@@ -65,7 +69,7 @@ CREATE UNLOGGED TABLE statements_src_tmp (
   queryid BIGINT NOT NULL,
   query TEXT NOT NULL,
   calls BIGINT NOT NULL,
-  total_time DOUBLE PRECISION NOT NULL,
+  total_exec_time DOUBLE PRECISION NOT NULL,
   rows BIGINT NOT NULL,
   shared_blks_hit BIGINT NOT NULL,
   shared_blks_read BIGINT NOT NULL,
@@ -78,7 +82,11 @@ CREATE UNLOGGED TABLE statements_src_tmp (
   temp_blks_read BIGINT NOT NULL,
   temp_blks_written BIGINT NOT NULL,
   blk_read_time DOUBLE PRECISION NOT NULL,
-  blk_write_time DOUBLE PRECISION NOT NULL
+  blk_write_time DOUBLE PRECISION NOT NULL,
+  total_plan_time DOUBLE PRECISION,
+  wal_records BIGINT,
+  wal_fpi BIGINT,
+  wal_bytes NUMERIC
 );
 
 CREATE TABLE statements_history (
@@ -94,8 +102,9 @@ CREATE TABLE statements_history (
   FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements
     ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE INDEX ON statements_history (agent_address, agent_port, dbid);
+CREATE INDEX ON statements_history USING GIST (coalesce_range);
 
-CREATE INDEX ON statements_history USING gist (agent_address, agent_port, queryid, coalesce_range);
 
 CREATE TABLE statements_history_db (
   agent_address TEXT NOT NULL,
@@ -110,7 +119,6 @@ CREATE TABLE statements_history_db (
     ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX ON statements_history_db USING gist (agent_address, agent_port, dbid, coalesce_range);
 
 CREATE TABLE statements_history_current (
   agent_address TEXT NOT NULL,
@@ -119,13 +127,9 @@ CREATE TABLE statements_history_current (
   dbid OID NOT NULL,
   userid OID NOT NULL,
   record statements_history_record NOT NULL,
-  FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements ON DELETE CASCADE ON UPDATE CASCADE,
-  -- make sure we don't have several entries for the same record which would
-  -- then lead to weird data when displayed in the UI
-  UNIQUE (agent_address, agent_port, queryid, dbid, userid, record)
+  FOREIGN KEY (agent_address, agent_port, queryid, dbid, userid) REFERENCES statements ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX ON statements_history_current (agent_address, agent_port, dbid, userid, queryid);
-CREATE INDEX on statements_history_current USING GIST (tstzrange((record).ts, (record).ts, '[]'));
+CREATE INDEX ON statements_history_current (agent_address, agent_port, dbid);
 
 CREATE TABLE statements_history_current_db (
   agent_address TEXT NOT NULL,
@@ -133,14 +137,8 @@ CREATE TABLE statements_history_current_db (
   dbid OID NOT NULL,
   datname TEXT NOT NULL,
   record statements_history_record NOT NULL,
-  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE,
-  -- make sure we don't have several entries for the same record which would
-  -- then lead to weird data when displayed in the UI
-  UNIQUE (agent_address, agent_port, dbid, record)
+  FOREIGN KEY (agent_address, agent_port) REFERENCES application.instances (agent_address, agent_port) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX ON statements_history_current_db (agent_address, agent_port, dbid);
-CREATE INDEX ON statements_history_current_db (agent_address, agent_port);
-CREATE INDEX on statements_history_current_db USING GIST (tstzrange((record).ts, (record).ts, '[]'));
 
 CREATE OR REPLACE FUNCTION prevent_concurrent_snapshot(_address text, _port integer)
 RETURNS void
@@ -173,21 +171,45 @@ BEGIN
             tstzrange(min((record).ts), max((record).ts),'[]'),
             array_agg(record),
             ROW(min((record).ts),
-                min((record).calls),min((record).total_time),min((record).rows),
-                min((record).shared_blks_hit),min((record).shared_blks_read),
-                min((record).shared_blks_dirtied),min((record).shared_blks_written),
-                min((record).local_blks_hit),min((record).local_blks_read),
-                min((record).local_blks_dirtied),min((record).local_blks_written),
-                min((record).temp_blks_read),min((record).temp_blks_written),
-                min((record).blk_read_time),min((record).blk_write_time))::statements_history_record,
+                min((record).calls),
+                min((record).total_exec_time),
+                min((record).rows),
+                min((record).shared_blks_hit),
+                min((record).shared_blks_read),
+                min((record).shared_blks_dirtied),
+                min((record).shared_blks_written),
+                min((record).local_blks_hit),
+                min((record).local_blks_read),
+                min((record).local_blks_dirtied),
+                min((record).local_blks_written),
+                min((record).temp_blks_read),
+                min((record).temp_blks_written),
+                min((record).blk_read_time),
+                min((record).blk_write_time),
+                min((record).total_plan_time),
+                min((record).wal_records),
+                min((record).wal_fpi),
+                min((record).wal_bytes))::statements_history_record,
             ROW(max((record).ts),
-                max((record).calls),max((record).total_time),max((record).rows),
-                max((record).shared_blks_hit),max((record).shared_blks_read),
-                max((record).shared_blks_dirtied),max((record).shared_blks_written),
-                max((record).local_blks_hit),max((record).local_blks_read),
-                max((record).local_blks_dirtied),max((record).local_blks_written),
-                max((record).temp_blks_read),max((record).temp_blks_written),
-                max((record).blk_read_time),max((record).blk_write_time))::statements_history_record
+                max((record).calls),
+                max((record).total_exec_time),
+                max((record).rows),
+                max((record).shared_blks_hit),
+                max((record).shared_blks_read),
+                max((record).shared_blks_dirtied),
+                max((record).shared_blks_written),
+                max((record).local_blks_hit),
+                max((record).local_blks_read),
+                max((record).local_blks_dirtied),
+                max((record).local_blks_written),
+                max((record).temp_blks_read),
+                max((record).temp_blks_written),
+                max((record).blk_read_time),
+                max((record).blk_write_time),
+                max((record).total_plan_time),
+                max((record).wal_records),
+                max((record).wal_fpi),
+                max((record).wal_bytes))::statements_history_record
         FROM statements_history_current
         WHERE agent_address = _address AND agent_port = _port
         GROUP BY agent_address, agent_port, queryid, dbid, userid;
@@ -201,21 +223,45 @@ BEGIN
             tstzrange(min((record).ts), max((record).ts),'[]'),
             array_agg(record),
             ROW(min((record).ts),
-                min((record).calls),min((record).total_time),min((record).rows),
-                min((record).shared_blks_hit),min((record).shared_blks_read),
-                min((record).shared_blks_dirtied),min((record).shared_blks_written),
-                min((record).local_blks_hit),min((record).local_blks_read),
-                min((record).local_blks_dirtied),min((record).local_blks_written),
-                min((record).temp_blks_read),min((record).temp_blks_written),
-                min((record).blk_read_time),min((record).blk_write_time))::statements_history_record,
+                min((record).calls),
+                min((record).total_exec_time),
+                min((record).rows),
+                min((record).shared_blks_hit),
+                min((record).shared_blks_read),
+                min((record).shared_blks_dirtied),
+                min((record).shared_blks_written),
+                min((record).local_blks_hit),
+                min((record).local_blks_read),
+                min((record).local_blks_dirtied),
+                min((record).local_blks_written),
+                min((record).temp_blks_read),
+                min((record).temp_blks_written),
+                min((record).blk_read_time),
+                min((record).blk_write_time),
+                min((record).total_plan_time),
+                min((record).wal_records),
+                min((record).wal_fpi),
+                min((record).wal_bytes))::statements_history_record,
             ROW(max((record).ts),
-                max((record).calls),max((record).total_time),max((record).rows),
-                max((record).shared_blks_hit),max((record).shared_blks_read),
-                max((record).shared_blks_dirtied),max((record).shared_blks_written),
-                max((record).local_blks_hit),max((record).local_blks_read),
-                max((record).local_blks_dirtied),max((record).local_blks_written),
-                max((record).temp_blks_read),max((record).temp_blks_written),
-                max((record).blk_read_time),max((record).blk_write_time))::statements_history_record
+                max((record).calls),
+                max((record).total_exec_time),
+                max((record).rows),
+                max((record).shared_blks_hit),
+                max((record).shared_blks_read),
+                max((record).shared_blks_dirtied),
+                max((record).shared_blks_written),
+                max((record).local_blks_hit),
+                max((record).local_blks_read),
+                max((record).local_blks_dirtied),
+                max((record).local_blks_written),
+                max((record).temp_blks_read),
+                max((record).temp_blks_written),
+                max((record).blk_read_time),
+                max((record).blk_write_time),
+                max((record).total_plan_time),
+                max((record).wal_records),
+                max((record).wal_fpi),
+                max((record).wal_bytes))::statements_history_record
         FROM statements_history_current_db
         WHERE agent_address = _address AND agent_port = _port
         GROUP BY agent_address, agent_port, dbid, datname;
@@ -279,10 +325,10 @@ BEGIN
         INSERT INTO statements_history_current
             SELECT _address, _port, queryid, dbid, userid,
             ROW(
-                ts, calls, total_time, rows, shared_blks_hit, shared_blks_read,
+                ts, calls, total_exec_time, rows, shared_blks_hit, shared_blks_read,
                 shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read,
                 local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written,
-                blk_read_time, blk_write_time
+                blk_read_time, blk_write_time, total_plan_time, wal_records, wal_fpi, wal_bytes
             )::statements_history_record
             FROM capture
     ),
@@ -291,10 +337,11 @@ BEGIN
         INSERT INTO statements_history_current_db
             SELECT _address, _port, dbid, datname,
             ROW(
-                ts, sum(calls), sum(total_time), sum(rows), sum(shared_blks_hit), sum(shared_blks_read),
+                ts, sum(calls), sum(total_exec_time), sum(rows), sum(shared_blks_hit), sum(shared_blks_read),
                 sum(shared_blks_dirtied), sum(shared_blks_written), sum(local_blks_hit), sum(local_blks_read),
                 sum(local_blks_dirtied), sum(local_blks_written), sum(temp_blks_read), sum(temp_blks_written),
-                sum(blk_read_time), sum(blk_write_time)
+                sum(blk_read_time), sum(blk_write_time), sum(total_plan_time), sum(wal_records), sum(wal_fpi),
+                sum(wal_bytes)
             )::statements_history_record
             FROM capture
             GROUP BY dbid, datname, ts
