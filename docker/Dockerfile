@@ -1,4 +1,4 @@
-FROM python:2.7-slim
+FROM python:3.6-slim
 
 RUN apt-get update -y \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
