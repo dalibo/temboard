@@ -230,6 +230,6 @@
 
   function notify() {
     this.$emit('update:from', dateMath.parse(this.editRawFrom));
-    this.$emit('update:to', dateMath.parse(this.editRawTo));
+    this.$emit('update:to', dateMath.parse(this.editRawTo, true));
   }
 })();
