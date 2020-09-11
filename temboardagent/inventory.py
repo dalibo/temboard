@@ -2,6 +2,7 @@ import platform
 import socket
 import os
 import re
+import sys
 
 from temboardagent.tools import check_fqdn, which, to_bytes
 from temboardagent.command import exec_command
@@ -84,6 +85,10 @@ class SysInfo(Inventory):
 
     def linux_distribution(self):
         if self.os == 'Linux':
+            # Fail safely for python3.8 and above
+            # platform.linux_distribution is not available
+            if sys.version_info >= (3, 8):
+                return 'Distrib. info N/A'
             return " ".join(platform.linux_distribution()).strip()
         else:
             raise Exception("Unsupported OS.")
