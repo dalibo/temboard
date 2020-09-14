@@ -120,19 +120,21 @@
     template: html,
     watch: {
       rawFromTo: function() {
-        if (this.$route.query.start !== this.editRawFrom || this.$route.query.end !== this.editRawTo) {
-          this.$router.push({ query: _.assign({}, this.$route.query, {
-            start: '' + this.editRawFrom,
-            end: '' + this.editRawTo
-          })});
-        }
+        // "'' + date" will:
+        //  - convert 'date' to unix timestamp (ms) if it's a moment object
+        //  - not do anything if date is a string ('now - 24h' for example)
+        this.$router.push({ query: _.assign({}, this.$route.query, {
+          start: '' + this.editRawFrom,
+          end: '' + this.editRawTo
+        })});
       },
       refreshInterval: refresh,
       $route: function(to, from) {
-        if (to.query.start) {
+        // Detect changes in browser history (back button for example)
+        // Don't do anything if route params have been changed internaly by the
+        // rawFromTo watcher
+        if (to.query.start !== '' + this.editRawFrom || to.query.end !== '' + this.editRawTo) {
           this.editRawFrom = convertDate(to.query.start);
-        }
-        if (to.query.end) {
           this.editRawTo = convertDate(to.query.end);
         }
         this.refresh();
@@ -156,7 +158,8 @@
   }
 
   function convertDate(date) {
-    return dateMath.parse(date).isValid() ? date : moment(parseInt(date, 10))
+    const timestamp = parseInt(date, 10);
+    return _.isFinite(timestamp) ? moment(timestamp) : date;
   }
 
   function loadRangeShortcut(shortcut) {
