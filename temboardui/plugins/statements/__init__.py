@@ -854,10 +854,7 @@ def purge_data_worker(app):
     Session = scoped_session(session_factory)
     session = Session()
 
-    try:
-        purge_after = app.config.statements.purge_after
-    except AttributeError:
-        purge_after = 30
+    purge_after = app.config.statements.purge_after
 
     # Get tablename list to purge from metric_tables_config()
     try:
