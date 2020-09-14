@@ -263,6 +263,9 @@ def list_options_specs():
     s = 'monitoring'
     yield OptionSpec(s, 'purge_after', default=None, validator=v.nday)
 
+    s = 'statements'
+    yield OptionSpec(s, 'purge_after', default=30, validator=v.nday)
+
 
 class TemboardApplication(BaseApplication):
     DEFAULT_CONFIGFILES = [
