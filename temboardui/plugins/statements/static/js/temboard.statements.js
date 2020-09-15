@@ -28,7 +28,7 @@ $(function() {
     computed: {
       fields: getFields,
       fromTo: function() {
-        return this.from, this.to, new Date();
+        return this.from, this.to;
       },
       queryidUserid: function() {
         return this.queryid, this.userid, new Date();
