@@ -11,7 +11,7 @@ $(function() {
     },
     computed: {
       fromTo: function() {
-        return this.from, this.to, new Date();
+        return this.from, this.to;
       },
       sortedKeys: function() {
         return this.keys.sort(function(a, b) {
