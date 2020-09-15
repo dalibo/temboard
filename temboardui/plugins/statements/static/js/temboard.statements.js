@@ -31,7 +31,7 @@ $(function() {
         return this.from, this.to;
       },
       queryidUserid: function() {
-        return this.queryid, this.userid, new Date();
+        return this.queryid, this.userid;
       }
     },
     methods: {
