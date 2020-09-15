@@ -330,7 +330,7 @@ $(function() {
         }
       },
       $route: function(to, from) {
-        if (to.query.graphs !== from.query.graphs) {
+        if (to.query.graphs) {
           loadGraphs.call(this, JSON.parse(to.query.graphs));
         }
       }
