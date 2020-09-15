@@ -45,10 +45,12 @@ $(function() {
         var newQueryParams = _.assign({}, this.$route.query);
         if (!this.dbid) {
           delete newQueryParams.dbid;
+          delete newQueryParams.queryid;
+          delete newQueryParams.userid;
         } else {
           newQueryParams.dbid = this.dbid;
         }
-        this.$router.replace({ query: newQueryParams });
+        this.$router.push({ query: newQueryParams });
         this.fetchData();
       },
       queryidUserid: function() {
@@ -57,11 +59,17 @@ $(function() {
           delete newQueryParams.queryid;
           delete newQueryParams.userid;
         } else {
+          newQueryParams.dbid = this.dbid;
           newQueryParams.queryid = this.queryid;
           newQueryParams.userid = this.userid;
         }
-        this.$router.replace({ query: newQueryParams });
+        this.$router.push({ query: newQueryParams });
         this.fetchData();
+      },
+      $route: function(to, from) {
+        this.dbid = to.query.dbid;
+        this.queryid = to.query.queryid;
+        this.userid = to.query.userid;
       }
     }
   });
