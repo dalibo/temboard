@@ -315,11 +315,6 @@ $(function() {
       removeGraph: removeGraph,
       loadGraphs: loadGraphs
     },
-    computed: {
-      fromTo: function() {
-        return this.from, this.to, new Date();
-      }
-    },
     watch: {
       graphs: function(val) {
         var graphs = JSON.stringify(val.map(function(item) {return item.id;}))
