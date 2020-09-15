@@ -131,8 +131,12 @@
       refreshInterval: refresh,
       $route: function(to, from) {
         // Detect changes in browser history (back button for example)
-        this.editRawFrom = convertDate(to.query.start);
-        this.editRawTo = convertDate(to.query.end);
+        if (to.query.start) {
+          this.editRawFrom = convertDate(to.query.start);
+        }
+        if (to.query.end) {
+          this.editRawTo = convertDate(to.query.end);
+        }
         this.refresh();
       }
     }
