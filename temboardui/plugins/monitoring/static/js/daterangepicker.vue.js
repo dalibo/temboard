@@ -109,7 +109,7 @@
     },
     computed: {
       rawFromTo: function() {
-        return this.editRawFrom, this.editRawTo, new Date();
+        return this.editRawFrom, this.editRawTo;
       },
       isRefreshable: function() {
         return this.editRawFrom && this.editRawFrom.toString().indexOf('now') != -1 ||
@@ -131,12 +131,8 @@
       refreshInterval: refresh,
       $route: function(to, from) {
         // Detect changes in browser history (back button for example)
-        // Don't do anything if route params have been changed internaly by the
-        // rawFromTo watcher
-        if (to.query.start !== '' + this.editRawFrom || to.query.end !== '' + this.editRawTo) {
-          this.editRawFrom = convertDate(to.query.start);
-          this.editRawTo = convertDate(to.query.end);
-        }
+        this.editRawFrom = convertDate(to.query.start);
+        this.editRawTo = convertDate(to.query.end);
         this.refresh();
       }
     }
