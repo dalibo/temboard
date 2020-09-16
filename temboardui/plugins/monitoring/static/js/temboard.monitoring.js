@@ -234,7 +234,7 @@ $(function() {
     },
     computed: {
       fromTo: function() {
-        return this.from, this.to;
+        return '' + this.from + this.to;
       }
     },
     template: '<div class="monitoring-chart"></div>'

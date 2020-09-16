@@ -109,7 +109,7 @@
     },
     computed: {
       rawFromTo: function() {
-        return this.editRawFrom, this.editRawTo;
+        return '' + this.editRawFrom + this.editRawTo;
       },
       isRefreshable: function() {
         return this.editRawFrom && this.editRawFrom.toString().indexOf('now') != -1 ||
