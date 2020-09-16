@@ -16,7 +16,7 @@
             <div class="form-group">
               <label for="inputFrom">From:</label>
               <div class="input-group">
-                <input type="text" id="inputFrom" v-model="editRawFrom" class="form-control">
+                <input type="text" id="inputFrom" v-model="inputFrom" class="form-control">
                 <div class="input-group-append" data-role="from-picker">
                   <div class="input-group-text">
                     <i class="fa fa-calendar"></i>
@@ -27,7 +27,7 @@
             <div class="form-group">
               <label for="inputTo">To:</label>
               <div class="input-group">
-                <input type="text" id="inputTo" v-model="editRawTo" class="form-control">
+                <input type="text" id="inputTo" v-model="inputTo" class="form-control">
                 <div class="input-group-append" data-role="to-picker">
                   <div class="input-group-text">
                     <i class="fa fa-calendar"></i>
@@ -82,13 +82,21 @@
       return {
         ranges: rangeUtils.getRelativeTimesList(),
         rangeString: function() {
-          if (!this.editRawFrom || !this.editRawTo) {
+          if (!this.rawFrom || !this.rawTo) {
             return;
           }
-          return rangeUtils.describeTimeRange({from: this.editRawFrom, to: this.editRawTo});
+          return rangeUtils.describeTimeRange({from: this.rawFrom, to: this.rawTo});
         },
-        editRawFrom: null,
-        editRawTo: null,
+        // The raw values (examples: 'now-24h', 'Tue Sep 01 2020 10:16:00 GMT+0200')
+        // Interaction with parent component is done with from/to props which
+        // are unix timestamps
+        rawFrom: null,
+        rawTo: null,
+        // The values to display in the custom range from and to fields
+        // we don't use raw values because we may want to pick/change from and
+        // to in the form before applying changes
+        inputFrom: null,
+        inputTo: null,
         refreshInterval: null,
         intervals: {
           '60': '1m',
@@ -109,11 +117,11 @@
     },
     computed: {
       rawFromTo: function() {
-        return '' + this.editRawFrom + this.editRawTo;
+        return '' + this.rawFrom + this.rawTo;
       },
       isRefreshable: function() {
-        return this.editRawFrom && this.editRawFrom.toString().indexOf('now') != -1 ||
-          this.editRawTo && this.editRawTo.toString().indexOf('now') != -1;
+        return this.rawFrom && this.rawFrom.toString().indexOf('now') != -1 ||
+          this.rawTo && this.rawTo.toString().indexOf('now') != -1;
       }
     },
     mounted: onMounted,
@@ -124,18 +132,20 @@
         //  - convert 'date' to unix timestamp (ms) if it's a moment object
         //  - not do anything if date is a string ('now - 24h' for example)
         this.$router.push({ query: _.assign({}, this.$route.query, {
-          start: '' + this.editRawFrom,
-          end: '' + this.editRawTo
+          start: '' + this.rawFrom,
+          end: '' + this.rawTo
         })});
+        this.inputFrom = this.rawFrom;
+        this.inputTo = this.rawTo;
       },
       refreshInterval: refresh,
       $route: function(to, from) {
         // Detect changes in browser history (back button for example)
         if (to.query.start) {
-          this.editRawFrom = convertDate(to.query.start);
+          this.rawFrom = convertDate(to.query.start);
         }
         if (to.query.end) {
-          this.editRawTo = convertDate(to.query.end);
+          this.rawTo = convertDate(to.query.end);
         }
         this.refresh();
       }
@@ -150,8 +160,8 @@
      */
     var start = this.$route.query.start || this.from || 'now-24h';
     var end = this.$route.query.end || this.to || 'now';
-    this.editRawFrom = convertDate(start);
-    this.editRawTo = convertDate(end);
+    this.rawFrom = convertDate(start);
+    this.rawTo = convertDate(end);
     this.notify();
 
     synchronizePickers.call(this);
@@ -163,8 +173,8 @@
   }
 
   function loadRangeShortcut(shortcut) {
-    this.editRawFrom = shortcut.from;
-    this.editRawTo = shortcut.to;
+    this.rawFrom = shortcut.from;
+    this.rawTo = shortcut.to;
     this.isPickerOpen = false;
     this.refresh();
   }
@@ -175,6 +185,8 @@
 
   function pickerApply() {
     this.isPickerOpen = false;
+    this.rawFrom = this.inputFrom;
+    this.rawTo = this.inputTo;
     this.refresh();
   }
 
@@ -195,9 +207,9 @@
     if (!fromPicker || !fromPicker.data('daterangepicker').isShowing) {
       fromPicker = $(this.$el).find('[data-role=from-picker]').daterangepicker(
         $.extend({
-          startDate: dateMath.parse(this.editRawFrom)
+          startDate: dateMath.parse(this.rawFrom)
         }, pickerOptions),
-        onPickerApply.bind(this, 'editRawFrom')
+        onPickerApply.bind(this, 'inputFrom')
       );
     }
     // update 'to' date picker only if not currently open
@@ -205,10 +217,10 @@
     if (!toPicker || !toPicker.data('daterangepicker').isShowing) {
       toPicker = $(this.$el).find('[data-role=to-picker]').daterangepicker(
         $.extend({
-          startDate: dateMath.parse(this.editRawTo),
-          minDate: dateMath.parse(this.editRawFrom)
+          startDate: dateMath.parse(this.rawTo),
+          minDate: dateMath.parse(this.rawFrom)
         }, pickerOptions),
-        onPickerApply.bind(this, 'editRawTo')
+        onPickerApply.bind(this, 'inputTo')
       );
     }
   }
@@ -226,13 +238,13 @@
   }
 
   function setFromTo(from, to) {
-    this.editRawFrom = from;
-    this.editRawTo = to;
+    this.rawFrom = from;
+    this.rawTo = to;
     this.refresh();
   }
 
   function notify() {
-    this.$emit('update:from', dateMath.parse(this.editRawFrom));
-    this.$emit('update:to', dateMath.parse(this.editRawTo, true));
+    this.$emit('update:from', dateMath.parse(this.rawFrom));
+    this.$emit('update:to', dateMath.parse(this.rawTo, true));
   }
 })();
