@@ -11,7 +11,7 @@ $(function() {
     },
     computed: {
       fromTo: function() {
-        return this.from, this.to;
+        return '' + this.from + this.to;
       },
       sortedKeys: function() {
         return this.keys.sort(function(a, b) {
@@ -42,7 +42,7 @@ $(function() {
     },
     computed: {
       fromTo: function() {
-        return this.from, this.to;
+        return '' + this.from + this.to;
       }
     },
     template: '<div class="monitoring-chart"></div>'
