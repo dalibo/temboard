@@ -150,4 +150,4 @@ Parameters related to the statements plugin.
 
   - **purge_after**
   Set the amount of data to keep, expressed in days.
-  Default: 30
+  Default: 7
