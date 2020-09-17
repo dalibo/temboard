@@ -844,7 +844,7 @@ def purge_data_worker(app):
     """Background worker in charge of purging statements data.
     Purge policy is based on purge_after parameter from statements section.
     purge_after sets the number of days of data to keep, from now. Default is
-    90 days if not set.
+    7 days if not set.
     """
     logger.setLevel(app.config.logging.level)
     logger.info("Purging old statements data")

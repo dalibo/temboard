@@ -264,7 +264,7 @@ def list_options_specs():
     yield OptionSpec(s, 'purge_after', default=None, validator=v.nday)
 
     s = 'statements'
-    yield OptionSpec(s, 'purge_after', default=30, validator=v.nday)
+    yield OptionSpec(s, 'purge_after', default=7, validator=v.nday)
 
 
 class TemboardApplication(BaseApplication):

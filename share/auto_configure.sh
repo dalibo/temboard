@@ -129,6 +129,9 @@ generate_configuration() {
 	[monitoring]
 	# purge_after = 365
 
+	[statements]
+	# purge_after = 7
+
 	EOF
 }
 
