@@ -2,7 +2,7 @@ version: '2'
 
 services:
   centos6: &centos
-    image: dalibo/temboard-agent-sdk:centos6
+    image: dalibo/labs-sdk:centos6
     environment:
     - VERSION
     volumes:
@@ -11,4 +11,8 @@ services:
 
   centos7:
     <<: *centos
-    image: dalibo/temboard-agent-sdk:centos7
+    image: dalibo/labs-sdk:centos7
+
+  centos8:
+    <<: *centos
+    image: dalibo/labs-sdk:centos8

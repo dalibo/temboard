@@ -4,6 +4,10 @@
 
 %{!?python_sitelib: %global python_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
+%if 0%{?rhel} >= 8
+  %global __python /usr/bin/python3
+%endif
+
 Name:          %{pkgname}
 Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
@@ -17,14 +21,20 @@ Source1:       temboard-agent.init
 Source2:       temboard-agent.service
 Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
-BuildRequires: python-setuptools
 Requires:      openssl
 %if 0%{?rhel} <= 6
 Requires:      python-argparse
 Requires:      python-logutils
 %endif
-Requires:      python-psycopg2
+%if 0%{?rhel} < 8
 Requires:      python-setuptools
+Requires:      python-psycopg2
+BuildRequires: python-setuptools
+%else
+Requires:      python3-setuptools
+Requires:      python3-psycopg2
+BuildRequires: python3-setuptools
+%endif
 
 %description
 Administration & monitoring PostgreSQL agent.

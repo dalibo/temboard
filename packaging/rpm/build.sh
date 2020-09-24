@@ -44,6 +44,7 @@ ln -f dist/${tarball} packaging/rpm/
 # rpmbuild requires files to be owned by running uid
 sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
 
+
 rpmbuild \
     --clean \
     --define "pkgversion ${VERSION}" \
@@ -59,13 +60,19 @@ chmod a+rw dist/rpm/noarch/*
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
-if [ "${DIST}" = "el6" ] ; then
+if [ "${DIST}" = ".el6" ] ; then
     sudo yum install -y epel-release
+fi
+
+if [ "${DIST}" = ".el6" ] || [ "${DIST}" = ".el7" ] ; then
+	PY=python2
+else
+	PY=python3
 fi
 
 sudo yum install -y $rpm
 (
 	cd /
 	temboard-agent --version
-	python -c 'import temboardagent.toolkit'
+	${PY} -c 'import temboardagent.toolkit'
 )

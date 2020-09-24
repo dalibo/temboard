@@ -3,10 +3,10 @@ YUM_LABS?=$(wildcard ../../../yum-labs)
 
 all:
 	@make -sC $(YUM_LABS) clean
-	$(MAKE) build-centos7 build-centos6
+	$(MAKE) build-centos8 build-centos7 build-centos6
 
 # Helper target to build and push altogether.
-centos7 centos6:
+centos8 centos7 centos6:
 	$(MAKE) build-$@
 	$(MAKE) push-$@
 
