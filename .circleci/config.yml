@@ -6,6 +6,8 @@ workflows:
     jobs:
     - docs:
         name: stage0-docs
+    - rpm-centos8:
+        name: stage0-pkg-centos8
     - rpm-centos7:
         name: stage0-pkg-centos7
     - unit:
@@ -25,6 +27,14 @@ workflows:
         name: stage1-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
         requires: [stage0-pkg-centos7, "stage0-unit-python:2.7"]
+        matrix:
+          parameters:
+            pgversion: ["9.6", "12"]
+    - func:
+        name: stage1-func-pg<< matrix.pgversion >>-centos8
+        dist: centos8
+        requires: [stage0-pkg-centos8, "stage0-unit-python:3.6"]
+        python: "python3"
         matrix:
           parameters:
             pgversion: ["9.6", "12"]
@@ -66,6 +76,25 @@ jobs:
     - store_artifacts:
         path: README.html
         destination: build/README.html
+
+  rpm-centos8:
+    docker: [{image: "dalibo/labs-sdk:centos8"}]
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        name: Build RPM snapshot
+        command: |
+          sudo yum-builddep -y packaging/rpm/temboard-agent.spec
+          python3 setup.py sdist
+          VERSION=$(python3 setup.py --version) ./packaging/rpm/build.sh
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/rpm/noarch/*.rpm
 
   rpm-centos7:
     docker: [{image: "dalibo/labs-sdk:centos7"}]
@@ -148,7 +177,7 @@ jobs:
       dist:
         description: "Execution Linux distribution"
         type: enum
-        enum: [centos7, buster, stretch]
+        enum: [centos8, centos7, buster, stretch]
       install_rpm:
         description: "Whether to install agent from RPM"
         type: integer
