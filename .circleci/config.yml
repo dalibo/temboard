@@ -68,7 +68,7 @@ jobs:
         destination: build/README.html
 
   rpm-centos7:
-    docker: [{image: "dalibo/temboard-agent-sdk:centos7"}]
+    docker: [{image: "dalibo/labs-sdk:centos7"}]
     working_directory: ~/workspace
     steps:
     - checkout
@@ -126,7 +126,7 @@ jobs:
         description: "Debian version"
         type: enum
         enum: [buster, stretch]
-    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
+    docker: [{image: "dalibo/labs-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
