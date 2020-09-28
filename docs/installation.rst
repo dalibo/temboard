@@ -59,7 +59,7 @@ RHEL / CentOS
 =============
 
 temBoard RPM are published on `Dalibo Labs YUM repository
-<https://yum.dalibo.org/labs/>`_. temBoard agent supports RHEL/CentOS 7.
+<https://yum.dalibo.org/labs/>`_. temBoard agent supports RHEL/CentOS 7 and 8.
 Start by enabling Dalibo Labs YUM repository.
 
 .. code-block:: console
