@@ -16,7 +16,8 @@
 - Added comment field for instance settings, by [@pgiraud].
 - Allow users to choose the refresh interval (whenever a date range picker is
   used), by [@pgiraud].
-- Agent: support of RHEL/CentOS 6 has been dropped.
+- Agent: support for RHEL/CentOS 6 has been dropped.
+- Agent: support for RHEL/CentOS 8 has been added.
 
 ### Fixed
 
