@@ -40,7 +40,7 @@ pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
 #       I N S T A L L
 
-pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v psycopg2-binary
 # Fake --install-layout=deb, when using wheel.
 mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
 
