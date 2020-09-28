@@ -8,7 +8,7 @@ all:
 # Helper target to build and push altogether.
 centos8 centos7:
 	$(MAKE) build-$@
-	$(MAKE) push-$@
+	$(MAKE) push
 
 # Build RPM for either centos7 or centos8
 build-centos%:
