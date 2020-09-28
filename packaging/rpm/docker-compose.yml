@@ -1,17 +1,13 @@
 version: '2'
 
 services:
-  centos6: &centos
-    image: dalibo/labs-sdk:centos6
+  centos7: &centos
+    image: dalibo/labs-sdk:centos7
     environment:
     - VERSION
     volumes:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh
-
-  centos7:
-    <<: *centos
-    image: dalibo/labs-sdk:centos7
 
   centos8:
     <<: *centos

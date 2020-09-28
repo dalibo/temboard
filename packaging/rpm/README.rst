@@ -44,7 +44,7 @@ Development
 -----------
 
 The RPM spec file supports building a package for RHEL / CentOS
-version 6 and 7. To do so, it uses tests on the version, provided
+version 7 and 8. To do so, it uses tests on the version, provided
 by the %{rhel} macro.
 
 First, run docker container for interactive usage:

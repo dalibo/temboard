@@ -60,11 +60,7 @@ chmod a+rw dist/rpm/noarch/*
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
-if [ "${DIST}" = ".el6" ] ; then
-    sudo yum install -y epel-release
-fi
-
-if [ "${DIST}" = ".el6" ] || [ "${DIST}" = ".el7" ] ; then
+if [ "${DIST}" = ".el7" ] ; then
 	PY=python2
 else
 	PY=python3

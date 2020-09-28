@@ -22,10 +22,6 @@ Source2:       temboard-agent.service
 Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 Requires:      openssl
-%if 0%{?rhel} <= 6
-Requires:      python-argparse
-Requires:      python-logutils
-%endif
 %if 0%{?rhel} < 8
 Requires:      python-setuptools
 Requires:      python-psycopg2
@@ -64,16 +60,9 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__install} -m 600 %{SOURCE3} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 
 # init script
-%if 0%{?rhel} <= 6
-%{__install} -d %{buildroot}%{_initrddir}
-%{__install} -m 755 %{SOURCE1} %{buildroot}%{_initrddir}/temboard-agent
-rm -f %{buildroot}/usr/lib/systemd/system/temboard-agent*.service
-%endif
 
-%if 0%{?rhel} >= 7
 %{__install} -d %{buildroot}%{_unitdir}
 %{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
-%endif
 
 # log directory
 %{__install} -d %{buildroot}/var/log/temboard-agent
@@ -90,13 +79,11 @@ openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.p
 
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
     /usr/share/temboard-agent/restart-all.sh
-%if 0%{?rhel} >= 7
 elif systemctl is-system-running &>/dev/null ; then
     systemctl daemon-reload
     if systemctl is-active temboard-agent &>/dev/null; then
         systemctl restart temboard-agent
     fi
-%endif
 fi
 
 %files
@@ -105,37 +92,30 @@ fi
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
 
-%if 0%{?rhel} <= 6
-%{_initrddir}/temboard-agent
-%endif
-
-%if 0%{?rhel} >= 7
 %{_unitdir}/temboard-agent*.service
-%endif
 
 %attr(-,postgres,postgres) /var/log/temboard-agent
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
-%if 0%{?rhel} >= 7
 if systemctl is-system-running &>/dev/null ; then
     systemctl stop temboard-agent*
     systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
     systemctl reset-failed temboard-agent*
 fi
-%endif
 
 
 %postun
-%if 0%{?rhel} >= 7
 if systemctl is-system-running &>/dev/null ; then
     systemctl daemon-reload
 fi
-%endif
 
 
 %changelog
+* Fri Sep 25 2020 Pierre Giraud <pierre.giraud@dalibo.com>
+- Remove centos6 support
+
 * Wed Nov 8 2017 Julien Tachoires <julmon@gmail.com> - 1.1-1
 - Handle systemd service on uninstall
 - Build auto-signed SSL certs
