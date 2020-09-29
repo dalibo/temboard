@@ -61,6 +61,7 @@ jobs:
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8
             python2.7 setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            check-manifest
       - run:
           name: Python tests
           command: |
