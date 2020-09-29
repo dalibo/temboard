@@ -17,6 +17,8 @@ upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
 	python2 -c 'import temboardui.toolkit'
+	@echo Clean build and dist directory
+	rm -rf build
 	python2.7 setup.py sdist bdist_wheel
 	twine upload dist/temboard-$(VERSION).tar.gz dist/temboard-$(VERSION)-py2-none-any.whl
 
