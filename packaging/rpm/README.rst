@@ -29,6 +29,7 @@ script will try to download the sources from PyPI.
 
 ::
 
+   check-manifest
    python setup.py sdist
    VERSION=$(python setup.py --version) make -C packaging/rpm/ all push
 
