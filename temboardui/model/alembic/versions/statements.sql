@@ -1,8 +1,5 @@
 DROP SCHEMA IF EXISTS statements CASCADE;
 CREATE SCHEMA statements;
--- Extension to allow GIST indexes on columns that otherwise wouldn't be
--- possible
-CREATE EXTENSION btree_gist;
 SET search_path TO statements, public;
 
 
