@@ -75,6 +75,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %post
 # auto-signed SSL cert. building
 openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.pem -keyout /etc/pki/tls/private/temboard-agent.key -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " >> /dev/null 2>&1
+chmod 644 /etc/pki/tls/private/temboard-agent.key
 
 
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
