@@ -79,7 +79,8 @@ fpm --verbose \
 deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb -I $deb
 dpkg-deb -c $deb
-dpkg -i --ignore-depends=python-pkg-resources --ignore-depends=ssl-cert $deb
+apt-get update --quiet
+apt-get install --yes ./$deb
 (
 	cd /
 	temboard-agent --version
