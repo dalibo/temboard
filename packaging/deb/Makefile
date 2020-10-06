@@ -1,4 +1,4 @@
-all: stretch jessie wheezy
+all: buster stretch jessie wheezy
 
 buster stretch jessie wheezy:
 	mkdir -p ../../dist/
