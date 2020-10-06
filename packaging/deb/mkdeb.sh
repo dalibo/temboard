@@ -40,7 +40,7 @@ pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
 #       I N S T A L L
 
-pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v psycopg2-binary
+pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
 # Fake --install-layout=deb, when using wheel.
 mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
 
@@ -68,6 +68,7 @@ fpm --verbose \
     --url http://temboard.io/ \
     --depends python-pkg-resources \
     --depends ssl-cert \
+    --depends python-psycopg2 \
     --depends python${pythonv} \
     --after-install ../../share/restart-all.sh \
     "${fpm_args[@]}" \
