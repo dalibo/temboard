@@ -33,7 +33,7 @@ This is very important!
 Then apply `repository` database structure upgrade with the following command:
 
 ``` shell
-$ temboard-migratedb upgrade
+$ sudo -u temboard temboard-migratedb upgrade
 ```
 
 ## Start service
