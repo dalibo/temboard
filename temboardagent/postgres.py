@@ -70,7 +70,7 @@ class ConnectionManager(object):
             if self.app is not None:
                 self.app.check_compatibility(self.conn.server_version)
         except Exception as e:
-            raise UserError("Failed to connect to Postgres: %s" % e.message)
+            raise UserError("Failed to connect to Postgres: %s" % e)
         return self.conn
 
     def __exit__(self, *a):

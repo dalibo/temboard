@@ -328,7 +328,7 @@ def post_settings(conn, config, http_context):
             try:
                 conn.execute(query)
             except Exception as e:
-                raise HTTPError(408, "%s: %s" % (setting['name'], e.message))
+                raise HTTPError(408, "%s: %s" % (setting['name'], e))
             ret['settings'].append({
                 'name': item['name'],
                 'setting': setting['setting'],
