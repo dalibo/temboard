@@ -67,6 +67,7 @@ else
 fi
 
 sudo yum install -y $rpm
+rpm -q --list --changelog temboard-agent-${VERSION}
 (
 	cd /
 	temboard-agent --version
