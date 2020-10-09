@@ -26,7 +26,8 @@ workflows:
     - func:
         name: stage1-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
-        requires: [stage0-pkg-centos7, "stage0-unit-python:2.7"]
+        requires: [stage0-pkg-centos7, "stage0-unit-python:3.6"]
+        python: "python3"
         matrix:
           parameters:
             pgversion: ["9.6", "12"]

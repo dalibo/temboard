@@ -60,16 +60,10 @@ chmod a+rw dist/rpm/noarch/*
 ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
 
 # Test it
-if [ "${DIST}" = ".el7" ] ; then
-	PY=python2
-else
-	PY=python3
-fi
-
 sudo yum install -y $rpm
 rpm -q --list --changelog temboard-agent-${VERSION}
 (
 	cd /
 	temboard-agent --version
-	${PY} -c 'import temboardagent.toolkit'
+	python3 -c 'import temboardagent.toolkit'
 )

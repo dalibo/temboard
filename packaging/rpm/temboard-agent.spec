@@ -1,12 +1,6 @@
 %global pkgname temboard-agent
 %{!?pkgversion: %global pkgversion 1.1}
-%{!?pkgrevision: %global pkgrevision 1}
-
-%{!?python_sitelib: %global python_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
-
-%if 0%{?rhel} >= 8
-  %global __python /usr/bin/python3
-%endif
+%{!?pkgrevision: %global pkgrevision 2}
 
 Name:          %{pkgname}
 Version:       %{pkgversion}
@@ -22,15 +16,10 @@ Source2:       temboard-agent.service
 Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 Requires:      openssl
-%if 0%{?rhel} < 8
-Requires:      python-setuptools
-Requires:      python-psycopg2
-BuildRequires: python-setuptools
-%else
 Requires:      python3-setuptools
 Requires:      python3-psycopg2
+BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
-%endif
 
 %description
 Administration & monitoring PostgreSQL agent.
@@ -41,7 +30,7 @@ Administration & monitoring PostgreSQL agent.
 
 
 %build
-%{__python} setup.py build
+%{__python3} setup.py build
 
 %pre
 # This comes from the PGDG rpm for PostgreSQL server. We want temboard to run
@@ -52,7 +41,7 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 
 
 %install
-%{__python} setup.py install --root=%{buildroot}
+%{__python3} setup.py install --root=%{buildroot}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
@@ -88,7 +77,7 @@ fi
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
-%{python_sitelib}/*
+%{python3_sitelib}/*
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
 
@@ -113,6 +102,9 @@ fi
 
 
 %changelog
+* Fri Oct  9 2020 Denis Laxalde <denis.laxalde@dalibo.com> - 7.1-2
+- Build with Python 3 on CentOS/RHEL 7
+
 * Fri Sep 25 2020 Pierre Giraud <pierre.giraud@dalibo.com>
 - Remove centos6 support
 
