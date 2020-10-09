@@ -52,7 +52,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 
 
 %install
-PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__python} setup.py install --root=%{buildroot}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
