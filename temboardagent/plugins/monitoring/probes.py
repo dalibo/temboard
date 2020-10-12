@@ -371,7 +371,7 @@ class SqlProbe(Probe):
         except Exception as e:
             logger.error(
                 "Unable to run probe \"%s\" on \"%s\" on database \"%s\": %s",
-                e, self.get_name(), conninfo['instance'], database)
+                self.get_name(), conninfo['instance'], database, e)
         return output
 
     def run(self, conninfo):
