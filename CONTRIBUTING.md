@@ -241,7 +241,82 @@ infrastructure :
   without interaction. **Agent are not unregistered!**
 
 
----
+## Setting Up a Hot Standby
+
+You can managed a hot standby Postgres instance with an agent with a custom
+`docker-compose.override.yml`:
+
+``` yaml
+# Contents of docker-compose.override.yml
+
+version: '2.4'  # Matches docker-compose.yml version.
+
+volumes:
+  data2:
+  run2:
+
+services:
+  postgres:
+    image: postgres:13-alpine  # MUST MATCH secondary service image !
+    volumes:
+    - ./docker/setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
+
+  secondary:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PRIMARY_HOST: postgres  # Setting PRIMARY_HOST triggers the standby mode.
+    command: postgres -c shared_preload_libraries=pg_stat_statements
+    volumes:
+    - data2:/var/lib/postgresql/data
+    - run2:/var/run/postgresql
+    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - ./docker/setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
+
+  agent2:
+    image: dalibo/temboard-agent
+    ports:
+    - 2346:2345
+    volumes:
+    - data2:/var/lib/postgresql/data
+    - run2:/var/run/postgresql
+    - /var/run/docker.sock:/var/run/docker.sock
+    - .:/usr/local/src/temboard/
+    - ./agent/:/usr/local/src/temboard-agent/
+    links:
+    - secondary:secondary.dev
+    environment:
+      # Persist bash history. Eases reuse of pip install and hupper command when
+      # recreating container.
+      HISTFILE: /usr/local/src/temboard/docker-agent-bash_history
+      TEMBOARD_HOSTNAME: secondary.dev
+      TEMBOARD_LOGGING_LEVEL: DEBUG
+      TEMBOARD_KEY: key_for_agent
+      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
+      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
+      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+    command: sleep infinity
+```
+
+Start full environment with `make devenv`.
+
+Then, install and run agent like for primary agent:
+
+``` console
+$ docker-compose exec agent2 /bin/bash
+root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
+ INFO: Starting temboard-agent 8.0.dev0.
+ INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
+2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
+...
+```
+
+Finally, register the secondary agent in UI, using host `0.0.0.0`, port `2346`
+(**NOT 2345**) and key `key_for_agent`. The monitored Postgres instance is named
+`secondary.dev`.
+
 
 ## Coding style
 
