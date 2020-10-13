@@ -45,13 +45,20 @@ query_pgsettings() {
 }
 
 find_next_free_port() {
-	local used=($(ss -ln4t '( sport >= 2345 and sport <= 3000 )' | grep -Po ':\K\d+'))
-	used="${used[*]}"
+	local port
+	local used_a
+	local used
+	mapfile -t used_a < <(ss -ln4t '( sport >= 2345 and sport <= 3000 )' | grep -Po ':\K\d+')
+	# To mock ss output, use seq:
+	# mapfile -t used_a < <(seq 2345 3000)
+	used="${used_a[*]}"
 	for port in {2345..3000} ; do
-		if [[ " $used " =~ " $port " ]] ; then continue ; fi
+		if [[ " $used " =~ \ $port\  ]] ; then continue ; fi
 		echo $port;
-		break
+		return
 	done
+	log "No free TCP port found between 2345 and 3000. Force with env TEMBOARD_PORT."
+	return 1
 }
 
 generate_configuration() {
@@ -67,9 +74,13 @@ generate_configuration() {
 	local instance=$1; shift
 	local logfile=$1; shift
 
-	local port=${TEMBOARD_PORT-$(find_next_free_port)}
+	local pg_ctl
+	local port
+
+	port="${TEMBOARD_PORT-$(find_next_free_port)}"
+	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
-	local pg_ctl=$(which pg_ctl)
+	pg_ctl="$(command -v pg_ctl)"
 
 	cat <<-EOF
 	#
