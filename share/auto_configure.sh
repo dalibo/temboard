@@ -45,8 +45,13 @@ query_pgsettings() {
 }
 
 find_next_free_port() {
-	local used=($(ss -ln4t '( sport >= 2345 and sport <= 3000 )' | grep -Po ':\K\d+'))
-	used="${used[*]}"
+	local port
+	local used_a
+	local used
+	mapfile -t used_a < <(ss -ln4t '( sport >= 2345 and sport <= 3000 )' | grep -Po ':\K\d+')
+	# To mock ss output, use seq:
+	# mapfile -t used_a < <(seq 2345 3000)
+	used="${used_a[*]}"
 	for port in {2345..3000} ; do
 		if [[ " $used " =~ " $port " ]] ; then continue ; fi
 		echo $port;
