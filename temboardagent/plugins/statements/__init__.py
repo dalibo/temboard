@@ -28,7 +28,6 @@ def get_statements(http_context, app):
     """
     config = app.config
     dbname = config.statements.dbname
-    assert dbname == "postgres", dbname
     snapshot_datetime = now()
     conninfo = dict(config.postgresql, dbname=dbname)
     try:
