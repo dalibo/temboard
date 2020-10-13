@@ -531,6 +531,7 @@ def collector(app, address, port, key):
         )
 
         logger.debug("Row with datetime=%s inserted", row['datetime'])
+        worker_session.commit()
 
     logger.info("End of collector worker.")
 
