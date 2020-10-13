@@ -74,12 +74,13 @@ generate_configuration() {
 	local instance=$1; shift
 	local logfile=$1; shift
 
+	local pg_ctl
 	local port
 
 	port="${TEMBOARD_PORT-$(find_next_free_port)}"
 	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
-	local pg_ctl=$(which pg_ctl)
+	pg_ctl="$(command -v pg_ctl)"
 
 	cat <<-EOF
 	#
