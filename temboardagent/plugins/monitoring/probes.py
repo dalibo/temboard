@@ -797,17 +797,27 @@ class probe_replication_lag(SqlProbe):
 
                 # Proceed with LSN diff
                 if conn.server_version >= 100000:
+                    # Use pg_wal_lsn_diff(pg_lsn, pg_lsn)
                     rows = conn.query("""\
                     SELECT pg_wal_lsn_diff(
                       '{xlogpos}'::pg_lsn,
                        pg_last_wal_replay_lsn()
                     ) AS lsn_diff, NOW() AS datetime
                     """.format(xlogpos=xlogpos))
-                else:
+                elif conn.server_version >= 90500:
+                    # Use pg_xlog_lsn_diff(pg_lsn, pg_lsn)
                     rows = conn.query("""\
-                    SELECT pg_xlog_location_diff("
-                      '{xlogpos}'::TEXT,"
-                       pg_last_xlog_replay_location()"
+                    SELECT pg_xlog_location_diff(
+                      '{xlogpos}'::pg_lsn,
+                       pg_last_xlog_replay_location()
+                    ) AS lsn_diff, NOW() AS datetime
+                    """.format(xlogpos=xlogpos))
+                else:
+                    # Use pg_xlog_lsn_diff(TEXT, TEXT)
+                    rows = conn.query("""\
+                    SELECT pg_xlog_location_diff(
+                      '{xlogpos}'::TEXT,
+                       pg_last_xlog_replay_location()::TEXT
                     ) AS lsn_diff, NOW() AS datetime
                     """.format(xlogpos=xlogpos))
                 r = list(rows)
