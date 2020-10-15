@@ -1,6 +1,6 @@
 %global pkgname temboard-agent
 %{!?pkgversion: %global pkgversion 1.1}
-%{!?pkgrevision: %global pkgrevision 2}
+%{!?pkgrevision: %global pkgrevision 1}
 
 Name:          %{pkgname}
 Version:       %{pkgversion}
