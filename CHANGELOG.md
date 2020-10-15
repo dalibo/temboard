@@ -1,5 +1,22 @@
 # Changelog
 
+## [7.3] - 2020-10-15
+
+- Commit after alert processing [@bersace]
+
+## [7.2] - 2020-09-29
+
+### Fixed
+
+- Extension btree_gist is not required anymore [@pgiraud]
+- Various packaging fixes [@dlax]
+
+## [7.1] - 2020-09-29
+
+### Fixed
+
+- Fixed bug in wheel generation [@pgiraud].
+
 ## [7.0] - 2020-09-28
 
 ### Added
