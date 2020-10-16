@@ -49,7 +49,7 @@ def alerts(request):
 
     query = dedent("""\
     COPY (
-        SELECT array_to_json(array_agg(x))
+        SELECT array_to_json(coalesce(array_agg(x), '{}'))
         FROM (
             SELECT json_build_object('description', c.description, 'name', c.name, 'key', sc.key, 'state', sc.state, 'datetime', sc.datetime, 'value', sc.value, 'warning', sc.warning, 'critical', sc.critical) as x
             FROM monitoring.state_changes sc JOIN monitoring.checks c ON (sc.check_id = c.check_id)
@@ -196,13 +196,13 @@ def check_changes(request, name):
 
     query = dedent("""\
     COPY (
-        SELECT array_to_json(array_agg(json_build_object(
+        SELECT array_to_json(coalesce(array_agg(json_build_object(
             'datetime', f.datetime,
             'enabled', f.enabled,
             'warning', f.warning,
             'critical', f.critical,
             'description', f.description
-        ))) FROM monitoring.get_check_changes(%s, %s, %s, %s, %s) f
+        )), '{}')) FROM monitoring.get_check_changes(%s, %s, %s, %s, %s) f
     ) TO STDOUT
     """)
     return jsonify(sql_json_query(
@@ -221,13 +221,13 @@ def state_changes(request, name):
 
     query = dedent("""\
     COPY (
-        SELECT array_to_json(array_agg(json_build_object(
+        SELECT array_to_json(coalesce(array_agg(json_build_object(
             'datetime', f.datetime,
             'state', f.state,
             'value', f.value,
             'warning', f.warning,
             'critical', f.critical
-        ))) FROM monitoring.get_state_changes(%s, %s, %s, %s, %s, %s) f
+        )), '{}')) FROM monitoring.get_state_changes(%s, %s, %s, %s, %s, %s) f
     ) TO STDOUT
     """)
 
