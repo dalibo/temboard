@@ -439,6 +439,7 @@ def collector(app, address, port, key):
                     last_pull=datetime.utcnow(),
                 )
                 worker_session.commit()
+        worker_session.close()
         return
 
     for row in json.loads(response):
@@ -533,6 +534,7 @@ def collector(app, address, port, key):
         logger.debug("Row with datetime=%s inserted", row['datetime'])
         worker_session.commit()
 
+    worker_session.close()
     logger.info("End of collector worker.")
 
 
