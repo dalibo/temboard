@@ -147,13 +147,17 @@ class PreProcess(object):
 
     @staticmethod
     def replication_lag(data):
-        return int(data['replication_lag'][0]['lag'])
+        if data['replication_lag']:
+            return int(data['replication_lag'][0]['lag'])
+        raise Exception("No replication lag info for this instance")
 
     @staticmethod
     def replication_connection(data):
-        k = data['replication_connection'][0]['upstream']
-        v = int(data['replication_connection'][0]['connected'])
-        return {k: v}
+        if data['replication_connection']:
+            k = data['replication_connection'][0]['upstream']
+            v = int(data['replication_connection'][0]['connected'])
+            return {k: v}
+        raise Exception("No replication connection info for this instance")
 
     @staticmethod
     def temp_files_size_delta(data):
