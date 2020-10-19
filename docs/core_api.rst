@@ -139,7 +139,7 @@ Core API
         "hostname": "neptune",
         "pg_data": "/var/lib/postgresql/9.4/main",
         "pg_port": 5432,
-        "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance"],
+        "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance", "statements"],
         "memory_size": 8241508352,
         "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
         "cpu": 4
