@@ -23,7 +23,6 @@ from .sharedmemory import Sessions
 from .api import check_sessionid
 from .errors import UserError
 from .toolkit.services import Service
-from .toolkit.pycompat import PY2
 
 
 logger = logging.getLogger(__name__)
@@ -154,7 +153,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps(message).encode('utf-8'))
+            self.wfile.write(json.dumps(message, cls=JSONEncoder)
+                             .encode('utf-8'))
         except Exception as e:
             logger.exception(str(e))
             logger.error("Could not send response")
@@ -326,12 +326,3 @@ class JSONEncoder(json.JSONEncoder):
             return obj.isoformat()
         else:
             return super(JSONEncoder, self).default(obj)
-
-
-# Change default cls argument to custom encoder.
-if PY2:
-    defaults = list(json.dumps.func_defaults)
-    defaults[4] = JSONEncoder
-    json.dumps.func_defaults = tuple(defaults)
-else:
-    json.dumps.__kwdefaults__['cls'] = JSONEncoder
