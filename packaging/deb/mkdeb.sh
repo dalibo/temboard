@@ -34,22 +34,19 @@ pep440v=${versions[0]}
 debianv=${versions[1]}
 codename=$(lsb_release --codename --short)
 release=0dlb1${codename}1
-# Should match the interpreter used by scripts shebang. We should pin python
-# version used.
-python=/usr/bin/python
-pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
 #       I N S T A L L
 
 if [ "${FROMSOURCE-}" = 1 ] ;
 then
 	# Install from sources
-	pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps $TOP_SRCDIR
+	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps $TOP_SRCDIR
 else
 	# Install from pypi
-	pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
 fi
 # Fake --install-layout=deb, when using wheel.
+pythonv=$(python3 --version |& grep -Po 'Python \K([3]\..)')
 mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
 
 #       B U I L D
@@ -74,10 +71,10 @@ fpm --verbose \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
     --url http://temboard.io/ \
-    --depends python-pkg-resources \
+    --depends python3-pkg-resources \
     --depends ssl-cert \
-    --depends python-psycopg2 \
-    --depends python${pythonv} \
+    --depends python3-psycopg2 \
+    --depends python3 \
     --after-install ../../share/restart-all.sh \
     "${fpm_args[@]}" \
     "$@" \
@@ -93,7 +90,7 @@ apt-get install --yes ./$deb
 (
 	cd /
 	temboard-agent --version
-	python -c 'import temboardagent.toolkit'
+	python3 -c 'import temboardagent.toolkit'
 )
 
 #       S A V E
