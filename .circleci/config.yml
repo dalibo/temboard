@@ -164,6 +164,7 @@ jobs:
     - run:
         command: ./packaging/deb/mkdeb.sh
         environment:
+          FROMSOURCE: 1
           DEBFULLNAME: CircleCI
           DEBEMAIL: none@example.com
     - store_artifacts:

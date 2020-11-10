@@ -1,5 +1,6 @@
 #!/bin/bash -eux
 
+TOP_SRCDIR=$(readlink -m $0/../../..)
 UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/..)
 
@@ -40,7 +41,14 @@ pythonv=$($python --version |& grep -Po 'Python \K([23]\..)')
 
 #       I N S T A L L
 
-pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+if [ "${FROMSOURCE-}" = 1 ] ;
+then
+	# Install from sources
+	pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps $TOP_SRCDIR
+else
+	# Install from pypi
+	pip$pythonv install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+fi
 # Fake --install-layout=deb, when using wheel.
 mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
 

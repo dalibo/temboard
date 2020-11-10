@@ -53,6 +53,7 @@ If you get no output just after the run, type ``ENTER`` or ``CTRL+L`` to
 redraw.
 
 Top srcdir is mounted as ``/workspace/`` and ``dist/`` is mounted as ``/dist/``.
-Just call ``/workspace/packaging/deb/mkdeb.sh`` to build debian package.
+Just call ``/workspace/packaging/deb/mkdeb.sh`` to build debian package from
+PYPI. Use `FROMSOURCE=1` to build the package from source tree.
 
 Once you quit the shell, the container is destroyed.
