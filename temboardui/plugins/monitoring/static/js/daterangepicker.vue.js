@@ -36,7 +36,7 @@
               </div>
             </div>
             <div>
-              <button class="btn btn-primary" v-on:click.prevent="pickerApply">Apply</button>
+              <button class="btn btn-primary" v-on:click.prevent="onApply">Apply</button>
             </div>
           </form>
         </div>
@@ -110,7 +110,7 @@
       loadRangeShortcut: loadRangeShortcut,
       describeTimeRange: rangeUtils.describeTimeRange,
       showHidePicker: showHidePicker,
-      pickerApply: pickerApply,
+      onApply: onApply,
       setFromTo: setFromTo,
       notify: notify,
       refresh: refresh
@@ -183,7 +183,10 @@
     this.isPickerOpen = !this.isPickerOpen;
   }
 
-  function pickerApply() {
+  function onApply() {
+    /*
+     * Called when global "apply" button is clicked
+     */
     this.isPickerOpen = false;
     this.rawFrom = this.inputFrom;
     this.rawTo = this.inputTo;
