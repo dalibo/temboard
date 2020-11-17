@@ -1,6 +1,5 @@
 import logging
 import time
-from datetime import datetime
 
 try:
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -18,6 +17,7 @@ import ssl
 
 from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError
+from temboardagent.tools import JSONEncoder
 from temboardagent import __version__ as temboard_version
 from .sharedmemory import Sessions
 from .api import check_sessionid
@@ -318,11 +318,3 @@ class HTTPDService(Service):
 
     def handle_request(self, *args):
         return RequestHandler(self.app, self.sessions, *args)
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        else:
-            return super(JSONEncoder, self).default(obj)

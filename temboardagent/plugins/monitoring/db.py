@@ -5,6 +5,7 @@ import os
 import sqlite3
 from textwrap import dedent
 from time import time as current_time
+from temboardagent.tools import JSONEncoder
 
 
 def bootstrap(path, dbname):
@@ -46,7 +47,7 @@ def add_metric(path, dbname, time, data):
         c = conn.cursor()
         c.execute(
             "INSERT INTO metrics VALUES(?, ?)",
-            (time, json.dumps(data))
+            (time, json.dumps(data, cls=JSONEncoder))
         )
         # When data are pulled from temboard server, we need to keep 6 hours of
         # data history for recovery.
@@ -106,11 +107,11 @@ def upsert_last_measure(path, dbname, time, key, data):
         try:
             c.execute(
                 "INSERT INTO last_measures VALUES(?, ?, ?)",
-                (time, key, json.dumps(data))
+                (time, key, json.dumps(data, cls=JSONEncoder))
             )
         except sqlite3.IntegrityError:
             c.execute(
                 "UPDATE last_measures SET time = ?, data = ? "
                 "WHERE key = ?",
-                (time, json.dumps(data), key)
+                (time, json.dumps(data, cls=JSONEncoder), key)
             )

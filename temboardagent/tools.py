@@ -1,9 +1,11 @@
+import errno
+import hashlib
+import json
 import logging
 import os
-import hashlib
-import time
 import re
-import errno
+import time
+from datetime import datetime
 from time import strftime, gmtime
 from temboardagent.errors import HTTPError
 
@@ -141,3 +143,11 @@ def check_fqdn(name):
 def now():
     """Give the current date and time at GMT, suitable for PostgreSQL."""
     return strftime("%Y-%m-%d %H:%M:%S +0000", gmtime())
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        else:
+            return super(JSONEncoder, self).default(obj)

@@ -4,6 +4,7 @@ import json
 import os
 import sqlite3
 from textwrap import dedent
+from temboardagent.tools import JSONEncoder
 
 
 def bootstrap(path, dbname):
@@ -36,7 +37,7 @@ def add_metric(path, dbname, time, data, keep_limit):
         c = conn.cursor()
         c.execute(
             "INSERT INTO metrics VALUES(?, ?)",
-            (time, json.dumps(data))
+            (time, json.dumps(data, cls=JSONEncoder))
         )
         # Purge
         c.execute(
