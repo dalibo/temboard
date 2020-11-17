@@ -27,7 +27,6 @@ workflows:
         name: stage1-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
         requires: [stage0-pkg-centos7, "stage0-unit-python:3.6"]
-        python: "python3"
         matrix:
           parameters:
             pgversion: ["9.6", "12"]
@@ -35,7 +34,6 @@ workflows:
         name: stage1-func-pg<< matrix.pgversion >>-centos8
         dist: centos8
         requires: [stage0-pkg-centos8, "stage0-unit-python:3.6"]
-        python: "python3"
         matrix:
           parameters:
             pgversion: ["9.6", "12"]
@@ -44,7 +42,6 @@ workflows:
         dist: buster
         pgversion: "13"
         install_rpm: 0
-        python: "python3"
         requires: ["stage0-unit-python:3.6"]
     - func:
         name: stage1-func-pg11-py2-buster
@@ -57,6 +54,7 @@ workflows:
         dist: stretch
         install_rpm: 0
         requires: ["stage0-unit-python:2.7"]
+        python: "python2"
         matrix:
           parameters:
             pgversion: ["10"]
@@ -190,7 +188,7 @@ jobs:
       python:
         description: "Python interpreter"
         type: string
-        default: "python2"
+        default: "python3"
     docker: [image: "dalibo/labs-sdk:<< parameters.dist >>"]
     environment:
       TBD_PGVERSION: "<< parameters.pgversion >>"
