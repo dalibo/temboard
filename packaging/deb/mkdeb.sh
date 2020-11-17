@@ -47,7 +47,8 @@ else
 fi
 # Fake --install-layout=deb, when using wheel.
 pythonv=$(python3 --version |& grep -Po 'Python \K([3]\..)')
-mv $DESTDIR/usr/lib/python${pythonv}/{site,dist}-packages/
+mkdir -p ${DESTDIR}/usr/lib/python3/dist-packages/
+mv $DESTDIR/usr/lib/python${pythonv}/site-packages/* $DESTDIR/usr/lib/python3/dist-packages/
 
 #       B U I L D
 
