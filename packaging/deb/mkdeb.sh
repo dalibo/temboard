@@ -40,10 +40,10 @@ release=0dlb1${codename}1
 if [ "${FROMSOURCE-}" = 1 ] ;
 then
 	# Install from sources
-	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps $TOP_SRCDIR
+	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps --no-compile $TOP_SRCDIR
 else
 	# Install from pypi
-	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps temboard-agent==$pep440v
+	pip3 install --pre --root $DESTDIR --prefix /usr --no-deps --no-compile temboard-agent==$pep440v
 fi
 # Fake --install-layout=deb, when using wheel.
 pythonv=$(python3 --version |& grep -Po 'Python \K([3]\..)')
