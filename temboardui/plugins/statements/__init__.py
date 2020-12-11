@@ -142,7 +142,9 @@ BASE_QUERY_STATDATA_DATABASE = """
 WITH first_occurence AS (
   -- first occurence for each statement
   SELECT
-    distinct on (queryid) queryid,
+    distinct on (queryid, userid)
+    queryid,
+    userid,
     ts,
     calls,
     total_exec_time,
@@ -162,12 +164,16 @@ WITH first_occurence AS (
     (
       (
         SELECT
-          distinct on (queryid) queryid,
+          distinct on (queryid, userid)
+          queryid,
+          userid,
           (record).*
         FROM
           (
             SELECT
-              distinct on (queryid) queryid,
+              distinct on (queryid, userid)
+              queryid,
+              userid,
               unnest(records) AS record
             FROM
               statements.statements_history psh
@@ -183,6 +189,7 @@ WITH first_occurence AS (
               {queryidfilter}
             order by
               queryid,
+              userid,
               coalesce_range
           ) AS unnested
         WHERE
@@ -197,12 +204,15 @@ WITH first_occurence AS (
           )
         order by
           queryid,
+          userid,
           ts
       )
       UNION ALL
         (
           SELECT
-            distinct on (queryid) queryid,
+            distinct on (queryid, userid)
+            queryid,
+            userid,
             (record).*
           FROM
             statements.statements_history_current
@@ -222,17 +232,21 @@ WITH first_occurence AS (
             {queryidfilter}
           order by
             queryid,
+            userid,
             ts
         )
     ) as h
   order by
     queryid,
+    userid,
     ts
 ),
 last_occurence AS (
   -- last occurence for each statement
   SELECT
-    distinct on (queryid) queryid,
+    distinct on (queryid, userid)
+    queryid,
+    userid,
     ts,
     calls,
     total_exec_time,
@@ -252,12 +266,16 @@ last_occurence AS (
     (
       (
         SELECT
-          distinct on (queryid) queryid,
+          distinct on (queryid, userid)
+          queryid,
+          userid,
           (record).*
         FROM
           (
             SELECT
-              distinct on (queryid) queryid,
+              distinct on (queryid, userid)
+              queryid,
+              userid,
               unnest(records) AS record
             FROM
               statements.statements_history psh
@@ -273,6 +291,7 @@ last_occurence AS (
               {queryidfilter}
             order by
               queryid,
+              userid,
               coalesce_range desc
           ) AS unnested
         WHERE
@@ -287,12 +306,15 @@ last_occurence AS (
           )
         order by
           queryid,
+          userid,
           ts desc
       )
       UNION ALL
         (
           SELECT
-            distinct on (queryid) queryid,
+            distinct on (queryid, userid)
+            queryid,
+            userid,
             (record).*
           FROM
             statements.statements_history_current
@@ -312,11 +334,13 @@ last_occurence AS (
             {queryidfilter}
           order by
             queryid,
+            userid,
             ts desc
         )
     ) as h
   order by
     queryid,
+    userid,
     ts desc
 )
 SELECT
@@ -366,8 +390,12 @@ SELECT
   ) AS blk_write_time
 FROM
   first_occurence AS fo
-  JOIN last_occurence AS lo ON fo.queryid = lo.queryid
-  JOIN statements.statements ON statements.queryid = fo.queryid
+  JOIN last_occurence AS lo
+    ON fo.queryid = lo.queryid
+    AND fo.userid = lo.userid
+  JOIN statements.statements
+    ON statements.queryid = fo.queryid
+    AND statements.userid = fo.userid
   AND agent_address = :agent_address
   AND agent_port = :agent_port
   AND dbid = :dbid
