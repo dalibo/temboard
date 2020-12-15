@@ -240,8 +240,20 @@
     }
   }
 
+  function setToPickerMinDate() {
+    $(this.$el).find('[data-role=to-picker]').daterangepicker(
+      $.extend({
+        minDate: dateMath.parse(this.inputFrom)
+      }, pickerOptions),
+      onPickerApply.bind(this, 'inputTo')
+    );
+  }
+
   function onPickerApply(targetProperty, date) {
     this[targetProperty] = date;
+    if (targetProperty === 'inputFrom') {
+      setToPickerMinDate.call(this);
+    }
   }
 
   function refresh() {
