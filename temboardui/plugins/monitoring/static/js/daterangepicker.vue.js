@@ -183,13 +183,25 @@
     this.isPickerOpen = !this.isPickerOpen;
   }
 
+  function parseInputDate(date) {
+    /*
+     * Tries to convert a date or string to moment
+     * Returns value unchanged if not a valid date
+     */
+    if (moment.isMoment(date)) {
+      return date
+    }
+    const newDate = moment(new Date(date));
+    return newDate.isValid() ? newDate : date;
+  }
+
   function onApply() {
     /*
      * Called when global "apply" button is clicked
      */
     this.isPickerOpen = false;
-    this.rawFrom = this.inputFrom;
-    this.rawTo = this.inputTo;
+    this.rawFrom = parseInputDate(this.inputFrom);
+    this.rawTo = parseInputDate(this.inputTo);
     this.refresh();
   }
 
