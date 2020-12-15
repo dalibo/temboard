@@ -142,10 +142,10 @@
       $route: function(to, from) {
         // Detect changes in browser history (back button for example)
         if (to.query.start) {
-          this.rawFrom = convertDate(to.query.start);
+          this.rawFrom = convertTimestampToDate(to.query.start);
         }
         if (to.query.end) {
-          this.rawTo = convertDate(to.query.end);
+          this.rawTo = convertTimestampToDate(to.query.end);
         }
         this.refresh();
       }
@@ -160,14 +160,14 @@
      */
     var start = this.$route.query.start || this.from || 'now-24h';
     var end = this.$route.query.end || this.to || 'now';
-    this.rawFrom = convertDate(start);
-    this.rawTo = convertDate(end);
+    this.rawFrom = convertTimestampToDate(start);
+    this.rawTo = convertTimestampToDate(end);
     this.notify();
 
     synchronizePickers.call(this);
   }
 
-  function convertDate(date) {
+  function convertTimestampToDate(date) {
     const timestamp = parseInt(date, 10);
     return _.isFinite(timestamp) ? moment(timestamp) : date;
   }
