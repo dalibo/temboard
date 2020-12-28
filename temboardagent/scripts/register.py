@@ -119,7 +119,7 @@ def wrapped_main(args, app):
                 "Content-type": "application/json"
             }
         )
-        infos = json.loads(content)
+        infos = json.loads(content.decode("utf-8"))
 
         print("Login at %s ..." % (args.ui_address))
         username = ask_username()
