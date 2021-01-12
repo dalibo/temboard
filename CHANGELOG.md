@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.5] - 2021-01-12
+
+- Return valid JSON if no result is returned by postgres (monitoring)
+    [@pgiraud]
+
+## [7.4] - 2020-12-15
+
+- Take userid into account for statdata query [@pgiraud]
+- Fix daterange picker behavior [@pgiraud]
+
 ## [7.3] - 2020-10-15
 
 - Commit after alert processing [@bersace]
