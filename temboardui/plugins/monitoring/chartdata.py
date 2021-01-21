@@ -412,7 +412,7 @@ SELECT
     datetime AS date,
     SUM((record).n_rollback) AS rollback
 FROM %(tablename)s
-WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND key = %(key)s
+WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 GROUP BY datetime, instance_id ORDER BY datetime
         """,  # noqa
         probename='xacts',
