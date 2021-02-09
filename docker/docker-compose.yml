@@ -35,19 +35,19 @@ services:
   instance13:
     image: postgres:13
     volumes:
-    - data13:/var/lib/postgresql/data
-    - run13:/var/run/postgresql
+      - data13:/var/lib/postgresql/data
+      - run13:/var/run/postgresql
 
   agent13:
     image: dalibo/temboard-agent
     volumes:
-    - data13:/var/lib/postgresql/data
-    - run13:/var/run/postgresql/
-    - /usr/bin/docker:/usr/bin/docker
-    - /var/run/docker.sock:/var/run/docker.sock
+      - data13:/var/lib/postgresql/data
+      - run13:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
     links:
-    - instance13:instance13.fqdn
-    - ui
+      - instance13:instance13.fqdn
+      - ui
     environment:
       TEMBOARD_HOSTNAME: instance13.fqdn
       TEMBOARD_KEY: key_for_agent_13
