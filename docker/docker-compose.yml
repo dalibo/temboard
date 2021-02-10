@@ -37,6 +37,8 @@ services:
     volumes:
     - data13:/var/lib/postgresql/data
     - run13:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent13:
     image: dalibo/temboard-agent
@@ -60,6 +62,8 @@ services:
     volumes:
       - data12:/var/lib/postgresql/data
       - run12:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent12:
     image: dalibo/temboard-agent
@@ -83,6 +87,8 @@ services:
     volumes:
       - data10:/var/lib/postgresql/data
       - run10:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent10:
     image: dalibo/temboard-agent
@@ -106,6 +112,8 @@ services:
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent96:
     image: dalibo/temboard-agent
