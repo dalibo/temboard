@@ -34,6 +34,7 @@ services:
 
   instance13:
     image: postgres:13
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5432:5432
     volumes:
@@ -59,6 +60,7 @@ services:
 
   instance12:
     image: postgres:12
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5433:5432
     volumes:
@@ -84,6 +86,7 @@ services:
 
   instance10:
     image: postgres:10
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5434:5432
     volumes:
@@ -109,6 +112,7 @@ services:
 
   instance96:
     image: postgres:9.6
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5435:5432
     volumes:
