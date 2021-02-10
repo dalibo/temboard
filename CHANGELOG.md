@@ -1,5 +1,10 @@
 # Changelog
 
+## [7.6] - 2021-02-10
+
+- Fix wrong column name in SQL for chartdata for rollback transactions
+    (monitoring) [@pgiraud]
+
 ## [7.5] - 2021-01-12
 
 - Return valid JSON if no result is returned by postgres (monitoring)
