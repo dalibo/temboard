@@ -26,6 +26,7 @@ pgbench:
 
 ``` console
 $ export PGHOST=0.0.0.0 PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres
+$ psql -c 'CREATE EXTENSION IF NOT EXISTS pg_stat_statements'
 $ pgbench -i
 $ pgbench -c 8 -T 60
 ```
