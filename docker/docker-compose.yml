@@ -34,6 +34,8 @@ services:
 
   instance13:
     image: postgres:13
+    ports:
+      - 5432:5432
     volumes:
     - data13:/var/lib/postgresql/data
     - run13:/var/run/postgresql
