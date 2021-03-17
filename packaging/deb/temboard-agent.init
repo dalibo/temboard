@@ -33,7 +33,7 @@ test -f $CONF || exit 0
 
 . /lib/lsb/init-functions
 
-SSD="start-stop-daemon --pidfile $PIDFILE --quiet"
+SSD="start-stop-daemon --pidfile $PIDFILE --quiet --user $RUNASUSER"
 
 case "$1" in
   start)
