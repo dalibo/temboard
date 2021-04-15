@@ -34,12 +34,16 @@ log() {
 	echo "$@" | tee -a /dev/fd/3 >&2
 }
 
+psql() {
+	command sudo -Eu "${SYSUSER}" psql -AtX "$@"
+}
+
 query_pgsettings() {
 	# Usage: query_pgsettings name [default]
 
 	local name=$1; shift
 	local default=${1-}; shift
-	val=$(sudo -Eu ${SYSUSER} psql -Atc "SELECT setting FROM pg_settings WHERE name = '${name}';")
+	val=$(psql -c "SELECT setting FROM pg_settings WHERE name = '${name}';")
 
 	echo "${val:-${default}}"
 }
@@ -136,7 +140,7 @@ setup_pq() {
 	log "Configuring for cluster on port ${PGPORT}."
 	export PGHOST=${PGHOST-$(query_pgsettings unix_socket_directories)}
 	PGHOST=${PGHOST%%,*}
-	if ! sudo -Eu ${SYSUSER} psql -tc "SELECT 'Postgres connection working.';" ; then
+	if ! psql -c "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
 	export PGDATA=$(query_pgsettings data_directory)
