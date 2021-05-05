@@ -1,0 +1,26 @@
+# -*- dockerfile -*-
+FROM centos:8
+
+RUN yum install -y make git sudo epel-release yum-utils rpm-build && \
+    yum install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
+    yum install -y python3 python3-pip python3-rpm-macros python3-setuptools && \
+    yum clean all
+
+RUN pip2 install python-dateutil python-setuptools python-setuptools python-futures \
+    python-tornado python-sqlalchemy python-psycopg2 python-dateutil
+
+RUN useradd builder -u 1000 -m -G users,wheel && \
+    echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    echo "# macros"                      >  /home/builder/.rpmmacros && \
+    echo "%_topdir    /home/builder/rpm" >> /home/builder/.rpmmacros && \
+    echo "%_sourcedir %{_topdir}"        >> /home/builder/.rpmmacros && \
+    echo "%_builddir  %{_topdir}"        >> /home/builder/.rpmmacros && \
+    echo "%_specdir   %{_topdir}"        >> /home/builder/.rpmmacros && \
+    echo "%_rpmdir    %{_topdir}"        >> /home/builder/.rpmmacros && \
+    echo "%_srcrpmdir %{_topdir}"        >> /home/builder/.rpmmacros && \
+    mkdir /home/builder/rpm && \
+    chown -R builder /home/builder
+USER builder
+
+ENV FLAVOR=rpmbuild OS=centos DIST=el8
+CMD /srv/pkg

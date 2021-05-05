@@ -1,8 +1,23 @@
-version: '2'
+version: '3'
 
 services:
   centos7:
-    image: rpmbuild/centos7
+    #image: rpmbuild/centos7
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+    image: dalibo/socle-builder:centos7
+    environment:
+    - VERSION
+    volumes:
+    - ../../:/workspace
+    command: /workspace/packaging/rpm/build.sh
+
+  centos8:
+    build:
+      context: .
+      dockerfile: Dockerfile.builder8
+    image: dalibo/socle-builder:centos8
     environment:
     - VERSION
     volumes:

@@ -2,6 +2,7 @@
 %global confdir %{_sysconfdir}/%{pkgname}
 %{!?pkgversion: %global pkgversion 1.1}
 %{!?pkgrevision: %global pkgrevision 1}
+%global __python /bin/python2
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
@@ -16,6 +17,8 @@ URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+%if 0%{rhel} && %{rhel} == 7
 BuildRequires: python-setuptools
 Requires:      python-alembic
 Requires:      python-futures
@@ -24,6 +27,19 @@ Requires:      python-setuptools
 Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-psycopg2
 Requires:      python-dateutil >= 1.5
+%endif
+
+%if 0%{rhel} && %{rhel} == 8
+BuildRequires: python2-setuptools
+Requires:      python2-alembic
+Requires:      python2-futures
+Requires:      python2-tornado >= 3.2
+Requires:      python2-setuptools
+Requires:      python2-sqlalchemy >= 0.9.8
+Requires:      python2-psycopg2
+Requires:      python2-dateutil >= 1.5
+%endif
+
 Requires:      openssl
 Requires:      mailcap
 
