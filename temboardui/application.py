@@ -45,9 +45,9 @@ def add_role(session,
              is_admin=False):
     try:
         role = Roles(
-            role_name=unicode(role_name),
-            role_password=unicode(role_password),
-            role_email=unicode(role_email),
+            role_name=role_name,
+            role_password=role_password,
+            role_email=role_email,
             is_active=is_active,
             is_admin=is_admin)
         session.add(role)
@@ -76,16 +76,16 @@ def update_role(session,
                 role_phone=None):
     try:
         role = session.query(Roles) \
-            .filter_by(role_name=unicode(role_name)) \
+            .filter_by(role_name=role_name) \
             .first()
         if new_role_name is not None:
-            role.role_name = unicode(new_role_name)
+            role.role_name = new_role_name
         if role_password is not None:
-            role.role_password = unicode(role_password)
+            role.role_password = role_password
         if role_email is not None:
-            role.role_email = unicode(role_email)
+            role.role_email = role_email
         if role_phone is not None:
-            role.role_phone = unicode(role_phone) if role_phone else None
+            role.role_phone = role_phone if role_phone else None
         if is_active is not None:
             role.is_active = is_active
         if is_admin is not None:
@@ -112,7 +112,7 @@ def get_role(session, role_name):
     try:
         return session.query(Roles).options(
             joinedload(Roles.groups)).filter_by(
-                role_name=unicode(role_name)).first()
+                role_name=role_name).first()
     except AttributeError as e:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
@@ -122,7 +122,7 @@ def get_role(session, role_name):
 def delete_role(session, role_name):
     try:
         role = session.query(Roles).filter(
-            Roles.role_name == unicode(role_name)).one()
+            Roles.role_name == role_name).one()
         session.delete(role)
     except NoResultFound as e:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
@@ -144,9 +144,9 @@ Groups
 def add_group(session, group_name, group_description, group_kind):
     try:
         group = Groups(
-            group_name=unicode(group_name),
-            group_description=unicode(group_description),
-            group_kind=unicode(group_kind))
+            group_name=group_name,
+            group_description=group_description,
+            group_kind=group_kind)
         session.add(group)
         session.flush()
         return group
@@ -167,13 +167,13 @@ def get_group(session, group_name, group_kind):
     try:
         if group_kind == 'role':
             return session.query(Groups).filter_by(
-                group_name=unicode(group_name),
-                group_kind=unicode(group_kind)).one()
+                group_name=group_name,
+                group_kind=group_kind).one()
         else:
             return session.query(Groups).options(
                 joinedload(Groups.ari)).filter(
-                    Groups.group_name == unicode(group_name),
-                    Groups.group_kind == unicode(group_kind)).one()
+                    Groups.group_name == group_name,
+                    Groups.group_kind == group_kind).one()
     except AttributeError as e:
         raise TemboardUIError(
             400, "Group '{}' ({}) not found.".format(group_name, group_kind))
@@ -189,13 +189,13 @@ def update_group(session,
     try:
         group = session.query(Groups) \
             .filter_by(
-                group_name=unicode(group_name),
-                group_kind=unicode(group_kind)) \
+                group_name=group_name,
+                group_kind=group_kind) \
             .first()
         if new_group_name is not None:
-            group.group_name = unicode(new_group_name)
+            group.group_name = new_group_name
         if group_description is not None:
-            group.group_description = unicode(group_description)
+            group.group_description = group_description
         session.merge(group)
         session.flush()
         return group
@@ -215,8 +215,8 @@ def update_group(session,
 def delete_group(session, group_name, group_kind):
     try:
         group = session.query(Groups).filter(
-            Groups.group_name == unicode(group_name),
-            Groups.group_kind == unicode(group_kind)).one()
+            Groups.group_name == group_name,
+            Groups.group_kind == group_kind).one()
         session.delete(group)
     except NoResultFound as e:
         raise TemboardUIError(400, "Group '%s' not found." % (group_name))
@@ -227,18 +227,18 @@ def delete_group(session, group_name, group_kind):
 def get_group_list(session, group_kind='role'):
     if group_kind == 'role':
         return session.query(Groups).filter(
-            Groups.group_kind == unicode(group_kind)).order_by(
+            Groups.group_kind == group_kind).order_by(
                 Groups.group_name).all()
     else:
         return session.query(Groups).options(joinedload(Groups.ari)).filter(
-            Groups.group_kind == unicode(group_kind)).order_by(
+            Groups.group_kind == group_kind).order_by(
                 Groups.group_name).all()
 
 
 def add_role_in_group(session, role_name, group_name):
     try:
         role_group = RoleGroups(
-            role_name=unicode(role_name), group_name=unicode(group_name))
+            role_name=role_name, group_name=group_name)
         session.add(role_group)
         session.flush()
     except IntegrityError as e:
@@ -260,8 +260,8 @@ def add_role_in_group(session, role_name, group_name):
 def delete_role_from_group(session, role_name, group_name):
     try:
         role_group = session.query(RoleGroups).filter(
-            RoleGroups.group_name == unicode(group_name),
-            RoleGroups.role_name == unicode(role_name)).one()
+            RoleGroups.group_name == group_name,
+            RoleGroups.role_name == role_name).one()
         session.delete(role_group)
     except NoResultFound as e:
         raise TemboardUIError(400, "Role '%s' not found in group '%s'." %
@@ -272,7 +272,7 @@ def delete_role_from_group(session, role_name, group_name):
 
 def get_groups_by_role(session, role_name):
     return session.query(RoleGroups).filter(
-        RoleGroups.role_name == unicode(role_name)).order_by(
+        RoleGroups.role_name == role_name).order_by(
             RoleGroups.group_name).all()
 
 
@@ -280,14 +280,14 @@ def get_instance_groups_by_role(session, role_name):
     return session.query(InstanceGroups.group_name).filter(
         InstanceGroups.group_name == AccessRoleInstance.instance_group_name,
         AccessRoleInstance.role_group_name == RoleGroups.group_name,
-        RoleGroups.role_name == unicode(role_name)).group_by(
+        RoleGroups.role_name == role_name).group_by(
             InstanceGroups.group_name).order_by(
                 InstanceGroups.group_name).all()
 
 
 def get_roles_by_group(session, group_name):
     return session.query(Roles).filter(
-        RoleGroups.group_name == unicode(group_name),
+        RoleGroups.group_name == group_name,
         Roles.role_name == RoleGroups.role_name).order_by(
             Roles.role_name).all()
 
@@ -312,11 +312,11 @@ def add_instance(session,
                  comment=None):
     try:
         instance = Instances(
-            agent_address=unicode(new_agent_address),
+            agent_address=new_agent_address,
             agent_port=int(new_agent_port),
-            hostname=unicode(hostname))
+            hostname=hostname)
         if agent_key is not None:
-            instance.agent_key = unicode(agent_key)
+            instance.agent_key = agent_key
         if cpu is not None and cpu != '':
             instance.cpu = int(cpu)
         if memory_size is not None and memory_size != '':
@@ -324,11 +324,11 @@ def add_instance(session,
         if pg_port is not None and pg_port != '':
             instance.pg_port = int(pg_port)
         if pg_version is not None:
-            instance.pg_version = unicode(pg_version)
+            instance.pg_version = pg_version
         if pg_version_summary is not None:
-            instance.pg_version_summary = unicode(pg_version_summary)
+            instance.pg_version_summary = pg_version_summary
         if pg_data is not None:
-            instance.pg_data = unicode(pg_data)
+            instance.pg_data = pg_data
         instance.notify = bool(notify)
         instance.comment = comment
         session.add(instance)
@@ -350,7 +350,7 @@ def get_instance(session, agent_address, agent_port):
         return session.query(Instances).options(
             joinedload(Instances.groups),
             joinedload(Instances.plugins)).filter_by(
-                agent_address=unicode(agent_address),
+                agent_address=agent_address,
                 agent_port=agent_port).first()
     except AttributeError as e:
         raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
@@ -377,11 +377,11 @@ def update_instance(session,
     try:
         instance = session.query(Instances) \
             .filter_by(
-                agent_address=unicode(agent_address),
+                agent_address=agent_address,
                 agent_port=agent_port) \
             .first()
         if new_agent_address is not None:
-            instance.agent_address = unicode(new_agent_address)
+            instance.agent_address = new_agent_address
         if new_agent_port is not None:
             instance.agent_port = int(new_agent_port)
         if cpu is not None and cpu != '':
@@ -402,7 +402,7 @@ def update_instance(session,
         for prop in ['agent_key', 'hostname', 'pg_version',
                      'pg_version_summary', 'pg_data']:
             if locals().get(prop) is not None:
-                setattr(instance, prop, unicode(locals().get(prop)))
+                setattr(instance, prop, locals().get(prop))
         session.merge(instance)
         session.flush()
         return instance
@@ -428,7 +428,7 @@ def delete_instance(session, agent_address, agent_port):
 
     try:
         instance = session.query(Instances).filter(
-            Instances.agent_address == unicode(agent_address),
+            Instances.agent_address == agent_address,
             Instances.agent_port == agent_port).one()
         session.delete(instance)
     except NoResultFound as e:
@@ -474,14 +474,14 @@ def delete_instance(session, agent_address, agent_port):
 def add_instance_in_group(session, agent_address, agent_port, group_name):
     try:
         # Create instance group if not exists
-        group = Groups(group_name=unicode(group_name), group_kind='instance')
+        group = Groups(group_name=group_name, group_kind='instance')
         session.merge(group)
         session.flush()
 
         instance_group = InstanceGroups(
-            agent_address=unicode(agent_address),
+            agent_address=agent_address,
             agent_port=agent_port,
-            group_name=unicode(group_name))
+            group_name=group_name)
         session.add(instance_group)
         session.flush()
     except IntegrityError as e:
@@ -505,7 +505,7 @@ def add_instance_in_group(session, agent_address, agent_port, group_name):
 def purge_instance_plugins(session, agent_address, agent_port):
     try:
         plugins = session.query(Plugins).filter(
-            Plugins.agent_address == unicode(agent_address),
+            Plugins.agent_address == agent_address,
             Plugins.agent_port == agent_port).all()
         for plugin in plugins:
             session.delete(plugin)
@@ -516,9 +516,9 @@ def purge_instance_plugins(session, agent_address, agent_port):
 def add_instance_plugin(session, agent_address, agent_port, plugin_name):
     try:
         plugin = Plugins(
-            agent_address=unicode(agent_address),
+            agent_address=agent_address,
             agent_port=agent_port,
-            plugin_name=unicode(plugin_name))
+            plugin_name=plugin_name)
         session.add(plugin)
         session.flush()
     except IntegrityError as e:
@@ -545,9 +545,9 @@ def get_instance_list(
 def delete_instance_from_group(session, agent_address, agent_port, group_name):
     try:
         instance_group = session.query(InstanceGroups).filter(
-            InstanceGroups.agent_address == unicode(agent_address),
+            InstanceGroups.agent_address == agent_address,
             InstanceGroups.agent_port == agent_port,
-            InstanceGroups.group_name == unicode(group_name)).one()
+            InstanceGroups.group_name == group_name).one()
         session.delete(instance_group)
     except NoResultFound as e:
         raise TemboardUIError(
@@ -560,7 +560,7 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
 def get_instances_by_group(session, group_name):
     return session.query(Instances).options(
         joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
-            InstanceGroups.group_name == unicode(group_name),
+            InstanceGroups.group_name == group_name,
             Instances.agent_address == InstanceGroups.agent_address,
             Instances.agent_port == InstanceGroups.agent_port).order_by(
                 Instances.agent_address).all()
@@ -568,7 +568,7 @@ def get_instances_by_group(session, group_name):
 
 def get_groups_by_instance(session, agent_address, agent_port):
     return session.query(InstanceGroups).filter(
-        InstanceGroups.agent_address == unicode(agent_address),
+        InstanceGroups.agent_address == agent_address,
         InstanceGroups.agent_port == agent_port).order_by(
             InstanceGroups.group_name).all()
 
@@ -591,8 +591,8 @@ def add_role_group_in_instance_group(session, role_group_name,
                                      instance_group_name):
     try:
         ari = AccessRoleInstance(
-            role_group_name=unicode(role_group_name),
-            instance_group_name=unicode(instance_group_name))
+            role_group_name=role_group_name,
+            instance_group_name=instance_group_name)
         session.add(ari)
         session.flush()
     except IntegrityError as e:
@@ -617,9 +617,9 @@ def delete_role_group_from_instance_group(session, role_group_name,
                                           instance_group_name):
     try:
         ari = session.query(AccessRoleInstance).filter(
-            AccessRoleInstance.role_group_name == unicode(role_group_name),
-            AccessRoleInstance.instance_group_name == unicode(
-                instance_group_name)).one()
+            AccessRoleInstance.role_group_name == role_group_name,
+            AccessRoleInstance.instance_group_name == instance_group_name
+        ).one()
         session.delete(ari)
     except NoResultFound as e:
         raise TemboardUIError(
@@ -636,7 +636,7 @@ def get_instances_by_role_name(session, role_name):
             InstanceGroups.group_name ==
             AccessRoleInstance.instance_group_name,
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == unicode(role_name)).order_by(
+            RoleGroups.role_name == role_name).order_by(
                 InstanceGroups.group_name, Instances.agent_address)
 
 
@@ -647,8 +647,8 @@ def role_name_can_access_instance(session, role_name, agent_address,
             AccessRoleInstance.instance_group_name ==
             InstanceGroups.group_name,
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == unicode(role_name),
-            InstanceGroups.agent_address == unicode(agent_address),
+            RoleGroups.role_name == role_name,
+            InstanceGroups.agent_address == agent_address,
             InstanceGroups.agent_port == agent_port).one()
     except (NoResultFound, Exception):
         raise TemboardUIError(400, "You don't have access to this instance.")
@@ -657,9 +657,9 @@ def role_name_can_access_instance(session, role_name, agent_address,
 def get_role_by_auth(session, role_name, role_password):
     try:
         role = session.query(Roles).filter(
-            Roles.role_name == unicode(role_name),
+            Roles.role_name == role_name,
             Roles.is_active.is_(True)).one()
-        if role.role_password != unicode(role_password):
+        if role.role_password != role_password:
             raise TemboardUIError(400, "Wrong user/password: %s/%s" %
                                   (role_name, role_password))
         return role
@@ -714,12 +714,12 @@ def get_role_by_cookie(session, content):
             raise Exception("Cookie's content is corrupted.")
         try:
             role = session.query(Roles).filter(
-                Roles.role_name == unicode(c_role_name),
+                Roles.role_name == c_role_name,
                 Roles.is_active.is_(True)).one()
         except (NoResultFound, Exception):
             raise Exception("Role '%s' not found or not active." %
                             (c_role_name))
-        if role.role_password[:15] != unicode(c_fp_hash_password):
+        if role.role_password[:15] != c_fp_hash_password:
             raise Exception("Password sign not correct.")
         return role
     else:

@@ -108,7 +108,7 @@ def checks(request):
         for row in post['checks']:
             # Find the check from its name
             check = request.db_session.query(Check).filter(
-                        Check.name == unicode(row.get('name')),
+                        Check.name == row.get('name'),
                         Check.host_id == host_id,
                         Check.instance_id == instance_id).first()
             enabled_before = check.enabled
@@ -138,7 +138,7 @@ def checks(request):
                     CheckState.check_id == check.check_id,
                 )
                 for i in cs:
-                    i.state = unicode('UNDEF')
+                    i.state = 'UNDEF'
                     request.db_session.merge(i)
                     request.db_session.execute(
                         "SELECT monitoring.append_state_changes(:d, :i,"

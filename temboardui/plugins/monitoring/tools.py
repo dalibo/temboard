@@ -308,7 +308,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
         # Try to find enabled check for this host_id with the same name
         try:
             c = session.query(Check).filter(
-                Check.name == unicode(name),
+                Check.name == name,
                 Check.host_id == host_id,
                 Check.instance_id == instance_id,
                 Check.enabled == bool(True),
@@ -320,7 +320,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
         try:
             cs = session.query(CheckState).filter(
                 CheckState.check_id == c.check_id,
-                CheckState.key == unicode(key)
+                CheckState.key == key
             ).one()
             # State has changed since last time
             if cs.state != state:
@@ -336,12 +336,12 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
                     },
                     expire=0,
                 )
-            cs.state = unicode(state)
+            cs.state = state
             session.merge(cs)
 
         except NoResultFound:
             cs = CheckState(
-                check_id=c.check_id, key=unicode(key), state=unicode(state)
+                check_id=c.check_id, key=key, state=state
             )
             session.add(cs)
 

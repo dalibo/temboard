@@ -145,7 +145,7 @@ class CallableHandler(RequestHandler):
             return
 
         try:
-            return get_role_by_cookie(self.db_session, cookie)
+            return get_role_by_cookie(self.db_session, cookie.decode("utf-8"))
         except Exception as e:
             self.logger.error("Failed to get role from cookie: %s ", e)
 
