@@ -2,7 +2,8 @@ import functools
 import json
 import logging
 import os
-import urllib2
+import urllib
+import urllib.error
 from cStringIO import StringIO
 from csv import writer as CSVWriter
 from datetime import datetime
@@ -333,14 +334,14 @@ class InstanceHelper:
                 headers=headers,
                 data=body,
             )
-        except urllib2.HTTPError as e:
+        except urllib.error.HTTPError as e:
             message = e.read()
             try:
                 message = json_decode(message)['error']
             except Exception as ee:
                 logger.debug("Failed to decode agent error: %s.", ee)
             raise HTTPError(e.code, message)
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500, str(e.reason))
         except Exception as e:

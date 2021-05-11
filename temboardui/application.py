@@ -5,7 +5,9 @@ import json
 import logging
 import re
 import urllib
-import urllib2
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import (
@@ -821,13 +823,13 @@ def send_sms(config, content, phones):
 
     errors = []
     for recipient in phones:
-        req = urllib2.Request(url=uri)
+        req = urllib.request.Request(url=uri)
         req.add_header('Authorization', 'Basic %s' % s)
         data = {'From': from_, 'Body': content, 'To': recipient}
-        req.add_data(urllib.urlencode(data))
+        req.add_data(urllib.parse.urlencode(data))
         try:
-            urllib2.urlopen(req)
-        except urllib2.HTTPError as e:
+            urllib.request.urlopen(req)
+        except urllib.error.HTTPError as e:
             response = json.loads(e.read())
             logger.error("Could not send SMS; %s" % response.get('message'))
             errors.append(recipient)

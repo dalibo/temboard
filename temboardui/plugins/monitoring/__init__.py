@@ -4,8 +4,9 @@ import hashlib
 import logging
 import os
 from textwrap import dedent
-from urllib import quote
-import urllib2
+from urllib.parse import quote
+import urllib
+import urllib.error
 
 import tornado.web
 import tornado.escape
@@ -363,7 +364,7 @@ def collector(app, address, port, key):
             url,
             headers={"Content-type": "application/json"},
         )
-    except urllib2.HTTPError:
+    except urllib.error.HTTPError:
         logger.error("Could not get response from %s" % url)
         logger.error("Agent or host are down.")
         return
@@ -423,7 +424,7 @@ def collector(app, address, port, key):
             history_url,
             headers={"Content-type": "application/json"},
         )
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         if e.code == 404:
             logger.error("Agent version does not support pull mode. "
                          "Please consider upgrading to version 5 at least.")

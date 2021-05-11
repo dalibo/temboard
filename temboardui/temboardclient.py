@@ -1,5 +1,7 @@
 import httplib
-import urllib2
+import urllib
+import urllib.error
+import urllib.request
 import ssl
 import socket
 import json
@@ -19,10 +21,10 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
             ca_certs=CA_CERT_FILE)
 
 
-class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
+class VerifiedHTTPSHandler(urllib.request.HTTPSHandler):
     def __init__(self, connection_class=VerifiedHTTPSConnection):
         self.specialized_conn_class = connection_class
-        urllib2.HTTPSHandler.__init__(self)
+        urllib.request.HTTPSHandler.__init__(self)
 
     def https_open(self, req):
         return self.do_open(self.specialized_conn_class, req)
@@ -38,20 +40,20 @@ class UnverifiedHTTPSConnection(httplib.HTTPSConnection):
         self.sock = ssl.wrap_socket(sock)
 
 
-class UnverifiedHTTPSHandler(urllib2.HTTPSHandler):
+class UnverifiedHTTPSHandler(urllib.request.HTTPSHandler):
     # HTTPS connection handler
     def __init__(self, connection_class=UnverifiedHTTPSConnection):
         self.specialized_conn_class = connection_class
-        urllib2.HTTPSHandler.__init__(self)
+        urllib.request.HTTPSHandler.__init__(self)
 
     def https_open(self, req):
         return self.do_open(self.specialized_conn_class, req)
 
 
-class RequestWithMethod(urllib2.Request):
+class RequestWithMethod(urllib.request.Request):
     def __init__(self, *args, **kwargs):
         self._method = kwargs.pop('method', None)
-        urllib2.Request.__init__(self, *args, **kwargs)
+        urllib.request.Request.__init__(self, *args, **kwargs)
 
     def get_method(self):
         return self._method if self._method else super().get_method()
@@ -64,7 +66,7 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
         https_handler = UnverifiedHTTPSHandler()
     else:
         https_handler = VerifiedHTTPSHandler()
-    url_opener = urllib2.build_opener(https_handler)
+    url_opener = urllib.request.build_opener(https_handler)
     headers_list = []
     for key, val in headers.iteritems():
         headers_list.append((key, val))
@@ -94,7 +96,7 @@ def temboard_discover(in_ca_cert_file, hostname, port):
             url='https://{}:{}/discover'.format(hostname, port),
             headers={"Content-type": "application/json"})
         return json.loads(res)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         raise TemboardError(e.code, json.loads(e.read())['error'])
     except Exception as e:
         raise TemboardError(500, str(e))
@@ -111,7 +113,7 @@ def temboard_profile(in_ca_cert_file, hostname, port, xsession):
                 "X-Session": xsession
             })
         return json.loads(res)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         raise TemboardError(e.code, json.loads(e.read())['error'])
     except Exception as e:
         raise TemboardError(500, str(e))
