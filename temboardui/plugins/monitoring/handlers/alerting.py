@@ -1,5 +1,5 @@
 import logging
-import cStringIO
+from io import StringIO
 from datetime import datetime
 from textwrap import dedent
 
@@ -30,7 +30,7 @@ def sql_json_query(request, query, *args):
 
     cur = request.db_session.connection().connection.cursor()
     query = cur.mogrify(query, args)
-    data_buffer = cStringIO.StringIO()
+    data_buffer = StringIO()
     cur.copy_expert(query, data_buffer)
     cur.close()
     data = data_buffer.getvalue()

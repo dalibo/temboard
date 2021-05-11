@@ -4,7 +4,7 @@ import logging
 import os
 import urllib
 import urllib.error
-from cStringIO import StringIO
+from io import StringIO
 from csv import writer as CSVWriter
 from datetime import datetime
 

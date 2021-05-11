@@ -1,4 +1,4 @@
-import cStringIO
+from io import StringIO
 import datetime
 from psycopg2.extensions import AsIs
 
@@ -854,7 +854,7 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
 
     metric = METRICS.get(metric_name)
     # Instanciate a new string buffer needed by copy_expert()
-    data_buffer = cStringIO.StringIO()
+    data_buffer = StringIO()
     # Get a new psycopg2 cursor from the current sqlalchemy session
     cur = session.connection().connection.cursor()
     # Change working schema to 'monitoring'
@@ -874,7 +874,7 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
 
     if metric.get('pivot'):
         # Apply pivot rotation
-        data_pivot = cStringIO.StringIO()
+        data_pivot = StringIO()
         pivot_timeserie(
             data_buffer,
             index=metric.get('pivot').get('index'),
@@ -905,7 +905,7 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
     """
     query = cur.mogrify(sql, dict(instance_id=instance_id,
                                   start=start, end=end))
-    data_buffer = cStringIO.StringIO()
+    data_buffer = StringIO()
     cur.copy_expert("COPY(" + query + ") TO STDOUT", data_buffer)
     data = data_buffer.getvalue()
     data_buffer.close()
