@@ -169,8 +169,8 @@ class CallableHandler(RequestHandler):
     def get(self, *args, **kwargs):
         try:
             response = yield self.callable_(self.request, *args, **kwargs)
-        except Redirect as response:
-            pass
+        except Redirect as r:
+            response = r
 
         if response is None:
             response = u''
