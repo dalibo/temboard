@@ -57,7 +57,7 @@ def legacy_enable_plugins(self, plugin_names):
     plugins_conf = dict()
     self.workersets = []
     self.loaded_plugins = []
-    for key, val in plugins.iteritems():
+    for key, val in plugins.items():
         self.add_rules(val['routes'])
         plugins_conf[key] = val['configuration']
         if val['workers']:
