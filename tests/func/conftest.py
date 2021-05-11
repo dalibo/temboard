@@ -1,4 +1,4 @@
-import httplib
+import http.client as httpclient
 import json
 import os
 import ssl
@@ -31,7 +31,7 @@ class HTTPClient:
 
     def get(self, path, headers=None):
         url = urlparse(self.base_url + path)
-        conn = httplib.HTTPSConnection(
+        conn = httpclient.HTTPSConnection(
             url.hostname, url.port,
             timeout=5, context=ssl._create_unverified_context(),
         )
@@ -48,7 +48,7 @@ class HTTPClient:
 
     def post(self, path, body, headers=None):
         url = urlparse(self.base_url + path)
-        conn = httplib.HTTPSConnection(
+        conn = httpclient.HTTPSConnection(
             url.hostname, url.port,
             timeout=5, context=ssl._create_unverified_context(),
         )

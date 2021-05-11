@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import urllib
 import urllib.error
 import urllib.request
@@ -7,7 +7,7 @@ import socket
 import json
 
 
-class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+class VerifiedHTTPSConnection(http.client.HTTPSConnection):
     def connect(self):
         sock = socket.create_connection((self.host, self.port), self.timeout)
         if self._tunnel_host:
@@ -30,7 +30,7 @@ class VerifiedHTTPSHandler(urllib.request.HTTPSHandler):
         return self.do_open(self.specialized_conn_class, req)
 
 
-class UnverifiedHTTPSConnection(httplib.HTTPSConnection):
+class UnverifiedHTTPSConnection(http.client.HTTPSConnection):
     # HTTPS connection class, without any SSL cert. check.
     def connect(self):
         sock = socket.create_connection((self.host, self.port), self.timeout)
