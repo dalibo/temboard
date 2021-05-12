@@ -326,7 +326,7 @@ def schedule_collector(app):
 
             # Build a unique Task id based on agent address and port
             task_id = hashlib.md5(
-                "{}:{}".format(agent_address, agent_port)
+                "{}:{}".format(agent_address, agent_port).encode("utf-8")
             ).hexdigest()[:8]
 
             taskmanager.schedule_task(
