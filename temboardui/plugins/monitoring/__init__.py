@@ -332,9 +332,8 @@ def schedule_collector(app):
             # For each registered agent, let's start a new data collector
 
             # Build a unique Task id based on agent address and port
-            task_id = hashlib.md5(
-                "%s:%s" % (agent_address, agent_port)
-            ).hexdigest()[:8]
+            agent_id = "%s:%s" % (agent_address, agent_port)
+            task_id = hashlib.md5(agent_id.encode("utf-8")).hexdigest()[:8]
 
             taskmanager.schedule_task(
                 'collector',
