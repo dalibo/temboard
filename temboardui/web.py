@@ -103,7 +103,7 @@ def csvify(data, status_code=200):
         for row in data:
             writer.writerow(row)
         data = fo.getvalue()
-    elif not isinstance(data, (str, unicode)):
+    elif not isinstance(data, (str, bytes)):
         raise ValueError("Malformed CSV data")
     return Response(
         status_code=status_code,
@@ -158,7 +158,7 @@ class CallableHandler(RequestHandler):
 
         if response is None:
             response = ''
-        if isinstance(response, (dict, unicode)):
+        if isinstance(response, (dict, str)):
             response = Response(body=response)
         self.write_response(response)
 
