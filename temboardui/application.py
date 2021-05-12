@@ -173,8 +173,8 @@ def get_group(session, group_name, group_kind):
                     Groups.group_name == unicode(group_name),
                     Groups.group_kind == unicode(group_kind)).one()
     except AttributeError as e:
-        raise TemboardUIError(400, "Group '%s' (%s) not found." % (group_name,
-                                                                   group_kind))
+        raise TemboardUIError(
+            400, "Group '{}' ({}) not found.".format(group_name, group_kind))
     except Exception as e:
         raise TemboardUIError(e.message)
 
@@ -315,11 +315,11 @@ def add_instance(session,
             hostname=unicode(hostname))
         if agent_key is not None:
             instance.agent_key = unicode(agent_key)
-        if cpu is not None and cpu != u'':
+        if cpu is not None and cpu != '':
             instance.cpu = int(cpu)
-        if memory_size is not None and memory_size != u'':
+        if memory_size is not None and memory_size != '':
             instance.memory_size = int(memory_size)
-        if pg_port is not None and pg_port != u'':
+        if pg_port is not None and pg_port != '':
             instance.pg_port = int(pg_port)
         if pg_version is not None:
             instance.pg_version = unicode(pg_version)
@@ -382,15 +382,15 @@ def update_instance(session,
             instance.agent_address = unicode(new_agent_address)
         if new_agent_port is not None:
             instance.agent_port = int(new_agent_port)
-        if cpu is not None and cpu != u'':
+        if cpu is not None and cpu != '':
             instance.cpu = int(cpu)
         else:
             instance.cpu = None
-        if memory_size is not None and memory_size != u'':
+        if memory_size is not None and memory_size != '':
             instance.memory_size = int(memory_size)
         else:
             instance.memory_size = None
-        if pg_port is not None and pg_port != u'':
+        if pg_port is not None and pg_port != '':
             instance.pg_port = int(pg_port)
         else:
             instance.pg_port = None
@@ -472,7 +472,7 @@ def delete_instance(session, agent_address, agent_port):
 def add_instance_in_group(session, agent_address, agent_port, group_name):
     try:
         # Create instance group if not exists
-        group = Groups(group_name=unicode(group_name), group_kind=u'instance')
+        group = Groups(group_name=unicode(group_name), group_kind='instance')
         session.merge(group)
         session.flush()
 
@@ -696,8 +696,8 @@ def gen_cookie(username, hash_password):
 
         2/ We don't want to see the full hash password stored in a cookie.
     """
-    content = "%s:%s" % (username, hash_password[:15])
-    return "%s:%s" % (len(content) + 1, content)
+    content = "{}:{}".format(username, hash_password[:15])
+    return "{}:{}".format(len(content) + 1, content)
 
 
 def get_role_by_cookie(session, content):
@@ -817,7 +817,7 @@ def send_sms(config, content, phones):
     token = config.twilio_auth_token
     from_ = config.twilio_from
     uri = 'https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json' % sid
-    s = base64.b64encode('%s:%s' % (sid, token))
+    s = base64.b64encode('{}:{}'.format(sid, token))
 
     errors = []
     for recipient in phones:

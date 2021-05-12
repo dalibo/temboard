@@ -1,6 +1,3 @@
-# coding: utf-8
-
-
 def test_arguments():
     from argparse import ArgumentParser
     from temboardui.__main__ import define_arguments

@@ -1,10 +1,7 @@
-# coding: utf-8
-
 import imp
 import logging.config
 import os
 import pkg_resources
-import socket
 import sys
 from argparse import (
     ArgumentParser,
@@ -140,7 +137,7 @@ def map_pgvars(environ):
 
 class SchedulerService(taskmanager.SchedulerService):
     def apply_config(self):
-        super(SchedulerService, self).apply_config()
+        super().apply_config()
         if self.scheduler:
             # Set legacy config context.
             self.scheduler.set_context(
@@ -165,7 +162,7 @@ class TornadoService(Service):
         try:
             server.listen(
                 config.temboard.port, address=config.temboard.address)
-        except socket.error as e:
+        except OSError as e:
             logger.error("FATAL: " + str(e) + '. Quit')
             sys.exit(3)
 
@@ -321,7 +318,7 @@ class TemboardApplication(BaseApplication):
         legacy_plugins, ep_plugins = self.filter_plugins()
         self.config.temboard.plugins = ep_plugins
 
-        super(TemboardApplication, self).apply_config()
+        super().apply_config()
 
         finalize_tornado_app(app, self.config, plugins=legacy_plugins)
 
@@ -367,12 +364,12 @@ class TemboardApplication(BaseApplication):
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self, name=u'worker pool',
+            app=self, name='worker pool',
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
         self.scheduler = SchedulerService(
-            app=self, name=u'scheduler',
+            app=self, name='scheduler',
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
@@ -398,7 +395,7 @@ class TemboardApplication(BaseApplication):
         # H T T P   S E R V E R
 
         webservice = TornadoService(
-            app=self, name=u'web', services=services,
+            app=self, name='web', services=services,
             setproctitle=setproctitle,
         )
         with services:

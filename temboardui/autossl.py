@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This module implements protocol switching from HTTP to HTTPS on the same
 # socket connection.
@@ -23,7 +22,6 @@
 
 import errno
 import logging
-import socket
 import ssl
 
 from tornado import gen
@@ -75,7 +73,7 @@ def protocol_switcher(request):
         # name-based virtualhost.
         host = '%(address)s:%(port)s' % dict(
             request.config.temboard, address=request.host)
-    new_url = 'https://%s%s' % (host, request.uri)
+    new_url = 'https://{}{}'.format(host, request.uri)
     headers = HTTPHeaders({
         'Content-Length': '0',
         'Location': new_url,
@@ -132,7 +130,7 @@ class EasySSLIOStream(SSLIOStream):
                                 self.socket.fileno(), peer, err)
                 return self.close(exc_info=True)
             raise
-        except socket.error as err:
+        except OSError as err:
             # Some port scans (e.g. nmap in -sT mode) have been known
             # to cause do_handshake to raise EBADF and ENOTCONN, so make
             # those errors quiet as well.
@@ -172,7 +170,7 @@ class AutoHTTPSServer(HTTPServer):
                 return connection.close()
             else:
                 raise
-        except socket.error as err:
+        except OSError as err:
             # If the connection is closed immediately after it is created
             # (as in a port scan), we can get one of several errors.
             # wrap_socket makes an internal call to getpeername,
@@ -225,7 +223,7 @@ class AutoHTTPSServer(HTTPServer):
             logger.debug("Stream closed by client during handshake. Skipping.")
             return
         else:
-            super(AutoHTTPSServer, self).handle_stream(ssl_stream, address)
+            super().handle_stream(ssl_stream, address)
 
     @gen.coroutine
     def handle_http_connection(self, conn):

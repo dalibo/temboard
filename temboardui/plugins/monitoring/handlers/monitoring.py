@@ -93,7 +93,7 @@ def collector(request):
     update_collector_status(
         request.db_session,
         instance_id,
-        u'OK',
+        'OK',
         last_push=datetime.utcnow(),
         # This is the datetime format used by the agent
         last_insert=datetime.strptime(

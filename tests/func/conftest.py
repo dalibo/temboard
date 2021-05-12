@@ -21,7 +21,7 @@ def selenium():
     driver.quit()
 
 
-class HTTPClient(object):
+class HTTPClient:
     class Error(Exception):
         def __init__(self, response):
             self.response = response

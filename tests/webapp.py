@@ -50,18 +50,18 @@ configure_db_session(dsn=dsn)
 
 @app.route(r'/')
 def index(request):
-    return u'OK\n'
+    return 'OK\n'
 
 
 @app.route(r'/sleep/(\d+)')
 def sleep_(request, seconds):
     sleep(int(seconds))
-    return u'%s\n' % seconds
+    return '%s\n' % seconds
 
 
 @app.route(r'/post', methods=['POST'])
 def post(request):
-    return u'%r\n' % request.body_arguments
+    return '%r\n' % request.body_arguments
 
 
 @app.route(r'/template/(.+\.html)')

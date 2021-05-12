@@ -19,7 +19,7 @@ def get_sample(request):
     }
 
 
-class SamplePlugin(object):
+class SamplePlugin:
     def __init__(self, app, **kw):
         self.app = app
         self.app.config.add_specs([OptionSpec('sample', 'option')])

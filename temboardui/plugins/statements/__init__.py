@@ -779,7 +779,7 @@ def pull_data_worker(app):
 
 
 def pull_data_for_instance(app, session, instance):
-    url = 'https://%s:%s%s?key=%s' % (
+    url = 'https://{}:{}{}?key={}'.format(
         instance.agent_address,
         instance.agent_port,
         '/statements',

@@ -24,9 +24,9 @@ def daemonize(pidfile, config):
     """
     # Try to read pidfile
     try:
-        with open(pidfile, 'r') as pf:
+        with open(pidfile) as pf:
             pid = int(pf.read().strip())
-    except IOError:
+    except OSError:
         pid = None
     except ValueError:
         sys.stderr.write("WARNING: pidfile %s in wrong format.\n" % pidfile)
@@ -41,7 +41,7 @@ def daemonize(pidfile, config):
     try:
         with open(pidfile, 'w+') as pf:
             pf.write("\0")
-    except IOError:
+    except OSError:
         sys.stderr.write("FATAL: can't write pidfile %s.\n" % pidfile)
         sys.exit(1)
 

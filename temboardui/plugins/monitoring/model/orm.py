@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.inspection import inspect
 
 
-class ModelMixin(object):
+class ModelMixin:
     """
     Class to be mixed in with every mapped class
     """
@@ -61,7 +61,7 @@ class Instance(Model):
     host = relationship('Host', backref='instances')
 
     def __repr__(self):
-        return "instance: %s:%s" % (self.host_id, self.port)
+        return "instance: {}:{}".format(self.host_id, self.port)
 
 
 class Check(Model):

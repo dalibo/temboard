@@ -33,6 +33,6 @@ def load_plugins(plugin_names, config):
         except Exception:
             logger.exception("Failed to load %s configuration.", plugin_name)
             continue
-        logger.info("Loaded plugin '%s'." % (plugin_name, ))
+        logger.info("Loaded plugin '{}'.".format(plugin_name))
 
     return ret

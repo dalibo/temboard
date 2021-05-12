@@ -1,4 +1,4 @@
-from mock import Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -145,9 +145,9 @@ def test_easy_handshake_other_errors(ioloop_mock):
     from temboardui.autossl import (
         EasySSLIOStream,
         errno,
-        socket,
         ssl,
     )
+    import socket
 
     socket_ = Mock(name='socket', spec=ssl.SSLSocket)
     stream = EasySSLIOStream(socket_)
@@ -161,13 +161,13 @@ def test_easy_handshake_other_errors(ioloop_mock):
     stream.socket = socket_
     stream._do_ssl_handshake()
 
-    socket_.do_handshake.side_effect = socket.error(errno.EBADF)
+    socket_.do_handshake.side_effect = OSError(errno.EBADF)
     stream.socket = socket_
     stream._do_ssl_handshake()
 
-    socket_.do_handshake.side_effect = socket.error(0)
+    socket_.do_handshake.side_effect = OSError(0)
     stream.socket = socket_
-    with pytest.raises(socket.error):
+    with pytest.raises(OSError):
         stream._do_ssl_handshake()
 
 

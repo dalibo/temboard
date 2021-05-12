@@ -54,8 +54,7 @@ class RequestWithMethod(urllib2.Request):
         urllib2.Request.__init__(self, *args, **kwargs)
 
     def get_method(self):
-        return self._method if self._method else super(RequestWithMethod,
-                                                       self).get_method()
+        return self._method if self._method else super().get_method()
 
 
 def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
@@ -92,7 +91,7 @@ def temboard_discover(in_ca_cert_file, hostname, port):
         res = temboard_request(
             in_ca_cert_file,
             method='GET',
-            url='https://%s:%s/discover' % (hostname, port),
+            url='https://{}:{}/discover'.format(hostname, port),
             headers={"Content-type": "application/json"})
         return json.loads(res)
     except urllib2.HTTPError as e:
@@ -106,7 +105,7 @@ def temboard_profile(in_ca_cert_file, hostname, port, xsession):
         res = temboard_request(
             in_ca_cert_file,
             method='GET',
-            url='https://%s:%s/profile' % (hostname, port),
+            url='https://{}:{}/profile'.format(hostname, port),
             headers={
                 "Content-type": "application/json",
                 "X-Session": xsession

@@ -176,7 +176,7 @@ class Groups(Model):
     )
 
 
-class Biggest(object):
+class Biggest:
 
     def __init__(self, order_by):
         self.order_by = order_by
@@ -191,7 +191,7 @@ class Biggest(object):
         ).label(label)
 
 
-class Biggestsum(object):
+class Biggestsum:
 
     def __init__(self, order_by):
         self.order_by = order_by

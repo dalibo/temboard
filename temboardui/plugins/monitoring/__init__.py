@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 import json
 import hashlib
@@ -326,7 +325,7 @@ def schedule_collector(app):
 
             # Build a unique Task id based on agent address and port
             task_id = hashlib.md5(
-                "%s:%s" % (agent_address, agent_port)
+                "{}:{}".format(agent_address, agent_port)
             ).hexdigest()[:8]
 
             taskmanager.schedule_task(
@@ -354,7 +353,7 @@ def collector(app, address, port, key):
     discover_data = dict()
 
     # First, we need to call discover API because we want to know the hostname
-    url = 'https://%s:%s/discover' % (address, port)
+    url = 'https://{}:{}/discover'.format(address, port)
     logger.debug("Calling %s" % url)
 
     try:
@@ -380,7 +379,7 @@ def collector(app, address, port, key):
 
     host_id = instance_id = None
     # Agent monitoring API endpoint
-    history_url = 'https://%s:%s/monitoring/history?key=%s&limit=100' % (
+    history_url = 'https://{}:{}/monitoring/history?key={}&limit=100'.format(
         address, port, quote(key)
     )
 
@@ -435,7 +434,7 @@ def collector(app, address, port, key):
                 update_collector_status(
                     worker_session,
                     instance_id,
-                    u'FAIL',
+                    'FAIL',
                     last_pull=datetime.utcnow(),
                 )
                 worker_session.commit()
@@ -489,7 +488,7 @@ def collector(app, address, port, key):
                 update_collector_status(
                     worker_session,
                     instance_id,
-                    u'FAIL',
+                    'FAIL',
                     last_pull=datetime.utcnow(),
                     last_insert=last_insert,
                 )
@@ -501,7 +500,7 @@ def collector(app, address, port, key):
         update_collector_status(
             worker_session,
             instance_id,
-            u'OK',
+            'OK',
             last_pull=datetime.utcnow(),
             # This is the datetime format used by the agent
             last_insert=datetime.strptime(
