@@ -25,7 +25,7 @@ workflows:
 
 jobs:
   doc:
-    docker: [{image: "python:3.5"}]
+    docker: [{image: "python:3.6"}]
     working_directory: ~/project
     steps:
     - checkout
@@ -40,7 +40,7 @@ jobs:
         destination: build/README.html
 
   unit:
-    docker: [{image: "python:2.7"}]
+    docker: [{image: "python:3.6"}]
     working_directory: /workspace
     steps:
       - checkout
@@ -53,14 +53,14 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip2.7 install --upgrade --requirement requirements-ci.txt --editable .
+            pip3 install --upgrade --requirement requirements-ci.txt --editable .
       - run:
           name: Lint
           command: |
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8
-            python2.7 setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            python3 setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
       - run:
           name: Python tests
@@ -80,9 +80,10 @@ jobs:
     - run:
         name: Build RPM snapshot
         command: |
+          sudo yum install -y python3
           sudo yum-builddep -y packaging/rpm/temboard.spec
-          python setup.py sdist
-          VERSION=$(python setup.py --version) packaging/rpm/build.sh
+          python3 setup.py sdist
+          VERSION=$(python3 setup.py --version) packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
