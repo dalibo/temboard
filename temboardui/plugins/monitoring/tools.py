@@ -376,5 +376,5 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
 
     # Set to UNDEF each unchecked check for the given instance
     # This may happen when postgres is not available
-    db.undef_check_states(session, all_check_ids, keys.keys())
+    db.undef_check_states(session, all_check_ids, list(keys))
     session.commit()
