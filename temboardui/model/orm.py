@@ -23,16 +23,16 @@ Model = declarative_base()
 def validate_int(value):
     if value is None:
         return
-    if isinstance(value, unicode):
+    if isinstance(value, bytes):
         value = int(value)
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         value = int(value)
     assert isinstance(value, int)
     return value
 
 
 def validate_string(value):
-    assert isinstance(value, basestring)
+    assert isinstance(value, str)
     return value
 
 
@@ -47,7 +47,7 @@ def validate_boolean(value):
             value = True
         if value == 0:
             value = False
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         if str(value).lower() == 'yes' or \
            str(value).lower() == 'true' or \
            str(value).lower() == 't' or value == '1':
