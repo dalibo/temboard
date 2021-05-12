@@ -19,7 +19,7 @@ This document guides you to quickly setup all these components together.
 
 temBoard UI requires:
 
-- Python 2.7
+- Python 3.6+
 - openssl
 - bash, sudo and psql for setup script.
 
@@ -110,7 +110,7 @@ $ temboard --version
 
 temBoard UI wheel and source tarball are published on
 [PyPI](https://pypi.org/project/temboard). Installing from PyPI requires
-Python2.7, pip and wheel. It's better to have a recent version of pip.
+Python3.5+, pip and wheel. It's better to have a recent version of pip.
 
 Due to the [binary strategy of
 psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/)
