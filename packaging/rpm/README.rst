@@ -30,8 +30,8 @@ script will try to download the sources from PyPI.
 ::
 
    check-manifest
-   python setup.py sdist
-   VERSION=$(python setup.py --version) make -C packaging/rpm/ all push
+   python3 setup.py sdist
+   VERSION=$(python3 setup.py --version) make -C packaging/rpm/ all push
 
 
 Setup

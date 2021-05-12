@@ -61,6 +61,6 @@ sudo yum install -y $rpm
 (
 	cd /;
 	temboard --version;
-	python -c 'import temboardui.toolkit';
+	python3 -c 'import temboardui.toolkit';
 
 )

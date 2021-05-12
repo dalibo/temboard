@@ -3,7 +3,7 @@
 %{!?pkgversion: %global pkgversion 1.1}
 %{!?pkgrevision: %global pkgrevision 1}
 
-%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
+%{!?python3_sitelib: %global python3_sitelib %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:          %{pkgname}
 Version:       %{pkgversion}
@@ -16,14 +16,14 @@ URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: python-setuptools
+BuildRequires: python3-setuptools
+BuildRequires: python3-rpm-macros
 Requires:      python-alembic
-Requires:      python-futures
-Requires:      python-tornado >= 3.2
-Requires:      python-setuptools
-Requires:      python-sqlalchemy >= 0.9.8
-Requires:      python-psycopg2
-Requires:      python-dateutil >= 1.5
+Requires:      python36-tornado >= 3.2
+Requires:      python3-setuptools
+Requires:      python36-sqlalchemy >= 0.9.8
+Requires:      python3-psycopg2
+Requires:      python36-dateutil >= 1.5
 Requires:      openssl
 Requires:      mailcap
 
@@ -35,7 +35,7 @@ This packages holds the web user interface
 %setup -q -n %{pkgname}-%{version}
 
 %build
-%{__python} setup.py build
+%{__python3} setup.py build
 
 %pre
 # Create system user now to let rpm chown %files.
@@ -62,8 +62,8 @@ fi
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 
 %install
-PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
-%{__python} setup.py install --root=%{buildroot}
+PATH=$PATH:%{buildroot}%{python3_sitelib}/%{pkgname}
+%{__python3} setup.py install --root=%{buildroot}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
@@ -75,7 +75,7 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %files
 %config(noreplace) %attr(-,temboard,temboard) %{confdir}
 %config(noreplace) %{_sysconfdir}/logrotate.d/temboard
-%{python_sitelib}/*
+%{python3_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard
 /usr/bin/temboard-migratedb

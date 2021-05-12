@@ -43,11 +43,11 @@ release=0dlb1${CODENAME}1
 
 export PIP_CACHE_DIR=build/pip-cache/
 VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
-virtualenv --python=python2.7 $VIRTUAL_ENV
+virtualenv --python=python3 $VIRTUAL_ENV
 export PATH=${VIRTUAL_ENV}/bin:$PATH
 hash -r pip
 pip install -U pip setuptools wheel
-dist=${DISTDIR}/temboard-${pep440v}-py2-none-any.whl
+dist=${DISTDIR}/temboard-${pep440v}-py3-none-any.whl
 if ! [ -f $dist ] ; then
 	pip download --no-deps --pre --dest ${DISTDIR}/ temboard==$pep440v
 fi
@@ -58,7 +58,7 @@ fi
 # latest psycopg2.
 pip install $dist 'psycopg2<2.8'
 pip check
-virtualenv --python=python2.7 --relocatable $VIRTUAL_ENV
+virtualenv --python=python3 --relocatable $VIRTUAL_ENV
 
 sed -i s,$DESTDIR,, ${VIRTUAL_ENV}/bin/temboard
 mkdir -p $DESTDIR/usr/bin
@@ -87,7 +87,7 @@ fpm --verbose \
     --license PostgreSQL \
     --url http://temboard.io/ \
     --after-install packaging/deb/postinst.sh \
-    --depends python2.7 \
+    --depends python3 \
     $DESTDIR/=/
 
 #       T E S T
@@ -99,7 +99,7 @@ dpkg -i $deb
 (
 	cd /
 	temboard --version
-	/usr/lib/temboard/bin/python -c 'import temboardui.toolkit'
+	/usr/lib/temboard/bin/python3 -c 'import temboardui.toolkit'
 )
 
 #       S A V E
