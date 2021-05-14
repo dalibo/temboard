@@ -47,7 +47,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
-        if '/json' in response.headers.get('content-type', ''):
+        if '/json' in response.headers.get('content-type', '') or \
+           '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)
         if response.status >= 400:
             raise self.Error(response)
@@ -67,7 +68,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
-        if '/json' in response.headers.get('content-type', ''):
+        if '/json' in response.headers.get('content-type', '') or \
+           '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)
         if response.status >= 400:
             raise self.Error(response)
