@@ -2,7 +2,7 @@ import http.client as httpclient
 import json
 import os
 import ssl
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import pytest
 from selenium.webdriver import Remote
