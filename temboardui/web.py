@@ -1,12 +1,26 @@
 # coding: utf-8
 from __future__ import absolute_import
 
+from builtins import str
+from builtins import object
 import functools
 import json
 import logging
 import os
-import urllib2
-from cStringIO import StringIO
+try:
+    # python2
+    from urllib2 import (
+        HTTPError as urllib_HTTPError,
+        URLError as urllib_URLError,
+    )
+    from StringIO import StringIO
+except Exception:
+    # python3
+    from urllib.error import (
+        HTTPError as urllib_HTTPError,
+        URLError as urllib_URLError,
+    )
+    from io import StringIO
 from csv import writer as CSVWriter
 from datetime import datetime
 
@@ -105,7 +119,7 @@ def csvify(data, status_code=200):
         for row in data:
             writer.writerow(row)
         data = fo.getvalue()
-    elif not isinstance(data, (str, unicode)):
+    elif not isinstance(data, (str, bytes)):
         raise ValueError("Malformed CSV data")
     return Response(
         status_code=status_code,
@@ -160,7 +174,7 @@ class CallableHandler(RequestHandler):
 
         if response is None:
             response = u''
-        if isinstance(response, (dict, unicode)):
+        if isinstance(response, (dict, str)):
             response = Response(body=response)
         self.write_response(response)
 
@@ -174,14 +188,14 @@ class CallableHandler(RequestHandler):
             response.secure_cookies['referer_uri'] = self.request.uri
 
         self.set_status(response.status_code)
-        for k, v in response.headers.items():
+        for k, v in list(response.headers.items()):
             if not isinstance(v, list):
                 v = [v]
             self.clear_header(k)
             for v1 in v:
                 self.add_header(k, v1)
 
-        for k, v in response.secure_cookies.items():
+        for k, v in list(response.secure_cookies.items()):
             self.set_secure_cookie(k, v, expires_days=30)
 
         self.finish(response.body)
@@ -334,14 +348,14 @@ class InstanceHelper(object):
                 headers=headers,
                 data=body,
             )
-        except urllib2.HTTPError as e:
+        except urllib_HTTPError as e:
             message = e.read()
             try:
                 message = json_decode(message)['error']
             except Exception as ee:
                 logger.debug("Failed to decode agent error: %s.", ee)
             raise HTTPError(e.code, message)
-        except urllib2.URLError as e:
+        except urllib_URLError as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500, str(e.reason))
         except Exception as e:
@@ -594,9 +608,9 @@ class JSONEncoder(json.JSONEncoder):
 
 # Change default cls argument to custom encoder.
 if PY2:
-    defaults = list(json.dumps.func_defaults)
+    defaults = list(json.dumps.__defaults__)
     defaults[4] = JSONEncoder
-    json.dumps.func_defaults = tuple(defaults)
+    json.dumps.__defaults__ = tuple(defaults)
 else:
     json.dumps.__kwdefaults__['cls'] = JSONEncoder
 

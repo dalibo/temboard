@@ -1,3 +1,4 @@
+from builtins import object
 import logging
 
 from temboardui.web import Blueprint, anonymous_allowed

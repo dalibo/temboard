@@ -1,5 +1,7 @@
+from future import standard_library
+from builtins import str
 import logging
-import cStringIO
+import io
 from datetime import datetime
 from textwrap import dedent
 
@@ -22,6 +24,8 @@ from . import (
 from ..tools import get_request_ids, parse_start_end
 from ..alerting import checks_info, check_state_detail, check_specs
 
+standard_library.install_aliases()
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +34,7 @@ def sql_json_query(request, query, *args):
 
     cur = request.db_session.connection().connection.cursor()
     query = cur.mogrify(query, args)
-    data_buffer = cStringIO.StringIO()
+    data_buffer = io.StringIO()
     cur.copy_expert(query, data_buffer)
     cur.close()
     data = data_buffer.getvalue()
@@ -108,7 +112,7 @@ def checks(request):
         for row in post['checks']:
             # Find the check from its name
             check = request.db_session.query(Check).filter(
-                        Check.name == unicode(row.get('name')),
+                        Check.name == str(row.get('name')),
                         Check.host_id == host_id,
                         Check.instance_id == instance_id).first()
             enabled_before = check.enabled
@@ -138,7 +142,7 @@ def checks(request):
                     CheckState.check_id == check.check_id,
                 )
                 for i in cs:
-                    i.state = unicode('UNDEF')
+                    i.state = str('UNDEF')
                     request.db_session.merge(i)
                     request.db_session.execute(
                         "SELECT monitoring.append_state_changes(:d, :i,"

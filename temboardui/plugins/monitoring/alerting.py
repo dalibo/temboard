@@ -1,3 +1,6 @@
+from __future__ import division
+from builtins import object
+from past.utils import old_div
 import operator
 
 
@@ -117,7 +120,7 @@ class PreProcess(object):
         for r in data['blocks']:
             hit = int(r['blks_hit'])
             read = int(r['blks_read'])
-            _data[r['dbname']] = (100 * hit / (hit + read)) \
+            _data[r['dbname']] = (old_div(100 * hit, (hit + read))) \
                 if read + hit > 0 else 100
         return _data
 

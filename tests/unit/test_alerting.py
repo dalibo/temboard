@@ -78,7 +78,7 @@ def test_preproc():
         ),
     )
 
-    for k, d in data.items():
+    for k, d in list(data.items()):
         assert d['expected'] == check_specs[k]['preprocess'](d['data'])
 
 

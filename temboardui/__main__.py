@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from __future__ import print_function
+from builtins import str
 import imp
 import logging.config
 import os
@@ -60,7 +62,7 @@ def legacy_enable_plugins(self, plugin_names):
     plugins_conf = dict()
     self.workersets = []
     self.loaded_plugins = []
-    for key, val in plugins.iteritems():
+    for key, val in plugins.items():
         self.add_rules(val['routes'])
         plugins_conf[key] = val['configuration']
         if val['workers']:
@@ -125,7 +127,7 @@ def map_pgvars(environ):
         PGDATABASE='TEMBOARD_REPOSITORY_DBNAME',
     )
     mapped = environ.copy()
-    for pgvar, tbvar in pgvar_map.items():
+    for pgvar, tbvar in list(pgvar_map.items()):
         if tbvar in environ:
             continue
 

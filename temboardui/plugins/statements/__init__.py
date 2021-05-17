@@ -1,3 +1,6 @@
+from __future__ import division
+from builtins import str
+from past.utils import old_div
 import json
 import logging
 from os import path
@@ -453,7 +456,7 @@ def get_diffs_forstatdata():
     return [
         diff("calls"),
         diff("total_exec_time").label("total_exec_time"),
-        (diff("total_exec_time") / diff("calls")).label("mean_time"),
+        (old_div(diff("total_exec_time"), diff("calls"))).label("mean_time"),
         diff("shared_blks_read"),
         diff("shared_blks_hit"),
         diff("shared_blks_dirtied"),
@@ -646,15 +649,15 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
     cols = [
         to_epoch(c.ts),
         (
-            func.sum(c.calls) /
-            greatest(extract("epoch", c.mesure_interval), 1)
+            old_div(func.sum(c.calls),
+                    greatest(extract("epoch", c.mesure_interval), 1))
         ).label("calls"),
         (
-            func.sum(c.runtime) / greatest(func.sum(c.calls), 1.)
+            old_div(func.sum(c.runtime), greatest(func.sum(c.calls), 1.))
         ).label("avg_runtime"),
         (
-            func.sum(c.runtime) /
-            greatest(extract("epoch", c.mesure_interval), 1)
+            old_div(func.sum(c.runtime),
+                    greatest(extract("epoch", c.mesure_interval), 1))
         ).label("load"),
         total_read(c),
         total_hit(c)

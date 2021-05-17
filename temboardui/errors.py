@@ -1,3 +1,6 @@
+from builtins import str
+
+
 class CLIError(Exception):
     """ CLI errors """
 

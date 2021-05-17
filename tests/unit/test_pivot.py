@@ -1,4 +1,8 @@
-from StringIO import StringIO
+try:
+    # python2
+    from StringIO import StringIO
+except Exception:
+    from io import StringIO
 
 
 def test_pivot():

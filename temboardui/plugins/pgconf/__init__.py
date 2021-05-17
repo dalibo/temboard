@@ -70,7 +70,7 @@ def configuration_handler(request, category=None):
     if "POST" == request.method:
         settings = {'settings': [
             {'name': name, 'setting': value[0]}
-            for name, value in request.arguments.iteritems()
+            for name, value in request.arguments.items()
             # 'filter' is not a setting, just ignore it.
             if name != 'filter'
         ]}
