@@ -1,3 +1,4 @@
+from builtins import object
 from temboardui.plugins.monitoring.model import tables
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -27,11 +28,12 @@ class ModelMixin(object):
         mapper = inspect(cls)
         columns_values = {
             key: value
-            for key, value in dict_values.items()
+            for key, value in list(dict_values.items())
             if key in mapper.column_attrs
         }
         if recurse:
-            for key, relationship_property in mapper.relationships.items():
+            items = mapper.relationships.items()
+            for key, relationship_property in list(items):
                 target_cls = relationship_property.mapper.class_
                 value = dict_values.get(key)
                 if isinstance(value, dict):

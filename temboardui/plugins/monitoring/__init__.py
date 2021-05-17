@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
+from builtins import str
 from datetime import datetime, timedelta
 import json
 import hashlib
 import logging
 import os
 from textwrap import dedent
-from urllib import quote
-import urllib2
+try:
+    # python2
+    from urllib2 import HTTPError
+    from urllib import quote
+except Exception:
+    # python3
+    from urllib.error import HTTPError
+    from urllib.parse import quote
 
 import tornado.web
 import tornado.escape
@@ -364,7 +371,7 @@ def collector(app, address, port, key):
             url,
             headers={"Content-type": "application/json"},
         )
-    except urllib2.HTTPError:
+    except HTTPError:
         logger.error("Could not get response from %s" % url)
         logger.error("Agent or host are down.")
         return
@@ -424,7 +431,7 @@ def collector(app, address, port, key):
             history_url,
             headers={"Content-type": "application/json"},
         )
-    except urllib2.HTTPError as e:
+    except HTTPError as e:
         if e.code == 404:
             logger.error("Agent version does not support pull mode. "
                          "Please consider upgrading to version 5 at least.")

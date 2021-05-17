@@ -35,6 +35,7 @@ SETUP_KWARGS = dict(
         # documentation.
         'sqlalchemy>=0.9.8',
         'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
+        'future',
     ],
     include_package_data=True,
     zip_safe=False,

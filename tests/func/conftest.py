@@ -1,8 +1,15 @@
-import httplib
+from builtins import object
 import json
 import os
 import ssl
-from urlparse import urlparse
+try:
+    # python2
+    from urlparse import urlparse
+    from httplib import HTTPSConnection
+except Exception:
+    # python3
+    from urllib.parse import urlparse
+    from http.client import HTTPSConnection
 
 import pytest
 from selenium.webdriver import Remote
@@ -31,7 +38,7 @@ class HTTPClient(object):
 
     def get(self, path, headers=None):
         url = urlparse(self.base_url + path)
-        conn = httplib.HTTPSConnection(
+        conn = HTTPSConnection(
             url.hostname, url.port,
             timeout=5, context=ssl._create_unverified_context(),
         )
@@ -48,7 +55,7 @@ class HTTPClient(object):
 
     def post(self, path, body, headers=None):
         url = urlparse(self.base_url + path)
-        conn = httplib.HTTPSConnection(
+        conn = HTTPSConnection(
             url.hostname, url.port,
             timeout=5, context=ssl._create_unverified_context(),
         )

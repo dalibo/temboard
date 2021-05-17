@@ -19,7 +19,7 @@ def pivot_timeserie(fd, index, key, value, output):
         if r[key] not in keys:
             keys[r[key]] = p
             p += 1
-    sk = sorted(keys.items(), key=operator.itemgetter(1))
+    sk = sorted(list(keys.items()), key=operator.itemgetter(1))
     # CSV Header
     line = [index] + [x[0] for x in sk]
     p_index = ''

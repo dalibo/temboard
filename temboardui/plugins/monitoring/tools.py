@@ -1,3 +1,4 @@
+from builtins import str
 from dateutil import parser as parse_datetime
 import logging
 import os
@@ -136,7 +137,7 @@ def check_host_key(session, hostname, agent_key):
 
 def insert_metrics(session, host_id, instance_id, data):
 
-    for metric_name in data.keys():
+    for metric_name in list(data.keys()):
         # Do not try to insert empty lines
         if data[metric_name] is None:
             continue
@@ -266,7 +267,7 @@ def preprocess_data(data, checks, timestamp):
         if not isinstance(res, dict):
             res = {'': res}
 
-        for key, value in res.items():
+        for key, value in list(res.items()):
             ret.append(
                 dict(
                     datetime=timestamp,
@@ -308,7 +309,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
         # Try to find enabled check for this host_id with the same name
         try:
             c = session.query(Check).filter(
-                Check.name == unicode(name),
+                Check.name == str(name),
                 Check.host_id == host_id,
                 Check.instance_id == instance_id,
                 Check.enabled == bool(True),
@@ -320,7 +321,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
         try:
             cs = session.query(CheckState).filter(
                 CheckState.check_id == c.check_id,
-                CheckState.key == unicode(key)
+                CheckState.key == str(key)
             ).one()
             # State has changed since last time
             if cs.state != state:
@@ -336,12 +337,12 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
                     },
                     expire=0,
                 )
-            cs.state = unicode(state)
+            cs.state = str(state)
             session.merge(cs)
 
         except NoResultFound:
             cs = CheckState(
-                check_id=c.check_id, key=unicode(key), state=unicode(state)
+                check_id=c.check_id, key=str(key), state=str(state)
             )
             session.add(cs)
 
@@ -366,7 +367,7 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
         session.expunge_all()
 
     # Purge CheckState
-    for check_id, ks in keys.items():
+    for check_id, ks in list(keys.items()):
         db.purge_check_states(session, check_id, ks)
         session.commit()
 
@@ -376,5 +377,5 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
 
     # Set to UNDEF each unchecked check for the given instance
     # This may happen when postgres is not available
-    db.undef_check_states(session, all_check_ids, keys.keys())
+    db.undef_check_states(session, all_check_ids, list(keys.keys()))
     session.commit()

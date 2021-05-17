@@ -24,6 +24,7 @@ Requires:      python-setuptools
 Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-psycopg2
 Requires:      python-dateutil >= 1.5
+Requires:      python-future
 Requires:      openssl
 Requires:      mailcap
 

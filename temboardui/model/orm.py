@@ -1,3 +1,8 @@
+from __future__ import division
+from builtins import str
+from past.builtins import basestring
+from builtins import object
+from past.utils import old_div
 import datetime
 from sqlalchemy import (
     Boolean,
@@ -23,7 +28,7 @@ Model = declarative_base()
 def validate_int(value):
     if value is None:
         return
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = int(value)
     if isinstance(value, basestring):
         value = int(value)
@@ -90,15 +95,16 @@ block_size = 8192
 
 def total_read(c):
     return (
-        func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read) /
-        total_measure_interval(c.mesure_interval)
+        old_div(func.sum(c.shared_blks_read + c.local_blks_read +
+                         c.temp_blks_read),
+                total_measure_interval(c.mesure_interval))
     ).label("total_blks_read")
 
 
 def total_hit(c):
     return (
-        func.sum(c.shared_blks_hit + c.local_blks_hit) /
-        total_measure_interval(c.mesure_interval)
+        old_div(func.sum(c.shared_blks_hit + c.local_blks_hit),
+                total_measure_interval(c.mesure_interval))
     ).label("total_blks_hit")
 
 
