@@ -602,6 +602,8 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
+        elif isinstance(obj, bytes):
+            return obj.decode("utf-8")
         else:
             return super(JSONEncoder, self).default(obj)
 
