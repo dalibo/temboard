@@ -31,7 +31,7 @@ def logout(request):
 
 def login_common(db_session, rolename, password):
     # Common logic between json and HTML login.
-    passhash = hash_password(rolename, password)
+    passhash = hash_password(rolename, password).decode("utf-8")
     role = get_role_by_auth(db_session, rolename, passhash)
     logger.info(u"Role '%s' authentificated.", role.role_name)
     return dict(temboard=gen_cookie(role.role_name, passhash))
