@@ -872,6 +872,7 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
     query = cur.mogrify(q_tpl, dict(host_id=host_id, instance_id=instance_id,
                                     start=start, end=end, key=key,
                                     tablename=AsIs(tablename)))
+    query = query.decode("utf-8")
     # Retreive data using copy_expert()
     cur.copy_expert("COPY(" + query + ") TO STDOUT WITH CSV HEADER",
                     data_buffer)
@@ -910,6 +911,7 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
     """
     query = cur.mogrify(sql, dict(instance_id=instance_id,
                                   start=start, end=end))
+    query = query.decode("utf-8")
     data_buffer = StringIO()
     query = query.decode("utf-8")
     cur.copy_expert("COPY(" + query + ") TO STDOUT", data_buffer)
