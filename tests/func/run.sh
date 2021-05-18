@@ -5,6 +5,7 @@ cd $top_srcdir
 
 LOGFILE=temboard-func.log
 PIDFILE=$(readlink -m temboard-func.pid)
+PYTHONBIN=${PYTHONBIN:-python2}
 
 retrykill() {
 	local pid=$1
@@ -50,8 +51,8 @@ install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
 	rm -f /tmp/temboard-*.tar.gz
-	python2 setup.py sdist --dist-dir /tmp
-	pip2.7 install \
+	$PYTHONBIN setup.py sdist --dist-dir /tmp
+	$PYTHONBIN -m pip install \
 		--progress-bar off \
 		--prefix=/usr/local --ignore-installed --upgrade \
 		/tmp/temboard-*.tar.gz \
@@ -76,7 +77,7 @@ mkdir -p tests/func/home
 
 if [ -n "${SETUP-1}" ] ; then
 	install_ui_py
-	pip2.7 install \
+	$PYTHONBIN -m pip install \
 		--progress-bar off \
 		--ignore-installed \
 		--prefix=/usr/local \

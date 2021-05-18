@@ -23,6 +23,12 @@ workflows:
         dist: centos7
         pgversion: "12"
     - func:
+        name: stage1-func-pg13-centos8
+        requires: [stage0-unit-py3.6]
+        dist: centos8
+        pgversion: "13"
+        pythonbin: "python3"
+    - func:
         name: stage1-func-pg9.5-buster
         requires: [stage0-unit-py2.7]
         dist: buster
@@ -128,11 +134,16 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [buster, stretch, jessie, centos7]
+        enum: [buster, stretch, jessie, centos7, centos8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
         enum: ["13", "12", "11", "10", "9.6", "9.5"]
+      pythonbin:
+        description: "Python bin executable"
+        type: enum
+        enum: ["python2", "python3"]
+        default: "python2"
     docker:
     - image: dalibo/labs-sdk:<< parameters.dist >>
       environment:
@@ -153,6 +164,8 @@ jobs:
     - run:
         name: Functionnal tests
         command: tests/func/run.sh
+        environment:
+          PYTHONBIN: << parameters.pythonbin >>
     - *pip-cache-save
     - store_artifacts:
         path: temboard-func.logs
