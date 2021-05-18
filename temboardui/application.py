@@ -109,7 +109,7 @@ def update_role(session,
                                   (new_role_name))
         else:
             raise TemboardUIError(e.message)
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
         raise TemboardUIError(500, e.message)
@@ -120,7 +120,7 @@ def get_role(session, role_name):
         return session.query(Roles).options(
             joinedload(Roles.groups)).filter_by(
                 role_name=str(role_name)).first()
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
         raise TemboardUIError(e.message)
@@ -131,7 +131,7 @@ def delete_role(session, role_name):
         role = session.query(Roles).filter(
             Roles.role_name == str(role_name)).one()
         session.delete(role)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
         raise TemboardUIError(e.message)
@@ -181,7 +181,7 @@ def get_group(session, group_name, group_kind):
                 joinedload(Groups.ari)).filter(
                     Groups.group_name == str(group_name),
                     Groups.group_kind == str(group_kind)).one()
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Group '%s' (%s) not found." % (group_name,
                                                                    group_kind))
     except Exception as e:
@@ -212,7 +212,7 @@ def update_group(session,
                                   (new_group_name))
         else:
             raise TemboardUIError(400, e.message)
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Group '%s' ('%s') not found." %
                               (group_name, group_kind))
     except Exception as e:
@@ -225,7 +225,7 @@ def delete_group(session, group_name, group_kind):
             Groups.group_name == str(group_name),
             Groups.group_kind == str(group_kind)).one()
         session.delete(group)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(400, "Group '%s' not found." % (group_name))
     except Exception as e:
         raise TemboardUIError(400, e.message)
@@ -270,7 +270,7 @@ def delete_role_from_group(session, role_name, group_name):
             RoleGroups.group_name == str(group_name),
             RoleGroups.role_name == str(role_name)).one()
         session.delete(role_group)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(400, "Role '%s' not found in group '%s'." %
                               (role_name, group_name))
     except Exception as e:
@@ -359,7 +359,7 @@ def get_instance(session, agent_address, agent_port):
             joinedload(Instances.plugins)).filter_by(
                 agent_address=str(agent_address),
                 agent_port=agent_port).first()
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
                               (agent_address, agent_port))
     except Exception as e:
@@ -420,7 +420,7 @@ def update_instance(session,
                                   (agent_address, agent_port))
         else:
             raise TemboardUIError(400, e.message)
-    except AttributeError as e:
+    except AttributeError:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
     except Exception as e:
@@ -438,7 +438,7 @@ def delete_instance(session, agent_address, agent_port):
             Instances.agent_address == str(agent_address),
             Instances.agent_port == agent_port).one()
         session.delete(instance)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
     except Exception as e:
@@ -453,7 +453,7 @@ def delete_instance(session, agent_address, agent_port):
                 MonitoringHost.hostname == instance.hostname,
                 MonitoringInstance.port == instance.pg_port).one()
         session.delete(monitoring_instance)
-    except NoResultFound as e:
+    except NoResultFound:
         pass
     except Exception as e:
         raise TemboardUIError(400, e.message)
@@ -472,7 +472,7 @@ def delete_instance(session, agent_address, agent_port):
             session.query(MonitoringHost) \
                 .filter(MonitoringHost.hostname == instance.hostname) \
                 .delete()
-        except NoResultFound as e:
+        except NoResultFound:
             pass
         except Exception as e:
             raise TemboardUIError(400, e.message)
@@ -556,7 +556,7 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
             InstanceGroups.agent_port == agent_port,
             InstanceGroups.group_name == str(group_name)).one()
         session.delete(instance_group)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(
             400, "Instance entry ('%s:%s)' not found in group '%s'." %
             (agent_address, agent_port, group_name))
@@ -628,7 +628,7 @@ def delete_role_group_from_instance_group(session, role_group_name,
             AccessRoleInstance.instance_group_name == str(
                 instance_group_name)).one()
         session.delete(ari)
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(
             400, "Role group '%s' not found in instance group '%s'." %
             (role_group_name, instance_group_name))
@@ -670,7 +670,7 @@ def get_role_by_auth(session, role_name, role_password):
             raise TemboardUIError(400, "Wrong user/password: %s/%s" %
                                   (role_name, role_password))
         return role
-    except NoResultFound as e:
+    except NoResultFound:
         raise TemboardUIError(400, "Wrong user/password: %s/%s" %
                               (role_name, role_password))
     except Exception as e:
