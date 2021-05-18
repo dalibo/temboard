@@ -53,14 +53,14 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip2.7 install --upgrade --requirement requirements-ci.txt --editable .
+            pip install --upgrade --requirement requirements-ci.txt --editable .
       - run:
           name: Lint
           command: |
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8
-            python2.7 setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
       - run:
           name: Python tests
