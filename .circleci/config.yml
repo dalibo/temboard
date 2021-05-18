@@ -5,7 +5,12 @@ workflows:
   default:
     jobs:
     - doc: {name: stage0-doc}
-    - unit: {name: stage0-unit}
+    - unit:
+       name: stage0-unit-py2.7
+       pyversion: "2.7"
+    - unit:
+       name: stage0-unit-py3.6
+       pyversion: "3.6"
     - rpm-centos7: {name: stage0-pkg-centos7}
     - deb:
         name: stage0-pkg-<< matrix.codename >>
@@ -14,12 +19,12 @@ workflows:
             codename: [buster, stretch, jessie]
     - func:
         name: stage1-func-pg12-centos7
-        requires: [stage0-unit]
+        requires: [stage0-unit-py2.7]
         dist: centos7
         pgversion: "12"
     - func:
         name: stage1-func-pg9.5-buster
-        requires: [stage0-unit]
+        requires: [stage0-unit-py2.7]
         dist: buster
         pgversion: "9.5"
 
@@ -40,7 +45,13 @@ jobs:
         destination: build/README.html
 
   unit:
-    docker: [{image: "python:2.7"}]
+    parameters:
+      pyversion:
+        description: "Python version"
+        type: enum
+        enum: ["2.7", "3.6"]
+    docker:
+      - image: python:<< parameters.pyversion >>
     working_directory: /workspace
     steps:
       - checkout
