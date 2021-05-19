@@ -132,7 +132,7 @@ class EasySSLIOStream(SSLIOStream):
                     self._ssl_connect_future.set_exception(
                         SSLErrorHTTPRequest()
                     )
-                    gen_log.warning("HTTP_REQUESTS on SSL handshake from %s.",
+                    gen_log.warning("HTTP_REQUEST on SSL handshake from %s.",
                                     peer)
                     return
 
