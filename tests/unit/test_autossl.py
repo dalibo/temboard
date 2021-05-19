@@ -66,20 +66,23 @@ def test_redirect_response_host():
     assert 'https://temboard.lan/home' == response.headers['Location']
 
 
-def test_easy_handshake_ok(ioloop_mock):
+def test_easy_handshake_ok(ioloop_mock, mocker):
+    mocker.patch('temboardui.autossl.EasySSLIOStream._add_io_state')
     from temboardui.autossl import (
         EasySSLIOStream,
         ssl,
     )
     socket = Mock(name='socket', spec=ssl.SSLSocket)
     stream = EasySSLIOStream(socket)
+    stream.wait_for_handshake()
 
     stream._do_ssl_handshake()
 
     assert stream._ssl_accepting is False
 
 
-def test_easy_handshake_ssl_errors(ioloop_mock):
+def test_easy_handshake_ssl_errors(ioloop_mock, mocker):
+    mocker.patch('temboardui.autossl.EasySSLIOStream._add_io_state')
     from tornado.concurrent import Future
     from temboardui.autossl import (
         EasySSLIOStream,
@@ -89,6 +92,7 @@ def test_easy_handshake_ssl_errors(ioloop_mock):
 
     socket = Mock(name='socket', spec=ssl.SSLSocket)
     stream = EasySSLIOStream(socket)
+    stream.wait_for_handshake()
 
     socket.do_handshake.side_effect = ssl.SSLError(123)
     stream.socket = socket
@@ -109,6 +113,8 @@ def test_easy_handshake_ssl_errors(ioloop_mock):
     stream.socket = socket
     stream._do_ssl_handshake()
 
+    stream.wait_for_handshake()
+
     socket.do_handshake.side_effect = ssl.SSLError(ssl.SSL_ERROR_SSL)
     socket.getpeername.side_effect = Exception('Unknown test error')
     stream.socket = socket
@@ -120,7 +126,7 @@ def test_easy_handshake_ssl_errors(ioloop_mock):
     socket.getpeername.reset_mock()
     socket.getpeername.return_value = '127.0.0.1'
     stream.socket = socket
-    stream.socket = socket
+    stream.wait_for_handshake()
     stream._do_ssl_handshake()
     assert socket.getpeername.called is True
 
@@ -141,7 +147,8 @@ def test_easy_handshake_ssl_errors(ioloop_mock):
         fut.result()
 
 
-def test_easy_handshake_other_errors(ioloop_mock):
+def test_easy_handshake_other_errors(ioloop_mock, mocker):
+    mocker.patch('temboardui.autossl.EasySSLIOStream._add_io_state')
     from temboardui.autossl import (
         EasySSLIOStream,
         errno,
@@ -151,6 +158,7 @@ def test_easy_handshake_other_errors(ioloop_mock):
 
     socket_ = Mock(name='socket', spec=ssl.SSLSocket)
     stream = EasySSLIOStream(socket_)
+    stream.wait_for_handshake()
 
     socket_.do_handshake.side_effect = Exception('Pouet')
     stream.socket = socket
@@ -163,10 +171,12 @@ def test_easy_handshake_other_errors(ioloop_mock):
 
     socket_.do_handshake.side_effect = socket.error(errno.EBADF)
     stream.socket = socket_
+    stream.wait_for_handshake()
     stream._do_ssl_handshake()
 
     socket_.do_handshake.side_effect = socket.error(0)
     stream.socket = socket_
+    stream.wait_for_handshake()
     with pytest.raises(socket.error):
         stream._do_ssl_handshake()
 

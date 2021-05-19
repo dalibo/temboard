@@ -221,7 +221,7 @@ class AutoHTTPSServer(HTTPServer):
         try:
             yield ssl_stream.wait_for_handshake()
         except SSLErrorHTTPRequest:
-            stream = IOStream(ssl_stream.socket._sock)
+            stream = make_iostream(ssl_stream)
             conn = HTTP1Connection(stream, is_client=False)
             try:
                 yield self.handle_http_connection(conn)
@@ -276,3 +276,20 @@ class AutoHTTPSServer(HTTPServer):
             ),
             headers=response.headers,
         )
+
+
+def make_iostream(ssl_stream):
+    try:
+        # Py2.7: Unwrap underlying socket.
+        sock = ssl_stream.socket._sock
+    except AttributeError:  # pragma: nocover_py2
+        # Py3 : Detach FD from SSL socket and recreate a regular socket.
+        fd = ssl_stream.socket.detach()
+        ssl_stream.io_loop.remove_handler(fd)
+        sock = socket.socket(
+            family=ssl_stream.socket.family,
+            type=ssl_stream.socket.type,
+            proto=ssl_stream.socket.proto,
+            fileno=fd,
+        )
+    return IOStream(sock)
