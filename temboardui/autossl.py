@@ -100,6 +100,12 @@ class EasySSLIOStream(SSLIOStream):
     # SSIOStream raising exception on HTTP_REQUEST rather than closing socket.
 
     def _do_ssl_handshake(self):
+        if self._ssl_connect_future.done():
+            # After HTTP_REQUEST is detected, we may still have read event.
+            # Just ignore them.
+            gen_log.debug("Ignoring subsequent read event.")
+            return
+
         # Based on code from test_ssl.py in the python stdlib
         try:
             self._handshake_reading = False
