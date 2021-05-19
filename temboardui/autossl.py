@@ -27,6 +27,7 @@ import socket
 import ssl
 
 from tornado import gen
+from tornado.escape import native_str
 from tornado.httpserver import HTTPServer, HTTPRequest
 from tornado.httpclient import HTTPResponse
 from tornado.httputil import (
@@ -53,6 +54,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_http_headers(payload):
+    payload = native_str(payload)
     # Implements simple HTTP1Connection._read_message but IO-free.
     lines = payload.splitlines()
     if lines and ':' not in lines[0]:
