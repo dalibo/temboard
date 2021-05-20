@@ -4,6 +4,10 @@ import os
 import time
 import json
 
+import psycopg2
+from psycopg2.extensions import parse_dsn
+from psycopg2.extras import PhysicalReplicationConnection
+
 from temboardagent.spc import connector
 from temboardagent.tools import now
 from temboardagent.inventory import SysInfo
@@ -80,14 +84,10 @@ def run_probes(probes, instances, delta=True):
 
 def parse_primary_conninfo(pci):
     # Parse primary_conninfo string picked up from recovery.conf file
-    r = dict()
     m = re.match(r'.*primary_conninfo\s*=\s*\'(.*)\'[^\']*$', pci)
-    if m:
-        for f in re.findall(r"(\w+)\s*=\s*''(.+?)''", m.group(1)):
-            r[f[0]] = f[1]
-        for f in re.findall(r"(\w+)\s*=\s*([\w\.-]+)", m.group(1)):
-            r[f[0]] = f[1]
-    return (r.get('host'), r.get('port'), r.get('user'), r.get('password'))
+    if not m:
+        raise Exception("Unable to parse primary_conninfo.")
+    return m.group(1)
 
 
 def get_primary_conninfo(conn):
@@ -780,22 +780,20 @@ class probe_replication_lag(SqlProbe):
             with Postgres(**conninfo).connect() as conn:
 
                 # Get primary parameters from primary_conninfo
-                p_host, p_port, p_user, p_password = get_primary_conninfo(conn)
+                dsn = get_primary_conninfo(conn)
 
                 # Let's fetch primary current wal position with IDENTIFY_SYSTEM
                 # through streaming replication protocol.
-                p_conn = connector(p_host, int(p_port), p_user, p_password,
-                                   database='replication')
-                p_conn._replication = 1
-                p_conn.connect()
-                p_conn.execute("IDENTIFY_SYSTEM")
-                r = list(p_conn.get_rows())
-                if len(r) == 0:
-                    conn.close()
-                    p_conn.close()
-                    return []
-                xlogpos = r[0]['xlogpos']
-                p_conn.close()
+                with psycopg2.connect(
+                    dsn, connection_factory=PhysicalReplicationConnection
+                ) as p_conn:
+                    with p_conn.cursor() as p_cur:
+                        p_cur.execute("IDENTIFY_SYSTEM")
+                        rows = p_cur.fetchall()
+
+                        if len(rows) == 0:
+                            return []
+                        xlogpos = rows[0][2]
 
                 # Proceed with LSN diff
                 if conn.server_version >= 100000:
@@ -864,7 +862,8 @@ class probe_replication_connection(SqlProbe):
         try:
             with Postgres(**conninfo).connect() as conn:
                 # Get primary parameters from primary_conninfo
-                p_host, p_port, p_user, p_password = get_primary_conninfo(conn)
+                dsn = parse_dsn(get_primary_conninfo(conn))
+                p_host = dsn['host']
 
                 # pg_stat_wal_receiver lookup
                 rows = conn.query("""\
