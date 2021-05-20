@@ -85,7 +85,7 @@ def parse_primary_conninfo(pci):
     if m:
         for f in re.findall(r"(\w+)\s*=\s*''(.+?)''", m.group(1)):
             r[f[0]] = f[1]
-        for f in re.findall(r"(\w+)\s*=\s*(\w+)", m.group(1)):
+        for f in re.findall(r"(\w+)\s*=\s*([\w\.-]+)", m.group(1)):
             r[f[0]] = f[1]
     return (r.get('host'), r.get('port'), r.get('user'), r.get('password'))
 
