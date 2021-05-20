@@ -103,7 +103,7 @@ class SysInfo(Inventory):
             # Try to get hostname (FQDN) using 'hostname -f'
             (rc, out, err) = exec_command([which('hostname'), '-f'])
             if rc == 0:
-                hostname = out.encode('utf-8').strip()
+                hostname = out.decode('utf-8').strip()
         except Exception:
             try:
                 # Try to get hostname (FQDN) using socket module
