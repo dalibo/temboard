@@ -11,12 +11,12 @@ def ioloop_mock(mocker):
     old, IOLoop._instance = getattr(IOLoop, "_instance", False), ioloop
     ioloop.WRITE = IOLoop.WRITE
     # Make mock thread current loop
-    IOLoop._current.instance = ioloop
+    IOLoop.current().instance = ioloop
     yield ioloop
     del ioloop._instance
     if old:
         ioloop._instance = old
-        ioloop._current.instance = None
+        ioloop.current().instance = None
 
 
 def test_parse_headers_ok():
