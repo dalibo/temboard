@@ -31,7 +31,7 @@ SETUP_KWARGS = dict(
     license='PostgreSQL',
     install_requires=[
         'alembic',
-        'futures',
+        'futures; python_version<"3"',
         'python-dateutil>=1.5',
         # There is no hard dependency on psycopg2 to allow using
         # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
