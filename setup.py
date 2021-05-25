@@ -15,7 +15,12 @@ if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
 
 # Accept Tornado 5.X on Python 2.7.9+
-BLEEDING_EDGE_TORNADO = '4.5' if sys.version_info < (2, 7, 9) else '6'
+# Accept Tornado 6.X on Python 3+
+BLEEDING_EDGE_TORNADO = '7'
+if sys.version_info < (2, 7, 9):
+    BLEEDING_EDGE_TORNADO = '4.5'
+elif sys.version_info < (3,):
+    BLEEDING_EDGE_TORNADO = '6'
 
 
 SETUP_KWARGS = dict(
