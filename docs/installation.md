@@ -19,7 +19,7 @@ This document guides you to quickly setup all these components together.
 
 temBoard UI requires:
 
-- Python 2.7
+- Python 2.7 or 3.6
 - openssl
 - bash, sudo and psql for setup script.
 
@@ -84,7 +84,7 @@ You can now install temBoard with:
 <h3>RHEL / CentOS</h3>
 
 temBoard RPM are published on [Dalibo Labs YUM repository](https://yum.dalibo.org/labs/).
-temBoard supports RHEL / CentOS 7. Start by enabling Dalibo Labs YUM repository.
+temBoard supports RHEL / CentOS 7 & 8. Start by enabling Dalibo Labs YUM repository.
 
 ``` console
 $ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-2-1.noarch.rpm
