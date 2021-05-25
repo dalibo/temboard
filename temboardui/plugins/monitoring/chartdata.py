@@ -913,7 +913,6 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
                                   start=start, end=end))
     query = query.decode("utf-8")
     data_buffer = StringIO()
-    query = query.decode("utf-8")
     cur.copy_expert("COPY(" + query + ") TO STDOUT", data_buffer)
     data = data_buffer.getvalue()
     data_buffer.close()
