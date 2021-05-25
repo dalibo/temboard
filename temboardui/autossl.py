@@ -159,7 +159,10 @@ class EasySSLIOStream(SSLIOStream):
             if not self._verify_cert(self.socket.getpeercert()):
                 self.close()
                 return
-            self._run_ssl_connect_callback()
+            try:
+                self._run_ssl_connect_callback()  # Tornado < 6
+            except AttributeError:
+                self._finish_ssl_connect()
 
 
 class AutoHTTPSServer(HTTPServer):
