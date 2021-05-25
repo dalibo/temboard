@@ -52,8 +52,15 @@ rpmbuild \
 	-bb packaging/rpm/temboard.spec
 
 # Pin RPM as latest built, for upload.
-rpm=$(ls dist/rpm/noarch/temboard-${VERSION}-*${DIST}*.noarch.rpm)
-ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
+DIST=$(rpm --eval %dist)
+rpm=$(ls dist/rpm/RPMS/noarch/temboard-${VERSION}-*${DIST}*.noarch.rpm)
+ln -fs $(basename $rpm) dist/rpm/RPMS/noarch/last_build.rpm
+
+if [ "${DIST}" = ".el7" ] ; then
+	PY=python2
+else
+	PY=python3
+fi
 
 # Test it
 sudo yum install -y epel-release  # for alembic
@@ -61,6 +68,5 @@ sudo yum install -y $rpm
 (
 	cd /;
 	temboard --version;
-	python -c 'import temboardui.toolkit';
-
+	${PY} -c 'import temboardui.toolkit';
 )

@@ -11,7 +11,13 @@ workflows:
     - unit:
        name: stage0-unit-py3.6
        pyversion: "3.6"
-    - rpm-centos7: {name: stage0-pkg-centos7}
+    - centos:
+        name: stage0-pkg-centos7
+        codename: centos7
+    - centos:
+        name: stage0-pkg-centos8
+        codename: centos8
+        python: python3
     - deb:
         name: stage0-pkg-<< matrix.codename >>
         matrix:
@@ -88,8 +94,18 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
-  rpm-centos7:
-    docker: [{image: "rpmbuild/centos7"}]
+  centos:
+    parameters:
+      codename:
+        description: "CentOS version"
+        type: enum
+        enum: [centos7, centos8]
+      python:
+        description: "Python interpreter"
+        type: string
+        default: "python"
+    docker:
+      - image: dalibo/labs-sdk:<< parameters.codename >>
     working_directory: ~/workspace
     steps:
     - checkout
@@ -98,14 +114,14 @@ jobs:
         name: Build RPM snapshot
         command: |
           sudo yum-builddep -y packaging/rpm/temboard.spec
-          python setup.py sdist
-          VERSION=$(python setup.py --version) packaging/rpm/build.sh
+          << parameters.python >> setup.py sdist
+          VERSION=$(<< parameters.python >> setup.py --version) packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
         root: .
         paths:
-        - dist/rpm/noarch/*.rpm
+        - dist/rpm/RPMS/noarch/*.rpm
 
   deb:
     parameters:

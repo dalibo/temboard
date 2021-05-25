@@ -3,6 +3,10 @@
 %{!?pkgversion: %global pkgversion 1.1}
 %{!?pkgrevision: %global pkgrevision 1}
 
+%if 0%{?rhel} >= 8
+  %global __python /usr/bin/python3
+%endif
+
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:          %{pkgname}
@@ -16,6 +20,7 @@ URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+%if 0%{?rhel} < 8
 BuildRequires: python-setuptools
 Requires:      python-alembic
 Requires:      python-futures
@@ -25,6 +30,17 @@ Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-psycopg2
 Requires:      python-dateutil >= 1.5
 Requires:      python-future
+%else
+BuildRequires: python3-setuptools
+BuildRequires: python3-rpm-macros
+Requires:      python3-alembic
+Requires:      python3-tornado
+Requires:      python3-setuptools
+Requires:      python3-sqlalchemy >= 0.9.8
+Requires:      python3-psycopg2
+Requires:      python3-dateutil >= 1.5
+Requires:      python3-future
+%endif
 Requires:      openssl
 Requires:      mailcap
 
