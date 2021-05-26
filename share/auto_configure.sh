@@ -92,6 +92,7 @@ setup_ssl() {
 		     openssl req -new -x509 -days 365 -nodes \
 			     -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
 			     -out $sslcert -keyout $sslkey
+		     chmod 644 $sslkey
 	     fi
 	fi
 	echo $sslcert $sslkey
