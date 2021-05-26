@@ -256,6 +256,7 @@ class AutoHTTPSServer(HTTPServer):
         # Simulate conn._read_message side effect. This is required by
         # HTTP1Connection.write_headers()
         conn._request_start_line = parse_request_start_line('GET / HTTP/1.1')
+        conn._request_headers = HTTPHeaders()
         try:
             start_line, headers = parse_http_headers(payload)
             conn._request_start_line = start_line
