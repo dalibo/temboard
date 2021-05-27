@@ -6,10 +6,11 @@ workflows:
     jobs:
     - docs:
         name: stage0-docs
-    - rpm-centos8:
-        name: stage0-pkg-centos8
-    - rpm-centos7:
-        name: stage0-pkg-centos7
+    - rpm:
+        name: stage0-pkg-<< matrix.dist >>
+        matrix:
+          parameters:
+            dist: [centos8, centos7]
     - unit:
         name: stage0-unit-<< matrix.docker >>
         matrix:
@@ -76,44 +77,6 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  rpm-centos8:
-    docker: [{image: "dalibo/labs-sdk:centos8"}]
-    working_directory: ~/workspace
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - run:
-        name: Build RPM snapshot
-        command: |
-          sudo yum-builddep -y packaging/rpm/temboard-agent.spec
-          python3 setup.py sdist
-          VERSION=$(python3 setup.py --version) ./packaging/rpm/build.sh
-    - store_artifacts:
-        path: ~/workspace/dist/
-    - persist_to_workspace:
-        root: .
-        paths:
-        - dist/rpm/noarch/*.rpm
-
-  rpm-centos7:
-    docker: [{image: "dalibo/labs-sdk:centos7"}]
-    working_directory: ~/workspace
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - run:
-        name: Build RPM snapshot
-        command: |
-          sudo yum-builddep -y packaging/rpm/temboard-agent.spec
-          python setup.py sdist
-          VERSION=$(python setup.py --version) ./packaging/rpm/build.sh
-    - store_artifacts:
-        path: ~/workspace/dist/
-    - persist_to_workspace:
-        root: .
-        paths:
-        - dist/rpm/noarch/*.rpm
-
   unit:
     parameters:
       docker:
@@ -171,6 +134,29 @@ jobs:
         root: .
         paths:
          - dist/*.deb
+
+  rpm:
+    parameters:
+      dist:
+        description: "Distribution"
+        type: enum
+        enum: [centos8, centos7]
+    docker: [{image: "dalibo/labs-sdk:<< parameters.dist >>"}]
+    working_directory: ~/workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run:
+        name: Build RPM snapshot
+        command: |
+          python3 setup.py sdist
+          ./packaging/rpm/build.sh
+    - store_artifacts:
+        path: ~/workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/*.rpm
 
   func:
     parameters:

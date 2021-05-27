@@ -3,8 +3,10 @@ version: '2'
 services:
   centos7: &centos
     image: dalibo/labs-sdk:centos7
+    working_dir: /workspace
     environment:
     - VERSION
+    - HISTFILE=/workspace/packaging/rpm/.docker-bash-history
     volumes:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh

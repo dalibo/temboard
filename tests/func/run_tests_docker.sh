@@ -31,7 +31,7 @@ if (( install_rpm == 1 ))
 then
     # Search for the proper RPM package
     rpmdist=$(rpm --eval '%dist')
-    rpm=$(readlink -e dist/rpm/noarch/temboard-agent-*${rpmdist}*.noarch.rpm)
+    rpm=$(readlink -e dist/temboard-agent-*${rpmdist}*.noarch.rpm)
     # Disable pgdg to use base pyscopg2 2.5 from Red Hat.
     yum -d1 "--disablerepo=pgdg*"  install -y $rpm
     rpm --query --queryformat= temboard-agent
