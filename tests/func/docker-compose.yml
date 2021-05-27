@@ -5,7 +5,7 @@ services:
     image: postgres:13-alpine
     environment:
       POSTGRES_USER: temboard
-      POSTGRES_PASSWORD: &PGPASSWORD confidentiel
+      POSTGRES_PASSWORD: confidentiel
 
   selenium:
     image: selenium/standalone-firefox
@@ -13,15 +13,16 @@ services:
   ui:
     image: dalibo/labs-sdk:${TAG-buster}
     environment:
-      HISTFILE: /workspace/tests/func/.docker-cache/bash_history
-      PGHOST: repository
-      PGUSER: temboard
-      PGPASSWORD: *PGPASSWORD
-      MANUAL: "${MANUAL-}"
-      SELENIUM: http://selenium:4444
-      TEMBOARD_PASSWORD: *PGPASSWORD
-      UI: https://ui:8888
-      XDG_CACHE_HOME: /workspace/tests/func/.docker-cache/
+    - HISTFILE=/workspace/tests/func/.docker-cache/bash_history
+    - PGHOST=repository
+    - PGUSER=temboard
+    - PGPASSWORD=confidentiel
+    - MANUAL
+    - SELENIUM=http://selenium:4444
+    - TEMBOARD_PASSWORD=confidentiel
+    - UI=https://ui:8888
+    - XDG_CACHE_HOME=/workspace/tests/func/.docker-cache/
+    - TBD_INSTALL_RPM
     volumes:
     - ../..:/workspace
     working_dir: /workspace

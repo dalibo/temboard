@@ -25,12 +25,12 @@ workflows:
             codename: [buster, stretch, jessie]
     - func:
         name: stage1-func-pg12-centos7
-        requires: [stage0-unit-py2.7]
+        requires: [stage0-unit-py2.7, stage0-pkg-centos7]
         dist: centos7
         pgversion: "12"
     - func:
         name: stage1-func-pg13-centos8
-        requires: [stage0-unit-py3.6]
+        requires: [stage0-unit-py3.6, stage0-pkg-centos8]
         dist: centos8
         pgversion: "13"
         pythonbin: "python3"
@@ -167,14 +167,18 @@ jobs:
         PGPASSWORD: &PGPASSWORD confidentiel
         SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
+        TBD_INSTALL_RPM: "1"
     - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
     - image: selenium/standalone-firefox
+    working_directory: ~/workspace
     steps:
     - checkout
     - run: git submodule update --init
+    - attach_workspace:
+        at: ~/workspace
     - *pip-cache-restore
     - run:
         name: Functionnal tests

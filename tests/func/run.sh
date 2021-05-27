@@ -57,11 +57,46 @@ install_ui_py() {
 		--prefix=/usr/local --ignore-installed --upgrade \
 		/tmp/temboard-*.tar.gz \
 		psycopg2-binary
+
 	wait-for-it.sh ${PGHOST}:5432
 	if ! /usr/local/share/temboard/auto_configure.sh ; then
 		cat /var/log/temboard-auto-configure.log >&2
 		return 1
 	fi
+}
+
+install_ui_rpm() {
+	rpmdist=$(rpm --eval '%dist')
+	rpm=$(readlink -e dist/temboard-*"${rpmdist}"*.noarch.rpm)
+	# Disable pgdg to use base pyscopg2 2.5 from Red Hat.
+	yum -d1 "--disablerepo=pgdg*"  install -y "$rpm"
+	rpm --query --queryformat= temboard
+
+	wait-for-it.sh ${PGHOST}:5432
+	if ! /usr/share/temboard/auto_configure.sh ; then
+		cat /var/log/temboard-auto-configure.log >&2
+		return 1
+	fi
+}
+
+rm -f $LOGFILE
+mkdir -p tests/func/home
+
+if [ -n "${SETUP-1}" ] ; then
+	if type -p yum &>/dev/null && [ "${TBD_INSTALL_RPM-}" = 1 ] ; then
+		install_ui_rpm
+	else
+		install_ui_py
+	fi
+
+	$PYTHONBIN -m pip install \
+		--progress-bar off \
+		--ignore-installed \
+		--prefix=/usr/local \
+		--upgrade \
+		--requirement tests/func/requirements.txt \
+		"$top_srcdir/tests/func/sample-plugin"
+
 	mkdir -p /etc/temboard/temboard.conf.d
 	cat >> /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
 	[temboard]
@@ -70,20 +105,6 @@ install_ui_py() {
 	[sample]
 	option = configured
 	EOF
-}
-
-rm -f $LOGFILE
-mkdir -p tests/func/home
-
-if [ -n "${SETUP-1}" ] ; then
-	install_ui_py
-	$PYTHONBIN -m pip install \
-		--progress-bar off \
-		--ignore-installed \
-		--prefix=/usr/local \
-		--upgrade \
-		--requirement tests/func/requirements.txt \
-		"$top_srcdir/tests/func/sample-plugin"
 fi
 
 if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
