@@ -1,13 +1,13 @@
 #!/bin/bash -eux
 
-top_srcdir=$(readlink -m $0/../../..)
-cd $top_srcdir
+top_srcdir=$(readlink -m "$0/../../..")
+cd "$top_srcdir"
 test -f setup.py
 
 teardown() {
     exit_code=$?
     set +x
-    cd $top_srcdir
+    cd "$top_srcdir"
     # rpmbuild requires files to be owned by running uid
     sudo chown --recursive $(stat -c %u:%g setup.py) packaging/rpm/
     rm -f packaging/rpm/temboard-agent*.tar.gz
@@ -17,7 +17,7 @@ teardown() {
     # If not on CI and we are docker entrypoint (PID 1), let's wait forever on
     # error. This allows user to enter the container and debug after a build
     # failure.
-    if [ -z "${CI-}" -a $$ = 1 -a $exit_code -gt 0 ] ; then
+    if [ -z "${CI-}" ] && [ $$ = 1 ] && [ $exit_code -gt 0 ] ; then
         tail -f /dev/null
     fi
 }
@@ -33,13 +33,13 @@ if [ -z "${VERSION-}" ] ; then
 	VERSION=$(curl https://pypi.debian.net/temboard-agent/ | grep -Po '>temboard-agent-\K.*(?=\.tar\.gz)' | tail -1)
 fi
 tarball=temboard-agent-${VERSION}.tar.gz
-if ! [ -f dist/${tarball} ] ; then
+if ! [ -f "dist/${tarball}" ] ; then
 	# Fetch missing tarball.
 	mkdir -p dist
-	(cd dist/; curl -LO https://pypi.debian.net/temboard-agent/${tarball} )
-	test -f dist/${tarball}
+	(cd dist/; curl -LO "https://pypi.debian.net/temboard-agent/${tarball}")
+	test -f "dist/${tarball}"
 fi
-ln -f dist/${tarball} packaging/rpm/
+ln -f "dist/${tarball}" packaging/rpm/
 
 # rpmbuild requires files to be owned by running uid
 sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
@@ -55,13 +55,13 @@ rpmbuild \
 
 # Pin rpm as latest built, for upload.
 DIST=$(rpm --eval %dist)
-rpm=$(ls dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}*.rpm)
+rpm=$(ls "dist/rpm/noarch/temboard-agent-${VERSION}-*${DIST}"*.rpm)
 chmod a+rw dist/rpm/noarch/*
-ln -fs $(basename $rpm) dist/rpm/noarch/last_build.rpm
+ln -fs "$(basename "$rpm")" dist/rpm/noarch/last_build.rpm
 
 # Test it
-sudo yum install -y $rpm
-rpm -q --list --changelog temboard-agent-${VERSION}
+sudo yum install -y "$rpm"
+rpm -q --list --changelog "temboard-agent-${VERSION}"
 (
 	cd /
 	temboard-agent --version
