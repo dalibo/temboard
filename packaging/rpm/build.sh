@@ -9,7 +9,7 @@ teardown() {
     set +x
     cd "$top_srcdir"
     # rpmbuild requires files to be owned by running uid
-    sudo chown --recursive $(stat -c %u:%g setup.py) packaging/rpm/
+    chown --recursive "$(stat -c %u:%g setup.py)" packaging/rpm/
     rm -f packaging/rpm/temboard-agent*.tar.gz
 
     trap - EXIT INT TERM
@@ -24,8 +24,8 @@ teardown() {
 
 trap teardown EXIT INT TERM
 
-sudo yum-builddep -y packaging/rpm/temboard-agent.spec
-sudo sed -i s/.centos// /etc/rpm/macros.dist
+yum-builddep -y packaging/rpm/temboard-agent.spec
+sed -i s/.centos// /etc/rpm/macros.dist
 
 # Find source tarball
 if [ -z "${VERSION-}" ] ; then
@@ -42,7 +42,7 @@ fi
 ln -f "dist/${tarball}" packaging/rpm/
 
 # rpmbuild requires files to be owned by running uid
-sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
+chown --recursive "$(id -u):$(id -g)" packaging/rpm/
 
 
 rpmbuild \
@@ -60,7 +60,7 @@ chmod a+rw dist/rpm/noarch/*
 ln -fs "$(basename "$rpm")" dist/rpm/noarch/last_build.rpm
 
 # Test it
-sudo yum install -y "$rpm"
+yum install -y "$rpm"
 rpm -q --list --changelog "temboard-agent-${VERSION}"
 (
 	cd /
