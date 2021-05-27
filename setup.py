@@ -22,6 +22,21 @@ if sys.version_info < (2, 7, 9):
 elif sys.version_info < (3,):
     BLEEDING_EDGE_TORNADO = '6'
 
+install_requires = [
+    'alembic',
+    'python-dateutil>=1.5',
+    # There is no hard dependency on psycopg2 to allow using
+    # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
+    # and there is no way to state an OR dependency in Python. It's up to
+    # the user or package manager to ensure psycopg2 dependency. See
+    # documentation.
+    'sqlalchemy>=0.9.8',
+    'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
+    'future',
+]
+
+if sys.version_info < (3,):
+    install_requires.append('futures')
 
 SETUP_KWARGS = dict(
     name='temboard',
@@ -29,19 +44,7 @@ SETUP_KWARGS = dict(
     description='temBoard User Interface.',
     author='Julien Tachoires, Étienne BERSAC',
     license='PostgreSQL',
-    install_requires=[
-        'alembic',
-        'futures; python_version<"3"',
-        'python-dateutil>=1.5',
-        # There is no hard dependency on psycopg2 to allow using
-        # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
-        # and there is no way to state an OR dependency in Python. It's up to
-        # the user or package manager to ensure psycopg2 dependency. See
-        # documentation.
-        'sqlalchemy>=0.9.8',
-        'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
-        'future',
-    ],
+    install_requires=install_requires,
     include_package_data=True,
     zip_safe=False,
     url='https://github.com/dalibo/temboard/',
