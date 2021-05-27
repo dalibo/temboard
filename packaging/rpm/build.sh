@@ -1,72 +1,68 @@
 #!/bin/bash -eux
 
-cd $(readlink -m $0/../../..)
+top_srcdir=$(readlink -m "$0/../../..")
+cd "$top_srcdir"
 test -f setup.py
 
-teardown() {
-	exit_code=$?
-	set +x;
-	# rpmbuild requires files to be owned by running uid
-	sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
-	rm -f packaging/rpm/temboard*.tar.gz
 
-	trap - EXIT INT TERM
-
-	# If not on CI and we are docker entrypoint (PID 1), let's wait forever
-	# on error. This allows user to enter the container and debug after a
-	# build failure.
-	if [ -z "${CI-}" -a $$ = 1 -a $exit_code -gt 0 ] ; then
-		echo "Waiting forever. Debug with" >&2
-		echo "	docker exec -it $(hostname) /bin/bash"
-		tail -f /dev/null
-	fi
-}
-
-trap teardown EXIT INT TERM
-
-sudo yum-builddep -y packaging/rpm/temboard.spec
-sudo sed -i s/.centos// /etc/rpm/macros.dist
-
-# Find source tarball
-if [ -z "${VERSION-}" ] ; then
-	# Find latest published version.
-	VERSION=$(curl -s https://pypi.debian.net/temboard/ | grep -Po '>temboard-\K.*(?=\.tar\.gz)' | tail -1)
-fi
-tarball=temboard-${VERSION}.tar.gz
-if ! [ -f dist/${tarball} ] ; then
-	# Fetch missing tarball.
-	mkdir -p dist
-	(cd dist/; curl -LO https://pypi.debian.net/temboard/${tarball} )
-	test -f dist/${tarball}
-fi
-ln -f dist/${tarball} packaging/rpm/
-
-# rpmbuild requires files to be owned by running uid
-sudo chown --recursive $(id -u):$(id -g) packaging/rpm/
-
-rpmbuild \
-	--clean \
-	--define "pkgversion ${VERSION}" \
-	--define "_topdir ${PWD}/dist/rpm" \
-	--define "_sourcedir ${PWD}/packaging/rpm" \
-	-bb packaging/rpm/temboard.spec
-
-# Pin RPM as latest built, for upload.
-DIST=$(rpm --eval %dist)
-rpm=$(ls dist/rpm/RPMS/noarch/temboard-${VERSION}-*${DIST}*.noarch.rpm)
-ln -fs $(basename $rpm) dist/rpm/RPMS/noarch/last_build.rpm
-
-if [ "${DIST}" = ".el7" ] ; then
-	PY=python2
+DIST="$(rpm --eval %dist)"
+if [ "${DIST}" = ".el8" ] ; then
+	PYTHON=python3
 else
-	PY=python3
+	PYTHON=python2
 fi
 
-# Test it
-sudo yum install -y epel-release  # for alembic
-sudo yum install -y $rpm
+
+#       S O U R C E S
+#
+# Determine version to build, default to current checkout version.
+if [ -z "${VERSION-}" ] ; then
+	VERSION=$("$PYTHON" setup.py --version)
+fi
+
+# Ensure source tarball. If missing, try download from PyPI.
+tarball=temboard-${VERSION}.tar.gz
+if ! [ -f "dist/${tarball}" ] ; then
+	mkdir -p dist
+	(cd dist/; curl -LO "https://pypi.debian.net/temboard/${tarball}")
+	test -f "dist/${tarball}"
+fi
+
+topdir=~testuser/rpmbuild
+mkdir -p "$topdir/SOURCES" "$topdir/SPECS"
+cp -vf packaging/rpm/temboard.spec "$topdir/SPECS/"
+cp -vf "dist/$tarball" "$topdir/SOURCES/"
+# rpmbuild requires files to be owned by running uid
+chown -R testuser "$topdir"
+
+
+#       B U I L D
+
+# Disable PGDG repos, they eat network bandwith for nothing.
+sed -i s/enabled=1/enabled=0/ /etc/yum.repos.d/pgdg-redhat-all.repo
+yum-builddep -y packaging/rpm/temboard.spec
+
+sudo -u testuser rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir $topdir" \
+    -bb "$topdir/SPECS/temboard.spec"
+
+# Pin rpm as latest built, for upload.
+rpm=$(ls "$topdir/RPMS/noarch/temboard-${VERSION}"-*"${DIST}"*.rpm)
+test -f "$rpm"
+cp "$rpm" dist/
+rpm="$(basename "$rpm")"
+ln -fs "$rpm" dist/temboard-last.rpm
+chown --no-dereference "$(stat -c %u:%g "dist/$tarball")" "dist/$rpm" dist/temboard-last.rpm
+
+
+#       P E N   T E S T
+
+yum install -y dist/temboard-last.rpm
+rpm -q --list --changelog "temboard-${VERSION}"
 (
-	cd /;
-	temboard --version;
-	${PY} -c 'import temboardui.toolkit';
+	cd /
+	temboard --version
+	"$PYTHON" -c 'import temboardui.toolkit'
 )
