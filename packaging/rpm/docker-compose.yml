@@ -1,10 +1,16 @@
 version: '2'
 
 services:
-  centos7:
-    image: rpmbuild/centos7
+  centos8: &centos
+    image: dalibo/labs-sdk:centos8
+    working_dir: /workspace
     environment:
     - VERSION
+    - HISTFILE=/workspace/packaging/rpm/.docker-bash-history
     volumes:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh
+
+  centos7:
+    <<: *centos
+    image: dalibo/labs-sdk:centos7
