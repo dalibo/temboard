@@ -87,7 +87,13 @@ def parse_primary_conninfo(pci):
     m = re.match(r'.*primary_conninfo\s*=\s*\'(.*)\'[^\']*$', pci)
     if not m:
         raise Exception("Unable to parse primary_conninfo.")
-    return m.group(1)
+
+    # Unquote string. When coming from recovery.conf, single quotes can be
+    # doubled or escaped with a backslash
+    c = m.group(1).replace("''", "'")
+    c = c.replace("\\'", "'")
+
+    return c
 
 
 def get_primary_conninfo(conn):
