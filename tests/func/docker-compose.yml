@@ -11,7 +11,7 @@ services:
     image: selenium/standalone-firefox
 
   ui:
-    image: dalibo/labs-sdk:${TAG-buster}
+    image: dalibo/buildpack-python:${TAG-buster}
     environment:
       HISTFILE: /workspace/tests/func/.docker-cache/bash_history
       PGHOST: repository
