@@ -25,7 +25,7 @@ tarball=temboard-${VERSION}.tar.gz
 if ! [ -f "dist/${tarball}" ] ; then
 	mkdir -p dist
 	(cd dist/; curl -LO "https://pypi.debian.net/temboard/${tarball}")
-	test -f "dist/${tarball}"
+	chown "$(stat -c %u:%g setup.py)" "dist/$tarball"
 fi
 
 topdir=~testuser/rpmbuild
@@ -54,7 +54,7 @@ test -f "$rpm"
 cp "$rpm" dist/
 rpm="$(basename "$rpm")"
 ln -fs "$rpm" dist/temboard-last.rpm
-chown --no-dereference "$(stat -c %u:%g "dist/$tarball")" "dist/$rpm" dist/temboard-last.rpm
+chown --no-dereference "$(stat -c %u:%g setup.py)" "dist/$rpm" dist/temboard-last.rpm
 
 
 #       P E N   T E S T
