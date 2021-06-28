@@ -150,7 +150,10 @@ def validate_user_data(data, role=None):
 def handle_password(data):
     if data['password']:
         check_role_password(data['password'])
-        return hash_password(data['new_username'], data['password'])
+        return hash_password(
+            data['new_username'],
+            data['password']
+        ).decode('utf-8')
     return None
 
 
