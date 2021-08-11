@@ -574,4 +574,7 @@ table td.auto-width {
   .dropdown-item.active {
     background-color: #dfdfdf;
   }
+
+  overflow-y: scroll;
+  max-height: 20em;
 }
