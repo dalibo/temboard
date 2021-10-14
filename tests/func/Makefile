@@ -5,6 +5,7 @@ run:
 
 run-all:
 	@# Please keep this matrix sync with .circleci/config.yml
+	TAG=bullseye PYTHON=python3 TBD_PGVERSION=14 $(MAKE) run
 	TAG=buster PYTHON=python3 TBD_PGVERSION=13 $(MAKE) run
 	TAG=centos8 TBD_PGVERSION=12 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=12 $(MAKE) run

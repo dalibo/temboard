@@ -37,10 +37,10 @@ workflows:
         requires: [stage0-pkg-centos8, "stage0-unit-python:3.6"]
         matrix:
           parameters:
-            pgversion: ["9.6", "12"]
+            pgversion: ["9.6", "14"]
     - func:
-        name: stage1-func-pg13-py3-buster
-        dist: buster
+        name: stage1-func-pg13-py3-bullseye
+        dist: bullseye
         pgversion: "13"
         install_rpm: 0
         requires: ["stage0-unit-python:3.6"]
@@ -163,7 +163,7 @@ jobs:
       dist:
         description: "Execution Linux distribution"
         type: enum
-        enum: [centos8, centos7, buster, stretch]
+        enum: [centos8, centos7, buster, stretch, bullseye]
       install_rpm:
         description: "Whether to install agent from RPM"
         type: integer
