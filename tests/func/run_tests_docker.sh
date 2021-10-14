@@ -40,7 +40,7 @@ else
     if type -p yum &>/dev/null && $PYTHON --version | grep -F 'Python 2' ; then
 	    yum -q -y "--disablerepo=pgdg*" install python-psycopg2
     else
-	    $PYTHON -m pip install psycopg2-binary
+	    $PYTHON -m pip install --only-binary :all: psycopg2-binary
     fi
 fi
 
