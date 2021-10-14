@@ -175,7 +175,7 @@ jobs:
         description: "Python interpreter"
         type: string
         default: "python3"
-    docker: [image: "dalibo/labs-sdk:<< parameters.dist >>"]
+    docker: [image: "dalibo/buildpack-postgres:<< parameters.dist >>"]
     environment:
       TBD_PGVERSION: "<< parameters.pgversion >>"
       PYTHON: "<< parameters.python >>"
