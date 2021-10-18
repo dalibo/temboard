@@ -2,13 +2,13 @@ version: '3'
 
 services:
   test:
-    image: dalibo/buildpack-postgres:${TAG-centos7}
+    image: dalibo/buildpack-postgres:${TAG-centos8}
     volumes:
     - ../../:/workspace
     environment:
       - CI
       - PYTHON
-      - TBD_PGVERSION=${TBD_PGVERSION-13}
+      - TBD_PGVERSION=${TBD_PGVERSION-14}
       - TBD_INSTALL_RPM
       - HISTFILE=/workspace/tests/func/docker-bash_history
     working_dir: /workspace
