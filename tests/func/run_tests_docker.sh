@@ -16,6 +16,23 @@ teardown() {
     # error. This allows user to enter the container and debug after a build
     # failure.
     if [ -z "${CI-}" -a $PPID = 1 -a $exit_code -gt 0 ] ; then
+	set +x
+	cat <<-EOF
+
+                F A I L U R E
+
+	This container will wait forever. To rexecute tests in this container,
+	open a shell with 'make shell' and execute pytest with
+	'run_tests_docker.sh'.
+
+            $ make -C tests/func shell
+            docker-compose exec test /bin/bash
+            [root@b09dc2ff4a88 workspace]# ./tests/func/run_tests_docker.sh --pdb
+            ...
+
+	EOF
+	echo -e '\e[33;1mTests failed. Hit Ctrl-C to terminate.\e[0m'
+
         tail -f /dev/null
     fi
 }
