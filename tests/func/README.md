@@ -40,7 +40,9 @@ shell`
 ``` console
 $ TAG=centos7 POSTGRES_VERSION=9.5 make run
 …
+test_1  | + tail -f /dev/null
+
 $ make shell
-[root@3e8037d18e8b /]# make -C tests/func/ pytest PYTEST_ARGS="-x --pdb"
+[root@3e8037d18e8b /workspace]# ./tests/func/run_tests_docker.sh -x --pdb
 …
 ```
