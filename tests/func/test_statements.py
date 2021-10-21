@@ -156,7 +156,11 @@ def test_statements(xsession, extension_enabled):
             u"stddev_time",
             u"total_time",
         ])
+    if pg_version >= (14,):
+        expected_keys.add('toplevel')
 
+    # This assert let pytest shows the diff between expected and returned.
+    assert set(data[0]) == expected_keys
     assert all(set(d) == expected_keys for d in data)
     assert "temboard" in set([d["rolname"] for d in data])
     assert "postgres" in set([d["datname"] for d in data])
