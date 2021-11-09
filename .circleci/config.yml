@@ -105,7 +105,7 @@ jobs:
         type: string
         default: "python"
     docker:
-      - image: dalibo/labs-sdk:<< parameters.codename >>
+      - image: dalibo/buildpack-pkg:<< parameters.codename >>
     working_directory: ~/workspace
     steps:
     - checkout
@@ -113,6 +113,7 @@ jobs:
     - run:
         name: Build RPM snapshot
         command: |
+          yum-builddep -y packaging/rpm/temboard.spec
           << parameters.python >> setup.py sdist
           packaging/rpm/build.sh
     - store_artifacts:
