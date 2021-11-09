@@ -57,6 +57,14 @@ if ! [ -f /usr/bin/systemctl ] ; then
 	fpm_args+=(--deb-init temboard-agent.init)
 fi
 
+case "$codename" in
+	jessie|stretch|wheezy)
+	;;
+	*)
+		fpm_args+=(--depends python3-distutils)
+	;;
+esac
+
 fpm --verbose \
     --force \
     --debug-workspace \
