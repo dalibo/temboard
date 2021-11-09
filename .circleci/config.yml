@@ -161,7 +161,7 @@ jobs:
         enum: ["python2", "python3"]
         default: "python2"
     docker:
-    - image: dalibo/labs-sdk:<< parameters.dist >>
+    - image: dalibo/buildpack-python:<< parameters.dist >>
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard

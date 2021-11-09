@@ -53,7 +53,6 @@ install_ui_py() {
 	rm -f /tmp/temboard-*.tar.gz
 	$PYTHONBIN setup.py sdist --dist-dir /tmp
 	$PYTHONBIN -m pip install \
-		--progress-bar off \
 		--prefix=/usr/local --ignore-installed --upgrade \
 		/tmp/temboard-*.tar.gz \
 		psycopg2-binary
@@ -90,7 +89,6 @@ if [ -n "${SETUP-1}" ] ; then
 	fi
 
 	$PYTHONBIN -m pip install \
-		--progress-bar off \
 		--ignore-installed \
 		--prefix=/usr/local \
 		--upgrade \
