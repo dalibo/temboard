@@ -99,5 +99,5 @@ apt-get install --yes ./$deb
 mkdir -p ${DISTDIR}/
 mv -fv $deb ${DISTDIR}/
 # Point deb as latest build for changes generation.
-ln -fs $(basename $deb) ${DISTDIR}/last_build.deb
+ln -fs "$(basename "$deb")" "${DISTDIR}/temboard-agent_last.deb"
 chown -R ${UID_GID} ${DISTDIR}/
