@@ -1,5 +1,6 @@
 from __future__ import division
 from builtins import str
+from decimal import Decimal
 from past.utils import old_div
 import json
 import logging
@@ -687,12 +688,31 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
     return [dict(row) for row in rows]
 
 
+def convert_decimal_to_float(data):
+    # Since Postgres 14, timestamp and other data are returned as Decimal
+    # rather than float. stock json does not know how to serialize Decimals.
+    # For now, just preprocess data to convert decimals to float in payload
+    # before serializing to json.
+    if isinstance(data, Decimal):
+        return float(data)
+    elif isinstance(data, list):
+        return [convert_decimal_to_float(v) for v in data]
+    elif isinstance(data, dict):
+        return {
+            k: convert_decimal_to_float(v)
+            for k, v in data.items()
+        }
+    else:
+        return data
+
+
 @blueprint.instance_route(r'/statements/chart')
 def json_chart_data_instance(request):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "instance", start, end)
+    data = convert_decimal_to_float(data)
     return jsonify(dict(data=data))
 
 
@@ -703,6 +723,7 @@ def json_chart_data_query(request, dbid, queryid, userid):
 
     data = getstatdata_sample(request, "query", start, end, dbid=dbid,
                               queryid=queryid, userid=userid)
+    data = convert_decimal_to_float(data)
     return jsonify(dict(data=data))
 
 
@@ -712,6 +733,7 @@ def json_chart_data_db(request, dbid):
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "db", start, end, dbid=dbid)
+    data = convert_decimal_to_float(data)
     return jsonify(dict(data=data))
 
 
