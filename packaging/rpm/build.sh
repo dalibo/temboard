@@ -4,6 +4,7 @@ top_srcdir=$(readlink -m "$0/../../..")
 cd "$top_srcdir"
 test -f setup.py
 
+retry yum-builddep -y packaging/rpm/temboard.spec
 
 DIST="$(rpm --eval %dist)"
 if [ "${DIST}" = ".el8" ] ; then
@@ -38,10 +39,6 @@ chown -R testuser "$topdir"
 
 #       B U I L D
 
-# Disable PGDG repos, they eat network bandwith for nothing.
-sed -i s/enabled=1/enabled=0/ /etc/yum.repos.d/pgdg-redhat-all.repo
-yum-builddep -y packaging/rpm/temboard.spec
-
 sudo -u testuser rpmbuild \
     --clean \
     --define "pkgversion ${VERSION}" \
@@ -59,7 +56,7 @@ chown --no-dereference "$(stat -c %u:%g setup.py)" "dist/$rpm" dist/temboard-las
 
 #       P E N   T E S T
 
-yum install -y dist/temboard-last.rpm
+retry yum install -y dist/temboard-last.rpm
 rpm -q --list --changelog "temboard-${VERSION}"
 (
 	cd /

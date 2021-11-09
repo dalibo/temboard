@@ -31,6 +31,7 @@ Requires:      python-setuptools
 Requires:      python-sqlalchemy >= 0.9.8
 Requires:      python-tornado >= 3.2
 %else
+BuildRequires: python36
 BuildRequires: python3-setuptools
 BuildRequires: python3-rpm-macros
 Requires:      python3-alembic

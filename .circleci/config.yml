@@ -29,10 +29,10 @@ workflows:
         dist: centos7
         pgversion: "12"
     - func:
-        name: stage1-func-pg13-centos8
+        name: stage1-func-pg14-centos8
         requires: [stage0-unit-py3.6, stage0-pkg-centos8]
         dist: centos8
-        pgversion: "13"
+        pgversion: "14"
         pythonbin: "python3"
     - func:
         name: stage1-func-pg9.5-buster
@@ -105,7 +105,7 @@ jobs:
         type: string
         default: "python"
     docker:
-      - image: dalibo/labs-sdk:<< parameters.codename >>
+      - image: dalibo/buildpack-pkg:<< parameters.codename >>
     working_directory: ~/workspace
     steps:
     - checkout
@@ -113,6 +113,7 @@ jobs:
     - run:
         name: Build RPM snapshot
         command: |
+          yum-builddep -y packaging/rpm/temboard.spec
           << parameters.python >> setup.py sdist
           packaging/rpm/build.sh
     - store_artifacts:
@@ -153,14 +154,14 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["14", "13", "12", "11", "10", "9.6", "9.5"]
       pythonbin:
         description: "Python bin executable"
         type: enum
         enum: ["python2", "python3"]
         default: "python2"
     docker:
-    - image: dalibo/labs-sdk:<< parameters.dist >>
+    - image: dalibo/buildpack-python:<< parameters.dist >>
       environment:
         PGHOST: 0.0.0.0
         PGUSER: temboard
