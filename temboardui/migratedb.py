@@ -53,9 +53,17 @@ class MigrateDBApplication(BaseApplication):
             versions['psycopg2'], versions['alembic'], versions['sqlalchemy'],
         )
 
+        if args.command is None:
+            raise UserError("Missing sub-command. See --help")
+
         command_method = 'command_' + args.command
         try:
-            getattr(self, command_method)(args)
+            command = getattr(self, command_method)
+        except AttributeError:
+            raise UserError("Unknown command %s." % args.command)
+
+        try:
+            command(args)
         except sqlalchemy.exc.OperationalError as e:
             raise UserError("Failed to query Postgres server: %s." % e)
 
