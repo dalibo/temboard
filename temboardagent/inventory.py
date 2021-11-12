@@ -194,7 +194,7 @@ class SysInfo(Inventory):
 
     def _file_systems_linux(self):
         fs = []
-        (rc, out, err) = exec_command([which('df'), '-k'])
+        (rc, out, err) = exec_command([which('df'), '--local', '-k'])
         lines = out.splitlines()
         # Remove header
         del lines[0]
