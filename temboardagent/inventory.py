@@ -223,6 +223,12 @@ class SysInfo(Inventory):
                 logger.debug("Ignoring mount point %s.", mount_point)
                 continue
 
+            # Skip basic FHS directories.
+            _, top_level_dir = mount_point.decode('utf-8').split('/', 2)[:2]
+            if top_level_dir in ('dev', 'proc', 'run', 'sys'):
+                logger.debug("Ignoring mount point %s.", mount_point)
+                continue
+
             if dev is not None:
                 fs.append({
                     'mount_point': cols[4].decode('utf-8'),
