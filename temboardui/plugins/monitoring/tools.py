@@ -193,6 +193,8 @@ def insert_metrics(session, host_id, instance_id, data):
             elif metric_name == 'btree_bloat':
                 db.insert_metric_btree_bloat(session, instance_id, metric_data)
 
+            session.commit()
+
 
 def get_instance_checks(session, instance_id):
     # Returns enabled alerting checks as list of tuples:
