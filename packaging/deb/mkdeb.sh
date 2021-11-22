@@ -53,12 +53,11 @@ mv $DESTDIR/usr/lib/python${pythonv}/site-packages/* $DESTDIR/usr/lib/python3/di
 #       B U I L D
 
 fpm_args=()
-if ! [ -f /usr/bin/systemctl ] ; then
-	fpm_args+=(--deb-init temboard-agent.init)
-fi
-
 case "$codename" in
-	jessie|stretch|wheezy)
+	stretch|wheezy)
+		fpm_args+=(--deb-init temboard-agent.init)
+	;;
+	jessie)
 	;;
 	*)
 		fpm_args+=(--depends python3-distutils)
