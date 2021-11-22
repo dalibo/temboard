@@ -1,16 +1,26 @@
 # coding: utf-8
 
-from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+from argparse import (
+    ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT, _VersionAction,
+)
 from socket import getfqdn
 import logging
 import os
 import datetime
 import getpass
+import sys
+from platform import python_version
+from textwrap import dedent
 
 from ..toolkit import taskmanager
 
 from ..cli import Application
 from ..toolkit.configuration import OptionSpec
+from ..toolkit.versions import (
+    format_pq_version,
+    read_distinfo,
+    read_libpq_version,
+)
 from ..daemon import daemonize
 from ..httpd import HTTPDService
 from ..routing import Router
@@ -24,8 +34,42 @@ from ..notification import NotificationMgmt
 logger = logging.getLogger('temboardagent.scripts.agent')
 
 
+class VersionAction(_VersionAction):
+    fmt = dedent("""\
+    temBoard agent %(temboard)s
+    System %(distname)s %(distversion)s
+    Python %(python)s (%(pythonbin)s)
+    psycopg2 %(psycopg2)s libpq %(libpq)s
+    """)
+
+    def __call__(self, parser, *_):
+        print((self.fmt % self.inspect_versions()).strip())
+        parser.exit()
+
+    @classmethod
+    def inspect_versions(cls):
+        from psycopg2 import __version__ as psycopg2_version
+
+        distinfos = read_distinfo()
+
+        return dict(
+            temboard=Application.VERSION,
+            psycopg2=psycopg2_version,
+            python=python_version(),
+            pythonbin=sys.executable,
+            distname=distinfos['NAME'],
+            distversion=distinfos['VERSION'],
+            libpq=format_pq_version(read_libpq_version()),
+        )
+
+
 def define_arguments(parser):
-    define_core_arguments(parser, appversion=Application.VERSION)
+    define_core_arguments(parser)
+    parser.add_argument(
+        '-V', '--version',
+        action=VersionAction,
+        help='show version and exit',
+    )
     parser.add_argument(
         '-d', '--daemon',
         action='store_true', dest='temboard_daemonize',
