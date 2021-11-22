@@ -1,3 +1,4 @@
+import logging
 import platform
 import socket
 import os
@@ -6,6 +7,9 @@ import sys
 
 from temboardagent.tools import check_fqdn, which, to_bytes
 from temboardagent.command import exec_command
+
+
+logger = logging.getLogger(__name__)
 
 
 class Inventory(object):
@@ -194,7 +198,7 @@ class SysInfo(Inventory):
 
     def _file_systems_linux(self):
         fs = []
-        (rc, out, err) = exec_command([which('df'), '-k'])
+        (rc, out, err) = exec_command([which('df'), '--local', '-k'])
         lines = out.splitlines()
         # Remove header
         del lines[0]
@@ -203,6 +207,7 @@ class SysInfo(Inventory):
             cols = line.split()
             # Skip rootfs which is redundant on Debian
             if cols[0] == 'rootfs':
+                logger.debug("Ignoring rootfs mount point.")
                 continue
 
             # Output of df can be multiline when the name of the
@@ -210,6 +215,20 @@ class SysInfo(Inventory):
             if len(cols) == 1:
                 dev = cols[0]
                 continue
+
+            mount_point = cols[5] if dev is None else cols[4]
+
+            # Skip docker volumes.
+            if cols[0] in ('overlay', 'shm'):
+                logger.debug("Ignoring mount point %s.", mount_point)
+                continue
+
+            # Skip basic FHS directories.
+            _, top_level_dir = mount_point.decode('utf-8').split('/', 2)[:2]
+            if top_level_dir in ('dev', 'proc', 'run', 'sys'):
+                logger.debug("Ignoring mount point %s.", mount_point)
+                continue
+
             if dev is not None:
                 fs.append({
                     'mount_point': cols[4].decode('utf-8'),
