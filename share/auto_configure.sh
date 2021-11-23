@@ -185,6 +185,8 @@ setup_ssl() {
 			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
 			-out "$sslcert" -keyout "$sslkey"
 	fi
+
+	chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
 	readlink -e "$sslcert" "$sslkey"
 }
 
@@ -251,6 +253,7 @@ conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
 # shellcheck disable=SC2154
 generate_configuration "$home" "${sslfiles[@]}" "$key" "$name" "$logfile" | tee "$conf"
+chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
 if [ -x /bin/systemctl ] ; then
