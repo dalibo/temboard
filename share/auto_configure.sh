@@ -202,6 +202,8 @@ fi
 # Now, log everything.
 set -x
 
+umask 037
+
 cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
 
 ETCDIR=${ETCDIR-/etc/temboard-agent}
