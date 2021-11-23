@@ -232,9 +232,10 @@ if [ -f "${ETCDIR}/${name}/temboard-agent.conf" ] ; then
 fi
 
 # Create directories
-install -o ${SYSUSER} -g ${SYSUSER} -m 0750 -d \
+mkdir --parents \
 	${ETCDIR}/${name}/temboard-agent.conf.d/ \
 	${LOGDIR} ${home}
+chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
