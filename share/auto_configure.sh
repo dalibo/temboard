@@ -13,10 +13,11 @@
 set -o pipefail
 
 catchall() {
+	# shellcheck disable=SC2181
 	if [ $? -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
 	else
-		rm -f ${LOGFILE}
+		rm -f "${LOGFILE}"
 	fi
 	trap - INT EXIT TERM
 }
@@ -58,7 +59,7 @@ find_next_free_port() {
 	used="${used_a[*]:-}"
 	for port in {2345..3000} ; do
 		if [[ " $used " =~ \ $port\  ]] ; then continue ; fi
-		echo $port;
+		echo "$port"
 		return
 	done
 	log "No free TCP port found between 2345 and 3000. Force with env TEMBOARD_PORT."
@@ -122,8 +123,8 @@ search_bindir() {
 
 	local pgversion=$1; shift
 	for d in /usr/lib/postgresql/$pgversion /usr/pgsql-$pgversion ; do
-		if [ -x $d/bin/pg_ctl ] ; then
-			echo $d/bin
+		if [ -x "$d/bin/pg_ctl" ] ; then
+			echo "$d/bin"
 			return
 		fi
 	done
@@ -143,12 +144,13 @@ setup_pq() {
 	if ! psql -c "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
-	export PGDATA=$(query_pgsettings data_directory)
+	export PGDATA
+	PGDATA=$(query_pgsettings data_directory)
 	log "Configuring for cluster at ${PGDATA}."
 
-	read PGVERSION < ${PGDATA}/PG_VERSION
-	if ! which pg_ctl &>/dev/null ; then
-		bindir=$(search_bindir $PGVERSION)
+	read -r PGVERSION < "${PGDATA}/PG_VERSION"
+	if ! command -v pg_ctl &>/dev/null ; then
+		bindir=$(search_bindir "$PGVERSION")
 		log "Using ${bindir}/pg_ctl."
 		export PATH=$bindir:$PATH
 	fi
@@ -156,29 +158,23 @@ setup_pq() {
 	# Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
 	# use the tail of ${PGDATA} after ~postgres has been removed. If PGDATA
 	# is not in postgres home, compute a cluster name from version and port.
-	local home=$(eval readlink -e ~${SYSUSER})
+	local home
+	home=$(eval readlink -e "~${SYSUSER}")
 	if [ -z "${PGDATA##${home}/*}" ] ; then
 		default_cluster_name=${PGDATA##${home}/}
 	else
 		default_cluster_name=$PGVERSION/pg${PGPORT}
 	fi
-	export PGCLUSTER_NAME=$(query_pgsettings cluster_name $default_cluster_name)
+	export PGCLUSTER_NAME
+	PGCLUSTER_NAME=$(query_pgsettings cluster_name "$default_cluster_name")
 }
 
 setup_ssl() {
 	local name=${1//\//-}; shift
-	local pki;
-	for d in /etc/pki/tls /etc/ssl /etc/temboard-agent/$name; do
-		if [ -d $d ] ; then
-			pki=$d
-			break
-		fi
-	done
-	if [ -z "${pki-}" ] ; then
-		fatal "Failed to find PKI directory."
-	fi
+	local pki
+	read -r pki < <(readlink -e /etc/pki/tls /etc/ssl "/etc/temboard-agent/$name")
 
-	if [ -f $pki/certs/ssl-cert-snakeoil.pem -a -f $pki/private/ssl-cert-snakeoil.key ] ; then
+	if [ -f "$pki/certs/ssl-cert-snakeoil.pem" ] && [ -f "$pki/private/ssl-cert-snakeoil.key" ] ; then
 		log "Using snake-oil SSL certificate."
 		sslcert=$pki/certs/ssl-cert-snakeoil.pem
 		sslkey=$pki/private/ssl-cert-snakeoil.key
@@ -187,9 +183,11 @@ setup_ssl() {
 		sslkey=$pki/private/temboard-agent-$name.key
 		openssl req -new -x509 -days 365 -nodes \
 			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
-			-out $sslcert -keyout $sslkey
+			-out "$sslcert" -keyout "$sslkey"
 	fi
-	echo $sslcert $sslkey
+
+	chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
+	readlink -e "$sslcert" "$sslkey"
 }
 
 if [ -n "${DEBUG-}" ] ; then
@@ -204,7 +202,9 @@ fi
 # Now, log everything.
 set -x
 
-cd $(readlink -m ${BASH_SOURCE[0]}/..)
+umask 037
+
+cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
 
 ETCDIR=${ETCDIR-/etc/temboard-agent}
 VARDIR=${VARDIR-/var/lib/temboard-agent}
@@ -232,41 +232,44 @@ if [ -f "${ETCDIR}/${name}/temboard-agent.conf" ] ; then
 fi
 
 # Create directories
-install -o ${SYSUSER} -g ${SYSUSER} -m 0750 -d \
-	${ETCDIR}/${name}/temboard-agent.conf.d/ \
-	${LOGDIR} ${home}
+mkdir --parents \
+	"${ETCDIR}/${name}/temboard-agent.conf.d/" \
+	"${LOGDIR}" "${home}"
+chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
-install -o ${SYSUSER} -g ${SYSUSER} -m 0640 temboard-agent.conf ${ETCDIR}/${name}/
-install -b -o ${SYSUSER} -g ${SYSUSER} -m 0600 /dev/null ${ETCDIR}/${name}/users
+install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
+install -b -o "$SYSUSER" -g "$SYSUSER" -m 0600 /dev/null "$ETCDIR/$name/users"
 if ! [ -f /etc/logrotate.d/temboard-agent ] ; then
 	install -d -m 0755 /etc/logrotate.d
 	install -m 644 temboard-agent.logrotate /etc/logrotate.d/temboard-agent
 fi
 
-sslfiles=($(set -eu; setup_ssl $name))
+mapfile sslfiles < <(set -eu; setup_ssl "$name")
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 logfile=${LOGDIR}/${name//\//-}.log
 
 # Inject autoconfiguration in dedicated file.
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
-generate_configuration $home "${sslfiles[@]}" $key $name $logfile | tee $conf
+# shellcheck disable=SC2154
+generate_configuration "$home" "${sslfiles[@]}" "$key" "$name" "$logfile" | tee "$conf"
+chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
 if [ -x /bin/systemctl ] ; then
-	unit="temboard-agent@$(systemd-escape ${name}).service"
+	unit="temboard-agent@$(systemd-escape "${name}").service"
 	log "Enabling systemd unit ${unit}."
 	if [ "${SYSUSER}" != "postgres" ] ; then
-		mkdir -p /etc/systemd/system/${unit}.d/
-		cat > /etc/systemd/system/${unit}.d/user.conf <<-EOF
+		mkdir -p "/etc/systemd/system/$unit.d/"
+		cat > "/etc/systemd/system/$unit.d/user.conf" <<-EOF
 		[Service]
 		User=${SYSUSER}
 		Group=${SYSGROUP}
 		EOF
 	fi
-	systemctl enable $unit
+	systemctl enable "$unit"
 	start_cmd="systemctl start $unit"
 else
 	start_cmd="sudo -u ${SYSUSER} temboard-agent -c ${ETCDIR}/${name}/temboard-agent.conf"
