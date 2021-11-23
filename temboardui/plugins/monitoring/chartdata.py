@@ -3,7 +3,7 @@ try:
     from StringIO import StringIO
 except Exception:
     # python3
-    from io import BytesIO as StringIO
+    from io import StringIO
 import datetime
 from psycopg2.extensions import AsIs
 
