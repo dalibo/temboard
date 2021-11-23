@@ -186,5 +186,8 @@ jobs:
     - attach_workspace:
         at: /workspace
     - run:
+        name: Shellcheck
+        command: shellcheck share/auto_configure.sh
+    - run:
         name: Execute func tests
         command: "TBD_INSTALL_RPM=<< parameters.install_rpm >> tests/func/run_tests_docker.sh"
