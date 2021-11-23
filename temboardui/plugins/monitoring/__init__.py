@@ -80,20 +80,27 @@ def get_routes(config):
 @workers.register(pool_size=1)
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
-    try:
-        engine = worker_engine(app.config.repository)
-        with engine.begin() as conn:
-            conn.execute("SET search_path TO monitoring")
-            logger.debug("Running SQL function monitoring.aggregate_data()")
-            res = conn.execute("SELECT * FROM aggregate_data()")
-            for row in res.fetchall():
-                logger.debug("table=%s insert=%s"
-                             % (row['tblname'], row['nb_rows']))
-            return
-    except Exception as e:
-        logger.error('Could not aggregate montitoring data')
-        logger.exception(e)
-        raise(e)
+    engine = worker_engine(app.config.repository)
+    with engine.connect() as conn:
+        conn.execute("SET search_path TO monitoring")
+        res = conn.execute("SELECT * FROM metric_tables_config()")
+        tables_config, = res.fetchone()
+        for config in tables_config.values():
+            logger.info("Aggregating data for metric %s.", config['name'])
+            try:
+                with conn.begin():
+                    res = conn.execute(
+                        "SELECT * FROM aggregate_data_single(%s, %s, %s)", (
+                            config['name'], config['record_type'],
+                            config['aggregate'],
+                        )
+                    )
+                    table_name, nb_rows = res.fetchone()
+                    logger.debug("table=%s insert=%s", table_name, nb_rows)
+            except Exception as e:
+                logger.error("Failed to archive data: %s.", e)
+
+    logger.info("Monitoring data aggregation done.")
 
 
 @workers.register(pool_size=1)

@@ -27,3 +27,30 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS history_tables();
+
+CREATE OR REPLACE FUNCTION aggregate_data_single(table_name TEXT, record_type TEXT, query TEXT) RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  t JSON;
+  v_agg_periods TEXT[] := array['30m', '6h'];
+  v_agg_table TEXT;
+  i_period TEXT;
+  v_query TEXT;
+  i INTEGER;
+BEGIN
+  -- Build and run 'aggregate' query for type of metric.
+  FOREACH i_period IN ARRAY v_agg_periods LOOP
+    v_agg_table := table_name || '_' || i_period || '_current';
+    v_query := replace(query, '#agg_table#', v_agg_table);
+    v_query := replace(v_query, '#interval#', i_period);
+    v_query := replace(v_query, '#record_type#', record_type);
+    v_query := replace(v_query, '#name#', table_name);
+    EXECUTE v_query;
+    GET DIAGNOSTICS i = ROW_COUNT;
+    RETURN QUERY SELECT v_agg_table, i;
+  END LOOP;
+END;
+$$;
+
+DROP FUNCTION IF EXISTS aggregate_data();
