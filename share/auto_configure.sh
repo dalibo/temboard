@@ -171,16 +171,8 @@ setup_pq() {
 
 setup_ssl() {
 	local name=${1//\//-}; shift
-	local pki;
-	for d in /etc/pki/tls /etc/ssl /etc/temboard-agent/$name; do
-		if [ -d "$d" ] ; then
-			pki=$d
-			break
-		fi
-	done
-	if [ -z "${pki-}" ] ; then
-		fatal "Failed to find PKI directory."
-	fi
+	local pki
+	read -r pki < <(readlink -e /etc/pki/tls /etc/ssl "/etc/temboard-agent/$name")
 
 	if [ -f "$pki/certs/ssl-cert-snakeoil.pem" ] && [ -f "$pki/private/ssl-cert-snakeoil.key" ] ; then
 		log "Using snake-oil SSL certificate."
