@@ -39,7 +39,7 @@ def compute_main_module_name(mod):
     else:
         name = mod.__name__
 
-    return mod.__package__ + '.' + name
+    return mod.__package__ + '.' + name if mod.__package__ else name
 
 
 def fix_argv(argv):
