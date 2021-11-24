@@ -51,10 +51,6 @@ def fix_argv(argv):
     #
     # Alterations are: adding a -c argument, trimming of main module name.
 
-    # We'll loop over a copy of argv. On Python2, we'll insert a new element in
-    # argv, offsetting following elements compared to sys.argv. Track this
-    # offset here.
-    offset = 0
     modname = None
     # Whether the current -c is placeholder for command string
     command_string = False
@@ -65,9 +61,12 @@ def fix_argv(argv):
         elif not arg.startswith('-'):
             # Python argument. Next argv items are scripts arguments. Stop now.
             break
+        elif '-' == arg:
+            break
         elif '-c' == arg:
             if command_string:
-                argv[offset + i] = '__COMMAND_STRING__'
+                argv[i] = '__COMMAND_STRING__'
+                break
             else:
                 command_string = True
         elif '-m' == arg and modname is None:
@@ -75,6 +74,7 @@ def fix_argv(argv):
             modname = compute_main_module_name(sys.modules['__main__'])
             # In PY3, -m module is replaced with -m -m.
             argv[i + 1] = modname
+            break
 
     return argv
 
