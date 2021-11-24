@@ -26,7 +26,7 @@ def test_fix_argv(mocker):
     wanted = ['python', '-m', 'my.module']
     cmmn.return_value = 'my.module'
     if PY3:
-        input_ = ['python', '-m', '-m', '-c']
+        input_ = ['python', '-m', '-m']
     else:
         input_ = ['python', '-m', '-c']
     assert wanted == fix_argv(input_)
@@ -35,7 +35,10 @@ def test_fix_argv(mocker):
     assert wanted == fix_argv(['python', 'my-script.py'])
 
     wanted = ['python', 'my-script.py', '-c', 'config']
-    assert wanted == fix_argv(['python', '-c', 'my-script.py', '-c', 'config'])
+    assert wanted == fix_argv(['python', 'my-script.py', '-c', 'config'])
+
+    wanted = ['python', '-c', '__COMMAND_STRING__']
+    assert wanted == fix_argv(['python', '-c', '-c'])
 
 
 def test_read_memory():
@@ -91,7 +94,7 @@ def test_find_stack_segment():
         find_stack_segment_from_maps(lines=[])
 
 
-def test_find_argv_from_procmaps(mocker):
+def test_find_argv_from_procmaps_mod(mocker):
     mod = 'sampleproject.toolkit.proctitle'
     fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
     mocker.patch(mod + '.reverse_walk_memory', autospec=True)
@@ -112,7 +115,32 @@ def test_find_argv_from_procmaps(mocker):
 
     argv = ['python', '-m', 'temboard.script.tool']
     env = dict(LC_ALL='fr_FR.UTF-8')
-    address = find_argv_memory_from_maps(maps=None, argv=argv, environ=env)
+    _, address = find_argv_memory_from_maps(maps=None, argv=argv, environ=env)
+    assert 0x1c1 == address
+
+
+def test_find_argv_from_procmaps_command_string(mocker):
+    mod = 'sampleproject.toolkit.proctitle'
+    fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
+    mocker.patch(mod + '.reverse_walk_memory', autospec=True)
+    rfn = mocker.patch(mod + '.reverse_find_nulstring', autospec=True)
+
+    from sampleproject.toolkit.proctitle import find_argv_memory_from_maps
+
+    fss.return_value = 0xdeb, 0xf1
+    rfn.return_value = reversed([
+        # This is the nul-terminated of string in stack segment.
+        (0xbad, 'garbadge'),
+        (0x1c1, 'python'),
+        (0xbad, '-c'),
+        (0xbad, 'from module import main; main()'),
+        (0xbad, 'LC_ALL=fr_FR.UTF-8'),
+        (0xbad, '/usr/lib/python3.6/site-packages/...'),
+    ])
+
+    argv = ['python', '-c', '__COMMAND_STRING__']
+    env = dict(LC_ALL='fr_FR.UTF-8')
+    _, address = find_argv_memory_from_maps(maps=None, argv=argv, environ=env)
     assert 0x1c1 == address
 
 

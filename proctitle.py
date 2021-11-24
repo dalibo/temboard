@@ -53,6 +53,8 @@ def fix_argv(argv):
     # offset here.
     offset = 0
     modname = None
+    # Whether the current -c is placeholder for command string
+    command_string = False
     for i, arg in enumerate(argv[:]):
         if 0 == i:
             # Python interpreter. Skip it.
@@ -61,18 +63,15 @@ def fix_argv(argv):
             # Python argument. Next argv items are scripts arguments. Stop now.
             break
         elif '-c' == arg:
-            # Remove -c from Python args.
-            argv[offset+i:offset+i+1] = []
+            if command_string:
+                argv[offset + i] = '__COMMAND_STRING__'
+            else:
+                command_string = True
         elif '-m' == arg and modname is None:
             # Restore main module name.
             modname = compute_main_module_name(sys.modules['__main__'])
-            if PY3:  # pragma: nocover_py2
-                # In PY3, -m module is replaced with -m -m.
-                argv[i + 1] = modname
-            else:  # pragma: nocover_py3
-                argv.insert(i + 1, modname)
-                # new argv have one more element than Python argv.
-                offset += 1
+            # In PY3, -m module is replaced with -m -m.
+            argv[i + 1] = modname
 
     return argv
 
@@ -141,8 +140,11 @@ def find_stack_segment_from_maps(lines):
 
 
 def find_argv_memory_from_maps(maps, argv, environ=os.environ):
+    # Find stack in /proc/self/maps, and walk backward until argv[0] is found.
+    # Returns address of argv[0] and fixed argv when using python -c cmd form.
     stack_start, stack_end = find_stack_segment_from_maps(maps)
     argv = argv[:]
+    remaining_argv = argv[:]
     # Stack ends with argv, environ and a single path. These are all null
     # terminated strings.
     found_environ = False
@@ -157,11 +159,16 @@ def find_argv_memory_from_maps(maps, argv, environ=os.environ):
             # We are after environ, just skip until we find an env var
             # declaration.
             continue
-        elif string == argv[-1]:
-            argv.pop()
-            if not argv:
+        elif string == remaining_argv[-1]:
+            remaining_argv.pop()
+            if not remaining_argv:
                 # Ok we found all args!
-                return address
+                return argv, address
+        elif remaining_argv[-1] == '__COMMAND_STRING__':
+            logger.debug("Guessed command string: %r.", string)
+            remaining_argv.pop()
+            command_index = len(remaining_argv)
+            argv[command_index] = string
         else:
             raise Exception("Can't find argv in stack segment")
 
@@ -178,8 +185,9 @@ class ProcTitleManager(object):
                 # On CPython3, PythonAPI returns a copy of argv. Find argv
                 # address from /proc/self/maps.
                 with open('/proc/self/maps') as fo:
-                    self.address = find_argv_memory_from_maps(
+                    argv, self.address = find_argv_memory_from_maps(
                         argv=argv, maps=fo)
+                    self.size = sum(len(s) for s in argv) + len(argv)
             logger.debug("argv is at %#x, len=%d.", self.address, self.size)
         except Exception as e:
             self.address = self.size = False
@@ -205,7 +213,7 @@ class ProcTitleManager(object):
         return self.settitle(title)
 
 
-if '__main__' == __name__:  # pragma: nocover
+def test_main():  # pragma: nocover
     logging.basicConfig(level=logging.DEBUG)
     setproctitle = ProcTitleManager(prefix='temboard-process: ')
     setproctitle.setup()
@@ -225,3 +233,7 @@ if '__main__' == __name__:  # pragma: nocover
             raw_input()
 
     logger.info("OK")
+
+
+if '__main__' == __name__:  # pragma: nocover
+    test_main()
