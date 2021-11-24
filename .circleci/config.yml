@@ -24,6 +24,7 @@ jobs:
             pytest tests/
             PYTHONPATH=tests/ python -m sampleproject.toolkit.proctitle
             PYTHONPATH=tests/ python -c 'from sampleproject.toolkit.proctitle import test_main; test_main()'
+            python tests/sampleproject/toolkit/proctitle.py
             codecov
       - save_cache:
           key: temboard-toolkit-{{ .Branch }}

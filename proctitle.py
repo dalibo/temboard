@@ -23,7 +23,10 @@ import logging
 import sys
 import os
 
-from .pycompat import PY3
+if __package__:
+    from .pycompat import PY3
+else:
+    PY3 = sys.version_info > (3,)
 
 
 libc = ctypes.CDLL('libc.so.6')
