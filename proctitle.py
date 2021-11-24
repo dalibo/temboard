@@ -68,7 +68,7 @@ def fix_argv(argv):
             modname = compute_main_module_name(sys.modules['__main__'])
             if PY3:  # pragma: nocover_py2
                 # In PY3, -m module is replaced with -m -m.
-                argv[i+1:i+2] = [modname]
+                argv[i + 1] = modname
             else:  # pragma: nocover_py3
                 argv.insert(i + 1, modname)
                 # new argv have one more element than Python argv.
