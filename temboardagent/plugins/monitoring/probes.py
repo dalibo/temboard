@@ -337,6 +337,7 @@ class SqlProbe(Probe):
         output = []
         try:
             with Postgres(**conninfo).connect() as conn:
+                conn.execute("SET statement_timeout = '30s';")
 
                 cluster_name = conninfo['instance'].replace('/', '')
                 for r in conn.query(sql):
