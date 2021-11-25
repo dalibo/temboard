@@ -80,44 +80,60 @@ def get_routes(config):
 @workers.register(pool_size=1)
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
-    try:
-        engine = worker_engine(app.config.repository)
-        with engine.begin() as conn:
-            conn.execute("SET search_path TO monitoring")
-            logger.debug("Running SQL function monitoring.aggregate_data()")
-            res = conn.execute("SELECT * FROM aggregate_data()")
-            for row in res.fetchall():
-                logger.debug("table=%s insert=%s"
-                             % (row['tblname'], row['nb_rows']))
-            return
-    except Exception as e:
-        logger.error('Could not aggregate montitoring data')
-        logger.exception(e)
-        raise(e)
+    engine = worker_engine(app.config.repository)
+    with engine.connect() as conn:
+        conn.execute("SET search_path TO monitoring")
+        res = conn.execute("SELECT * FROM metric_tables_config()")
+        tables_config, = res.fetchone()
+        for config in tables_config.values():
+            logger.info("Aggregating data for metric %s.", config['name'])
+            try:
+                with conn.begin():
+                    res = conn.execute(
+                        "SELECT * FROM aggregate_data_single(%s, %s, %s)", (
+                            config['name'], config['record_type'],
+                            config['aggregate'],
+                        )
+                    )
+                    table_name, nb_rows = res.fetchone()
+                    logger.debug("table=%s insert=%s", table_name, nb_rows)
+            except Exception as e:
+                logger.error("Failed to archive data: %s.", e)
+
+    logger.info("Monitoring data aggregation done.")
 
 
 @workers.register(pool_size=1)
 def history_tables_worker(app):
-    # Worker in charge of history tables
-    try:
-        engine = worker_engine(app.config.repository)
-        with engine.connect() as conn:
-            conn.execute("SET search_path TO monitoring")
-            logger.debug("Running SQL function monitoring.history_tables()")
-            res = conn.execute("SELECT * FROM history_tables()")
-            for row in res.fetchall():
-                logger.debug("table=%s insert=%s"
-                             % (row['tblname'], row['nb_rows']))
-            conn.execute("COMMIT")
-            return
-    except Exception as e:
-        logger.error('Could not history montitoring tables')
-        logger.exception(e)
-        try:
-            conn.execute("ROLLBACK")
-        except Exception:
-            pass
-        raise(e)
+    # Archive monitoring metric tables.
+    #
+    # Copy contents of every metric_*_current tables into corresponding
+    # metric_*_history, aggregated. Then truncate _current tables.
+    #
+    # This task is triggered every 3 hours by monitoring_boostrap() below.
+    #
+    engine = worker_engine(app.config.repository)
+    with engine.connect() as conn:
+        conn.execute("SET search_path TO monitoring")
+        res = conn.execute("SELECT * FROM metric_tables_config()")
+        tables_config, = res.fetchone()
+        for config in tables_config.values():
+            logger.info("Archiving data for metric %s.", config['name'])
+            try:
+                with conn.begin():
+                    res = conn.execute(
+                        "SELECT * FROM archive_current_metrics(%s, %s, %s)", (
+                            config['name'], config['record_type'],
+                            config['history'],
+                        )
+                    )
+
+                    table_name, nb_rows = res.fetchone()
+                    logger.debug("table=%s insert=%s", table_name, nb_rows)
+            except Exception as e:
+                logger.error("Failed to archive data: %s.", e)
+
+    logger.info("Monitoring data archiving done.")
 
 
 @workers.register(pool_size=10)

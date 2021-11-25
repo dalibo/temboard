@@ -14,7 +14,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:13-alpine
+    image: postgres:14-alpine
     environment:
       POSTGRES_PASSWORD: confinment
     command: postgres -c shared_preload_libraries=pg_stat_statements

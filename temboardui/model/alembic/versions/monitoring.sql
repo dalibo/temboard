@@ -1156,36 +1156,6 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION history_tables() RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  t JSON;
-  v_table_current TEXT;
-  v_table_history TEXT;
-  v_query TEXT;
-  i INTEGER;
-BEGIN
-  -- History data from each _current table
-  FOR t IN SELECT metric_tables_config()->json_object_keys(metric_tables_config()) LOOP
-    v_table_current := trim((t->'name')::TEXT, '"')||'_current';
-    v_table_history := trim((t->'name')::TEXT, '"')||'_history';
-    -- Lock _current table to prevent concurrent updates
-    EXECUTE 'LOCK TABLE '||v_table_current||' IN SHARE MODE';
-    v_query := replace(t->>'history', '#history_table#', v_table_history);
-    v_query := replace(v_query, '#current_table#', v_table_current);
-    v_query := replace(v_query, '#record_type#', trim((t->'record_type')::TEXT, '"'));
-    -- Move data into _history table
-    EXECUTE v_query;
-    GET DIAGNOSTICS i = ROW_COUNT;
-    -- Truncate _current table
-    EXECUTE 'TRUNCATE '||v_table_current;
-    -- Return each history table name and the number of rows inserted
-    RETURN QUERY SELECT v_table_history, i;
-  END LOOP;
-END;
-$$;
-
 
 CREATE OR REPLACE FUNCTION build_expand_data_query(i_name TEXT, i_range TSTZRANGE) RETURNS TEXT
 LANGUAGE plpgsql
