@@ -372,15 +372,6 @@ function load_add_instance_form(modal_id)
       // Activate multiselect plugin for group selecting.
       $('#selectGroups').multiselect(multiselectOptions);
       $('#selectPlugins').multiselect(multiselectOptions);
-      // Add group's description as a tooltip.
-      $('.multiselect-container li').not('.filter, .group').tooltip({
-          placement: 'right',
-          container: 'body',
-          title: function () {
-              var value = $(this).find('input').val();
-              return descriptions[value];
-          }
-      });
       $('#formAddInstance').submit(function( event ) {
         event.preventDefault();
         addInstance(
