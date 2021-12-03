@@ -147,7 +147,7 @@ well as self-signed SSL certificate, UNIX user, configuration file and systemd
 unit. A few steps are left to the administrator.
 
 The configuration file `/etc/temboard/temboard.conf` should suit most people.
-See [Configuration](configuration.md) and customize if default port
+See [Configuration](server_configure.md) and customize if default port
 or directories don't match your local needs, or increase security by changing
 the certificate and the cookie secret key.
 

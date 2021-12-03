@@ -21,8 +21,7 @@ sudo systemctl stop temboard
 
 ### Update package
 
-Update temboard package with your [preferred installation
-method](installation.md#installation).
+Update temboard package with your [preferred installation method](server_install.md#installation).
 
 ### Upgrade database structure
 
@@ -66,8 +65,7 @@ Stop `temboard` service:
 sudo systemctl stop temboard
 ```
 
-Update temboard package with your [preferred installation
-method](installation.md#installation).
+Update temboard package with your [preferred installation method](server_install.md#installation).
 
 The database structure hasn't changed in this release, however temBoard now
 requires to version the schema and checks it at startup. This will ease future

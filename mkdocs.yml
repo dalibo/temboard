@@ -9,14 +9,14 @@ nav:
 - Home: index.md
 - Quick Start: QUICKSTART.md
 - Install:
-  - Install the server: installation.md
-  - Install the agent: install_the_agent.md
-  - Configure the server: configuration.md
-  - Configure the agent: configure_the_agent.md
+  - Install the server: server_install.md
+  - Install the agent: agent_install.md
+  - Configure the server: server_configure.md
+  - Configure the agent: agent_configure.md
 - Upgrade:
   - Changelog: CHANGELOG.md
-  - Upgrade the server: upgrade_the_server.md
-  - Upgrade the agent: upgrade_the_agent.md
+  - Upgrade the server: server_upgrade.md
+  - Upgrade the agent: agent_upgrade.md
   - Upgrade PostgreSQL: postgres_upgrade.md
 - How To:
   - temBoard UI howto: temboard-howto.md

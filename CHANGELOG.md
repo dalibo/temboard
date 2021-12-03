@@ -68,7 +68,7 @@ Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
 This release requires a special step before restarting temBoard. Please read
 [upgrade to 6.0] documentation.
 
-[upgrade to 6.0]: upgrade_the_server.md
+[upgrade to 6.0]: server_upgrade.md
 
 
 ### Added
@@ -124,7 +124,7 @@ This release requires a special step before restarting temBoard. Please read
 - Allow to use either psycopg2 or psycopg2-binary by [@bersace](https://github.com/bersace)
 - Monitoring shareable urls by [@pgiraud](https://github.com/pgiraud)
 - Use `pg_version_summary` when possible by [@pgiraud](https://github.com/pgiraud)
-- Database schema, please see the [upgrade documentation](upgrade_the_server.md)
+- Database schema, please see the [upgrade documentation](server_upgrade.md)
 
 ### Removed
 
