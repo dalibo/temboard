@@ -104,15 +104,6 @@ function load_update_user_form(modal_id, username)
 
       // Activate multiselect plugin for group selecting.
       $('#selectGroups').multiselect(multiselectOptions);
-      // Add group's description as a tooltip.
-      $('.multiselect-container li').not('.filter, .group').tooltip({
-          placement: 'right',
-          container: 'body',
-          title: function () {
-              var value = $(this).find('input').val();
-              return descriptions[value];
-          }
-      });
       // Use multiselect style for Active & Admin selects.
       $('#selectActive').multiselect(multiselectOptions);
       $('#selectAdmin').multiselect(multiselectOptions);
