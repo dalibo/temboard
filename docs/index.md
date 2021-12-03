@@ -14,4 +14,4 @@ You can set up a complete testing environment based on docker,  follow the
 [QUICKSTART](QUICKSTART.md) guide for more details.
 
 
-For a regular installation, follow the [Installation guide](installation.md).
+For a regular installation, follow the [Installation guide](server_install.md).
