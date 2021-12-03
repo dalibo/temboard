@@ -1,32 +1,31 @@
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
-copyright: Copyright 2015-2020 <a href="http://www.dalibo.com">dalibo</a>
+copyright: Copyright 2015-2022 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/
 theme:
   name: readthedocs
 nav:
 - Home: index.md
-- Changelog: CHANGELOG.md
 - Quick Start: QUICKSTART.md
 - Install:
   - Install the server: installation.md
-  - Install the agent: FIXME.md
+  - Install the agent: install_the_agent.md
   - Configure the server: configuration.md
-  - Configure the agent: FIXME.md
+  - Configure the agent: configure_the_agent.md
 - Upgrade:
   - Changelog: CHANGELOG.md
-  - Upgrade the server: FIXME.md
-  - Upgrade the agent: FIXME.md
-  - Upgrade PostgreSQL: FIXME.md
+  - Upgrade the server: upgrade_the_server.md
+  - Upgrade the agent: upgrade_the_agent.md
+  - Upgrade PostgreSQL: postgres_upgrade.md
 - How To:
   - temBoard UI howto: temboard-howto.md
   - Alerting: temboard-howto-alerting.md
   - Maintenance: temboard-howto-maintenance.md
   - Statements: temboard-howto-statements.md
 - Develop:
-  - Contributing: FIXME.md
-  - REST API of the Agent: FIXME.md
+  - Contributing: contributing.md
+  - REST API of the Agent: agent_api.md
 
 
 # Markdown settings
