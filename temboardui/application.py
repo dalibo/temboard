@@ -342,7 +342,7 @@ def add_instance(session,
         session.flush()
         return instance
     except IntegrityError as e:
-        if e.message.find('instances_pkey') > 0:
+        if str(e.message).find('instances_pkey') > 0:
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') already exists." %
                                   (new_agent_address, new_agent_port))
