@@ -16,3 +16,4 @@ node_modules
 server_tasks.db
 .coverage
 package-lock.json
+*.ipynb_checkpoints

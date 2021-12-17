@@ -1,4 +1,34 @@
-# Development Environment Setup
+# Contributing
+
+
+[dalibo/temboard]: https://github.com/dalibo/temboard
+
+## Reporting an Issue & Submitting a Patch
+
+We use the [dalibo/temboard] project to track issue and review
+contributions. Fork the main repository and open a PR against
+`master` as usual.
+
+
+## Editing Documentation
+
+The documentation is written in markdown and built with `mkdocs`
+``` console
+$ pip install -r docs/requirements.txt
+$ make docs
+```
+
+The documentation will be placed the `site` folder
+
+You can also run `make docs-serve` in another terminal and point your web browser
+at <http://0.0.0.0:8000/>.
+
+
+
+
+---
+
+## Development Environment Setup
 
 You can quickly set up a dev env with virtualenv and Docker Compose. Running
 development version of UI and agent requires two shells, one for the UI and one
@@ -60,13 +90,13 @@ Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
 `key_for_agent`. The monitored Postgres instance is named `postgres.dev`.
 
 
-## Throw your development environment
+### Throw your development environment
 
 If you want to trash development env, use `docker-compose down -v` and restart
 from `make devenv`.
 
 
-## Monitoring another version of PostgreSQL
+### Monitoring another version of PostgreSQL
 
 You can change the version of the monitored PostgreSQL instance by overriding
 docker image in `docker-compose.override.yml`.
@@ -85,7 +115,7 @@ and `agent` containers, thus you need to install and start the agent as
 documented above.
 
 
-## CSS
+### CSS
 
 temBoard UI mainly relies on `Bootstrap`. The CSS files are compiled with
 `SASS`.
@@ -109,7 +139,7 @@ grunt watch
 ```
 
 
-## Launching Multiple Agents
+### Launching Multiple Agents
 
 Default development environment instanciate a single PostgreSQL instance and
 it's temBoard agent. Root Makefile offers two targets to help testing bigger
@@ -123,9 +153,11 @@ infrastructure :
   without interaction. **Agent are not unregistered!**
 
 
-# Coding style
+---
 
-A `.editorconfig` file is included at the root of the repository configuring
+## Coding style
+
+An `.editorconfig` file is included at the root of the repository configuring
 whitespace and charset handling in various programming language.
 The [EditorConfig]( http://editorconfig.org/#download) site links to plugins for
 various editors. See `.editorconfig` for a description of the conventions.
@@ -134,13 +166,13 @@ Please stick to this conventions.
 Python syntax must conform to flake8. Our CI checks new code with flake8.
 
 
-# Contribution Workflow
+## Contribution Workflow
 
 Fork the project, commit in a branch and open a new GithUb PR on
 https://github.com/dalibo/temboard.
 
 
-# Releasing
+## Releasing the Server
 
 Releasing a new version of temBoard requires write access to master on [main
 repository](https://github.com/dalibo/temboard), [PyPI
@@ -162,3 +194,33 @@ To release a new version:
 - Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
 - Ensure docs/installation.md points to matching version of agent.
+
+## Releasing the Agent
+
+Releasing a new version of temBoard agent requires write access to
+master on [main repository](https://github.com/dalibo/temboard-agent),
+[PyPI project](https://pypi.org/project/temboard-agent) and [Docker Hub
+repository](https://hub.docker.com/r/dalibo/temboard-agent).
+
+For the tooling, you need Git 1.8+, a recent setuptools with wheel, and
+twine. For debian packaging, see below.
+
+Please follow these steps:
+
+-   Checkout the release branch, e.g. v2.
+-   Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
+-   Update `temboardagent/version.py`, without committing.
+-   Generate commit and tag with `make release`.
+-   Push Python egg to PyPI using `make upload`.
+-   Build and push RPM packages using `make -C packaging/rpm all push`.
+-   Build and push debian packages using
+    `make -C packaging/deb all push`.
+-   Trigger docker master build from
+    <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+
+## Other documentation for maintainers
+
+
+Checkout the RPM packaging README for the agent:
+
+https://github.com/dalibo/temboard-agent/blob/master/packaging/rpm/README.rst

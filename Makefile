@@ -65,3 +65,12 @@ clean-agents:
 			--project-name temboardagent% \
 			--file docker/docker-compose.agent.yml \
 		down --volumes
+
+.PHONY: docs docs-serve
+docs: site
+
+docs-serve:
+	mkdocs serve
+
+site: docs/* mkdocs.yml
+	mkdocs build --theme readthedocs

@@ -1,30 +1,31 @@
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
-copyright: Copyright 2015-2020 <a href="http://www.dalibo.com">dalibo</a>
+copyright: Copyright 2015-2022 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/
 theme:
   name: readthedocs
 nav:
 - Home: index.md
-- Changelog: CHANGELOG.md
-- Docker Quick Start: QUICKSTART.md
-- Installation: installation.md
-- Configuration: configuration.md
+- Quick Start: QUICKSTART.md
+- Install:
+  - Install the server: server_install.md
+  - Install the agent: agent_install.md
+  - Configure the server: server_configure.md
+  - Configure the agent: agent_configure.md
 - Upgrade:
-  - Upgrade 6.X to 7.0: temboard-upgrade-6-7.0.md
-  - Upgrade 5.X to 6.0: temboard-upgrade-5-6.0.md
-  - Upgrade 4.X to 5.0 (RHEL/CentOS): temboard-upgrade-4-5.0.md
-  - Upgrade 3.0 to 4.0 (RHEL/CentOS): temboard-upgrade-3.0-4.0.md
-  - Upgrade 2.X to 3.0 (RHEL/CentOS): temboard-upgrade-2-3.0.md
-  - Upgrade 1.2 to 2.0 (RHEL/CentOS): temboard-upgrade-1.2-2.0.md
-  - Upgrade 1.1 to 1.2 (RHEL/CentOS): temboard-upgrade-1.1-1.2.md
-  - Upgrade 0.0.1 to 1.1 (RHEL/CentOS): temboard-upgrade-0.0.1-1.1.md
+  - Changelog: CHANGELOG.md
+  - Upgrade the server: server_upgrade.md
+  - Upgrade the agent: agent_upgrade.md
 - How To:
   - temBoard UI howto: temboard-howto.md
   - Alerting: temboard-howto-alerting.md
   - Maintenance: temboard-howto-maintenance.md
   - Statements: temboard-howto-statements.md
+- Develop:
+  - Contributing: CONTRIBUTING.md
+  - Agent REST API: agent_api.md
+
 
 # Markdown settings
 strict: yes
