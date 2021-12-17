@@ -4,8 +4,6 @@ workflows:
   version: 2
   default:
     jobs:
-    - docs:
-        name: stage0-docs
     - rpm:
         name: stage0-pkg-<< matrix.dist >>
         matrix:
@@ -61,22 +59,6 @@ workflows:
             pgversion: ["10"]
 
 jobs:
-  docs:
-    docker: [{image: "python:2.7"}]
-    working_directory: ~/workspace
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - run:
-        name: Build documentation with Sphinx
-        command: |
-          pip install --upgrade -r docs/requirements-doc.txt -e . psycopg2-binary
-          python setup.py --long-description | rst2html.py --verbose --halt=warning > README.html
-          make -C docs/ clean html
-    - store_artifacts:
-        path: README.html
-        destination: build/README.html
-
   unit:
     parameters:
       docker:
