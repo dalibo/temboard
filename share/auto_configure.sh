@@ -159,9 +159,9 @@ setup_pq() {
 	# use the tail of ${PGDATA} after ~postgres has been removed. If PGDATA
 	# is not in postgres home, compute a cluster name from version and port.
 	local home
-	home=$(eval readlink -e "~${SYSUSER}")
-	if [ -z "${PGDATA##${home}/*}" ] ; then
-		default_cluster_name=${PGDATA##${home}/}
+	home="$(eval readlink -e "~${SYSUSER}")"
+	if [ -z "${PGDATA##"${home}"/*}" ] ; then
+		default_cluster_name="${PGDATA##"${home}"/}"
 	else
 		default_cluster_name=$PGVERSION/pg${PGPORT}
 	fi
