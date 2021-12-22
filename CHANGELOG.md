@@ -7,7 +7,8 @@
 - Support PostgreSQL 14.
 - Fix deadlock in monitoring.
 - Fix UI glitches.
-- Monitor only local filesystem size.
+- Restructured documentation.
+- agent: Monitor only local filesystem size.
 - agent: Set umask 027 in auto_configure.sh.
 - agent: Details components version in `temboard-agent --version` output.
 - agent: Fix sysv init script shipped on systemd by debian package.
