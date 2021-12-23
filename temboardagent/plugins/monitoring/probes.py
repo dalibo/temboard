@@ -35,7 +35,7 @@ def load_probes(options, home):
             o = eval(c + "(options)")
             o.set_home(home)
             probes.append(o)
-            logger.info("Loaded probe: %s", o.get_name())
+            logger.debug("Loaded probe: %s.", o.get_name())
 
     return probes
 
@@ -43,7 +43,7 @@ def load_probes(options, home):
 def run_probes(probes, instances, delta=True):
     """Execute the probes."""
 
-    logger.debug("Starting probe run")
+    logger.info("Running probes.")
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
     output = {}
@@ -57,7 +57,7 @@ def run_probes(probes, instances, delta=True):
 
         if p.level == 'host':
             if p.check():
-                logger.debug("Running host probe %s", p.get_name())
+                logger.info("Running host probe %s.", p.get_name())
                 try:
                     out = p.run()
                 except Exception:
@@ -68,9 +68,9 @@ def run_probes(probes, instances, delta=True):
             for i in instances:
                 if i['available']:
                     if p.check(i['version_num']):
-                        logger.debug(
-                            "Running %s level probe \"%s\" on instance \"%s\"",
-                            p.level, p.get_name(), i['instance'])
+                        logger.info(
+                            "Running %s level probe %s.",
+                            p.level, p.get_name())
                         try:
                             out += p.run(i)
                         except Exception:
@@ -78,7 +78,7 @@ def run_probes(probes, instances, delta=True):
 
         output[p.get_name()] = out
 
-    logger.debug("Finished probe run")
+    logger.info("Finished probes run.")
     return output
 
 

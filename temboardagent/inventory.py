@@ -197,6 +197,7 @@ class SysInfo(Inventory):
         return addrs
 
     def _file_systems_linux(self):
+        logger.debug("Inspecting file systems.")
         fs = []
         (rc, out, err) = exec_command([which('df'), '--local', '-k'])
         lines = out.splitlines()
