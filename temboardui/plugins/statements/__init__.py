@@ -751,9 +751,12 @@ def statements(request):
 
 
 def add_statement(session, instance, data):
+    agent_id = "%s:%s" % (instance.agent_address, instance.agent_port)
     try:
         cur = session.connection().connection.cursor()
         cur.execute("SET search_path TO statements")
+        if not data.get('data'):
+            logger.info("No statement data from %s.", agent_id)
         for statement in data.get('data'):
             query = """
                 INSERT INTO statements_src_tmp
@@ -828,10 +831,15 @@ def pull_data_worker(app):
         try:
             pull_data_for_instance(app, worker_session, instance)
         except Exception:
-            pass
+            logger.exception(
+                "Failed to pull data from %s:%s",
+                instance.agent_address, instance.agent_port,
+            )
 
 
 def pull_data_for_instance(app, session, instance):
+    agent_id = "%s:%s" % (instance.agent_address, instance.agent_port)
+    logger.info("Pulling statements from %s.", agent_id)
     url = 'https://%s:%s%s?key=%s' % (
         instance.agent_address,
         instance.agent_port,
@@ -840,6 +848,7 @@ def pull_data_for_instance(app, session, instance):
     )
     headers = {}
     try:
+        logger.debug("Querying %s.", url)
         body = temboard_request(
             app.config.temboard.ssl_ca_cert_file,
             method='GET',
@@ -847,6 +856,7 @@ def pull_data_for_instance(app, session, instance):
             headers=headers,
         )
         add_statement(session, instance, json_decode(body))
+        logger.info("Successfully pulled statements data for %s.", agent_id)
     except Exception as e:
         error = 'Error while fetching statements from instance: '
         if hasattr(e, 'read'):
@@ -854,8 +864,7 @@ def pull_data_for_instance(app, session, instance):
         else:
             error += str(e)
 
-        logger.error(error)
-        logger.exception(e)
+        logger.exception(error)
 
         # If statements data cannot be retrieved store the error in the
         # statements metas table
@@ -889,7 +898,7 @@ def pull_data_for_instance(app, session, instance):
             )
         )
         session.connection().connection.commit()
-        raise(e)
+        raise
 
 
 @workers.register(pool_size=1)
@@ -899,7 +908,6 @@ def purge_data_worker(app):
     purge_after sets the number of days of data to keep, from now. Default is
     7 days if not set.
     """
-    logger.setLevel(app.config.logging.level)
     logger.info("Purging old statements data")
 
     engine = worker_engine(app.config.repository)
@@ -915,10 +923,10 @@ def purge_data_worker(app):
         cur.execute("SET search_path TO statements")
         cur.execute("""SELECT statements_purge(%s)""", (purge_after,))
         session.connection().connection.commit()
-    except Exception as e:
-        logger.error('Could not purge statements data')
-        logger.exception(e)
-        raise(e)
+        logger.info("Old statements purged successfully.")
+    except Exception:
+        logger.exception('Could not purge statements data:')
+        raise
 
 
 @taskmanager.bootstrap()
@@ -926,7 +934,8 @@ def statements_bootstrap(context):
     yield taskmanager.Task(
         worker_name='pull_data_worker',
         id='statementsdata',
-        redo_interval=1 * 60,  # Repeat each 1m,
+        # redo_interval=1 * 60,  # Repeat each 1m,
+        redo_interval=10,  # Repeat each 1m,
         options={},
     )
     yield taskmanager.Task(
