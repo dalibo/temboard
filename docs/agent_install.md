@@ -75,6 +75,24 @@ $ sudo yum install temboard-agent
 $ temboard-agent --version
 ```
 
+#### Offline install
+
+Some production infrastructure are offline for security reasons. In this
+situation, the temboard-agent package and its dependencies can be dowloaded
+with the following commands :
+
+``` console
+$ sudo yum install yum-utils
+$ yumdownloader --resolve --destdir /tmp/temboard-packages temboard-agent
+```
+
+Then the downloaded packages can be transfered to the production server and
+installed with
+
+``` console
+$ yum --disablerepo=* localinstall *.rpm
+```
+
 </div>
 
 <div id="pypi" markdown=1>
