@@ -334,7 +334,7 @@ def schedule_collector(app):
     """Worker function in charge of scheduling collector (pull mode)."""
 
     logger.setLevel(app.config.logging.level)
-    logger.info("Starting collector scheduler worker.")
+    logger.info("Starting collector scheduler.")
 
     engine = worker_engine(app.config.repository)
     with engine.connect() as conn:
@@ -351,6 +351,8 @@ def schedule_collector(app):
             agent_id = "%s:%s" % (agent_address, agent_port)
             task_id = hashlib.md5(agent_id.encode("utf-8")).hexdigest()[:8]
 
+            logger.info("Scheduling collector for agent %s.", agent_id)
+
             taskmanager.schedule_task(
                 'collector',
                 listener_addr=os.path.join(
@@ -365,19 +367,20 @@ def schedule_collector(app):
                 expire=0,
             )
 
-    logger.info("End of collector scheduler worker.")
+    logger.info("End of collector scheduler.")
 
 
 @workers.register(pool_size=20)
 def collector(app, address, port, key):
-    logger.setLevel(app.config.logging.level)
-    logger.info("Starting collector worker for %s:%s", address, port)
+    agent_id = "%s:%s" % (address, port)
+    logger.info("Starting collector for %s.", agent_id)
 
     discover_data = dict()
 
     # First, we need to call discover API because we want to know the hostname
+    logger.info("Discovering hostname from agent %s.", agent_id)
     url = 'https://%s:%s/discover' % (address, port)
-    logger.debug("Calling %s" % url)
+    logger.debug("Calling %s.", url)
 
     try:
         response = temboard_request(
@@ -387,7 +390,7 @@ def collector(app, address, port, key):
             headers={"Content-type": "application/json"},
         )
     except HTTPError:
-        logger.error("Could not get response from %s" % url)
+        logger.error("Could not get response from %s.", url)
         logger.error("Agent or host are down.")
         return
 
@@ -417,12 +420,15 @@ def collector(app, address, port, key):
             host_id,
             discover_data['pg_port']
         )
+        logger.info(
+            "Found host #%s and instance #%s for agent %s, hostname %s.",
+            host_id, instance_id, agent_id, discover_data['hostname'])
     except Exception:
         # This case happens on the very first pull when no data have been
         # previously added.
         logger.warning(
             "Could not find host or instance records in monitoring inventory "
-            "tables."
+            "tables for agent %s.", agent_id,
         )
     else:
         # Get last inserted data timestamp from collector status
@@ -439,13 +445,15 @@ def collector(app, address, port, key):
     # Finally, let's call /monitoring/history agent API for getting metrics
     # history.
     try:
-        logger.debug("Calling %s" % history_url)
+        logger.info("Querying monitoring history from agent %s.", agent_id)
+        logger.debug("Calling %s.", history_url)
         response = temboard_request(
             app.config.temboard.ssl_ca_cert_file,
             'GET',
             history_url,
             headers={"Content-type": "application/json"},
         )
+        response = json.loads(response)
     except HTTPError as e:
         if e.code == 404:
             logger.error("Agent version does not support pull mode. "
@@ -463,7 +471,10 @@ def collector(app, address, port, key):
                 worker_session.commit()
         return
 
-    for row in json.loads(response):
+    if not response:
+        logger.info("Agent %s returned no monitoring data.", agent_id)
+
+    for row in response:
         hostinfo = row['hostinfo']
         data = row['data']
         instance = row['instances'][0]
@@ -474,17 +485,17 @@ def collector(app, address, port, key):
         try:
             # Try to insert collected data
 
-            # Update the inventory
+            logger.info("Update the inventory for %s.", agent_id)
             host = merge_agent_info(worker_session, hostinfo, instance)
             instance_id = get_instance_id(worker_session, host.host_id, port)
-            # Insert instance availability informations
+            logger.info("Insert instance availability for %s.", agent_id)
             insert_availability(
                 worker_session,
                 row['datetime'],
                 instance_id,
                 row['instances'][0]['available']
             )
-            # Insert collected metrics
+            logger.info("Insert collected metrics for %s.", agent_id)
             insert_metrics(worker_session, host.host_id, instance_id, data)
             worker_session.commit()
 
@@ -505,8 +516,8 @@ def collector(app, address, port, key):
 
             logger.exception(str(e))
             worker_session.rollback()
-            # Set collector status to FAIL
             if instance_id:
+                logger.info("Set collector status to FAIL for %s.", host)
                 update_collector_status(
                     worker_session,
                     instance_id,
@@ -515,10 +526,10 @@ def collector(app, address, port, key):
                     last_insert=last_insert,
                 )
                 worker_session.commit()
-            # Continue with the next row
+            logger.info("Continue with the next row.")
             continue
 
-        # Update collector status
+        logger.debug("Update collector status for agent %s.", agent_id)
         update_collector_status(
             worker_session,
             instance_id,
@@ -530,6 +541,7 @@ def collector(app, address, port, key):
             ),
         )
         worker_session.commit()
+        logger.info("Populate checks for %s.", host)
         # ALERTING PART
         populate_host_checks(
             worker_session,
@@ -539,7 +551,9 @@ def collector(app, address, port, key):
         )
         worker_session.commit()
 
-        # Apply alerting checks against preprocessed data
+        logger.info(
+            "Apply alerting checks against preprocessed data for agent %s.",
+            agent_id)
         check_preprocessed_data(
             worker_session,
             host.host_id,
@@ -555,7 +569,7 @@ def collector(app, address, port, key):
         logger.debug("Row with datetime=%s inserted", row['datetime'])
         worker_session.commit()
 
-    logger.info("End of collector worker.")
+    logger.info("End of collector for agent %s.", agent_id)
 
 
 @taskmanager.bootstrap()
@@ -581,6 +595,7 @@ def monitoring_bootstrap(context):
     yield taskmanager.Task(
             worker_name='schedule_collector',
             id='schedule_collector',
-            redo_interval=60,  # Repeat each 60s
+            # redo_interval=60,  # Repeat each 60s
+            redo_interval=10,  # Repeat each 60s
             options={},
     )
