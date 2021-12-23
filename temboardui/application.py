@@ -61,16 +61,16 @@ def add_role(session,
         session.flush()
         return role
     except IntegrityError as e:
-        if e.message.find('roles_role_email_key') > 0:
+        if str(e).find('roles_role_email_key') > 0:
             raise TemboardUIError(400, "Email address '%s' already in use." %
                                   (role_email))
-        elif e.message.find('roles_pkey') > 0:
+        elif str(e).find('roles_pkey') > 0:
             raise TemboardUIError(400,
                                   "Role '%s' already exists." % (role_name))
         else:
-            raise TemboardUIError(e.message)
+            raise TemboardUIError(str(e))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(str(e))
 
 
 def update_role(session,
@@ -101,18 +101,18 @@ def update_role(session,
         session.flush()
         return role
     except IntegrityError as e:
-        if e.message.find('roles_role_email_key') > 0:
+        if str(e).find('roles_role_email_key') > 0:
             raise TemboardUIError(400, "Email address '%s' already in use." %
                                   (role_email))
-        elif e.message.find('roles_pkey') > 0:
+        elif str(e).find('roles_pkey') > 0:
             raise TemboardUIError(400, "Role '%s' already exists." %
                                   (new_role_name))
         else:
-            raise TemboardUIError(e.message)
+            raise TemboardUIError(str(e))
     except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
-        raise TemboardUIError(500, e.message)
+        raise TemboardUIError(500, str(e))
 
 
 def get_role(session, role_name):
@@ -123,7 +123,7 @@ def get_role(session, role_name):
     except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(str(e))
 
 
 def delete_role(session, role_name):
@@ -134,7 +134,7 @@ def delete_role(session, role_name):
     except NoResultFound:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(str(e))
 
 
 def get_role_list(
@@ -158,16 +158,16 @@ def add_group(session, group_name, group_description, group_kind):
         session.flush()
         return group
     except IntegrityError as e:
-        if e.message.find('groups_group_kind_check') > 0:
+        if str(e).find('groups_group_kind_check') > 0:
             raise TemboardUIError(400, "Group kind '%s' does not exist." %
                                   (group_kind))
-        elif e.message.find('groups_pkey') > 0:
+        elif str(e).find('groups_pkey') > 0:
             raise TemboardUIError(400, "Group '%s' ('%s') already exists." %
                                   (group_name, group_kind))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_group(session, group_name, group_kind):
@@ -185,7 +185,7 @@ def get_group(session, group_name, group_kind):
         raise TemboardUIError(400, "Group '%s' (%s) not found." % (group_name,
                                                                    group_kind))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(str(e))
 
 
 def update_group(session,
@@ -207,16 +207,16 @@ def update_group(session,
         session.flush()
         return group
     except IntegrityError as e:
-        if e.message.find('groups_pkey') > 0:
+        if str(e).find('groups_pkey') > 0:
             raise TemboardUIError(400, "Group name '%s' already in use." %
                                   (new_group_name))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except AttributeError:
         raise TemboardUIError(400, "Group '%s' ('%s') not found." %
                               (group_name, group_kind))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def delete_group(session, group_name, group_kind):
@@ -228,7 +228,7 @@ def delete_group(session, group_name, group_kind):
     except NoResultFound:
         raise TemboardUIError(400, "Group '%s' not found." % (group_name))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_group_list(session, group_kind='role'):
@@ -249,19 +249,19 @@ def add_role_in_group(session, role_name, group_name):
         session.add(role_group)
         session.flush()
     except IntegrityError as e:
-        if e.message.find('role_groups_group_name_fkey') > 0:
+        if str(e).find('role_groups_group_name_fkey') > 0:
             raise TemboardUIError(400, "Group '%s' ('role') does not exist." %
                                   (group_name))
-        elif e.message.find('role_groups_role_name_fkey') > 0:
+        elif str(e).find('role_groups_role_name_fkey') > 0:
             raise TemboardUIError(400,
                                   "Role '%s' does not exist." % (role_name))
-        elif e.message.find('role_groups_pkey') > 0:
+        elif str(e).find('role_groups_pkey') > 0:
             raise TemboardUIError(400, "Role '%s' already in group '%s'." %
                                   (role_name, group_name))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def delete_role_from_group(session, role_name, group_name):
@@ -274,7 +274,7 @@ def delete_role_from_group(session, role_name, group_name):
         raise TemboardUIError(400, "Role '%s' not found in group '%s'." %
                               (role_name, group_name))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_groups_by_role(session, role_name):
@@ -342,14 +342,14 @@ def add_instance(session,
         session.flush()
         return instance
     except IntegrityError as e:
-        if str(e.message).find('instances_pkey') > 0:
+        if str(str(e)).find('instances_pkey') > 0:
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') already exists." %
                                   (new_agent_address, new_agent_port))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_instance(session, agent_address, agent_port):
@@ -363,7 +363,7 @@ def get_instance(session, agent_address, agent_port):
         raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
                               (agent_address, agent_port))
     except Exception as e:
-        raise TemboardUIError(e.message)
+        raise TemboardUIError(str(e))
 
 
 def update_instance(session,
@@ -414,17 +414,17 @@ def update_instance(session,
         session.flush()
         return instance
     except IntegrityError as e:
-        if e.message.find('instances_pkey') > 0:
+        if str(e).find('instances_pkey') > 0:
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') already exists." %
                                   (agent_address, agent_port))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except AttributeError:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def delete_instance(session, agent_address, agent_port):
@@ -442,7 +442,7 @@ def delete_instance(session, agent_address, agent_port):
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
     # Also delete any monitoring data
     # First all instance data
@@ -456,7 +456,7 @@ def delete_instance(session, agent_address, agent_port):
     except NoResultFound:
         pass
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
     # Then delete host data if there's no instance left referenced for this
     # host
@@ -475,7 +475,7 @@ def delete_instance(session, agent_address, agent_port):
         except NoResultFound:
             pass
         except Exception as e:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
 
 
 def add_instance_in_group(session, agent_address, agent_port, group_name):
@@ -492,21 +492,21 @@ def add_instance_in_group(session, agent_address, agent_port, group_name):
         session.add(instance_group)
         session.flush()
     except IntegrityError as e:
-        if e.message.find('instance_groups_group_name_fkey') > 0:
+        if str(e).find('instance_groups_group_name_fkey') > 0:
             raise TemboardUIError(
                 400, "Group '%s' ('instance') does not exist." % (group_name))
-        elif e.message.find('instance_groups_agent_address_fkey') > 0:
+        elif str(e).find('instance_groups_agent_address_fkey') > 0:
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') does not exist." %
                                   (agent_address, agent_port))
-        elif e.message.find('instance_groups_pkey') > 0:
+        elif str(e).find('instance_groups_pkey') > 0:
             raise TemboardUIError(
                 400, "Instance entry ('%s:%s)' already in group '%s'." %
                 (agent_address, agent_port, group_name))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def purge_instance_plugins(session, agent_address, agent_port):
@@ -517,7 +517,7 @@ def purge_instance_plugins(session, agent_address, agent_port):
         for plugin in plugins:
             session.delete(plugin)
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def add_instance_plugin(session, agent_address, agent_port, plugin_name):
@@ -529,17 +529,17 @@ def add_instance_plugin(session, agent_address, agent_port, plugin_name):
         session.add(plugin)
         session.flush()
     except IntegrityError as e:
-        if e.message.find('plugins_pkey') > 0:
+        if str(e).find('plugins_pkey') > 0:
             raise TemboardUIError(
                 400, "Plugin '%s' was already activated for this instance." %
                 (plugin_name))
-        elif e.message.find('plugins_agent_address_fkey') > 0:
+        elif str(e).find('plugins_agent_address_fkey') > 0:
             raise TemboardUIError(400, "Instance '%s:%s' does not exist." %
                                   (agent_address, agent_port))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_instance_list(
@@ -561,7 +561,7 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
             400, "Instance entry ('%s:%s)' not found in group '%s'." %
             (agent_address, agent_port, group_name))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_instances_by_group(session, group_name):
@@ -603,21 +603,21 @@ def add_role_group_in_instance_group(session, role_group_name,
         session.add(ari)
         session.flush()
     except IntegrityError as e:
-        if e.message.find('access_role_instance_pkey') > 0:
+        if str(e).find('access_role_instance_pkey') > 0:
             raise TemboardUIError(
                 400, "Group '%s' ('role') has already access to '%s'." %
                 (role_group_name, instance_group_name))
-        elif e.message.find(
+        elif str(e).find(
                 'access_role_instance_instance_group_name_fkey') > 0:
             raise TemboardUIError(400, "Instance group '%s' does not exist." %
                                   (instance_group_name))
-        elif e.message.find('access_role_instance_role_group_name_fkey') > 0:
+        elif str(e).find('access_role_instance_role_group_name_fkey') > 0:
             raise TemboardUIError(400, "Role group '%s' does not exist." %
                                   (role_group_name))
         else:
-            raise TemboardUIError(400, e.message)
+            raise TemboardUIError(400, str(e))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def delete_role_group_from_instance_group(session, role_group_name,
@@ -633,7 +633,7 @@ def delete_role_group_from_instance_group(session, role_group_name,
             400, "Role group '%s' not found in instance group '%s'." %
             (role_group_name, instance_group_name))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def get_instances_by_role_name(session, role_name):
@@ -674,7 +674,7 @@ def get_role_by_auth(session, role_name, role_password):
         raise TemboardUIError(400, "Wrong user/password: %s/%s" %
                               (role_name, role_password))
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 def hash_password(username, password):

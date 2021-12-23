@@ -807,7 +807,7 @@ def add_statement(session, instance, data):
         cur.execute(query, (instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
     except Exception as e:
-        raise TemboardUIError(400, e.message)
+        raise TemboardUIError(400, str(e))
 
 
 @workers.register(pool_size=1)
