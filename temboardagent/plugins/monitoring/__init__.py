@@ -227,7 +227,7 @@ def monitoring_collector_worker(app):
     """
     Run probes and push collected metrics in a queue.
     """
-    logger.debug("Starting monitoring collector")
+    logger.info("Starting monitoring collector.")
     config = app.config
     conninfo = dict(
         host=config.postgresql.host,
@@ -239,8 +239,9 @@ def monitoring_collector_worker(app):
         instance=config.postgresql.instance,
     )
 
+    logger.info("Gathering host information.")
     system_info = host_info(config.temboard.hostname)
-    # Load the probes to run
+    logger.info("Load the probes to run.")
     probes = load_probes(
         config.monitoring,
         config.temboard.home
@@ -248,7 +249,6 @@ def monitoring_collector_worker(app):
 
     instance = instance_info(conninfo, system_info['hostname'])
 
-    logger.debug("Running probes")
     # Gather the data from probes
     data = run_probes(probes, [instance])
 
@@ -260,9 +260,9 @@ def monitoring_collector_worker(app):
         data=data,
         version=__VERSION__,
     )
-    logger.debug(output)
+    logger.debug("Collect output=%s", output)
 
-    # Add data to metrics table
+    logger.info("Add data to metrics table.")
     db.add_metric(
         config.temboard.home,
         'monitoring.db',
@@ -270,7 +270,7 @@ def monitoring_collector_worker(app):
         output
     )
 
-    logger.debug("Done")
+    logger.info("Collect done.")
 
 
 class MonitoringPlugin(object):
@@ -295,7 +295,8 @@ class MonitoringPlugin(object):
         self.app.worker_pool.add(workers)
         workers.schedule(
             id='monitoring_collector',
-            redo_interval=self.app.config.monitoring.scheduler_interval,
+            redo_interval=15,
+            # redo_interval=self.app.config.monitoring.scheduler_interval,
         )(monitoring_collector_worker)
         self.app.scheduler.add(workers)
 
