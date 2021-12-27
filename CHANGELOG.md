@@ -2,7 +2,7 @@
 
 
 
-## [7.9]
+## [7.9] - 2022-01-03
 
 - Support PostgreSQL 14.
 - Fix deadlock in monitoring.
