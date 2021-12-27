@@ -118,16 +118,16 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
     changes['Changes'] = CHANGELOG_FMT % changes
     changes['Files'] = [u' '.join([
         md5,
-        unicode(filesize),
+        str(filesize),
         controls['Section'],
         controls['Priority'],
         filename,
     ])]
     changes['Checksums-Sha1'] = [u' '.join([
-        sha1, unicode(filesize), filename,
+        sha1, str(filesize), filename,
     ])]
     changes['Checksums-Sha256'] = [u' '.join([
-        sha256, unicode(filesize), filename,
+        sha256, str(filesize), filename,
     ])]
 
     return changes
@@ -135,7 +135,10 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
 
 def main():
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
-    deb = os.path.realpath(sys.argv[1].decode('utf-8'))
+    deb = sys.argv[1]
+    if PY2:
+        deb = deb.decode('utf-8')
+    deb = os.path.realpath(deb)
 
     with tmpdir():
         logger.info("Extracting control file.")
