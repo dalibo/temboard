@@ -8,6 +8,7 @@
 - Fix deadlock in monitoring.
 - Fix UI glitches.
 - Restructured documentation.
+- Improved logging messages.
 - agent: Monitor only local filesystem size.
 - agent: Set umask 027 in auto_configure.sh.
 - agent: Details components version in `temboard-agent --version` output.
