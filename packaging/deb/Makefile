@@ -1,6 +1,6 @@
-all: buster stretch jessie wheezy
+all: buster stretch
 
-buster stretch jessie wheezy:
+buster stretch:
 	mkdir -p ../../dist/
 	docker-compose run --rm $@
 	$(MAKE) changes-$@
