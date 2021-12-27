@@ -22,7 +22,7 @@ workflows:
         name: stage0-pkg-<< matrix.codename >>
         matrix:
           parameters:
-            codename: [buster, stretch, jessie]
+            codename: [buster, stretch]
     - func:
         name: stage1-func-pg12-centos7
         requires: [stage0-unit-py2.7, stage0-pkg-centos7]
@@ -128,7 +128,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [buster, stretch, jessie]
+        enum: [buster, stretch]
     docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
@@ -150,7 +150,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [buster, stretch, jessie, centos7, centos8]
+        enum: [buster, stretch, centos7, centos8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum

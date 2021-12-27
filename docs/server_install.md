@@ -60,9 +60,9 @@ Choose the method matching your target system:
 <div id="debian" markdown=1>
 <h3>Debian</h3>
 
-temBoard debs are published on [Dalibo Labs APT repository](https://apt.dalibo.org/labs/).
-temBoard supports Debian *stretch* and *jessie*. Start by enabling
-Dalibo Labs APT repository.
+temBoard debs are published on [Dalibo Labs APT
+repository](https://apt.dalibo.org/labs/). temBoard supports Debian *buster*
+and *stretch*. Start by enabling Dalibo Labs APT repository.
 
 
 ``` console

@@ -49,7 +49,7 @@ Run docker image for interactive usage:
 
 .. code-block::
 
-   CODENAME=jessie docker-compose run --rm debian /bin/bash
+   CODENAME=buster docker-compose run --rm debian /bin/bash
 
 ``packaging/`` is mounted as ``/workspace/`` and ``dist/`` is mounted as
 ``/dist/``. Just call ``/workspace/mkdeb.sh`` to build debian package. The

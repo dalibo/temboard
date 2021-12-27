@@ -33,9 +33,8 @@ Now choose the method matching best your target environment.
 ## Debian
 
 temBoard debs are published on [Dalibo Labs APT
-repository](https://apt.dalibo.org/labs/). temBoard agent supports
-Debian stretch, jessie and wheezy. Start by enabling Dalibo Labs APT
-repository.
+repository](https://apt.dalibo.org/labs/). temBoard agent supports Debian
+buster and stretch. Start by enabling Dalibo Labs APT repository.
 
 ``` console
 # echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list

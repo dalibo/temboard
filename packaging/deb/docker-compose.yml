@@ -14,7 +14,3 @@ services:
   stretch:
     <<: *mkdeb
     image: dalibo/labs-sdk:stretch
-
-  jessie:
-    <<: *mkdeb
-    image: dalibo/labs-sdk:jessie

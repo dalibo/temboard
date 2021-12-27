@@ -9,6 +9,7 @@
 - Fix UI glitches.
 - Restructured documentation.
 - Improved logging messages.
+- Dropped Debian Jessie support.
 - agent: Monitor only local filesystem size.
 - agent: Set umask 027 in auto_configure.sh.
 - agent: Details components version in `temboard-agent --version` output.
