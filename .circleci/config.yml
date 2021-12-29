@@ -129,7 +129,7 @@ jobs:
         description: "Debian version"
         type: enum
         enum: [buster, stretch]
-    docker: [{image: "dalibo/temboard-agent-sdk:<< parameters.codename >>"}]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
