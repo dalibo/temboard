@@ -46,14 +46,15 @@ Just create the tarball with ``setup.py sdist``.
 Development
 -----------
 
-The RPM spec file supports building a package for RHEL / CentOS version 7
-and 8. To do so, it uses tests on the version, provided by the %{rhel} macro.
+The RPM spec file supports building a package for RHEL / CentOS / RockyLinux
+version 7 and 8. To do so, it uses tests on the version, provided by the
+%{rhel} macro.
 
 First, run docker container for interactive usage:
 
 ::
 
-    $ docker-compose run --rm centos7 /bin/bash
+    $ docker-compose run --rm rhel8 /bin/bash
 
 If you get no output just after the run, type ``ENTER`` or ``CTRL+L`` to redraw.
 
