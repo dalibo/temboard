@@ -24,7 +24,7 @@ Now choose the method matching best your target environment.
 
 <ul class="tabs">
   <li><a href="#debian"><img src="../sc/debian.svg" height="48" width="48"></img> Debian</a></li>
-  <li><a href="#rhel-centos"><img src="../sc/centos.svg" height="48" width="48"></img> RHEL / CentOS</a></li>
+  <li><a href="#rhel"><img src="../sc/centos.svg" height="48" width="48"></img> RHEL / CentOS / RockyLinux</a></li>
   <li><a href="#pypi2"><img src="../sc/pypi.svg" height="48" width="48"></img> PyPI</a></li>
 </ul>
 
@@ -50,15 +50,15 @@ You can install now temBoard agent with:
 ```
 </div>
 
-<div id="rhel-centos" markdown=1>
-## RHEL / CentOS
+<div id="rhel" markdown=1>
+## RHEL / CentOS / RockyLinux / ...
 
 temBoard RPM are published on [Dalibo Labs YUM
 repository](https://yum.dalibo.org/labs/). temBoard agent supports
-RHEL/CentOS 7 and 8. Start by enabling Dalibo Labs YUM repository.
+RHEL/CentOS/RockyLinux 7 and 8. Start by enabling Dalibo Labs YUM repository.
 
 ``` console
-$ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-2-1.noarch.rpm
+$ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-3-1.noarch.rpm
 $ sudo yum makecache fast
 ```
 
@@ -66,6 +66,11 @@ $ sudo yum makecache fast
 
     Do **NOT** use temBoard agent rpm from PGDG. They are known to be
     broken.
+
+!!! warning
+
+    Ensure you have updated dalibo labs repo pointing to yum.dalibo.org/labs/RHEL
+    directory, not yum.dalibo.org/labs/CentOS.
 
 With the YUM repository configured, you can install temBoard agent with:
 
