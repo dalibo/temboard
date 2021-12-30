@@ -123,7 +123,7 @@ jobs:
         description: "Distribution"
         type: enum
         enum: [centos8, centos7]
-    docker: [{image: "dalibo/labs-sdk:<< parameters.dist >>"}]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.dist >>"}]
     working_directory: ~/workspace
     steps:
     - checkout

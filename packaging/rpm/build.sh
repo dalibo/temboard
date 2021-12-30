@@ -35,8 +35,6 @@ chown -R testuser "$topdir"
 
 #       B U I L D
 
-# Disable PGDG repos, they eat network bandwith for nothing.
-sed -i s/enabled=1/enabled=0/ /etc/yum.repos.d/pgdg-redhat-all.repo
 yum-builddep -y packaging/rpm/temboard-agent.spec
 
 sudo -u testuser rpmbuild \

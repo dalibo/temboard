@@ -2,7 +2,7 @@ version: '2'
 
 services:
   centos7: &centos
-    image: dalibo/labs-sdk:centos7
+    image: dalibo/buildpack-pkg:centos7
     working_dir: /workspace
     environment:
     - VERSION
@@ -13,4 +13,4 @@ services:
 
   centos8:
     <<: *centos
-    image: dalibo/labs-sdk:centos8
+    image: dalibo/buildpack-pkg:centos8
