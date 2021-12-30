@@ -54,6 +54,8 @@ then
     rpm --query --queryformat= temboard-agent
 else
     $PYTHON -m pip install -e .
+    # Fake easy_install.pth dropped by new setuptools.
+    echo "$PWD" > "$("$PYTHON" -c "import sys; print(sys.path[-1]);")/temboard-develop.pth"
     if type -p yum &>/dev/null && $PYTHON --version | grep -F 'Python 2' ; then
 	    yum -q -y "--disablerepo=pgdg*" install python-psycopg2
     else
