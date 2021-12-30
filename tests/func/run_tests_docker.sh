@@ -40,7 +40,7 @@ teardown() {
 trap teardown EXIT INT TERM
 
 install_rpm=${TBD_INSTALL_RPM:-0}
-export PYTHON=${PYTHON-python3}
+PYTHON="$(type -p "${PYTHON-python3}")"
 
 # For circle-ci tests we want to install using RPM
 # When launched locally we install via pip
