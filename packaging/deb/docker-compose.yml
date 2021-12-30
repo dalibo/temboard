@@ -2,7 +2,7 @@ version: '2'
 
 services:
   buster: &mkdeb
-    image: dalibo/labs-sdk:buster
+    image: dalibo/buildpack-pkg:buster
     environment:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}
@@ -14,4 +14,4 @@ services:
 
   stretch:
     <<: *mkdeb
-    image: dalibo/labs-sdk:stretch
+    image: dalibo/buildpack-pkg:stretch
