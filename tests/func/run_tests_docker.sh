@@ -78,6 +78,7 @@ export TBD_WORKPATH="/tmp"
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
 rm -rf /tmp/tests_temboard
+temboard-agent --version
 sudo -Eu testuser \
 	/usr/bin/env PATH="$PATH" \
 	"$PYTHON" -m pytest \
