@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  centos7: &centos
+  rhel7: &rhel
     image: dalibo/buildpack-pkg:centos7
     working_dir: /workspace
     environment:
@@ -11,6 +11,6 @@ services:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh
 
-  centos8:
-    <<: *centos
+  rhel8:
+    <<: *rhel
     image: dalibo/buildpack-pkg:centos8
