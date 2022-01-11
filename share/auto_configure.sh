@@ -53,7 +53,7 @@ setup_logging() {
 setup_pq() {
 	# Ensure used libpq vars are defined for configuration template.
 
-	export PGHOST=${PGHOST-$(query_pgsettings unix_socket_directories)}
+	export PGHOST=${PGHOST-/var/run/postgresql}
 	PGHOST=${PGHOST%%,*}
 	export PGPORT=${PGPORT-5432}
 	export PGUSER=${PGUSER-postgres}
