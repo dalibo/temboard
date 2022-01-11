@@ -42,4 +42,7 @@ if getent passwd temboard ; then
 	userdel temboard
 fi
 
+sudo -iu postgres dropdb --if-exists temboard
+sudo -iu postgres dropuser --if-exists temboard
+
 rm -rf "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
