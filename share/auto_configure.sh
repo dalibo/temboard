@@ -170,12 +170,8 @@ install -o temboard -g temboard -m 0640 /dev/null ${ETCDIR}/temboard.conf
 generate_configuration "${sslfiles[@]}" > ${ETCDIR}/temboard.conf
 
 log "Creating Postgres user, database and schema."
-if [ -d ${PGHOST-/tmp} ] ; then
-	# If local, sudo to PGUSER.
-	sudo -Eu ${PGUSER} ./create_repository.sh
-else
-	./create_repository.sh
-fi
+./create_repository.sh
+
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
 if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
