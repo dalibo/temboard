@@ -56,6 +56,7 @@ class TaskApplication(TemboardApplication):
         parser.add_argument(
             'worker_args', nargs='*',
             metavar='ARG',
+            default=[],
             help="Worker arguments as Python literals.")
         args = parser.parse_args(argv)
         environ = map_pgvars(environ)
