@@ -10,8 +10,8 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: temboard
-      POSTGRES_PASSWORD: temboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   postgres:
     image: postgres:14-alpine
