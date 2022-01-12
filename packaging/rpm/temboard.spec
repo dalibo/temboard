@@ -59,7 +59,7 @@ This packages holds the web user interface
 # Create system user now to let rpm chown %files.
 if ! getent passwd temboard &>/dev/null ; then
   useradd \
-    --system --user-group --shell /sbin/nologin \
+    --system --user-group --shell /bin/bash \
     --home-dir /var/lib/temboard \
     --comment "temBoard Web UI" temboard &>/dev/null
 fi

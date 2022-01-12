@@ -153,7 +153,7 @@ export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
 if ! getent passwd temboard ; then
 	log "Creating system user temBoard."
 	useradd \
-		--system --user-group --shell /sbin/nologin \
+		--system --user-group --shell "$SHELL" \
 		--home-dir ${VARDIR} \
 		--comment "temBoard Web UI" temboard &>/dev/null
 fi
