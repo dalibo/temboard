@@ -182,6 +182,10 @@ jobs:
         at: ~/workspace
     - *pip-cache-restore
     - run:
+        name: Shellcheck
+        command: |
+          shellcheck share/purge.sh share/create_repository.sh share/auto_configure.sh
+    - run:
         name: Functionnal tests
         command: tests/func/run.sh
         environment:
