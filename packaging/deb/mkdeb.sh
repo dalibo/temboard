@@ -107,5 +107,5 @@ dpkg -i $deb
 mkdir -p ${DISTDIR}/
 mv -fv $deb ${DISTDIR}/
 # Point deb as latest build for changes generation.
-ln -fs $(basename $deb) ${DISTDIR}/last_build.deb
+ln -fs $(basename $deb) ${DISTDIR}/temboard_last.deb
 chown -R ${UID_GID} ${DISTDIR}/*
