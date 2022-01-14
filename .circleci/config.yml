@@ -184,7 +184,7 @@ jobs:
     - run:
         name: Shellcheck
         command: |
-          shellcheck share/purge.sh
+          shellcheck share/purge.sh share/create_repository.sh
     - run:
         name: Functionnal tests
         command: tests/func/run.sh
