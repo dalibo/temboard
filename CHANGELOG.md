@@ -6,6 +6,7 @@
 - Fix database ownership on creation.
 - Ship a /usr/share/temboard/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
+- Review defaults groups.
 
 
 ## [7.9] - 2022-01-03

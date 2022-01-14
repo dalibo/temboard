@@ -73,9 +73,11 @@ GRANT ALL ON ALL TABLES IN SCHEMA application TO temboard;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA application TO temboard;
 GRANT ALL ON SCHEMA application TO temboard;
 
+-- Defaults
+INSERT INTO groups VALUES ('default', 'Default instance group', 'instance');
+INSERT INTO groups VALUES ('default', 'Default admin role group', 'role');
+INSERT INTO access_role_instance VALUES ('default', 'role', 'default', 'instance');
+
 -- Default administrator: admin/admin
 INSERT INTO roles VALUES ('admin', 'xiet7KLumux50Q2dmV/FBue2zqtexElavkVAKnEYN/rw2YLIn51TQsXb3u8FPm4wiuHUTtEjjvBIrtBPAgRMsA==', 'admin@change.me', NULL, true, true);
-INSERT INTO groups VALUES ('default', 'Default instance group', 'instance');
-INSERT INTO groups VALUES ('admin', 'Default admin role group', 'role');
-INSERT INTO role_groups VALUES ('admin', 'admin', 'role');
-INSERT INTO access_role_instance VALUES ('admin', 'role', 'default', 'instance');
+INSERT INTO role_groups VALUES ('admin', 'default', 'role');
