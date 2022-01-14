@@ -1,17 +1,17 @@
 version: '2'
 
 volumes:
+  data13:
+  run13:
+
+  data12:
+  run12:
+
   data10:
   run10:
 
   data96:
   run96:
-
-  data95:
-  run95:
-
-  data94:
-  run94:
 
 
 services:
@@ -27,27 +27,84 @@ services:
       - "8888:8888"
 
   repository:
-    image: postgres:10
+    image: postgres:13
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: temboard
 
+  instance13:
+    image: postgres:13
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
+    ports:
+      - 5432:5432
+    volumes:
+    - data13:/var/lib/postgresql/data
+    - run13:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  agent13:
+    image: dalibo/temboard-agent
+    volumes:
+    - data13:/var/lib/postgresql/data
+    - run13:/var/run/postgresql/
+    - /usr/bin/docker:/usr/bin/docker
+    - /var/run/docker.sock:/var/run/docker.sock
+    links:
+    - instance13:instance13.fqdn
+    - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance13.fqdn
+      TEMBOARD_KEY: key_for_agent_13
+      TEMBOARD_UI_URL: https://ui:8888/
+
+  instance12:
+    image: postgres:12
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
+    ports:
+      - 5433:5432
+    volumes:
+      - data12:/var/lib/postgresql/data
+      - run12:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  agent12:
+    image: dalibo/temboard-agent
+    volumes:
+      - data12:/var/lib/postgresql/data
+      - run12:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance12:instance12.fqdn
+      - ui
+    environment:
+      TEMBOARD_HOSTNAME: instance12.fqdn
+      TEMBOARD_KEY: key_for_agent_12
+      TEMBOARD_UI_URL: https://ui:8888/
+
   instance10:
     image: postgres:10
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
+    ports:
+      - 5434:5432
     volumes:
-    - data10:/var/lib/postgresql/data
-    - run10:/var/run/postgresql
+      - data10:/var/lib/postgresql/data
+      - run10:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent10:
     image: dalibo/temboard-agent
     volumes:
-    - data10:/var/lib/postgresql/data
-    - run10:/var/run/postgresql/
-    - /usr/bin/docker:/usr/bin/docker
-    - /var/run/docker.sock:/var/run/docker.sock
+      - data10:/var/lib/postgresql/data
+      - run10:/var/run/postgresql/
+      - /usr/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
     links:
-    - instance10:instance10.fqdn
-    - ui
+      - instance10:instance10.fqdn
+      - ui
     environment:
       TEMBOARD_HOSTNAME: instance10.fqdn
       TEMBOARD_KEY: key_for_agent_10
@@ -55,11 +112,14 @@ services:
 
   instance96:
     image: postgres:9.6
+    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
-      - 5433:5432
+      - 5435:5432
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
 
   agent96:
     image: dalibo/temboard-agent
@@ -74,50 +134,4 @@ services:
     environment:
       TEMBOARD_HOSTNAME: instance96.fqdn
       TEMBOARD_KEY: key_for_agent_96
-      TEMBOARD_UI_URL: https://ui:8888/
-
-  instance95:
-    image: postgres:9.5
-    ports:
-      - 5434:5432
-    volumes:
-      - data95:/var/lib/postgresql/data
-      - run95:/var/run/postgresql
-
-  agent95:
-    image: dalibo/temboard-agent
-    volumes:
-      - data95:/var/lib/postgresql/data
-      - run95:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
-      - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - instance95:instance95.fqdn
-      - ui
-    environment:
-      TEMBOARD_HOSTNAME: instance95.fqdn
-      TEMBOARD_KEY: key_for_agent_95
-      TEMBOARD_UI_URL: https://ui:8888/
-
-  instance94:
-    image: postgres:9.4
-    ports:
-      - 5435:5432
-    volumes:
-      - data94:/var/lib/postgresql/data
-      - run94:/var/run/postgresql
-
-  agent94:
-    image: dalibo/temboard-agent
-    volumes:
-      - data94:/var/lib/postgresql/data
-      - run94:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
-      - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - instance94:instance94.fqdn
-      - ui
-    environment:
-      TEMBOARD_HOSTNAME: instance94.fqdn
-      TEMBOARD_KEY: key_for_agent_94
       TEMBOARD_UI_URL: https://ui:8888/
