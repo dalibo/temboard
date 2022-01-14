@@ -19,7 +19,7 @@ workflows:
         requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
-            codename: [buster, stretch]
+            codename: [bullseye, buster, stretch]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - func:
@@ -98,7 +98,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [buster, stretch]
+        enum: [bullseye, buster, stretch]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:

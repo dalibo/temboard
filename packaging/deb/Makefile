@@ -1,6 +1,6 @@
-all: buster stretch
+all: bullseye buster stretch
 
-buster stretch:
+bullseye buster stretch:
 	mkdir -p ../../dist/
 	docker-compose run --rm $@
 	$(MAKE) changes-$@
