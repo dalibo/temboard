@@ -77,15 +77,6 @@ function load_update_group_form(modal_id, group_kind, group_name)
       {
         // Activate multiselect plugin for group selecting.
         $('#selectGroups').multiselect(multiselectOptions);
-        // Add group's description as a tooltip.
-        $('.multiselect-container li').not('.filter, .group').tooltip({
-            placement: 'right',
-            container: 'body',
-            title: function () {
-                var value = $(this).find('input').val();
-                return descriptions[value];
-            }
-        });
       }
       $('#submitFormUpdateGroup').click(function() {
         $('#formUpdateGroup').submit()
