@@ -329,23 +329,7 @@ class TemboardApplication(BaseApplication):
 
         self.webapp.engine = configure_db_session(self.config.repository)
 
-    def main(self, argv, environ):
-
-        # C O N F I G U R A T I O N
-
-        parser = ArgumentParser(
-            prog='temboard',
-            description="temBoard web UI.",
-            argument_default=UNDEFINED_ARGUMENT,
-        )
-        define_arguments(parser)
-        args = parser.parse_args(argv)
-        environ = map_pgvars(environ)
-        self.bootstrap(args=args, environ=environ)
-
-        setproctitle = ProcTitleManager(prefix='temboard: ')
-        setproctitle.setup()
-
+    def log_versions(self):
         versions = inspect_versions()
         logger.info(
             "Running on %s %s.",
@@ -357,6 +341,25 @@ class TemboardApplication(BaseApplication):
             "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
             versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
         )
+
+    def main(self, argv, environ):
+
+        # C O N F I G U R A T I O N
+
+        parser = ArgumentParser(
+            prog=self.PROGRAM,
+            description="temBoard web UI.",
+            argument_default=UNDEFINED_ARGUMENT,
+        )
+        define_arguments(parser)
+        args = parser.parse_args(argv)
+        environ = map_pgvars(environ)
+        self.bootstrap(args=args, environ=environ)
+
+        setproctitle = ProcTitleManager(prefix='temboard: ')
+        setproctitle.setup()
+
+        self.log_versions()
         logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)

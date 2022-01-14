@@ -24,7 +24,6 @@ from .__main__ import (
     check_schema,
     legacy_bootstrap,
     list_options_specs,
-    inspect_versions,
     map_pgvars,
     TemboardApplication,
 )
@@ -67,17 +66,7 @@ class TaskApplication(TemboardApplication):
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
-        versions = inspect_versions()
-        logger.info(
-            "Running on %s %s.",
-            versions['distname'], versions['distversion'])
-        logger.info(
-            "Using Python %s (%s).",
-            versions['python'], versions['pythonbin'])
-        logger.info(
-            "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
-            versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
-        )
+        self.log_versions()
         logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)

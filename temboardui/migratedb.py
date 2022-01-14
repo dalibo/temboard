@@ -9,33 +9,25 @@ import alembic.command
 import alembic.config
 import sqlalchemy.exc
 
-from .__main__ import VersionAction, map_pgvars
+from .__main__ import VersionAction, map_pgvars, TemboardApplication
 from .model import build_alembic_config, check_schema
 from .toolkit import validators as v
 from .toolkit.app import (
-    BaseApplication,
     define_core_arguments,
 )
 from .toolkit.configuration import OptionSpec
 from .toolkit.errors import UserError
-from .version import __version__, inspect_versions
 
 
 logger = logging.getLogger(__name__)
 
 
-class MigrateDBApplication(BaseApplication):
-    DEFAULT_CONFIGFILES = [
-        '/etc/temboard/temboard.conf',
-        'temboard.conf',
-    ]
+class MigrateDBApplication(TemboardApplication):
     PROGRAM = 'temboard-migratedb'
-    REPORT_URL = "https://github.com/dalibo/temboard/issues"
-    VERSION = __version__
 
     def main(self, argv, environ):
         parser = ArgumentParser(
-            prog='temboard-migratedb',
+            prog=self.PROGRAM,
             description="temBoard schema migrator.",
             argument_default=UNDEFINED_ARGUMENT,
         )
@@ -44,14 +36,7 @@ class MigrateDBApplication(BaseApplication):
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
-        versions = inspect_versions()
-        logger.debug(
-            "Using Python %s (%s).",
-            versions['python'], versions['pythonbin'])
-        logger.debug(
-            "Using Psycopg2 %s, Alembic %s and SQLAlchemy %s",
-            versions['psycopg2'], versions['alembic'], versions['sqlalchemy'],
-        )
+        self.log_versions()
 
         if args.command is None:
             raise UserError("Missing sub-command. See --help")
