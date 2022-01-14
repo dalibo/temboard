@@ -335,11 +335,11 @@ class TemboardApplication(BaseApplication):
             "Running on %s %s.",
             versions['distname'], versions['distversion'])
         logger.info(
-            "Using Python %s (%s).",
-            versions['python'], versions['pythonbin'])
+            "Using Python %s (%s) and Tornado %s .",
+            versions['python'], versions['pythonbin'], versions['tornado'])
         logger.info(
-            "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
-            versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
+            "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",
+            versions['libpq'], versions['psycopg2'], versions['sqlalchemy'],
         )
 
     def main(self, argv, environ):
