@@ -7,7 +7,7 @@
 - Ship a /usr/share/temboard/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
 - Review defaults groups.
-- agent: Package for bullseye.
+- Packages for bullseye.
 
 
 ## [7.9] - 2022-01-03

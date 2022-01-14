@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  buster: &mkdeb
-    image: dalibo/buildpack-pkg:buster
+  bullseye: &mkdeb
+    image: dalibo/buildpack-pkg:bullseye
     environment:
       # See dch(1)
       DEBFULLNAME: ${DEBFULLNAME}
@@ -10,6 +10,10 @@ services:
     volumes:
     - ../..:/workspace
     command: /workspace/packaging/deb/mkdeb.sh
+
+  buster:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:buster
 
   stretch:
     <<: *mkdeb

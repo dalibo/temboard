@@ -22,7 +22,7 @@ workflows:
         name: stage0-pkg-<< matrix.codename >>
         matrix:
           parameters:
-            codename: [buster, stretch]
+            codename: [bullseye, buster, stretch]
     - func:
         name: stage1-func-pg12-centos7
         requires: [stage0-unit-py2.7, stage0-pkg-centos7]
@@ -34,6 +34,12 @@ workflows:
         dist: centos8
         pgversion: "14"
         pythonbin: "python3"
+    - func:
+        name: stage1-func-pg13-bullseye
+        requires: [stage0-unit-py2.7, stage0-pkg-bullseye]
+        dist: bullseye
+        pgversion: "13"
+        pythonbin: "python2.7"
     - func:
         name: stage1-func-pg9.5-buster
         requires: [stage0-unit-py2.7]
@@ -128,7 +134,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [buster, stretch]
+        enum: [bullseye, buster, stretch]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
@@ -150,7 +156,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [buster, stretch, centos7, centos8]
+        enum: [bullseye, buster, stretch, centos7, centos8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
@@ -158,7 +164,7 @@ jobs:
       pythonbin:
         description: "Python bin executable"
         type: enum
-        enum: ["python2", "python3"]
+        enum: ["python2.7", "python2", "python3"]
         default: "python2"
     docker:
     - image: dalibo/buildpack-python:<< parameters.dist >>
