@@ -47,6 +47,11 @@ class TaskApplication(TemboardApplication):
             argument_default=UNDEFINED_ARGUMENT,
         )
         parser.add_argument(
+            '-c', '--config',
+            action='store', dest='temboard_configfile',
+            help="Configuration file", metavar='CONFIGFILE',
+        )
+        parser.add_argument(
             'worker_name',
             metavar='WORKER',
             help=(
