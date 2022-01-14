@@ -40,7 +40,7 @@ teardown() {
 trap teardown EXIT INT TERM
 
 install_rpm=${TBD_INSTALL_RPM:-0}
-export PYTHON=${PYTHON-python3}
+PYTHON="$(type -p "${PYTHON-python3}")"
 
 # For circle-ci tests we want to install using RPM
 # When launched locally we install via pip
@@ -54,6 +54,8 @@ then
     rpm --query --queryformat= temboard-agent
 else
     $PYTHON -m pip install -e .
+    # Fake easy_install.pth dropped by new setuptools.
+    echo "$PWD" > "$("$PYTHON" -c "import sys; print(sys.path[-1]);")/temboard-develop.pth"
     if type -p yum &>/dev/null && $PYTHON --version | grep -F 'Python 2' ; then
 	    yum -q -y "--disablerepo=pgdg*" install python-psycopg2
     else
@@ -78,6 +80,7 @@ export TBD_WORKPATH="/tmp"
 # Remove any .pyc file to avoid errors with pytest and cache
 find . -name \*.pyc -delete
 rm -rf /tmp/tests_temboard
+temboard-agent --version
 sudo -Eu testuser \
 	/usr/bin/env PATH="$PATH" \
 	"$PYTHON" -m pytest \

@@ -8,7 +8,7 @@ workflows:
         name: stage0-pkg-<< matrix.dist >>
         matrix:
           parameters:
-            dist: [centos8, centos7]
+            dist: [rockylinux8, centos7]
     - unit:
         name: stage0-unit-<< matrix.docker >>
         matrix:
@@ -19,7 +19,7 @@ workflows:
         requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
-            codename: [buster, stretch]
+            codename: [bullseye, buster, stretch]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - func:
@@ -30,9 +30,9 @@ workflows:
           parameters:
             pgversion: ["9.6", "12"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-centos8
-        dist: centos8
-        requires: [stage0-pkg-centos8, "stage0-unit-python:3.6"]
+        name: stage1-func-pg<< matrix.pgversion >>-rockylinux8
+        dist: rockylinux8
+        requires: [stage0-pkg-rockylinux8, "stage0-unit-python:3.6"]
         matrix:
           parameters:
             pgversion: ["9.6", "14"]
@@ -98,8 +98,8 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [buster, stretch]
-    docker: [{image: "dalibo/labs-sdk:<< parameters.codename >>"}]
+        enum: [bullseye, buster, stretch]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
@@ -122,8 +122,8 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [centos8, centos7]
-    docker: [{image: "dalibo/labs-sdk:<< parameters.dist >>"}]
+        enum: [rockylinux8, centos7]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.dist >>"}]
     working_directory: ~/workspace
     steps:
     - checkout
@@ -145,7 +145,7 @@ jobs:
       dist:
         description: "Execution Linux distribution"
         type: enum
-        enum: [centos8, centos7, buster, stretch, bullseye]
+        enum: [rockylinux8, centos7, buster, stretch, bullseye]
       install_rpm:
         description: "Whether to install agent from RPM"
         type: integer
