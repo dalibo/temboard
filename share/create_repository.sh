@@ -9,7 +9,7 @@ if [ -n "${DEBUG-}" ] ; then
 	set -x
 fi
 
-SQLDIR=$(readlink -m $0/../sql/)
+SQLDIR=$(readlink -m "$0/../sql/")
 
 export PGUSER=${PGUSER-postgres}
 export PGHOST=${PGHOST-/var/run/postgresql}
@@ -36,7 +36,11 @@ else
 	runas=()
 fi
 
-psql=(env PGPASSWORD="$TEMBOARD_PASSWORD" psql -U temboard -d temboard -h "$PGHOST" -w --set ON_ERROR_STOP=on --pset pager=off)
+psql=(
+	env "PGPASSWORD=$TEMBOARD_PASSWORD"
+	psql -U temboard -d temboard -h "$PGHOST" -w
+	--set 'ON_ERROR_STOP=on' --pset 'pager=off'
+)
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to temboard.
 	psql=("${runas[@]}" "${psql[@]}")
