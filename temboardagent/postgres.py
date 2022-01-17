@@ -47,7 +47,11 @@ class ConnectionHelper(connection):
             return cur.fetchone()
 
     def query_scalar(self, query, vars=None):
-        return next(iter(self.queryone(query, vars).values()))
+        row = self.queryone(query, vars)
+        if row is None:
+            return
+        else:
+            return next(iter(row.values()))
 
 
 class ConnectionManager(object):
