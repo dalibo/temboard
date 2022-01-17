@@ -228,6 +228,10 @@ class SysInfo(Inventory):
                 logger.debug("Ignoring mount point %s.", mount_point)
                 continue
 
+            if dev.startswith('/dev/loop'):
+                logger.debug("Ignoring loopback device %s.", dev)
+                continue
+
             # Skip basic FHS directories.
             _, top_level_dir = mount_point.split('/', 2)[:2]
             if top_level_dir in ('dev', 'proc', 'run', 'sys'):
