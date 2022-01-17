@@ -329,12 +329,25 @@ class TemboardApplication(BaseApplication):
 
         self.webapp.engine = configure_db_session(self.config.repository)
 
+    def log_versions(self):
+        versions = inspect_versions()
+        logger.info(
+            "Running on %s %s.",
+            versions['distname'], versions['distversion'])
+        logger.info(
+            "Using Python %s (%s) and Tornado %s .",
+            versions['python'], versions['pythonbin'], versions['tornado'])
+        logger.info(
+            "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",
+            versions['libpq'], versions['psycopg2'], versions['sqlalchemy'],
+        )
+
     def main(self, argv, environ):
 
         # C O N F I G U R A T I O N
 
         parser = ArgumentParser(
-            prog='temboard',
+            prog=self.PROGRAM,
             description="temBoard web UI.",
             argument_default=UNDEFINED_ARGUMENT,
         )
@@ -346,17 +359,7 @@ class TemboardApplication(BaseApplication):
         setproctitle = ProcTitleManager(prefix='temboard: ')
         setproctitle.setup()
 
-        versions = inspect_versions()
-        logger.info(
-            "Running on %s %s.",
-            versions['distname'], versions['distversion'])
-        logger.info(
-            "Using Python %s (%s).",
-            versions['python'], versions['pythonbin'])
-        logger.info(
-            "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
-            versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
-        )
+        self.log_versions()
         logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)

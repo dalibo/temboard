@@ -4,10 +4,11 @@
 ## [7.10] - Unreleased
 
 - Fix database ownership on creation.
-- Ship a /usr/share/temboard/reassign.sql script to fix ownership.
+- Ship a /usr/share/temboard/sql/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
 - Review defaults groups.
 - Packages for bullseye.
+- Show libpq version in logs and --version.
 
 
 ## [7.9] - 2022-01-03

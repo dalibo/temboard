@@ -24,7 +24,6 @@ from .__main__ import (
     check_schema,
     legacy_bootstrap,
     list_options_specs,
-    inspect_versions,
     map_pgvars,
     TemboardApplication,
 )
@@ -47,6 +46,11 @@ class TaskApplication(TemboardApplication):
             argument_default=UNDEFINED_ARGUMENT,
         )
         parser.add_argument(
+            '-c', '--config',
+            action='store', dest='temboard_configfile',
+            help="Configuration file", metavar='CONFIGFILE',
+        )
+        parser.add_argument(
             'worker_name',
             metavar='WORKER',
             help=(
@@ -56,22 +60,13 @@ class TaskApplication(TemboardApplication):
         parser.add_argument(
             'worker_args', nargs='*',
             metavar='ARG',
+            default=[],
             help="Worker arguments as Python literals.")
         args = parser.parse_args(argv)
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
 
-        versions = inspect_versions()
-        logger.info(
-            "Running on %s %s.",
-            versions['distname'], versions['distversion'])
-        logger.info(
-            "Using Python %s (%s).",
-            versions['python'], versions['pythonbin'])
-        logger.info(
-            "Using Psycopg2 %s, Tornado %s and SQLAlchemy %s",
-            versions['psycopg2'], versions['tornado'], versions['sqlalchemy'],
-        )
+        self.log_versions()
         logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
