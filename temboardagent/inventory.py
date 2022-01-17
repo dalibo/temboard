@@ -238,6 +238,7 @@ class SysInfo(Inventory):
                 logger.debug("Ignoring mount point %s.", mount_point)
                 continue
 
+            logger.debug("Found filesystem %s at %s.", dev, mount_point)
             fs.append({
                 'mount_point': mount_point,
                 'device': dev,
