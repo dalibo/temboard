@@ -205,7 +205,7 @@ class SysInfo(Inventory):
         del lines[0]
         dev = None
         for line in lines:
-            cols = line.split()
+            cols = line.decode('utf-8').split()
             # Skip rootfs which is redundant on Debian
             if cols[0] == 'rootfs':
                 logger.debug("Ignoring rootfs mount point.")
@@ -213,39 +213,39 @@ class SysInfo(Inventory):
 
             # Output of df can be multiline when the name of the
             # device is too large
-            if len(cols) == 1:
-                dev = cols[0]
+            if len(cols) in (1, 6):
+                dev = cols.pop(0)
+
+            if not cols:
+                # Multi-line output, skip to next line for next fields.
                 continue
 
-            mount_point = cols[5] if dev is None else cols[4]
+            # cols is now always [total, used, avail, use%, mount_point].
+            total, used, _, _, mount_point = cols
 
             # Skip docker volumes.
-            if cols[0] in ('overlay', 'shm'):
-                logger.debug("Ignoring mount point %s.", mount_point)
+            if dev in ('devtmpfs', 'overlay', 'shm', 'tmpfs'):
+                logger.debug("Ignoring device %s as %s.", dev, mount_point)
+                continue
+
+            if dev.startswith('/dev/loop'):
+                logger.debug("Ignoring loopback device %s.", dev)
                 continue
 
             # Skip basic FHS directories.
-            _, top_level_dir = mount_point.decode('utf-8').split('/', 2)[:2]
+            _, top_level_dir = mount_point.split('/', 2)[:2]
             if top_level_dir in ('dev', 'proc', 'run', 'sys'):
                 logger.debug("Ignoring mount point %s.", mount_point)
                 continue
 
-            if dev is not None:
-                fs.append({
-                    'mount_point': cols[4].decode('utf-8'),
-                    'device': dev.decode('utf-8'),
-                    'total': int(cols[0]) * 1024,
-                    'used': int(cols[1]) * 1024
-                })
-                dev = None
-            else:
-                # Single line output from df
-                fs.append({
-                    'mount_point': cols[5].decode('utf-8'),
-                    'device': cols[0].decode('utf-8'),
-                    'total': int(cols[1]) * 1024,
-                    'used': int(cols[2]) * 1024
-                })
+            logger.debug("Found filesystem %s at %s.", dev, mount_point)
+            fs.append({
+                'mount_point': mount_point,
+                'device': dev,
+                'total': int(total) * 1024,
+                'used': int(used) * 1024
+            })
+            dev = None
         return fs
 
     def mount_points(self):
