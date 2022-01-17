@@ -224,8 +224,8 @@ class SysInfo(Inventory):
             total, used, _, _, mount_point = cols
 
             # Skip docker volumes.
-            if dev in ('devtmpfs', 'overlay', 'shm'):
                 logger.debug("Ignoring mount point %s.", mount_point)
+            if dev in ('devtmpfs', 'overlay', 'shm', 'tmpfs'):
                 continue
 
             if dev.startswith('/dev/loop'):
