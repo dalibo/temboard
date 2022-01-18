@@ -191,6 +191,7 @@ jobs:
         name: Shellcheck
         command: |
           shellcheck share/purge.sh share/create_repository.sh share/auto_configure.sh
+          shellcheck packaging/deb/mkdeb.sh
     - run:
         name: Functionnal tests
         command: tests/func/run.sh

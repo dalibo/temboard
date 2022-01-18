@@ -42,8 +42,8 @@ $ cd temboard/
 $ git clone --recursive https://github.com/dalibo/temboard-agent.git agent/
 ```
 
-Then, create a virtualenv for Python2.7, activate it. Then install temBoard and
-pull docker images:
+Then, create a virtualenv for Python3.6+ or Python2.7, activate it. Then
+install temBoard and pull docker images:
 
 ``` console
 $ pip install -e . psycopg2-binary
