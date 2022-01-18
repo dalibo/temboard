@@ -44,7 +44,8 @@ release="0dlb1${CODENAME}1"
 
 #       I N S T A L L
 
-PYTHON="$(type -p python3.9 python3.7 python3.6	python2.7 python2 | head -1)"
+# Add python3.5 for temBoard 7.10 and onward.
+PYTHON="$(type -p python3.9 python3.7 python3.6 python2.7 python2 | head -1)"
 export PIP_CACHE_DIR=build/pip-cache/
 VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
 virtualenv --python="$PYTHON" "$VIRTUAL_ENV"
