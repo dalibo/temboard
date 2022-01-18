@@ -55,6 +55,19 @@ teardown() {
 }
 trap teardown EXIT INT TERM
 
+install_ui_deb() {
+	. /etc/os-release
+	deb="$(readlink -e dist/temboard_*-"0dlb1${VERSION_CODENAME}1_amd64.deb")"
+	test -f "$deb"
+	apt update
+	apt install "$deb"
+	# Define extsample target installation directory
+	PYTHONPREFIX=/usr/lib/temboard/
+	# Use same interpreter as deb virtualenv
+	python=(/usr/lib/temboard/lib/python*)
+	PYTHONBIN="${python[0]##*/}"
+}
+
 install_ui_py() {
 	mkdir -p ${XDG_CACHE_HOME-~/.cache}
 	chown -R $(id -u) ${XDG_CACHE_HOME-~/.cache}
@@ -80,6 +93,8 @@ mkdir -p tests/func/home
 if [ -n "${SETUP-1}" ] ; then
 	if type -p yum &>/dev/null && [ "${TBD_INSTALL_RPM-}" = 1 ] ; then
 		install_ui_rpm
+	elif type -p apt &>/dev/null ; then
+		install_ui_deb
 	else
 		install_ui_py
 	fi
