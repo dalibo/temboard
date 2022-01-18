@@ -9,8 +9,8 @@ workflows:
        name: stage0-unit-py2.7
        pyversion: "2.7"
     - unit:
-       name: stage0-unit-py3.6
-       pyversion: "3.6"
+       name: stage0-unit-py3.5
+       pyversion: "3.5"
     - rpm:
         name: stage0-pkg-centos7
         codename: centos7
@@ -30,7 +30,7 @@ workflows:
         pgversion: "12"
     - func:
         name: stage1-func-pg14-centos8
-        requires: [stage0-unit-py3.6, stage0-pkg-centos8]
+        requires: [stage0-unit-py3.5, stage0-pkg-centos8]
         dist: centos8
         pgversion: "14"
         pythonbin: "python3"
@@ -67,7 +67,7 @@ jobs:
       pyversion:
         description: "Python version"
         type: enum
-        enum: ["2.7", "3.6"]
+        enum: ["2.7", "3.5"]
     docker:
       - image: python:<< parameters.pyversion >>
     working_directory: /workspace
