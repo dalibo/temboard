@@ -90,6 +90,50 @@ Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
 `key_for_agent`. The monitored Postgres instance is named `postgres.dev`.
 
 
+### Execute unit tests
+
+Use pytest to run unit tests:
+
+``` console
+$ pytest tests/unit
+...
+==== 31 passed, 10 warnings in 1.10 seconds ======
+$
+```
+
+
+### Execute func tests
+
+Go to tests/func and run docker-compose:
+
+``` console
+$ cd tests/func
+tests/func/$ docker-compose up --force-recreate --always-recreate-deps --renew-anon-volumes --abort-on-container-exit ui
+...
+```
+
+Functionnal tests are executed **outside** temboard process. UI is installed and
+registered using regular tools : pip, dpkg or yum, auto_configure.sh, etc. A
+real Postgres database is set up for the repository
+
+Tests are written in Python with pytest. Tests use selenium to communicate with
+the UI.
+
+For development purpose, a `docker-compose.yml` file describe the setup to
+execute functionnal tests almost like on Circle CI. The main entry point is
+`tests/func/run.sh` which is responsible to install temboard, configure it and
+call pytest with selenium parameters.
+
+On failure, the main container, named `ui`, wait for you to enter it and debug.
+Project tree is mounted at `/workspace`.
+
+``` console
+tests/func/$ docker-compose exec ui /bin/bash
+[root@ccb2ec0d78cb workspace]# tests/func/run.sh --pdb -x
+…
+```
+
+
 ### Throw your development environment
 
 If you want to trash development env, use `docker-compose down -v` and restart
