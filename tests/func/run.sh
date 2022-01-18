@@ -32,6 +32,15 @@ teardown() {
 		sed 's/.*\]: //g' $LOGFILE >&2
 	fi
 
+	if [ -f "${PIDFILE}" ] ; then
+		read -r pid < "${PIDFILE}"
+		# clean pidfile if temboard is dead.
+		if ! kill -0 "$pid" ; then
+			rm -f "$PIDFILE"
+		fi
+	fi
+
+
 	# If not on CI and we are docker entrypoint (PID 1), let's wait forever on
 	# error. This allows user to enter the container and debug after a build
 	# failure.
@@ -39,10 +48,9 @@ teardown() {
 		tail -f /dev/null
 	fi
 
-	if [ -f ${PIDFILE} ] ; then
-		read pid < ${PIDFILE}
-		retrykill $pid
-		rm -f ${PIDFILE}
+	if [ -n "${pid-}" ] ; then
+		retrykill "$pid"
+		rm -f "${PIDFILE}"
 	fi
 }
 trap teardown EXIT INT TERM
