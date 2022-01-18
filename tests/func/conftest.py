@@ -1,4 +1,3 @@
-from builtins import object
 import json
 import os
 import ssl
@@ -28,7 +27,7 @@ def selenium():
     driver.quit()
 
 
-class HTTPClient(object):
+class HTTPClient:
     class Error(Exception):
         def __init__(self, response):
             self.response = response
