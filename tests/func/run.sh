@@ -5,7 +5,7 @@ cd $top_srcdir
 
 LOGFILE=temboard-func.log
 PIDFILE=$(readlink -m temboard-func.pid)
-PYTHONBIN=${PYTHONBIN:-python2}
+PYTHONBIN=${PYTHONBIN:-python3}
 
 retrykill() {
 	local pid=$1
