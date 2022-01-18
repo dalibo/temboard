@@ -3,7 +3,7 @@
 top_srcdir=$(readlink -m $0/../../..)
 cd $top_srcdir
 
-LOGFILE=temboard-func.log
+LOGFILE="$PWD/temboard-func.log"
 PIDFILE=$(readlink -m temboard-func.pid)
 PYTHONBIN=${PYTHONBIN:-python3}
 
@@ -84,6 +84,8 @@ if [ -n "${SETUP-1}" ] ; then
 		install_ui_py
 	fi
 
+	temboard --version
+
 	wait-for-it.sh ${PGHOST}:5432
 	auto_configure="$(readlink -e /usr{/local,}/share/temboard/auto_configure.sh | head -1)"
 	if ! "$auto_configure" ; then
@@ -91,12 +93,16 @@ if [ -n "${SETUP-1}" ] ; then
 		exit 1
 	fi
 
+	$PYTHONBIN -m pip --version
 	$PYTHONBIN -m pip install \
 		--ignore-installed \
-		--prefix=/usr/local \
-		--upgrade \
-		--requirement tests/func/requirements.txt \
+		--prefix="${PYTHONPREFIX-/usr/local}" \
 		"$top_srcdir/tests/func/sample-plugin"
+
+	$PYTHONBIN -m pip install \
+		--ignore-installed \
+		--upgrade \
+		--requirement tests/func/requirements.txt
 
 	mkdir -p /etc/temboard/temboard.conf.d
 	cat >> /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
@@ -112,8 +118,8 @@ if [ -n "${MANUAL-}" -a $PPID = 1 ] ; then
 	exec tail -f /dev/null
 fi
 
-TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=${PWD}/$LOGFILE \
-		       temboard --daemon --debug --pid-file ${PIDFILE}
+TEMBOARD_HOME=tests/func/home TEMBOARD_LOGGING_METHOD=file TEMBOARD_LOGGING_DESTINATION=$LOGFILE \
+		       temboard --debug --daemon --pid-file ${PIDFILE}
 UI=${UI-https://0.0.0.0:8888}
 wait-for-it.sh ${UI#https://}
 
