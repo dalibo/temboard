@@ -52,9 +52,9 @@ export PATH=${VIRTUAL_ENV}/bin:$PATH
 hash -r pip
 pip --version
 pip install -U pip setuptools wheel
-dist=${DISTDIR}/temboard-${pep440v}-py2-none-any.whl
+dist="$DISTDIR/temboard-$pep440v"-py2.py3-none-any.whl
 if ! [ -f "$dist" ] ; then
-	pip download --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
+	pip download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
 fi
 pip install "$dist" 'psycopg2-binary<2.9'
 pip check
