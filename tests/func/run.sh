@@ -56,12 +56,6 @@ install_ui_py() {
 		--prefix=/usr/local --ignore-installed --upgrade \
 		/tmp/temboard-*.tar.gz \
 		psycopg2-binary
-
-	wait-for-it.sh ${PGHOST}:5432
-	if ! /usr/local/share/temboard/auto_configure.sh ; then
-		cat /var/log/temboard-auto-configure.log >&2
-		return 1
-	fi
 }
 
 install_ui_rpm() {
@@ -70,12 +64,6 @@ install_ui_rpm() {
 	# Disable pgdg to use base pyscopg2 2.5 from Red Hat.
 	yum -d1 "--disablerepo=pgdg*"  install -y "$rpm"
 	rpm --query --queryformat= temboard
-
-	wait-for-it.sh ${PGHOST}:5432
-	if ! /usr/share/temboard/auto_configure.sh ; then
-		cat /var/log/temboard-auto-configure.log >&2
-		return 1
-	fi
 }
 
 rm -f $LOGFILE
@@ -86,6 +74,13 @@ if [ -n "${SETUP-1}" ] ; then
 		install_ui_rpm
 	else
 		install_ui_py
+	fi
+
+	wait-for-it.sh ${PGHOST}:5432
+	auto_configure="$(readlink -e /usr{/local,}/share/temboard/auto_configure.sh | head -1)"
+	if ! "$auto_configure" ; then
+		cat /var/log/temboard-auto-configure.log >&2
+		exit 1
 	fi
 
 	$PYTHONBIN -m pip install \
