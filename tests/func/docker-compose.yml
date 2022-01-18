@@ -2,7 +2,8 @@ version: "3"
 
 services:
   repository:
-    image: postgres:14-alpine
+    # Ensure psql has SCRAM in all env before updating to 14.
+    image: postgres:13-alpine
     environment:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: confidentiel
@@ -27,3 +28,6 @@ services:
     - ../..:/workspace
     working_dir: /workspace
     command: /workspace/tests/func/run.sh
+    links:
+    - selenium
+    - repository

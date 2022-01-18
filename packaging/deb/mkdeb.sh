@@ -29,13 +29,11 @@ mkdir -p "$DESTDIR"
 
 #       V E R S I O N S
 
-pep440deb=(pep440deb --echo)
-if [ -n "${VERSION-}" ] ; then
-	pep440deb+=("$VERSION")
-else
-	pep440deb+=(--pypi temboard)
+PYTHON="$(type -p python3.9 python3.7 python3.6 python3.5 python2.7 python2 | head -1)"
+if [ -z "${VERSION-}" ] ; then
+	VERSION=$("$PYTHON" setup.py --version)
 fi
-mapfile -t versions < <("${pep440deb[@]}" | tr ' ' '\n')
+mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 
 pep440v="${versions[0]}"
 debianv="${versions[1]}"
@@ -44,7 +42,6 @@ release="0dlb1${CODENAME}1"
 
 #       I N S T A L L
 
-PYTHON="$(type -p python3.9 python3.7 python3.6	python2.7 python2 | head -1)"
 export PIP_CACHE_DIR=build/pip-cache/
 VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
 virtualenv --python="$PYTHON" "$VIRTUAL_ENV"

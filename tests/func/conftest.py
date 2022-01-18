@@ -1,4 +1,3 @@
-from builtins import object
 import json
 import os
 import ssl
@@ -28,7 +27,7 @@ def selenium():
     driver.quit()
 
 
-class HTTPClient(object):
+class HTTPClient:
     class Error(Exception):
         def __init__(self, response):
             self.response = response
@@ -47,6 +46,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
+        if hasattr(response.body, 'decode'):
+            response.body = response.body.decode('utf-8')
         if '/json' in response.headers.get('content-type', '') or \
            '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)
@@ -68,6 +69,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
+        if hasattr(response.body, 'decode'):
+            response.body = response.body.decode('utf-8')
         if '/json' in response.headers.get('content-type', '') or \
            '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)

@@ -9,6 +9,7 @@
 - Review defaults groups.
 - Packages for bullseye.
 - Show libpq version in logs and --version.
+- Moving to Python3 on stretch, buster and bullseye.
 
 
 ## [7.9] - 2022-01-03
