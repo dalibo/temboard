@@ -47,6 +47,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
+        if hasattr(response.body, 'decode'):
+            response.body = response.body.decode('utf-8')
         if '/json' in response.headers.get('content-type', '') or \
            '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)
@@ -68,6 +70,8 @@ class HTTPClient(object):
         response = conn.getresponse()
         response.headers = dict(response.getheaders())
         response.body = response.read()
+        if hasattr(response.body, 'decode'):
+            response.body = response.body.decode('utf-8')
         if '/json' in response.headers.get('content-type', '') or \
            '/json' in response.headers.get('Content-Type', ''):
             response.json = json.loads(response.body)
