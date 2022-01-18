@@ -10,24 +10,6 @@ contributions. Fork the main repository and open a PR against
 `master` as usual.
 
 
-## Editing Documentation
-
-The documentation is written in markdown and built with `mkdocs`
-``` console
-$ pip install -r docs/requirements.txt
-$ make docs
-```
-
-The documentation will be placed the `site` folder
-
-You can also run `make docs-serve` in another terminal and point your web browser
-at <http://0.0.0.0:8000/>.
-
-
-
-
----
-
 ## Development Environment Setup
 
 You can quickly set up a dev env with virtualenv and Docker Compose. Running
@@ -132,6 +114,26 @@ tests/func/$ docker-compose exec ui /bin/bash
 [root@ccb2ec0d78cb workspace]# tests/func/run.sh --pdb -x
 …
 ```
+
+
+## Editing Documentation
+
+The documentation is written in markdown and built with `mkdocs`
+
+``` console
+$ mkdocs serve
+INFO     -  Building documentation...
+INFO     -  Cleaning site directory
+INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+              - alerting.md
+              - postgres_upgrade.md
+INFO     -  Documentation built in 0.42 seconds
+INFO     -  [16:21:24] Serving on http://127.0.0.1:8000/
+...
+```
+
+Go to http://127.0.0.1:8000/ to view the documentation. mkdocs serve has hot
+reload while you edit the documentation.
 
 
 ### Throw your development environment
