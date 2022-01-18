@@ -108,7 +108,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement requirements-ci.txt --editable .
+            pip install --upgrade --requirement requirements-dev.txt --editable .
       - run:
           name: Lint
           command: |

@@ -36,7 +36,7 @@ exclude mkdocs.yml
 exclude package.json
 prune packaging/deb
 prune packaging/rpm
-exclude requirements-ci.txt
+exclude requirements-dev.txt
 exclude temboard.conf
 prune temboardui/toolkit/.circleci
 exclude temboardui/toolkit/.flake8
