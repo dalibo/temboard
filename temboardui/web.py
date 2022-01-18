@@ -614,6 +614,8 @@ if PY2:
     defaults[4] = JSONEncoder
     json.dumps.__defaults__ = tuple(defaults)
 else:
+    if json.dumps.__kwdefaults__ is None:
+        json.dumps.__kwdefaults__ = dict()
     json.dumps.__kwdefaults__['cls'] = JSONEncoder
 
 
