@@ -46,7 +46,7 @@ Then, create a virtualenv for Python3.6+ or Python2.7, activate it. Then
 install temBoard and pull docker images:
 
 ``` console
-$ pip install -e . psycopg2-binary
+$ pip install -e . -r requirements-dev.txt
 ...
 $ docker-compose pull
 ```
