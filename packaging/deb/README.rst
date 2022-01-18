@@ -38,7 +38,7 @@ key.
 
     Successfully signed changes file
 
-temBoard depends only on Python2.7. All dependencies are bundled. You can easily
+temBoard depends only on Python. All dependencies are bundled. You can easily
 install the package with a simple ``dpkg -i ../dist/stretch/temboard*.deb``.
 
 
