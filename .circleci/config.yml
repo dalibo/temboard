@@ -17,8 +17,8 @@ workflows:
         codename: centos7
         requires: [stage0-dist]
     - rpm:
-        name: stage0-pkg-centos8
-        codename: centos8
+        name: stage0-pkg-rockylinux8
+        codename: rockylinux8
         python: python3
         requires: [stage0-dist]
     - deb:
@@ -33,9 +33,9 @@ workflows:
         dist: centos7
         pgversion: "12"
     - func:
-        name: stage1-func-pg14-centos8
-        requires: [stage0-unit-py3.5, stage0-pkg-centos8]
-        dist: centos8
+        name: stage1-func-pg14-rockylinux8
+        requires: [stage0-unit-py3.5, stage0-pkg-rockylinux8]
+        dist: rockylinux8
         pgversion: "14"
         pythonbin: "python3"
     - func:
@@ -108,7 +108,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement requirements-ci.txt --editable .
+            pip install --upgrade --requirement requirements-dev.txt --editable .
       - run:
           name: Lint
           command: |
@@ -129,9 +129,9 @@ jobs:
   rpm:
     parameters:
       codename:
-        description: "CentOS version"
+        description: "RHEL-clone distribution"
         type: enum
-        enum: [centos7, centos8]
+        enum: [centos7, rockylinux8]
       python:
         description: "Python interpreter"
         type: string
@@ -186,7 +186,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bullseye, buster, stretch, centos7, centos8]
+        enum: [bullseye, buster, stretch, centos7, rockylinux8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum

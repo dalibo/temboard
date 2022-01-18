@@ -10,7 +10,7 @@ rhel8 rhel7:
 	$(MAKE) build-$@
 	$(MAKE) push
 
-# Build RPM for either centos7 or centos8
+# Build RPM for either RHEL 7 or 8
 build-rhel%:
 	if rpm --eval rhel%dist 2>/dev/null | grep -q rhel$*; then \
 		./build.sh; \

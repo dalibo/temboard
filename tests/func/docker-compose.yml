@@ -12,7 +12,7 @@ services:
     image: selenium/standalone-firefox
 
   ui:
-    image: dalibo/buildpack-python:${TAG-buster}
+    image: dalibo/buildpack-python:${TAG-rockylinux8}
     environment:
     - HISTFILE=/workspace/tests/func/.docker-cache/bash_history
     - PGHOST=repository

@@ -74,7 +74,10 @@ install_ui_py() {
 	rm -f /tmp/temboard-*.tar.gz
 	$PYTHONBIN setup.py sdist --dist-dir /tmp
 	$PYTHONBIN -m pip install \
-		--prefix=/usr/local --ignore-installed --upgrade \
+		--prefix=/usr \
+		--ignore-installed --upgrade \
+		--only-binary psycopg2-binary \
+		--only-binary regex \
 		/tmp/temboard-*.tar.gz \
 		psycopg2-binary
 }
@@ -111,7 +114,7 @@ if [ -n "${SETUP-1}" ] ; then
 	$PYTHONBIN -m pip --version
 	$PYTHONBIN -m pip install \
 		--ignore-installed \
-		--prefix="${PYTHONPREFIX-/usr/local}" \
+		--prefix="${PYTHONPREFIX-/usr}" \
 		"$top_srcdir/tests/func/sample-plugin"
 
 	$PYTHONBIN -m pip install \
