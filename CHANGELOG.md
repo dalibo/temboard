@@ -10,6 +10,8 @@
 - Packages for bullseye.
 - Show libpq version in logs and --version.
 - Moving to Python3 on stretch, buster and bullseye.
+- Authenticate with agent using both header and query arg. 8.0 will remove
+  query arg auth.
 
 
 ## [7.9] - 2022-01-03
