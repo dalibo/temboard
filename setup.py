@@ -4,7 +4,7 @@ import os
 # Load version number
 __version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
-exec(open(os.path.join(setup_path, 'temboardagent', 'version.py'), 'r').read())
+exec(open(os.path.join(setup_path, 'temboardagent', 'version.py')).read())
 
 if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
