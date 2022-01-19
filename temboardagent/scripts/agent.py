@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from argparse import (
     ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT, _VersionAction,
 )
@@ -134,12 +132,12 @@ class AgentApplication(Application):
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self, setproctitle=setproctitle, name=u'worker pool',
+            app=self, setproctitle=setproctitle, name='worker pool',
             task_queue=task_queue, event_queue=event_queue)
         self.services.append(self.worker_pool)
 
         self.scheduler = taskmanager.SchedulerService(
-            app=self, setproctitle=setproctitle, name=u'scheduler',
+            app=self, setproctitle=setproctitle, name='scheduler',
             task_queue=task_queue, event_queue=event_queue)
         self.services.append(self.scheduler)
 
@@ -184,14 +182,14 @@ class AgentApplication(Application):
 
         with services:
             httpd = HTTPDService(
-                self, setproctitle=setproctitle, name=u'main process',
+                self, setproctitle=setproctitle, name='main process',
                 services=services)
             httpd.run()
 
         return 0
 
     def reload(self):
-        super(AgentApplication, self).reload()
+        super().reload()
         self.reload_datetime = datetime.datetime.now()
 
 
