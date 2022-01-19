@@ -482,7 +482,7 @@ def check_table_exists(conn, schema, table):
         "schemaname = '{schema}'".format(table=table, schema=schema)
     )
     if not list(rows):
-        raise UserError("Table %s.%s not found" % (schema, table))
+        raise UserError("Table {}.{} not found".format(schema, table))
 
 
 def check_index_exists(conn, schema, index):
@@ -492,7 +492,7 @@ def check_index_exists(conn, schema, index):
         "schemaname = '{schema}'".format(index=index, schema=schema)
     )
     if not list(rows):
-        raise UserError("Index %s.%s not found" % (schema, index))
+        raise UserError("Index {}.{} not found".format(schema, index))
 
 
 def schedule_operation(operation_type, conn, database,
@@ -578,7 +578,7 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB %s: %s" % (dbname, q))
+        logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("VACCUM done.")
     except error as e:
@@ -586,7 +586,7 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run vacuum %s" % mode
         if schema and table:
-            message += " on %s.%s" % (schema, table,)
+            message += " on {}.{}".format(schema, table)
 
         raise UserError(message)
 
@@ -669,7 +669,7 @@ def analyze(conn, dbname, schema=None, table=None):
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB %s: %s" % (dbname, q))
+        logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("ANALYZE done.")
     except error as e:
@@ -677,7 +677,7 @@ def analyze(conn, dbname, schema=None, table=None):
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run analyze"
         if schema and table:
-            message += " on %s.%s" % (schema, table,)
+            message += " on {}.{}".format(schema, table)
 
         raise UserError(message)
 
@@ -712,7 +712,7 @@ def reindex(conn, dbname, schema, table, index):
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB %s: %s" % (dbname, q))
+        logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("reindex done.")
     except error as e:
