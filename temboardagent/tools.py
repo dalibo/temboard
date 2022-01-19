@@ -150,4 +150,4 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         else:
-            return super(JSONEncoder, self).default(obj)
+            return super().default(obj)
