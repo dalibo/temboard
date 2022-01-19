@@ -273,7 +273,7 @@ def monitoring_collector_worker(app):
     logger.info("Collect done.")
 
 
-class MonitoringPlugin(object):
+class MonitoringPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     s = 'monitoring'
     option_specs = [
