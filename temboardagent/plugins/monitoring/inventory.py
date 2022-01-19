@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The inventory contains support functions to discover the features of the host
 (ex: OS, CPU info, MemInfo)
