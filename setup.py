@@ -19,8 +19,7 @@ SETUP_KWARGS = dict(
     description='PostgreSQL Remote Control Agent',
     classifiers=[
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Environment :: No Input/Output (Daemon)",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved",
