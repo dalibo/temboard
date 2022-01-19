@@ -50,7 +50,7 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
-    command: sleep infinity
+    command: [/usr/bin/tini, sleep, infinity]
 
   smtp:
     image: python:3
