@@ -11,7 +11,7 @@ except ImportError:
     from urllib2 import HTTPError
 
 from .test.temboard import temboard_request
-from .conftest import ENV, text_type, pgconnect
+from .conftest import ENV, pgconnect
 
 XSESSION = ''
 
@@ -142,18 +142,18 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == text_type
-        assert type(dict_data['rows'][0]['user']) == text_type
+        assert type(dict_data['rows'][0]['database']) == str
+        assert type(dict_data['rows'][0]['user']) == str
         # can be float or 'N/A'
-        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
+        assert type(dict_data['rows'][0]['cpu']) in (float, str)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == text_type
-        assert type(dict_data['rows'][0]['write_s']) == text_type
-        assert type(dict_data['rows'][0]['iow']) == text_type
-        assert type(dict_data['rows'][0]['wait']) == text_type
+        assert type(dict_data['rows'][0]['read_s']) == str
+        assert type(dict_data['rows'][0]['write_s']) == str
+        assert type(dict_data['rows'][0]['iow']) == str
+        assert type(dict_data['rows'][0]['wait']) == str
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
-        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['state']) in (str, type(None))
+        assert type(dict_data['rows'][0]['query']) in (str, type(None))
 
     def test_02_activity_kill(self):
         """
@@ -265,21 +265,21 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == text_type
-        assert type(dict_data['rows'][0]['user']) == text_type
-        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
+        assert type(dict_data['rows'][0]['database']) == str
+        assert type(dict_data['rows'][0]['user']) == str
+        assert type(dict_data['rows'][0]['cpu']) in (float, str)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == text_type
-        assert type(dict_data['rows'][0]['write_s']) == text_type
-        assert type(dict_data['rows'][0]['iow']) == text_type
-        assert type(dict_data['rows'][0]['relation']) == text_type
-        assert type(dict_data['rows'][0]['type']) == text_type
+        assert type(dict_data['rows'][0]['read_s']) == str
+        assert type(dict_data['rows'][0]['write_s']) == str
+        assert type(dict_data['rows'][0]['iow']) == str
+        assert type(dict_data['rows'][0]['relation']) == str
+        assert type(dict_data['rows'][0]['type']) == str
         assert dict_data['rows'][0]['type'] == u'relation'
-        assert type(dict_data['rows'][0]['mode']) == text_type
+        assert type(dict_data['rows'][0]['mode']) == str
         assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
-        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['state']) in (str, type(None))
+        assert type(dict_data['rows'][0]['query']) in (str, type(None))
 
     def test_04_activity_blocking(self):
         """
@@ -341,18 +341,18 @@ class TestActivity:
         assert 'state' in dict_data['rows'][0]
         assert 'query' in dict_data['rows'][0]
         assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == text_type
-        assert type(dict_data['rows'][0]['user']) == text_type
-        assert type(dict_data['rows'][0]['cpu']) in (float, text_type)
+        assert type(dict_data['rows'][0]['database']) == str
+        assert type(dict_data['rows'][0]['user']) == str
+        assert type(dict_data['rows'][0]['cpu']) in (float, str)
         assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == text_type
-        assert type(dict_data['rows'][0]['write_s']) == text_type
-        assert type(dict_data['rows'][0]['iow']) == text_type
-        assert type(dict_data['rows'][0]['relation']) == text_type
-        assert type(dict_data['rows'][0]['type']) == text_type
+        assert type(dict_data['rows'][0]['read_s']) == str
+        assert type(dict_data['rows'][0]['write_s']) == str
+        assert type(dict_data['rows'][0]['iow']) == str
+        assert type(dict_data['rows'][0]['relation']) == str
+        assert type(dict_data['rows'][0]['type']) == str
         assert dict_data['rows'][0]['type'] == u'relation'
-        assert type(dict_data['rows'][0]['mode']) == text_type
+        assert type(dict_data['rows'][0]['mode']) == str
         assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (text_type, type(None))
-        assert type(dict_data['rows'][0]['query']) in (text_type, type(None))
+        assert type(dict_data['rows'][0]['state']) in (str, type(None))
+        assert type(dict_data['rows'][0]['query']) in (str, type(None))
