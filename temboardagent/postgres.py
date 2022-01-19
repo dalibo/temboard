@@ -7,13 +7,12 @@ from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
 
 from .errors import UserError
-from .toolkit.pycompat import PY2
 
 
 # See https://www.psycopg.org/docs/faq.html#faq-float
 DEC2FLOAT = psycopg2.extensions.new_type(
     psycopg2.extensions.DECIMAL.values,
-    b'DEC2FLOAT' if PY2 else 'DEC2FLOAT',
+    'DEC2FLOAT',
     lambda value, curs: float(value) if value is not None else None)
 psycopg2.extensions.register_type(DEC2FLOAT)
 
