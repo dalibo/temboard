@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
-
 from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
 from sys import stdout
 from getpass import getpass
@@ -78,8 +74,8 @@ class AddUserApplication(Application):
         hash_ = hash_password(username, password).decode('utf-8')
         try:
             with open(self.config.temboard.users, 'a') as fd:
-                fd.write("%s:%s\n" % (username, hash_))
-        except IOError as e:
+                fd.write("{}:{}\n".format(username, hash_))
+        except OSError as e:
             raise UserError(str(e))
         else:
             stdout.write("Done.\n")
