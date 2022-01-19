@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import os.path
 
 WORK_PATH = '/tmp'
