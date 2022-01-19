@@ -26,7 +26,7 @@ class Session(Structure):
     ]
 
 
-class Sessions(object):
+class Sessions:
     """
     Sessions object.
     """
