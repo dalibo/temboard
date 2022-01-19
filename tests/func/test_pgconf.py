@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 from hashlib import md5
 import datetime
@@ -14,7 +12,7 @@ from .conftest import ENV, pgconnect
 XSESSION = ''
 
 
-class TestPgconf(object):
+class TestPgconf:
     def _exec_query(self, dbname, query):
         with pgconnect(dbname=dbname) as conn:
             with conn.cursor() as cur:
@@ -26,7 +24,7 @@ class TestPgconf(object):
 
     def _read_file(self, filepath):
         try:
-            with open(filepath, 'r') as fd:
+            with open(filepath) as fd:
                 return fd.read()
         except Exception:
             pass
