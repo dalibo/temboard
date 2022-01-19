@@ -9,7 +9,7 @@ exec(open(os.path.join(setup_path, 'temboardagent', 'version.py')).read())
 if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
 
-SETUP_KWARGS = dict(
+setup(**dict(
     name='temboard-agent',
     version=__version__,
     author='Dalibo',
@@ -62,11 +62,6 @@ SETUP_KWARGS = dict(
             'statements = temboardagent.plugins.statements:StatementsPlugin',
         ],
     },
-)
-
-if __name__ == '__main__':
-    setup(**dict(
-        SETUP_KWARGS,
-        packages=find_packages(),
-        long_description=open('README.rst').read(),
-    ))
+    packages=find_packages(),
+    long_description=open('README.rst').read(),
+))
