@@ -26,9 +26,9 @@ def daemonize(pidfile):
     """
     # Try to read pidfile
     try:
-        with open(pidfile, 'r') as pf:
+        with open(pidfile) as pf:
             pid = int(pf.read().strip())
-    except (IOError, ValueError):
+    except (OSError, ValueError):
         pid = None
 
     # If pidfile exists, yet another process is probably running.
@@ -40,7 +40,7 @@ def daemonize(pidfile):
     try:
         with open(pidfile, 'w+') as pf:
             pf.write("\0")
-    except IOError:
+    except OSError:
         sys.stderr.write("FATAL: can't write pidfile %s.\n" % pidfile)
         sys.exit(1)
 
@@ -74,7 +74,7 @@ def daemonize(pidfile):
     # Redirect standard file descriptors.
     sys.stdout.flush()
     sys.stderr.flush()
-    si = open('/dev/null', 'r')
+    si = open('/dev/null')
     so = open('/dev/null', 'a+')
     se = open('/dev/null', 'a+')
     os.dup2(si.fileno(), sys.stdin.fileno())
