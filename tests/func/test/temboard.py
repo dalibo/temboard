@@ -496,7 +496,7 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
         request = RequestWithMethod(url, method=method)
     try:
         handle = url_opener.open(request)
-        response = handle.read()
+        response = handle.read().decode()
         handle.close()
     except urllib2.HTTPError as e:
         return (e.code, json.dumps({'error': e.reason}))
