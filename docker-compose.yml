@@ -1,46 +1,48 @@
-version: '2.4'
+version: '3.8'
 
 volumes:
   data:
   run:
 
 services:
+  # The Postgres server to store temBoard data.
   repository:
     image: postgres:14-alpine
-    ports:
-      - 5432:5432
+    ports: [5432:5432]
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     command: [postgres, -c, log_statement=all]
 
+  # A mock SMTP server for alterting by mail.
+  smtp:
+    image: python:3
+    ports: [8025:8025]
+    command: [python3, -m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
+
   postgres:
     image: postgres:14-alpine
-    ports:
-      - 5433:5432
     environment:
+    ports: [5433:5432]
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     command: postgres -c shared_preload_libraries=pg_stat_statements
     volumes:
-      - data:/var/lib/postgresql/data
-      - run:/var/run/postgresql
-      - type: bind
-        source: ./share/sql/pg_stat_statements-create-extension.sql
-        target: /docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - data:/var/lib/postgresql/data
+    - run:/var/run/postgresql
+    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
 
   agent:
     image: dalibo/temboard-agent
-    ports:
-      - 2345:2345
+    ports: [2345:2345]
     volumes:
-      - data:/var/lib/postgresql/data
-      - run:/var/run/postgresql
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .:/usr/local/src/temboard/
-      - ./agent/:/usr/local/src/temboard-agent/
+    - data:/var/lib/postgresql/data
+    - run:/var/run/postgresql
+    - /var/run/docker.sock:/var/run/docker.sock
+    - .:/usr/local/src/temboard/
+    - ./agent/:/usr/local/src/temboard-agent/
     links:
-      - postgres:postgres.dev
+    - postgres:postgres.dev
     environment:
       # Perists bash history. Eases reuse of pip install and hupper command when
       # recreating container.
@@ -53,8 +55,3 @@ services:
       TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
     command: [/usr/bin/tini, sleep, infinity]
 
-  smtp:
-    image: python:3
-    ports:
-      - 8025:8025
-    command: [python3, -m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
