@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 from multiprocessing import Process
 import time
@@ -41,7 +39,7 @@ def create_table(dbname, tablename):
     Create a table and insert 5 rows in it.
     """
     with pgconnect(dbname=dbname) as conn:
-        conn.execute("CREATE TABLE %s (id INTEGER)" % (tablename,))
+        conn.execute("CREATE TABLE {} (id INTEGER)".format(tablename))
         conn.execute("INSERT INTO %s SELECT generate_series(1, 5)"
                      % (tablename,))
 
@@ -274,9 +272,9 @@ class TestActivity:
         assert type(dict_data['rows'][0]['iow']) == str
         assert type(dict_data['rows'][0]['relation']) == str
         assert type(dict_data['rows'][0]['type']) == str
-        assert dict_data['rows'][0]['type'] == u'relation'
+        assert dict_data['rows'][0]['type'] == 'relation'
         assert type(dict_data['rows'][0]['mode']) == str
-        assert dict_data['rows'][0]['mode'] == u'RowExclusiveLock'
+        assert dict_data['rows'][0]['mode'] == 'RowExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) in (str, type(None))
         assert type(dict_data['rows'][0]['query']) in (str, type(None))
@@ -350,9 +348,9 @@ class TestActivity:
         assert type(dict_data['rows'][0]['iow']) == str
         assert type(dict_data['rows'][0]['relation']) == str
         assert type(dict_data['rows'][0]['type']) == str
-        assert dict_data['rows'][0]['type'] == u'relation'
+        assert dict_data['rows'][0]['type'] == 'relation'
         assert type(dict_data['rows'][0]['mode']) == str
-        assert dict_data['rows'][0]['mode'] == u'ExclusiveLock'
+        assert dict_data['rows'][0]['mode'] == 'ExclusiveLock'
         assert type(dict_data['rows'][0]['duration']) in (float, int)
         assert type(dict_data['rows'][0]['state']) in (str, type(None))
         assert type(dict_data['rows'][0]['query']) in (str, type(None))
