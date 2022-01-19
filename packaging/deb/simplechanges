@@ -15,8 +15,6 @@ from tempfile import mkdtemp
 
 logger = logging.getLogger('simplechanges')
 
-PY2 = sys.version_info < (3,)
-
 
 @contextmanager
 def tmpdir():
@@ -104,16 +102,10 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
         k: v for k, v in controls.items()
         if k in {'Architecture', 'Description', 'Maintainer', 'Version'}
     })
-    if PY2:
-        changes['Changed-By'] = "{} <{}>".format(
-            os.environ['DEBFULLNAME'].decode('utf-8'),
-            os.environ['DEBEMAIL'].decode('utf-8'),
-        )
-    else:
-        changes['Changed-By'] = "{} <{}>".format(
-            os.environ['DEBFULLNAME'],
-            os.environ['DEBEMAIL'],
-        )
+    changes['Changed-By'] = "{} <{}>".format(
+        os.environ['DEBFULLNAME'],
+        os.environ['DEBEMAIL'],
+    )
     changes['Changes'] = CHANGELOG_FMT % changes
     changes['Files'] = [' '.join([
         md5,
@@ -154,8 +146,6 @@ def main():
         )
 
     for payload in format(changes):
-        if PY2:
-            payload = payload.encode('UTF-8')
         sys.stdout.write(payload)
     logger.info(".changes generated for %s.", deb)
 
