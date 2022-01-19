@@ -33,7 +33,7 @@ def get_setting(conn, name):
 def preformat(setting, type):
     if setting.startswith("'") and setting.endswith("'"):
         setting = setting[1:-1]
-    if type == u'bool':
+    if type == 'bool':
         if setting == 'true':
             setting = 'on'
         elif setting == 'false':
@@ -44,9 +44,9 @@ def preformat(setting, type):
 def format_setting(setting, type, unit=None):
     if not setting:
         return
-    if type == u'integer':
+    if type == 'integer':
         setting = int(human_to_number(setting, unit))
-    elif type == u'real':
+    elif type == 'real':
         setting = float(setting)
     return setting
 
@@ -203,7 +203,7 @@ def post_settings(conn, config, http_context):
                         if item['name'] in do_not_check_names:
                             checked = True
                             raise Exception()
-                        if item['vartype'] == u'integer':
+                        if item['vartype'] == 'integer':
                             # Integers handling.
                             if item['min_val'] and \
                                item['unit'] and \
@@ -228,7 +228,7 @@ def post_settings(conn, config, http_context):
                             if setting['setting'] == '':
                                 setting['setting'] = None
                             checked = True
-                        if item['vartype'] == u'real':
+                        if item['vartype'] == 'real':
                             setting['setting'] \
                                 = human_to_number(setting['setting'],
                                                   item['unit'],
@@ -245,15 +245,15 @@ def post_settings(conn, config, http_context):
                                 raise HTTPError(406, "%s: Invalid setting." %
                                                      (item['name']))
                             checked = True
-                        if item['vartype'] == u'bool':
+                        if item['vartype'] == 'bool':
                             # Boolean handling.
                             if setting['setting'].lower() not in \
-                               [u'on', u'off']:
+                               ['on', 'off']:
                                 raise HTTPError(
                                     406, 'Invalid setting: %s.' %
                                          (setting['setting'].lower()))
                             checked = True
-                        if item['vartype'] == u'enum':
+                        if item['vartype'] == 'enum':
                             # Enum handling.
                             if len(item['enumvals']) > 0:
                                 enumvals = [
@@ -273,7 +273,7 @@ def post_settings(conn, config, http_context):
                                         'Invalid setting: %s.' %
                                         (setting['setting']))
                                 checked = True
-                        if item['vartype'] == u'string':
+                        if item['vartype'] == 'string':
                             # String handling.
                             # setting must be escaped.
                             setting['setting'] = pg_escape(
@@ -296,17 +296,17 @@ def post_settings(conn, config, http_context):
                                  (setting['name']))
         if 'force' not in setting:
             setting['force'] = 'false'
-        if ((item['vartype'] == u'integer' and
+        if ((item['vartype'] == 'integer' and
             setting['setting'] != item['setting_raw']) or
-            (item['vartype'] == u'real' and
+            (item['vartype'] == 'real' and
             float(setting['setting']) != float(item['setting'])) or
-            (item['vartype'] not in [u'integer', u'real'] and
+            (item['vartype'] not in ['integer', 'real'] and
             setting['setting'] != item['setting'])) or \
                 (setting['force'] == 'true'):
             # At this point, all incoming parameters have been checked.
             if setting['setting']:
-                query = "ALTER SYSTEM SET %s TO '%s'" % (setting['name'],
-                                                         setting['setting'])
+                query = "ALTER SYSTEM SET {} TO '{}'".format(
+                    setting['name'], setting['setting'])
             else:
                 query = "ALTER SYSTEM RESET %s;" % (setting['name'])
 
@@ -318,7 +318,7 @@ def post_settings(conn, config, http_context):
                     config,
                     Notification(
                         username=http_context['username'],
-                        message="Setting '%s' changed: '%s' -> '%s'" % (
+                        message="Setting '{}' changed: '{}' -> '{}'".format(
                             item['name'],
                             item['setting_raw'],
                             setting['setting'])))
@@ -328,7 +328,7 @@ def post_settings(conn, config, http_context):
             try:
                 conn.execute(query)
             except Exception as e:
-                raise HTTPError(408, "%s: %s" % (setting['name'], e))
+                raise HTTPError(408, "{}: {}".format(setting['name'], e))
             ret['settings'].append({
                 'name': item['name'],
                 'setting': setting['setting'],
