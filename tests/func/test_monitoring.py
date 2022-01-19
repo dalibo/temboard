@@ -1,11 +1,5 @@
-from __future__ import absolute_import
-
 import json
-
-try:
-    from urllib.request import HTTPError
-except ImportError:
-    from urllib2 import HTTPError
+from urllib.request import HTTPError
 
 from .test.temboard import temboard_request
 from .conftest import ENV, pgconnect

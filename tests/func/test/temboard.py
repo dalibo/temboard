@@ -1,5 +1,3 @@
-from __future__ import absolute_import, print_function
-
 import io
 import logging
 import time
@@ -9,14 +7,8 @@ import signal
 import random
 import string
 from subprocess import Popen, PIPE
-try:
-    import http.client as httplib
-except ImportError:
-    import httplib
-try:
-    import urllib.request as urllib2
-except ImportError:
-    import urllib2
+import http.client as httplib
+import urllib.request as urllib2
 import ssl
 import socket
 import json

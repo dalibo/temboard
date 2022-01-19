@@ -12,12 +12,6 @@ from ..tools import validate_parameters
 from .agent import list_options_specs
 
 
-try:
-    input = raw_input
-except NameError:
-    pass
-
-
 def ask_password():
     raw_pass1 = getpass("Password: ")
     raw_pass2 = getpass("Retype password: ")

@@ -1,14 +1,8 @@
-try:
-    import httplib
-except ImportError:
-    import http.client as httplib
-try:
-    import urllib2
-except ImportError:
-    import urllib.request as urllib2
-import ssl
-import socket
+import http.client as httplib
 import json
+import socket
+import ssl
+import urllib.request as urllib2
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
