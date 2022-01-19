@@ -34,7 +34,7 @@ def get_pg_conf_status(http_context, app):
         return pgconf_functions.get_settings_status(conn)
 
 
-class PgConfPlugin(object):
+class PgConfPlugin:
     PG_MIN_VERSION = (90500, 9.5)
 
     def __init__(self, app, **kw):
