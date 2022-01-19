@@ -13,4 +13,4 @@ services:
 
   rhel8:
     <<: *rhel
-    image: dalibo/buildpack-pkg:centos8
+    image: dalibo/buildpack-pkg:rockylinux8

@@ -61,8 +61,8 @@ fi
 
 $PYTHON -m pip install pytest pytest-mock
 
-# CentOS 8 container has a bad locale configured. Configure locale according to
-# system availabilities. This is important for initdb.
+# Rockylinux 8 container has a bad locale configured. Configure locale
+# according to system availabilities. This is important for initdb.
 for locale in en_US.utf8 en_US.UTF-8 C.utf8 C.UTF-8 ; do
 	if locale -a | grep -q "$locale" ; then
 		export LANG="$locale"
