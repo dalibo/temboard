@@ -19,8 +19,8 @@ def bytes2human(num):
     for sym in reversed(symbols):
         if num >= prefix[sym]:
             value = "%.2f" % float(float(num) / float(prefix[sym]))
-            return "%s%s%s" % (nume, value, sym)
-    return "%s%.2fB" % (nume, num)
+            return "{}{}{}".format(nume, value, sym)
+    return "{}{:.2f}B".format(nume, num)
 
 
 def memory_total_size():
@@ -28,7 +28,7 @@ def memory_total_size():
     Get the total amount of memory from /proc/meminfo.
     """
     try:
-        with open('/proc/meminfo', 'r') as fd:
+        with open('/proc/meminfo') as fd:
             for line in fd.readlines():
                 items = line.split()
                 if len(items) > 0:
@@ -44,7 +44,7 @@ def memory_total_size():
     return
 
 
-class Process(object):
+class Process:
     """
     Process class aimed to retreive process informations such CPU usage, memory
     usage, waiting in uninterruptible disk sleep (IO wait), disk read and write
@@ -78,7 +78,7 @@ class Process(object):
         cpu_time_capture = 0
         rss = 0
         try:
-            with open('/proc/%s/stat' % (self.pid), 'r') as fd:
+            with open('/proc/%s/stat' % (self.pid)) as fd:
                 lines = fd.read()
                 infos = lines[:-1].split()
                 # IO wait
@@ -103,7 +103,7 @@ class Process(object):
         write_bytes = 0
         io_capture = 0
         try:
-            with open('/proc/%s/io' % (self.pid), 'r') as fd:
+            with open('/proc/%s/io' % (self.pid)) as fd:
                 io_capture = time.time()
                 for line in fd.readlines():
                     infos = line.split()
