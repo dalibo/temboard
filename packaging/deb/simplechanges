@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import unicode_literals
-
 import codecs
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -86,7 +84,7 @@ def hashfile(path, algorithm):
     return hasher.hexdigest()
 
 
-CHANGELOG_FMT = u"""\
+CHANGELOG_FMT = """\
 %(Source)s (%(Version)s) %(Distribution)s; urgency=low
 
   * New upstream version.
@@ -107,27 +105,27 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
         if k in {'Architecture', 'Description', 'Maintainer', 'Version'}
     })
     if PY2:
-        changes['Changed-By'] = u"%s <%s>" % (
+        changes['Changed-By'] = "{} <{}>".format(
             os.environ['DEBFULLNAME'].decode('utf-8'),
             os.environ['DEBEMAIL'].decode('utf-8'),
         )
     else:
-        changes['Changed-By'] = u"%s <%s>" % (
+        changes['Changed-By'] = "{} <{}>".format(
             os.environ['DEBFULLNAME'],
             os.environ['DEBEMAIL'],
         )
     changes['Changes'] = CHANGELOG_FMT % changes
-    changes['Files'] = [u' '.join([
+    changes['Files'] = [' '.join([
         md5,
         str(filesize),
         controls['Section'],
         controls['Priority'],
         filename,
     ])]
-    changes['Checksums-Sha1'] = [u' '.join([
+    changes['Checksums-Sha1'] = [' '.join([
         sha1, str(filesize), filename,
     ])]
-    changes['Checksums-Sha256'] = [u' '.join([
+    changes['Checksums-Sha256'] = [' '.join([
         sha256, str(filesize), filename,
     ])]
 
