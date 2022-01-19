@@ -10,7 +10,7 @@ run-all:
 	TAG=centos8 TBD_PGVERSION=12 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=12 $(MAKE) run
 	TAG=buster TBD_PGVERSION=11 $(MAKE) run
-	TAG=stretch PYTHON=python2 TBD_PGVERSION=10 $(MAKE) run
+	TAG=stretch TBD_PGVERSION=10 $(MAKE) run
 	TAG=centos8 TBD_PGVERSION=9.6 $(MAKE) run
 	TAG=centos7 TBD_PGVERSION=9.6 $(MAKE) run
 
