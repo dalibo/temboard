@@ -7,7 +7,7 @@ import re
 import time
 from datetime import datetime
 from time import strftime, gmtime
-from temboardagent.errors import HTTPError
+from .errors import HTTPError
 
 logger = logging.getLogger(__name__)
 

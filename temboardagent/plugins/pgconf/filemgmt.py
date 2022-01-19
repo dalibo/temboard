@@ -1,7 +1,8 @@
 import os.path
 from os import listdir
 import datetime
-from temboardagent.errors import HTTPError
+
+from ...errors import HTTPError
 
 
 class ConfigurationFileManager:

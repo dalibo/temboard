@@ -1,10 +1,10 @@
 import logging
 
-from temboardagent.errors import HTTPError
-from temboardagent.routing import RouteSet
-from temboardagent.postgres import Postgres
-from temboardagent.tools import now
-from temboardagent.toolkit.configuration import OptionSpec
+from ...errors import HTTPError
+from ...routing import RouteSet
+from ...postgres import Postgres
+from ...tools import now
+from ...toolkit.configuration import OptionSpec
 
 
 logger = logging.getLogger(__name__)

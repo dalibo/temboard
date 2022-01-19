@@ -3,11 +3,10 @@ import time
 import os
 import re
 
-from temboardagent.notification import NotificationMgmt
-from temboardagent.inventory import SysInfo, PgInfo
-from temboardagent.errors import UserError
-
 from . import db
+from ...notification import NotificationMgmt
+from ...inventory import SysInfo, PgInfo
+from ...errors import UserError
 
 
 def get_metrics(app):

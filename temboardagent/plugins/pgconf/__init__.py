@@ -1,4 +1,4 @@
-from temboardagent.routing import RouteSet
+from ...routing import RouteSet
 
 from . import functions as pgconf_functions
 from .types import (

@@ -3,14 +3,14 @@ import time
 import logging
 import json
 
-from temboardagent.toolkit import taskmanager
-from temboardagent.routing import RouteSet
-from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.toolkit.validators import commalist
-from temboardagent.tools import now, validate_parameters
-from temboardagent.inventory import SysInfo
-from temboardagent import __version__ as __VERSION__
-from temboardagent.errors import HTTPError as TemboardHTTPError
+from ...toolkit import taskmanager
+from ...routing import RouteSet
+from ...toolkit.configuration import OptionSpec
+from ...toolkit.validators import commalist
+from ...tools import now, validate_parameters
+from ...inventory import SysInfo
+from ... import __version__ as __VERSION__
+from ...errors import HTTPError as TemboardHTTPError
 
 from . import db
 from .inventory import host_info, instance_info

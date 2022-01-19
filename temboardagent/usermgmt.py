@@ -4,7 +4,7 @@ from hashlib import sha256, sha512
 from os import urandom
 from binascii import hexlify
 
-from temboardagent.errors import ConfigurationError, HTTPError
+from .errors import ConfigurationError, HTTPError
 
 
 def hash_password(username, password):

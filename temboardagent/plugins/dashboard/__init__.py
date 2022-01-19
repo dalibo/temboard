@@ -1,9 +1,9 @@
 import logging
 import time
 
-from temboardagent.toolkit import taskmanager
-from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.routing import RouteSet
+from ...toolkit import taskmanager
+from ...toolkit.configuration import OptionSpec
+from ...routing import RouteSet
 
 from . import db
 from . import metrics

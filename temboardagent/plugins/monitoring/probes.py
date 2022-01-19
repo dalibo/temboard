@@ -8,11 +8,11 @@ import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
 
-from temboardagent.spc import connector
-from temboardagent.tools import now
-from temboardagent.inventory import SysInfo
-from temboardagent.plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
-from temboardagent.postgres import Postgres
+from ...spc import connector
+from ...tools import now
+from ...inventory import SysInfo
+from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+from ...postgres import Postgres
 
 from . import db
 

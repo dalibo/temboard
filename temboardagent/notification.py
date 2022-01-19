@@ -5,7 +5,7 @@ import sqlite3
 from textwrap import dedent
 import time
 
-from temboardagent.errors import NotificationError
+from .errors import NotificationError
 
 logger = logging.getLogger(__name__)
 

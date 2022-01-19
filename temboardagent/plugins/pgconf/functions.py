@@ -2,10 +2,10 @@ import logging
 import re
 from collections import namedtuple
 
-from temboardagent.errors import HTTPError, NotificationError
-from temboardagent.tools import validate_parameters
-from temboardagent.notification import NotificationMgmt, Notification
-from temboardagent.postgres import pg_escape
+from ...errors import HTTPError, NotificationError
+from ...tools import validate_parameters
+from ...notification import NotificationMgmt, Notification
+from ...postgres import pg_escape
 from .types import (
     T_PGSETTINGS_FILTER,
 )

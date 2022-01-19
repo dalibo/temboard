@@ -5,8 +5,8 @@ import os
 import re
 import sys
 
-from temboardagent.tools import check_fqdn, which, to_bytes
-from temboardagent.command import exec_command
+from .tools import check_fqdn, which, to_bytes
+from .command import exec_command
 
 
 logger = logging.getLogger(__name__)
