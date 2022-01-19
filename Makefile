@@ -1,5 +1,5 @@
 $(info Reading current version)
-VERSION=$(shell python2 setup.py --version)
+VERSION=$(shell python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 GIT_REMOTE?=git@github.com:dalibo/temboard-agent.git
 
