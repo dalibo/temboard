@@ -129,7 +129,7 @@ def dashboard_collector_worker(app):
     logger.debug("Done")
 
 
-class DashboardPlugin(object):
+class DashboardPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     s = 'dashboard'
     option_specs = [
