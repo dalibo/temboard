@@ -303,7 +303,7 @@ class HTTPDService(Service):
                  self.app.config.temboard.port),
                 self.handle_request)
         except SocketError as e:
-            raise UserError("Failed to start HTTPS server: %s." % (e,))
+            raise UserError("Failed to start HTTPS server: {}.".format(e))
         try:
             logger.debug(
                 "Using SSL key %s.", self.app.config.temboard.ssl_key_file)
@@ -317,7 +317,7 @@ class HTTPDService(Service):
                 server_side=True,
             )
         except Exception as e:
-            raise UserError("Failed to setup SSL: %s." % (e,))
+            raise UserError("Failed to setup SSL: {}.".format(e))
         self.httpd.timeout = 1
 
     def serve1(self):
