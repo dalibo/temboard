@@ -66,7 +66,7 @@ def get_routes():
     return ROUTES
 
 
-class Router(object):
+class Router:
     # Adapter to manage routes with an instance rather than a global.
 
     def add(self, routes):
