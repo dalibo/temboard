@@ -328,13 +328,14 @@ class InstanceHelper(object):
             self.instance.agent_address,
             self.instance.agent_port,
             path,
+            # TODO: remove key arg for 8.0
             self.instance.agent_key,
         )
 
         if query:
             url += "&" + serialize_querystring(query)
 
-        headers = {}
+        headers = {'X-TemBoard-Agent-Key': self.instance.agent_key}
         xsession = self.xsession
         if xsession:
             headers['X-Session'] = xsession
