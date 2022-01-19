@@ -52,7 +52,7 @@ def get_statements(http_context, app):
         return {"snapshot_datetime": snapshot_datetime, "data": data}
 
 
-class StatementsPlugin(object):
+class StatementsPlugin:
     PG_MIN_VERSION = (90500, 9.5)
     s = "statements"
     option_specs = [OptionSpec(s, "dbname", default="postgres")]
