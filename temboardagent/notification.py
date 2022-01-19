@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from datetime import datetime
 import logging
 import os
@@ -7,12 +5,12 @@ import sqlite3
 from textwrap import dedent
 import time
 
-from temboardagent.errors import NotificationError
+from .errors import NotificationError
 
 logger = logging.getLogger(__name__)
 
 
-class Notification(object):
+class Notification:
     """Notifications are log messages stored in a sqlite table aimed to keep a
     track of each action impacting PostgreSQL server configuration or
     its behavior.

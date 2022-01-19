@@ -1,10 +1,8 @@
-from __future__ import absolute_import
-
 import json
 import time
 
 from .test.temboard import temboard_request
-from .conftest import ENV, text_type, pgconnect
+from .conftest import ENV, pgconnect
 
 
 XSESSION = ''
@@ -276,8 +274,7 @@ class TestDashboard:
 
         assert status == 200 \
             and 'hostname' in dict_data \
-            and type(dict_data['hostname']) == text_type
-
+            and type(dict_data['hostname']) == str
     def test_09_dashboard_os_version_ok(self):
         """
         [dashboard] 09: GET /dashboard/os_version : HTTP return code is 200 and the data structure is right
@@ -298,7 +295,7 @@ class TestDashboard:
 
         assert status == 200 \
             and 'os_version' in dict_data \
-            and type(dict_data['os_version']) == text_type
+            and type(dict_data['os_version']) == str
 
     def test_10_dashboard_databases_ok(self):
         """
@@ -321,9 +318,9 @@ class TestDashboard:
         assert status == 200 \
             and 'databases' in dict_data \
             and 'total_size' in dict_data['databases'] \
-            and type(dict_data['databases']['total_size']) == text_type \
+            and type(dict_data['databases']['total_size']) == str \
             and 'time' in dict_data['databases'] \
-            and type(dict_data['databases']['time']) == text_type \
+            and type(dict_data['databases']['time']) == str \
             and 'databases' in dict_data['databases'] \
             and type(dict_data['databases']['databases']) == int \
             and dict_data['databases']['databases'] >= 0 \
@@ -352,7 +349,7 @@ class TestDashboard:
 
         assert status == 200 \
             and 'pg_version' in dict_data \
-            and type(dict_data['pg_version']) == text_type
+            and type(dict_data['pg_version']) == str
 
     def test_12_dashboard_n_cpu_ok(self):
         """

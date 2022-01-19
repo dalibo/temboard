@@ -4,7 +4,7 @@ from hashlib import sha256, sha512
 from os import urandom
 from binascii import hexlify
 
-from temboardagent.errors import ConfigurationError, HTTPError
+from .errors import ConfigurationError, HTTPError
 
 
 def hash_password(username, password):
@@ -23,11 +23,11 @@ def read_password_file(filepath):
     Read and return the user/password file.
     """
     try:
-        with open(filepath, 'r') as fd:
+        with open(filepath) as fd:
             lines = fd.readlines()
             fd.close()
             return lines
-    except IOError:
+    except OSError:
         raise ConfigurationError("Can't open password file for reading.")
 
 

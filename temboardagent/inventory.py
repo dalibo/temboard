@@ -5,14 +5,14 @@ import os
 import re
 import sys
 
-from temboardagent.tools import check_fqdn, which, to_bytes
-from temboardagent.command import exec_command
+from .tools import check_fqdn, which, to_bytes
+from .command import exec_command
 
 
 logger = logging.getLogger(__name__)
 
 
-class Inventory(object):
+class Inventory:
     def __init__(self):
         pass
 
@@ -127,7 +127,7 @@ class SysInfo(Inventory):
             for line in f.read().split("\n"):
                 if ':' not in line:
                     continue
-                key, value = [part.strip() for part in line.split(':', 1)]
+                key, value = (part.strip() for part in line.split(':', 1))
                 if key == 'processor':
                     current_cpu = {}
                     cpus.append(current_cpu)
@@ -148,7 +148,7 @@ class SysInfo(Inventory):
             for line in f.read().split("\n"):
                 if ':' not in line:
                     continue
-                key, value = [part.strip() for part in line.split(':', 1)]
+                key, value = (part.strip() for part in line.split(':', 1))
                 size, unit = unit_re.match(value).groups()
                 size = int(size)
                 # convert everything to bytes, if a unit is specified

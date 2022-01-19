@@ -1,5 +1,3 @@
-from __future__ import absolute_import, print_function
-
 import io
 import logging
 import time
@@ -9,14 +7,8 @@ import signal
 import random
 import string
 from subprocess import Popen, PIPE
-try:
-    import http.client as httplib
-except ImportError:
-    import httplib
-try:
-    import urllib.request as urllib2
-except ImportError:
-    import urllib2
+import http.client as httplib
+import urllib.request as urllib2
 import ssl
 import socket
 import json
@@ -79,7 +71,7 @@ def pg_start(pg_bin, pg_port, pg_socket_dir, pg_data, pg_log_file_path):
         try:
             socket.create_connection(('127.0.0.1', int(pg_port)), 1)
             break
-        except socket.error as e:
+        except OSError as e:
             logger.info("Connection error: %s", e)
             time.sleep(i * 0.25)
     else:
@@ -143,7 +135,7 @@ def agent_add_user(passwd_file_path, user, passwd):
     if ret_code != 0:
         raise Exception(str(stderr))
 
-    with io.open(passwd_file_path, "ab") as fd:
+    with open(passwd_file_path, "ab") as fd:
         fd.write(stdout)
 
 
@@ -162,11 +154,11 @@ def agent_write_conf(test_env):
         ssl_ca_cert_file=test_env['agent']['ssl_ca_cert_file'],
     )
     config['postgresql']['host'] = test_env['pg']['socket_dir']
-    data = dict([
-        ('%s_%s' % (k, kk), vv)
+    data = {
+        '{}_{}'.format(k, kk): vv
         for k, v in config.items()
         for kk, vv in v.items()
-    ])
+    }
     dest = test_env['agent']['conf_file']
     template = test_conf.AGENT_CONFIG
     with open(dest, 'w') as fo:
@@ -205,7 +197,7 @@ def agent_stop(pid_file):
     """
     Stop the agent.
     """
-    with open(pid_file, 'r') as fd:
+    with open(pid_file) as fd:
         pid = int(fd.read())
     # Stop it using kill()
     os.kill(pid, signal.SIGTERM)
@@ -471,7 +463,7 @@ class RequestWithMethod(urllib2.Request):
         if self._method:
             return self._method
         else:
-            return super(RequestWithMethod, self).get_method()
+            return super().get_method()
 
 
 def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
@@ -496,7 +488,7 @@ def temboard_request(in_ca_cert_file, method, url, headers=None, data=None):
         request = RequestWithMethod(url, method=method)
     try:
         handle = url_opener.open(request)
-        response = handle.read()
+        response = handle.read().decode()
         handle.close()
     except urllib2.HTTPError as e:
         return (e.code, json.dumps({'error': e.reason}))

@@ -43,9 +43,9 @@ def get_pgpass(pgpass=None):
     if pgpass is None:
         from os.path import expanduser
         home = expanduser("~")
-        pgpass = "{0}/.pgpass".format(str(home))
+        pgpass = "{}/.pgpass".format(str(home))
     ret = []
-    with open(pgpass, 'r') as filep:
+    with open(pgpass) as filep:
         content = filep.readlines()
         for line in content:
             res = None
@@ -64,7 +64,7 @@ def pg_escape(in_string, escapee_char=r"'"):
     return out_string
 
 
-class protocol3(object):
+class protocol3:
     """
     PostgreSQL FE/BE protocol 3.0 implementation.
     """
@@ -467,7 +467,7 @@ class protocol3(object):
         return [b'n', b'I', b'E', b'Z', b'R']
 
 
-class message_buffer(object):
+class message_buffer:
     """
     Message buffer class.
     """
@@ -576,7 +576,7 @@ class message_buffer(object):
         return False
 
 
-class connector(object):
+class connector:
     """
     PostgreSQL connector class.
     """
@@ -676,7 +676,7 @@ class connector(object):
                 raw_data = self._socket.recv(self._socket_read_length)
             except socket.timeout:
                 raise error('PGC105', 'FATAL', "Timeout")
-            except socket.error as err:
+            except OSError as err:
                 raise error('PGC106', 'FATAL',
                             "Socket error: {msg}".format(msg=err))
             self._message_buffer.write(raw_data)
@@ -729,7 +729,7 @@ class connector(object):
                 tmp_socket.connect(self._host_unix + '/.s.PGSQL.' +
                                    str(self._port))
                 return tmp_socket
-            except socket.error:
+            except OSError:
                 raise error('PGC101', 'FATAL', "Could not connect to "
                                                "{host}".format(
                                                    host=self._host_unix))
@@ -739,7 +739,7 @@ class connector(object):
                 tmp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 tmp_socket.connect((self._host_ip4, self._port))
                 return tmp_socket
-            except socket.error:
+            except OSError:
                 if self._host_ip6 is None:
                     raise error('PGC101', 'FATAL',
                                 "Could not connect to {host}".format(
@@ -751,7 +751,7 @@ class connector(object):
                 tmp_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                 tmp_socket.connect((self._host_ip6, self._port))
                 return tmp_socket
-            except socket.error:
+            except OSError:
                 raise error('PGC101', 'FATAL', "Could not connect to "
                                                "{host}".format(
                                                    host=self._host_ip6))

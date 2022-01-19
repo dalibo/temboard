@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import sys
 
 from ..usermgmt import hash_password
@@ -25,7 +23,7 @@ def main():
     expl = str(sys.argv[1]).split(':')
     if len(expl) != 2:
         display_usage()
-    sys.stdout.write("%s:%s\n" % (
+    sys.stdout.write("{}:{}\n".format(
         expl[0],
         hash_password(expl[0], expl[1]).decode('utf-8'))
     )

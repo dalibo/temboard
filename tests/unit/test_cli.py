@@ -1,6 +1,3 @@
-from __future__ import unicode_literals
-
-
 def test_apply_config_with_plugins(mocker):
     mod = 'temboardagent.cli.'
     mocker.patch(mod + 'Postgres', autospec=True)

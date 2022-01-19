@@ -8,11 +8,11 @@ import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
 
-from temboardagent.spc import connector
-from temboardagent.tools import now
-from temboardagent.inventory import SysInfo
-from temboardagent.plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
-from temboardagent.postgres import Postgres
+from ...spc import connector
+from ...tools import now
+from ...inventory import SysInfo
+from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+from ...postgres import Postgres
 
 from . import db
 
@@ -152,7 +152,7 @@ def get_primary_conninfo(conn):
     return parse_primary_conninfo(pci)
 
 
-class Probe(object):
+class Probe:
     """Base class for all plugins."""
     # At which level the information is gathered: host, instance or db
     level = None
@@ -410,7 +410,7 @@ class probe_sessions(SqlProbe):
     level = 'instance'
 
     def check(self, version):
-        if not super(probe_sessions, self).check(version):
+        if not super().check(version):
             return False
 
         if version < 90200:
@@ -728,13 +728,13 @@ class probe_wal_files(SqlProbe):
         metric['current_location'] = rows[0]['current_location']
 
         if version < 100000:
-            sql = """
+            sql = r"""
             SELECT count(s.f) AS archive_ready
             FROM pg_ls_dir('pg_xlog/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'
             """  # noqa W605
         else:
-            sql = """
+            sql = r"""
             SELECT count(s.f) AS archive_ready
             FROM pg_ls_dir('pg_wal/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'

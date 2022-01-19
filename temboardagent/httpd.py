@@ -1,18 +1,12 @@
 import logging
 import time
 
-try:
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-    from socketserver import ThreadingMixIn
-    from urllib.parse import urlparse, parse_qs, unquote_plus
-except ImportError:
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-    from SocketServer import ThreadingMixIn
-    from urlparse import urlparse, parse_qs
-    from urllib import unquote_plus
 import json
 import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from socket import error as SocketError
+from socketserver import ThreadingMixIn
+from urllib.parse import urlparse, parse_qs, unquote_plus
 import ssl
 
 from temboardagent.routing import get_routes
@@ -303,7 +297,7 @@ class HTTPDService(Service):
                  self.app.config.temboard.port),
                 self.handle_request)
         except SocketError as e:
-            raise UserError("Failed to start HTTPS server: %s." % (e,))
+            raise UserError("Failed to start HTTPS server: {}.".format(e))
         try:
             logger.debug(
                 "Using SSL key %s.", self.app.config.temboard.ssl_key_file)
@@ -317,7 +311,7 @@ class HTTPDService(Service):
                 server_side=True,
             )
         except Exception as e:
-            raise UserError("Failed to setup SSL: %s." % (e,))
+            raise UserError("Failed to setup SSL: {}.".format(e))
         self.httpd.timeout = 1
 
     def serve1(self):

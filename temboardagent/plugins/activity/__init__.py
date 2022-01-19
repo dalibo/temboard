@@ -1,4 +1,4 @@
-from temboardagent.routing import RouteSet
+from ...routing import RouteSet
 
 from . import functions as activity_functions
 
@@ -31,7 +31,7 @@ def post_activity_kill(http_context, app):
                                                      http_context)
 
 
-class ActivityPlugin(object):
+class ActivityPlugin:
     PG_MIN_VERSION = (90400, 9.4)
 
     def __init__(self, app, **kw):

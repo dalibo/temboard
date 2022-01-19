@@ -1,9 +1,9 @@
 import logging
 import time
 
-from temboardagent.toolkit import taskmanager
-from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.routing import RouteSet
+from ...toolkit import taskmanager
+from ...toolkit.configuration import OptionSpec
+from ...routing import RouteSet
 
 from . import db
 from . import metrics
@@ -129,7 +129,7 @@ def dashboard_collector_worker(app):
     logger.debug("Done")
 
 
-class DashboardPlugin(object):
+class DashboardPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     s = 'dashboard'
     option_specs = [

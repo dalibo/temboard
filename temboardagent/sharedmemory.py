@@ -3,12 +3,14 @@ from multiprocessing.sharedctypes import Array
 from ctypes import (Structure, c_char, c_double)
 import time
 
-from temboardagent.errors import (SharedItem_not_found, SharedItem_exists,
-                                  SharedItem_bad_type_size,
-                                  SharedItem_no_free_slot_left,
-                                  NotificationError)
-from temboardagent.types import T_SESSIONID_SIZE, T_USERNAME_SIZE
-from temboardagent.notification import NotificationMgmt, Notification
+from .errors import (
+    SharedItem_not_found, SharedItem_exists,
+    SharedItem_bad_type_size,
+    SharedItem_no_free_slot_left,
+    NotificationError,
+)
+from .types import T_SESSIONID_SIZE, T_USERNAME_SIZE
+from .notification import NotificationMgmt, Notification
 
 
 class Session(Structure):
@@ -26,7 +28,7 @@ class Session(Structure):
     ]
 
 
-class Sessions(object):
+class Sessions:
     """
     Sessions object.
     """

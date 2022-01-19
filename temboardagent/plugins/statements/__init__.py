@@ -1,10 +1,10 @@
 import logging
 
-from temboardagent.errors import HTTPError
-from temboardagent.routing import RouteSet
-from temboardagent.postgres import Postgres
-from temboardagent.tools import now
-from temboardagent.toolkit.configuration import OptionSpec
+from ...errors import HTTPError
+from ...routing import RouteSet
+from ...postgres import Postgres
+from ...tools import now
+from ...toolkit.configuration import OptionSpec
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def get_statements(http_context, app):
         return {"snapshot_datetime": snapshot_datetime, "data": data}
 
 
-class StatementsPlugin(object):
+class StatementsPlugin:
     PG_MIN_VERSION = (90500, 9.5)
     s = "statements"
     option_specs = [OptionSpec(s, "dbname", default="postgres")]

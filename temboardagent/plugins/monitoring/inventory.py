@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The inventory contains support functions to discover the features of the host
 (ex: OS, CPU info, MemInfo)
@@ -9,8 +8,9 @@ Currently, only Linux is supported.
 import os
 import logging
 import pwd
-from temboardagent.postgres import Postgres
-from temboardagent.inventory import (
+
+from ...postgres import Postgres
+from ...inventory import (
     SysInfo,
     PgInfo,
 )

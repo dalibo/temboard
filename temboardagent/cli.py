@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import logging
 
 from .postgres import Postgres
@@ -36,7 +34,7 @@ class Application(BaseApplication):
     ]
 
     def init_specs(self, app_specs):
-        specs = super(Application, self).init_specs(app_specs)
+        specs = super().init_specs(app_specs)
 
         def add_specs(*new_specs):
             for spec in new_specs:
@@ -57,7 +55,7 @@ class Application(BaseApplication):
         return specs
 
     def core_specs(self):
-        for spec in super(Application, self).core_specs():
+        for spec in super().core_specs():
             yield spec
 
         for name, spec in self.config_specs.items():
@@ -66,7 +64,7 @@ class Application(BaseApplication):
 
     def apply_config(self):
         self.postgres = Postgres(app=self, **self.config.postgresql)
-        return super(Application, self).apply_config()
+        return super().apply_config()
 
     def check_compatibility(self, pg_version):
         # check for compatibility with plugins

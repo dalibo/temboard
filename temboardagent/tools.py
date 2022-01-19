@@ -7,7 +7,7 @@ import re
 import time
 from datetime import datetime
 from time import strftime, gmtime
-from temboardagent.errors import HTTPError
+from .errors import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -150,4 +150,4 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         else:
-            return super(JSONEncoder, self).default(obj)
+            return super().default(obj)

@@ -10,13 +10,9 @@ workflows:
           parameters:
             dist: [rockylinux8, centos7]
     - unit:
-        name: stage0-unit-<< matrix.docker >>
-        matrix:
-          parameters:
-            docker: ["python:3.6", "python:2.7"]
+        name: stage0-unit-py36
     - deb:
         name: stage1-pkg-<< matrix.codename >>
-        requires: ["stage0-unit-python:2.7"]
         matrix:
           parameters:
             codename: [bullseye, buster, stretch]
@@ -25,48 +21,40 @@ workflows:
     - func:
         name: stage1-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
-        requires: [stage0-pkg-centos7, "stage0-unit-python:3.6"]
+        requires: [stage0-pkg-centos7, "stage0-unit-py36"]
         matrix:
           parameters:
             pgversion: ["9.6", "12"]
     - func:
         name: stage1-func-pg<< matrix.pgversion >>-rockylinux8
         dist: rockylinux8
-        requires: [stage0-pkg-rockylinux8, "stage0-unit-python:3.6"]
+        requires: [stage0-pkg-rockylinux8, "stage0-unit-py36"]
         matrix:
           parameters:
             pgversion: ["9.6", "14"]
     - func:
-        name: stage1-func-pg13-py3-bullseye
+        name: stage1-func-pg13-bullseye
         dist: bullseye
         pgversion: "13"
         install_rpm: 0
-        requires: ["stage0-unit-python:3.6"]
+        requires: ["stage0-unit-py36"]
     - func:
-        name: stage1-func-pg11-py2-buster
+        name: stage1-func-pg11-buster
         dist: buster
         pgversion: "11"
         install_rpm: 0
-        requires: ["stage0-unit-python:2.7"]
+        requires: ["stage0-unit-py36"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-stretch
+        name: stage1-func-pg10-stretch
         dist: stretch
         install_rpm: 0
-        requires: ["stage0-unit-python:2.7"]
-        python: "python2"
-        matrix:
-          parameters:
-            pgversion: ["10"]
+        requires: ["stage0-unit-py36"]
+        pgversion: "10"
 
 jobs:
   unit:
-    parameters:
-      docker:
-        description: "Python runtime"
-        type: enum
-        enum: ["python:2.7", "python:3.6"]
     docker:
-      - image: "<< parameters.docker >>"
+      - image: "python:3.6"
         environment:
           TERM: linux
           TERMINFO: /etc/terminfo

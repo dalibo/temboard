@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os
 from sys import stdout
 from getpass import getpass
@@ -104,7 +102,7 @@ class RegisterApplication(Application):
 
 
 def wrapped_main(args, app):
-    discover_url = "https://%s:%s/discover" % (
+    discover_url = "https://{}:{}/discover".format(
         args.host, app.config.temboard.port)
     try:
         # Getting system/instance informations using agent's discovering API

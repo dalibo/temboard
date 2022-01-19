@@ -1,5 +1,5 @@
 $(info Reading current version)
-VERSION=$(shell python2 setup.py --version)
+VERSION=$(shell python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 GIT_REMOTE?=git@github.com:dalibo/temboard-agent.git
 
@@ -18,7 +18,7 @@ upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
 	python -c 'import temboardagent.toolkit'
-	python setup.py sdist bdist_wheel --universal
+	python setup.py sdist bdist_wheel
 	twine upload dist/temboard-agent-$(VERSION).tar.gz $$(ls dist/temboard_agent-$(VERSION)-*.whl)
 
 renew_sslca:

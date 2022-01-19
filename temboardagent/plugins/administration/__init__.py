@@ -89,7 +89,7 @@ def post_pg_control(http_context, app):
         return dict(action=action, state='ok')
 
 
-class AdministrationPlugin(object):
+class AdministrationPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     options_specs = [
         OptionSpec('administration', 'pg_ctl', default=None, validator=quoted),

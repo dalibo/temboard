@@ -3,11 +3,10 @@ import time
 import os
 import re
 
-from temboardagent.notification import NotificationMgmt
-from temboardagent.inventory import SysInfo, PgInfo
-from temboardagent.errors import UserError
-
 from . import db
+from ...notification import NotificationMgmt
+from ...inventory import SysInfo, PgInfo
+from ...errors import UserError
 
 
 def get_metrics(app):
@@ -155,7 +154,7 @@ def get_pg_version(conn):
     return dict(pg_version=pginfo.version()['full'])
 
 
-class DashboardMetrics(object):
+class DashboardMetrics:
     conn = None
     config = None
     _instance = None
@@ -232,8 +231,8 @@ class DashboardMetrics(object):
         mem_cached = 0
         mem_free = 0
         mem_active = 0
-        pattern_line_meminfo = re.compile('^([^:]+):\s+([0-9]+) kB$')  # noqa W605
-        with open('/proc/meminfo', 'r') as fd:
+        pattern_line_meminfo = re.compile(r'^([^:]+):\s+([0-9]+) kB$')
+        with open('/proc/meminfo') as fd:
             for line in fd.readlines():
                 m = pattern_line_meminfo.match(line)
                 if m:
@@ -278,7 +277,7 @@ class DashboardMetrics(object):
 
     def _get_current_cpu_usage_linux(self,):
         ret = {}
-        with open('/proc/stat', 'r') as fd:
+        with open('/proc/stat') as fd:
             for line in fd.readlines():
                 cols = line.split()
                 if len(cols) > 0 and cols[0] == 'cpu':

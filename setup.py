@@ -4,12 +4,12 @@ import os
 # Load version number
 __version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
-exec(open(os.path.join(setup_path, 'temboardagent', 'version.py'), 'r').read())
+exec(open(os.path.join(setup_path, 'temboardagent', 'version.py')).read())
 
 if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
 
-SETUP_KWARGS = dict(
+setup(**dict(
     name='temboard-agent',
     version=__version__,
     author='Dalibo',
@@ -19,8 +19,7 @@ SETUP_KWARGS = dict(
     description='PostgreSQL Remote Control Agent',
     classifiers=[
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Environment :: No Input/Output (Daemon)",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved",
@@ -63,11 +62,6 @@ SETUP_KWARGS = dict(
             'statements = temboardagent.plugins.statements:StatementsPlugin',
         ],
     },
-)
-
-if __name__ == '__main__':
-    setup(**dict(
-        SETUP_KWARGS,
-        packages=find_packages(),
-        long_description=open('README.rst').read(),
-    ))
+    packages=find_packages(),
+    long_description=open('README.rst').read(),
+))

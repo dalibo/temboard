@@ -295,7 +295,7 @@ def reindex_worker(app, dbname, schema=None, table=None, index=None):
         return functions.reindex(conn, dbname, schema, table, index)
 
 
-class MaintenancePlugin(object):
+class MaintenancePlugin:
     PG_MIN_VERSION = (90400, 9.4)
 
     def __init__(self, app, **kw):

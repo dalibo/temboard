@@ -1,11 +1,10 @@
-# coding: utf-8
-
 import json
 import os
 import sqlite3
 from textwrap import dedent
 from time import time as current_time
-from temboardagent.tools import JSONEncoder
+
+from ...tools import JSONEncoder
 
 
 def bootstrap(path, dbname):

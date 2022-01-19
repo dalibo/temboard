@@ -1,14 +1,8 @@
-try:
-    import httplib
-except ImportError:
-    import http.client as httplib
-try:
-    import urllib2
-except ImportError:
-    import urllib.request as urllib2
-import ssl
-import socket
+import http.client as httplib
 import json
+import socket
+import ssl
+import urllib.request as urllib2
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
@@ -74,7 +68,7 @@ class RequestWithMethod(urllib2.Request):
 
     def get_method(self):
         return self._method if self._method else \
-            super(RequestWithMethod, self).get_method()
+            super().get_method()
 
 
 def https_request(in_ca_cert_file, method, url, headers=None, data=None):

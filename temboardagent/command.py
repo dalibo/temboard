@@ -31,7 +31,7 @@ def exec_script(script_args, **kwargs):
         check_call(script_args, **kwargs)
     except CalledProcessError as err:
         return (err.returncode, None, err.output)
-    except IOError as err:
+    except OSError as err:
         if err.errno == errno.EPIPE:
             pass
 

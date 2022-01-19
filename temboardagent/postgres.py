@@ -1,7 +1,3 @@
-# coding: utf-8
-
-from __future__ import unicode_literals
-
 import re
 from textwrap import dedent
 
@@ -11,13 +7,12 @@ from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
 
 from .errors import UserError
-from .toolkit.pycompat import PY2
 
 
 # See https://www.psycopg.org/docs/faq.html#faq-float
 DEC2FLOAT = psycopg2.extensions.new_type(
     psycopg2.extensions.DECIMAL.values,
-    b'DEC2FLOAT' if PY2 else 'DEC2FLOAT',
+    'DEC2FLOAT',
     lambda value, curs: float(value) if value is not None else None)
 psycopg2.extensions.register_type(DEC2FLOAT)
 
@@ -38,8 +33,7 @@ class ConnectionHelper(connection):
     def query(self, query, vars=None):
         with self.cursor() as cur:
             cur.execute(dedent(query), vars)
-            for row in cur:
-                yield row
+            yield from cur
 
     def queryone(self, query, vars=None):
         with self.cursor() as cur:
@@ -54,7 +48,7 @@ class ConnectionHelper(connection):
             return next(iter(row.values()))
 
 
-class ConnectionManager(object):
+class ConnectionManager:
     def __init__(self, postgres, app):
         self.postgres = postgres
         self.app = app
@@ -81,7 +75,7 @@ class ConnectionManager(object):
         self.conn.close()
 
 
-class Postgres(object):
+class Postgres:
     def __init__(
             self, host=None, port=5432, user=None, password=None, dbname=None,
             app=None,
@@ -98,7 +92,7 @@ class Postgres(object):
         self._server_version = None
 
     def __repr__(self):
-        return '<%s on %s@%s:%s/%s>' % (
+        return '<{} on {}@{}:{}/{}>'.format(
             self.__class__.__name__,
             self.user, self.host, self.port, self.dbname,
         )

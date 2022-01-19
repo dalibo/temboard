@@ -105,65 +105,63 @@ def test_statements(xsession, extension_enabled):
     )
     data = result["data"]
     assert data
-    expected_keys = set(
-        [
-            u"blk_read_time",
-            u"blk_write_time",
-            u"calls",
-            u"datname",
-            u"dbid",
-            u"local_blks_dirtied",
-            u"local_blks_hit",
-            u"local_blks_read",
-            u"local_blks_written",
-            u"query",
-            u"queryid",
-            u"rolname",
-            u"rows",
-            u"shared_blks_dirtied",
-            u"shared_blks_hit",
-            u"shared_blks_read",
-            u"shared_blks_written",
-            u"temp_blks_read",
-            u"temp_blks_written",
-            u"userid",
-        ]
-    )
+    expected_keys = {
+            "blk_read_time",
+            "blk_write_time",
+            "calls",
+            "datname",
+            "dbid",
+            "local_blks_dirtied",
+            "local_blks_hit",
+            "local_blks_read",
+            "local_blks_written",
+            "query",
+            "queryid",
+            "rolname",
+            "rows",
+            "shared_blks_dirtied",
+            "shared_blks_hit",
+            "shared_blks_read",
+            "shared_blks_written",
+            "temp_blks_read",
+            "temp_blks_written",
+            "userid",
+    }
     if pg_version >= (13,):
-        expected_keys = expected_keys | set([
-            u'max_exec_time',
-            u'max_plan_time',
-            u'mean_exec_time',
-            u'mean_plan_time',
-            u'min_exec_time',
-            u'min_plan_time',
-            u'plans',
-            u'rolname',
-            u'rows',
-            u'stddev_exec_time',
-            u'stddev_plan_time',
-            u'total_exec_time',
-            u'total_plan_time',
-            u'wal_bytes',
-            u'wal_fpi',
-            u'wal_records',
-        ])
+        expected_keys = expected_keys | {
+            'max_exec_time',
+            'max_plan_time',
+            'mean_exec_time',
+            'mean_plan_time',
+            'min_exec_time',
+            'min_plan_time',
+            'plans',
+            'rolname',
+            'rows',
+            'stddev_exec_time',
+            'stddev_plan_time',
+            'total_exec_time',
+            'total_plan_time',
+            'wal_bytes',
+            'wal_fpi',
+            'wal_records',
+        }
     else:
-        expected_keys = expected_keys | set([
-            u"max_time",
-            u"mean_time",
-            u"min_time",
-            u"stddev_time",
-            u"total_time",
-        ])
+        expected_keys = expected_keys | {
+            "max_time",
+            "mean_time",
+            "min_time",
+            "stddev_time",
+            "total_time",
+        }
     if pg_version >= (14,):
         expected_keys.add('toplevel')
 
     # This assert let pytest shows the diff between expected and returned.
     assert set(data[0]) == expected_keys
     assert all(set(d) == expected_keys for d in data)
-    assert "temboard" in set([d["rolname"] for d in data])
-    assert "postgres" in set([d["datname"] for d in data])
+    assert "temboard" in {d["rolname"] for d in data}
+    assert "postgres" in {d["datname"] for d in data}
     queries = [d["query"] for d in data]
     assert "CREATE EXTENSION pg_stat_statements" in queries
 
@@ -183,8 +181,8 @@ def test_statements(xsession, extension_enabled):
     assert new_data
     assert all(set(d) == expected_keys for d in new_data)
     assert len(new_data) != len(data)
-    assert "temboard" in set([d["rolname"] for d in new_data])
-    assert "postgres" in set([d["datname"] for d in new_data])
+    assert "temboard" in {d["rolname"] for d in new_data}
+    assert "postgres" in {d["datname"] for d in new_data}
     new_queries = [d["query"] for d in new_data]
 
     stmt_query = "SELECT $1+$2" if pg_version > (10,) else "SELECT ?+?"
