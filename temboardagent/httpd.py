@@ -241,10 +241,18 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # 1. Try the auth' by key: if this method is available for this API
         # and 'key' arg exists.
-        if route['check_key'] and 'key' in self.query:
+        key = self.headers.get('X-TemBoard-Agent-Key')
+        if key:
+            logger.debug("Authenication by key from header.")
+        elif 'key' in self.query:
+            # TODO: Remove auth from query in 8.0
+            key = self.query['key'][0]
+            logger.debug("Authentication by key from argument.")
+
+        if route['check_key'] and key:
             if self.app.config.temboard.key is None:
                 raise HTTPError(401, "Authentication key not configured")
-            if self.query['key'][0] != self.app.config.temboard.key:
+            if key != self.app.config.temboard.key:
                 raise HTTPError(401, "Invalid key")
             checked = True
 
