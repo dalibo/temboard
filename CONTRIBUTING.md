@@ -59,7 +59,7 @@ You now need to run an agent and register it in UI. Open a second shell for
 managing the agent and execute the following commands.
 
 ``` console
-$ docker-compose exec agent /bin/bash
+$ docker-compose exec agent0 /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
  INFO: Starting temboard-agent 8.0.dev0.
@@ -69,7 +69,10 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 ```
 
 Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
-`key_for_agent`. The monitored Postgres instance is named `postgres.dev`.
+`key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
+
+Beware that two Postgres instance are set up with replication. The primary
+instance may be either postgres0 or postgres1. See below for details.
 
 
 ### Execute unit tests
@@ -118,11 +121,11 @@ tests/func/$ docker-compose exec ui /bin/bash
 
 ## Testing with Postgres replication
 
-A second PostgreSQL instance replicating the first one is running. You can
-execute a second agent for it likewise:
+Two postgres instance are up with replication. You can execute a second agent
+for it likewise:
 
 ``` console
-$ docker-compose exec agent2 /bin/bash
+$ docker-compose exec agent1 /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
  INFO: Starting temboard-agent 8.0.dev0.
@@ -133,8 +136,12 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 
 bash history is shared amongst these two containers.
 
-In UI, register the second agent with address 0.0.0.0, port 2346 instead of 2345, with the same
-key `key_for_agent`. The instance FQDN is `secondary.dev`.
+In UI, register the second agent with address 0.0.0.0, port 2346 instead of
+2345, with the same key `key_for_agent`. The instance FQDN is `postgres1.dev`.
+
+The script `docker/dev-switchover.sh` triggers a switchover between the two
+postgres instances. Executing `docker/dev-switchover.sh` one more time restore
+the original topology.
 
 
 ## Editing Documentation
