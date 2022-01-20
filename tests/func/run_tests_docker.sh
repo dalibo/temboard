@@ -81,5 +81,4 @@ sudo -Eu testuser \
 	/usr/bin/env PATH="$PATH" \
 	"$PYTHON" -m pytest \
 	-vv --capture=no -p no:cacheprovider \
-	tests/func/ \
-	"$@"
+	"${@:-tests/func/}"
