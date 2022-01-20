@@ -50,7 +50,7 @@ services:
     environment: &agent_env
       # Perists bash history. Eases reuse of pip install and hupper command when
       # recreating container.
-      HISTFILE: /usr/local/src/temboard/docker-agent-bash_history
+      HISTFILE: /usr/local/src/temboard/docker/dev-agent-bash_history
       TEMBOARD_HOSTNAME: postgres0.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
