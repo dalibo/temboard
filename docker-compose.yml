@@ -4,6 +4,9 @@ volumes:
   data:
   run:
 
+  data2:
+  run2:
+
 services:
   # The Postgres server to store temBoard data.
   repository:
@@ -20,10 +23,11 @@ services:
     ports: [8025:8025]
     command: [python3, -m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
 
+  # First instance.
   postgres:
-    image: postgres:14-alpine
-    environment:
+    image: &postgres_image postgres:14-alpine
     ports: [5433:5432]
+    environment: &postgres_env
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     command: postgres -c shared_preload_libraries=pg_stat_statements
@@ -31,6 +35,7 @@ services:
     - data:/var/lib/postgresql/data
     - run:/var/run/postgresql
     - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - ./docker/postgres-setup-primary.sh:/docker-entrypoint-initdb.d/setup-primary.sh
 
   agent:
     image: dalibo/temboard-agent
@@ -43,7 +48,7 @@ services:
     - ./agent/:/usr/local/src/temboard-agent/
     links:
     - postgres:postgres.dev
-    environment:
+    environment: &agent_env
       # Perists bash history. Eases reuse of pip install and hupper command when
       # recreating container.
       HISTFILE: /usr/local/src/temboard/docker-agent-bash_history
@@ -53,5 +58,35 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
-    command: [/usr/bin/tini, sleep, infinity]
+    command: &agent_command [/usr/bin/tini, sleep, infinity]
 
+  # Second instance, with replication of first instance.
+  secondary:
+    image: *postgres_image
+    environment:
+      <<: *postgres_env
+      PRIMARY_HOST: postgres.dev
+    command: [postgres, -c, shared_preload_libraries=pg_stat_statements]
+    links:
+    - postgres:postgres.dev
+    volumes:
+    - data2:/var/lib/postgresql/data
+    - run2:/var/run/postgresql
+    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - ./docker/postgres-setup-secondary.sh:/docker-entrypoint-initdb.d/setup-secondary.sh
+
+  agent2:
+    image: dalibo/temboard-agent
+    ports: [2346:2345]
+    volumes:
+    - data2:/var/lib/postgresql/data
+    - run2:/var/run/postgresql
+    - /var/run/docker.sock:/var/run/docker.sock
+    - .:/usr/local/src/temboard/
+    - ./agent/:/usr/local/src/temboard-agent/
+    links:
+    - secondary:secondary.dev
+    environment:
+      <<: *agent_env
+      TEMBOARD_HOSTNAME: secondary.dev
+    command: *agent_command

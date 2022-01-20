@@ -116,6 +116,27 @@ tests/func/$ docker-compose exec ui /bin/bash
 ```
 
 
+## Testing with Postgres replication
+
+A second PostgreSQL instance replicating the first one is running. You can
+execute a second agent for it likewise:
+
+``` console
+$ docker-compose exec agent2 /bin/bash
+root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
+ INFO: Starting temboard-agent 8.0.dev0.
+ INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
+2022-01-11 10:12:55,130 [ 1568] [app             ] DEBUG: Looking for plugin activity.
+...
+```
+
+bash history is shared amongst these two containers.
+
+In UI, register the second agent with address 0.0.0.0, port 2346 instead of 2345, with the same
+key `key_for_agent`. The instance FQDN is `secondary.dev`.
+
+
 ## Editing Documentation
 
 The documentation is written in markdown and built with `mkdocs`
