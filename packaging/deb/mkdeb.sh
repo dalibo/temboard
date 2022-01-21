@@ -91,8 +91,9 @@ fpm --verbose \
 #       T E S T
 
 deb=$(ls temboard-agent_*-${release}_all.deb)
-dpkg-deb -I $deb
-dpkg-deb -c $deb
+dpkg-deb --info $deb
+dpkg-deb --show --showformat '${Depends}\n' "$deb"
+dpkg-deb --contents $deb
 apt-get update --quiet
 apt-get install --yes ./$deb
 (
