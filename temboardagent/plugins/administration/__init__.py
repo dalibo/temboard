@@ -3,7 +3,6 @@ import time
 
 from temboardagent.routing import RouteSet
 from temboardagent.tools import validate_parameters
-from temboardagent.spc import error
 from temboardagent.command import (
     oneline_cmd_to_array,
     exec_script,
@@ -60,7 +59,7 @@ def post_pg_control(http_context, app):
                     conn.execute('SELECT 1')
                     logger.info("Done.")
                     return dict(action=action, state='ok')
-            except error:
+            except Exception:
                 if (time.time() - t_start) > 10:
                     logger.info("Failed.")
                     return dict(action=action, state='ko')
@@ -80,7 +79,7 @@ def post_pg_control(http_context, app):
                     retry = False
             logger.info("Failed.")
             return dict(action=action, state='ko')
-        except error:
+        except Exception:
             logger.info("Done.")
             return dict(action=action, state='ok')
 
