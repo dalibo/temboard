@@ -103,6 +103,8 @@ def aggregate_data_worker(app):
                     table_name, nb_rows, stopwatch.last_delta)
             except Exception as e:
                 logger.error("Failed to archive data: %s.", e)
+                # search_path is lost on exception. Define it again.
+                conn.execute("SET search_path TO monitoring")
 
     logger.info("Monitoring data aggregation done.")
     logger.debug("Total time in SQL %s.", stopwatch.delta)
@@ -140,6 +142,8 @@ def history_tables_worker(app):
                     table_name, nb_rows, stopwatch.last_delta)
             except Exception as e:
                 logger.error("Failed to archive data: %s.", e)
+                # search_path is lost on exception. Define it again.
+                conn.execute("SET search_path TO monitoring")
 
     logger.info("Monitoring data archiving done.")
     logger.debug("Total time in SQL %s.", stopwatch.delta)
