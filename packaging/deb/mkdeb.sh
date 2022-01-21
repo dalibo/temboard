@@ -94,6 +94,11 @@ deb=$(ls temboard-agent_*-${release}_all.deb)
 dpkg-deb --info $deb
 dpkg-deb --show --showformat '${Depends}\n' "$deb"
 dpkg-deb --contents $deb
+if grep -q stretch /etc/os-release ; then
+	# Debian has only python3-psycopg2 2.6. Use python3-psycopg2 >2.7 from PGDG.
+	curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg
+	echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+fi
 apt-get update --quiet
 apt-get install --yes ./$deb
 (
