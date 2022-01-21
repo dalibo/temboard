@@ -8,7 +8,6 @@ import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
 
-from ...spc import connector
 from ...tools import now
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
@@ -862,9 +861,6 @@ class probe_replication_connection(SqlProbe):
     def run(self, conninfo):
         if not conninfo['standby']:
             return []
-
-        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'], 'postgres')
 
         try:
             with Postgres(**conninfo).connect() as conn:
