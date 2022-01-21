@@ -349,13 +349,6 @@ class SqlProbe(Probe):
                     if self.delta_columns is not None:
                         to_delta = {}
 
-                        # XXX. Convert results to float(), spc retrieves
-                        # everything as string. So far psycopg2 on the
-                        # server side handles to rest
-                        for k in self.delta_columns:
-                            if k in r.keys():
-                                to_delta[k] = float(r[k])
-
                         # Create the store key for the delta
                         if self.delta_key is not None:
                             key = cluster_name + database + r[self.delta_key]
