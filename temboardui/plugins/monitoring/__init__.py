@@ -55,6 +55,7 @@ from .tools import (
     populate_host_checks,
     preprocess_data,
     update_collector_status,
+    Stopwatch,
 )
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ def get_routes(config):
 @workers.register(pool_size=1)
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
+    stopwatch = Stopwatch()
     engine = worker_engine(app.config.repository)
     with engine.connect() as conn:
         conn.execute("SET search_path TO monitoring")
@@ -88,7 +90,7 @@ def aggregate_data_worker(app):
         for config in tables_config.values():
             logger.info("Aggregating data for metric %s.", config['name'])
             try:
-                with conn.begin():
+                with conn.begin(), stopwatch:
                     res = conn.execute(
                         "SELECT * FROM aggregate_data_single(%s, %s, %s)", (
                             config['name'], config['record_type'],
@@ -96,11 +98,14 @@ def aggregate_data_worker(app):
                         )
                     )
                     table_name, nb_rows = res.fetchone()
-                    logger.debug("table=%s insert=%s", table_name, nb_rows)
+                logger.debug(
+                    "table=%s insert=%s timedelta=%s",
+                    table_name, nb_rows, stopwatch.last_delta)
             except Exception as e:
                 logger.error("Failed to archive data: %s.", e)
 
     logger.info("Monitoring data aggregation done.")
+    logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
 @workers.register(pool_size=1)
@@ -112,6 +117,7 @@ def history_tables_worker(app):
     #
     # This task is triggered every 3 hours by monitoring_boostrap() below.
     #
+    stopwatch = Stopwatch()
     engine = worker_engine(app.config.repository)
     with engine.connect() as conn:
         conn.execute("SET search_path TO monitoring")
@@ -120,7 +126,7 @@ def history_tables_worker(app):
         for config in tables_config.values():
             logger.info("Archiving data for metric %s.", config['name'])
             try:
-                with conn.begin():
+                with conn.begin(), stopwatch:
                     res = conn.execute(
                         "SELECT * FROM archive_current_metrics(%s, %s, %s)", (
                             config['name'], config['record_type'],
@@ -129,11 +135,14 @@ def history_tables_worker(app):
                     )
 
                     table_name, nb_rows = res.fetchone()
-                    logger.debug("table=%s insert=%s", table_name, nb_rows)
+                logger.debug(
+                    "table=%s insert=%s timedelta=%s",
+                    table_name, nb_rows, stopwatch.last_delta)
             except Exception as e:
                 logger.error("Failed to archive data: %s.", e)
 
     logger.info("Monitoring data archiving done.")
+    logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
 @workers.register(pool_size=10)

@@ -1,5 +1,6 @@
 from builtins import str
 from dateutil import parser as parse_datetime
+from datetime import datetime, timedelta
 import logging
 import os
 
@@ -381,3 +382,20 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
     # This may happen when postgres is not available
     db.undef_check_states(session, all_check_ids, list(keys.keys()))
     session.commit()
+
+
+# Stolen from ldap2pg
+class Stopwatch(object):
+    def __init__(self):
+        self.delta = timedelta()
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, self.delta)
+
+    def __enter__(self):
+        self.start = datetime.utcnow()
+
+    def __exit__(self, *_):
+        self.last_delta = datetime.utcnow() - self.start
+        self.delta += self.last_delta
+        self.start = None
