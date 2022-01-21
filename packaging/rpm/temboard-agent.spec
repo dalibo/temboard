@@ -17,7 +17,7 @@ Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 Requires:      openssl
 Requires:      python3-setuptools
-Requires:      python3-psycopg2
+Requires:      python3-psycopg2 >= 2.7
 BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
 

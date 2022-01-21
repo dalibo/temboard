@@ -5,7 +5,6 @@ import os
 
 from temboardagent.errors import UserError, HTTPError
 from temboardagent.postgres import Postgres
-from temboardagent.spc import error
 from temboardagent.toolkit import taskmanager
 
 logger = logging.getLogger(__name__)
@@ -581,7 +580,7 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
         logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("VACCUM done.")
-    except error as e:
+    except Exception as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run vacuum %s" % mode
@@ -672,7 +671,7 @@ def analyze(conn, dbname, schema=None, table=None):
         logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("ANALYZE done.")
-    except error as e:
+    except Exception as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run analyze"
@@ -715,7 +714,7 @@ def reindex(conn, dbname, schema, table, index):
         logger.info("Running SQL on DB {}: {}".format(dbname, q))
         conn.execute(q)
         logger.info("reindex done.")
-    except error as e:
+    except Exception as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)
         raise UserError("Unable to run reindex on %s" % (element))

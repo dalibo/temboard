@@ -8,7 +8,6 @@ import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
 
-from ...spc import connector
 from ...tools import now
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
@@ -349,13 +348,6 @@ class SqlProbe(Probe):
                     # Compute delta if the probe needs that
                     if self.delta_columns is not None:
                         to_delta = {}
-
-                        # XXX. Convert results to float(), spc retrieves
-                        # everything as string. So far psycopg2 on the
-                        # server side handles to rest
-                        for k in self.delta_columns:
-                            if k in r.keys():
-                                to_delta[k] = float(r[k])
 
                         # Create the store key for the delta
                         if self.delta_key is not None:
@@ -862,9 +854,6 @@ class probe_replication_connection(SqlProbe):
     def run(self, conninfo):
         if not conninfo['standby']:
             return []
-
-        conn = connector(conninfo['host'], conninfo['port'], conninfo['user'],
-                         conninfo['password'], 'postgres')
 
         try:
             with Postgres(**conninfo).connect() as conn:

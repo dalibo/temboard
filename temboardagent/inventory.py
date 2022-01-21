@@ -181,7 +181,7 @@ class SysInfo(Inventory):
             ifconfig = which('ifconfig', ['/sbin'])
             (rc, out, err) = exec_command([ifconfig, "-a"])
             if rc == 0:
-                for line in out.splitlines():
+                for line in out.decode('utf8').splitlines():
                     m = re.match(r'^\s+inet (addr:)?([\d\.]+)\s', line)
                     if m:
                         addrs.append(m.group(2))

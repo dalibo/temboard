@@ -1,11 +1,10 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 import json
 import re
 import time
 
 import pytest
-
-from temboardagent.spc import connector
+from psycopg2 import connect
 
 from test.temboard import temboard_request, urllib2
 
@@ -14,15 +13,13 @@ ENV = {}
 @pytest.fixture(scope="module")
 def xsession(env):
     ENV.update(env)
-    conn = connector(
+    connect(
         host=ENV["pg"]["socket_dir"],
         port=ENV["pg"]["port"],
         user=ENV["pg"]["user"],
         password=ENV["pg"]["password"],
-        database="postgres",
-    )
-    conn.connect()
-    conn.close()
+        dbname="postgres",
+    ).close()
     status, res = temboard_request(
         ENV["agent"]["ssl_cert_file"],
         method="POST",
@@ -38,29 +35,27 @@ def xsession(env):
 
 
 @contextmanager
-def conn():
-    cnx = connector(
+def cursor():
+    with closing(connect(
         host=ENV["pg"]["socket_dir"],
         port=ENV["pg"]["port"],
         user=ENV["pg"]["user"],
         password=ENV["pg"]["password"],
-        database="postgres",
-    )
-    cnx.connect()
-    try:
-        yield cnx
-    finally:
-        cnx.close()
+        dbname="postgres",
+    )) as conn:
+        with conn.cursor() as cur:
+            yield cur
+        conn.commit()
 
 
 @pytest.fixture(scope="function")
 def extension_enabled(env):
     ENV.update(env)
-    with conn() as cnx:
-        cnx.execute("CREATE EXTENSION pg_stat_statements")
+    with cursor() as cur:
+        cur.execute("CREATE EXTENSION pg_stat_statements")
     yield
-    with conn() as cnx:
-        cnx.execute("DROP EXTENSION pg_stat_statements")
+    with cursor() as cur:
+        cur.execute("DROP EXTENSION pg_stat_statements")
 
 
 def test_statements_not_enabled(xsession):
@@ -77,10 +72,10 @@ def test_statements_not_enabled(xsession):
 
 
 def test_statements(xsession, extension_enabled):
-    with conn() as cnx:
-        cnx.execute("SELECT version()")
-        row, = cnx.get_rows()
-        m = re.match(r"PostgreSQL (\d+\.?\d*)", row["version"])
+    with cursor() as cur:
+        cur.execute("SELECT version()")
+        version, = cur.fetchone()
+        m = re.match(r"PostgreSQL (\d+\.?\d*)", version)
         assert m
         pg_version = tuple(
             int(x) for x in m.group(1).split(".")
@@ -166,8 +161,8 @@ def test_statements(xsession, extension_enabled):
     assert "CREATE EXTENSION pg_stat_statements" in queries
 
     query = "SELECT 1+1"
-    with conn() as cnx:
-        cnx.execute(query)
+    with cursor() as cur:
+        cur.execute(query)
 
     # sleep 1s to get a different snapshot timestamp
     time.sleep(1)
@@ -190,8 +185,8 @@ def test_statements(xsession, extension_enabled):
     calls = [d["calls"] for d in new_data if d["query"] == stmt_query][0]
     assert calls == 1
 
-    with conn() as cnx:
-        cnx.execute(query)
+    with cursor() as cur:
+        cur.execute(query)
 
     # sleep 1s to get a different snapshot timestamp
     time.sleep(1)
