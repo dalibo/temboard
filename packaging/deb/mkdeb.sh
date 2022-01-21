@@ -81,7 +81,7 @@ fpm --verbose \
     --url http://temboard.io/ \
     --depends python3-pkg-resources \
     --depends ssl-cert \
-    --depends python3-psycopg2 \
+    --depends 'python3-psycopg2 >= 2.7' \
     --depends python3 \
     --after-install ../../share/restart-all.sh \
     "${fpm_args[@]}" \
