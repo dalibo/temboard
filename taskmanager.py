@@ -15,6 +15,7 @@ from multiprocessing.connection import Listener, Client
 
 from .services import Service
 from .errors import StorageEngineError
+from .perf import PerfCounters
 from .pycompat import PY2, Empty
 
 
@@ -793,6 +794,7 @@ class WorkerPool(object):
         self.event_queue = event_queue
         self.workers = {}
         self.setproctitle = setproctitle
+        self.perf = None
 
     def _abort_job(self, task_id):
         for workername in self.workers:
@@ -814,6 +816,8 @@ class WorkerPool(object):
         return False
 
     def setup(self):
+        if self.perf:
+            self.perf['fork'] = 0
         global TM_WORKERS
         for worker in TM_WORKERS:
             self.add(worker)
@@ -878,12 +882,19 @@ class WorkerPool(object):
                 return
 
     def exec_worker(self, module, function, out, *args, **kws):
-        if self.setproctitle:
-            self.setproctitle('task %s.%s' % (module, function))
-
         # Function wrapper around worker function
         try:
-            res = getattr(sys.modules[module], function)(*args, **kws)
+            fun = getattr(sys.modules[module], function)
+
+            modfun = "%s.%s" % (module, fun.__name__)
+            logger.debug("Starting new worker %s", modfun)
+            if self.setproctitle:
+                self.setproctitle('task %s' % (modfun))
+            perf = PerfCounters.setup(service='task', task=modfun)
+            if perf:
+                perf.schedule()
+
+            res = fun(*args, **kws)
             # Put function result into output queue as a Message
             out.put(Message(MSG_TYPE_RESP, res))
         except Exception as e:
@@ -892,6 +903,8 @@ class WorkerPool(object):
             logger.exception(e)
         except KeyboardInterrupt:
             logger.error("KeyboardInterrupt")
+        if perf:
+            perf.run()
 
     def start_jobs(self):
         # Execute Tasks
@@ -899,8 +912,6 @@ class WorkerPool(object):
             while len(self.workers[name]['pool']) < worker['pool_size']:
                 try:
                     t = worker['queue'].pop()
-                    logger.debug("Startin new worker %s.%s"
-                                 % (worker['module'], worker['function']))
                     # Queue used to get worker function return
                     out = Queue()
                     p = Process(
@@ -909,6 +920,10 @@ class WorkerPool(object):
                             kwargs=t.options,
                         )
                     p.start()
+
+                    if self.perf:
+                        self.perf['fork'] += 1
+
                     self.workers[name]['pool'].append(
                             {'id': t.id, 'process': p, 'out': out}
                     )
@@ -1032,9 +1047,11 @@ class WorkerPoolService(Service):
 
     def __init__(self, task_queue, event_queue, **kw):
         super(WorkerPoolService, self).__init__(**kw)
-        self.worker_pool = WorkerPool(task_queue, event_queue, self.setproctitle)
+        self.worker_pool = WorkerPool(
+            task_queue, event_queue, self.setproctitle)
 
     def setup(self):
+        self.worker_pool.perf = self.perf
         self.worker_pool.setup()
 
     def serve1(self):
