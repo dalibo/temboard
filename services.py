@@ -28,6 +28,7 @@ from multiprocessing import Process
 from time import sleep
 
 from .errors import UserError
+from .perf import PerfCounters
 
 
 logger = logging.getLogger(__name__)
@@ -71,11 +72,14 @@ class Service(object):
         signal.signal(signal.SIGHUP, self.sighup_handler)
         signal.signal(signal.SIGTERM, self.sigterm_handler)
         self.sighup = False
+        if self.perf:
+            signal.signal(signal.SIGALRM, self.perf.sigalrm_handler)
 
     def __exit__(self, *a):
         signal.signal(signal.SIGCHLD, signal.SIG_DFL)
         signal.signal(signal.SIGHUP, signal.SIG_DFL)
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
     def check_parent_running(self):
         if self.parentpid is None:
@@ -105,8 +109,12 @@ class Service(object):
         if self.name and self.setproctitle:
             self.setproctitle(self.name)
         logger.info(u"Starting %s.", self)
+        self.perf = PerfCounters.setup(service=self.logname.replace(' ', '-'))
+        if self.perf:
+            self.perf.run()
 
         self.setup()
+
         try:
             self.serve()
         except KeyboardInterrupt:
