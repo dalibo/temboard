@@ -58,6 +58,9 @@ class Service(object):
         # ServicesManager.start().
         self.is_my_process = True
 
+    def __str__(self):
+        return self.logname
+
     def __unicode__(self):
         return self.logname
 
