@@ -787,11 +787,12 @@ class SchedulerService(Service):
 
 class WorkerPool(object):
 
-    def __init__(self, task_queue, event_queue):
+    def __init__(self, task_queue, event_queue, setproctitle=None):
         self.thread = None
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.workers = {}
+        self.setproctitle = setproctitle
 
     def _abort_job(self, task_id):
         for workername in self.workers:
@@ -877,6 +878,9 @@ class WorkerPool(object):
                 return
 
     def exec_worker(self, module, function, out, *args, **kws):
+        if self.setproctitle:
+            self.setproctitle('task %s.%s' % (module, function))
+
         # Function wrapper around worker function
         try:
             res = getattr(sys.modules[module], function)(*args, **kws)
@@ -1028,7 +1032,7 @@ class WorkerPoolService(Service):
 
     def __init__(self, task_queue, event_queue, **kw):
         super(WorkerPoolService, self).__init__(**kw)
-        self.worker_pool = WorkerPool(task_queue, event_queue)
+        self.worker_pool = WorkerPool(task_queue, event_queue, self.setproctitle)
 
     def setup(self):
         self.worker_pool.setup()
