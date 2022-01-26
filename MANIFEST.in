@@ -44,3 +44,4 @@ exclude temboardui/toolkit/README.md
 exclude temboardui/toolkit/requirement-ci.txt
 prune temboardui/toolkit/tests
 prune tests
+prune perfui

@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+- name: "temBoard Performence Provisionned"
+  type: file
+  folder: ''
+  allowUiUpdates: true
+  options:
+    path: /usr/share/temboard/perf.json
