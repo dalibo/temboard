@@ -19,3 +19,4 @@ def test_stat():
 
     assert 'io_rchar' in p
     assert 'io_wchar' in p
+    assert 0 != p['load1']

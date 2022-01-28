@@ -26,6 +26,9 @@ class PerfCounters(dict):
             utime=0,
             vsize=0,
             pid=os.getpid(),
+            load1=0,
+            load5=0,
+            load15=0,
             **defaults
         )
         super(PerfCounters, self).__init__(**defaults)
@@ -85,6 +88,11 @@ class PerfCounters(dict):
 
         vsize = int(fields[22])
         self['vsize'] = vsize
+
+        # GLOBAL LOAD AVG
+        with open('/proc/loadavg') as fo:
+            loadavg = fo.read()
+        self['load1'], self['load5'], self['load15'], _ = loadavg.split(' ', 3)
 
 
 def parse(lines):
