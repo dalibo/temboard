@@ -3,15 +3,29 @@
 
 ## [7.10] - Unreleased
 
+- Show libpq version in logs and --version.
+- Authenticate with agent using both header and query arg. 8.0 will remove
+  query arg auth.
+- Packages for bullseye for both UI and agent.
+- Drop jessie package.
+
+**Server:**
+
 - Fix database ownership on creation.
 - Ship a /usr/share/temboard/sql/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
-- Review defaults groups.
-- Packages for bullseye.
-- Show libpq version in logs and --version.
+- Review defaults temBoard user groups.
+- Optionnal performance tracing in temBoard UI logs.
 - Moving to Python3 on stretch, buster and bullseye.
-- Authenticate with agent using both header and query arg. 8.0 will remove
-  query arg auth.
+- Drop another tooltip breaking dropdown menu.
+- Monitoring: Time SQL queries for archive and aggregation.
+
+**Agent:**
+
+- Explicitily requires psycopg2 2.7+ on debian.
+- Ignore loopback and tmpfs file systems.
+- Drop Python2 support
+- Build RHEL8 package with RockyLinux 8.
 
 
 ## [7.9] - 2022-01-03
