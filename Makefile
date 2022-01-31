@@ -46,7 +46,7 @@ COMPOSE_PROJECT=$(notdir $(CURDIR))
 NETWORK=$(COMPOSE_PROJECT)_default
 
 mass-agents:
-	seq 2346 3000 | xargs --interactive -I% \
+	seq 2347 3000 | xargs --interactive -I% \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
 			NETWORK=$(NETWORK) \
@@ -56,7 +56,7 @@ mass-agents:
 		up -d
 
 clean-agents:
-	seq 2346 3000 | xargs --verbose -I% --max-procs 4 \
+	seq 2347 3000 | xargs --verbose -I% --max-procs 4 \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
 			NETWORK=$(subst -,,$(notdir $(CURDIR)))_default \

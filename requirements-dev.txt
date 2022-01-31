@@ -4,6 +4,7 @@ pytest<4
 pytest-cov
 pytest-mock
 pytest-tornado
+pytz  # for perfui/
 mock
 docutils
 psycopg2-binary

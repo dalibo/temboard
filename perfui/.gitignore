@@ -1,0 +1,2 @@
+*.log
+prometheus/import/*.txt
