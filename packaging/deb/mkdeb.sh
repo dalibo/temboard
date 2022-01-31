@@ -57,8 +57,6 @@ case "$codename" in
 	stretch|wheezy)
 		fpm_args+=(--deb-init temboard-agent.init)
 	;;
-	jessie)
-	;;
 	*)
 		fpm_args+=(--depends python3-distutils)
 	;;
