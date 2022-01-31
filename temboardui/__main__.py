@@ -171,12 +171,25 @@ class TornadoService(Service):
             logger.error("FATAL: " + str(e) + '. Quit')
             sys.exit(3)
 
+    def autoreload_hook(self):
+        self.services.stop()
+        try:
+            self.services.check()
+        except UserError as e:
+            logger.debug("%s.", e)
+        self.services.kill()
+        try:
+            self.services.check()
+        except UserError as e:
+            logger.debug("%s.", e)
+
     def serve(self):
         with self:
             # Automatically reload modified modules (from Tornado's
             # Application.__init__). This code must be done here *after*
             # daemonize, because it instanciates ioloop for current PID.
             if self.app.webapp.settings.get('autoreload'):
+                autoreload.add_reload_hook(self.autoreload_hook)
                 autoreload.start()
 
             logger.info(
