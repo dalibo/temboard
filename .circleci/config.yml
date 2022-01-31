@@ -4,11 +4,13 @@ workflows:
   version: 2
   default:
     jobs:
+    - dist: {name: stage0-dist}
     - rpm:
         name: stage0-pkg-<< matrix.dist >>
         matrix:
           parameters:
             dist: [rockylinux8, centos7]
+        requires: [stage0-dist]
     - unit:
         name: stage0-unit-py36
     - deb:
@@ -16,6 +18,7 @@ workflows:
         matrix:
           parameters:
             codename: [bullseye, buster, stretch]
+        requires: [stage0-dist]
     # Please keep tests/func/Makefile run-all test matrix sync with the
     # following.
     - func:
@@ -52,6 +55,21 @@ workflows:
         pgversion: "10"
 
 jobs:
+  dist:
+    docker: [{image: python:3.6}]
+    working_directory: &working_directory /workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run: python setup.py sdist bdist_wheel
+    - store_artifacts:
+        path: /workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/*.tar.gz
+        - dist/*.whl
+
   unit:
     docker:
       - image: "python:3.6"
@@ -117,9 +135,7 @@ jobs:
     - run: git submodule update --init
     - run:
         name: Build RPM snapshot
-        command: |
-          python3 setup.py sdist
-          ./packaging/rpm/build.sh
+        command: ./packaging/rpm/build.sh
     - store_artifacts:
         path: ~/workspace/dist/
     - persist_to_workspace:
