@@ -33,9 +33,9 @@ def test_format_pq_version():
 
 
 def test_read_libpq_version_from_ctypes(mocker):
-    __import__('psycopg2')
+    __import__('psycopg2.extensions')
     # Remove __libpq_version__ if any.
-    mocker.patch.dict(sys.modules, [('psycopg2', object())])
+    mocker.patch.dict(sys.modules, [('psycopg2.extensions', object())])
 
     from sampleproject.toolkit.versions import read_libpq_version
 

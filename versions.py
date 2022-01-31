@@ -28,7 +28,8 @@ def read_libpq_version():
 
     try:
         # For psycopg2 2.7+
-        from psycopg2 import __libpq_version__
+        from psycopg2.extensions import libpq_version
+        return libpq_version()
     except ImportError:
         __import__('psycopg2')
 
@@ -43,9 +44,7 @@ def read_libpq_version():
                 raise Exception("libpq.so not loaded")
 
         libpq = ctypes.cdll.LoadLibrary(path)
-        __libpq_version__ = libpq.PQlibVersion()
-
-    return __libpq_version__
+        return libpq.PQlibVersion()
 
 
 def format_pq_version(version):
