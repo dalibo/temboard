@@ -9,7 +9,7 @@ services:
       - CI
       - PYTHON
       - TBD_PGVERSION=${TBD_PGVERSION-14}
-      - TBD_INSTALL_RPM
+      - TBD_INSTALL_PKG
       - HISTFILE=/workspace/tests/func/docker-bash_history
     working_dir: /workspace
     entrypoint: [/usr/local/sbin/tini, /workspace/tests/func/run_tests_docker.sh, "--"]
