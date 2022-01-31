@@ -1,8 +1,8 @@
 #!/bin/bash -eux
 
-TOP_SRCDIR=$(readlink -m $0/../../..)
-UID_GID=$(stat -c %u:%g $0)
 cd $(readlink -m $0/..)
+TOP_SRCDIR=$(readlink -m "$0/../../..")
+UID_GID=$(stat -c %u:%g "$0")
 
 WORKDIR=$(readlink -m build)
 DESTDIR=$WORKDIR/destdir
@@ -25,7 +25,7 @@ teardown () {
 trap teardown EXIT INT TERM
 teardown
 
-mkdir -p $DESTDIR
+mkdir -p "$DESTDIR"
 
 #       V E R S I O N S
 
@@ -47,8 +47,8 @@ else
 fi
 # Fake --install-layout=deb, when using wheel.
 pythonv=$(python3 --version |& grep -Po 'Python \K([3]\..)')
-mkdir -p ${DESTDIR}/usr/lib/python3/dist-packages/
-mv $DESTDIR/usr/lib/python${pythonv}/site-packages/* $DESTDIR/usr/lib/python3/dist-packages/
+mkdir -p "${DESTDIR}/usr/lib/python3/dist-packages/"
+mv "$DESTDIR/usr/lib/python${pythonv}/site-packages"/* "$DESTDIR/usr/lib/python3/dist-packages/"
 
 #       B U I L D
 
@@ -67,12 +67,12 @@ esac
 fpm --verbose \
     --force \
     --debug-workspace \
-    --chdir $DESTDIR \
+    --chdir "$DESTDIR" \
     --input-type dir \
     --output-type deb \
     --name temboard-agent \
-    --version $debianv \
-    --iteration $release \
+    --version "$debianv" \
+    --iteration "$release" \
     --architecture all \
     --description "PostgreSQL Remote Control Agent" \
     --category database \
@@ -91,16 +91,16 @@ fpm --verbose \
 #       T E S T
 
 deb=$(ls temboard-agent_*-${release}_all.deb)
-dpkg-deb --info $deb
+dpkg-deb --info "$deb"
 dpkg-deb --show --showformat '${Depends}\n' "$deb"
-dpkg-deb --contents $deb
+dpkg-deb --contents "$deb"
 if grep -q stretch /etc/os-release ; then
 	# Debian has only python3-psycopg2 2.6. Use python3-psycopg2 >2.7 from PGDG.
 	curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg
 	echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 fi
 apt-get update --quiet
-apt-get install --yes ./$deb
+apt-get install --yes "./$deb"
 (
 	cd /
 	temboard-agent --version
