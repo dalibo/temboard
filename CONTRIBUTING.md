@@ -260,8 +260,8 @@ distribution packaging, see ad-hoc documentation in `packaging/`.
 To release a new version:
 
 - Checkout release branch (like v2).
-- Choose the next version according to `PEP 440
-  <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_ .
+- Choose the next version according to [PEP 440]
+  (https://www.python.org/dev/peps/pep-0440/#version-scheme).
 - Update `temboardui/version.py`, without committing.
 - Generate and push commit and tag with `make release`.
 - Push Python egg to PyPI using `make upload`.
