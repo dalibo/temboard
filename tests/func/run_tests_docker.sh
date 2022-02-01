@@ -4,8 +4,8 @@
 # Script to run tests on CentOS
 #
 
-top_srcdir=$(readlink -m $0/../../..)
-cd $top_srcdir
+TOP_SRCDIR=$(readlink -m "$0/../../..")
+cd "$TOP_SRCDIR"
 # Ensure that setup.py exists (we are correctly located)
 test -f setup.py
 
@@ -39,27 +39,31 @@ teardown() {
 
 trap teardown EXIT INT TERM
 
-install_rpm=${TBD_INSTALL_RPM:-0}
-PYTHON="$(type -p "${PYTHON-python3}")"
-
 # For circle-ci tests we want to install using RPM
 # When launched locally we install via pip
-if (( install_rpm == 1 ))
+if [ "${TBD_INSTALL_PKG-0}" = "1" ]
 then
-    # Search for the proper RPM package
-    rpmdist=$(rpm --eval '%dist')
-    rpm=$(readlink -e dist/temboard-agent-*${rpmdist}*.noarch.rpm)
-    # Disable pgdg to use base pyscopg2 2.5 from Red Hat.
-    yum -d1 "--disablerepo=pgdg*"  install -y $rpm
-    rpm --query --queryformat= temboard-agent
+	if type -p yum &>/dev/null ; then
+		# Search for the proper RPM package
+		rpmdist=$(rpm --eval '%dist')
+		rpm=$(readlink -e dist/temboard-agent-*${rpmdist}*.noarch.rpm)
+		# Disable pgdg to use base pyscopg2 from EPEL.
+		yum -d1 "--disablerepo=pgdg*"  install -y "$rpm"
+		rpm --query --queryformat= temboard-agent
+	elif type -p apt-get &>/dev/null ; then
+		codename="$(grep -Po 'VERSION_CODENAME=\K.+' /etc/os-release)"
+		deb="$(readlink -e dist/temboard-agent_*-"0dlb1${codename}1_all.deb")"
+		apt-get update --quiet
+		apt-get install --yes "$deb"
+	fi
 else
-    $PYTHON -m pip install -e .
+    python3 -m pip install -e .
     # Fake easy_install.pth dropped by new setuptools.
-    echo "$PWD" > "$("$PYTHON" -c "import sys; print(sys.path[-1]);")/temboard-develop.pth"
-    $PYTHON -m pip install --only-binary :all: psycopg2-binary
+    echo "$PWD" > "$(python3 -c "import sys; print(sys.path[-1]);")/temboard-develop.pth"
+    python3 -m pip install --only-binary :all: psycopg2-binary
 fi
 
-$PYTHON -m pip install pytest pytest-mock
+python3 -m pip install pytest pytest-mock
 
 # Rockylinux 8 container has a bad locale configured. Configure locale
 # according to system availabilities. This is important for initdb.
@@ -79,6 +83,6 @@ rm -rf /tmp/tests_temboard
 temboard-agent --version
 sudo -Eu testuser \
 	/usr/bin/env PATH="$PATH" \
-	"$PYTHON" -m pytest \
+	python3 -m pytest \
 	-vv --capture=no -p no:cacheprovider \
 	"${@:-tests/func/}"
