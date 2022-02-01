@@ -300,6 +300,7 @@ class SqlProbe(Probe):
     delta_columns = None
     delta_key = None
     delta_interval_column = None
+    timeout = False
 
     def check(self, version=None):
         """Check if the plugin can run on the target version of PostgreSQL."""
@@ -336,7 +337,9 @@ class SqlProbe(Probe):
         output = []
         try:
             with Postgres(**conninfo).connect() as conn:
-                conn.execute("SET statement_timeout = '30s';")
+                if self.timeout:
+                    conn.execute(
+                        "SET statement_timeout = '%ss';", (self.timeout,))
 
                 cluster_name = conninfo['instance'].replace('/', '')
                 sql = "-- probe %s\n%s" % (self, sql)
@@ -935,6 +938,7 @@ FROM (
 
 class probe_btree_bloat(SqlProbe):
     # Btree index bloat estimation probe
+    timeout = 30
     level = 'database'
     sql = """
 SELECT
