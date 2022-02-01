@@ -46,19 +46,7 @@ _ha_setup() {
 		exit 1
 	fi
 
-	if ! [ "$DATABASE_ALREADY_EXISTS" = "true" ] ; then
-		# Elect primary using IP.
-		IFS=" " read -r _ winner _ < <( ( getent hosts "$HOSTNAME" ; echo "$peerhost"; ) | sort | head -1)
-		if [ "${winner}" = "$HOSTNAME" ] ; then
-			echo "Elected as primary."
-			# replication is configured in
-			# postgres-setup-primary.sh
-		else
-			echo "Elected as secondary."
-			sleep 3
-			_ha_init_secondary
-		fi
-	else
+	if [ "$DATABASE_ALREADY_EXISTS" = "true" ] ; then
 		if is_in_recovery=$(_retry env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c 'SELECT pg_is_in_recovery();') ; then
 			if [ "$is_in_recovery" = "t" ] ; then
 				echo "Restarting as primary."
@@ -75,11 +63,21 @@ _ha_setup() {
 				trap - INT EXIT TERM
 			fi
 		else
-			echo "$PEER_HOST does not respond."
-			exit 1
+			echo "$PEER_HOST does not respond. Restarting."
+		fi
+	else
+		# Elect primary using IP.
+		IFS=" " read -r _ winner _ < <( ( getent hosts "$HOSTNAME" ; echo "$peerhost"; ) | sort | head -1)
+		if [ "${winner}" = "$HOSTNAME" ] ; then
+			echo "Elected as primary."
+			# replication is configured in
+			# postgres-setup-primary.sh
+		else
+			echo "Elected as secondary."
+			sleep 3
+			_ha_init_secondary
 		fi
 	fi
-	set +x
 }
 
 _ha_stop_peer_backup() {
