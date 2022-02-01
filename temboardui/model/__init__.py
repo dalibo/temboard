@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 def format_dsn(dsn):
-    fmt = "postgresql://{user}:{password}@:{port}/{dbname}?host={host}"
+    fmt = (
+        "postgresql://{user}:{password}@:{port}"
+        "/{dbname}"
+        "?host={host}&application_name=temboard"
+    )
     return fmt.format(**dsn)
 
 

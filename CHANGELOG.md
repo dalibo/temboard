@@ -8,6 +8,7 @@
   query arg auth.
 - Packages for bullseye for both UI and agent.
 - Drop jessie package.
+- Always set application_name.
 
 **Server:**
 
