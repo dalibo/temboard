@@ -304,8 +304,6 @@ class MaintenancePlugin:
     def load(self):
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
-        for route in routes:
-            print(route)
 
     def unload(self):
         self.app.worker_pool.remove(workers)
