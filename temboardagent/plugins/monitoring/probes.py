@@ -3,6 +3,7 @@ import re
 import os
 import time
 import json
+from datetime import datetime
 
 import psycopg2
 from psycopg2.extensions import parse_dsn
@@ -391,7 +392,7 @@ class SqlProbe(Probe):
 
         if self.level == 'database':
             # Get current timestamp
-            now = self.run_sql(conninfo, "SELECT NOW()")[0]['now']
+            now = datetime.utcnow()
             output = []
             for database in conninfo['dbnames']:
                 result = self.run_sql(conninfo, self.sql, database['dbname'])
