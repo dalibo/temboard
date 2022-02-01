@@ -4,7 +4,7 @@ import ctypes
 import re
 
 
-def read_distinfo():
+def read_distinfo():  # pragma: nocover
     with open('/etc/os-release') as fo:
         distinfos = parse_lsb_release(fo)
     return distinfos
