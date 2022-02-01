@@ -3,7 +3,7 @@
 
 ## [7.10] - Unreleased
 
-- Show libpq version in logs and --version.
+- Show runtime libpq version in logs and --version.
 - Authenticate with agent using both header and query arg. 8.0 will remove
   query arg auth.
 - Packages for bullseye for both UI and agent.
