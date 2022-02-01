@@ -38,6 +38,7 @@ services:
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
       -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
     ]
 
   agent0:
