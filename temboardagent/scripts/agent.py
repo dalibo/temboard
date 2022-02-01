@@ -142,6 +142,7 @@ class AgentApplication(Application):
         self.services.append(self.scheduler)
 
         self.bootstrap(args=args, environ=environ)
+        self.log_versions()
         config = self.config
 
         # TaskList engine setup must be done before we load the plugins

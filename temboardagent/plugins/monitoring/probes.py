@@ -3,6 +3,7 @@ import re
 import os
 import time
 import json
+from datetime import datetime
 
 import psycopg2
 from psycopg2.extensions import parse_dsn
@@ -300,6 +301,7 @@ class SqlProbe(Probe):
     delta_columns = None
     delta_key = None
     delta_interval_column = None
+    timeout = False
 
     def check(self, version=None):
         """Check if the plugin can run on the target version of PostgreSQL."""
@@ -333,12 +335,17 @@ class SqlProbe(Probe):
         if database is None:
             database = conninfo['database']
 
+        conninfo = dict(conninfo, database=database)
+
         output = []
         try:
             with Postgres(**conninfo).connect() as conn:
-                conn.execute("SET statement_timeout = '30s';")
+                if self.timeout:
+                    conn.execute(
+                        "SET statement_timeout = '%ss';", (self.timeout,))
 
                 cluster_name = conninfo['instance'].replace('/', '')
+                sql = "-- probe %s\n%s" % (self, sql)
                 for r in conn.query(sql):
                     # Add the info of the instance (port) to the
                     # result to output one big list for all instances and
@@ -385,7 +392,7 @@ class SqlProbe(Probe):
 
         if self.level == 'database':
             # Get current timestamp
-            now = self.run_sql(conninfo, "SELECT NOW()")[0]['now']
+            now = datetime.utcnow()
             output = []
             for database in conninfo['dbnames']:
                 result = self.run_sql(conninfo, self.sql, database['dbname'])
@@ -934,6 +941,7 @@ FROM (
 
 class probe_btree_bloat(SqlProbe):
     # Btree index bloat estimation probe
+    timeout = 30
     level = 'database'
     sql = """
 SELECT

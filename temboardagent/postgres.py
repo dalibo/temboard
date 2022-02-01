@@ -1,3 +1,4 @@
+import logging
 import re
 from textwrap import dedent
 
@@ -7,6 +8,9 @@ from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
 
 from .errors import UserError
+
+
+logger = logging.getLogger(__name__)
 
 
 # See https://www.psycopg.org/docs/faq.html#faq-float
@@ -55,6 +59,9 @@ class ConnectionManager:
 
     def __enter__(self):
         try:
+            logger.debug(
+                "Opening Postgres connexion to database %s.",
+                self.postgres.dbname)
             self.conn = connect(
                 host=self.postgres.host,
                 port=self.postgres.port,
@@ -63,6 +70,7 @@ class ConnectionManager:
                 database=self.postgres.dbname,
                 connection_factory=ConnectionHelper,
                 cursor_factory=RealDictCursor,
+                application_name='temboard-agent',
             )
             self.conn.set_session(autocommit=True)
             if self.app is not None:
