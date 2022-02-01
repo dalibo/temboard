@@ -19,6 +19,7 @@
 - Moving to Python3 on stretch, buster and bullseye.
 - Drop another tooltip breaking dropdown menu.
 - Monitoring: Time SQL queries for archive and aggregation.
+- `systemctl reload temboard` now reload temBoard configuration.
 
 **Agent:**
 
