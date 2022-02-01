@@ -339,6 +339,7 @@ class SqlProbe(Probe):
                 conn.execute("SET statement_timeout = '30s';")
 
                 cluster_name = conninfo['instance'].replace('/', '')
+                sql = "-- probe %s\n%s" % (self, sql)
                 for r in conn.query(sql):
                     # Add the info of the instance (port) to the
                     # result to output one big list for all instances and
