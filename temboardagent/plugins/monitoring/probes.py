@@ -334,6 +334,8 @@ class SqlProbe(Probe):
         if database is None:
             database = conninfo['database']
 
+        conninfo = dict(conninfo, database=database)
+
         output = []
         try:
             with Postgres(**conninfo).connect() as conn:
