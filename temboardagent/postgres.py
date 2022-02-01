@@ -70,6 +70,7 @@ class ConnectionManager:
                 database=self.postgres.dbname,
                 connection_factory=ConnectionHelper,
                 cursor_factory=RealDictCursor,
+                application_name='temboard-agent',
             )
             self.conn.set_session(autocommit=True)
             if self.app is not None:
