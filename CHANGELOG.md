@@ -24,6 +24,7 @@
 
 **Agent:**
 
+- Fix database-metric always on same database.
 - Explicitily requires psycopg2 2.7+ on debian.
 - Ignore loopback and tmpfs file systems.
 - Drop Python2 support
