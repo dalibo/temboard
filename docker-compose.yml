@@ -34,7 +34,11 @@ services:
     - ./docker/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
     - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
     entrypoint: &postgres_entrypoint [/usr/local/bin/postgres-ha-entrypoint.sh]
-    command: &postgres_command [postgres, -c, shared_preload_libraries=pg_stat_statements]
+    command: &postgres_command [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_statement=all,
+    ]
 
   agent0:
     image: dalibo/temboard-agent
