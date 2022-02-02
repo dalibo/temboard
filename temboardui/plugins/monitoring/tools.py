@@ -46,6 +46,8 @@ def merge_agent_info(session, host_info, instance_info):
 
     # Get host_id in any case
     host_id = get_host_id(session, host_info['hostname'])
+    # Weird that SA does not update this.
+    host.host_id = host_id
 
     # Only process instances marked as available, since only those
     # have complete information
