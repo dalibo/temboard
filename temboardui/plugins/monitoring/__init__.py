@@ -489,6 +489,7 @@ def collector(app, address, port, key):
         logger.info("Agent %s returned no monitoring data.", agent_id)
 
     for row in response:
+        logger.info("Got points for %s at %s.", agent_id, row['datetime'])
         hostinfo = row['hostinfo']
         data = row['data']
         instance = row['instances'][0]
