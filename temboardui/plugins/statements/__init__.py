@@ -5,6 +5,13 @@ from past.utils import old_div
 import json
 import logging
 from os import path
+try:
+    # python2
+    from urllib2 import URLError, HTTPError
+except Exception:
+    # python3
+    from urllib.error import URLError, HTTPError
+
 import tornado.web
 from tornado.escape import json_decode
 
@@ -864,7 +871,10 @@ def pull_data_for_instance(app, session, instance):
         else:
             error += str(e)
 
-        logger.exception(error)
+        if isinstance(e, (HTTPError, URLError)):
+            logger.error("Agent is not available: %s", error)
+        else:
+            logger.exception("Failed to pull statements data: %s", error)
 
         # If statements data cannot be retrieved store the error in the
         # statements metas table
@@ -898,7 +908,6 @@ def pull_data_for_instance(app, session, instance):
             )
         )
         session.connection().connection.commit()
-        raise
 
 
 @workers.register(pool_size=1)

@@ -337,7 +337,7 @@ def add_instance(session,
         if pg_data is not None:
             instance.pg_data = str(pg_data)
         instance.notify = bool(notify)
-        instance.comment = comment
+        instance.comment = comment or ''
         session.add(instance)
         session.flush()
         return instance

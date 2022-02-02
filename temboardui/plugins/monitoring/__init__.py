@@ -1,4 +1,23 @@
 # -*- coding: utf-8 -*-
+#
+# Somes notes on monitoring in temBoard
+#
+# Metrics are stored in different tables:
+#
+# - metric_*_current stores metrics one row per metric point
+# - metric_*_30m_current is a compacted COPY of _current by interval
+# - metric_*_history aggregates points per time interavl
+#
+# Tasks:
+#
+# - collector(host, port, key) inserts metrics history in metric_*_current
+#   table.
+# - history_tables_worker() move data from metric_*_current to
+#   metric_*_history, grouped by time range. metric table is truncated
+# - aggregate_data_worker() aggregates data in metric_*_30m_current and
+#   metric_*_6h_current.
+#
+
 from builtins import str
 from datetime import datetime, timedelta
 import json
@@ -8,11 +27,11 @@ import os
 from textwrap import dedent
 try:
     # python2
-    from urllib2 import HTTPError
+    from urllib2 import URLError, HTTPError
     from urllib import quote
 except Exception:
     # python3
-    from urllib.error import HTTPError
+    from urllib.error import URLError, HTTPError
     from urllib.parse import quote
 
 import tornado.web
@@ -402,7 +421,7 @@ def collector(app, address, port, key):
             url,
             headers={"Content-type": "application/json"},
         )
-    except HTTPError:
+    except (URLError, HTTPError):
         logger.error("Could not get response from %s.", url)
         logger.error("Agent or host are down.")
         return
@@ -489,6 +508,7 @@ def collector(app, address, port, key):
         logger.info("Agent %s returned no monitoring data.", agent_id)
 
     for row in response:
+        logger.info("Got points for %s at %s.", agent_id, row['datetime'])
         hostinfo = row['hostinfo']
         data = row['data']
         instance = row['instances'][0]
@@ -610,7 +630,6 @@ def monitoring_bootstrap(context):
     yield taskmanager.Task(
             worker_name='schedule_collector',
             id='schedule_collector',
-            # redo_interval=60,  # Repeat each 60s
-            redo_interval=10,  # Repeat each 60s
+            redo_interval=60,  # Repeat each 60s
             options={},
     )

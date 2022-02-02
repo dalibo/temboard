@@ -3,6 +3,7 @@
 
 ## [7.10] - Unreleased
 
+- Fix performances issues with monitoring.
 - Show runtime libpq version in logs and --version.
 - Authenticate with agent using both header and query arg. 8.0 will remove
   query arg auth.
@@ -13,6 +14,9 @@
 **Server:**
 
 - Fix database ownership on creation.
+- Fix first collector run failure on new agent.
+- Fix tracebacks when an agent is down.
+- Fix 'null' instance comment with auto register.
 - Ship a /usr/share/temboard/sql/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
 - Review defaults temBoard user groups.
@@ -24,7 +28,7 @@
 
 **Agent:**
 
-- Fix database-metric always on same database.
+- Fix database probes always executed on same database.
 - Explicitily requires psycopg2 2.7+ on debian.
 - Ignore loopback and tmpfs file systems.
 - Drop Python2 support
