@@ -8,11 +8,11 @@ import os
 from textwrap import dedent
 try:
     # python2
-    from urllib2 import HTTPError
+    from urllib2 import URLError, HTTPError
     from urllib import quote
 except Exception:
     # python3
-    from urllib.error import HTTPError
+    from urllib.error import URLError, HTTPError
     from urllib.parse import quote
 
 import tornado.web
@@ -402,7 +402,7 @@ def collector(app, address, port, key):
             url,
             headers={"Content-type": "application/json"},
         )
-    except HTTPError:
+    except (URLError, HTTPError):
         logger.error("Could not get response from %s.", url)
         logger.error("Agent or host are down.")
         return
