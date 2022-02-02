@@ -113,7 +113,7 @@ register() {
 	temboard-agent-register \
 		--host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} \
 		--port ${TEMBOARD_REGISTER_PORT-2345} \
-		--groups ${TEMBOARD_GROUPS-local_instances} \
+		--groups ${TEMBOARD_GROUPS-default} \
 		${TEMBOARD_UI_URL%/}
 }
 
