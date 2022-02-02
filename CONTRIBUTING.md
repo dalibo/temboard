@@ -170,6 +170,21 @@ If you want to trash development env, use `docker-compose down -v` and restart
 from `make devenv`.
 
 
+## Entering Monitored PostgreSQL Instance with psql
+
+Use the following command:
+
+``` console
+$ docker-compose exec agent0 sudo -iu postgres psql
+psql (13.5 (Debian 13.5-0+deb11u1), server 14.1)
+WARNING: psql major version 13, server major version 14.
+         Some psql features might not work.
+Type "help" for help.
+
+postgres=#
+```
+
+
 ### Monitoring another version of PostgreSQL
 
 You can change the version of the monitored PostgreSQL instance by overriding
