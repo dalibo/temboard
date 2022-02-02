@@ -3,6 +3,7 @@
 
 ## [7.10] - Unreleased
 
+- Fix performances issues with monitoring.
 - Show runtime libpq version in logs and --version.
 - Authenticate with agent using both header and query arg. 8.0 will remove
   query arg auth.

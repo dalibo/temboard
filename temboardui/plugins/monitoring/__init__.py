@@ -630,7 +630,6 @@ def monitoring_bootstrap(context):
     yield taskmanager.Task(
             worker_name='schedule_collector',
             id='schedule_collector',
-            # redo_interval=60,  # Repeat each 60s
-            redo_interval=10,  # Repeat each 60s
+            redo_interval=60,  # Repeat each 60s
             options={},
     )
