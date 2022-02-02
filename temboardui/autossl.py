@@ -234,7 +234,10 @@ class AutoHTTPSServer(HTTPServer):
                 stream.close()
         except ssl.SSLError as e:
             logger.error("SSLError: %s", e)
-        except StreamClosedError:
+        except (OSError, StreamClosedError) as e:
+            logger.debug(
+                "Error during SSL handshake: %s %s",
+                e.__class__.__name__, getattr(e, "strerror", str(e)))
             logger.debug("Stream closed by client during handshake. Skipping.")
             return
         else:
