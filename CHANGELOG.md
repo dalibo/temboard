@@ -14,6 +14,7 @@
 
 - Fix database ownership on creation.
 - Fix first collector run failure on new agent.
+- Fix tracebacks when an agent is down.
 - Ship a /usr/share/temboard/sql/reassign.sql script to fix ownership.
 - Define a shell to temboard UNIX user.
 - Review defaults temBoard user groups.

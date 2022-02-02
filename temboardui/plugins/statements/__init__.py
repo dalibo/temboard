@@ -898,7 +898,6 @@ def pull_data_for_instance(app, session, instance):
             )
         )
         session.connection().connection.commit()
-        raise
 
 
 @workers.register(pool_size=1)
