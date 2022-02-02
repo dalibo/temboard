@@ -60,7 +60,6 @@ managing the agent and execute the following commands.
 
 ``` console
 $ docker-compose exec agent0 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
