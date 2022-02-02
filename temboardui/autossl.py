@@ -232,6 +232,8 @@ class AutoHTTPSServer(HTTPServer):
                 logger.exception("Failed to process HTTP request:")
             finally:
                 stream.close()
+        except ssl.SSLError as e:
+            logger.error("SSLError: %s", e)
         except StreamClosedError:
             logger.debug("Stream closed by client during handshake. Skipping.")
             return
