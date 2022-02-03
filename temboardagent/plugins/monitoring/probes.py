@@ -12,7 +12,6 @@ from psycopg2.extras import PhysicalReplicationConnection
 from ...tools import now
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
-from ...postgres import Postgres
 
 from . import db
 
@@ -40,42 +39,63 @@ def load_probes(options, home):
     return probes
 
 
-def run_probes(probes, instances, delta=True):
+def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    logger.info("Running probes.")
+    now = datetime.utcnow()
+    logger.info("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
     output = {}
 
     for p in probes:
-        out = None
+        out = []
         if delta is False:
             p.delta_key = None
             p.delta_columns = None
             p.delta_interval_column = None
 
         if p.level == 'host':
-            if p.check():
-                logger.info("Running host probe %s.", p.get_name())
+            if not p.check():
+                continue
+            logger.info("Running host probe %s.", p.get_name())
+            try:
+                out = p.run()
+            except Exception as e:
+                logger.error("Probe failure: %s", e)
+                continue
+
+        else:
+            if p.level not in ('instance', 'database'):
+                raise Exception("Unknown probe level: %s", p.level)
+
+            i, = instances  # We are now mono-instance
+            if not i['available']:
+                continue
+
+            if not p.check(i['version_num']):
+                logger.warning(
+                    "Unsupported PostgreSQL version for probe %s.",
+                    p.get_name())
+                continue
+
+            logger.info("Running %s probe %s.", p.level, p.get_name())
+            if p.level == 'instance':
+                dbnames = [i['database']]
+            else:
+                dbnames = [db['dbname'] for db in i['dbnames']]
+
+            for dbname in dbnames:
+                conninfo = dict(i, dbname=dbname)
                 try:
-                    out = p.run()
-                except Exception:
-                    pass
+                    out += p.run(pool.get(dbname=dbname), conninfo)
+                except Exception as e:
+                    logger.error("Probe failure: %s", e)
+                    raise
+                    continue
 
-        if p.level == 'instance' or p.level == 'database':
-            out = []
-            for i in instances:
-                if i['available']:
-                    if p.check(i['version_num']):
-                        logger.info(
-                            "Running %s level probe %s.",
-                            p.level, p.get_name())
-                        try:
-                            out += p.run(i)
-                        except Exception:
-                            pass
-
+        for record in out:
+            record['datetime'] = now
         output[p.get_name()] = out
 
     logger.info("Finished probes run.")
@@ -318,62 +338,49 @@ class SqlProbe(Probe):
 
         return True
 
-    def get_version(self, conninfo):
-        try:
-            with Postgres(**conninfo).connect() as conn:
-                return conn.server_version
-        except Exception:
-            logger.error("Unable to get server version")
-
-    def run_sql(self, conninfo, sql, database=None):
+    def run_sql(self, conn, conninfo, sql):
         """Get the result of the SQL query"""
         if sql is None:
             return []
 
-        # Default the connection database to the one configured,
-        # useful for instance level sql probes
-        if database is None:
-            database = conninfo['database']
-
-        conninfo = dict(conninfo, database=database)
+        database = conninfo['dbname']
 
         output = []
         try:
-            with Postgres(**conninfo).connect() as conn:
-                if self.timeout:
-                    conn.execute(
-                        "SET statement_timeout = '%ss';", (self.timeout,))
+            if self.timeout:
+                conn.execute(
+                    "SET statement_timeout = '%ss';", (self.timeout,))
 
-                cluster_name = conninfo['instance'].replace('/', '')
-                sql = "-- probe %s\n%s" % (self, sql)
-                for r in conn.query(sql):
-                    # Add the info of the instance (port) to the
-                    # result to output one big list for all instances and
-                    # all databases
-                    r['port'] = conninfo['port']
+            cluster_name = conninfo['instance'].replace('/', '')
+            sql = "-- probe %s\n%s" % (self, sql)
+            for r in conn.query(sql):
+                # Add the info of the instance (port) to the
+                # result to output one big list for all instances and
+                # all databases
+                r['port'] = conninfo['port']
 
-                    # Compute delta if the probe needs that
-                    if self.delta_columns is not None:
-                        to_delta = {}
+                # Compute delta if the probe needs that
+                if self.delta_columns is not None:
+                    to_delta = {}
 
-                        # Create the store key for the delta
-                        if self.delta_key is not None:
-                            key = cluster_name + database + r[self.delta_key]
-                        else:
-                            key = cluster_name + database
+                    # Create the store key for the delta
+                    if self.delta_key is not None:
+                        key = cluster_name + database + r[self.delta_key]
+                    else:
+                        key = cluster_name + database
 
-                        # Calculate delta
-                        (interval, deltas) = self.delta(key, to_delta)
+                    # Calculate delta
+                    (interval, deltas) = self.delta(key, to_delta)
 
-                        # The first time, no delta is returned
-                        if interval is None:
-                            continue
+                    # The first time, no delta is returned
+                    if interval is None:
+                        continue
 
-                        # Merge result and add the interval column
-                        r.update(deltas)
-                        r[self.delta_interval_column] = interval
+                    # Merge result and add the interval column
+                    r.update(deltas)
+                    r[self.delta_interval_column] = interval
 
-                    output.append(r)
+                output.append(r)
         except Exception as e:
             logger.error(
                 "Unable to run probe \"%s\" on \"%s\" on database \"%s\": %s",
@@ -382,27 +389,12 @@ class SqlProbe(Probe):
             )
         return output
 
-    def run(self, conninfo):
+    def run(self, conn, conninfo):
         """Execute the query depending on the level configured."""
         if self.no_standby and conninfo['standby']:
             return []
 
-        if self.level == 'instance':
-            return self.run_sql(conninfo, self.sql)
-
-        if self.level == 'database':
-            # Get current timestamp
-            now = datetime.utcnow()
-            output = []
-            for database in conninfo['dbnames']:
-                result = self.run_sql(conninfo, self.sql, database['dbname'])
-                # Update or set 'datetime' field to the current timestamp
-                # because we need to have the same datetime for the whole
-                # result set.
-                for i in range(0, len(result)):
-                    result[i].update(datetime=now)
-                output += result
-            return output
+        return self.run_sql(conn, conninfo, self.sql)
 
 
 class probe_sessions(SqlProbe):
@@ -694,8 +686,8 @@ class probe_wal_files(SqlProbe):
     level = 'instance'
     min_version = 80200
 
-    def run(self, conninfo):
-        version = self.get_version(conninfo)
+    def run(self, conn, conninfo):
+        version = conn.server_version
 
         if conninfo['standby']:
             return []
@@ -720,7 +712,7 @@ class probe_wal_files(SqlProbe):
             FROM pg_ls_dir('pg_wal') AS s(f)
             WHERE f ~ E'^[0-9A-F]{24}$'
             """
-        rows = self.run_sql(conninfo, sql)
+        rows = self.run_sql(conn, conninfo, sql)
 
         metric['total'] = rows[0]['total']
         metric['total_size'] = rows[0]['total_size']
@@ -738,7 +730,7 @@ class probe_wal_files(SqlProbe):
             FROM pg_ls_dir('pg_wal/archive_status') AS s(f)
             WHERE f ~ E'\.ready$'
             """  # noqa W605
-        rows = self.run_sql(conninfo, sql)
+        rows = self.run_sql(conn, conninfo, sql)
 
         metric['archive_ready'] = rows[0]['archive_ready']
 
@@ -778,59 +770,57 @@ class probe_replication_lag(SqlProbe):
     level = 'instance'
     min_version = 90000
 
-    def run(self, conninfo):
+    def run(self, conn, conninfo):
         if not conninfo['standby']:
             return []
 
         try:
-            with Postgres(**conninfo).connect() as conn:
+            # Get primary parameters from primary_conninfo
+            dsn = get_primary_conninfo(conn)
 
-                # Get primary parameters from primary_conninfo
-                dsn = get_primary_conninfo(conn)
+            # Let's fetch primary current wal position with IDENTIFY_SYSTEM
+            # through streaming replication protocol.
+            with psycopg2.connect(
+                dsn, connection_factory=PhysicalReplicationConnection
+            ) as p_conn:
+                with p_conn.cursor() as p_cur:
+                    p_cur.execute("IDENTIFY_SYSTEM")
+                    rows = p_cur.fetchall()
 
-                # Let's fetch primary current wal position with IDENTIFY_SYSTEM
-                # through streaming replication protocol.
-                with psycopg2.connect(
-                    dsn, connection_factory=PhysicalReplicationConnection
-                ) as p_conn:
-                    with p_conn.cursor() as p_cur:
-                        p_cur.execute("IDENTIFY_SYSTEM")
-                        rows = p_cur.fetchall()
+                    if len(rows) == 0:
+                        return []
+                    xlogpos = rows[0][2]
 
-                        if len(rows) == 0:
-                            return []
-                        xlogpos = rows[0][2]
-
-                # Proceed with LSN diff
-                if conn.server_version >= 100000:
-                    # Use pg_wal_lsn_diff(pg_lsn, pg_lsn)
-                    rows = conn.query("""\
-                    SELECT pg_wal_lsn_diff(
-                      '{xlogpos}'::pg_lsn,
-                       pg_last_wal_replay_lsn()
-                    ) AS lsn_diff, NOW() AS datetime
-                    """.format(xlogpos=xlogpos))
-                elif conn.server_version >= 90500:
-                    # Use pg_xlog_lsn_diff(pg_lsn, pg_lsn)
-                    rows = conn.query("""\
-                    SELECT pg_xlog_location_diff(
-                      '{xlogpos}'::pg_lsn,
-                       pg_last_xlog_replay_location()
-                    ) AS lsn_diff, NOW() AS datetime
-                    """.format(xlogpos=xlogpos))
-                else:
-                    # Use pg_xlog_lsn_diff(TEXT, TEXT)
-                    rows = conn.query("""\
-                    SELECT pg_xlog_location_diff(
-                      '{xlogpos}'::TEXT,
-                       pg_last_xlog_replay_location()::TEXT
-                    ) AS lsn_diff, NOW() AS datetime
-                    """.format(xlogpos=xlogpos))
-                r = list(rows)
-                if len(r) == 0:
-                    return []
-                return [{'lag': int(r[0]['lsn_diff']),
-                        'datetime': r[0]['datetime']}]
+            # Proceed with LSN diff
+            if conn.server_version >= 100000:
+                # Use pg_wal_lsn_diff(pg_lsn, pg_lsn)
+                rows = conn.query("""\
+                SELECT pg_wal_lsn_diff(
+                    '{xlogpos}'::pg_lsn,
+                    pg_last_wal_replay_lsn()
+                ) AS lsn_diff, NOW() AS datetime
+                """.format(xlogpos=xlogpos))
+            elif conn.server_version >= 90500:
+                # Use pg_xlog_lsn_diff(pg_lsn, pg_lsn)
+                rows = conn.query("""\
+                SELECT pg_xlog_location_diff(
+                    '{xlogpos}'::pg_lsn,
+                    pg_last_xlog_replay_location()
+                ) AS lsn_diff, NOW() AS datetime
+                """.format(xlogpos=xlogpos))
+            else:
+                # Use pg_xlog_lsn_diff(TEXT, TEXT)
+                rows = conn.query("""\
+                SELECT pg_xlog_location_diff(
+                    '{xlogpos}'::TEXT,
+                    pg_last_xlog_replay_location()::TEXT
+                ) AS lsn_diff, NOW() AS datetime
+                """.format(xlogpos=xlogpos))
+            r = list(rows)
+            if len(r) == 0:
+                return []
+            return [{'lag': int(r[0]['lsn_diff']),
+                    'datetime': r[0]['datetime']}]
 
         except Exception as e:
             logger.exception(str(e))
@@ -858,29 +848,24 @@ class probe_replication_connection(SqlProbe):
     level = 'instance'
     min_version = 96000
 
-    def run(self, conninfo):
+    def run(self, conn, conninfo):
         if not conninfo['standby']:
             return []
 
         try:
-            with Postgres(**conninfo).connect() as conn:
-                # Get primary parameters from primary_conninfo
-                dsn = parse_dsn(get_primary_conninfo(conn))
-                p_host = dsn['host']
+            # Get primary parameters from primary_conninfo
+            dsn = parse_dsn(get_primary_conninfo(conn))
+            p_host = dsn['host']
 
-                # pg_stat_wal_receiver lookup
-                rows = conn.query("""\
-                SELECT '{p_host}' AS upstream, NOW() AS datetime,
-                CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
-                FROM pg_stat_wal_receiver
-                WHERE status='streaming' AND
-                      conninfo LIKE '%host={p_host}%'
-                """.format(p_host=p_host))
-                r = list(rows)
-                if len(r) == 0:
-                    return []
-                return r
-
+            # pg_stat_wal_receiver lookup
+            rows = conn.query("""\
+            SELECT '{p_host}' AS upstream, NOW() AS datetime,
+            CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
+            FROM pg_stat_wal_receiver
+            WHERE status='streaming' AND
+                    conninfo LIKE '%host={p_host}%'
+            """.format(p_host=p_host))
+            return list(rows)
         except Exception as e:
             logger.exception(str(e))
             return []

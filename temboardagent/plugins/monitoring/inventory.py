@@ -9,7 +9,6 @@ import os
 import logging
 import pwd
 
-from ...postgres import Postgres
 from ...inventory import (
     SysInfo,
     PgInfo,
@@ -36,7 +35,7 @@ def host_info(hostname_cfg):
     return hostinfo
 
 
-def instance_info(conninfo, hostname):
+def instance_info(pool, conninfo, hostname):
     """Gather PostgreSQL instance information."""
     instance_info = {
         'hostname': hostname,
@@ -52,37 +51,37 @@ def instance_info(conninfo, hostname):
 
     # Try the connection
     try:
-        with Postgres(**conninfo).connect() as conn:
-            # Get PostgreSQL informations using PgInfo
-            pginfo = PgInfo(conn)
-            pgv = pginfo.version()
-            # Gather the info while where are connected
-            instance_info['version_num'] = pgv['num']
-            instance_info['version'] = pgv['server']
-            instance_info['data_directory'] = pginfo.setting('data_directory')
+        conn = pool.get(dbname=conninfo['database'])
+        # Get PostgreSQL informations using PgInfo
+        pginfo = PgInfo(conn)
+        pgv = pginfo.version()
+        # Gather the info while where are connected
+        instance_info['version_num'] = pgv['num']
+        instance_info['version'] = pgv['server']
+        instance_info['data_directory'] = pginfo.setting('data_directory')
 
-            # hot standby is available from 9.0
-            instance_info['standby'] = pginfo.is_in_recovery()
+        # hot standby is available from 9.0
+        instance_info['standby'] = pginfo.is_in_recovery()
 
-            # max_connections
-            instance_info['max_connections'] = pginfo.setting(
-                'max_connections')
+        # max_connections
+        instance_info['max_connections'] = pginfo.setting(
+            'max_connections')
 
-            # Grab the list of tablespaces
-            instance_info['tablespaces'] = pginfo.tablespaces(
-                instance_info['data_directory'])
+        # Grab the list of tablespaces
+        instance_info['tablespaces'] = pginfo.tablespaces(
+            instance_info['data_directory'])
 
-            # When the user has not given a dbnames list or '*' in the
-            # configuration file, we must get the list of databases. Since
-            # we have a working connection, let's do it now.
-            dbs = pginfo.databases()
-            instance_info['dbnames'] = []
-            for db in conninfo['dbnames']:
-                if db == '*':
-                    instance_info['dbnames'] = list(dbs.values())
-                    break
-                if db in dbs.keys():
-                    instance_info['dbnames'].append(dbs[db])
+        # When the user has not given a dbnames list or '*' in the
+        # configuration file, we must get the list of databases. Since
+        # we have a working connection, let's do it now.
+        dbs = pginfo.databases()
+        instance_info['dbnames'] = []
+        for db in conninfo['dbnames']:
+            if db == '*':
+                instance_info['dbnames'] = list(dbs.values())
+                break
+            if db in dbs.keys():
+                instance_info['dbnames'].append(dbs[db])
 
         # Now that we have the data_directory, find the owner
         try:

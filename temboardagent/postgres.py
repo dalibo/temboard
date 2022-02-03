@@ -56,12 +56,13 @@ class ConnectionManager:
     def __init__(self, postgres, app):
         self.postgres = postgres
         self.app = app
+        self.conn = None
 
-    def __enter__(self):
+    def open(self):
+        logger.debug(
+            "Opening Postgres connexion to database %s.",
+            self.postgres.dbname)
         try:
-            logger.debug(
-                "Opening Postgres connexion to database %s.",
-                self.postgres.dbname)
             self.conn = connect(
                 host=self.postgres.host,
                 port=self.postgres.port,
@@ -79,8 +80,18 @@ class ConnectionManager:
             raise UserError("Failed to connect to Postgres: %s" % e)
         return self.conn
 
-    def __exit__(self, *a):
+    def close(self):
+        logger.debug("Closing connection to %s.", self.postgres.dbname)
         self.conn.close()
+        self.conn = None
+
+    def __enter__(self):
+        if self.conn is None:
+            self.open()
+        return self.conn
+
+    def __exit__(self, *a):
+        self.close()
 
 
 class Postgres:
@@ -113,3 +124,42 @@ class Postgres:
             with self.connect() as conn:
                 self._server_version = conn.server_version
         return self._server_version
+
+    def copy(self, **kw):
+        defaults = dict(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            dbname=self.dbname,
+            app=self.app,
+        )
+        kw = dict(defaults, **kw)
+        return self.__class__(**kw)
+
+
+class ConnectionPool:
+    def __init__(self, **kw):
+        if 'database' in kw:
+            kw['dbname'] = kw.pop('database')
+        self.conn_kw = kw
+        self.pool = dict()
+
+    def get(self, dbname=None):
+        conn_kw = self.conn_kw.copy()
+        if dbname:
+            conn_kw['dbname'] = dbname
+        dbname = conn_kw['dbname']
+        try:
+            return self.pool[dbname]
+        except KeyError:
+            conn = Postgres(**conn_kw).connect()
+            return self.pool.setdefault(dbname, conn.open())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        for conn in self.pool.values():
+            conn.close()
+        self.pool = dict()
