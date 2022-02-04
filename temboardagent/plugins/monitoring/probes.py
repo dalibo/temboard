@@ -4,6 +4,7 @@ import os
 import time
 import json
 from datetime import datetime
+from contextlib import closing
 
 import psycopg2
 from psycopg2.extensions import parse_dsn
@@ -780,9 +781,9 @@ class probe_replication_lag(SqlProbe):
 
             # Let's fetch primary current wal position with IDENTIFY_SYSTEM
             # through streaming replication protocol.
-            with psycopg2.connect(
+            with closing(psycopg2.connect(
                 dsn, connection_factory=PhysicalReplicationConnection
-            ) as p_conn:
+            )) as p_conn:
                 with p_conn.cursor() as p_cur:
                     p_cur.execute("IDENTIFY_SYSTEM")
                     rows = p_cur.fetchall()
