@@ -10,6 +10,8 @@
 #
 # Tasks:
 #
+# - schedule_collector(): schedule a collector task for each agent in
+#   inventory.
 # - collector(host, port, key) inserts metrics history in metric_*_current
 #   table.
 # - history_tables_worker() move data from metric_*_current to
