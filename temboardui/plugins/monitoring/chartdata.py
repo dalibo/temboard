@@ -5,6 +5,8 @@ except Exception:
     # python3
     from io import StringIO
 import datetime
+from textwrap import dedent
+
 from psycopg2.extensions import AsIs
 
 from .pivot import pivot_timeserie
@@ -872,10 +874,15 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
     query = cur.mogrify(q_tpl, dict(host_id=host_id, instance_id=instance_id,
                                     start=start, end=end, key=key,
                                     tablename=AsIs(tablename)))
-    query = query.decode("utf-8")
+    query = query.strip().decode("utf-8")
     # Retreive data using copy_expert()
-    cur.copy_expert("COPY(" + query + ") TO STDOUT WITH CSV HEADER",
-                    data_buffer)
+    cur.copy_expert(dedent("""\
+    -- get_metric_data_csv
+    -- SET search_path TO monitoring;
+    COPY(
+    %s
+    ) TO STDOUT WITH CSV HEADER
+    """) % (query,), data_buffer)
     cur.close()
 
     if metric.get('pivot'):
