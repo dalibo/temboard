@@ -9,6 +9,11 @@
 # The agent is running on the first free port starting from 2345. Each agent has
 # its own user file. This file is emptied by the script.
 
+ETCDIR=${ETCDIR-/etc/temboard-agent}
+VARDIR=${VARDIR-/var/lib/temboard-agent}
+LOGDIR=${LOGDIR-/var/log/temboard-agent}
+LOGFILE=${LOGFILE-/var/log/temboard-agent-auto-configure.log}
+SYSUSER=${SYSUSER-postgres}
 
 set -o pipefail
 
@@ -193,9 +198,8 @@ setup_ssl() {
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
-	LOGFILE=/var/log/temboard-agent-auto-configure.log
-	exec 3>&2 2>${LOGFILE} 1>&2
-	chmod 0600 ${LOGFILE}
+	exec 3>&2 2>"${LOGFILE}" 1>&2
+	chmod 0600 "${LOGFILE}"
 	trap 'catchall' INT EXIT TERM
 fi
 
@@ -205,11 +209,6 @@ set -x
 umask 037
 
 cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
-
-ETCDIR=${ETCDIR-/etc/temboard-agent}
-VARDIR=${VARDIR-/var/lib/temboard-agent}
-LOGDIR=${LOGDIR-/var/log/temboard-agent}
-SYSUSER=${SYSUSER-postgres}
 
 export TEMBOARD_HOSTNAME=${TEMBOARD_HOSTNAME-$(hostname --fqdn)}
 if [ -n "${TEMBOARD_HOSTNAME##*.*}" ] ; then
