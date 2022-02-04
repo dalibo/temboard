@@ -114,6 +114,19 @@ def parse_primary_conninfo(pci):
     c = m.group(1).replace("''", "'")
     c = c.replace("\\'", "'")
 
+    # Keep only compat parameters because we may be bound to an old libpq.
+    well_known_params = [
+        p for p in c.split() if (
+            p.startswith('user') or
+            p.startswith('password') or
+            p.startswith('host') or
+            p.startswith('port') or
+            p.startswith('sslmode')
+        )
+    ]
+
+    c = ' '.join(well_known_params)
+
     return c
 
 
