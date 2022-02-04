@@ -10,6 +10,8 @@
 #
 # Tasks:
 #
+# - schedule_collector(): schedule a collector task for each agent in
+#   inventory.
 # - collector(host, port, key) inserts metrics history in metric_*_current
 #   table.
 # - history_tables_worker() move data from metric_*_current to
@@ -530,7 +532,15 @@ def collector(app, address, port, key):
                 row['instances'][0]['available']
             )
             logger.info("Insert collected metrics for %s.", agent_id)
-            insert_metrics(worker_session, host.host_id, instance_id, data)
+            insert_metrics(
+                worker_session, host.host_id, instance_id, data, dict(
+                    agent=agent_id,
+                    timestamp=(
+                        # transform to ISOFORMAT (same as journalctl)
+                        row['datetime'].replace(' +', '+').replace(' ', 'T')
+                    ),
+                ),
+            )
             worker_session.commit()
 
         except DataError as e:
@@ -588,17 +598,20 @@ def collector(app, address, port, key):
         logger.info(
             "Apply alerting checks against preprocessed data for agent %s.",
             agent_id)
-        check_preprocessed_data(
-            worker_session,
-            host.host_id,
-            instance_id,
-            preprocess_data(
-                row['data'],
-                get_instance_checks(worker_session, instance_id),
-                row['datetime']
-            ),
-            app.config.temboard.home,
-        )
+        try:
+            check_preprocessed_data(
+                worker_session,
+                host.host_id,
+                instance_id,
+                preprocess_data(
+                    row['data'],
+                    get_instance_checks(worker_session, instance_id),
+                    row['datetime']
+                ),
+                app.config.temboard.home,
+            )
+        except Exception:
+            logger.exception("Failed to check monitoring data for alerting.")
 
         logger.debug("Row with datetime=%s inserted", row['datetime'])
         worker_session.commit()

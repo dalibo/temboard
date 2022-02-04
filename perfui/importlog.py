@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Documented in docs/howto-performances.md
+#
 
 import logging
 import os
@@ -15,9 +16,11 @@ import httpx
 import pytz
 
 
-logger = logging.getLogger('logsender')
+logger = logging.getLogger('importlog')
 LOCALTZ = pytz.timezone('UTC')
-KNOWN_LABELS = ['pid', 'service', 'task']
+KNOWN_LABELS = [
+    'agent', 'pid', 'service', 'task', 'dbname', 'spcname', 'timestamp',
+]
 KNOWN_METRICS = {
     'fork': dict(
         type='counter',
@@ -63,7 +66,18 @@ KNOWN_METRICS = {
         type='counter',
         unit='seconds',
         help='Total seconds spent by the process in userspace.',
-    )
+    ),
+    # Agent metrics
+    'xacts_n_commit': dict(
+        type='counter',
+        unit='nounit',
+        help='Total commit in database.',
+    ),
+    'xacts_n_rollback': dict(
+        type='counter',
+        unit='nounit',
+        help='Total commit in database.',
+    ),
 }
 
 
@@ -76,7 +90,7 @@ def main(logfile):
 
     labels = dict(
         job="logsender.py",
-        logfile=logfile,
+        logfile="%s_%s" % (datetime.now().strftime('%Y%m%dT%H%M%S'), logfile),
     )
     logger.info("Analyzing %s.", logfile)
 
@@ -127,12 +141,13 @@ def main(logfile):
                 log_count += len(loki_batch)
                 loki_batch[:] = []
 
-            if ' io_rchar=' in tail:
+            if ' io_rchar=' in tail or ' up=1 ' in tail:
                 # métriques
-                _, message = tail.split(':', 2)
+                _, message = tail.split(':', 1)
                 try:
                     metrics = dict(parse_logfmt(message))
                 except Exception as e:
+                    import pdb; pdb.set_trace()
                     logger.warning("Failed to parse perf metrics: %s.", e)
                     logger.warning("Malformed line: %s.", line)
                     continue
@@ -168,12 +183,12 @@ def main(logfile):
         "/import/data.txt", "/prometheus",
     ])
 
-    from_ = 1000 * int(start.timestamp() - 60)
-    to = 1000 * int(end.timestamp() + 60)
+    from_ = 1000 * int(min(start.timestamp(), omw.start) - 60)
+    to = 1000 * int(max(end.timestamp(), omw.end) + 60)
     dashboard_url = (
         "http://grafana.temboardperf.docker:3000"
         "/d/MkhXLKbnz/temboard-performance"
-        f"?orgId=1&from={from_}&to={to}&var-logfile={logfile}"
+        f"?orgId=1&from={from_}&to={to}&var-service=.%2B&var-logfile={logfile}"
     )
     logger.info("View graph and messages at: %s.", dashboard_url)
 
@@ -181,6 +196,7 @@ def main(logfile):
 def send_log_batch_to_loki(lines, labels):
     # cf. https://grafana.com/docs/loki/latest/api/#post-lokiapiv1push
     logger.info("Sending %s lines to loki.", len(lines))
+    return
     r = httpx.post(
         'http://loki.temboardperf.docker:3100/loki/api/v1/push',
         json=dict(streams=[dict(
@@ -239,12 +255,25 @@ def find_timezone():
 
 
 class OpenMetricsWriter:
+    blacklist = ['up']
+
     def __init__(self, fo, known_metrics):
         self.fo = fo
         self.known_metrics = known_metrics
+        self.unknown = []
         self.declared_metrics = set()
+        self.start = None
+        self.end = None
 
     def append(self, name, labels, value, epoch_s):
+        if name in self.blacklist:
+            return
+        if name in self.unknown:
+            return
+        if name not in self.known_metrics:
+            logger.debug("Unknown metric %s", name)
+            self.unknown.append(name)
+            return
         unit = self.known_metrics[name]['unit']
         metric = name
         if unit != 'nounit':
@@ -260,13 +289,24 @@ class OpenMetricsWriter:
                 """))
             self.declared_metrics.add(name)
 
+        if 'timestamp' in labels:
+            # Overwrite epoch from pseudo label timestamp
+            timestamp = labels.pop('timestamp')
+            date, time = timestamp.split('T')
+            timestamp = parse_datetime(date, time)
+            epoch_s = timestamp.timestamp()
+            self.start = min(self.start or epoch_s, epoch_s)
+
         labels = ','.join('%s="%s"' % label for label in labels.items())
         self.fo.write(dedent(f"""\
         {metric}{{{labels}}} {value} {epoch_s}
         """))
+        self.end = epoch_s
 
     def close(self):
         self.fo.write("# EOF\n")
+        for name in self.unknown:
+            logger.debug("Unknown metric %s.", name)
 
 
 logging.basicConfig(

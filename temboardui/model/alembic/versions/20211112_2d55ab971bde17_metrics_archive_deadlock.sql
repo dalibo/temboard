@@ -32,7 +32,6 @@ CREATE OR REPLACE FUNCTION aggregate_data_single(table_name TEXT, record_type TE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  t JSON;
   v_agg_periods TEXT[] := array['30m', '6h'];
   v_agg_table TEXT;
   i_period TEXT;

@@ -29,6 +29,7 @@
 **Agent:**
 
 - Fix database probes always executed on same database.
+- Reduce reconnexion in monitoring probes.
 - Explicitily requires psycopg2 2.7+ on debian.
 - Ignore loopback and tmpfs file systems.
 - Drop Python2 support

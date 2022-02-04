@@ -943,8 +943,7 @@ def statements_bootstrap(context):
     yield taskmanager.Task(
         worker_name='pull_data_worker',
         id='statementsdata',
-        # redo_interval=1 * 60,  # Repeat each 1m,
-        redo_interval=10,  # Repeat each 1m,
+        redo_interval=1 * 60,  # Repeat each 1m,
         options={},
     )
     yield taskmanager.Task(
