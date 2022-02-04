@@ -87,7 +87,12 @@ def collector(request):
     )
     request.db_session.commit()
 
-    insert_metrics(request.db_session, host.host_id, instance_id, metrics_data)
+    labels = dict(
+        agent='%s:%s' % (hostname, port),
+    )
+    insert_metrics(
+        request.db_session, host.host_id, instance_id, metrics_data, labels,
+    )
     request.db_session.commit()
 
     # Update collector status

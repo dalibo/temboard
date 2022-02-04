@@ -138,14 +138,26 @@ def check_host_key(session, hostname, agent_key):
         raise Exception("Agent key does not match.")
 
 
-def insert_metrics(session, host_id, instance_id, data):
+def insert_metrics(session, host_id, instance_id, data, labels=None):
+    labels = labels or {}
 
     for metric_name in list(data.keys()):
+
         # Do not try to insert empty lines
         if data[metric_name] is None:
             continue
         if len(data[metric_name]) == 0:
             continue
+
+        for record in generate_logfmt_records(metric_name, data[metric_name]):
+            try:
+                logger.debug(
+                    "up=1 %s %s",
+                    " ".join(['%s=%s' % i for i in labels.items()]),
+                    " ".join(['%s=%s' % i for i in record.items()]),
+                )
+            except Exception:
+                logger.exception("Failed to format logfmt.")
 
         # Insert data
         for metric_data in data[metric_name]:
@@ -197,6 +209,23 @@ def insert_metrics(session, host_id, instance_id, data):
                 db.insert_metric_btree_bloat(session, instance_id, metric_data)
 
             session.commit()
+
+
+def generate_logfmt_records(metric, points):
+    # Generate flat key-value record from temBoard metrics data for logfmt.
+    if metric not in ('xacts',):
+        return
+    for point in points:
+        record = dict()
+        for k, v in point.items():
+            if k in ('datetime', 'port', 'measure_interval'):
+                continue
+            if k in ('dbname',):
+                logkey = k
+            else:
+                logkey = '%s_%s' % (metric, k)
+            record[logkey] = v
+        yield record
 
 
 def get_instance_checks(session, instance_id):

@@ -532,7 +532,15 @@ def collector(app, address, port, key):
                 row['instances'][0]['available']
             )
             logger.info("Insert collected metrics for %s.", agent_id)
-            insert_metrics(worker_session, host.host_id, instance_id, data)
+            insert_metrics(
+                worker_session, host.host_id, instance_id, data, dict(
+                    agent=agent_id,
+                    timestamp=(
+                        # transform to ISOFORMAT (same as journalctl)
+                        row['datetime'].replace(' +', '+').replace(' ', 'T')
+                    ),
+                ),
+            )
             worker_session.commit()
 
         except DataError as e:
