@@ -90,7 +90,7 @@ def main(logfile):
 
     labels = dict(
         job="logsender.py",
-        logfile=logfile,
+        logfile="%s_%s" % (datetime.now().strftime('%Y%m%dT%H%M%S'), logfile),
     )
     logger.info("Analyzing %s.", logfile)
 
