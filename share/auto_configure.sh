@@ -198,8 +198,8 @@ setup_ssl() {
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
-	exec 3>&2 2>${LOGFILE} 1>&2
-	chmod 0600 ${LOGFILE}
+	exec 3>&2 2>"${LOGFILE}" 1>&2
+	chmod 0600 "${LOGFILE}"
 	trap 'catchall' INT EXIT TERM
 fi
 
