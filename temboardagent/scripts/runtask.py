@@ -22,6 +22,7 @@ from ast import literal_eval
 
 from .agent import list_options_specs
 from ..cli import Application
+from ..notification import NotificationMgmt
 from ..routing import Router
 from ..toolkit.app import define_core_arguments
 from ..toolkit.errors import UserError
@@ -78,6 +79,11 @@ class TaskApplication(Application):
         self.log_versions()
         self.apply_config()
 
+        # Bootstraping plugins
+        self.bootstrap_plugins()
+        # Boostraping action logs table
+        NotificationMgmt.bootstrap(self.config)
+
         # E X E C U T I O N
 
         workers = iter_workers(self.worker_pool.worker_pool.workers)
@@ -103,6 +109,12 @@ class TaskApplication(Application):
             worker_args.append(arg)
 
         worker(self, *worker_args)
+
+    def bootstrap_plugins(self):
+        for plugin_name, plugin in self.plugins.items():
+            if hasattr(plugin, 'bootstrap'):
+                logger.debug("Boostraping plugin %s", plugin_name)
+                plugin.bootstrap()
 
 
 def iter_workers(workers):
