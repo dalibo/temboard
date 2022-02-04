@@ -598,17 +598,20 @@ def collector(app, address, port, key):
         logger.info(
             "Apply alerting checks against preprocessed data for agent %s.",
             agent_id)
-        check_preprocessed_data(
-            worker_session,
-            host.host_id,
-            instance_id,
-            preprocess_data(
-                row['data'],
-                get_instance_checks(worker_session, instance_id),
-                row['datetime']
-            ),
-            app.config.temboard.home,
-        )
+        try:
+            check_preprocessed_data(
+                worker_session,
+                host.host_id,
+                instance_id,
+                preprocess_data(
+                    row['data'],
+                    get_instance_checks(worker_session, instance_id),
+                    row['datetime']
+                ),
+                app.config.temboard.home,
+            )
+        except Exception:
+            logger.exception("Failed to check monitoring data for alerting.")
 
         logger.debug("Row with datetime=%s inserted", row['datetime'])
         worker_session.commit()
