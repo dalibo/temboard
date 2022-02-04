@@ -3,14 +3,12 @@ import re
 import os
 import time
 import json
-from datetime import datetime
 from contextlib import closing
 
 import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
 
-from ...tools import now
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
 
@@ -43,7 +41,7 @@ def load_probes(options, home):
 def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    now = datetime.utcnow()
+    now = pool.get().query_scalar("SELECT NOW()")
     logger.info("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
@@ -424,7 +422,6 @@ class probe_sessions(SqlProbe):
 
         if version < 90200:
             self.sql = """select
-  current_timestamp as datetime,
   d.datname as dbname,
   coalesce(sum((current_query not in ('<IDLE>','<IDLE> in transaction') and not waiting)::integer), 0) as active,
   coalesce(sum(waiting::integer), 0) as waiting,
@@ -440,7 +437,6 @@ where d.datallowconn
 group by d.datname"""  # noqa
         elif version >= 90200 and version < 90600:
             self.sql = """select
-  current_timestamp as datetime,
   d.datname as dbname,
   coalesce(sum((state = 'active' and not waiting)::integer), 0) as active,
   coalesce(sum((state = 'active' and waiting)::integer), 0) as waiting,
@@ -456,7 +452,6 @@ where d.datallowconn
 group by d.datname"""  # noqa
         elif version >= 90600:
             self.sql = """select
-  current_timestamp as datetime,
   d.datname as dbname,
   coalesce(sum((state = 'active' and wait_event_type IS DISTINCT FROM 'Lock')::integer), 0) as active,
   coalesce(sum((state = 'active' and wait_event_type IS NOT DISTINCT FROM 'Lock')::integer), 0) as waiting,
@@ -478,7 +473,6 @@ class probe_xacts(SqlProbe):
     level = 'instance'
     min_version = 70400
     sql = """select
-  current_timestamp as datetime,
   s.datname as dbname,
   xact_commit as n_commit,
   xact_rollback as n_rollback
@@ -493,7 +487,6 @@ where d.datallowconn"""
 class probe_locks(SqlProbe):
     level = 'instance'
     sql = """select
-  current_timestamp as datetime,
   d.datname as dbname,
   coalesce(sum((mode = 'AccessShareLock' and granted)::integer), 0) as access_share,
   coalesce(sum((mode = 'AccessShareLock' and not granted)::integer), 0) as waiting_access_share,
@@ -521,7 +514,6 @@ group by d.datname"""  # noqa
 class probe_blocks(SqlProbe):
     level = 'instance'
     sql = """select
-  current_timestamp as datetime,
   s.datname as dbname,
   blks_read,
   blks_hit,
@@ -537,7 +529,7 @@ where d.datallowconn"""  # noqa
 class probe_bgwriter(SqlProbe):
     level = 'instance'
     min_version = 80300
-    sql = """select current_timestamp as datetime, * from pg_stat_bgwriter"""
+    sql = """select * from pg_stat_bgwriter"""
     delta_columns = [
         'checkpoints_timed', 'checkpoints_req', 'checkpoint_write_time',
         'checkpoint_sync_time', 'buffers_checkpoint', 'buffers_clean',
@@ -550,7 +542,6 @@ class probe_bgwriter(SqlProbe):
 class probe_db_size(SqlProbe):
     level = 'instance'
     sql = """select
-  current_timestamp as datetime,
   datname as dbname,
   pg_database_size(oid) as size
 from pg_database
@@ -560,7 +551,6 @@ where datallowconn"""
 class probe_tblspc_size(SqlProbe):
     level = 'instance'
     sql = """select
-  current_timestamp as datetime,
   spcname,
   pg_tablespace_size(oid) as size
 from pg_tablespace"""
@@ -570,16 +560,7 @@ class probe_filesystems_size(HostProbe):
     system = 'Linux'
 
     def run(self):
-        # Everything is already gathered in the inventory, just add
-        # the time
-        out = []
-        datetime = now()
-        sysinfo = SysInfo()
-        for fs in sysinfo.file_systems():
-            fs['datetime'] = datetime
-            out.append(fs)
-
-        return out
+        return SysInfo().file_systems()
 
 
 class probe_cpu(HostProbe):
@@ -614,7 +595,6 @@ class probe_cpu(HostProbe):
             return []
 
         metrics['measure_interval'] = interval
-        metrics['datetime'] = now()
         metrics['cpu'] = 'global'
 
         return [metrics]
@@ -624,9 +604,7 @@ class probe_process(HostProbe):
     system = 'Linux'
 
     def run(self):
-        metrics = {
-            'datetime': now()
-        }
+        metrics = {}
         # Process information is partly stored in /proc/stat, ctxt and
         # processes are ever incresing counters, compute deltas on
         # them.
@@ -674,7 +652,6 @@ class probe_memory(HostProbe):
         meminfo = sysinfo.mem_info()
 
         return [{
-            'datetime': now(),
             'mem_total': meminfo['MemTotal'],
             'mem_used': meminfo['MemTotal'] - meminfo['MemFree'],
             'mem_free': meminfo['MemFree'],
@@ -693,7 +670,6 @@ class probe_loadavg(HostProbe):
         cols = loadavg.readline().split()
         loadavg.close()
         return [{
-            'datetime': now(),
             'load1': cols[0],
             'load5': cols[1],
             'load15': cols[2]
@@ -711,7 +687,6 @@ class probe_wal_files(SqlProbe):
             return []
 
         metric = {
-            'datetime': now(),
             'port': conninfo['port']
         }
         if version < 100000:
@@ -816,7 +791,7 @@ class probe_replication_lag(SqlProbe):
                 SELECT pg_wal_lsn_diff(
                     '{xlogpos}'::pg_lsn,
                     pg_last_wal_replay_lsn()
-                ) AS lsn_diff, NOW() AS datetime
+                ) AS lsn_diff
                 """.format(xlogpos=xlogpos))
             elif conn.server_version >= 90500:
                 # Use pg_xlog_lsn_diff(pg_lsn, pg_lsn)
@@ -824,7 +799,7 @@ class probe_replication_lag(SqlProbe):
                 SELECT pg_xlog_location_diff(
                     '{xlogpos}'::pg_lsn,
                     pg_last_xlog_replay_location()
-                ) AS lsn_diff, NOW() AS datetime
+                ) AS lsn_diff
                 """.format(xlogpos=xlogpos))
             else:
                 # Use pg_xlog_lsn_diff(TEXT, TEXT)
@@ -832,13 +807,12 @@ class probe_replication_lag(SqlProbe):
                 SELECT pg_xlog_location_diff(
                     '{xlogpos}'::TEXT,
                     pg_last_xlog_replay_location()::TEXT
-                ) AS lsn_diff, NOW() AS datetime
+                ) AS lsn_diff
                 """.format(xlogpos=xlogpos))
             r = list(rows)
             if len(r) == 0:
                 return []
-            return [{'lag': int(r[0]['lsn_diff']),
-                    'datetime': r[0]['datetime']}]
+            return [{'lag': int(r[0]['lsn_diff'])}]
 
         except Exception as e:
             logger.exception(str(e))
@@ -849,7 +823,6 @@ class probe_temp_files_size_delta(SqlProbe):
     # Temporary files probe
     level = 'instance'
     sql = """SELECT
-  current_timestamp AS datetime,
   s.datname AS dbname,
   temp_bytes AS size
 FROM pg_stat_database s
@@ -877,7 +850,7 @@ class probe_replication_connection(SqlProbe):
 
             # pg_stat_wal_receiver lookup
             rows = conn.query("""\
-            SELECT '{p_host}' AS upstream, NOW() AS datetime,
+            SELECT '{p_host}' AS upstream
             CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
             FROM pg_stat_wal_receiver
             WHERE status='streaming' AND
