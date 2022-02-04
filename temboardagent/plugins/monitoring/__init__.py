@@ -11,6 +11,7 @@ from ...tools import now, validate_parameters
 from ...inventory import SysInfo
 from ... import __version__ as __VERSION__
 from ...errors import HTTPError as TemboardHTTPError
+from ...postgres import ConnectionPool
 
 from . import db
 from .inventory import host_info, instance_info
@@ -157,11 +158,12 @@ def api_run_probe(probe_instance, config):
     )
     sysinfo = SysInfo()
     hostname = sysinfo.hostname(config.temboard.hostname)
-    instance = instance_info(conninfo, hostname)
-    # Set home path
-    probe_instance.set_home(config.temboard.home)
-    # Gather the data from probes
-    return run_probes([probe_instance], [instance], delta=False)
+    with ConnectionPool(**conninfo) as pool:
+        instance = instance_info(pool, conninfo, hostname)
+        # Set home path
+        probe_instance.set_home(config.temboard.home)
+        # Gather the data from probes
+        return run_probes([probe_instance], pool, [instance], delta=False)
 
 
 @routes.get(b'/history', check_key=True)
@@ -247,10 +249,9 @@ def monitoring_collector_worker(app):
         config.temboard.home
     )
 
-    instance = instance_info(conninfo, system_info['hostname'])
-
-    # Gather the data from probes
-    data = run_probes(probes, [instance])
+    with ConnectionPool(**conninfo) as pool:
+        instance = instance_info(pool, conninfo, system_info['hostname'])
+        data = run_probes(probes, pool, [instance])
 
     # Prepare and send output
     output = dict(
@@ -260,8 +261,6 @@ def monitoring_collector_worker(app):
         data=data,
         version=__VERSION__,
     )
-    logger.debug("Collect output=%s", output)
-
     logger.info("Add data to metrics table.")
     db.add_metric(
         config.temboard.home,
@@ -271,6 +270,40 @@ def monitoring_collector_worker(app):
     )
 
     logger.info("Collect done.")
+
+    try:
+        logger.debug("temboard_agent_version=%s", __VERSION__)
+        logger.debug("hostinfo=%s", system_info)
+        for record in iter_metrics_for_logfmt(data):
+            # up=1 is a marker to grep logfmt lines
+            logger.debug(
+                "up=1 %s",
+                " ".join('%s=%s' % i for i in record.items()),
+            )
+    except Exception:
+        logger.exception("Failed to log metrics.")
+
+
+def iter_metrics_for_logfmt(data):
+    # Generates a flat sequence of record dict containing key value for logfmt
+    # printing. See perfui/ in temboard project to analyze such data.
+    for k, v in data.items():
+        for vv in v:
+            record = dict()
+            for kkk, vvv in vv.items():
+                if hasattr(vvv, 'isoformat'):
+                    vvv = vvv.isoformat(sep='T')
+                if kkk in ('datetime', 'port', 'cpu', 'measure_interval'):
+                    continue
+                if kkk in ('dbname', 'spcname') or k in ('loadavg', 'memory'):
+                    record[kkk] = vvv
+                elif k.endswith('_size') and kkk == 'size':
+                    record[k] = vvv
+                elif k == 'lag':
+                    record[k] = vvv
+                else:
+                    record['%s_%s' % (k, kkk)] = vvv
+            yield record
 
 
 class MonitoringPlugin:
@@ -293,6 +326,10 @@ class MonitoringPlugin:
     def load(self):
         self.app.router.add(routes)
         self.app.worker_pool.add(workers)
+        logger.debug(
+            "Schedule metric collect every %s seconds.",
+            self.app.config.monitoring.scheduler_interval,
+        )
         workers.schedule(
             id='monitoring_collector',
             redo_interval=self.app.config.monitoring.scheduler_interval,
