@@ -43,7 +43,7 @@ def load_probes(options, home):
 def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    now = datetime.utcnow()
+    now = pool.get().query_scalar("SELECT NOW()")
     logger.info("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
