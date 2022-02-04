@@ -364,6 +364,10 @@ class SqlProbe(Probe):
                 if self.delta_columns is not None:
                     to_delta = {}
 
+                    for k in self.delta_columns:
+                        if k in r.keys():
+                            to_delta[k] = r[k]
+
                     # Create the store key for the delta
                     if self.delta_key is not None:
                         key = cluster_name + database + r[self.delta_key]
