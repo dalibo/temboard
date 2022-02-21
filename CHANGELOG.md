@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [7.10] - Unreleased
+## [7.10] - 2022-02-22
 
 - Fix performances issues with monitoring.
 - Show runtime libpq version in logs and --version.
