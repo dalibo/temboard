@@ -282,6 +282,7 @@ To release a new version:
 - Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
 
+
 ## Releasing the Agent
 
 Releasing a new version of temBoard agent requires write access to
@@ -302,8 +303,7 @@ Please follow these steps:
 -   Build and push RPM packages using `make -C packaging/rpm all push`.
 -   Build and push debian packages using
     `make -C packaging/deb all push`.
--   Trigger docker master build from
-    <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+
 
 ## Other documentation for maintainers
 
