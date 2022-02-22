@@ -168,7 +168,8 @@ install -o temboard -g temboard -m 0640 /dev/null "$ETCDIR/temboard.conf"
 generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
 
 log "Creating Postgres user, database and schema."
-./create_repository.sh
+# For temboard-migratedb
+TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
 if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
