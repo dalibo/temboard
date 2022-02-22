@@ -147,7 +147,6 @@ def main(logfile):
                 try:
                     metrics = dict(parse_logfmt(message))
                 except Exception as e:
-                    import pdb; pdb.set_trace()
                     logger.warning("Failed to parse perf metrics: %s.", e)
                     logger.warning("Malformed line: %s.", line)
                     continue
