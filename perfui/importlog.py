@@ -143,7 +143,7 @@ def main(logfile):
 
             if ' io_rchar=' in tail or ' up=1 ' in tail:
                 # métriques
-                _, message = tail.split(':', 1)
+                _, _, message = tail.split(':', 2)
                 try:
                     metrics = dict(parse_logfmt(message))
                 except Exception as e:
