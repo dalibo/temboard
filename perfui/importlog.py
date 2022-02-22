@@ -187,7 +187,8 @@ def main(logfile):
     dashboard_url = (
         "http://grafana.temboardperf.docker:3000"
         "/d/MkhXLKbnz/temboard-performance"
-        f"?orgId=1&from={from_}&to={to}&var-service=.%2B&var-logfile={logfile}"
+        f"?orgId=1&from={from_}&to={to}"
+        f"&var-service=.%2B&var-logfile={labels['logfile']}"
     )
     logger.info("View graph and messages at: %s.", dashboard_url)
 
