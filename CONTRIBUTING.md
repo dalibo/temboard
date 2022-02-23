@@ -335,6 +335,16 @@ Fork the project, commit in a branch and open a new GithUb PR on
 https://github.com/dalibo/temboard.
 
 
+## Building a snapshot
+
+You can build a snapshot RPM like this:
+
+``` console
+$ make snapshot
+$ make -C packaging/rpm build-rhel8
+```
+
+
 ## Releasing the Server
 
 Releasing a new version of temBoard requires write access to master on [main
