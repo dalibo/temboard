@@ -64,14 +64,14 @@ jobs:
     steps:
     - checkout
     - run: git submodule update --init
-    - run: python setup.py sdist bdist_wheel --universal
+    - run: cd ui/; python setup.py sdist bdist_wheel --universal
     - store_artifacts:
-        path: /workspace/dist/
+        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
-        - dist/*.tar.gz
-        - dist/*.whl
+        - ui/dist/*.tar.gz
+        - ui/dist/*.whl
 
   doc:
     docker: [{image: "python:3.5"}]
@@ -102,13 +102,14 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement requirements-dev.txt --editable ./
+            pip install --upgrade --requirement ui/requirements-dev.txt --editable ui/
       - run:
           name: Lint
           command: |
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            cd ui/
             flake8
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
@@ -137,14 +138,16 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement requirements-dev.txt --editable .
+            pip install --upgrade --requirement ui/requirements-dev.txt --editable ui/
       - run:
           name: Lint
           command: |
+            cd ui/
             flake8
       - run:
           name: Python tests
           command: |
+            cd ui/
             pytest --full-trace --cov-report=xml tests/unit/
       - &pip-cache-save
         save_cache:
@@ -168,14 +171,14 @@ jobs:
     - run:
         name: Build RPM snapshot
         command: |
-          yum-builddep -y packaging/rpm/temboard.spec
-          packaging/rpm/build.sh
+          yum-builddep -y ui/packaging/rpm/temboard.spec
+          ui/packaging/rpm/build.sh
     - store_artifacts:
-        path: /workspace/dist/
+        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
-        - dist/*.rpm
+        - ui/dist/*.rpm
 
   deb:
     parameters:
@@ -191,7 +194,7 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        command: ./packaging/deb/mkdeb.sh
+        command: ui/packaging/deb/mkdeb.sh
         environment:
           DEBFULLNAME: CircleCI
           DEBEMAIL: none@example.com
@@ -199,7 +202,7 @@ jobs:
         path: /workspace/dist/
     - persist_to_workspace:
         root: .
-        paths: [dist/*.deb]
+        paths: [ui/dist/*.deb]
 
   func:
     parameters:
@@ -238,11 +241,11 @@ jobs:
     - run:
         name: Shellcheck
         command: |
-          shellcheck share/purge.sh share/create_repository.sh share/auto_configure.sh
-          shellcheck packaging/deb/mkdeb.sh
+          shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
+          shellcheck ui/packaging/deb/mkdeb.sh
     - run:
         name: Functionnal tests
-        command: tests/func/run.sh
+        command: ui/tests/func/run.sh
         environment:
           PYTHONBIN: << parameters.pythonbin >>
     - *pip-cache-save

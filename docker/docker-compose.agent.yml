@@ -22,7 +22,7 @@ services:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
       - type: bind
-        source: ../share/sql/pg_stat_statements-create-extension.sql
+        source: ../ui/share/sql/pg_stat_statements-create-extension.sql
         target: /docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
 
   agent:

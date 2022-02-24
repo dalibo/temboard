@@ -32,7 +32,7 @@ services:
     - wal:/var/lib/postgresql/archive/
     - ./docker/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./docker/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
-    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
     entrypoint: &postgres_entrypoint [/usr/local/bin/postgres-ha-entrypoint.sh]
     command: &postgres_command [
       postgres,
@@ -48,8 +48,7 @@ services:
     - data0:/var/lib/postgresql/data
     - run0:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
-    - .:/usr/local/src/temboard/
-    - ./agent/:/usr/local/src/temboard-agent/
+    - ./:/usr/local/src/temboard/
     links:
     - postgres0:postgres0.dev
     environment: &agent_env
@@ -59,9 +58,9 @@ services:
       TEMBOARD_HOSTNAME: postgres0.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
-      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
-      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
-      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
+      TEMBOARD_SSL_CA: /usr/local/src/temboard/agent/share/temboard-agent_ca_certs_CHANGEME.pem
+      TEMBOARD_SSL_CERT: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.pem
+      TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
     command: &agent_command [/usr/bin/tini, sleep, infinity]
 
   # Second instance, with replication of first instance.
@@ -78,7 +77,7 @@ services:
     - wal:/var/lib/postgresql/archive/
     - ./docker/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./docker/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
-    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
     entrypoint: *postgres_entrypoint
     command: *postgres_command
 
@@ -89,8 +88,7 @@ services:
     - data1:/var/lib/postgresql/data
     - run1:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
-    - .:/usr/local/src/temboard/
-    - ./agent/:/usr/local/src/temboard-agent/
+    - ./:/usr/local/src/temboard/
     links:
     - postgres1:postgres1.dev
     environment:

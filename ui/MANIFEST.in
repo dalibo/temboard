@@ -1,5 +1,3 @@
-include CHANGELOG.md
-include NEWS.md
 include LICENSE
 include packaging/temboard.service
 include temboardui/toolkit/LICENSE
@@ -21,27 +19,20 @@ graft temboardui/plugins/statements/templates
 graft share
 global-exclude *.pyc
 
-prune .circleci
-exclude .editorconfig
-exclude .gitmodules
-exclude CONTRIBUTING.md
-exclude QUICKSTART.md
 exclude alembic.ini
 prune docker
 exclude docker-compose.yml
 prune docs
+exclude .gitmodules
 exclude Gruntfile.js
 exclude Makefile
-exclude mkdocs.yml
 exclude package.json
 prune packaging/deb
 prune packaging/rpm
 exclude requirements-dev.txt
-exclude temboard.conf
 prune temboardui/toolkit/.circleci
 exclude temboardui/toolkit/.flake8
 exclude temboardui/toolkit/README.md
 exclude temboardui/toolkit/requirement-ci.txt
 prune temboardui/toolkit/tests
 prune tests
-prune perfui

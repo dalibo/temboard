@@ -1,3 +1,3 @@
-[submodule "temboardui/scheduler"]
+[submodule "ui/temboardui/toolkit"]
 	path = ui/temboardui/toolkit
 	url = https://github.com/dalibo/temboard-toolkit.git
