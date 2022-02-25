@@ -2,4 +2,5 @@
 # python_version.
 pytest<5
 pytest-base-url
+pytest-log
 selenium
