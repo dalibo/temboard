@@ -17,3 +17,5 @@ server_tasks.db
 .coverage
 package-lock.json
 *.ipynb_checkpoints
+# From pytest
+test_log.log
