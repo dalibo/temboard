@@ -8,9 +8,6 @@ services:
       POSTGRES_USER: temboard
       POSTGRES_PASSWORD: confidentiel
 
-  selenium:
-    image: selenium/standalone-firefox
-
   ui:
     image: dalibo/buildpack-python:${TAG-rockylinux8}
     environment:
@@ -19,7 +16,6 @@ services:
     - PGUSER=temboard
     - PGPASSWORD=confidentiel
     - MANUAL
-    - SELENIUM=http://selenium:4444
     - TEMBOARD_PASSWORD=confidentiel
     - UI=https://ui:8888
     - XDG_CACHE_HOME=/workspace/tests/func/.docker-cache/
@@ -29,5 +25,4 @@ services:
     working_dir: /workspace
     command: /workspace/tests/func/run.sh
     links:
-    - selenium
     - repository

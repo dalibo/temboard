@@ -200,14 +200,12 @@ jobs:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
-        SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
         TBD_INSTALL_RPM: "1"
     - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
-    - image: selenium/standalone-firefox
     working_directory: *working_directory
     steps:
     - checkout
