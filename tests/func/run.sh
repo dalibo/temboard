@@ -124,7 +124,7 @@ if [ -n "${SETUP-1}" ] ; then
 		--requirement tests/func/requirements.txt
 
 	mkdir -p /etc/temboard/temboard.conf.d
-	cat >> /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
+	cat > /etc/temboard/temboard.conf.d/func-plugins.conf <<-EOF
 	[temboard]
 	plugins = ["dashboard", "pgconf", "activity", "monitoring", "maintenance", "extsample", "statements"]
 
