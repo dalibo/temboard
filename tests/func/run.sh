@@ -117,7 +117,8 @@ if [ -n "${SETUP-1}" ] ; then
 		--prefix="${PYTHONPREFIX-/usr}" \
 		"$top_srcdir/tests/func/sample-plugin"
 
-	$PYTHONBIN -m pip install \
+	# Always use Python3 for pytest
+	python3 -m pip install \
 		--ignore-installed \
 		--upgrade \
 		--requirement tests/func/requirements.txt
