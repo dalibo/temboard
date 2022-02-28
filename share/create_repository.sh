@@ -5,8 +5,6 @@
 # auto_configure.sh calls this script for production and Makefile for
 # development.
 
-CONFIGFILE=${ETCDIR-/etc/temboard}/temboard.conf
-
 if [ -n "${DEBUG-}" ] ; then
 	set -x
 fi
@@ -50,8 +48,8 @@ fi
 
 unset PGUSER PGHOST PGDATABASE PGPASSWORD
 
-if ! "${runas[@]}" temboard-migratedb -c "${CONFIGFILE}" check ; then
-    "${runas[@]}" temboard-migratedb -c "${CONFIGFILE}" upgrade
+if ! "${runas[@]}" temboard-migratedb check ; then
+    "${runas[@]}" temboard-migratedb upgrade
     if [ -n "${DEV-}" ] ; then
         "${psql[@]}" -f "$SQLDIR/dev-fixture.sql"
     fi

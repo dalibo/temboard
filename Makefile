@@ -23,6 +23,9 @@ upload:
 	python setup.py sdist bdist_wheel --universal
 	twine upload dist/temboard-$(VERSION).tar.gz dist/temboard-$(VERSION)-py2.py3-none-any.whl
 
+snapshot:
+	python setup.py sdist bdist_wheel --universal
+
 renew_sslca:
 	openssl req -batch -x509 -new -nodes -key share/temboard_CHANGEME.key -sha256 -days 1095 -out share/temboard_ca_certs_CHANGEME.pem
 
