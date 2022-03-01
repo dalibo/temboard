@@ -1,4 +1,4 @@
-FROM python:2.7-slim
+FROM python:3.7-slim
 
 RUN set -ex; \
     apt-get update -y ; \
@@ -17,7 +17,7 @@ RUN git clone --depth=1 --recursive https://github.com/dalibo/temboard/ && \
     rm -rf temboard
 
 RUN set -ex; \
-    python -c 'import urllib; urllib.urlretrieve("https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh", "/usr/local/bin/wait-for-it")' ; \
+    python -c 'import urllib.request as u; u.urlretrieve("https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh", "/usr/local/bin/wait-for-it")' ; \
     chmod 0755 /usr/local/bin/wait-for-it ; \
     :
 
