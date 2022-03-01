@@ -850,7 +850,7 @@ class probe_replication_connection(SqlProbe):
 
             # pg_stat_wal_receiver lookup
             rows = conn.query("""\
-            SELECT '{p_host}' AS upstream
+            SELECT '{p_host}' AS upstream,
             CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
             FROM pg_stat_wal_receiver
             WHERE status='streaming' AND
