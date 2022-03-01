@@ -41,4 +41,4 @@ chmod 0600 ~/.pgpass
 DEV=1 bash /usr/local/share/temboard/create_repository.sh
 
 set -x
-exec ${*-temboard}
+exec sudo -EHu temboard "${@-temboard}"
