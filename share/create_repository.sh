@@ -2,8 +2,8 @@
 #
 # This script initialize the database, with idempotence.
 #
-# auto_configure.sh calls this script for production and Makefile for
-# development.
+# auto_configure.sh calls this script for production, docker/entrypoint.sh for
+# quickstart and Makefile for development.
 
 if [ -n "${DEBUG-}" ] ; then
 	set -x

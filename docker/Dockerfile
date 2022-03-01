@@ -30,7 +30,7 @@ RUN mkdir -p /etc/temboard \
 VOLUME /etc/temboard
 
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["sudo", "-u", "temboard", "docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["temboard"]
 
 EXPOSE 8888
