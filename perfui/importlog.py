@@ -143,11 +143,10 @@ def main(logfile):
 
             if ' io_rchar=' in tail or ' up=1 ' in tail:
                 # métriques
-                _, message = tail.split(':', 1)
+                _, _, message = tail.split(':', 2)
                 try:
                     metrics = dict(parse_logfmt(message))
                 except Exception as e:
-                    import pdb; pdb.set_trace()
                     logger.warning("Failed to parse perf metrics: %s.", e)
                     logger.warning("Malformed line: %s.", line)
                     continue
@@ -188,7 +187,8 @@ def main(logfile):
     dashboard_url = (
         "http://grafana.temboardperf.docker:3000"
         "/d/MkhXLKbnz/temboard-performance"
-        f"?orgId=1&from={from_}&to={to}&var-service=.%2B&var-logfile={logfile}"
+        f"?orgId=1&from={from_}&to={to}"
+        f"&var-service=.%2B&var-logfile={labels['logfile']}"
     )
     logger.info("View graph and messages at: %s.", dashboard_url)
 

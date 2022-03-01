@@ -23,9 +23,12 @@
 from builtins import str
 from datetime import datetime, timedelta
 import json
-import hashlib
 import logging
 import os
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 from textwrap import dedent
 try:
     # python2
@@ -363,6 +366,13 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         send_sms(app.config.notifications, body, phones)
 
 
+# From itertools documentation
+def grouper(n, iterable, fillvalue=None):
+    """grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"""
+    args = [iter(iterable)] * n
+    return zip_longest(fillvalue=fillvalue, *args)
+
+
 @workers.register(pool_size=1)
 def schedule_collector(app):
     """Worker function in charge of scheduling collector (pull mode)."""
@@ -378,30 +388,31 @@ def schedule_collector(app):
             "FROM application.instances ORDER BY 1, 2"
         )
 
-        for agent_address, agent_port, agent_key in res.fetchall():
-            # For each registered agent, let's start a new data collector
+        for batch in grouper(16, res.fetchall()):
+            batch = [row.values() for row in batch if row]
 
-            # Build a unique Task id based on agent address and port
-            agent_id = "%s:%s" % (agent_address, agent_port)
-            task_id = hashlib.md5(agent_id.encode("utf-8")).hexdigest()[:8]
-
-            logger.info("Scheduling collector for agent %s.", agent_id)
+            logger.info(
+                "Scheduling batch collector for %s agents.", len(batch))
 
             taskmanager.schedule_task(
-                'collector',
+                'collector_batch',
                 listener_addr=os.path.join(
                     app.config.temboard.home, '.tm.socket'
                 ),
-                id=task_id,
-                options=dict(
-                    address=agent_address,
-                    port=agent_port,
-                    key=agent_key,
-                ),
+                options=dict(batch=batch),
                 expire=0,
             )
 
     logger.info("End of collector scheduler.")
+
+
+@workers.register(pool_size=20)
+def collector_batch(app, batch):
+    for address, port, key in batch:
+        try:
+            collector(app, address, port, key)
+        except Exception as e:
+            logger.error("Failed to collect %s:%s: %s", address, port, e)
 
 
 @workers.register(pool_size=20)
