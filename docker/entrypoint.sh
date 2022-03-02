@@ -2,14 +2,6 @@
 
 set -x
 
-catchall() {
-	if [ ${PPID-$$} -lt 2 -a $? -gt 0 ] ; then
-		tail -f /dev/null
-	fi
-	trap - INT EXIT TERM
-}
-trap catchall INT EXIT TERM
-
 # Stage 1, as root: setup system user dans groups
 if [ $EUID = 0 ] ; then
 	# Create postgres user matching postgres container one.
