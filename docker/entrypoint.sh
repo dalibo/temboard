@@ -16,11 +16,13 @@ if [ $EUID = 0 ] ; then
 	fi
 	chown -R postgres: ~postgres /etc/temboard-agent /var/lib/temboard-agent
 
-	# Create docker group matching docker socket ownership.
-	DOCKER_GID=$(stat -c "%g" /var/run/docker.sock)
-	if ! getent group ${DOCKER_GID} &>/dev/null ; then
-		groupadd --system --gid ${DOCKER_GID} docker-host
-		adduser postgres docker-host
+	if [ -x /usr/bin/docker ] ; then
+		# Create docker group matching docker socket ownership.
+		DOCKER_GID=$(stat -c "%g" /var/run/docker.sock)
+		if ! getent group ${DOCKER_GID} &>/dev/null ; then
+			groupadd --system --gid ${DOCKER_GID} docker-host
+			adduser postgres docker-host
+		fi
 	fi
 
 	# And reexec myself as postgres.
@@ -41,13 +43,7 @@ TEMBOARD_UI_URL=${TEMBOARD_UI_URL-}
 export TEMBOARD_UI_USER=${TEMBOARD_UI_USER-admin}
 export TEMBOARD_UI_PASSWORD=${TEMBOARD_UI_PASSWORD-admin}
 
-network=$(docker inspect --format '{{ .HostConfig.NetworkMode }}' $HOSTNAME)
-links=($(docker inspect --format '{{ $net := index .NetworkSettings.Networks "'"${network}"'" }}{{range $net.Links }}{{.}} {{end}}' $HOSTNAME))
-links=(${links[@]%%:${TEMBOARD_HOSTNAME}})
-PGCONTAINER=${links[@]%%*:*}
-COMPOSE_SERVICE=$(docker inspect --format "{{ index .Config.Labels \"com.docker.compose.service\"}}" $HOSTNAME)
 
-echo "Managing PostgreSQL container $PGCONTAINER." >&2
 
 echo "Generating temboard-agent.conf" >&2
 
@@ -75,10 +71,26 @@ password = ${PGPASSWORD}
 instance = ${PGINSTANCE-main}
 EOF
 
-cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf << EOF
-[administration]
-pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
-EOF
+if [ -x /usr/bin/docker ] ; then
+	network=$(docker inspect --format '{{ .HostConfig.NetworkMode }}' $HOSTNAME)
+	links=($(docker inspect --format '{{ $net := index .NetworkSettings.Networks "'"${network}"'" }}{{range $net.Links }}{{.}} {{end}}' $HOSTNAME))
+	links=(${links[@]%%:${TEMBOARD_HOSTNAME}})
+	PGCONTAINER=${links[@]%%*:*}
+	COMPOSE_SERVICE=$(docker inspect --format "{{ index .Config.Labels \"com.docker.compose.service\"}}" $HOSTNAME)
+	echo "Managing PostgreSQL container $PGCONTAINER." >&2
+
+	cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf <<- EOF
+	[administration]
+	pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
+	EOF
+else
+	echo "Can't start/stop PostgreSQL." >&2
+
+	cat > /etc/temboard-agent/temboard-agent.conf.d/administration.conf <<- EOF
+	[administration]
+	pg_ctl = /bin/false %s
+	EOF
+fi
 
 cat > /etc/temboard-agent/temboard-agent.conf.d/statements.conf << EOF
 [statements]
