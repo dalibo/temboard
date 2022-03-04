@@ -1,5 +1,3 @@
-# pytest 5 does not supports python2. And old pip does not handle
-# python_version.
-pytest<5
+pytest
 pytest-base-url
-selenium
+pytest-log

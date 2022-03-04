@@ -19,7 +19,6 @@ workflows:
     - rpm:
         name: stage0-pkg-rockylinux8
         codename: rockylinux8
-        python: python3
         requires: [stage0-dist]
     - deb:
         name: stage0-pkg-<< matrix.codename >>
@@ -136,10 +135,6 @@ jobs:
         description: "RHEL-clone distribution"
         type: enum
         enum: [centos7, rockylinux8]
-      python:
-        description: "Python interpreter"
-        type: string
-        default: "python"
     docker:
       - image: dalibo/buildpack-pkg:<< parameters.codename >>
     working_directory: *working_directory
@@ -152,7 +147,6 @@ jobs:
         name: Build RPM snapshot
         command: |
           yum-builddep -y packaging/rpm/temboard.spec
-          << parameters.python >> setup.py sdist
           packaging/rpm/build.sh
     - store_artifacts:
         path: /workspace/dist/
@@ -206,14 +200,12 @@ jobs:
         PGHOST: 0.0.0.0
         PGUSER: temboard
         PGPASSWORD: &PGPASSWORD confidentiel
-        SELENIUM: http://0.0.0.0:4444
         TEMBOARD_PASSWORD: *PGPASSWORD
         TBD_INSTALL_RPM: "1"
     - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
         POSTGRES_PASSWORD: *PGPASSWORD
-    - image: selenium/standalone-firefox
     working_directory: *working_directory
     steps:
     - checkout
