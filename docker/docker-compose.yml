@@ -16,11 +16,12 @@ volumes:
 
 services:
   ui:
-    image: dalibo/temboard:latest
+    image: dalibo/temboard:7
     environment:
       PGHOST: repository
       PGUSER: temboard
       PGPASSWORD: temboard
+      TEMBOARD_LOGGING_LEVEL: DEBUG
     links:
       - repository
     ports:
@@ -44,7 +45,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent13:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
     - data13:/var/lib/postgresql/data
     - run13:/var/run/postgresql/
@@ -57,6 +58,7 @@ services:
       TEMBOARD_HOSTNAME: instance13.fqdn
       TEMBOARD_KEY: key_for_agent_13
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance12:
     image: postgres:12
@@ -70,7 +72,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent12:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data12:/var/lib/postgresql/data
       - run12:/var/run/postgresql/
@@ -83,6 +85,7 @@ services:
       TEMBOARD_HOSTNAME: instance12.fqdn
       TEMBOARD_KEY: key_for_agent_12
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance10:
     image: postgres:10
@@ -96,7 +99,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent10:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data10:/var/lib/postgresql/data
       - run10:/var/run/postgresql/
@@ -109,6 +112,7 @@ services:
       TEMBOARD_HOSTNAME: instance10.fqdn
       TEMBOARD_KEY: key_for_agent_10
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance96:
     image: postgres:9.6
@@ -122,7 +126,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent96:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql/
@@ -135,3 +139,4 @@ services:
       TEMBOARD_HOSTNAME: instance96.fqdn
       TEMBOARD_KEY: key_for_agent_96
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
