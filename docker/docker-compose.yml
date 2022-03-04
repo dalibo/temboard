@@ -21,6 +21,7 @@ services:
       PGHOST: repository
       PGUSER: temboard
       PGPASSWORD: temboard
+      TEMBOARD_LOGGING_LEVEL: DEBUG
     links:
       - repository
     ports:
@@ -57,6 +58,7 @@ services:
       TEMBOARD_HOSTNAME: instance13.fqdn
       TEMBOARD_KEY: key_for_agent_13
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance12:
     image: postgres:12
@@ -83,6 +85,7 @@ services:
       TEMBOARD_HOSTNAME: instance12.fqdn
       TEMBOARD_KEY: key_for_agent_12
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance10:
     image: postgres:10
@@ -109,6 +112,7 @@ services:
       TEMBOARD_HOSTNAME: instance10.fqdn
       TEMBOARD_KEY: key_for_agent_10
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance96:
     image: postgres:9.6
@@ -135,3 +139,4 @@ services:
       TEMBOARD_HOSTNAME: instance96.fqdn
       TEMBOARD_KEY: key_for_agent_96
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_LOGGING_LEVEL: DEBUG
