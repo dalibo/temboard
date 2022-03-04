@@ -5,6 +5,7 @@
 
 - Fix heap bloat probe.
 - Collect metrics by agent batch. Huge performance boost.
+- Log HTTP request response time.
 - docker: New tag `7` for stable branch.
 - docker: Reduce image size using multi-stage build.
 
