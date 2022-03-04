@@ -1,7 +1,19 @@
 # Changelog
 
+## [7.11] - Unreleased
 
-## [7.10] - Unreleased
+- Fix heap bloat probe.
+- Collect metrics by agent batch. Huge performance boost.
+- docker: New tag `7` for stable branch.
+- docker: Reduce image size using multi-stage build.
+
+**Agent:**
+
+- docker: Fix build.
+- docker: Properly stop container on failure.
+
+
+## [7.10] - 2022-02-22
 
 - Fix performances issues with monitoring.
 - Show runtime libpq version in logs and --version.
