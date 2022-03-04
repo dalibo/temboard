@@ -1,7 +1,7 @@
 NAME="dalibo/temboard"
 
 build:
-	docker pull python:2.7-slim
+	docker pull $$(grep --max-count 1 --only-matching --perl-regexp '^FROM \K[^ ]+' Dockerfile)
 	docker build --tag $(NAME) .
 
 clean:
