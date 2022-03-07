@@ -147,7 +147,8 @@ def generate_logging_config(
 
     minimal_fmt = '%(levelname)5.5s: %(message)s'
     verbose_fmt = (
-        '%(asctime)s [%(process)5d] [%(lastname)-16.16s] ' + minimal_fmt
+        '%(asctime)s ' + core + '[%(process)5d]: [%(lastname)-16.16s] ' +
+        minimal_fmt
     )
     syslog_fmt = (
         core +
