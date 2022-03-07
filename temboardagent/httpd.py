@@ -97,6 +97,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                     % (self.address_string(), format % args))
 
     def handle_one_request(self, *a, **kw):
+        self.log_data = dict(
+            url='unknown',
+            handler='unknown',
+        )
         self.start_time = time.time()
         return BaseHTTPRequestHandler.handle_one_request(self, *a, **kw)
 
@@ -109,11 +113,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         This is called by send_response().
 
         """
+        response_time = self.request_time()
         if hasattr(code, 'value'):
             code = code.value
         self.log_message(
             '"%s" %s %s %.2fms',
-            self.requestline, str(code), str(size), self.request_time(),
+            self.requestline, str(code), str(size), response_time,
+        )
+        logger.debug(
+            "method=%s url=%s status=%s handler=%s"
+            " response_time=%s service=web",
+            self.http_method, self.log_data['url'], code,
+            self.log_data['handler'], response_time,
         )
 
     def response(self):
@@ -204,7 +215,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         """
         # Let's parse and prepare url, path, query etc..
         up = urlparse(self.path, 'http')
-        path = up.path
+        self.log_data['url'] = path = up.path
         splitpath = path.split('/')
         if len(splitpath) == 1:
             raise HTTPError(404, 'Not found.')
@@ -279,6 +290,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # Handle the request
         func = getattr(sys.modules[route['module']], route['function'])
+        self.log_data['handler'] = route['module'] + '.' + route['function']
         if route['module'] == 'temboardagent.api':
             # some core APIs need to deal with sessions
             return (200, func(http_context, self.app, self.sessions))
