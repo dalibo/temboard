@@ -117,7 +117,7 @@ def main(logfile):
 
             # log line format:
             #
-            #     YYYY-mm-dd HH:MM:SS,SSSSSS [PID] [MODULE  ] LEVEL: MESSAGE...
+            #     YYYY-mm-dd HH:MM:SS,SSSSSS command[PID]: [MODULE  ] LEVEL: MESSAGE...
             #
             # or systemd:
             #
