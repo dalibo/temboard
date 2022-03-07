@@ -47,6 +47,7 @@ from .temboardclient import (
     temboard_request,
 )
 from .toolkit.pycompat import PY2
+from .toolkit.perf import PerfCounters
 
 
 logger = logging.getLogger(__name__)
@@ -303,6 +304,10 @@ class InstanceHelper(object):
         self.instance = get_instance(self.request.db_session, address, port)
         if not self.instance:
             raise HTTPError(404)
+        self.agent_id = '%s:%s' % (
+            self.instance.agent_address,
+            self.instance.agent_port,
+        )
 
     @property
     def cookie_name(self):
@@ -459,6 +464,7 @@ class Blueprint(object):
     def __init__(self, plugin_name=None):
         self.plugin_name = plugin_name
         self.rules = []
+        self.perf = PerfCounters.setup(service='web', plugin=plugin_name)
 
     def add_rules(self, rules):
         self.rules.extend(rules)
@@ -522,15 +528,40 @@ class Blueprint(object):
             @run_on_executor
             @functools.wraps(func)
             def sync_request_wrapper(request, *args):
+                start = datetime.utcnow() if self.perf else None
+                status = 500
                 try:
-                    return func(request, *args)
-                except (Redirect, HTTPError):
+                    response = func(request, *args)
+                    if hasattr(response, 'status_code'):
+                        status = response.status_code
+                    else:  # JSON data
+                        status = 200
+                    return response
+                except (Redirect, HTTPError) as e:
+                    status = e.status_code
                     raise
                 except Exception as e:
                     # Since async traceback is useless, spit here traceback and
                     # forge simple HTTPError(500), no HTML error.
                     logger.exception("Unhandled Error:")
                     raise HTTPError(500, str(e))
+                finally:
+                    if self.perf:
+                        response_time = datetime.utcnow() - start
+                        if (
+                                with_instance and
+                                hasattr(request.instance, 'instance')):
+                            agent = request.instance.agent_id
+                        else:
+                            agent = 'undefined'
+
+                        logger.debug(
+                            "method=%s url=%s status=%s handler=%s"
+                            " response_time=%s plugin=%s agent=%s service=web",
+                            request.method, request.path, status,
+                            logger_name, response_time.total_seconds(),
+                            self.plugin_name or 'main', agent,
+                        )
 
             rules = [(
                 url, CallableHandler, dict(
@@ -549,6 +580,7 @@ class Blueprint(object):
 class WebApplication(TornadoApplication, Blueprint):
     def __init__(self, *a, **kwargs):
         super(WebApplication, self).__init__(*a, **kwargs)
+        Blueprint.__init__(self)
 
     def configure(self, **settings):
         # Runtime configuration of application.
