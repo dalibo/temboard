@@ -236,7 +236,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         # and 'key' arg exists.
         key = self.headers.get('X-TemBoard-Agent-Key')
         if key:
-            logger.debug("Authenication by key from header.")
+            logger.debug("Authentication by key from header.")
         elif 'key' in self.query:
             # TODO: Remove auth from query in 8.0
             key = self.query['key'][0]
