@@ -120,7 +120,14 @@ def wrapped_main(args, app):
         )
         infos = json.loads(content.decode("utf-8"))
 
-        print("Login at %s ..." % (args.ui_address))
+        logger.info(
+            "Agent responded at %s:%s.", args.host, app.config.temboard.port)
+        logger.info(
+            "For %s instance at %s listening on port %s.",
+            infos['pg_version_summary'], infos['pg_data'], infos['pg_port'],
+        )
+
+        logger.info("Login at %s ...", args.ui_address)
         username = ask_username()
         password = ask_password()
         (code, content, cookies) = https_request(
@@ -145,7 +152,7 @@ def wrapped_main(args, app):
             groups = None
 
         # POSTing new instance
-        print("Registering instance/agent to %s ..." % (args.ui_address))
+        logger.info("Registering instance/agent to %s ...", args.ui_address)
         (code, content, cookies) = https_request(
             None,
             'POST',
@@ -171,7 +178,7 @@ def wrapped_main(args, app):
         )
         if code != 200:
             raise HTTPError(code, content)
-        print("Done.")
+        logger.info("Done.")
     except UserError:
         raise
     except HTTPError as e:
