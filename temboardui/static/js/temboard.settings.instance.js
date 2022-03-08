@@ -139,7 +139,7 @@ function addInstance(modal_id, address, port, key, notify, comment) {
     saveInstance(modal_id, url, address, port, key, notify, comment, data);
   }
   var onError = showError.bind(null, modal_id);
-  discoverInstance(modal_id, address, port, onSuccess, onError);
+  discoverInstance(modal_id, address, port, key, onSuccess, onError);
 }
 
 function updateInstance(modal_id, address, port, newAddress, newPort, key, notify, comment) {
@@ -151,15 +151,17 @@ function updateInstance(modal_id, address, port, newAddress, newPort, key, notif
     // save the instance anyway, without discovered data
     saveInstance(modal_id, url, address, port, key, notify, comment);
   }
-  discoverInstance(modal_id, address, port, onSuccess, onError);
+  discoverInstance(modal_id, address, port, key, onSuccess, onError);
 }
 
-function discoverInstance(modal_id, address, port, onSuccess, onError) {
+function discoverInstance(modal_id, address, port, key, onSuccess, onError) {
+  console.log("discover", address, port, key);
   $.ajax({
     url: ['/json/discover/instance', address, port].join('/'),
     type: 'get',
     async: true,
     contentType: "application/json",
+    headers: {'X-TemBoard-Agent-Key': key},
     dataType: "json",
     beforeSend: showWaiter.bind(null, modal_id),
     success: onSuccess,

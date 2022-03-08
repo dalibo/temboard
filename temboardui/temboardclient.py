@@ -96,13 +96,16 @@ class TemboardError(Exception):
         self.message = message
 
 
-def temboard_discover(in_ca_cert_file, hostname, port):
+def temboard_discover(in_ca_cert_file, hostname, port, key):
     try:
         res = temboard_request(
             in_ca_cert_file,
             method='GET',
             url='https://%s:%s/discover' % (hostname, port),
-            headers={"Content-type": "application/json"})
+            headers={
+                "Content-type": "application/json",
+                "X-TemBoard-Agent-Key": key,
+            })
         return json.loads(res)
     except HTTPError as e:
         raise TemboardError(e.code, json.loads(e.read())['error'])
