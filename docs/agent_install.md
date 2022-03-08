@@ -232,7 +232,7 @@ Now you can register the agent in the UI using
 agent host and port and the path to the temBoard UI.:
 
 ``` console
-# sudo -u postgres temboard-agent-register -c /etc/temboard-agent/11/main/temboard-agent.conf --host $(hostname --fqdn) --port 2345 --groups default https://temboard-ui.lan:8888
+# sudo -u postgres temboard-agent-register -c /etc/temboard-agent/11/main/temboard-agent.conf --groups default https://temboard-ui.lan:8888
 ```
 
 `temboard-agent-register` will ask you to login to the UI (eg. `admin`
