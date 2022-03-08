@@ -5,12 +5,10 @@ import re
 import json
 import logging
 import socket
+from urllib.error import HTTPError
 
 from ..cli import Application
-from ..errors import (
-    HTTPError,
-    UserError,
-)
+from ..errors import UserError
 from ..types import T_PASSWORD, T_USERNAME
 from ..toolkit.app import define_core_arguments
 from ..tools import validate_parameters
