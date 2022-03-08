@@ -102,7 +102,10 @@ def temboard_discover(in_ca_cert_file, hostname, port, key):
             in_ca_cert_file,
             method='GET',
             url='https://%s:%s/discover' % (hostname, port),
-            headers={"Content-type": "application/json", "X-TemBoard-Agent-Key": key})
+            headers={
+                "Content-type": "application/json",
+                "X-TemBoard-Agent-Key": key,
+            })
         return json.loads(res)
     except HTTPError as e:
         raise TemboardError(e.code, json.loads(e.read())['error'])
