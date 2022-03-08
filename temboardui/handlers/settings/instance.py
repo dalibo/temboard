@@ -155,8 +155,9 @@ def json_delete_instance(request):
     r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
 @admin_required
 def discover(request, address, port):
+    key = request.headers['X-TemBoard-Agent-Key']
     return temboard_discover(
-        request.config.temboard.ssl_ca_cert_file, address, port)
+        request.config.temboard.ssl_ca_cert_file, address, port, key)
 
 
 @app.route(r"/settings/instances")
