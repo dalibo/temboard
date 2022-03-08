@@ -114,8 +114,9 @@ def wrapped_main(args, app):
             'GET',
             discover_url,
             headers={
-                "Content-type": "application/json"
-            }
+                "Content-type": "application/json",
+                "X-Temboard-Agent-Key": app.config.temboard['key'],
+            },
         )
         infos = json.loads(content.decode("utf-8"))
 
