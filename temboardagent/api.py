@@ -106,6 +106,14 @@ def logout(http_context, app, sessions):
 def get_discover(http_context, app, sessions):
     logger.info('Starting discovery.')
 
+    # Optionnal validation of key. For compatibility, we accept unauthenticated
+    # /discover. But for better reliability, we validate a key sent by HTTP
+    # header. temboard-agent-register sends key to prevent configuration
+    # mismatch.
+    request_key = http_context['headers'].get('X-Temboard-Agent-Key')
+    if request_key and request_key != app.config.temboard['key']:
+        raise HTTPError(401, "Invalid key")
+
     discover = dict(
         hostname=None,
         cpu=None,

@@ -4,12 +4,11 @@ from getpass import getpass
 import re
 import json
 import logging
+import socket
+from urllib.error import HTTPError
 
 from ..cli import Application
-from ..errors import (
-    HTTPError,
-    UserError,
-)
+from ..errors import UserError
 from ..types import T_PASSWORD, T_USERNAME
 from ..toolkit.app import define_core_arguments
 from ..tools import validate_parameters
@@ -81,7 +80,7 @@ class RegisterApplication(Application):
             '-h', '--host',
             dest='host',
             help="Agent address. Default: %(default)s",
-            default='localhost'
+            default=socket.getfqdn(),
         )
         self.config_specs['temboard_port'].add_argument(
             parser, '-p', '--port',
@@ -102,8 +101,9 @@ class RegisterApplication(Application):
 
 
 def wrapped_main(args, app):
-    discover_url = "https://{}:{}/discover".format(
-        args.host, app.config.temboard.port)
+    agent_baseurl = "https://{}:{}".format(args.host, app.config.temboard.port)
+    discover_url = agent_baseurl + '/discover'
+
     try:
         # Getting system/instance informations using agent's discovering API
         logger.info(
@@ -114,12 +114,20 @@ def wrapped_main(args, app):
             'GET',
             discover_url,
             headers={
-                "Content-type": "application/json"
-            }
+                "Content-type": "application/json",
+                "X-Temboard-Agent-Key": app.config.temboard['key'],
+            },
         )
         infos = json.loads(content.decode("utf-8"))
 
-        print("Login at %s ..." % (args.ui_address))
+        logger.info(
+            "Agent responded at %s:%s.", args.host, app.config.temboard.port)
+        logger.info(
+            "For %s instance at %s listening on port %s.",
+            infos['pg_version_summary'], infos['pg_data'], infos['pg_port'],
+        )
+
+        logger.info("Login at %s ...", args.ui_address)
         username = ask_username()
         password = ask_password()
         (code, content, cookies) = https_request(
@@ -144,7 +152,7 @@ def wrapped_main(args, app):
             groups = None
 
         # POSTing new instance
-        print("Registering instance/agent to %s ..." % (args.ui_address))
+        logger.info("Registering instance/agent to %s ...", args.ui_address)
         (code, content, cookies) = https_request(
             None,
             'POST',
@@ -170,12 +178,14 @@ def wrapped_main(args, app):
         )
         if code != 200:
             raise HTTPError(code, content)
-        print("Done.")
+        logger.info("Done.")
     except UserError:
         raise
     except HTTPError as e:
-        err = json.loads(e.read())
-        raise UserError(err['error'])
+        msg = json.loads(e.read())['error']
+        if e.url.startswith(agent_baseurl):
+            msg = "Failed to contact agent: %s. Are you mixing agents ?" % msg
+        raise UserError(msg)
     except Exception as e:
         raise UserError(str(e) or repr(e))
 
