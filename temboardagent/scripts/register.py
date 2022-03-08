@@ -101,8 +101,9 @@ class RegisterApplication(Application):
 
 
 def wrapped_main(args, app):
-    discover_url = "https://{}:{}/discover".format(
-        args.host, app.config.temboard.port)
+    agent_baseurl = "https://{}:{}".format(args.host, app.config.temboard.port)
+    discover_url = agent_baseurl + '/discover'
+
     try:
         # Getting system/instance informations using agent's discovering API
         logger.info(
@@ -180,8 +181,10 @@ def wrapped_main(args, app):
     except UserError:
         raise
     except HTTPError as e:
-        err = json.loads(e.read())
-        raise UserError(err['error'])
+        msg = json.loads(e.read())['error']
+        if e.url.startswith(agent_baseurl):
+            msg = "Failed to contact agent: %s. Are you mixing agents ?" % msg
+        raise UserError(msg)
     except Exception as e:
         raise UserError(str(e) or repr(e))
 
