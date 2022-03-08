@@ -4,6 +4,7 @@ from getpass import getpass
 import re
 import json
 import logging
+import socket
 
 from ..cli import Application
 from ..errors import (
@@ -81,7 +82,7 @@ class RegisterApplication(Application):
             '-h', '--host',
             dest='host',
             help="Agent address. Default: %(default)s",
-            default='localhost'
+            default=socket.getfqdn(),
         )
         self.config_specs['temboard_port'].add_argument(
             parser, '-p', '--port',
