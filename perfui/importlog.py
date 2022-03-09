@@ -20,6 +20,7 @@ logger = logging.getLogger('importlog')
 LOCALTZ = pytz.timezone('UTC')
 KNOWN_LABELS = [
     'agent', 'pid', 'service', 'task', 'dbname', 'spcname', 'timestamp',
+    'method', 'url', 'status', 'handler', 'plugin',
 ]
 KNOWN_METRICS = {
     'fork': dict(
@@ -78,6 +79,12 @@ KNOWN_METRICS = {
         unit='nounit',
         help='Total commit in database.',
     ),
+    # HTTP metric
+    'response_time': dict(
+        type='gauge',
+        unit='seconds',
+        help='HTTP response time',
+    ),
 }
 
 
@@ -110,7 +117,7 @@ def main(logfile):
 
             # log line format:
             #
-            #     YYYY-mm-dd HH:MM:SS,SSSSSS [PID] [MODULE  ] LEVEL: MESSAGE...
+            #     YYYY-mm-dd HH:MM:SS,SSSSSS command[PID]: [MODULE  ] LEVEL: MESSAGE...
             #
             # or systemd:
             #
@@ -141,7 +148,7 @@ def main(logfile):
                 log_count += len(loki_batch)
                 loki_batch[:] = []
 
-            if ' io_rchar=' in tail or ' up=1 ' in tail:
+            if ' io_rchar=' in tail or ' up=1 ' in tail or ' method=' in tail:
                 # métriques
                 _, _, message = tail.split(':', 2)
                 try:
@@ -295,7 +302,7 @@ class OpenMetricsWriter:
             date, time = timestamp.split('T')
             timestamp = parse_datetime(date, time)
             epoch_s = timestamp.timestamp()
-            self.start = min(self.start or epoch_s, epoch_s)
+        self.start = min(self.start or epoch_s, epoch_s)
 
         labels = ','.join('%s="%s"' % label for label in labels.items())
         self.fo.write(dedent(f"""\
