@@ -135,7 +135,7 @@ def main(logfile):
                 logger.warning("Malformed line: %s.", line)
                 continue
             epoch_s = timestamp.timestamp()
-            epoch_ns = epoch_s * 1_000_000_000
+            epoch_ns = epoch_s * 1000000000
 
             if not start:
                 start = timestamp
@@ -194,9 +194,9 @@ def main(logfile):
     dashboard_url = (
         "http://grafana.temboardperf.docker:3000"
         "/d/MkhXLKbnz/temboard-performance"
-        f"?orgId=1&from={from_}&to={to}"
-        f"&var-service=.%2B&var-logfile={labels['logfile']}"
-    )
+        "?orgId=1&from={from_}&to={to}"
+        "&var-service=.%2B&var-logfile={labels['logfile']}"
+    ).format(**locals())
     logger.info("View graph and messages at: %s.", dashboard_url)
 
 
@@ -286,14 +286,14 @@ class OpenMetricsWriter:
         if unit != 'nounit':
             metric += '_' + unit
         if name not in self.declared_metrics:
-            self.fo.write(dedent(f"""\
+            self.fo.write(dedent("""\
             # HELP {metric} {self.known_metrics[name]['help']}
             # TYPE {metric} {self.known_metrics[name]['type']}
-            """))
+            """).format(**locals()))
             if unit != 'nounit':
-                self.fo.write(dedent(f"""\
+                self.fo.write(dedent("""\
                 # UNIT {metric} {unit}
-                """))
+                """).format(**locals()))
             self.declared_metrics.add(name)
 
         if 'timestamp' in labels:
@@ -305,9 +305,9 @@ class OpenMetricsWriter:
         self.start = min(self.start or epoch_s, epoch_s)
 
         labels = ','.join('%s="%s"' % label for label in labels.items())
-        self.fo.write(dedent(f"""\
+        self.fo.write(dedent("""\
         {metric}{{{labels}}} {value} {epoch_s}
-        """))
+        """).format(**locals()))
         self.end = epoch_s
 
     def close(self):
