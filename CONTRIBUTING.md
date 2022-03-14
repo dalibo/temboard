@@ -70,7 +70,7 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
 `key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
 
-Beware that two Postgres instance are set up with replication. The primary
+Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
 
 
@@ -100,13 +100,12 @@ Functionnal tests are executed **outside** temboard process. UI is installed and
 registered using regular tools : pip, dpkg or yum, auto_configure.sh, etc. A
 real Postgres database is set up for the repository
 
-Tests are written in Python with pytest. Tests use selenium to communicate with
-the UI.
+Tests are written in Python with pytest.
 
 For development purpose, a `docker-compose.yml` file describe the setup to
 execute functionnal tests almost like on Circle CI. The main entry point is
 `tests/func/run.sh` which is responsible to install temboard, configure it and
-call pytest with selenium parameters.
+call pytest.
 
 On failure, the main container, named `ui`, wait for you to enter it and debug.
 Project tree is mounted at `/workspace`.
@@ -125,7 +124,6 @@ for it likewise:
 
 ``` console
 $ docker-compose exec agent1 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
@@ -241,83 +239,6 @@ infrastructure :
   without interaction. **Agent are not unregistered!**
 
 
-## Setting Up a Hot Standby
-
-You can managed a hot standby Postgres instance with an agent with a custom
-`docker-compose.override.yml`:
-
-``` yaml
-# Contents of docker-compose.override.yml
-
-version: '2.4'  # Matches docker-compose.yml version.
-
-volumes:
-  data2:
-  run2:
-
-services:
-  postgres:
-    image: postgres:13-alpine  # MUST MATCH secondary service image !
-    volumes:
-    - ./docker/setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
-
-  secondary:
-    image: postgres:13-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      PRIMARY_HOST: postgres  # Setting PRIMARY_HOST triggers the standby mode.
-    command: postgres -c shared_preload_libraries=pg_stat_statements
-    volumes:
-    - data2:/var/lib/postgresql/data
-    - run2:/var/run/postgresql
-    - ./share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
-    - ./docker/setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
-
-  agent2:
-    image: dalibo/temboard-agent
-    ports:
-    - 2346:2345
-    volumes:
-    - data2:/var/lib/postgresql/data
-    - run2:/var/run/postgresql
-    - /var/run/docker.sock:/var/run/docker.sock
-    - .:/usr/local/src/temboard/
-    - ./agent/:/usr/local/src/temboard-agent/
-    links:
-    - secondary:secondary.dev
-    environment:
-      # Persist bash history. Eases reuse of pip install and hupper command when
-      # recreating container.
-      HISTFILE: /usr/local/src/temboard/docker-agent-bash_history
-      TEMBOARD_HOSTNAME: secondary.dev
-      TEMBOARD_LOGGING_LEVEL: DEBUG
-      TEMBOARD_KEY: key_for_agent
-      TEMBOARD_SSL_CA: /usr/local/src/temboard-agent/share/temboard-agent_ca_certs_CHANGEME.pem
-      TEMBOARD_SSL_CERT: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.pem
-      TEMBOARD_SSL_KEY: /usr/local/src/temboard-agent/share/temboard-agent_CHANGEME.key
-    command: sleep infinity
-```
-
-Start full environment with `make devenv`.
-
-Then, install and run agent like for primary agent:
-
-``` console
-$ docker-compose exec agent2 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# pip install -e /usr/local/src/temboard-agent/ psycopg2-binary hupper
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
- INFO: Starting temboard-agent 8.0.dev0.
- INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
-2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
-...
-```
-
-Finally, register the secondary agent in UI, using host `0.0.0.0`, port `2346`
-(**NOT 2345**) and key `key_for_agent`. The monitored Postgres instance is named
-`secondary.dev`.
-
-
 ## Coding style
 
 An `.editorconfig` file is included at the root of the repository configuring
@@ -367,6 +288,7 @@ To release a new version:
 - Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
 
+
 ## Releasing the Agent
 
 Releasing a new version of temBoard agent requires write access to
@@ -379,19 +301,19 @@ twine. For debian packaging, see below.
 
 Please follow these steps:
 
--   Checkout the release branch, e.g. v2.
--   Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
--   Update `temboardagent/version.py`, without committing.
--   Generate commit and tag with `make release`.
--   Push Python egg to PyPI using `make upload`.
--   Build and push RPM packages using `make -C packaging/rpm all push`.
--   Build and push debian packages using
-    `make -C packaging/deb all push`.
--   Trigger docker master build from
-    <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+- Checkout the release branch, e.g. v2.
+- Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
+- Update `temboardagent/version.py`, without committing.
+- Generate commit and tag with `make release`.
+- Push Python egg to PyPI using `make upload`.
+- Build and push RPM packages using `make -C packaging/rpm all push`.
+- Build and push debian packages using
+  `make -C packaging/deb all push`.
+- Trigger docker master build from
+  <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+
 
 ## Other documentation for maintainers
-
 
 Checkout the RPM packaging README for the agent:
 
