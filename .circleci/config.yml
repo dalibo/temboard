@@ -5,6 +5,7 @@ workflows:
   default:
     jobs:
     - doc: {name: stage0-doc}
+    - lint: {name: stage0-lint}
     - unit:
        name: stage0-unit-py2.7
        pyversion: "2.7"
@@ -87,6 +88,35 @@ jobs:
         path: README.html
         destination: build/README.html
 
+  lint:
+    docker: [image: python:3.9]
+    working_directory: *working_directory
+    steps:
+      - checkout
+      - run: git submodule update --init
+      - &pip-cache-restore
+        restore_cache:
+          keys:
+            - temboard-{{ .Branch }}
+            - temboard-master
+      - run:
+          name: Setup python environment
+          command: |
+            pip install --upgrade --requirement requirements-dev.txt --editable ./
+      - run:
+          name: Lint
+          command: |
+            set -x
+            # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
+            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            flake8
+            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            check-manifest
+      - &pip-cache-save
+        save_cache:
+          key: temboard-{{ .Branch }}
+          paths: ["~/.cache/pip/"]
+
   unit:
     parameters:
       pyversion:
@@ -111,15 +141,7 @@ jobs:
       - run:
           name: Lint
           command: |
-            set -x
-            # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
-            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8
-            if flake8 | grep -q 'Python 3' ; then
-              flake8 perfui/
-            fi
-            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
-            check-manifest
       - run:
           name: Python tests
           command: |
