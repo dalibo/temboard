@@ -5,6 +5,7 @@ workflows:
   default:
     jobs:
     - doc: {name: stage0-doc}
+    - lint: {name: stage0-lint}
     - unit:
        name: stage0-unit-py2.7
        pyversion: "2.7"
@@ -88,8 +89,7 @@ jobs:
         destination: build/README.html
 
   lint:
-    docker:
-      - image: python:3.9
+    docker: [image: python:3.9]
     working_directory: *working_directory
     steps:
       - checkout
@@ -102,7 +102,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement ui/requirements-dev.txt --editable ui/
+            pip install --upgrade --requirement requirements-dev.txt --editable ./
       - run:
           name: Lint
           command: |
@@ -112,11 +112,6 @@ jobs:
             flake8
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
-      - run:
-          name: Python tests
-          command: |
-            cd ui/
-            pytest --full-trace --cov-report=xml tests/unit/
       - &pip-cache-save
         save_cache:
           key: temboard-{{ .Branch }}
