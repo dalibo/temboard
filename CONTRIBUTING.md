@@ -70,7 +70,7 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
 `key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
 
-Beware that two Postgres instance are set up with replication. The primary
+Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
 
 
@@ -367,6 +367,7 @@ To release a new version:
 - Build and upload RPM package with `make -C packaging/rpm all push`.
 - Build and upload Debian package with `make -C packaging/deb all push`.
 
+
 ## Releasing the Agent
 
 Releasing a new version of temBoard agent requires write access to
@@ -379,19 +380,19 @@ twine. For debian packaging, see below.
 
 Please follow these steps:
 
--   Checkout the release branch, e.g. v2.
--   Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
--   Update `temboardagent/version.py`, without committing.
--   Generate commit and tag with `make release`.
--   Push Python egg to PyPI using `make upload`.
--   Build and push RPM packages using `make -C packaging/rpm all push`.
--   Build and push debian packages using
-    `make -C packaging/deb all push`.
--   Trigger docker master build from
-    <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+- Checkout the release branch, e.g. v2.
+- Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
+- Update `temboardagent/version.py`, without committing.
+- Generate commit and tag with `make release`.
+- Push Python egg to PyPI using `make upload`.
+- Build and push RPM packages using `make -C packaging/rpm all push`.
+- Build and push debian packages using
+  `make -C packaging/deb all push`.
+- Trigger docker master build from
+  <https://hub.docker.com/r/dalibo/temboard-agent/~/settings/automated-builds/>.
+
 
 ## Other documentation for maintainers
-
 
 Checkout the RPM packaging README for the agent:
 
