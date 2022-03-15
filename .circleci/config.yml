@@ -64,12 +64,25 @@ jobs:
     steps:
     - checkout
     - run: git submodule update --init
-    - run: cd ui/; python setup.py sdist bdist_wheel --universal
+    - run:
+        name: Build Agent
+        command: |
+          cd agent/
+          python setup.py sdist bdist_wheel
+    - store_artifacts:
+        path: /workspace/agent/dist/
+    - run:
+        name: Build UI
+        command: |
+          cd ui/
+          python setup.py sdist bdist_wheel --universal
     - store_artifacts:
         path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
+        - agent/dist/*.tar.gz
+        - agent/dist/*.whl
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
 
