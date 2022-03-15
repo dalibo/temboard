@@ -14,13 +14,13 @@ workflows:
            pyversion: ["3.5", "2.7"]
     - dist: {name: stage0-dist}
     - rpm:
-        name: stage0-pkg-<< matrix.codename >>
+        name: stage1-pkg-<< matrix.codename >>
         matrix:
           parameters:
             codename: [rockylinux8, centos7]
         requires: [stage0-dist]
     - deb:
-        name: stage0-pkg-<< matrix.codename >>
+        name: stage1-pkg-<< matrix.codename >>
         matrix:
           parameters:
             codename: [bullseye, buster, stretch]
@@ -28,37 +28,37 @@ workflows:
     # Please keep agent/tests/func/Makefile run-all test matrix sync with the
     # following.
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage0-pkg-<< matrix.dist >>]
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage1-pkg-<< matrix.dist >>]
         pythonbin: "python2"
         matrix:
           parameters:
             dist: [centos7]
             pgversion: ["9.6", "12"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [rockylinux8]
             pgversion: ["9.6", "14"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [bullseye]
             pgversion: ["13"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [buster]
             pgversion: ["11"]
     - func:
-        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [stretch]
