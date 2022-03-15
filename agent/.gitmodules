@@ -1,0 +1,3 @@
+[submodule "temboardagent/toolkit"]
+	path = temboardagent/toolkit
+	url = https://github.com/dalibo/temboard-toolkit.git

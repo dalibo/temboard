@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  bullseye: &mkdeb
+    image: dalibo/buildpack-pkg:bullseye
+    environment:
+      # See dch(1)
+      DEBFULLNAME: ${DEBFULLNAME}
+      DEBEMAIL: ${DEBEMAIL}
+    volumes:
+    - ../..:/workspace
+    - ../../dist/:/dist
+    command: /workspace/packaging/deb/mkdeb.sh
+
+  buster:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:buster
+
+  stretch:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:stretch

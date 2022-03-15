@@ -1,0 +1,175 @@
+version: 2.1
+
+workflows:
+  version: 2
+  default:
+    jobs:
+    - dist: {name: stage0-dist}
+    - rpm:
+        name: stage1-pkg-<< matrix.dist >>
+        matrix:
+          parameters:
+            dist: [rockylinux8, centos7]
+        requires: [stage0-dist]
+    - unit:
+        name: stage0-unit-py36
+    - deb:
+        name: stage1-pkg-<< matrix.codename >>
+        matrix:
+          parameters:
+            codename: [bullseye, buster, stretch]
+        requires: [stage0-dist]
+    # Please keep tests/func/Makefile run-all test matrix sync with the
+    # following.
+    - func:
+        name: stage2-func-pg<< matrix.pgversion >>-centos7
+        dist: centos7
+        requires: [stage1-pkg-centos7, "stage0-unit-py36"]
+        matrix:
+          parameters:
+            pgversion: ["9.6", "12"]
+    - func:
+        name: stage2-func-pg<< matrix.pgversion >>-rockylinux8
+        dist: rockylinux8
+        requires: [stage1-pkg-rockylinux8, "stage0-unit-py36"]
+        matrix:
+          parameters:
+            pgversion: ["9.6", "14"]
+    - func:
+        name: stage2-func-pg13-bullseye
+        dist: bullseye
+        pgversion: "13"
+        requires: [stage1-pkg-bullseye, "stage0-unit-py36"]
+    - func:
+        name: stage2-func-pg11-buster
+        dist: buster
+        pgversion: "11"
+        requires: [stage1-pkg-buster, "stage0-unit-py36"]
+    - func:
+        name: stage2-func-pg10-stretch
+        dist: stretch
+        requires: [stage1-pkg-stretch, "stage0-unit-py36"]
+        pgversion: "10"
+
+jobs:
+  dist:
+    docker: [{image: python:3.6}]
+    working_directory: &working_directory /workspace
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - run: python setup.py sdist bdist_wheel
+    - store_artifacts: &store_artifacts
+        path: /workspace/dist/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/*.tar.gz
+        - dist/*.whl
+
+  unit:
+    docker:
+      - image: "python:3.6"
+        environment:
+          TERM: linux
+          TERMINFO: /etc/terminfo
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - restore_cache:
+        keys:
+        - temboard-agent-{{ .Branch }}
+        - temboard-agent-master
+    - run:
+        name: Python lint and tests
+        command: |
+          set -x
+          pip install --upgrade --requirement requirement-ci.txt --editable . psycopg2-binary
+          git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+          flake8 temboardagent
+          python -m temboardagent.toolkit.proctitle
+          pytest tests/unit/
+          codecov
+    - save_cache:
+        key: temboard-agent-{{ .Branch }}
+        paths:
+        - ".cache/pip/"
+
+  deb:
+    parameters:
+      codename:
+        description: "Debian version"
+        type: enum
+        enum: [bullseye, buster, stretch]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - attach_workspace: &attach_workspace
+        at: *working_directory
+    - run:
+        command: ./packaging/deb/mkdeb.sh
+        environment:
+          DEBFULLNAME: CircleCI
+          DEBEMAIL: none@example.com
+    - store_artifacts: *store_artifacts
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/*.deb
+
+  rpm:
+    parameters:
+      dist:
+        description: "Distribution"
+        type: enum
+        enum: [rockylinux8, centos7]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.dist >>"}]
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - attach_workspace: *attach_workspace
+    - run:
+        name: Build RPM snapshot
+        command: ./packaging/rpm/build.sh
+    - store_artifacts: *store_artifacts
+    - persist_to_workspace:
+        root: .
+        paths:
+        - dist/*.rpm
+
+  func:
+    parameters:
+      dist:
+        description: "Execution Linux distribution"
+        type: enum
+        enum: [rockylinux8, centos7, buster, stretch, bullseye]
+      install_pkg:
+        description: "Whether to install agent from deb or RPM"
+        type: integer
+        default: 1
+      pgversion:
+        description: "PostgreSQL dotted major version"
+        type: string
+      python:
+        description: "Python interpreter"
+        type: string
+        default: "python3"
+    docker: [image: "dalibo/buildpack-postgres:<< parameters.dist >>"]
+    environment:
+      TBD_PGVERSION: "<< parameters.pgversion >>"
+      PYTHON: "<< parameters.python >>"
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - attach_workspace: *attach_workspace
+    - run:
+        name: Shellcheck
+        command: shellcheck share/auto_configure.sh packaging/deb/mkdeb.sh
+    - run:
+        name: Execute func tests
+        command: "TBD_INSTALL_PKG=<< parameters.install_pkg >> tests/func/run_tests_docker.sh"
