@@ -77,7 +77,7 @@ stop(){
 
 reload(){
 	test -f $CONFIG || exit 6
-	echo -n $"Reloading configuration: "	
+	echo -n $"Reloading configuration: "
 	killproc -p $PIDFILE temboard-agent -HUP
 	RETVAL=$?
 	echo
