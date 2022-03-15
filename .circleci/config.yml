@@ -6,12 +6,12 @@ workflows:
     jobs:
     - doc: {name: stage0-doc}
     - lint: {name: stage0-lint}
+    - unit-agent: {name: stage0-unit-agent-py3.6}
     - unit-ui:
-       name: stage0-unit-ui-py2.7
-       pyversion: "2.7"
-    - unit-ui:
-       name: stage0-unit-ui-py3.5
-       pyversion: "3.5"
+       name: stage0-unit-ui-py<< matrix.pyversion >>
+       matrix:
+         parameters:
+           pyversion: ["3.5", "2.7"]
     - dist: {name: stage0-dist}
     - rpm:
         name: stage0-pkg-centos7
@@ -137,6 +137,37 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
+  unit-agent:
+    docker:
+    - image: "python:3.6"
+      environment:
+        TERM: linux
+        TERMINFO: /etc/terminfo
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - run: git submodule update --init
+    - &pip-cache-restore
+      restore_cache:
+        keys:
+          - temboard-{{ .Branch }}
+          - temboard-master
+    - run:
+        name: Install Agent and requirements
+        command: |
+          pip install --upgrade --requirement agent/requirement-ci.txt --editable agent/ psycopg2-binary
+    - run:
+        name: Execute unit tests
+        command: |
+          set -x
+          cd agent/
+          python -m temboardagent.toolkit.proctitle
+          pytest tests/unit/
+    - &pip-cache-save
+      save_cache:
+        key: temboard-{{ .Branch }}
+        paths: ["~/.cache/pip/"]
+
   unit-ui:
     parameters:
       pyversion:
@@ -149,11 +180,7 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init
-      - &pip-cache-restore
-        restore_cache:
-          keys:
-            - temboard-{{ .Branch }}
-            - temboard-master
+      - *pip-cache-restore
       - run:
           name: Setup python environment
           command: |
@@ -168,10 +195,7 @@ jobs:
           command: |
             cd ui/
             pytest --full-trace --cov-report=xml tests/unit/
-      - &pip-cache-save
-        save_cache:
-          key: temboard-{{ .Branch }}
-          paths: ["~/.cache/pip/"]
+      - *pip-cache-save
 
   rpm:
     parameters:

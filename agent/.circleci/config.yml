@@ -9,8 +9,6 @@ workflows:
         matrix:
           parameters:
             dist: [rockylinux8, centos7]
-    - unit:
-        name: stage0-unit-py36
     - deb:
         name: stage1-pkg-<< matrix.codename >>
         matrix:
@@ -21,14 +19,14 @@ workflows:
     - func:
         name: stage2-func-pg<< matrix.pgversion >>-centos7
         dist: centos7
-        requires: [stage1-pkg-centos7, "stage0-unit-py36"]
+        requires: [stage1-pkg-centos7]
         matrix:
           parameters:
             pgversion: ["9.6", "12"]
     - func:
         name: stage2-func-pg<< matrix.pgversion >>-rockylinux8
         dist: rockylinux8
-        requires: [stage1-pkg-rockylinux8, "stage0-unit-py36"]
+        requires: [stage1-pkg-rockylinux8]
         matrix:
           parameters:
             pgversion: ["9.6", "14"]
@@ -36,46 +34,19 @@ workflows:
         name: stage2-func-pg13-bullseye
         dist: bullseye
         pgversion: "13"
-        requires: [stage1-pkg-bullseye, "stage0-unit-py36"]
+        requires: [stage1-pkg-bullseye]
     - func:
         name: stage2-func-pg11-buster
         dist: buster
         pgversion: "11"
-        requires: [stage1-pkg-buster, "stage0-unit-py36"]
+        requires: [stage1-pkg-buster]
     - func:
         name: stage2-func-pg10-stretch
         dist: stretch
-        requires: [stage1-pkg-stretch, "stage0-unit-py36"]
+        requires: [stage1-pkg-stretch]
         pgversion: "10"
 
 jobs:
-  unit:
-    docker:
-      - image: "python:3.6"
-        environment:
-          TERM: linux
-          TERMINFO: /etc/terminfo
-    working_directory: *working_directory
-    steps:
-    - checkout
-    - run: git submodule update --init
-    - restore_cache:
-        keys:
-        - temboard-agent-{{ .Branch }}
-        - temboard-agent-master
-    - run:
-        name: Python lint and tests
-        command: |
-          set -x
-          pip install --upgrade --requirement requirement-ci.txt --editable . psycopg2-binary
-          python -m temboardagent.toolkit.proctitle
-          pytest tests/unit/
-          codecov
-    - save_cache:
-        key: temboard-agent-{{ .Branch }}
-        paths:
-        - ".cache/pip/"
-
   deb:
     parameters:
       codename:
