@@ -6,11 +6,11 @@ workflows:
     jobs:
     - doc: {name: stage0-doc}
     - lint: {name: stage0-lint}
-    - unit:
-       name: stage0-unit-py2.7
+    - unit-ui:
+       name: stage0-unit-ui-py2.7
        pyversion: "2.7"
-    - unit:
-       name: stage0-unit-py3.5
+    - unit-ui:
+       name: stage0-unit-ui-py3.5
        pyversion: "3.5"
     - dist: {name: stage0-dist}
     - rpm:
@@ -29,30 +29,30 @@ workflows:
         requires: [stage0-dist]
     - func:
         name: stage1-func-pg12-centos7
-        requires: [stage0-unit-py2.7, stage0-pkg-centos7]
+        requires: [stage0-unit-ui-py2.7, stage0-pkg-centos7]
         dist: centos7
         pgversion: "12"
     - func:
         name: stage1-func-pg14-rockylinux8
-        requires: [stage0-unit-py3.5, stage0-pkg-rockylinux8]
+        requires: [stage0-unit-ui-py3.5, stage0-pkg-rockylinux8]
         dist: rockylinux8
         pgversion: "14"
         pythonbin: "python3"
     - func:
         name: stage1-func-pg13-bullseye
-        requires: [stage0-unit-py2.7, stage0-pkg-bullseye]
+        requires: [stage0-unit-ui-py2.7, stage0-pkg-bullseye]
         dist: bullseye
         pythonbin: "python3.9"
         pgversion: "13"
     - func:
         name: stage1-func-pg9.6-buster
-        requires: [stage0-unit-py2.7, stage0-pkg-buster]
+        requires: [stage0-unit-ui-py2.7, stage0-pkg-buster]
         dist: buster
         pythonbin: "python2.7"
         pgversion: "9.5"
     - func:
         name: stage1-func-pg9.5-stretch
-        requires: [stage0-unit-py3.5, stage0-pkg-stretch]
+        requires: [stage0-unit-ui-py3.5, stage0-pkg-stretch]
         dist: stretch
         pythonbin: "python3.5"
         pgversion: "9.5"
@@ -137,7 +137,7 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
-  unit:
+  unit-ui:
     parameters:
       pyversion:
         description: "Python version"
