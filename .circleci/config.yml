@@ -104,7 +104,13 @@ jobs:
           command: |
             pip install --upgrade --requirement ui/requirements-dev.txt --editable ui/
       - run:
-          name: Lint
+          name: Lint Agent
+          command: |
+            cd agent/
+            flake8 temboardagent
+            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+      - run:
+          name: Lint UI
           command: |
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410

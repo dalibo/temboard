@@ -86,8 +86,6 @@ jobs:
         command: |
           set -x
           pip install --upgrade --requirement requirement-ci.txt --editable . psycopg2-binary
-          git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-          flake8 temboardagent
           python -m temboardagent.toolkit.proctitle
           pytest tests/unit/
           codecov
