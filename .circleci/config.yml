@@ -14,12 +14,10 @@ workflows:
            pyversion: ["3.5", "2.7"]
     - dist: {name: stage0-dist}
     - rpm:
-        name: stage0-pkg-centos7
-        codename: centos7
-        requires: [stage0-dist]
-    - rpm:
-        name: stage0-pkg-rockylinux8
-        codename: rockylinux8
+        name: stage0-pkg-<< matrix.codename >>
+        matrix:
+          parameters:
+            codename: [rockylinux8, centos7]
         requires: [stage0-dist]
     - deb:
         name: stage0-pkg-<< matrix.codename >>
@@ -202,17 +200,22 @@ jobs:
       codename:
         description: "RHEL-clone distribution"
         type: enum
-        enum: [centos7, rockylinux8]
-    docker:
-      - image: dalibo/buildpack-pkg:<< parameters.codename >>
+        enum: [rockylinux8, centos7]
+    docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
     - checkout
     - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
+    - run: find agent/dist
     - run:
-        name: Build RPM snapshot
+        name: Build Agent RPM snapshot
+        command: agent/packaging/rpm/build.sh
+    - store_artifacts:
+        path: /workspace/agent/dist/
+    - run:
+        name: Build UI RPM snapshot
         command: |
           yum-builddep -y ui/packaging/rpm/temboard.spec
           ui/packaging/rpm/build.sh
@@ -221,6 +224,7 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
+        - agent/dist/*.rpm
         - ui/dist/*.rpm
 
   deb:
@@ -237,15 +241,26 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
+        name: Build Agent Debian Snapshot
+        command: agent/packaging/deb/mkdeb.sh
+        environment:
+          DEBFULLNAME: CircleCI
+          DEBEMAIL: none@example.com
+    - store_artifacts:
+        path: /workspace/agent/dist/
+    - run:
+        name: Build UI Debian Snapshot
         command: ui/packaging/deb/mkdeb.sh
         environment:
           DEBFULLNAME: CircleCI
           DEBEMAIL: none@example.com
     - store_artifacts:
-        path: /workspace/dist/
+        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
-        paths: [ui/dist/*.deb]
+        paths:
+        - agent/dist/*.deb
+        - ui/dist/*.deb
 
   func:
     parameters:
