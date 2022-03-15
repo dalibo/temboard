@@ -25,35 +25,44 @@ workflows:
           parameters:
             codename: [bullseye, buster, stretch]
         requires: [stage0-dist]
+    # Please keep agent/tests/func/Makefile run-all test matrix sync with the
+    # following.
     - func:
-        name: stage1-func-pg12-centos7
-        requires: [stage0-unit-ui-py2.7, stage0-pkg-centos7]
-        dist: centos7
-        pgversion: "12"
+        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage0-pkg-<< matrix.dist >>]
+        pythonbin: "python2"
+        matrix:
+          parameters:
+            dist: [centos7]
+            pgversion: ["9.6", "12"]
     - func:
-        name: stage1-func-pg14-rockylinux8
-        requires: [stage0-unit-ui-py3.5, stage0-pkg-rockylinux8]
-        dist: rockylinux8
-        pgversion: "14"
-        pythonbin: "python3"
+        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        matrix:
+          parameters:
+            dist: [rockylinux8]
+            pgversion: ["9.6", "14"]
     - func:
-        name: stage1-func-pg13-bullseye
-        requires: [stage0-unit-ui-py2.7, stage0-pkg-bullseye]
-        dist: bullseye
-        pythonbin: "python3.9"
-        pgversion: "13"
+        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        matrix:
+          parameters:
+            dist: [bullseye]
+            pgversion: ["13"]
     - func:
-        name: stage1-func-pg9.6-buster
-        requires: [stage0-unit-ui-py2.7, stage0-pkg-buster]
-        dist: buster
-        pythonbin: "python2.7"
-        pgversion: "9.5"
+        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        matrix:
+          parameters:
+            dist: [buster]
+            pgversion: ["11"]
     - func:
-        name: stage1-func-pg9.5-stretch
-        requires: [stage0-unit-ui-py3.5, stage0-pkg-stretch]
-        dist: stretch
-        pythonbin: "python3.5"
-        pgversion: "9.5"
+        name: stage1-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage0-pkg-<< matrix.dist >>]
+        matrix:
+          parameters:
+            dist: [stretch]
+            pgversion: ["10"]
 
 jobs:
   dist:
@@ -273,22 +282,16 @@ jobs:
         type: enum
         enum: ["14", "13", "12", "11", "10", "9.6", "9.5"]
       pythonbin:
-        description: "Python bin executable"
+        description: "UI Python Executable"
         type: enum
         enum: ["python2.7", "python2", "python3.9", "python3.5", "python3"]
-        default: "python2"
+        default: "python3"
     docker:
-    - image: dalibo/buildpack-python:<< parameters.dist >>
-      environment:
-        PGHOST: 0.0.0.0
-        PGUSER: temboard
-        PGPASSWORD: &PGPASSWORD confidentiel
-        TEMBOARD_PASSWORD: *PGPASSWORD
-        TBD_INSTALL_RPM: "1"
+    - image: dalibo/buildpack-postgres:<< parameters.dist >>
     - image: postgres:<< parameters.pgversion >>-alpine
       environment:
         POSTGRES_USER: temboard
-        POSTGRES_PASSWORD: *PGPASSWORD
+        POSTGRES_PASSWORD: &PGPASSWORD confidentiel
     working_directory: *working_directory
     steps:
     - checkout
@@ -302,10 +305,23 @@ jobs:
           shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
           shellcheck ui/packaging/deb/mkdeb.sh
     - run:
-        name: Functionnal tests
+        name: Agent Functionnal Tests
+        command: agent/tests/func/run_tests_docker.sh
+        environment:
+          TBD_INSTALL_PKG: "1"
+          TBD_PGVERSION: "<< parameters.pgversion >>"
+    - store_artifacts:
+        path: /tmp/tests_temboard/logs/postgresql.log
+    - run:
+        name: UI Functionnal Tests
         command: ui/tests/func/run.sh
         environment:
+          PGHOST: 0.0.0.0
+          PGUSER: temboard
+          PGPASSWORD: *PGPASSWORD
           PYTHONBIN: << parameters.pythonbin >>
+          TEMBOARD_PASSWORD: *PGPASSWORD
+          TBD_INSTALL_RPM: "1"
     - *pip-cache-save
     - store_artifacts:
-        path: temboard-func.logs
+        path: ui/temboard-func.log
