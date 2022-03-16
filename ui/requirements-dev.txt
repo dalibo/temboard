@@ -1,6 +1,6 @@
 check-manifest
 flake8
-pytest<4
+pytest
 pytest-cov
 pytest-mock
 pytest-tornado

@@ -23,19 +23,12 @@ $ git clone https://github.com/dalibo/temboard.git
 $ cd temboard/
 ```
 
-Then, create a virtualenv for Python3.6+ or Python2.7, activate it. Then
-install temBoard and pull docker images:
+The `develop` make target creates a virtual environment for Python 3.6,
+installs temBoard and its dependencies, development tools, starts services and
+initialize temBoard repository.
 
 ``` console
-$ pip install -e ui/ -r ui/requirements-dev.txt
-...
-$ docker-compose pull
-```
-
-Then, bootstrap development with `make devenv`.
-
-``` console
-$ make devenv
+$ make develop
 ...
 2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.
 Initialized role temboard and database temboard.
@@ -44,11 +37,15 @@ temboard_repository_1 is up-to-date
 Creating temboard_instance_1 ... done
 Creating temboard_agent_1    ... done
 
-$ temboard --debug
+$ .venv-py3.6/bin/temboard --debug
+ INFO: Starting temboard 8.0.dev0.
+ INFO: Found config file /home/.../temboard/temboard.conf.
+ INFO: Running on Debian GNU/Linux 11 (bullseye).
+ INFO: Using Python 3.6.8 (/home/.../.cache/pyenv/versions/temboard-uoBqmXGk-py3.6/bin/python) and Tornado 4.4.3 .
+ INFO: Using libpq 11.5, Psycopg2 2.8.6 (dt dec pq3 ext lo64) and SQLAlchemy 1.3.24 .
+2022-03-16 14:08:06,425 temboardui[1593889]: [pluginsmgmt     ]  INFO: Loaded plugin 'dashboard'.
 ...
-2020-03-24 17:11:55,997 [ 3551] [temboardui      ]  INFO: Starting temBoard 4.0+master on Debian GNU/Linux 10 (buster).
-...
-2020-03-24 17:11:56,015 [ 3551] [temboardui      ]  INFO: Serving temboardui on https://0.0.0.0:8888
+2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on https://0.0.0.0:8888
 ...
 ```
 
@@ -164,7 +161,7 @@ reload while you edit the documentation.
 ### Throw your development environment
 
 If you want to trash development env, use `docker-compose down -v` and restart
-from `make devenv`.
+from `make develop`.
 
 
 ## Entering Monitored PostgreSQL Instance with psql
@@ -196,7 +193,7 @@ services:
     image: postgres:9.5-alpine
 ```
 
-Now apply changes with `make devenv`. Docker-compose will recreate `postgres`
+Now apply changes with `make develop`. Docker-compose will recreate `postgres`
 and `agent` containers, thus you need to install and start the agent as
 documented above.
 
