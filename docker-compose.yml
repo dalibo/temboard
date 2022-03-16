@@ -61,7 +61,8 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard/agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
-    command: &agent_command [/usr/bin/tini, sleep, infinity]
+    entrypoint: &agent_entrypoint [/usr/bin/tini, /usr/local/src/temboard/docker/dev-agent-entrypoint.sh]
+    command: &agent_command [sleep, infinity]
 
   # Second instance, with replication of first instance.
   postgres1:
@@ -94,6 +95,7 @@ services:
     environment:
       <<: *agent_env
       TEMBOARD_HOSTNAME: postgres1.dev
+    entrypoint: *agent_entrypoint
     command: *agent_command
 
 
