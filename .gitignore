@@ -17,3 +17,4 @@ package-lock.json
 *.ipynb_checkpoints
 # From pytest
 test_log.log
+.venv-py*
