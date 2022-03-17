@@ -373,7 +373,6 @@ class TemboardApplication(BaseApplication):
         setproctitle.setup()
 
         self.log_versions()
-        logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 
@@ -402,7 +401,7 @@ class TemboardApplication(BaseApplication):
 
         self.apply_config()
 
-        check_schema(self.config)
+        check_schema()
 
         self.worker_pool.apply_config()
         services.add(self.worker_pool)
