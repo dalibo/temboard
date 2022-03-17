@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class Migrator(object):
     versionsdir = os.path.dirname(__file__) + '/versions'
     UNDEFINED = object()
-    LAST_ALEMBIC_VERSION = '006_metrics_archive_deadlock.sql'
+    LAST_ALEMBIC_VERSION = '005_statements.sql'
 
     def __init__(self):
         self.current_version = self.UNDEFINED
