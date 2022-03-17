@@ -22,7 +22,6 @@ BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %if 0%{?rhel} < 8
 BuildRequires: python-setuptools
-Requires:      python-alembic
 Requires:      python-dateutil >= 1.5
 Requires:      python-future
 Requires:      python-futures
@@ -34,7 +33,6 @@ Requires:      python-tornado >= 3.2
 BuildRequires: python36
 BuildRequires: python3-setuptools
 BuildRequires: python3-rpm-macros
-Requires:      python3-alembic
 Requires:      python3-dateutil >= 1.5
 Requires:      python3-future
 Requires:      python3-psycopg2
