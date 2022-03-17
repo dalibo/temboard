@@ -29,6 +29,7 @@ CREATE TABLE instances (
 	pg_version_summary TEXT,
 	pg_data TEXT,
 	notify BOOLEAN DEFAULT true,
+	comment TEXT DEFAULT '',
 	PRIMARY KEY (agent_address, agent_port)
 );
 
