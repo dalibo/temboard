@@ -7,18 +7,13 @@ test -f setup.py
 retry yum-builddep -y packaging/rpm/temboard.spec
 
 DIST="$(rpm --eval %dist)"
-if [ "${DIST}" = ".el8" ] ; then
-	PYTHON=python3
-else
-	PYTHON=python2
-fi
 
 
 #       S O U R C E S
 #
 # Determine version to build, default to current checkout version.
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$("$PYTHON" setup.py --version)
+	VERSION=$(python3 setup.py --version)
 fi
 
 # Ensure source tarball. If missing, try download from PyPI.
@@ -61,5 +56,5 @@ rpm -q --list --changelog "temboard-${VERSION}"
 (
 	cd /
 	temboard --version
-	"$PYTHON" -c 'import temboardui.toolkit'
+	python3 -c 'import temboardui.toolkit'
 )

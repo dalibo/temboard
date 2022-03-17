@@ -30,7 +30,6 @@ workflows:
     - func:
         name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage1-pkg-<< matrix.dist >>]
-        pythonbin: "python2"
         matrix:
           parameters:
             dist: [centos7]
