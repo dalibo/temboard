@@ -61,10 +61,6 @@ class MigrateDBApplication(TemboardApplication):
     def command_check(self, args, conn):
         self.migrator.check()
 
-    def command_stamp(self, args, conn):
-        self.migrator.stamp(conn)
-        logger.info("Database marked as up to date.")
-
     def command_upgrade(self, args, conn):
         for version in self.migrator.missing_versions:
             logger.info("Upgrading database to version %s.", version)
@@ -86,10 +82,6 @@ def define_arguments(parser):
     sub.add_parser(
         "check",
         help='Check schema synchronisation status only.'
-    )
-    sub.add_parser(
-        "stamp",
-        help="Mark database as uptodate without migrating.",
     )
     sub.add_parser(
         "upgrade",
