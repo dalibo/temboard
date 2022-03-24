@@ -51,8 +51,8 @@ $ .venv-py3.6/bin/temboard --debug
 
 Go to https://127.0.0.1:8888/ to access temBoard running with your code!
 
-You now need to run an agent and register it in UI. Open a second shell for
-managing the agent and execute the following commands.
+You now need to run the agent. Open a second shell for managing the agent and
+execute the following commands.
 
 ``` console
 $ docker-compose exec agent0 /bin/bash
@@ -63,7 +63,7 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 ...
 ```
 
-Now register the agent in UI, using host `0.0.0.0`, port `2345` and key
+The agent is preregistred in UI, using host `0.0.0.0`, port `2345` and key
 `key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
 
 Beware that two Postgres instances are set up with replication. The primary
@@ -130,8 +130,9 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 
 bash history is shared amongst these two containers.
 
-In UI, register the second agent with address 0.0.0.0, port 2346 instead of
-2345, with the same key `key_for_agent`. The instance FQDN is `postgres1.dev`.
+In UI, the seconde agent is pre-registered with address 0.0.0.0, port 2346
+instead of 2345, with the same key `key_for_agent`. The instance FQDN is
+`postgres1.dev`.
 
 The script `docker/dev-switchover.sh` triggers a switchover between the two
 postgres instances. Executing `docker/dev-switchover.sh` one more time restore

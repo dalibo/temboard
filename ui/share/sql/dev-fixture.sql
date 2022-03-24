@@ -14,3 +14,33 @@ VALUES ('alice', 'Xm4iJH8aQmXRvrsLy/fNbQU23K6/FlEVRhhPZKO2aHvYVGzCft+u7RXQ9Z48Iy
 INSERT INTO application.role_groups (role_name, group_name, group_kind)
 VALUES ('alice', 'default', 'role'),
        ('bob', 'default', 'role');
+
+-- Pre-register agents
+
+INSERT INTO application.instances
+(agent_address, agent_port, agent_key, hostname, pg_port, comment, notify)
+VALUES
+('0.0.0.0', 2345, 'key_for_agent', 'postgres0.dev', 5432, '', FALSE),
+('0.0.0.0', 2346, 'key_for_agent', 'postgres1.dev', 5432, '', FALSE);
+
+INSERT INTO application.instance_groups
+(agent_address, agent_port, group_name, group_kind)
+VALUES
+('0.0.0.0', 2345, 'default', 'instance'),
+('0.0.0.0', 2346, 'default', 'instance');
+
+INSERT INTO application.plugins
+(agent_address, agent_port, plugin_name)
+VALUES
+('0.0.0.0', 2345, 'dashboard'),
+('0.0.0.0', 2345, 'pgconf'),
+('0.0.0.0', 2345, 'activity'),
+('0.0.0.0', 2345, 'monitoring'),
+('0.0.0.0', 2345, 'maintenance'),
+('0.0.0.0', 2345, 'statements'),
+('0.0.0.0', 2346, 'dashboard'),
+('0.0.0.0', 2346, 'pgconf'),
+('0.0.0.0', 2346, 'activity'),
+('0.0.0.0', 2346, 'monitoring'),
+('0.0.0.0', 2346, 'maintenance'),
+('0.0.0.0', 2346, 'statements');
