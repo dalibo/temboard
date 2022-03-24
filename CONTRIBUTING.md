@@ -285,7 +285,7 @@ Go to http://127.0.0.1:8000/ to view the documentation. mkdocs serve has hot
 reload while you edit the documentation.
 
 
-## Releasing the Server
+## Releasing
 
 Releasing a new version of temBoard requires write access to master on [main
 repository](https://github.com/dalibo/temboard), [PyPI
@@ -293,16 +293,15 @@ project](https://pypi.org/project/temboard), [Docker Hub
 repository](https://hub.docker.com/r/dalibo/temboard) and Dalibo Labs YUM and
 APT repositories.
 
-For the tooling, you need Git 1.8+, a recent setuptools with wheel. For
-distribution packaging, see ad-hoc documentation in `ui/packaging/`.
+For the tooling, you need Git 1.8+, a recent setuptools with wheel.
 
 To release a new version:
 
-- Move to ui/ directory.
 - Checkout release branch (like v2).
 - Choose the next version according to [PEP 440]
   (https://www.python.org/dev/peps/pep-0440/#version-scheme).
-- Update `temboardui/version.py`, without committing.
+- Update `ui/temboardui/version.py`, and `agent/temboardagent/version.py`
+  without committing.
 - Generate and push commit and tag with `make release`.
 - Push Python egg to PyPI using `make upload`.
 - Build and upload RPM package with `make -C packaging/rpm all push`.

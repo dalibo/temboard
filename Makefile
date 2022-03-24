@@ -62,3 +62,19 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 			--project-name temboardagent% \
 			--file docker/docker-compose.agent.yml \
 		down --volumes
+
+VERSION=$(shell cd ui; python setup.py --version)
+BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
+GIT_REMOTE=git@github.com:dalibo/temboard.git
+release:  #: Tag and push a new git release
+	$(info Checking we are on branch $(BRANCH).)
+	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
+	$(info Checking agent and UI version are same)
+	grep -q "$(VERSION)" agent/temboardagent/version.py
+	cd ui/; python setup.py egg_info
+	cd agent/; python setup.py egg_info
+	git commit ui/temboardui/version.py agent/temboardagent/version.py -m "Version $(VERSION)"
+	$(info Checking source tree is clean)
+	git diff --quiet
+	git tag --annotate --message "Version $(VERSION)" $(VERSION)
+	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
