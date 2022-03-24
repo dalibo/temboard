@@ -9,6 +9,17 @@ We use the [dalibo/temboard] project to track issue and review
 contributions. Fork the main repository and open a PR against
 `master` as usual.
 
+## Project Directories Overview
+
+dalibo/temboard git repository contains multiple sub-project. Here is a quick
+overview.
+
+- `docs/` - global mkdocs documentation sources.
+- `ui/` - Python Tornado project for temBoard UI aka server.
+- `agent/` - Bare Python project for temBoard agent.
+- `perfui/` - Docker & Grafana project to visualize temBoard performances traces.
+- `docker/` - Development and quickstart docker files.
+
 
 ## Development Environment Setup
 
