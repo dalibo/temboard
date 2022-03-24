@@ -12,7 +12,7 @@ RUN set -ex; \
 
 RUN set -ex; \
     git clone --depth=1 --recursive https://github.com/dalibo/temboard/ /root/temboard ; \
-    cd /root/temboard ; \
+    cd /root/temboard/ui ; \
     python setup.py bdist_wheel ; \
     :
 
@@ -29,7 +29,7 @@ RUN set -ex; \
     apt-get clean ; \
     :
 
-COPY --from=builder /root/temboard/dist/*.whl /root
+COPY --from=builder /root/temboard/ui/dist/*.whl /root
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 
