@@ -8,3 +8,4 @@ pytz  # for perfui/
 mock
 docutils
 psycopg2-binary
+wheel

@@ -69,3 +69,39 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 			--project-name temboardagent% \
 			--file docker/docker-compose.agent.yml \
 		down --volumes
+
+VERSION=$(shell cd ui; python setup.py --version)
+BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
+# To test release target, override GIT_REMOTE with your own fork.
+GIT_REMOTE=git@github.com:dalibo/temboard.git
+release:  #: Tag and push a new git release
+	$(info Checking we are on branch $(BRANCH).)
+	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
+	$(info Checking agent and UI version are same)
+	grep -q "$(VERSION)" agent/temboardagent/version.py
+	git commit agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
+	$(info Checking source tree is clean)
+	git diff --quiet
+	$(MAKE) dist
+	git tag --annotate --message "Version $(VERSION)" $(VERSION)
+	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+
+dist:  #: Build sources and wheels.
+	cd agent/; python setup.py sdist bdist_wheel
+	cd ui/; python setup.py sdist bdist_wheel
+
+PYDIST=\
+	agent/dist/temboard-agent-$(VERSION).tar.gz \
+	agent/dist/temboard_agent-$(VERSION)-py3-none-any.whl \
+	ui/dist/temboard-$(VERSION).tar.gz \
+	ui/dist/temboard-$(VERSION)-py3-none-any.whl \
+
+# To test PyPI upload, set TWINE_REPOSITORY=testpypi environment variable.
+upload:  #: Upload Python artefacts to PyPI.
+	twine upload $(PYDIST)
+
+packages:  #: Build and upload packages dalibo.org.
+	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
+	$(MAKE) -c agent/packaging/deb bullseye buster stretch
+	$(MAKE) -c ui/packaging/rpm rhel8 rhel7
+	$(MAKE) -c ui/packaging/deb bullseye buster stretch

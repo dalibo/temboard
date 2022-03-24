@@ -1,11 +1,12 @@
 all: bullseye buster stretch
 
 bullseye buster stretch:
-	mkdir -p ../../dist/
-	docker-compose run --rm $@
-	$(MAKE) changes-$@
+	$(MAKE) build-$@
+	$(MAKE) push
 
-changes-%:
+build-%:
+	mkdir -p ../../dist/
+	docker-compose run --rm $*
 	./mkchanges.sh $(shell readlink -e ../../dist/temboard-agent_last.deb) $*
 
 push:

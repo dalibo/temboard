@@ -4,9 +4,13 @@ DPUT=labs
 all: bullseye buster stretch
 
 bullseye buster stretch:
+	$(MAKE) build-$@
+	$(MAKE) push
+
+build-%:
 	mkdir -p $(DISTDIR)
-	docker-compose run --rm $@
-	./mkchanges.sh $$(readlink -e $(DISTDIR)/last_build.deb) $@
+	docker-compose run --rm $*
+	./mkchanges.sh $$(readlink -e $(DISTDIR)/last_build.deb) $*
 
 push:
 	version=$$(dpkg-deb -f ../../dist/temboard_last.deb  Version | grep -Po '.*(?=-0dlb.*)'); \
