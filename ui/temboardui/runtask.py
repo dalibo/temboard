@@ -73,7 +73,7 @@ class TaskApplication(TemboardApplication):
 
         self.apply_config()
 
-        check_schema(self.config)
+        check_schema()
 
         # E X E C U T I O N
 

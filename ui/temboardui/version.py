@@ -13,7 +13,6 @@ Tornado %(tornado)s
 psycopg2 %(psycopg2)s
 libpq %(libpq)s
 SQLAlchemy %(sqlalchemy)s
-alembic %(alembic)s
 """
 
 
@@ -27,7 +26,6 @@ def inspect_versions():
         read_distinfo,
         read_libpq_version,
     )
-    from alembic import __version__ as alembic_version
     from psycopg2 import __version__ as psycopg2_version
     from tornado import version as tornado_version
     from sqlalchemy import __version__ as sqlalchemy_version
@@ -35,7 +33,6 @@ def inspect_versions():
     distinfos = read_distinfo()
 
     return dict(
-        alembic=alembic_version,
         distname=distinfos['NAME'],
         distversion=distinfos['VERSION'],
         libpq=format_pq_version(read_libpq_version()),

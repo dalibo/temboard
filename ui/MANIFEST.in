@@ -1,7 +1,7 @@
 include LICENSE
 include packaging/temboard.service
 include temboardui/toolkit/LICENSE
-graft temboardui/model/alembic
+graft temboardui/model/versions
 graft temboardui/static
 graft temboardui/templates
 graft temboardui/plugins/pgconf/static
@@ -19,7 +19,6 @@ graft temboardui/plugins/statements/templates
 graft share
 global-exclude *.pyc
 
-exclude alembic.ini
 prune docker
 exclude docker-compose.yml
 prune docs

@@ -23,7 +23,6 @@ elif sys.version_info < (3,):
     BLEEDING_EDGE_TORNADO = '6'
 
 install_requires = [
-    'alembic',
     'python-dateutil>=1.5',
     # There is no hard dependency on psycopg2 to allow using
     # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary

@@ -4,13 +4,13 @@ from argparse import (
     ArgumentParser,
     SUPPRESS as UNDEFINED_ARGUMENT,
 )
+from contextlib import closing
 
-import alembic.command
-import alembic.config
-import sqlalchemy.exc
+from psycopg2 import connect
 
 from .__main__ import VersionAction, map_pgvars, TemboardApplication
-from .model import build_alembic_config, check_schema
+from .model import format_dsn
+from .model.migrator import Migrator
 from .toolkit import validators as v
 from .toolkit.app import (
     define_core_arguments,
@@ -35,11 +35,14 @@ class MigrateDBApplication(TemboardApplication):
         args = parser.parse_args(argv)
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
-
         self.log_versions()
+        self.apply_config()
 
         if args.command is None:
             raise UserError("Missing sub-command. See --help")
+
+        self.migrator = Migrator()
+        self.migrator.inspect_available_versions()
 
         command_method = 'command_' + args.command
         try:
@@ -47,24 +50,21 @@ class MigrateDBApplication(TemboardApplication):
         except AttributeError:
             raise UserError("Unknown command %s." % args.command)
 
-        try:
-            command(args)
-        except sqlalchemy.exc.OperationalError as e:
-            raise UserError("Failed to query Postgres server: %s." % e)
+        with closing(connect(format_dsn(self.config.repository))) as conn:
+            self.migrator.inspect_current_version(conn)
+            command(args, conn)
 
-    def command_check(self, args):
-        logging.getLogger('alembic').setLevel(logging.WARN)
-        check_schema(self.config)
+    def apply_config(self):
+        # bypass TemboardApplication apply_config
+        super(TemboardApplication, self).apply_config()
 
-    def command_stamp(self, args):
-        logging.getLogger('alembic').setLevel(logging.WARN)
-        alembic_cfg = build_alembic_config(self.config)
-        alembic.command.stamp(alembic_cfg, 'head')
-        logger.info("Database marked as up to date.")
+    def command_check(self, args, conn):
+        self.migrator.check()
 
-    def command_upgrade(self, args):
-        alembic_cfg = build_alembic_config(self.config)
-        alembic.command.upgrade(alembic_cfg, 'head')
+    def command_upgrade(self, args, conn):
+        for version in self.migrator.missing_versions:
+            logger.info("Upgrading database to version %s.", version)
+            self.migrator.apply(conn, version)
         logger.info("Database up to date.")
 
 
@@ -82,10 +82,6 @@ def define_arguments(parser):
     sub.add_parser(
         "check",
         help='Check schema synchronisation status only.'
-    )
-    sub.add_parser(
-        "stamp",
-        help="Mark database as uptodate without migrating.",
     )
     sub.add_parser(
         "upgrade",

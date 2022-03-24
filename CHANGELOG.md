@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.0] - Unreleased
+
+This release requires a database schema migration. Use temboard-migratedb
+script to proceed.
+
+- New database migration engine.
+
+
 ## [7.11] - Unreleased
 
 - Fix heap bloat probe.
