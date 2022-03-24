@@ -21,7 +21,6 @@ Get temBoard UI and agent sources:
 ```console
 $ git clone --recursive https://github.com/dalibo/temboard.git
 $ cd temboard/
-$ git clone --recursive https://github.com/dalibo/temboard-agent.git agent/
 ```
 
 Then, create a virtualenv for Python3.6+ or Python2.7, activate it. Then

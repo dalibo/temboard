@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  rhel7: &rhel
+    image: dalibo/buildpack-pkg:centos7
+    working_dir: /workspace
+    environment:
+    - VERSION
+    - HISTFILE=/workspace/packaging/rpm/.docker-bash-history
+    volumes:
+    - ../../:/workspace
+    command: /workspace/packaging/rpm/build.sh
+
+  rhel8:
+    <<: *rhel
+    image: dalibo/buildpack-pkg:rockylinux8
