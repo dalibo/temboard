@@ -1,6 +1,15 @@
-default:
+apropos:  #: Show dev Makefile help.
+	@echo
+	@echo "    temBoard development"
+	@echo
+	@echo "make target available:"
+	@echo
+	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-16s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
+	@echo
+	@echo "See docs/CONTRIBUTING.md for details."
+	@echo
 
-develop: develop-3.6
+develop: develop-3.6  #: Create Pyton venv and docker services.
 
 develop-%:
 	$(MAKE) venv-$*
@@ -34,7 +43,7 @@ COMPOSE_PROJECT=$(notdir $(CURDIR))
 # network from docker-compose.yml run.
 NETWORK=$(COMPOSE_PROJECT)_default
 
-mass-agents:
+mass-agents:  #: Interactively trigger new agent.
 	seq 2347 3000 | xargs --interactive -I% \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
@@ -44,7 +53,7 @@ mass-agents:
 			--file docker/docker-compose.agent.yml \
 		up -d
 
-clean-agents:
+clean-agents:  #: Aggressively trash agent from mass-agents.
 	seq 2347 3000 | xargs --verbose -I% --max-procs 4 \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
