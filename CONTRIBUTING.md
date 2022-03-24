@@ -28,7 +28,7 @@ Then, create a virtualenv for Python3.6+ or Python2.7, activate it. Then
 install temBoard and pull docker images:
 
 ``` console
-$ pip install -e . -r requirements-dev.txt
+$ pip install -e ui/ -r ui/requirements-dev.txt
 ...
 $ docker-compose pull
 ```
@@ -74,25 +74,26 @@ Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
 
 
-### Execute unit tests
+### Execute UI unit tests
 
 Use pytest to run unit tests:
 
 ``` console
-$ pytest tests/unit
+$ cd ui/
+ui/$ pytest tests/unit
 ...
 ==== 31 passed, 10 warnings in 1.10 seconds ======
-$
+ui/$
 ```
 
 
-### Execute func tests
+### Execute UI func tests
 
 Go to tests/func and run docker-compose:
 
 ``` console
-$ cd tests/func
-tests/func/$ docker-compose up --force-recreate --always-recreate-deps --renew-anon-volumes --abort-on-container-exit ui
+$ cd ui/tests/func
+ui/tests/func/$ docker-compose up --force-recreate --always-recreate-deps --renew-anon-volumes --abort-on-container-exit ui
 ...
 ```
 
@@ -111,7 +112,7 @@ On failure, the main container, named `ui`, wait for you to enter it and debug.
 Project tree is mounted at `/workspace`.
 
 ``` console
-tests/func/$ docker-compose exec ui /bin/bash
+ui/tests/func/$ docker-compose exec ui /bin/bash
 [root@ccb2ec0d78cb workspace]# tests/func/run.sh --pdb -x
 …
 ```
@@ -204,7 +205,7 @@ documented above.
 ### CSS
 
 temBoard UI mainly relies on `Bootstrap`. The CSS files are compiled with
-`SASS`.
+`SASS`. Execute all the following commands in ui/ directory.
 
 In case you want to contribute on the styles, first install the nodeJS dev
 dependencies:
@@ -256,13 +257,13 @@ Fork the project, commit in a branch and open a new GithUb PR on
 https://github.com/dalibo/temboard.
 
 
-## Building a snapshot
+## Building UI snapshot
 
 You can build a snapshot RPM like this:
 
 ``` console
-$ make snapshot
-$ make -C packaging/rpm build-rhel8
+ui/$ make snapshot
+ui/$ make -C packaging/rpm build-rhel8
 ```
 
 
@@ -275,10 +276,11 @@ repository](https://hub.docker.com/r/dalibo/temboard) and Dalibo Labs YUM and
 APT repositories.
 
 For the tooling, you need Git 1.8+, a recent setuptools with wheel. For
-distribution packaging, see ad-hoc documentation in `packaging/`.
+distribution packaging, see ad-hoc documentation in `ui/packaging/`.
 
 To release a new version:
 
+- Move to ui/ directory.
 - Checkout release branch (like v2).
 - Choose the next version according to [PEP 440]
   (https://www.python.org/dev/peps/pep-0440/#version-scheme).
@@ -301,6 +303,7 @@ twine. For debian packaging, see below.
 
 Please follow these steps:
 
+- Move to agent/ directory.
 - Checkout the release branch, e.g. v2.
 - Choose the next version according to [PEP 440](https://www.python.org/dev/peps/pep-0440/#version-scheme) .
 - Update `temboardagent/version.py`, without committing.

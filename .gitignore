@@ -6,7 +6,7 @@ agent/
 temboard.conf.d/
 *.egg-info/
 build/
-dist/
+ui/dist/
 site/
 docker-compose.override.yml
 docker/dev-agent-bash_history

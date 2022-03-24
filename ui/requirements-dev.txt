@@ -1,0 +1,12 @@
+# check-manifest 0.48 fixes a bug with submodules and project in a
+# subdirectory.
+check-manifest>=0.48; python_version >= '3.6'
+flake8
+pytest<4
+pytest-cov
+pytest-mock
+pytest-tornado
+pytz  # for perfui/
+mock
+docutils
+psycopg2-binary
