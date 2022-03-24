@@ -1,7 +1,0 @@
-*.pyc
-.pytest_cache/
-.coverage
-build/
-dist/
-*.egg-info/
-tests/func/docker-bash_history

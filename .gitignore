@@ -1,20 +1,32 @@
-*.pyc
-.pybuild/
-*.sw*
-temboard.conf.d/
+# Python runtime files
+.venv-py*
 *.egg-info/
-build/
-ui/dist/
-site/
-docker-compose.override.yml
+*.ipynb_checkpoints
+*.pyc
 docker/dev-agent-bash_history
+
+# Buildtime files
+build/
+dist/
+# From mkdocs
+site/
+
+# Test runtime files
+.coverage
+.pytest_cache/
+# from pytest-log
+test_log.log
+agent/tests/func/docker-bash_history
+
+# Nodejs buildtime files
+node_modules/
+package-lock.json
+
+# temBoard runtime files
+server_tasks.db
 temboard*.pid
 temboard-func.log
-node_modules
-server_tasks.db
-.coverage
-package-lock.json
-*.ipynb_checkpoints
-# From pytest
-test_log.log
-.venv-py*
+
+# Help developer customize their development environment
+docker-compose.override.yml
+temboard.conf.d/
