@@ -11,7 +11,7 @@ RUN set -ex; \
     :
 
 RUN set -ex; \
-    git clone --depth=1 --recursive https://github.com/dalibo/temboard/ /root/temboard ; \
+    git clone --depth=1 --recursive --branch=v7 https://github.com/dalibo/temboard/ /root/temboard ; \
     cd /root/temboard ; \
     python setup.py bdist_wheel ; \
     :
