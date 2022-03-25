@@ -99,7 +99,6 @@ dpkg -i "$deb"
 (
 	cd /
 	temboard --version
-	/usr/lib/temboard/bin/python -c 'import temboardui.toolkit'
 )
 
 #       S A V E
