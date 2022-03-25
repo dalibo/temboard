@@ -3,7 +3,7 @@ from textwrap import dedent
 
 
 def test_os_release():
-    from sampleproject.toolkit.versions import parse_lsb_release
+    from temboardui.toolkit.versions import parse_lsb_release
 
     distinfos = parse_lsb_release(dedent("""\
     PRETTY_NAME="Debian GNU/Linux 10 (buster)"
@@ -22,7 +22,7 @@ def test_os_release():
 
 
 def test_format_pq_version():
-    from sampleproject.toolkit.versions import format_pq_version
+    from temboardui.toolkit.versions import format_pq_version
 
     assert '14.1' == format_pq_version(140001)
     assert '13.5' == format_pq_version(130005)
@@ -37,6 +37,6 @@ def test_read_libpq_version_from_ctypes(mocker):
     # Remove __libpq_version__ if any.
     mocker.patch.dict(sys.modules, [('psycopg2.extensions', object())])
 
-    from sampleproject.toolkit.versions import read_libpq_version
+    from temboardui.toolkit.versions import read_libpq_version
 
     assert read_libpq_version() > 90000

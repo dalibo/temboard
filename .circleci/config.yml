@@ -69,7 +69,6 @@ jobs:
     working_directory: &working_directory /workspace
     steps:
     - checkout
-    - run: git submodule update --init
     - run:
         name: Build Agent
         command: |
@@ -97,7 +96,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - run:
         name: Build documentation with mkdocs
         command: |
@@ -112,7 +110,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - run: git submodule update --init
       - &pip-cache-restore
         restore_cache:
           keys:
@@ -152,7 +149,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - &pip-cache-restore
       restore_cache:
         keys:
@@ -163,7 +159,7 @@ jobs:
         command: |
           pip install --upgrade --requirement agent/requirement-ci.txt --editable agent/ psycopg2-binary
     - run:
-        name: Execute unit tests
+        name: Execute agent unit tests
         command: |
           set -x
           cd agent/
@@ -185,7 +181,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - run: git submodule update --init
       - *pip-cache-restore
       - run:
           name: Setup python environment
@@ -201,6 +196,17 @@ jobs:
           command: |
             cd ui/
             pytest --full-trace --cov-report=xml tests/unit/
+      - run:
+          name: Execute toolkit integration tests
+          command: |
+            set -x
+            cd ui/
+            # Called by script
+            python temboardui/toolkit/proctitle.py
+            # Called by module
+            python -m temboardui.toolkit.proctitle
+            # Inline script
+            python -c 'from temboardui.toolkit.proctitle import test_main; test_main()'
       - *pip-cache-save
 
   rpm:
@@ -213,7 +219,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - run: find agent/dist
@@ -245,7 +250,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - run:
@@ -294,7 +298,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - *pip-cache-restore

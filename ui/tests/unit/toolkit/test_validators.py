@@ -6,7 +6,7 @@ import os.path
 
 import pytest
 
-from sampleproject.toolkit import validators as v
+from temboardui.toolkit import validators as v
 
 
 def test_address():
@@ -34,8 +34,8 @@ def test_boolean():
 
 
 def test_directory(mocker):
-    access = mocker.patch('sampleproject.toolkit.validators.os.access')
-    isdir = mocker.patch('sampleproject.toolkit.validators.os.path.isdir')
+    access = mocker.patch('temboardui.toolkit.validators.os.access')
+    isdir = mocker.patch('temboardui.toolkit.validators.os.path.isdir')
 
     access.return_value = True
     isdir.return_value = True

@@ -19,7 +19,7 @@ for the agent.
 Get temBoard UI and agent sources:
 
 ```console
-$ git clone --recursive https://github.com/dalibo/temboard.git
+$ git clone https://github.com/dalibo/temboard.git
 $ cd temboard/
 ```
 

@@ -105,7 +105,6 @@ apt-get install --yes "./dist/$deb"
 (
 	cd /
 	temboard-agent --version
-	python3 -c 'import temboardagent.toolkit'
 )
 
 #       S A V E

@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import pytest
 
-from sampleproject.toolkit.app import BaseApplication
+from temboardui.toolkit.app import BaseApplication
 
 
 def cli(main):
@@ -51,7 +51,7 @@ def test_interrupt():
 
 
 def test_user_error():
-    from sampleproject.toolkit.errors import UserError
+    from temboardui.toolkit.errors import UserError
 
     @cli
     def main(app, argv, environ):
@@ -75,7 +75,7 @@ def test_unhandled_error_prod():
 
 
 def test_unhandled_error_debug(mocker):
-    pm = mocker.patch('sampleproject.toolkit.app.pdb.post_mortem')
+    pm = mocker.patch('temboardui.toolkit.app.pdb.post_mortem')
 
     @cli
     def main(app, argv, environ):
@@ -89,13 +89,13 @@ def test_unhandled_error_debug(mocker):
 
 
 def test_bootstrap(caplog, mocker):
-    mod = 'sampleproject.toolkit.app'
+    mod = 'temboardui.toolkit.app'
     fc = mocker.patch(mod + '.BaseApplication.find_config_file', autospec=True)
     mocker.patch(mod + '.BaseApplication.read_file', autospec=True)
     mocker.patch(mod + '.BaseApplication.read_dir', autospec=True)
     mocker.patch(mod + '.BaseApplication.apply_config', autospec=True)
     mocker.patch(mod + '.MergedConfiguration')
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     fc.return_value = 'pouet'
@@ -114,10 +114,10 @@ def test_bootstrap(caplog, mocker):
 
 
 def test_find_config_file(mocker):
-    mod = 'sampleproject.toolkit.app'
+    mod = 'temboardui.toolkit.app'
     exists = mocker.patch(mod + '.os.path.exists', autospec=True)
 
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     app.config.add_specs(app.list_stage1_specs())
@@ -144,9 +144,9 @@ def test_find_config_file(mocker):
 
 
 def test_apply_config_bad_logging(mocker):
-    mod = 'sampleproject.toolkit.app.'
+    mod = 'temboardui.toolkit.app.'
     sl = mocker.patch(mod + 'setup_logging', autospec=True)
-    from sampleproject.toolkit.app import BaseApplication, UserError
+    from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
     app.config.logging = dict()
@@ -157,12 +157,12 @@ def test_apply_config_bad_logging(mocker):
 
 
 def test_apply_config_with_plugins(mocker):
-    mod = 'sampleproject.toolkit.app.'
+    mod = 'temboardui.toolkit.app.'
     mocker.patch(mod + 'BaseApplication.setup_logging', autospec=True)
     cp = mocker.patch(mod + 'BaseApplication.create_plugins', autospec=True)
     mocker.patch(mod + 'BaseApplication.update_plugins', autospec=True)
     mocker.patch(mod + 'BaseApplication.purge_plugins', autospec=True)
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     app.config_sources = dict()
@@ -178,9 +178,9 @@ def test_apply_config_with_plugins(mocker):
 
 
 def test_apply_config_without_plugins(mocker):
-    mod = 'sampleproject.toolkit.app.'
+    mod = 'temboardui.toolkit.app.'
     mocker.patch(mod + 'BaseApplication.setup_logging', autospec=True)
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication(with_plugins=False)
     app.config_sources = dict()
@@ -192,7 +192,7 @@ def test_apply_config_without_plugins(mocker):
 
 
 def test_application_specs():
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     assert 'temboard_plugins' in app.config_specs
@@ -203,7 +203,7 @@ def test_application_specs():
 
 def test_app_pickle():
     from pickle import dumps as pickle, loads as unpickle
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     empty_generator = (x for x in [])
     orig = BaseApplication(specs=empty_generator)
@@ -213,10 +213,10 @@ def test_app_pickle():
 
 
 def test_read_file(mocker):
-    from sampleproject.toolkit.app import BaseApplication, UserError
+    from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
-    open_ = mocker.patch('sampleproject.toolkit.app.open', create=True)
+    open_ = mocker.patch('temboardui.toolkit.app.open', create=True)
     app.read_file(mocker.Mock(name='parser'), 'pouet.conf')
 
     open_.side_effect = IOError()
@@ -225,12 +225,12 @@ def test_read_file(mocker):
 
 
 def test_read_dir(mocker):
-    mod = 'sampleproject.toolkit.app'
+    mod = 'temboardui.toolkit.app'
     rf = mocker.patch(mod + '.BaseApplication.read_file', autospec=True)
     isdir = mocker.patch(mod + '.os.path.isdir', autospec=True)
     glob = mocker.patch(mod + '.glob', autospec=True)
 
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     isdir.return_value = False
@@ -243,12 +243,12 @@ def test_read_dir(mocker):
 
 
 def test_reload(mocker):
-    m = 'sampleproject.toolkit.app.BaseApplication'
+    m = 'temboardui.toolkit.app.BaseApplication'
     mocker.patch(m + '.read_file', autospec=True)
     mocker.patch(m + '.read_dir', autospec=True)
     mocker.patch(m + '.apply_config', autospec=True)
 
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     app.config = mocker.Mock(name='config')
@@ -258,8 +258,8 @@ def test_reload(mocker):
 
 def test_fetch_plugin(mocker):
     iter_ep = mocker.patch(
-        'sampleproject.toolkit.app.pkg_resources.iter_entry_points')
-    from sampleproject.toolkit.app import BaseApplication
+        'temboardui.toolkit.app.pkg_resources.iter_entry_points')
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     ep = mocker.Mock(name='found')
@@ -272,8 +272,8 @@ def test_fetch_plugin(mocker):
 
 def test_fetch_failing(mocker):
     iter_ep = mocker.patch(
-        'sampleproject.toolkit.app.pkg_resources.iter_entry_points')
-    from sampleproject.toolkit.app import BaseApplication, UserError
+        'temboardui.toolkit.app.pkg_resources.iter_entry_points')
+    from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
     ep = mocker.Mock(name='ep')
@@ -286,8 +286,8 @@ def test_fetch_failing(mocker):
 
 def test_fetch_missing(mocker):
     iter_ep = mocker.patch(
-        'sampleproject.toolkit.app.pkg_resources.iter_entry_points')
-    from sampleproject.toolkit.app import BaseApplication, UserError
+        'temboardui.toolkit.app.pkg_resources.iter_entry_points')
+    from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
     iter_ep.return_value = []
@@ -297,11 +297,11 @@ def test_fetch_missing(mocker):
 
 
 def test_create_plugins(mocker):
-    mod = 'sampleproject.toolkit.app'
+    mod = 'temboardui.toolkit.app'
     mocker.patch(mod + '.refresh_distributions')
     mocker.patch(mod + '.refresh_pythonpath')
     mocker.patch(mod + '.BaseApplication.fetch_plugin', autospec=True)
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     app.config = mocker.Mock(name='config')
@@ -312,7 +312,7 @@ def test_create_plugins(mocker):
 
 
 def test_update_plugins(mocker):
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
 
@@ -329,7 +329,7 @@ def test_update_plugins(mocker):
 
 
 def test_purge_plugins():
-    from sampleproject.toolkit.app import BaseApplication, MergedConfiguration
+    from temboardui.toolkit.app import BaseApplication, MergedConfiguration
 
     app = BaseApplication()
     app.plugins = dict(destroyme=1, keepme=1)
@@ -340,7 +340,7 @@ def test_purge_plugins():
 
 
 def test_create_parser():
-    from sampleproject.toolkit.app import BaseApplication
+    from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     parser = app.create_parser(add_help=False)
@@ -350,7 +350,7 @@ def test_create_parser():
 
 def test_debug_arg():
     from argparse import ArgumentParser, SUPPRESS
-    from sampleproject.toolkit.app import define_core_arguments
+    from temboardui.toolkit.app import define_core_arguments
 
     parser = ArgumentParser(argument_default=SUPPRESS)
     define_core_arguments(parser, appversion='1.0')
@@ -366,7 +366,7 @@ def test_debug_arg():
 
 
 def test_debug_var():
-    from sampleproject.toolkit.app import detect_debug_mode
+    from temboardui.toolkit.app import detect_debug_mode
 
     assert not detect_debug_mode(dict())
     assert not detect_debug_mode(dict(DEBUG='N'))

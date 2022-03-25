@@ -6,7 +6,7 @@ import pytest
 
 
 def test_resolve_main(mocker):
-    from sampleproject.toolkit.proctitle import compute_main_module_name
+    from temboardui.toolkit.proctitle import compute_main_module_name
 
     mod = mocker.Mock(__package__='my', __name__='module')
     assert 'my.module' == compute_main_module_name(mod)
@@ -18,10 +18,10 @@ def test_resolve_main(mocker):
 
 def test_fix_argv(mocker):
     cmmn = mocker.patch(
-        'sampleproject.toolkit.proctitle.compute_main_module_name',
+        'temboardui.toolkit.proctitle.compute_main_module_name',
         autospec=True)
-    from sampleproject.toolkit.pycompat import PY3
-    from sampleproject.toolkit.proctitle import fix_argv
+    from temboardui.toolkit.pycompat import PY3
+    from temboardui.toolkit.proctitle import fix_argv
 
     wanted = ['python', '-m', 'my.module']
     cmmn.return_value = 'my.module'
@@ -43,7 +43,7 @@ def test_fix_argv(mocker):
 
 def test_read_memory():
     import ctypes
-    from sampleproject.toolkit.proctitle import PY3, read_byte
+    from temboardui.toolkit.proctitle import PY3, read_byte
 
     data = ctypes.create_string_buffer(b'abcdef')
     b = read_byte(ctypes.addressof(data))
@@ -53,7 +53,7 @@ def test_read_memory():
 
 def test_walk_bytes_backwards():
     import ctypes
-    from sampleproject.toolkit.proctitle import reverse_walk_memory
+    from temboardui.toolkit.proctitle import reverse_walk_memory
 
     data = ctypes.create_string_buffer(b'abcdef')
     address_of_nul = ctypes.addressof(data) + 6
@@ -64,7 +64,7 @@ def test_walk_bytes_backwards():
 
 
 def test_find_nulstrings():
-    from sampleproject.toolkit.proctitle import reverse_find_nulstring
+    from temboardui.toolkit.proctitle import reverse_find_nulstring
 
     segment = b'\x00string0\x00string1\x00'
     bytes_ = ((0xbebed0d0, b) for b in reversed(segment))
@@ -75,7 +75,7 @@ def test_find_nulstrings():
 
 
 def test_find_stack_segment():
-    from sampleproject.toolkit.proctitle import find_stack_segment_from_maps
+    from temboardui.toolkit.proctitle import find_stack_segment_from_maps
 
     lines = dedent("""\
     55c7c8b2d000-55c7c8b35000 r-xp 00000000 fd:01 12582915                   /bin/lol
@@ -95,12 +95,12 @@ def test_find_stack_segment():
 
 
 def test_find_argv_from_procmaps_mod(mocker):
-    mod = 'sampleproject.toolkit.proctitle'
+    mod = 'temboardui.toolkit.proctitle'
     fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
     mocker.patch(mod + '.reverse_walk_memory', autospec=True)
     rfn = mocker.patch(mod + '.reverse_find_nulstring', autospec=True)
 
-    from sampleproject.toolkit.proctitle import find_argv_memory_from_maps
+    from temboardui.toolkit.proctitle import find_argv_memory_from_maps
 
     fss.return_value = 0xdeb, 0xf1
     rfn.return_value = reversed([
@@ -120,12 +120,12 @@ def test_find_argv_from_procmaps_mod(mocker):
 
 
 def test_find_argv_from_procmaps_command_string(mocker):
-    mod = 'sampleproject.toolkit.proctitle'
+    mod = 'temboardui.toolkit.proctitle'
     fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
     mocker.patch(mod + '.reverse_walk_memory', autospec=True)
     rfn = mocker.patch(mod + '.reverse_find_nulstring', autospec=True)
 
-    from sampleproject.toolkit.proctitle import find_argv_memory_from_maps
+    from temboardui.toolkit.proctitle import find_argv_memory_from_maps
 
     fss.return_value = 0xdeb, 0xf1
     rfn.return_value = reversed([
@@ -146,8 +146,8 @@ def test_find_argv_from_procmaps_command_string(mocker):
 
 def test_set_proc_title(mocker):
     memmove = mocker.patch(
-        'sampleproject.toolkit.proctitle.ctypes.memmove', autospec=True)
-    from sampleproject.toolkit.proctitle import ProcTitleManager
+        'temboardui.toolkit.proctitle.ctypes.memmove', autospec=True)
+    from temboardui.toolkit.proctitle import ProcTitleManager
 
     setproctitle = ProcTitleManager(prefix='prefix: ')
     title = setproctitle('not initialized')

@@ -56,5 +56,4 @@ rpm -q --list --changelog "temboard-${VERSION}"
 (
 	cd /
 	temboard --version
-	python3 -c 'import temboardui.toolkit'
 )

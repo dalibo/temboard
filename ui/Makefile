@@ -16,7 +16,6 @@ release:
 upload:
 	@echo Checking we are on a tag
 	git describe --exact-match --tags
-	python -c 'import temboardui.toolkit'
 	@echo Clean build and dist directory
 	rm -rf build
 	check-manifest

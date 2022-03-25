@@ -60,5 +60,4 @@ rpm -q --list --changelog "temboard-agent-${VERSION}"
 (
 	cd /
 	temboard-agent --version
-	python3 -c 'import temboardagent.toolkit'
 )
