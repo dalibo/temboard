@@ -2,7 +2,7 @@ import logging
 
 
 def test_color(mocker):
-    from sampleproject.toolkit.log import ColoredStreamHandler
+    from temboardui.toolkit.log import ColoredStreamHandler
 
     handler = ColoredStreamHandler()
     record = logging.getLogger().makeRecord(
@@ -17,7 +17,7 @@ def test_color(mocker):
 
 
 def test_multiline(mocker):
-    from sampleproject.toolkit.log import MultilineFormatter
+    from temboardui.toolkit.log import MultilineFormatter
 
     formatter = MultilineFormatter('PREFIX: %(message)s')
     record = logging.getLogger().makeRecord(
@@ -37,7 +37,7 @@ def test_multiline(mocker):
 
 
 def test_systemd(mocker):
-    from sampleproject.toolkit.log import SystemdFormatter
+    from temboardui.toolkit.log import SystemdFormatter
 
     formatter = SystemdFormatter('PREFIX: %(message)s')
     record = logging.getLogger().makeRecord(
@@ -51,7 +51,7 @@ def test_systemd(mocker):
 
 
 def test_lastname():
-    from sampleproject.toolkit.log import LastnameFilter
+    from temboardui.toolkit.log import LastnameFilter
 
     filter_ = LastnameFilter()
     record = logging.getLogger().makeRecord(
@@ -64,15 +64,15 @@ def test_lastname():
     assert ret
     assert 'toto' == record.lastname
 
-    record.name = 'sampleproject.titi'
+    record.name = 'temboardui.titi'
     ret = filter_.filter(record)
     assert 'titi' == record.lastname
 
 
 def test_temboard_debug(mocker):
-    mocker.patch('sampleproject.toolkit.log.sys.stderr.isatty')
+    mocker.patch('temboardui.toolkit.log.sys.stderr.isatty')
 
-    from sampleproject.toolkit.log import generate_logging_config
+    from temboardui.toolkit.log import generate_logging_config
 
     config = generate_logging_config()
     assert '%(process)' not in config['formatters']['console']['format']
@@ -80,32 +80,32 @@ def test_temboard_debug(mocker):
     config = generate_logging_config(level='DEBUG', debug=False)
 
     assert '%(process)' in config['formatters']['console']['format']
-    assert 'DEBUG' == config['loggers']['sampleproject']['level']
+    assert 'DEBUG' == config['loggers']['temboardui']['level']
 
     config = generate_logging_config(level='INFO', debug=True)
 
     assert '%(process)' in config['formatters']['console']['format']
-    assert 'DEBUG' == config['loggers']['sampleproject']['level']
+    assert 'DEBUG' == config['loggers']['temboardui']['level']
 
     config = generate_logging_config(level='INFO', debug='__debug__')
 
     assert '%(process)' in config['formatters']['console']['format']
-    assert 'DEBUG' == config['loggers']['sampleproject']['level']
+    assert 'DEBUG' == config['loggers']['temboardui']['level']
 
 
 def test_limit_debug():
-    from sampleproject.toolkit.log import generate_logging_config
+    from temboardui.toolkit.log import generate_logging_config
 
     config = generate_logging_config(
-        level='INFO', debug='myplugins,sampleproject.cli')
+        level='INFO', debug='myplugins,temboardui.cli')
 
-    assert 'INFO' == config['loggers']['sampleproject']['level']
+    assert 'INFO' == config['loggers']['temboardui']['level']
     assert 'DEBUG' == config['loggers']['myplugins']['level']
-    assert 'DEBUG' == config['loggers']['sampleproject.cli']['level']
+    assert 'DEBUG' == config['loggers']['temboardui.cli']['level']
 
 
 def test_setup(mocker):
-    dc = mocker.patch('sampleproject.toolkit.log.dictConfig', autospec=True)
-    from sampleproject.toolkit.log import setup_logging
+    dc = mocker.patch('temboardui.toolkit.log.dictConfig', autospec=True)
+    from temboardui.toolkit.log import setup_logging
     setup_logging()
     assert dc.called is True

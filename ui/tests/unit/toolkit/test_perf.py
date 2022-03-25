@@ -1,5 +1,5 @@
 def test_format():
-    from sampleproject.toolkit.perf import PerfCounters
+    from temboardui.toolkit.perf import PerfCounters
 
     p = PerfCounters()
 
@@ -11,7 +11,7 @@ def test_format():
 
 
 def test_stat():
-    from sampleproject.toolkit.perf import PerfCounters
+    from temboardui.toolkit.perf import PerfCounters
 
     p = PerfCounters()
 

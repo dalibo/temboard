@@ -159,7 +159,7 @@ jobs:
         command: |
           pip install --upgrade --requirement agent/requirement-ci.txt --editable agent/ psycopg2-binary
     - run:
-        name: Execute unit tests
+        name: Execute agent unit tests
         command: |
           set -x
           cd agent/
@@ -196,6 +196,17 @@ jobs:
           command: |
             cd ui/
             pytest --full-trace --cov-report=xml tests/unit/
+      - run:
+          name: Execute toolkit integration tests
+          command: |
+            set -x
+            cd ui/
+            # Called by script
+            python temboardui/toolkit/proctitle.py
+            # Called by module
+            python -m temboardui.toolkit.proctitle
+            # Inline script
+            python -c 'from temboardui.toolkit.proctitle import test_main; test_main()'
       - *pip-cache-save
 
   rpm:
