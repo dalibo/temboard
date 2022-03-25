@@ -70,6 +70,18 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 			--file docker/docker-compose.agent.yml \
 		down --volumes
 
+renew-sslca:  #: Renew CA for self signed certificate
+	openssl req -batch -x509 -new -nodes -key agent/share/temboard-agent_CHANGEME.key -sha256 -days 1095 -out agent/share/temboard-agent_ca_certs_CHANGEME.pem
+	openssl req -batch -x509 -new -nodes -key ui/share/temboard_CHANGEME.key -sha256 -days 1095 -out ui/share/temboard_ca_certs_CHANGEME.pem
+
+renew-sslcert:  #: Renew self-signed SSL certificate
+	openssl req -batch -new -key agent/share/temboard-agent_CHANGEME.key -out request.pem
+	openssl x509 -req -in request.pem -CA agent/share/temboard-agent_ca_certs_CHANGEME.pem -CAkey agent/share/temboard-agent_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out agent/share/temboard-agent_CHANGEME.pem
+	openssl req -batch -new -key ui/share/temboard_CHANGEME.key -out request.pem
+	openssl x509 -req -in request.pem -CA ui/share/temboard_ca_certs_CHANGEME.pem -CAkey ui/share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out ui/share/temboard_CHANGEME.pem
+	rm -f request.pem agent/share/temboard-agent_ca_certs_CHANGEME.srl ui/share/temboard_ca_certs_CHANGEME.srl
+
+
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 # To test release target, override GIT_REMOTE with your own fork.
