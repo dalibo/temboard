@@ -26,6 +26,7 @@ nav:
   - temBoard performances: howto-temboard-performances.md
 - Develop:
   - Contributing: CONTRIBUTING.md
+  - Alerting internals: alerting.md
   - Agent REST API: agent_api.md
 
 
