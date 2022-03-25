@@ -9,14 +9,14 @@ RUN apt-get update -y \
     ;
 
 RUN set -ex; \
-    git clone --depth=1 --recursive https://github.com/dalibo/temboard-agent /root/temboard-agent; \
-    cd /root/temboard-agent ; \
+    git clone --depth=1 --recursive https://github.com/dalibo/temboard /root/temboard; \
+    cd /root/temboard/agent ; \
     python setup.py bdist_wheel ; \
     :
 
 FROM python:3.6-slim
 
-COPY --from=builder /root/temboard-agent/dist/temboard*.whl /root/
+COPY --from=builder /root/temboard/agent/dist/temboard*.whl /root/
 
 RUN apt-get update -y \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
