@@ -69,7 +69,6 @@ jobs:
     working_directory: &working_directory /workspace
     steps:
     - checkout
-    - run: git submodule update --init
     - run:
         name: Build Agent
         command: |
@@ -97,7 +96,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - run:
         name: Build documentation with mkdocs
         command: |
@@ -112,7 +110,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - run: git submodule update --init
       - &pip-cache-restore
         restore_cache:
           keys:
@@ -152,7 +149,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - &pip-cache-restore
       restore_cache:
         keys:
@@ -185,7 +181,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - run: git submodule update --init
       - *pip-cache-restore
       - run:
           name: Setup python environment
@@ -213,7 +208,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - run: find agent/dist
@@ -245,7 +239,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - run:
@@ -294,7 +287,6 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - run: git submodule update --init
     - attach_workspace:
         at: *working_directory
     - *pip-cache-restore

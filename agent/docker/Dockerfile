@@ -9,7 +9,7 @@ RUN apt-get update -y \
     ;
 
 RUN set -ex; \
-    git clone --depth=1 --recursive https://github.com/dalibo/temboard /root/temboard; \
+    git clone --depth=1 https://github.com/dalibo/temboard /root/temboard; \
     cd /root/temboard/agent ; \
     python setup.py bdist_wheel ; \
     :
