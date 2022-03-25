@@ -1,0 +1,2 @@
+[flake8]
+builtins = raw_input
