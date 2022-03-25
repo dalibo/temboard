@@ -1,6 +1,0 @@
-[submodule "ui/temboardui/toolkit"]
-	path = ui/temboardui/toolkit
-	url = https://github.com/dalibo/temboard-toolkit.git
-[submodule "agent/temboardagent/toolkit"]
-	path = agent/temboardagent/toolkit
-	url = https://github.com/dalibo/temboard-toolkit.git
