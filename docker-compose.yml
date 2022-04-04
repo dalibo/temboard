@@ -5,7 +5,7 @@ services:
   # The Postgres server to store temBoard data.
   repository:
     image: postgres:14-alpine
-    ports: [5432:5432]
+    ports: ["5432:5432"]
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
