@@ -25,6 +25,35 @@ workflows:
           parameters:
             codename: [bullseye, buster, stretch]
         requires: [stage0-dist]
+    - func: &func
+        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+        requires:
+        - stage0-unit-agent-py3.6
+        - stage0-unit-ui-py3.5
+        - stage1-pkg-<< matrix.dist >>
+        matrix:
+          parameters:
+            dist: [rockylinux8]
+            pgversion: ["14", "11"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
+            dist: [centos7]
+            pgversion: ["13", "9.6"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
+            dist: [bullseye]
+            pgversion: ["12"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
+            dist: [buster]
+            pgversion: ["10"]
+
     # Please keep agent/tests/func/Makefile run-all test matrix sync with the
     # following.
     - func-legacy:
@@ -125,6 +154,7 @@ jobs:
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            flake8 tests/
             cd ui/
             flake8
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
@@ -268,6 +298,51 @@ jobs:
         - agent/dist/*.deb
         - ui/dist/*.deb
 
+  func:
+    parameters:
+      dist:
+        description: "Distribution"
+        type: enum
+        enum: [bullseye, buster, stretch, centos7, rockylinux8]
+      pgversion:
+        description: "PostgreSQL version for repository."
+        type: enum
+        enum: ["14", "13", "12", "11", "10", "9.6", "9.5"]
+    docker:
+    - image: dalibo/buildpack-postgres:<< parameters.dist >>
+      environment:
+        PGHOST: localhost
+        PGPASSWORD: &PGPASSWORD confidentiel
+        PGUSER: postgres
+        SELENIUM: http://0.0.0.0:4444
+    - image: postgres:<< parameters.pgversion >>-alpine
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: *PGPASSWORD
+    - image: selenium/standalone-firefox
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - attach_workspace:
+        at: *working_directory
+    - *pip-cache-restore
+    - run:
+        name: Shellcheck
+        command: |
+          shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
+          shellcheck ui/packaging/deb/mkdeb.sh
+    - run:
+        name: Install temBoard UI & agent
+        command: tests/install-all
+    - run:
+        name: Install test dependencies
+        command: pip3 install -r ui/requirements-dev.txt
+    - run:
+        name: Run pytest
+        command: pytest --pg-version=<< parameters.pgversion >> -vvv tests/
+    - *pip-cache-save
+
+
   func-legacy:
     parameters:
       dist:
@@ -295,11 +370,6 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - *pip-cache-restore
-    - run:
-        name: Shellcheck
-        command: |
-          shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
-          shellcheck ui/packaging/deb/mkdeb.sh
     - run:
         name: Agent Functionnal Tests
         command: agent/tests/func/run_tests_docker.sh

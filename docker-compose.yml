@@ -98,6 +98,15 @@ services:
     entrypoint: *agent_entrypoint
     command: *agent_command
 
+  selenium:
+    image: selenium/standalone-firefox
+    ports:
+    - "4444:4444"
+    - "7900:7900"
+    environment:
+      VNC_NO_PASSWORD: "y"
+      TZ: Europe/Paris
+
 
 volumes:
   # Shared archive volume between replicated instances.

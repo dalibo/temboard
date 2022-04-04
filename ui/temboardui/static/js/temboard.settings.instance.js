@@ -323,7 +323,7 @@ function load_add_instance_form(modal_id)
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
-      body_html += '    <div class="form-group col-sm-6">';
+      body_html += '    <div id="divSelectGroups" class="form-group col-sm-6">';
       body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
       body_html += '      <select id="selectGroups" multiple="multiple">';
       var descriptions = {};
@@ -334,7 +334,7 @@ function load_add_instance_form(modal_id)
       }
       body_html += '      </select>';
       body_html += '    </div>';
-      body_html += '    <div class="form-group col-sm-6">';
+      body_html += '    <div id="divSelectPlugins" class="form-group col-sm-6">';
       body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
       body_html += '      <select id="selectPlugins" multiple="multiple">';
       var selected = '';

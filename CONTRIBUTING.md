@@ -200,7 +200,53 @@ $
 ```
 
 
-## Execute UI Func Tests
+## Execute Integration Tests
+
+The `tests/` directory contains a pytest project to tests both UI and agent
+using selenium. These tests are not to be confused with `ui/tests/func` and
+`agent/tests/func`.
+
+Execute these tests right from your virtualenv, using pytest:
+
+``` console
+$ . .venv-py3.6/bin/activate
+$ pytest tests/
+============================= test session starts ==============================
+platform linux -- Python 3.6.8, pytest-7.0.1, pluggy-1.0.0 -- /home/bersace/src/dalibo/temboard/.venv-py3.6/bin/python3.6
+cachedir: .pytest_cache
+postgresql: 14 (/usr/lib/postgresql/14/bin)
+sqlalchemy: 1.4.35
+system: Debian GNU/Linux 11 (bullseye)
+tornado: 6.1
+libpq: 14.2
+psycopg2: 2.9.3 (dt dec pq3 ext lo64)
+temboard: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard)
+temboard-agent: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard-agent)
+rootdir: /home/bersace/src/dalibo/temboard/tests, configfile: pytest.ini
+plugins: mock-3.6.1, cov-3.0.0, tornado-0.8.1, anyio-3.5.0
+...
+tests/test_00_setup_ui.py::test_temboard_version PASSED                  [ 12%]
+...
+tests/test_20_register.py::test_web_register PASSED                      [100%]
+
+============================== 8 passed in 17.69s ==============================
+$
+```
+
+`pytests tests/ --help` describes custom options `--pg-version` and
+`--selenium`. Take care of the custom pytest report header, it shows which
+temboard and temboard-agent binary is used, the bin directory of PostgreSQL.
+
+`pytests tests/ --fixtures` describes fixtures defined by tests/conftest.py.
+Fixtures configure a postgres for monitoring, an agent and the UI in `workdir/`
+prefix.
+
+Selenium standalone container runs a headless Xvfb server with noVNC enabled.
+View live tests in your browser at http://localhost:7900/ . Click the connect
+button and interract with the browser and UI.
+
+
+## Execute UI Func Tests (legacy)
 
 Go to tests/func and run docker-compose:
 

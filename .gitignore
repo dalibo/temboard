@@ -17,6 +17,7 @@ site/
 # from pytest-log
 test_log.log
 agent/tests/func/docker-bash_history
+tests/workdir/
 
 # Nodejs buildtime files
 node_modules/
