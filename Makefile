@@ -1,12 +1,46 @@
-default:
+apropos:  #: Show dev Makefile help.
+	@echo
+	@echo "    temBoard development"
+	@echo
+	@echo "make target available:"
+	@echo
+	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-16s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
+	@echo
+	@echo "See docs/CONTRIBUTING.md for details."
+	@echo
 
-devenv:
+develop: develop-3.6  #: Create Python venv and docker services.
+develop-2.7::  #: Create development environment for Python 2.7.
+develop-%::
+	$(MAKE) install-$*
+	. .venv-py$*/bin/activate; $(MAKE) repository
+	docker-compose up -d
+	@echo
+	@echo
+	@echo "    You can now execute temBoard UI with .venv-py$*/bin/temboard"
+	@echo
+	@echo
+
+repository:  #: Initialize temboard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
-	docker-compose up -d
-	docker-compose exec agent0 /bin/bash -c 'pip install -e /usr/local/src/temboard/agent/ psycopg2-binary hupper'
-	docker-compose exec agent1 /bin/bash -c 'pip install -e /usr/local/src/temboard/agent/ psycopg2-binary hupper'
+
+venv-%:
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv .venv-py$*/
+	.venv-py$*/bin/python --version  # pen test
+
+venv-2.7:
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv .venv-py2.7/
+	.venv-py2.7/bin/python --version  # pen test
+
+install-%: venv-%
+	.venv-py$*/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e ui/
+	.venv-py$*/bin/temboard --version  # pen test
+
+clean:  #: Trash venv and containers.
+	docker-compose down --volumes --remove-orphans
+	rm -rf .venv-py* site/
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
@@ -16,7 +50,7 @@ COMPOSE_PROJECT=$(notdir $(CURDIR))
 # network from docker-compose.yml run.
 NETWORK=$(COMPOSE_PROJECT)_default
 
-mass-agents:
+mass-agents:  #: Interactively trigger new agent.
 	seq 2347 3000 | xargs --interactive -I% \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
@@ -26,7 +60,7 @@ mass-agents:
 			--file docker/docker-compose.agent.yml \
 		up -d
 
-clean-agents:
+clean-agents:  #: Aggressively trash agent from mass-agents.
 	seq 2347 3000 | xargs --verbose -I% --max-procs 4 \
 		env \
 			TEMBOARD_REGISTER_PORT=% \
@@ -35,3 +69,51 @@ clean-agents:
 			--project-name temboardagent% \
 			--file docker/docker-compose.agent.yml \
 		down --volumes
+
+renew-sslca:  #: Renew CA for self signed certificate
+	openssl req -batch -x509 -new -nodes -key agent/share/temboard-agent_CHANGEME.key -sha256 -days 1095 -out agent/share/temboard-agent_ca_certs_CHANGEME.pem
+	openssl req -batch -x509 -new -nodes -key ui/share/temboard_CHANGEME.key -sha256 -days 1095 -out ui/share/temboard_ca_certs_CHANGEME.pem
+
+renew-sslcert:  #: Renew self-signed SSL certificate
+	openssl req -batch -new -key agent/share/temboard-agent_CHANGEME.key -out request.pem
+	openssl x509 -req -in request.pem -CA agent/share/temboard-agent_ca_certs_CHANGEME.pem -CAkey agent/share/temboard-agent_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out agent/share/temboard-agent_CHANGEME.pem
+	openssl req -batch -new -key ui/share/temboard_CHANGEME.key -out request.pem
+	openssl x509 -req -in request.pem -CA ui/share/temboard_ca_certs_CHANGEME.pem -CAkey ui/share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out ui/share/temboard_CHANGEME.pem
+	rm -f request.pem agent/share/temboard-agent_ca_certs_CHANGEME.srl ui/share/temboard_ca_certs_CHANGEME.srl
+
+
+VERSION=$(shell cd ui; python setup.py --version)
+BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
+# To test release target, override GIT_REMOTE with your own fork.
+GIT_REMOTE=git@github.com:dalibo/temboard.git
+release:  #: Tag and push a new git release
+	$(info Checking we are on branch $(BRANCH).)
+	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
+	$(info Checking agent and UI version are same)
+	grep -q "$(VERSION)" agent/temboardagent/version.py
+	git commit agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
+	$(info Checking source tree is clean)
+	git diff --quiet
+	$(MAKE) dist
+	git tag --annotate --message "Version $(VERSION)" $(VERSION)
+	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+
+dist:  #: Build sources and wheels.
+	cd agent/; python setup.py sdist bdist_wheel
+	cd ui/; python setup.py sdist bdist_wheel
+
+PYDIST=\
+	agent/dist/temboard-agent-$(VERSION).tar.gz \
+	agent/dist/temboard_agent-$(VERSION)-py3-none-any.whl \
+	ui/dist/temboard-$(VERSION).tar.gz \
+	ui/dist/temboard-$(VERSION)-py3-none-any.whl \
+
+# To test PyPI upload, set TWINE_REPOSITORY=testpypi environment variable.
+upload:  #: Upload Python artefacts to PyPI.
+	twine upload $(PYDIST)
+
+packages:  #: Build and upload packages dalibo.org.
+	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
+	$(MAKE) -c agent/packaging/deb bullseye buster stretch
+	$(MAKE) -c ui/packaging/rpm rhel8 rhel7
+	$(MAKE) -c ui/packaging/deb bullseye buster stretch

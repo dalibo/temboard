@@ -22,9 +22,11 @@ nav:
   - Alerting: temboard-howto-alerting.md
   - Maintenance: temboard-howto-maintenance.md
   - Statements: temboard-howto-statements.md
+  - Upgrade PostgreSQL: postgres_upgrade.md
   - temBoard performances: howto-temboard-performances.md
 - Develop:
   - Contributing: CONTRIBUTING.md
+  - Alerting internals: alerting.md
   - Agent REST API: agent_api.md
 
 
