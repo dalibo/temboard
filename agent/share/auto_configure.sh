@@ -18,13 +18,16 @@ SYSUSER=${SYSUSER-postgres}
 set -o pipefail
 
 catchall() {
+	local exit_code=$?
+
+	trap - INT EXIT TERM
+
 	# shellcheck disable=SC2181
-	if [ $? -gt 0 ] ; then
+	if [ $exit_code -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
 	else
 		rm -f "${LOGFILE}"
 	fi
-	trap - INT EXIT TERM
 }
 
 error() {
@@ -41,7 +44,14 @@ log() {
 }
 
 psql() {
-	command sudo -Eu "${SYSUSER}" psql -AtX "$@"
+	local wrapper
+	wrapper=()
+
+	if ! [ "$USER" = "$SYSUSER" ] ; then
+		wrapper=(sudo -Eu "$SYSUSER")
+	fi
+
+	command "${wrapper[@]}" psql -AtX "$@"
 }
 
 query_pgsettings() {
@@ -113,6 +123,7 @@ generate_configuration() {
 	host = ${PGHOST}
 	port = ${PGPORT}
 	user = ${PGUSER}
+	password = ${PGPASSWORD}
 	dbname = ${PGDATABASE}
 	instance = ${instance}
 
@@ -172,12 +183,14 @@ setup_pq() {
 	fi
 	export PGCLUSTER_NAME
 	PGCLUSTER_NAME=$(query_pgsettings cluster_name "$default_cluster_name")
+	log "Cluster name is $PGCLUSTER_NAME."
 }
 
 setup_ssl() {
 	local name=${1//\//-}; shift
 	local pki
-	read -r pki < <(readlink -e /etc/pki/tls /etc/ssl "/etc/temboard-agent/$name")
+	read -r pki < <(readlink -e /etc/pki/tls /etc/ssl "$ETCDIR/$name")
+	pki="${PKIDIR-$pki}"
 
 	if [ -f "$pki/certs/ssl-cert-snakeoil.pem" ] && [ -f "$pki/private/ssl-cert-snakeoil.key" ] ; then
 		log "Using snake-oil SSL certificate."
@@ -189,9 +202,9 @@ setup_ssl() {
 		openssl req -new -x509 -days 365 -nodes \
 			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
 			-out "$sslcert" -keyout "$sslkey"
+		chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
 	fi
 
-	chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
 	readlink -e "$sslcert" "$sslkey"
 }
 
@@ -240,7 +253,7 @@ chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
 install -b -o "$SYSUSER" -g "$SYSUSER" -m 0600 /dev/null "$ETCDIR/$name/users"
-if ! [ -f /etc/logrotate.d/temboard-agent ] ; then
+if ! [ -f /etc/logrotate.d/temboard-agent ] && [ -w /etc/logrotate.d ]; then
 	install -d -m 0755 /etc/logrotate.d
 	install -m 644 temboard-agent.logrotate /etc/logrotate.d/temboard-agent
 fi
@@ -253,11 +266,11 @@ logfile=${LOGDIR}/${name//\//-}.log
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
 # shellcheck disable=SC2154
-generate_configuration "$home" "${sslfiles[@]}" "$key" "$name" "$logfile" | tee "$conf"
+generate_configuration "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" "$logfile" | tee "$conf"
 chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
-if [ -x /bin/systemctl ] ; then
+if [ -x /bin/systemctl ] && [ -w /etc/systemd/system ] ; then
 	unit="temboard-agent@$(systemd-escape "${name}").service"
 	log "Enabling systemd unit ${unit}."
 	if [ "${SYSUSER}" != "postgres" ] ; then
