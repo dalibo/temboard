@@ -27,36 +27,36 @@ workflows:
         requires: [stage0-dist]
     # Please keep agent/tests/func/Makefile run-all test matrix sync with the
     # following.
-    - func:
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - func-legacy:
+        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [centos7]
             pgversion: ["9.6", "12"]
-    - func:
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - func-legacy:
+        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [rockylinux8]
             pgversion: ["9.6", "14"]
-    - func:
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - func-legacy:
+        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [bullseye]
             pgversion: ["13"]
-    - func:
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - func-legacy:
+        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [buster]
             pgversion: ["11"]
-    - func:
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - func-legacy:
+        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
@@ -268,7 +268,7 @@ jobs:
         - agent/dist/*.deb
         - ui/dist/*.deb
 
-  func:
+  func-legacy:
     parameters:
       dist:
         description: "Distribution"
