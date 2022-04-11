@@ -105,7 +105,7 @@ release:  #: Tag and push a new git release
 
 dist:  #: Build sources and wheels.
 	cd agent/; python setup.py sdist bdist_wheel
-	cd ui/; python setup.py sdist bdist_wheel
+	cd ui/; python setup.py sdist bdist_wheel --universal
 
 PYDIST=\
 	agent/dist/temboard-agent-$(VERSION).tar.gz \

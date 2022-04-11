@@ -70,17 +70,11 @@ jobs:
     steps:
     - checkout
     - run:
-        name: Build Agent
+        name: Build Agent & UI
         command: |
-          cd agent/
-          python setup.py sdist bdist_wheel
+          make dist
     - store_artifacts:
         path: /workspace/agent/dist/
-    - run:
-        name: Build UI
-        command: |
-          cd ui/
-          python setup.py sdist bdist_wheel --universal
     - store_artifacts:
         path: /workspace/ui/dist/
     - persist_to_workspace:
