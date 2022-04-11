@@ -10,7 +10,7 @@ bullseye buster stretch:
 build-%:
 	mkdir -p $(DISTDIR)
 	docker-compose run --rm $*
-	./mkchanges.sh $$(readlink -e $(DISTDIR)/last_build.deb) $*
+	./mkchanges.sh $$(readlink -e $(DISTDIR)/temboard_last.deb) $*
 
 push:
 	version=$$(dpkg-deb -f ../../dist/temboard_last.deb  Version | grep -Po '.*(?=-0dlb.*)'); \
