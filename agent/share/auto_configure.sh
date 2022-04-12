@@ -47,7 +47,7 @@ psql() {
 	local wrapper
 	wrapper=()
 
-	if ! [ "$USER" = "$SYSUSER" ] ; then
+	if ! [ "$(whoami)" = "$SYSUSER" ] ; then
 		wrapper=(sudo -Eu "$SYSUSER")
 	fi
 
