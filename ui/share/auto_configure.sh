@@ -182,7 +182,7 @@ if ! sudo -nEu "$SYSUSER" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONN
 	fatal "Can't configure access to Postgres database."
 fi
 
-if hash systemctl &>/dev/null; then
+if [ -x /bin/systemctl ] && [ -w /etc/systemd/system ] ; then
 	start_cmd="systemctl start temboard"
 	if systemctl is-system-running &>/dev/null ; then
 		systemctl daemon-reload

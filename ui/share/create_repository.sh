@@ -30,7 +30,7 @@ psql=(psql -d "$PGUSER")
 
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to PGUSER.
-	psql=(sudo -EHu "${PGUSER}" "${psql[@]}")
+	psql=(sudo -nEHu "${PGUSER}" "${psql[@]}")
 fi
 
 TEMBOARD_DATABASE=${TEMBOARD_DATABASE-temboard}
@@ -57,14 +57,20 @@ else
 	runas=()
 fi
 
+migratedb=(
+	"${runas[@]}"
+	temboard-migratedb
+	${TEMBOARD_CONFIGFILE+--config=$TEMBOARD_CONFIGFILE}
+)
+
 psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off')
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to temboard.
 	psql=("${runas[@]}" "${psql[@]}")
 fi
 
-if ! "${runas[@]}" temboard-migratedb check ; then
-    "${runas[@]}" temboard-migratedb upgrade
+if ! "${migratedb[@]}" check ; then
+    "${migratedb[@]}" upgrade
     if [ -n "${DEV-}" ] ; then
         "${psql[@]}" -f "$SQLDIR/dev-fixture.sql"
     fi
