@@ -14,6 +14,7 @@ LOGFILE=${LOGFILE-/var/log/temboard-auto-configure.log}
 
 catchall() {
 	local rc=$?
+	trap - INT EXIT TERM
 	set +x
 	if [ $rc -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
@@ -21,7 +22,6 @@ catchall() {
 		rm -f "${LOGFILE}"
 	fi
 	exec 3>&-
-	trap - INT EXIT TERM
 }
 
 
