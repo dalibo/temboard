@@ -100,7 +100,7 @@ class Service(object):
 
     def sigterm_handler(self, *a):
         logger.info(u"%s terminated.", self)
-        sys.exit(1)
+        sys.exit(0)
 
     def apply_config(self):
         pass
@@ -119,7 +119,7 @@ class Service(object):
             self.serve()
         except KeyboardInterrupt:
             logger.info(u"%s interrupted.", self)
-            sys.exit(1)
+            sys.exit(0)
 
     def serve(self):
         with self:
