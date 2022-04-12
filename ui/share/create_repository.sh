@@ -22,6 +22,7 @@ if [ -n "${DEBUG-}" ] ; then
 fi
 
 SQLDIR=$(readlink -m "$0/../sql/")
+SYSUSER="${SYSUSER-temboard}"
 
 export PGUSER=${PGUSER-postgres}
 export PGHOST=${PGHOST-/var/run/postgresql}
@@ -48,10 +49,10 @@ PGUSER=temboard
 export PGPASSWORD="$TEMBOARD_PASSWORD"
 export PGDATABASE="$TEMBOARD_DATABASE"
 
-if getent passwd temboard &>/dev/null ; then
-	# Run as temboard UNIX user. Wipe environment, this requires propery
+if getent passwd "$SYSUSER" &>/dev/null && [ "$(whoami)" != "$SYSUSER" ] ; then
+	# Run as temboard UNIX user. Wipe environment, this requires properly
 	# temboard.conf.
-	runas=(sudo -iu temboard)
+	runas=(sudo -inu "$SYSUSER")
 else
 	runas=()
 fi
