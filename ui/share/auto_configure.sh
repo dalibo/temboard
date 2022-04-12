@@ -175,7 +175,7 @@ generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
 
 log "Creating Postgres user, database and schema."
 # For temboard-migratedb
-TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
+DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
 if ! sudo -nEu "$SYSUSER" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
