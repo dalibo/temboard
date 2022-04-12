@@ -10,8 +10,8 @@ temBoard %(temboard)s
 System %(distname)s %(distversion)s
 Python %(python)s (%(pythonbin)s)
 Tornado %(tornado)s
-psycopg2 %(psycopg2)s
 libpq %(libpq)s
+psycopg2 %(psycopg2)s
 SQLAlchemy %(sqlalchemy)s
 """
 

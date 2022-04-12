@@ -37,7 +37,8 @@ class VersionAction(_VersionAction):
     temBoard agent %(temboard)s
     System %(distname)s %(distversion)s
     Python %(python)s (%(pythonbin)s)
-    psycopg2 %(psycopg2)s libpq %(libpq)s
+    libpq %(libpq)s
+    psycopg2 %(psycopg2)s
     """)
 
     def __call__(self, parser, *_):
