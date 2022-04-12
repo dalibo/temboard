@@ -109,6 +109,7 @@ generate_configuration() {
 	# possibilities.
 
 	[temboard]
+	port = ${TEMBOARD_PORT-8888}
 	ssl_cert_file = $sslcert
 	ssl_key_file = $sslkey
 	cookie_secret = $(pwgen 128)
@@ -119,11 +120,11 @@ generate_configuration() {
 	port = ${PGPORT}
 	user = temboard
 	password = ${TEMBOARD_PASSWORD}
-	dbname = temboard
+	dbname = ${TEMBOARD_DATABASE-temboard}
 
 	[logging]
 	method = stderr
-	level = INFO
+	level = ${TEMBOARD_LOGGING_LEVEL-INFO}
 
 	[monitoring]
 	# purge_after = 365
