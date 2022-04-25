@@ -58,35 +58,35 @@ workflows:
     # following.
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py2.7, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [centos7]
             pgversion: ["9.6", "12"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [rockylinux8]
             pgversion: ["9.6", "14"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [bullseye]
             pgversion: ["13"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [buster]
             pgversion: ["11"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage0-unit-ui-py3.5, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [stretch]
@@ -378,16 +378,6 @@ jobs:
           TBD_PGVERSION: "<< parameters.pgversion >>"
     - store_artifacts:
         path: /tmp/tests_temboard/logs/postgresql.log
-    - run:
-        name: UI Functionnal Tests
-        command: ui/tests/func/run.sh
-        environment:
-          PGHOST: 0.0.0.0
-          PGUSER: temboard
-          PGPASSWORD: *PGPASSWORD
-          PYTHONBIN: << parameters.pythonbin >>
-          TEMBOARD_PASSWORD: *PGPASSWORD
-          TBD_INSTALL_RPM: "1"
     - *pip-cache-save
     - store_artifacts:
         path: ui/temboard-func.log

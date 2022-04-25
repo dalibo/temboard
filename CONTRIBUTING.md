@@ -203,8 +203,7 @@ $
 ## Execute Integration Tests
 
 The `tests/` directory contains a pytest project to tests both UI and agent
-using selenium. These tests are not to be confused with `ui/tests/func` and
-`agent/tests/func`.
+using selenium. These tests are not to be confused with `agent/tests/func`.
 
 Execute these tests right from your virtualenv, using pytest:
 
@@ -244,37 +243,6 @@ prefix.
 Selenium standalone container runs a headless Xvfb server with noVNC enabled.
 View live tests in your browser at http://localhost:7900/ . Click the connect
 button and interract with the browser and UI.
-
-
-## Execute UI Func Tests (legacy)
-
-Go to tests/func and run docker-compose:
-
-``` console
-$ cd ui/tests/func
-ui/tests/func/$ docker-compose up --force-recreate --always-recreate-deps --renew-anon-volumes --abort-on-container-exit ui
-...
-```
-
-Functionnal tests are executed **outside** temboard process. UI is installed and
-registered using regular tools : pip, dpkg or yum, auto_configure.sh, etc. A
-real Postgres database is set up for the repository
-
-Tests are written in Python with pytest.
-
-For development purpose, a `docker-compose.yml` file describes the setup to
-execute functionnal tests almost like on Circle CI. The main entry point is
-`tests/func/run.sh` which is responsible to install temboard, configure it and
-call pytest.
-
-On failure, the main container, named `ui`, waits for you to enter it and
-debug. Project tree is mounted at `/workspace`.
-
-``` console
-ui/tests/func/$ docker-compose exec ui /bin/bash
-[root@ccb2ec0d78cb workspace]# tests/func/run.sh --pdb -x
-…
-```
 
 
 ## Coding Style
