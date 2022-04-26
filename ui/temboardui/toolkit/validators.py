@@ -54,6 +54,12 @@ def file_(raw):
     return raw
 
 
+def fqdn(raw):
+    if '.' not in raw:
+        raise ValueError("%s is not an FQDN" % raw)
+    return raw
+
+
 _identifier_re = re.compile(r'^[a-zA-Z0-9]+$')
 
 

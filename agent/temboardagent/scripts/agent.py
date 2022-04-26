@@ -101,7 +101,7 @@ def list_options_specs():
         section, 'users',
         default='/etc/temboard-agent/users', validator=v.file_,
     )
-    yield OptionSpec(section, 'hostname', default=getfqdn())
+    yield OptionSpec(section, 'hostname', default=getfqdn(), validator=v.fqdn)
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
 
