@@ -75,7 +75,7 @@ def get_host_id(session, hostname):
     """
     host_id = db.get_host_id(session, hostname)
     if not host_id:
-        raise Exception(
+        raise NameError(
             "Could not find registered host with hostname=%s" % hostname
         )
     return host_id

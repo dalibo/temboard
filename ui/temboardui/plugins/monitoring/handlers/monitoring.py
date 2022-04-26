@@ -149,7 +149,12 @@ def index(request):
 
 @blueprint.instance_route("/monitoring/unavailability")
 def unavailability(request):
-    host_id, instance_id = get_request_ids(request)
+    try:
+        host_id, instance_id = get_request_ids(request)
+    except NameError as e:
+        logger.info("%s. No data.", e)
+        return csvify(data=[])
+
     start, end = parse_start_end(request)
     data = get_unavailability_csv(
         request.db_session, start, end, host_id, instance_id)
@@ -159,7 +164,12 @@ def unavailability(request):
 @blueprint.instance_route(r'/monitoring/data/([a-z\-_.0-9]{1,64})$')
 def data_metric(request, metric_name):
     key = request.handler.get_argument('key', default=None)
-    host_id, instance_id = get_request_ids(request)
+    try:
+        host_id, instance_id = get_request_ids(request)
+    except NameError as e:
+        logger.info("%s. No data.", e)
+        return csvify(data=[])
+
     start, end = parse_start_end(request)
     try:
         data = get_metric_data_csv(
