@@ -244,6 +244,9 @@ Selenium standalone container runs a headless Xvfb server with noVNC enabled.
 View live tests in your browser at http://localhost:7900/ . Click the connect
 button and interract with the browser and UI.
 
+Selenium container may be flaky. If you suspend your computer, you may have
+timeout from selenium. Use `make restart-selenium` to workaround this.
+
 
 ## Coding Style
 

@@ -26,6 +26,9 @@ repository:  #: Initialize temboard UI database.
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
 
+restart-selenium:  #: Restart selenium development container
+	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
+
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv .venv-py$*/
 	.venv-py$*/bin/python --version  # pen test
