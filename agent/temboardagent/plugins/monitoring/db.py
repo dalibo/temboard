@@ -129,3 +129,12 @@ def drop_current_for_delta_metrics(metrics):
             sample.pop('current', None)
 
     return metrics
+
+
+def use_current_for_delta_metrics(metrics):
+    # Override delta measures with current value.
+    for probe, samples in metrics['data'].items():
+        for sample in samples:
+            sample.update(sample.pop('current', {}))
+            sample.pop('measure_interval', None)
+    return metrics

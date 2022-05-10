@@ -5,6 +5,7 @@ import logging
 
 import pytest
 from selenium.common.exceptions import TimeoutException
+from sh import temboard
 
 from fixtures.utils import retry_slow
 
@@ -33,6 +34,14 @@ def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
     browser.select("#chartCtxForks")  # Ensure chart is shown
     browser.select("#checkboxCtxForks").click()  # Disable chart
     browser.absent("#chartCtxForks")  # Chart's vanished
+
+
+@pytest.mark.slowmonitoring
+def test_metrics(ui_auto_configure, agent, ensure_monitoring_data):
+    client = temboard.bake("query-agent", _tty_in=True)
+    res = client(f"{agent.base_url}/monitoring/metrics")
+    metrics = res.stdout.decode('utf-8')
+    assert 'node_load1 ' in metrics
 
 
 @pytest.fixture

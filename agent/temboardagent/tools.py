@@ -121,6 +121,12 @@ def now():
     return strftime("%Y-%m-%d %H:%M:%S +0000", gmtime())
 
 
+def fromisoformat(datestr):
+    datetime_part, tz_part = datestr.split('+')
+    datestr = datetime_part + '+' + tz_part.replace(':', '')
+    return datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
