@@ -79,6 +79,7 @@ fpm --verbose \
     --license PostgreSQL \
     --url http://temboard.io/ \
     --depends python3 \
+    --depends python3-bottle \
     --depends python3-cryptography \
     --depends python3-pkg-resources \
     --depends 'python3-psycopg2 >= 2.7' \

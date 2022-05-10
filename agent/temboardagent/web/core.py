@@ -1,23 +1,23 @@
 import logging
 import time
 
-from temboardagent.routing import add_route
-from temboardagent.errors import (
-    HTTPError,
-    NotificationError,
-)
-from temboardagent.notification import NotificationMgmt
-from temboardagent.inventory import SysInfo, PgInfo
-from .toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
-from .version import __version__ as version
+from bottle import default_app, get, request
+
+from ..routing import add_route
+from ..errors import HTTPError
+from ..notification import NotificationMgmt
+from ..inventory import SysInfo, PgInfo
+from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
+from ..version import __version__ as version
 
 
 logger = logging.getLogger(__name__)
 
 
-@add_route('GET', b'/discover', public=True)
-def get_discover(http_context, app):
+@get('/discover')
+def get_discover():
     logger.info('Starting discovery.')
+    app = default_app().temboard
     discover = dict(
         hostname=None,
         cpu=None,
@@ -65,12 +65,12 @@ def get_discover(http_context, app):
         # Do not raise HTTPError, just keeping null values for Postgres
         # informations.
 
-    signature = http_context['headers'].get('x-temboard-signature')
+    signature = request.headers.get('x-temboard-signature')
     if signature:
-        request = canonicalize_request(
-            http_context['method'],
-            http_context['path'],
-            http_context['headers'],
+        crequest = canonicalize_request(
+            request.method,
+            request.path,
+            request.headers,
         )
         try:
             if not signature.startswith('v1:'):
@@ -78,7 +78,7 @@ def get_discover(http_context, app):
             signature = signature[3:]
 
             verify_v1(
-                http_context['app'].config.signing_key, signature, request)
+                app.config.signing_key, signature, crequest)
             sign_status = 'valid'
         except InvalidSignature:
             sign_status = 'invalid'
@@ -98,17 +98,10 @@ def profile(http_context, app):
     return {'username': http_context['username'], 'signature': 'valid'}
 
 
-@add_route('GET', b'/notifications')
-def notifications(http_context, app):
-    logger.info("Get notifications.")
-    try:
-        notifications = NotificationMgmt.get_last_n(app.config, -1)
-        logger.info("Done.")
-        return list(notifications)
-    except (NotificationError, Exception) as e:
-        logger.exception(e)
-        logger.info("Failed.")
-        raise HTTPError(500, "Internal error.")
+@get('/notifications')
+def notifications():
+    config = default_app().temboard.config
+    return list(NotificationMgmt.get_last_n(config, -1))
 
 
 @add_route('GET', b'/status', public=True)

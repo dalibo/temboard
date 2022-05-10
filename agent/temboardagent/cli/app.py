@@ -232,6 +232,7 @@ class VersionAction(_VersionAction):
     temBoard agent %(temboard)s (%(temboardbin)s)
     System %(distname)s %(distversion)s
     Python %(python)s (%(pythonbin)s)
+    bottle %(bottle)s
     cryptography %(cryptography)s
     libpq %(libpq)s
     psycopg2 %(psycopg2)s
@@ -243,6 +244,7 @@ class VersionAction(_VersionAction):
 
     @classmethod
     def inspect_versions(cls):
+        from bottle import __version__ as bottle_version
         from psycopg2 import __version__ as psycopg2_version
         from cryptography import __version__ as cryptography_version
 
@@ -254,6 +256,7 @@ class VersionAction(_VersionAction):
             psycopg2=psycopg2_version,
             python=python_version(),
             pythonbin=sys.executable,
+            bottle=bottle_version,
             distname=distinfos['NAME'],
             distversion=distinfos['VERSION'],
             libpq=format_pq_version(read_libpq_version()),

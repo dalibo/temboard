@@ -16,8 +16,10 @@ BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
 Requires:      openssl
 %if 0%{?rhel} < 8
+Requires:      python36-bottle
 Requires:      python36-cryptography
 %else
+Requires:      python3-bottle
 Requires:      python3-cryptography
 %endif
 Requires:      python3-setuptools

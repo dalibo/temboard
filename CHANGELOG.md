@@ -38,6 +38,7 @@ script to proceed.
   release.
 - Debian Stretch support is deprecated and will be removed in next major
   release.
+- temBoard agent now depends on cryptography and bottle.
 
 
 ## [7.11] - Unreleased
