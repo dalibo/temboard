@@ -10,10 +10,12 @@ ETCDIR=${ETCDIR-/etc/temboard}
 VARDIR=${VARDIR-/var/lib/temboard}
 LOGDIR=${LOGDIR-/var/log/temboard}
 LOGFILE=${LOGFILE-/var/log/temboard-auto-configure.log}
+SYSUSER=${SYSUSER-temboard}
 
 
 catchall() {
 	local rc=$?
+	trap - INT EXIT TERM
 	set +x
 	if [ $rc -gt 0 ] ; then
 		fatal "Failure. See ${LOGFILE} for details."
@@ -21,7 +23,6 @@ catchall() {
 		rm -f "${LOGFILE}"
 	fi
 	exec 3>&-
-	trap - INT EXIT TERM
 }
 
 
@@ -51,17 +52,21 @@ setup_logging() {
 
 
 setup_pq() {
+	local psql
+
 	# Ensure used libpq vars are defined for configuration template.
 
 	export PGHOST=${PGHOST-/var/run/postgresql}
 	export PGPORT=${PGPORT-5432}
 	export PGUSER=${PGUSER-postgres}
+
 	if [ -d "$PGHOST" ] ; then
-		sudo="sudo -Eu ${PGUSER}"
+		psql=(sudo -nEu "$PGUSER" psql)
 	else
-		sudo=
+		psql=(psql)
 	fi
-	if ! $sudo psql -tc "SELECT 'Postgres connection working.';" ; then
+
+	if ! "${psql[@]}" -tc "SELECT 'Postgres connection working.';" ; then
 		fatal "Can't connect to Postgres cluster."
 	fi
 }
@@ -109,6 +114,7 @@ generate_configuration() {
 	# possibilities.
 
 	[temboard]
+	port = ${TEMBOARD_PORT-8888}
 	ssl_cert_file = $sslcert
 	ssl_key_file = $sslkey
 	cookie_secret = $(pwgen 128)
@@ -119,11 +125,11 @@ generate_configuration() {
 	port = ${PGPORT}
 	user = temboard
 	password = ${TEMBOARD_PASSWORD}
-	dbname = temboard
+	dbname = ${TEMBOARD_DATABASE-temboard}
 
 	[logging]
 	method = stderr
-	level = INFO
+	level = ${TEMBOARD_LOGGING_LEVEL-INFO}
 
 	[monitoring]
 	# purge_after = 365
@@ -148,42 +154,42 @@ setup_logging
 setup_pq
 
 export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
-if ! getent passwd temboard ; then
+if ! getent passwd "$SYSUSER" ; then
 	log "Creating system user temBoard."
 	useradd \
 		--system --user-group --shell "$SHELL" \
 		--home-dir "$VARDIR" \
-		--comment "temBoard Web UI" temboard &>/dev/null
+		--comment "temBoard Web UI" "$SYSUSER" &>/dev/null
 fi
 
-if getent group ssl-cert &>/dev/null; then
-	adduser temboard ssl-cert
+if getent group ssl-cert &>/dev/null && ! getent group ssl-cert | grep -q "$SYSUSER"; then
+	adduser "$SYSUSER" ssl-cert
 fi
 
 
 log "Configuring temboard in ${ETCDIR}."
 mapfile sslfiles < <(set -eu; setup_ssl)
-install -o temboard -g temboard -m 0750 -d "$ETCDIR" "$LOGDIR" "$VARDIR"
-install -o temboard -g temboard -m 0640 /dev/null "$ETCDIR/temboard.conf"
+install -o "$SYSUSER" -g "$SYSUSER" -m 0750 -d "$ETCDIR" "$LOGDIR" "$VARDIR"
+install -o "$SYSUSER" -g "$SYSUSER" -m 0640 /dev/null "$ETCDIR/temboard.conf"
 generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
 
 log "Creating Postgres user, database and schema."
 # For temboard-migratedb
-TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
+DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
-if ! sudo -Eu temboard psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
+if ! sudo -nEu "$SYSUSER" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
 fi
 
-if hash systemctl &>/dev/null; then
+if [ -x /bin/systemctl ] && [ -w /etc/systemd/system ] ; then
 	start_cmd="systemctl start temboard"
 	if systemctl is-system-running &>/dev/null ; then
 		systemctl daemon-reload
 		systemctl enable temboard
 	fi
 else
-	start_cmd="temboard -c ${ETCDIR}/temboard.conf"
+	start_cmd="sudo -iu $SYSUSER temboard -c ${ETCDIR}/temboard.conf"
 fi
 
 log

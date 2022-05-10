@@ -200,35 +200,52 @@ $
 ```
 
 
-## Execute UI Func Tests
+## Execute Integration Tests
 
-Go to tests/func and run docker-compose:
+The `tests/` directory contains a pytest project to tests both UI and agent
+using selenium. These tests are not to be confused with `agent/tests/func`.
+
+Execute these tests right from your virtualenv, using pytest:
 
 ``` console
-$ cd ui/tests/func
-ui/tests/func/$ docker-compose up --force-recreate --always-recreate-deps --renew-anon-volumes --abort-on-container-exit ui
+$ . .venv-py3.6/bin/activate
+$ pytest tests/
+============================= test session starts ==============================
+platform linux -- Python 3.6.8, pytest-7.0.1, pluggy-1.0.0 -- /home/bersace/src/dalibo/temboard/.venv-py3.6/bin/python3.6
+cachedir: .pytest_cache
+postgresql: 14 (/usr/lib/postgresql/14/bin)
+sqlalchemy: 1.4.35
+system: Debian GNU/Linux 11 (bullseye)
+tornado: 6.1
+libpq: 14.2
+psycopg2: 2.9.3 (dt dec pq3 ext lo64)
+temboard: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard)
+temboard-agent: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard-agent)
+rootdir: /home/bersace/src/dalibo/temboard/tests, configfile: pytest.ini
+plugins: mock-3.6.1, cov-3.0.0, tornado-0.8.1, anyio-3.5.0
 ...
+tests/test_00_setup_ui.py::test_temboard_version PASSED                  [ 12%]
+...
+tests/test_20_register.py::test_web_register PASSED                      [100%]
+
+============================== 8 passed in 17.69s ==============================
+$
 ```
 
-Functionnal tests are executed **outside** temboard process. UI is installed and
-registered using regular tools : pip, dpkg or yum, auto_configure.sh, etc. A
-real Postgres database is set up for the repository
+`pytests tests/ --help` describes custom options `--pg-version` and
+`--selenium`. Take care of the custom pytest report header, it shows which
+temboard and temboard-agent binary is used, the bin directory of PostgreSQL.
 
-Tests are written in Python with pytest.
+`pytests tests/ --fixtures` describes fixtures defined by tests/conftest.py.
+Fixtures configure a postgres for monitoring, an agent and the UI in `workdir/`
+prefix.
 
-For development purpose, a `docker-compose.yml` file describes the setup to
-execute functionnal tests almost like on Circle CI. The main entry point is
-`tests/func/run.sh` which is responsible to install temboard, configure it and
-call pytest.
+Selenium standalone container runs a headless Xvfb server with noVNC enabled.
+View live tests in your browser at http://localhost:7900/ . Click the connect
+button and interract with the browser and UI.
 
-On failure, the main container, named `ui`, waits for you to enter it and
-debug. Project tree is mounted at `/workspace`.
-
-``` console
-ui/tests/func/$ docker-compose exec ui /bin/bash
-[root@ccb2ec0d78cb workspace]# tests/func/run.sh --pdb -x
-…
-```
+Selenium container may be flaky. If you suspend your computer, you may have
+timeout from selenium. Use `make restart-selenium` to workaround this.
 
 
 ## Coding Style

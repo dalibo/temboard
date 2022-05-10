@@ -24,7 +24,10 @@ develop-%::
 repository:  #: Initialize temboard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
-	PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
+	PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
+
+restart-selenium:  #: Restart selenium development container
+	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv .venv-py$*/
@@ -35,8 +38,13 @@ venv-2.7:
 	.venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
-	.venv-py$*/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e ui/
+	.venv-py$*/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e agent/ -e ui/
 	.venv-py$*/bin/temboard --version  # pen test
+	.venv-py$*/bin/temboard-agent --version  # pen test
+
+install-2.7: venv-2.7
+	.venv-py2.7/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e ui/
+	.venv-py2.7/bin/temboard --version  # pen test
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
@@ -100,7 +108,7 @@ release:  #: Tag and push a new git release
 
 dist:  #: Build sources and wheels.
 	cd agent/; python setup.py sdist bdist_wheel
-	cd ui/; python setup.py sdist bdist_wheel
+	cd ui/; python setup.py sdist bdist_wheel --universal
 
 PYDIST=\
 	agent/dist/temboard-agent-$(VERSION).tar.gz \
