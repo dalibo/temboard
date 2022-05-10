@@ -211,11 +211,6 @@ jobs:
           command: |
             pip install --upgrade --requirement ui/requirements-dev.txt --editable ui/
       - run:
-          name: Lint
-          command: |
-            cd ui/
-            flake8
-      - run:
           name: Python tests
           command: |
             cd ui/
