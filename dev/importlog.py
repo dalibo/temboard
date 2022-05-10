@@ -192,7 +192,7 @@ def main(logfile):
     from_ = 1000 * int(min(start.timestamp(), omw.start) - 60)
     to = 1000 * int(max(end.timestamp(), omw.end) + 60)
     dashboard_url = (
-        "http://grafana.temboardperf.docker:3000"
+        "http://0.0.0.0:3000"
         "/d/MkhXLKbnz/temboard-performance"
         f"?orgId=1&from={from_}&to={to}"
         f"&var-service=.%2B&var-logfile={labels['logfile']}"
@@ -205,7 +205,7 @@ def send_log_batch_to_loki(lines, labels):
     logger.info("Sending %s lines to loki.", len(lines))
     return
     r = httpx.post(
-        'http://loki.temboardperf.docker:3100/loki/api/v1/push',
+        'http://0.0.0.0:3100/loki/api/v1/push',
         json=dict(streams=[dict(
             stream=labels,
             values=lines,

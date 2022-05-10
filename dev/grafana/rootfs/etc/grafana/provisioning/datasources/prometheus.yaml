@@ -17,4 +17,5 @@ datasources:
   "isDefault": true
   "jsonData":
     "httpMethod": "POST"
+    "timeInterval": "60s"
   "readOnly": false

@@ -2,7 +2,7 @@
 
 temBoard UI has a built-in, logfmt based, performances tracing. You enable
 performance tracing, execute temBoard UI and analyze the logs afterward using a
-dedicated grafana setup.
+development grafana setup.
 
 
 ## Enabling performance tracing
@@ -53,22 +53,17 @@ You will see the following `perf` messages in temBoard logs.
 
 To visualize temBoard's performances traces, the development environment of
 temBoard ships et Grafana setup with Prometheus and Loki. See
-[Contributing](CONTRIBUTING.md) to setup a development environment. The Grafana
-project is versionned in dev/perfui/ directory. A docker-compose.yml file describes
-the services and configuration. `importlog.py` Python script backfills
-Prometheus and Loki from temBoard traces file.
-
-The setup requires dnsdock instead of exposing port. You may add a
-`docker-compose.override.yml` file to expose port and use localhost as Grafana,
-Loki and Prometheus network host.
+[Contributing](CONTRIBUTING.md) to setup a development environment.
+`dev/importlog.py` Python script backfills Prometheus and Loki from temBoard
+traces file.
 
 ``` console
-dev/perfui/$ docker-compose up -d
-dev/perfui/$ ./importlog.py my-temboard.log
+$ docker-compose up -d
+$ ./dev/importlog.py my-temboard.log
 I: Analyzing systemd.log.
 I: Read timezone from /etc: Europe/Paris.
 ...
-D: HTTP Request: POST http://loki.temboardperf.docker:3100/loki/api/v1/push "HTTP/1.1 204 No Content"
+D: HTTP Request: POST http://0.0.0.0:3100/loki/api/v1/push "HTTP/1.1 204 No Content"
 I: Parsed messages from 2022-01-27 15:09:54+01:00 to 2022-01-27 18:03:15+01:00.
 I: Log time span is 2:53:21.
 I: Exported 1209 points in OpenMetrics format.
@@ -77,8 +72,8 @@ I: Backfilling Prometheus from OpenMetrics.
 BLOCK ULID                  MIN TIME       MAX TIME       DURATION      NUM SAMPLES  NUM CHUNKS   NUM SERIES   SIZE
 01FTE7W2G0CGHM0GZQFYP2KD0Z  1643294766000  1643299198001  1h13m52.001s  1643         1086         1086         117422
 01FTE7W2J70EJATMMGAXHHDP09  1643299209000  1643302995001  1h3m6.001s   4484         3476         3476         372009
-I: View graph and messages at: http://grafana.temboardperf.docker:3000/d/MkhXLKbnz/temboard-performance?orgId=1&from=1643292534000&to=1643303055000&var-logfile=systemd.log.
-dev/perfui/$
+I: View graph and messages at: http://0.0.0.0:3000/d/MkhXLKbnz/temboard-performance?orgId=1&from=1643292534000&to=1643303055000&var-logfile=systemd.log.
+$
 ```
 
 Follow the final link to see the dashboard narrowed to the date interval
@@ -96,7 +91,7 @@ Please take advise:
 If you need to restart from scratch, just trash the compose setup and restart.
 
 ``` console
-dev/perfui/$ docker-compose down -v
+$ docker-compose down -v
 Stopping perfui_prometheus_1 ... done
 Stopping perfui_loki_1       ... done
 Stopping perfui_grafana_1    ... done
@@ -105,6 +100,6 @@ Removing perfui_loki_1       ... done
 Removing perfui_grafana_1    ... done
 Removing network perfui_default
 Removing volume perfui_grafana-data
-dev/perfui/$ docker-compose up -d
+$ make develop
 ...
 ```

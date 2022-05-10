@@ -11,6 +11,7 @@ dist/
 dev/agent-bash_history
 dev/pip-cache
 dev/venv-py*
+dev/prometheus/targets/*.yaml
 
 # Test runtime files
 .coverage
@@ -33,3 +34,5 @@ temboard-func.log
 # Help developer customize their development environment
 docker-compose.override.yml
 temboard.conf.d/
+*.log
+dev/prometheus/import/*.txt
