@@ -11,7 +11,7 @@ In order to run temBoard agent, you need:
 -   PostgreSQL 9.4+, listening on UNIX socket. Check with
     `sudo -u postgres psql`.
 -   openssl.
--   Python 2.6+ or 3.5+. Check with `python --version`.
+-   Python 3.6+. Check with `python --version`.
 -   A running temBoard UI.
 -   bash, curl and sudo for setup script.
 

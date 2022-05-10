@@ -67,7 +67,6 @@ class TaskApplication(TemboardApplication):
         self.bootstrap(args=args, environ=environ)
 
         self.log_versions()
-        logging.getLogger('alembic').setLevel(logging.WARN)
         # Manage logging_debug default until we use toolkit OptionSpec.
         legacy_bootstrap(self.config)
 

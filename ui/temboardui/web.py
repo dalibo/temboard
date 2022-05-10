@@ -548,9 +548,10 @@ class Blueprint(object):
                 finally:
                     if self.perf:
                         response_time = datetime.utcnow() - start
+                        instance_helper = getattr(request, 'instance', None)
                         if (
                                 with_instance and
-                                hasattr(request.instance, 'instance')):
+                                hasattr(instance_helper, 'instance')):
                             agent = request.instance.agent_id
                         else:
                             agent = 'undefined'

@@ -32,7 +32,8 @@ overview.
 - `agent/` - Bare Python project for temBoard agent.
     - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
 - `perfui/` - Docker & Grafana project to visualize temBoard performances traces.
-- `docker/` - Development and quickstart docker files.
+- `dev/` - Development scripts and setup.
+- `docker/` - Quickstart Docker Compose file.
 
 Python package is `temboardui` for temBoard UI and `temboardagent` for temBoard agent.
 agent.
@@ -144,9 +145,9 @@ In UI, the seconde agent is pre-registered with address 0.0.0.0, port 2346
 instead of 2345, with the same key `key_for_agent`. The instance FQDN is
 `postgres1.dev`.
 
-The script `docker/dev-switchover.sh` triggers a switchover between the two
-postgres instances. Executing `docker/dev-switchover.sh` one more time restore
-the original typology.
+The script `dev/switchover.sh` triggers a switchover between the two postgres
+instances. Executing `dev/switchover.sh` one more time restore the original
+typology.
 
 
 ## Launching Multiple Agents
