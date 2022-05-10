@@ -10,8 +10,7 @@
 # with pg_rewind.
 #
 # There is nothing like automatic failover. You can trigger manually a
-# switchover with docker/dev-switchover.sh script which will promote the
-# secondary.
+# switchover with dev/switchover.sh script which will promote the secondary.
 
 
 # shellcheck source=/dev/null

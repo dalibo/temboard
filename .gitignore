@@ -3,7 +3,7 @@
 *.egg-info/
 *.ipynb_checkpoints
 *.pyc
-docker/dev-agent-bash_history
+dev/agent-bash_history
 
 # Buildtime files
 build/
