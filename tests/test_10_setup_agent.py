@@ -1,4 +1,7 @@
-from sh import temboard_agent
+import json
+
+from sh import temboard_agent, ErrorReturnCode
+import pytest
 
 
 def test_version():
@@ -23,3 +26,21 @@ def test_discover(agent, agent_env, pg_version):
 
     assert pg_version in discover['pg_version']
     assert int(agent_env['PGPORT']) == discover['pg_port']
+
+
+def test_temboard_client(agent):
+    # Import once debian virtualenv is active.
+    from sh import python3
+
+    client = python3.bake("-m", "temboardui.temboardclient", _tty_in=True)
+
+    # Error
+    url = f"{agent.base_url}/bad-path"
+    with pytest.raises(ErrorReturnCode):
+        client(url)
+
+    # GET
+    url = f"{agent.base_url}/discover"
+    out = client(url)
+    data = json.loads(str(out))
+    assert 'hostname' in data

@@ -12,7 +12,7 @@ from temboardui.application import (
     purge_instance_plugins,
     update_instance,
 )
-from temboardui.temboardclient import temboard_discover
+from temboardui.temboardclient import TemboardAgentClient
 from temboardui.web import (
     HTTPError,
     InstanceHelper,
@@ -155,9 +155,12 @@ def json_delete_instance(request):
     r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
 @admin_required
 def discover(request, address, port):
-    key = request.headers['X-TemBoard-Agent-Key']
-    return temboard_discover(
-        request.config.temboard.ssl_ca_cert_file, address, port, key)
+    client = TemboardAgentClient(
+        address, port,
+        ca_cert_file=request.config.temboard.ssl_ca_cert_file,
+        key=request.headers['X-TemBoard-Agent-Key'])
+    response = client.get('/discover')
+    return response.json()
 
 
 @app.route(r"/settings/instances")
