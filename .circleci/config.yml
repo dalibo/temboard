@@ -147,6 +147,14 @@ jobs:
     - run:
         name: Install UI and tooling.
         command: |
+          set -x
+          if [ "3.5" = "<< parameters.pyversion >>" ] ; then
+              # There is no cffi wheel for Python 3.5. Use distribution
+              # package. Buildpack 3.5 image is based on Debian Stretch.
+              apt-get update -qy
+              apt-get install -q -y --no-install-recommends python3-cffi
+          fi
+
           pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt
     - run:
         name: Install Agent.

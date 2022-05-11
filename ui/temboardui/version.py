@@ -10,6 +10,7 @@ VERSION_FMT = """\
 temBoard %(temboard)s (%(temboardbin)s)
 System %(distname)s %(distversion)s
 Python %(python)s (%(pythonbin)s)
+cryptography %(cryptography)s
 Tornado %(tornado)s
 libpq %(libpq)s
 psycopg2 %(psycopg2)s
@@ -30,10 +31,12 @@ def inspect_versions():
     from psycopg2 import __version__ as psycopg2_version
     from tornado import version as tornado_version
     from sqlalchemy import __version__ as sqlalchemy_version
+    import cryptography
 
     distinfos = read_distinfo()
 
     return dict(
+        cryptography=cryptography.__version__,
         distname=distinfos['NAME'],
         distversion=distinfos['VERSION'],
         libpq=format_pq_version(read_libpq_version()),
