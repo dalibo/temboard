@@ -51,6 +51,8 @@ class DotDict(IterableUserDict):
 
 
 def ensure_bytes(value, encoding='utf-8'):
+    if not hasattr(value, "lower"):
+        value = str(value)
     if hasattr(value, "isdecimal"):
         return value.encode(encoding)
     return value
