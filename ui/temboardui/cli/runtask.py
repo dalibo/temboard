@@ -13,6 +13,7 @@
 #
 
 import logging
+import sys
 from ast import literal_eval
 from textwrap import dedent
 
@@ -55,7 +56,7 @@ class RunTask(SubCommand):
         )
 
     def main(self, args):
-        workers = iter_workers(self.app.webapp.workersets)
+        workers = iter_workers(self.app.worker_pool.worker_pool)
 
         if '?' == args.worker_name:
             for name in sorted(fn.__name__ for fn in workers):
@@ -82,7 +83,8 @@ class RunTask(SubCommand):
         worker(self.app, *worker_args)
 
 
-def iter_workers(workersets):
-    for workerset in workersets:
-        for worker in workerset:
-            yield worker
+def iter_workers(pool):
+    for name, config in pool.workers.items():
+        mod = sys.modules[config['module']]
+        fn = getattr(mod, config['function'])
+        yield fn

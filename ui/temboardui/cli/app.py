@@ -2,10 +2,8 @@
 
 from __future__ import print_function
 from builtins import str
-import imp
 import logging.config
 import os
-import pkg_resources
 import socket
 import sys
 from argparse import _VersionAction
@@ -29,7 +27,6 @@ from ..toolkit.services import Service
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..web import Error404Handler, app as webapp
 
-from ..pluginsmgmt import load_plugins
 from ..autossl import AutoHTTPSServer
 from ..version import __version__, format_version, inspect_versions
 
@@ -75,32 +72,6 @@ class TemboardApplication(BaseApplication):
         # Chain up for sub-commands arguments initialization.
         super(TemboardApplication, self).define_arguments(parser)
 
-    def filter_plugins(self):
-        # Returns two lists of plugin names from config.temboard.plugins, the
-        # first list is legacy plugins, the second is external plugins.
-
-        legacy_plugins = []
-        ep_plugins = []
-
-        path = os.path.dirname(__file__) + '/../plugins'
-
-        logger.debug("Looping over all plugins.")
-        for name in self.config.temboard.plugins:
-            if any(pkg_resources.iter_entry_points(self.with_plugins, name)):
-                logger.debug("%s is a new plugin.", name)
-                ep_plugins.append(name)
-            else:
-                try:
-                    fp, _, _ = imp.find_module(name, [path])
-                except ImportError:
-                    raise
-                    raise UserError("Missing plugin: %s." % name)
-                else:
-                    legacy_plugins.append(name)
-                    logger.debug("%s is a legacy plugin.", name)
-
-        return legacy_plugins, ep_plugins
-
     def apply_config(self):
         bootstrap_tornado = not hasattr(self, 'webapp')
         if bootstrap_tornado:
@@ -110,12 +81,9 @@ class TemboardApplication(BaseApplication):
             self.webapp.executor = ThreadPoolExecutor(12)
             self.webapp.temboard_app = self
 
-        legacy_plugins, ep_plugins = self.filter_plugins()
-        self.config.temboard.plugins = ep_plugins
-
         super(TemboardApplication, self).apply_config()
 
-        finalize_tornado_app(webapp, self.config, plugins=legacy_plugins)
+        finalize_tornado_app(webapp, self.config)
 
         self.webapp.engine = configure_db_session(self.config.repository)
 
@@ -161,7 +129,7 @@ class TemboardApplication(BaseApplication):
             setproctitle=setproctitle,
         )
         self.services.append(self.worker_pool)
-        self.scheduler = SchedulerService(
+        self.scheduler = taskmanager.SchedulerService(
             app=self, name=u'scheduler',
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
@@ -178,31 +146,11 @@ class TemboardApplication(BaseApplication):
             os.path.join(self.config.temboard['home'], 'server_tasks.db')
         )
 
-        self.config.plugins = {}  # Compat for legacy plugins
         self.apply_config()
-
-        for wset in self.webapp.workersets:
-            self.worker_pool.add(wset)
 
         command_name = getattr(args, 'command_fullname', 'serve')
         command = self.commands[command_name]
         command.main(args)
-
-
-def legacy_enable_plugins(self, plugin_names):
-    # Load and enable legacy plugins in tornado app.
-    plugins = load_plugins(plugin_names, self.config)
-    plugins_conf = dict()
-    self.workersets = []
-    self.loaded_plugins = []
-    for key, val in plugins.items():
-        self.add_rules(val['routes'])
-        plugins_conf[key] = val['configuration']
-        if val['workers']:
-            self.workersets.append(val['workers'])
-        if key not in self.loaded_plugins:
-            self.loaded_plugins.append(key)
-    return plugins_conf
 
 
 def bootstrap_tornado_app(app, config):
@@ -228,7 +176,7 @@ def bootstrap_tornado_app(app, config):
     return app
 
 
-def finalize_tornado_app(app, config, plugins):
+def finalize_tornado_app(app, config):
     autoreload.watch(config.temboard.configfile)
 
     base_path = os.path.dirname(os.path.dirname(__file__))
@@ -247,7 +195,6 @@ def finalize_tornado_app(app, config, plugins):
         })
     ]
 
-    config.plugins = legacy_enable_plugins(app, plugins)
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
     app.add_rules(handlers)
@@ -273,22 +220,6 @@ def map_pgvars(environ):
             pass
 
     return mapped
-
-
-class SchedulerService(taskmanager.SchedulerService):
-    def apply_config(self):
-        super(SchedulerService, self).apply_config()
-        if self.scheduler:
-            # Set legacy config context.
-            self.scheduler.set_context(
-                'config',
-                {
-                    # Wrap settings in dict for JSON serializable.
-                    'plugins': dict(self.app.config.plugins),
-                    'temboard': dict(self.app.config.temboard),
-                    'repository': dict(self.app.config.repository),
-                }
-            )
 
 
 class TornadoService(Service):
@@ -398,7 +329,4 @@ def list_options_specs():
     yield OptionSpec(s, 'purge_after', default=7, validator=v.nday)
 
 
-app = TemboardApplication(
-    specs=list_options_specs(),
-    with_plugins="temboardui.plugins",
-)
+app = TemboardApplication(specs=list_options_specs())
