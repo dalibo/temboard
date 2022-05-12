@@ -21,10 +21,11 @@ from ..toolkit.app import (
     BaseApplication,
     define_core_arguments,
 )
-from ..toolkit.configuration import OptionSpec
+from ..toolkit.configuration import OptionSpec, MergedConfiguration
 from ..toolkit.errors import UserError
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import Service
+from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
 from ..web import Error404Handler, app as webapp
@@ -49,6 +50,10 @@ class TemboardApplication(BaseApplication):
         'maintenance',
         'statements',
     ]
+
+    def __init__(self, *a, **kw):
+        super(TemboardApplication, self).__init__(*a, **kw)
+        self.config = TemboardUIConfiguration()
 
     def define_arguments(self, parser):
         define_core_arguments(parser)
@@ -151,6 +156,27 @@ class TemboardApplication(BaseApplication):
             "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",
             versions['libpq'], versions['psycopg2'], versions['sqlalchemy'],
         )
+
+
+class TemboardUIConfiguration(MergedConfiguration):
+    def __init__(self, *a, **kw):
+        MergedConfiguration.__init__(self, *a, **kw)  # PY2, use super.
+        self._signing_key = None
+
+    @property
+    def signing_key(self):
+        # Lazy load signing key.
+        if not self._signing_key:
+            path = self.temboard.signing_private_key
+            logger.debug("Loading signing key from %s.", path)
+            try:
+                fo = open(path, 'rb')
+            except OSError as e:
+                raise UserError("Failed to laod signing key: %s" % e)
+
+            with fo:
+                self._signing_key = load_private_key(fo.read())
+        return self._signing_key
 
 
 def bootstrap_tornado_app(webapp, config):
@@ -316,6 +342,12 @@ def list_options_specs():
         s, 'ssl_key_file',
         default=OptionSpec.REQUIRED, validator=v.file_)
     yield OptionSpec(s, 'ssl_ca_cert_file', validator=v.file_)
+    yield OptionSpec(
+        s, 'signing_private_key',
+        default='signing-private.pem', validator=v.path)
+    yield OptionSpec(
+        s, 'signing_public_key',
+        default='signing-public.pem', validator=v.path)
     yield OptionSpec(s, 'cookie_secret', validator=cookie_secret)
     home = os.environ.get('HOME', '/var/lib/temboard')
     yield OptionSpec(s, 'home', default=home, validator=v.writeabledir)

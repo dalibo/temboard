@@ -35,7 +35,7 @@ class DotDict(IterableUserDict):
 
     def __setattr__(self, name, value):
         if name.startswith('_'):
-            super(DotDict, self).__setattr__(name, value)
+            self.__dict__[name] = value  # PY2, use __setattr__
         else:
             if hasattr(value, 'items'):
                 value = DotDict(value)
