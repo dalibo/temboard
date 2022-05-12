@@ -79,8 +79,8 @@ SETUP_KWARGS = dict(
     ],
     entry_points={
         'console_scripts': [
-            'temboard = temboardui.__main__:main',
             'temboard-migratedb = temboardui.migratedb:main',
+            'temboard = temboardui.__main__:main',
         ],
         'temboardui.plugins': [
             'activity = temboardui.plugins.activity:ActivityPlugin',

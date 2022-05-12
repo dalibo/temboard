@@ -6,6 +6,7 @@ This release requires a database schema migration. Use temboard-migratedb
 script to proceed.
 
 - New database migration engine.
+- Removed parameter of `temboard --debug` CLI option.
 
 
 ## [7.11] - Unreleased
