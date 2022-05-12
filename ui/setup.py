@@ -87,6 +87,7 @@ SETUP_KWARGS = dict(
             'dashboard = temboardui.plugins.dashboard:DashboardPlugin',
             'maintenance = temboardui.plugins.maintenance:MaintenancePlugin',
             'monitoring = temboardui.plugins.monitoring:MonitoringPlugin',
+            'pgconf = temboardui.plugins.pgconf:PGConfPlugin',
         ]
     },
 )

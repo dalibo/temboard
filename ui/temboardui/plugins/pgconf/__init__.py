@@ -11,7 +11,6 @@ from temboardui.web import (
 )
 
 
-PLUGIN_NAME = 'pgconf'
 logger = logging.getLogger(__name__)
 blueprint = Blueprint()
 blueprint.generic_proxy("/pgconf/configuration", methods=["POST"])
@@ -19,30 +18,30 @@ plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + "/templates")
 
 
-def configuration(config):
-    return {}
+class PGConfPlugin(object):
+    def __init__(self, app):
+        self.app = app
 
-
-def get_routes(config):
-    routes = blueprint.rules + [
-        (
-            r"/js/pgconf/(.*)",
-            tornado.web.StaticFileHandler,
-            {'path': plugin_path + "/static/js"}
-        ),
-        (
-            r"/css/pgconf/(.*)",
-            tornado.web.StaticFileHandler,
-            {'path': plugin_path + "/static/css"}
-        ),
-    ]
-    return routes
+    def load(self):
+        self.app.webapp.add_rules(blueprint.rules)
+        self.app.webapp.add_rules([
+            (
+                r"/js/pgconf/(.*)",
+                tornado.web.StaticFileHandler,
+                {'path': plugin_path + "/static/js"}
+            ),
+            (
+                r"/css/pgconf/(.*)",
+                tornado.web.StaticFileHandler,
+                {'path': plugin_path + "/static/css"}
+            ),
+        ])
 
 
 @blueprint.instance_route("/pgconf/configuration(?:/category/(.+))?",
                           methods=["GET", "POST"])
 def configuration_handler(request, category=None):
-    request.instance.check_active_plugin(PLUGIN_NAME)
+    request.instance.check_active_plugin('pgconf')
     profile = request.instance.get_profile()
     agent_username = profile['username']
     template_vars = {}
@@ -89,7 +88,7 @@ def configuration_handler(request, category=None):
         role=request.current_user,
         instance=request.instance,
         agent_username=agent_username,
-        plugin=PLUGIN_NAME,
+        plugin='pgconf',
         xsession=request.instance.xsession,
         current_cat=category,
         configuration_categories=categories,
