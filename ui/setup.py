@@ -82,6 +82,9 @@ SETUP_KWARGS = dict(
             'temboard = temboardui.__main__:main',
             'temboard-migratedb = temboardui.migratedb:main',
         ],
+        'temboardui.plugins': [
+            'activity = temboardui.plugins.activity:ActivityPlugin',
+        ]
     },
 )
 

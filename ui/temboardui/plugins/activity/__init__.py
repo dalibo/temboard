@@ -1,30 +1,33 @@
 from os import path
+
 import tornado.web
 
-from temboardui.web import (
+from ...web import (
     Blueprint,
     TemplateRenderer,
 )
 
 
-PLUGIN_NAME = 'activity'
 blueprint = Blueprint()
 blueprint.generic_proxy(r'/activity/kill', methods=['POST'])
 plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-def configuration(config):
-    return {}
+class ActivityPlugin(object):
+    def __init__(self, app, **kw):
+        self.app = app
 
+    def load(self):
+        self.app.webapp.add_rules(blueprint.rules)
+        self.app.webapp.add_rules([
+            (r"/js/activity/(.*)", tornado.web.StaticFileHandler, {
+                'path': plugin_path + "/static/js"
+            }),
+        ])
 
-def get_routes(config):
-    routes = blueprint.rules + [
-        (r"/js/activity/(.*)", tornado.web.StaticFileHandler, {
-            'path': plugin_path + "/static/js"
-        }),
-    ]
-    return routes
+    def unload(self):
+        raise NotImplementedError()
 
 
 def get_agent_username(request):
@@ -36,7 +39,7 @@ def get_agent_username(request):
 
 @blueprint.instance_route(r'/activity/(running|blocking|waiting)')
 def activity(request, mode):
-    request.instance.check_active_plugin(PLUGIN_NAME)
+    request.instance.check_active_plugin('activity')
     agent_username = get_agent_username(request)
     xsession = request.instance.xsession if agent_username else None
     return render_template(
@@ -44,7 +47,7 @@ def activity(request, mode):
         nav=True,
         agent_username=agent_username,
         instance=request.instance,
-        plugin=PLUGIN_NAME,
+        plugin='activity',
         mode=mode,
         xsession=xsession,
         role=request.current_user,
@@ -53,7 +56,7 @@ def activity(request, mode):
 
 @blueprint.instance_proxy(r'/activity(?:/blocking|/waiting)?')
 def activity_proxy(request):
-    request.instance.check_active_plugin(PLUGIN_NAME)
+    request.instance.check_active_plugin('activity')
     return dict(
         blocking=request.instance.get('/activity/blocking'),
         running=request.instance.get('/activity'),
