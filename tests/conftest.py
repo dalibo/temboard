@@ -121,6 +121,16 @@ class PostgreSQLVersions(dict):
 POSTGRESQL_AVAILABLE_VERSIONS = PostgreSQLVersions()
 
 
+@pytest.fixture(scope='session', autouse=True)
+def activate_virtualenv():
+    """Automatically activate temBoard UI virtualenv on debian."""
+
+    bindir = Path('/usr/lib/temboard/bin/')
+    if bindir.exists():
+        logger.debug("Activating %s virtualenv.", bindir.parent)
+        os.environ['PATH'] = f"{bindir}:{os.environ['PATH']}"
+
+
 @pytest.fixture(scope='session')
 def admin_session(browser, ui, ui_url):
     """Ensure temBoard UI is opened in browser and admin is logged in."""
