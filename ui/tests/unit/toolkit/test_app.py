@@ -100,7 +100,6 @@ def test_bootstrap(caplog, mocker):
     app = BaseApplication()
     fc.return_value = 'pouet'
     app.bootstrap(args=None, environ={})
-    assert not caplog.records
 
     assert repr(app)
 

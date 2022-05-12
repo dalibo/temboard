@@ -95,6 +95,7 @@ class BaseApplication(object):
         if configfile is None:
             logger.info("No config file found.")
         else:
+            logger.info("Using config file %s.", configfile)
             self.config.temboard['configfile'] = configfile
             self.read_file(parser, configfile)
             self.read_dir(parser, configfile + '.d')
@@ -186,7 +187,6 @@ class BaseApplication(object):
             for configfile in self.DEFAULT_CONFIGFILES:
                 configfile = os.path.abspath(configfile)
                 if os.path.exists(configfile):
-                    logger.info("Found config file %s.", configfile)
                     break
             else:
                 configfile = None
@@ -209,7 +209,7 @@ class BaseApplication(object):
     def fetch_plugin(self, name):
         logger.debug("Looking for plugin %s.", name)
         for ep in pkg_resources.iter_entry_points(self.with_plugins, name):
-            logger.info("Found plugin %s.", ep)
+            logger.debug("Found plugin %s.", ep)
             try:
                 return ep.load()
             except Exception:
@@ -256,7 +256,7 @@ class BaseApplication(object):
 
         to_load = new_names - old_names
         for name in to_load:
-            logger.info("Loading plugin %s.", name)
+            logger.debug("Loading plugin %s.", name)
             self.plugins[name].load()
 
     def purge_plugins(self):
@@ -294,7 +294,7 @@ class BaseApplication(object):
         retcode = 1
         try:
             setup_logging(debug=self.debug)
-            logger.info("Starting %s %s.", self.PROGRAM, self.VERSION)
+            logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
             logger.info('Terminated.')

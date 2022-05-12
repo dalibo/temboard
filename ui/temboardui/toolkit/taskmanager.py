@@ -1083,7 +1083,7 @@ class WorkerPoolService(Service):
             conf['function'] = wrapper_name
 
             # Add to current workers
-            logger.debug("Activate worker %s", conf['name'])
+            logger.debug("Register worker %s", conf['name'])
             self.worker_pool.add(conf)
 
     def remove(self, workerset):
