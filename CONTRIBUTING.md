@@ -269,7 +269,7 @@ To create a new version, put a new file in `temboardui/model/versions/`
 prefixed with a discrete number following the last version. As of now, version
 file must ends with `.sql` and contains valid PostgreSQL SQL.
 
-That's all. Use temboard-migratedb to check and upgrade temBoard repository.
+That's all. Use `temboard migratedb` to check and upgrade temBoard repository.
 
 
 ## Building CSS and Javascript

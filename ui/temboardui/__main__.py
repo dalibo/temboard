@@ -5,6 +5,7 @@ from .cli.app import app
 
 def main():
     # Load sub commands.
+    __import__(__package__ + '.cli.migratedb')
     __import__(__package__ + '.cli.serve')
 
     return app()

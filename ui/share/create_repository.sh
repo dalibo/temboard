@@ -4,7 +4,7 @@
 #
 # Makefile docker/entrypoint.sh and auto_configure.sh execute this script. It
 # creates a temboard role, a temboard database owned by it and uses
-# temboard-migratedb to initialize database. With DEV=1 environment variable, a
+# temboard migratedb to initialize database. With DEV=1 environment variable, a
 # development SQL script is executed after initialization to setup database for
 # development.
 #
@@ -44,7 +44,7 @@ if ! "${psql[@]}" -c "SELECT 'SKIP' FROM pg_catalog.pg_database WHERE datname = 
      "${psql[@]}" -awc "CREATE DATABASE $TEMBOARD_DATABASE OWNER temboard;"
 fi
 
-# Now configure psql and temboard-migratedb as temboard.
+# Now configure psql and temboard migratedb as temboard.
 PGUSER=temboard
 export PGPASSWORD="$TEMBOARD_PASSWORD"
 export PGDATABASE="$TEMBOARD_DATABASE"
@@ -59,8 +59,9 @@ fi
 
 migratedb=(
 	"${runas[@]}"
-	temboard-migratedb
+	temboard
 	${TEMBOARD_CONFIGFILE+--config=$TEMBOARD_CONFIGFILE}
+	migratedb
 )
 
 psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off')

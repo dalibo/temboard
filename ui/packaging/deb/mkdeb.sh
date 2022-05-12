@@ -60,7 +60,6 @@ virtualenv --python="$PYTHON" --relocatable "$VIRTUAL_ENV"
 sed -i "s,$DESTDIR,," "$VIRTUAL_ENV/bin/temboard"
 mkdir -p "$DESTDIR/usr/bin"
 ln -fsv ../lib/temboard/bin/temboard "${DESTDIR}/usr/bin/temboard"
-ln -fsv ../lib/temboard/bin/temboard-migratedb "${DESTDIR}/usr/bin/temboard-migratedb"
 mv "$VIRTUAL_ENV/share" "$DESTDIR/usr/share"
 mv "$VIRTUAL_ENV/lib/systemd" "$DESTDIR/usr/lib"
 pip uninstall --yes pip wheel

@@ -56,7 +56,7 @@ class Migrator(object):
                 len(self.missing_versions))
             raise UserError(
                 "Database is not up to date."
-                " Please upgrade with temboard-migratedb."
+                " Please upgrade with temboard migratedb."
             )
         else:
             logger.info("temBoard database is up-to-date.")

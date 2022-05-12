@@ -7,6 +7,7 @@ script to proceed.
 
 - New database migration engine.
 - Removed parameter of `temboard --debug` CLI option.
+- Move `temboard-migratedb` as `temboard migratedb` subcommand.
 
 
 ## [7.11] - Unreleased

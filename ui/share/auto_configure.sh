@@ -174,7 +174,7 @@ install -o "$SYSUSER" -g "$SYSUSER" -m 0640 /dev/null "$ETCDIR/temboard.conf"
 generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
 
 log "Creating Postgres user, database and schema."
-# For temboard-migratedb
+# For temboard migratedb
 DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
