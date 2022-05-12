@@ -45,3 +45,9 @@ class DotDict(IterableUserDict):
         if hasattr(default, 'items'):
             default = DotDict(default)
         return IterableUserDict.setdefault(self, name, default)
+
+
+def ensure_bytes(value, encoding='utf-8'):
+    if hasattr(value, "isdecimal"):
+        return value.encode(encoding)
+    return value

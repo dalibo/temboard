@@ -22,7 +22,6 @@
 
 from builtins import str
 from datetime import datetime, timedelta
-import json
 import logging
 import os
 try:
@@ -30,14 +29,6 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 from textwrap import dedent
-try:
-    # python2
-    from urllib2 import URLError, HTTPError
-    from urllib import quote
-except Exception:
-    # python3
-    from urllib.error import URLError, HTTPError
-    from urllib.parse import quote
 
 import tornado.web
 import tornado.escape
@@ -54,7 +45,7 @@ from temboardui.application import (
     send_mail,
     send_sms,
 )
-from temboardui.temboardclient import temboard_request
+from temboardui.temboardclient import TemboardAgentClient
 from temboardui.model.orm import Instances
 from temboardui.model import worker_engine
 
@@ -420,27 +411,19 @@ def collector(app, address, port, key):
     agent_id = "%s:%s" % (address, port)
     logger.info("Starting collector for %s.", agent_id)
 
-    discover_data = dict()
-
     # First, we need to call discover API because we want to know the hostname
     logger.info("Discovering hostname from agent %s.", agent_id)
-    url = 'https://%s:%s/discover' % (address, port)
-    logger.debug("Calling %s.", url)
-
+    client = TemboardAgentClient.factory(app.config, address, port, key)
     try:
-        response = temboard_request(
-            app.config.temboard.ssl_ca_cert_file,
-            'GET',
-            url,
-            headers={"Content-type": "application/json"},
-        )
-    except (URLError, HTTPError):
-        logger.error("Could not get response from %s.", url)
-        logger.error("Agent or host are down.")
+        response = client.get('/discover')
+        response.raise_for_status()
+    except (client.ConnectionError, client.Error) as e:
+        logger.error("Could not discover %s: %s", agent_id, e)
+        logger.error("Agent or host may be down or misconfigured.")
         return
 
-    discover_data = json.loads(response)
-    logger.debug(discover_data)
+    discover_data = response.json()
+    logger.debug("Discover data: %s", discover_data)
 
     # Start new ORM DB session
     engine = worker_engine(app.config.repository)
@@ -450,10 +433,7 @@ def collector(app, address, port, key):
 
     host_id = instance_id = None
     # Agent monitoring API endpoint
-    history_url = 'https://%s:%s/monitoring/history?key=%s&limit=100' % (
-        address, port, quote(key)
-    )
-
+    history_url = '/monitoring/history?limit=100'
     try:
         # Trying to find host_id, instance_id and the datetime of the latest
         # inserted record.
@@ -471,7 +451,7 @@ def collector(app, address, port, key):
     except Exception:
         # This case happens on the very first pull when no data have been
         # previously added.
-        logger.warning(
+        logger.debug(
             "Could not find host or instance records in monitoring inventory "
             "tables for agent %s.", agent_id,
         )
@@ -491,31 +471,23 @@ def collector(app, address, port, key):
     # history.
     try:
         logger.info("Querying monitoring history from agent %s.", agent_id)
-        logger.debug("Calling %s.", history_url)
-        response = temboard_request(
-            app.config.temboard.ssl_ca_cert_file,
-            'GET',
-            history_url,
-            headers={"Content-type": "application/json"},
-        )
-        response = json.loads(response)
-    except HTTPError as e:
-        if e.code == 404:
-            logger.error("Agent version does not support pull mode. "
-                         "Please consider upgrading to version 5 at least.")
-        else:
-            logger.exception(str(e))
-            # Update collector status only if instance_id is known
-            if instance_id:
-                update_collector_status(
-                    worker_session,
-                    instance_id,
-                    u'FAIL',
-                    last_pull=datetime.utcnow(),
-                )
-                worker_session.commit()
+        response = client.get(history_url)
+        response.raise_for_status()
+    except (client.ConnectionError, client.Error) as e:
+        logger.error("Failed to query history: %s", e)
+        # Update collector status only if instance_id is known
+        if instance_id:
+            update_collector_status(
+                worker_session,
+                instance_id,
+                u'FAIL',
+                last_pull=datetime.utcnow(),
+            )
+            worker_session.commit()
         worker_session.close()
         return
+    else:
+        response = response.json()
 
     if not response:
         logger.info("Agent %s returned no monitoring data.", agent_id)

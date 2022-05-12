@@ -49,7 +49,7 @@ def check_connectivity(engine):
         except Exception as e:
             if i == 9:
                 raise
-            logger.warn("Failed to connect to database: %s", e)
+            logger.warning("Failed to connect to database: %s", e)
             logger.info("Retrying in %ss.", i)
             sleep(i)
 
