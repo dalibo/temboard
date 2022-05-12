@@ -8,18 +8,8 @@ import json
 import logging
 import os
 try:
-    # python2
-    from urllib2 import (
-        HTTPError as urllib_HTTPError,
-        URLError as urllib_URLError,
-    )
     from StringIO import StringIO
 except Exception:
-    # python3
-    from urllib.error import (
-        HTTPError as urllib_HTTPError,
-        URLError as urllib_URLError,
-    )
     from io import StringIO
 from csv import writer as CSVWriter
 from datetime import datetime
@@ -42,10 +32,7 @@ from .application import (
 )
 from .errors import TemboardUIError
 from .model import Session as DBSession
-from .temboardclient import (
-    TemboardError,
-    temboard_request,
-)
+from .temboardclient import TemboardAgentClient
 from .toolkit.pycompat import PY2
 from .toolkit.perf import PerfCounters
 
@@ -242,7 +229,10 @@ class ErrorHelper(object):
                 return func(request, *args)
             except Redirect:
                 raise
-            except (TemboardError, TemboardUIError) as e:
+            except TemboardAgentClient.Error as e:
+                code = e.response.status
+                message = e.message
+            except TemboardUIError as e:
                 code = e.code
                 message = e.message
             except HTTPError as e:
@@ -266,7 +256,7 @@ class InstanceHelper(object):
     # This helper class implements all operations related to instance dedicated
     # request.
 
-    INSTANCE_PARAMS = r'/(.*)/([0-9]{1,5})'
+    INSTANCE_PARAMS = r'/(.+)/([0-9]{1,5})'
     PROXY_PREFIX = r'/proxy' + INSTANCE_PARAMS
     SERVER_PREFIX = r'/server' + INSTANCE_PARAMS
 
@@ -328,54 +318,48 @@ class InstanceHelper(object):
     def redirect(self, path):
         raise Redirect(location=self.format_url(path))
 
-    def http(self, path, method='GET', query=None, body=None):
-        url = 'https://%s:%s%s?key=%s' % (
+    def request_agent(self, path, method='GET', query=None, body=None):
+        client = TemboardAgentClient.factory(
+            self.request.config,
             self.instance.agent_address,
             self.instance.agent_port,
-            path,
-            # TODO: remove key arg for 8.0
             self.instance.agent_key,
         )
 
+        pathinfo = path
         if query:
-            url += "&" + serialize_querystring(query)
+            pathinfo += "&" + serialize_querystring(query)
 
-        headers = {'X-TemBoard-Agent-Key': self.instance.agent_key}
+        headers = {}
         xsession = self.xsession
         if xsession:
             headers['X-Session'] = xsession
 
-        logger.debug("Proxying %s %s.", method, url)
         try:
-            body = temboard_request(
-                self.request.config.temboard.ssl_ca_cert_file,
+            response = client.request(
                 method=method,
-                url=url,
+                path=pathinfo,
                 headers=headers,
-                data=body,
+                body=body,
             )
-        except urllib_HTTPError as e:
-            message = e.read()
-            try:
-                message = json_decode(message)['error']
-            except Exception as ee:
-                logger.debug("Failed to decode agent error: %s.", ee)
-            raise HTTPError(e.code, message)
-        except urllib_URLError as e:
-            logger.error("Proxied request failed: %s", e)
-            raise HTTPError(500, str(e.reason))
+            response.raise_for_status()
+        except ConnectionError as e:
+            raise HTTPError(500, str(e))
+        except TemboardAgentClient.Error as e:
+            raise HTTPError(e.response.status, e.message)
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
             raise HTTPError(500)
-        return json_decode(body)
+        else:
+            return response.json()
 
     def get(self, *args, **kwargs):
         kwargs['method'] = 'GET'
-        return self.http(*args, **kwargs)
+        return self.request_agent(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         kwargs['method'] = 'POST'
-        return self.http(*args, **kwargs)
+        return self.request_agent(*args, **kwargs)
 
     def require_xsession(self):
         if not self.xsession:
@@ -478,7 +462,7 @@ class Blueprint(object):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(
                     request.blueprint.plugin_name)
-            body = request.instance.http(
+            body = request.instance.request_agent(
                 path=url_escape(path, plus=False),
                 method=request.method,
                 body=request.json,
