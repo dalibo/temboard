@@ -424,7 +424,7 @@ class TemboardApplication(BaseApplication):
 
 main = TemboardApplication(
     specs=list_options_specs(),
-    with_plugins="temboard.plugins",
+    with_plugins="temboardui.plugins",
 )
 
 
