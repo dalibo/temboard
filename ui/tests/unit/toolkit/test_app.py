@@ -347,23 +347,6 @@ def test_create_parser():
     parser.add_argument("--help", action="help")
 
 
-def test_debug_arg():
-    from argparse import ArgumentParser, SUPPRESS
-    from temboardui.toolkit.app import define_core_arguments
-
-    parser = ArgumentParser(argument_default=SUPPRESS)
-    define_core_arguments(parser, appversion='1.0')
-
-    args = parser.parse_args([])
-    assert 'logging_debug' not in args
-
-    args = parser.parse_args(['--debug'])
-    assert args.logging_debug is True
-
-    args = parser.parse_args(['--debug', 'myplugin'])
-    assert 'myplugin' == args.logging_debug
-
-
 def test_debug_var():
     from temboardui.toolkit.app import detect_debug_mode
 

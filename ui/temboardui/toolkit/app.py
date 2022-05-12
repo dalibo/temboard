@@ -75,6 +75,7 @@ class BaseApplication(object):
         self.active_config_specs = []
         self.services = []
         self._main = main
+        self.commands = {}
 
     def __repr__(self):
         return '<%s>' % (self.__class__.__name__)
@@ -159,6 +160,34 @@ class BaseApplication(object):
         kw.setdefault('description', self.__class__.__doc__)
         kw.setdefault('prog', self.PROGRAM)
         return ArgumentParser(*a, **kw)
+
+    def command(self, cls):
+        # Class-decorator to instanciate and register a subcommand.
+        command = cls.singleton = cls(self)
+        self.commands[command.fullname] = command
+        return cls
+
+    def define_arguments(self, parser):
+        # Configure an argparse parser for each subcommands declared with
+        # @self.command class decorator.
+
+        if not self.commands:
+            return
+
+        subparsers = parser.add_subparsers(
+            title="Available commands",
+            metavar="COMMAND",
+            help="Name of one sub-command described bellow.",
+        )
+
+        for fullname, command in self.commands.items():
+            if "." in fullname:
+                continue  # Let commands declare their sub-commands.
+
+            subparser = subparsers.add_parser(
+                command.name, help=command.__doc__)
+            subparser.set_defaults(command_fullname=fullname)
+            command.define_arguments(subparser)
 
     def apply_config(self):
         # Once config is loaded or reloaded, update application state to match
@@ -324,6 +353,79 @@ class BaseApplication(object):
             return self._main(self, argv, environ)
 
 
+class SubCommand(object):
+    # Base class for sub-command.
+    #
+    # Almost everything keeps in app object. Sub commands is roughly a set of
+    # two fuctions : one to define argparse arguments, the other is the main
+    # code to execute after app initialization.
+    #
+    # Class docstring is injected in argparse help for the command.
+
+    def __init__(self, parent):
+        self.parent = parent  # The app or another command.
+
+        names = []
+        root = self.parent
+        while hasattr(root, 'parent'):
+            names[0:] = [root.name]
+            root = root.parent
+
+        if names:
+            names.append("")    # Add final .
+
+        self.name = self.__class__.__name__.lower()
+        self.app = root
+        self.prefix = ".".join(names)
+        self.fullname = self.prefix + self.name
+
+    def __repr__(self):
+        return '<%s>' % (self.__class__.__name__)
+
+    @classmethod
+    def command(cls, subcommand_cls):
+        # Class decorator to instanciate and register a subcommand.
+        self = cls.singleton
+        command = subcommand_cls.singleton = subcommand_cls(self)
+        self.app.commands[command.fullname] = command
+        return subcommand_cls
+
+    @property
+    def commands(self):
+        app = self.app
+        prefix = self.fullname + '.'
+        my_commands = {}
+        for fullname, command in app.commands.items():
+            if not fullname.startswith(prefix):
+                continue
+            my_commands[fullname] = command
+
+        return my_commands
+
+    def define_arguments(self, parser):
+        # Configure an argparse parser for each subcommands declared with
+        # @self.command class decorator.
+
+        my_commands = self.commands
+        if not my_commands:
+            return
+
+        subparsers = parser.add_subparsers(
+            title="Available commands",
+            metavar="COMMAND",
+            help="Name of one sub-command described bellow.",
+        )
+
+        for fullname, command in my_commands.items():
+            subparser = subparsers.add_parser(
+                command.name, help=command.__doc__)
+            subparser.set_defaults(command_fullname=fullname)
+            command.define_arguments(subparser)
+
+    def main(self, args):
+        raise NotImplementedError()
+
+
 def detect_debug_mode(environ):
     debug = environ.get('DEBUG', '0')
     try:
@@ -349,9 +451,6 @@ def define_core_arguments(parser, appversion=None):
     )
     parser.add_argument(
         '--debug',
-        action=StoreDefinedAction, dest='logging_debug', nargs='?',
-        metavar='LOGGER,LOGGER,...',
-        help=(
-            "Shows debug messages for these loggers. "
-            "If no loggers defined, debug all core loggers."),
+        action='store_const', const='temboardui', dest='logging_debug',
+        help="Enable verbose messages for temBoard.",
     )
