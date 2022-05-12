@@ -11,45 +11,34 @@
 # a message is called a task
 # the message broker is called taskmanager
 #
-import logging.config
-import sys
-from argparse import (
-    ArgumentParser,
-    SUPPRESS as UNDEFINED_ARGUMENT,
-)
+
+import logging
 from ast import literal_eval
+from textwrap import dedent
 
-from .toolkit.errors import UserError
-from .__main__ import (
-    check_schema,
-    legacy_bootstrap,
-    list_options_specs,
-    map_pgvars,
-    TemboardApplication,
-)
-
-# Avoid using `__name__` which could be `__main__`
-module_name = 'temboardui.runtask'
-
-logger = logging.getLogger(module_name)
+from ..toolkit.app import SubCommand
+from ..toolkit.errors import UserError
+from ..model import check_schema
+from .app import app
 
 
-class TaskApplication(TemboardApplication):
+logger = logging.getLogger(__name__)
 
-    def main(self, argv, environ):
 
-        # C O N F I G U R A T I O N
+@app.command
+class RunTask(SubCommand):
+    """ Run a task foreground. """
 
-        parser = ArgumentParser(
-            prog=module_name,
-            description="Run a single task foreground.",
-            argument_default=UNDEFINED_ARGUMENT,
-        )
-        parser.add_argument(
-            '-c', '--config',
-            action='store', dest='temboard_configfile',
-            help="Configuration file", metavar='CONFIGFILE',
-        )
+    def define_arguments(self, parser):
+        parser.description = dedent("""\
+
+        Run a task foreground. Some tasks won't work foreground because they
+        requires task manager processes.
+
+        Use this only for testing, debugging and development.
+
+        """)
+
         parser.add_argument(
             'worker_name',
             metavar='WORKER',
@@ -57,26 +46,16 @@ class TaskApplication(TemboardApplication):
                 "Global name of the worker function name to execute."
                 " Use ? to list available workers."),
         )
+
         parser.add_argument(
             'worker_args', nargs='*',
             metavar='ARG',
             default=[],
-            help="Worker arguments as Python literals.")
-        args = parser.parse_args(argv)
-        environ = map_pgvars(environ)
-        self.bootstrap(args=args, environ=environ)
+            help="Worker arguments as Python literals.",
+        )
 
-        self.log_versions()
-        # Manage logging_debug default until we use toolkit OptionSpec.
-        legacy_bootstrap(self.config)
-
-        self.apply_config()
-
-        check_schema()
-
-        # E X E C U T I O N
-
-        workers = iter_workers(self.webapp.workersets)
+    def main(self, args):
+        workers = iter_workers(self.app.webapp.workersets)
 
         if '?' == args.worker_name:
             for name in sorted(fn.__name__ for fn in workers):
@@ -98,20 +77,12 @@ class TaskApplication(TemboardApplication):
                 logger.debug("Unknown literal %s, using as raw string.", arg)
             worker_args.append(arg)
 
-        worker(self, *worker_args)
+        check_schema()
+
+        worker(self.app, *worker_args)
 
 
 def iter_workers(workersets):
     for workerset in workersets:
         for worker in workerset:
             yield worker
-
-
-main = TaskApplication(
-    specs=list_options_specs(),
-    with_plugins="temboard.plugins",
-)
-
-
-if __name__ == "__main__":
-    sys.exit(main())

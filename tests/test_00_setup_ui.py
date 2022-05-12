@@ -38,3 +38,9 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("li.nav-item.dropdown a").click()
     browser.select("a[href='/logout']").click()
+
+
+def test_runtask(ui):
+    out = temboard("runtask", "?")
+
+    assert '\ncollector\n' in out
