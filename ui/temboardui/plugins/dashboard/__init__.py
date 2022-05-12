@@ -4,8 +4,8 @@ from os.path import realpath
 import tornado.web
 from tornado.escape import json_encode
 
-from temboardui.temboardclient import TemboardError
-from temboardui.web import (
+from ...temboardclient import TemboardAgentError
+from ...web import (
     Blueprint,
     TemplateRenderer,
 )
@@ -17,25 +17,23 @@ logger = logging.getLogger(__name__)
 plugin_path = realpath(__file__ + '/..')
 render_template = TemplateRenderer(plugin_path + '/templates')
 
-PLUGIN_NAME = 'dashboard'
 
+class DashboardPlugin(object):
+    def __init__(self, app, **kw):
+        self.app = app
 
-def configuration(config):
-    return {}
-
-
-def get_routes(config):
-    routes = blueprint.rules + [
-        (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
-            'path': plugin_path + "/static/js"
-        }),
-    ]
-    return routes
+    def load(self):
+        self.app.webapp.add_rules(blueprint.rules)
+        self.app.webapp.add_rules([
+            (r"/js/dashboard/(.*)", tornado.web.StaticFileHandler, {
+                'path': plugin_path + "/static/js"
+            }),
+        ])
 
 
 @blueprint.instance_route(r"/dashboard")
 def dashboard(request):
-    request.instance.check_active_plugin(PLUGIN_NAME)
+    request.instance.check_active_plugin('dashboard')
 
     try:
         agent_username = request.instance.get_profile()['username']
@@ -44,7 +42,7 @@ def dashboard(request):
 
     try:
         config = request.instance.get('/dashboard/config')
-    except TemboardError as e:
+    except TemboardAgentError as e:
         if 404 != e.code:
             raise
         logger.debug("Fallback dashboard config.")
@@ -64,7 +62,7 @@ def dashboard(request):
         nav=True, role=request.current_user,
         instance=request.instance,
         agent_username=agent_username,
-        plugin=PLUGIN_NAME,
+        plugin='dashboard',
         config=json_encode(config),
         dashboard=last_data,
         history=json_encode(history or ''),

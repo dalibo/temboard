@@ -29,25 +29,17 @@ plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-def configuration(config):
-    return {}
+class MaintenancePlugin(object):
+    def __init__(self, app):
+        self.app = app
 
-
-def get_routes(config):
-    routes = blueprint.rules + [
-        (r"/js/maintenance/(.*)", tornado.web.StaticFileHandler, {
-            'path': plugin_path + "/static/js"
-        }),
-    ]
-    return routes
-
-
-def get_agent_username(request):
-    try:
-        agent_username = request.instance.get_profile()['username']
-    except Exception:
-        agent_username = None
-    return agent_username
+    def load(self):
+        self.app.webapp.add_rules(blueprint.rules)
+        self.app.webapp.add_rules([
+            (r"/js/maintenance/(.*)", tornado.web.StaticFileHandler, {
+                'path': plugin_path + "/static/js"
+            }),
+        ])
 
 
 @blueprint.instance_route(r'/maintenance')
@@ -56,7 +48,7 @@ def maintenance(request):
     return render_template(
         'index.html',
         nav=True,
-        agent_username=get_agent_username(request),
+        agent_username=request.instnace.get_username(),
         instance=request.instance,
         plugin=PLUGIN_NAME,
         role=request.current_user,
@@ -66,7 +58,7 @@ def maintenance(request):
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)/table/(.*)')
 def table(request, database, schema, table):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = get_agent_username(request)
+    agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
     return render_template(
         'table.html',
@@ -85,7 +77,7 @@ def table(request, database, schema, table):
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)')
 def schema(request, database, schema):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = get_agent_username(request)
+    agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
     return render_template(
         'schema.html',
@@ -103,12 +95,12 @@ def schema(request, database, schema):
 @blueprint.instance_route(r'/maintenance/(.*)')
 def database(request, database):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = get_agent_username(request)
+    agent_username = request.get_username()
     xsession = request.instance.xsession if agent_username else None
     return render_template(
         'database.html',
         nav=True,
-        agent_username=get_agent_username(request),
+        agent_username=request.get_username(),
         instance=request.instance,
         plugin=PLUGIN_NAME,
         xsession=xsession,

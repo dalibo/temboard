@@ -74,23 +74,24 @@ from .tools import (
 )
 
 logger = logging.getLogger(__name__)
-PLUGIN_NAME = 'monitoring'
 workers = taskmanager.WorkerSet()
 
 
-def configuration(config):
-    return {}
+class MonitoringPlugin(object):
+    def __init__(self, app):
+        self.app = app
 
-
-def get_routes(config):
-    plugin_path = os.path.dirname(os.path.realpath(__file__))
-    __import__(__name__ + '.handlers.alerting')
-    __import__(__name__ + '.handlers.monitoring')
-    routes = blueprint.rules + [
-        (r"/js/monitoring/(.*)",
-         tornado.web.StaticFileHandler, {'path': plugin_path + "/static/js"}),
-    ]
-    return routes
+    def load(self):
+        plugin_path = os.path.dirname(os.path.realpath(__file__))
+        __import__(__name__ + '.handlers.alerting')
+        __import__(__name__ + '.handlers.monitoring')
+        self.app.webapp.add_rules(blueprint.rules)
+        self.app.webapp.add_rules([
+            (r"/js/monitoring/(.*)",
+             tornado.web.StaticFileHandler,
+             {'path': plugin_path + "/static/js"}),
+        ])
+        self.app.worker_pool.add(workers)
 
 
 @workers.register(pool_size=1)

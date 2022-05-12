@@ -375,6 +375,13 @@ class InstanceHelper(object):
                 self.redirect('/login')
             raise
 
+    def get_username(self):
+        try:
+            agent_username = self.get_profile()['username']
+        except Exception:
+            agent_username = None
+        return agent_username
+
 
 def add_json_middleware(func):
     @functools.wraps(func)

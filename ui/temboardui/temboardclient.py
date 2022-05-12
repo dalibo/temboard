@@ -91,6 +91,7 @@ class TemboardAgentError(TemboardError):
     def __init__(self, response):
         self.response = response
         self._message = None
+        super(TemboardAgentError, self).__init__(response.status, self.message)
 
     @property
     def message(self):
