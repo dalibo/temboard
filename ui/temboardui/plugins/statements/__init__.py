@@ -5,15 +5,8 @@ from past.utils import old_div
 import json
 import logging
 from os import path
-try:
-    # python2
-    from urllib2 import URLError, HTTPError
-except Exception:
-    # python3
-    from urllib.error import URLError, HTTPError
 
 import tornado.web
-from tornado.escape import json_decode
 
 from sqlalchemy.orm import (
     sessionmaker,
@@ -48,9 +41,7 @@ from temboardui.plugins.monitoring.tools import (
     parse_start_end,
 )
 from temboardui.toolkit import taskmanager
-from temboardui.temboardclient import (
-    temboard_request,
-)
+from temboardui.temboardclient import TemboardAgentClient
 
 
 logger = logging.getLogger(__name__)
@@ -847,22 +838,15 @@ def pull_data_worker(app):
 def pull_data_for_instance(app, session, instance):
     agent_id = "%s:%s" % (instance.agent_address, instance.agent_port)
     logger.info("Pulling statements from %s.", agent_id)
-    url = 'https://%s:%s%s?key=%s' % (
-        instance.agent_address,
-        instance.agent_port,
-        '/statements',
+    client = TemboardAgentClient.factory(
+        app.config,
+        instance.agent_address, instance.agent_port,
         instance.agent_key,
     )
-    headers = {}
     try:
-        logger.debug("Querying %s.", url)
-        body = temboard_request(
-            app.config.temboard.ssl_ca_cert_file,
-            method='GET',
-            url=url,
-            headers=headers,
-        )
-        add_statement(session, instance, json_decode(body))
+        response = client.get('/statements')
+        response.raise_for_status()
+        add_statement(session, instance, response.json())
         logger.info("Successfully pulled statements data for %s.", agent_id)
     except Exception as e:
         error = 'Error while fetching statements from instance: '
@@ -871,7 +855,7 @@ def pull_data_for_instance(app, session, instance):
         else:
             error += str(e)
 
-        if isinstance(e, (HTTPError, URLError)):
+        if isinstance(e, (client.ConnectionError, client.Error)):
             logger.error("Agent is not available: %s", error)
         else:
             logger.exception("Failed to pull statements data: %s", error)
