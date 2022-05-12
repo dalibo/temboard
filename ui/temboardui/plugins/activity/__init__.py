@@ -30,17 +30,10 @@ class ActivityPlugin(object):
         raise NotImplementedError()
 
 
-def get_agent_username(request):
-    try:
-        return request.instance.get_profile()['username']
-    except Exception:
-        return None
-
-
 @blueprint.instance_route(r'/activity/(running|blocking|waiting)')
 def activity(request, mode):
     request.instance.check_active_plugin('activity')
-    agent_username = get_agent_username(request)
+    agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
     return render_template(
         'activity.html',
