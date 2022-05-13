@@ -46,3 +46,9 @@ def test_temboard_client(agent):
     out = client(url)
     data = json.loads(str(out))
     assert 'hostname' in data
+
+
+def test_runtask(agent, agent_env):
+    out = temboard_agent("runtask", "?", _env=agent_env)
+
+    assert 'vacuum_worker' in out
