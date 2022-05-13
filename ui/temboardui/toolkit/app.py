@@ -14,6 +14,7 @@ from argparse import (
     ArgumentParser,
     Action as ArgAction,
     SUPPRESS as SUPPRESS_ARG,
+    RawDescriptionHelpFormatter,
 )
 
 try:
@@ -159,6 +160,7 @@ class BaseApplication(object):
         kw.setdefault('argument_default', SUPPRESS_ARG)
         kw.setdefault('description', self.__class__.__doc__)
         kw.setdefault('prog', self.PROGRAM)
+        kw.setdefault('formatter_class', RawDescriptionHelpFormatter)
         return ArgumentParser(*a, **kw)
 
     def command(self, cls):
@@ -185,7 +187,9 @@ class BaseApplication(object):
                 continue  # Let commands declare their sub-commands.
 
             subparser = subparsers.add_parser(
-                command.name, help=command.__doc__)
+                command.name, help=command.__doc__,
+                formatter_class=parser.formatter_class,
+            )
             subparser.set_defaults(command_fullname=fullname)
             command.define_arguments(subparser)
 
