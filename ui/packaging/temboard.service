@@ -1,12 +1,13 @@
 [Unit]
-Description=temBoard Web UI
+Description=temBoard Server
 After=network.target
 
 [Service]
 Type=simple
 User=temboard
 Group=temboard
-ExecStart=/usr/bin/env SYSTEMD=1 temboard -c /etc/temboard/temboard.conf serve
+Environment="SYSTEMD=1"
+ExecStart=/usr/bin/temboard -c /etc/temboard/temboard.conf serve
 ExecReload=kill -HUP $MAINPID
 
 [Install]
