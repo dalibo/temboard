@@ -825,6 +825,9 @@ class WorkerPool(object):
             self.add(worker)
 
     def add(self, worker):
+        if worker['name'] in self.workers:
+            raise Exception("Worker %s already registered." % worker['name'])
+
         self.workers[worker['name']] = {
             'queue': deque(),
             'pool_size': worker['pool_size'],
