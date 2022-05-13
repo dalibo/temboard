@@ -1,3 +1,24 @@
+import json
+
+import pytest
+from sh import temboard, ErrorReturnCode
+
+
+def test_query_agent(ui_auto_configure, agent):
+    client = temboard.bake("query-agent", _tty_in=True)
+
+    # Error
+    url = f"{agent.base_url}/bad-path"
+    with pytest.raises(ErrorReturnCode):
+        client(url)
+
+    # GET
+    url = f"{agent.base_url}/discover"
+    out = client(url)
+    data = json.loads(str(out))
+    assert 'hostname' in data
+
+
 def test_web_register(
         registered_agent, agent_conf, browser, pg_version, ui_url):
     browser.get(ui_url + '/settings/instances')

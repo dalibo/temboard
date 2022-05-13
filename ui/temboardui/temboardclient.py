@@ -2,21 +2,11 @@ import http.client
 import json
 import logging
 import ssl
-import sys
-from textwrap import dedent
 from time import time
-
-try:
-    # python2
-    from urllib2 import HTTPError
-    from urlparse import urlparse
-except Exception:
-    # python3
-    from urllib.error import HTTPError
-    from urllib.parse import urlparse
 
 from .toolkit.utils import ensure_bytes
 from .toolkit.errors import TemboardError
+from .toolkit.pycompat import PY2, HTTPError
 
 try:
     ConnectionError = ConnectionError
@@ -25,66 +15,6 @@ except NameError:  # python2
 
 
 logger = logging.getLogger(__name__)
-
-
-def main():
-    USAGE = dedent("""\
-    A simple CLI client for temBoard agent.
-
-    usage: python -m temboardui.temboardclient URL [BODY]
-
-    Accepts body contents in stdin. temBoard agent accepts only JSON as body.
-
-    """)
-
-    logging.basicConfig(
-        format="%(levelname)4.4s: %(message)s",
-        level=logging.DEBUG,
-    )
-
-    try:
-        url = urlparse(sys.argv[1])
-    except IndexError:
-        sys.stderr.write(USAGE)
-        sys.exit(2)
-
-    try:
-        body = sys.argv[2]
-    except IndexError:
-        if sys.stdin.isatty():
-            body = None
-        else:
-            logger.debug("Reading request body from STDIN.")
-            body = sys.stdin.read()
-
-    method = 'POST' if body else 'GET'
-
-    client = TemboardAgentClient(url.hostname, url.port)
-    pathinfo = url.path
-    if url.query:
-        pathinfo = "%s?%s" % (pathinfo, url.query)
-
-    try:
-        response = client.request(method, pathinfo, body=body)
-        response.raise_for_status()
-    except ConnectionError as e:
-        logger.critical("%s", e)
-        sys.exit(1)
-    except TemboardAgentError as e:
-        logger.error("%s", e)
-        exit_code = 1
-    else:
-        exit_code = 0
-
-    try:
-        headers = response.headers.items()
-    except AttributeError:  # python2
-        headers = response.getheaders()
-    for name, value in sorted(headers):
-        sys.stderr.write("%s: %s\n" % (name, value))
-
-    sys.stdout.write(response.read().decode('utf-8'))
-    sys.exit(exit_code)
 
 
 class TemboardAgentError(TemboardError):
@@ -191,6 +121,11 @@ class TemboardAgentClient(object):
 class TemboardAgentResponse(http.client.HTTPResponse):
     # Extensions to HTTPResponse, inspired by httpx
 
+    if PY2:
+        @property
+        def headers(self):
+            return dict(self.getheaders())
+
     def __str__(self):
         return '%s %s' % (self.status, self.reason)
 
@@ -210,7 +145,3 @@ class TemboardAgentResponse(http.client.HTTPResponse):
 
     def json(self):
         return json.loads(self.read().decode('utf-8'))
-
-
-if '__main__' == __name__:
-    main()
