@@ -186,9 +186,9 @@ jobs:
         name: Execute agent unit tests
         command: |
           set -x
+          pytest agent/tests/unit/
           cd agent/
           python -m temboardagent.toolkit.proctitle
-          pytest tests/unit/
     - &pip-cache-save
       save_cache:
         key: temboard-{{ .Branch }}
@@ -213,8 +213,7 @@ jobs:
       - run:
           name: Python tests
           command: |
-            cd ui/
-            pytest --full-trace --cov-report=xml tests/unit/
+            pytest --full-trace --cov-report=xml ui/tests/unit/
       - run:
           name: Execute toolkit integration tests
           command: |

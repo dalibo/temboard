@@ -188,7 +188,7 @@ Note that defining a different major version for postgres0 and postgres1 breaks
 physical replication.
 
 
-## Execute UI Unit Tests
+## Execute Unit Tests
 
 Enable the virtualenv and use pytest to run unit tests:
 
@@ -197,6 +197,9 @@ $ . .venv-py3.6/bin/activate
 $ pytest ui/tests/unit
 ...
 ==== 31 passed, 10 warnings in 1.10 seconds ======
+$ pytest agent/tests/unit
+...
+=============== 6 passed in 0.25s ================
 $
 ```
 
