@@ -108,7 +108,7 @@ jobs:
           command: |
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
-            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            git diff --check $(git merge-base origin/v7 $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
