@@ -7,14 +7,16 @@ import logging
 import os.path
 import types
 import signal
+from ast import literal_eval
 from select import select, error as SelectError
 from datetime import datetime
 from collections import deque
 from multiprocessing import AuthenticationError, Process, Queue
 from multiprocessing.connection import Listener, Client
+from textwrap import dedent
 
 from .services import Service
-from .errors import StorageEngineError
+from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
 from .pycompat import PY2, Empty
 
@@ -1094,3 +1096,70 @@ class WorkerPoolService(Service):
             conf = function._tm_worker
             logger.debug("Disable worker %s", conf['name'])
             self.worker_pool.workers.pop(conf['name'], None)
+
+
+class RunTaskMixin(object):
+    # Shared code to execute a single task, for runtask commands.
+    #
+    # To combines with toolkit.app.SubCommand
+
+    def define_arguments(self, parser):
+        parser.description = dedent("""\
+
+        Run a task foreground. Some tasks won't work foreground because they
+        requires task manager processes.
+
+        Use this only for testing, debugging and development.
+
+        Note that our home-made background task implementation uses a different
+        semantic that state of the art background task implementation:
+
+        - a task function is called a worker
+        - a worker process is called workerpool
+        - a message is called a task
+        - the message broker is called taskmanager
+
+        """)
+
+        parser.add_argument(
+            'worker_name',
+            metavar='WORKER',
+            help=(
+                "Global name of the worker function name to execute."
+                " Use ? to list available workers."),
+        )
+
+        parser.add_argument(
+            'worker_args', nargs='*',
+            metavar='ARG',
+            default=[],
+            help="Worker arguments as Python literals.",
+        )
+
+    def iter_workers(self):
+        for name, config in self.app.worker_pool.worker_pool.workers.items():
+            mod = sys.modules[config['module']]
+            fn = getattr(mod, config['function'])
+            yield fn
+
+    def compute_worker_args(self, workers, args):
+        needles = (args.worker_name, args.worker_name + '_worker')
+        for worker in workers:
+            if worker.__name__ in needles:
+                break
+        else:
+            raise UserError("Unknown worker %s." % args.worker_name)
+
+        worker_args = []
+        for arg in args.worker_args:
+            try:
+                arg = literal_eval(arg)
+            except Exception:
+                logger.debug("Unknown literal %s, using as raw string.", arg)
+            worker_args.append(arg)
+
+        return worker, worker_args
+
+    def print_workers(self, workers):
+        for name in sorted(fn.__name__ for fn in workers):
+            print(name)
