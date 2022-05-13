@@ -4,11 +4,13 @@ from sh import temboard_agent, ErrorReturnCode
 import pytest
 
 
-def test_version():
+def test_help_version():
     out = temboard_agent('--version')
-
     assert 'agent' in out
     assert 'libpq' in out
+
+    out = temboard_agent('--help')
+    assert 'serve' in out
 
 
 def test_auto_configure(agent_auto_configure, agent_conf):
@@ -44,3 +46,13 @@ def test_temboard_client(agent):
     out = client(url)
     data = json.loads(str(out))
     assert 'hostname' in data
+
+
+def test_register_command_help(agent, agent_env):
+    temboard_agent("register", "--help", _env=agent_env)
+
+
+def test_runtask(agent, agent_env):
+    out = temboard_agent("runtask", "?", _env=agent_env)
+
+    assert 'vacuum_worker' in out

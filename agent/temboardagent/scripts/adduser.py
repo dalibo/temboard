@@ -1,15 +1,25 @@
-from argparse import ArgumentParser, SUPPRESS as UNDEFINED_ARGUMENT
+import logging
 from sys import stdout
 from getpass import getpass
 
-from ..cli import Application
-from ..usermgmt import hash_password
 from ..errors import ConfigurationError, HTTPError, UserError
-from ..usermgmt import get_user
-from ..types import T_PASSWORD, T_USERNAME
+from ..toolkit.app import BaseApplication
 from ..toolkit.app import define_core_arguments
 from ..tools import validate_parameters
-from .agent import list_options_specs
+from ..types import T_PASSWORD, T_USERNAME
+from ..usermgmt import get_user
+from ..usermgmt import hash_password
+from ..version import __version__
+from ..cli.app import list_options_specs
+
+
+logger = logging.getLogger(__name__)
+
+
+try:
+    input = raw_input
+except NameError:
+    pass
 
 
 def ask_password():
@@ -49,19 +59,24 @@ def ask_username(config):
     return username
 
 
-class AddUserApplication(Application):
+class AddUserApplication(BaseApplication):
     PROGRAM = "temboard-agent-adduser"
+    VERSION = __version__
+
+    DEFAULT_CONFIGFILES = [
+        '/etc/temboard-agent/temboard-agent.conf',
+        'temboard-agent.conf',
+    ]
 
     def main(self, argv, environ):
-        parser = ArgumentParser(
-            prog='temboard-agent-adduser',
+        parser = self.create_parser(
             description="Add a new temboard-agent user.",
-            argument_default=UNDEFINED_ARGUMENT,
         )
-        define_core_arguments(parser, appversion=Application.VERSION)
+        define_core_arguments(parser, appversion=self.VERSION)
         args = parser.parse_args(argv)
         self.bootstrap(args=args, environ=environ)
 
+        logger.info("Using file %s.", self.config.temboard.users)
         # Load configuration from the configuration file.
         username = ask_username(self.config)
         password = ask_password()

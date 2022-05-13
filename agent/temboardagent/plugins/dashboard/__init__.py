@@ -110,7 +110,7 @@ def dashboard_max_connections(http_context, app):
 
 @workers.register(pool_size=1)
 def dashboard_collector_worker(app):
-    logger.debug("Starting dashboard collector")
+    logger.info("Running dashboard collector.")
 
     data = metrics.get_metrics(app)
 

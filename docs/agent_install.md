@@ -228,14 +228,14 @@ Check that it has started successfully:
 ```
 
 Now you can register the agent in the UI using
-`temboard-agent-register`. It needs the configuration file path, the
+`temboard-agent register`. It needs the configuration file path, the
 agent host and port and the path to the temBoard UI.:
 
 ``` console
-# sudo -u postgres temboard-agent-register -c /etc/temboard-agent/11/main/temboard-agent.conf --groups default https://temboard-ui.lan:8888
+# sudo -u postgres temboard-agent -c /etc/temboard-agent/11/main/temboard-agent.conf register --groups default https://temboard-ui.lan:8888
 ```
 
-`temboard-agent-register` will ask you to login to the UI (eg. `admin`
+`temboard-agent register` will ask you to login to the UI (eg. `admin`
 if you\'ve kept the default temBoard user). Beware, it is **NOT** the
 user set on the agent.
 

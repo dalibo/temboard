@@ -491,8 +491,6 @@ def pytest_report_header(config):
     }
 
     agent_version = temboard_agent("--version")
-    agent_path = temboard_agent._path.decode('utf-8')
-    temboard_path = temboard._path.decode('utf-8')
     temboard_version = temboard("--version")
 
     joined_versions = str(temboard_version) + str(agent_version)
@@ -504,11 +502,7 @@ def pytest_report_header(config):
             line = line.replace(' ', '-', 1)
         component, version = line.split(' ', 1)
         component = component.lower()
-        if 'temboard' == component:
-            version = f'{version} ({temboard_path})'
-        elif 'temboard-agent' == component:
-            version = f'{version} ({agent_path})'
-        elif 'python' == component:
+        if 'python' == component:
             continue
         versions[component] = version
 

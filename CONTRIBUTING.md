@@ -95,7 +95,7 @@ agent and execute the following commands.
 
 ``` console
 $ docker-compose exec agent0 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
@@ -132,7 +132,7 @@ for it likewise:
 
 ``` console
 $ docker-compose exec agent1 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent.scripts.agent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardagent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2022-01-11 10:12:55,130 [ 1568] [app             ] DEBUG: Looking for plugin activity.
@@ -188,7 +188,7 @@ Note that defining a different major version for postgres0 and postgres1 breaks
 physical replication.
 
 
-## Execute UI Unit Tests
+## Execute Unit Tests
 
 Enable the virtualenv and use pytest to run unit tests:
 
@@ -197,6 +197,9 @@ $ . .venv-py3.6/bin/activate
 $ pytest ui/tests/unit
 ...
 ==== 31 passed, 10 warnings in 1.10 seconds ======
+$ pytest agent/tests/unit
+...
+=============== 6 passed in 0.25s ================
 $
 ```
 
