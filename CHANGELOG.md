@@ -4,6 +4,7 @@
 ## [7.11] - Unreleased
 
 - Fix heap bloat probe.
+- Fix statements not purged.
 - Collect metrics by agent batch. Huge performance boost.
 - Log HTTP request response time.
 - Check agent key on registration.
