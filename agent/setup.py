@@ -50,7 +50,6 @@ setup(**dict(
             'temboard-agent = temboardagent.__main__:main',
             'temboard-agent-adduser = temboardagent.scripts.adduser:main',
             'temboard-agent-password = temboardagent.scripts.password:main',
-            'temboard-agent-register = temboardagent.scripts.register:main',
         ],
         'temboardagent.plugins': [
             'activity = temboardagent.plugins.activity:ActivityPlugin',

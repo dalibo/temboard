@@ -48,6 +48,10 @@ def test_temboard_client(agent):
     assert 'hostname' in data
 
 
+def test_register_command_help(agent, agent_env):
+    temboard_agent("register", "--help", _env=agent_env)
+
+
 def test_runtask(agent, agent_env):
     out = temboard_agent("runtask", "?", _env=agent_env)
 
