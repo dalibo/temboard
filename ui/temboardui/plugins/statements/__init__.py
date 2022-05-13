@@ -886,7 +886,7 @@ def pull_data_for_instance(app, session, instance):
 
 
 @workers.register(pool_size=1)
-def purge_data_worker(app):
+def statements_purge_worker(app):
     """Background worker in charge of purging statements data.
     Purge policy is based on purge_after parameter from statements section.
     purge_after sets the number of days of data to keep, from now. Default is
@@ -922,8 +922,8 @@ def statements_bootstrap(context):
         options={},
     )
     yield taskmanager.Task(
-        worker_name='purge_data_worker',
-        id='purge_data',
+        worker_name='statements_purge_worker',
+        id='statements_purge_data',
         redo_interval=24 * 60 * 60,  # Repeat each 24h,
         options={},
     )
