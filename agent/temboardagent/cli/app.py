@@ -236,8 +236,7 @@ def list_options_specs():
     yield OptionSpec(section, 'ssl_ca_cert_file', validator=v.file_)
     yield OptionSpec(section, 'key')
     yield OptionSpec(
-        section, 'users',
-        default='/etc/temboard-agent/users', validator=v.file_,
+        section, 'users', default='users', validator=v.file_,
     )
     yield OptionSpec(section, 'hostname', default=getfqdn(), validator=v.fqdn)
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
