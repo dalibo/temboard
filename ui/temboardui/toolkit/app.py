@@ -9,6 +9,7 @@ import os
 import pdb
 from codecs import open
 from site import main as refresh_pythonpath
+from textwrap import dedent
 import sys
 from argparse import (
     ArgumentParser,
@@ -158,7 +159,8 @@ class BaseApplication(object):
 
     def create_parser(self, *a, **kw):
         kw.setdefault('argument_default', SUPPRESS_ARG)
-        kw.setdefault('description', self.__class__.__doc__)
+        _, d = extract_help_description_from_docstring(self.__class__.__doc__)
+        kw.setdefault('description', d)
         kw.setdefault('prog', self.PROGRAM)
         kw.setdefault('formatter_class', RawDescriptionHelpFormatter)
         return ArgumentParser(*a, **kw)
@@ -186,9 +188,12 @@ class BaseApplication(object):
             if "." in fullname:
                 continue  # Let commands declare their sub-commands.
 
+            h, d = extract_help_description_from_docstring(command.__doc__)
             subparser = subparsers.add_parser(
-                command.name, help=command.__doc__,
+                command.name,
+                help=h, description=d,
                 formatter_class=parser.formatter_class,
+                argument_default=parser.argument_default,
             )
             subparser.set_defaults(command_fullname=fullname)
             command.define_arguments(subparser)
@@ -461,3 +466,15 @@ def define_core_arguments(parser, appversion=None):
         action='store_const', const='temboardui', dest='logging_debug',
         help="Enable verbose messages for temBoard.",
     )
+
+
+def extract_help_description_from_docstring(docstring):
+    docstring = docstring or ""
+
+    if "\n " in docstring:
+        title, description = docstring.split("\n", 1)
+        description = "%s\n%s" % (title, dedent(description))
+    else:
+        title = description = docstring
+
+    return title, description
