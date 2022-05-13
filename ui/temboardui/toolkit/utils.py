@@ -34,9 +34,12 @@ class DotDict(IterableUserDict):
             raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        if hasattr(value, 'items'):
-            value = DotDict(value)
-        self[name] = value
+        if name.startswith('_'):
+            super(DotDict, self).__setattr__(name, value)
+        else:
+            if hasattr(value, 'items'):
+                value = DotDict(value)
+            self[name] = value
 
     def __setstate__(self, state):
         self.__dict__.update(state)
