@@ -44,6 +44,8 @@ class TemboardAgentClient(object):
     ConnectionError = ConnectionError
     Error = TemboardAgentError
 
+    log_headers = False
+
     @classmethod
     def factory(cls, config, host, port, key=None):
         return cls(
@@ -101,14 +103,25 @@ class TemboardAgentClient(object):
             self.host, self.port, context=self.ssl_context, timeout=30,
         )
         conn.response_class = TemboardAgentResponse
+
+        if self.log_headers:
+            for name, value in sorted(headers.items()):
+                logger.debug(">>> %s: %s", name, value)
+
         start_time = time()
         conn.request(method, fullurl, body, headers)
         response = conn.getresponse()
         duration = time() - start_time
         response.path = path
+
+        if self.log_headers:
+            for name, value in sorted(response.headers.items()):
+                logger.debug("<<< %s: %s", name, value)
+
         logger.debug(
             "Response from %s:%s in %.3fs: %s.",
             self.host, self.port, duration, response)
+
         return response
 
     def get(self, path, headers=None):

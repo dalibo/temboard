@@ -51,6 +51,7 @@ class QueryAgent(SubCommand):
         client = TemboardAgentClient.factory(
             self.app.config, url.hostname, url.port,
         )
+        client.log_headers = True
 
         try:
             response = client.request(method, pathinfo, body=args.body)
@@ -59,14 +60,8 @@ class QueryAgent(SubCommand):
             logger.critical("%s", e)
             return 1
         except client.Error as e:
-            self.print_headers(response)
             raise UserError(str(e))
         else:
-            self.print_headers(response)
             sys.stdout.write(response.read().decode('utf-8'))
 
         return 0
-
-    def print_headers(self, response):
-        for name, value in sorted(response.headers.items()):
-            sys.stderr.write("%s: %s\n" % (name, value))
