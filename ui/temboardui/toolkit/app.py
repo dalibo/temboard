@@ -54,7 +54,7 @@ class BaseApplication(object):
 
     PROGRAM = "temboard"
     VERSION = "unknown"
-    REPORT_URL = "https://github.com/dalibo/temboard-agent/issues"
+    REPORT_URL = "https://github.com/dalibo/temboard/issues/new"
 
     DEFAULT_CONFIGFILES = [
         '%s.conf' % (LastnameFilter.root),

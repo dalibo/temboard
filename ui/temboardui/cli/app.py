@@ -34,6 +34,9 @@ logger = logging.getLogger('temboardui')
 
 
 class TemboardApplication(BaseApplication):
+    PROGRAM = 'temboard'
+    VERSION = __version__
+
     DEFAULT_CONFIGFILES = [
         '/etc/temboard/temboard.conf',
         'temboard.conf',
@@ -46,9 +49,6 @@ class TemboardApplication(BaseApplication):
         'maintenance',
         'statements',
     ]
-    PROGRAM = 'temboard'
-    REPORT_URL = "https://github.com/dalibo/temboard/issues"
-    VERSION = __version__
 
     def define_arguments(self, parser):
         define_core_arguments(parser)

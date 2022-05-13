@@ -31,7 +31,6 @@ logger = logging.getLogger('temboardagent.scripts.agent')
 class TemboardAgentApplication(BaseApplication):
     PROGRAM = "temboard-agent"
     VERSION = __version__
-    REPORT_URL = "https://github.com/dalibo/temboard/issues/new"
 
     DEFAULT_CONFIGFILES = [
         '/etc/temboard-agent/temboard-agent.conf',
