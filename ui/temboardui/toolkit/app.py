@@ -366,6 +366,8 @@ class SubCommand(object):
     #
     # Class docstring is injected in argparse help for the command.
 
+    name = None
+
     def __init__(self, parent):
         self.parent = parent  # The app or another command.
 
@@ -378,7 +380,8 @@ class SubCommand(object):
         if names:
             names.append("")    # Add final .
 
-        self.name = self.__class__.__name__.lower()
+        if not self.name:
+            self.name = self.__class__.__name__.lower()
         self.app = root
         self.prefix = ".".join(names)
         self.fullname = self.prefix + self.name
