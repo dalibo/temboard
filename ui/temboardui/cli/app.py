@@ -121,7 +121,7 @@ class TemboardApplication(BaseApplication):
 
         command_name = getattr(args, 'command_fullname', 'serve')
         command = self.commands[command_name]
-        command.main(args)
+        return command.main(args)
 
     def apply_config(self):
         bootstrap_tornado = not hasattr(self, 'webapp')
