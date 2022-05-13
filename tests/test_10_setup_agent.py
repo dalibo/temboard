@@ -4,11 +4,13 @@ from sh import temboard_agent, ErrorReturnCode
 import pytest
 
 
-def test_version():
+def test_help_version():
     out = temboard_agent('--version')
-
     assert 'agent' in out
     assert 'libpq' in out
+
+    out = temboard_agent('--help')
+    assert 'serve' in out
 
 
 def test_auto_configure(agent_auto_configure, agent_conf):

@@ -47,7 +47,7 @@ setup(**dict(
     ],
     entry_points={
         'console_scripts': [
-            'temboard-agent = temboardagent.scripts.agent:main',
+            'temboard-agent = temboardagent.__main__:main',
             'temboard-agent-adduser = temboardagent.scripts.adduser:main',
             'temboard-agent-password = temboardagent.scripts.password:main',
             'temboard-agent-register = temboardagent.scripts.register:main',
