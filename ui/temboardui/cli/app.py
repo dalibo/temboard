@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from __future__ import print_function
+
 from builtins import str
 import logging.config
 import os
@@ -13,9 +14,9 @@ import tornado.ioloop
 import tornado.web
 from tornado import autoreload
 
+from ..autossl import AutoHTTPSServer
 from ..model import configure as configure_db_session
-from ..toolkit import taskmanager
-from ..toolkit import validators as v
+from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import (
     BaseApplication,
     define_core_arguments,
@@ -25,10 +26,8 @@ from ..toolkit.errors import UserError
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import Service
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
-from ..web import Error404Handler, app as webapp
-
-from ..autossl import AutoHTTPSServer
 from ..version import __version__, format_version, inspect_versions
+from ..web import Error404Handler, app as webapp
 
 
 logger = logging.getLogger('temboardui')
@@ -71,34 +70,6 @@ class TemboardApplication(BaseApplication):
 
         # Chain up for sub-commands arguments initialization.
         super(TemboardApplication, self).define_arguments(parser)
-
-    def apply_config(self):
-        bootstrap_tornado = not hasattr(self, 'webapp')
-        if bootstrap_tornado:
-            # For now, just create web app once. One time, we'll be able to
-            # unload plugin routes.
-            self.webapp = bootstrap_tornado_app(webapp, self.config)
-            self.webapp.executor = ThreadPoolExecutor(12)
-            self.webapp.temboard_app = self
-
-        super(TemboardApplication, self).apply_config()
-
-        finalize_tornado_app(webapp, self.config)
-
-        self.webapp.engine = configure_db_session(self.config.repository)
-
-    def log_versions(self):
-        versions = inspect_versions()
-        logger.debug(
-            "Running on %s %s.",
-            versions['distname'], versions['distversion'])
-        logger.debug(
-            "Using Python %s (%s) and Tornado %s .",
-            versions['python'], versions['pythonbin'], versions['tornado'])
-        logger.debug(
-            "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",
-            versions['libpq'], versions['psycopg2'], versions['sqlalchemy'],
-        )
 
     def main(self, argv, environ):
 
@@ -152,9 +123,37 @@ class TemboardApplication(BaseApplication):
         command = self.commands[command_name]
         command.main(args)
 
+    def apply_config(self):
+        bootstrap_tornado = not hasattr(self, 'webapp')
+        if bootstrap_tornado:
+            # For now, just create web app once. One time, we'll be able to
+            # unload plugin routes.
+            self.webapp = bootstrap_tornado_app(webapp, self.config)
+            self.webapp.executor = ThreadPoolExecutor(12)
+            self.webapp.temboard_app = self
 
-def bootstrap_tornado_app(app, config):
-    app.config = config
+        super(TemboardApplication, self).apply_config()
+
+        finalize_tornado_app(webapp, self.config)
+
+        self.webapp.engine = configure_db_session(self.config.repository)
+
+    def log_versions(self):
+        versions = inspect_versions()
+        logger.debug(
+            "Running on %s %s.",
+            versions['distname'], versions['distversion'])
+        logger.debug(
+            "Using Python %s (%s) and Tornado %s .",
+            versions['python'], versions['pythonbin'], versions['tornado'])
+        logger.debug(
+            "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",
+            versions['libpq'], versions['psycopg2'], versions['sqlalchemy'],
+        )
+
+
+def bootstrap_tornado_app(webapp, config):
+    webapp.config = config
 
     base_path = os.path.dirname(os.path.dirname(__file__))
     # Load handlers
@@ -166,17 +165,17 @@ def bootstrap_tornado_app(app, config):
     __import__('temboardui.handlers.settings.notifications')
     __import__('temboardui.handlers.user')
 
-    app.configure(
+    webapp.configure(
         cookie_secret=config.temboard['cookie_secret'],
         debug=config.logging.debug,
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler,
     )
 
-    return app
+    return webapp
 
 
-def finalize_tornado_app(app, config):
+def finalize_tornado_app(webapp, config):
     autoreload.watch(config.temboard.configfile)
 
     base_path = os.path.dirname(os.path.dirname(__file__))
@@ -197,7 +196,7 @@ def finalize_tornado_app(app, config):
 
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
-    app.add_rules(handlers)
+    webapp.add_rules(handlers)
 
 
 def map_pgvars(environ):
