@@ -1,20 +1,8 @@
 # coding: utf-8
 
 
-def test_arguments():
-    from argparse import ArgumentParser
-    from temboardui.__main__ import define_arguments
-
-    parser = ArgumentParser()
-    define_arguments(parser)
-
-    args = parser.parse_args(['--pid-file', 'my.pid'])
-
-    assert 'my.pid' == args.temboard_pidfile
-
-
 def test_pgvar_map():
-    from temboardui.migratedb import map_pgvars
+    from temboardui.cli.app import map_pgvars
 
     env = dict(
         PGHOST='localhost',

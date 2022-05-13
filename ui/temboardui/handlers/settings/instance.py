@@ -36,7 +36,7 @@ def create_instance_helper(webapp, db_session, data):
     instance = add_instance(db_session, **data)
     add_instance_in_groups(db_session, instance, groups)
     enable_instance_plugins(
-        db_session, instance, plugins, webapp.loaded_plugins,
+        db_session, instance, plugins, webapp.config.temboard.plugins,
     )
 
 
@@ -103,7 +103,7 @@ def json_instance(request):
                 'name': group.group_name,
                 'description': group.group_description
             } for group in groups],
-            'loaded_plugins': request.handler.application.loaded_plugins,
+            'loaded_plugins': request.config.temboard.plugins,
             'notify': instance.notify,
             'comment': instance.comment,
         }
@@ -134,7 +134,7 @@ def json_instance(request):
         add_instance_in_groups(request.db_session, instance, groups)
         enable_instance_plugins(
             request.db_session, instance, plugins,
-            request.handler.application.loaded_plugins,
+            request.config.temboard.plugins,
         )
         return {"message": "OK"}
 

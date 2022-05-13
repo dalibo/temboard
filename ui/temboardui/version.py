@@ -7,7 +7,7 @@ __version__ = "8.0.dev0"
 
 # This output is parsed by tests/conftest.py::pytest_report_header.
 VERSION_FMT = """\
-temBoard %(temboard)s
+temBoard %(temboard)s (%(temboardbin)s)
 System %(distname)s %(distversion)s
 Python %(python)s (%(pythonbin)s)
 Tornado %(tornado)s
@@ -42,5 +42,6 @@ def inspect_versions():
         pythonbin=sys.executable,
         sqlalchemy=sqlalchemy_version,
         temboard=__version__,
+        temboardbin=sys.argv[0],
         tornado=tornado_version,
     )

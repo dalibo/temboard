@@ -34,7 +34,7 @@ def all_group(request, kind):
             'kind': group.group_kind,
             'description': group.group_description
         } for group in groups],
-        'loaded_plugins': request.handler.application.loaded_plugins,
+        'loaded_plugins': request.config.temboard.plugins,
     }
 
 

@@ -1,5 +1,5 @@
 import pytest
-from sh import temboard, temboard_migratedb, ErrorReturnCode
+from sh import temboard, ErrorReturnCode
 
 
 def test_temboard_version():
@@ -19,11 +19,11 @@ def test_temboard_help():
 
 def test_migratedb_no_database():
     with pytest.raises(ErrorReturnCode):
-        temboard_migratedb('check')
+        temboard('migratedb', 'check')
 
 
 def test_auto_configure(ui_auto_configure):
-    temboard_migratedb('check')
+    temboard('migratedb', 'check')
 
 
 def test_login_logout(browser, ui, ui_url):
@@ -38,3 +38,9 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("li.nav-item.dropdown a").click()
     browser.select("a[href='/logout']").click()
+
+
+def test_runtask(ui):
+    out = temboard("runtask", "?")
+
+    assert '\ncollector\n' in out
