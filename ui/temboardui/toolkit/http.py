@@ -4,6 +4,11 @@ import http.client
 import json
 import logging
 import ssl
+from datetime import datetime
+try:
+    from datetime import timezone
+except ImportError:  # PY2
+    timezone = None
 from time import time
 
 from .utils import ensure_bytes
@@ -85,7 +90,11 @@ class TemboardClient(object):
         return self._ssl_context
 
     def request(self, method, path, headers=None, body=None):
-        fullurl = 'https://%s:%s%s' % (self.host, self.port, path)
+        hostport = '%s:%s' % (self.host, self.port)
+        fullurl = 'https://%s%s' % (hostport, path)
+
+        logger.debug("Requesting %s %s.", method, fullurl)
+
         headers = headers or {}
         if self._cookies:
             headers.setdefault('Cookie', "\n".join(self._cookies))
@@ -98,7 +107,6 @@ class TemboardClient(object):
 
         body = ensure_bytes(body)
 
-        logger.debug("Requesting %s %s.", method, fullurl)
         conn = http.client.HTTPSConnection(
             self.host, self.port, context=self.ssl_context, timeout=30,
         )
@@ -124,8 +132,7 @@ class TemboardClient(object):
             self._cookies.add(cookie)
 
         logger.debug(
-            "Response from %s:%s in %.3fs: %s.",
-            self.host, self.port, duration, response)
+            "Response from %s in %.3fs: %s.", hostport, duration, response)
 
         return response
 
@@ -163,3 +170,10 @@ class TemboardResponse(http.client.HTTPResponse):
 
     def json(self):
         return json.loads(self.read().decode('utf-8'))
+
+
+def format_date(date=None):
+    if not date:
+        date = datetime.utcnow()
+    date = date.astimezone(timezone.utc)
+    return date.strftime("%Y%m%dT%H%M%SZ")

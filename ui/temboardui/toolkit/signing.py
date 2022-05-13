@@ -1,4 +1,3 @@
-import logging
 from base64 import b64decode, b64encode
 from hashlib import sha256
 
@@ -11,7 +10,6 @@ from .errors import TemboardError
 from .utils import ensure_bytes
 
 
-logger = logging.getLogger(__name__)
 __all__ = [
     'InvalidSignature',
 ]
@@ -69,7 +67,6 @@ def canonicalize_request(method, path, headers, body=b''):
 
     lines.append(b"")   # Final EOF
 
-    logger.debug("Canonical request:\n%s", b"\n".join(lines).decode('utf-8'))
     return b"\n".join(lines)
 
 

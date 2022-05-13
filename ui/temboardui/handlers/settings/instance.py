@@ -188,9 +188,9 @@ def json_delete_instance(request):
     r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
 @admin_required
 def discover(request, address, port):
-    client = TemboardAgentClient(
+    client = TemboardAgentClient.factory(
+        request.config,
         address, port,
-        ca_cert_file=request.config.temboard.ssl_ca_cert_file,
         key=request.headers['X-TemBoard-Agent-Key'])
     response = client.get('/discover')
     return response.json()
