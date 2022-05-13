@@ -1,7 +1,4 @@
-# This module provide an undocumented feature mainly for development purpose:
-# execute a task foreground.
-#
-# Usage: python -m temboardui.runtask [options] worker_name
+# Usage: temboard [options] runtask worker_name [args ...]
 #
 # Note that our home-made background task implementation, we use a different
 # semantic that state of the art background task implemtation:
