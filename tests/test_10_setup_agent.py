@@ -4,13 +4,19 @@ from sh import temboard_agent, ErrorReturnCode
 import pytest
 
 
-def test_help_version():
+def test_version():
     out = temboard_agent('--version')
     assert 'agent' in out
     assert 'libpq' in out
 
-    out = temboard_agent('--help')
-    assert 'serve' in out
+
+def test_help():
+    assert 'serve' in temboard_agent('--help')
+
+
+def test_route(agent_auto_configure, sudo_pguser, agent_env):
+    with sudo_pguser:
+        assert '/discover' in temboard_agent('routes', _env=agent_env)
 
 
 def test_auto_configure(agent_auto_configure, agent_conf):

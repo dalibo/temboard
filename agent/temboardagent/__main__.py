@@ -4,9 +4,14 @@ from .cli.app import app
 
 
 def main():
-    __import__(__package__ + '.cli.serve')
+    # Import main HTTP routes
+    __import__(__package__ + '.api')
+
+    # Import commands
     __import__(__package__ + '.cli.register')
+    __import__(__package__ + '.cli.routes')
     __import__(__package__ + '.cli.runtask')
+    __import__(__package__ + '.cli.serve')
     return app()
 
 
