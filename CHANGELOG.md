@@ -9,8 +9,8 @@ script to proceed.
 - Removed parameter of `temboard --debug` CLI option.
 - Move `temboard-migratedb` as `temboard migratedb` subcommand.
 - Move `temboard-agent-register` as `temboard-agent register` subcommand.
-- New subcommands `temboard runtask`, `temboard-agent routes`, `temboard-agent
-  runtask` and `temboard-agent web` for debugging.
+- New subcommands `temboard routes`, `temboard runtask`, `temboard-agent
+  routes`, `temboard-agent runtask` and `temboard-agent web` for debugging.
 
 
 ## [7.11] - Unreleased
