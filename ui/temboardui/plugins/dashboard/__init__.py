@@ -4,7 +4,7 @@ from os.path import realpath
 import tornado.web
 from tornado.escape import json_encode
 
-from ...temboardclient import TemboardAgentError
+from ...agentclient import TemboardAgentClient
 from ...web import (
     Blueprint,
     TemplateRenderer,
@@ -42,7 +42,7 @@ def dashboard(request):
 
     try:
         config = request.instance.get('/dashboard/config')
-    except TemboardAgentError as e:
+    except TemboardAgentClient.Error as e:
         if 404 != e.code:
             raise
         logger.debug("Fallback dashboard config.")

@@ -45,7 +45,7 @@ from temboardui.application import (
     send_mail,
     send_sms,
 )
-from temboardui.temboardclient import TemboardAgentClient
+from temboardui.agentclient import TemboardAgentClient
 from temboardui.model.orm import Instances
 from temboardui.model import worker_engine
 

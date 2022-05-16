@@ -12,7 +12,7 @@ from temboardui.application import (
     purge_instance_plugins,
     update_instance,
 )
-from temboardui.temboardclient import TemboardAgentClient
+from temboardui.agentclient import TemboardAgentClient
 from temboardui.web import (
     HTTPError,
     InstanceHelper,

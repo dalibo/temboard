@@ -32,7 +32,7 @@ from .application import (
 )
 from .errors import TemboardUIError
 from .model import Session as DBSession
-from .temboardclient import TemboardAgentClient
+from .agentclient import TemboardAgentClient
 from .toolkit.pycompat import PY2
 from .toolkit.perf import PerfCounters
 

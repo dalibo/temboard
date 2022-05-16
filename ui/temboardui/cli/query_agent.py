@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from ..temboardclient import TemboardAgentClient
+from ..agentclient import TemboardAgentClient
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from ..toolkit.pycompat import urlparse
