@@ -620,7 +620,7 @@ def make_error(request, code, message):
     template = 'unauthorized.html' if 403 == code else 'error.html'
     response = render_template(
         template,
-        nav=True, role=request.current_user,
+        nav=True, role=getattr(request, 'current_user', 'anonymous'),
         **data
     )
     response.status_code = code
