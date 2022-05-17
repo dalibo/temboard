@@ -61,6 +61,7 @@ class TemboardClient(object):
         self.port = port
         self.ca_cert_file = ca_cert_file
         self._ssl_context = None
+        self._cookies = set()
 
     def __repr__(self):
         return '<%s %s:%s %s>' % (
@@ -86,6 +87,8 @@ class TemboardClient(object):
     def request(self, method, path, headers=None, body=None):
         fullurl = 'https://%s:%s%s' % (self.host, self.port, path)
         headers = headers or {}
+        if self._cookies:
+            headers.setdefault('Cookie', "\n".join(self._cookies))
 
         if body:
             headers['Content-Type'] = 'application/json'
@@ -114,6 +117,11 @@ class TemboardClient(object):
         if self.log_headers:
             for name, value in sorted(response.headers.items()):
                 logger.debug("<<< %s: %s", name, value)
+
+        if response.headers['set-cookie']:
+            cookie = response.headers['set-cookie']
+            logger.debug("Registering cookie %.16s... in session.", cookie)
+            self._cookies.add(cookie)
 
         logger.debug(
             "Response from %s:%s in %.3fs: %s.",
