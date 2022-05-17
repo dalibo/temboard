@@ -194,16 +194,24 @@ class MergedConfiguration(DotDict):
         try:
             self.add_values(iter_args_values(args))
             self.add_values(iter_environ_values(environ))
-            if parser:
-                # configfile values are relatives to configfile directory.
+
+            if pwd:
+                # configfile and default values are relative to configfile
+                # directory.
                 oldpwd = os.getcwd()
                 os.chdir(pwd)
+            else:
+                oldpwd = None
+
+            if parser:
                 self.add_values(iter_configparser_values(parser))
+            self.add_values(iter_defaults(self.specs))
+
+            if oldpwd:
                 try:
                     os.chdir(oldpwd)
                 except OSError as e:
-                    logger.debug("Can't move back to %s: %s", oldpwd, e)
-            self.add_values(iter_defaults(self.specs))
+                    logger.warning("Can't move back to %s: %s", oldpwd, e)
         except ValueError as e:
             logger.debug("Bad value %s.", e)
             raise UserError("Failed to load configuration.")
