@@ -216,7 +216,12 @@ def finalize_tornado_app(webapp, config):
         }),
         (r"/fonts/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/fonts'
-        })
+        }),
+        # Path needs a (unused) path parameter, not used by subclass
+        # SingleFileHandler.
+        (r"/(signing.key)", SingleFileHandler, {
+            'path': config.temboard.signing_public_key,
+        }),
     ]
 
     # Append rules *after* plugins because plugins shares same namespace for
@@ -306,6 +311,18 @@ class TornadoService(Service):
 
         for path in self.iter_template_files():
             autoreload.watch(path)
+
+
+class SingleFileHandler(tornado.web.StaticFileHandler):
+    @classmethod
+    def get_absolute_path(cls, root, *a):
+        return root
+
+    def validate_absolute_path(self, root, absolute_path):
+        if not os.path.exists(absolute_path):
+            logger.warning("Inexistant file %s", absolute_path)
+            raise tornado.web.HTTPError(404)
+        return absolute_path
 
 
 class VersionAction(_VersionAction):
