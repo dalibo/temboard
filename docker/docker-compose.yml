@@ -58,6 +58,8 @@ services:
       TEMBOARD_HOSTNAME: instance13.fqdn
       TEMBOARD_KEY: key_for_agent_13
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_UI_USER: admin
+      TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance12:
@@ -112,6 +114,8 @@ services:
       TEMBOARD_HOSTNAME: instance10.fqdn
       TEMBOARD_KEY: key_for_agent_10
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_UI_USER: admin
+      TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance96:
@@ -139,4 +143,6 @@ services:
       TEMBOARD_HOSTNAME: instance96.fqdn
       TEMBOARD_KEY: key_for_agent_96
       TEMBOARD_UI_URL: https://ui:8888/
+      TEMBOARD_UI_USER: admin
+      TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG

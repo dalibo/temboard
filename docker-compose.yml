@@ -55,6 +55,8 @@ services:
       # Persists bash history. Eases reuse of hupper command when recreating
       # container.
       HISTFILE: /usr/local/src/temboard/dev/agent-bash_history
+      TEMBOARD_UI_USER: admin
+      TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_HOSTNAME: postgres0.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
