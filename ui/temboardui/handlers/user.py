@@ -1,8 +1,6 @@
 import logging
 from time import sleep
 
-import tornado.web
-
 from ..application import (
     gen_cookie,
     get_role_by_auth,
@@ -69,12 +67,13 @@ def login(request):
 @app.route(r'/json/login', methods=['POST'])
 @anonymous_allowed
 def json_login(request):
+    username = request.json['username']
+    password = request.json['password']
+
     # Mitigate dictionnaries attacks.
     sleep(1)
+
     try:
-        post = tornado.escape.json_decode(request.body)
-        username = post['username']
-        password = post['password']
         cookies = login_common(request.db_session, username, password)
         return Response(
             body={"message": "OK"},
