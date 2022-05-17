@@ -8,7 +8,7 @@ from selenium.common.exceptions import (
 
 
 @pytest.fixture
-def browse_pgconf(agent_login, browse_instance, browser):
+def browse_pgconf(browse_instance, browser):
     """Go to Configuration tab of current instance."""
     browser.select("div.sidebar a.pgconf").click()
 

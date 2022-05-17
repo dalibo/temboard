@@ -68,14 +68,14 @@ def test_query(browser, browse_statements, ensure_statements_data):
 
 
 @pytest.fixture
-def browse_statements(agent_login, browse_instance, browser):
+def browse_statements(browse_instance, browser):
     """Go to Statements tab of current instance."""
     browser.select("div.sidebar a.statements").click()
 
 
 @pytest.fixture(scope='module')
 def ensure_statements_data(
-        agent_conf, agent_login, browse_instance, browser_session, ui_sudo):
+        agent_conf, browse_instance, browser_session, ui_sudo):
     """Waits for statements data to come up."""
     browser = browser_session
     browser.select("div.sidebar a.statements").click()

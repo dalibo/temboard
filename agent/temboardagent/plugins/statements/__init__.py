@@ -22,7 +22,7 @@ JOIN pg_database ON pgss.dbid = pg_database.oid
 """
 
 
-@routes.get(b"/", check_key=True)
+@routes.get(b"/")
 def get_statements(http_context, app):
     """Return a snapshot of latest statistics of executed SQL statements
     """

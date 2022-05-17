@@ -48,7 +48,6 @@ cat > /etc/temboard-agent/temboard-agent.conf <<EOF
 
 [temboard]
 home = /var/lib/temboard-agent
-users = /etc/temboard-agent/users
 address = 0.0.0.0
 port = 2345
 ssl_cert_file = ${TEMBOARD_SSL_CERT-/usr/local/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem}
@@ -92,14 +91,6 @@ cat > /etc/temboard-agent/temboard-agent.conf.d/statements.conf << EOF
 [statements]
 dbname = ${PGDATABASE}
 EOF
-
-touch /etc/temboard-agent/users
-chmod 0600 /etc/temboard-agent/users
-for entry in ${TEMBOARD_USERS_LIST-alice:alice bob:bob} ; do
-    echo "Adding user ${entry%%:*}."
-    sed -i /${entry%:*}/d /etc/temboard-agent/users
-    temboard-agent-password $entry >> /etc/temboard-agent/users
-done
 
 wait-for-it ${PGHOST}:${PGPORT}
 

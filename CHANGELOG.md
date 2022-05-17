@@ -5,6 +5,7 @@
 This release requires a database schema migration. Use temboard-migratedb
 script to proceed.
 
+- Unified authentification: agents now accepts UI as source of identity.
 - New database migration engine.
 - Removed parameter of `temboard --debug` CLI option.
 - Improved error logging.
@@ -16,6 +17,7 @@ script to proceed.
   runtask`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
   `temboard-agent runtask` and `temboard-agent web` for debugging.
 - New agent option: `[temboard] ui_url`, pointing to UI URL.
+- New agent auto_configure.sh required parameter: UI URL.
 - temBoard agent auto_configure.sh does not configure file logging anymore.
   temBoard UI & agent package does not ship logrotate file anymore. temBoard UI
   & agent can still log to file if you configure it to do so.
@@ -30,6 +32,8 @@ script to proceed.
   instead.
 - Fast collect of monitoring and statements metrics upon agent registration.
 - temBoard UI dropped push-metrics handler from pre-6.0 push metric collect.
+- Removed scripts `temboard-agent-adduser` and `temboard-agent-password`.
+- Agent dropped users file and configuration.
 - Python 2.7 and 3.5 support is deprecated and will be removed in next major
   release.
 - Debian Stretch support is deprecated and will be removed in next major

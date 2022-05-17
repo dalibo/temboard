@@ -56,7 +56,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
 # pidfile directory
 %{__install} -d %{buildroot}/var/run/temboard-agent
-%{__install} -m 600 /dev/null %{buildroot}/%{_sysconfdir}/temboard-agent/users
 
 %post
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
@@ -77,7 +76,6 @@ fi
 %{_unitdir}/temboard-agent@.service
 
 %attr(-,postgres,postgres) /var/lib/temboard-agent
-%config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
 if systemctl is-system-running &>/dev/null ; then

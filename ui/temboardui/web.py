@@ -366,6 +366,10 @@ class InstanceHelper(object):
         return self.request_agent(*args, **kwargs)
 
     def require_xsession(self):
+        # New agent has neither key nor sessions.
+        if not self.instance.agent_key:
+            return True
+
         if not self.xsession:
             self.redirect('/login')
         return self.xsession

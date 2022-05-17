@@ -39,7 +39,7 @@ def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
 
 
 @pytest.fixture
-def browse_monitoring(agent_login, browse_instance, browser):
+def browse_monitoring(browse_instance, browser):
     """Go to Monitoring tab of current instance."""
     browser.select("div.sidebar a.monitoring").click()
 

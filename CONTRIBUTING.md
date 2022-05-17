@@ -228,8 +228,7 @@ $
 ## Execute Integration Tests
 
 The `tests/` directory contains a pytest project to tests UI and agent
-integration using Selenium. These tests are not to be confused with
-`agent/tests/func`.
+integration using Selenium.
 
 Execute these tests right from your virtualenv, using pytest:
 

@@ -11,7 +11,7 @@ from fixtures.utils import retry_fast
 logger = logging.getLogger(__name__)
 
 
-def test_running(agent_login, browser, pg_sleep, ui_url):
+def test_running(browser, pg_sleep, registered_agent, ui_url):
     browser.get(ui_url)  # Goto home
     browser.select("a.instance-link").click()  # Click first instance
     browser.select("div.sidebar a.activity").click()  # Click Activity

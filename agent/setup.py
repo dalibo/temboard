@@ -39,15 +39,12 @@ setup(**dict(
             'share/temboard-agent_CHANGEME.pem',
             'share/temboard-agent_CHANGEME.key',
             'share/temboard-agent_ca_certs_CHANGEME.pem',
-            'share/users',
         ]),
         ('lib/systemd/system', ['packaging/temboard-agent@.service']),
     ],
     entry_points={
         'console_scripts': [
             'temboard-agent = temboardagent.__main__:main',
-            'temboard-agent-adduser = temboardagent.scripts.adduser:main',
-            'temboard-agent-password = temboardagent.scripts.password:main',
         ],
         'temboardagent.plugins': [
             'activity = temboardagent.plugins.activity:ActivityPlugin',

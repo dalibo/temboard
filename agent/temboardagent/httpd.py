@@ -13,10 +13,9 @@ from temboardagent.routing import get_routes
 from temboardagent.errors import HTTPError
 from temboardagent.tools import JSONEncoder
 from temboardagent import __version__ as temboard_version
-from .sharedmemory import Sessions
-from .api import check_sessionid
 from .errors import UserError
 from .toolkit.services import Service
+from .toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
 
 
 logger = logging.getLogger(__name__)
@@ -30,12 +29,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     """
     HTTP request handler.
     """
-    def __init__(self, app, sessions, *args, **kwargs):
+    def __init__(self, app, *args, **kwargs):
         """
         Constructor.
         """
-        # Sessions array in shared memory.
-        self.sessions = sessions
         # Application instance.
         self.app = app
         # HTTP server version.
@@ -136,19 +133,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             (code, message) = self.route_request()
         except HTTPError as e:
             if e.code >= 500:
-                logger.exception(e.message)
-            logger.error(e.message)
+                logger.exception("%s", e)
+            else:
+                logger.error("%s", e)
+
             code = e.code
-            message = e.message
+            message = {'error': str(e)}
         except UserError as e:
-            msg = str(e)
-            logger.exception(msg)
-            logger.error(msg)
-            code = 500
-            message = {'error': msg}
+            logger.error("%s", e)
+            code = 400
+            message = {'error': str(e)}
         except Exception as e:
-            logger.exception(str(e))
-            logger.error("Internal error")
+            logger.exception("Unhandled error: %s", e)
             # This is an unknown error. Just inform there is an internal error.
             code = 500
             message = {'error': "Internal error."}
@@ -226,13 +222,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         route = self.get_route(self.http_method, path.encode('utf-8'))
         # Parse URL path
         urlvars = self.parse_path(path.encode('utf-8'), route)
-        post_raw = None
+        self.body = None
         # Load POST content if any
         if self.http_method == 'POST':
             # TODO: raise an HTTP error if the content-length is
             # too large.
+            size = int(self.headers['Content-Length'])
             try:
-                post_raw = self.rfile.read(int(self.headers['Content-Length']))
+                self.body = self.rfile.read(size)
             except Exception as e:
                 logger.exception(str(e))
                 logger.debug(self.headers)
@@ -240,42 +237,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 raise HTTPError(400, 'Unable to read post data')
 
         username = None
-        checked = False
 
         # Authentication checking out
-
-        # 1. Try the auth' by key: if this method is available for this API
-        # and 'key' arg exists.
-        key = self.headers.get('X-TemBoard-Agent-Key')
-        if key:
-            logger.debug("Authentication by key from header.")
-        elif 'key' in self.query:
-            # TODO: Remove auth from query in 8.0
-            key = self.query['key'][0]
-            logger.debug("Authentication by key from argument.")
-
-        if route['check_key'] and key:
-            if self.app.config.temboard.key is None:
-                raise HTTPError(401, "Authentication key not configured")
-            if key != self.app.config.temboard.key:
-                raise HTTPError(401, "Invalid key")
-            checked = True
-
-        # 2. Check session ID if available and not previously auth'd by key
-        if not checked and route['check_session']:
-            username = check_sessionid(self.headers, self.sessions)
-            checked = True
-
-        # 3. At this point, if not yet checked out and auth' by key is
-        # available then we need to raise an error because 'key' arg hasn't
-        # been passed and auth' by key is the only available method.
-        if not checked and route['check_key']:
-            raise HTTPError(401, "Missing key")
+        if route['public']:
+            logger.debug('Allowing public route %s.', route['path'])
+        else:
+            username = self.authenticate()
 
         try:
             # Load POST content expecting it is in JSON format.
             if self.http_method == 'POST':
-                self.post_json = json.loads(post_raw.decode('utf-8'))
+                self.post_json = json.loads(self.body.decode('utf-8'))
         except Exception as e:
             logger.exception(str(e))
             logger.error('Invalid json format')
@@ -292,17 +264,37 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Handle the request
         func = getattr(sys.modules[route['module']], route['function'])
         self.log_data['handler'] = route['module'] + '.' + route['function']
-        if route['module'] == 'temboardagent.api':
-            # some core APIs need to deal with sessions
-            return (200, func(http_context, self.app, self.sessions))
-        else:
-            # plugin
-            return (200, func(http_context, self.app))
+        return 200, func(http_context, self.app)
+
+    def authenticate(self):
+        signature = self.headers['x-temboard-signature']
+        version, _, signature = signature.partition(':')
+        if 'v1' != version:
+            raise HTTPError(400, 'Unsupported signature format')
+
+        if not signature:
+            raise HTTPError(400, 'Malformed signature')
+
+        canonical_request = canonicalize_request(
+            self.http_method, self.path,
+            self.headers, self.body,
+        )
+
+        try:
+            verify_v1(
+                self.app.config.signing_key, signature, canonical_request)
+        except InvalidSignature:
+            raise HTTPError(403, 'Invalid signature')
+
+        user = self.headers['x-temboard-user']
+        if not user:
+            raise HTTPError(400, 'Missing username')
+
+        return user
 
 
 class HTTPDService(Service):
     def setup(self):
-        self.sessions = Sessions(size=100)
         try:
             self.httpd = ThreadedHTTPServer(
                 (self.app.config.temboard.address,
@@ -328,7 +320,6 @@ class HTTPDService(Service):
 
     def serve1(self):
         self.httpd.handle_request()
-        self.sessions.purge_expired(3600, logger, self.app.config)
 
     def handle_request(self, *args):
-        return RequestHandler(self.app, self.sessions, *args)
+        return RequestHandler(self.app, *args)

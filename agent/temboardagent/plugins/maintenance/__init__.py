@@ -12,7 +12,7 @@ routes = RouteSet(prefix=b'/maintenance')
 workers = taskmanager.WorkerSet()
 
 
-@routes.get(b'', check_key=True)
+@routes.get(b'')
 def get_instance(http_context, app):
     with app.postgres.connect() as conn:
         instance = next(functions.get_instance(conn))
@@ -41,7 +41,7 @@ T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 T_OPERATION_ID = b'(^[0-9a-f]{8}$)'
 
 
-@routes.get(b'/%s' % (T_DATABASE_NAME), check_key=True)
+@routes.get(b'/%s' % (T_DATABASE_NAME))
 def get_database(http_context, app):
     dbname = http_context['urlvars'][0]
     with functions.get_postgres(app.config, dbname).connect() as conn:
@@ -50,8 +50,7 @@ def get_database(http_context, app):
     return dict(database, **{'schemas': schemas})
 
 
-@routes.get(b'/%s/schema/%s' % (T_DATABASE_NAME, T_SCHEMA_NAME),
-            check_key=True)
+@routes.get(b'/%s/schema/%s' % (T_DATABASE_NAME, T_SCHEMA_NAME))
 def get_schema(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -64,8 +63,7 @@ def get_schema(http_context, app):
 
 
 @routes.get(b'/%s/schema/%s/table/%s' % (T_DATABASE_NAME, T_SCHEMA_NAME,
-                                         T_TABLE_NAME),
-            check_key=True)
+                                         T_TABLE_NAME))
 def get_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -112,7 +110,7 @@ def post_vacuum(app, post, dbname, schema=None, table=None):
                                          schema=schema, table=table)
 
 
-@routes.get(b'/%s/vacuum/scheduled' % (T_DATABASE_NAME), check_key=True)
+@routes.get(b'/%s/vacuum/scheduled' % (T_DATABASE_NAME))
 def scheduled_vacuum_database(http_context, app):
     dbname = http_context['urlvars'][0]
     return functions.list_scheduled_vacuum(app, dbname=dbname)
@@ -120,8 +118,7 @@ def scheduled_vacuum_database(http_context, app):
 
 @routes.get(b'/%s/schema/%s/table/%s/vacuum/scheduled' % (T_DATABASE_NAME,
                                                           T_SCHEMA_NAME,
-                                                          T_TABLE_NAME),
-            check_key=True)
+                                                          T_TABLE_NAME))
 def scheduled_vacuum_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -136,7 +133,7 @@ def delete_vacuum(http_context, app):
     return functions.cancel_scheduled_operation(vacuum_id, app)
 
 
-@routes.get(b'/vacuum/scheduled', check_key=True)
+@routes.get(b'/vacuum/scheduled')
 def scheduled_vacuum(http_context, app):
     return functions.list_scheduled_vacuum(app)
 
@@ -177,7 +174,7 @@ def post_analyze(app, post, dbname, schema=None, table=None):
                                           schema=schema, table=table)
 
 
-@routes.get(b'/%s/analyze/scheduled' % (T_DATABASE_NAME), check_key=True)
+@routes.get(b'/%s/analyze/scheduled' % (T_DATABASE_NAME))
 def scheduled_analyze_database(http_context, app):
     dbname = http_context['urlvars'][0]
     return functions.list_scheduled_analyze(app, dbname=dbname)
@@ -185,8 +182,7 @@ def scheduled_analyze_database(http_context, app):
 
 @routes.get(b'/%s/schema/%s/table/%s/analyze/scheduled' % (T_DATABASE_NAME,
                                                            T_SCHEMA_NAME,
-                                                           T_TABLE_NAME),
-            check_key=True)
+                                                           T_TABLE_NAME))
 def scheduled_analyze_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -201,7 +197,7 @@ def delete_analyze(http_context, app):
     return functions.cancel_scheduled_operation(analyze_id, app)
 
 
-@routes.get(b'/analyze/scheduled', check_key=True)
+@routes.get(b'/analyze/scheduled')
 def scheduled_analyze(http_context, app):
     return functions.list_scheduled_analyze(app)
 
@@ -254,15 +250,14 @@ def post_reindex(app, post, dbname, schema=None, table=None, index=None):
             conn, dbname, dt, app, schema=schema, table=table, index=index)
 
 
-@routes.get(b'/%s/reindex/scheduled' % (T_DATABASE_NAME), check_key=True)
+@routes.get(b'/%s/reindex/scheduled' % (T_DATABASE_NAME))
 def scheduled_reindex_database(http_context, app):
     dbname = http_context['urlvars'][0]
     return functions.list_scheduled_reindex(app, dbname=dbname)
 
 
 @routes.get(b'/%s/schema/%s/table/%s/reindex/scheduled' %
-            (T_DATABASE_NAME, T_SCHEMA_NAME, T_TABLE_NAME),
-            check_key=True)
+            (T_DATABASE_NAME, T_SCHEMA_NAME, T_TABLE_NAME))
 def scheduled_reindex_table(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -270,8 +265,7 @@ def scheduled_reindex_table(http_context, app):
 
 
 @routes.get(b'/%s/schema/%s/reindex/scheduled' % (T_DATABASE_NAME,
-                                                  T_SCHEMA_NAME),
-            check_key=True)
+                                                  T_SCHEMA_NAME))
 def scheduled_reindex_index(http_context, app):
     dbname = http_context['urlvars'][0]
     schema = http_context['urlvars'][1]
@@ -284,7 +278,7 @@ def delete_reindex(http_context, app):
     return functions.cancel_scheduled_operation(reindex_id, app)
 
 
-@routes.get(b'/reindex/scheduled', check_key=True)
+@routes.get(b'/reindex/scheduled')
 def scheduled_reindex(http_context, app):
     return functions.list_scheduled_reindex(app)
 

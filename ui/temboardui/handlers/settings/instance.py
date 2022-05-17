@@ -95,8 +95,6 @@ def validate_instance_data(data):
     if 'new_agent_port' not in data or data['new_agent_port'] == '':
         raise HTTPError(400, "Agent port is missing.")
     check_agent_port(data['new_agent_port'])
-    if 'agent_key' not in data:
-        raise HTTPError(400, "Agent key field is missing.")
     if 'groups' not in data:
         raise HTTPError(400, "Groups field is missing.")
     if data['groups'] is not None and type(data['groups']) != list:

@@ -253,7 +253,6 @@ chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
-install -b -o "$SYSUSER" -g "$SYSUSER" -m 0600 /dev/null "$ETCDIR/$name/users"
 
 mapfile sslfiles < <(set -eu; setup_ssl "$name")
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
