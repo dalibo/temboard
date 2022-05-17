@@ -12,11 +12,16 @@ License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
-Requires:      openssl
-Requires:      python3-setuptools
-Requires:      python3-psycopg2 >= 2.7
 BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
+Requires:      openssl
+%if 0%{?rhel} < 8
+Requires:      python36-cryptography
+%else
+Requires:      python3-cryptography
+%endif
+Requires:      python3-setuptools
+Requires:      python3-psycopg2 >= 2.7
 
 %description
 Administration & monitoring PostgreSQL agent.

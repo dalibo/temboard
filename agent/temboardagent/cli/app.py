@@ -194,6 +194,7 @@ class VersionAction(_VersionAction):
     temBoard agent %(temboard)s (%(temboardbin)s)
     System %(distname)s %(distversion)s
     Python %(python)s (%(pythonbin)s)
+    cryptography %(cryptography)s
     libpq %(libpq)s
     psycopg2 %(psycopg2)s
     """)
@@ -205,6 +206,7 @@ class VersionAction(_VersionAction):
     @classmethod
     def inspect_versions(cls):
         from psycopg2 import __version__ as psycopg2_version
+        from cryptography import __version__ as cryptography_version
 
         distinfos = read_distinfo()
 
@@ -217,6 +219,7 @@ class VersionAction(_VersionAction):
             distname=distinfos['NAME'],
             distversion=distinfos['VERSION'],
             libpq=format_pq_version(read_libpq_version()),
+            cryptography=cryptography_version,
         )
 
 
@@ -236,6 +239,9 @@ def list_options_specs():
         section, 'ssl_key_file',
         default=OptionSpec.REQUIRED, validator=v.file_)
     yield OptionSpec(section, 'ssl_ca_cert_file', validator=v.file_)
+    yield OptionSpec(
+        section, 'signing_public_key', default='signing-public.pem',
+        validator=v.path)
     yield OptionSpec(section, 'key')
     yield OptionSpec(
         section, 'users', default='users', validator=v.file_,

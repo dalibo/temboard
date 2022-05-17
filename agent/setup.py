@@ -61,4 +61,7 @@ setup(**dict(
     },
     packages=find_packages(),
     long_description=open('README.rst').read(),
+    install_requires=[
+        'cryptography',
+    ]
 ))

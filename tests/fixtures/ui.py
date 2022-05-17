@@ -215,12 +215,14 @@ def browser(browser_session, request):
 
 @pytest.fixture(scope='session')
 def registered_agent(
-        admin_session, agent, agent_conf, browser_session, pg_version):
+        admin_session, agent, agent_conf, agent_env,
+        browser_session, pg_version, sudo_pguser):
     """
     Ensure the temBoard agent and UI are running, and temBoard agent is
     registered in UI.
     """
 
+    sudo_pguser("temboard-agent", "fetch-key", _env=agent_env)
     browser = browser_session
     browser.select("a[href='/settings/instances']").click()
 

@@ -39,8 +39,6 @@ export PGUSER=${PGUSER-postgres}
 PGPASSWORD=${PGPASSWORD-}
 export PGDATABASE=${PGDATABASE-postgres}
 
-TEMBOARD_UI_URL=${TEMBOARD_UI_URL-}
-
 
 echo "Generating temboard-agent.conf" >&2
 
@@ -119,7 +117,7 @@ register() {
 		${TEMBOARD_UI_URL%/}
 }
 
-if [ -z "${command##temboard-agent*}" -a -n "${TEMBOARD_UI_USER}" ] ; then
+if [ -z "${command##temboard-agent*}" ] && [ -n "${TEMBOARD_UI_USER}" ] ; then
     register &
 fi
 
