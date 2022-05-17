@@ -318,13 +318,17 @@ class InstanceHelper(object):
     def redirect(self, path):
         raise Redirect(location=self.format_url(path))
 
-    def request_agent(self, path, method='GET', query=None, body=None):
-        client = TemboardAgentClient.factory(
+    def client(self):
+        return TemboardAgentClient.factory(
             self.request.config,
             self.instance.agent_address,
             self.instance.agent_port,
             self.instance.agent_key,
+            self.request.current_user.role_name,
         )
+
+    def request_agent(self, path, method='GET', query=None, body=None):
+        client = self.client()
 
         pathinfo = path
         if query:

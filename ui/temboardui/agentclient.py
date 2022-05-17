@@ -11,18 +11,22 @@ logger = logging.getLogger(__name__)
 
 class TemboardAgentClient(TemboardClient):
     @classmethod
-    def factory(cls, config, host, port, key=None):
+    def factory(cls, config, host, port, key=None, username='temboard'):
         return cls(
             config.signing_key,
             host, port,
             ca_cert_file=config.temboard.ssl_ca_cert_file,
             key=key,
+            username=username,
         )
 
-    def __init__(self, signing_key, host, port, ca_cert_file=None, key=None):
+    def __init__(
+            self, signing_key, host, port, ca_cert_file=None, key=None,
+            username='temboard'):
         super(TemboardAgentClient, self).__init__(host, port, ca_cert_file)
         self.key = key  # Authentication key
         self.signing_key = signing_key
+        self.username = username
 
     def request(self, method, path, headers=None, body=None):
         hostport = '%s:%s' % (self.host, self.port)
@@ -31,7 +35,7 @@ class TemboardAgentClient(TemboardClient):
         headers.setdefault('Host', hostport)
         headers.setdefault('X-TemBoard-Date', format_date())
         headers.setdefault('X-TemBoard-Request-Id', str(uuid4()))
-        headers.setdefault('X-TemBoard-User', 'temboard')
+        headers.setdefault('X-TemBoard-User', self.username)
 
         if self.key:
             headers['X-TemBoard-Agent-Key'] = self.key

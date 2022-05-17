@@ -191,7 +191,9 @@ def discover(request, address, port):
     client = TemboardAgentClient.factory(
         request.config,
         address, port,
-        key=request.headers['X-TemBoard-Agent-Key'])
+        key=request.headers['X-TemBoard-Agent-Key'],
+        username=request.current_user.role_name,
+    )
     response = client.get('/discover')
     return response.json()
 
