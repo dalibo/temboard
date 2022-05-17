@@ -10,6 +10,7 @@ def main():
     __import__(__package__ + '.cli.routes')
     __import__(__package__ + '.cli.runtask')
     __import__(__package__ + '.cli.serve')
+    __import__(__package__ + '.cli.web')
 
     return app()
 

@@ -10,8 +10,8 @@ script to proceed.
 - Move `temboard-migratedb` as `temboard migratedb` subcommand.
 - Move `temboard-agent-register` as `temboard-agent register` subcommand.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
-  runtask`, `temboard-agent routes`, `temboard-agent runtask` and
-  `temboard-agent web` for debugging.
+  runtask`, `temboard web`, `temboard-agent routes`, `temboard-agent runtask`
+  and `temboard-agent web` for debugging.
 
 
 ## [7.11] - Unreleased

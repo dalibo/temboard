@@ -237,6 +237,9 @@ class TornadoService(Service):
             sys.exit(3)
 
     def autoreload_hook(self):
+        if not self.services:
+            return
+
         self.services.stop()
         try:
             self.services.check()
