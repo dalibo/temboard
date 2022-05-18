@@ -22,6 +22,15 @@ def test_migratedb_no_database():
         temboard('migratedb', 'check')
 
 
+# Next tests of this module has auto_configure.sh executed.
+
+
+def test_routes(ui_auto_configure):
+    assert '/login' in temboard('routes')
+
+    assert '/statements' in temboard('routes', '--sort')
+
+
 def test_auto_configure(ui_auto_configure):
     temboard('migratedb', 'check')
 

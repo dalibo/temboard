@@ -11,7 +11,11 @@ if PY2:
     import ConfigParser as configparser
     from UserDict import IterableUserDict
     from Queue import Empty
+    from urlparse import urlparse
+    from urllib2 import HTTPError
 else:
     import configparser
     from collections import UserDict as IterableUserDict
     from queue import Empty
+    from urllib.parse import urlparse
+    from urllib.error import HTTPError

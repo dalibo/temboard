@@ -16,6 +16,7 @@ from distutils.util import strtobool
 from logging.handlers import SysLogHandler
 
 from .log import HANDLERS as LOG_METHODS
+from .pycompat import urlparse
 
 
 _address_re = re.compile(
@@ -136,3 +137,12 @@ def nday(raw):
         raise ValueError('Number of day not valid')
 
     return nday
+
+
+def url(raw):
+    url = urlparse(raw)
+    if not url.scheme.startswith('http'):
+        raise ValueError("HTTP URL required")
+    if not url.netloc:
+        raise ValueError("Missing host and port")
+    return raw
