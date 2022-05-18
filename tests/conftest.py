@@ -31,7 +31,7 @@ from selenium.webdriver.firefox.remote_connection import (
     FirefoxRemoteConnection)
 from sh import (
     ErrorReturnCode, TimeoutException,
-    chown, hostname, locale, temboard, temboard_agent,
+    chown, env as env_cmd, hostname, locale, temboard, temboard_agent,
     # Use bare sudo instead of contrib to ensure non interactive sudo.
     sudo,
 )
@@ -179,8 +179,8 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
     The agent is a subprocess of pytest.
     """
 
-    with sudo_pguser():
-        proc = temboard_agent(_bg=True, _env=agent_env)
+    proc = sudo_pguser("temboard-agent", _bg=True, _env=agent_env)
+    assert proc.is_alive()
 
     client = httpx.Client(
         base_url=f"https://localhost:{agent_env['TEMBOARD_PORT']}",
@@ -369,9 +369,6 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     Returns pgdata directory object.
     """
 
-    # Import initdb locally to use PATH configured by pgbin fixture.
-    from sh import initdb, pg_ctl, psql
-
     # workdir fixture warranties an empty directory.
     pgdata = workdir / 'var/pgdata'
     logger.info("Creating %s.", pgdata)
@@ -387,8 +384,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     logger.info("Initializing database at %s.", pgdata)
     pwfile = workdir / 'pwfile'
     pwfile.write_text(agent_env['PGPASSWORD'])
-    with sudo_pguser():
-        initdb(
+    sudo_pguser.initdb(
             locale=locale_,
             username=agent_env['PGUSER'],
             auth_local="md5",
@@ -420,15 +416,13 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     """))
 
     logger.info("Starting instance at %s.", pgdata)
-    with sudo_pguser():
-        pg_ctl(f"--pgdata={pgdata}", "start")
-    psql(c='SELECT version();', _env=agent_env)  # pentest
+    sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "start")
+    sudo_pguser.psql(c='SELECT version();', _env=agent_env)  # pentest
 
     yield pgdata
 
     logger.info("Stopping instance at %s.", pgdata)
-    with sudo_pguser():
-        pg_ctl(f"--pgdata={pgdata}", "--mode=immediate", "stop")
+    sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "--mode=immediate", "stop")
     rmtree(pgdata)
 
 
@@ -582,19 +576,20 @@ def stdio_writer_callback(fo, data):
 
 
 @pytest.fixture(scope='session')
-def sudo_pguser(pguser):
-    """Return amoffat/sh context manager to eventually run commands as another
-    user.
-
-    """
+def sudo_pguser(pguser, agent_env):
+    """Return amoffat/sh command to eventually run commands as another user."""
     if pguser == getuser():
-        return nullcontext
+        # Use /bin/env as a noop.
+        cmd = env_cmd
     else:
-        return sudo.bake(
+        cmd = sudo.bake(
             non_interactive=True, set_home=True, preserve_env=True,
             user=pguser,
-            _with=True, _in=None,
+            _in=None,
         )
+        cmd = cmd.bake("env")
+
+    return cmd.bake(f"PATH={os.environ['PATH']}", _env=agent_env)
 
 
 @pytest.fixture(scope='session')
@@ -607,8 +602,7 @@ def ui(ui_auto_configure, ui_env, ui_sudo, ui_url) -> httpx.Client:
     """
 
     logger.info("Starting temBoard UI.")
-    with ui_sudo():
-        proc = temboard(config=ui_env['TEMBOARD_CONFIGFILE'], _bg=True)
+    proc = ui_sudo.temboard(config=ui_env['TEMBOARD_CONFIGFILE'], _bg=True)
 
     client = httpx.Client(base_url=ui_url, verify=False)
 
@@ -704,16 +698,14 @@ def ui_sharedir():
 
 @pytest.fixture(scope='session')
 def ui_sudo(ui_sysuser):
-    """
-    Returns amoffat/sh context manager to eventually sudo to UI Unix user.
-    """
+    """Returns amoffat/sh command to eventually sudo to UI Unix user."""
     if ui_sysuser == getuser():
-        return nullcontext
+        return env_cmd
     else:
         return sudo.bake(
             non_interactive=True, set_home=True, preserve_env=True,
             user=ui_sysuser,
-            _with=True, _in=None,
+            _in=None,
         )
 
 
