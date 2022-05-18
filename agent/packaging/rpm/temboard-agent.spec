@@ -52,8 +52,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 %{__install} -d %{buildroot}%{_unitdir}
 %{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 
-# log directory
-%{__install} -d %{buildroot}/var/log/temboard-agent
 # work directory
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
 # pidfile directory
@@ -83,7 +81,6 @@ fi
 
 %{_unitdir}/temboard-agent*.service
 
-%attr(-,postgres,postgres) /var/log/temboard-agent
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 

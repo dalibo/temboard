@@ -92,7 +92,6 @@ generate_configuration() {
 	local sslkey=$1; shift
 	local key=$1; shift
 	local instance=$1; shift
-	local logfile=$1; shift
 
 	local pg_ctl
 	local port
@@ -114,10 +113,6 @@ generate_configuration() {
 	ssl_cert_file = ${sslcert}
 	ssl_key_file = ${sslkey}
 	key = ${key}
-
-	[logging]
-	method = file
-	destination = ${logfile}
 
 	[postgresql]
 	host = ${PGHOST}
@@ -253,20 +248,15 @@ chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
 install -b -o "$SYSUSER" -g "$SYSUSER" -m 0600 /dev/null "$ETCDIR/$name/users"
-if ! [ -f /etc/logrotate.d/temboard-agent ] && [ -w /etc/logrotate.d ]; then
-	install -d -m 0755 /etc/logrotate.d
-	install -m 644 temboard-agent.logrotate /etc/logrotate.d/temboard-agent
-fi
 
 mapfile sslfiles < <(set -eu; setup_ssl "$name")
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
-logfile=${LOGDIR}/${name//\//-}.log
 
 # Inject autoconfiguration in dedicated file.
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
 # shellcheck disable=SC2154
-generate_configuration "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" "$logfile" | tee "$conf"
+generate_configuration "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" | tee "$conf"
 chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
