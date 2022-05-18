@@ -91,65 +91,6 @@ class TestActivity:
         global XSESSION
         XSESSION = self._temboard_login()
 
-    def test_01_activity_root(self):
-        """
-        [activity] 01: GET /activity : Check HTTP code (200) and the whole data structure
-        """  # noqa
-
-        # Start a long query in a dedicated process.
-        p = Process(target=pg_sleep, args=(1,))
-        p.start()
-
-        status = 0
-        try:
-            (status, res) = temboard_request(
-                ENV['agent']['ssl_cert_file'],
-                method='GET',
-                url='https://%s:%s/activity'
-                % (ENV['agent']['host'], ENV['agent']['port']),
-                headers={
-                    "Content-type": "application/json",
-                    "X-Session": XSESSION
-                }
-            )
-        except HTTPError as e:
-            status = e.code
-        dict_data = json.loads(res)
-
-        # Join the process
-        p.join()
-
-        assert status == 200
-        assert 'rows' in dict_data
-        assert type(dict_data['rows']) == list
-        assert type(dict_data['rows'][0]) == dict
-        assert 'pid' in dict_data['rows'][0]
-        assert 'database' in dict_data['rows'][0]
-        assert 'user' in dict_data['rows'][0]
-        assert 'client' in dict_data['rows'][0]
-        assert 'cpu' in dict_data['rows'][0]
-        assert 'memory' in dict_data['rows'][0]
-        assert 'read_s' in dict_data['rows'][0]
-        assert 'write_s' in dict_data['rows'][0]
-        assert 'iow' in dict_data['rows'][0]
-        assert 'wait' in dict_data['rows'][0]
-        assert 'duration' in dict_data['rows'][0]
-        assert 'state' in dict_data['rows'][0]
-        assert 'query' in dict_data['rows'][0]
-        assert type(dict_data['rows'][0]['pid']) == int
-        assert type(dict_data['rows'][0]['database']) == str
-        assert type(dict_data['rows'][0]['user']) == str
-        # can be float or 'N/A'
-        assert type(dict_data['rows'][0]['cpu']) in (float, str)
-        assert type(dict_data['rows'][0]['memory']) == float
-        assert type(dict_data['rows'][0]['read_s']) == str
-        assert type(dict_data['rows'][0]['write_s']) == str
-        assert type(dict_data['rows'][0]['iow']) == str
-        assert type(dict_data['rows'][0]['wait']) == str
-        assert type(dict_data['rows'][0]['duration']) in (float, int)
-        assert type(dict_data['rows'][0]['state']) in (str, type(None))
-        assert type(dict_data['rows'][0]['query']) in (str, type(None))
-
     def test_02_activity_kill(self):
         """
         [activity] 02: POST /activity/kill : Test backend termination
