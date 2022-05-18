@@ -11,9 +11,6 @@ Group:         Applications/Databases
 License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
-Source1:       temboard-agent.init
-Source2:       temboard-agent.service
-Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 Requires:      openssl
 Requires:      python3-setuptools
@@ -45,15 +42,11 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{_sysconfdir}/temboard-agent
-%{__install} -m 600 %{SOURCE3} %{buildroot}/%{_sysconfdir}/temboard-agent/temboard-agent.conf
 
 # init script
 
 %{__install} -d %{buildroot}%{_unitdir}
-%{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 
-# log directory
-%{__install} -d %{buildroot}/var/log/temboard-agent
 # work directory
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
 # pidfile directory
@@ -61,11 +54,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 %{__install} -m 600 /dev/null %{buildroot}/%{_sysconfdir}/temboard-agent/users
 
 %post
-# auto-signed SSL cert. building
-openssl req -new -x509 -days 365 -nodes -out /etc/pki/tls/certs/temboard-agent.pem -keyout /etc/pki/tls/private/temboard-agent.key -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " >> /dev/null 2>&1
-chmod 644 /etc/pki/tls/private/temboard-agent.key
-
-
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
     /usr/share/temboard-agent/restart-all.sh
 elif systemctl is-system-running &>/dev/null ; then
@@ -81,16 +69,15 @@ fi
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
 
-%{_unitdir}/temboard-agent*.service
+%{_unitdir}/temboard-agent@.service
 
-%attr(-,postgres,postgres) /var/log/temboard-agent
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
 if systemctl is-system-running &>/dev/null ; then
     systemctl stop temboard-agent*
-    systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
+    systemctl disable $(systemctl --plain list-units temboard-agent@* | grep -Po temboard-agent.*\\.service)
     systemctl reset-failed temboard-agent*
 fi
 

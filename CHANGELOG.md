@@ -12,6 +12,13 @@ script to proceed.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
   runtask`, `temboard web`, `temboard-agent routes`, `temboard-agent runtask`
   and `temboard-agent web` for debugging.
+- temBoard agent auto_configure.sh does not configure file logging anymore.
+  temBoard agent package does not ship logrotate file anymore. temBoard agent
+  can still log to file if you configure it to do so.
+- temBoard agent packages does not ship mono-installation service file. Use
+  `auto_configure.sh` and `temboard-agent@.service` instead.
+- temBoard agent RPM packages does not ship `temboard-agent.conf` anymore. Use
+  `auto_configure.sh` instead.
 
 
 ## [7.11] - Unreleased
