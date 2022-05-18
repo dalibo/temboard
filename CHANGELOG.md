@@ -17,6 +17,8 @@ script to proceed.
   can still log to file if you configure it to do so.
 - temBoard agent packages does not ship mono-installation service file. Use
   `auto_configure.sh` and `temboard-agent@.service` instead.
+- temBoard agent RPM packages does not ship `temboard-agent.conf` anymore. Use
+  `auto_configure.sh` instead.
 
 
 ## [7.11] - Unreleased

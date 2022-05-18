@@ -26,7 +26,6 @@ cp -vf packaging/rpm/temboard-agent.spec "$topdir/SPECS/"
 cp -vf \
 	"dist/$tarball" \
 	packaging/rpm/temboard-agent.init \
-	packaging/rpm/temboard-agent.rpm.conf \
 	"$topdir/SOURCES/"
 # rpmbuild requires files to be owned by running uid
 chown -R testuser "$topdir"
