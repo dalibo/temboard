@@ -11,7 +11,6 @@ Group:         Applications/Databases
 License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
-Source1:       temboard-agent.init
 BuildArch:     noarch
 Requires:      openssl
 Requires:      python3-setuptools
