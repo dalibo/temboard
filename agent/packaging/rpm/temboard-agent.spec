@@ -12,7 +12,6 @@ License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 Source1:       temboard-agent.init
-Source2:       temboard-agent.service
 Source3:       temboard-agent.rpm.conf
 BuildArch:     noarch
 Requires:      openssl
@@ -50,7 +49,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 # init script
 
 %{__install} -d %{buildroot}%{_unitdir}
-%{__install} -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/temboard-agent.service
 
 # work directory
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
@@ -79,7 +77,7 @@ fi
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
 
-%{_unitdir}/temboard-agent*.service
+%{_unitdir}/temboard-agent@.service
 
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 %config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
@@ -87,7 +85,7 @@ fi
 %preun
 if systemctl is-system-running &>/dev/null ; then
     systemctl stop temboard-agent*
-    systemctl disable $(systemctl --plain list-units temboard-agent* | grep -Po temboard-agent.*\\.service)
+    systemctl disable $(systemctl --plain list-units temboard-agent@* | grep -Po temboard-agent.*\\.service)
     systemctl reset-failed temboard-agent*
 fi
 

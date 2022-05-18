@@ -15,6 +15,8 @@ script to proceed.
 - temBoard agent auto_configure.sh does not configure file logging anymore.
   temBoard agent package does not ship logrotate file anymore. temBoard agent
   can still log to file if you configure it to do so.
+- temBoard agent packages does not ship mono-installation service file. Use
+  `auto_configure.sh` and `temboard-agent@.service` instead.
 
 
 ## [7.11] - Unreleased
