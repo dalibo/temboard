@@ -205,7 +205,7 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
 
 
 @pytest.fixture(scope='session')
-def agent_conf(agent, agent_env) -> ConfigParser:
+def agent_conf(agent_auto_configure, agent_env) -> ConfigParser:
     """
     Read configure temBoard agent configuration files as a ConfigParser object.
     """
