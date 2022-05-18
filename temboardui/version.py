@@ -2,7 +2,7 @@ import sys
 from platform import python_version
 
 
-__version__ = "7.11rc1"
+__version__ = "7.11"
 
 
 VERSION_FMT = """\
