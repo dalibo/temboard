@@ -331,7 +331,7 @@ def fqdn():
 
 def httpx_retry():
     return Retrying(
-        retry=retry_if_exception_type(httpx.NetworkError),
+        retry=retry_if_exception_type((httpx.NetworkError, OSError)),
         stop=stop_after_delay(10),
         wait=wait_fixed(.1),
     )
