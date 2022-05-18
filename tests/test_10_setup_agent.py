@@ -12,7 +12,7 @@ def test_help():
 
 
 def test_route(agent_auto_configure, sudo_pguser, agent_env):
-    with sudo_pguser:
+    with sudo_pguser():
         assert '/discover' in temboard_agent('routes', _env=agent_env)
 
 
