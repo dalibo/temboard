@@ -40,9 +40,6 @@ PGPASSWORD=${PGPASSWORD-}
 export PGDATABASE=${PGDATABASE-postgres}
 
 TEMBOARD_UI_URL=${TEMBOARD_UI_URL-}
-export TEMBOARD_UI_USER=${TEMBOARD_UI_USER-admin}
-export TEMBOARD_UI_PASSWORD=${TEMBOARD_UI_PASSWORD-admin}
-
 
 
 echo "Generating temboard-agent.conf" >&2

@@ -387,12 +387,16 @@ def add_json_middleware(func):
     @functools.wraps(func)
     def json_middleware(request, *args):
         if 'POST' == request.method:
-            try:
-                request.json = json_decode(request.body)
-            except Exception as e:
-                raise HTTPError(400, e.message)
+            if request.body:
+                try:
+                    request.json = json_decode(request.body)
+                except Exception as e:
+                    raise HTTPError(400, str(e))
+            else:
+                logger.debug("Empty body for POST request.")
+                request.json = None
         else:
-            # Set empty body, make_error catch this to format error as JSON.
+            # Set empty body.
             request.json = None
 
         return func(request, *args)
@@ -616,7 +620,7 @@ def make_error(request, code, message):
     template = 'unauthorized.html' if 403 == code else 'error.html'
     response = render_template(
         template,
-        nav=True, role=request.current_user,
+        nav=True, role=getattr(request, 'current_user', 'anonymous'),
         **data
     )
     response.status_code = code
