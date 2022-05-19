@@ -28,6 +28,7 @@ import pytest
 import sh
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import (
     Options as FirefoxOptions)
 from selenium.webdriver.firefox.remote_connection import (
@@ -66,6 +67,13 @@ class Browser:
 
     def get_full_page_screenshot_as_png(self):
         return self.select("body").screenshot_as_png
+
+    def hover(self, selector):
+        (
+            ActionChains(self.webdriver)
+            .move_to_element(self.select(selector))
+            .perform()
+        )
 
 
 class PostgreSQLVersions(dict):

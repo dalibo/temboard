@@ -32,7 +32,8 @@
           <div class="col-6 small text-center">
             <div class="chart-title">
               CPU &times; {{ dashboard['n_cpu'] }}
-              <i class="fa fa-info-circle text-muted" data-toggle="tooltip"
+              <i id="cpu-info"
+                 class="fa fa-info-circle text-muted" data-toggle="tooltip"
                  title="{% for model, count in dashboard['cpu_models'].items() %} {{ count }} &times; {{ model }}{% end %}">
               </i>
             </div>
