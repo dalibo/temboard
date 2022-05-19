@@ -258,6 +258,19 @@ def agent_env(env, fqdn, workdir):
 
 
 @pytest.fixture(scope='session')
+def agent_login(alice, browser, registered_agent, ui_url):
+    """Login with Alice to agent thru UI."""
+    browser.get(ui_url)
+    dashboard_url = browser.select("a.instance-link").get_attribute('href')
+    login_url = dashboard_url.replace('/dashboard', '/login')
+    browser.get(login_url)
+    browser.select("#inputUsername").send_keys("alice")
+    browser.select("#inputPassword").send_keys("S3cret_alice")
+    browser.select("form[action=login] button[type=submit]").click()
+    browser.select("a.instance-link")  # Wait for home to load.
+
+
+@pytest.fixture(scope='session')
 def agent_sharedir():
     """
     Search for agent share/ directory.
