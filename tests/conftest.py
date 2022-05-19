@@ -14,6 +14,8 @@ import subprocess
 import sys
 from configparser import ConfigParser
 from contextlib import contextmanager
+from datetime import datetime
+from errno import ENOTEMPTY
 from functools import partial
 from getpass import getuser
 from glob import iglob
@@ -49,6 +51,7 @@ class Browser:
     # Helper for selenium API.
     def __init__(self, webdriver):
         self.webdriver = webdriver
+        self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
     def select(self, selector):
         return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
@@ -134,9 +137,10 @@ def activate_virtualenv():
 
 
 @pytest.fixture(scope='session')
-def admin_session(browser, ui, ui_url):
+def admin_session(browser_session, ui, ui_url):
     """Ensure temBoard UI is opened in browser and admin is logged in."""
 
+    browser = browser_session
     browser.get(ui_url + '/login')
     browser.select("#inputUsername").send_keys("admin")
     browser.select("#inputPassword").send_keys("admin")
@@ -258,8 +262,9 @@ def agent_env(env, fqdn, workdir):
 
 
 @pytest.fixture(scope='session')
-def agent_login(alice, browser, registered_agent, ui_url):
+def agent_login(alice, browser_session, registered_agent, ui_url):
     """Login with Alice to agent thru UI."""
+    browser = browser_session
     browser.get(ui_url)
     dashboard_url = browser.select("a.instance-link").get_attribute('href')
     login_url = dashboard_url.replace('/dashboard', '/login')
@@ -292,7 +297,7 @@ def agent_sharedir():
 
 
 @pytest.fixture(scope='session')
-def browser(request, ui, ui_url):
+def browser_session(request, ui, ui_url):
     """
     Open session dedicated Firefox with temBoard UI opened.
     """
@@ -311,15 +316,40 @@ def browser(request, ui, ui_url):
     driver.implicitly_wait(3)
 
     # Open UI and ensure login prompt is shown
-    driver.get(ui_url + '/')
     browser = Browser(driver)
+
+    browser.screenshots_dir = Path('tests/screenshots')
+    browser.screenshots_dir.mkdir(exist_ok=True)
+
+    browser.get(ui_url + '/')
     browser.select("#inputUsername")
 
+    yield browser
+
+    logger.info("Closing browser.")
+    driver.quit()
+
     try:
-        yield browser
-    finally:
-        logger.info("Closing browser.")
-        driver.quit()
+        browser.screenshots_dir.rmdir()
+    except OSError as e:
+        if ENOTEMPTY != e.errno:
+            raise
+
+
+@pytest.fixture
+def browser(browser_session, request):
+    """Handle browser per single test."""
+    yield browser_session
+
+    if request.node.rep_call.passed:
+        return
+
+    filename = f"{browser_session.screenshot_tag}_{request.node.nodeid}.png"
+    path = browser_session.screenshots_dir / filename
+    png = browser_session.get_screenshot_as_png()
+    with path.open('wb') as fo:
+        fo.write(png)
+    logger.info("Browser screenshot saved at %s.", path)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -531,13 +561,25 @@ def pytest_report_header(config):
     return [f"{k}: {v}" for k, v in versions.items()]
 
 
+# https://docs.pytest.org/en/7.0.x/example/simple.html#making-test-result-information-available-in-fixtures
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    # execute all other hooks to obtain the report object
+    outcome = yield
+    rep = outcome.get_result()
+
+    setattr(item, "rep_" + rep.when, rep)
+
+
 @pytest.fixture(scope='session')
-def registered_agent(admin_session, agent, agent_conf, browser, pg_version):
+def registered_agent(
+        admin_session, agent, agent_conf, browser_session, pg_version):
     """
     Ensure the temBoard agent and UI are running, and temBoard agent is
     registered in UI.
     """
 
+    browser = browser_session
     browser.select("a[href='/settings/instances']").click()
 
     browser.select("button#buttonLoadAddInstanceForm").click()

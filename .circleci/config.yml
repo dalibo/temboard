@@ -335,6 +335,8 @@ jobs:
     - run:
         name: Run pytest
         command: pytest --pg-version=<< parameters.pgversion >> -vvv tests/
+    - store_artifacts:
+        path: /workspace/tests/screenshots/
     - *pip-cache-save
 
 
