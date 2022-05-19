@@ -18,6 +18,7 @@ from functools import partial
 from getpass import getuser
 from glob import iglob
 from pathlib import Path
+from queue import Queue
 from textwrap import dedent
 
 import httpx
@@ -41,6 +42,7 @@ from tenacity import (
 
 
 logger = logging.getLogger(__name__)
+EOF = None  # For amoffat/sh stdin
 
 
 class Browser:
@@ -141,6 +143,18 @@ def admin_session(browser, ui, ui_url):
     browser.select("button[type=submit]").click()
 
     return browser
+
+
+@pytest.fixture(scope='session')
+def alice(agent_auto_configure, agent_env, sudo_pguser):
+    """Add user alice to agent."""
+    proc = sudo_pguser(
+        "temboard-agent-adduser",
+        _env=agent_env, _in=Queue(), _bg=True)
+    proc.process.stdin.put("alice\n")
+    proc.process.stdin.put("S3cret_alice\n")
+    proc.process.stdin.put("S3cret_alice\n")  # Confirmation
+    proc.wait()
 
 
 @pytest.fixture(scope='session')
