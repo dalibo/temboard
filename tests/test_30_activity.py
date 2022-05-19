@@ -2,7 +2,8 @@ import logging
 from queue import Queue
 
 import pytest
-from sh import SignalException
+from selenium.common.exceptions import NoSuchElementException
+from sh import ErrorReturnCode, SignalException
 from tenacity import (
     Retrying, retry_if_exception_type, wait_fixed, stop_after_delay,
 )
@@ -19,13 +20,14 @@ def retry_assert():
     )
 
 
-def test_running(browser, pg_sleep, registered_agent, ui_url):
-    browser.get(ui_url)
-    browser.select("a.instance-link").click()
-    browser.select("div.sidebar a.activity").click()
+def test_running(agent_login, browser, pg_sleep, ui_url):
+    browser.get(ui_url)  # Goto home
+    browser.select("a.instance-link").click()  # Click first instance
+    browser.select("div.sidebar a.activity").click()  # Click Activity
 
     # Pause auto-refresh
-    browser.select("td input[type=checkbox]").click()
+    browser.select("td input[type=checkbox]").click()  # Select first process
+    # Ensure auto_refresh button is shown
     auto_refresh_resume = browser.select("span#autoRefreshResume")
     assert 'd-none' not in auto_refresh_resume.get_attribute('class')
 
@@ -33,6 +35,19 @@ def test_running(browser, pg_sleep, registered_agent, ui_url):
 
     assert 'pg_sleep' in td.text
     assert 'test-activity' in td.text
+
+    browser.select("#killButton").click()  # Click read Terminate
+    browser.select("#submitKill").click()  # Confirmation dialog
+
+    # Ensure psql session is killed.
+    with pytest.raises(ErrorReturnCode) as ei:
+        pg_sleep.wait(timeout=1)
+
+    assert 2 == ei.value.exit_code
+
+    # Ensure processes vanished from view.
+    with pytest.raises(NoSuchElementException):
+        browser.select("td.query")
 
 
 def test_lock(browser, pg_lock, registered_agent, ui_url):
