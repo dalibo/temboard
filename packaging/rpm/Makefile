@@ -1,15 +1,15 @@
 DISTDIR=$(wildcard ../..)/dist
 YUM_LABS?=$(wildcard ../../../yum-labs)
 
-all:
+release:
 	@make -sC $(YUM_LABS) clean
-	$(MAKE) build-rhel8 build-rhel7
+	$(MAKE) release-rhel8 release-rhel7
 
 # Helper target to build and push altogether.
-rhel8 rhel7:
-	$(MAKE) build-$@
-	mkdir -p $(YUM_LABS)/rpms/$(shell echo '$*' | tr '[:lower:]' '[:upper:]')-x86_64
-	cp -fl $$(readlink -e $(DISTDIR)/temboard-last.rpm) $(YUM_LABS)/rpms/$(shell echo '$*' | tr '[:lower:]' '[:upper:]')-x86_64/
+release-rhel%:
+	$(MAKE) build-rhel$*
+	mkdir -p $(YUM_LABS)/rpms/RHEL$*-x86_64
+	cp -fl $$(readlink -e $(DISTDIR)/temboard-last.rpm) $(YUM_LABS)/rpms/RHEL$*-x86_64/
 	$(MAKE) push
 
 # Build RPM for either RHEL 7 or 8
