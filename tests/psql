@@ -1,0 +1,13 @@
+#!/bin/bash -eu
+#
+# Helper to enter monitored psql.
+#
+# Keep it sync with conftest.py
+#
+
+export PGHOST=$PWD/tests/workdir/run/postgresql/
+export PGPASSWORD=S3cret_postgres
+export PGPORT=55432
+export PGUSER=postgres
+
+exec "psql" "$@"
