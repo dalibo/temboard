@@ -133,38 +133,3 @@ class TestAPI:
         except HTTPError as e:
             status = e.code
         assert status == 406
-
-    def test_discover(self):
-        status = 0
-        (status, res) = temboard_request(
-            ENV["agent"]["ssl_cert_file"],
-            method="GET",
-            url="https://%s:%s/discover" % (
-                ENV["agent"]["host"], ENV["agent"]["port"]
-            ),
-        )
-        assert status == 200
-        data = json.loads(res)
-        assert set(data) == {
-            "cpu",
-            "hostname",
-            "memory_size",
-            "pg_block_size",
-            "pg_data",
-            "pg_port",
-            "pg_version",
-            "pg_version_summary",
-            "plugins",
-        }
-        assert data["hostname"] == "test.temboard.io"
-        assert data["pg_data"] == "/tmp/tests_temboard/pg/data"
-        assert data["pg_block_size"] == 8192
-        assert set(data["plugins"]) == {
-            "monitoring",
-            "dashboard",
-            "pgconf",
-            "administration",
-            "activity",
-            "maintenance",
-            "statements",
-        }
