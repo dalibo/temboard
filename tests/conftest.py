@@ -197,7 +197,7 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
     The agent is a subprocess of pytest.
     """
 
-    proc = sudo_pguser("temboard-agent", _bg=True, _env=agent_env)
+    proc = sudo_pguser("temboard-agent", _bg=True)
     assert proc.is_alive()
 
     client = httpx.Client(
