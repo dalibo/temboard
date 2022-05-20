@@ -56,8 +56,13 @@ class Browser:
     def select(self, selector):
         return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
 
-    def __getattr__(self, name, default=None):
-        return getattr(self.webdriver, name, default)
+    UNDEFINED = object()
+
+    def __getattr__(self, name, default=UNDEFINED):
+        value = getattr(self.webdriver, name, default)
+        if value is self.UNDEFINED:
+            raise AttributeError(name)
+        return value
 
     def get_full_page_screenshot_as_png(self):
         return self.select("body").screenshot_as_png
