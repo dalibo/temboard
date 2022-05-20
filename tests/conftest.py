@@ -382,7 +382,7 @@ def fqdn():
     """
     Determine host FQDN.
     """
-    fqdn = str(hostname('--fqdn'))
+    fqdn = str(hostname('--fqdn')).strip()
     return fqdn if '.' in fqdn else 'localhost.localdomain'
 
 
