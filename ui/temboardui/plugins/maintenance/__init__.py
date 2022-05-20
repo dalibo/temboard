@@ -48,7 +48,7 @@ def maintenance(request):
     return render_template(
         'index.html',
         nav=True,
-        agent_username=request.instnace.get_username(),
+        agent_username=request.instance.get_username(),
         instance=request.instance,
         plugin=PLUGIN_NAME,
         role=request.current_user,

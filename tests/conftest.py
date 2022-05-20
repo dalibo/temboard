@@ -28,6 +28,7 @@ import pytest
 import sh
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import (
     Options as FirefoxOptions)
 from selenium.webdriver.firefox.remote_connection import (
@@ -56,8 +57,23 @@ class Browser:
     def select(self, selector):
         return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
 
-    def __getattr__(self, name, default=None):
-        return getattr(self.webdriver, name, default)
+    UNDEFINED = object()
+
+    def __getattr__(self, name, default=UNDEFINED):
+        value = getattr(self.webdriver, name, default)
+        if value is self.UNDEFINED:
+            raise AttributeError(name)
+        return value
+
+    def get_full_page_screenshot_as_png(self):
+        return self.select("body").screenshot_as_png
+
+    def hover(self, selector):
+        (
+            ActionChains(self.webdriver)
+            .move_to_element(self.select(selector))
+            .perform()
+        )
 
 
 class PostgreSQLVersions(dict):
@@ -197,7 +213,7 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
     The agent is a subprocess of pytest.
     """
 
-    proc = sudo_pguser("temboard-agent", _bg=True, _env=agent_env)
+    proc = sudo_pguser("temboard-agent", _bg=True)
     assert proc.is_alive()
 
     client = httpx.Client(
@@ -257,6 +273,7 @@ def agent_env(env, fqdn, workdir):
             workdir / 'etc/temboard-agent/temboard-tests/temboard-agent.conf'
         ),
         TEMBOARD_HOSTNAME=fqdn,
+        TEMBOARD_LOGGING_LEVEL='DEBUG',
         TEMBOARD_PORT='52345',
     )
 
@@ -346,7 +363,7 @@ def browser(browser_session, request):
 
     filename = f"{browser_session.screenshot_tag}_{request.node.nodeid}.png"
     path = browser_session.screenshots_dir / filename
-    png = browser_session.get_screenshot_as_png()
+    png = browser_session.get_full_page_screenshot_as_png()
     with path.open('wb') as fo:
         fo.write(png)
     logger.info("Browser screenshot saved at %s.", path)
@@ -382,7 +399,7 @@ def fqdn():
     """
     Determine host FQDN.
     """
-    fqdn = str(hostname('--fqdn'))
+    fqdn = str(hostname('--fqdn')).strip()
     return fqdn if '.' in fqdn else 'localhost.localdomain'
 
 

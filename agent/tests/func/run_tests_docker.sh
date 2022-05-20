@@ -48,7 +48,7 @@ then
 		rpmdist=$(rpm --eval '%dist')
 		rpm=$(readlink -e dist/temboard-agent-*${rpmdist}*.noarch.rpm)
 		# Disable pgdg to use base pyscopg2 from EPEL.
-		yum -d1 "--disablerepo=pgdg*"  install -y "$rpm"
+		$(type -p retry) yum -d1 "--disablerepo=pgdg*"  install -y "$rpm"
 		rpm --query --queryformat= temboard-agent
 	elif type -p apt-get &>/dev/null ; then
 		codename="$(grep -Po 'VERSION_CODENAME=\K.+' /etc/os-release)"
