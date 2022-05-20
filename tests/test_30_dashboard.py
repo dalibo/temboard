@@ -8,7 +8,7 @@ from selenium.common.exceptions import (
 )
 
 
-def test_dashboard(agent_conf, browser, registered_agent, ui_url):
+def test_dashboard(browser, registered_agent, ui_url):
     browser.get(ui_url)  # Goto home
     browser.select("a.instance-link").click()  # Click first instance
 
