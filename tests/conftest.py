@@ -257,6 +257,7 @@ def agent_env(env, fqdn, workdir):
             workdir / 'etc/temboard-agent/temboard-tests/temboard-agent.conf'
         ),
         TEMBOARD_HOSTNAME=fqdn,
+        TEMBOARD_LOGGING_LEVEL='DEBUG',
         TEMBOARD_PORT='52345',
     )
 
