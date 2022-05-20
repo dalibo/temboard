@@ -56,6 +56,8 @@ def file_(raw):
 
 
 def fqdn(raw):
+    if '\n' in raw:
+        raise ValueError("New line in FQDN.")
     if '.' not in raw:
         raise ValueError("%s is not an FQDN" % raw)
     return raw
