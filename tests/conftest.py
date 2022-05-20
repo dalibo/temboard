@@ -59,6 +59,9 @@ class Browser:
     def __getattr__(self, name, default=None):
         return getattr(self.webdriver, name, default)
 
+    def get_full_page_screenshot_as_png(self):
+        return self.select("body").screenshot_as_png
+
 
 class PostgreSQLVersions(dict):
     # A mapping from major version -> bindir.
@@ -347,7 +350,7 @@ def browser(browser_session, request):
 
     filename = f"{browser_session.screenshot_tag}_{request.node.nodeid}.png"
     path = browser_session.screenshots_dir / filename
-    png = browser_session.get_screenshot_as_png()
+    png = browser_session.get_full_page_screenshot_as_png()
     with path.open('wb') as fo:
         fo.write(png)
     logger.info("Browser screenshot saved at %s.", path)
