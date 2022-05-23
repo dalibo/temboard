@@ -328,7 +328,7 @@ class InstanceHelper(object):
 
         pathinfo = path
         if query:
-            pathinfo += "&" + serialize_querystring(query)
+            pathinfo += "?" + serialize_querystring(query)
 
         headers = {}
         xsession = self.xsession

@@ -46,8 +46,13 @@ def test_running(agent_login, browser, pg_sleep, ui_url):
     assert 2 == ei.value.exit_code
 
     # Ensure processes vanished from view.
-    with pytest.raises(NoSuchElementException):
-        browser.select("td.query")
+    try:
+        query = browser.select("td.query").text
+    except NoSuchElementException:
+        pass
+    else:
+        # If a query is running, ensure it's not pg_sleep.
+        assert 'pg_sleep' not in query
 
 
 def test_lock(browser, pg_lock, registered_agent, ui_url):

@@ -71,17 +71,32 @@ def admin_session(browser_session, ui, ui_url):
 
 
 @pytest.fixture(scope='session')
-def agent_login(alice, browser_session, registered_agent, ui_url):
+def agent_login(alice, browser_session, ui_url):
     """Login with Alice to agent thru UI."""
     browser = browser_session
-    browser.get(ui_url)
-    dashboard_url = browser.select("a.instance-link").get_attribute('href')
+
+    browser.get(ui_url)  # Goto home
+    browser.select("a.instance-link").click()  # Click first instance
+
+    dashboard_url = browser.current_url
+    assert dashboard_url.endswith('/dashboard')
     login_url = dashboard_url.replace('/dashboard', '/login')
+
     browser.get(login_url)
     browser.select("#inputUsername").send_keys("alice")
     browser.select("#inputPassword").send_keys("S3cret_alice")
     browser.select("form[action=login] button[type=submit]").click()
     browser.select("a.instance-link")  # Wait for home to load.
+
+    browser.get(dashboard_url)  # Go back to dashboard.
+
+
+@pytest.fixture(scope='module')
+def browse_instance(browser_session, registered_agent, ui_url):
+    """Open first instance in temBoard UI home."""
+    browser = browser_session
+    browser.get(ui_url)  # Goto home
+    browser.select("a.instance-link").click()  # Click first instance
 
 
 @pytest.fixture(scope='session')
