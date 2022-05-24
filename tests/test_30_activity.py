@@ -1,5 +1,6 @@
 import logging
 from queue import Queue
+from time import sleep
 
 import pytest
 from selenium.common.exceptions import NoSuchElementException
@@ -46,8 +47,10 @@ def test_running(agent_login, browser, pg_sleep, ui_url):
     assert 2 == ei.value.exit_code
 
     # Ensure processes vanished from view.
+    sleep(.1)
     try:
-        query = browser.select("td.query").text
+        with browser(nowait=True):
+            query = browser.select("td.query").text
     except NoSuchElementException:
         pass
     else:

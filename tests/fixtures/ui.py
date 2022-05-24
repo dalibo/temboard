@@ -35,6 +35,17 @@ class Browser:
         self.webdriver = webdriver
         self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
+    def __call__(self, nowait=False):
+        if nowait:
+            self.webdriver.implicitly_wait(0)
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a, **kw):
+        self.webdriver.implicitly_wait(3)
+
     def select(self, selector):
         return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
 

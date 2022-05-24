@@ -30,7 +30,8 @@ def test_dashboard(browser, registered_agent, ui_url):
     browser.hover("body")
     sleep(.1)
     with pytest.raises(NoSuchElementException):
-        cpuinfo = browser.select(f"#{tooltip}").text
+        with browser(nowait=True):
+            browser.select(f"#{tooltip}")
 
     memory, percent = browser.select("#total-memory").text.split()
     assert '%' == percent
