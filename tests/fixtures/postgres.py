@@ -189,3 +189,12 @@ def pguser():
 def pg_version(request):
     """ Reads chosen PostgreSQL major version. """
     return request.config.getoption("--pg-version")
+
+
+@pytest.fixture(scope='module')
+def psql(postgres, sudo_pguser, agent_env):
+    """Returns a psql command line to monitored Postgres."""
+    return sudo_pguser.psql.bake(
+        _env=dict(agent_env, PGAPPNAME='pytest-psql'),
+        _bg_exc=False,
+    )

@@ -1,5 +1,11 @@
+from time import sleep
+
 import pytest
 from selenium.webdriver.support.select import Select
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    NoSuchElementException,
+)
 
 
 @pytest.fixture
@@ -20,3 +26,142 @@ def test_category_selector(browse_pgconf, browser):
     category_selector.select_by_visible_text('Error Handling')
     current_category = browser.select(".card-header").text
     assert 'Error Handling' == current_category
+
+
+def test_search(browse_pgconf, browser):
+    # Ensure only one category is shown.
+    cards = browser.select_all(".main .card")
+    assert 1 == len(cards)
+
+    browser.select("#inputSearchSettings").send_keys("archive")
+    browser.select("#buttonSearchSettings").click()
+
+    cards = browser.select_all(".main .card")
+    # Ensure several categeries matches. Number varies accross PostgreSQL
+    # version.
+    assert len(cards) > 1
+
+    badges = browser.select_all(".main .card td.badge-setting")
+    for badge in badges:
+        assert 'archive' in badge.text
+
+    browser.select("#buttonResetSearch").click()
+    assert not browser.select("#inputSearchSettings").get_attribute('value')
+
+
+def test_boolean(browse_pgconf, browser, psql):
+    param = "check_function_bodies"
+    browser.select("#inputSearchSettings").send_keys(param)
+    browser.select("#buttonSearchSettings").click()
+
+    input_ = browser.select(f"input[name={param}]")
+    assert 'on' == input_.get_attribute('value')
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert 'on' == out.strip()
+
+    with pytest.raises(NoSuchElementException):
+        with browser(nowait=True):
+            browser.select(f"#buttonResetDefault_{param}")
+
+    browser.select(".toggle-on").click()
+    sleep(.1)
+    input_ = browser.select(f"input[name={param}]")
+    assert 'off' == input_.get_attribute('value')
+
+    # Ensure On is not available.
+    with pytest.raises(ElementNotInteractableException):
+        browser.select(".toggle-on").click()
+
+    browser.select(".main form[role=form] button[type=submit]").click()
+
+    # Ensure Reset button appears
+    browser.select(f"#buttonResetDefault_{param}")
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert 'off' == out.strip()
+
+
+def test_integer(browse_pgconf, browser, psql):
+    param = 'autovacuum_vacuum_threshold'
+    browser.select("#inputSearchSettings").send_keys(param)
+    browser.select("#buttonSearchSettings").click()
+
+    input_ = browser.select(f"input[name={param}]")
+    assert "50" == input_.get_attribute('value')
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert '50' == out.strip()
+
+    with pytest.raises(NoSuchElementException):
+        with browser(nowait=True):
+            browser.select(f"#buttonResetDefault_{param}")
+
+    input_.send_keys(browser.Keys.BACKSPACE)
+    input_.send_keys(browser.Keys.BACKSPACE)
+    input_.send_keys("100")
+
+    browser.select(".main form[role=form] button[type=submit]").click()
+
+    # Ensure Reset button appears
+    browser.select(f"#buttonResetDefault_{param}")
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert '100' == out.strip()
+
+
+def test_bytes(browse_pgconf, browser, psql):
+    param = 'maintenance_work_mem'
+    browser.select("#inputSearchSettings").send_keys(param)
+    browser.select("#buttonSearchSettings").click()
+
+    input_ = browser.select(f"input[name={param}]")
+    assert "64MB" == input_.get_attribute('value')
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert '64MB' == out.strip()
+
+    with pytest.raises(NoSuchElementException):
+        with browser(nowait=True):
+            browser.select(f"#buttonResetDefault_{param}")
+
+    input_.send_keys(browser.Keys.BACKSPACE)  # 64M
+    input_.send_keys(browser.Keys.BACKSPACE)  # 64
+    input_.send_keys(browser.Keys.BACKSPACE)  # 6
+    input_.send_keys(browser.Keys.BACKSPACE)
+    input_.send_keys("128MB")
+
+    browser.select(".main form[role=form] button[type=submit]").click()
+
+    # Ensure Reset button appears
+    browser.select(f"#buttonResetDefault_{param}")
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert '128MB' == out.strip()
+
+
+def test_enum(browse_pgconf, browser, psql):
+    param = 'log_error_verbosity'
+    browser.select("#inputSearchSettings").send_keys(param)
+    browser.select("#buttonSearchSettings").click()
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    current_value = out.strip()
+    assert 'default' == current_value
+
+    enum_selector = Select(browser.select(f"select[name={param}]"))
+    selected = enum_selector.first_selected_option.get_attribute('value')
+    assert current_value == selected
+
+    with pytest.raises(NoSuchElementException):
+        with browser(nowait=True):
+            browser.select(f"#buttonResetDefault_{param}")
+
+    enum_selector.select_by_value('verbose')
+
+    browser.select(".main form[role=form] button[type=submit]").click()
+
+    out = psql("-Abt", c=f"SHOW {param};")
+    assert 'verbose' == out.strip()
+
+    browser.select(f"#buttonResetDefault_{param}")

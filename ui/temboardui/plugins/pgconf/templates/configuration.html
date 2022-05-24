@@ -98,7 +98,7 @@
         <input class="form-control" id="inputSearchSettings" name="filter" placeholder="Find in settings" value="{{query_filter if query_filter is not None else ''}}"/>
         <span class="input-group-append">
           {% if query_filter %}
-          <a class="btn btn-outline-secondary"
+          <a class="btn btn-outline-secondary" id="buttonResetSearch"
              href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration">
             <i class="fa fa-fw fa-times"></i>
           </a>
