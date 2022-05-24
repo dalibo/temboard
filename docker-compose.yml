@@ -42,7 +42,7 @@ services:
     ]
 
   agent0:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     ports: [2345:2345]
     volumes:
     - data0:/var/lib/postgresql/data
@@ -83,7 +83,7 @@ services:
     command: *postgres_command
 
   agent1:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     ports: [2346:2345]
     volumes:
     - data1:/var/lib/postgresql/data
