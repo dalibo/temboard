@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [7.11] - Unreleased
+## [7.11] - 2022-05-23
 
 - Fix heap bloat probe.
 - Fix statements not purged.
