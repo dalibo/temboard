@@ -11,6 +11,7 @@ import httpx
 import pytest
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import (
     Options as FirefoxOptions)
@@ -30,13 +31,29 @@ logger = logging.getLogger(__name__)
 
 
 class Browser:
+    Keys = Keys
+
     # Helper for selenium API.
     def __init__(self, webdriver):
         self.webdriver = webdriver
         self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
+    def __call__(self, nowait=False):
+        if nowait:
+            self.webdriver.implicitly_wait(0)
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a, **kw):
+        self.webdriver.implicitly_wait(3)
+
     def select(self, selector):
         return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
+
+    def select_all(self, selector):
+        return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
     UNDEFINED = object()
 
@@ -71,7 +88,7 @@ def admin_session(browser_session, ui, ui_url):
 
 
 @pytest.fixture(scope='session')
-def agent_login(alice, browser_session, ui_url):
+def agent_login(alice, browser_session, registered_agent, ui_url):
     """Login with Alice to agent thru UI."""
     browser = browser_session
 
