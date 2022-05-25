@@ -4,7 +4,6 @@ import pytest
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
-    NoSuchElementException,
 )
 
 
@@ -29,9 +28,7 @@ def test_dashboard(browser, registered_agent, ui_url):
     # Vanish tooltip
     browser.hover("body")
     sleep(.1)
-    with pytest.raises(NoSuchElementException):
-        with browser(nowait=True):
-            browser.select(f"#{tooltip}")
+    browser.absent(f"#{tooltip}")
 
     memory, percent = browser.select("#total-memory").text.split()
     assert '%' == percent
