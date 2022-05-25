@@ -78,6 +78,7 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
         base_url=f"https://localhost:{agent_env['TEMBOARD_PORT']}",
         verify=False,
     )
+    client.agent_command = proc
     for attempt in retry_http():
         with attempt:
             client.get('/')
