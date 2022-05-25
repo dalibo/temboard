@@ -20,13 +20,24 @@ from tenacity import (
 logger = logging.getLogger(__name__)
 
 
+def test_quick_alerting(browser, browse_alerting):
+    # Quick pentest of status page.
+    browser.select("#checks-container")
 
 
+def test_quick_monitoring(browser, browse_monitoring):
+    # Quick pentest of the monitoring page
+    browser.select("a[aria-controls=metrics]").click()
+    browser.select("#buttonPicker").click()
+
+
+@pytest.mark.slowmonitoring
 def test_wait_for_data(browser, browse_monitoring, ensure_monitoring_data):
     # Dumb test to show an explicit "wait_for_data" in pytest output.
     browser.select("#chartLoadavg")
 
 
+@pytest.mark.slowmonitoring
 def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
     browser.select("a[aria-controls=metrics]").click()
 
@@ -37,6 +48,7 @@ def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
     browser.absent("#chartCtxForks")  # Chart's vanished
 
 
+@pytest.mark.slowmonitoring
 def test_alerts(browser, browse_alerting, ensure_monitoring_data):
     checks = [
         'btree_bloat',

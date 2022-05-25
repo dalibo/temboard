@@ -1,0 +1,9 @@
+# Sources files requiring monitoring tests on CI
+.circleci/
+agent/agent/plugins/monitoring/
+tests/fixtures/
+tests/monitoring-files
+tests/test_40_monitoring.py
+ui/temboardui/plugins/monitoring/
+ui/temboardui/toolkit/taskmanager/
+setup.py
