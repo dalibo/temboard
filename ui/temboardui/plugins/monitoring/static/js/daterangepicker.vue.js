@@ -3,7 +3,7 @@
 (function() {
   var html = `
     <div v-cloak>
-      <button class="btn btn-secondary" v-on:click="showHidePicker()">
+      <button id="buttonPicker" class="btn btn-secondary" v-on:click="showHidePicker()">
         <i class="fa fa-clock-o"></i>
         <span v-cloak>{{ rangeString() }}</span>
       </button>
@@ -56,7 +56,7 @@
         </div>
       </div>
       <div class="btn-group">
-        <button class="btn btn-secondary" v-on:click="refresh()" :disabled="!isRefreshable">
+        <button id="buttonRefresh" class="btn btn-secondary" v-on:click="refresh()" :disabled="!isRefreshable">
           <i class="fa fa-refresh"></i>
         </button>
         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" :disabled="!isRefreshable">

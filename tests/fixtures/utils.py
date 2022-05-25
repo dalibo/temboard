@@ -4,6 +4,14 @@ from tenacity import (
 )
 
 
+def retry_assert():
+    return Retrying(
+        retry=retry_if_exception_type(AssertionError),
+        stop=stop_after_delay(10),
+        wait=wait_fixed(.1),
+    )
+
+
 def retry_http():
     return Retrying(
         retry=retry_if_exception_type((httpx.NetworkError, OSError)),

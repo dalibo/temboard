@@ -9,6 +9,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+from selenium.common import exceptions as selenium_exc
 from selenium.webdriver import Remote
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -17,6 +18,8 @@ from selenium.webdriver.firefox.options import (
     Options as FirefoxOptions)
 from selenium.webdriver.firefox.remote_connection import (
     FirefoxRemoteConnection)
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 from sh import (
     ErrorReturnCode, TimeoutException,
     env as env_cmd, hostname,
@@ -38,22 +41,8 @@ class Browser:
         self.webdriver = webdriver
         self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
-    def __call__(self, nowait=False):
-        if nowait:
-            self.webdriver.implicitly_wait(0)
-        return self
-
-    def __enter__(self):
-        return self
-
     def __exit__(self, *a, **kw):
         self.webdriver.implicitly_wait(3)
-
-    def select(self, selector):
-        return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
-
-    def select_all(self, selector):
-        return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
     UNDEFINED = object()
 
@@ -62,6 +51,30 @@ class Browser:
         if value is self.UNDEFINED:
             raise AttributeError(name)
         return value
+
+    def absent(self, selector, timeout=3):
+        # Waits until an element vanish.
+        return WebDriverWait(self.webdriver, timeout).until_not(
+            expected_conditions.presence_of_element_located(
+                (By.CSS_SELECTOR, selector)),
+            f"Element {selector} is still present.",
+        )
+
+    def hidden(self, selector, timeout=3):
+        # Waits until an element has d-none.
+        return WebDriverWait(self.webdriver, timeout).until(
+            text_to_be_present_in_element_attribute(
+                (By.CSS_SELECTOR, selector),
+                'class', 'd-none',
+            ),
+            f"Element {selector} does not have d-none.",
+        )
+
+    def select(self, selector):
+        return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
+
+    def select_all(self, selector):
+        return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
     def get_full_page_screenshot_as_png(self):
         return self.select("body").screenshot_as_png
@@ -72,6 +85,18 @@ class Browser:
             .move_to_element(self.select(selector))
             .perform()
         )
+
+
+def text_to_be_present_in_element_attribute(locator, attribute_, text_):
+    def _predicate(driver):
+        try:
+            element_text = driver.find_element(*locator).get_attribute(
+                attribute_)
+            return text_ in element_text
+        except selenium_exc.StaleElementReferenceException:
+            return False
+
+    return _predicate
 
 
 @pytest.fixture(scope='session')

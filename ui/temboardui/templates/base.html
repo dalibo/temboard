@@ -124,7 +124,7 @@
               {% if 'monitoring' in plugin_names %}
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-                   class="{{'active' if plugin == 'monitoring' else ''}} nav-link">
+                   class="{{'active' if plugin == 'monitoring' else ''}} monitoring nav-link">
                   <i class="fa fa-bar-chart-o fa-fw"></i>
                   <span>Monitoring</span>
                 </a>
@@ -133,7 +133,7 @@
               {% if 'monitoring' in plugin_names %}
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
-                   class="{{'active' if plugin == 'alerting' else ''}} nav-link">
+                   class="{{'active' if plugin == 'alerting' else ''}} alerting nav-link">
                   <i class="fa fa-heart fa-fw"></i>
                   <span>Status</span>
                 </a>

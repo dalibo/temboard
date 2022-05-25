@@ -4,7 +4,6 @@ import pytest
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import (
     ElementNotInteractableException,
-    NoSuchElementException,
 )
 
 
@@ -60,9 +59,7 @@ def test_boolean(browse_pgconf, browser, psql):
     out = psql("-Abt", c=f"SHOW {param};")
     assert 'on' == out.strip()
 
-    with pytest.raises(NoSuchElementException):
-        with browser(nowait=True):
-            browser.select(f"#buttonResetDefault_{param}")
+    browser.absent(f"#buttonResetDefault_{param}")
 
     browser.select(".toggle-on").click()
     sleep(.1)
@@ -93,9 +90,7 @@ def test_integer(browse_pgconf, browser, psql):
     out = psql("-Abt", c=f"SHOW {param};")
     assert '50' == out.strip()
 
-    with pytest.raises(NoSuchElementException):
-        with browser(nowait=True):
-            browser.select(f"#buttonResetDefault_{param}")
+    browser.absent(f"#buttonResetDefault_{param}")
 
     input_.send_keys(browser.Keys.BACKSPACE)
     input_.send_keys(browser.Keys.BACKSPACE)
@@ -121,9 +116,7 @@ def test_bytes(browse_pgconf, browser, psql):
     out = psql("-Abt", c=f"SHOW {param};")
     assert '64MB' == out.strip()
 
-    with pytest.raises(NoSuchElementException):
-        with browser(nowait=True):
-            browser.select(f"#buttonResetDefault_{param}")
+    browser.absent(f"#buttonResetDefault_{param}")
 
     input_.send_keys(browser.Keys.BACKSPACE)  # 64M
     input_.send_keys(browser.Keys.BACKSPACE)  # 64
@@ -153,9 +146,7 @@ def test_enum(browse_pgconf, browser, psql):
     selected = enum_selector.first_selected_option.get_attribute('value')
     assert current_value == selected
 
-    with pytest.raises(NoSuchElementException):
-        with browser(nowait=True):
-            browser.select(f"#buttonResetDefault_{param}")
+    browser.absent(f"#buttonResetDefault_{param}")
 
     enum_selector.select_by_value('verbose')
 

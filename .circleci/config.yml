@@ -315,6 +315,9 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: *PGPASSWORD
     - image: selenium/standalone-firefox
+      environment:
+        SCREEN_WIDTH: 1280
+        SCREEN_HEIGHT: 768
     working_directory: *working_directory
     steps:
     - checkout
@@ -334,7 +337,19 @@ jobs:
         command: pip3 install -r ui/requirements-dev.txt
     - run:
         name: Run pytest
-        command: pytest --pg-version=<< parameters.pgversion >> -vvv tests/
+        command: |
+          set -ux
+          upstream=master  # Update when branching to v8.
+          pytest_opts=(tests/)
+          if [ "$CIRCLE_BRANCH" = "$upstream" ] ; then
+              : "Run all tests on $upstream."
+          elif git diff --name-only origin/$upstream..HEAD | grep -f tests/monitoring-files ; then
+              : "Run all tests for modified files."
+          else
+              : "Skip slow monitoring tests."
+              pytest_opts+=('-m' 'not slowmonitoring')
+          fi
+          pytest --pg-version=<< parameters.pgversion >> -vvv "${pytest_opts[@]}"
     - store_artifacts:
         path: /workspace/tests/screenshots/
     - *pip-cache-save

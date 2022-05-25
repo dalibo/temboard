@@ -3,22 +3,12 @@ from queue import Queue
 from time import sleep
 
 import pytest
-from selenium.common.exceptions import NoSuchElementException
 from sh import ErrorReturnCode, SignalException
-from tenacity import (
-    Retrying, retry_if_exception_type, wait_fixed, stop_after_delay,
-)
+
+from fixtures.utils import retry_assert
 
 
 logger = logging.getLogger(__name__)
-
-
-def retry_assert():
-    return Retrying(
-        retry=retry_if_exception_type(AssertionError),
-        stop=stop_after_delay(10),
-        wait=wait_fixed(.1),
-    )
 
 
 def test_running(agent_login, browser, pg_sleep, ui_url):
@@ -49,9 +39,8 @@ def test_running(agent_login, browser, pg_sleep, ui_url):
     # Ensure processes vanished from view.
     sleep(.1)
     try:
-        with browser(nowait=True):
-            query = browser.select("td.query").text
-    except NoSuchElementException:
+        query = browser.absent("td.query").text
+    except Exception:
         pass
     else:
         # If a query is running, ensure it's not pg_sleep.
