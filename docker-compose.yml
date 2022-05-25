@@ -106,6 +106,9 @@ services:
     - "4444:4444"
     - "7900:7900"
     environment:
+      # Let webdriver server keep session opened for one hour. This way,
+      # selenium does not close a session while pdb is waiting.
+      JAVA_OPTS: "-Dwebdriver.server.session.timeout=3600"
       VNC_NO_PASSWORD: "y"
       TZ: Europe/Paris
       # 1280x768 is common and fit in noVNC page.
