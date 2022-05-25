@@ -108,6 +108,9 @@ services:
     environment:
       VNC_NO_PASSWORD: "y"
       TZ: Europe/Paris
+      # 1280x768 is common and fit in noVNC page.
+      SCREEN_WIDTH: 1280
+      SCREEN_HEIGHT: 768
 
 
 volumes:

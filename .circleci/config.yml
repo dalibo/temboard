@@ -315,6 +315,9 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: *PGPASSWORD
     - image: selenium/standalone-firefox
+      environment:
+        SCREEN_WIDTH: 1280
+        SCREEN_HEIGHT: 768
     working_directory: *working_directory
     steps:
     - checkout
