@@ -4,20 +4,11 @@ from time import sleep
 
 import pytest
 from sh import ErrorReturnCode, SignalException
-from tenacity import (
-    Retrying, retry_if_exception_type, wait_fixed, stop_after_delay,
-)
+
+from fixtures.utils import retry_assert
 
 
 logger = logging.getLogger(__name__)
-
-
-def retry_assert():
-    return Retrying(
-        retry=retry_if_exception_type(AssertionError),
-        stop=stop_after_delay(10),
-        wait=wait_fixed(.1),
-    )
 
 
 def test_running(agent_login, browser, pg_sleep, ui_url):
