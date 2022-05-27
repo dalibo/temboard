@@ -89,7 +89,6 @@ repository](https://yum.dalibo.org/labs/). temBoard supports RHEL / CentOS 7
 
 ``` console
 $ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
-$ sudo yum makecache fast
 ```
 
 !!! warning

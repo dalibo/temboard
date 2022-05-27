@@ -58,7 +58,6 @@ repository](https://yum.dalibo.org/labs/). temBoard agent supports
 RHEL/CentOS 7 and 8. Start by enabling Dalibo Labs YUM repository.
 
 ``` console
-$ sudo yum makecache fast
 $ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
 ```
 
