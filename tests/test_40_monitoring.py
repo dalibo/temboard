@@ -65,7 +65,7 @@ def test_alerts(browser, browse_alerting, ensure_monitoring_data):
         'wal_files_total',
     ]
 
-    wanted = {'badge-ok', 'badge-warning'}
+    wanted = {'badge-ok', 'badge-warning', 'badge-critical'}
 
     for check in checks:
         # Wait and refresh for probes to come up.
