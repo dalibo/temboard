@@ -145,14 +145,10 @@ def generate_logging_config(
     if sys.stderr.isatty():
         stderr_handler = __name__ + '.ColoredStreamHandler'
 
-    minimal_fmt = '%(levelname)5.5s:  %(lastname)s: %(message)s'
-    verbose_fmt = (
-        '%(asctime)s ' + core + '[%(process)5d]: ' +
-        minimal_fmt
-    )
+    minimal_fmt = '%(levelname)s:  %(lastname)s: %(message)s'
+    verbose_fmt = '%(asctime)s [%(process)d] ' + minimal_fmt
     syslog_fmt = (
-        core +
-        "[%(process)d]: %(levelname)s:  %(lastname)s: %(message)s"
+        core + "[%(process)d] %(levelname)s:  %(lastname)s: %(message)s"
     )
 
     logging_config = {
