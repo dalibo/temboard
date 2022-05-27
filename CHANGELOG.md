@@ -21,6 +21,9 @@ script to proceed.
   `auto_configure.sh` instead.
 - temBoard agent deb does not ship `temboard-agent.init` anymore. Use systemd
   instead.
+- Post install script of temBoard UI RPM does not execute auto_configure.sh.
+- temBoard UI RPM does not create `temboard` UNIX user. Use auto_configure.sh
+  instead.
 
 
 ## [7.11] - Unreleased

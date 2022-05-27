@@ -64,11 +64,6 @@ systemctl daemon-reload &>/dev/null || :
 
 if systemctl is-active temboard >&/dev/null ; then
 	systemctl restart temboard
-elif ! [ -f /etc/temboard/temboard.conf ] && [ -x /usr/share/temboard/auto_configure.sh ] ; then
-	if ! /usr/share/temboard/auto_configure.sh ; then
-		echo "Auto-configuration failed. Skipping." &>2
-		error "See documentation for how to setup." &>2
-	fi
 fi
 
 %postun
