@@ -1,14 +1,17 @@
-all: bullseye buster stretch
+DISTDIR=../../dist
+DPUT=labs
 
-bullseye buster stretch:
-	$(MAKE) build-$@
-	$(MAKE) push
+default:
 
 build-%:
-	mkdir -p ../../dist/
+	mkdir -p $(DISTDIR)
 	docker-compose run --rm $*
-	./mkchanges.sh $(shell readlink -e ../../dist/temboard-agent_last.deb) $*
+	./mkchanges.sh $$(readlink -e $(DISTDIR)/temboard-agent_last.deb) $*
 
 push:
 	version=$$(dpkg-deb -f ../../dist/temboard-agent_last.deb  Version | grep -Po '.*(?=-0dlb.*)'); \
 	find ../../dist/ -name "temboard-agent_$${version}-0dlb*.changes" | xargs -rt dput labs
+
+release-%:
+	$(MAKE) build-$@
+	$(MAKE) push
