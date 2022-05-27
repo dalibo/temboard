@@ -322,6 +322,26 @@ documentation. mkdocs has hot reload: saving file triggers a refresh in your
 browser.
 
 
+## Building RHEL Package
+
+Building RPM packages for RHEL and compatible clones requires Docker and Docker
+Compose for isolation. Uploading to Dalibo Labs requires internal project
+yum-labs and access.
+
+UI and agent each has `packaging/rpm` directory with a Makefile and scripts to
+build RPM packages. Use the following targets to build and push packages:
+
+- `make -C ui/packaging/rpm/ build-rhel<version>` - Build RPM.
+- `make -C ui/packaging/rpm/ push` - Push **all** packages to yum.dalibo.org/labs.
+- `make -C ui/packaging/rpm/ release-rhel<version>` - Build and push alltogether.
+
+Version can be either 8 or 7. `agent/packaging/rpm/Makefile` provides the same
+targets.
+
+The builder script search for wheels in `ui/dist/` and if not found, tries to
+download wheel from PyPI. Use top level `make dist` to generate a snapshot.
+
+
 ## Building Debian Package
 
 Building debian packages requires Docker and Docker Compose for isolation. For
