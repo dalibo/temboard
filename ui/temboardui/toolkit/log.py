@@ -163,10 +163,12 @@ def generate_logging_config(
             'console': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': verbose_fmt if verbose else minimal_fmt,
+                'datefmt': '%Y-%m-%d %H:%M:%S %Z',
             },
             'dated_syslog': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': '%(asctime)s ' + syslog_fmt,
+                'datefmt': '%Y-%m-%d %H:%M:%S %Z',
             },
             'syslog': {
                 '()': __name__ + '.MultilineFormatter',
