@@ -6,11 +6,11 @@ import sys
 
 class ColoredStreamHandler(logging.StreamHandler):
 
-    _color_map = {
-        logging.DEBUG: '37',
+    _color_map = {  # Colors code from systemctl/journalctl
+        logging.DEBUG: '38;5;245',
         logging.INFO: '1;39',
-        logging.WARN: '96',
-        logging.ERROR: '91',
+        logging.WARN: '38;5;185',
+        logging.ERROR: '31',
         logging.CRITICAL: '1;91',
     }
 
