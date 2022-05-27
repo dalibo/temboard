@@ -56,8 +56,7 @@ mv "$DESTDIR/usr/lib/python${pythonv}/site-packages"/* "$DESTDIR/usr/lib/python3
 
 fpm_args=()
 case "$codename" in
-	stretch|wheezy)
-		fpm_args+=(--deb-init packaging/deb/temboard-agent.init)
+	stretch)
 	;;
 	*)
 		fpm_args+=(--depends python3-distutils)
@@ -84,7 +83,6 @@ fpm --verbose \
     --depends 'python3-psycopg2 >= 2.7' \
     --depends python3 \
     --after-install share/restart-all.sh \
-    "${fpm_args[@]}" \
     "$@" \
     ./=/
 

@@ -19,6 +19,8 @@ script to proceed.
   `auto_configure.sh` and `temboard-agent@.service` instead.
 - temBoard agent RPM packages does not ship `temboard-agent.conf` anymore. Use
   `auto_configure.sh` instead.
+- temBoard agent deb does not ship `temboard-agent.init` anymore. Use systemd
+  instead.
 
 
 ## [7.11] - Unreleased
