@@ -176,8 +176,6 @@ def bootstrap_tornado_app(webapp, config):
 
 
 def finalize_tornado_app(webapp, config):
-    autoreload.watch(config.temboard.configfile)
-
     base_path = os.path.dirname(os.path.dirname(__file__))
     handlers = [
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
@@ -251,13 +249,21 @@ class TornadoService(Service):
         except UserError as e:
             logger.debug("%s.", e)
 
+    def iter_template_files(self):
+        rootpkg = __import__(__name__)
+        rootdir = rootpkg.__path__[0]
+        for dirpath, dirnames, filenames in os.walk(rootdir):
+            for filename in filenames:
+                if filename.endswith('.html'):
+                    yield dirpath + '/' + filename
+
     def serve(self):
         with self:
             # Automatically reload modified modules (from Tornado's
             # Application.__init__). This code must be done here *after*
             # daemonize, because it instanciates ioloop for current PID.
             if self.app.webapp.settings.get('autoreload'):
-                autoreload.add_reload_hook(self.autoreload_hook)
+                self.setup_autoreload()
                 autoreload.start()
 
             logger.info(
@@ -265,6 +271,14 @@ class TornadoService(Service):
                 self.app.config.temboard.address,
                 self.app.config.temboard.port)
             tornado.ioloop.IOLoop.instance().start()
+
+    def setup_autoreload(self):
+        autoreload.add_reload_hook(self.autoreload_hook)
+
+        autoreload.watch(self.app.config.temboard.configfile)
+
+        for path in self.iter_template_files():
+            autoreload.watch(path)
 
 
 class VersionAction(_VersionAction):
