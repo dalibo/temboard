@@ -73,7 +73,6 @@ SETUP_KWARGS = dict(
             'share/temboard_CHANGEME.pem',
             'share/temboard_ca_certs_CHANGEME.pem',
             'share/temboard.conf',
-            'share/temboard.logrotate',
         ]),
         ('lib/systemd/system', ['packaging/temboard.service']),
     ],
