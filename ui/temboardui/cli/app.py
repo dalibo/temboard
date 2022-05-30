@@ -83,11 +83,10 @@ class TemboardApplication(BaseApplication):
         args = parser.parse_args(argv)
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ)
+        self.log_versions()
 
         setproctitle = ProcTitleManager(prefix='temboard: ')
         setproctitle.setup()
-
-        self.log_versions()
 
         # T A S K   M A N A G E R
 
