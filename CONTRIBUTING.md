@@ -322,18 +322,51 @@ documentation. mkdocs has hot reload: saving file triggers a refresh in your
 browser.
 
 
-## Building Snapshot Package
+## Building RHEL Package
 
-You can build a RPM or deb snapshot like this:
+Building RPM packages for RHEL and compatible clones requires Docker and Docker
+Compose for isolation. Uploading to Dalibo Labs requires internal project
+yum-labs and access.
 
-``` console
-$ make dist
-$ make -C ui/packaging/rpm build-rhel8
-$ make -C agent/packaging/deb build-buster
+UI and agent each has `packaging/rpm` directory with a Makefile and scripts to
+build RPM packages. Use the following targets to build and push packages:
+
+- `make -C ui/packaging/rpm/ build-rhel<version>` - Build RPM.
+- `make -C ui/packaging/rpm/ push` - Push **all** packages to yum.dalibo.org/labs.
+- `make -C ui/packaging/rpm/ release-rhel<version>` - Build and push alltogether.
+
+Version can be either 8 or 7. `agent/packaging/rpm/Makefile` provides the same
+targets.
+
+The builder script search for wheels in `ui/dist/` and if not found, tries to
+download wheel from PyPI. Use top level `make dist` to generate a snapshot.
+
+
+## Building Debian Package
+
+Building debian packages requires Docker and Docker Compose for isolation. For
+signing, you need the ``devscripts`` package and a GPG private key. For
+uploading, you require ``dput``.
+
+```
+sudo apt install devscripts dput
 ```
 
-Find packages in `ui/dist` or `agent/dist` directories. See further targets in
-`{ui,agent}/packaging/{deb,rpm}/Makefile`.
+Define environment variables `DEBFULLNAME` and `DEBEMAIL`. mkchanges.sh scripts
+signs changes with your GPG key matching these environment variables.
+
+Each UI and agent has `packaging/deb/` directory with a Makefile and scripts to
+build packages. Use the following make target to build and push packages:
+
+- `make -C ui/packaging/deb build-<codename>` - Build.
+- `make -C ui/packaging/deb push` - Push previously build package.
+- `make -C ui/packaging/deb release-<codename>` - Build and push alltogether.
+
+`codename` is one of `bullseye`, `buster` or `stretch`.
+`agent/packaging/deb/Makefile` provides the same targets.
+
+The builder script search for wheels in `ui/dist/` and if not found, tries to
+download wheel from PyPI. Use top level `make dist` to generate a snapshot.
 
 
 ## Releasing

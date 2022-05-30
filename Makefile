@@ -122,6 +122,6 @@ upload:  #: Upload Python artefacts to PyPI.
 
 packages:  #: Build and upload packages dalibo.org.
 	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
-	$(MAKE) -c agent/packaging/deb bullseye buster stretch
+	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
 	$(MAKE) -c ui/packaging/rpm rhel8 rhel7
-	$(MAKE) -c ui/packaging/deb bullseye buster stretch
+	$(MAKE) -c ui/packaging/deb release-bullseye release-buster release-stretch

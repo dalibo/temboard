@@ -177,7 +177,7 @@ log "Creating Postgres user, database and schema."
 # For temboard migratedb
 DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
-dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/temboard"
+dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/${TEMBOARD_DATABASE-temboard}"
 if ! sudo -nEu "$SYSUSER" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
 fi

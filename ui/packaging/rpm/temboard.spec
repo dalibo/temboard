@@ -50,25 +50,11 @@ This packages holds the web user interface
 %build
 %{__python} setup.py build
 
-%pre
-# Create system user now to let rpm chown %files.
-if ! getent passwd temboard &>/dev/null ; then
-  useradd \
-    --system --user-group --shell /bin/bash \
-    --home-dir /var/lib/temboard \
-    --comment "temBoard Web UI" temboard &>/dev/null
-fi
-
 %post
 systemctl daemon-reload &>/dev/null || :
 
 if systemctl is-active temboard >&/dev/null ; then
 	systemctl restart temboard
-elif ! [ -f /etc/temboard/temboard.conf ] && [ -x /usr/share/temboard/auto_configure.sh ] ; then
-	if ! /usr/share/temboard/auto_configure.sh ; then
-		echo "Auto-configuration failed. Skipping." &>2
-		error "See documentation for how to setup." &>2
-	fi
 fi
 
 %postun
@@ -80,14 +66,11 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
-%{__install} -d -m 755 %{buildroot}/%{_sysconfdir}/logrotate.d
-%{__install} -m 644 %{buildroot}/usr/share/temboard/quickstart/temboard.logrotate %{buildroot}/%{_sysconfdir}/logrotate.d/temboard
 %{__install} -d %{buildroot}/var/log/temboard
 %{__install} -d %{buildroot}/var/lib/temboard
 
 %files
 %config(noreplace) %attr(-,temboard,temboard) %{confdir}
-%config(noreplace) %{_sysconfdir}/logrotate.d/temboard
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard

@@ -88,8 +88,7 @@ repository](https://yum.dalibo.org/labs/). temBoard supports RHEL / CentOS 7
 & 8. Start by enabling Dalibo Labs YUM repository.
 
 ``` console
-$ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-3-1.noarch.rpm
-$ sudo yum makecache fast
+$ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
 ```
 
 !!! warning

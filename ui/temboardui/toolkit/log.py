@@ -6,11 +6,11 @@ import sys
 
 class ColoredStreamHandler(logging.StreamHandler):
 
-    _color_map = {
-        logging.DEBUG: '37',
+    _color_map = {  # Colors code from systemctl/journalctl
+        logging.DEBUG: '38;5;245',
         logging.INFO: '1;39',
-        logging.WARN: '96',
-        logging.ERROR: '91',
+        logging.WARN: '38;5;185',
+        logging.ERROR: '31',
         logging.CRITICAL: '1;91',
     }
 
@@ -27,17 +27,9 @@ class ColoredStreamHandler(logging.StreamHandler):
 class MultilineFormatter(logging.Formatter):
     def format(self, record):
         s = logging.Formatter.format(self, record)
-        if '\n' not in s:
-            return s
-
-        lines = s.splitlines()
-        d = record.__dict__.copy()
-        for i, line in enumerate(lines[1:]):
-            record.message = line
-            lines[1 + i] = self._fmt % record.__dict__
-        record.__dict__ = d
-
-        return '\n'.join(lines)
+        if '\n' in s:
+            s = s.replace('\n', '\n\t')
+        return s
 
 
 class NullHandler(logging.Handler):
@@ -145,14 +137,10 @@ def generate_logging_config(
     if sys.stderr.isatty():
         stderr_handler = __name__ + '.ColoredStreamHandler'
 
-    minimal_fmt = '%(levelname)5.5s: %(message)s'
-    verbose_fmt = (
-        '%(asctime)s ' + core + '[%(process)5d]: [%(lastname)-16.16s] ' +
-        minimal_fmt
-    )
+    minimal_fmt = '%(levelname)s:  %(lastname)s: %(message)s'
+    verbose_fmt = '%(asctime)s [%(process)d] ' + minimal_fmt
     syslog_fmt = (
-        core +
-        "[%(process)d]: [%(lastname)s] %(levelname)s: %(message)s"
+        core + "[%(process)d] %(levelname)s:  %(lastname)s: %(message)s"
     )
 
     logging_config = {
@@ -167,10 +155,12 @@ def generate_logging_config(
             'console': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': verbose_fmt if verbose else minimal_fmt,
+                'datefmt': '%Y-%m-%d %H:%M:%S %Z',
             },
             'dated_syslog': {
                 '()': __name__ + '.MultilineFormatter',
                 'format': '%(asctime)s ' + syslog_fmt,
+                'datefmt': '%Y-%m-%d %H:%M:%S %Z',
             },
             'syslog': {
                 '()': __name__ + '.MultilineFormatter',
@@ -178,7 +168,7 @@ def generate_logging_config(
             },
             'systemd': {
                 '()': __name__ + '.SystemdFormatter',
-                'format': '%(message)s',
+                'format': '%(lastname)s: %(message)s',
             }
         },
         'handlers': {

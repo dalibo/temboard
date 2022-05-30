@@ -17,7 +17,7 @@ def test_dashboard(browser, registered_agent, ui_url):
 
     cpu, percent = browser.select("#total-cpu").text.split()
     assert '%' == percent
-    assert int(cpu) > 1
+    assert int(cpu) >= 1
 
     browser.hover("#cpu-info")
     sleep(.1)
