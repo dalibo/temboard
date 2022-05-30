@@ -5,7 +5,7 @@ from time import sleep
 import pytest
 from sh import ErrorReturnCode, SignalException
 
-from fixtures.utils import retry_assert
+from fixtures.utils import retry_fast
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def test_lock(browser, pg_lock, registered_agent, ui_url):
 
     browser.select('td.query')  # Wait for queries to appears.
 
-    for attempt in retry_assert():  # Wait for waiting count to come up
+    for attempt in retry_fast():  # Wait for waiting count to come up
         with attempt:
             assert "1" == browser.select("#waiting-count").text
 
