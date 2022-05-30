@@ -41,9 +41,6 @@ class Browser:
         self.webdriver = webdriver
         self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
-    def __exit__(self, *a, **kw):
-        self.webdriver.implicitly_wait(3)
-
     UNDEFINED = object()
 
     def __getattr__(self, name, default=UNDEFINED):
