@@ -29,7 +29,7 @@ def test_multiline(mocker):
     s = formatter.format(record)
 
     assert 'PREFIX: Line1' in s
-    assert 'PREFIX: Line2' in s
+    assert '\tLine2' in s
 
     record.msg = 'Single'
     s = formatter.format(record)

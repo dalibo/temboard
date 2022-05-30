@@ -27,17 +27,9 @@ class ColoredStreamHandler(logging.StreamHandler):
 class MultilineFormatter(logging.Formatter):
     def format(self, record):
         s = logging.Formatter.format(self, record)
-        if '\n' not in s:
-            return s
-
-        lines = s.splitlines()
-        d = record.__dict__.copy()
-        for i, line in enumerate(lines[1:]):
-            record.message = line
-            lines[1 + i] = self._fmt % record.__dict__
-        record.__dict__ = d
-
-        return '\n'.join(lines)
+        if '\n' in s:
+            s = s.replace('\n', '\n\t')
+        return s
 
 
 class NullHandler(logging.Handler):
