@@ -6,6 +6,7 @@ from datetime import datetime
 from errno import ENOTEMPTY
 from getpass import getuser
 from pathlib import Path
+from textwrap import dedent
 
 import httpx
 import pytest
@@ -289,6 +290,15 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
+
+    extra_etc = workdir / 'etc/temboard/temboard.conf.d/tests-extra.conf'
+    extra_etc.parent.mkdir()
+    extra_etc.write_text(dedent(f"""\
+    [logging]
+    method = file
+    destination = {logfile.parent}/temboard.log
+    level = DEBUG
+    """))
 
     yield None
 

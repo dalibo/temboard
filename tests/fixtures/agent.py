@@ -5,6 +5,7 @@ import sys
 from configparser import ConfigParser
 from getpass import getuser
 from pathlib import Path
+from textwrap import dedent
 
 import httpx
 import pytest
@@ -61,6 +62,15 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
+
+    etcdir = workdir / 'etc/temboard-agent/temboard-tests/'
+    extra_etc = etcdir / 'temboard-agent.conf.d/tests-extra.conf'
+    extra_etc.write_text(dedent(f"""\
+    [logging]
+    method = file
+    destination = {logfile.parent}/temboard-agent.log
+    level = DEBUG
+    """))
 
 
 @pytest.fixture(scope='session')
