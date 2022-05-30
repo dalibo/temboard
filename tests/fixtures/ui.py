@@ -27,7 +27,7 @@ from sh import (
     sudo,
 )
 
-from fixtures.utils import retry_http
+from fixtures.utils import retry_http, retry_slow
 
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,6 @@ class Browser:
     def __init__(self, webdriver):
         self.webdriver = webdriver
         self.screenshot_tag = datetime.now().strftime('%H%M%S')
-
-    def __exit__(self, *a, **kw):
-        self.webdriver.implicitly_wait(3)
 
     UNDEFINED = object()
 
@@ -60,6 +57,9 @@ class Browser:
             f"Element {selector} is still present.",
         )
 
+    def get_full_page_screenshot_as_png(self):
+        return self.select("body").screenshot_as_png
+
     def hidden(self, selector, timeout=3):
         # Waits until an element has d-none.
         return WebDriverWait(self.webdriver, timeout).until(
@@ -70,21 +70,27 @@ class Browser:
             f"Element {selector} does not have d-none.",
         )
 
-    def select(self, selector):
-        return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
-
-    def select_all(self, selector):
-        return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
-
-    def get_full_page_screenshot_as_png(self):
-        return self.select("body").screenshot_as_png
-
     def hover(self, selector):
         (
             ActionChains(self.webdriver)
             .move_to_element(self.select(selector))
             .perform()
         )
+
+    def refresh_until(self, selector):
+        for attempt in retry_slow(selenium_exc.NoSuchElementException):
+            with attempt:
+                try:
+                    return self.select(selector)
+                except selenium_exc.NoSuchElementException:
+                    self.refresh()
+                    raise
+
+    def select(self, selector):
+        return self.webdriver.find_element(by=By.CSS_SELECTOR, value=selector)
+
+    def select_all(self, selector):
+        return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
 
 def text_to_be_present_in_element_attribute(locator, attribute_, text_):

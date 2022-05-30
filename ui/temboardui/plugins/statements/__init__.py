@@ -37,7 +37,6 @@ from temboardui.web import (
     jsonify,
 )
 from temboardui.plugins.monitoring.tools import (
-    get_request_ids,
     parse_start_end,
 )
 from temboardui.toolkit import taskmanager
@@ -101,7 +100,6 @@ BASE_QUERY_STATDATA = text("""
 
 @blueprint.instance_route(r'/statements/data')
 def json_data_instance(request):
-    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     base_query = BASE_QUERY_STATDATA
@@ -407,7 +405,6 @@ def json_data_database(request, dbid):
 
 
 def json_data(request, dbid, queryid=None, userid=None):
-    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     query = text("""
@@ -697,7 +694,6 @@ def convert_decimal_to_float(data):
 
 @blueprint.instance_route(r'/statements/chart')
 def json_chart_data_instance(request):
-    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "instance", start, end)
@@ -707,7 +703,6 @@ def json_chart_data_instance(request):
 
 @blueprint.instance_route(r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
 def json_chart_data_query(request, dbid, queryid, userid):
-    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "query", start, end, dbid=dbid,
@@ -718,7 +713,6 @@ def json_chart_data_query(request, dbid, queryid, userid):
 
 @blueprint.instance_route(r'/statements/chart/(.*)')
 def json_chart_data_db(request, dbid):
-    host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
 
     data = getstatdata_sample(request, "db", start, end, dbid=dbid)

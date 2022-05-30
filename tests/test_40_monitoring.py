@@ -7,14 +7,9 @@
 import logging
 
 import pytest
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    TimeoutException,
-)
-from tenacity import (
-    Retrying, retry_if_exception_type, stop_after_delay,
-    wait_chain, wait_fixed,
-)
+from selenium.common.exceptions import TimeoutException
+
+from fixtures.utils import retry_slow
 
 
 logger = logging.getLogger(__name__)
@@ -68,28 +63,9 @@ def test_alerts(browser, browse_alerting, ensure_monitoring_data):
     wanted = {'badge-ok', 'badge-warning', 'badge-critical'}
 
     for check in checks:
-        # Wait and refresh for probes to come up.
-        for attempt in retry_one_minute(NoSuchElementException):
-            with attempt:
-                try:
-                    el = browser.select(f"#status-{check} .badge")
-                except Exception:
-                    browser.refresh()
-                    raise
-
+        el = browser.refresh_until(f"#status-{check} .badge")
         classes = set(el.get_attribute('class').split())
         assert wanted & classes
-
-
-def retry_one_minute(exc_type=NoSuchElementException):
-    return Retrying(
-        retry=retry_if_exception_type(exc_type),
-        stop=stop_after_delay(70),
-        wait=wait_chain(
-            *[wait_fixed(10)] * 2,
-            wait_fixed(2),
-        ),
-    )
 
 
 @pytest.fixture
@@ -115,12 +91,9 @@ def ensure_monitoring_data(
     browser = browser_session
     browser.select("div.sidebar a.monitoring").click()
 
-    for attempt in retry_one_minute(TimeoutException):
-        with attempt:
-            browser.refresh()
-            browser.select("#nodataCPU")
+    browser.refresh_until("#nodataCPU")
 
-    for attempt in retry_one_minute(TimeoutException):
+    for attempt in retry_slow(TimeoutException):
         with attempt:
             browser.refresh()
             browser.hidden("#nodataCPU")
