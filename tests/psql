@@ -5,6 +5,9 @@
 # Keep it sync with conftest.py
 #
 
+# shellcheck disable=2086
+unset ${!PG*}
+
 export PGHOST=$PWD/tests/workdir/run/postgresql/
 export PGPASSWORD=S3cret_postgres
 export PGPORT=55432
