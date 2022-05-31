@@ -148,12 +148,13 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     log_lock_waits = on
     logging_collector = on
     port = {agent_env['PGPORT']}
+    shared_preload_libraries = pg_stat_statements
     unix_socket_directories = '{socketdir}'
     """))
 
     logger.info("Starting instance at %s.", pgdata)
     sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "start")
-    sudo_pguser.psql(c='SELECT version();', _env=agent_env)  # pentest
+    sudo_pguser.psql(c='CREATE EXTENSION pg_stat_statements;', _env=agent_env)
 
     yield pgdata
 
