@@ -62,13 +62,24 @@ class Browser:
         return self.select("body").screenshot_as_png
 
     def hidden(self, selector, timeout=3):
+        waiter = WebDriverWait(self.webdriver, timeout)
+        element = self.select(selector)
+        if 'dialog' == element.get_attribute('role'):
+            callable_ = waiter.until_not
+            attribute, value = 'class', 'show'
+            message = f"Element {selector} {attribute} still has {value}.",
+        else:
+            callable_ = waiter.until
+            attribute, value = 'class', 'd-none'
+            message = f"Element {selector} {attribute} does not have {value}.",
+
         # Waits until an element has d-none.
-        return WebDriverWait(self.webdriver, timeout).until(
+        return callable_(
             text_to_be_present_in_element_attribute(
                 (By.CSS_SELECTOR, selector),
-                'class', 'd-none',
+                attribute, value,
             ),
-            f"Element {selector} does not have d-none.",
+            message,
         )
 
     def hover(self, selector):
@@ -227,6 +238,14 @@ def registered_agent(
     browser.select("textarea#inputComment").send_keys("Registered by tests.")
 
     browser.select("button#submitFormAddInstance").click()
+    td = browser.select("td.agent_hostport")
+    assert f'0.0.0.0:{port}' in td.text
+
+    # Ensure modal succeed and hides.
+    browser.hidden("#InstanceModal")
+
+    # We should restart UI here to triggers monitoring and statements
+    # background tasks, saving one round of 60s of waiting.
 
     return browser
 
