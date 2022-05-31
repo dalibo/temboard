@@ -1,6 +1,6 @@
 # Sources files requiring monitoring tests on CI
 .circleci/
-agent/agent/plugins/monitoring/
+agent/temboardagent/plugins/monitoring/
 tests/fixtures/
 tests/monitoring-files
 tests/test_40_monitoring.py
