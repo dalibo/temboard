@@ -128,6 +128,7 @@ $(function() {
     }, {
       key: 'datname',
       label: 'DB',
+      class: 'database',
       sortable: true,
       sortDirection: 'asc'
     }, {
