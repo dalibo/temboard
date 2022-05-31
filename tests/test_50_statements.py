@@ -4,6 +4,9 @@
 import pytest
 
 
+pytestmark = pytest.mark.slowstatements
+
+
 def test_wait_for_data(browser, ensure_statements_data):
     tds = browser.select_all(".main table tr td.database")
     databases = sorted([td.text for td in tds])

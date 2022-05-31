@@ -1,0 +1,9 @@
+# Sources files requiring statements tests on CI
+.circleci/
+agent/temboardagent/plugins/statements/
+tests/fixtures/
+tests/statements-files
+tests/test_50_statements.py
+ui/temboardui/plugins/statements/
+ui/temboardui/toolkit/taskmanager/
+setup.py

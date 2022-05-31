@@ -1,0 +1,35 @@
+#!/bin/bash -eux
+#
+# Wrapper around pytest to configure marker expr from git diff.
+#
+
+upstream="$1"; shift
+marker_expr=()
+
+if [ "$CIRCLE_BRANCH" = "$upstream" ] ; then
+	: "Run all tests on $upstream."
+elif ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/monitoring-files ; then
+	: "Skipping slow monitoring tests."
+	marker_expr+=("not slowmonitoring")
+elif ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/statements-files ; then
+	: "Skipping slow statements tests."
+	marker_expr+=("not slowstatements")
+else
+	: "Running all tests for modified files."
+fi
+
+# From https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
+join_array() {
+	local d="${1-}" f="${2-}"
+	if shift 2; then
+		printf %s "$f" "${@/#/$d}"
+	fi
+}
+
+marker_expr_s="$(join_array " and " "${marker_expr[@]-}")"
+
+if [ "${marker_expr_s}" ] ; then
+	set -- "-m" "$marker_expr_s" "$@"
+fi
+
+exec pytest "$@"
