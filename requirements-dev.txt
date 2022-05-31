@@ -1,4 +1,5 @@
 check-manifest
+codecov
 flake8
 pytest
 pytest-cov
