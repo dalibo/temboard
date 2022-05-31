@@ -9,6 +9,8 @@ from .app import app
 class Serve(SubCommand):
     """Combined web server and worker processes."""
 
+    is_service = True
+
     def main(self, args):
         check_schema()
 

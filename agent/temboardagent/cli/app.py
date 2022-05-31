@@ -53,6 +53,9 @@ class TemboardAgentApplication(BaseApplication):
         self.define_arguments(parser)
         args = parser.parse_args(argv)
 
+        command_name = getattr(args, 'command_fullname', 'serve')
+        command = self.commands[command_name]
+
         setproctitle = ProcTitleManager(prefix='temboard-agent: ')
         setproctitle.setup()
 
@@ -75,7 +78,7 @@ class TemboardAgentApplication(BaseApplication):
             self, setproctitle=setproctitle, name='main process',
         )
 
-        self.bootstrap(args=args, environ=environ)
+        self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()
         config = self.config
 
@@ -99,8 +102,6 @@ class TemboardAgentApplication(BaseApplication):
         # Boostraping action logs table
         NotificationMgmt.bootstrap(config)
 
-        command_name = getattr(args, 'command_fullname', 'serve')
-        command = self.commands[command_name]
         return command.main(args)
 
     def apply_config(self):
