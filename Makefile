@@ -27,7 +27,7 @@ develop-%:: .env
 repository:  #: Initialize temboard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
-	PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
+	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=1 ui/share/create_repository.sh
 
 recreate-repository:
 	docker-compose up --detach --force-recreate --renew-anon-volumes repository
