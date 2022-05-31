@@ -101,7 +101,7 @@ VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 # To test release target, override GIT_REMOTE with your own fork.
 GIT_REMOTE=git@github.com:dalibo/temboard.git
-release:  #: Tag and push a new git release
+release:  #: Tag and push a new git release.
 	$(info Checking we are on branch $(BRANCH).)
 	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
 	$(info Checking agent and UI version are same)
@@ -124,10 +124,10 @@ PYDIST=\
 	ui/dist/temboard-$(VERSION)-py3-none-any.whl \
 
 # To test PyPI upload, set TWINE_REPOSITORY=testpypi environment variable.
-upload:  #: Upload Python artefacts to PyPI.
+release-pypi:  #: Upload Python artefacts to PyPI.
 	twine upload $(PYDIST)
 
-packages:  #: Build and upload packages dalibo.org.
+release-packages:  #: Build and upload packages to Dalibo Labs repositories.
 	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
 	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
 	$(MAKE) -c ui/packaging/rpm rhel8 rhel7
