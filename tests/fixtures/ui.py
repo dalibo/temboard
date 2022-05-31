@@ -292,13 +292,13 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
 
     auto_configure = ui_sharedir / 'auto_configure.sh'
     logger.info("Calling %s.", auto_configure)
-    logfile = workdir / 'var/log/temboard/ui-auto-configure.log'
+    logfile = workdir / 'var/log/ui/auto-configure.log'
     logfile.parent.mkdir()
     try:
         subprocess.run([auto_configure], env=dict(
             env,
-            ETCDIR=str(workdir / 'etc/temboard'),
-            VARDIR=str(workdir / 'var/temboard'),
+            ETCDIR=str(workdir / 'etc/ui'),
+            VARDIR=str(workdir / 'var/ui'),
             LOGDIR=str(logfile.parent),
             LOGFILE=str(logfile),
             SYSUSER=ui_sysuser,
@@ -310,12 +310,12 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
         sys.stderr.write(logfile.read_text())
         raise
 
-    extra_etc = workdir / 'etc/temboard/temboard.conf.d/tests-extra.conf'
+    extra_etc = workdir / 'etc/ui/temboard.conf.d/tests-extra.conf'
     extra_etc.parent.mkdir()
     extra_etc.write_text(dedent(f"""\
     [logging]
     method = file
-    destination = {logfile.parent}/temboard.log
+    destination = {logfile.parent}/serve.log
     level = DEBUG
     """))
 
@@ -336,7 +336,7 @@ def ui_env(env, workdir):
         PGUSER='temboard',
         PGPASSWORD='temboard',
         PGDATABASE='temboardtest',
-        TEMBOARD_CONFIGFILE=str(workdir / 'etc/temboard/temboard.conf'),
+        TEMBOARD_CONFIGFILE=str(workdir / 'etc/ui/temboard.conf'),
         TEMBOARD_LOGGING_LEVEL='DEBUG',
         TEMBOARD_PORT='18888',
     )
