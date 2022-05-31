@@ -11,25 +11,15 @@ Monitor, optimize and configure multiple PostgreSQL instances.
  Install
 =========
 
-temBoard is composed of 2 basic elements:
+temBoard is composed of two services:
 
 - A lightweight **agent** that you need to install on every PostgreSQL server
-  you want to manage. See `dalibo/temboard-agent`_ for the agent project.
-- A central **web app** (this project) to control the agents and collect metrics.
+  you want to manage.
+- A central **web app** to control the agents and collect metrics.
 
-
-temBoard needs a dedicated database called *repository* to store configuration,
-metrics and other data.
-
-::
-
-    pip install temboard psycopg2-binary
-    sudo -u postgres bash /usr/local/share/temboard/create_repository.sh
-    temboard -c /usr/local/share/temboard/quickstart/temboard.conf
-
-Now install `dalibo/temboard-agent`_ along the PostgreSQL cluster you want to
-administer and register it in the UI. Further details on
-`temboard.readthedocs.io <http://temboard.readthedocs.io/en/latest/>`_.
+temBoard project provides packages for RHEL 8 & 7, Debian bullseye, buster &
+stretch. See `temboard.readthedocs.io
+<http://temboard.readthedocs.io/en/latest/>`_ for installation instructions.
 
 
 ===================
@@ -87,5 +77,3 @@ temBoard is available under the `PostgreSQL License
 .. |Travis| image:: https://travis-ci.org/dalibo/temboard.svg?branch=master
    :target: https://travis-ci.org/dalibo/temboard
    :alt: Travis
-
-.. _dalibo/temboard-agent: https://github.com/dalibo/temboard-agent
