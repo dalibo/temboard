@@ -4,7 +4,7 @@ apropos:  #: Show dev Makefile help.
 	@echo
 	@echo "make target available:"
 	@echo
-	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-16s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
+	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-24s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
 	@echo
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
