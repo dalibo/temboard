@@ -81,8 +81,12 @@ class TemboardApplication(BaseApplication):
         self.define_arguments(parser)
 
         args = parser.parse_args(argv)
+
+        command_name = getattr(args, 'command_fullname', 'serve')
+        command = self.commands[command_name]
+
         environ = map_pgvars(environ)
-        self.bootstrap(args=args, environ=environ)
+        self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()
 
         setproctitle = ProcTitleManager(prefix='temboard: ')
@@ -118,8 +122,6 @@ class TemboardApplication(BaseApplication):
 
         self.apply_config()
 
-        command_name = getattr(args, 'command_fullname', 'serve')
-        command = self.commands[command_name]
         return command.main(args)
 
     def apply_config(self):

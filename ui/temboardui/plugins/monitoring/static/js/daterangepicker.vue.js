@@ -59,15 +59,15 @@
         <button id="buttonRefresh" class="btn btn-secondary" v-on:click="refresh()" :disabled="!isRefreshable">
           <i class="fa fa-refresh"></i>
         </button>
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" :disabled="!isRefreshable">
+        <button id="buttonAutoRefresh" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" :disabled="!isRefreshable">
           <span class="text-warning" v-if="isRefreshable">
             {{ intervals[refreshInterval] }}
           </span>
         </button>
         <div class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
-          <a class="dropdown-item" href v-on:click.prevent="refreshInterval = null">Off</a>
+          <a class="dropdown-item refresh-off" href v-on:click.prevent="refreshInterval = null">Off</a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href v-on:click.prevent="refreshInterval = key" v-for="interval, key in intervals">{{ interval }}</a>
+          <a :class='"dropdown-item refresh-" + interval' href v-on:click.prevent="refreshInterval = key" v-for="interval, key in intervals">{{ interval }}</a>
         </div>
       </div>
     </div>`;

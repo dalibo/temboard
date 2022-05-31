@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class Serve(SubCommand):
     """Combined web and worker services."""
 
+    is_service = True
+
     def main(self, args):
         # Purge all legacy data queues
         home = self.app.config.temboard.home

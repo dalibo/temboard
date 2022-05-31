@@ -82,10 +82,12 @@ class BaseApplication(object):
     def __repr__(self):
         return '<%s>' % (self.__class__.__name__)
 
-    def bootstrap(self, args, environ):
+    def bootstrap(self, args, environ, service=False):
         # bootstrapping the app is a complex process to manage options loading
         # incrementally.
 
+        # Whether we are oneshot CLI or long running service.
+        self.is_service = service
         config = self.config
         # Stage 1: Read configfile option
         config.add_specs(self.list_stage1_specs())
@@ -319,6 +321,16 @@ class BaseApplication(object):
         return self
 
     def setup_logging(self):
+        if self.config.logging.method != 'stderr' and not self.is_service:
+            # Enforce stderr method for one shot command, this avoid creating a
+            # logfile with bad privileges, and spam syslog or logfile with
+            # command logs.
+            logger.debug(
+                "Disabling log method %s for one shot command.",
+                self.config.logging.method,
+            )
+            self.config.logging.method = 'stderr'
+
         setup_logging(
             systemd='SYSTEMD' in os.environ,
             **self.config.logging)
@@ -372,6 +384,9 @@ class SubCommand(object):
     # Class docstring is injected in argparse help for the command.
 
     name = None
+    # Whether oneshot CLI or long running service. This is handled by
+    # Application.setup_logging.
+    is_service = False
 
     def __init__(self, parent):
         self.parent = parent  # The app or another command.

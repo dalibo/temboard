@@ -22,9 +22,9 @@ def retry_slow(exc_type=NoSuchElementException):
     # Usually to refresh a browser page.
     return Retrying(
         retry=retry_if_exception_type(exc_type),
-        stop=stop_after_delay(70),
+        stop=stop_after_delay(130),
         wait=wait_chain(
-            *[wait_fixed(5)] * 5,
+            *[wait_fixed(5)] * 11,
             wait_fixed(2),
         ),
     )

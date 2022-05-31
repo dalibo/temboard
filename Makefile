@@ -42,12 +42,12 @@ venv-2.7:
 	.venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
-	.venv-py$*/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e agent/ -e ui/
+	.venv-py$*/bin/pip install -r docs/requirements.txt -r requirements-dev.txt -e agent/ -e ui/
 	.venv-py$*/bin/temboard --version  # pen test
 	.venv-py$*/bin/temboard-agent --version  # pen test
 
 install-2.7: venv-2.7
-	.venv-py2.7/bin/pip install -r docs/requirements.txt -r ui/requirements-dev.txt -e ui/
+	.venv-py2.7/bin/pip install -r docs/requirements.txt -r requirements-dev.txt -e ui/
 	.venv-py2.7/bin/temboard --version  # pen test
 
 clean:  #: Trash venv and containers.

@@ -6,6 +6,7 @@ from datetime import datetime
 from errno import ENOTEMPTY
 from getpass import getuser
 from pathlib import Path
+from textwrap import dedent
 
 import httpx
 import pytest
@@ -61,13 +62,24 @@ class Browser:
         return self.select("body").screenshot_as_png
 
     def hidden(self, selector, timeout=3):
+        waiter = WebDriverWait(self.webdriver, timeout)
+        element = self.select(selector)
+        if 'dialog' == element.get_attribute('role'):
+            callable_ = waiter.until_not
+            attribute, value = 'class', 'show'
+            message = f"Element {selector} {attribute} still has {value}.",
+        else:
+            callable_ = waiter.until
+            attribute, value = 'class', 'd-none'
+            message = f"Element {selector} {attribute} does not have {value}.",
+
         # Waits until an element has d-none.
-        return WebDriverWait(self.webdriver, timeout).until(
+        return callable_(
             text_to_be_present_in_element_attribute(
                 (By.CSS_SELECTOR, selector),
-                'class', 'd-none',
+                attribute, value,
             ),
-            f"Element {selector} does not have d-none.",
+            message,
         )
 
     def hover(self, selector):
@@ -226,6 +238,14 @@ def registered_agent(
     browser.select("textarea#inputComment").send_keys("Registered by tests.")
 
     browser.select("button#submitFormAddInstance").click()
+    td = browser.select("td.agent_hostport")
+    assert f'0.0.0.0:{port}' in td.text
+
+    # Ensure modal succeed and hides.
+    browser.hidden("#InstanceModal")
+
+    # We should restart UI here to triggers monitoring and statements
+    # background tasks, saving one round of 60s of waiting.
 
     return browser
 
@@ -272,13 +292,13 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
 
     auto_configure = ui_sharedir / 'auto_configure.sh'
     logger.info("Calling %s.", auto_configure)
-    logfile = workdir / 'var/log/temboard/ui-auto-configure.log'
+    logfile = workdir / 'var/log/ui/auto-configure.log'
     logfile.parent.mkdir()
     try:
         subprocess.run([auto_configure], env=dict(
             env,
-            ETCDIR=str(workdir / 'etc/temboard'),
-            VARDIR=str(workdir / 'var/temboard'),
+            ETCDIR=str(workdir / 'etc/ui'),
+            VARDIR=str(workdir / 'var/ui'),
             LOGDIR=str(logfile.parent),
             LOGFILE=str(logfile),
             SYSUSER=ui_sysuser,
@@ -289,6 +309,15 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
+
+    extra_etc = workdir / 'etc/ui/temboard.conf.d/tests-extra.conf'
+    extra_etc.parent.mkdir()
+    extra_etc.write_text(dedent(f"""\
+    [logging]
+    method = file
+    destination = {logfile.parent}/serve.log
+    level = DEBUG
+    """))
 
     yield None
 
@@ -307,7 +336,7 @@ def ui_env(env, workdir):
         PGUSER='temboard',
         PGPASSWORD='temboard',
         PGDATABASE='temboardtest',
-        TEMBOARD_CONFIGFILE=str(workdir / 'etc/temboard/temboard.conf'),
+        TEMBOARD_CONFIGFILE=str(workdir / 'etc/ui/temboard.conf'),
         TEMBOARD_LOGGING_LEVEL='DEBUG',
         TEMBOARD_PORT='18888',
     )

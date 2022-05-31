@@ -52,7 +52,7 @@
     <tbody>
     {% for instance_item in instance_list %}
       <tr>
-        <td>{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
+        <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
         <td>{{instance_item.hostname}}</td>
         <td>
           {{instance_item.pg_version_summary}}

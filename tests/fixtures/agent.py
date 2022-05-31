@@ -5,6 +5,7 @@ import sys
 from configparser import ConfigParser
 from getpass import getuser
 from pathlib import Path
+from textwrap import dedent
 
 import httpx
 import pytest
@@ -43,17 +44,18 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
 
     auto_configure = agent_sharedir / 'auto_configure.sh'
     logger.info("Calling %s.", auto_configure)
-    logfile = workdir / 'var/log/agent-auto-configure.log'
+    logfile = workdir / 'var/log/agent/auto-configure.log'
+    logfile.parent.mkdir()
     res = subprocess.run(
         [str(auto_configure)],
         stdin=subprocess.PIPE,
         env=dict(
             agent_env,
-            ETCDIR=str(workdir / 'etc/temboard-agent'),
+            ETCDIR=str(workdir / 'etc/agent'),
             LOGDIR=str(logfile.parent),
             LOGFILE=str(logfile),
             SYSUSER=pguser,
-            VARDIR=str(workdir / 'var/temboard-agent'),
+            VARDIR=str(workdir / 'var/agent'),
         ),
     )
     try:
@@ -61,6 +63,15 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
+
+    etcdir = workdir / 'etc/agent/temboard-tests/'
+    extra_etc = etcdir / 'temboard-agent.conf.d/tests-extra.conf'
+    extra_etc.write_text(dedent(f"""\
+    [logging]
+    method = file
+    destination = {logfile.parent}/serve.log
+    level = DEBUG
+    """))
 
 
 @pytest.fixture(scope='session')
@@ -129,7 +140,7 @@ def agent_env(env, fqdn, workdir):
         PGPORT='55432',
         PGUSER='postgres',
         TEMBOARD_CONFIGFILE=str(
-            workdir / 'etc/temboard-agent/temboard-tests/temboard-agent.conf'
+            workdir / 'etc/agent/temboard-tests/temboard-agent.conf'
         ),
         TEMBOARD_HOSTNAME=fqdn,
         TEMBOARD_LOGGING_LEVEL='DEBUG',
