@@ -150,17 +150,24 @@ instances. Executing `dev/switchover.sh` one more time restore the original
 typology.
 
 
+## Testing with previous stable version
+
+Compose project for development configures a stable agent named `agent-stable`.
+This agent is preregistered in development UI. Browser `postgres-stable`
+instance in UI to ensure temBoard UI is compatible with stable agent.
+
+
 ## Launching Multiple Agents
 
 Default development environment instanciates two PostgreSQL instances and their
 temBoard agents. Root Makefile offers two targets to help testing big scale
 setup :
 
-- `make mass-agents` loops from 2347 to 3000 and instanciate a PostgreSQL
+- `make mass-agents` loops from 2348 to 3000 and instanciate a PostgreSQL
   instance and an agent to monitor it. Each instanciation requires you to type
   `y` and Enter. This allows to throttle instanciations and to stop when enough
   instances are up.
-- `make clean-agents` trashes every existing instances from 2347 to 3000,
+- `make clean-agents` trashes every existing instances from 2348 to 3000,
   without interaction. **make clean-agents does not unregister agents!**
 
 
