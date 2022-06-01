@@ -8,14 +8,16 @@ marker_expr=()
 
 if [ "$CIRCLE_BRANCH" = "$upstream" ] ; then
 	: "Run all tests on $upstream."
-elif ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/monitoring-files ; then
-	: "Skipping slow monitoring tests."
-	marker_expr+=("not slowmonitoring")
-elif ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/statements-files ; then
-	: "Skipping slow statements tests."
-	marker_expr+=("not slowstatements")
 else
-	: "Running all tests for modified files."
+    if ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/monitoring-files ; then
+        : "Skipping slow monitoring tests."
+        marker_expr+=("not slowmonitoring")
+    fi
+
+    if ! git diff --name-only "origin/$upstream"..HEAD | grep -f tests/statements-files ; then
+        : "Skipping slow statements tests."
+        marker_expr+=("not slowstatements")
+    fi
 fi
 
 # From https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
