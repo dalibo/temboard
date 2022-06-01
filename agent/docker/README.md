@@ -16,6 +16,6 @@ This docker image targets development environment and demo.
 - `TEMBOARD_KEY`: agent secret key
 - `TEMBOARD_LOGGING_LEVEL`: standard python logging level: `DEBUG`, `INFO`, etc.
 - `TEMBOARD_UI_URL`, `TEMBOARD_UI_USER` and `TEMBOARD_UI_PASSWORD`: URL and
-  credentials of the UI for autoregister and monitoring report.
+  credentials of the UI for autoregister.
 - `TEMBOARD_SSL_CA`, `TEMBOARD_SSL_CERT` and `TEMBOARD_SSL_KEY` for HTTPS.
 - `TEMBOARD_USERS`: a space separated list of `login:password`.
