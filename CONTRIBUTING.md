@@ -36,7 +36,7 @@ overview.
 - `docker/` - Quickstart Docker Compose file.
 - `tests/` - Functional integration tests.
 
-Python package is `temboardui` for temBoard UI and `temboardagent` for temBoard agent.
+Python package is `temboardui` for temBoard UI and `temboardagent` for temBoard
 agent.
 
 
@@ -162,6 +162,10 @@ invocation:
 
 ``` console
 $ docker-compose exec agent-stable sudo -u postgres psql
+psql (13.5 (Debian 13.5-0+deb11u1), server 13.7)
+Type "help" for help.
+
+postgres=#
 ```
 
 
@@ -172,9 +176,9 @@ temBoard agents. Root Makefile offers two targets to help testing big scale
 setup :
 
 - `make mass-agents` loops from 2348 to 3000 and instanciate a PostgreSQL
-  instance and an agent to monitor it. Each instanciation requires you to type
-  `y` and Enter. This allows to throttle instanciations and to stop when enough
-  instances are up.
+  instance for each number and an agent to monitor it. Number is used as agent
+  port. Each instanciation requires you to type `y` and Enter. This allows to
+  throttle instanciations and to stop when enough instances are up.
 - `make clean-agents` trashes every existing instances from 2348 to 3000,
   without interaction. **make clean-agents does not unregister agents!**
 
@@ -186,7 +190,7 @@ image tag in `docker-compose.override.yml`.
 
 ``` yml
 # file docker-compose.override.yml
-version: "2.4"
+version: "3.8"
 
 services:
   postgres0:
@@ -205,7 +209,8 @@ physical replication.
 
 ## Execute Unit Tests
 
-Enable the virtualenv and use pytest to run unit tests:
+Each UI and agent project has its own unit tests battery. Enable the virtualenv
+and use pytest to run unit tests:
 
 ``` console
 $ . .venv-py3.6/bin/activate
@@ -221,8 +226,9 @@ $
 
 ## Execute Integration Tests
 
-The `tests/` directory contains a pytest project to tests both UI and agent
-using selenium. These tests are not to be confused with `agent/tests/func`.
+The `tests/` directory contains a pytest project to tests UI and agent
+integration using Selenium. These tests are not to be confused with
+`agent/tests/func`.
 
 Execute these tests right from your virtualenv, using pytest:
 
@@ -253,11 +259,12 @@ $
 
 `pytests tests/ --help` describes custom options `--pg-version` and
 `--selenium`. Take care of the custom pytest report header, it shows which
-temboard and temboard-agent binary is used, the bin directory of PostgreSQL.
+temboard and temboard-agent binary is used, the bin directory of PostgreSQL and
+more.
 
 `pytests tests/ --fixtures` describes fixtures defined by tests/conftest.py.
 Fixtures configure a postgres for monitoring, an agent and the UI in `workdir/`
-prefix.
+prefix. This may help you write a new test.
 
 Selenium standalone container runs a headless Xvfb server with noVNC enabled.
 View live tests in your browser at http://localhost:7900/ . Click the connect
