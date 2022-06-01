@@ -21,13 +21,15 @@ INSERT INTO application.instances
 (agent_address, agent_port, agent_key, hostname, pg_port, comment, notify)
 VALUES
 ('0.0.0.0', 2345, 'key_for_agent', 'postgres0.dev', 5432, '', FALSE),
-('0.0.0.0', 2346, 'key_for_agent', 'postgres1.dev', 5432, '', FALSE);
+('0.0.0.0', 2346, 'key_for_agent', 'postgres1.dev', 5432, '', FALSE),
+('0.0.0.0', 2347, 'key_for_agent', 'postgres-stable.dev', 5432, '', FALSE);
 
 INSERT INTO application.instance_groups
 (agent_address, agent_port, group_name, group_kind)
 VALUES
 ('0.0.0.0', 2345, 'default', 'instance'),
-('0.0.0.0', 2346, 'default', 'instance');
+('0.0.0.0', 2346, 'default', 'instance'),
+('0.0.0.0', 2347, 'default', 'instance');
 
 INSERT INTO application.plugins
 (agent_address, agent_port, plugin_name)
@@ -43,4 +45,10 @@ VALUES
 ('0.0.0.0', 2346, 'activity'),
 ('0.0.0.0', 2346, 'monitoring'),
 ('0.0.0.0', 2346, 'maintenance'),
-('0.0.0.0', 2346, 'statements');
+('0.0.0.0', 2346, 'statements'),
+('0.0.0.0', 2347, 'dashboard'),
+('0.0.0.0', 2347, 'pgconf'),
+('0.0.0.0', 2347, 'activity'),
+('0.0.0.0', 2347, 'monitoring'),
+('0.0.0.0', 2347, 'maintenance'),
+('0.0.0.0', 2347, 'statements');

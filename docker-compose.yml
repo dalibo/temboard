@@ -116,6 +116,33 @@ services:
       SCREEN_WIDTH: 1280
       SCREEN_HEIGHT: 768
 
+  # First instance.
+  postgres-stable:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+    - data-stable:/var/lib/postgresql/data
+    - run-stable:/var/run/postgresql
+    - wal:/var/lib/postgresql/archive/
+    - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    command: *postgres_command
+
+  agent-stable:
+    image: dalibo/temboard-agent:7
+    ports: [2347:2345]
+    volumes:
+    - data-stable:/var/lib/postgresql/data
+    - run-stable:/var/run/postgresql
+    - /var/run/docker.sock:/var/run/docker.sock
+    links:
+    - postgres-stable:postgres-stable.dev
+    environment:
+      TEMBOARD_HOSTNAME: postgres-stable.dev
+      TEMBOARD_LOGGING_LEVEL: DEBUG
+      TEMBOARD_KEY: key_for_agent
+
 
 volumes:
   # Shared archive volume between replicated instances.
@@ -130,3 +157,6 @@ volumes:
   data1:
   # /run/postgresql to share socket between postgres instance and agent.
   run1:
+
+  data-stable:
+  run-stable:
