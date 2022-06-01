@@ -1,12 +1,14 @@
+from __future__ import absolute_import
+
 import http.client
 import json
 import logging
 import ssl
 from time import time
 
-from .toolkit.utils import ensure_bytes
-from .toolkit.errors import TemboardError
-from .toolkit.pycompat import PY2, HTTPError
+from .utils import ensure_bytes
+from .errors import TemboardError
+from .pycompat import PY2, HTTPError
 
 try:
     ConnectionError = ConnectionError
@@ -17,11 +19,11 @@ except NameError:  # python2
 logger = logging.getLogger(__name__)
 
 
-class TemboardAgentError(TemboardError):
+class TemboardHTTPError(TemboardError):
     def __init__(self, response):
         self.response = response
         self._message = None
-        super(TemboardAgentError, self).__init__(response.status, self.message)
+        super(TemboardHTTPError, self).__init__(response.status, self.message)
 
     @property
     def message(self):
@@ -40,27 +42,26 @@ class TemboardAgentError(TemboardError):
         return '<%s %s>' % (self.__class__.__name__, self)
 
 
-class TemboardAgentClient(object):
+class TemboardClient(object):
     ConnectionError = ConnectionError
-    Error = TemboardAgentError
+    Error = TemboardHTTPError
 
     log_headers = False
 
     @classmethod
-    def factory(cls, config, host, port, key=None):
+    def factory(cls, config, host, port):
         return cls(
             host, port,
             ca_cert_file=config.temboard.ssl_ca_cert_file,
-            key=key,
         )
 
-    def __init__(self, host, port, ca_cert_file=None, key=None):
+    def __init__(self, host, port, ca_cert_file=None):
         """ If ca_cert_file is None, HTTPS connection is unverified. """
         self.host = host
         self.port = port
         self.ca_cert_file = ca_cert_file
-        self.key = key  # Authentication key
         self._ssl_context = None
+        self._cookies = set()
 
     def __repr__(self):
         return '<%s %s:%s %s>' % (
@@ -86,9 +87,8 @@ class TemboardAgentClient(object):
     def request(self, method, path, headers=None, body=None):
         fullurl = 'https://%s:%s%s' % (self.host, self.port, path)
         headers = headers or {}
-
-        if self.key:
-            headers['X-TemBoard-Agent-Key'] = self.key
+        if self._cookies:
+            headers.setdefault('Cookie', "\n".join(self._cookies))
 
         if body:
             headers['Content-Type'] = 'application/json'
@@ -102,14 +102,14 @@ class TemboardAgentClient(object):
         conn = http.client.HTTPSConnection(
             self.host, self.port, context=self.ssl_context, timeout=30,
         )
-        conn.response_class = TemboardAgentResponse
+        conn.response_class = TemboardResponse
 
         if self.log_headers:
             for name, value in sorted(headers.items()):
                 logger.debug(">>> %s: %s", name, value)
 
         start_time = time()
-        conn.request(method, fullurl, body, headers)
+        conn.request(method, path, body, headers)
         response = conn.getresponse()
         duration = time() - start_time
         response.path = path
@@ -117,6 +117,11 @@ class TemboardAgentClient(object):
         if self.log_headers:
             for name, value in sorted(response.headers.items()):
                 logger.debug("<<< %s: %s", name, value)
+
+        if response.headers['set-cookie']:
+            cookie = response.headers['set-cookie']
+            logger.debug("Registering cookie %.16s... in session.", cookie)
+            self._cookies.add(cookie)
 
         logger.debug(
             "Response from %s:%s in %.3fs: %s.",
@@ -128,10 +133,10 @@ class TemboardAgentClient(object):
         return self.request('GET', path, headers)
 
     def post(self, path, body, headers=None):
-        return self.request('POST', path, headers)
+        return self.request('POST', path, headers, body)
 
 
-class TemboardAgentResponse(http.client.HTTPResponse):
+class TemboardResponse(http.client.HTTPResponse):
     # Extensions to HTTPResponse, inspired by httpx
 
     if PY2:
@@ -152,7 +157,7 @@ class TemboardAgentResponse(http.client.HTTPResponse):
 
     def raise_for_status(self):
         if self.status >= 400:
-            raise TemboardAgentError(self)
+            raise TemboardHTTPError(self)
         elif self.status >= 300:
             raise HTTPError(self.status, self.reason)
 

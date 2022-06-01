@@ -40,7 +40,7 @@ from temboardui.plugins.monitoring.tools import (
     parse_start_end,
 )
 from temboardui.toolkit import taskmanager
-from temboardui.temboardclient import TemboardAgentClient
+from temboardui.agentclient import TemboardAgentClient
 
 
 logger = logging.getLogger(__name__)
