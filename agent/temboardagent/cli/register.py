@@ -52,8 +52,9 @@ class Register(SubCommand):
             default=None,
         )
         parser.add_argument(
-            'ui_address',
-            metavar='TEMBOARD-UI-ADDRESS',
+            '--ui-url',
+            dest='temboard_ui_url',
+            metavar='URL',
             help="temBoard UI address to register to.",
         )
         super(Register, self).define_arguments(parser)
@@ -68,7 +69,7 @@ class Register(SubCommand):
             self.app.config,
             args.host, self.app.config.temboard.port,
         )
-        ui_url_raw = args.ui_address.rstrip('/')
+        ui_url_raw = self.app.config.temboard.ui_url.rstrip('/')
         ui_url = urlparse(ui_url_raw)
         uiclient = TemboardClient.factory(
             self.app.config, ui_url.hostname, ui_url.port,

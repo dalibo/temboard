@@ -223,6 +223,7 @@ class VersionAction(_VersionAction):
 def list_options_specs():
     # Generate each option specs.
     section = 'temboard'
+    yield OptionSpec(section, 'ui_url', validator=v.url)
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
     yield OptionSpec(

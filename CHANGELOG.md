@@ -14,6 +14,7 @@ script to proceed.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
   runtask`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
   `temboard-agent runtask` and `temboard-agent web` for debugging.
+- New agent option: `[temboard] ui_url`, pointing to UI URL.
 - temBoard agent auto_configure.sh does not configure file logging anymore.
   temBoard UI & agent package does not ship logrotate file anymore. temBoard UI
   & agent can still log to file if you configure it to do so.

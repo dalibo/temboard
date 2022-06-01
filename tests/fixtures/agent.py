@@ -37,7 +37,7 @@ def alice(agent_auto_configure, agent_env, sudo_pguser):
 
 
 @pytest.fixture(scope='session')
-def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
+def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, ui_url, workdir):
     """
     Configure temBoard agent for the postgres instance.
     """
@@ -66,7 +66,7 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
 
     try:
         subprocess.run(
-            [auto_configure],
+            [auto_configure, ui_url],
             env=env,
         ).check_returncode()
     except Exception:

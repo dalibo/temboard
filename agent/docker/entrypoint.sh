@@ -55,6 +55,7 @@ address = 0.0.0.0
 port = 2345
 ssl_cert_file = ${TEMBOARD_SSL_CERT-/usr/local/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem}
 ssl_key_file = ${TEMBOARD_SSL_KEY-/usr/local/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key}
+ui_url = ${TEMBOARD_UI_URL%/}
 
 [logging]
 method = stderr
