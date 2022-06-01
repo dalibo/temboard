@@ -90,6 +90,7 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
         verify=False,
     )
     client.agent_command = proc
+    logger.info("Waiting for agent to come up.")
     for attempt in retry_http():
         with attempt:
             client.get('/')

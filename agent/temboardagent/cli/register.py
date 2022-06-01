@@ -1,16 +1,15 @@
 import os
-import json
 import logging
-import re
 import socket
 from getpass import getpass
 from textwrap import dedent
 from sys import stdout
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 
 from ..errors import UserError
-from ..httpsclient import https_request
 from ..toolkit.app import SubCommand
+from ..toolkit.http import TemboardClient
 from ..tools import validate_parameters
 from ..types import T_PASSWORD, T_USERNAME
 from .app import app
@@ -62,67 +61,53 @@ class Register(SubCommand):
     def main(self, args):
         agent_baseurl = "https://{}:{}".format(
             args.host, self.app.config.temboard.port)
-        discover_url = agent_baseurl + '/discover'
+
+        logger.info("Working for agent listening at %s.", agent_baseurl)
+
+        agentclient = TemboardClient.factory(
+            self.app.config,
+            args.host, self.app.config.temboard.port,
+        )
+        ui_url_raw = args.ui_address.rstrip('/')
+        ui_url = urlparse(ui_url_raw)
+        uiclient = TemboardClient.factory(
+            self.app.config, ui_url.hostname, ui_url.port,
+        )
 
         try:
             # Getting system/instance informations using agent's discovering
             # API.
-            logger.info(
-                "Discovering system and PostgreSQL (%s) ...", discover_url)
-            code, content, cookies = https_request(
-                None,
-                'GET',
-                discover_url,
-                headers={
-                    "Content-type": "application/json",
-                    "X-Temboard-Agent-Key": app.config.temboard['key'],
-                },
-            )
-            infos = json.loads(content.decode("utf-8"))
+            logger.info("Discovering system and PostgreSQL ...")
+            response = agentclient.get('/discover')
+            response.raise_for_status()
+            infos = response.json()
 
-            logger.info("Agent responded at %s:%s.", agent_baseurl)
             logger.info(
-                "For %s instance at %s listening on port %s.",
+                "temboard agent for %s instance at %s listening on port %s.",
                 infos['pg_version_summary'],
                 infos['pg_data'], infos['pg_port'],
             )
 
-            logger.info("Login at %s ...", args.ui_address)
+            logger.info("Login at %s ...", ui_url_raw)
             username = ask_username()
             password = ask_password()
-            code, content, cookies = https_request(
-                None,
-                'POST',
-                "%s/json/login" % (args.ui_address.rstrip('/')),
-                headers={
-                    "Content-type": "application/json"
-                },
-                data={'username': username, 'password': password}
+            response = uiclient.post(
+                ui_url.path + '/json/login',
+                {'username': username, 'password': password},
             )
-            temboard_cookie = None
-            for cookie in cookies.split("\n"):
-                cookie_content = cookie.split(";")[0]
-                if re.match(r'^temboard=.*$', cookie_content):
-                    temboard_cookie = cookie_content
-                    continue
+            response.raise_for_status()
 
-            if args.groups:
-                groups = [g for g in args.groups.split(',')]
-            else:
-                groups = None
+            groups = args.groups
+            if groups:
+                groups = args.groups.split(',')
 
             # POSTing new instance
             logger.info(
-                "Registering instance/agent to %s ...", args.ui_address)
-            code, content, cookies = https_request(
-                None,
-                'POST',
-                "%s/json/register/instance" % (args.ui_address.rstrip('/')),
-                headers={
-                    "Content-type": "application/json",
-                    "Cookie": temboard_cookie
-                },
-                data={
+                "Registering instance/agent in %s ...", ui_url_raw)
+            path = ui_url.path + '/json/register/instance'
+            response = uiclient.post(
+                path,
+                {
                     'hostname': infos['hostname'],
                     'agent_key': app.config.temboard['key'],
                     'agent_address': args.host,
@@ -135,20 +120,16 @@ class Register(SubCommand):
                     'pg_version_summary': infos['pg_version_summary'],
                     'plugins': infos['plugins'],
                     'groups': groups
-                }
+                },
             )
-            if code != 200:
-                raise HTTPError(code, content)
-            logger.info("Done.")
-        except UserError:
-            raise
-        except HTTPError as e:
-            msg = json.loads(e.read())['error']
-            if e.url.startswith(agent_baseurl):
-                fmt = "Failed to contact agent: %s. Are you mixing agents ?"
-            raise UserError(fmt % msg)
-        except Exception as e:
-            raise UserError(str(e) or repr(e))
+            response.raise_for_status()
+            dashboard_url = ui_url_raw + '/server/%s/%s/dashboard' % (
+                args.host, self.app.config.temboard.port,
+            )
+            logger.info(
+                "Instance registered. Managed it at %s.", dashboard_url)
+        except TemboardClient.Error as e:
+            raise UserError(str(e))
 
         return 0
 

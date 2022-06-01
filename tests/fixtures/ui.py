@@ -244,6 +244,9 @@ def registered_agent(
     # Ensure modal succeed and hides.
     browser.hidden("#InstanceModal")
 
+    # Wait for one agent edit button to come up.
+    browser.select("table tbody tr td button.btn-outline-secondary")
+
     # We should restart UI here to triggers monitoring and statements
     # background tasks, saving one round of 60s of waiting.
 
@@ -265,6 +268,7 @@ def ui(ui_auto_configure, ui_env, ui_sudo, ui_url) -> httpx.Client:
     client = httpx.Client(base_url=ui_url, verify=False)
 
     try:
+        logger.info("Waiting for UI to come up.")
         for attempt in retry_http():
             with attempt:
                 client.get('/')
