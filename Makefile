@@ -10,8 +10,8 @@ apropos:  #: Show dev Makefile help.
 	@echo
 
 develop: develop-3.6  #: Create Python venv and docker services.
-develop-2.7::  #: Create development environment for Python 2.7.
-develop-%::
+develop-2.7:: .env  #: Create development environment for Python 2.7.
+develop-%:: .env
 	$(MAKE) install-$*
 	. .venv-py$*/bin/activate; $(MAKE) repository
 	docker-compose up -d
@@ -20,6 +20,9 @@ develop-%::
 	@echo "    You can now execute temBoard UI with .venv-py$*/bin/temboard"
 	@echo
 	@echo
+
+.env: dev/mkenv
+	$^ > $@
 
 repository:  #: Initialize temboard UI database.
 	docker-compose up -d repository
@@ -52,7 +55,7 @@ install-2.7: venv-2.7
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
-	rm -rf .venv-py* site/
+	rm -rf .venv-py* site/ .env
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
