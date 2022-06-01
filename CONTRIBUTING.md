@@ -156,6 +156,13 @@ Compose project for development configures a stable agent named `agent-stable`.
 This agent is preregistered in development UI. Browser `postgres-stable`
 instance in UI to ensure temBoard UI is compatible with stable agent.
 
+Access Postgres instance monitored by stable agent using the following compose
+invocation:
+
+``` console
+$ docker-compose exec agent-stable sudo -u postgres psql
+```
+
 
 ## Launching Multiple Agents
 
