@@ -273,9 +273,6 @@ $(function() {
   });
 
   $('#killButton').click(function terminate() {
-    if (!checkSession()) {
-      return;
-    }
     var pids = [];
     $('#tableActivity input:checked').each(function () {
       pids.push($(this).data('pid'));
@@ -289,7 +286,7 @@ $(function() {
     for(var i = 0; i < pids.length; i++) {
       pids_html += '<span class="badge badge-primary">'+pids[i]+'</span> ';
     }
-    $('#ModalInfo').html(pids_html);
+    $('#ModalInfo').html('Please confirm you want to terminated the following backend PIDs: ' + pids_html);
     var footer_html = '';
     footer_html += '<button type="button" id="submitKill" class="btn btn-danger">Yes, terminate</button>';
     footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
@@ -312,8 +309,20 @@ $(function() {
           window.location.replace(url);
         },
         error: function(xhr) {
-          if (xhr.status == 401) {
-            showNeedsLoginMsg();
+            console.log(xhr.status);
+          // 406 is for malformed X-Session.
+          if (xhr.status == 401 || xhr.status == 406) {
+            var params = $.param({redirect_to: window.location.href});
+            var info = '';
+            info += '<div class="row">';
+            info += '  <div class="col-12">';
+            info += '    <div class="alert alert-danger" role="alert">Agent login required: ' + escapeHtml(JSON.parse(xhr.responseText).error) + '</div>';
+            info += '    <p>Go to <a href="' + agentLoginUrl + '?' + params + '">Agent Login form</a> and try again to terminate backend.</div>';
+            info += '  </div>';
+            info += '</div>';
+            // Reuse Info dialog to avoid flicker while closing info and opening error.
+            $('#ModalInfo').html(info);
+            $('#ModalFooter').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
           }
           else
           {
@@ -444,30 +453,6 @@ $(function() {
     play();
     e.preventDefault();
   });
-
-  /**
-   * Redirects to agent login page if session is not provided
-   * Should be used in each action requiring xsession authentication.
-   *
-   * params:
-   * e - Optional browser event
-   *
-   */
-  function checkSession(e) {
-    if (!xsession) {
-      showNeedsLoginMsg();
-      e && e.stopPropagation();
-      return false;
-    }
-    return true;
-  }
-
-  function showNeedsLoginMsg() {
-    if (confirm('You need to be logged in the instance agent to perform this action')) {
-      var params = $.param({redirect_to: window.location.href});
-      window.location.href = agentLoginUrl + '?' + params;
-    }
-  }
 });
 
 var entityMap = {
