@@ -34,6 +34,7 @@ overview.
 - `perfui/` - Docker & Grafana project to visualize temBoard performances traces.
 - `dev/` - Development scripts and setup.
 - `docker/` - Quickstart Docker Compose file.
+- `tests/` - Functional integration tests.
 
 Python package is `temboardui` for temBoard UI and `temboardagent` for temBoard agent.
 agent.
