@@ -31,8 +31,9 @@ overview.
     - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
     - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
-- `perfui/` - Docker & Grafana project to visualize temBoard performances traces.
 - `dev/` - Development scripts and setup.
+  - `dev/perfui/` - Docker & Grafana project to visualize temBoard performances
+    traces.
 - `docker/` - Quickstart Docker Compose file.
 - `tests/` - Functional integration tests.
 

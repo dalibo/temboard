@@ -54,7 +54,7 @@ You will see the following `perf` messages in temBoard logs.
 To visualize temBoard's performances traces, the development environment of
 temBoard ships et Grafana setup with Prometheus and Loki. See
 [Contributing](CONTRIBUTING.md) to setup a development environment. The Grafana
-project is versionned in perfui/ directory. A docker-compose.yml file describes
+project is versionned in dev/perfui/ directory. A docker-compose.yml file describes
 the services and configuration. `importlog.py` Python script backfills
 Prometheus and Loki from temBoard traces file.
 
@@ -63,8 +63,8 @@ The setup requires dnsdock instead of exposing port. You may add a
 Loki and Prometheus network host.
 
 ``` console
-perfui/$ docker-compose up -d
-perfui/$ ./importlog.py my-temboard.log
+dev/perfui/$ docker-compose up -d
+dev/perfui/$ ./importlog.py my-temboard.log
 I: Analyzing systemd.log.
 I: Read timezone from /etc: Europe/Paris.
 ...
@@ -78,7 +78,7 @@ BLOCK ULID                  MIN TIME       MAX TIME       DURATION      NUM SAMP
 01FTE7W2G0CGHM0GZQFYP2KD0Z  1643294766000  1643299198001  1h13m52.001s  1643         1086         1086         117422
 01FTE7W2J70EJATMMGAXHHDP09  1643299209000  1643302995001  1h3m6.001s   4484         3476         3476         372009
 I: View graph and messages at: http://grafana.temboardperf.docker:3000/d/MkhXLKbnz/temboard-performance?orgId=1&from=1643292534000&to=1643303055000&var-logfile=systemd.log.
-perfui/$
+dev/perfui/$
 ```
 
 Follow the final link to see the dashboard narrowed to the date interval
@@ -96,7 +96,7 @@ Please take advise:
 If you need to restart from scratch, just trash the compose setup and restart.
 
 ``` console
-perfui/$ docker-compose down -v
+dev/perfui/$ docker-compose down -v
 Stopping perfui_prometheus_1 ... done
 Stopping perfui_loki_1       ... done
 Stopping perfui_grafana_1    ... done
@@ -105,6 +105,6 @@ Removing perfui_loki_1       ... done
 Removing perfui_grafana_1    ... done
 Removing network perfui_default
 Removing volume perfui_grafana-data
-perfui/$ docker-compose up -d
+dev/perfui/$ docker-compose up -d
 ...
 ```
