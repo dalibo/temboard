@@ -336,6 +336,8 @@ jobs:
           upstream=master  # Update when branching to v8.
           tests/pytest-ci $upstream -vvv --pg-version=<< parameters.pgversion >> tests/
     - store_artifacts:
+        path: /workspace/tests/logs/
+    - store_artifacts:
         path: /workspace/tests/screenshots/
     - *pip-cache-save
 

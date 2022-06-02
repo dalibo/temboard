@@ -1,9 +1,14 @@
 import httpx
+from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException
 from tenacity import (
     Retrying, retry_if_exception_type, stop_after_delay,
     wait_chain, wait_fixed,
 )
+
+
+# Unique identifier for screenshots and log files.
+session_tag = datetime.now().strftime('%H:%M')
 
 
 def retry_fast(exc_type=AssertionError):

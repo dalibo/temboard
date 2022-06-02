@@ -144,6 +144,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     cluster_name = 'temboard-tests'
     external_pid_file = '{pidfile}'
     log_directory = '{logdir}'
+    log_filename = 'postgres.log'
     log_line_prefix = '%t [%p]: user=%u,db=%d,app=%a,client=%h '
     log_lock_waits = on
     logging_collector = on

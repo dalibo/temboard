@@ -2,7 +2,6 @@ import logging
 import os.path
 import subprocess
 import sys
-from datetime import datetime
 from errno import ENOTEMPTY
 from getpass import getuser
 from pathlib import Path
@@ -28,7 +27,7 @@ from sh import (
     sudo,
 )
 
-from fixtures.utils import retry_http, retry_slow
+from fixtures.utils import retry_http, retry_slow, session_tag
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,6 @@ class Browser:
     # Helper for selenium API.
     def __init__(self, webdriver):
         self.webdriver = webdriver
-        self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
     UNDEFINED = object()
 
@@ -207,7 +205,7 @@ def browser(browser_session, request):
     if request.node.rep_call.passed:
         return
 
-    filename = f"{browser_session.screenshot_tag}_{request.node.nodeid}.png"
+    filename = f"{session_tag}_{request.node.nodeid}.png"
     path = browser_session.screenshots_dir / filename
     png = browser_session.get_full_page_screenshot_as_png()
     with path.open('wb') as fo:
