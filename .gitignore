@@ -1,5 +1,4 @@
 # Python runtime files
-.venv-py*
 *.egg-info/
 *.ipynb_checkpoints
 *.pyc
@@ -13,6 +12,7 @@ site/
 .env
 dev/agent-bash_history
 dev/pip-cache
+dev/venv-py*
 
 # Test runtime files
 .coverage

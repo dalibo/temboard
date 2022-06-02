@@ -63,7 +63,7 @@ services and initializes temBoard database.
 $ make develop
 make venv-3.6
 make[1] : on entre dans le répertoire « /home/.../src/dalibo/temboard »
-python3.6 -m venv .venv-py3.6/
+python3.6 -m venv dev/venv-py3.6/
 ...
 2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.
 Initialized role temboard and database temboard.
@@ -73,10 +73,10 @@ Creating temboard_instance_1 ... done
 Creating temboard_agent_1    ... done
 
 
-    You can now execute temBoard UI with .venv-py3.6/bin/temboard
+    You can now execute temBoard UI with dev/venv-py3.6/bin/temboard
 
 
-$ .venv-py3.6/bin/temboard --debug
+$ dev/venv-py3.6/bin/temboard --debug
  INFO: Starting temboard 8.0.dev0.
  INFO: Found config file /home/.../temboard/temboard.conf.
  INFO: Running on Debian GNU/Linux 11 (bullseye).
@@ -213,7 +213,7 @@ Each UI and agent project has its own unit tests battery. Enable the virtualenv
 and use pytest to run unit tests:
 
 ``` console
-$ . .venv-py3.6/bin/activate
+$ . dev/venv-py3.6/bin/activate
 $ pytest ui/tests/unit
 ...
 ==== 31 passed, 10 warnings in 1.10 seconds ======
@@ -233,10 +233,10 @@ integration using Selenium. These tests are not to be confused with
 Execute these tests right from your virtualenv, using pytest:
 
 ``` console
-$ . .venv-py3.6/bin/activate
+$ . dev/venv-py3.6/bin/activate
 $ pytest tests/
 ============================= test session starts ==============================
-platform linux -- Python 3.6.8, pytest-7.0.1, pluggy-1.0.0 -- /home/bersace/src/dalibo/temboard/.venv-py3.6/bin/python3.6
+platform linux -- Python 3.6.8, pytest-7.0.1, pluggy-1.0.0 -- /home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/python3.6
 cachedir: .pytest_cache
 postgresql: 14 (/usr/lib/postgresql/14/bin)
 sqlalchemy: 1.4.35
@@ -244,8 +244,8 @@ system: Debian GNU/Linux 11 (bullseye)
 tornado: 6.1
 libpq: 14.2
 psycopg2: 2.9.3 (dt dec pq3 ext lo64)
-temboard: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard)
-temboard-agent: 8.0.dev0 (/home/bersace/src/dalibo/temboard/.venv-py3.6/bin/temboard-agent)
+temboard: 8.0.dev0 (/home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/temboard)
+temboard-agent: 8.0.dev0 (/home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/temboard-agent)
 rootdir: /home/bersace/src/dalibo/temboard/tests, configfile: pytest.ini
 plugins: mock-3.6.1, cov-3.0.0, tornado-0.8.1, anyio-3.5.0
 ...
@@ -328,7 +328,7 @@ $ grunt watch
 The documentation is written in Markdown and built with `mkdocs`.
 
 ``` console
-$ .venv-py3.6/bin/mkdocs serve
+$ dev/venv-py3.6/bin/mkdocs serve
 INFO     -  Building documentation...
 INFO     -  Cleaning site directory
 INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
