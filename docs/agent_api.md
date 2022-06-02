@@ -2,130 +2,6 @@
 
 ## Core API {#core_api}
 
-> User login
->
-> reqheader Content-Type
->
-> :   `application/json`
->
-> status 200
->
-> :   no error
->
-> status 404
->
-> :   invalid username or password
->
-> status 500
->
-> :   internal error
->
-> status 406
->
-> :   username or password malformed or missing
-
-**Example request**:
-
-``` http
-POST /login HTTP/1.1
-Content-Type: application/json
-
-{
-    "username": "alice",
-    "password": "foo!!"
-}
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:19:48 GMT
-Content-type: application/json
-
-{"session": "fa452548403ac53f2158a65f5eb6db9723d2b07238dd83f5b6d9ca52ce817b63"}
-```
-
-**Error responses**:
-
-``` http
-HTTP/1.0 404 Not Found
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:20:33 GMT
-Content-type: application/json
-
-{"error": "Invalid username/password."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:21:01 GMT
-Content-type: application/json
-
-{"error": "Parameter 'password' is malformed."}
-```
-
-> User logout
->
-> reqheader X-Session
->
-> :   Session ID
->
-> status 200
->
-> :   no error
->
-> status 401
->
-> :   invalid session ID
->
-> status 500
->
-> :   internal error
->
-> status 406
->
-> :   session ID malformed
-
-**Example request**:
-
-``` http
-GET /logout HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:33:19 GMT
-Content-type: application/json
-
-{"logout": true}
-```
-
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:36:33 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:37:23 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
 
 > Get global informations about the environment
 >
@@ -136,6 +12,7 @@ Content-type: application/json
 > status 500
 >
 > :   internal error
+
 
 **Example request**:
 
@@ -164,31 +41,18 @@ Content-type: application/json
 
 > Get current username
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session ID
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   session ID malformed
 
 **Example request**:
 
 ``` http
 GET /profile HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -204,57 +68,20 @@ Content-type: application/json
 }
 ```
 
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:36:33 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:37:23 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Get all notifications from the agent.
->
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
 >
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session ID
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   session ID malformed
 
 **Example request**:
 
 ``` http
 GET /notifications HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -271,26 +98,6 @@ Content-type: application/json
     {"date": "2016-04-11T15:50:57", "username": "alice", "message": "PostgreSQL reload"},
     {"date": "2016-04-11T15:48:50", "username": "alice", "message": "PostgreSQL reload"}
 ]
-```
-
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:36:33 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:37:23 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
 ```
 
 > Get informations about the agent
@@ -333,31 +140,18 @@ Content-type: application/json
 > Control PostgreSQL server. Supported actions are `start`, `stop`,
 > `restart` and `reload`.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header or parameter is malformed.
 
 **Example request**:
 
 ``` http
 POST /administration/control HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-Type: application/json
 
 {
@@ -382,15 +176,6 @@ Content-type: application/json
 **Error responses**:
 
 ``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
 HTTP/1.0 406 Not Acceptable
 Server: temboard-agent/0.0.1 Python/2.7.8
 Date: Wed, 22 Apr 2015 09:58:00 GMT
@@ -403,31 +188,19 @@ Content-type: application/json
 
 > Get list of PostgreSQL backends.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
+
 
 **Example request**:
 
 ``` http
 GET /activity HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -461,53 +234,20 @@ Content-type: application/json
 }
 ```
 
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Get list of PostgreSQL backends waiting for lock acquisition.
->
-> reqheader X-Session
->
-> :   Session ID
 >
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /activity/waiting HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -545,31 +285,18 @@ Content-type: application/json
 > Get list of PostgreSQL backends blocking other backends due to lock
 > acquisition.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /activity/blocking HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -606,31 +333,18 @@ Content-type: application/json
 
 > Terminate (kill) a list of PostgreSQL backends.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 POST /activity/kill HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-Type: application/json
 
 {
@@ -663,33 +377,16 @@ Content-type: application/json
 > Get the whole last data set used to render dashboard view. Data have
 > been collected async.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -742,55 +439,18 @@ Content-type: application/json
 }
 ```
 
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Get the dashboard plugin config.
->
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
 >
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -809,24 +469,6 @@ Content-type: application/json
 
 **Error responses**:
 
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Synchronous version of `/dashboard`. Please refer to `/dashboard` API
 > documentation for details.
 
@@ -834,33 +476,14 @@ Content-type: application/json
 > `history_length` from the `dashboard` section of configuration file.
 > Default value is `150`.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
-> status 200
->
 > :   no error
->
-> status 401
->
-> :   invalid session
 >
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/history HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -925,33 +548,16 @@ Content-type: application/json
 > Get the number of buffers allocated by PostgreSQL `background writer`
 > process.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/buffers HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -968,33 +574,16 @@ Content-type: application/json
 
 > Get PostgreSQL global cache hit ratio.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/hitratio HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1011,33 +600,16 @@ Content-type: application/json
 
 > Get the total number of active backends.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/active_backends HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1060,33 +632,16 @@ Content-type: application/json
 
 > Get CPU usage.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/cpu HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1112,33 +667,16 @@ Content-type: application/json
 
 > System loadaverage.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/loadaverage HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1157,33 +695,16 @@ Content-type: application/json
 
 > Memory usage.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/memory HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1208,33 +729,16 @@ Content-type: application/json
 
 > Machine hostname.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/hostname HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1253,33 +757,16 @@ Content-type: application/json
 
 > Operating system version.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/os_version HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1298,33 +785,16 @@ Content-type: application/json
 
 > Get PostgreSQL server version.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/pg_version HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1343,33 +813,16 @@ Content-type: application/json
 
 > Number of CPU.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/n_cpu HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1388,33 +841,16 @@ Content-type: application/json
 
 > PostgreSQL cluster size & number of databases.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/databases HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1441,33 +877,16 @@ Content-type: application/json
 
 > Get a bunch of global informations about system and PostgreSQL.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/info HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1491,33 +910,16 @@ Content-type: application/json
 
 > Get the max_connections settings value.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 ``` http
 GET /dashboard/active_backends HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1538,35 +940,18 @@ Content-type: application/json
 
 > Run `sessions` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/sessions HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1598,57 +983,20 @@ Content-type: application/json
 }
 ```
 
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Run `xacts` monitoring probe.
->
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
 >
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/xacts HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1676,35 +1024,18 @@ Content-type: application/json
 
 > Run `locks` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/locks HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1747,35 +1078,18 @@ Content-type: application/json
 
 > Run `blocks` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/blocks HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1804,35 +1118,18 @@ Content-type: application/json
 
 > Run `bgwriter` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/bgwriter HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1868,35 +1165,18 @@ Content-type: application/json
 
 > Run `db_size` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/db_size HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1929,35 +1209,18 @@ Content-type: application/json
 
 > Run `tblspc_size` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/tblspc_size HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -1996,35 +1259,18 @@ Content-type: application/json
 
 > Run `filesystems_size` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/filesystems_size HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2059,35 +1305,18 @@ Content-type: application/json
 
 > Run `cpu` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/cpu HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2148,35 +1377,18 @@ Content-type: application/json
 
 > Run `process` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/process HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2206,35 +1418,18 @@ Content-type: application/json
 
 > Run `memory` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/memory HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2265,35 +1460,18 @@ Content-type: application/json
 
 > Run `loadavg` monitoring probe.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/loadavg HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2320,31 +1498,18 @@ Content-type: application/json
 
 > Run `wal_files` monitoring probe.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /monitoring/probe/wal_files HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2378,31 +1543,18 @@ Content-type: application/json
 > Get PostgreSQL settings from `pg_settings` system view and
 > configuration files.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /pgconf/configuration HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2439,53 +1591,20 @@ Content-type: application/json
 ]
 ```
 
-**Error responses**:
-
-``` http
-HTTP/1.0 401 Unauthorized
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Invalid session."}
-```
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'X-Session' is malformed."}
-```
-
 > Get list of settings categories.
->
-> reqheader X-Session
->
-> :   Session ID
 >
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /pgconf/configuration/categories HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2510,26 +1629,14 @@ Content-type: application/json
 > Update one or many PostgreSQL settings values. This API issues
 > `ALTER SYSTEM` SQL statements.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` or setting item is malformed.
->
+
 > status 400
 >
 > :   invalid JSON format.
@@ -2539,7 +1646,6 @@ Content-type: application/json
 ``` http
 POST /pgconf/configuration HTTP/1.1
 Content-Type: application/json
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 {
     "settings":
@@ -2576,10 +1682,6 @@ Content-type: application/json
 
 > Get list of settings for one category, based on category name.
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > param category_name
 >
 > :   Setting category name
@@ -2588,23 +1690,14 @@ Content-type: application/json
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /pgconf/configuration/category/Autovacuum HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2643,31 +1736,18 @@ Content-type: application/json
 
 > Shows settings waiting for PostgreSQL server restart
 >
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /pgconf/configuration/status HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2706,35 +1786,18 @@ Content-type: application/json
 
 > Get information about the instance and its databases
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2775,35 +1838,18 @@ Content-type: application/json
 
 > Get information about one database
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -2876,35 +1922,18 @@ Content-type: application/json
 
 > Get information about one schema
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/schema/public HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3030,35 +2059,18 @@ Content-type: application/json
 
 > Get information about one table
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/schema/public/table/country HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3137,36 +2149,19 @@ Content-type: application/json
 > The mode parameter can be a combination of \'full\', \'freeze\' or
 > \'analyze\'.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'mode\' is malformed
->     or Parameter \'datetime\' is maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/vacuum HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3196,36 +2191,19 @@ Content-type: application/json
 > The mode parameter can be a combination of \'full\', \'freeze\' or
 > \'analyze\'.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'mode\' is malformed
->     or Parameter \'datetime\' is maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/schema/public/table/country/vacuum HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3250,35 +2228,18 @@ Content-type: application/json
 
 > Get the id of the scheduled VACUUM operations for the given table.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/schema/public/table/country/vacuum/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3306,35 +2267,18 @@ Content-type: application/json
 
 > Cancel the given VACUUM operation.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 DELETE /maintenance/vacuum/9ce6426b HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3351,35 +2295,18 @@ Content-type: application/json
 
 > Get the id of all the scheduled VACUUM operations.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/vacuum/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3417,35 +2344,18 @@ Content-type: application/json
 
 > Get the id of all the scheduled VACUUM operations.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/vacuum/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3485,36 +2395,19 @@ Content-type: application/json
 >
 > The ANALYZE can be scheduled if [datetime]{.title-ref} is provided.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'datetime\' is
->     maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/analyze HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3540,36 +2433,19 @@ Content-type: application/json
 >
 > The ANALYZE can be scheduled if [datetime]{.title-ref} is provided.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'datetime\' is
->     maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/schema/public/table/country/analyze HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3593,35 +2469,18 @@ Content-type: application/json
 
 > Get the id of the scheduled ANALYZE operations for the given database
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/analyze/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3649,35 +2508,18 @@ Content-type: application/json
 
 > Get the id of the scheduled ANALYZE operations for the given table.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/schema/public/table/country/analyze/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3705,35 +2547,18 @@ Content-type: application/json
 
 > Cancel the given ANALYZE operation.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 DELETE /maintenance/analyze/1045055e HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3750,35 +2575,18 @@ Content-type: application/json
 
 > Get the id of all the scheduled ANALYZE operations.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/analyze/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -3818,36 +2626,19 @@ Content-type: application/json
 >
 > The REINDEX can be scheduled if [datetime]{.title-ref} is provided.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'datetime\' is
->     maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/reindex HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3873,36 +2664,19 @@ Content-type: application/json
 >
 > The REINDEX can be scheduled if [datetime]{.title-ref} is provided.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'datetime\' is
->     maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/schema/public/table/country/reindex HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3928,36 +2702,19 @@ Content-type: application/json
 >
 > The REINDEX can be scheduled if [datetime]{.title-ref} is provided.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed, Parameter \'datetime\' is
->     maformed.
+
 
 **Example request**:
 
 ``` http
 POST /maintenance/postgres/schema/public/index/country_pkey/reindex HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 Content-type: application/json
 
 {
@@ -3981,35 +2738,18 @@ Content-type: application/json
 
 > Get the id of the scheduled REINDEX operations for the given database.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/reindex/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -4047,90 +2787,41 @@ Content-type: application/json
 
 > Get the id of the scheduled REINDEX operations for the given schema.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 > Get the id of the scheduled REINDEX operations for the given schema.
 > Alias for
 > [/maintenance/\<database_name>/schema/\<schema_name>/reindex/scheduled]{.title-ref}
 > (See below). Note: does not filter on table.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 > Get the id of the scheduled REINDEX operations for the given schema.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/postgres/schema/public/reindex/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -4158,35 +2849,18 @@ Content-type: application/json
 
 > Cancel the given REINDEX operation.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 DELETE /maintenance/reindex/7f377004 HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -4203,35 +2877,18 @@ Content-type: application/json
 
 > Get the id of all the scheduled REINDEX operations.
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
 >
-> status 401
->
-> :   invalid session
->
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /maintenance/reindex/scheduled HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 ```
 
 **Example response**:
@@ -4261,21 +2918,9 @@ Content-type: application/json
 
 > Get latest statistics of executed SQL statements
 >
-> query key
->
-> :   Agent\'s key for authentication (optional)
->
-> reqheader X-Session
->
-> :   Session ID
->
 > status 200
 >
 > :   no error
->
-> status 401
->
-> :   invalid session
 >
 > status 404
 >
@@ -4284,16 +2929,11 @@ Content-type: application/json
 > status 500
 >
 > :   internal error
->
-> status 406
->
-> :   header `X-Session` is malformed.
 
 **Example request**:
 
 ``` http
 GET /statements HTTP/1.1
-X-Session: 3b28ed94743e3ada57b217bbf9f36c6d1eb45e669a1ab693e8ca7ac3bd070b9e
 
 {
   "snapshot_datetime": "2020-03-17 17:31:25.0929+01",
