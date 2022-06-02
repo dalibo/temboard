@@ -98,6 +98,14 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 	openssl x509 -req -in request.pem -CA ui/share/temboard_ca_certs_CHANGEME.pem -CAkey ui/share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out ui/share/temboard_CHANGEME.pem
 	rm -f request.pem agent/share/temboard-agent_ca_certs_CHANGEME.srl ui/share/temboard_ca_certs_CHANGEME.srl
 
+.PHONY: tests
+tests:  #: Execute all tests.
+	cd agent/; flake8
+	cd ui/; flake8
+	flake8 tests/ dev/perfui/
+	pytest -x agent/tests/unit/
+	pytest -x ui/tests/unit/
+	pytest -x tests/
 
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
