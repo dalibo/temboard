@@ -142,7 +142,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement requirements-dev.txt --editable ui/
+            pip install --upgrade --requirement dev/requirements.txt --editable ui/
       - run:
           name: Lint Agent
           command: |
@@ -184,7 +184,7 @@ jobs:
     - run:
         name: Install UI and tooling.
         command: |
-          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement requirements-dev.txt
+          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt
     - run:
         name: Install Agent.
         command: |
@@ -328,7 +328,7 @@ jobs:
         command: tests/install-all
     - run:
         name: Install test dependencies
-        command: pip3 install -r requirements-dev.txt
+        command: pip3 install -r dev/requirements.txt
     - run:
         name: Run pytest
         command: |
