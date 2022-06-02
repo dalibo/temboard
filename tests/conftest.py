@@ -89,7 +89,8 @@ def log_tweaks():
     # Try to remove log directory if empty.
     logdir = Path("tests/logs")
     try:
-        logdir.rmdir()
+        if logdir.exists():
+            logdir.rmdir()
     except OSError as e:
         if ENOTEMPTY != e.errno:
             raise
