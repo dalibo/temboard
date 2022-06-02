@@ -6,8 +6,6 @@
 # Buildtime files
 build/
 dist/
-# From mkdocs
-site/
 # From dev compose project
 .env
 dev/agent-bash_history

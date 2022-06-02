@@ -1,3 +1,4 @@
+site_dir: dev/build/docs
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
