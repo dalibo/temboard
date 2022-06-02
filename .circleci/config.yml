@@ -115,14 +115,17 @@ jobs:
         - ui/dist/*.whl
 
   doc:
-    docker: [{image: "python:3.5"}]
+    docker: [{image: "python:3.6"}]
     working_directory: *working_directory
     steps:
     - checkout
     - run:
-        name: Build documentation with mkdocs
+        name: Install mkdocs and extensions
         command: |
           pip install --upgrade --requirement docs/requirements.txt
+    - run:
+        name: Build documentation with mkdocs
+        command: |
           mkdocs build --strict
     - store_artifacts:
         path: README.html
