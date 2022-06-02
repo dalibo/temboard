@@ -180,17 +180,23 @@ def workdir(request):
     Create a FHS-like tree in tests/workdir.
     """
 
-    path = Path(request.config.rootdir) / 'workdir'
-    if path.exists():
-        logger.info("Cleaning existing %s.", path)
+    if 'CI' in os.environ:
+        logger.info("Working in root filesystem.")
+        root = Path('/')
+
+        yield root
+    else:
+        path = Path(request.config.rootdir) / 'workdir'
+        logger.info("Working in local work directory %s.", path)
+        if path.exists():
+            logger.info("Cleaning existing %s.", path)
+            rmtree(path)
+
+        path.mkdir()
+        for name in 'etc', 'etc/pki', 'run', 'var', 'var/log':
+            (path / name).mkdir()
+
+        yield path
+
+        logger.info("Cleaning %s.", path)
         rmtree(path)
-
-    logger.info("Creating %s.", path)
-    path.mkdir()
-    for name in 'etc', 'etc/pki', 'run', 'var', 'var/log':
-        (path / name).mkdir()
-
-    yield path
-
-    logger.info("Cleaning %s.", path)
-    rmtree(path)

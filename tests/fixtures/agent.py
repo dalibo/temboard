@@ -43,35 +43,55 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
     """
 
     auto_configure = agent_sharedir / 'auto_configure.sh'
+    etcdir = Path(agent_env['TEMBOARD_CONFIGFILE']).parent
     logger.info("Calling %s.", auto_configure)
-    logfile = workdir / 'var/log/agent/auto-configure.log'
-    logfile.parent.mkdir()
-    res = subprocess.run(
-        [str(auto_configure)],
-        stdin=subprocess.PIPE,
-        env=dict(
+    if 'CI' in os.environ:
+        logfile = workdir / 'var/log/temboard-agent-auto-configure.log'
+        logdir = workdir / 'var/log/temboard-agent'
+        env = dict(
             agent_env,
-            ETCDIR=str(workdir / 'etc/agent'),
+        )
+    else:
+        logfile = workdir / 'var/log/agent/auto-configure.log'
+        logfile.parent.mkdir()
+        logdir = logfile.parent
+        env = dict(
+            agent_env,
+            ETCDIR=str(etcdir.parent),
             LOGDIR=str(logfile.parent),
             LOGFILE=str(logfile),
             SYSUSER=pguser,
             VARDIR=str(workdir / 'var/agent'),
-        ),
-    )
+        )
+
     try:
-        res.check_returncode()
+        subprocess.run(
+            [auto_configure],
+            env=env,
+        ).check_returncode()
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
 
-    etcdir = workdir / 'etc/agent/temboard-tests/'
     extra_etc = etcdir / 'temboard-agent.conf.d/tests-extra.conf'
     extra_etc.write_text(dedent(f"""\
     [logging]
     method = file
-    destination = {logfile.parent}/serve.log
+    destination = {logdir}/serve.log
     level = DEBUG
     """))
+
+    yield
+
+    logger.info("Purging agent installation.")
+    purge = agent_sharedir / 'purge.sh'
+    try:
+        subprocess.run(
+            [purge, 'temboard-tests'], env=env,
+        ).check_returncode()
+    except Exception:
+        sys.stderr.write(logfile.read_text())
+        raise
 
 
 @pytest.fixture(scope='session')
@@ -133,6 +153,7 @@ def agent_env(env, fqdn, workdir):
     Generate environment for temBoard agent processes.
     """
 
+    dirname = 'temboard-agent' if 'CI' in os.environ else 'agent'
     return dict(
         env,
         PGDATABASE='postgres',
@@ -141,7 +162,7 @@ def agent_env(env, fqdn, workdir):
         PGPORT='55432',
         PGUSER='postgres',
         TEMBOARD_CONFIGFILE=str(
-            workdir / 'etc/agent/temboard-tests/temboard-agent.conf'
+            workdir / 'etc' / dirname / 'temboard-tests/temboard-agent.conf'
         ),
         TEMBOARD_HOSTNAME=fqdn,
         TEMBOARD_LOGGING_LEVEL='DEBUG',

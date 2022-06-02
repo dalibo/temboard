@@ -6,6 +6,7 @@ ETCDIR=${ETCDIR-/etc/temboard}
 VARDIR=${VARDIR-/var/lib/temboard}
 LOGDIR=${LOGDIR-/var/log/temboard}
 LOGFILE=${LOGFILE-/var/log/temboard-purge.log}
+SYSUSER=${SYSUSER-temboard}
 
 catchall() {
 	# shellcheck disable=SC2181
@@ -22,6 +23,10 @@ fatal() {
 	exit 1
 }
 
+log() {
+	echo "$@" | tee -a /dev/fd/3 >&2
+}
+
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else
@@ -33,16 +38,25 @@ fi
 # Now, log everything.
 set -x
 
-if systemctl cat temboard &>/dev/null ; then
+if systemctl is-system-running && systemctl cat temboard &>/dev/null ; then
 	systemctl disable --now temboard
 	systemctl reset-failed temboard || true
 fi
 
-if getent passwd temboard ; then
-	userdel temboard
+if getent passwd "$SYSUSER" && [ "$(whoami)" != "$SYSUSER" ]; then
+	userdel "$SYSUSER"
 fi
 
-sudo -iu postgres dropdb --if-exists temboard
-sudo -iu postgres dropuser --if-exists temboard
+if [ -d "$PGHOST" ] ; then
+	# If local, sudo to PGUSER.
+	run_as_postgres=(sudo -nEHu "${PGUSER}")
+else
+	run_as_postgres=(env)
+fi
+
+"${run_as_postgres[@]}" dropdb --if-exists "${TEMBOARD_DATABASE-temboard}"
+"${run_as_postgres[@]}" dropuser --if-exists temboard || :
 
 rm -rf "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
+
+log "temBoard UI unconfigured."

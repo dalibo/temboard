@@ -59,7 +59,7 @@ fi
 
 migratedb=(
 	"${runas[@]}"
-	temboard
+	"$(type -p temboard)"
 	${TEMBOARD_CONFIGFILE+--config=$TEMBOARD_CONFIGFILE}
 	migratedb
 )
