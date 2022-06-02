@@ -27,5 +27,5 @@ exclude Makefile
 exclude package.json
 prune packaging/deb
 prune packaging/rpm
-exclude requirements-dev.txt
+exclude dev/requirements.txt
 prune tests

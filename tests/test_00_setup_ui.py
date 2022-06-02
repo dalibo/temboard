@@ -17,18 +17,18 @@ def test_temboard_help():
     temboard('--help')
 
 
-def test_migratedb_no_database():
+def test_migratedb_no_database(ui_sudo):
     with pytest.raises(ErrorReturnCode):
-        temboard('migratedb', 'check')
+        ui_sudo.temboard.migratedb.check()
 
 
 # Next tests of this module has auto_configure.sh executed.
 
 
-def test_routes(ui_auto_configure):
-    assert '/login' in temboard('routes')
+def test_routes(ui_auto_configure, ui_sudo, ):
+    assert '/login' in ui_sudo.temboard.routes()
 
-    assert '/statements' in temboard('routes', '--sort')
+    assert '/statements' in ui_sudo.temboard.routes('--sort')
 
 
 def test_auto_configure(ui_auto_configure):

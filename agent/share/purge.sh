@@ -11,9 +11,9 @@ LOGDIR=${LOGDIR-/var/log/temboard-agent}
 instance_path="$1"
 instance_name="${instance_path//\//-}"
 
-if type -p systemctl >/dev/null ; then
+if type -p systemctl >/dev/null && systemctl is-system-running && [ -w /etc/systemd/system ]; then
 	echo "Stopping and disabling systemd service." >&2
-	! systemctl disable --now "temboard-agent@$instance_name"
+	systemctl disable --now "temboard-agent@$instance_name" || true
 fi
 
 echo "Cleaning files and directories..." >&2

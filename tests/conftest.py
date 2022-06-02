@@ -11,8 +11,10 @@
 import logging
 import os
 import sys
+from errno import ENOTEMPTY
 from functools import partial
 from pathlib import Path
+from shutil import copy as cp
 
 import pytest
 import sh
@@ -25,6 +27,7 @@ from fixtures.utils import rmtree
 
 # Import fixtures
 from fixtures import *  # noqa: F401, F403
+from fixtures.utils import session_tag
 
 
 logger = logging.getLogger(__name__)
@@ -80,6 +83,51 @@ def log_tweaks():
     root = logging.getLogger()
     root.addHandler(handler)
     root.setLevel(logging.INFO)
+
+    yield
+
+    # Try to remove log directory if empty.
+    logdir = Path("tests/logs")
+    try:
+        if logdir.exists():
+            logdir.rmdir()
+    except OSError as e:
+        if ENOTEMPTY != e.errno:
+            raise
+
+
+@pytest.fixture(autouse=True)
+def save_logs(request, workdir):
+    yield
+
+    if request.node.rep_call.passed:
+        return
+
+    logdir = Path("tests/logs") / session_tag / request.node.nodeid
+    logdir.mkdir(exist_ok=True, parents=True)
+    candidates = [
+        workdir / 'var/log/agent/auto-configure.log',
+        workdir / 'var/log/agent/serve.log',
+        workdir / 'var/log/temboard-agent/serve.log',
+        workdir / 'var/log/temboard-auto-configure.log',
+        workdir / 'var/log/temboard/serve.log',
+        workdir / 'var/log/ui/auto-configure.log',
+        workdir / 'var/log/ui/serve.log',
+        workdir / 'var/log/postgresql/postgres.log',
+    ]
+
+    for path in candidates:
+        if not path.exists():
+            continue
+
+        logger.info("Saving log file %s.", path)
+        parent = path.parent.name
+        if 'agent' in parent or 'ui' in parent or 'temboard' in parent:
+            # Avoid conflict for serve.log, auto-configure.log, etc.
+            dest = logdir / f"{parent}-{path.name}"
+        else:
+            dest = logdir / path.name
+        cp(path, dest)
 
 
 def pytest_addoption(parser):
@@ -180,17 +228,23 @@ def workdir(request):
     Create a FHS-like tree in tests/workdir.
     """
 
-    path = Path(request.config.rootdir) / 'workdir'
-    if path.exists():
-        logger.info("Cleaning existing %s.", path)
+    if 'CI' in os.environ:
+        logger.info("Working in root filesystem.")
+        root = Path('/')
+
+        yield root
+    else:
+        path = Path(request.config.rootdir) / 'workdir'
+        logger.info("Working in local work directory %s.", path)
+        if path.exists():
+            logger.info("Cleaning existing %s.", path)
+            rmtree(path)
+
+        path.mkdir()
+        for name in 'etc', 'etc/pki', 'run', 'var', 'var/log':
+            (path / name).mkdir()
+
+        yield path
+
+        logger.info("Cleaning %s.", path)
         rmtree(path)
-
-    logger.info("Creating %s.", path)
-    path.mkdir()
-    for name in 'etc', 'etc/pki', 'run', 'var', 'var/log':
-        (path / name).mkdir()
-
-    yield path
-
-    logger.info("Cleaning %s.", path)
-    rmtree(path)

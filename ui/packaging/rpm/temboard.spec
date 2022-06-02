@@ -66,18 +66,12 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
-%{__install} -d %{buildroot}/var/log/temboard
-%{__install} -d %{buildroot}/var/lib/temboard
 
 %files
-%config(noreplace) %attr(-,temboard,temboard) %{confdir}
 %{python_sitelib}/*
 /usr/share/temboard/*
 /usr/bin/temboard
-%attr(-,temboard,temboard) /var/log/temboard
 %{_unitdir}/temboard.service
-
-%attr(-,temboard,temboard) /var/lib/temboard
 
 %changelog
 * Wed Nov 8 2017 Julien Tachoires <julmon@gmail.com> - 1.1-1

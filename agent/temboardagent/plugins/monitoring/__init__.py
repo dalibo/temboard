@@ -286,7 +286,7 @@ def monitoring_collector_worker(app):
 
 def iter_metrics_for_logfmt(data):
     # Generates a flat sequence of record dict containing key value for logfmt
-    # printing. See perfui/ in temboard project to analyze such data.
+    # printing. See dev/perfui/ in temboard project to analyze such data.
     for k, v in data.items():
         for vv in v:
             record = dict()

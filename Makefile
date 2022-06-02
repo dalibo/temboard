@@ -13,11 +13,11 @@ develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
 	$(MAKE) install-$*
-	. .venv-py$*/bin/activate; $(MAKE) repository
+	. dev/venv-py$*/bin/activate; $(MAKE) repository
 	docker-compose up -d
 	@echo
 	@echo
-	@echo "    You can now execute temBoard UI with .venv-py$*/bin/temboard"
+	@echo "    You can now execute temBoard UI with dev/venv-py$*/bin/temboard"
 	@echo
 	@echo
 
@@ -37,25 +37,27 @@ restart-selenium:  #: Restart selenium development container.
 	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv .venv-py$*/
-	.venv-py$*/bin/python --version  # pen test
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/
+	dev/venv-py$*/bin/python --version  # pen test
+	dev/venv-py$*/bin/pip --version  # pen test
 
 venv-2.7:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv .venv-py2.7/
-	.venv-py2.7/bin/python --version  # pen test
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/
+	dev/venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
-	.venv-py$*/bin/pip install -r docs/requirements.txt -r requirements-dev.txt -e agent/ -e ui/
-	.venv-py$*/bin/temboard --version  # pen test
-	.venv-py$*/bin/temboard-agent --version  # pen test
+	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/
+	dev/venv-py$*/bin/temboard --version  # pen test
+	dev/venv-py$*/bin/temboard-agent --version  # pen test
 
 install-2.7: venv-2.7
-	.venv-py2.7/bin/pip install -r docs/requirements.txt -r requirements-dev.txt -e ui/
-	.venv-py2.7/bin/temboard --version  # pen test
+	dev/venv-py2.7/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e ui/
+	dev/venv-py2.7/bin/temboard --version  # pen test
+	dev/venv-py2.7/bin/temboard-agent --version  # pen test
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
-	rm -rf .venv-py* site/ .env
+	rm -rf dev/venv-py* .venv-py* site/ .env
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191

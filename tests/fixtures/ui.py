@@ -2,7 +2,6 @@ import logging
 import os.path
 import subprocess
 import sys
-from datetime import datetime
 from errno import ENOTEMPTY
 from getpass import getuser
 from pathlib import Path
@@ -28,7 +27,7 @@ from sh import (
     sudo,
 )
 
-from fixtures.utils import retry_http, retry_slow
+from fixtures.utils import retry_http, retry_slow, session_tag
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,6 @@ class Browser:
     # Helper for selenium API.
     def __init__(self, webdriver):
         self.webdriver = webdriver
-        self.screenshot_tag = datetime.now().strftime('%H%M%S')
 
     UNDEFINED = object()
 
@@ -207,7 +205,7 @@ def browser(browser_session, request):
     if request.node.rep_call.passed:
         return
 
-    filename = f"{browser_session.screenshot_tag}_{request.node.nodeid}.png"
+    filename = f"{session_tag}_{request.node.nodeid}.png"
     path = browser_session.screenshots_dir / filename
     png = browser_session.get_full_page_screenshot_as_png()
     with path.open('wb') as fo:
@@ -287,46 +285,64 @@ def ui(ui_auto_configure, ui_env, ui_sudo, ui_url) -> httpx.Client:
 
 
 @pytest.fixture(scope='session')
-def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir):
+def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir: Path):
     """
     Configure UI with auto_configure.sh in tests/workdir/.
     """
 
-    from sh import dropdb
-
+    dirname = 'temboard' if 'CI' in os.environ else 'ui'
     auto_configure = ui_sharedir / 'auto_configure.sh'
-    logger.info("Calling %s.", auto_configure)
-    logfile = workdir / 'var/log/ui/auto-configure.log'
-    logfile.parent.mkdir()
-    try:
-        subprocess.run([auto_configure], env=dict(
-            env,
+
+    env = dict(
+        env,
+        TEMBOARD_DATABASE=ui_env['PGDATABASE'],
+        TEMBOARD_PASSWORD=ui_env['PGPASSWORD'],
+        TEMBOARD_PORT=ui_env['TEMBOARD_PORT'],
+    )
+    if 'CI' in os.environ:
+        logfile = workdir / 'var/log/temboard-auto-configure.log'
+        logdir = logfile.parent / 'temboard'
+    else:
+        logfile = workdir / 'var/log/ui/auto-configure.log'
+        logfile.parent.mkdir(exist_ok=True)
+        logdir = logfile.parent
+        env.update(dict(
             ETCDIR=str(workdir / 'etc/ui'),
             VARDIR=str(workdir / 'var/ui'),
             LOGDIR=str(logfile.parent),
-            LOGFILE=str(logfile),
             SYSUSER=ui_sysuser,
-            TEMBOARD_DATABASE=ui_env['PGDATABASE'],
-            TEMBOARD_PASSWORD=ui_env['PGPASSWORD'],
-            TEMBOARD_PORT=ui_env['TEMBOARD_PORT'],
-        )).check_returncode()
+        ))
+    env['LOGFILE'] = str(logfile)
+
+    logger.info("Calling %s.", auto_configure)
+    try:
+        subprocess.run(
+            [auto_configure], env=env,
+        ).check_returncode()
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
 
-    extra_etc = workdir / 'etc/ui/temboard.conf.d/tests-extra.conf'
+    extra_etc = workdir / 'etc' / dirname / 'temboard.conf.d/tests-extra.conf'
     extra_etc.parent.mkdir()
     extra_etc.write_text(dedent(f"""\
     [logging]
     method = file
-    destination = {logfile.parent}/serve.log
+    destination = {logdir}/serve.log
     level = DEBUG
     """))
 
     yield None
 
-    logger.info("Dropping database temboardtest.")
-    dropdb('temboardtest')
+    logger.info("Purging UI installation.")
+    purge = ui_sharedir / 'purge.sh'
+    try:
+        subprocess.run(
+            [purge], env=env,
+        ).check_returncode()
+    except Exception:
+        sys.stderr.write(logfile.read_text())
+        raise
 
 
 @pytest.fixture(scope='session')
@@ -335,12 +351,13 @@ def ui_env(env, workdir):
     Configure environment for temBoard UI processes.
     """
 
+    dirname = 'temboard' if 'CI' in os.environ else 'ui'
     return dict(
         env,
         PGUSER='temboard',
         PGPASSWORD='temboard',
         PGDATABASE='temboardtest',
-        TEMBOARD_CONFIGFILE=str(workdir / 'etc/ui/temboard.conf'),
+        TEMBOARD_CONFIGFILE=str(workdir / 'etc' / dirname / 'temboard.conf'),
         TEMBOARD_LOGGING_LEVEL='DEBUG',
         TEMBOARD_PORT='18888',
     )
@@ -368,16 +385,19 @@ def ui_sharedir():
 
 
 @pytest.fixture(scope='session')
-def ui_sudo(ui_sysuser):
+def ui_sudo(ui_env, ui_sysuser):
     """Returns amoffat/sh command to eventually sudo to UI Unix user."""
     if ui_sysuser == getuser():
-        return env_cmd
+        cmd = env_cmd
     else:
-        return sudo.bake(
+        cmd = sudo.bake(
             non_interactive=True, set_home=True, preserve_env=True,
             user=ui_sysuser,
             _in=None,
         )
+        cmd = cmd.bake("env")
+
+    return cmd.bake(f"PATH={os.environ['PATH']}", _env=ui_env)
 
 
 @pytest.fixture(scope='session')

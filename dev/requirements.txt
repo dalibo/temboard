@@ -5,7 +5,7 @@ pytest
 pytest-cov
 pytest-mock
 pytest-tornado
-pytz  # for perfui/
+pytz  # for dev/perfui/
 mock
 docutils
 psycopg2-binary

@@ -94,7 +94,7 @@ def find_locale():
 
 
 @pytest.fixture(scope='session')
-def postgres(agent_env, pguser, sudo_pguser, workdir):
+def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     """
     Initialize a PostgreSQL instance for monitoring by a temBoard agent.
 
@@ -109,9 +109,9 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     logger.info("Creating %s.", pgdata)
     pgdata.mkdir()
     logdir = workdir / 'var/log/postgresql'
-    logdir.mkdir()
+    logdir.mkdir(exist_ok=True)
     socketdir = Path(agent_env['PGHOST'])
-    socketdir.mkdir()
+    socketdir.mkdir(exist_ok=True)
     chown("--recursive", pguser, pgdata, logdir, socketdir)
 
     locale_ = find_locale()
@@ -144,6 +144,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir):
     cluster_name = 'temboard-tests'
     external_pid_file = '{pidfile}'
     log_directory = '{logdir}'
+    log_filename = 'postgres.log'
     log_line_prefix = '%t [%p]: user=%u,db=%d,app=%a,client=%h '
     log_lock_waits = on
     logging_collector = on
