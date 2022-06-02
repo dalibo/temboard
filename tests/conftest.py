@@ -49,6 +49,8 @@ def env():
     """
 
     # Configure libpq with superuser from docker-compose.yml
+    os.environ.setdefault('PGHOST', '0.0.0.0')
+    os.environ.setdefault('PGPORT', '5432')
     os.environ.setdefault('PGUSER', 'postgres')
     os.environ.setdefault('PGPASSWORD', 'postgres')
 

@@ -4,7 +4,7 @@ apropos:  #: Show dev Makefile help.
 	@echo
 	@echo "make target available:"
 	@echo
-	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-16s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
+	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-24s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
 	@echo
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
@@ -27,13 +27,13 @@ develop-%:: .env
 repository:  #: Initialize temboard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
-	PGHOST=0.0.0.0 DEV=1 ui/share/create_repository.sh
+	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=1 ui/share/create_repository.sh
 
 recreate-repository:
 	docker-compose up --detach --force-recreate --renew-anon-volumes repository
 	$(MAKE) repository
 
-restart-selenium:  #: Restart selenium development container
+restart-selenium:  #: Restart selenium development container.
 	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
@@ -85,11 +85,11 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 			--file docker/docker-compose.agent.yml \
 		down --volumes
 
-renew-sslca:  #: Renew CA for self signed certificate
+renew-sslca:  #: Renew CA for self signed certificates.
 	openssl req -batch -x509 -new -nodes -key agent/share/temboard-agent_CHANGEME.key -sha256 -days 1095 -out agent/share/temboard-agent_ca_certs_CHANGEME.pem
 	openssl req -batch -x509 -new -nodes -key ui/share/temboard_CHANGEME.key -sha256 -days 1095 -out ui/share/temboard_ca_certs_CHANGEME.pem
 
-renew-sslcert:  #: Renew self-signed SSL certificate
+renew-sslcert:  #: Renew self-signed SSL certificates.
 	openssl req -batch -new -key agent/share/temboard-agent_CHANGEME.key -out request.pem
 	openssl x509 -req -in request.pem -CA agent/share/temboard-agent_ca_certs_CHANGEME.pem -CAkey agent/share/temboard-agent_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out agent/share/temboard-agent_CHANGEME.pem
 	openssl req -batch -new -key ui/share/temboard_CHANGEME.key -out request.pem
@@ -101,7 +101,7 @@ VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 # To test release target, override GIT_REMOTE with your own fork.
 GIT_REMOTE=git@github.com:dalibo/temboard.git
-release:  #: Tag and push a new git release
+release:  #: Tag and push a new git release.
 	$(info Checking we are on branch $(BRANCH).)
 	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
 	$(info Checking agent and UI version are same)
@@ -124,10 +124,10 @@ PYDIST=\
 	ui/dist/temboard-$(VERSION)-py3-none-any.whl \
 
 # To test PyPI upload, set TWINE_REPOSITORY=testpypi environment variable.
-upload:  #: Upload Python artefacts to PyPI.
+release-pypi:  #: Upload Python artefacts to PyPI.
 	twine upload $(PYDIST)
 
-packages:  #: Build and upload packages dalibo.org.
+release-packages:  #: Build and upload packages to Dalibo Labs repositories.
 	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
 	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
 	$(MAKE) -c ui/packaging/rpm rhel8 rhel7

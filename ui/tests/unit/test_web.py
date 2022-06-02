@@ -23,15 +23,25 @@ def test_app_route(mocker):
 
     @app.route('/', methods=['GET', 'POST'])
     def index(request):
-        pass
+        yield ''
 
     request = mocker.Mock(name='request', host_name='0.0.0.0', path='/')
-    handler = app.default_router.find_handler(request)
+    try:
+        router = app.default_router
+    except AttributeError:  # PY2
+        request = mocker.Mock(name='request', host='0.0.0.0', path='/')
+        dispatcher = app.start_request(request, None)
+        dispatcher.set_request(request)
+        kwargs = dispatcher.handler_kwargs
+    else:
+        handler = router.find_handler(request)
+        kwargs = handler.handler_kwargs
 
-    assert handler.handler_kwargs['methods'] == ['GET', 'POST']
+    assert kwargs['methods'] == ['GET', 'POST']
 
 
 def test_handler(executor, io_loop, mocker):
+    from tornado.gen import coroutine
     from temboardui.web import CallableHandler
 
     mod = 'temboardui.web'
@@ -40,11 +50,14 @@ def test_handler(executor, io_loop, mocker):
     cls = mod + '.CallableHandler'
     gsc = mocker.patch(cls + '.get_secure_cookie')
 
-    callable_ = mocker.MagicMock(__name__='callable', return_value=None)
+    @coroutine
+    def callable_(*a):
+        return
+
     handler = CallableHandler(
         mocker.Mock(name='app', ui_methods={}, executor=executor),
         mocker.Mock(name='request'),
-        callable_=callable_,
+        callable_=mocker.Mock(side_effect=callable_),
     )
     # Mock handler._execute
     handler._transforms = {}
@@ -53,7 +66,7 @@ def test_handler(executor, io_loop, mocker):
     io_loop.run_sync(handler.prepare)
     assert handler.request.db_session
     io_loop.run_sync(handler.get)
-    assert callable_.called is True
+    assert handler.callable_.called is True
 
     # Test other get_current_user cases
     grbc.return_value = 'user'

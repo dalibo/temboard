@@ -24,6 +24,10 @@ script to proceed.
 - Post install script of temBoard UI RPM does not execute auto_configure.sh.
 - temBoard UI RPM does not create `temboard` UNIX user. Use auto_configure.sh
   instead.
+- Python 2.7 and 3.5 support is deprecated and will be removed in next major
+  release.
+- Debian Stretch support is deprecated and will be removed in next major
+  release.
 
 
 ## [7.11] - Unreleased

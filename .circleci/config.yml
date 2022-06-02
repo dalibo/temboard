@@ -6,12 +6,11 @@ workflows:
     jobs:
     - doc: {name: stage0-doc}
     - lint: {name: stage0-lint}
-    - unit-agent: {name: stage0-unit-agent-py3.6}
-    - unit-ui:
-       name: stage0-unit-ui-py<< matrix.pyversion >>
+    - unit:
+       name: stage0-unit-py<< matrix.pyversion >>
        matrix:
          parameters:
-           pyversion: ["3.5", "2.7"]
+           pyversion: ["3.6", "3.5", "2.7"]
     - dist: {name: stage0-dist}
     - rpm:
         name: stage1-pkg-<< matrix.codename >>
@@ -28,8 +27,7 @@ workflows:
     - func: &func
         name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires:
-        - stage0-unit-agent-py3.6
-        - stage0-unit-ui-py3.5
+        - stage0-unit-py3.6
         - stage1-pkg-<< matrix.dist >>
         matrix:
           parameters:
@@ -58,35 +56,35 @@ workflows:
     # following.
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [centos7]
             pgversion: ["9.6", "12"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [rockylinux8]
             pgversion: ["9.6", "14"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [bullseye]
             pgversion: ["13"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [buster]
             pgversion: ["11"]
     - func-legacy:
         name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-agent-py3.6, stage1-pkg-<< matrix.dist >>]
+        requires: [stage0-unit-py3.5, stage1-pkg-<< matrix.dist >>]
         matrix:
           parameters:
             dist: [stretch]
@@ -115,14 +113,17 @@ jobs:
         - ui/dist/*.whl
 
   doc:
-    docker: [{image: "python:3.5"}]
+    docker: [{image: "python:3.6"}]
     working_directory: *working_directory
     steps:
     - checkout
     - run:
-        name: Build documentation with mkdocs
+        name: Install mkdocs and extensions
         command: |
           pip install --upgrade --requirement docs/requirements.txt
+    - run:
+        name: Build documentation with mkdocs
+        command: |
           mkdocs build --strict
     - store_artifacts:
         path: README.html
@@ -164,12 +165,14 @@ jobs:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
 
-  unit-agent:
+  unit:
+    parameters:
+      pyversion:
+        description: "Python version"
+        type: enum
+        enum: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9"]
     docker:
-    - image: "python:3.6"
-      environment:
-        TERM: linux
-        TERMINFO: /etc/terminfo
+      - image: dalibo/buildpack-python:<< parameters.pyversion >>
     working_directory: *working_directory
     steps:
     - checkout
@@ -179,53 +182,44 @@ jobs:
           - temboard-{{ .Branch }}
           - temboard-master
     - run:
-        name: Install Agent and requirements
+        name: Install UI and tooling.
         command: |
-          pip install --upgrade --requirement requirements-dev.txt --editable agent/ psycopg2-binary
+          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement requirements-dev.txt
     - run:
-        name: Execute agent unit tests
+        name: Install Agent.
+        command: |
+          if [ "2.7" = "<< parameters.pyversion >>" ] ; then  # PY2
+              echo "Skipping agent for 2.7."
+              exit
+          fi
+          pip<< parameters.pyversion >> install --upgrade --editable agent/
+    - run:
+        name: Agent Unit Tests
+        command: |
+          if ! type -p temboard-agent ; then  # PY2
+              echo "Skipping uninstalled agent."
+              exit
+          fi
+          pytest --full-trace --cov-report=xml agent/tests/unit/
+    - run:
+        name: UI Unit Tests
+        command: |
+          pytest --full-trace --cov-report=xml ui/tests/unit/
+    - run:
+        name: setproctitle Integration Tests
         command: |
           set -x
-          pytest agent/tests/unit/
-          cd agent/
-          python -m temboardagent.toolkit.proctitle
+          cd ui/
+          # Called by script
+          python temboardui/toolkit/proctitle.py
+          # Called by module
+          python -m temboardui.toolkit.proctitle
+          # Inline script
+          python -c 'from temboardui.toolkit.proctitle import test_main; test_main()'
     - &pip-cache-save
       save_cache:
         key: temboard-{{ .Branch }}
         paths: ["~/.cache/pip/"]
-
-  unit-ui:
-    parameters:
-      pyversion:
-        description: "Python version"
-        type: enum
-        enum: ["2.7", "3.5"]
-    docker:
-      - image: python:<< parameters.pyversion >>
-    working_directory: *working_directory
-    steps:
-      - checkout
-      - *pip-cache-restore
-      - run:
-          name: Setup python environment
-          command: |
-            pip install --upgrade --requirement requirements-dev.txt --editable ui/
-      - run:
-          name: Python tests
-          command: |
-            pytest --full-trace --cov-report=xml ui/tests/unit/
-      - run:
-          name: Execute toolkit integration tests
-          command: |
-            set -x
-            cd ui/
-            # Called by script
-            python temboardui/toolkit/proctitle.py
-            # Called by module
-            python -m temboardui.toolkit.proctitle
-            # Inline script
-            python -c 'from temboardui.toolkit.proctitle import test_main; test_main()'
-      - *pip-cache-save
 
   rpm:
     parameters:
