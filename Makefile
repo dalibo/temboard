@@ -52,6 +52,7 @@ install-%: venv-%
 install-2.7: venv-2.7
 	.venv-py2.7/bin/pip install -r docs/requirements.txt -r requirements-dev.txt -e ui/
 	.venv-py2.7/bin/temboard --version  # pen test
+	.venv-py2.7/bin/temboard-agent --version  # pen test
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
