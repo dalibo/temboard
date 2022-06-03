@@ -10,8 +10,8 @@ script to proceed.
 - Move `temboard-migratedb` as `temboard migratedb` subcommand.
 - Move `temboard-agent-register` as `temboard-agent register` subcommand.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
-  runtask`, `temboard web`, `temboard-agent routes`, `temboard-agent runtask`
-  and `temboard-agent web` for debugging.
+  runtask`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
+  `temboard-agent runtask` and `temboard-agent web` for debugging.
 - temBoard agent auto_configure.sh does not configure file logging anymore.
   temBoard UI & agent package does not ship logrotate file anymore. temBoard UI
   & agent can still log to file if you configure it to do so.
