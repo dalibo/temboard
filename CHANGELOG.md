@@ -24,7 +24,7 @@ script to proceed.
 - Post install script of temBoard UI RPM does not execute auto_configure.sh.
 - temBoard UI RPM does not create `temboard` UNIX user. Use auto_configure.sh
   instead.
-- Fast collect of monitoring metrics upon agent registration.
+- Fast collect of monitoring and statements metrics upon agent registration.
 - temBoard UI dropped push-metrics handler from pre-6.0 push metric collect.
 - Python 2.7 and 3.5 support is deprecated and will be removed in next major
   release.

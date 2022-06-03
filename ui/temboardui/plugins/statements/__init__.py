@@ -19,6 +19,8 @@ from sqlalchemy.sql import (
     select,
     text,
 )
+
+from ...application import get_instance
 from temboardui.model import worker_engine
 from temboardui.model.orm import (
     Biggest,
@@ -818,6 +820,23 @@ def pull_data_worker(app):
                 "Failed to pull data from %s:%s",
                 instance.agent_address, instance.agent_port,
             )
+
+
+@workers.register(pool_size=1)
+def statements_pull1(app, host, port):
+    engine = worker_engine(app.config.repository)
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    worker_session = Session()
+    instance = get_instance(worker_session, host, port)
+
+    try:
+        pull_data_for_instance(app, worker_session, instance)
+    except Exception:
+        logger.exception(
+            "Failed to pull data from %s:%s",
+            instance.agent_address, instance.agent_port,
+        )
 
 
 def pull_data_for_instance(app, session, instance):

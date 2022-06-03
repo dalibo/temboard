@@ -60,6 +60,19 @@ def create_instance_helper(webapp, db_session, data):
             expire=0,
         )
 
+    if 'statements' in plugins:
+        logger.info("Schedule statements collect for agent now.")
+        taskmanager.schedule_task(
+            'statements_pull1',
+            listener_addr=tmsocket,
+            options=dict(
+                address=data['new_agent_address'],
+                port=data['new_agent_port'],
+            ),
+            expire=0,
+        )
+
+
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
     for plugin_name in plugins or []:
         # 'administration' plugin case: the plugin is not currently
