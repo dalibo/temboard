@@ -46,7 +46,7 @@ def test_database(browser, browse_statements, ensure_statements_data):
     # Filter
     browser.select("#filterInput").send_keys("pg_sett")
     matched_queries = browser.select_all(".main td.query pre.sql")
-    assert len(all_queries) > len(matched_queries)
+    assert len(all_queries) >= len(matched_queries)
     for td in matched_queries:
         assert 'pg_settings' in td.text
 
