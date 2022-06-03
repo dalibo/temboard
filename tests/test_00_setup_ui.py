@@ -2,6 +2,24 @@ import pytest
 from sh import temboard, ErrorReturnCode
 
 
+def test_setproctitle_script():
+    from sh import python3
+
+    python3('ui/temboardui/toolkit/proctitle.py')
+
+
+def test_setproctitle_inline():
+    from sh import python3
+
+    python3(c='import temboardui.toolkit.proctitle as pc; pc.test_main()')
+
+
+def test_setproctitle_module():
+    from sh import python3
+
+    python3(m='temboardui.toolkit.proctitle')
+
+
 def test_temboard_version():
     out = temboard('--version')
 

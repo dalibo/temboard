@@ -205,17 +205,6 @@ jobs:
         name: UI Unit Tests
         command: |
           pytest --full-trace --cov-report=xml ui/tests/unit/
-    - run:
-        name: setproctitle Integration Tests
-        command: |
-          set -x
-          cd ui/
-          # Called by script
-          python temboardui/toolkit/proctitle.py
-          # Called by module
-          python -m temboardui.toolkit.proctitle
-          # Inline script
-          python -c 'from temboardui.toolkit.proctitle import test_main; test_main()'
     - &pip-cache-save
       save_cache:
         key: temboard-{{ .Branch }}

@@ -24,12 +24,12 @@ develop-%:: .env
 .env: dev/mkenv
 	$^ > $@
 
-repository:  #: Initialize temboard UI database.
+repository:  #: Initialize temBoard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=1 ui/share/create_repository.sh
 
-recreate-repository:
+recreate-repository:  #: Reinitialize temBoard UI database.
 	docker-compose up --detach --force-recreate --renew-anon-volumes repository
 	$(MAKE) repository
 
@@ -37,12 +37,12 @@ restart-selenium:  #: Restart selenium development container.
 	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
 	dev/venv-py$*/bin/python --version  # pen test
 	dev/venv-py$*/bin/pip --version  # pen test
 
 venv-2.7:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/ --prompt "$${PWD##*/}-py2.7"
 	dev/venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
@@ -57,7 +57,7 @@ install-2.7: venv-2.7
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
-	rm -rf dev/venv-py* .venv-py* site/ .env
+	rm -rf dev/venv-py* .venv-py* dev/build/ agent/build/ ui/build/ .env agent/.coverage ui/.coverage
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
@@ -98,6 +98,14 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 	openssl x509 -req -in request.pem -CA ui/share/temboard_ca_certs_CHANGEME.pem -CAkey ui/share/temboard_CHANGEME.key -CAcreateserial -sha256 -days 1095 -out ui/share/temboard_CHANGEME.pem
 	rm -f request.pem agent/share/temboard-agent_ca_certs_CHANGEME.srl ui/share/temboard_ca_certs_CHANGEME.srl
 
+.PHONY: tests
+tests:  #: Execute all tests.
+	cd agent/; flake8
+	cd ui/; flake8
+	flake8 tests/ dev/perfui/
+	pytest -x agent/tests/unit/
+	pytest -x ui/tests/unit/
+	pytest -x tests/
 
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
