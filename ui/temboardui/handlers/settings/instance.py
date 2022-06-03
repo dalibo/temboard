@@ -1,3 +1,6 @@
+import os.path
+import logging
+
 from temboardui.application import (
     add_instance,
     add_instance_in_group,
@@ -20,6 +23,10 @@ from temboardui.web import (
     app,
     render_template,
 )
+from ...toolkit import taskmanager
+
+
+logger = logging.getLogger(__name__)
 
 
 def add_instance_in_groups(db_session, instance, groups):
@@ -39,6 +46,19 @@ def create_instance_helper(webapp, db_session, data):
         db_session, instance, plugins, webapp.config.temboard.plugins,
     )
 
+    tmsocket = os.path.join(app.config.temboard.home, '.tm.socket')
+    if 'monitoring' in plugins:
+        logger.info("Schedule monitoring collect for agent now.")
+        taskmanager.schedule_task(
+            'collector',
+            listener_addr=tmsocket,
+            options=dict(
+                address=data['new_agent_address'],
+                port=data['new_agent_port'],
+                key=data['agent_key'],
+            ),
+            expire=0,
+        )
 
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
     for plugin_name in plugins or []:
