@@ -15,11 +15,6 @@ from fixtures.utils import retry_slow
 logger = logging.getLogger(__name__)
 
 
-def test_quick_alerting(browser, browse_alerting):
-    # Quick pentest of status page.
-    browser.select("#checks-container")
-
-
 def test_quick_monitoring(browser, browse_monitoring):
     # Quick pentest of the monitoring page
     browser.select("a[aria-controls=metrics]").click()
@@ -43,37 +38,6 @@ def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
     browser.absent("#chartCtxForks")  # Chart's vanished
 
 
-@pytest.mark.slowmonitoring
-def test_alerts(browser, browse_alerting, ensure_monitoring_data):
-    checks = [
-        'btree_bloat',
-        'cpu_core',
-        'heap_bloat',
-        'hitreadratio_db',
-        'load1',
-        'memory_usage',
-        'rollback_db',
-        'sessions_usage',
-        'temp_files_size_delta',
-        'waiting_sessions_db',
-        'wal_files_archive',
-        'wal_files_total',
-    ]
-
-    wanted = {'badge-ok', 'badge-warning', 'badge-critical'}
-
-    for check in checks:
-        el = browser.refresh_until(f"#status-{check} .badge")
-        classes = set(el.get_attribute('class').split())
-        assert wanted & classes
-
-
-@pytest.fixture
-def browse_alerting(agent_login, browse_instance, browser):
-    """Go to Monitoring tab of current instance."""
-    browser.select("div.sidebar a.alerting").click()
-
-
 @pytest.fixture
 def browse_monitoring(agent_login, browse_instance, browser):
     """Go to Monitoring tab of current instance."""
@@ -86,10 +50,15 @@ def browse_monitoring(agent_login, browse_instance, browser):
 
 @pytest.fixture(scope='module')
 def ensure_monitoring_data(
-        agent, browse_instance, browser_session, registered_agent):
+        agent_conf, agent, browse_instance, browser_session, registered_agent,
+        ui_sudo):
     """Ensure agent process has two minutes running."""
     browser = browser_session
     browser.select("div.sidebar a.monitoring").click()
+    ui_sudo.temboard.schedule(
+        "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
+        agent_conf['temboard']['key'],
+    )
 
     browser.refresh_until("#nodataCPU")
 

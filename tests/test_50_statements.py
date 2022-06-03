@@ -7,10 +7,10 @@ import pytest
 pytestmark = pytest.mark.slowstatements
 
 
-def test_wait_for_data(browser, ensure_statements_data):
+def test_wait_for_data(browser, ensure_statements_data, ui_sudo):
     tds = browser.select_all(".main table tr td.database")
     databases = sorted([td.text for td in tds])
-    assert ['postgres', 'template1'] == databases
+    assert 'postgres' in databases
 
 
 def test_picker(browser, browse_statements, ensure_statements_data):
@@ -74,8 +74,15 @@ def browse_statements(agent_login, browse_instance, browser):
 
 
 @pytest.fixture(scope='module')
-def ensure_statements_data(agent_login, browse_instance, browser_session):
+def ensure_statements_data(
+        agent_conf, agent_login, browse_instance, browser_session, ui_sudo):
     """Waits for statements data to come up."""
     browser = browser_session
     browser.select("div.sidebar a.statements").click()
+    ui_sudo.temboard.schedule(
+        "statements_pull1", "0.0.0.0", str(agent_conf['temboard']['port']))
+    ui_sudo.temboard.schedule(
+        "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
+        agent_conf['temboard']['key'],
+    )
     browser.refresh_until(".main table tr td.database")
