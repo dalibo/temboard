@@ -37,12 +37,12 @@ restart-selenium:  #: Restart selenium development container.
 	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
 	dev/venv-py$*/bin/python --version  # pen test
 	dev/venv-py$*/bin/pip --version  # pen test
 
 venv-2.7:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/
+	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/ --prompt "$${PWD##*/}-py2.7"
 	dev/venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
