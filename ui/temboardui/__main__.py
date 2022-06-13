@@ -9,6 +9,7 @@ def main():
     __import__(__package__ + '.cli.query_agent')
     __import__(__package__ + '.cli.routes')
     __import__(__package__ + '.cli.runtask')
+    __import__(__package__ + '.cli.schedule')
     __import__(__package__ + '.cli.serve')
     __import__(__package__ + '.cli.web')
 

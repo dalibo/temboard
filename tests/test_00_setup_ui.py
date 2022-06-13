@@ -1,5 +1,9 @@
-import pytest
-from sh import temboard, ErrorReturnCode
+from sh import temboard
+
+
+def test_start_ui(ui, browser):
+    # Start UI ASAP to save some times.
+    pass
 
 
 def test_setproctitle_script():
@@ -35,21 +39,13 @@ def test_temboard_help():
     temboard('--help')
 
 
-def test_migratedb_no_database(ui_sudo):
-    with pytest.raises(ErrorReturnCode):
-        ui_sudo.temboard.migratedb.check()
-
-
-# Next tests of this module has auto_configure.sh executed.
-
-
-def test_routes(ui_auto_configure, ui_sudo, ):
+def test_routes(ui_auto_configure, ui_sudo):
     assert '/login' in ui_sudo.temboard.routes()
 
     assert '/statements' in ui_sudo.temboard.routes('--sort')
 
 
-def test_auto_configure(ui_auto_configure):
+def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 

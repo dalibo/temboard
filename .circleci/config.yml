@@ -52,43 +52,6 @@ workflows:
             dist: [buster]
             pgversion: ["10"]
 
-    # Please keep agent/tests/func/Makefile run-all test matrix sync with the
-    # following.
-    - func-legacy:
-        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
-        matrix:
-          parameters:
-            dist: [centos7]
-            pgversion: ["9.6", "12"]
-    - func-legacy:
-        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
-        matrix:
-          parameters:
-            dist: [rockylinux8]
-            pgversion: ["9.6", "14"]
-    - func-legacy:
-        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
-        matrix:
-          parameters:
-            dist: [bullseye]
-            pgversion: ["13"]
-    - func-legacy:
-        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-py3.6, stage1-pkg-<< matrix.dist >>]
-        matrix:
-          parameters:
-            dist: [buster]
-            pgversion: ["11"]
-    - func-legacy:
-        name: stage2-func-legacy-pg<< matrix.pgversion >>-<< matrix.dist >>
-        requires: [stage0-unit-py3.5, stage1-pkg-<< matrix.dist >>]
-        matrix:
-          parameters:
-            dist: [stretch]
-            pgversion: ["10"]
 
 jobs:
   dist:
@@ -329,43 +292,3 @@ jobs:
     - store_artifacts:
         path: /workspace/tests/screenshots/
     - *pip-cache-save
-
-
-  func-legacy:
-    parameters:
-      dist:
-        description: "Distribution"
-        type: enum
-        enum: [bullseye, buster, stretch, centos7, rockylinux8]
-      pgversion:
-        description: "PostgreSQL version for repository."
-        type: enum
-        enum: ["14", "13", "12", "11", "10", "9.6", "9.5"]
-      pythonbin:
-        description: "UI Python Executable"
-        type: enum
-        enum: ["python2.7", "python2", "python3.9", "python3.5", "python3"]
-        default: "python3"
-    docker:
-    - image: dalibo/buildpack-postgres:<< parameters.dist >>
-    - image: postgres:<< parameters.pgversion >>-alpine
-      environment:
-        POSTGRES_USER: temboard
-        POSTGRES_PASSWORD: &PGPASSWORD confidentiel
-    working_directory: *working_directory
-    steps:
-    - checkout
-    - attach_workspace:
-        at: *working_directory
-    - *pip-cache-restore
-    - run:
-        name: Agent Functionnal Tests
-        command: agent/tests/func/run_tests_docker.sh
-        environment:
-          TBD_INSTALL_PKG: "1"
-          TBD_PGVERSION: "<< parameters.pgversion >>"
-    - store_artifacts:
-        path: /tmp/tests_temboard/logs/postgresql.log
-    - *pip-cache-save
-    - store_artifacts:
-        path: ui/temboard-func.log
