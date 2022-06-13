@@ -11,7 +11,7 @@ from sh import (
     chown, locale,
 )
 
-from .utils import rmtree
+from .utils import copy_files, rmtree
 
 
 logger = logging.getLogger(__name__)
@@ -161,6 +161,11 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
 
     logger.info("Stopping instance at %s.", pgdata)
     sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "--mode=immediate", "stop")
+
+    if 'CI' in os.environ:
+        logfile = workdir / 'var/log/postgresql/postgres.log'
+        copy_files([logfile], Path('tests/logs'))
+
     rmtree(pgdata)
 
 

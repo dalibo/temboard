@@ -18,7 +18,7 @@ from sh import (
 )
 
 
-from .utils import retry_http
+from .utils import copy_files, retry_http
 
 
 logger = logging.getLogger(__name__)
@@ -127,6 +127,17 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
         proc.wait(timeout=5)
     except ErrorReturnCode as e:
         logger.info("temBoard agent exited with code %s.", e.exit_code)
+
+    if 'CI' not in os.environ:
+        return
+
+    candidates = [
+        workdir / 'var/log/agent/auto-configure.log',
+        workdir / 'var/log/agent/serve.log',
+        workdir / 'var/log/temboard-agent-auto-configure.log',
+        workdir / 'var/log/temboard-agent/serve.log',
+    ]
+    copy_files(candidates, Path("tests/logs"))
 
 
 @pytest.fixture(scope='session')
