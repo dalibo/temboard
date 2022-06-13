@@ -49,7 +49,11 @@ def sql_json_query(request, query, *args):
 
 @blueprint.instance_route(r"/alerting/alerts.json")
 def alerts(request):
-    host_id, instance_id = get_request_ids(request)
+    try:
+        host_id, instance_id = get_request_ids(request)
+    except NameError as e:
+        logger.info("Unknown host or no data: %s." % e)
+        return jsonify([])
 
     query = dedent("""\
     COPY (
@@ -92,7 +96,12 @@ def index(request):
 
 @blueprint.instance_route("/alerting/checks.json", methods=['GET', 'POST'])
 def checks(request):
-    host_id, instance_id = get_request_ids(request)
+    try:
+        host_id, instance_id = get_request_ids(request)
+    except NameError as e:
+        logger.info("Unknown host or no data: %s." % e)
+        return jsonify([])
+
     if 'GET' == request.method:
         data = checks_info(request.db_session, host_id, instance_id)
         for datum in data:

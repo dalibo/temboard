@@ -7,6 +7,7 @@ script to proceed.
 
 - New database migration engine.
 - Removed parameter of `temboard --debug` CLI option.
+- Improved error logging.
 - Move `temboard-migratedb` as `temboard migratedb` subcommand.
 - Move `temboard-agent-register` as `temboard-agent register` subcommand.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
