@@ -135,7 +135,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             (code, message) = self.route_request()
         except HTTPError as e:
-            logger.exception(e.message)
+            if e.code >= 500:
+                logger.exception(e.message)
             logger.error(e.message)
             code = e.code
             message = e.message
