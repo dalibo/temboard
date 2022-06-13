@@ -66,7 +66,7 @@ def create_instance_helper(webapp, db_session, data):
             'statements_pull1',
             listener_addr=tmsocket,
             options=dict(
-                address=data['new_agent_address'],
+                host=data['new_agent_address'],
                 port=data['new_agent_port'],
             ),
             expire=0,
