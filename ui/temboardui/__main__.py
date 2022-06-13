@@ -5,6 +5,7 @@ from .cli.app import app
 
 def main():
     # Load sub commands.
+    __import__(__package__ + '.cli.generate_key')
     __import__(__package__ + '.cli.migratedb')
     __import__(__package__ + '.cli.query_agent')
     __import__(__package__ + '.cli.routes')

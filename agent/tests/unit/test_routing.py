@@ -5,24 +5,24 @@ def test_make_route():
         pass
 
     path = b'/foo'
-    r = make_route(f, 'm', path, True, True)
+    r = make_route(f, 'm', path)
     assert r['function'] == 'f'
     assert r['path'] == path
     assert r['splitpath'][0] == b'foo'
 
     path = b'/foo/bar'
-    r = make_route(f, 'm', path, True, True)
+    r = make_route(f, 'm', path)
     assert len(r['splitpath']) == 2
 
     T_SOMETHING = b'(^[a-z]{1,100}$)'
     path = b'/foo/' + T_SOMETHING
-    r = make_route(f, 'm', path, True, True)
+    r = make_route(f, 'm', path)
     assert len(r['splitpath']) == 2
 
     T_BAR = b'(bar)'
     T_DUDE = b'(^.{1,128}$)'
     path = b'/foo/' + T_BAR + b'/' + T_DUDE
-    r = make_route(f, 'm', path, True, True)
+    r = make_route(f, 'm', path)
     assert len(r['splitpath']) == 3
 
     # # check path part is a compiled regexp

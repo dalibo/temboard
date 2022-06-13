@@ -18,6 +18,12 @@ def test_query_agent(ui_auto_configure, agent):
     data = json.loads(str(out))
     assert 'hostname' in data
 
+    # username
+    url = f"{agent.base_url}/profile"
+    out = client("--username=toto", url)
+    data = json.loads(str(out))
+    assert 'toto' == data['username']
+
 
 def test_web_register(
         registered_agent, agent_conf, browser, pg_version, ui_url):

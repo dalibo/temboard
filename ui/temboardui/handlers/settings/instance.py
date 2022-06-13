@@ -95,8 +95,6 @@ def validate_instance_data(data):
     if 'new_agent_port' not in data or data['new_agent_port'] == '':
         raise HTTPError(400, "Agent port is missing.")
     check_agent_port(data['new_agent_port'])
-    if 'agent_key' not in data:
-        raise HTTPError(400, "Agent key field is missing.")
     if 'groups' not in data:
         raise HTTPError(400, "Groups field is missing.")
     if data['groups'] is not None and type(data['groups']) != list:
@@ -188,10 +186,12 @@ def json_delete_instance(request):
     r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
 @admin_required
 def discover(request, address, port):
-    client = TemboardAgentClient(
+    client = TemboardAgentClient.factory(
+        request.config,
         address, port,
-        ca_cert_file=request.config.temboard.ssl_ca_cert_file,
-        key=request.headers['X-TemBoard-Agent-Key'])
+        key=request.headers['X-TemBoard-Agent-Key'],
+        username=request.current_user.role_name,
+    )
     response = client.get('/discover')
     return response.json()
 

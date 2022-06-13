@@ -24,6 +24,11 @@ class QueryAgent(SubCommand):
 
     def define_arguments(self, parser):
         parser.add_argument(
+            '--username', metavar='USERNAME', default='temboard',
+            help="temBoard UI Username",
+        )
+
+        parser.add_argument(
             'url', metavar='URL',
             help="Full URL to agent to query.",
             type=v.url,
@@ -50,6 +55,7 @@ class QueryAgent(SubCommand):
 
         client = TemboardAgentClient.factory(
             self.app.config, url.hostname, url.port,
+            username=args.username,
         )
         client.log_headers = True
 

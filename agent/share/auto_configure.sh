@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# auto_configure.sh setup and start a temboard-agent to manage a Postgres cluster.
+# auto_configure.sh setup a temboard-agent to manage a Postgres cluster.
 #
 # Run auto_configure.sh as root. You configure it like any libpq software. By
 # default, the script configure an agent for the running cluster on port 5432,
@@ -87,6 +87,7 @@ generate_configuration() {
 	# Generates minimal configuration required to adapt default
 	# configuration to this cluster.
 
+	local ui_url=$1; shift
 	local home=$1; shift
 	local sslcert=$1; shift
 	local sslkey=$1; shift
@@ -107,6 +108,7 @@ generate_configuration() {
 	#
 
 	[temboard]
+	ui_url = $ui_url
 	home = ${home}
 	hostname = ${TEMBOARD_HOSTNAME}
 	port = ${port}
@@ -214,6 +216,10 @@ fi
 # Now, log everything.
 set -x
 
+if [ -z "${1-}" ] ; then
+	fatal "Missing temBoard UI URL as first parameter."
+fi
+
 umask 037
 
 cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
@@ -247,7 +253,6 @@ chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
-install -b -o "$SYSUSER" -g "$SYSUSER" -m 0600 /dev/null "$ETCDIR/$name/users"
 
 mapfile sslfiles < <(set -eu; setup_ssl "$name")
 key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
@@ -255,8 +260,7 @@ key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 # Inject autoconfiguration in dedicated file.
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
-# shellcheck disable=SC2154
-generate_configuration "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" | tee "$conf"
+generate_configuration "$1" "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" | tee "$conf"
 chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd

@@ -32,6 +32,6 @@ def test_alerts(browser, browse_alerting):
 
 
 @pytest.fixture
-def browse_alerting(agent_login, browse_instance, browser):
+def browse_alerting(browse_instance, browser):
     """Go to Monitoring tab of current instance."""
     browser.select("div.sidebar a.alerting").click()

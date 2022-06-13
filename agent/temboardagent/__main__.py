@@ -8,6 +8,7 @@ def main():
     __import__(__package__ + '.api')
 
     # Import commands
+    __import__(__package__ + '.cli.fetch_key')
     __import__(__package__ + '.cli.register')
     __import__(__package__ + '.cli.routes')
     __import__(__package__ + '.cli.runtask')

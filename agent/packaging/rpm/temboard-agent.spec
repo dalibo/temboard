@@ -12,11 +12,16 @@ License:       PostgreSQL
 URL:           http://temboard.io/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
-Requires:      openssl
-Requires:      python3-setuptools
-Requires:      python3-psycopg2 >= 2.7
 BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
+Requires:      openssl
+%if 0%{?rhel} < 8
+Requires:      python36-cryptography
+%else
+Requires:      python3-cryptography
+%endif
+Requires:      python3-setuptools
+Requires:      python3-psycopg2 >= 2.7
 
 %description
 Administration & monitoring PostgreSQL agent.
@@ -51,7 +56,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
 # pidfile directory
 %{__install} -d %{buildroot}/var/run/temboard-agent
-%{__install} -m 600 /dev/null %{buildroot}/%{_sysconfdir}/temboard-agent/users
 
 %post
 if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
@@ -72,7 +76,6 @@ fi
 %{_unitdir}/temboard-agent@.service
 
 %attr(-,postgres,postgres) /var/lib/temboard-agent
-%config(noreplace) %attr(0600,postgres,postgres) /etc/temboard-agent/users
 
 %preun
 if systemctl is-system-running &>/dev/null ; then

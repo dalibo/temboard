@@ -55,6 +55,16 @@ def file_(raw):
     return raw
 
 
+def path(raw):
+    if not raw:
+        return raw
+    raw = os.path.realpath(raw)
+    parent = os.path.dirname(raw)
+    if not os.path.isdir(parent):
+        raise ValueError("Missing parent directory of: %s" % raw)
+    return raw
+
+
 def fqdn(raw):
     if '\n' in raw:
         raise ValueError("New line in FQDN.")

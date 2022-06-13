@@ -39,8 +39,6 @@ export PGUSER=${PGUSER-postgres}
 PGPASSWORD=${PGPASSWORD-}
 export PGDATABASE=${PGDATABASE-postgres}
 
-TEMBOARD_UI_URL=${TEMBOARD_UI_URL-}
-
 
 echo "Generating temboard-agent.conf" >&2
 
@@ -50,11 +48,11 @@ cat > /etc/temboard-agent/temboard-agent.conf <<EOF
 
 [temboard]
 home = /var/lib/temboard-agent
-users = /etc/temboard-agent/users
 address = 0.0.0.0
 port = 2345
 ssl_cert_file = ${TEMBOARD_SSL_CERT-/usr/local/share/temboard-agent/quickstart/temboard-agent_CHANGEME.pem}
 ssl_key_file = ${TEMBOARD_SSL_KEY-/usr/local/share/temboard-agent/quickstart/temboard-agent_CHANGEME.key}
+ui_url = ${TEMBOARD_UI_URL%/}
 
 [logging]
 method = stderr
@@ -94,14 +92,6 @@ cat > /etc/temboard-agent/temboard-agent.conf.d/statements.conf << EOF
 dbname = ${PGDATABASE}
 EOF
 
-touch /etc/temboard-agent/users
-chmod 0600 /etc/temboard-agent/users
-for entry in ${TEMBOARD_USERS_LIST-alice:alice bob:bob} ; do
-    echo "Adding user ${entry%%:*}."
-    sed -i /${entry%:*}/d /etc/temboard-agent/users
-    temboard-agent-password $entry >> /etc/temboard-agent/users
-done
-
 wait-for-it ${PGHOST}:${PGPORT}
 
 register() {
@@ -118,7 +108,7 @@ register() {
 		${TEMBOARD_UI_URL%/}
 }
 
-if [ -z "${command##temboard-agent*}" -a -n "${TEMBOARD_UI_USER}" ] ; then
+if [ -z "${command##temboard-agent*}" ] && [ -n "${TEMBOARD_UI_USER}" ] ; then
     register &
 fi
 

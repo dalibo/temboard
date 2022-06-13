@@ -135,7 +135,7 @@ class MergedConfiguration(DotDict):
     # Origin order: args > environ > file > defaults
 
     def __init__(self, specs=None):
-        DotDict.__init__(self)
+        DotDict.__init__(self)  # PY2, move to super
         self.__dict__['specs'] = dict([(s, s) for s in specs or []])
         self.__dict__['unvalidated_specs'] = set(self.specs)
 

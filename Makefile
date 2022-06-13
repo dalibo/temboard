@@ -38,6 +38,7 @@ restart-selenium:  #: Restart selenium development container.
 
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
+	dev/venv-py$*/bin/pip install -U pip   # Upgrade pip to install cryptography
 	dev/venv-py$*/bin/python --version  # pen test
 	dev/venv-py$*/bin/pip --version  # pen test
 

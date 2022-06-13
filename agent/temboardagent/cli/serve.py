@@ -23,6 +23,9 @@ class Serve(SubCommand):
             [os.remove(os.path.join(home, f))
              for f in os.listdir(home) if f.endswith('.q')]
 
+        # Eager load of signing_key
+        self.app.config.signing_key
+
         if self.app.config.temboard.daemonize:
             daemonize(self.app.config.temboard.pidfile)
 

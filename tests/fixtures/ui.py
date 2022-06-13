@@ -128,27 +128,6 @@ def admin_session(browser_session, ui, ui_url):
     return browser
 
 
-@pytest.fixture(scope='session')
-def agent_login(alice, browser_session, registered_agent, ui_url):
-    """Login with Alice to agent thru UI."""
-    browser = browser_session
-
-    browser.get(ui_url)  # Goto home
-    browser.select("a.instance-link").click()  # Click first instance
-
-    dashboard_url = browser.current_url
-    assert dashboard_url.endswith('/dashboard')
-    login_url = dashboard_url.replace('/dashboard', '/login')
-
-    browser.get(login_url)
-    browser.select("#inputUsername").send_keys("alice")
-    browser.select("#inputPassword").send_keys("S3cret_alice")
-    browser.select("form[action=login] button[type=submit]").click()
-    browser.select("a.instance-link")  # Wait for home to load.
-
-    browser.get(dashboard_url)  # Go back to dashboard.
-
-
 @pytest.fixture(scope='module')
 def browse_instance(browser_session, registered_agent, ui_url):
     """Open first instance in temBoard UI home."""
@@ -229,8 +208,6 @@ def registered_agent(
     browser.select("input#inputNewAgentAddress").send_keys("0.0.0.0")
     port = agent_conf.get('temboard', 'port')
     browser.select("input#inputNewAgentPort").send_keys(port)
-    key = agent_conf.get('temboard', 'key')
-    browser.select("input#inputAgentKey").send_keys(key)
     browser.select("div#divSelectGroups button").click()
     browser.select("label[title='default']").click()
     browser.select("textarea#inputComment").send_keys("Registered by tests.")

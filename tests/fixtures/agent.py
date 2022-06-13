@@ -9,7 +9,6 @@ from textwrap import dedent
 
 import httpx
 import pytest
-from queue import Queue
 from sh import (
     ErrorReturnCode, TimeoutException,
     env as env_cmd,
@@ -25,19 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='session')
-def alice(agent_auto_configure, agent_env, sudo_pguser):
-    """Add user alice to agent."""
-    proc = sudo_pguser(
-        "temboard-agent-adduser",
-        _env=agent_env, _in=Queue(), _bg=True)
-    proc.process.stdin.put("alice\n")
-    proc.process.stdin.put("S3cret_alice\n")
-    proc.process.stdin.put("S3cret_alice\n")  # Confirmation
-    proc.wait()
-
-
-@pytest.fixture(scope='session')
-def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
+def agent_auto_configure(
+        agent_env, agent_sharedir, postgres, pguser, ui_url, workdir):
     """
     Configure temBoard agent for the postgres instance.
     """
@@ -66,7 +54,7 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
 
     try:
         subprocess.run(
-            [auto_configure],
+            [auto_configure, ui_url],
             env=env,
         ).check_returncode()
     except Exception:
@@ -95,12 +83,14 @@ def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, workdir):
 
 
 @pytest.fixture(scope='session')
-def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, workdir):
+def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
     """
     Run configured temBoard agent.
 
     The agent is a subprocess of pytest.
     """
+
+    sudo_pguser("temboard-agent", "fetch-key", _env=agent_env)
 
     proc = sudo_pguser("temboard-agent", _bg=True)
     assert proc.is_alive()

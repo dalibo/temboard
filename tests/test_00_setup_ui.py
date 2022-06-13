@@ -49,6 +49,11 @@ def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 
+def test_signing_key(ui, ui_url):
+    response = ui.get('/signing.key')
+    response.raise_for_status()
+
+
 def test_login_logout(browser, ui, ui_url):
     browser.get(ui_url + '/')
 

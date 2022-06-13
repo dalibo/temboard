@@ -13,7 +13,9 @@ from ..httpd import HTTPDService
 from ..postgres import Postgres
 from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
+from ..toolkit.configuration import MergedConfiguration
 from ..toolkit.proctitle import ProcTitleManager
+from ..toolkit.signing import load_public_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..toolkit.versions import (
     format_pq_version,
@@ -45,6 +47,10 @@ class TemboardAgentApplication(BaseApplication):
         "pgconf",
         "statements",
     ]
+
+    def __init__(self, *a, **kw):
+        super(TemboardAgentApplication, self).__init__(*a, **kw)
+        self.config = TemboardAgentConfiguration()
 
     def main(self, argv, environ):
         parser = self.create_parser(
@@ -106,6 +112,7 @@ class TemboardAgentApplication(BaseApplication):
 
     def apply_config(self):
         self.postgres = Postgres(app=self, **self.config.postgresql)
+
         return super().apply_config()
 
     def bootstrap_plugins(self):
@@ -189,11 +196,28 @@ class TemboardAgentApplication(BaseApplication):
         self.reload_datetime = datetime.datetime.now()
 
 
+class TemboardAgentConfiguration(MergedConfiguration):
+    def __init__(self, *a, **kw):
+        super(TemboardAgentConfiguration, self).__init__(*a, **kw)
+        self._signing_key = None
+
+    @property
+    def signing_key(self):
+        # Lazy load signing key.
+        if not self._signing_key:
+            path = self.temboard.signing_public_key
+            logger.debug("Loading signing key from %s.", path)
+            with open(path, 'rb') as fo:
+                self._signing_key = load_public_key(fo.read())
+        return self._signing_key
+
+
 class VersionAction(_VersionAction):
     fmt = dedent("""\
     temBoard agent %(temboard)s (%(temboardbin)s)
     System %(distname)s %(distversion)s
     Python %(python)s (%(pythonbin)s)
+    cryptography %(cryptography)s
     libpq %(libpq)s
     psycopg2 %(psycopg2)s
     """)
@@ -205,6 +229,7 @@ class VersionAction(_VersionAction):
     @classmethod
     def inspect_versions(cls):
         from psycopg2 import __version__ as psycopg2_version
+        from cryptography import __version__ as cryptography_version
 
         distinfos = read_distinfo()
 
@@ -217,12 +242,14 @@ class VersionAction(_VersionAction):
             distname=distinfos['NAME'],
             distversion=distinfos['VERSION'],
             libpq=format_pq_version(read_libpq_version()),
+            cryptography=cryptography_version,
         )
 
 
 def list_options_specs():
     # Generate each option specs.
     section = 'temboard'
+    yield OptionSpec(section, 'ui_url', validator=v.url)
     yield OptionSpec(section, 'daemonize', default=False)
     yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
     yield OptionSpec(
@@ -235,10 +262,10 @@ def list_options_specs():
         section, 'ssl_key_file',
         default=OptionSpec.REQUIRED, validator=v.file_)
     yield OptionSpec(section, 'ssl_ca_cert_file', validator=v.file_)
-    yield OptionSpec(section, 'key')
     yield OptionSpec(
-        section, 'users', default='users', validator=v.file_,
-    )
+        section, 'signing_public_key', default='signing-public.pem',
+        validator=v.path)
+    yield OptionSpec(section, 'key')
     yield OptionSpec(section, 'hostname', default=getfqdn(), validator=v.fqdn)
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)

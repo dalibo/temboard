@@ -47,96 +47,96 @@ T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 T_LIMIT = b'(^[0-9]+$)'
 
 
-@routes.get(b'/probe/sessions', check_key=True)
+@routes.get(b'/probe/sessions')
 def get_probe_sessions(http_context, app):
     return api_run_probe(probe_sessions(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/xacts', check_key=True)
+@routes.get(b'/probe/xacts')
 def get_probe_xacts(http_context, app):
     return api_run_probe(probe_xacts(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/locks', check_key=True)
+@routes.get(b'/probe/locks')
 def get_probe_locks(http_context, app):
     return api_run_probe(probe_locks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/blocks', check_key=True)
+@routes.get(b'/probe/blocks')
 def get_probe_blocks(http_context, app):
     return api_run_probe(probe_blocks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/bgwriter', check_key=True)
+@routes.get(b'/probe/bgwriter')
 def get_probe_bgwriter(http_context, app):
     return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/db_size', check_key=True)
+@routes.get(b'/probe/db_size')
 def get_probe_db_size(http_context, app):
     return api_run_probe(probe_db_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/tblspc_size', check_key=True)
+@routes.get(b'/probe/tblspc_size')
 def get_probe_tblspc_size(http_context, app):
     return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/filesystems_size', check_key=True)
+@routes.get(b'/probe/filesystems_size')
 def get_probe_filesystems_size(http_context, app):
     return api_run_probe(probe_filesystems_size(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/cpu', check_key=True)
+@routes.get(b'/probe/cpu')
 def get_probe_cpu(http_context, app):
     return api_run_probe(probe_cpu(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/process', check_key=True)
+@routes.get(b'/probe/process')
 def get_probe_process(http_context, app):
     return api_run_probe(probe_process(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/memory', check_key=True)
+@routes.get(b'/probe/memory')
 def get_probe_memory(http_context, app):
     return api_run_probe(probe_memory(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/loadavg', check_key=True)
+@routes.get(b'/probe/loadavg')
 def get_probe_loadavg(http_context, app):
     return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/wal_files', check_key=True)
+@routes.get(b'/probe/wal_files')
 def get_probe_wal_files(http_context, app):
     return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/replication_lag', check_key=True)
+@routes.get(b'/probe/replication_lag')
 def get_probe_replication_lag(http_context, app):
     return api_run_probe(probe_replication_lag(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/temp_files_size_delta', check_key=True)
+@routes.get(b'/probe/temp_files_size_delta')
 def get_probe_temp_files_size_delta(http_context, app):
     return api_run_probe(probe_temp_files_size_delta(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/replication_connection', check_key=True)
+@routes.get(b'/probe/replication_connection')
 def get_probe_replication_connection(http_context, app):
     return api_run_probe(probe_replication_connection(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/heap_bloat', check_key=True)
+@routes.get(b'/probe/heap_bloat')
 def get_probe_heap_bloat(http_context, app):
     return api_run_probe(probe_heap_bloat(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/btree_bloat', check_key=True)
+@routes.get(b'/probe/btree_bloat')
 def get_probe_btree_bloat(http_context, app):
     return api_run_probe(probe_btree_bloat(app.config.monitoring), app.config)
 
@@ -166,7 +166,7 @@ def api_run_probe(probe_instance, config):
         return run_probes([probe_instance], pool, [instance], delta=False)
 
 
-@routes.get(b'/history', check_key=True)
+@routes.get(b'/history')
 def get_monitoring(http_context, app):
     """Monitoring root API aims to query metrics history.
     Data are sorted by collect timestamp, in ascending order. By default, only
@@ -214,7 +214,7 @@ def get_monitoring(http_context, app):
     ]
 
 
-@routes.get(b'/config', check_key=True)
+@routes.get(b'/config')
 def get_config(http_context, app):
     """Returns monitoring plugin configuration.
     """

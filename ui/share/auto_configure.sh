@@ -177,10 +177,20 @@ log "Creating Postgres user, database and schema."
 # For temboard migratedb
 DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
+if [ "$(whoami)" != "$SYSUSER" ] ; then
+	# Run as temboard UNIX user. Wipe environment, this requires properly
+	# temboard.conf.
+	run_as_temboard=(sudo -Enu "$SYSUSER")
+else
+	run_as_temboard=()
+fi
+
 dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/${TEMBOARD_DATABASE-temboard}"
-if ! sudo -nEu "$SYSUSER" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
+if ! "${run_as_temboard[@]}" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
 	fatal "Can't configure access to Postgres database."
 fi
+
+TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" "${run_as_temboard[@]}" temboard generate-key
 
 if [ -x /bin/systemctl ] && [ -w /etc/systemd/system ] ; then
 	start_cmd="systemctl start temboard"
