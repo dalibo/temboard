@@ -14,7 +14,6 @@ import sys
 from errno import ENOTEMPTY
 from functools import partial
 from pathlib import Path
-from shutil import copy as cp
 
 import pytest
 import sh
@@ -27,7 +26,7 @@ from fixtures.utils import rmtree
 
 # Import fixtures
 from fixtures import *  # noqa: F401, F403
-from fixtures.utils import session_tag
+from fixtures.utils import session_tag, copy_files
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +103,6 @@ def save_logs(request, workdir):
         return
 
     logdir = Path("tests/logs") / session_tag / request.node.nodeid
-    logdir.mkdir(exist_ok=True, parents=True)
     candidates = [
         workdir / 'var/log/agent/auto-configure.log',
         workdir / 'var/log/agent/serve.log',
@@ -116,18 +114,7 @@ def save_logs(request, workdir):
         workdir / 'var/log/postgresql/postgres.log',
     ]
 
-    for path in candidates:
-        if not path.exists():
-            continue
-
-        logger.info("Saving log file %s.", path)
-        parent = path.parent.name
-        if 'agent' in parent or 'ui' in parent or 'temboard' in parent:
-            # Avoid conflict for serve.log, auto-configure.log, etc.
-            dest = logdir / f"{parent}-{path.name}"
-        else:
-            dest = logdir / path.name
-        cp(path, dest)
+    copy_files(candidates, logdir)
 
 
 def pytest_addoption(parser):

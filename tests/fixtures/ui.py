@@ -27,7 +27,7 @@ from sh import (
     sudo,
 )
 
-from fixtures.utils import retry_http, retry_slow, session_tag
+from .utils import copy_files, retry_http, retry_slow, session_tag
 
 
 logger = logging.getLogger(__name__)
@@ -252,7 +252,7 @@ def registered_agent(
 
 
 @pytest.fixture(scope='session')
-def ui(ui_auto_configure, ui_env, ui_sudo, ui_url) -> httpx.Client:
+def ui(ui_auto_configure, ui_env, ui_sudo, ui_url, workdir) -> httpx.Client:
     """
     Starts temBoard UI, wait for UI to answer and returns an httpx client
     backed to query temBoard UI.
@@ -282,6 +282,17 @@ def ui(ui_auto_configure, ui_env, ui_sudo, ui_url) -> httpx.Client:
             proc.wait(timeout=5)
         except ErrorReturnCode as e:
             logger.info("temBoard UI exited with code %s.", e.exit_code)
+
+    if 'CI' not in os.environ:
+        return
+
+    candidates = [
+        workdir / 'var/log/temboard-auto-configure.log',
+        workdir / 'var/log/temboard/serve.log',
+        workdir / 'var/log/ui/auto-configure.log',
+        workdir / 'var/log/ui/serve.log',
+    ]
+    copy_files(candidates, Path("tests/logs"))
 
 
 @pytest.fixture(scope='session')
