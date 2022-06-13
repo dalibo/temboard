@@ -95,12 +95,12 @@ def schema(request, database, schema):
 @blueprint.instance_route(r'/maintenance/(.*)')
 def database(request, database):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = request.get_username()
+    agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
     return render_template(
         'database.html',
         nav=True,
-        agent_username=request.get_username(),
+        agent_username=agent_username,
         instance=request.instance,
         plugin=PLUGIN_NAME,
         xsession=xsession,
