@@ -19,10 +19,8 @@ docker-compose up
 - a container for temBoard UI
 
 temBoard UI is available on <https://0.0.0.0:8888/> with `admin` / `admin`
-credentials. The agents can be accessed with `alice` / `alice` or `bob` / `bob`.
-
-You can access clusters with user and password `postgres`. For example with
-pgbench:
+credentials. You can access clusters with user and password `postgres`. For
+example with pgbench:
 
 ``` console
 $ export PGHOST=0.0.0.0 PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres
