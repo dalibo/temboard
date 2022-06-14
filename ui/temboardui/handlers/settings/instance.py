@@ -194,6 +194,7 @@ def discover(request, address, port):
     )
     try:
         response = client.get('/discover')
+        response.raise_for_status()
     except OSError as e:
         logger.error(
             "Failed to discover agent at %s:%s: %s",  address, port, e)
