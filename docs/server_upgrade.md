@@ -6,6 +6,8 @@
 
 ## Upgrade `7.11` to `8.0`
 
+Upgrade temBoard UI before upgrading agents.
+
 temBoard 8.0 requires changes in database schema.
 
 ### Stop service
@@ -28,6 +30,14 @@ Then apply `repository` database upgrade with the following command:
 $ sudo -u temboard temboard-migratedb upgrade
 ```
 
+### Generate Signing Key
+
+Generate signing key:
+
+``` console
+$ sudo -u temboard generate-key
+```
+
 ### Start service
 
 Start `temboard` service:
@@ -35,6 +45,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
+
 
 ## Upgrade `7.X` to `7.9`
 
