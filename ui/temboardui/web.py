@@ -525,8 +525,8 @@ class Blueprint(object):
 
             if json:
                 func = add_json_middleware(func)
-            func = ErrorHelper.add_middleware(func)
             func = DatabaseHelper.add_middleware(func)
+            func = ErrorHelper.add_middleware(func)
 
             @run_on_executor
             @functools.wraps(func)
