@@ -192,8 +192,16 @@ def discover(request, address, port):
         key=request.headers.get('X-TemBoard-Agent-Key'),
         username=request.current_user.role_name,
     )
-    response = client.get('/discover')
-    return response.json()
+    try:
+        response = client.get('/discover')
+    except OSError as e:
+        logger.error(
+            "Failed to discover agent at %s:%s: %s",  address, port, e)
+        raise HTTPError(
+            400, "Can't connect to agent. Please check address and port.")
+    else:
+        # pass-through JSON
+        return response.json()
 
 
 @app.route(r"/settings/instances")
