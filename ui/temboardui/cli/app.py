@@ -308,6 +308,8 @@ class TornadoService(Service):
         autoreload.add_reload_hook(self.autoreload_hook)
 
         autoreload.watch(self.app.config.temboard.configfile)
+        autoreload.watch(self.app.config.temboard.signing_public_key)
+        autoreload.watch(self.app.config.temboard.signing_private_key)
 
         for path in self.iter_template_files():
             autoreload.watch(path)
