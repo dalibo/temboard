@@ -1,5 +1,42 @@
 # Upgrade (RHEL/CentOS) {#temboard-agent-upgrade}
 
+## 7.11 to 8.0
+
+temBoard Agent 8.0 requires temBoard UI 8.0.
+
+Stop the agent:
+
+``` bash
+sudo systemctl stop temboard-agent
+```
+
+Update the package:
+
+``` bash
+sudo yum install temboard-agent
+```
+
+Edit configuration, comment out `key` parameter and define `[temboard] ui_url`
+like this:
+
+``` conf
+[temboard]
+ui_url = https://temboard.acme.tld:8888
+```
+
+Fetch signing key using `temboard-agent fetch-key`.
+
+Start the agent:
+
+``` bash
+sudo systemctl start temboard-agent
+```
+
+Check agent logs and dashboard in temBoard UI.
+
+You can drop `users` file.
+
+
 ## 6.X to 7.0
 
 First of all, beware that support for `RHEL/CentOS 6` has been dropped.
