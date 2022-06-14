@@ -260,7 +260,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             raise HTTPError(400, 'Invalid json format')
 
         http_context = dict(
+            app=self.app,
+            method=self.http_method,
             headers=self.headers,
+            path=path,
             query=self.query,
             post=self.post_json,
             urlvars=urlvars,
