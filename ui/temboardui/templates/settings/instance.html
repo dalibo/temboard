@@ -4,6 +4,10 @@
 
 {% block content %}
 <!-- Instance update/add/delete modal -->
+<div id="vue-app">
+  <new-instance-wizard></new-instance-wizard>
+</div>
+
 <div class="modal fade" id="InstanceModal" tabindex="-1" role="dialog" aria-labelledby="InstanceModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -28,7 +32,7 @@
     <div class="row">
       <div class="col-md-12 text-right">
         <p>
-          <button id="buttonLoadAddInstanceForm" class="btn btn-success btn-sm">
+          <button id="buttonNewInstance" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalNewInstance">
             New instance
           </button>
         </p>
@@ -87,19 +91,17 @@
   </div>
 </div>
 <script src="/js/lodash.min.js"></script>
+<script src="/js/vue.min.js"></script>
 <script src="/js/temboard.settings.instance.js"></script>
+<script src="/js/new-instance-wizard.js"></script>
 <script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
 <script>
 $(document).ready(function() {
+  new Vue({ el: "#vue-app" });
+
   $('#tableInstances').DataTable({
     stateSave: true
-  });
-
-  $('#buttonLoadAddInstanceForm').click(function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_add_instance_form('InstanceModal');
   });
 
   $(document).on('click', '[data-action=edit]', function () {

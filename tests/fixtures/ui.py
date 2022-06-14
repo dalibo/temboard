@@ -203,16 +203,17 @@ def registered_agent(
     browser = browser_session
     browser.select("a[href='/settings/instances']").click()
 
-    browser.select("button#buttonLoadAddInstanceForm").click()
+    browser.select("button#buttonNewInstance").click()
 
-    browser.select("input#inputNewAgentAddress").send_keys("0.0.0.0")
+    browser.select("input#inputAgentAddress").send_keys("0.0.0.0")
     port = agent_conf.get('temboard', 'port')
-    browser.select("input#inputNewAgentPort").send_keys(port)
-    browser.select("div#divSelectGroups button").click()
+    browser.select("input#inputAgentPort").send_keys(port)
+    browser.select("#buttonDiscover").click()
+    browser.select("div#divGroups button.multiselect").click()
     browser.select("label[title='default']").click()
     browser.select("textarea#inputComment").send_keys("Registered by tests.")
 
-    browser.select("button#submitFormAddInstance").click()
+    browser.select("#buttonRegister").click()
     td = browser.select("td.agent_hostport")
     assert f'0.0.0.0:{port}' in td.text
 

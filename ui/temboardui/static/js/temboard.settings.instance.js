@@ -133,15 +133,6 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
   });
 }
 
-function addInstance(modal_id, address, port, key, notify, comment) {
-  var url = '/json/settings/instance';
-  var onSuccess = function (data) {
-    saveInstance(modal_id, url, address, port, key, notify, comment, data);
-  }
-  var onError = showError.bind(null, modal_id);
-  discoverInstance(modal_id, address, port, key, onSuccess, onError);
-}
-
 function updateInstance(modal_id, address, port, newAddress, newPort, key, notify, comment) {
   var url = ['/json/settings/instance', address, port].join('/');
   var onSuccess = function (data) {
@@ -282,111 +273,6 @@ function send_delete_instance(modal_id, agent_address, agent_port)
       showError(xhr, modal_id);
       $('#'+modal_id+'Body').html('');
     }
-  });
-}
-
-/*
- *  Build the instance creation form.
- */
-function load_add_instance_form(modal_id)
-{
-  $('#'+modal_id+'Label').html('Add a new instance');
-  $.ajax({
-    url: '/json/settings/all/group/instance',
-    type: 'get',
-    beforeSend: function(xhr){
-      $('#'+modal_id+'Info').html(waitMessage);
-      $('#'+modal_id+'Body').html('');
-      $('#'+modal_id+'Footer').html('<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>');
-    },
-    async: true,
-    contentType: "application/json",
-    dataType: "json",
-    success: function (data) {
-      $('#'+modal_id+'Info').html('');
-      var body_html = '';
-      body_html += '<form id="formAddInstance">';
-      body_html += '  <div class="row">';
-      body_html += '    <div class="form-group col-sm-6">';
-      body_html += '      <label for="inputNewAgentAddress" class="control-label">Agent address</label>';
-      body_html += '      <input type="text" class="form-control" id="inputNewAgentAddress" placeholder="ex: db.entreprise.lan" />';
-      body_html += '    </div>';
-      body_html += '    <div class="form-group col-sm-6">';
-      body_html += '      <label for="inputNewAgentPort" class="control-label">Agent port</label>';
-      body_html += '      <input type="text" class="form-control" id="inputNewAgentPort" placeholder="ex: 2345" />';
-      body_html += '    </div>';
-      body_html += '  </div>';
-      body_html += '  <div class="row">';
-      body_html += '    <div class="form-group col-sm-12">';
-      body_html += '      <label for="inputAgentKey" class="control-label">Agent secret key</label>';
-      body_html += '      <input class="form-control" id="inputAgentKey">';
-      body_html += '    </div>';
-      body_html += '  </div>';
-      body_html += '  <div class="row">';
-      body_html += '    <div id="divSelectGroups" class="form-group col-sm-6">';
-      body_html += '      <label for="selectGroups" class="control-label">Groups</label><br />';
-      body_html += '      <select id="selectGroups" multiple="multiple">';
-      var descriptions = {};
-      for (var group of data['groups'])
-      {
-          body_html += '      <option value="'+group['name']+'">'+group['name']+'</option>';
-        descriptions[group['name']] = group['description'];
-      }
-      body_html += '      </select>';
-      body_html += '    </div>';
-      body_html += '    <div id="divSelectPlugins" class="form-group col-sm-6">';
-      body_html += '      <label for="selectPlugins" class="control-label">Active plugins</label><br />';
-      body_html += '      <select id="selectPlugins" multiple="multiple">';
-      var selected = '';
-      for (var plugin_name of data['loaded_plugins'])
-      {
-        body_html += '      <option value="'+plugin_name+'" selected>'+plugin_name+'</option>';
-      }
-      body_html += '      </select>';
-      body_html += '    </div>';
-      body_html += '  </div>';
-      body_html += '  <div class="row">';
-      body_html += '    <div class="col-sm-12">';
-      body_html += '      <div class="form-check">';
-      body_html += '        <input type="checkbox" class="form-check-input" id="inputNotify" checked>';
-      body_html += '        <label for="inputNotify" class="control-label">Notify users of any status alert</label>';
-      body_html += '      </div>';
-      body_html += '    </div>';
-      body_html += '  </div>';
-      body_html += '  <div class="row">';
-      body_html += '    <div class="form-group col-sm-12">';
-      body_html += '      <label for="inputComment" class="control-label">Comment</label>';
-      body_html += '      <textarea class="form-control" rows="3" id="inputComment"></textarea>';
-      body_html += '    </div>';
-      body_html += '  </div>';
-      body_html += '</form>';
-      var footer_html = '';
-      footer_html += '<i class="fa fa-spinner fa-spin loader d-none"></i>';
-      footer_html += '<button type="submit" id="submitFormAddInstance" class="btn btn-success ml-auto">Save</button>';
-      footer_html += '<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
-
-      // Write the form.
-      $('#'+modal_id+'Body').html(body_html);
-      $('#'+modal_id+'Footer').html(footer_html);
-      $('#submitFormAddInstance').click(function() {
-        $('#formAddInstance').submit()
-      });
-      // Activate multiselect plugin for group selecting.
-      $('#selectGroups').multiselect(multiselectOptions);
-      $('#selectPlugins').multiselect(multiselectOptions);
-      $('#formAddInstance').submit(function( event ) {
-        event.preventDefault();
-        addInstance(
-          modal_id,
-          $('#inputNewAgentAddress').val(),
-          $('#inputNewAgentPort').val(),
-          $('#inputAgentKey').val(),
-          $('#inputNotify').prop('checked'),
-          $('#inputComment').val()
-        );
-      });
-    },
-    error: showError.bind(null, modal_id)
   });
 }
 
