@@ -95,6 +95,38 @@ class Register(SubCommand):
         except TemboardClient.Error as e:
             raise UserError(str(e))
 
+        groups = args.groups
+        if groups:
+            groups = args.groups.split(',')
+        else:
+            logger.warning("Instance without groups are hidden in UI!")
+
+        try:
+            logger.info("Verifying signing key.")
+            response = uiclient.get(ui_url.path + '/signing.key')
+            response.raise_for_status()
+            wanted = response.read()
+            with open(self.app.config.temboard.signing_public_key, 'rb') as fo:
+                configured = fo.read()
+
+            if wanted != configured:
+                logger.error(
+                    "Agent %s is not configured with UI %s signing key.",
+                    agent_hostport, ui_url.netloc,
+                )
+                logger.error(
+                    "Use temboard-agent fetch-key --force "
+                    "to accept %s signing key.",
+                    ui_url.netloc,
+                )
+                raise UserError("Signature mismatch.")
+        except OSError as e:
+            logger.error("Failed to connect to UI: %s", e)
+            logger.error("Is UI %s running?", ui_url.netloc)
+            raise UserError("Connection failure.")
+        except TemboardClient.Error as e:
+            raise UserError("UI returned error: %s" % e)
+
         try:
             logger.info("Login at %s ...", ui_url_raw)
             username = ask_username()
@@ -110,17 +142,6 @@ class Register(SubCommand):
                 {'username': username, 'password': password},
             )
             response.raise_for_status()
-        except OSError as e:
-            logger.error("Failed to connect to UI: %s", e)
-            logger.error("Is UI %s running?", ui_url.netloc)
-            raise UserError("Connection failure.")
-        except TemboardClient.Error as e:
-            raise UserError(str(e))
-
-        try:
-            groups = args.groups
-            if groups:
-                groups = args.groups.split(',')
 
             # POSTing new instance
             logger.info(
