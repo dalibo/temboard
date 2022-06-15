@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from .migrator import Migrator
 
 
-Session = sessionmaker()
+Session = sessionmaker(expire_on_commit=False)
 logger = logging.getLogger(__name__)
 
 
