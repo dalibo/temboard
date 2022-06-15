@@ -55,7 +55,13 @@ class TemboardAgentApplication(BaseApplication):
 
     def main(self, argv, environ):
         parser = self.create_parser(
-            description="temBoard agent {}.".format(__version__),
+            description=dedent("""\
+            temBoard agent %s.
+
+            COMMAND is optional. Default command is `serve`, the combined
+            service. See available commands below.
+
+            """) % __version__,
         )
         self.define_arguments(parser)
         args = parser.parse_args(argv)
