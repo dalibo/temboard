@@ -1,6 +1,7 @@
 import os
 import logging
 import socket
+import sys
 from getpass import getpass
 from textwrap import dedent
 from sys import stdout
@@ -60,8 +61,8 @@ class Register(SubCommand):
         super(Register, self).define_arguments(parser)
 
     def main(self, args):
-        agent_baseurl = "https://{}:{}".format(
-            args.host, self.app.config.temboard.port)
+        agent_hostport = "%s:%s" % (args.host, self.app.config.temboard.port)
+        agent_baseurl = "https://%s" % agent_hostport
 
         logger.info("Working for agent listening at %s.", agent_baseurl)
 
@@ -82,22 +83,41 @@ class Register(SubCommand):
             response = agentclient.get('/discover')
             response.raise_for_status()
             infos = response.json()
-
             logger.info(
-                "temboard agent for %s instance at %s listening on port %s.",
+                "temboard agent for %s instance serving %s on port %s.",
                 infos['pg_version_summary'],
                 infos['pg_data'], infos['pg_port'],
             )
+        except OSError as e:
+            logger.error("Failed to connect to agent: %s", e)
+            logger.error("Is agent %s running?", agent_hostport)
+            raise UserError("Connection failure.")
+        except TemboardClient.Error as e:
+            raise UserError(str(e))
 
+        try:
             logger.info("Login at %s ...", ui_url_raw)
             username = ask_username()
             password = ask_password()
+        except EOFError:
+            # Write new line after prompt.
+            sys.stderr.write("\n")
+            raise UserError("Exiting.")
+
+        try:
             response = uiclient.post(
                 ui_url.path + '/json/login',
                 {'username': username, 'password': password},
             )
             response.raise_for_status()
+        except OSError as e:
+            logger.error("Failed to connect to UI: %s", e)
+            logger.error("Is UI %s running?", ui_url.netloc)
+            raise UserError("Connection failure.")
+        except TemboardClient.Error as e:
+            raise UserError(str(e))
 
+        try:
             groups = args.groups
             if groups:
                 groups = args.groups.split(',')
@@ -130,7 +150,7 @@ class Register(SubCommand):
             logger.info(
                 "Instance registered. Managed it at %s.", dashboard_url)
         except TemboardClient.Error as e:
-            raise UserError(str(e))
+            raise UserError("UI returned error: %s" % e)
 
         return 0
 
