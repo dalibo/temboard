@@ -37,7 +37,6 @@ services:
       - postgres:postgres-${TEMBOARD_REGISTER_PORT}.dev
     environment:
       TEMBOARD_HOSTNAME: postgres-${TEMBOARD_REGISTER_PORT}.dev
-      TEMBOARD_KEY: key_for_agent0
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_UI_URL: https://172.17.0.1:8888
       TEMBOARD_REGISTER_HOST: 172.17.0.1

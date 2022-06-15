@@ -62,7 +62,6 @@ services:
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_HOSTNAME: postgres0.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
-      TEMBOARD_KEY: key_for_agent
       TEMBOARD_SSL_CA: /usr/local/src/temboard/agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
