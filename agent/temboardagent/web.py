@@ -311,7 +311,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 class HTTPDService(Service):
     def setup(self):
         try:
-            self.httpd = ThreadedHTTPServer(
+            self.server = ThreadedHTTPServer(
                 (self.app.config.temboard.address,
                  self.app.config.temboard.port),
                 self.handle_request)
@@ -323,18 +323,18 @@ class HTTPDService(Service):
             logger.debug(
                 "Using SSL certificate %s.",
                 self.app.config.temboard.ssl_cert_file)
-            self.httpd.socket = ssl.wrap_socket(
-                self.httpd.socket,
+            self.server.socket = ssl.wrap_socket(
+                self.server.socket,
                 keyfile=self.app.config.temboard.ssl_key_file,
                 certfile=self.app.config.temboard.ssl_cert_file,
                 server_side=True,
             )
         except Exception as e:
             raise UserError("Failed to setup SSL: {}.".format(e))
-        self.httpd.timeout = 1
+        self.server.timeout = 1
 
     def serve1(self):
-        self.httpd.handle_request()
+        self.server.handle_request()
 
     def handle_request(self, *args):
         return RequestHandler(self.app, *args)
