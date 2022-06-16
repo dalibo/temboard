@@ -2,7 +2,6 @@ import logging
 
 from bottle import default_app, get, request
 
-from ..errors import HTTPError
 from ..notification import NotificationMgmt
 from ..inventory import SysInfo, PgInfo
 from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
@@ -17,34 +16,20 @@ def get_discover():
     logger.info('Starting discovery.')
     app = default_app().temboard
     discover = dict(
-        hostname=None,
-        cpu=None,
-        memory_size=None,
         pg_port=app.config.postgresql['port'],
         pg_version=None,
         pg_version_summary=None,
         pg_data=None,
-        plugins=[plugin for plugin in app.config.temboard['plugins']],
+        plugins=app.config.temboard['plugins'],
+        signature_status='enabled',
     )
 
-    try:
-        # Gather system informations
-        sysinfo = SysInfo()
-        hostname = sysinfo.hostname(app.config.temboard['hostname'])
-        cpu = sysinfo.n_cpu()
-        memory_size = sysinfo.memory_size()
-
-    except (Exception, HTTPError) as e:
-        logger.exception(str(e))
-        logger.error('System discovery failed.')
-        # We stop here if system information has not been collected
-        if isinstance(e, HTTPError):
-            raise e
-        else:
-            raise HTTPError(500, "Internal error.")
-
+    # Gather system informations
+    sysinfo = SysInfo()
     discover.update(
-        hostname=hostname, cpu=cpu, memory_size=memory_size
+        hostname=sysinfo.hostname(app.config.temboard['hostname']),
+        cpu=sysinfo.n_cpu(),
+        memory_size=sysinfo.memory_size(),
     )
 
     try:
@@ -56,10 +41,8 @@ def get_discover():
                 pg_version_summary=pginfo.version()['summary'],
                 pg_data=pginfo.setting('data_directory')
             )
-
-    except Exception as e:
-        logger.exception(str(e))
-        logger.error('Postgres discovery failed.')
+    except Exception:
+        logger.exception('Postgres discovery failed.')
         # Do not raise HTTPError, just keeping null values for Postgres
         # informations.
 
@@ -77,16 +60,10 @@ def get_discover():
 
             verify_v1(
                 app.config.signing_key, signature, crequest)
-            sign_status = 'valid'
+            discover['signature_status'] = 'valid'
         except InvalidSignature:
-            sign_status = 'invalid'
-    else:
-        sign_status = 'enabled'
+            discover['signature_status'] = 'invalid'
 
-    discover['signature_status'] = sign_status
-
-    logger.info('Discovery done.')
-    logger.debug(discover)
     return discover
 
 
