@@ -10,7 +10,7 @@ from textwrap import dedent
 
 from ..toolkit.configuration import OptionSpec
 from ..toolkit.errors import UserError
-from ..httpd import HTTPDService
+from ..web import HTTPDService
 from ..postgres import Postgres
 from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
