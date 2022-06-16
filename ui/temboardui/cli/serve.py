@@ -13,6 +13,7 @@ class Serve(SubCommand):
 
     def main(self, args):
         check_schema()
+        self.app.config.load_signing_key()
 
         # Enable background services with web as main process.
         self.app.webservice.services = services = ServicesManager()

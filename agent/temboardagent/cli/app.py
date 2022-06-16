@@ -9,6 +9,7 @@ from socket import getfqdn
 from textwrap import dedent
 
 from ..toolkit.configuration import OptionSpec
+from ..toolkit.errors import UserError
 from ..httpd import HTTPDService
 from ..postgres import Postgres
 from ..toolkit import taskmanager, validators as v
@@ -205,11 +206,19 @@ class TemboardAgentConfiguration(MergedConfiguration):
     def signing_key(self):
         # Lazy load signing key.
         if not self._signing_key:
-            path = self.temboard.signing_public_key
-            logger.debug("Loading signing key from %s.", path)
-            with open(path, 'rb') as fo:
-                self._signing_key = load_public_key(fo.read())
+            self.load_signing_key()
         return self._signing_key
+
+    def load_signing_key(self):
+        path = self.temboard.signing_public_key
+        logger.debug("Loading signing key from %s.", path)
+        try:
+            fo = open(path, 'rb')
+        except OSError as e:
+            raise UserError("Failed to load signing key: %s" % e)
+
+        with fo:
+            self._signing_key = load_public_key(fo.read())
 
 
 class VersionAction(_VersionAction):

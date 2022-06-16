@@ -13,7 +13,6 @@ This docker image targets development environment and demo.
   repository.
 - `TEMBOARD_GROUPS`: groups of this agent.
 - `TEMBOARD_HOSTNAME`: PostgreSQL instance FQDN
-- `TEMBOARD_KEY`: agent secret key
 - `TEMBOARD_LOGGING_LEVEL`: standard python logging level: `DEBUG`, `INFO`, etc.
 - `TEMBOARD_UI_URL`, `TEMBOARD_UI_USER` and `TEMBOARD_UI_PASSWORD`: URL and
   credentials of the UI for autoregister.

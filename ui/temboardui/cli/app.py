@@ -167,16 +167,19 @@ class TemboardUIConfiguration(MergedConfiguration):
     def signing_key(self):
         # Lazy load signing key.
         if not self._signing_key:
-            path = self.temboard.signing_private_key
-            logger.debug("Loading signing key from %s.", path)
-            try:
-                fo = open(path, 'rb')
-            except OSError as e:
-                raise UserError("Failed to laod signing key: %s" % e)
-
-            with fo:
-                self._signing_key = load_private_key(fo.read())
+            self.load_signing_key()
         return self._signing_key
+
+    def load_signing_key(self):
+        path = self.temboard.signing_private_key
+        logger.debug("Loading signing key from %s.", path)
+        try:
+            fo = open(path, 'rb')
+        except OSError as e:
+            raise UserError("Failed to load signing key: %s" % e)
+
+        with fo:
+            self._signing_key = load_private_key(fo.read())
 
 
 def bootstrap_tornado_app(webapp, config):
@@ -308,6 +311,8 @@ class TornadoService(Service):
         autoreload.add_reload_hook(self.autoreload_hook)
 
         autoreload.watch(self.app.config.temboard.configfile)
+        autoreload.watch(self.app.config.temboard.signing_public_key)
+        autoreload.watch(self.app.config.temboard.signing_private_key)
 
         for path in self.iter_template_files():
             autoreload.watch(path)
