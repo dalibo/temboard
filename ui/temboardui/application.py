@@ -733,6 +733,11 @@ def get_role_by_cookie(session, content):
         raise Exception("Cookie content is not valid.")
 
 
+_reserved_role_name = [
+    'temboard',
+]
+
+
 def check_role_name(role_name):
     p_role_name = r'^([a-z0-9_\-.]{3,16})$'
     r_role_name = re.compile(p_role_name)
@@ -740,6 +745,9 @@ def check_role_name(role_name):
         raise TemboardUIError(
             400, "Invalid username, must satisfy this regexp pattern: %s" %
             (p_role_name))
+
+    if role_name in _reserved_role_name:
+        raise TemboardUIError(400, "Reserved role name")
 
 
 def check_role_email(role_email):
