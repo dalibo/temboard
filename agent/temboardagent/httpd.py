@@ -3,6 +3,7 @@ import time
 
 import json
 import sys
+from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socket import error as SocketError
 from socketserver import ThreadingMixIn
@@ -14,8 +15,13 @@ from temboardagent.errors import HTTPError
 from temboardagent.tools import JSONEncoder
 from temboardagent import __version__ as temboard_version
 from .errors import UserError
+from .toolkit.http import format_date
 from .toolkit.services import Service
-from .toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
+from .toolkit.signing import (
+    InvalidSignature,
+    canonicalize_request,
+    verify_v1,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -267,6 +273,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         return 200, func(http_context, self.app)
 
     def authenticate(self):
+        date = self.headers['x-temboard-date']
+        oldest_date = format_date(datetime.utcnow() - timedelta(hours=2))
+
+        if date < oldest_date:
+            raise HTTPError(400, "Request older than 2 hours.")
+
         signature = self.headers['x-temboard-signature']
         version, _, signature = signature.partition(':')
         if 'v1' != version:
