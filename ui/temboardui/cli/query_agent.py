@@ -61,13 +61,12 @@ class QueryAgent(SubCommand):
 
         try:
             response = client.request(method, pathinfo, body=args.body)
+            sys.stdout.write(response.read().decode('utf-8'))
             response.raise_for_status()
         except client.ConnectionError as e:
             logger.critical("%s", e)
             return 1
         except client.Error as e:
             raise UserError(str(e))
-        else:
-            sys.stdout.write(response.read().decode('utf-8'))
 
         return 0
