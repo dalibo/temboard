@@ -14,7 +14,7 @@ from ..version import __version__ as version
 logger = logging.getLogger(__name__)
 
 
-@get('/discover')
+@get('/discover', skip=['signature'])
 def get_discover():
     logger.info('Starting discovery.')
     app = default_app().temboard
@@ -92,10 +92,9 @@ def get_discover():
     return discover
 
 
-@add_route('GET', b'/profile')
-def profile(http_context, app):
-    logger.info("Get user profile.")
-    return {'username': http_context['username'], 'signature': 'valid'}
+@get
+def profile():
+    return {'username': request.username, 'signature': 'valid'}
 
 
 @get('/notifications')

@@ -2,7 +2,6 @@ import logging
 import json
 import ssl
 import sys
-from datetime import datetime, timedelta
 from socket import error as SocketError
 from urllib.parse import urlparse, parse_qs, unquote_plus
 from wsgiref.simple_server import make_server
@@ -13,14 +12,7 @@ from .. import __version__ as temboard_version
 from .. import errors
 from ..errors import UserError
 from ..routing import get_routes
-from ..toolkit.http import format_date
 from ..toolkit.services import Service
-from ..toolkit.signing import (
-    InvalidSignature,
-    canonicalize_request,
-    verify_v1,
-)
-
 from ..tools import JSONEncoder
 
 
@@ -74,7 +66,8 @@ def legacy_fallback(path):
         method=request.method,
         path=path,
         headers=request.headers,
-        body=request.body.read()
+        body=request.body.read(),
+        username=request.username,
     )
 
     try:
@@ -101,7 +94,7 @@ class RequestHandler(object):
     """
     HTTP request handler.
     """
-    def __init__(self, app, method, path, headers, body):
+    def __init__(self, app, method, path, headers, body, username):
         """
         Constructor.
         """
@@ -115,6 +108,7 @@ class RequestHandler(object):
         self.path = path
         self.headers = headers
         self.body = body
+        self.username = username
 
     def get_route(self, method, path):
         # Returns the right route according to method/path
@@ -177,13 +171,6 @@ class RequestHandler(object):
         # Parse URL path
         urlvars = self.parse_path(up.path.encode('utf-8'), route)
 
-        # Authentication checking out
-        if route['public']:
-            logger.debug('Allowing public route %s.', route['path'])
-            username = None
-        else:
-            username = self.authenticate()
-
         post_json = None
         try:
             # Load POST content expecting it is in JSON format.
@@ -202,41 +189,9 @@ class RequestHandler(object):
             query=query,
             post=post_json,
             urlvars=urlvars,
-            username=username,
+            username=self.username,
         )
 
         # Handle the request
         func = getattr(sys.modules[route['module']], route['function'])
         return 200, func(http_context, self.app)
-
-    def authenticate(self):
-        date = self.headers['x-temboard-date']
-        oldest_date = format_date(datetime.utcnow() - timedelta(hours=2))
-
-        if date < oldest_date:
-            raise errors.HTTPError(400, "Request older than 2 hours.")
-
-        signature = self.headers['x-temboard-signature']
-        version, _, signature = signature.partition(':')
-        if 'v1' != version:
-            raise errors.HTTPError(400, 'Unsupported signature format')
-
-        if not signature:
-            raise errors.HTTPError(400, 'Malformed signature')
-
-        canonical_request = canonicalize_request(
-            self.http_method, self.path,
-            self.headers, self.body,
-        )
-
-        try:
-            verify_v1(
-                self.app.config.signing_key, signature, canonical_request)
-        except InvalidSignature:
-            raise errors.HTTPError(403, 'Invalid signature')
-
-        user = self.headers['x-temboard-user']
-        if not user:
-            raise errors.HTTPError(400, 'Missing username')
-
-        return user
