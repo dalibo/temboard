@@ -105,7 +105,8 @@ class TemboardClient(object):
         if hasattr(body, 'pop'):  # list or dict
             body = json.dumps(body)
 
-        body = ensure_bytes(body)
+        if body is not None:
+            body = ensure_bytes(body)
 
         conn = http.client.HTTPSConnection(
             self.host, self.port, context=self.ssl_context, timeout=30,
