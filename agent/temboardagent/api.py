@@ -8,6 +8,7 @@ from temboardagent.errors import (
 )
 from temboardagent.notification import NotificationMgmt
 from temboardagent.inventory import SysInfo, PgInfo
+from .toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
 from .version import __version__ as version
 
 
@@ -63,6 +64,28 @@ def get_discover(http_context, app):
         logger.error('Postgres discovery failed.')
         # Do not raise HTTPError, just keeping null values for Postgres
         # informations.
+
+    signature = http_context['headers'].get('x-temboard-signature')
+    if signature:
+        request = canonicalize_request(
+            http_context['method'],
+            http_context['path'],
+            http_context['headers'],
+        )
+        try:
+            if not signature.startswith('v1:'):
+                raise InvalidSignature("Unsupported signature version.")
+            signature = signature[3:]
+
+            verify_v1(
+                http_context['app'].config.signing_key, signature, request)
+            sign_status = 'valid'
+        except InvalidSignature:
+            sign_status = 'invalid'
+    else:
+        sign_status = 'enabled'
+
+    discover['signature_status'] = sign_status
 
     logger.info('Discovery done.')
     logger.debug(discover)
