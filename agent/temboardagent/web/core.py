@@ -1,9 +1,7 @@
 import logging
-import time
 
 from bottle import default_app, get, request
 
-from ..routing import add_route
 from ..errors import HTTPError
 from ..notification import NotificationMgmt
 from ..inventory import SysInfo, PgInfo
@@ -103,28 +101,20 @@ def notifications():
     return list(NotificationMgmt.get_last_n(config, -1))
 
 
-@add_route('GET', b'/status', public=True)
-def get_status(http_context, app):
-    logger.info('Starting /status.')
+@get('/status', skip=['signature'])
+def get_status():
+    app = default_app().temboard
+
     try:
-        start_datetime = time.strftime("%Y-%m-%dT%H:%M:%S%Z",
-                                       app.start_datetime.timetuple())
-        reload_datetime = time.strftime("%Y-%m-%dT%H:%M:%S%Z",
-                                        app.start_datetime.timetuple())
-        ret = dict(
-            pid=app.pid,
-            user=app.user,
-            start_datetime=start_datetime,
-            reload_datetime=reload_datetime,
-            configfile=app.config.temboard.configfile,
-            version=version,
-        )
-        logger.info('Ending /status.')
-        return ret
-    except (Exception, HTTPError) as e:
-        logger.exception(str(e))
-        logger.info('Status failed.')
-        if isinstance(e, HTTPError):
-            raise e
-        else:
-            raise HTTPError(500, "Internal error.")
+        reload_datetime = app.reload_datetime.strftime("%Y-%m-%dT%H:%M:%S%Z")
+    except AttributeError:
+        reload_datetime = None
+
+    return dict(
+        pid=app.pid,
+        user=app.user,
+        start_datetime=app.start_datetime.strftime("%Y-%m-%dT%H:%M:%S%Z"),
+        reload_datetime=reload_datetime,
+        configfile=app.config.temboard.configfile,
+        version=version,
+    )

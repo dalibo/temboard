@@ -40,3 +40,10 @@ def test_discover(agent, agent_env, pg_version):
 
     assert pg_version in discover['pg_version']
     assert int(agent_env['PGPORT']) == discover['pg_port']
+
+
+def test_status(agent, agent_env, pg_version):
+    res = agent.get('/status')
+    status = res.json()
+
+    assert 'start_datetime' in status

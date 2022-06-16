@@ -47,17 +47,6 @@ def make_route(function, method, path, public=False):
     )
 
 
-def add_route(method, path, public=False):
-    """
-    Function decorator for HTTP method/path -> API function mapping.
-    """
-    def func_wrapper(function):
-        global ROUTES
-        ROUTES.append(make_route(function, method, path, public))
-        return function
-    return func_wrapper
-
-
 def get_routes():
     """
     Returns the routes.
