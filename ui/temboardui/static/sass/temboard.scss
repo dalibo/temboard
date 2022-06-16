@@ -567,14 +567,37 @@ table td.auto-width {
 }
 
 .multiselect-container {
-  >li>a>label {
+  padding: 0;
+
+  > li.dropdown-item label {
     padding-left: 10px;
+    margin: 0.5rem 0;
   }
 
-  .dropdown-item.active {
-    background-color: #dfdfdf;
+  .dropdown-item {
+    &.active {
+      color: black;
+      background-color: #dfdfdf;
+    }
+
+    &.disabled {
+      color: grey;
+    }
+
+    &:not(.disabled) {
+      cursor: pointer;
+    }
+
+    label, input {
+      cursor: inherit !important;
+    }
   }
 
   overflow-y: scroll;
   max-height: 20em;
+}
+
+#modalNewInstance .modal-body .alert pre {
+  max-height: 10em;
+  overflow-y: scroll;
 }

@@ -1,14 +1,22 @@
 # First connection
 
-Once `temboard` is up and running, it's time to try a first connection to the web interface with a web browser using `https` at the address `https://<temboard-host>:8888/`.
+Once `temboard` is up and running, it's time to try a first connection to the
+web interface with a web browser using `https` at the address
+`https://<temboard-host>:8888/`.
 
 ![Login](sc/login.png)
 
-You should get a login box. The default administration account is `admin`, the password is `admin`. Obviously, this password **MUST** be changed as soon as possible. To edit user's profile, please login and go to `Manage` -> `User list` then `Edit` on the corresponding row.
+You should get a login box. The default administration account is `admin`, the
+password is `admin`. Obviously, this password **MUST** be changed as soon as
+possible. To edit user's profile, please login and go to `Settings` -> `User
+list` then `Edit` on the corresponding row.
 
 ![Edit admin user](sc/edit-user-admin.png)
 
-Currently, when a logged in user changes its password, the error message `Restricted area...` is raised, this behaviour is due to the expiration of user session when the password has been changed. Go back to the login page and fill the form with the new password.
+Currently, when a logged in user changes its password, the error message
+`Restricted area...` is raised, this behaviour is due to the expiration of user
+session when the password has been changed. Go back to the login page and fill
+the form with the new password.
 
 
 # User and user group creation
@@ -68,6 +76,5 @@ Go to `Manage` -> `Instances`, then `+ Add a new instance`.
 
   * `Agent address`: IPv4 address that the agent is listening on;
   * `Agent port`: Port number that the agent is listening on;
-  * `Agent secret key`: Authentication key used by the agent to send data to the collector (`monitoring` plugin only);
   * `Groups`: Instance groups this instance belongs to.
   * `Active plugins`: `plugins` enabled for this instance. Selected `plugins` must be loaded by the `agent` too.

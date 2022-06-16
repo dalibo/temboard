@@ -316,7 +316,8 @@ def add_instance(session,
                  pg_version_summary=None,
                  pg_data=None,
                  notify=False,
-                 comment=None):
+                 comment=None,
+                 **_):
     try:
         instance = Instances(
             agent_address=str(new_agent_address),

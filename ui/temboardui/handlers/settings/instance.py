@@ -94,7 +94,7 @@ def validate_instance_data(data):
     check_agent_address(data['new_agent_address'])
     if 'new_agent_port' not in data or data['new_agent_port'] == '':
         raise HTTPError(400, "Agent port is missing.")
-    check_agent_port(data['new_agent_port'])
+    check_agent_port(str(data['new_agent_port']))
     if 'groups' not in data:
         raise HTTPError(400, "Groups field is missing.")
     if data['groups'] is not None and type(data['groups']) != list:
@@ -189,11 +189,20 @@ def discover(request, address, port):
     client = TemboardAgentClient.factory(
         request.config,
         address, port,
-        key=request.headers['X-TemBoard-Agent-Key'],
+        key=request.headers.get('X-TemBoard-Agent-Key'),
         username=request.current_user.role_name,
     )
-    response = client.get('/discover')
-    return response.json()
+    try:
+        response = client.get('/discover')
+        response.raise_for_status()
+    except OSError as e:
+        logger.error(
+            "Failed to discover agent at %s:%s: %s",  address, port, e)
+        raise HTTPError(
+            400, "Can't connect to agent. Please check address and port.")
+    else:
+        # pass-through JSON
+        return response.json()
 
 
 @app.route(r"/settings/instances")
