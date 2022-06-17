@@ -93,6 +93,7 @@ class Migrator(object):
                     self.current_version, = cur.fetchone()
                 logger.debug(
                     "temBoard database revision is %s.", self.current_version)
+        conn.commit()
         return self.current_version
 
     def inspect_available_versions(self):

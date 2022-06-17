@@ -9,6 +9,7 @@ import socket
 import sys
 from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
+from textwrap import dedent
 
 import tornado.ioloop
 import tornado.web
@@ -81,7 +82,13 @@ class TemboardApplication(BaseApplication):
         # C O N F I G U R A T I O N
 
         parser = self.create_parser(
-            description="temBoard server %s." % __version__,
+            description=dedent("""\
+            temBoard UI %s.
+
+            COMMAND is optional. Default command is `serve`, the combined
+            service. See available commands below.
+
+            """) % __version__,
         )
         self.define_arguments(parser)
 

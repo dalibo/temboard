@@ -13,10 +13,10 @@ services:
 
   # A mock SMTP server for alterting by mail.
   smtp:
-    image: dalibo/temboard-agent
-    ports: [8025:8025]
-    entrypoint: [python3]
-    command: [-m, smtpd, --debug, --nosetuid, --class, DebuggingServer]
+    image: mailhog/mailhog
+    ports:
+    - 1025:1025
+    - 8025:8025
 
   # First instance.
   postgres0:

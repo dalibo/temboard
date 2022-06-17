@@ -207,6 +207,11 @@ class DatabaseHelper(object):
             try:
                 response = func(request, *args)
             except Exception:
+                # Expunge objects before rollback to implement
+                # expire_on_rollback=False. This allow templates to reuse
+                # request.instance object and joined object without triggering
+                # lazy load.
+                request.db_session.expunge_all()
                 request.db_session.rollback()
                 raise
             else:
