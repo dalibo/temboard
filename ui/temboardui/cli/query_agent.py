@@ -43,10 +43,14 @@ class QueryAgent(SubCommand):
 
     def main(self, args):
         url = urlparse(args.url)
+        headers = {}
 
         if not args.body and not sys.stdin.isatty():
             logger.info("Reading request body from STDIN.")
             args.body = sys.stdin.read()
+
+        if args.body:
+            headers['Content-Type'] = 'application/json'
 
         method = 'POST' if args.body else 'GET'
         pathinfo = url.path
@@ -60,7 +64,7 @@ class QueryAgent(SubCommand):
         client.log_headers = True
 
         try:
-            response = client.request(method, pathinfo, body=args.body)
+            response = client.request(method, pathinfo, headers, args.body)
             sys.stdout.write(response.read().decode('utf-8'))
             response.raise_for_status()
         except client.ConnectionError as e:
