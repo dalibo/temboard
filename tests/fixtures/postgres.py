@@ -147,6 +147,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     log_filename = 'postgres.log'
     log_line_prefix = '%t [%p]: user=%u,db=%d,app=%a,client=%h '
     log_lock_waits = on
+    log_statement = all
     logging_collector = on
     port = {agent_env['PGPORT']}
     shared_preload_libraries = pg_stat_statements
