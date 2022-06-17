@@ -1,6 +1,3 @@
-# flake8: noqa
-# pytype: disable=import-error
-
 import sys
 
 
@@ -13,9 +10,10 @@ if PY2:
     from Queue import Empty
     from urlparse import urlparse
     from urllib2 import HTTPError
+    from urllib import quote_plus
 else:
-    import configparser
-    from collections import UserDict as IterableUserDict
-    from queue import Empty
-    from urllib.parse import urlparse
-    from urllib.error import HTTPError
+    import configparser  # noqa: F401
+    from collections import UserDict as IterableUserDict  # noqa: F401
+    from queue import Empty  # noqa: F401
+    from urllib.parse import quote_plus, urlparse  # noqa: F401
+    from urllib.error import HTTPError  # noqa: F401

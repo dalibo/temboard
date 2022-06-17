@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 
 from .errors import TemboardError
+from .pycompat import quote_plus
 from .utils import ensure_bytes
 
 
@@ -49,7 +50,7 @@ def canonicalize_request(method, path, headers, body=b''):
             "Missing headers for request signing: %s" % missing_headers)
 
     lines = [
-        b"%s %s" % (method, ensure_bytes(path)),
+        b"%s %s" % (method, ensure_bytes(quote_plus(path, safe='/'))),
         b"",
     ] + sorted([
         b"%s: %s" % (ensure_bytes(name), ensure_bytes(value))
