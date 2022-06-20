@@ -1,4 +1,5 @@
 import functools
+import inspect
 import logging
 import json
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from bottle import (
     HTTPError, HTTPResponse, Response,
     default_app, request, response,
 )
+from psycopg2 import Error as Psycopg2Error
 
 from .. import errors
 from ..tools import JSONEncoder
@@ -31,6 +33,7 @@ def create_app(temboard):
     app.install(JSONPlugin())
     app.install(ErrorPlugin())
     app.install(SignaturePlugin())
+    app.install(PostgresPlugin())
     return app
 
 
@@ -60,6 +63,61 @@ def after_request_log():
     else:
         logmethod = logger.info
     logmethod("%s %s %s", request.method, request.path, response.status)
+
+
+class PostgresPlugin(object):
+    def __init__(self):
+        self._pool = None
+        self._dbpool = None
+
+    @property
+    def dbpool(self):
+        if not self._dbpool:
+            self._dbpool = default_app().temboard.postgres.dbpool()
+        return self._dbpool
+
+    @property
+    def pool(self):
+        if not self._pool:
+            self._pool = default_app().temboard.postgres.pool()
+        return self._pool
+
+    def apply(self, callback, route):
+        wanted = self.wants_postgres(callback)
+        if not wanted:
+            return callback
+
+        @functools.wraps(callback)
+        def wrapper(*a, **kw):
+            # Retry execution one time to handle closed connection. This assume
+            # callbacks idempotence.
+            for try_ in 0, 1:
+                if 'pgconn' in wanted:
+                    conn = self.pool.getconn()
+                    conn.set_session(autocommit=True)
+                    kw['pgconn'] = conn
+
+                if 'pgpool' in wanted:
+                    # dbpool is not threadsafe! But wsgiref simple server is
+                    # not threaded.
+                    kw['pgpool'] = self.dbpool
+
+                try:
+                    return callback(*a, **kw)
+                except Psycopg2Error as e:
+                    if e.pgcode is None:
+                        logger.debug("Retrying lost connection: %s", e)
+                        self.dbpool.closeall()
+                        self.pool.closeall()
+                finally:
+                    if 'pgconn' in wanted:
+                        self.pool.putconn(conn)
+
+        return wrapper
+
+    def wants_postgres(self, callback):
+        argspec = inspect.getargspec(callback)
+        return [a for a in argspec.args if a in ('pgconn', 'pgpool')]
 
 
 class ErrorPlugin(object):

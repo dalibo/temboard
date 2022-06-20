@@ -39,6 +39,8 @@ script to proceed.
 - Debian Stretch support is deprecated and will be removed in next major
   release.
 - temBoard agent now depends on cryptography and bottle.
+- temBoard agent pools connections to PostgreSQL used by web API, reducing
+  connections stress on PostgreSQL.
 
 
 ## [7.11] - Unreleased
