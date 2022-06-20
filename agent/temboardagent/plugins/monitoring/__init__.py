@@ -11,7 +11,7 @@ from ...tools import now, validate_parameters
 from ...inventory import SysInfo
 from ... import __version__ as __VERSION__
 from ...errors import HTTPError as TemboardHTTPError
-from ...postgres import ConnectionPool
+from ...postgres import Postgres
 
 from . import db
 from .inventory import host_info, instance_info
@@ -156,9 +156,10 @@ def api_run_probe(probe_instance, config):
         dbnames=config.monitoring.dbnames,
         instance=config.postgresql.instance,
     )
+    postgres = Postgres(**conninfo)
     sysinfo = SysInfo()
     hostname = sysinfo.hostname(config.temboard.hostname)
-    with ConnectionPool(**conninfo) as pool:
+    with postgres.dbpool() as pool:
         instance = instance_info(pool, conninfo, hostname)
         # Set home path
         probe_instance.set_home(config.temboard.home)
@@ -249,7 +250,7 @@ def monitoring_collector_worker(app):
         config.temboard.home
     )
 
-    with ConnectionPool(**conninfo) as pool:
+    with Postgres(**conninfo).dbpool() as pool:
         instance = instance_info(pool, conninfo, system_info['hostname'])
         data = run_probes(probes, pool, [instance])
 

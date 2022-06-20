@@ -296,7 +296,7 @@ class PgInfo(Inventory):
         """
         Returns PostgreSQL setting value based on its name.
         """
-        return self.db_conn.query_scalar(
+        return self.db_conn.queryscalar(
             "SELECT setting FROM pg_settings WHERE name = %s",
             (name,)
         )
@@ -318,7 +318,7 @@ class PgInfo(Inventory):
 
     def is_in_recovery(self):
         if self.db_conn.server_version >= 90000:
-            return self.db_conn.query_scalar(
+            return self.db_conn.queryscalar(
                 "SELECT pg_is_in_recovery() AS standby;")
         return False
 

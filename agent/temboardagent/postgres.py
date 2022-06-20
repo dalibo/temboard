@@ -1,13 +1,19 @@
+#
+# Configure and extend psycopg2 for temBoard
+#
+# - Use float for decimal.
+# - dict as default row type
+# - per query row_factory
+# - connection helpers to hide cursor.
+#
+
 import logging
 import re
-from textwrap import dedent
+from contextlib import closing
 
-import psycopg2.extensions
 from psycopg2 import connect
-from psycopg2.extensions import connection
-from psycopg2.extras import RealDictCursor
-
-from .errors import UserError
+from psycopg2.pool import ThreadedConnectionPool
+import psycopg2.extensions
 
 
 logger = logging.getLogger(__name__)
@@ -29,72 +35,9 @@ def pg_escape(in_string, escapee_char=r"'"):
     return out_string
 
 
-class ConnectionHelper(connection):
-    def execute(self, query, vars=None):
-        with self.cursor() as cur:
-            cur.execute(dedent(query), vars)
-
-    def query(self, query, vars=None):
-        with self.cursor() as cur:
-            cur.execute(dedent(query), vars)
-            yield from cur
-
-    def queryone(self, query, vars=None):
-        with self.cursor() as cur:
-            cur.execute(dedent(query), vars)
-            return cur.fetchone()
-
-    def query_scalar(self, query, vars=None):
-        row = self.queryone(query, vars)
-        if row is None:
-            return
-        else:
-            return next(iter(row.values()))
-
-
-class ConnectionManager:
-    def __init__(self, postgres, app):
-        self.postgres = postgres
-        self.app = app
-        self.conn = None
-
-    def open(self):
-        logger.debug(
-            "Opening Postgres connexion to database %s.",
-            self.postgres.dbname)
-        try:
-            self.conn = connect(
-                host=self.postgres.host,
-                port=self.postgres.port,
-                user=self.postgres.user,
-                password=self.postgres.password,
-                database=self.postgres.dbname,
-                connection_factory=ConnectionHelper,
-                cursor_factory=RealDictCursor,
-                application_name='temboard-agent',
-            )
-            self.conn.set_session(autocommit=True)
-            if self.app is not None:
-                self.app.check_compatibility(self.conn.server_version)
-        except Exception as e:
-            raise UserError("Failed to connect to Postgres: %s" % e)
-        return self.conn
-
-    def close(self):
-        logger.debug("Closing connection to %s.", self.postgres.dbname)
-        self.conn.close()
-        self.conn = None
-
-    def __enter__(self):
-        if self.conn is None:
-            self.open()
-        return self.conn
-
-    def __exit__(self, *a):
-        self.close()
-
-
 class Postgres:
+    # main object holding Postgres parameters and methods.
+
     def __init__(
             self, host=None, port=5432, user=None, password=None, dbname=None,
             app=None,
@@ -116,8 +59,19 @@ class Postgres:
             self.user, self.host, self.port, self.dbname,
         )
 
+    def dbpool(self):
+        return DBConnectionPool(self)
+
+    def pool(self):
+        return ThreadedConnectionPool(
+            minconn=1, maxconn=2,
+            **self.pqvars(),
+        )
+
     def connect(self):
-        return ConnectionManager(self, self.app)
+        conn = connect(**self.pqvars())
+        conn.set_session(autocommit=True)
+        return closing(conn)
 
     def fetch_version(self):
         if self._server_version is None:
@@ -137,29 +91,112 @@ class Postgres:
         kw = dict(defaults, **kw)
         return self.__class__(**kw)
 
+    def pqvars(self, dbname=None):
+        return dict(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=dbname or self.dbname,
+            connection_factory=FactoryConnection,
+            application_name='temboard-agent',
+        )
 
-class ConnectionPool:
-    def __init__(self, **kw):
-        if 'database' in kw:
-            kw['dbname'] = kw.pop('database')
-        self.conn_kw = kw
+
+class DBConnectionPool:
+    # Pool one connection per database.
+    #
+    # Not thread-safe.
+
+    def __init__(self, postgres):
+        self.postgres = postgres
         self.pool = dict()
 
-    def get(self, dbname=None):
-        conn_kw = self.conn_kw.copy()
-        if dbname:
-            conn_kw['dbname'] = dbname
-        dbname = conn_kw['dbname']
+    def getconn(self, dbname=None):
+        dbname = dbname or self.postgres.dbname
         try:
             return self.pool[dbname]
         except KeyError:
-            conn = Postgres(**conn_kw).connect()
-            return self.pool.setdefault(dbname, conn.open())
+            return self.pool.setdefault(
+                dbname,
+                connect(**self.postgres.pqvars(dbname=dbname)),
+            )
+
+    def closeall(self):
+        for dbname in list(self.pool):
+            conn = self.pool.pop(dbname)
+            conn.close()
+
+    def __del__(self):
+        self.closeall()
 
     def __enter__(self):
         return self
 
     def __exit__(self, *_):
-        for conn in self.pool.values():
-            conn.close()
-        self.pool = dict()
+        self.closeall()
+
+
+class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
+    def cursor(self, *a, **kw):
+        row_factory = kw.pop('row_factory', None)
+        kw['cursor_factory'] = FactoryCursor.make_factory(
+            row_factory=row_factory)
+        return super(FactoryConnection, self).cursor(*a, **kw)
+
+    def execute(self, sql, *args):
+        with self.cursor() as cur:
+            cur.execute(sql, *args)
+
+    def query(self, sql, *args, row_factory=None):
+        with self.cursor(row_factory=row_factory) as cur:
+            cur.execute(sql, *args)
+            for row in cur.fetchall():
+                yield row
+
+    def queryone(self, sql, *args, row_factory=None):
+        with self.cursor(row_factory=row_factory) as cur:
+            cur.execute(sql, *args)
+            return cur.fetchone()
+
+    def queryscalar(self, sql, *args):
+        return self.queryone(sql, *args, row_factory=scalar)
+
+
+class FactoryCursor(psycopg2.extensions.cursor):  # pragma: nocover
+    # Implement row_factory for psycopg2.
+
+    @classmethod
+    def make_factory(cls, row_factory=None):
+        # Build a cursor_factory for psycopg2 connection.
+        def factory(*a, **kw):
+            kw['row_factory'] = row_factory
+            return cls(*a, **kw)
+        return factory
+
+    def __init__(self, conn, name=None, row_factory=None):
+        super(FactoryCursor, self).__init__(conn)
+        if not row_factory:
+            def row_factory(**kw):
+                return kw
+        self._row_factory = row_factory
+
+    def fetchone(self):
+        row = super(FactoryCursor, self).fetchone()
+        kw = dict(zip([c.name for c in self.description], row))
+        return self._row_factory(**kw)
+
+    def fetchmany(self, size=None):
+        for row in super(FactoryCursor, self).fetchmany(size):
+            kw = dict(zip([c.name for c in self.description], row))
+            yield self._row_factory(**kw)
+
+    def fetchall(self):
+        for row in super(FactoryCursor, self).fetchall():
+            kw = dict(zip([c.name for c in self.description], row))
+            yield self._row_factory(**kw)
+
+
+def scalar(**kw):
+    # Row factory for scalar.
+    return next(iter(kw.values()))

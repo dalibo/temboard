@@ -129,7 +129,7 @@ def post_activity_kill(conn, config, http_context):
     ])
     ret = {'backends': []}
     for pid in http_context['post']['pids']:
-        killed = conn.query_scalar(
+        killed = conn.queryscalar(
             "SELECT pg_terminate_backend(%s) AS killed" % (pid))
         # Push a notification.
         try:

@@ -41,7 +41,7 @@ def load_probes(options, home):
 def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    now = pool.get().query_scalar("SELECT NOW()")
+    now = pool.getconn().queryscalar("SELECT NOW()")
     logger.info("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
@@ -87,7 +87,7 @@ def run_probes(probes, pool, instances, delta=True):
             for dbname in dbnames:
                 conninfo = dict(i, dbname=dbname)
                 try:
-                    out += p.run(pool.get(dbname=dbname), conninfo)
+                    out += p.run(pool.getconn(dbname=dbname), conninfo)
                 except Exception as e:
                     logger.error("Probe failure: %s", e)
                     raise
@@ -155,7 +155,7 @@ def get_primary_conninfo(conn):
             ) > 0
         )) AS is_in_recovery
         """
-    is_in_recovery = conn.query_scalar(query)
+    is_in_recovery = conn.queryscalar(query)
     if not is_in_recovery:
         raise Exception("Instance not in recovery or recovery file is "
                         "missing.")
