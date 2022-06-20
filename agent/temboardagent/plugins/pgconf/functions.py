@@ -1,14 +1,13 @@
 import logging
 import re
 from collections import namedtuple
+from textwrap import dedent
+
+from bottle import request
 
 from ...errors import HTTPError, NotificationError
-from ...tools import validate_parameters
 from ...notification import NotificationMgmt, Notification
 from ...postgres import pg_escape
-from .types import (
-    T_PGSETTINGS_FILTER,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ def get_settings_categories(conn):
 
 
 def get_setting(conn, name):
-    return conn.query_scalar(
+    return conn.queryscalar(
         "SELECT setting FROM pg_settings WHERE name = %s", (name,))
 
 
@@ -51,43 +50,42 @@ def format_setting(setting, type, unit=None):
     return setting
 
 
-def get_settings(conn, http_context=None):
-    filter_query = ''
-    if http_context and 'filter' in http_context['query']:
-        # Check 'filter' parameters.
-        validate_parameters(http_context['query'], [
-            ('filter', T_PGSETTINGS_FILTER, True)
-        ])
-        filter = http_context['query']['filter'][0]
-        filter_query = " WHERE name ILIKE '%{0}%'" \
-                       " OR short_desc ILIKE '%{0}%'" \
-                       " OR extra_desc ILIKE '%{0}%'".format(filter)
-    query = """
-SELECT
-    name, setting, current_setting(name) AS current_setting, unit,
-    vartype, min_val, max_val, enumvals, context, category,
-    short_desc||' '||coalesce(extra_desc, '') AS desc, boot_val, reset_val,
-    pending_restart
-FROM pg_settings
-%s ORDER BY category, name
-    """ % (filter_query)
-    ret = []
+def get_settings(conn, category=None, search=None):
+    where = ''
+    if search:
+        where = dedent("""\
+        WHERE name ILIKE '%{0}%'
+         OR short_desc ILIKE '%{0}%'
+         OR extra_desc ILIKE '%{0}%'
+        """).format(search)
+    query = dedent("""\
+    SELECT
+      name,
+      setting,
+      current_setting(name) AS current_setting,
+      unit,
+      vartype,
+      min_val, max_val, enumvals,
+      context, category,
+      short_desc || ' ' || coalesce(extra_desc, '') AS desc,
+      boot_val, reset_val,
+      pending_restart
+    FROM pg_settings
+    %s
+    ORDER BY category, name
+    """) % where
+
+    ret = {}
     for row in conn.query(query):
-        if http_context and len(http_context['urlvars']) > 0:
-            if http_context['urlvars'][0] != row['category']:
-                continue
-        cat_exists = False
-        i = 0
-        for ret_cat in ret:
-            if ret_cat['category'] == row['category']:
-                cat_exists = True
-                break
-            i += 1
+        if category and category != row['category']:
+            continue
+
+        rows = ret.setdefault(row['category'], [])
         enumvals = row['enumvals']
         if enumvals is not None:
             # format enumvals as before switching from tpc to psycopg2
             enumvals = '{%s}' % ','.join(enumvals)
-        row_dict = {
+        rows.append({
             'name': row['name'],
             'setting': row['setting'],
             'setting_raw': row['current_setting'],
@@ -101,14 +99,9 @@ FROM pg_settings
             'context': row['context'],
             'desc': row['desc'],
             'pending_restart': row['pending_restart'],
-        }
+        })
 
-        if not cat_exists:
-            ret.append({'category': row['category'], 'rows': [row_dict]})
-        else:
-            ret[i]['rows'].append(row_dict)
-
-    return ret
+    return [{'category': k, 'rows': v} for k, v in ret.items()]
 
 
 def human_to_number(h_value, h_unit=None, h_type=int):
@@ -178,26 +171,16 @@ def get_settings_status(conn):
     }
 
 
-def post_settings(conn, config, http_context):
-    if http_context and 'filter' in http_context['query']:
-        # Check 'filter' parameters.
-        validate_parameters(http_context['query'], [
-            ('filter', T_PGSETTINGS_FILTER, True)
-        ])
-    pg_config_categories = get_settings(conn, http_context)
-    if 'settings' not in http_context['post']:
-        raise HTTPError(406, "Parameter 'settings' not sent.")
-    settings = http_context['post']['settings']
+def post_settings(app, conn, current, update):
     ret = {'settings': []}
     do_not_check_names = ['unix_socket_permissions', 'log_file_mode']
-    logger.debug(settings)
-    for setting in settings:
+    for setting in update:
         if 'name' not in setting \
            or 'setting' not in setting:
             raise HTTPError(406, "setting item malformed.")
         checked = False
         try:
-            for pg_config_category in pg_config_categories:
+            for pg_config_category in current:
                 for item in pg_config_category['rows']:
                     if item['name'] == setting['name']:
                         if item['name'] in do_not_check_names:
@@ -315,9 +298,9 @@ def post_settings(conn, config, http_context):
             # Push a notification on setting change.
             try:
                 NotificationMgmt.push(
-                    config,
+                    app.config,
                     Notification(
-                        username=http_context['username'],
+                        username=request.username,
                         message="Setting '{}' changed: '{}' -> '{}'".format(
                             item['name'],
                             item['setting_raw'],
@@ -340,8 +323,8 @@ def post_settings(conn, config, http_context):
     conn.execute("SELECT pg_reload_conf()")
     # Push a notification.
     try:
-        NotificationMgmt.push(config,
-                              Notification(username=http_context['username'],
+        NotificationMgmt.push(app.config,
+                              Notification(username=request.username,
                                            message="PostgreSQL reload"))
     except NotificationError as e:
         logger.error(e.message)

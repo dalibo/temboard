@@ -1,37 +1,50 @@
-from ...routing import RouteSet
+import re
+
+from bottle import Bottle, default_app, HTTPError, request
 
 from . import functions as pgconf_functions
-from .types import (
-    T_PGSETTINGS_CATEGORY,
-)
 
 
-routes = RouteSet(prefix=b'/pgconf')
+bottle = Bottle()
 
 
-@routes.get(b'/configuration')
-@routes.get(b'/configuration/category/' + T_PGSETTINGS_CATEGORY)
-def get_pg_conf(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_settings(conn, http_context)
+@bottle.get('/configuration')
+def get_configuration(pgconn):
+    return get_configuration_category(pgconn, None)
 
 
-@routes.get(b'/configuration/categories')
-def get_pg_conf_categories(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_settings_categories(conn)
+@bottle.get('/configuration/category/<category>')
+def get_configuration_category(pgconn, category):
+    search = None
+    if 'filter' in request.query:
+        if not re.match('([a-zA-Z0-9_]{3,128})', request.query['filter']):
+            raise HTTPError(406, "Parameter 'filter' is malformed")
+        search = request.query['filter']
+    if category:
+        # Unquote +.
+        category = category.replace('+', ' ')
+    return pgconf_functions.get_settings(pgconn, category, search)
 
 
-@routes.post(b'/configuration')
-def post_pg_conf(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.post_settings(conn, app.config, http_context)
+@bottle.get('/configuration/categories')
+def get_configuration_categories(pgconn):
+    return pgconf_functions.get_settings_categories(pgconn)
 
 
-@routes.get(b'/configuration/status')
-def get_pg_conf_status(http_context, app):
-    with app.postgres.connect() as conn:
-        return pgconf_functions.get_settings_status(conn)
+@bottle.post('/configuration')
+def post_configuration(pgconn):
+    if 'settings' not in request.json:
+        raise HTTPError(406, "Parameter 'settings' not sent.")
+    current = get_configuration_category(pgconn, None)
+    return pgconf_functions.post_settings(
+        default_app().temboard, pgconn,
+        current, request.json['settings'],
+    )
+
+
+@bottle.get('/configuration/status')
+def get_status(pgconn):
+    return pgconf_functions.get_settings_status(pgconn)
 
 
 class PgConfPlugin:
@@ -41,7 +54,4 @@ class PgConfPlugin:
         self.app = app
 
     def load(self):
-        self.app.router.add(routes)
-
-    def unload(self):
-        self.app.router.remove(routes)
+        default_app().mount('/pgconf/', bottle)
