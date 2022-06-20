@@ -376,6 +376,7 @@ class InstanceHelper(object):
             return True
 
         if not self.xsession:
+            logger.debug("No agent session, redirecting to login.")
             self.redirect('/login')
         return self.xsession
 
@@ -383,8 +384,11 @@ class InstanceHelper(object):
         try:
             self.require_xsession()
             return self.get("/profile")
+        except Redirect:
+            raise
         except HTTPError as e:
             if 401 == e.status_code:
+                logger.debug("Invalid agent session, redirecting to login.")
                 self.redirect('/login')
             raise
 
