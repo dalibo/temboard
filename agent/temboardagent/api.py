@@ -95,7 +95,7 @@ def get_discover(http_context, app):
 @add_route('GET', b'/profile')
 def profile(http_context, app):
     logger.info("Get user profile.")
-    return {'username': http_context['username']}
+    return {'username': http_context['username'], 'signature': 'valid'}
 
 
 @add_route('GET', b'/notifications')
