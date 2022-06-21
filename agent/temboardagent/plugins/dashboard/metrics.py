@@ -169,7 +169,7 @@ class DashboardMetrics:
                 'time': current_time}
 
     def get_hitratio(self,):
-        return self.conn.query_scalar("""\
+        return self.conn.queryscalar("""\
         SELECT CASE sum(blks_hit+blks_read)
           WHEN 0 THEN NULL
           ELSE trunc(sum(blks_hit)/sum(blks_hit+blks_read)*100)::float
@@ -184,7 +184,7 @@ class DashboardMetrics:
                 'time': current_time}
 
     def get_max_connections(self):
-        return int(self.conn.query_scalar("""\
+        return int(self.conn.queryscalar("""\
         SELECT setting FROM pg_settings WHERE name = 'max_connections'
         """))
 
@@ -222,7 +222,7 @@ class DashboardMetrics:
                 'timestamp': time.time()}
 
     def get_pg_uptime(self,):
-        return self.conn.query_scalar("""\
+        return self.conn.queryscalar("""\
         SELECT EXTRACT(epoch FROM NOW() - pg_postmaster_start_time())::integer AS uptime
         """)  # noqa
 
@@ -291,7 +291,7 @@ class DashboardMetrics:
         return ret
 
     def _get_current_buffers(self,):
-        return self.conn.query_scalar(
+        return self.conn.queryscalar(
             "SELECT buffers_alloc FROM pg_stat_bgwriter"
         )
 
@@ -304,7 +304,7 @@ SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE state != 'idle'
             query = """
 SELECT COUNT(*) AS nb FROM pg_stat_activity WHERE current_query != '<IDLE>'
             """
-        return self.conn.query_scalar(query)
+        return self.conn.queryscalar(query)
 
     def get_notifications(self, config):
         return list(NotificationMgmt.get_last_n(config, 15))

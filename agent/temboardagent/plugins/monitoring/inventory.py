@@ -51,7 +51,7 @@ def instance_info(pool, conninfo, hostname):
 
     # Try the connection
     try:
-        conn = pool.get(dbname=conninfo['database'])
+        conn = pool.getconn(dbname=conninfo['database'])
         # Get PostgreSQL informations using PgInfo
         pginfo = PgInfo(conn)
         pgv = pginfo.version()

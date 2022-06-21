@@ -27,6 +27,7 @@ setup(**dict(
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
+    python_requires='~=3.5',
     data_files=[
         ('share/temboard-agent/', [
             'share/temboard-agent.conf',

@@ -19,12 +19,12 @@ def test_canonicalize_request_get(headers):
 
     data = canonicalize_request(
         method='get',
-        path='/chemin',
+        path='/chemin/toto+titi',
         headers=headers,
     )
 
     wanted = dedent("""\
-    GET /chemin
+    GET /chemin/toto%2Btiti
 
     host: 0.0.0.0:2345
     x-temboard-date: 20220511t095800z
