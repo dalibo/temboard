@@ -4,6 +4,29 @@
 [preferred installation method]: server_install.md#install
 [upgrade the agents]: agent_upgrade.md
 
+## Upgrade `7.9` or `7.10` to `7.11`
+
+### Stop service
+
+Stop `temboard` service:
+
+``` shell
+sudo systemctl stop temboard
+```
+
+### Update package
+
+Update temboard package with your [preferred installation method].
+
+### Start service
+
+Start `temboard` service:
+
+```shell
+sudo systemctl start temboard
+```
+
+
 ## Upgrade `7.X` to `7.9`
 
 ### Stop service
