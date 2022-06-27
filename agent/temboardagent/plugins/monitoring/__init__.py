@@ -3,8 +3,9 @@ import time
 import logging
 import json
 
+from bottle import Bottle, default_app, request
+
 from ...toolkit import taskmanager
-from ...routing import RouteSet
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
@@ -40,104 +41,122 @@ from .probes import (
 from .output import remove_passwords
 
 logger = logging.getLogger(__name__)
+bottle = Bottle()
 workers = taskmanager.WorkerSet()
-routes = RouteSet(prefix=b'/monitoring')
 
 T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 T_LIMIT = b'(^[0-9]+$)'
 
 
-@routes.get(b'/probe/sessions')
-def get_probe_sessions(http_context, app):
+@bottle.get('/probe/sessions')
+def get_probe_sessions():
+    app = default_app().temboard
     return api_run_probe(probe_sessions(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/xacts')
-def get_probe_xacts(http_context, app):
+@bottle.get('/probe/xacts')
+def get_probe_xacts():
+    app = default_app().temboard
     return api_run_probe(probe_xacts(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/locks')
-def get_probe_locks(http_context, app):
+@bottle.get('/probe/locks')
+def get_probe_locks():
+    app = default_app().temboard
     return api_run_probe(probe_locks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/blocks')
-def get_probe_blocks(http_context, app):
+@bottle.get('/probe/blocks')
+def get_probe_blocks():
+    app = default_app().temboard
     return api_run_probe(probe_blocks(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/bgwriter')
-def get_probe_bgwriter(http_context, app):
+@bottle.get('/probe/bgwriter')
+def get_probe_bgwriter():
+    app = default_app().temboard
     return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/db_size')
-def get_probe_db_size(http_context, app):
+@bottle.get('/probe/db_size')
+def get_probe_db_size():
+    app = default_app().temboard
     return api_run_probe(probe_db_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/tblspc_size')
-def get_probe_tblspc_size(http_context, app):
+@bottle.get('/probe/tblspc_size')
+def get_probe_tblspc_size():
+    app = default_app().temboard
     return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/filesystems_size')
-def get_probe_filesystems_size(http_context, app):
+@bottle.get('/probe/filesystems_size')
+def get_probe_filesystems_size():
+    app = default_app().temboard
     return api_run_probe(probe_filesystems_size(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/cpu')
-def get_probe_cpu(http_context, app):
+@bottle.get('/probe/cpu')
+def get_probe_cpu():
+    app = default_app().temboard
     return api_run_probe(probe_cpu(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/process')
-def get_probe_process(http_context, app):
+@bottle.get('/probe/process')
+def get_probe_process():
+    app = default_app().temboard
     return api_run_probe(probe_process(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/memory')
-def get_probe_memory(http_context, app):
+@bottle.get('/probe/memory')
+def get_probe_memory():
+    app = default_app().temboard
     return api_run_probe(probe_memory(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/loadavg')
-def get_probe_loadavg(http_context, app):
+@bottle.get('/probe/loadavg')
+def get_probe_loadavg():
+    app = default_app().temboard
     return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/wal_files')
-def get_probe_wal_files(http_context, app):
+@bottle.get('/probe/wal_files')
+def get_probe_wal_files():
+    app = default_app().temboard
     return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/replication_lag')
-def get_probe_replication_lag(http_context, app):
+@bottle.get('/probe/replication_lag')
+def get_probe_replication_lag():
+    app = default_app().temboard
     return api_run_probe(probe_replication_lag(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/temp_files_size_delta')
-def get_probe_temp_files_size_delta(http_context, app):
+@bottle.get('/probe/temp_files_size_delta')
+def get_probe_temp_files_size_delta():
+    app = default_app().temboard
     return api_run_probe(probe_temp_files_size_delta(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/replication_connection')
-def get_probe_replication_connection(http_context, app):
+@bottle.get('/probe/replication_connection')
+def get_probe_replication_connection():
+    app = default_app().temboard
     return api_run_probe(probe_replication_connection(app.config.monitoring),
                          app.config)
 
 
-@routes.get(b'/probe/heap_bloat')
-def get_probe_heap_bloat(http_context, app):
+@bottle.get('/probe/heap_bloat')
+def get_probe_heap_bloat():
+    app = default_app().temboard
     return api_run_probe(probe_heap_bloat(app.config.monitoring), app.config)
 
 
-@routes.get(b'/probe/btree_bloat')
-def get_probe_btree_bloat(http_context, app):
+@bottle.get('/probe/btree_bloat')
+def get_probe_btree_bloat():
+    app = default_app().temboard
     return api_run_probe(probe_btree_bloat(app.config.monitoring), app.config)
 
 
@@ -167,8 +186,8 @@ def api_run_probe(probe_instance, config):
         return run_probes([probe_instance], pool, [instance], delta=False)
 
 
-@routes.get(b'/history')
-def get_monitoring(http_context, app):
+@bottle.get('/history')
+def get_monitoring():
     """Monitoring root API aims to query metrics history.
     Data are sorted by collect timestamp, in ascending order. By default, only
     the most fresh record set is returned. The query parameter 'start' can be
@@ -183,27 +202,29 @@ def get_monitoring(http_context, app):
     start_timestamp = None
     limit = 50
 
-    if 'start' in http_context['query']:
+    app = default_app().temboard
+
+    if 'start' in request.query:
         # Validate start parameter
-        validate_parameters(http_context['query'], [
-            ('start', T_TIMESTAMP_UTC, True),
+        validate_parameters(request.query, [
+            ('start', T_TIMESTAMP_UTC, False),
         ])
         # Convert it to epoch
         try:
             start_timestamp = (
                 datetime.strptime(
-                    http_context['query']['start'][0], "%Y-%m-%dT%H:%M:%SZ"
+                    request.query['start'], "%Y-%m-%dT%H:%M:%SZ"
                 ) - datetime(1970, 1, 1)
             ).total_seconds()
         except ValueError:
             raise TemboardHTTPError(406, "Invalid timestamp")
 
-    if 'limit' in http_context['query']:
+    if 'limit' in request.query:
         # Validate limit parameter
-        validate_parameters(http_context['query'], [
-            ('limit', T_LIMIT, True),
+        validate_parameters(request.query, [
+            ('limit', T_LIMIT, False),
         ])
-        limit = int(http_context['query']['limit'][0])
+        limit = int(request.query['limit'])
 
     return [
         json.loads(metric[1]) for metric in db.get_metrics(
@@ -215,10 +236,11 @@ def get_monitoring(http_context, app):
     ]
 
 
-@routes.get(b'/config')
-def get_config(http_context, app):
+@bottle.get('/config')
+def get_config():
     """Returns monitoring plugin configuration.
     """
+    app = default_app().temboard
     return dict(
         dbnames=app.config.monitoring.dbnames,
         scheduler_interval=app.config.monitoring.scheduler_interval,
@@ -325,7 +347,7 @@ class MonitoringPlugin:
         db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
 
     def load(self):
-        self.app.router.add(routes)
+        default_app().mount('/monitoring', bottle)
         self.app.worker_pool.add(workers)
         logger.debug(
             "Schedule metric collect every %s seconds.",
@@ -340,5 +362,4 @@ class MonitoringPlugin:
     def unload(self):
         self.app.scheduler.remove(workers)
         self.app.worker_pool.remove(workers)
-        self.app.router.remove(routes)
         self.app.config.remove_specs(self.option_specs)
