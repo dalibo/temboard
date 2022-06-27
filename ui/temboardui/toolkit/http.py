@@ -176,5 +176,7 @@ class TemboardResponse(http.client.HTTPResponse):
 def format_date(date=None):
     if not date:
         date = datetime.utcnow()
-    date = date.astimezone(timezone.utc)
+        date = date.replace(tzinfo=timezone.utc)
+    if date.tzinfo is not timezone.utc:
+        date = date.astimezone(timezone.utc)
     return date.strftime("%Y%m%dT%H%M%SZ")
