@@ -1,9 +1,6 @@
 # Testing monitoring after other plugins so that Agent and UI have the time to
 # collect some data while other tests are running.
-#
-# fixture/agent.py schedule probing each 5s. fixture/ui.py schedule collect
-# each 5s.
-#
+
 import logging
 
 import pytest
