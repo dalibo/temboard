@@ -108,6 +108,9 @@ tests:  #: Execute all tests.
 	pytest -x ui/tests/unit/
 	pytest -x tests/
 
+testclean:  #: Clean tests runtime files
+	rm -rf tests/logs/ tests/screenshots/
+
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 # To test release target, override GIT_REMOTE with your own fork.
