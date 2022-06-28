@@ -23,7 +23,7 @@
     <div class="row">
       <div class="col-4">
         <div>
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal" v-on:click="checkSession">
+          <button id="buttonAnalyze" type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#analyzeModal">
             ANALYZE
           </button>
           {% include includes/analyze_modal.html %}
@@ -32,7 +32,7 @@
       </div>
       <div class="col-4">
         <div>
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal" v-on:click="checkSession">
+          <button id="buttonVacuum" type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#vacuumModal">
             VACUUM
           </button>
           {% include includes/vacuum_modal.html %}
@@ -41,7 +41,7 @@
       </div>
       <div class="col-4">
         <div>
-          <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementType='database';reindexElementName=database.name;checkSession($event)">
+          <button id="buttonReindex" type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementType='database';reindexElementName=database.name">
             REINDEX
           </button>
           {% include includes/reindex_modal.html %}
@@ -100,16 +100,16 @@
     <tbody>
       <template v-for="(schema, loop_index) in schemasSorted">
         <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0}">
-          <td class="font-weight-bold">
+          <td class="schema font-weight-bold">
             <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{database}}/schema/' + schema.name">
               {{! schema.name }}
             </a>
           </td>
-          <td :class="['text-right', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+          <td :class="['schema-size', 'text-right', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
             {{! schema.total_size }}
           </td>
           <template v-if="schema.n_tables > 0">
-          <td class="text-right border-left">
+          <td class="temboard-tables text-right border-left">
             <span class="badge badge-secondary">
               {{! schema.n_tables }}
             </span>
@@ -118,19 +118,19 @@
               {{! schema.tables_size }}
               </span>
             </span>
-            <small style="min-width: 70px;" :class="['d-inline-block', sortCriteria == 'tables_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
+            <small style="min-width: 70px;" :class="['table-bloat', 'd-inline-block', sortCriteria == 'tables_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
               <template v-if="schema.tables_bloat_bytes && schema.tables_bytes">
                 Bloat: {{! schema.tables_bloat_ratio.toFixed(1)}}%
               </template>
             </small>
           </td>
           </template>
-          <td class="text-center text-muted border-left small" v-else>
+          <td class="temboard-tables text-center text-muted border-left small" v-else>
             <em>
               No table
             </em>
           </td>
-          <td class="text-right border-left" v-if="schema.n_indexes > 0">
+          <td class="indexes text-right border-left" v-if="schema.n_indexes > 0">
             <span class="badge badge-secondary">
               {{! schema.n_indexes }}
             </span>
@@ -139,18 +139,18 @@
               {{! schema.indexes_size }}
               </span>
             </span>
-            <small style="min-width: 70px;" :class="['d-inline-block', sortCriteria == 'indexes_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
+            <small style="min-width: 70px;" :class="['index-bloat', 'd-inline-block', sortCriteria == 'indexes_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
               <template v-if="schema.indexes_bloat_bytes && schema.indexes_bytes">
               Bloat: {{! schema.indexes_bloat_ratio.toFixed(1)}}%
               </template>
             </small>
           </td>
-          <td class="text-center text-muted border-left small" v-else>
+          <td class="indexes text-center text-muted border-left small" v-else>
             <em>
               No index
             </em>
           </td>
-          <td class="text-right border-left">
+          <td class="toast text-right border-left">
             <span v-if="schema.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
               {{! schema.toast_size }}
             </span>

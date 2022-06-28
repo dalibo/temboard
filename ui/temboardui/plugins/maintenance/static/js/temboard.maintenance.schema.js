@@ -60,7 +60,6 @@ $(function() {
       indexSortBy: indexSortBy,
       doReindex: doReindex,
       cancelReindex: cancelReindex,
-      checkSession: checkSession
     }
   });
 
@@ -179,9 +178,6 @@ $(function() {
   }
 
   function cancelReindex(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/reindex/' + id,

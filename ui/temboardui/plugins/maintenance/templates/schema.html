@@ -70,58 +70,58 @@
       <tbody>
         <template v-for="(table, index) in tablesSorted">
           <tr v-bind:class="{ 'bg-light2': index % 2 == 0}">
-            <td>
+            <td class="temboard-table">
               <a :href="'/server/{{instance.agent_address}}/{{ instance.agent_port}}/maintenance/{{ database }}/schema/{{ schema }}/table/' + table.name">
                 <strong>{{! table.name }}</strong>
               </a>
               <span v-if="table.tablespace">
-                <em class="text-muted small">in </em>
+                <em class="tablespace text-muted small">in </em>
                 {{! table.tablespace }}
               </span>
             </td>
-            <td :class="['text-right', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+            <td :class="['temboard-table-total-size', 'text-right', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
               {{! table.total_size }}
             </td>
-            <td class="text-right border-left">
-              <span v-if="table.table_bytes" :class="[sortCriteria == 'table_bytes' ? 'font-weight-bold' : '']">
+            <td class="heap text-right border-left">
+              <span v-if="table.table_bytes" :class="['table-size', sortCriteria == 'table_bytes' ? 'font-weight-bold' : '']">
               {{! table.table_size }}
               </span>
               <template v-else>
               -
               </template>
-              <small style="min-width: 70px;" :class="['d-inline-block', sortCriteria == 'bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
+              <small style="min-width: 70px;" :class="['table-bloat', 'd-inline-block', sortCriteria == 'bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
                 <template v-if="table.bloat_bytes">
                 Bloat: {{! table.bloat_ratio.toFixed(1) }}%
                 </template>
               </small>
             </td>
             <template v-if="table.n_indexes">
-            <td class="text-right border-left">
+            <td class="indexes text-right border-left">
               <span class="badge badge-secondary">
                 {{! table.n_indexes }}
               </span>
               <span class="d-inline-block" style="min-width: 80px;">
-                <span v-if="table.index_bytes" :class="[sortCriteria == 'index_bytes' ? 'font-weight-bold' : '']">
+                <span v-if="table.index_bytes" :class="['index-size', sortCriteria == 'index_bytes' ? 'font-weight-bold' : '']">
                 {{! table.index_size }}
                 </span>
                 <template v-else>
                 -
                 </template>
               </span>
-              <small style="min-width: 70px;" :class="['d-inline-block', sortCriteria == 'index_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
+              <small style="min-width: 70px;" :class="['index-bloat', 'd-inline-block', sortCriteria == 'index_bloat_ratio' ? 'font-weight-bold' : 'text-muted']">
                 <template v-if="table.index_bloat_bytes">
                 Bloat: {{! table.index_bloat_ratio.toFixed(1) }}%
                 </template>
               </small>
             </td>
             </template>
-            <td class="text-center text-muted border-left small" v-else>
+            <td class="indexes text-center text-muted border-left small" v-else>
               <em>
                 No index
               </em>
             </td>
-            <td class="text-right border-left">
-              <span v-if="table.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
+            <td class="toast text-right border-left">
+              <span v-if="table.toast_bytes" :class="['toast-size', sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
               {{! table.toast_size }}
               </span>
               <template v-else>
@@ -176,7 +176,7 @@
     <table class="table table-sm table-query table-striped table-bordered">
       <tbody>
         <tr v-for="index in indexesSorted">
-          <td>
+          <td class="index">
             <strong>{{! index.name }}</strong>
             <small>
               ({{! index.type }})
@@ -191,7 +191,7 @@
               {{! index.tablespace }}
             </span>
           </td>
-          <td class="text-right align-middle">
+          <td class="index-size text-right align-middle">
             <span :class="[indexSortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
             {{! index.total_size }}
             </span>
@@ -201,7 +201,7 @@
               </template>
             </small>
           </td>
-          <td class="align-middle text-right">
+          <td class="index-scans align-middle text-right">
             <span class="badge badge-secondary" v-if="index.scans">
               {{! index.scans }} scans
             </span>
@@ -209,8 +209,8 @@
           <td class="query" width="80%">
             <pre><code class="sql">{{! index.def }}</code></pre>
           </td>
-          <td class="align-middle" width="5%">
-            <button class="btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementName=index.name; checkSession($event);">Reindex</button>
+          <td class="reindex align-middle" width="5%">
+            <button class="buttonReindex btn btn-outline-secondary btn-sm py-0" data-toggle="modal" data-target="#reindexModal" v-on:click="reindexElementName=index.name;">Reindex</button>
             <ul class="list list-unstyled mb-0" v-if="scheduledReindexes.length > 0">
               <template v-for="scheduledReindex in scheduledReindexes">
               <li v-if="scheduledReindex.index == index.name">
@@ -218,7 +218,7 @@
                   <em v-if="scheduledReindex.status == 'todo'">
                     <span class="text-muted" :title="scheduledReindex.datetime.toString()"><i class="fa fa-clock-o"></i> {{! scheduledReindex.datetime | relative_time(false) }}</span>
                   </em>
-                  <button class="btn btn-link py-0" v-on:click="cancelReindex(scheduledReindex.id)" v-if="scheduledReindex.status == 'todo'">Cancel</button>
+                  <button class="buttonCancel btn btn-link py-0" v-on:click="cancelReindex(scheduledReindex.id)" v-if="scheduledReindex.status == 'todo'">Cancel</button>
                 </template>
                 <template v-else-if="scheduledReindex.status == 'doing'">
                   <em class="text-muted">

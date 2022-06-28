@@ -65,7 +65,6 @@ $(function() {
       getLatestAnalyze: getLatestX('analyze'),
       doReindex: doReindex,
       cancelReindex: cancelReindex,
-      checkSession: checkSession
     }
   });
 
@@ -175,9 +174,6 @@ $(function() {
   }
 
   function cancelVacuum(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/vacuum/' + id,
@@ -247,9 +243,6 @@ $(function() {
   }
 
   function cancelAnalyze(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/analyze/' + id,
@@ -324,9 +317,6 @@ $(function() {
   }
 
   function cancelReindex(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/reindex/' + id,
