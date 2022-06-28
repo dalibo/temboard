@@ -59,7 +59,6 @@ $(function() {
         getScheduledReindexes.call(this);
       },
       sortBy: sortBy,
-      checkSession: checkSession,
       doVacuum: doVacuum,
       cancelVacuum: cancelVacuum,
       doAnalyze: doAnalyze,
@@ -182,9 +181,6 @@ $(function() {
   }
 
   function cancelVacuum(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/vacuum/' + id,
@@ -221,7 +217,6 @@ $(function() {
   }
 
   function doAnalyze() {
-
     var fields = $('#analyzeForm').serializeArray();
     var mode = fields.filter(function(field) {
       return field.name == 'mode';
@@ -254,9 +249,6 @@ $(function() {
   }
 
   function cancelAnalyze(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/analyze/' + id,
@@ -319,9 +311,6 @@ $(function() {
   }
 
   function cancelReindex(id) {
-    if (!checkSession()) {
-      return;
-    }
     $.ajax({
       method: 'DELETE',
       url: maintenanceBaseUrl + '/reindex/' + id,

@@ -12,20 +12,3 @@ function showNeedsLoginMsg() {
     window.location.href = agentLoginUrl + '?' + params;
   }
 }
-
-/**
- * Redirects to agent login page if session is not provided
- * Should be used in each action requiring xsession authentication.
- *
- * params:
- * e - Optional browser event
- *
- */
-function checkSession(e) {
-  if (!xsession) {
-    showNeedsLoginMsg();
-    e && e.stopPropagation();
-    return false;
-  }
-  return true;
-}
