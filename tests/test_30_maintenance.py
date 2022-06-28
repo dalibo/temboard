@@ -1,5 +1,11 @@
+from contextlib import suppress
+
 import pytest
+from tenacity import (
+    Retrying, retry_unless_exception_type, stop_after_delay, wait_fixed,
+)
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import ElementNotInteractableException
 
 
 def test_all_databases(browser, browse_maintenance):
@@ -43,7 +49,11 @@ def test_database_analyze_now(browser, browse_maintenance):
     # In modal
     browser.select("#analyzeNow").click()
     browser.select("#analyzeScheduled")
-    browser.select("#buttonAnalyzeApply").click()
+    # Hack some weird case where button.click() is not effective. Need more
+    # investigation.
+    for attempt in retry_until_hidden():
+        with attempt:
+            browser.select("#buttonAnalyzeApply").click()
 
     browser.hidden("#analyzeModal")
     browser.absent(".modal-backdrop")
@@ -59,7 +69,9 @@ def test_database_vacuum_now(browser, browse_maintenance):
     browser.select("#vacuumModeFull")
     browser.select("#vacuumModeFreeze")
     browser.select("#vacuumNow").click()
-    browser.select("#buttonVacuumApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonVacuumApply").click()
 
     browser.hidden("#vacuumModal")
     browser.absent(".modal-backdrop")
@@ -73,7 +85,9 @@ def test_database_reindex_now(browser, browse_maintenance):
     # In modal
     browser.select("#reindexNow").click()
     browser.select("#reindexScheduled")
-    browser.select("#buttonReindexApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonReindexApply").click()
 
     browser.hidden("#reindexModal")
     browser.absent(".modal-backdrop")
@@ -104,7 +118,9 @@ def test_schema_reindex_now(browser, browse_maintenance):
     browser.select("td.reindex .buttonReindex").click()
 
     browser.select("#reindexNow").click()
-    browser.select("#buttonReindexApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonReindexApply").click()
 
     browser.hidden("#reindexModal")
     browser.absent(".modal-backdrop")
@@ -128,7 +144,9 @@ def test_table_analyze_now(browser, browse_table):
     # In modal
     browser.select("#analyzeNow").click()
     browser.select("#analyzeScheduled")
-    browser.select("#buttonAnalyzeApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonAnalyzeApply").click()
 
     browser.hidden("#analyzeModal")
     browser.absent(".modal-backdrop")
@@ -142,7 +160,9 @@ def test_table_vacuum_now(browser, browse_table):
     browser.select("#vacuumModeFull")
     browser.select("#vacuumModeFreeze")
     browser.select("#vacuumNow").click()
-    browser.select("#buttonVacuumApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonVacuumApply").click()
 
     browser.hidden("#vacuumModal")
     browser.absent(".modal-backdrop")
@@ -154,7 +174,9 @@ def test_table_reindex_now(browser, browse_table):
     # In modal
     browser.select("#reindexNow").click()
     browser.select("#reindexScheduled")
-    browser.select("#buttonReindexApply").click()
+    for attempt in retry_until_hidden():
+        with suppress(ElementNotInteractableException), attempt:
+            browser.select("#buttonReindexApply").click()
 
     browser.hidden("#reindexModal")
     browser.absent(".modal-backdrop")
@@ -171,3 +193,12 @@ def browse_table(browse_maintenance, browser):
     browser.select("td.database a").click()
     browser.select("td.schema a").click()
     browser.select("td.temboard-table a").click()
+
+
+def retry_until_hidden():
+    with suppress(ElementNotInteractableException):
+        yield from Retrying(
+            retry=retry_unless_exception_type(ElementNotInteractableException),
+            stop=stop_after_delay(10),
+            wait=wait_fixed(.1),
+        )
