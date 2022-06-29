@@ -23,6 +23,22 @@ def parse_lsb_release(lines):
     return infos
 
 
+def load_libpq():
+    __import__('psycopg2')
+
+    # Search for libpq.so path in loaded libraries.
+    with open('/proc/self/maps') as fo:
+        for line in fo:
+            values = line.split()
+            path = values[-1]
+            if '/libpq' in path:
+                break
+        else:  # pragma: nocover
+            raise Exception("libpq.so not loaded")
+
+    return ctypes.cdll.LoadLibrary(path)
+
+
 def read_libpq_version():
     # Search libpq version bound to this process.
 
@@ -31,19 +47,7 @@ def read_libpq_version():
         from psycopg2.extensions import libpq_version
         return libpq_version()
     except ImportError:
-        __import__('psycopg2')
-
-        # Search for libpq.so path in loaded libraries.
-        with open('/proc/self/maps') as fo:
-            for line in fo:
-                values = line.split()
-                path = values[-1]
-                if '/libpq' in path:
-                    break
-            else:  # pragma: nocover
-                raise Exception("libpq.so not loaded")
-
-        libpq = ctypes.cdll.LoadLibrary(path)
+        libpq = load_libpq()
         return libpq.PQlibVersion()
 
 
