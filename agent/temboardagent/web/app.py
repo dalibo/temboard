@@ -3,7 +3,11 @@ import logging
 import json
 from datetime import datetime, timedelta
 
-from bottle import Bottle, HTTPError, HTTPResponse, Response, request, response
+from bottle import (
+    Bottle,
+    HTTPError, HTTPResponse, Response,
+    default_app, request, response,
+)
 
 from .. import errors
 from ..tools import JSONEncoder
@@ -39,6 +43,11 @@ class CustomBottle(Bottle):
         # Keep a copy of the original PATH_INFO, before bottle modifies it.
         environ['ORIG_PATH_INFO'] = environ['PATH_INFO']
         return super(CustomBottle, self).__call__(environ, start_response)
+
+    def mount(self, prefix, app, **options):
+        for plugin in self.plugins:
+            app.install(plugin)
+        return super(CustomBottle, self).mount(prefix, app, **options)
 
 
 def before_request_log():
@@ -116,7 +125,7 @@ class SignaturePlugin(object):
         return wrapper
 
     def authenticate(self):
-        app = self.app.temboard
+        app = default_app().temboard
 
         date = request.headers['x-temboard-date']
         oldest_date = format_date(datetime.utcnow() - timedelta(hours=2))

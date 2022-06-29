@@ -36,7 +36,21 @@ def iter_routes(routes):
         yield route['path'].decode('ascii'), route['http_method'], callback
 
 
-def iter_bottle_routes():
-    bottle = default_app()
+def iter_bottle_routes(bottle=None):
+    if bottle is None:
+        bottle = default_app()
     for route in bottle.routes:
-        yield route.rule, route.method, route.callback
+        if 'PROXY' == route.method:  # Gateway to a plugin.
+            prefix = route.config['mountpoint.prefix'].rstrip('/')
+            subapp = route.config['mountpoint.target']
+            dynamic = '<:re:' in route.rule
+            for rule, method, callback in iter_bottle_routes(subapp):
+                # Show root for static PROXY only.
+                if dynamic:
+                    if '/' == rule:
+                        continue
+                elif '/' != rule:
+                    continue
+                yield prefix + ('' if '/' == rule else rule), method, callback
+        else:
+            yield route.rule, route.method, route.callback
