@@ -3,7 +3,7 @@ import time
 import logging
 import json
 
-from bottle import Bottle, default_app, request
+from bottle import Bottle, default_app, request, HTTPError
 
 from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
@@ -11,7 +11,6 @@ from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
 from ...inventory import SysInfo
 from ... import __version__ as __VERSION__
-from ...errors import HTTPError as TemboardHTTPError
 from ...postgres import Postgres
 
 from . import db
@@ -217,7 +216,7 @@ def get_monitoring():
                 ) - datetime(1970, 1, 1)
             ).total_seconds()
         except ValueError:
-            raise TemboardHTTPError(406, "Invalid timestamp")
+            raise HTTPError(406, "Invalid timestamp")
 
     if 'limit' in request.query:
         # Validate limit parameter

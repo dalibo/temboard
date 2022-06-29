@@ -1,8 +1,7 @@
 import logging
 
-from bottle import Bottle, default_app
+from bottle import Bottle, default_app, HTTPError
 
-from ...errors import HTTPError
 from ...tools import now
 from ...toolkit.configuration import OptionSpec
 

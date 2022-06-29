@@ -3,7 +3,9 @@ import hashlib
 import logging
 import os
 
-from temboardagent.errors import UserError, HTTPError
+from bottle import HTTPError
+
+from temboardagent.errors import UserError
 from temboardagent.postgres import Postgres
 from temboardagent.toolkit import taskmanager
 

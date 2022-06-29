@@ -11,7 +11,6 @@ from bottle import (
 )
 from psycopg2 import Error as Psycopg2Error
 
-from .. import errors
 from ..tools import JSONEncoder
 from ..toolkit.http import format_date
 from ..toolkit.signing import (
@@ -133,10 +132,6 @@ class ErrorPlugin(object):
                 raise
             except HTTPResponse:
                 raise
-            except errors.HTTPError as e:
-                # Callback may call other function raising legacy HTTPError.
-                response = HTTPResponse({'error': str(e)}, e.code)
-                logger.debug("Error: %s.", response.body)
             except Exception:
                 logger.exception("Unhandled error:")
                 response = HTTPResponse({'error': 'Internal error.'}, 500)

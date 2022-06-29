@@ -3,9 +3,9 @@ import re
 from collections import namedtuple
 from textwrap import dedent
 
-from bottle import request
+from bottle import request, HTTPError
 
-from ...errors import HTTPError, NotificationError
+from ...errors import NotificationError
 from ...notification import NotificationMgmt, Notification
 from ...postgres import pg_escape
 

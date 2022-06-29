@@ -24,7 +24,6 @@ from ..toolkit.versions import (
     read_libpq_version,
 )
 from ..notification import NotificationMgmt
-from ..routing import Router
 from ..version import __version__
 
 
@@ -71,8 +70,6 @@ class TemboardAgentApplication(BaseApplication):
 
         setproctitle = ProcTitleManager(prefix='temboard-agent: ')
         setproctitle.setup()
-
-        self.router = Router()
 
         task_queue = taskmanager.Queue()
         event_queue = taskmanager.Queue()
