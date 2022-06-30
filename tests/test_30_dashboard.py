@@ -39,7 +39,7 @@ def test_dashboard(browser, registered_agent, ui_url):
     assert float(memory) > 1
 
     assert browser.select("#pg_uptime").text
-    assert '1' == browser.select("#nb_db").text
+    assert 2 == int(browser.select("#nb_db").text)
     db_size, unit = browser.select("b#size").text.split()
     assert 'B' in unit
     assert int(db_size) > 1

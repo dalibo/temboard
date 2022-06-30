@@ -159,6 +159,22 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "start")
     sudo_pguser.psql(c='CREATE EXTENSION pg_stat_statements;', _env=agent_env)
 
+    # Few data for testing.
+    sudo_pguser.psql(c='CREATE DATABASE "toto";', _env=agent_env)
+    sudo_pguser.psql(d='toto', c='CREATE SCHEMA "toto";', _env=agent_env)
+    sudo_pguser.psql(
+        d='toto',
+        c=dedent('''\
+        CREATE TABLE "toto"."toto" AS SELECT generate_series(0, 99) AS key;
+        '''),
+        _env=agent_env,
+    )
+    sudo_pguser.psql(
+        d='toto',
+        c='CREATE UNIQUE INDEX "toto_key_idx" ON "toto"."toto" ("key");',
+        _env=agent_env,
+    )
+
     yield pgdata
 
     logger.info("Stopping instance at %s.", pgdata)
