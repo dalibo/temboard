@@ -77,22 +77,6 @@ def test_database_vacuum_now(browser, browse_maintenance):
     browser.absent(".modal-backdrop")
 
 
-def test_database_reindex_now(browser, browse_maintenance):
-    browser.select("td.database a").click()
-
-    browser.select("#buttonReindex").click()
-
-    # In modal
-    browser.select("#reindexNow").click()
-    browser.select("#reindexScheduled")
-    for attempt in retry_until_hidden():
-        with suppress(ElementNotInteractableException), attempt:
-            browser.select("#buttonReindexApply").click()
-
-    browser.hidden("#reindexModal")
-    browser.absent(".modal-backdrop")
-
-
 def test_schema(browser, browse_maintenance):
     browser.select("td.database a").click()
     browser.select("td.schema a").click()
