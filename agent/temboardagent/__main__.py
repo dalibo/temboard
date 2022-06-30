@@ -1,11 +1,17 @@
 import sys
 
+from bottle import default_app
+
 from .cli.app import app
+from .web.app import create_app
 
 
 def main():
-    # Import main HTTP routes
-    __import__(__package__ + '.api')
+    default_app.pop()  # Remove default app.
+    default_app.push(create_app(app))
+
+    # Import core HTTP routes
+    __import__(__package__ + '.web.core')
 
     # Import commands
     __import__(__package__ + '.cli.fetch_key')

@@ -1,7 +1,7 @@
 import logging
-import sys
 
-from ..routing import get_routes
+from bottle import default_app
+
 from ..toolkit.app import SubCommand
 from .app import app
 
@@ -14,13 +14,8 @@ class Routes(SubCommand):
     """ Show HTTP routing table."""
 
     def main(self, args):
-        routes = get_routes()
-        for route in sorted(routes, key=route_sort_key):
-            method = route['http_method']
-            path = route['path'].decode('utf-8')
-            mod = sys.modules[route['module']]
-            fn = getattr(mod, route['function'])
-            doc = fn.__doc__ or ''
+        for path, method, callback in sorted(iter_bottle_routes()):
+            doc = callback.__doc__ or ''
             try:
                 title = doc.splitlines()[0]
             except IndexError:
@@ -30,5 +25,21 @@ class Routes(SubCommand):
         return 0
 
 
-def route_sort_key(route):
-    return route['path'], route['http_method']
+def iter_bottle_routes(bottle=None):
+    if bottle is None:
+        bottle = default_app()
+    for route in bottle.routes:
+        if 'PROXY' == route.method:  # Gateway to a plugin.
+            prefix = route.config['mountpoint.prefix'].rstrip('/')
+            subapp = route.config['mountpoint.target']
+            dynamic = '<:re:' in route.rule
+            for rule, method, callback in iter_bottle_routes(subapp):
+                # Show root for static PROXY only.
+                if dynamic:
+                    if '/' == rule:
+                        continue
+                elif '/' != rule:
+                    continue
+                yield prefix + ('' if '/' == rule else rule), method, callback
+        else:
+            yield route.rule, route.method, route.callback

@@ -28,6 +28,10 @@ setup(**dict(
         "Topic :: System :: Monitoring",
     ],
     python_requires='~=3.5',
+    install_requires=[
+        'bottle >= 0.12, <0.13',
+        'cryptography',
+    ],
     data_files=[
         ('share/temboard-agent/', [
             'share/temboard-agent.conf',
@@ -59,7 +63,4 @@ setup(**dict(
     },
     packages=find_packages(),
     long_description=open('README.rst').read(),
-    install_requires=[
-        'cryptography',
-    ]
 ))

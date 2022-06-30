@@ -2,7 +2,7 @@ import os.path
 from os import listdir
 import datetime
 
-from ...errors import HTTPError
+from bottle import HTTPError
 
 
 class ConfigurationFileManager:

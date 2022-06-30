@@ -1,14 +1,13 @@
 import logging
 
-from ...errors import HTTPError
-from ...routing import RouteSet
-from ...postgres import Postgres
+from bottle import Bottle, default_app, HTTPError
+
 from ...tools import now
 from ...toolkit.configuration import OptionSpec
 
 
+bottle = Bottle()
 logger = logging.getLogger(__name__)
-routes = RouteSet(prefix=b"/statements")
 
 
 query = """\
@@ -22,17 +21,17 @@ JOIN pg_database ON pgss.dbid = pg_database.oid
 """
 
 
-@routes.get(b"/")
-def get_statements(http_context, app):
+@bottle.get("/")
+def get_statements(pgpool):
     """Return a snapshot of latest statistics of executed SQL statements
     """
+    app = default_app().temboard
     config = app.config
     dbname = config.statements.dbname
     snapshot_datetime = now()
-    conninfo = dict(config.postgresql, dbname=dbname)
     try:
-        with Postgres(**conninfo).connect() as conn:
-            data = list(conn.query(query))
+        conn = pgpool.getconn(dbname)
+        data = list(conn.query(query))
     except Exception as e:
         pg_version = app.postgres.fetch_version()
         if (
@@ -63,8 +62,7 @@ class StatementsPlugin:
         self.app.config.add_specs(self.option_specs)
 
     def load(self):
-        self.app.router.add(routes)
+        default_app().mount('/statements', bottle)
 
     def unload(self):
-        self.app.router.remove(routes)
         self.app.config.remove_specs(self.option_specs)

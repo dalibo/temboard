@@ -1,7 +1,8 @@
 import logging
 import time
 
-from temboardagent.routing import RouteSet
+from bottle import Bottle, default_app, request
+
 from temboardagent.tools import validate_parameters
 from temboardagent.command import (
     oneline_cmd_to_array,
@@ -15,26 +16,27 @@ from . import functions as admin_functions
 from .types import T_CONTROL
 
 
+bottle = Bottle()
 logger = logging.getLogger(__name__)
-routes = RouteSet()
 
 
-@routes.get(b'/administration/pg_version')
-def api_pg_version(http_context, app):
-    with app.postgres.connect() as conn:
-        return admin_functions.pg_version(conn)
+@bottle.get('/pg_version')
+def get_pg_version(pgconn):
+    return admin_functions.pg_version(pgconn)
 
 
-@routes.post(b'/administration/control')
-def post_pg_control(http_context, app):
+@bottle.post('/control')
+def post_pg_control(pgconn):
+    """Start, stop and restart Postgres instance."""
+    app = default_app().temboard
     # Control instance
-    validate_parameters(http_context['post'], [
+    validate_parameters(request.json, [
         ('action', T_CONTROL, False)
     ])
-    action = http_context['post']['action']
+    action = request.json['action']
     logger.info("PostgreSQL '%s' requested." % action)
     NotificationMgmt.push(app.config,
-                          Notification(username=http_context['username'],
+                          Notification(username=request.username,
                                        message="PostgreSQL %s" % action))
 
     cmd = app.config.administration.pg_ctl % action
@@ -55,10 +57,9 @@ def post_pg_control(http_context, app):
         t_start = time.time()
         while retry:
             try:
-                with app.postgres.connect() as conn:
-                    conn.execute('SELECT 1')
-                    logger.info("Done.")
-                    return dict(action=action, state='ok')
+                pgconn.execute('SELECT 1')
+                logger.info("Done.")
+                return dict(action=action, state='ok')
             except Exception:
                 if (time.time() - t_start) > 10:
                     logger.info("Failed.")
@@ -72,8 +73,7 @@ def post_pg_control(http_context, app):
             retry = True
             t_start = time.time()
             while retry:
-                with app.postgres.connect() as conn:
-                    conn.execute('SELECT 1')
+                pgconn.execute('SELECT 1')
                 time.sleep(0.5)
                 if (time.time() - t_start) > 10:
                     retry = False
@@ -99,8 +99,7 @@ class AdministrationPlugin:
         self.app.config.add_specs(self.options_specs)
 
     def load(self):
-        self.app.router.add(routes)
+        default_app().mount('/administration/', bottle)
 
     def unload(self):
-        self.app.router.remove(routes)
         self.app.config.remove_specs(self.options_specs)

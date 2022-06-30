@@ -1,10 +1,6 @@
 from .process import Process, memory_total_size
 import time
 from resource import getpagesize
-from temboardagent.notification import NotificationMgmt, Notification
-from temboardagent.tools import validate_parameters
-from temboardagent.types import T_PID
-from temboardagent.errors import NotificationError
 
 
 def get_activity(conn):
@@ -117,37 +113,6 @@ ORDER BY
         except Exception:
             pass
     return {'rows': final_backend_list}
-
-
-def post_activity_kill(conn, config, http_context):
-    """
-    Kill (using pg_terminate_backend()) processes based on a given backend PID
-    list.
-    """
-    validate_parameters(http_context['post'], [
-        ('pids', T_PID, True)
-    ])
-    ret = {'backends': []}
-    for pid in http_context['post']['pids']:
-        killed = conn.queryscalar(
-            "SELECT pg_terminate_backend(%s) AS killed" % (pid))
-        # Push a notification.
-        try:
-            NotificationMgmt.push(
-                config,
-                Notification(
-                    username=http_context['username'],
-                    message="Backend %s terminated" % (pid)
-                )
-            )
-        except (NotificationError, Exception):
-            pass
-
-        ret['backends'].append({
-            'pid': pid,
-            'killed': killed,
-        })
-    return ret
 
 
 def get_activity_waiting(conn):
