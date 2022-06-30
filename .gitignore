@@ -16,6 +16,9 @@ dev/venv-py*
 .coverage
 # from pytest-log
 test_log.log
+tests/downloads/
+tests/logs/
+tests/screenshots/
 tests/workdir/
 
 # Nodejs buildtime files
