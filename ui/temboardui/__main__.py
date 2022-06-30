@@ -1,6 +1,8 @@
 import sys
 
 from .cli.app import app
+from .model import QUERIES
+from .model.queries import load_queries
 
 
 def main():
@@ -13,6 +15,8 @@ def main():
     __import__(__package__ + '.cli.schedule')
     __import__(__package__ + '.cli.serve')
     __import__(__package__ + '.cli.web')
+
+    QUERIES.update(load_queries())
 
     return app()
 

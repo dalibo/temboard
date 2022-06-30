@@ -24,6 +24,7 @@ from temboardui.web import (
     render_template,
 )
 from ...toolkit import taskmanager
+from ...model import QUERIES
 
 
 logger = logging.getLogger(__name__)

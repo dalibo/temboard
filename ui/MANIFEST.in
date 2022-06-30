@@ -1,5 +1,6 @@
 include LICENSE
 include packaging/temboard.service
+include temboardui/model/queries/*.sql
 graft temboardui/model/versions
 graft temboardui/static
 graft temboardui/templates

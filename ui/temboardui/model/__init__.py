@@ -11,6 +11,8 @@ from .migrator import Migrator
 
 Session = sessionmaker(expire_on_commit=False)
 logger = logging.getLogger(__name__)
+# named queries, loaded with t.m.queries.load_queries() by temboardui.__main__.
+QUERIES = {}
 
 
 def format_dsn(dsn):
