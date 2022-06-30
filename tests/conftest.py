@@ -99,7 +99,7 @@ def log_tweaks():
 def save_logs(request, workdir):
     yield
 
-    if request.node.rep_call.passed:
+    if hasattr(request.node, 'rep_call') and request.node.rep_call.passed:
         return
 
     logdir = Path("tests/logs") / session_tag / request.node.nodeid

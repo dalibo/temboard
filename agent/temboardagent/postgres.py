@@ -7,6 +7,7 @@
 # - connection helpers to hide cursor.
 #
 
+import ctypes
 import logging
 import re
 from contextlib import closing
@@ -14,6 +15,8 @@ from contextlib import closing
 from psycopg2 import connect
 from psycopg2.pool import ThreadedConnectionPool
 import psycopg2.extensions
+
+from .toolkit.versions import load_libpq
 
 
 logger = logging.getLogger(__name__)
@@ -114,17 +117,24 @@ class DBConnectionPool:
 
     def getconn(self, dbname=None):
         dbname = dbname or self.postgres.dbname
-        try:
-            return self.pool[dbname]
-        except KeyError:
-            return self.pool.setdefault(
-                dbname,
-                connect(**self.postgres.pqvars(dbname=dbname)),
-            )
+        conn = self.pool.get(dbname)
+        if conn and conn.pqstatus() == conn.CONNECTION_BAD:
+            logger.debug("Recycling bad connection to db %s.", dbname)
+            conn.close()
+            del self.pool[dbname]
+            conn = None
+
+        if not conn:
+            logger.debug("Opening connection to db %s.", dbname)
+            pqvars = self.postgres.pqvars(dbname=dbname)
+            conn = self.pool.setdefault(dbname, connect(**pqvars))
+
+        return conn
 
     def closeall(self):
         for dbname in list(self.pool):
             conn = self.pool.pop(dbname)
+            logger.debug("Closing pooled connection to %s.", dbname)
             conn.close()
 
     def __del__(self):
@@ -138,6 +148,19 @@ class DBConnectionPool:
 
 
 class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
+    CONNECTION_OK = 0
+    CONNECTION_BAD = 1
+
+    def pqstatus(self):
+        try:
+            self.libpq
+        except AttributeError:
+            self.libpq = load_libpq()
+            self.libpq.PQstatus.argtypes = [ctypes.c_void_p]
+            self.libpq.PQstatus.restype = ctypes.c_int
+
+        return self.libpq.PQstatus(self.pgconn_ptr)
+
     def cursor(self, *a, **kw):
         row_factory = kw.pop('row_factory', None)
         kw['cursor_factory'] = FactoryCursor.make_factory(

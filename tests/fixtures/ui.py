@@ -181,7 +181,7 @@ def browser(browser_session, request):
     """Handle browser per single test."""
     yield browser_session
 
-    if request.node.rep_call.passed:
+    if hasattr(request.node, 'rep_call') and request.node.rep_call.passed:
         return
 
     filename = f"{session_tag}_{request.node.nodeid}.png"

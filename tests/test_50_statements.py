@@ -36,7 +36,11 @@ def test_charts(browser, browse_statements, ensure_statements_data):
 
 
 def test_database(browser, browse_statements, ensure_statements_data):
-    browser.select(".main td.database a").click()
+    for a in browser.select_all(".main td.database a"):
+        if 'postgres' == a.text:
+            a.click()
+            break
+
     assert 'postgres' == browser.select(".main .breadcrumb-item strong").text
 
     all_queries = browser.select_all(".main td.query pre.sql")

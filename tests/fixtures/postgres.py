@@ -143,6 +143,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     conffile.write_text(dedent(f"""\
     cluster_name = 'temboard-tests'
     external_pid_file = '{pidfile}'
+    log_connections = on
     log_directory = '{logdir}'
     log_filename = 'postgres.log'
     log_line_prefix = '%t [%p]: user=%u,db=%d,app=%a,client=%h '
@@ -157,6 +158,22 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     logger.info("Starting instance at %s.", pgdata)
     sudo_pguser.pg_ctl(f"--pgdata={pgdata}", "start")
     sudo_pguser.psql(c='CREATE EXTENSION pg_stat_statements;', _env=agent_env)
+
+    # Few data for testing.
+    sudo_pguser.psql(c='CREATE DATABASE "toto";', _env=agent_env)
+    sudo_pguser.psql(d='toto', c='CREATE SCHEMA "toto";', _env=agent_env)
+    sudo_pguser.psql(
+        d='toto',
+        c=dedent('''\
+        CREATE TABLE "toto"."toto" AS SELECT generate_series(0, 99) AS key;
+        '''),
+        _env=agent_env,
+    )
+    sudo_pguser.psql(
+        d='toto',
+        c='CREATE UNIQUE INDEX "toto_key_idx" ON "toto"."toto" ("key");',
+        _env=agent_env,
+    )
 
     yield pgdata
 

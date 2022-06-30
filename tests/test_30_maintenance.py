@@ -22,13 +22,11 @@ def test_all_databases(browser, browse_maintenance):
     browser.select("td.toast")
 
 
-def test_database(browser, browse_maintenance):
-    browser.select("td.database a").click()
-
+def test_database(browser, browse_toto_db):
     ol = browser.select("ol.breadcrumb")
     li0, li1 = ol.find_elements(By.TAG_NAME, 'li')
     assert 'All Databases' == li0.text
-    assert 'postgres' in li1.text
+    assert 'toto' in li1.text
 
     browser.select("#buttonAnalyze")
     browser.select("#buttonVacuum")
@@ -41,9 +39,7 @@ def test_database(browser, browse_maintenance):
     browser.select("td.indexes .index-bloat")
 
 
-def test_database_analyze_now(browser, browse_maintenance):
-    browser.select("td.database a").click()
-
+def test_database_analyze_now(browser, browse_toto_db):
     browser.select("#buttonAnalyze").click()
 
     # In modal
@@ -59,9 +55,7 @@ def test_database_analyze_now(browser, browse_maintenance):
     browser.absent(".modal-backdrop")
 
 
-def test_database_vacuum_now(browser, browse_maintenance):
-    browser.select("td.database a").click()
-
+def test_database_vacuum_now(browser, browse_toto_db):
     browser.select("#buttonVacuum").click()
 
     # In modal
@@ -77,31 +71,12 @@ def test_database_vacuum_now(browser, browse_maintenance):
     browser.absent(".modal-backdrop")
 
 
-def test_database_reindex_now(browser, browse_maintenance):
-    browser.select("td.database a").click()
-
-    browser.select("#buttonReindex").click()
-
-    # In modal
-    browser.select("#reindexNow").click()
-    browser.select("#reindexScheduled")
-    for attempt in retry_until_hidden():
-        with suppress(ElementNotInteractableException), attempt:
-            browser.select("#buttonReindexApply").click()
-
-    browser.hidden("#reindexModal")
-    browser.absent(".modal-backdrop")
-
-
-def test_schema(browser, browse_maintenance):
-    browser.select("td.database a").click()
-    browser.select("td.schema a").click()
-
+def test_schema(browser, browse_toto_schema):
     ol = browser.select("ol.breadcrumb")
     li0, li1, li2 = ol.find_elements(By.TAG_NAME, 'li')
     assert 'All Databases' == li0.text
-    assert 'postgres' in li1.text
-    assert 'pg_catalog' in li2.text
+    assert 'toto' in li1.text
+    assert 'toto' in li2.text
 
     browser.select("td.temboard-table")
     browser.select("td.temboard-table-total-size")
@@ -111,10 +86,7 @@ def test_schema(browser, browse_maintenance):
     browser.select("td.toast")
 
 
-def test_schema_reindex_now(browser, browse_maintenance):
-    browser.select("td.database a").click()
-    browser.select("td.schema a").click()
-
+def test_schema_reindex_now(browser, browse_toto_schema):
     browser.select("td.reindex .buttonReindex").click()
 
     browser.select("#reindexNow").click()
@@ -126,19 +98,18 @@ def test_schema_reindex_now(browser, browse_maintenance):
     browser.absent(".modal-backdrop")
 
 
-def test_table(browser, browse_table):
+def test_table(browser, browse_toto_table):
     browser.select("#buttonAnalyze")
     browser.select("#buttonVacuum")
     browser.select("#buttonReindex")
 
     browser.select("td.index-name")
     browser.select("td.index-size")
-    browser.select("td.index-scans span.badge")
     browser.select("td.query")
     browser.select("td.reindex")
 
 
-def test_table_analyze_now(browser, browse_table):
+def test_table_analyze_now(browser, browse_toto_table):
     browser.select("#buttonAnalyze").click()
 
     # In modal
@@ -152,7 +123,7 @@ def test_table_analyze_now(browser, browse_table):
     browser.absent(".modal-backdrop")
 
 
-def test_table_vacuum_now(browser, browse_table):
+def test_table_vacuum_now(browser, browse_toto_table):
     browser.select("#buttonVacuum").click()
 
     # In modal
@@ -168,7 +139,7 @@ def test_table_vacuum_now(browser, browse_table):
     browser.absent(".modal-backdrop")
 
 
-def test_table_reindex_now(browser, browse_table):
+def test_table_reindex_now(browser, browse_toto_table):
     browser.select("#buttonReindex").click()
 
     # In modal
@@ -189,10 +160,27 @@ def browse_maintenance(browse_instance, browser):
 
 
 @pytest.fixture
-def browse_table(browse_maintenance, browser):
-    browser.select("td.database a").click()
-    browser.select("td.schema a").click()
-    browser.select("td.temboard-table a").click()
+def browse_toto_db(browse_maintenance, browser):
+    for a in browser.select_all(".main td.database a"):
+        if 'toto' == a.text:
+            a.click()
+            break
+
+
+@pytest.fixture
+def browse_toto_table(browse_toto_schema, browser):
+    for a in browser.select_all(".main td.temboard-table a"):
+        if 'toto' == a.text:
+            a.click()
+            break
+
+
+@pytest.fixture
+def browse_toto_schema(browse_toto_db, browser):
+    for a in browser.select_all(".main td.schema a"):
+        if 'toto' == a.text:
+            a.click()
+            break
 
 
 def retry_until_hidden():
