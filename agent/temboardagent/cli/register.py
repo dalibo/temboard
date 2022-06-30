@@ -12,7 +12,6 @@ from ..errors import UserError
 from ..toolkit.app import SubCommand
 from ..toolkit.http import TemboardClient
 from ..tools import validate_parameters
-from ..types import T_PASSWORD, T_USERNAME
 from .app import app
 
 
@@ -22,6 +21,8 @@ except NameError:
     pass
 
 logger = logging.getLogger(__name__)
+T_USERNAME = b'(^[a-z0-9]{3,16}$)'
+T_PASSWORD = b'(^.{5,32}$)'
 
 
 @app.command

@@ -5,7 +5,6 @@ from bottle import Bottle, default_app, request
 from . import functions as activity_functions
 from ...notification import NotificationMgmt, Notification
 from ...tools import validate_parameters
-from ...types import T_PID
 
 
 bottle = Bottle()
@@ -31,7 +30,7 @@ def get_activity_blocking(pgconn):
 def post_activity_kill(pgconn):
     app = default_app().temboard
     validate_parameters(request.json, [
-        ('pids', T_PID, True)
+        ('pids', int, True)
     ])
     backends = []
     for pid in request.json['pids']:
