@@ -87,6 +87,14 @@ def test_proctitle(ui):
         assert ': worker' in cmdline or ': scheduler' in cmdline
 
 
+def test_autossl(ui):
+    http_url = ui.base_url.copy_with(scheme='http')
+    response = ui.get(http_url)
+
+    assert 301 == response.status_code
+    assert response.headers['location'].startswith('https://')
+
+
 def test_login_logout(browser, ui, ui_url):
     browser.get(ui_url + '/')
 
