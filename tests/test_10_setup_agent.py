@@ -29,9 +29,35 @@ def test_runtask(agent_auto_configure, sudo_pguser):
     assert 'vacuum_worker' in out
 
 
-def test_start(agent, agent_conf):
+def test_start(agent):
     res = agent.get('/')
     assert 404 == res.status_code
+
+
+def test_proctitle(agent):
+    if b'sudo' in agent.proc.cmd[0]:  # CI case
+        ppid = agent.proc.pid
+        with open(f"/proc/{ppid}/task/{ppid}/children") as fo:
+            pid = int(fo.read())
+    else:  # dev case
+        pid = agent.proc.pid
+
+    with open(f"/proc/{pid}/cmdline") as fo:
+        cmdline = fo.read()
+
+    assert cmdline.startswith('temboard-agent: temboard-tests: web')
+
+    with open(f"/proc/{pid}/task/{pid}/children") as fo:
+        children = fo.read()
+    children = children.split()
+
+    for childpid in children:
+        with open(f"/proc/{childpid}/cmdline") as fo:
+            cmdline = fo.read()
+
+        assert cmdline.startswith('temboard-agent: temboard-tests: ')
+
+        assert ': worker' in cmdline or ': scheduler' in cmdline
 
 
 def test_discover(agent, agent_env, pg_version):

@@ -85,7 +85,7 @@ class TemboardAgentApplication(BaseApplication):
         self.services.append(self.scheduler)
 
         self.httpd = HTTPDService(
-            self, setproctitle=setproctitle, name='main process',
+            self, setproctitle=setproctitle, name='web',
         )
 
         self.bootstrap(args=args, environ=environ, service=command.is_service)

@@ -60,6 +60,33 @@ def test_signing_key(ui):
     response.raise_for_status()
 
 
+def test_proctitle(ui):
+    if b'sudo' in ui.proc.cmd[0]:  # CI case
+        ppid = ui.proc.pid
+        with open(f"/proc/{ppid}/task/{ppid}/children") as fo:
+            children = fo.read()
+        pid = int(children)
+    else:  # dev case
+        pid = ui.proc.pid
+
+    with open(f"/proc/{pid}/cmdline") as fo:
+        cmdline = fo.read()
+
+    assert cmdline.startswith('temboard: web')
+
+    with open(f"/proc/{pid}/task/{pid}/children") as fo:
+        children = fo.read()
+    children = children.split()
+
+    for childpid in children:
+        with open(f"/proc/{childpid}/cmdline") as fo:
+            cmdline = fo.read()
+
+        assert cmdline.startswith('temboard: ')
+
+        assert ': worker' in cmdline or ': scheduler' in cmdline
+
+
 def test_login_logout(browser, ui, ui_url):
     browser.get(ui_url + '/')
 

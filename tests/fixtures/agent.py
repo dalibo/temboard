@@ -92,14 +92,20 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
 
     sudo_pguser("temboard-agent", "fetch-key", _env=agent_env)
 
-    proc = sudo_pguser("temboard-agent", _bg=True)
+    proc = sudo_pguser(
+        "temboard-agent",
+        # This --config is redudnant, its only to pad place in cmdline for
+        # setproctitle.
+        "--config", agent_env['TEMBOARD_CONFIGFILE'],
+        _bg=True,
+    )
     assert proc.is_alive()
 
     client = httpx.Client(
         base_url=f"https://localhost:{agent_env['TEMBOARD_PORT']}",
         verify=False,
     )
-    client.agent_command = proc
+    client.proc = proc
     logger.info("Waiting for agent to come up.")
     for attempt in retry_http():
         with attempt:
