@@ -1,3 +1,4 @@
+import codecs
 import os.path
 import logging
 
@@ -22,8 +23,11 @@ from temboardui.web import (
     admin_required,
     app,
     render_template,
+    Response,
 )
 from ...toolkit import taskmanager
+from ...toolkit.pycompat import StringIO
+from ...model import QUERIES
 
 
 logger = logging.getLogger(__name__)
@@ -212,6 +216,27 @@ def instances(request):
         'settings/instance.html',
         nav=True, role=request.current_user,
         instance_list=get_instance_list(request.db_session)
+    )
+
+
+@app.route(r"/settings/instances.csv")
+@admin_required
+def instances_csv(request):
+    bind = request.db_session.get_bind()
+    conn = bind.raw_connection().connection
+    with conn.cursor() as cur, StringIO() as fo:
+        cur.copy_expert(QUERIES['copy-instances-as-csv'], fo)
+        csv = fo.getvalue()
+
+    filename = 'postgresql-instances-inventory.csv'
+    return Response(
+        status_code=200,
+        headers={
+            'Content-Type': 'text/csv',
+            'Content-Disposition': 'attachment;filename=' + filename,
+        },
+        # BOM declares UTF8 for Excell.
+        body=codecs.BOM_UTF8 + csv.encode('utf-8'),
     )
 
 

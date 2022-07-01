@@ -109,7 +109,7 @@ tests:  #: Execute all tests.
 	pytest -x tests/
 
 testclean:  #: Clean tests runtime files
-	rm -rf tests/logs/ tests/screenshots/
+	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))

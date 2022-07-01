@@ -36,3 +36,20 @@ def test_web_register(
     assert port in browser.select(fmt(col=agent)).text
     assert pg_version in browser.select(fmt(col=pg_version_col)).text
     assert 'default' in browser.select(fmt(col=groups)).text
+
+
+def test_download_inventory(registered_agent, browser):
+    browser.select("#linkSettings").click()
+    download = browser.select("#buttonDownload")
+
+    download.click()
+    browser.select("#buttonDownload")  # Ensure page is still present.
+
+    *_, filename = browser.list_download_filenames()
+    assert filename.endswith('.csv')
+
+    csv = browser.fetch_remote_file(filename).decode('utf-8')
+    header, instance = csv.splitlines()
+
+    assert "Hostname;Port" in header
+    assert "default" in instance

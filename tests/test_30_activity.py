@@ -4,6 +4,7 @@ from time import sleep
 
 import pytest
 from sh import ErrorReturnCode, SignalException
+from selenium.webdriver.common.by import By
 
 from fixtures.utils import retry_fast
 
@@ -17,15 +18,19 @@ def test_running(browser, pg_sleep, registered_agent, ui_url):
     browser.select("div.sidebar a.activity").click()  # Click Activity
 
     # Pause auto-refresh
-    browser.select("td input[type=checkbox]").click()  # Select first process
+    browser.hover(".main tr td.query")
+
+    for tr in browser.select_all('.main tbody tr'):
+        query = tr.find_element(By.CSS_SELECTOR, 'td.query pre')
+        if 'test-activity' in query.text:
+            tr.find_element(By.CSS_SELECTOR, 'input[type=checkbox]').click()
+            break
+    else:
+        assert False, "pg_sleep not running"
+
     # Ensure auto_refresh button is shown
     auto_refresh_resume = browser.select("span#autoRefreshResume")
     assert 'd-none' not in auto_refresh_resume.get_attribute('class')
-
-    td = browser.select('td.query')
-
-    assert 'pg_sleep' in td.text
-    assert 'test-activity' in td.text
 
     browser.select("#killButton").click()  # Click read Terminate
     browser.select("#submitKill").click()  # Confirmation dialog

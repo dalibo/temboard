@@ -41,6 +41,7 @@ script to proceed.
 - temBoard agent now depends on cryptography and bottle.
 - temBoard agent pools connections to PostgreSQL used by web API, reducing
   connections stress on PostgreSQL.
+- Download instance inventory as CSV.
 
 
 ## [7.11] - Unreleased

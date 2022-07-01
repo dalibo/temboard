@@ -2,10 +2,12 @@ import logging
 import os.path
 import subprocess
 import sys
+from base64 import b64decode
 from errno import ENOTEMPTY
 from getpass import getuser
 from pathlib import Path
 from textwrap import dedent
+from uuid import uuid4
 
 import httpx
 import pytest
@@ -102,6 +104,41 @@ class Browser:
     def select_all(self, selector):
         return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
+    def list_download_filenames(self):
+        self.webdriver.command_executor._commands["SET_CONTEXT"] = (
+            "POST", "/session/$sessionId/moz/context")
+        self.webdriver.execute("SET_CONTEXT", {"context": "chrome"})
+        filenames = self.webdriver.execute_async_script(dedent("""\
+        var { Downloads } = Components.utils.import('resource://gre/modules/Downloads.jsm', {});
+        Downloads.getList(Downloads.ALL)
+        .then(list => list.getAll())
+        .then(entries => entries.filter(e => e.succeeded).map(e => e.target.path))
+        .then(arguments[0]);
+        """))  # noqa: E501
+        self.webdriver.execute("SET_CONTEXT", {"context": "content"})
+        return filenames
+
+    def fetch_remote_file(self, path):
+        self.webdriver.execute("SET_CONTEXT", {"context": "chrome"})
+        logger.info("Downloading %s.", path)
+        contents = self.webdriver.execute_async_script(dedent("""\
+        var { OS } = Cu.import("resource://gre/modules/osfile.jsm", {});
+        OS.File.read(arguments[0]).then(function(data) {
+        var base64 = Cc["@mozilla.org/scriptablebase64encoder;1"].getService(Ci.nsIScriptableBase64Encoder);
+        var stream = Cc['@mozilla.org/io/arraybuffer-input-stream;1'].createInstance(Ci.nsIArrayBufferInputStream);
+        stream.setData(data.buffer, 0, data.length);
+        return base64.encodeToString(stream, data.length);
+        }).then(arguments[1]);
+        """), path)  # noqa: E501
+        self.webdriver.execute("SET_CONTEXT", {"context": "content"})
+        binary_contents = b64decode(contents)
+
+        # Save a local copy.
+        localfile = self.downloads_dir / Path(path).name
+        logger.info("Saving file %s.", localfile)
+        localfile.write_bytes(binary_contents)
+        return binary_contents
+
 
 def text_to_be_present_in_element_attribute(locator, attribute_, text_):
     def _predicate(driver):
@@ -152,7 +189,15 @@ def browser_session(request, ui, ui_url):
     connection._conn.connection_pool_kw['timeout'] = 30
     logger.info("Opening browser.")
     # FirefoxOptions() changes default acceptInsecureCerts to True.
-    driver = Remote(command_executor=connection, options=FirefoxOptions())
+    options = FirefoxOptions()
+    # Avoid download panel, which may occult view. We won't interract with it.
+    # See Browser.list_download_filenames() and Browser.fetch_remote_file().
+    options.set_preference("browser.download.alwaysOpenPanel", False)
+    # Don't use default Downloads
+    options.set_preference("browser.download.folderList", 2)
+    downloaddir = f"/home/seluser/Downloads/{uuid4()}"
+    options.set_preference("browser.download.dir", downloaddir)
+    driver = Remote(command_executor=connection, options=options)
     driver.implicitly_wait(3)
 
     # Open UI and ensure login prompt is shown
@@ -160,6 +205,8 @@ def browser_session(request, ui, ui_url):
 
     browser.screenshots_dir = Path('tests/screenshots')
     browser.screenshots_dir.mkdir(exist_ok=True)
+    browser.downloads_dir = Path('tests/downloads')
+    browser.downloads_dir.mkdir(exist_ok=True)
 
     browser.get(ui_url + '/')
     browser.select("#inputUsername")

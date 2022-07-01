@@ -16,7 +16,7 @@ import tornado.web
 from tornado import autoreload
 
 from ..autossl import AutoHTTPSServer
-from ..model import configure as configure_db_session
+from ..model import configure as configure_db_session, queries
 from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import (
     BaseApplication,
@@ -322,6 +322,9 @@ class TornadoService(Service):
         autoreload.watch(self.app.config.temboard.signing_private_key)
 
         for path in self.iter_template_files():
+            autoreload.watch(path)
+
+        for path in queries.iter_queries_files(queries.QUERIESDIR):
             autoreload.watch(path)
 
 
