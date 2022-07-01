@@ -1,5 +1,10 @@
 # Contributing
 
+!!! warning
+
+    You are reading temBoard 7 documentation. You may want to contribute to
+    latest version of the documentation. Use Read The Docs version selector or
+    go to [latest documentation](https://temboard.rtfd.io/).
 
 [dalibo/temboard]: https://github.com/dalibo/temboard
 
@@ -19,7 +24,7 @@ for the agent.
 Get temBoard UI and agent sources:
 
 ```console
-$ git clone --recursive https://github.com/dalibo/temboard.git
+$ git clone --branch v7 --recursive https://github.com/dalibo/temboard.git
 $ cd temboard/
 $ git clone --recursive https://github.com/dalibo/temboard-agent.git agent/
 ```
