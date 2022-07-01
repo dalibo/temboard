@@ -49,6 +49,12 @@ def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 
+def test_runtask(ui_auto_configure):
+    out = temboard("runtask", "?")
+
+    assert '\ncollector\n' in out
+
+
 def test_signing_key(ui):
     response = ui.get('/signing.key')
     response.raise_for_status()
@@ -66,9 +72,3 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("li.nav-item.dropdown a").click()
     browser.select("a[href='/logout']").click()
-
-
-def test_runtask(ui):
-    out = temboard("runtask", "?")
-
-    assert '\ncollector\n' in out
