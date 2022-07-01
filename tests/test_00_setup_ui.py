@@ -49,7 +49,7 @@ def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 
-def test_signing_key(ui, ui_url):
+def test_signing_key(ui):
     response = ui.get('/signing.key')
     response.raise_for_status()
 
