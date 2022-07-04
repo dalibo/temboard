@@ -5,7 +5,7 @@ default:
 
 build-%:
 	mkdir -p $(DISTDIR)
-	docker-compose run --rm $*
+	env -u COMPOSE_FILE docker-compose run --rm $*
 	./mkchanges.sh $$(readlink -e $(DISTDIR)/temboard_last.deb) $*
 
 push:

@@ -49,9 +49,50 @@ def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 
-def test_signing_key(ui, ui_url):
+def test_runtask(ui_auto_configure):
+    out = temboard("runtask", "?")
+
+    assert '\ncollector\n' in out
+
+
+def test_signing_key(ui):
     response = ui.get('/signing.key')
     response.raise_for_status()
+
+
+def test_proctitle(ui):
+    if b'sudo' in ui.proc.cmd[0]:  # CI case
+        ppid = ui.proc.pid
+        with open(f"/proc/{ppid}/task/{ppid}/children") as fo:
+            children = fo.read()
+        pid = int(children)
+    else:  # dev case
+        pid = ui.proc.pid
+
+    with open(f"/proc/{pid}/cmdline") as fo:
+        cmdline = fo.read()
+
+    assert cmdline.startswith('temboard: web')
+
+    with open(f"/proc/{pid}/task/{pid}/children") as fo:
+        children = fo.read()
+    children = children.split()
+
+    for childpid in children:
+        with open(f"/proc/{childpid}/cmdline") as fo:
+            cmdline = fo.read()
+
+        assert cmdline.startswith('temboard: ')
+
+        assert ': worker' in cmdline or ': scheduler' in cmdline
+
+
+def test_autossl(ui):
+    http_url = ui.base_url.copy_with(scheme='http')
+    response = ui.get(http_url)
+
+    assert 301 == response.status_code
+    assert response.headers['location'].startswith('https://')
 
 
 def test_login_logout(browser, ui, ui_url):
@@ -66,9 +107,3 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("li.nav-item.dropdown a").click()
     browser.select("a[href='/logout']").click()
-
-
-def test_runtask(ui):
-    out = temboard("runtask", "?")
-
-    assert '\ncollector\n' in out

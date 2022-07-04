@@ -289,6 +289,7 @@ def ui(ui_auto_configure, ui_env, ui_sudo, ui_url, workdir) -> httpx.Client:
     proc = ui_sudo.temboard(config=ui_env['TEMBOARD_CONFIGFILE'], _bg=True)
 
     client = httpx.Client(base_url=ui_url, verify=False)
+    client.proc = proc
 
     try:
         logger.info("Waiting for UI to come up.")
