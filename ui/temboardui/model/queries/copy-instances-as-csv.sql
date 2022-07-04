@@ -16,6 +16,11 @@ COPY (
 			 ON plugins.agent_address = i.agent_address
 		  AND plugins.agent_port = i.agent_port
 	GROUP BY 1, 2, 3, 4, 6, 7
+	HAVING concat_ws(
+	  ' ',
+		i.hostname, i.pg_port, i.pg_data, i.pg_version_summary,
+		i.agent_address, i.agent_port
+	) LIKE %s
 	ORDER BY 1, 2
 ) TO STDOUT WITH (
 	DELIMITER ';',

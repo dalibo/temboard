@@ -222,10 +222,14 @@ def instances(request):
 @app.route(r"/settings/instances.csv")
 @admin_required
 def instances_csv(request):
+    search = request.handler.get_query_argument('filter')
+    search = '%%%s%%' % search if search else '%'
     bind = request.db_session.get_bind()
     conn = bind.raw_connection().connection
+    sql = QUERIES['copy-instances-as-csv']
     with conn.cursor() as cur, StringIO() as fo:
-        cur.copy_expert(QUERIES['copy-instances-as-csv'], fo)
+        sql = cur.mogrify(sql, (search,))
+        cur.copy_expert(sql, fo)
         csv = fo.getvalue()
 
     filename = 'postgresql-instances-inventory.csv'
