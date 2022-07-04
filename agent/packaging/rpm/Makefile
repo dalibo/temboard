@@ -7,7 +7,7 @@ build-rhel%:
 	if rpm --eval rhel%dist 2>/dev/null | grep -q rhel$*; then \
 		./build.sh; \
 	else \
-		docker-compose run --rm rhel$*; \
+		env -u COMPOSE_FILE docker-compose run --rm rhel$*; \
 	fi
 
 push:
