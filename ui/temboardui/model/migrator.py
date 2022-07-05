@@ -3,6 +3,7 @@ import os
 from glob import glob
 from textwrap import dedent
 
+from .. import __version__
 from ..toolkit.errors import UserError
 
 logger = logging.getLogger(__name__)
@@ -39,9 +40,9 @@ class Migrator(object):
                 cur.execute(sql)
                 cur.execute(dedent("""\
                 INSERT INTO application.schema_migration_log
-                (version)
-                VALUES (%s);
-                """), (version,))
+                (version, comment)
+                VALUES (%s, 'temBoard ' || %s);
+                """), (version, __version__))
 
     def check(self):
         current = self.current_version
