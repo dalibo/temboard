@@ -16,6 +16,9 @@ $(function() {
   Vue.component('checks', {
     props: ['instance'],
     computed: {
+      available: function() {
+        return this.instance.available;
+      },
       checks: function() {
         return getChecksCount(this.instance);
       }
@@ -46,6 +49,7 @@ $(function() {
         data-placement="bottom"
         data-container="body"
         data-html="true">
+      <span class="badge badge-critical" v-if="!available">UNAVAILABLE</span>
       <span class="badge badge-critical" v-if="checks.CRITICAL">
         CRITICAL: {{ checks.CRITICAL }}</span>
       <span class="badge badge-warning" v-if="checks.WARNING">

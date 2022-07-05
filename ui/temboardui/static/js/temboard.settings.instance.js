@@ -44,7 +44,8 @@ function load_update_instance_form(modal_id, agent_address, agent_port)
       body_html += '  <div class="row">';
       body_html += '    <div class="form-group col-sm-12">';
       body_html += '      <label for="inputAgentKey" class="control-label">Agent secret key</label>';
-      body_html += '      <input class="form-control" id="inputAgentKey" value="'+data['agent_key']+'">';
+      // New agent has agent_key = null.
+      body_html += '      <input class="form-control" id="inputAgentKey" value="'+(data['agent_key'] || '')+'">';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
