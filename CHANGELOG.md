@@ -45,6 +45,7 @@ script to proceed.
 - Format PostgreSQL start time in dashboard.
 - Avoid modal for dashboard refresh error.
 - temBoard agent auto_configure.sh conditionnaly enable statements plugins.
+- temBoard agent auto_configure.sh now generates a single configuration file.
 
 
 ## [7.11] - Unreleased

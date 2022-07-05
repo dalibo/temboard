@@ -139,18 +139,11 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
 @pytest.fixture(scope='session')
 def agent_conf(agent_auto_configure, agent_env) -> ConfigParser:
     """
-    Read configure temBoard agent configuration files as a ConfigParser object.
+    Read configure temBoard agent configuration as a ConfigParser object.
     """
 
     config = ConfigParser()
-    files = [
-        agent_env['TEMBOARD_CONFIGFILE'],
-        agent_env['TEMBOARD_CONFIGFILE'] + '.d/auto.conf',
-    ]
-    for file_ in files:
-        read_, = config.read(file_)
-        assert read_ == file_
-
+    config.read(agent_env['TEMBOARD_CONFIGFILE'])
     return config
 
 
