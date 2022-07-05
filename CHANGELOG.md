@@ -42,6 +42,7 @@ script to proceed.
 - temBoard agent pools connections to PostgreSQL used by web API, reducing
   connections stress on PostgreSQL.
 - Download instance inventory as CSV.
+- Format PostgreSQL start time in dashboard.
 
 
 ## [7.11] - Unreleased

@@ -27,6 +27,10 @@ $(function() {
    * updateDashboard() callback.
    */
   function refreshDashboard() {
+    var start_time = $('#pg_uptime time').attr("datetime");
+    $('#pg_uptime time').text((moment(start_time).fromNow()));
+    $('#pg_uptime time').attr("title", (moment(start_time).format("LLLL")));
+
     $.ajax({
       url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
       type: 'GET',
@@ -69,7 +73,9 @@ $(function() {
     $('#nb_db').html(databases ? databases.databases : null);
     $('#pg_data').html(data['pg_data']);
     $('#pg_port').html(data['pg_port']);
-    $('#pg_uptime').html(data['pg_uptime'] || 'N/A');
+    if (!'pg_start_time' in data) {
+      $('#pg_uptime').html(data['pg_uptime'] || 'N/A');  // For 7.X
+    }
 
     /** Update memory usage chart **/
     memorychart.data.datasets[0].data[0] = data['memory']['active'];

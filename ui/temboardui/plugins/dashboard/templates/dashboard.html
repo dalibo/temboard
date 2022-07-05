@@ -83,7 +83,12 @@
           <br>
           Uptime:
           <strong id="pg_uptime">
-            {% if 'pg_uptime' in dashboard.keys() %}
+            {% if 'pg_start_time' in dashboard.keys() %}
+            <time datetime="{{ dashboard['pg_start_time'] }}"
+              title="{{ dashboard['pg_start_time'] }}">
+              {{ dashboard['pg_start_time'] }}
+            </time>
+            {% elif 'pg_uptime' in dashboard.keys() %}
             {{ dashboard['pg_uptime'] }}
             {% end %}
           </strong>
