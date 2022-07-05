@@ -107,7 +107,6 @@ $(function() { Vue.component('new-instance-wizard', {    /*
         }).done((data) => {
           this.groups = data.groups;
           this.ui_plugins = data.loaded_plugins;
-          console.log("agent_plugins", this.agent_plugins)
           this.waiting = false;
           this.wizard_step = "register";
           this.$nextTick(() => {

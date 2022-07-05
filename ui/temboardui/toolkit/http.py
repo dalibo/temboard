@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import absolute_import
 
 import http.client
@@ -177,6 +178,8 @@ def format_date(date=None):
     if not date:
         date = datetime.utcnow()
         date = date.replace(tzinfo=timezone.utc)
+    if date.tzinfo is None:
+        raise Exception("Refusing to format naïve datetime.")
     if date.tzinfo is not timezone.utc:
         date = date.astimezone(timezone.utc)
     return date.strftime("%Y%m%dT%H%M%SZ")

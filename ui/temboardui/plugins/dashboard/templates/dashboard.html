@@ -84,15 +84,17 @@
             {% end %}
           </b>
           <br>
-          Uptime:
-          <strong id="pg_uptime">
+          Start Time:
+          <strong id="pg_start_time">
             {% if 'pg_start_time' in dashboard.keys() %}
-            <time datetime="{{ dashboard['pg_start_time'] }}"
-              title="{{ dashboard['pg_start_time'] }}">
+            <time datetime="{{ dashboard['pg_start_time'] }}"">
               {{ dashboard['pg_start_time'] }}
             </time>
             {% elif 'pg_uptime' in dashboard.keys() %}
-            {{ dashboard['pg_uptime'] }}
+            <!-- For v7 agent -->
+            <time datetime="{{ datetime.datetime.utcnow() - datetime.timedelta(seconds=dashboard['pg_uptime']) }}+0000">
+              {{ dashboard['pg_uptime'] }} seconds ago
+            </time>
             {% end %}
           </strong>
         </div>
