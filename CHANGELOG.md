@@ -43,6 +43,7 @@ script to proceed.
   connections stress on PostgreSQL.
 - Download instance inventory as CSV.
 - Format PostgreSQL start time in dashboard.
+- Avoid modal for dashboard refresh error.
 
 
 ## [7.11] - Unreleased

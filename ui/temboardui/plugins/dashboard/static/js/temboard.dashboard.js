@@ -2,24 +2,13 @@
 $(function() {
   "use strict";
 
-  function html_error_modal(code, error) {
-    var html = '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
-    html += '   <div class="modal-dialog">';
-    html += '     <div class="modal-content">';
-    html += '       <div class="modal-header">';
-    html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
-    html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
-    html += '       </div>';
-    html += '       <div class="modal-body">';
-    html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
-    html += '       </div>';
-    html += '       <div class="modal-footer" id="ErrorModalFooter">';
-    html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
-    html += '       </div>';
-    html += '     </div>';
-    html += '   </div>';
-    html += '</div>';
-    return html;
+  function html_error(code, error) {
+    return `
+    <div class="alert alert-danger" role="alert">
+      <h4 class="modal-title" id="ErrorModalLabel">Error ${code}</h4>
+      <p>${error}</p>
+    </div>
+    `;
   }
 
   /*
@@ -37,13 +26,12 @@ $(function() {
       async: true,
       contentType: "application/json",
       success: function (data) {
-        $('#ErrorModal').modal('hide');
+        $('#divError').html('');
         updateDashboard(data, true);
         updateTps([data]);
         updateLoadaverage([data]);
       },
       error: function(xhr) {
-        $('#ErrorModal').modal('hide');
         if (xhr.status == 401 || xhr.status == 302) {
           // force a reload of the page, should lead to the server login page
           location.href = location.href;
@@ -55,8 +43,7 @@ $(function() {
         } else {
           code = '';
         }
-        $('#modalError').html(html_error_modal(code, error));
-        $('#ErrorModal').modal('show');
+        $('#divError').html(html_error(code, error));
       }
     });
   }
