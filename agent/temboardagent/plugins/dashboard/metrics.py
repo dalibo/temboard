@@ -21,7 +21,7 @@ def get_metrics(app):
                 active_backends=dm.get_active_backends(),
                 max_connections=dm.get_max_connections(),
                 databases=dm.get_stat_db(),
-                pg_uptime=dm.get_pg_uptime(),
+                pg_start_time=dm.get_pg_start_time(),
                 pg_version=pginfo.version()['full'],
                 pg_data=pginfo.setting('data_directory'),
                 pg_port=pginfo.setting('port'),
@@ -87,7 +87,7 @@ def get_info(conn, config):
     return dict(
         hostname=sysinfo.hostname(config.temboard.hostname),
         os_version=' '.join([sysinfo.os, sysinfo.os_release]),
-        pg_uptime=dm.get_pg_uptime(),
+        pg_start_time=dm.get_pg_start_time(),
         pg_version=pginfo.version()['full'],
         pg_data=pginfo.setting('data_directory'),
         pg_port=pginfo.setting('port'),
@@ -221,10 +221,8 @@ class DashboardMetrics:
                 'total_rollback': row['total_rollback'],
                 'timestamp': time.time()}
 
-    def get_pg_uptime(self,):
-        return self.conn.queryscalar("""\
-        SELECT EXTRACT(epoch FROM NOW() - pg_postmaster_start_time())::integer AS uptime
-        """)  # noqa
+    def get_pg_start_time(self):
+        return self.conn.queryscalar("SELECT pg_postmaster_start_time();")
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
