@@ -30,7 +30,7 @@ def test_web_register(
     browser.get(ui_url + '/settings/instances')
     port = agent_conf.get('temboard', 'port')
 
-    agent, hostname, pg_version_col, pg_port_col, pgdata, groups = range(1, 7)
+    server, pg_version_col, pgdata, groups, agent = range(1, 6)
     fmt = "table#tableInstances tr td:nth-child({col})".format
 
     assert port in browser.select(fmt(col=agent)).text
