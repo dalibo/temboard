@@ -87,6 +87,5 @@ def ensure_statements_data(
         "statements_pull1", "0.0.0.0", str(agent_conf['temboard']['port']))
     ui_sudo.temboard.schedule(
         "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
-        agent_conf['temboard']['key'],
     )
     browser.refresh_until(".main table tr td.database")

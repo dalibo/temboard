@@ -54,7 +54,6 @@ def ensure_monitoring_data(
     browser.select("div.sidebar a.monitoring").click()
     ui_sudo.temboard.schedule(
         "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
-        agent_conf['temboard']['key'],
     )
 
     browser.refresh_until("#nodataCPU")
