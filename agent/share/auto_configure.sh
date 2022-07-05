@@ -93,6 +93,7 @@ generate_configuration() {
 	local sslkey=$1; shift
 	local key=$1; shift
 	local instance=$1; shift
+	local has_statements=$1; shift
 
 	local pg_ctl
 	local port
@@ -101,6 +102,12 @@ generate_configuration() {
 	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
 	pg_ctl="$(command -v pg_ctl)"
+
+	plugins=(administration dashboard maintenance monitoring pgconf)
+	if [ -n "$has_statements" ] ; then
+		plugins+=(statements)
+	fi
+	printf -v qplugins ', "%s"' "${plugins[@]}"  # loose jsonify
 
 	cat <<-EOF
 	#
@@ -115,6 +122,7 @@ generate_configuration() {
 	ssl_cert_file = ${sslcert}
 	ssl_key_file = ${sslkey}
 	key = ${key}
+	plugins = ["activity"${qplugins[@]}]
 
 	[postgresql]
 	host = ${PGHOST}
@@ -250,6 +258,8 @@ mkdir --parents \
 	"${LOGDIR}" "${home}"
 chown --recursive "${SYSUSER}:${SYSUSER}" "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
 
+has_statements=$(psql -c "SELECT 'HAS_STATEMENTS' FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pg_stat_statements';")
+
 # Start with default configuration
 log "Configuring temboard-agent in ${ETCDIR}/${name}/temboard-agent.conf ."
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 temboard-agent.conf "$ETCDIR/$name/"
@@ -260,7 +270,7 @@ key=$(od -vN 16 -An -tx1 /dev/urandom | tr -d ' \n')
 # Inject autoconfiguration in dedicated file.
 conf=${ETCDIR}/${name}/temboard-agent.conf.d/auto.conf
 log "Saving auto-configuration in $conf"
-generate_configuration "$1" "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" | tee "$conf"
+generate_configuration "$1" "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$name" "$has_statements" | tee "$conf"
 chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
@@ -288,3 +298,5 @@ log "    ${start_cmd}"
 log
 log "For registration, use secret key ${key} ."
 log "See documentation for detailed instructions."
+
+false
