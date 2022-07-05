@@ -370,27 +370,42 @@ class InstanceHelper(object):
         kwargs['method'] = 'POST'
         return self.request_agent(*args, **kwargs)
 
-    def require_xsession(self):
-        # New agent has neither key nor sessions.
-        if not self.instance.agent_key:
-            return True
-
-        if not self.xsession:
-            logger.debug("No agent session, redirecting to login.")
-            self.redirect('/login')
-        return self.xsession
-
     def get_profile(self):
-        try:
-            self.require_xsession()
-            return self.get("/profile")
-        except Redirect:
-            raise
-        except HTTPError as e:
-            if 401 == e.status_code:
-                logger.debug("Invalid agent session, redirecting to login.")
-                self.redirect('/login')
-            raise
+        i = self.instance
+        if i.agent_key:
+            # Try without key to detect agent upgrade.
+            client = self.client()
+            try:
+                logger.debug(
+                    "Testing session handling of agent for %s.",
+                    self.instance)
+                headers = {'X-Session': '__bad_session__'}
+                res = client.get('/profile', headers=headers)
+                res.raise_for_status()
+            except TemboardAgentClient.Error as e:
+                if 406 == e.response.status:
+                    logger.debug("Agent for %s still validates X-Session.", i)
+                    logger.warning("You should upgrade agent for %s.", i)
+                else:
+                    raise
+            else:
+                logger.info(
+                    "Detected agent upgrade for %s. Dropping legacy key.", i)
+                self.instance.agent_key = None
+                self.request.db_session.commit()
+
+        if self.instance.agent_key:  # Agent 7.X
+            try:
+                return self.get("/profile")
+            except HTTPError as e:
+                if 401 == e.status_code:
+                    logger.debug("Legacy agent login required for %s.", i)
+                    self.redirect('/login')
+                else:
+                    raise
+        else:
+            # Agent 8+ does not have users anymore. Use UI user.
+            return {"username": self.request.current_user.role_name}
 
     def get_username(self):
         try:

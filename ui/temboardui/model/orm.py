@@ -167,6 +167,9 @@ class Instances(Model):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
+    def __str__(self):
+        return '%s:%s' % (self.hostname, self.pg_port)
+
 
 class Groups(Model):
     __table__ = tables.groups
