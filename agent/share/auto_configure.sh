@@ -355,7 +355,11 @@ else
 fi
 
 log
-log "Success. You can now start temboard-agent using:"
+log "Success. You now need to fetch UI signing key using:"
+log
+log "    sudo -u $SYSUSER temboard-agent -c $conf fetch-key"
+log
+log "Then start agent service using:"
 log
 log "    ${start_cmd}"
 log
