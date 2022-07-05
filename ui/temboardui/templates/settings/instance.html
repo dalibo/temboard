@@ -35,21 +35,17 @@
           <button id="buttonNewInstance" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalNewInstance">
             New instance
           </button>
-          <a id="buttonDownload" class="btn btn-secondary btn-sm" title="Download inventory as CSV" href="/settings/instances.csv" data-toggle="tooltip">
-            <i class="fa fa-download"></i>
-          </a>
        </p>
       </div>
     </div>
     <table class="table table-striped table-bordered table-hover" id="tableInstances" cellspacing="0">
     <thead>
       <tr>
-        <th>Agent</th>
-        <th>Hostname</th>
+        <th>Server</th>
         <th>PG Version</th>
-        <th>PG Port</th>
         <th>PG Data</th>
         <th>Groups</th>
+        <th>Agent</th>
         <th>Notify</th>
         <th>Comment</th>
         <th class="no-sort"></th>
@@ -59,17 +55,16 @@
     <tbody>
     {% for instance_item in instance_list %}
       <tr>
-        <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
-        <td>{{instance_item.hostname}}</td>
+        <td>{{instance_item.hostname}}:{{instance_item.pg_port}}</td>
         <td>
           {{instance_item.pg_version_summary}}
           <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance_item.pg_version}}">
             {{instance_item.pg_version}}
           </div>
         </td>
-        <td>{{instance_item.pg_port}}</td>
         <td>{{instance_item.pg_data}}</td>
         <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
+        <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
         <td class="text-center">
           {% if instance_item.notify %}
           <i class="fa fa-check"></i>
@@ -103,9 +98,29 @@
 $(document).ready(function() {
   new Vue({ el: "#vue-app" });
 
-  $('#tableInstances').DataTable({
+  var table = $('#tableInstances').DataTable({
+    buttons: [{
+      attr: {
+        title: "Download inventory as CSV",
+        id: "buttonDownload",
+        "data-toggle": "tooltip"
+      },
+      className: "btn-sm mx-1",
+      text: `<i class="fa fa-download"></i>`,
+      action: function(e, dt, node, config) {
+        /*
+         * Use temBoard UI API instead of datatable export. UI export includes
+         * more data and has reordered column.
+         */
+        var filter = $("#tableInstances_filter input").val();
+        var url = new URLSearchParams({filter});
+        window.location.replace("/settings/instances.csv?" + url.toString());
+      }
+    }],
     stateSave: true
   });
+
+  table.buttons().container().appendTo($("#tableInstances_filter"));
 
   $(document).on('click', '[data-action=edit]', function () {
     $('#InstanceModal').modal('show');
