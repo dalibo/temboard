@@ -192,7 +192,7 @@ fi
 
 TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" "${run_as_temboard[@]}" temboard generate-key
 
-if [ -x /bin/systemctl ] && [ -w /etc/systemd/system ] ; then
+if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	start_cmd="systemctl start temboard"
 	if systemctl is-system-running &>/dev/null ; then
 		systemctl daemon-reload

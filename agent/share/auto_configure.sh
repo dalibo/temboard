@@ -264,7 +264,7 @@ generate_configuration "$1" "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$key" "$n
 chown "$SYSUSER:$SYSUSER" "$conf"
 
 # systemd
-if [ -x /bin/systemctl ] && systemctl is-system-running && [ -w /etc/systemd/system ] ; then
+if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	unit="temboard-agent@$(systemd-escape "${name}").service"
 	log "Enabling systemd unit ${unit}."
 	if [ "${SYSUSER}" != "postgres" ] ; then
