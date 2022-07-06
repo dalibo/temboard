@@ -23,7 +23,7 @@ from .alerting import (
 )
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 
 def merge_agent_info(session, host_info, instance_info):
