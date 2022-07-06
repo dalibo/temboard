@@ -21,6 +21,7 @@ from .alerting import (
     bootstrap_checks,
     check_specs,
 )
+from ...toolkit.errors import UserError
 
 
 logger = logging.getLogger(__package__)
@@ -138,10 +139,26 @@ def check_host_key(session, hostname, agent_key):
         raise Exception("Agent key does not match.")
 
 
-def insert_metrics(session, host_id, instance_id, data, labels=None):
+class TimeoutError(UserError):
+    pass
+
+
+def insert_metrics(
+        session, host_id, instance_id, data, labels=None, max_duration=30):
+    start = datetime.utcnow()
+    max_duration = timedelta(seconds=max_duration)
     labels = labels or {}
 
     for metric_name in list(data.keys()):
+        call_duration = datetime.utcnow() - start
+        if call_duration >= max_duration:
+            logger.warning(
+                "Metrics insertion is too long. "
+                "Maybe another task is locking tables.")
+            logger.warning(
+                "Aborting metrics insertion. Retrying in less than a minute.")
+            raise TimeoutError(
+                "Metrics insertion takes more than %s." % max_duration)
 
         # Do not try to insert empty lines
         if data[metric_name] is None:
@@ -161,6 +178,7 @@ def insert_metrics(session, host_id, instance_id, data, labels=None):
 
         # Insert data
         for metric_data in data[metric_name]:
+            logger.debug("Inserting data for metric %s.", metric_name)
             if metric_name == 'sessions':
                 db.insert_metric_sessions(session, instance_id, metric_data)
             elif metric_name == 'xacts':

@@ -47,6 +47,8 @@ script to proceed.
 - temBoard agent auto_configure.sh conditionnaly enable statements plugins.
 - temBoard agent auto_configure.sh now generates a single configuration file.
 - Dropped temBoard agent HTTP endpoint /monitoring/probe/*.
+- temBoard server waits for locks in monitoring collect. Abort long collect
+  task. New parameter `[monitoring] collect_max_duration`.
 
 
 ## [7.11] - Unreleased

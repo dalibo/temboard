@@ -55,6 +55,8 @@ from .model.orm import (
     Host,
     Instance,
 )
+from ...toolkit.errors import UserError
+from ...toolkit.configuration import OptionSpec
 from .model.db import insert_availability
 from .alerting import (
     check_specs,
@@ -78,8 +80,14 @@ workers = taskmanager.WorkerSet()
 
 
 class MonitoringPlugin(object):
+    s = 'monitoring'
+    options_specs = [
+        OptionSpec(s, 'collect_max_duration', default=30, validator=int),
+    ]
+
     def __init__(self, app):
         self.app = app
+        self.app.config.add_specs(self.options_specs)
 
     def load(self):
         plugin_path = os.path.dirname(os.path.realpath(__file__))
@@ -113,6 +121,8 @@ def aggregate_data_worker(app):
                             config['aggregate'],
                         )
                     )
+                    # Call here pg_sleep() using conn.execute() to fake slow
+                    # aggregation.
                     table_name, nb_rows = res.fetchone()
                 logger.debug(
                     "table=%s insert=%s timedelta=%s",
@@ -151,7 +161,8 @@ def history_tables_worker(app):
                             config['history'],
                         )
                     )
-
+                    # Call here pg_sleep() using conn.execute() to fake slow
+                    # archiving.
                     table_name, nb_rows = res.fetchone()
                 logger.debug(
                     "table=%s insert=%s timedelta=%s",
@@ -403,6 +414,8 @@ def collector_batch(app, batch):
     for address, port, key in batch:
         try:
             collector(app, address, port, key)
+        except UserError:
+            raise
         except Exception as e:
             logger.error("Failed to collect %s:%s: %s", address, port, e)
 
@@ -525,8 +538,10 @@ def collector(app, address, port, key=None):
                         row['datetime'].replace(' +', '+').replace(' ', 'T')
                     ),
                 ),
+                max_duration=app.config.monitoring.collect_max_duration,
             )
-
+        except UserError:
+            raise
         except DataError as e:
             # Wrong data type or corrupted data could lead to DataError. In
             # this case we should consider this row as unvalid and move to the
