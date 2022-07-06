@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-from .tools import check_fqdn, which, to_bytes
+from .tools import which, to_bytes
 from .command import exec_command
 
 
@@ -31,8 +31,6 @@ class SysInfo(Inventory):
                 hostname = self._hostname_linux()
             else:
                 raise Exception("Unsupported OS.")
-        if not check_fqdn(hostname):
-            raise ValueError("Invalid FQDN: %s" % (hostname))
         return hostname
 
     def uname(self):

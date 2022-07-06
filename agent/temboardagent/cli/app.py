@@ -99,6 +99,12 @@ class TemboardAgentApplication(BaseApplication):
 
         self.apply_config()
 
+        if '.' not in self.config.temboard.hostname:
+            logger.warning(
+                "Hostname %s is not a FQDN.",
+                self.config.temboard.hostname
+            )
+
         if config.postgresql.instance:
             setproctitle.prefix += config.postgresql.instance + ': '
 

@@ -68,7 +68,12 @@ def path(raw):
 def fqdn(raw):
     if '\n' in raw:
         raise ValueError("New line in FQDN.")
-    if '.' not in raw:
+    if not re.match(
+        r"(?=^.{4,253}$)"  # check length between 4 and 253
+        r"(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-))"
+        r"(\.(?!-)[a-zA-Z0-9-]{1,63}(?<!-))*$)",
+        raw,
+    ):
         raise ValueError("%s is not an FQDN" % raw)
     return raw
 
