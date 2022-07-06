@@ -53,7 +53,8 @@ are distributed under sections:
 
 ## `postgresql` section
 
-> -   `host`: Path to PostgreSQL unix socket. Default:
+> -   `host`: Path to PostgreSQL unix socket. As of now, temboard-agent
+>     requires superuser access using local UNIX socket only. Default:
 >     `/var/run/postgresql`;
 > -   `port`: PostgreSQL port number. Default: `5432`;
 > -   `user`: PostgreSQL user. Must be a super-user. Default:
