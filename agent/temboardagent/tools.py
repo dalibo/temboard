@@ -129,19 +129,6 @@ def which(prog, search_path=None):
     raise OSError(os.strerror(errno.ENOENT))
 
 
-def check_fqdn(name):
-    """
-    Check if a hostname is fully qualified, it must only contain
-    letters, - and have dots.
-    """
-    # StackOverflow #11809631
-    if re.match(r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]'  # noqa W605
-                r'{2,63}\.?$)', name):
-        return True
-    else:
-        return False
-
-
 def now():
     """Give the current date and time at GMT, suitable for PostgreSQL."""
     return strftime("%Y-%m-%d %H:%M:%S +0000", gmtime())

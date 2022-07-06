@@ -124,3 +124,29 @@ def test_nday():
         v.nday(-1)
 
     assert type(v.nday("1")) == int
+
+
+def test_fqdn():
+    valid_hostname = [
+        "localhost",
+        "localhost.localdomain",
+        "host-name.localdomain",
+        "host82.localdomain",
+        "x880-dev01",
+        "db01.lan.acme.com",
+        "db01",
+        "localhost.a",
+        "localhost.42",
+        "localhost.localdomain.a",
+    ]
+    for host in valid_hostname:
+        assert host == v.fqdn(host)
+    invalid_hostname = [
+        "localhost.",
+        ".localhost",
+        "-localhost",
+        "local_host",
+    ]
+    for host in invalid_hostname:
+        with pytest.raises(ValueError):
+            v.fqdn(host)
