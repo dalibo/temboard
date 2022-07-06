@@ -408,7 +408,7 @@ def collector_batch(app, batch):
 
 
 @workers.register(pool_size=20)
-def collector(app, address, port, key):
+def collector(app, address, port, key=None):
     agent_id = "%s:%s" % (address, port)
     logger.info("Starting collector for %s.", agent_id)
 

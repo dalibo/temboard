@@ -15,7 +15,7 @@ from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
 from . import db
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 
 def load_probes(options, home):

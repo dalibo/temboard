@@ -9,7 +9,7 @@ from temboardagent.errors import UserError
 from temboardagent.postgres import Postgres
 from temboardagent.toolkit import taskmanager
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 # Taken from https://github.com/ioguix/pgsql-bloat-estimation/blob/master/table/table_bloat.sql  # noqa
 TABLE_BLOAT_SQL = """

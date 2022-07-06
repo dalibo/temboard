@@ -23,7 +23,7 @@ from .alerting import (
 )
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 
 def merge_agent_info(session, host_info, instance_info):
@@ -293,7 +293,7 @@ def preprocess_data(data, checks, timestamp):
         try:
             res = spec.get('preprocess')(data)
         except Exception as e:
-            logger.warning(
+            logger.debug(
                 "Failed to preprocess alerting check '%s': %s", check[0], e,
             )
             continue

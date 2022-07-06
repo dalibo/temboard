@@ -902,6 +902,8 @@ class WorkerPool(object):
             res = fun(*args, **kws)
             # Put function result into output queue as a Message
             out.put(Message(MSG_TYPE_RESP, res))
+        except UserError as e:
+            logger.critical("%s", e)
         except Exception as e:
             e = Exception("%s: %s" % (type(e), e))
             out.put(Message(MSG_TYPE_ERROR, e))
@@ -1069,7 +1071,7 @@ class WorkerPoolService(Service):
     def create_task_function_app_wrapper(self, function):
         @functools.wraps(function)
         def wrapper(*a, **kw):
-            return function(app=self.app, *a, **kw)
+            return function(self.app, *a, **kw)
         wrapper._tm_function = function
         return wrapper
 

@@ -10,7 +10,7 @@ from ...notification import NotificationMgmt, Notification
 from ...postgres import pg_escape
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 
 class FileSetting(namedtuple('FileSetting', ['name', 'setting', 'sourcefile',
