@@ -859,8 +859,8 @@ def pull_data_for_instance(app, session, instance):
         else:
             error += str(e)
 
-        if isinstance(e, (client.ConnectionError, client.Error)):
-            logger.error("Agent is not available: %s", error)
+        if isinstance(e, (OSError, client.ConnectionError, client.Error)):
+            logger.error("Agent %s is not available: %s", agent_id, error)
         else:
             logger.exception("Failed to pull statements data: %s", error)
 
