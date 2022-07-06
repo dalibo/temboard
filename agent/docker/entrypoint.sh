@@ -107,6 +107,7 @@ register() {
 }
 
 if [[ "${*} " =~ "temboard-agent " ]] && [ -n "${TEMBOARD_UI_URL-}" ] ; then
+	temboard-agent fetch-key --force
 	register &
 fi
 
