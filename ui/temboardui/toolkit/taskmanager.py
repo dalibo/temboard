@@ -1069,7 +1069,7 @@ class WorkerPoolService(Service):
     def create_task_function_app_wrapper(self, function):
         @functools.wraps(function)
         def wrapper(*a, **kw):
-            return function(app=self.app, *a, **kw)
+            return function(self.app, *a, **kw)
         wrapper._tm_function = function
         return wrapper
 
