@@ -1,6 +1,9 @@
 import logging
 import os.path
-from inspect import signature
+try:
+    from inspect import signature
+except ImportError:
+    from inspect import getargspec
 from textwrap import dedent
 
 from ..toolkit.app import SubCommand
@@ -61,6 +64,10 @@ class Schedule(RunTaskMixin, SubCommand):
 
 
 def build_kwargs_from_args(callable_, args):
-    sig = signature(callable_)
-    _, *names = sig.parameters.keys()
+    try:
+        args = signature(callable_).parameters
+    except NameError:
+        args = getargspec(callable_).args
+    names = list(args.keys())
+    names.pop(0)  # Drop app arg
     return dict(zip(names, args))
