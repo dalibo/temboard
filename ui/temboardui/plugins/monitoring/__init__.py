@@ -515,6 +515,7 @@ def collector(app, address, port, key=None):
                 instance_id,
                 row['instances'][0]['available']
             )
+            worker_session.commit()
             logger.info("Insert collected metrics for %s.", agent_id)
             insert_metrics(
                 worker_session, host.host_id, instance_id, data, dict(
@@ -525,7 +526,6 @@ def collector(app, address, port, key=None):
                     ),
                 ),
             )
-            worker_session.commit()
 
         except DataError as e:
             # Wrong data type or corrupted data could lead to DataError. In
