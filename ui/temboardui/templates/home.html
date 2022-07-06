@@ -71,7 +71,7 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
           <div class="row">
             <div class="col-md-12">
               <strong>
-                <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')" class="overflow-ellipsis d-block instance-link">{{!instance.hostname}}
+                <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')" class="overflow-ellipsis d-block instance-link">{{!instance.hostname}}:{{!instance.pg_port}}
                 </a>
               </strong>
               <div v-if="instance.available === false">
@@ -82,7 +82,6 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
             <div class="col-md-12 small">
               <ul class="list-unstyled mb-0">
                 <li class="overflow-ellipsis">{{!instance.agent_address}}</li>
-                <li>{{!instance.pg_port}}</li>
                 <li>{{!instance.pg_data}}</li>
                 <li class="overflow-ellipsis">{{!instance.pg_version_summary}}</li>
               </ul>
