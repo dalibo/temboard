@@ -75,7 +75,7 @@ mass-agents:  #: Interactively trigger new agent.
 			NETWORK=$(NETWORK) \
 		docker-compose \
 			--project-name temboardagent% \
-			--file docker/docker-compose.agent.yml \
+			--file dev/docker-compose.massagent.yml \
 		up -d
 
 clean-agents:  #: Aggressively trash agent from mass-agents.
@@ -85,7 +85,7 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 			NETWORK=$(subst -,,$(notdir $(CURDIR)))_default \
 		docker-compose \
 			--project-name temboardagent% \
-			--file docker/docker-compose.agent.yml \
+			--file dev/docker-compose.massagent.yml \
 		down --volumes
 
 renew-sslca:  #: Renew CA for self signed certificates.

@@ -31,8 +31,6 @@ fi
 
 # Now stage 2 as postgres user
 
-command=${*-temboard-agent}
-
 export PGHOST=${PGHOST-${TEMBOARD_HOSTNAME}}
 export PGPORT=${PGPORT-5432}
 export PGUSER=${PGUSER-postgres}
@@ -92,25 +90,26 @@ cat > /etc/temboard-agent/temboard-agent.conf.d/statements.conf << EOF
 dbname = ${PGDATABASE}
 EOF
 
-wait-for-it ${PGHOST}:${PGPORT}
+wait-for-it "${PGHOST}:${PGPORT}"
 
 register() {
 	set -x
+
 	hostportpath=${TEMBOARD_UI_URL#*://}
 	hostport=${hostportpath%%/*}
 	wait-for-it localhost:2345 -t 60
-	wait-for-it ${hostport} -t 60
+	wait-for-it "${hostport}" -t 60
 
 	temboard-agent register \
-		--host ${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE} \
-		--port ${TEMBOARD_REGISTER_PORT-2345} \
-		--groups ${TEMBOARD_GROUPS-default} \
-		${TEMBOARD_UI_URL%/}
+		--host "${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE}" \
+		--port "${TEMBOARD_REGISTER_PORT-2345}" \
+		--groups "${TEMBOARD_GROUPS-default}"
 }
 
-if [ -z "${command##temboard-agent*}" ] && [ -n "${TEMBOARD_UI_USER}" ] ; then
-    register &
+if [[ "${*} " =~ "temboard-agent " ]] && [ -n "${TEMBOARD_UI_URL-}" ] ; then
+	temboard-agent fetch-key --force
+	register &
 fi
 
 set -x
-exec ${command}
+exec "$@"
