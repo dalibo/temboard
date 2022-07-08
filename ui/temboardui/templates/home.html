@@ -59,41 +59,41 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
       </form>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12 d-flex flex-wrap instance-list">
-      <div
-        :class="['card mb-2 mr-2', {'border-danger bg-danger-light': getStatusValue(instance) >= 1000000, 'border-warning bg-warning-light': getStatusValue(instance) >= 1000}]"
-        style="width: 220px;"
-        v-for="instance, instanceIndex in filteredInstances"
-        :key="instance.hostname + instance.pg_port"
-        v-cloak>
-        <div class="card-body p-2">
+  <div class="row instance-list">
+    <div
+      v-for="instance, instanceIndex in filteredInstances"
+      :key="instance.hostname + instance.pg_port"
+      v-cloak
+      class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 pb-3">
+      <div :class="['card', {'border-danger bg-danger-light': getStatusValue(instance) >= 1000000, 'border-warning bg-warning-light': getStatusValue(instance) >= 1000}]">
+        <div class="card-body p-2"
+             style="min-height: 150px;">
           <div class="row">
             <div class="col-md-12">
-              <strong>
-                <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')" class="overflow-ellipsis d-block instance-link">{{!instance.hostname}}
-                </a>
-              </strong>
+              <p class="mb-0 overflow-ellipsis">
+                <strong>
+                  <i class="fa fa-database"></i>
+                  <a :href="['/server', instance.agent_address, instance.agent_port, 'dashboard'].join('/')"
+                     :title="instance.pg_version_summary + ' listening on ' + [instance.hostname, instance.pg_port].join(':')"
+                     class="instance-link"
+                     data-toggle="tooltip">
+                     {{!instance.hostname}}:{{!instance.pg_port}}
+                  </a>
+                </strong>
+              </p>
+              <p class="mb-0 small">
+                <template v-for="(group, index) in instance.groups">
+                  <span class="badge border text-muted" :title="'Instance in group ' + group">
+                    {{!group}}
+                  </span>
+                  {{!index === (instance.groups.length - 1) ? '' : ' '}}
+                </template>
+                <span class="pg_version">{{!instance.pg_version_summary || 'Unknown version'}}</span>
+             </p>
               <div v-if="instance.available === false">
                 <span class="badge badge-warning"><i class="fa fa-exclamation-triangle"></i> Unable to connect to postgres</span>
               </div>
               <checks :instance="instance"></checks>
-            </div>
-            <div class="col-md-12 small">
-              <ul class="list-unstyled mb-0">
-                <li class="overflow-ellipsis">{{!instance.agent_address}}</li>
-                <li>{{!instance.pg_port}}</li>
-                <li>{{!instance.pg_data}}</li>
-                <li class="overflow-ellipsis">{{!instance.pg_version_summary}}</li>
-              </ul>
-            </div>
-            <div class="col-md-12 small">
-              <template v-for="(group, index) in instance.groups">
-                <span class="badge border text-muted">
-                  {{!group}}
-                </span>
-                {{!index === (instance.groups.length - 1) ? '' : ' '}}
-              </template>
             </div>
           </div>
           <div class="row" v-if="hasMonitoring(instance) && instanceIndex < 10">
@@ -132,19 +132,19 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
           </div>
         </div>
       </div>
-      <p v-if="!loading && instances.length == 0" v-cloak>
-      {% try %}
-      {% if role.is_admin %}
-      No instance is available yet.<br>
-      Go to <strong>Settings</strong> to add or configure instances.
-      {% else %}
-      You don't have access to any instance.<br>
-      Please contact an administrator.
-      {% end %}
-      {% except %}
-      {% end %}
-      </p>
     </div>
+    <p v-if="!loading && instances.length == 0" v-cloak>
+    {% try %}
+    {% if role.is_admin %}
+    No instance is available yet.<br>
+    Go to <strong>Settings</strong> to add or configure instances.
+    {% else %}
+    You don't have access to any instance.<br>
+    Please contact an administrator.
+    {% end %}
+    {% except %}
+    {% end %}
+    </p>
   </div>
 </div>
 {% end %}
