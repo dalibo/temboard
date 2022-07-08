@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [Unreleased] - 2022-07-08
+
+**Agent:**
+
+- hostname without dot are accepted but a warning is issued.
+
+
 ## [7.11] - 2022-05-23
 
 - Fix heap bloat probe.
