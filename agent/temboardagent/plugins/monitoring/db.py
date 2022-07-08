@@ -114,3 +114,18 @@ def upsert_last_measure(path, dbname, time, key, data):
                 "WHERE key = ?",
                 (time, json.dumps(data, cls=JSONEncoder), key)
             )
+
+
+def drop_current_for_delta_metrics(metrics):
+    # Drop current value. Keeping only delta value.
+    for probe, samples in metrics['data'].items():
+        samples[:] = [
+            sample for sample in samples
+            # Keep non-delta sample or delta with last measure.
+            if 'current' not in sample or 'measure_interval' in sample
+        ]
+
+        for sample in samples:
+            sample.pop('current', None)
+
+    return metrics

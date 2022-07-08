@@ -52,7 +52,6 @@ def run_probes(probes, pool, instances, delta=True):
         if delta is False:
             p.delta_key = None
             p.delta_columns = None
-            p.delta_interval_column = None
 
         if p.level == 'host':
             if not p.check():
@@ -256,24 +255,21 @@ class Probe:
         current_time = time.time()
         store_key = self.get_name() + key
         last_measure = self.get_last_measure(store_key)
-        delta = (None, None)
+        delta = dict(current=current_values)
         delta_value = None
         # Compute deltas and update last_* variables
         try:
             if last_measure:
-                delta_time = current_time - last_measure['time']
+                delta['measure_interval'] = current_time - last_measure['time']
 
-                delta_values = {}
                 for k in current_values.keys():
                     delta_value = current_values[k] - \
                         last_measure['data'][k]
                     if delta_value < 0:
                         raise Exception('Negative delta value.')
-                    delta_values[k] = delta_value
-
-                delta = (delta_time, delta_values)
-        except Exception:
-            delta = (None, None)
+                    delta[k] = delta_value
+        except Exception as e:
+            logger.debug("Failed to compute delta metric: %s", e)
 
         # Update/insert last measure for next delta calculation
         self.upsert_last_measure(
@@ -328,11 +324,10 @@ class SqlProbe(Probe):
     # Delta columns is a list of columns in the output of the query on
     # which delta are computed between to runs. When is it set, a new
     # key is added with the time interval of the delta named with
-    # delta_interval_column. delta_key a column used as unique key to
+    # measure_interval. delta_key a column used as unique key to
     # compute delta on multiline output.
     delta_columns = None
     delta_key = None
-    delta_interval_column = None
     timeout = False
 
     def check(self, version=None):
@@ -372,7 +367,7 @@ class SqlProbe(Probe):
 
                     for k in self.delta_columns:
                         if k in r.keys():
-                            to_delta[k] = r[k]
+                            to_delta[k] = r.pop(k)
 
                     # Create the store key for the delta
                     if self.delta_key is not None:
@@ -380,16 +375,8 @@ class SqlProbe(Probe):
                     else:
                         key = cluster_name + database
 
-                    # Calculate delta
-                    (interval, deltas) = self.delta(key, to_delta)
-
-                    # The first time, no delta is returned
-                    if interval is None:
-                        continue
-
-                    # Merge result and add the interval column
-                    r.update(deltas)
-                    r[self.delta_interval_column] = interval
+                    # Calculate and add delta.
+                    r.update(self.delta(key, to_delta))
 
                 output.append(r)
         except Exception as e:
@@ -476,7 +463,6 @@ from pg_stat_database s
 where d.datallowconn"""
     delta_columns = ['n_commit', 'n_rollback']
     delta_key = 'dbname'
-    delta_interval_column = 'measure_interval'
 
 
 class probe_locks(SqlProbe):
@@ -518,7 +504,6 @@ from pg_stat_database s
 where d.datallowconn"""  # noqa
     delta_columns = ['blks_read', 'blks_hit']
     delta_key = 'dbname'
-    delta_interval_column = 'measure_interval'
 
 
 class probe_bgwriter(SqlProbe):
@@ -531,7 +516,6 @@ class probe_bgwriter(SqlProbe):
         'maxwritten_clean', 'buffers_backend', 'buffers_backend_fsync',
         'buffers_alloc'
     ]
-    delta_interval_column = 'measure_interval'
 
 
 class probe_db_size(SqlProbe):
@@ -583,13 +567,7 @@ class probe_cpu(HostProbe):
         stat.close()
 
         # Compute deltas for values of /proc/stat since boot time
-        (interval, metrics) = self.delta('global', to_delta)
-
-        # No deltas on the first call
-        if interval is None:
-            return []
-
-        metrics['measure_interval'] = interval
+        metrics = self.delta('global', to_delta)
         metrics['cpu'] = 'global'
 
         return [metrics]
@@ -629,13 +607,7 @@ class probe_process(HostProbe):
             metrics['procs_total'] = 0
 
         # Compute deltas for values of /proc/stat since boot time
-        (interval, deltas) = self.delta('key', to_delta)
-        # No deltas on the first call
-        if interval is None:
-            return []
-
-        metrics['measure_interval'] = interval
-        metrics.update(deltas)
+        metrics.update(self.delta('key', to_delta))
         return [metrics]
 
 
@@ -731,16 +703,10 @@ class probe_wal_files(SqlProbe):
             logger.error("Unable to convert xlog location to a number")
             return []
 
-        (interval, delta) = self.delta(conninfo['instance'].replace('/', ''),
-                                       {'written_size': current})
-
-        # Empty the first time
-        if interval is None:
-            return []
-
-        metric['measure_interval'] = interval
-        metric.update(delta)
-
+        metric.update(self.delta(
+            conninfo['instance'].replace('/', ''),
+            {'written_size': current},
+        ))
         return [metric]
 
 
@@ -823,7 +789,6 @@ JOIN pg_database d ON (d.oid = s.datid)
 WHERE d.datallowconn"""  # noqa
     delta_columns = ['size']
     delta_key = 'dbname'
-    delta_interval_column = 'measure_interval'
 
 
 class probe_replication_connection(SqlProbe):

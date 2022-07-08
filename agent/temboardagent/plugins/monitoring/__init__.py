@@ -68,14 +68,14 @@ def get_monitoring():
         ])
         limit = int(request.query['limit'])
 
-    return [
-        json.loads(metric[1]) for metric in db.get_metrics(
-            app.config.temboard.home,
-            'monitoring.db',
-            start_timestamp=start_timestamp,
-            limit=limit
-        )
-    ]
+    out = []
+    h, n = app.config.temboard.home, 'monitoring.db',
+    for _, metrics in db.get_metrics(h, n, limit, start_timestamp):
+        metrics = json.loads(metrics)
+        # Dropping current value, use /metrics to get them.
+        db.drop_current_for_delta_metrics(metrics)
+        out.append(metrics)
+    return out
 
 
 @bottle.get('/config')
