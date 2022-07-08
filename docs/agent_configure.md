@@ -48,7 +48,7 @@ are distributed under sections:
 >     store temporary data. When running multiple agents on the same
 >     host, each agent must have its own home directory. Default:
 >     `/var/lib/temboard-agent/main`.
-> -   `hostname`: Overrides real machine hostname. Must be a valid FQDN.
+> -   `hostname`: Overrides real machine FQDN. Must be unique for each agent.
 >     Default: `None`;
 
 ## `postgresql` section
