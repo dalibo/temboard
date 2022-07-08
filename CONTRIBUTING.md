@@ -4,7 +4,7 @@
 
     You are reading temBoard 7 documentation. You may want to contribute to
     latest version of the documentation. Use Read The Docs version selector or
-    go to [latest documentation](https://temboard.rtfd.io/).
+    go to [latest documentation](https://temboard.rtfd.io/en/latest/CONTRIBUTING/).
 
 [dalibo/temboard]: https://github.com/dalibo/temboard
 
