@@ -1,10 +1,11 @@
 import logging
 import ssl
 from socket import error as SocketError
-from wsgiref.simple_server import make_server
+from wsgiref.simple_server import make_server, ServerHandler
 
 from bottle import debug, default_app
 
+from .. import __version__
 from ..errors import UserError
 from ..toolkit.services import Service
 
@@ -14,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 class HTTPDService(Service):
     def setup(self):
+        ServerHandler.server_software = 'temBoard-agent/%s' % __version__
+
         try:
             bottle = default_app()
             debug(self.app.debug)

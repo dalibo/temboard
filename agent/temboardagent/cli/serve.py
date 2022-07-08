@@ -2,6 +2,7 @@ import logging
 import os
 
 from ..daemon import daemonize
+from ..plugins.monitoring import db
 from ..toolkit.app import SubCommand
 from ..toolkit.services import ServicesManager
 from .app import app
@@ -22,6 +23,10 @@ class Serve(SubCommand):
         if os.path.exists(home):
             [os.remove(os.path.join(home, f))
              for f in os.listdir(home) if f.endswith('.q')]
+
+        if 'monitoring' in self.app.config.temboard.plugins:
+            logger.info("Resetting monitoring data.")
+            db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
 
         self.app.config.load_signing_key()
 
