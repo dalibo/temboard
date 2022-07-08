@@ -366,11 +366,6 @@ class SqlProbe(Probe):
             cluster_name = conninfo['instance'].replace('/', '')
             sql = "-- probe %s\n%s" % (self, sql)
             for r in conn.query(sql):
-                # Add the info of the instance (port) to the
-                # result to output one big list for all instances and
-                # all databases
-                r['port'] = conninfo['port']
-
                 # Compute delta if the probe needs that
                 if self.delta_columns is not None:
                     to_delta = {}
@@ -686,9 +681,7 @@ class probe_wal_files(SqlProbe):
         if conninfo['standby']:
             return []
 
-        metric = {
-            'port': conninfo['port']
-        }
+        metric = {}
         if version < 100000:
             sql = """
             SELECT count(s.f) AS total,
