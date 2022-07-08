@@ -26,7 +26,7 @@ please consider contracting commercial support and send us an email
 at <contact@dalibo.com>
 
 Thank you.
-The Temboard Developers Team
+The Temboard Development Team
 
 -->
 
