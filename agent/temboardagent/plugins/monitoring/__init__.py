@@ -342,9 +342,6 @@ class MonitoringPlugin:
         self.app = app
         self.app.config.add_specs(self.option_specs)
 
-    def bootstrap(self):
-        db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
-
     def load(self):
         default_app().mount('/monitoring', bottle)
         self.app.worker_pool.add(workers)
