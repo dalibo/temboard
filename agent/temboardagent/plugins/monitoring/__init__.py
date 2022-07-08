@@ -9,7 +9,6 @@ from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
-from ...inventory import SysInfo
 from ... import __version__ as __VERSION__
 from ...postgres import Postgres
 
@@ -17,24 +16,6 @@ from . import db
 from .inventory import host_info, instance_info
 from .probes import (
     load_probes,
-    probe_bgwriter,
-    probe_blocks,
-    probe_cpu,
-    probe_db_size,
-    probe_filesystems_size,
-    probe_heap_bloat,
-    probe_btree_bloat,
-    probe_loadavg,
-    probe_locks,
-    probe_memory,
-    probe_process,
-    probe_replication_lag,
-    probe_replication_connection,
-    probe_sessions,
-    probe_temp_files_size_delta,
-    probe_tblspc_size,
-    probe_wal_files,
-    probe_xacts,
     run_probes,
 )
 from .output import remove_passwords
@@ -45,144 +26,6 @@ workers = taskmanager.WorkerSet()
 
 T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 T_LIMIT = b'(^[0-9]+$)'
-
-
-@bottle.get('/probe/sessions')
-def get_probe_sessions():
-    app = default_app().temboard
-    return api_run_probe(probe_sessions(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/xacts')
-def get_probe_xacts():
-    app = default_app().temboard
-    return api_run_probe(probe_xacts(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/locks')
-def get_probe_locks():
-    app = default_app().temboard
-    return api_run_probe(probe_locks(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/blocks')
-def get_probe_blocks():
-    app = default_app().temboard
-    return api_run_probe(probe_blocks(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/bgwriter')
-def get_probe_bgwriter():
-    app = default_app().temboard
-    return api_run_probe(probe_bgwriter(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/db_size')
-def get_probe_db_size():
-    app = default_app().temboard
-    return api_run_probe(probe_db_size(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/tblspc_size')
-def get_probe_tblspc_size():
-    app = default_app().temboard
-    return api_run_probe(probe_tblspc_size(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/filesystems_size')
-def get_probe_filesystems_size():
-    app = default_app().temboard
-    return api_run_probe(probe_filesystems_size(app.config.monitoring),
-                         app.config)
-
-
-@bottle.get('/probe/cpu')
-def get_probe_cpu():
-    app = default_app().temboard
-    return api_run_probe(probe_cpu(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/process')
-def get_probe_process():
-    app = default_app().temboard
-    return api_run_probe(probe_process(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/memory')
-def get_probe_memory():
-    app = default_app().temboard
-    return api_run_probe(probe_memory(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/loadavg')
-def get_probe_loadavg():
-    app = default_app().temboard
-    return api_run_probe(probe_loadavg(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/wal_files')
-def get_probe_wal_files():
-    app = default_app().temboard
-    return api_run_probe(probe_wal_files(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/replication_lag')
-def get_probe_replication_lag():
-    app = default_app().temboard
-    return api_run_probe(probe_replication_lag(app.config.monitoring),
-                         app.config)
-
-
-@bottle.get('/probe/temp_files_size_delta')
-def get_probe_temp_files_size_delta():
-    app = default_app().temboard
-    return api_run_probe(probe_temp_files_size_delta(app.config.monitoring),
-                         app.config)
-
-
-@bottle.get('/probe/replication_connection')
-def get_probe_replication_connection():
-    app = default_app().temboard
-    return api_run_probe(probe_replication_connection(app.config.monitoring),
-                         app.config)
-
-
-@bottle.get('/probe/heap_bloat')
-def get_probe_heap_bloat():
-    app = default_app().temboard
-    return api_run_probe(probe_heap_bloat(app.config.monitoring), app.config)
-
-
-@bottle.get('/probe/btree_bloat')
-def get_probe_btree_bloat():
-    app = default_app().temboard
-    return api_run_probe(probe_btree_bloat(app.config.monitoring), app.config)
-
-
-def api_run_probe(probe_instance, config):
-    """
-    Run a probe instance.
-    """
-    # Validate connection information from the config, and ensure
-    # the instance is available
-    conninfo = dict(
-        host=config.postgresql.host,
-        port=config.postgresql.port,
-        user=config.postgresql.user,
-        database=config.postgresql.dbname,
-        password=config.postgresql.password,
-        dbnames=config.monitoring.dbnames,
-        instance=config.postgresql.instance,
-    )
-    postgres = Postgres(**conninfo)
-    sysinfo = SysInfo()
-    hostname = sysinfo.hostname(config.temboard.hostname)
-    with postgres.dbpool() as pool:
-        instance = instance_info(pool, conninfo, hostname)
-        # Set home path
-        probe_instance.set_home(config.temboard.home)
-        # Gather the data from probes
-        return run_probes([probe_instance], pool, [instance], delta=False)
 
 
 @bottle.get('/history')
