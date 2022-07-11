@@ -1,10 +1,8 @@
 import errno
-import hashlib
 import json
 import logging
 import os
 import re
-import time
 from datetime import datetime
 from time import strftime, gmtime
 
@@ -12,17 +10,6 @@ from bottle import HTTPError
 
 
 logger = logging.getLogger(__name__)
-
-
-def hash_id(id):
-    """
-    Hash (MD5) and returns a string built from the given id aimed to be used as
-    an ID.
-    """
-    strid = 'id%s%d' % (id, time.time() * 1000)
-    m = hashlib.md5()
-    m.update(strid.encode('utf-8'))
-    return m.hexdigest()
 
 
 def validate_parameters(values, types):
