@@ -59,6 +59,7 @@ def instance_info(pool, conninfo, hostname):
         instance_info['version_num'] = pgv['num']
         instance_info['version'] = pgv['server']
         instance_info['data_directory'] = pginfo.setting('data_directory')
+        instance_info['start_time'] = pginfo.start_time()
 
         # hot standby is available from 9.0
         instance_info['standby'] = pginfo.is_in_recovery()
