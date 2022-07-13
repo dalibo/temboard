@@ -6,7 +6,6 @@ import os
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from temboardui.web import HTTPError
 from temboardui.toolkit import taskmanager
 
 from .model.orm import (
@@ -22,6 +21,7 @@ from .alerting import (
     check_specs,
 )
 from ...toolkit.errors import UserError
+from ...web.tornado import HTTPError
 
 
 logger = logging.getLogger(__package__)

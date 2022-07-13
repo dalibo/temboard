@@ -2,7 +2,7 @@ from temboardui.application import (
     send_mail,
     send_sms,
 )
-from temboardui.web import (
+from temboardui.web.tornado import (
     HTTPError,
     admin_required,
     app,

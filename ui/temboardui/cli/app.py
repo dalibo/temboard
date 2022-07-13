@@ -29,7 +29,7 @@ from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
-from ..web import Error404Handler, app as webapp
+from ..web.tornado import Error404Handler, app as webapp
 
 
 logger = logging.getLogger('temboardui')

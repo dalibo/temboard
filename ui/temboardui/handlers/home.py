@@ -1,8 +1,8 @@
-from temboardui.application import (
+from ..application import (
     get_instance_groups_by_role,
     get_instances_by_role_name,
 )
-from ..web import (
+from ..web.tornado import (
     Redirect,
     app,
     anonymous_allowed,

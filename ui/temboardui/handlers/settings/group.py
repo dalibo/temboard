@@ -1,6 +1,6 @@
 import logging
 
-from temboardui.web import (
+from temboardui.web.tornado import (
     HTTPError,
     admin_required,
     app,

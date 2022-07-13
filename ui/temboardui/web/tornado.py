@@ -25,16 +25,16 @@ from tornado.web import (
 )
 from tornado.template import Loader as TemplateLoader
 
-from .application import (
+from ..application import (
     get_instance,
     get_role_by_cookie,
     get_roles_by_instance,
 )
-from .errors import TemboardUIError
-from .model import Session as DBSession
-from .agentclient import TemboardAgentClient
-from .toolkit.pycompat import PY2
-from .toolkit.perf import PerfCounters
+from ..errors import TemboardUIError
+from ..model import Session as DBSession
+from ..agentclient import TemboardAgentClient
+from ..toolkit.pycompat import PY2
+from ..toolkit.perf import PerfCounters
 
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class TemplateRenderer(object):
         )
 
 
-template_path = os.path.realpath(__file__ + '/../templates')
+template_path = os.path.realpath(__file__ + '/../../templates')
 render_template = TemplateRenderer(template_path)
 
 
@@ -682,7 +682,6 @@ else:
     json.dumps.__kwdefaults__['cls'] = JSONEncoder
 
 
-# Global app instance for registration of core handlers.
 app = WebApplication()
 # Hijack tornado.web access_log to log request in temboardui namespace.
 tornadoweb.access_log = logging.getLogger('temboardui.access')

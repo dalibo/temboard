@@ -5,7 +5,7 @@ import tornado.web
 from tornado.escape import json_encode
 
 from ...agentclient import TemboardAgentClient
-from ...web import (
+from ...web.tornado import (
     Blueprint,
     TemplateRenderer,
 )

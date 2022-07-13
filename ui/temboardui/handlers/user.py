@@ -7,7 +7,7 @@ from ..application import (
     hash_password,
 )
 from ..errors import TemboardUIError
-from ..web import (
+from ..web.tornado import (
     HTTPError,
     Redirect,
     Response,

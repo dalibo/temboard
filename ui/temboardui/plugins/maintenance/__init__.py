@@ -1,7 +1,7 @@
 from os import path
 import tornado.web
 
-from temboardui.web import (
+from temboardui.web.tornado import (
     Blueprint,
     TemplateRenderer,
 )

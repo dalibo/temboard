@@ -12,7 +12,7 @@ from temboardui.plugins.monitoring.model.orm import (
     Check,
     CheckState,
 )
-from temboardui.web import (
+from temboardui.web.tornado import (
     HTTPError,
     jsonify,
 )
