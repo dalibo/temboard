@@ -1,11 +1,17 @@
 import sys
 
+from .web.flask import create_app
 from .cli.app import app
 from .model import QUERIES
 from .model.queries import load_queries
 
 
 def main():
+    flask = create_app(app)
+    flask.app_context().push()
+
+    __import__(__package__ + '.web.routes')
+
     # Load sub commands.
     __import__(__package__ + '.cli.generate_key')
     __import__(__package__ + '.cli.migratedb')

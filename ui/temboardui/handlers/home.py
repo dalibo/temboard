@@ -3,19 +3,11 @@ from ..application import (
     get_instances_by_role_name,
 )
 from ..web.tornado import (
-    Redirect,
     app,
-    anonymous_allowed,
     jsonify,
     render_template,
 )
 from ..plugins.monitoring.alerting import get_highest_state
-
-
-@app.route('/')
-@anonymous_allowed
-def index(request):
-    return Redirect('/home')
 
 
 @app.route('/home')
