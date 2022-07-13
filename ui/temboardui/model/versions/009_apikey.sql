@@ -1,0 +1,7 @@
+CREATE TABLE "application"."apikeys" (
+	id SERIAL PRIMARY KEY,
+	secret TEXT NOT NULL UNIQUE,
+	comment TEXT,
+	cdate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+	edate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() + '6 months'::interval
+);
