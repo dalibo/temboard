@@ -625,6 +625,8 @@ class WebApplication(TornadoApplication, Blueprint):
             self.settings.setdefault('static_hash_cache', False)
             self.settings.setdefault('serve_traceback', True)
 
+        self.start_time = datetime.utcnow()
+
     def add_rules(self, rules):
         if hasattr(self, 'wildcard_router'):  # Tornado 4.5+
             self.wildcard_router.add_rules(rules)

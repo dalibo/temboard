@@ -200,6 +200,7 @@ def bootstrap_tornado_app(webapp, config):
     __import__('temboardui.handlers.settings.instance')
     __import__('temboardui.handlers.settings.user')
     __import__('temboardui.handlers.settings.notifications')
+    __import__('temboardui.handlers.settings.metadata')
     __import__('temboardui.handlers.user')
 
     webapp.configure(
