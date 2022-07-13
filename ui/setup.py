@@ -24,6 +24,7 @@ elif sys.version_info < (3,):
 
 install_requires = [
     'cryptography',
+    'flask',
     'python-dateutil>=1.5',
     # There is no hard dependency on psycopg2 to allow using
     # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
