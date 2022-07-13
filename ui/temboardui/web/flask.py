@@ -1,4 +1,5 @@
 import logging
+from ipaddress import ip_address, ip_network
 
 from flask import Flask, abort, g, request, jsonify
 from werkzeug.exceptions import HTTPException
@@ -84,6 +85,15 @@ class APIKeyMiddleware(object):
         if 'Authorization' not in request.headers:
             return
 
+        remote_addr = ip_address(request.remote_addr)
+        if not any((
+                remote_addr in ip_network(cidr)
+                for cidr in
+                self.app.temboard.config.auth.allowed_ip
+        )):
+            logger.debug("Authorization ignored for IP %s.", remote_addr)
+            return
+
         try:
             scheme, secret = request.headers['Authorization'].split(None, 1)
         except TypeError:
@@ -100,7 +110,8 @@ class APIKeyMiddleware(object):
         if key.expired:
             abort(403, "Expired API key.")
 
-        logger.debug("Accepted API key from HTTP Header.")
+        logger.debug(
+            "Accepted API key from HTTP Header, client IP %s.", remote_addr)
         g.apikey = key
 
 

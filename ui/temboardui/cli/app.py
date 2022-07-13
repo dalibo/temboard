@@ -394,6 +394,10 @@ def list_options_specs():
     home = os.environ.get('HOME', '/var/lib/temboard')
     yield OptionSpec(s, 'home', default=home, validator=v.writeabledir)
 
+    s = 'auth'
+    yield OptionSpec(
+        s, 'allowed_ip', default='127.0.0.0/8', validator=v.commalist)
+
     s = 'repository'
     yield OptionSpec(s, 'host', default='/var/run/postgresql')
     yield OptionSpec(s, 'instance', default='main')
