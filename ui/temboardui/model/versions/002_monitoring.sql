@@ -1337,7 +1337,7 @@ BEGIN
   v_table_current := table_name || '_current';
   v_table_history := table_name || '_history';
   -- Lock _current table to prevent concurrent updates
-  EXECUTE 'LOCK TABLE ' || v_table_current || ' IN SHARE MODE NOWAIT';
+  EXECUTE 'LOCK TABLE ' || v_table_current || ' IN SHARE MODE';
   v_query := replace(query, '#history_table#', v_table_history);
   v_query := replace(v_query, '#current_table#', v_table_current);
   v_query := replace(v_query, '#record_type#', record_type);
