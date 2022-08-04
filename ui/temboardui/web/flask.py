@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, abort, g, request, redirect, jsonify
+from flask import Flask, abort, g, request, jsonify
 from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
@@ -67,11 +67,6 @@ class SQLAlchemy(object):
 class AuthMiddleware(object):
     # Flask extension enforcing authentication
 
-    def unauthorized(self):
-        if g.current_user:
-            abort(403)
-        return redirect('/login')
-
     def __init__(self, app=None):
         self.app = app
         if app:
@@ -86,8 +81,8 @@ class AuthMiddleware(object):
 
         anonymous_allowed = getattr(func, '__anonymous_allowed', False)
         if not anonymous_allowed and g.current_user is None:
-            logger.debug("Redirecting anonymous to /login.")
-            return redirect('/login')
+            logger.debug("Refusing anonymous access.")
+            abort(403)
 
         admin_required = getattr(func, '__admin_required', False)
         if admin_required and not g.current_user.is_admin:
