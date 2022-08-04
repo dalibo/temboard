@@ -180,6 +180,22 @@ class ApiKeys(Model):
             .columns(cls.id, cls.comment)
             )
 
+    @classmethod
+    def select_secret(cls, secret):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-select-secret'])
+            .bindparams(secret=secret)
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @property
+    def expired(self):
+        true_utc_now = (
+            datetime.datetime.utcnow()
+            .replace(tzinfo=datetime.timezone.utc)
+        )
+        return self.edate < true_utc_now
+
 
 class Plugins(Model):
     __table__ = tables.plugins

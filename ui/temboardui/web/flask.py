@@ -5,6 +5,7 @@ from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
 from ..model import Session
+from ..model.orm import ApiKeys
 from ..application import (
     get_role_by_cookie,
 )
@@ -17,6 +18,7 @@ def create_app(temboard_app):
     app = Flask('temboardui', static_folder=None)
     app.temboard = temboard_app
     SQLAlchemy(app)
+    APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthMiddleware(app)
     app.errorhandler(Exception)(json_error_handler)
@@ -64,6 +66,44 @@ class SQLAlchemy(object):
         del g.db_session
 
 
+class APIKeyMiddleware(object):
+    # Flask extension validating API key header
+
+    def __init__(self, app):
+        self.app = app
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        app.apikey = self
+        app.before_request(self.before)
+
+    def before(self):
+        g.apikey = None
+
+        if 'Authorization' not in request.headers:
+            return
+
+        try:
+            scheme, secret = request.headers['Authorization'].split(None, 1)
+        except TypeError:
+            abort(400, "Malformed Authorization header")
+
+        if scheme != 'Bearer':
+            logger.debug("Ignoring Authorization scheme %s.", scheme)
+            return
+
+        key = g.db_session.scalar(ApiKeys.select_secret(secret))
+        if not key:
+            abort(403, "Unknown API Key.")
+
+        if key.expired:
+            abort(403, "Expired API key.")
+
+        logger.debug("Accepted API key from HTTP Header.")
+        g.apikey = key
+
+
 class AuthMiddleware(object):
     # Flask extension enforcing authentication
 
@@ -78,6 +118,11 @@ class AuthMiddleware(object):
 
     def before(self):
         func = self.app.view_functions[request.endpoint]
+
+        apikey_allowed = getattr(func, '__apikey_allowed', False)
+        if apikey_allowed and g.apikey:
+            logger.debug("Endpoint authorized by API key.")
+            return
 
         anonymous_allowed = getattr(func, '__anonymous_allowed', False)
         if not anonymous_allowed and g.current_user is None:
@@ -120,4 +165,10 @@ class UserMiddleware(object):
 def anonymous_allowed(func):
     # Decorator marking a route as public.
     func.__anonymous_allowed = True
+    return func
+
+
+def apikey_allowed(func):
+    # Decorator allowing a route by apikey auth
+    func.__apikey_allowed = True
     return func
