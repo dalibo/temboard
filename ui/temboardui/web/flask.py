@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask, abort, g, request, redirect, jsonify
+from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
 from ..model import Session
@@ -23,7 +24,13 @@ def create_app(temboard_app):
 
 
 def json_error_handler(e):
-    logger.exception("Unhandled error:")
+    if isinstance(e, HTTPException):
+        if e.code < 500:
+            logger.warning("User error: %s", e)
+        else:
+            logger.error("Fatal error: %s", e)
+    else:
+        logger.exception("Unhandled error:")
     return jsonify(error=str(e) or repr(e))
 
 
