@@ -33,7 +33,7 @@ from temboardui.model.orm import (
 )
 from temboardui.errors import TemboardUIError
 
-from temboardui.web import (
+from temboardui.web.tornado import (
     Blueprint,
     TemplateRenderer,
     jsonify,

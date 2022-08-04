@@ -22,6 +22,7 @@ BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python36-setuptools
 Requires:      python36-cryptography
 Requires:      python36-dateutil
+Requires:      python36-flask
 Requires:      python36-future
 Requires:      python36-psycopg2
 Requires:      python36-setuptools
@@ -33,6 +34,7 @@ BuildRequires: python3-setuptools
 BuildRequires: python3-rpm-macros
 Requires:      python3-cryptography
 Requires:      python3-dateutil >= 1.5
+Requires:      python3-flask
 Requires:      python3-future
 Requires:      python3-psycopg2
 Requires:      python3-setuptools

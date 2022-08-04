@@ -1,6 +1,6 @@
 from os.path import realpath
 
-from temboardui.web import (
+from ....web.tornado import (
     Blueprint,
     TemplateRenderer,
 )

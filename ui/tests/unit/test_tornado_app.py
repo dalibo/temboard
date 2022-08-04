@@ -9,7 +9,7 @@ def executor():
 
 
 def test_app_configure(mocker):
-    from temboardui.web import WebApplication
+    from temboardui.web.tornado import WebApplication
 
     app = WebApplication()
     app.configure(debug=True)
@@ -17,7 +17,7 @@ def test_app_configure(mocker):
 
 
 def test_app_route(mocker):
-    from temboardui.web import WebApplication
+    from temboardui.web.tornado import WebApplication
 
     app = WebApplication()
 
@@ -42,9 +42,9 @@ def test_app_route(mocker):
 
 def test_handler(executor, io_loop, mocker):
     from tornado.gen import coroutine
-    from temboardui.web import CallableHandler
+    from temboardui.web.tornado import CallableHandler
 
-    mod = 'temboardui.web'
+    mod = 'temboardui.web.tornado'
     grbc = mocker.patch(mod + '.get_role_by_cookie')
     mocker.patch(mod + '.DBSession')
     cls = mod + '.CallableHandler'
@@ -80,12 +80,12 @@ def test_handler(executor, io_loop, mocker):
 
 
 def test_redirect(mocker):
-    mod = 'temboardui.web'
+    mod = 'temboardui.web.tornado'
     cls = mod + '.CallableHandler'
     ssc = mocker.patch(cls + '.set_secure_cookie')
     finish = mocker.patch(cls + '.finish')
 
-    from temboardui.web import CallableHandler, Redirect
+    from temboardui.web.tornado import CallableHandler, Redirect
 
     handler = CallableHandler(
         mocker.Mock(name='app', ui_methods={}, executor=executor),
@@ -102,9 +102,9 @@ def test_redirect(mocker):
 
 
 def test_template(mocker):
-    loader = mocker.patch('temboardui.web.render_template.loader')
+    loader = mocker.patch('temboardui.web.tornado.render_template.loader')
 
-    from temboardui.web import render_template
+    from temboardui.web.tornado import render_template
 
     response = render_template('test.html', var='toto')
     assert loader.load.called is True
@@ -112,7 +112,7 @@ def test_template(mocker):
 
 
 def test_csv():
-    from temboardui.web import csvify
+    from temboardui.web.tornado import csvify
 
     response = csvify("1,2")
     assert "1,2" == response.body
@@ -127,9 +127,9 @@ def test_csv():
 
 
 def test_make_error(mocker):
-    rt = mocker.patch('temboardui.web.render_template')
+    rt = mocker.patch('temboardui.web.tornado.render_template')
     from tornado.httputil import HTTPServerRequest
-    from temboardui.web import make_error
+    from temboardui.web.tornado import make_error
 
     response_kw = dict(
         name='request',

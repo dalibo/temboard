@@ -1,6 +1,6 @@
 import logging
 
-from temboardui.web import admin_required, app, render_template
+from temboardui.web.tornado import admin_required, app, render_template
 
 from ...version import inspect_versions
 

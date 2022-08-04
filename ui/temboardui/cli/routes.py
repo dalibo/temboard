@@ -1,4 +1,7 @@
 import logging
+from itertools import chain
+
+from flask import current_app
 
 from ..toolkit.app import SubCommand
 from .app import app
@@ -20,7 +23,7 @@ class Routes(SubCommand):
 
     def main(self, args):
         rules = self.app.webapp.wildcard_router.rules
-        routes = iter_route(rules)
+        routes = chain(iter_flask_routes(), iter_tornado_routes(rules))
 
         if args.sort:
             logger.debug("Sorting routes alphabetically.")
@@ -34,8 +37,20 @@ class Routes(SubCommand):
         return 0
 
 
-def iter_route(rules):
+def iter_flask_routes():
+    for rule in current_app.url_map.iter_rules():
+        for method in rule.methods:
+            if method in ('OPTIONS', 'HEAD'):
+                continue
+            yield method, rule.rule
+
+
+def iter_tornado_routes(rules):
     for rule in rules:
+        if 'fallback' in rule.target_kwargs:
+            # Skip fallback to Flask routes.
+            continue
+
         # Fallback for static handlers
         methods = rule.target_kwargs.get('methods', ['GET'])
         path = rule.matcher.regex.pattern

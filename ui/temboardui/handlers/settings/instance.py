@@ -17,7 +17,7 @@ from temboardui.application import (
     update_instance,
 )
 from temboardui.agentclient import TemboardAgentClient
-from temboardui.web import (
+from temboardui.web.tornado import (
     HTTPError,
     InstanceHelper,
     admin_required,

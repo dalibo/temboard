@@ -11,8 +11,11 @@ from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
 from textwrap import dedent
 
+from flask import current_app
+
 import tornado.ioloop
 import tornado.web
+from tornado.wsgi import WSGIContainer
 from tornado import autoreload
 
 from ..autossl import AutoHTTPSServer
@@ -29,7 +32,7 @@ from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
-from ..web import Error404Handler, app as webapp
+from ..web.tornado import Error404Handler, app as webapp
 
 
 logger = logging.getLogger('temboardui')
@@ -238,6 +241,12 @@ def finalize_tornado_app(webapp, config):
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
     webapp.add_rules(handlers)
+
+    # Fallback to Flask
+    webapp.add_rules([
+        (r"/.*", tornado.web.FallbackHandler, {
+            'fallback': WSGIContainer(current_app.wsgi_app)}),
+    ])
 
 
 def map_pgvars(environ):

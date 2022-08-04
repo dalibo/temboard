@@ -2,7 +2,7 @@ from os import path
 
 import tornado.web
 
-from ...web import (
+from ...web.tornado import (
     Blueprint,
     TemplateRenderer,
 )

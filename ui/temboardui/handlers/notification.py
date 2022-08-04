@@ -1,4 +1,4 @@
-from ..web import (
+from ..web.tornado import (
     app,
     render_template,
 )
