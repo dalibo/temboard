@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, abort, g, request, redirect
+from flask import Flask, abort, g, request, redirect, jsonify
 from tornado.web import decode_signed_value
 
 from ..model import Session
@@ -17,7 +17,13 @@ def create_app(temboard_app):
     app.temboard = temboard_app
     SQLAlchemy(app)
     UserMiddleware(app)
+    app.errorhandler(Exception)(json_error_handler)
     return app
+
+
+def json_error_handler(e):
+    logger.exception("Unhandled error:")
+    return jsonify(error=str(e) or repr(e))
 
 
 class SQLAlchemy(object):
