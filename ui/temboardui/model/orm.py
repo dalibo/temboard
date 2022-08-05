@@ -10,17 +10,29 @@ from sqlalchemy import (
     Integer,
     String,
     event,
+    text,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.schema import (
+    Column,
+)
+from sqlalchemy.types import (
+    UnicodeText,
+    BigInteger,
+    TIMESTAMP,
+)
 from sqlalchemy.sql import (
     case,
     column,
     extract,
     func,
+    select,
 )
 
 from temboardui.model import tables
+from . import QUERIES
+
 
 Model = declarative_base()
 
@@ -123,6 +135,66 @@ def configure_listener(class_, key, inst):
                 raise Exception("%s: wrong type." % (inst.property))
         else:
             return value
+
+
+class ApiKeys(Model):
+    __tablename__ = 'apikeys'
+    __table_args__ = {'schema': 'application'}
+
+    id = Column(BigInteger, primary_key=True)
+    secret = Column(UnicodeText)
+    comment = Column(UnicodeText)
+    cdate = Column(TIMESTAMP(timezone=True))
+    edate = Column(TIMESTAMP(timezone=True))
+
+    # See
+    # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
+
+    @classmethod
+    def insert(cls, secret, comment):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-insert'])
+            .bindparams(secret=secret, comment=comment)
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @classmethod
+    def select_active(cls):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-select-active'])
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @classmethod
+    def delete(cls, id):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-delete'])
+            .bindparams(id=id)
+            .columns(cls.id, cls.comment)
+            )
+
+    @classmethod
+    def purge(cls):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-purge'])
+            .columns(cls.id, cls.comment)
+            )
+
+    @classmethod
+    def select_secret(cls, secret):
+        return select(cls).from_statement(
+            text(QUERIES['apikeys-select-secret'])
+            .bindparams(secret=secret)
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @property
+    def expired(self):
+        true_utc_now = (
+            datetime.datetime.utcnow()
+            .replace(tzinfo=datetime.timezone.utc)
+        )
+        return self.edate < true_utc_now
 
 
 class Plugins(Model):

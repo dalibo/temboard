@@ -49,6 +49,10 @@ script to proceed.
 - Dropped temBoard agent HTTP endpoint /monitoring/probe/*.
 - temBoard server waits for locks in monitoring collect. Abort long collect
   task. New parameter `[monitoring] collect_max_duration`.
+- temBoard UI now has API key authorization, use for very few specific
+  endpoint.
+- New temBoard UI parameter `[auth] allowed_ip` to restrict API Key
+  authorization. By default, only 127/8 is allowed.
 
 
 ## [7.11] - Unreleased

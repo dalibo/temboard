@@ -13,6 +13,7 @@ def main():
     __import__(__package__ + '.web.routes')
 
     # Load sub commands.
+    __import__(__package__ + '.cli.apikey')
     __import__(__package__ + '.cli.generate_key')
     __import__(__package__ + '.cli.migratedb')
     __import__(__package__ + '.cli.query_agent')
