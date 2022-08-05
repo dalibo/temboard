@@ -163,7 +163,11 @@ if ! getent passwd "$SYSUSER" ; then
 fi
 
 if getent group ssl-cert &>/dev/null && ! getent group ssl-cert | grep -q "$SYSUSER"; then
-	adduser "$SYSUSER" ssl-cert
+	if command -v adduser &>/dev/null ; then
+		adduser "$SYSUSER" ssl-cert
+	else
+		fatal "$SYSUSER is not member of ssl-cert group and can't execute adduser. Make sure to add user in group before executing."
+	fi
 fi
 
 

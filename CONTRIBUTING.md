@@ -230,6 +230,10 @@ $
 The `tests/` directory contains a pytest project to tests UI and agent
 integration using Selenium.
 
+On Debian your UNIX user must be in the ssl-cert group to run the tests.
+Be careful, the tests will use the local installation of temboard if it exists
+instead of dev files. To run the tests locally it is better not to have temboard installed.
+
 Execute these tests right from your virtualenv, using pytest:
 
 ``` console
