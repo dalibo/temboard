@@ -5,11 +5,11 @@ from flask import Flask, abort, g, request, jsonify
 from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
-from ..model import Session
-from ..model.orm import ApiKeys
 from ..application import (
     get_role_by_cookie,
 )
+from ..model import Session
+from ..model.orm import ApiKeys, StubRole
 
 
 logger = logging.getLogger(__name__)
@@ -162,6 +162,8 @@ class UserMiddleware(object):
         g.current_user = None
         if 'temboard' in request.cookies:
             g.current_user = self.load_user_from_tornado_secure_cookie()
+        if getattr(g, 'apikey', None):
+            g.current_user = StubRole('temboard')
 
     def load_user_from_tornado_secure_cookie(self):
         cookie = decode_signed_value(
