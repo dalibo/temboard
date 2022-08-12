@@ -93,8 +93,8 @@ class MonitoringPlugin(object):
         plugin_path = os.path.dirname(os.path.realpath(__file__))
         __import__(__name__ + '.handlers.alerting')
         __import__(__name__ + '.handlers.monitoring')
-        self.app.webapp.add_rules(blueprint.rules)
-        self.app.webapp.add_rules([
+        self.app.tornado_app.add_rules(blueprint.rules)
+        self.app.tornado_app.add_rules([
             (r"/js/monitoring/(.*)",
              tornado.web.StaticFileHandler,
              {'path': plugin_path + "/static/js"}),

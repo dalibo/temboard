@@ -11,7 +11,7 @@ from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
 from textwrap import dedent
 
-from flask import current_app
+from flask import current_app as flask_app
 
 import tornado.ioloop
 import tornado.web
@@ -32,7 +32,8 @@ from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
-from ..web.tornado import Error404Handler, app as webapp
+from ..web.tornado import Error404Handler, app as tornado_app
+from ..web.flask import finalize_app as finalize_flask_app
 
 
 logger = logging.getLogger('temboardui')
@@ -140,19 +141,20 @@ class TemboardApplication(BaseApplication):
         return command.main(args)
 
     def apply_config(self):
-        bootstrap_tornado = not hasattr(self, 'webapp')
+        bootstrap_tornado = not hasattr(self, 'tornado_app')
         if bootstrap_tornado:
             # For now, just create web app once. One time, we'll be able to
             # unload plugin routes.
-            self.webapp = bootstrap_tornado_app(webapp, self.config)
-            self.webapp.executor = ThreadPoolExecutor(12)
-            self.webapp.temboard_app = self
+            self.tornado_app = bootstrap_tornado_app(tornado_app, self.config)
+            self.tornado_app.executor = ThreadPoolExecutor(12)
+            self.tornado_app.temboard_app = self
 
         super(TemboardApplication, self).apply_config()
 
-        finalize_tornado_app(webapp, self.config)
+        finalize_tornado_app(tornado_app, self.config)
+        finalize_flask_app()  # Uses current_app thread local
 
-        self.webapp.engine = configure_db_session(self.config.repository)
+        self.tornado_app.engine = configure_db_session(self.config.repository)
 
     def log_versions(self):
         versions = inspect_versions()
@@ -192,8 +194,8 @@ class TemboardUIConfiguration(MergedConfiguration):
             self._signing_key = load_private_key(fo.read())
 
 
-def bootstrap_tornado_app(webapp, config):
-    webapp.config = config
+def bootstrap_tornado_app(tornado_app, config):
+    tornado_app.config = config
 
     base_path = os.path.dirname(os.path.dirname(__file__))
     # Load handlers
@@ -206,17 +208,17 @@ def bootstrap_tornado_app(webapp, config):
     __import__('temboardui.handlers.settings.metadata')
     __import__('temboardui.handlers.user')
 
-    webapp.configure(
+    tornado_app.configure(
         cookie_secret=config.temboard['cookie_secret'],
         debug=config.logging.debug,
         template_path=base_path + "/templates",
         default_handler_class=Error404Handler,
     )
 
-    return webapp
+    return tornado_app
 
 
-def finalize_tornado_app(webapp, config):
+def finalize_tornado_app(tornado_app, config):
     base_path = os.path.dirname(os.path.dirname(__file__))
     handlers = [
         (r"/css/(.*)", tornado.web.StaticFileHandler, {
@@ -240,12 +242,12 @@ def finalize_tornado_app(webapp, config):
 
     # Append rules *after* plugins because plugins shares same namespace for
     # static rules, i.e. /js/.* is a fallback for /js/dashboard/.*.
-    webapp.add_rules(handlers)
+    tornado_app.add_rules(handlers)
 
     # Fallback to Flask
-    webapp.add_rules([
+    tornado_app.add_rules([
         (r"/.*", tornado.web.FallbackHandler, {
-            'fallback': WSGIContainer(current_app.wsgi_app)}),
+            'fallback': WSGIContainer(flask_app.wsgi_app)}),
     ])
 
 
@@ -278,7 +280,7 @@ class TornadoService(Service):
             'certfile': config.temboard.ssl_cert_file,
             'keyfile': config.temboard.ssl_key_file,
         }
-        server = AutoHTTPSServer(self.app.webapp, ssl_options=ssl_ctx)
+        server = AutoHTTPSServer(self.app.tornado_app, ssl_options=ssl_ctx)
         try:
             server.listen(
                 config.temboard.port, address=config.temboard.address)
@@ -314,7 +316,7 @@ class TornadoService(Service):
             # Automatically reload modified modules (from Tornado's
             # Application.__init__). This code must be done here *after*
             # daemonize, because it instanciates ioloop for current PID.
-            if self.app.webapp.settings.get('autoreload'):
+            if self.app.tornado_app.settings.get('autoreload'):
                 self.setup_autoreload()
                 autoreload.start()
 

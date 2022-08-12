@@ -223,6 +223,12 @@ class Roles(Model):
     )
 
 
+class StubRole(object):
+    # Fake object for roles not in database.
+    def __init__(self, role_name):
+        self.role_name = role_name
+
+
 class Instances(Model):
     __table__ = tables.instances
     groups = relationship(
