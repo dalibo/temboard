@@ -23,7 +23,7 @@ class Routes(SubCommand):
 
     def main(self, args):
         rules = self.app.tornado_app.wildcard_router.rules
-        routes = chain(iter_flask_routes(), iter_tornado_routes(rules))
+        routes = chain(iter_tornado_routes(rules), iter_flask_routes())
 
         if args.sort:
             logger.debug("Sorting routes alphabetically.")
