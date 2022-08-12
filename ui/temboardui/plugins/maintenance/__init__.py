@@ -34,8 +34,8 @@ class MaintenancePlugin(object):
         self.app = app
 
     def load(self):
-        self.app.webapp.add_rules(blueprint.rules)
-        self.app.webapp.add_rules([
+        self.app.tornado_app.add_rules(blueprint.rules)
+        self.app.tornado_app.add_rules([
             (r"/js/maintenance/(.*)", tornado.web.StaticFileHandler, {
                 'path': plugin_path + "/static/js"
             }),

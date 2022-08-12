@@ -40,14 +40,14 @@ def add_instance_in_groups(db_session, instance, groups):
             group_name)
 
 
-def create_instance_helper(webapp, db_session, data):
+def create_instance_helper(db_session, data):
     validate_instance_data(data)
     groups = data.pop('groups')
     plugins = data.pop('plugins') or []
     instance = add_instance(db_session, **data)
     add_instance_in_groups(db_session, instance, groups)
     enable_instance_plugins(
-        db_session, instance, plugins, webapp.config.temboard.plugins,
+        db_session, instance, plugins, app.config.temboard.plugins,
     )
 
     tmsocket = os.path.join(app.config.temboard.home, '.tm.socket')
@@ -108,9 +108,7 @@ def validate_instance_data(data):
 @app.route(r"/json/settings/instance", methods=['POST'])
 @admin_required
 def create_instance_handler(request):
-    create_instance_helper(
-        request.handler.application, request.db_session, request.json,
-    )
+    create_instance_helper(request.db_session, request.json)
     return {"message": "OK"}
 
 
@@ -256,9 +254,5 @@ def register(request):
 
     data['new_agent_address'] = agent_address
     data['new_agent_port'] = data.pop('agent_port', None)
-    create_instance_helper(
-        request.handler.application,
-        request.db_session,
-        data,
-    )
+    create_instance_helper(request.db_session, data)
     return {"message": "OK"}
