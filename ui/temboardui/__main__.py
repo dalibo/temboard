@@ -1,3 +1,22 @@
+#
+# There is three app objects in temBoard. One for Tornado, Flask and temBoard
+# itself.
+#
+# Tornado's app is implemented and instanciated in t.w.tornado. Tornado's app
+# holds Tornado routes. Tornado's app is a Tornado HTTP server delegate.
+#
+# Flask app is implemented in t.w.flask and instanciated here in t.__main__,
+# accessible through flask.current_app thread local. Flask app holds Flask
+# routes. Flask app is a WSGI app.
+#
+# temBoard app is implemented and instanciated in t.c.app. temBoard app holds
+# configuration, CLI definition and controls execution of the service. temBoard
+# app is a CLI entrypoint.
+#
+# Each of this app has different purpose, configuration handling and
+# initialization process. This is quite messy and needs redesign.
+#
+
 import sys
 
 from .web.flask import create_app
@@ -10,6 +29,7 @@ def main():
     flask = create_app(app)
     flask.app_context().push()
 
+    # Import main routes
     __import__(__package__ + '.web.routes')
 
     # Load sub commands.

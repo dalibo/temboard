@@ -11,7 +11,7 @@ from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
 from textwrap import dedent
 
-from flask import current_app
+from flask import current_app as flask_app
 
 import tornado.ioloop
 import tornado.web
@@ -245,7 +245,7 @@ def finalize_tornado_app(webapp, config):
     # Fallback to Flask
     webapp.add_rules([
         (r"/.*", tornado.web.FallbackHandler, {
-            'fallback': WSGIContainer(current_app.wsgi_app)}),
+            'fallback': WSGIContainer(flask_app.wsgi_app)}),
     ])
 
 
