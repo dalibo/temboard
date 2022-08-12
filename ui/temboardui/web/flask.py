@@ -1,18 +1,30 @@
+from __future__ import absolute_import
+
 import logging
 from ipaddress import ip_address, ip_network
 
-from flask import Flask, abort, g, request, jsonify
+from flask import (
+    Blueprint, Flask, abort, current_app, g, make_response, request, jsonify,
+)
 from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
+from ..agentclient import TemboardAgentClient
 from ..application import (
+    get_instance,
     get_role_by_cookie,
 )
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
+from .tornado import serialize_querystring
 
 
 logger = logging.getLogger(__name__)
+# InstanceMiddleware extension controls request context for the following
+# blueprint routes.
+instance_proxy = Blueprint(
+    "instance_proxy", __name__, url_prefix='/proxy/<address>/<port>',
+)
 
 
 def create_app(temboard_app):
@@ -23,6 +35,21 @@ def create_app(temboard_app):
     UserMiddleware(app)
     AuthMiddleware(app)
     app.errorhandler(Exception)(json_error_handler)
+    # finalize_app() must be called before serving, to enable configured
+    # blueprints.
+    return app
+
+
+def finalize_app():
+    # Configure Flask app after configuration is loaded.
+    app = current_app
+
+    # This middleware registers instance_proxy blueprint, loads g.instance
+    # object and provides helpers in app.instance. instance is loaded only for
+    # instance_proxy blueprint. instance_proxy must be registered after plugins
+    # loading.
+    InstanceMiddleware(app)
+
     return app
 
 
@@ -173,6 +200,81 @@ class UserMiddleware(object):
         )
         cookie = cookie.decode('utf-8')
         return get_role_by_cookie(g.db_session, cookie)
+
+
+class InstanceMiddleware(object):
+    # Flask extension providing instance helpers to view, setting up
+    # instance_proxy middleware. Must be initialize once instance_proxy has its
+    # routes.
+
+    def __init__(self, app=None):
+        self.app = app
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        app.instance = self
+        app.register_blueprint(instance_proxy)
+        brf = app.before_request_funcs
+        brf[instance_proxy.name] = brf[None] + [
+            self.load_instance_before_request,
+        ]
+
+    def load_instance_before_request(self):
+        address = request.view_args.pop('address')
+        port = request.view_args.pop('port')
+
+        g.instance = get_instance(g.db_session, address, port)
+        if not g.instance:
+            abort(404)
+
+        prefix = current_app.blueprints[request.blueprint].url_prefix
+        request.instance_path = request.url_rule.rule.replace(prefix, "")
+
+    def client(self):
+        return TemboardAgentClient.factory(
+            current_app.temboard.config,
+            g.instance.agent_address,
+            g.instance.agent_port,
+            g.instance.agent_key,
+            g.current_user.role_name,
+        )
+
+    def request(self, path, method='GET', query=None, body=None):
+        client = self.client()
+
+        pathinfo = path
+        if query:
+            pathinfo += "?" + serialize_querystring(query)
+
+        try:
+            response = client.request(
+                method=method,
+                path=pathinfo,
+                body=body,
+            )
+            response.raise_for_status()
+        except ConnectionError as e:
+            abort(500, str(e))
+        except TemboardAgentClient.Error as e:
+            abort(e.response.status, e.message)
+        except Exception as e:
+            logger.error("Proxied request failed: %s", e)
+            abort(500)
+        else:
+            return response
+
+    def proxy(self):
+        # Translate current Flask request to instance agent, translate the
+        # response to a Flask response ready for return.
+        agent_response = self.request(
+            path=request.instance_path,
+            method=request.method,
+        )
+        response = make_response(agent_response.read())
+        h = 'Content-Type'
+        response.headers[h] = agent_response.headers[h]
+        return response
 
 
 def anonymous_allowed(func):

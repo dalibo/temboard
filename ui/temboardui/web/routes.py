@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+
+import logging
+
 from flask import current_app as app, g, redirect, jsonify
 
 from .flask import anonymous_allowed
@@ -5,6 +9,9 @@ from ..application import (
     get_instances_by_role_name,
 )
 from ..plugins.monitoring.alerting import get_highest_state
+
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/')

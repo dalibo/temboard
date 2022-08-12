@@ -33,6 +33,7 @@ from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
 from ..web.tornado import Error404Handler, app as tornado_app
+from ..web.flask import finalize_app as finalize_flask_app
 
 
 logger = logging.getLogger('temboardui')
@@ -151,6 +152,7 @@ class TemboardApplication(BaseApplication):
         super(TemboardApplication, self).apply_config()
 
         finalize_tornado_app(tornado_app, self.config)
+        finalize_flask_app()  # Uses current_app thread local
 
         self.tornado_app.engine = configure_db_session(self.config.repository)
 
