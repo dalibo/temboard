@@ -20,6 +20,18 @@ def test_quick_monitoring(browser, browse_monitoring):
 
 
 @pytest.mark.slowmonitoring
+def test_open_metrics(agent, apikey, ui, ensure_monitoring_data):
+    res = ui.get(
+        f'/proxy/0.0.0.0/{agent.base_url.port}/monitoring/metrics',
+        headers={'Authorization': f'Bearer {apikey}'},
+    )
+    res.raise_for_status()
+    body = res.read().decode('utf-8')
+
+    assert '# TYPE ' in body
+
+
+@pytest.mark.slowmonitoring
 def test_wait_for_data(browser, browse_monitoring, ensure_monitoring_data):
     # Dumb test to show an explicit "wait_for_data" in pytest output.
     browser.select("#chartLoadavg")
