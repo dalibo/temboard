@@ -52,3 +52,10 @@ VALUES
 ('0.0.0.0', 2347, 'monitoring'),
 ('0.0.0.0', 2347, 'maintenance'),
 ('0.0.0.0', 2347, 'statements');
+
+-- Insert a predictable API key for preconfigured prometheus and other
+-- development purpose. See dev/prometheus/prometheus.yml.
+INSERT INTO application.apikeys
+(secret, comment)
+VALUES
+('UNSECURE_DEV_APIKEY', 'Created by dev-fixture.sql');
