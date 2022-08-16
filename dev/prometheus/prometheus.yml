@@ -1,0 +1,13 @@
+scrape_configs:
+- job_name: temboard
+  scrape_interval: 60s
+  scheme: https
+  authorization:
+    type: Bearer
+    credentials: UNSECURE_DEV_APIKEY
+  tls_config:
+    insecure_skip_verify: true
+  file_sd_configs:
+  - files:
+    - /targets/temboard-dev.yaml
+    - /targets/custom.yaml

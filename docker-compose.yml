@@ -149,8 +149,42 @@ services:
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_KEY: key_for_agent
 
+  grafana:
+    image: grafana/grafana:9.0.2
+    volumes:
+    - grafana-data:/var/lib/grafana
+    - ./dev/grafana/entrypoint.sh:/usr/local/sbin/grafana-entrypoint.sh
+    - ./dev/grafana/rootfs:/usr/local/lib/grafana/rootfs
+    entrypoint: [/usr/local/sbin/grafana-entrypoint.sh]
+    user: root
+    ports:
+    - 3000:3000
+
+  loki:
+    image: grafana/loki:2.6.0
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+    - 3100:3100
+
+  prometheus:
+    image: prom/prometheus:v2.36.2
+    volumes:
+    - ./dev/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./dev/prometheus/import:/import
+    - ./dev/prometheus/targets:/targets
+    ports:
+    - 9090:9090
+    command:
+    - "--config.file=/etc/prometheus/prometheus.yml"
+    - "--storage.tsdb.path=/prometheus"
+    - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+    - "--web.console.templates=/usr/share/prometheus/consoles"
+    - --log.level=debug
+
 
 volumes:
+  grafana-data:
+
   # Shared archive volume between replicated instances.
   wal:
 

@@ -3,7 +3,7 @@ import time
 import logging
 import json
 
-from bottle import Bottle, default_app, request, HTTPError
+from bottle import Bottle, default_app, request, HTTPError, response
 
 from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
@@ -19,6 +19,10 @@ from .probes import (
     run_probes,
 )
 from .output import remove_passwords
+from .openmetrics import (
+    format_open_metrics_lines,
+    generate_samples,
+)
 
 logger = logging.getLogger(__name__)
 bottle = Bottle()
@@ -26,6 +30,21 @@ workers = taskmanager.WorkerSet()
 
 T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 T_LIMIT = b'(^[0-9]+$)'
+
+
+@bottle.get('/metrics')
+def get_metrics():
+    app = default_app().temboard
+    response.headers['Content-Type'] = 'text/plain; version=0.0.4'
+
+    rows = db.get_metrics(app.config.temboard.home, 'monitoring.db')
+    if not rows:
+        return '# EOF\n'
+    (_, data), = rows
+    data = json.loads(data)
+    db.use_current_for_delta_metrics(data)
+    lines = format_open_metrics_lines(generate_samples(data))
+    return '\n'.join(lines)
 
 
 @bottle.get('/history')
@@ -68,14 +87,14 @@ def get_monitoring():
         ])
         limit = int(request.query['limit'])
 
-    return [
-        json.loads(metric[1]) for metric in db.get_metrics(
-            app.config.temboard.home,
-            'monitoring.db',
-            start_timestamp=start_timestamp,
-            limit=limit
-        )
-    ]
+    out = []
+    h, n = app.config.temboard.home, 'monitoring.db',
+    for _, metrics in db.get_metrics(h, n, limit, start_timestamp):
+        metrics = json.loads(metrics)
+        # Dropping current value, use /metrics to get them.
+        db.drop_current_for_delta_metrics(metrics)
+        out.append(metrics)
+    return out
 
 
 @bottle.get('/config')

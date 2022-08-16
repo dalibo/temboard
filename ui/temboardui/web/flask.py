@@ -1,3 +1,5 @@
+# Flask WSGI app is served by Tornado's fallback handler.
+
 from __future__ import absolute_import
 
 import logging
@@ -55,13 +57,17 @@ def finalize_app():
 
 def json_error_handler(e):
     if isinstance(e, HTTPException):
+        status_code = e.code
         if e.code < 500:
             logger.warning("User error: %s", e)
         else:
             logger.error("Fatal error: %s", e)
     else:
+        status_code = 500
         logger.exception("Unhandled error:")
-    return jsonify(error=str(e) or repr(e))
+    response = jsonify(error=str(e) or repr(e))
+    response.status_code = status_code
+    return response
 
 
 class SQLAlchemy(object):

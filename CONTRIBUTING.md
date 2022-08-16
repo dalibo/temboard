@@ -391,6 +391,30 @@ The builder script search for wheels in `ui/dist/` and if not found, tries to
 download wheel from PyPI. Use top level `make dist` to generate a snapshot.
 
 
+## Testing with Grafana
+
+temBoard exposes /metrics in OpenMetric format. Development environment
+includes Prometheus and Grafana preconfigured with authenticated access and
+file-based service discovery. You only need a couple of steps to view temBoard
+metrics in Grafana.
+
+- Start development temBoard UI and at lease one of agent0 or agent1.
+- Generate Prometheus targets using `make prom-targets`.
+- Go to [development Grafana import page](http://localhost:3000/dashboard/import).
+- Import Dashboard ID [1860](https://grafana.com/grafana/dashboards/1860)
+  (*Node Exporter Full*) or [9628](https://grafana.com/grafana/dashboards/1860)
+  (*PostgreSQL Database*).
+- Now wait a few minutes that Prometheus scrapes data. Scrape interval is 1
+  minute.
+
+temBoard exposes only a subset of metrics from node\_exporter and
+postgres\_exporter, plus a set of custom metrics prefixed with `x`, e.g.
+`xpg_wal_files_bytes_total`. Thus a lot of panel will show *N/A*.
+
+Prometheus also watch `dev/prometheus/targets/custom.yaml` files for hand
+written targets.
+
+
 ## Releasing
 
 Releasing a new version of temBoard requires write access to master branch on

@@ -28,7 +28,6 @@ repository:  #: Initialize temBoard UI database.
 	docker-compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=$${DEV-1} ui/share/create_repository.sh
-	temboard apikey create
 
 recreate-repository:  #: Reinitialize temBoard UI database.
 	docker-compose up --detach --force-recreate --renew-anon-volumes repository
@@ -58,7 +57,8 @@ install-2.7: venv-2.7
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
-	rm -rf dev/venv-py* .venv-py* dev/build/ agent/build/ ui/build/ .env agent/.coverage ui/.coverage
+	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -rf agent/build/ ui/build/ .env agent/.coverage ui/.coverage
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
@@ -103,13 +103,17 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 tests:  #: Execute all tests.
 	cd agent/; flake8
 	cd ui/; flake8
-	flake8 tests/ dev/perfui/
+	flake8 tests/ dev/importlog.py
 	pytest -x agent/tests/unit/
 	pytest -x ui/tests/unit/
 	pytest -x tests/
 
 testclean:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
+
+prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
+dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
+	$^ > $@
 
 VERSION=$(shell cd ui; python setup.py --version)
 BRANCH?=v$(firstword $(subst ., ,$(VERSION)))

@@ -91,8 +91,11 @@ class MonitoringPlugin(object):
 
     def load(self):
         plugin_path = os.path.dirname(os.path.realpath(__file__))
+        # Import Tornado handlers
         __import__(__name__ + '.handlers.alerting')
         __import__(__name__ + '.handlers.monitoring')
+        # Import Flask routes
+        __import__(__name__ + '.routes')
         self.app.tornado_app.add_rules(blueprint.rules)
         self.app.tornado_app.add_rules([
             (r"/js/monitoring/(.*)",

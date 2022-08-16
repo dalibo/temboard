@@ -320,6 +320,9 @@ class PgInfo(Inventory):
                 "SELECT pg_is_in_recovery() AS standby;")
         return False
 
+    def start_time(self):
+        return self.db_conn.queryscalar("SELECT pg_postmaster_start_time();")
+
     def tablespaces(self, data_directory):
         # Grab the list of tablespaces
         if self.db_conn.server_version < 90200:

@@ -1,10 +1,8 @@
 import errno
-import hashlib
 import json
 import logging
 import os
 import re
-import time
 from datetime import datetime
 from time import strftime, gmtime
 
@@ -12,17 +10,6 @@ from bottle import HTTPError
 
 
 logger = logging.getLogger(__name__)
-
-
-def hash_id(id):
-    """
-    Hash (MD5) and returns a string built from the given id aimed to be used as
-    an ID.
-    """
-    strid = 'id%s%d' % (id, time.time() * 1000)
-    m = hashlib.md5()
-    m.update(strid.encode('utf-8'))
-    return m.hexdigest()
 
 
 def validate_parameters(values, types):
@@ -132,6 +119,12 @@ def which(prog, search_path=None):
 def now():
     """Give the current date and time at GMT, suitable for PostgreSQL."""
     return strftime("%Y-%m-%d %H:%M:%S +0000", gmtime())
+
+
+def fromisoformat(datestr):
+    datetime_part, tz_part = datestr.split('+')
+    datestr = datetime_part + '+' + tz_part.replace(':', '')
+    return datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%S.%f%z")
 
 
 class JSONEncoder(json.JSONEncoder):
