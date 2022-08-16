@@ -136,7 +136,11 @@ class APIKeyMiddleware(object):
             logger.debug("Ignoring Authorization scheme %s.", scheme)
             return
 
-        key = g.db_session.scalar(ApiKeys.select_secret(secret))
+        key = (
+            ApiKeys.select_secret(secret)
+            .with_session(g.db_session)
+            .scalar()
+        )
         if not key:
             abort(403, "Unknown API Key.")
 
@@ -161,7 +165,9 @@ class AuthMiddleware(object):
         app.before_request(self.before)
 
     def before(self):
-        func = self.app.view_functions[request.endpoint]
+        func = self.app.view_functions.get(request.endpoint)
+        if not func:
+            abort(404)
 
         apikey_allowed = getattr(func, '__apikey_allowed', False)
         if apikey_allowed and g.apikey:
