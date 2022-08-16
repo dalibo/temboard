@@ -222,7 +222,7 @@ class InstanceMiddleware(object):
         app.instance = self
         app.register_blueprint(instance_proxy)
         brf = app.before_request_funcs
-        brf[instance_proxy.name] = brf[None] + [
+        brf[instance_proxy.name] = [
             self.load_instance_before_request,
         ]
 
