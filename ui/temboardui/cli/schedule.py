@@ -65,9 +65,9 @@ class Schedule(RunTaskMixin, SubCommand):
 
 def build_kwargs_from_args(callable_, args):
     try:
-        args = signature(callable_).parameters
+        sig = signature(callable_).parameters
     except NameError:
-        args = getargspec(callable_).args
-    names = list(args.keys())
+        sig = getargspec(callable_).args
+    names = list(sig.keys())
     names.pop(0)  # Drop app arg
     return dict(zip(names, args))

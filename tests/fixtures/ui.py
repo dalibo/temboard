@@ -1,3 +1,4 @@
+import csv
 import logging
 import os.path
 import subprocess
@@ -163,6 +164,17 @@ def admin_session(browser_session, ui, ui_url):
     browser.select("button[type=submit]").click()
 
     return browser
+
+
+@pytest.fixture(scope='session')
+def apikey(ui_auto_configure, ui_sudo):
+    # Creates a session-wide temBoard API key
+    out = ui_sudo.temboard.apikey.create()
+    reader = csv.reader(out)
+    headers = next(reader)
+    assert 'Secret' == headers[1]
+    _, secret, *_ = next(reader)
+    return secret
 
 
 @pytest.fixture(scope='module')
@@ -363,6 +375,9 @@ def ui_auto_configure(ui_sharedir, env, ui_env, ui_sysuser, workdir: Path):
     extra_etc = workdir / 'etc' / dirname / 'temboard.conf.d/tests-extra.conf'
     extra_etc.parent.mkdir()
     extra_etc.write_text(dedent(f"""\
+    [auth]
+    allowed_ip = 10.0.0.0/8,127.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+
     [logging]
     method = file
     destination = {logdir}/serve.log

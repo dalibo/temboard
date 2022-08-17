@@ -13,6 +13,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.query import Query
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import (
     Column,
@@ -27,7 +28,6 @@ from sqlalchemy.sql import (
     column,
     extract,
     func,
-    select,
 )
 
 from temboardui.model import tables
@@ -152,7 +152,7 @@ class ApiKeys(Model):
 
     @classmethod
     def insert(cls, secret, comment):
-        return select(cls).from_statement(
+        return Query(cls).from_statement(
             text(QUERIES['apikeys-insert'])
             .bindparams(secret=secret, comment=comment)
             .columns(*cls.__mapper__.c.values())
@@ -160,14 +160,14 @@ class ApiKeys(Model):
 
     @classmethod
     def select_active(cls):
-        return select(cls).from_statement(
+        return Query(cls).from_statement(
             text(QUERIES['apikeys-select-active'])
             .columns(*cls.__mapper__.c.values())
         )
 
     @classmethod
     def delete(cls, id):
-        return select(cls).from_statement(
+        return Query(cls).from_statement(
             text(QUERIES['apikeys-delete'])
             .bindparams(id=id)
             .columns(cls.id, cls.comment)
@@ -175,14 +175,14 @@ class ApiKeys(Model):
 
     @classmethod
     def purge(cls):
-        return select(cls).from_statement(
+        return Query(cls).from_statement(
             text(QUERIES['apikeys-purge'])
             .columns(cls.id, cls.comment)
             )
 
     @classmethod
     def select_secret(cls, secret):
-        return select(cls).from_statement(
+        return Query(cls).from_statement(
             text(QUERIES['apikeys-select-secret'])
             .bindparams(secret=secret)
             .columns(*cls.__mapper__.c.values())

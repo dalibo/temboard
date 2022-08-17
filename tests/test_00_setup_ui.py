@@ -1,3 +1,5 @@
+import csv
+
 from sh import temboard
 
 
@@ -58,6 +60,34 @@ def test_runtask(ui_auto_configure):
 def test_signing_key(ui):
     response = ui.get('/signing.key')
     response.raise_for_status()
+
+
+def test_apikey_lifecycle(ui_auto_configure, ui_sudo):
+    out = ui_sudo.temboard.apikey.create()
+    reader = csv.reader(out)
+
+    header = next(reader)
+    assert 'Id' in header
+    assert 'Secret' in header
+    assert 'Comment' in header
+    assert 'Expiration' in header
+
+    key = next(reader)
+
+    out = ui_sudo.temboard.apikey.list()
+    reader = csv.reader(out)
+    for row in reader:
+        if row[0] == key[0]:
+            break
+    else:
+        assert False, "Key not listed"
+
+    ui_sudo.temboard.apikey.delete(key[0])
+    out = ui_sudo.temboard.apikey.list()
+    secret = key[1]
+    assert secret not in out
+
+    ui_sudo.temboard.apikey.purge()
 
 
 def test_proctitle(ui):

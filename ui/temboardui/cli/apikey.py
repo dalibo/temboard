@@ -37,10 +37,10 @@ class Create(SubCommand):
 
     def main(self, args):
         session = Session()
-        key = session.scalars(ApiKeys.insert(
+        key = ApiKeys.insert(
             secret=generate_secret(),
             comment=args.comment,
-        )).one()
+        ).with_session(session).scalar()
         session.commit()
 
         sys.stdout.write(dedent("""\
@@ -61,7 +61,7 @@ class List(SubCommand):
         session = Session()
 
         sys.stdout.write("Id,Secret,Comment,Creation,Expiration\n")
-        for key in session.scalars(ApiKeys.select_active()):
+        for key in ApiKeys.select_active().with_session(session).all():
             sys.stdout.write(dedent("""\
             {key.id},"{key.secret}","{comment}",{cdate},{edate}
             """).format(
@@ -84,7 +84,7 @@ class Delete(SubCommand):
 
     def main(self, args):
         session = Session()
-        key = session.scalars(ApiKeys.delete(args.id)).one_or_none()
+        key = ApiKeys.delete(args.id).with_session(session).scalar()
         session.commit()
 
         if key:
@@ -99,7 +99,7 @@ class Purge(SubCommand):
 
     def main(self, args):
         session = Session()
-        res = session.scalars(ApiKeys.purge())
+        res = ApiKeys.purge().with_session(session).all()
         count = 0
         for key in res:
             logger.info("Deleted API key #%s (%s).", key.id, key.comment)
