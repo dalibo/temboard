@@ -222,7 +222,7 @@ $(function() { Vue.component('new-instance-wizard', {    /*
               <div class="form-group col-sm-12">
                 <label for="inputAgentKey" class="control-label">
                   Agent secret key
-                  <i id="cpu-info"
+                  <i id="agent-key-deprecation-tooltip"
                       class="fa fa-info-circle text-muted" data-toggle="tooltip"
                       title="Using agent secret key is deprecated. You should upgrade agent to version 8.">
                   </i>
