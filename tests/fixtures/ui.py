@@ -272,7 +272,7 @@ def registered_agent(
     browser.select("label[title='default']").click()
     browser.select("textarea#inputComment").send_keys("Registered by tests.")
 
-    browser.select("#buttonRegister").click()
+    browser.select("#buttonSubmit").click()
     td = browser.select("td.agent_hostport")
     assert f'0.0.0.0:{port}' in td.text
 

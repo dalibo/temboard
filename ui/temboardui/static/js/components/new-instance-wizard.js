@@ -23,21 +23,31 @@ $(function() { Vue.component('new-instance-wizard', {    /*
     // Instance information from API.
     cpu: null,
     discover_data: null,
-    groups: null,
     mem_gb: null,
     pg_data: null,
     pg_host: null,
     pg_port: null,
     pg_version_summary: null,
+    ui_groups: null,
     ui_plugins: [],
     signature_status: null
   }},
   computed: {
-    agent_plugins() {
+    groups() {
+      return Array.from(this.ui_groups, group => {
+        return {
+          name: group.name,
+          disabled: false,
+          selected: false
+        }
+      });
+    },
+    plugins() {
       return Array.from(this.ui_plugins, name => {
         return {
           name,
-          disabled: this.discover_data.plugins.indexOf(name) === -1
+          disabled: this.discover_data.plugins.indexOf(name) === -1,
+          selected: this.discover_data.plugins.indexOf(name) !== -1
         }
       });
     }
@@ -48,6 +58,9 @@ $(function() { Vue.component('new-instance-wizard', {    /*
   },
   updated() {
     $('[data-toggle="tooltip"]', this.$el).tooltip();
+    if ('register' === this.wizard_step && this.plugins && !$("#selectGroups").data('multiselect')) {
+      this.$nextTick(this.$refs.form.setup_multiselects);
+    }
     if ('register' === this.wizard_step && $("#selectGroups").data('multiselect')) {
       $("#selectGroups").multiselect(this.waiting ? 'disable' : 'enable');
       $("#selectPlugins").multiselect(this.waiting ? 'disable' : 'enable');
@@ -65,7 +78,7 @@ $(function() { Vue.component('new-instance-wizard', {    /*
           return 'Unknown error. Please contact temBoard administrator.'
         }
     },
-    discover: function() {
+    discover() {
       this.error = null;
       this.waiting = true;
       $.ajax({
@@ -105,46 +118,20 @@ $(function() { Vue.component('new-instance-wizard', {    /*
           this.waiting = false;
           this.error = this.format_xhr_error(xhr);
         }).done((data) => {
-          this.groups = data.groups;
+          this.ui_groups = data.groups;
           this.ui_plugins = data.loaded_plugins;
           this.waiting = false;
           this.wizard_step = "register";
-          this.$nextTick(() => {
-            var options = {
-              templates: {
-                button: `
-                <button type="button"
-                        class="multiselect dropdown-toggle border-secondary"
-                        data-toggle="dropdown">
-                  <span class="multiselect-selected-text"></span> <b class="caret"></b>
-                </button>
-                `,
-                li: `
-                <li class="dropdown-item">
-                  <label class="w-100"></label>
-                </li>
-                `
-              },
-              numberDisplayed: 1
-            };
-            $("#selectGroups").multiselect(options);
-            $("#selectPlugins").multiselect(options);
-          });
         });
-
       });
     },
-    register: function() {
+    register(data) {
       this.waiting = true;
       var data = {
         ...this.discover_data,
+        ...data,
         new_agent_address: this.agent_address,
-        new_agent_port: this.agent_port,
-        agent_key: this.agent_key,
-        groups: $("#selectGroups").val(),
-        plugins: $("#selectPlugins").val(),
-        notify: this.notify,
-        comment: this.comment
+        new_agent_port: this.agent_port
       };
       $.ajax({
         url: '/json/settings/instance',
@@ -159,8 +146,9 @@ $(function() { Vue.component('new-instance-wizard', {    /*
         window.location.reload();
       });
     },
-    reset: function() {
+    reset() {
       Object.assign(this.$data, this.$options.data());
+      this.$refs.form.teardown_multiselects();
     }
   },
   template: `
@@ -173,125 +161,61 @@ $(function() { Vue.component('new-instance-wizard', {    /*
         </div>
 
         <!-- Discover -->
-        <form v-on:submit.prevent="discover" v-if="wizard_step == 'discover'">
-          <div class="modal-body">
+        <div v-if="wizard_step == 'discover'">
+          <form v-on:submit.prevent="discover">
+            <div class="modal-body" v-if="wizard_step == 'discover'">
 
-            <p class="alert alert-info">temBoard requires an agent to manage
-            a PostgreSQL instance. Follow documentation to setup the agent
-            next to your PostgreSQL instance. Set here agent address and
-            port, not PostgreSQL.</p>
+              <p class="alert alert-info">temBoard requires an agent to manage
+              a PostgreSQL instance. Follow documentation to setup the agent
+              next to your PostgreSQL instance. Set here agent address and
+              port, not PostgreSQL.</p>
 
-            <div class="row" class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
-            <div class="row">
-              <div class="form-group col-sm-6">
-                <label for="inputAgentAddress" class="control-label">Agent address</label>
-                <input v-bind:disabled="waiting" id="inputAgentAddress" type="text" v-model.lazy.trim="agent_address" class="form-control" placeholder="ex: db.entreprise.lan" />
-              </div>
-              <div class="form-group col-sm-6">
-                <label for="inputAgentPort" class="control-label">Agent port</label>
-                <input v-bind:disabled="waiting" id="inputAgentPort" type="text" v-model.lazy.number.trim="agent_port" class="form-control" placeholder="ex: 2345" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-            <button id="buttonDiscover"
-                    class="btn btn-success ml-auto"
-                    type="submit"
-                    v-bind:disabled="waiting">
-              Discover <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
-            </button>
-          </div>
-        </form>
-
-        <!-- Register -->
-        <form v-on:submit.prevent="register" v-if="wizard_step == 'register'">
-          <div class="modal-body p-3">
-            <div class="row">
-              <div class="alert alert-light mx-auto pa-6">
-                <h2 class="text-center"><span v-html="pg_host"/>:<span v-html="pg_port"/></h2>
-                <p class="text-center">
-                  <span v-html="cpu"/> CPU - <span v-html="mem_gb"/> GB memory<br/>
-                  <strong><span v-html="pg_version_summary"/> serving <span v-html="pg_data"/>.</strong><br/>
-                </p>
-              </div>
-            </div>
-            <div class="row" class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
-            <div class="row" v-if="signature_status === undefined">
-              <!-- Ask for legacy agent key. -->
-              <div class="form-group col-sm-12">
-                <label for="inputAgentKey" class="control-label">
-                  Agent secret key
-                  <i id="agent-key-deprecation-tooltip"
-                      class="fa fa-info-circle text-muted" data-toggle="tooltip"
-                      title="Using agent secret key is deprecated. You should upgrade agent to version 8.">
-                  </i>
-                </label>
-                <input id="inputAgentKey"
-                        class="form-control"
-                        placeholder="Find it in agent configuration file."
-                        required
-                        v-model="agent_key"
-                        v-bind:disabled="waiting" />
-              </div>
-            </div>
-            <div class="row">
-              <div id="divGroups" class="form-group col-sm-6">
-                <label for="selectGroups">Groups</label>
-                <select id="selectGroups" v-bind:disabled="waiting" multiple required>
-                  <option v-for="group of groups"
-                          v-bind:key="group.name"
-                          v-bind:value="group.name">{{ group.name }}</option>
-                </select>
-                <div id="tooltip-container"></div>
-              </div>
-              <div id="divPlugins" class="form-group col-sm-6">
-                <label for="selectPlugins" class="control-label">Plugins</label>
-                <select id="selectPlugins" v-bind:disabled="waiting" multiple="multiple">
-                  <option v-for="plugin of agent_plugins"
-                          v-bind:key="plugin.name"
-                          v-bind:value="plugin.name"
-                          v-bind:selected="!plugin.disabled"
-                          v-bind:disabled="plugin.disabled ? 'disabled' : null"
-                          v-bind:class="plugin.disabled ? 'disabled' : null"
-                          v-bind:title="plugin.disabled ? 'Plugin disabled by agent.' : null">{{ plugin.name }}</option>
-                </select>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="form-check">
-                  <input id="inputNotify"
-                          class="form-check-input"
-                          type="checkbox"
-                          v-model="notify"
-                          v-bind:disabled="waiting" />
-                  <label for="inputNotify" class="control-label">Notify users of any status alert.</label>
+              <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
+              <div class="row">
+                <div class="form-group col-sm-6">
+                  <label for="inputAgentAddress" class="control-label">Agent address</label>
+                  <input v-bind:disabled="waiting" id="inputAgentAddress" type="text" v-model.lazy.trim="agent_address" class="form-control" placeholder="ex: db.entreprise.lan" />
+                </div>
+                <div class="form-group col-sm-6">
+                  <label for="inputAgentPort" class="control-label">Agent port</label>
+                  <input v-bind:disabled="waiting" id="inputAgentPort" type="text" v-model.lazy.number.trim="agent_port" class="form-control" placeholder="ex: 2345" />
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="form-group col-sm-12">
-                <label for="inputComment" class="control-label">Comment</label>
-                <textarea id="inputComment"
-                          class="form-control"
-                          rows="3"
-                          v-model="comment"
-                          v-bind:disabled="waiting">
-                </textarea>
-              </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+              <button id="buttonDiscover"
+                      class="btn btn-success ml-auto"
+                      type="submit"
+                      v-bind:disabled="waiting">
+                Discover <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
+              </button>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-            <button id="buttonRegister"
-                    class="btn btn-success ml-auto"
-                    type="submit"
-                    v-bind:disabled="waiting">
-              Register <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
+
+        <!-- Register -->
+        <div v-if="wizard_step == 'register'">
+          <instance-form
+            ref="form"
+            submit_text="Register"
+            v-bind:error="error"
+            v-bind:pg_host="pg_host"
+            v-bind:pg_port="pg_port"
+            v-bind:pg_data="pg_data"
+            v-bind:pg_version_summary="pg_version_summary"
+            v-bind:cpu="cpu"
+            v-bind:mem_gb="mem_gb"
+            v-bind:signature_status="signature_status"
+            v-bind:groups="groups"
+            v-bind:plugins="plugins"
+            v-bind:notify="notify"
+            v-bind:comment="comment"
+            v-bind:agent_key="agent_key"
+            v-bind:waiting="waiting"
+            v-on:submit="register"
+            />
+        </div>
       </div>
     </div>
   </div>
