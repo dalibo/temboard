@@ -381,7 +381,8 @@ def update_instance(session,
                     pg_version_summary=None,
                     pg_data=None,
                     notify=True,
-                    comment=None):
+                    comment=None,
+                    **_):
     try:
         instance = session.query(Instances) \
             .filter_by(

@@ -4,10 +4,6 @@
 
 {% block content %}
 <!-- Instance update/add/delete modal -->
-<div id="vue-app">
-  <new-instance-wizard></new-instance-wizard>
-</div>
-
 <div class="modal fade" id="InstanceModal" tabindex="-1" role="dialog" aria-labelledby="InstanceModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -24,114 +20,133 @@
     </div>
   </div>
 </div>
-<div class="row">
-  <div class="col-md-3 col-xl-2">
-    {% include menu.html %}
-  </div>
-  <div class="col-md-9 col-xl-10">
-    <div class="row">
-      <div class="col-md-12 text-right">
-        <p>
-          <button id="buttonNewInstance" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalNewInstance">
-            New instance
-          </button>
-       </p>
-      </div>
+
+<div id="vue-app">
+  <new-instance-wizard></new-instance-wizard>
+  <update-instance-dialog ref="update_modal"></update-instance-dialog>
+
+  <div class="row">
+    <div class="col-md-3 col-xl-2">
+      {% include menu.html %}
     </div>
-    <table class="table table-striped table-bordered table-hover" id="tableInstances" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Server</th>
-        <th>PG Version</th>
-        <th>PG Data</th>
-        <th>Groups</th>
-        <th>Agent</th>
-        <th>Notify</th>
-        <th>Comment</th>
-        <th class="no-sort"></th>
-        <th class="no-sort"></th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for instance_item in instance_list %}
-      <tr>
-        <td>{{instance_item.hostname}}:{{instance_item.pg_port}}</td>
-        <td>
-          {{instance_item.pg_version_summary}}
-          <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance_item.pg_version}}">
-            {{instance_item.pg_version}}
-          </div>
-        </td>
-        <td>{{instance_item.pg_data}}</td>
-        <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
-        <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
-        <td class="text-center">
-          {% if instance_item.notify %}
-          <i class="fa fa-check"></i>
-          {% end %}
-        </td>
-        <td>
-          {% set comment = instance_item.comment if instance_item.comment is not None else '' %}
-          <div class="overflow-ellipsis" style="max-width: 100px;" title="{{comment}}">
-            {{comment}}
-          </div>
-        </td>
-        <td class="text-center">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-edit"></i></button>
-        </td>
-        <td class="text-center">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-trash-o"></i></button>
-        </td>
-      </tr>
-    {% end %}
-    </tbody>
-    </table>
+    <div class="col-md-9 col-xl-10">
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <p>
+            <button id="buttonNewInstance" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalNewInstance">
+              New instance
+            </button>
+        </p>
+        </div>
+      </div>
+      <table class="table table-striped table-bordered table-hover" id="tableInstances" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Server</th>
+          <th>PG Version</th>
+          <th>PG Data</th>
+          <th>Groups</th>
+          <th>Agent</th>
+          <th>Notify</th>
+          <th>Comment</th>
+          <th class="no-sort"></th>
+          <th class="no-sort"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for instance_item in instance_list %}
+        <tr>
+          <td>{{instance_item.hostname}}:{{instance_item.pg_port}}</td>
+          <td>
+            {{instance_item.pg_version_summary}}
+            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance_item.pg_version}}">
+              {{instance_item.pg_version}}
+            </div>
+          </td>
+          <td>{{instance_item.pg_data}}</td>
+          <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
+          <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
+          <td class="text-center">
+            {% if instance_item.notify %}
+            <i class="fa fa-check"></i>
+            {% end %}
+          </td>
+          <td>
+            {% set comment = instance_item.comment if instance_item.comment is not None else '' %}
+            <div class="overflow-ellipsis" style="max-width: 100px;" title="{{comment}}">
+              {{comment}}
+            </div>
+          </td>
+          <td class="text-center">
+            <button type="button"
+              class="btn btn-outline-secondary btn-sm"
+              data-toggle="tooltip"
+              data-placement="bottom"
+              title="Edit"
+              v-on:click.prevent="editInstance('{{instance_item.agent_address}}', {{instance_item.agent_port}})"
+            ><i class="fa fa-edit"></i></button>
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-trash-o"></i></button>
+          </td>
+        </tr>
+      {% end %}
+      </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
 <script src="/js/lodash.min.js"></script>
 <script src="/js/vue.min.js"></script>
 <script src="/js/temboard.settings.instance.js"></script>
 <script src="/js/new-instance-wizard.js"></script>
+<script src="/js/update-instance-dialog.js"></script>
 <script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
 <script>
+  var vm;
+
 $(document).ready(function() {
-  new Vue({ el: "#vue-app" });
-
-  var table = $('#tableInstances').DataTable({
-    buttons: [{
-      attr: {
-        title: "Download inventory as CSV",
-        id: "buttonDownload",
-        "data-toggle": "tooltip"
-      },
-      className: "btn-sm mx-1",
-      text: `<i class="fa fa-download"></i>`,
-      action: function(e, dt, node, config) {
-        /*
-         * Use temBoard UI API instead of datatable export. UI export includes
-         * more data and has reordered column.
-         */
-        var filter = $("#tableInstances_filter input").val();
-        var url = new URLSearchParams({filter});
-        window.location.replace("/settings/instances.csv?" + url.toString());
+  vm = new Vue({
+    el: "#vue-app",
+    methods: {
+      editInstance: function(...args) {
+        this.$refs.update_modal.open(...args);
       }
-    }],
-    stateSave: true
-  });
+    },
+    created() {
+      this.$nextTick(() => {
+        var table = $('#tableInstances').DataTable({
+          buttons: [{
+            attr: {
+              title: "Download inventory as CSV",
+              id: "buttonDownload",
+              "data-toggle": "tooltip"
+            },
+            className: "btn-sm mx-1",
+            text: `<i class="fa fa-download"></i>`,
+            action: function(e, dt, node, config) {
+              /*
+              * Use temBoard UI API instead of datatable export. UI export includes
+              * more data and has reordered column.
+              */
+              var filter = $("#tableInstances_filter input").val();
+              var url = new URLSearchParams({filter});
+              window.location.replace("/settings/instances.csv?" + url.toString());
+            }
+          }],
+          stateSave: true
+        });
 
-  table.buttons().container().appendTo($("#tableInstances_filter"));
+        table.buttons().container().appendTo($("#tableInstances_filter"));
 
-  $(document).on('click', '[data-action=edit]', function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_update_instance_form('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
-  });
-
-  $(document).on('click', '[data-action=delete]', function () {
-    $('#InstanceModal').modal('show');
-    $('[data-toggle=popover]').popover('hide');
-    load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+        $(document).on('click', '[data-action=delete]', function () {
+          $('#InstanceModal').modal('show');
+          load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
+        });
+      });
+    }
   });
 });
 
