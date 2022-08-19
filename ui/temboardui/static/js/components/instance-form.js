@@ -82,13 +82,14 @@ $(function() { Vue.component('instance-form', {    /*
       <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
 
       <div class="row">
-        <div class="alert alert-light mx-auto pa-6">
-          <h2 class="text-center"><span v-html="pg_host"/>:<span v-html="pg_port"/></h2>
-          <p class="text-center">
-            <span v-html="cpu"/> CPU - <span v-html="mem_gb"/> GB memory<br/>
-            <strong><span v-html="pg_version_summary"/> serving <span v-html="pg_data"/>.</strong><br/>
-          </p>
-        </div>
+        <instance-details
+          v-bind:pg_host="pg_host"
+          v-bind:pg_port="pg_port"
+          v-bind:pg_version_summary="pg_version_summary"
+          v-bind:pg_data="pg_data"
+          v-bind:cpu="cpu"
+          v-bind:mem_gb="mem_gb"
+          />
       </div>
       <div class="row" v-if="signature_status === undefined">
         <!-- Ask for legacy agent key. -->
