@@ -277,7 +277,7 @@ def registered_agent(
     assert f'0.0.0.0:{port}' in td.text
 
     # Ensure modal succeed and hides.
-    browser.hidden("#InstanceModal")
+    browser.hidden("#modalNewInstance")
 
     # Wait for one agent edit button to come up.
     browser.select("table tbody tr td button.btn-outline-secondary")
