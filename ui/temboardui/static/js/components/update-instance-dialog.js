@@ -166,6 +166,7 @@ $(function() { Vue.component('update-instance-dialog', {    /*
     },
     reset() {
       Object.assign(this.$data, this.$options.data());
+      this.$refs.form.teardown_multiselects();
     }
   },
   template: `

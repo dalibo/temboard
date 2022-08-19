@@ -52,10 +52,6 @@ $(function() { Vue.component('new-instance-wizard', {    /*
       });
     }
   },
-  mounted() {
-    // Reset component state on Bootstrap hidden event.
-    $(this.$el).on("hidden.bs.modal", this.reset);
-  },
   updated() {
     $('[data-toggle="tooltip"]', this.$el).tooltip();
     if ('register' === this.wizard_step && this.plugins && !$("#selectGroups").data('multiselect')) {
@@ -152,72 +148,65 @@ $(function() { Vue.component('new-instance-wizard', {    /*
     }
   },
   template: `
-  <div class="modal fade" id="modalNewInstance" role="dialog" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Register New Instance</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        </div>
+  <modal-dialog id="modalNewInstance" title="Register New Instance" v-on:closed="reset">
 
-        <!-- Discover -->
-        <div v-if="wizard_step == 'discover'">
-          <form v-on:submit.prevent="discover">
-            <div class="modal-body" v-if="wizard_step == 'discover'">
+    <!-- Discover -->
+    <div v-if="wizard_step == 'discover'">
+      <form v-on:submit.prevent="discover">
+        <div class="modal-body" v-if="wizard_step == 'discover'">
 
-              <p class="alert alert-info">temBoard requires an agent to manage
-              a PostgreSQL instance. Follow documentation to setup the agent
-              next to your PostgreSQL instance. Set here agent address and
-              port, not PostgreSQL.</p>
+          <p class="alert alert-info">temBoard requires an agent to manage
+          a PostgreSQL instance. Follow documentation to setup the agent
+          next to your PostgreSQL instance. Set here agent address and
+          port, not PostgreSQL.</p>
 
-              <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
-              <div class="row">
-                <div class="form-group col-sm-6">
-                  <label for="inputAgentAddress" class="control-label">Agent address</label>
-                  <input v-bind:disabled="waiting" id="inputAgentAddress" type="text" v-model.lazy.trim="agent_address" class="form-control" placeholder="ex: db.entreprise.lan" />
-                </div>
-                <div class="form-group col-sm-6">
-                  <label for="inputAgentPort" class="control-label">Agent port</label>
-                  <input v-bind:disabled="waiting" id="inputAgentPort" type="text" v-model.lazy.number.trim="agent_port" class="form-control" placeholder="ex: 2345" />
-                </div>
-              </div>
+          <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
+          <div class="row">
+            <div class="form-group col-sm-6">
+              <label for="inputAgentAddress" class="control-label">Agent address</label>
+              <input v-bind:disabled="waiting" id="inputAgentAddress" type="text" v-model.lazy.trim="agent_address" class="form-control" placeholder="ex: db.entreprise.lan" />
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-              <button id="buttonDiscover"
-                      class="btn btn-success ml-auto"
-                      type="submit"
-                      v-bind:disabled="waiting">
-                Discover <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
-              </button>
+            <div class="form-group col-sm-6">
+              <label for="inputAgentPort" class="control-label">Agent port</label>
+              <input v-bind:disabled="waiting" id="inputAgentPort" type="text" v-model.lazy.number.trim="agent_port" class="form-control" placeholder="ex: 2345" />
             </div>
-          </form>
+          </div>
         </div>
-
-        <!-- Register -->
-        <div v-if="wizard_step == 'register'">
-          <instance-form
-            ref="form"
-            submit_text="Register"
-            v-bind:error="error"
-            v-bind:pg_host="pg_host"
-            v-bind:pg_port="pg_port"
-            v-bind:pg_data="pg_data"
-            v-bind:pg_version_summary="pg_version_summary"
-            v-bind:cpu="cpu"
-            v-bind:mem_gb="mem_gb"
-            v-bind:signature_status="signature_status"
-            v-bind:groups="groups"
-            v-bind:plugins="plugins"
-            v-bind:notify="notify"
-            v-bind:comment="comment"
-            v-bind:agent_key="agent_key"
-            v-bind:waiting="waiting"
-            v-on:submit="register"
-            />
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+          <button id="buttonDiscover"
+                  class="btn btn-success ml-auto"
+                  type="submit"
+                  v-bind:disabled="waiting">
+            Discover <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
+          </button>
         </div>
-      </div>
+      </form>
     </div>
-  </div>
+
+    <!-- Register -->
+    <div v-if="wizard_step == 'register'">
+      <instance-form
+        ref="form"
+        submit_text="Register"
+        v-bind:error="error"
+        v-bind:pg_host="pg_host"
+        v-bind:pg_port="pg_port"
+        v-bind:pg_data="pg_data"
+        v-bind:pg_version_summary="pg_version_summary"
+        v-bind:cpu="cpu"
+        v-bind:mem_gb="mem_gb"
+        v-bind:signature_status="signature_status"
+        v-bind:groups="groups"
+        v-bind:plugins="plugins"
+        v-bind:notify="notify"
+        v-bind:comment="comment"
+        v-bind:agent_key="agent_key"
+        v-bind:waiting="waiting"
+        v-on:submit="register"
+        />
+    </div>
+
+  </modal-dialog>
   `
 })});

@@ -56,6 +56,10 @@ $(function() { Vue.component('instance-form', {    /*
       $("#selectGroups").multiselect(options);
       $("#selectPlugins").multiselect(options);
     },
+    teardown_multiselects() {
+      $("#selectGroups").multiselect('destroy');
+      $("#selectPlugins").multiselect('destroy');
+    },
     submit() {
       // data generates payload for both POST /json/settings/instances and POST
       // /json/settings/instances/X.X.X.X/PPPP.
