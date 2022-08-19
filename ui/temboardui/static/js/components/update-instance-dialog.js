@@ -52,10 +52,6 @@ $(function() { Vue.component('update-instance-dialog', {    /*
       }});
     }
   },
-  mounted() {
-    // Reset component state on Bootstrap hidden event.
-    $(this.$el).on("hidden.bs.modal", this.reset);
-  },
   updated() {
     $('[data-toggle="tooltip"]', this.$el).tooltip();
     if ($("#selectGroups").data('multiselect')) {
@@ -170,35 +166,26 @@ $(function() { Vue.component('update-instance-dialog', {    /*
     }
   },
   template: `
-  <div class="modal fade" id="modalUpdateInstance" role="dialog" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Update Instance</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        </div>
-
-        <instance-form
-          ref="form"
-          submit_text="Update"
-          v-bind:error="error"
-          v-bind:pg_host="pg_host"
-          v-bind:pg_port="pg_port"
-          v-bind:pg_data="pg_data"
-          v-bind:pg_version_summary="pg_version_summary"
-          v-bind:cpu="cpu"
-          v-bind:mem_gb="mem_gb"
-          v-bind:signature_status="signature_status"
-          v-bind:groups="groups"
-          v-bind:plugins="plugins"
-          v-bind:notify="notify"
-          v-bind:comment="comment"
-          v-bind:agent_key="agent_key"
-          v-bind:waiting="waiting"
-          v-on:submit="update"
-          />
-      </div>
-    </div>
-  </div>
+  <modal-dialog id="modalUpdateInstance" title="Update Instance" v-on:closed="reset">
+    <instance-form
+      ref="form"
+      submit_text="Update"
+      v-bind:error="error"
+      v-bind:pg_host="pg_host"
+      v-bind:pg_port="pg_port"
+      v-bind:pg_data="pg_data"
+      v-bind:pg_version_summary="pg_version_summary"
+      v-bind:cpu="cpu"
+      v-bind:mem_gb="mem_gb"
+      v-bind:signature_status="signature_status"
+      v-bind:groups="groups"
+      v-bind:plugins="plugins"
+      v-bind:notify="notify"
+      v-bind:comment="comment"
+      v-bind:agent_key="agent_key"
+      v-bind:waiting="waiting"
+      v-on:submit="update"
+      />
+  </modal-dialog>
   `
 })});
