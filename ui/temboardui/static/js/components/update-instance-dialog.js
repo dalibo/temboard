@@ -61,15 +61,18 @@ $(function() { Vue.component('update-instance-dialog', {    /*
   },
   methods: {
     format_xhr_error(xhr) {
-      if (xhr.getResponseHeader('content-type').includes('application/json')) {
+      if (0 === xhr.status) {
+        return "Failed to contact server."
+      }
+      else if (xhr.getResponseHeader('content-type').includes('application/json')) {
           return JSON.parse(xhr.responseText).error;
-        }
-        else if ('text/plain' == xhr.getResponseHeader('content-type')) {
-          return `<pre>${xhr.responseText}</pre>`;
-        }
-        else {
-          return 'Unknown error. Please contact temBoard administrator.'
-        }
+      }
+      else if ('text/plain' == xhr.getResponseHeader('content-type')) {
+        return `<pre>${xhr.responseText}</pre>`;
+      }
+      else {
+        return 'Unknown error. Please contact temBoard administrator.'
+      }
     },
     discover_agent() {
       return $.ajax({

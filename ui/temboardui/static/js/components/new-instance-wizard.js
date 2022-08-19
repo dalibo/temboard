@@ -63,8 +63,11 @@ $(function() { Vue.component('new-instance-wizard', {    /*
     }
   },
   methods: {
-    format_xhr_error: function(xhr) {
-      if (xhr.getResponseHeader('content-type').includes('application/json')) {
+    format_xhr_error(xhr) {
+      if (0 === xhr.status) {
+        return "Failed to contact server."
+      }
+      else if (xhr.getResponseHeader('content-type').includes('application/json')) {
           return JSON.parse(xhr.responseText).error;
         }
         else if ('text/plain' == xhr.getResponseHeader('content-type')) {
@@ -160,7 +163,7 @@ $(function() { Vue.component('new-instance-wizard', {    /*
           next to your PostgreSQL instance. Set here agent address and
           port, not PostgreSQL.</p>
 
-          <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
+          <div class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
           <div class="row">
             <div class="form-group col-sm-6">
               <label for="inputAgentAddress" class="control-label">Agent address</label>
