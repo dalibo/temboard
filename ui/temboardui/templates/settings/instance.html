@@ -3,27 +3,10 @@
 {% block title %}temBoard - settings{% end %}
 
 {% block content %}
-<!-- Instance update/add/delete modal -->
-<div class="modal fade" id="InstanceModal" tabindex="-1" role="dialog" aria-labelledby="InstanceModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="InstanceModalLabel"></h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body" id="InstanceModalInfo">
-      </div>
-      <div class="modal-body" id="InstanceModalBody">
-      </div>
-      <div class="modal-footer" id="InstanceModalFooter">
-      </div>
-    </div>
-  </div>
-</div>
-
 <div id="vue-app">
   <new-instance-wizard></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
+  <delete-instance-dialog ref="delete_modal"></delete-instance-dialog>
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
@@ -54,25 +37,25 @@
         </tr>
       </thead>
       <tbody>
-      {% for instance_item in instance_list %}
+      {% for instance in instance_list %}
         <tr>
-          <td>{{instance_item.hostname}}:{{instance_item.pg_port}}</td>
+          <td>{{instance.hostname}}:{{instance.pg_port}}</td>
           <td>
-            {{instance_item.pg_version_summary}}
-            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance_item.pg_version}}">
-              {{instance_item.pg_version}}
+            {{instance.pg_version_summary}}
+            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance.pg_version}}">
+              {{instance.pg_version}}
             </div>
           </td>
-          <td>{{instance_item.pg_data}}</td>
-          <td>{% for group in instance_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
-          <td class="agent_hostport">{{instance_item.agent_address}}:{{instance_item.agent_port}}</td>
+          <td>{{instance.pg_data}}</td>
+          <td>{% for group in instance.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
+          <td class="agent_hostport">{{instance.agent_address}}:{{instance.agent_port}}</td>
           <td class="text-center">
-            {% if instance_item.notify %}
+            {% if instance.notify %}
             <i class="fa fa-check"></i>
             {% end %}
           </td>
           <td>
-            {% set comment = instance_item.comment if instance_item.comment is not None else '' %}
+            {% set comment = instance.comment if instance.comment is not None else '' %}
             <div class="overflow-ellipsis" style="max-width: 100px;" title="{{comment}}">
               {{comment}}
             </div>
@@ -83,11 +66,18 @@
               data-toggle="tooltip"
               data-placement="bottom"
               title="Edit"
-              v-on:click.prevent="editInstance('{{instance_item.agent_address}}', {{instance_item.agent_port}})"
+              v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
             ><i class="fa fa-edit"></i></button>
           </td>
           <td class="text-center">
-            <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-agent_address="{{instance_item.agent_address}}" data-agent_port="{{instance_item.agent_port}}"><i class="fa fa-trash-o"></i></button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm buttonDelete"
+              data-toggle="tooltip"
+              data-placement="bottom"
+              title="Delete"
+              v-on:click.prevent="$refs.delete_modal.open('{{ instance.agent_address }}', {{ instance.agent_port }})"
+            ><i class="fa fa-trash-o"></i></button>
           </td>
         </tr>
       {% end %}
@@ -97,27 +87,19 @@
   </div>
 </div>
 
-<script src="/js/lodash.min.js"></script>
 <script src="/js/vue.min.js"></script>
-<script src="/js/temboard.settings.instance.js"></script>
 <script src="/js/components/modal-dialog.js"></script>
 <script src="/js/components/instance-details.js"></script>
 <script src="/js/components/instance-form.js"></script>
 <script src="/js/components/new-instance-wizard.js"></script>
 <script src="/js/components/update-instance-dialog.js"></script>
+<script src="/js/components/delete-instance-dialog.js"></script>
 <script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
 <script>
-  var vm;
-
 $(document).ready(function() {
-  vm = new Vue({
+  new Vue({
     el: "#vue-app",
-    methods: {
-      editInstance: function(...args) {
-        this.$refs.update_modal.open(...args);
-      }
-    },
     created() {
       this.$nextTick(() => {
         var table = $('#tableInstances').DataTable({
@@ -143,11 +125,6 @@ $(document).ready(function() {
         });
 
         table.buttons().container().appendTo($("#tableInstances_filter"));
-
-        $(document).on('click', '[data-action=delete]', function () {
-          $('#InstanceModal').modal('show');
-          load_delete_instance_confirm('InstanceModal', $(this).data('agent_address'), $(this).data('agent_port'));
-        });
       });
     }
   });
