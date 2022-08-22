@@ -129,6 +129,7 @@ def json_instance(request):
             'memory_size': instance.memory_size,
             'pg_port': instance.pg_port,
             'pg_version': instance.pg_version,
+            'pg_version_summary': instance.pg_version_summary,
             'pg_data': instance.pg_data,
             'in_groups': [g.group_name for g in instance.groups],
             'enabled_plugins': [p.plugin_name for p in instance.plugins],

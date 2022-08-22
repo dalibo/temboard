@@ -38,6 +38,14 @@ def test_web_register(
     assert 'default' in browser.select(fmt(col=groups)).text
 
 
+def test_edit_instance(registered_agent, browser):
+    browser.select("td button.buttonEdit").click()
+    browser.select("#inputNotify").click()
+    comment = browser.select("#inputComment").get_attribute('value')
+    assert "Registered by tests." == comment
+    browser.select("#buttonSubmit").click()
+
+
 def test_download_inventory(registered_agent, browser):
     browser.select("#linkSettings").click()
     download = browser.select("#buttonDownload")
