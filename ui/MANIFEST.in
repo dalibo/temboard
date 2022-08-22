@@ -23,7 +23,6 @@ prune docker
 exclude docker-compose.yml
 prune docs
 exclude .gitmodules
-exclude Gruntfile.js
 exclude *.config.js
 exclude Makefile
 exclude package.json
