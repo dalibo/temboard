@@ -98,6 +98,7 @@ dpkg -i "$deb"
 (
 	cd /
 	temboard --version
+	test -f /usr/lib/temboard/lib/python3.*/site-packages/temboardui/static/manifest.json
 )
 
 #       S A V E

@@ -11,7 +11,7 @@ module.exports = function(grunt) {
           outputStyle: 'expanded'
         },
         files: {
-          'temboardui/static/css/temboard.css': 'temboardui/static/sass/temboard.scss'
+          'temboardui/static/css/temboard.css': 'temboardui/static/src/temboard.scss'
         }
       },
       dist: {
@@ -19,7 +19,7 @@ module.exports = function(grunt) {
           outputStyle: 'compressed'
         },
         files: {
-          'temboardui/static/css/temboard.css': 'temboardui/static/sass/temboard.scss'
+          'temboardui/static/css/temboard.css': 'temboardui/static/src/temboard.scss'
         }
       }
     },
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
     // configure the "grunt watch" task
     watch: {
       sass: {
-        files: 'temboardui/static/sass/*.scss',
+        files: 'temboardui/static/src/*.scss',
         tasks: ['sass:dist']
       }
     }

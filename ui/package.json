@@ -1,5 +1,11 @@
 {
   "name": "temboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
   "dependencies": {
     "bootstrap": "^4.1.1",
     "jquery": "^3.2.1",
@@ -11,6 +17,9 @@
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-postcss": "^0.8.0",
-    "grunt-sass": "2.0.0"
+    "grunt-sass": "2.0.0",
+    "postcss": "^8.4.16",
+    "sass": "^1.54.5",
+    "vite": "^3.0.7"
   }
 }

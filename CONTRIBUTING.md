@@ -46,7 +46,7 @@ You need the following software to contribute to temBoard:
 - bash, git, make, psql.
 - Docker Compose.
 - Python 3.6 with `venv` module.
-- NodeJS and npm for building some assets.
+- NodeJS 16+ and npm for building some browser assets.
 
 
 ## Setup Development
@@ -309,7 +309,7 @@ $ npm install
 Then you can either build a dist version of the CSS:
 
 ``` console
-$ grunt sass:dist
+$ npm run build
 ```
 
 Or build a dev version which will get updated each time you make a change in

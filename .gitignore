@@ -6,6 +6,11 @@
 # Buildtime files
 build/
 dist/
+# ViteJS assets
+ui/temboardui/static/*.css
+ui/temboardui/static/*.js
+ui/temboardui/static/manifest.json
+
 # From dev compose project
 .env
 dev/agent-bash_history

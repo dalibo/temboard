@@ -13,6 +13,8 @@ develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
 	$(MAKE) install-$*
+	cd ui/; npm install
+	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
 	docker-compose up -d
 	@echo
@@ -58,7 +60,9 @@ install-2.7: venv-2.7
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
-	rm -rf agent/build/ ui/build/ .env agent/.coverage ui/.coverage
+	rm -rf agent/build/ .env agent/.coverage
+	rm -rvf ui/build/ ui/.coverage
+	$(MAKE) clean-static
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
@@ -127,13 +131,25 @@ release:  #: Tag and push a new git release.
 	git commit agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
 	$(info Checking source tree is clean)
 	git diff --quiet
+	$(MAKE) static
 	$(MAKE) dist
 	git tag --annotate --message "Version $(VERSION)" $(VERSION)
 	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
 dist:  #: Build sources and wheels.
 	cd agent/; python setup.py sdist bdist_wheel
+	test -f ui/temboardui/static/manifest.json
 	cd ui/; python setup.py sdist bdist_wheel --universal
+
+static:  #: Build UI browser assets.
+	cd ui/; npm run build
+
+clean-static:  #: Clean UI browser assets.
+	rm -vf \
+		ui/temboardui/static/manifest.json \
+		ui/temboardui/static/*.css \
+		ui/temboardui/static/*.js \
+		ui/temboardui/static/*webfont.*
 
 PYDIST=\
 	agent/dist/temboard-agent-$(VERSION).tar.gz \
