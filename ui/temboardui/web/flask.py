@@ -210,8 +210,9 @@ class UserMiddleware(object):
             'temboard',
             request.cookies['temboard'],
         )
-        cookie = cookie.decode('utf-8')
-        return get_role_by_cookie(g.db_session, cookie)
+        if cookie:
+            cookie = cookie.decode('utf-8')
+            return get_role_by_cookie(g.db_session, cookie)
 
 
 class InstanceMiddleware(object):
