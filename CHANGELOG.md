@@ -53,6 +53,7 @@ script to proceed.
   endpoint.
 - New temBoard UI parameter `[auth] allowed_ip` to restrict API Key
   authorization. By default, only 127/8 is allowed.
+- temBoard UI now accept to serve plain HTTP. For development purpose.
 
 
 ## [7.11] - Unreleased

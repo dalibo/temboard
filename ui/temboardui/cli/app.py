@@ -17,6 +17,7 @@ import tornado.ioloop
 import tornado.web
 from tornado.wsgi import WSGIContainer
 from tornado import autoreload
+from tornado.httpserver import HTTPServer
 
 from ..autossl import AutoHTTPSServer
 from ..model import configure as configure_db_session, queries
@@ -276,11 +277,14 @@ def map_pgvars(environ):
 class TornadoService(Service):
     def setup(self):
         config = self.app.config
-        ssl_ctx = {
-            'certfile': config.temboard.ssl_cert_file,
-            'keyfile': config.temboard.ssl_key_file,
-        }
-        server = AutoHTTPSServer(self.app.tornado_app, ssl_options=ssl_ctx)
+        if config.temboard.ssl_key_file:
+            ssl_ctx = {
+                'certfile': config.temboard.ssl_cert_file,
+                'keyfile': config.temboard.ssl_key_file,
+            }
+            server = AutoHTTPSServer(self.app.tornado_app, ssl_options=ssl_ctx)
+        else:
+            server = HTTPServer(self.app.tornado_app)
         try:
             server.listen(
                 config.temboard.port, address=config.temboard.address)
@@ -321,7 +325,8 @@ class TornadoService(Service):
                 autoreload.start()
 
             logger.info(
-                "Serving temboardui on https://%s:%d",
+                "Serving temboardui on http%s://%s:%d",
+                's' if self.app.config.temboard.ssl_cert_file else '',
                 self.app.config.temboard.address,
                 self.app.config.temboard.port)
             tornado.ioloop.IOLoop.instance().start()
@@ -379,12 +384,8 @@ def list_options_specs():
     yield OptionSpec(s, 'pidfile', default='/run/temboard.pid')
     yield OptionSpec(s, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(s, 'port', validator=v.port, default=8888)
-    yield OptionSpec(
-        s, 'ssl_cert_file',
-        default=OptionSpec.REQUIRED, validator=v.file_)
-    yield OptionSpec(
-        s, 'ssl_key_file',
-        default=OptionSpec.REQUIRED, validator=v.file_)
+    yield OptionSpec(s, 'ssl_cert_file', default=None, validator=v.file_)
+    yield OptionSpec(s, 'ssl_key_file', default=None, validator=v.file_)
     yield OptionSpec(s, 'ssl_ca_cert_file', validator=v.file_)
     yield OptionSpec(
         s, 'signing_private_key',
