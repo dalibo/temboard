@@ -4,6 +4,11 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity{% end %}
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
 
+{% block head %}
+<!-- DataTables CSS -->
+<link href="/js/datatables/datatables.min.css" rel="stylesheet">
+{% end %}
+
 {% block content %}
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
   <div class="modal-dialog" role="document">

@@ -22,8 +22,6 @@
     <script src="/js/html5shiv.js"></script>
     <script src="/js/respond.min.js"></script>
   <![endif]-->
-  <!-- DataTables CSS -->
-  <link href="/js/datatables/datatables.min.css" rel="stylesheet">
   <!-- Multiselect -->
   <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
   <!-- Toggle -->
@@ -35,6 +33,8 @@
   <!-- Require starting vitejs dev server with npm run dev. -->
   <script type="module" src="{{ vitejs.url_for('@vite/client') }}"></script>
   {% end %}
+
+  {% block head %}{# Put link and meta in head block to inject here #}{% end %}
 </head>
 <body>
   <script>
