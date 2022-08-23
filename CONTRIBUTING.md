@@ -83,11 +83,11 @@ $ dev/venv-py3.6/bin/temboard --debug
  INFO: Using libpq 11.5, Psycopg2 2.8.6 (dt dec pq3 ext lo64) and SQLAlchemy 1.3.24 .
 2022-03-16 14:08:06,425 temboardui[1593889]: [pluginsmgmt     ]  INFO: Loaded plugin 'dashboard'.
 ...
-2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on https://0.0.0.0:8888
+2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on http://localhost:8888
 ...
 ```
 
-Go to [https://127.0.0.1:8888/](https://127.0.0.1:8888/) to access temBoard
+Go to [http://localhost:8888/](http://localhost:8888/) to access temBoard
 running with your code!
 
 You now need to run the agent. Open a second terminal to interact with the
@@ -297,9 +297,12 @@ That's all. Use `temboard migratedb` to check and upgrade temBoard repository.
 ## Building CSS and Javascript
 
 temBoard UI mainly relies on Bootstrap. The CSS files are compiled with SASS.
+ViteJS manages assets from `ui/temboardui/static/src`. ViteJS builds assets in
+`ui/temboardui/static` directory.
+
 Execute all the following commands in ui/ directory.
 
-In case you want to contribute on the styles, first install the nodeJS dev
+In case you want to contribute on the styles, first install the NodeJS dev
 dependencies:
 
 ``` console
@@ -312,12 +315,31 @@ Then you can either build a dist version of the CSS:
 $ npm run build
 ```
 
-Or build a dev version which will get updated each time you make a change in
-any of the .scss files:
+Or run dev server which watch changes on source files and hot-reload modules in
+your browser:
 
 ``` console
-$ grunt watch
+$ npm run dev
 ```
+
+Now restart temBoard UI configured with ViteJS dev server base URL from
+environment variable `VITEJS`:
+
+``` console
+$ VITEJS=http://localhost:5173 temboard serve
+...
+2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Using ViteJS dev server at http://localhost:5173.
+2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Skip reading ViteJS manifest.
+...
+```
+
+**Beware of CORS!** Depending on your browser product and version, you may hit
+an unstyled page if CORS policy denies loading assets from ViteJS dev server.
+Ensure you run temBoard in **plain HTTP** and that you access both temBoard and
+ViteJS dev server on `localhost`.
+
+All assets managed by ViteJS are hot reloaded, including CSS. ViteJS Hot reload
+does not required reloading server-side.
 
 
 ## Editing Documentation

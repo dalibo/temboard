@@ -28,8 +28,13 @@
   <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
   <!-- Toggle -->
   <link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
+  {% if vitejs.PROD %}
   <!-- temBoard UI CSS module -->
   <link href="{{ vitejs.url_for('temboard.css') }}" rel="stylesheet" type="text/css"/>
+  {% else %}
+  <!-- Require starting vitejs dev server with npm run dev. -->
+  <script type="module" src="{{ vitejs.url_for('@vite/client') }}"></script>
+  {% end %}
 </head>
 <body>
   <script>
@@ -39,6 +44,7 @@
   </script>
   <div id="modalError" /></div>
   <div>
+    <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
     <script src="/js/jquery-2.1.4.min.js"></script>
     <script src="/js/popper.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>

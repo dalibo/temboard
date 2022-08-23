@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import logging
+import os
 from ipaddress import ip_address, ip_network
 
 from flask import (
@@ -32,6 +33,7 @@ instance_proxy = Blueprint(
 
 def create_app(temboard_app):
     app = Flask('temboardui')
+    app.config['DEBUG'] = app.config['TESTING'] = 'DEBUG' in os.environ
     app.temboard = temboard_app
     SQLAlchemy(app)
     APIKeyMiddleware(app)

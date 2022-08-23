@@ -341,6 +341,7 @@ class TornadoService(Service):
         autoreload.watch(self.app.config.temboard.configfile)
         autoreload.watch(self.app.config.temboard.signing_public_key)
         autoreload.watch(self.app.config.temboard.signing_private_key)
+        autoreload.watch(flask_app.vitejs.manifest_path)
 
         for path in self.iter_template_files():
             autoreload.watch(path)
