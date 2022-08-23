@@ -25,6 +25,12 @@ def test_query_agent(ui_auto_configure, agent):
     assert 'toto' == data['username']
 
 
+def test_settings(admin_session, browser, ui_url):
+    browser.get(ui_url + '/settings/metadata')
+    info = browser.select('#temboard_metadata').text
+    assert "Version" in info
+
+
 def test_web_register(
         registered_agent, agent_conf, browser, pg_version, ui_url):
     browser.get(ui_url + '/settings/instances')
