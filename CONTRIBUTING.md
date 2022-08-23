@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for your interest in contributing to temBoard. temBoard is an open
-source project open to contribution from idea to code and more.
+source project welcoming contribution from idea to code and more.
 
 
 ## Submitting an Issue or a Patch
@@ -27,13 +27,11 @@ $ cd temboard/
 overview.
 
 - `docs/` - Global mkdocs documentation sources.
-- `ui/` - Python Tornado project for temBoard UI aka server.
+- `ui/` - Python Tornado/Flask project for temBoard UI aka server.
     - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
     - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
-- `dev/` - Development scripts and setup.
-  - `dev/perfui/` - Docker & Grafana project to visualize temBoard performances
-    traces.
+- `dev/` - Development scripts and data.
 - `docker/` - Quickstart Docker Compose file.
 - `tests/` - Functional integration tests.
 
@@ -104,8 +102,8 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 ...
 ```
 
-The agent is preregistered in UI, using host `0.0.0.0`, port `2345` and key
-`key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
+The agent is preregistered in UI, using host `0.0.0.0` and port `2345`. The
+monitored Postgres instance is named `postgres0.dev`.
 
 Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
@@ -143,13 +141,12 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 
 bash history is shared amongst these two containers.
 
-In UI, the seconde agent is pre-registered with address 0.0.0.0, port 2346
-instead of 2345, with the same key `key_for_agent`. The instance FQDN is
-`postgres1.dev`.
+In UI, the second agent is pre-registered with address 0.0.0.0 and port 2346
+instead of 2345. The instance FQDN is `postgres1.dev`.
 
 The script `dev/switchover.sh` triggers a switchover between the two postgres
 instances. Executing `dev/switchover.sh` one more time restore the original
-typology.
+topology.
 
 
 ## Testing with previous stable version
@@ -176,7 +173,7 @@ Default development environment instanciates two PostgreSQL instances and their
 temBoard agents. Root Makefile offers two targets to help testing big scale
 setup :
 
-- `make mass-agents` loops from 2348 to 3000 and instanciate a PostgreSQL
+- `make mass-agents` loops from 2348 to 3000 and instanciates a PostgreSQL
   instance for each number and an agent to monitor it. Number is used as agent
   port. Each instanciation requires you to type `y` and Enter. This allows to
   throttle instanciations and to stop when enough instances are up.
