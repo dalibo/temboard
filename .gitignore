@@ -8,7 +8,11 @@ build/
 dist/
 # ViteJS assets
 ui/temboardui/static/*.css
+ui/temboardui/static/css/
+ui/temboardui/static/images/
 ui/temboardui/static/*.js
+ui/temboardui/static/js/
+ui/temboardui/static/fonts/
 ui/temboardui/static/manifest.json
 
 # From dev compose project

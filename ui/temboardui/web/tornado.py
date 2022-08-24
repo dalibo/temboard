@@ -404,7 +404,11 @@ class InstanceHelper(object):
                 if 401 == e.status_code:
                     logger.debug("Legacy agent login required for %s.", i)
                     self.redirect('/login')
+                elif 406 == e.status_code and 'X-Session' in e.log_message:
+                    logger.debug("Bad X-Session: %s Re-login.", e.log_message)
+                    self.redirect('/login')
                 else:
+                    logger.error("XXX: %s", e)
                     raise
         else:
             # Agent 8+ does not have users anymore. Use UI user.
