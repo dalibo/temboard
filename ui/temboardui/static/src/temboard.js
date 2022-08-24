@@ -1,10 +1,5 @@
 import './temboard.scss'
 import 'font-awesome/css/font-awesome.css'
-// Should not be in common module. Here for legacy.
-import hljs from 'highlightjs'
-
-// Export hljs in global namespace.
-window.hljs = hljs;
 
 $(() => {
   // Mark active link in sidebar

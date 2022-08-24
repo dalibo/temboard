@@ -2,6 +2,10 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Statements{% end %}
 
+{% block head %}
+<link href="/js/highlightjs/default.css" rel="stylesheet" />
+{% end %}
+
 {% block content %}
 
 <div id="app">
