@@ -33,19 +33,12 @@
   {% block head %}{# Put link and meta in head block to inject here #}{% end %}
 </head>
 <body>
-  <script>
-    if (eval(localStorage.getItem('sidebarCollapsed'))) {
-      document.body.className += 'sidebar-collapsed';
-    }
-  </script>
   <div id="modalError" /></div>
   <div>
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
     <script src="/js/jquery-2.1.4.min.js"></script>
     <script src="/js/popper.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
-    <!-- Custom Theme JavaScript -->
-    <script src="/js/sb-admin-2.js"></script>
     {% if nav %}
     <!-- Navigation -->
     <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand sticky-top">
