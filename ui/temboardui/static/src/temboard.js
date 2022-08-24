@@ -27,4 +27,8 @@ $(() => {
     localStorage.setItem('sidebarCollapsed', $(document.body).hasClass('sidebar-collapsed'));
     window.dispatchEvent(new Event('resize'));
   });
+
+  // Popover and tooltip initialization
+  $('[data-toggle="popover"]').popover()
+  $('[data-toggle="tooltip"]').tooltip()
 });
