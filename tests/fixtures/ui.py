@@ -62,25 +62,11 @@ class Browser:
     def get_full_page_screenshot_as_png(self):
         return self.select("body").screenshot_as_png
 
-    def hidden(self, selector, timeout=3):
-        waiter = WebDriverWait(self.webdriver, timeout)
-        element = self.select(selector)
-        if 'dialog' == element.get_attribute('role'):
-            callable_ = waiter.until_not
-            attribute, value = 'class', 'show'
-            message = f"Element {selector} {attribute} still has {value}.",
-        else:
-            callable_ = waiter.until
-            attribute, value = 'class', 'd-none'
-            message = f"Element {selector} {attribute} does not have {value}.",
-
-        # Waits until an element has d-none.
-        return callable_(
-            text_to_be_present_in_element_attribute(
-                (By.CSS_SELECTOR, selector),
-                attribute, value,
-            ),
-            message,
+    def hidden(self, selector, timeout=3, check='class'):
+        return WebDriverWait(self.webdriver, timeout).until_not(
+            expected_conditions.visibility_of_element_located(
+                (By.CSS_SELECTOR, selector)
+            )
         )
 
     def hover(self, selector):
