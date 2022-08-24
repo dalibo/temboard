@@ -75,10 +75,7 @@ jobs:
         path: /workspace/ui/temboardui/static/
     - persist_to_workspace:
         root: .
-        paths:
-        - ui/temboardui/static/manifest.json
-        - ui/temboardui/static/*.js
-        - ui/temboardui/static/*.css
+        paths: [ui/temboardui/static/]
 
   dist:
     docker: [{image: python:3.6}]

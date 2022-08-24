@@ -145,11 +145,12 @@ static:  #: Build UI browser assets.
 	cd ui/; npm run build
 
 clean-static:  #: Clean UI browser assets.
-	rm -vf \
-		ui/temboardui/static/manifest.json \
-		ui/temboardui/static/*.css \
-		ui/temboardui/static/*.js \
-		ui/temboardui/static/*webfont.*
+	rm -vrf \
+		ui/temboardui/static/*.* \
+		ui/temboardui/static/css/ \
+		ui/temboardui/static/fonts/ \
+		ui/temboardui/static/images/ \
+		ui/temboardui/static/js/
 
 PYDIST=\
 	agent/dist/temboard-agent-$(VERSION).tar.gz \
