@@ -9,6 +9,7 @@
   "dependencies": {
     "bootstrap": "^4.1.1",
     "highlightjs": "^9.12.0",
+    "font-awesome": "4.7",
     "jquery": "^3.2.1",
     "popper.js": "^1.12.3"
   },

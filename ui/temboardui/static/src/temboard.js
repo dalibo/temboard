@@ -1,4 +1,5 @@
 import './temboard.scss'
+import 'font-awesome/css/font-awesome.css'
 // Should not be in common module. Here for legacy.
 import hljs from 'highlightjs'
 

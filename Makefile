@@ -148,7 +148,6 @@ clean-static:  #: Clean UI browser assets.
 	rm -vrf \
 		ui/temboardui/static/*.* \
 		ui/temboardui/static/css/ \
-		ui/temboardui/static/fonts/ \
 		ui/temboardui/static/images/ \
 		ui/temboardui/static/js/
 
