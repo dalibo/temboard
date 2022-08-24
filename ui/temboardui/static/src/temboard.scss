@@ -2,7 +2,6 @@
 @import "bootstrap";
 @import "daterangepicker-override";
 @import "daterangepicker";
-@import "dygraph";
 
 @each $color, $value in $theme-colors {
   @include bg-variant(".bg-#{$color}-light", lighten($value, 43));
