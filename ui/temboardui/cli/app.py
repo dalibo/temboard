@@ -33,7 +33,7 @@ from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
-from ..web.tornado import Error404Handler, app as tornado_app
+from ..web.tornado import Error404Handler, app as tornado_app, TemplateRenderer
 from ..web.flask import finalize_app as finalize_flask_app
 
 
@@ -251,6 +251,8 @@ def finalize_tornado_app(tornado_app, config):
             'fallback': WSGIContainer(flask_app.wsgi_app)}),
     ])
 
+    TemplateRenderer.GLOBAL_NAMESPACE['vitejs'] = flask_app.vitejs
+
 
 def map_pgvars(environ):
     pgvar_map = dict(
@@ -276,6 +278,8 @@ def map_pgvars(environ):
 
 class TornadoService(Service):
     def setup(self):
+        flask_app.vitejs.read_manifest()
+
         config = self.app.config
         if config.temboard.ssl_key_file:
             ssl_ctx = {
@@ -337,6 +341,7 @@ class TornadoService(Service):
         autoreload.watch(self.app.config.temboard.configfile)
         autoreload.watch(self.app.config.temboard.signing_public_key)
         autoreload.watch(self.app.config.temboard.signing_private_key)
+        autoreload.watch(flask_app.vitejs.manifest_path)
 
         for path in self.iter_template_files():
             autoreload.watch(path)

@@ -86,10 +86,13 @@ class Redirect(Response, Exception):
 class TemplateRenderer(object):
     # Flask-like HTML render function, without thread local.
 
+    GLOBAL_NAMESPACE = {}
+
     def __init__(self, path):
         self.loader = TemplateLoader(path)
 
     def __call__(self, template, **data):
+        data = dict(self.GLOBAL_NAMESPACE, **data)
         return Response(
             body=self.loader.load(template).generate(**data),
             headers={'Content-Type': 'text/html; charset=UTF-8'},

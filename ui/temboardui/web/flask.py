@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import logging
+import os
 from ipaddress import ip_address, ip_network
 
 from flask import (
@@ -19,6 +20,7 @@ from ..application import (
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
+from .vitejs import ViteJSExtension
 
 
 logger = logging.getLogger(__name__)
@@ -30,13 +32,15 @@ instance_proxy = Blueprint(
 
 
 def create_app(temboard_app):
-    app = Flask('temboardui', static_folder=None)
+    app = Flask('temboardui')
+    app.config['DEBUG'] = app.config['TESTING'] = 'DEBUG' in os.environ
     app.temboard = temboard_app
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthMiddleware(app)
     app.errorhandler(Exception)(json_error_handler)
+    ViteJSExtension(app)
     # finalize_app() must be called before serving, to enable configured
     # blueprints.
     return app
@@ -165,6 +169,10 @@ class AuthMiddleware(object):
         app.before_request(self.before)
 
     def before(self):
+        if request.url_rule and request.url_rule.rule.startswith('/static'):
+            # Skip Auth for static files.
+            return
+
         func = self.app.view_functions.get(request.endpoint)
         if not func:
             abort(404)

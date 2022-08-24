@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for your interest in contributing to temBoard. temBoard is an open
-source project open to contribution from idea to code and more.
+source project welcoming contribution from idea to code and more.
 
 
 ## Submitting an Issue or a Patch
@@ -27,13 +27,11 @@ $ cd temboard/
 overview.
 
 - `docs/` - Global mkdocs documentation sources.
-- `ui/` - Python Tornado project for temBoard UI aka server.
+- `ui/` - Python Tornado/Flask project for temBoard UI aka server.
     - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
     - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
-- `dev/` - Development scripts and setup.
-  - `dev/perfui/` - Docker & Grafana project to visualize temBoard performances
-    traces.
+- `dev/` - Development scripts and data.
 - `docker/` - Quickstart Docker Compose file.
 - `tests/` - Functional integration tests.
 
@@ -48,7 +46,7 @@ You need the following software to contribute to temBoard:
 - bash, git, make, psql.
 - Docker Compose.
 - Python 3.6 with `venv` module.
-- NodeJS and npm for building some assets.
+- NodeJS 16+ and npm for building some browser assets.
 
 
 ## Setup Development
@@ -85,11 +83,11 @@ $ dev/venv-py3.6/bin/temboard --debug
  INFO: Using libpq 11.5, Psycopg2 2.8.6 (dt dec pq3 ext lo64) and SQLAlchemy 1.3.24 .
 2022-03-16 14:08:06,425 temboardui[1593889]: [pluginsmgmt     ]  INFO: Loaded plugin 'dashboard'.
 ...
-2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on https://0.0.0.0:8888
+2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on http://localhost:8888
 ...
 ```
 
-Go to [https://127.0.0.1:8888/](https://127.0.0.1:8888/) to access temBoard
+Go to [http://localhost:8888/](http://localhost:8888/) to access temBoard
 running with your code!
 
 You now need to run the agent. Open a second terminal to interact with the
@@ -104,8 +102,8 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 ...
 ```
 
-The agent is preregistered in UI, using host `0.0.0.0`, port `2345` and key
-`key_for_agent`. The monitored Postgres instance is named `postgres0.dev`.
+The agent is preregistered in UI, using host `0.0.0.0` and port `2345`. The
+monitored Postgres instance is named `postgres0.dev`.
 
 Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
@@ -143,13 +141,12 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper -m temboardag
 
 bash history is shared amongst these two containers.
 
-In UI, the seconde agent is pre-registered with address 0.0.0.0, port 2346
-instead of 2345, with the same key `key_for_agent`. The instance FQDN is
-`postgres1.dev`.
+In UI, the second agent is pre-registered with address 0.0.0.0 and port 2346
+instead of 2345. The instance FQDN is `postgres1.dev`.
 
 The script `dev/switchover.sh` triggers a switchover between the two postgres
 instances. Executing `dev/switchover.sh` one more time restore the original
-typology.
+topology.
 
 
 ## Testing with previous stable version
@@ -176,7 +173,7 @@ Default development environment instanciates two PostgreSQL instances and their
 temBoard agents. Root Makefile offers two targets to help testing big scale
 setup :
 
-- `make mass-agents` loops from 2348 to 3000 and instanciate a PostgreSQL
+- `make mass-agents` loops from 2348 to 3000 and instanciates a PostgreSQL
   instance for each number and an agent to monitor it. Number is used as agent
   port. Each instanciation requires you to type `y` and Enter. This allows to
   throttle instanciations and to stop when enough instances are up.
@@ -300,9 +297,12 @@ That's all. Use `temboard migratedb` to check and upgrade temBoard repository.
 ## Building CSS and Javascript
 
 temBoard UI mainly relies on Bootstrap. The CSS files are compiled with SASS.
+ViteJS manages assets from `ui/temboardui/static/src`. ViteJS builds assets in
+`ui/temboardui/static` directory.
+
 Execute all the following commands in ui/ directory.
 
-In case you want to contribute on the styles, first install the nodeJS dev
+In case you want to contribute on the styles, first install the NodeJS dev
 dependencies:
 
 ``` console
@@ -312,15 +312,34 @@ $ npm install
 Then you can either build a dist version of the CSS:
 
 ``` console
-$ grunt sass:dist
+$ npm run build
 ```
 
-Or build a dev version which will get updated each time you make a change in
-any of the .scss files:
+Or run dev server which watch changes on source files and hot-reload modules in
+your browser:
 
 ``` console
-$ grunt watch
+$ npm run dev
 ```
+
+Now restart temBoard UI configured with ViteJS dev server base URL from
+environment variable `VITEJS`:
+
+``` console
+$ VITEJS=http://localhost:5173 temboard serve
+...
+2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Using ViteJS dev server at http://localhost:5173.
+2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Skip reading ViteJS manifest.
+...
+```
+
+**Beware of CORS!** Depending on your browser product and version, you may hit
+an unstyled page if CORS policy denies loading assets from ViteJS dev server.
+Ensure you run temBoard in **plain HTTP** and that you access both temBoard and
+ViteJS dev server on `localhost`.
+
+All assets managed by ViteJS are hot reloaded, including CSS. ViteJS Hot reload
+does not required reloading server-side.
 
 
 ## Editing Documentation

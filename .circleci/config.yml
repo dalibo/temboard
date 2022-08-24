@@ -4,6 +4,7 @@ workflows:
   version: 2
   default:
     jobs:
+    - static: {name: stage0-static}
     - doc: {name: stage0-doc}
     - lint: {name: stage0-lint}
     - unit:
@@ -11,7 +12,9 @@ workflows:
        matrix:
          parameters:
            pyversion: ["3.6", "3.5", "2.7"]
-    - dist: {name: stage0-dist}
+    - dist:
+        name: stage0-dist
+        requires: [stage0-static]
     - rpm:
         name: stage1-pkg-<< matrix.codename >>
         matrix:
@@ -54,11 +57,36 @@ workflows:
 
 
 jobs:
-  dist:
-    docker: [{image: python:3.6}]
+  static:
+    docker: [{image: node:16}]
     working_directory: &working_directory /workspace
     steps:
     - checkout
+    - run:
+        name: Install NPM project
+        command: |
+          cd ui;
+          npm install
+    - run:
+        name: Build browser assets
+        command: |
+          make static
+    - store_artifacts:
+        path: /workspace/ui/temboardui/static/
+    - persist_to_workspace:
+        root: .
+        paths:
+        - ui/temboardui/static/manifest.json
+        - ui/temboardui/static/*.js
+        - ui/temboardui/static/*.css
+
+  dist:
+    docker: [{image: python:3.6}]
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - attach_workspace:
+        at: *working_directory
     - run:
         name: Build Agent & UI
         command: |

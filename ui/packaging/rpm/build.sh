@@ -56,4 +56,5 @@ rpm -q --list --changelog "temboard-${VERSION}"
 (
 	cd /
 	temboard --version
+	test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
 )
