@@ -25,10 +25,11 @@ def test_query_agent(ui_auto_configure, agent):
     assert 'toto' == data['username']
 
 
-def test_settings(admin_session, browser, ui_url):
-    browser.get(ui_url + '/settings/metadata')
-    info = browser.select('#temboard_metadata').text
-    assert "Version" in info
+def test_about(admin_session, browser, ui_url):
+    browser.get(ui_url + '/about')
+    metadata = browser.select('#metadata').text
+    assert "Version" in metadata
+    browser.select("#buttonCopy").click()
 
 
 def test_web_register(

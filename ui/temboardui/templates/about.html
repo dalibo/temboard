@@ -1,0 +1,70 @@
+{% extends base.html %}
+
+{% block title %}About temBoard{% end %}
+
+{% block content %}
+{% whitespace single %}
+<div class="row">
+  <div class="col-12" id="content" style="font-size: 130%">
+    <div style="max-width: 800px" class="mx-auto w-100 w-md-75">
+      <div class="row justify-content-center">
+        <img class="m-4 w-50 w-xl-25" src="/images/heron.png" />
+      </div>
+      <div class="row">
+        <div class="col-12 text-center">
+          <h1 style="font-size: 3rem; color: #D65A16" class="font-weight-bold">temBoard {{ temboard_version }}</h3>
+        </div>
+      </div>
+      <div class="clipboard" style="position: relative;">
+        <button id="buttonCopy" class="btn btn-light" style="position: absolute; top: 0; right: 0;" title="Copy to clipboard" data-toggle="tooltip" onclick="copyToClipboard();">
+          <i class="fa fa-copy"></i>
+        </button>
+      </div>
+      <div class="row mt-2 m-1">
+        <div id="metadata">
+<!-- For copy-paste only -->
+<p style="display: none; ">About temBoard</p>
+{% for key in infos %}{% whitespace oneline %}<p class="mb-1"><strong>{{ key }}:</strong>
+  {% if 'Uptime' == key %}
+  <time datetime="{{ infos[key] }}+0000">{{ infos[key] }}</time>
+  {% else %}
+  <span id="{{ key }}">{{ infos[key] }}</span>
+  {% end %}
+</p>
+{% whitespace single %}{% if 'Uptime' == key %}<!-- for copy-paste only --><p style="display: none"><strong>Start time:</strong> <span>({{ infos[key] }})</span></p>{% end %}
+{% end %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/moment.min.js"></script>
+<script type="application/javascript">
+  function copyToClipboard() {
+    document.addEventListener("copy", copyToClipboardListener)
+    document.execCommand("copy");
+    document.removeEventListener("copy", copyToClipboardListener)
+  }
+
+  function copyToClipboardListener(e) {
+    e.preventDefault()
+    e.clipboardData.setData('text/plain', $('#metadata').text())
+    $("#buttonCopy").attr('data-original-title', 'Copied!')
+    $('#buttonCopy').tooltip('hide')
+    $('#buttonCopy').tooltip('show')
+  }
+
+  function update_relative_time() {
+    $("time[datetime]").each((_, el) => {
+      var datetime = moment($(el).attr('datetime')).local()
+      $(el).attr('title', datetime.format('LLLL'))
+      $(el).text(datetime.fromNow())
+    });
+  }
+
+  $(document).ready(function() {
+    update_relative_time()
+    setInterval(update_relative_time, 60 * 1000)
+  });
+</script>
+{% end %}
