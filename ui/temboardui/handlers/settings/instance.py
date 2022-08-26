@@ -201,8 +201,9 @@ def discover(request, address, port):
     except OSError as e:
         logger.error(
             "Failed to discover agent at %s:%s: %s",  address, port, e)
-        raise HTTPError(
-            400, "Can't connect to agent. Please check address and port.")
+        raise HTTPError(400, (
+            "Can't connect to agent. "
+            "Please check address and port or that agent is running."))
     else:
         # pass-through JSON
         return response.json()
