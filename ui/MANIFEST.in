@@ -27,6 +27,7 @@ exclude *.config.js
 exclude Makefile
 exclude package.json
 exclude package-lock.json
+prune temboardui/static/src
 prune packaging/deb
 prune packaging/rpm
 exclude dev/requirements.txt
