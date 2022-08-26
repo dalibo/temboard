@@ -9,8 +9,6 @@ export default defineConfig({
     outDir: '..',
     emptyOutDir: false,
     assetsDir: '.',
-    // Increase warning limit until highlighjs is extracted from base module.
-    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
         'temboard': '/temboard.js'

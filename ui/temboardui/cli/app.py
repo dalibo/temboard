@@ -231,9 +231,6 @@ def finalize_tornado_app(tornado_app, config):
         (r"/images/(.*)", tornado.web.StaticFileHandler, {
             'path': base_path + '/static/images'
         }),
-        (r"/fonts/(.*)", tornado.web.StaticFileHandler, {
-            'path': base_path + '/static/fonts'
-        }),
         # Path needs a (unused) path parameter, not used by subclass
         # SingleFileHandler.
         (r"/(signing.key)", SingleFileHandler, {

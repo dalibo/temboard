@@ -3,6 +3,10 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Maintenance{% end %}
 
+{% block head %}
+<link href="/js/highlightjs/default.css" rel="stylesheet" />
+{% end %}
+
 {% block content %}
 
 {% include breadcrumb.html %}

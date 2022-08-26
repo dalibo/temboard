@@ -2,8 +2,13 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Configuration / Main Config {% end %}
 
-{% block content %}
+{% block head %}
+<!-- Toggle -->
+<link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
 <link href="/css/pgconf/temboard.pgconf.css" rel="stylesheet">
+{% end %}
+
+{% block content %}
 <!-- Reset Modal -->
 <div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel">
   <div class="modal-dialog" role="document">

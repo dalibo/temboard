@@ -2,6 +2,11 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Notifications{% end %}
 
+{% block head %}
+<!-- DataTables CSS -->
+<link href="/js/datatables/datatables.min.css" rel="stylesheet">
+{% end %}
+
 {% block content %}
 <div class="limiter">
 <div class="row">

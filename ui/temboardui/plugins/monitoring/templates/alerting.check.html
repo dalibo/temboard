@@ -2,6 +2,10 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Monitoring{% end %}
 
+{% block head %}
+<link href="/css/dygraph.css" rel="stylesheet" />
+{% end %}
+
 {% block content %}
 
 <div id="check-container" v-cloak>

@@ -54,6 +54,7 @@ script to proceed.
 - New temBoard UI parameter `[auth] allowed_ip` to restrict API Key
   authorization. By default, only 127/8 is allowed.
 - temBoard UI now accept to serve plain HTTP. For development purpose.
+- Dropped support of Internet Explorer 8 and below.
 
 
 ## [7.11] - Unreleased

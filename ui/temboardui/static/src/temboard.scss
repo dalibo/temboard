@@ -2,9 +2,6 @@
 @import "bootstrap";
 @import "daterangepicker-override";
 @import "daterangepicker";
-@import "dygraph";
-// Should not be in base style. Here for legacy.
-@import "highlightjs/styles/default";
 
 @each $color, $value in $theme-colors {
   @include bg-variant(".bg-#{$color}-light", lighten($value, 43));

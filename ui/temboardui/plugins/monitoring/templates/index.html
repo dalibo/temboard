@@ -2,6 +2,10 @@
 
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Monitoring{% end %}
 
+{% block head %}
+<link href="/css/dygraph.css" rel="stylesheet" />
+{% end %}
+
 {% block content %}
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
   <div class="modal-dialog" role="document">
