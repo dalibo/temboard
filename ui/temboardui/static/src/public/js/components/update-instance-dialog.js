@@ -119,10 +119,11 @@ $(function() { Vue.component('update-instance-dialog', {    /*
 
       $(this.$el).modal('show');
 
-      this.discover_agent().done(() => {
-        this.fetch_current_data().done(() => {
+      this.fetch_current_data().done(() => {
+        this.$nextTick(this.$refs.form.setup_multiselects);
+        // Discover may fail if agent is down.
+        this.discover_agent().done(() => {
           this.waiting = false;
-          this.$nextTick(this.$refs.form.setup_multiselects);
         });
       });
     },
