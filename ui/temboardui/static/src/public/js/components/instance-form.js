@@ -110,7 +110,7 @@ $(function() { Vue.component('instance-form', {    /*
         </div>
       </div>
       <div class="row">
-        <div id="divGroups" class="form-group col-sm-6">
+        <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
           <label for="selectGroups">Groups</label>
           <select id="selectGroups" v-bind:disabled="waiting" multiple required>
             <option v-for="group of groups"
@@ -120,7 +120,7 @@ $(function() { Vue.component('instance-form', {    /*
           </select>
           <div id="tooltip-container"></div>
         </div>
-        <div id="divPlugins" class="form-group col-sm-6">
+        <div id="divPlugins" class="form-group col-sm-6" v-if="plugins.length > 0">
           <label for="selectPlugins" class="control-label">Plugins</label>
           <select id="selectPlugins" v-bind:disabled="waiting" multiple="multiple">
             <option v-for="plugin of plugins"
