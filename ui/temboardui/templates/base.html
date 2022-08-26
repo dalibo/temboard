@@ -41,7 +41,7 @@
         {% if 'instance' in globals() %}
         <div class="navbar-text mr-auto">
           <b>
-            {{instance.hostname}}
+            {{instance.hostname}}:{{instance.pg_port}}
           </b>
         </div>
         {% end %}
