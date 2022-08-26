@@ -26,6 +26,7 @@ exclude .gitmodules
 exclude *.config.js
 exclude Makefile
 exclude package.json
+exclude package-lock.json
 prune packaging/deb
 prune packaging/rpm
 exclude dev/requirements.txt
