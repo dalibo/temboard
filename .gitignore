@@ -33,7 +33,6 @@ tests/workdir/
 
 # Nodejs buildtime files
 node_modules/
-package-lock.json
 
 # temBoard runtime files
 server_tasks.db

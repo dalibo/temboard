@@ -63,10 +63,11 @@ jobs:
     steps:
     - checkout
     - run:
-        name: Install NPM project
+        name: Install Browser packages
         command: |
           cd ui;
-          npm install
+          ls
+          npm install-clean
     - run:
         name: Build browser assets
         command: |
