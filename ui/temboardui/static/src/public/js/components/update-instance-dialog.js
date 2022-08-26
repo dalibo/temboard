@@ -119,10 +119,11 @@ $(function() { Vue.component('update-instance-dialog', {    /*
 
       $(this.$el).modal('show');
 
-      this.discover_agent().done(() => {
-        this.fetch_current_data().done(() => {
+      this.fetch_current_data().done(() => {
+        this.$nextTick(this.$refs.form.setup_multiselects);
+        // Discover may fail if agent is down.
+        this.discover_agent().done(() => {
           this.waiting = false;
-          this.$nextTick(this.$refs.form.setup_multiselects);
         });
       });
     },
@@ -136,6 +137,9 @@ $(function() { Vue.component('update-instance-dialog', {    /*
         this.notify = data.notify;
         this.comment = data.comment;
         this.agent_key = data.agent_key;
+        // Will be overriden by discover, if agent is up.
+        this.pg_host = data.hostname;
+        this.pg_port = data.pg_port;
         this.ui_groups = data.groups;
         this.ui_plugins = data.loaded_plugins;
         this.current_data = data;

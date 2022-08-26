@@ -1,7 +1,11 @@
 import logging
 import ssl
 from socket import error as SocketError
-from wsgiref.simple_server import make_server, ServerHandler
+from wsgiref.simple_server import (
+    make_server,
+    ServerHandler,
+    WSGIRequestHandler,
+)
 
 from bottle import debug, default_app
 
@@ -25,6 +29,7 @@ class HTTPDService(Service):
                 self.app.config.temboard.address,
                 self.app.config.temboard.port,
                 app=bottle,
+                handler_class=CustomWSGIRequestHandler,
             )
         except SocketError as e:
             raise UserError("Failed to start HTTPS server: {}.".format(e))
@@ -46,3 +51,14 @@ class HTTPDService(Service):
 
     def serve1(self):
         self.server.handle_request()
+
+
+class CustomWSGIRequestHandler(WSGIRequestHandler):
+    def get_environ(self):
+        env = super(CustomWSGIRequestHandler, self).get_environ()
+
+        # Save raw PATH_INFO for signature computation.
+        path, _, _ = self.path.partition('?')
+        env['RAW_PATH_INFO'] = path
+
+        return env

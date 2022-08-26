@@ -41,11 +41,6 @@ class CustomBottle(Bottle):
         # Skip HTML template.
         return res.body
 
-    def __call__(self, environ, start_response):
-        # Keep a copy of the original PATH_INFO, before bottle modifies it.
-        environ['ORIG_PATH_INFO'] = environ['PATH_INFO']
-        return super(CustomBottle, self).__call__(environ, start_response)
-
     def mount(self, prefix, app, **options):
         for plugin in self.plugins:
             app.install(plugin)
@@ -194,7 +189,7 @@ class SignaturePlugin(object):
         if not signature:
             raise HTTPError(400, 'Malformed signature')
 
-        path = request.environ['ORIG_PATH_INFO']
+        path = request.environ['RAW_PATH_INFO']
         if request.environ['QUERY_STRING']:
             path = path + '?' + request.environ['QUERY_STRING']
         canonical_request = canonicalize_request(

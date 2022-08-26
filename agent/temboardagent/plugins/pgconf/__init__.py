@@ -13,7 +13,7 @@ def get_configuration(pgconn):
     return get_configuration_category(pgconn, None)
 
 
-@bottle.get('/configuration/category/<category>')
+@bottle.get('/configuration/category/<category:path>')
 def get_configuration_category(pgconn, category):
     search = None
     if 'filter' in request.query:
