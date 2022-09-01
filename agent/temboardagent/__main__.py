@@ -14,6 +14,7 @@ def main():
     __import__(__package__ + '.web.core')
 
     # Import commands
+    __import__(__package__ + '.cli.discover')
     __import__(__package__ + '.cli.fetch_key')
     __import__(__package__ + '.cli.register')
     __import__(__package__ + '.cli.routes')

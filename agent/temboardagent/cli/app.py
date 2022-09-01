@@ -2,12 +2,12 @@ import logging
 import os
 import datetime
 import getpass
-import sys
 from argparse import _VersionAction
-from platform import python_version
 from socket import getfqdn
 from textwrap import dedent
 
+from ..discover import Discover, inspect_versions
+from ..queries import QUERIES
 from ..toolkit.configuration import OptionSpec
 from ..toolkit.errors import UserError
 from ..web import HTTPDService
@@ -18,11 +18,6 @@ from ..toolkit.configuration import MergedConfiguration
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.signing import load_public_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
-from ..toolkit.versions import (
-    format_pq_version,
-    read_distinfo,
-    read_libpq_version,
-)
 from ..notification import NotificationMgmt
 from ..version import __version__
 
@@ -92,6 +87,9 @@ class TemboardAgentApplication(BaseApplication):
         self.log_versions()
         config = self.config
 
+        self.discover = Discover(self)
+        self.discover.read()
+
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(
             os.path.join(config.temboard['home'], 'agent_tasks.db')
@@ -107,6 +105,8 @@ class TemboardAgentApplication(BaseApplication):
 
         if config.postgresql.instance:
             setproctitle.prefix += config.postgresql.instance + ': '
+
+        QUERIES.load()
 
         self.start_datetime = datetime.datetime.now()
         self.reload_datetime = None
@@ -189,7 +189,7 @@ class TemboardAgentApplication(BaseApplication):
                 yield spec
 
     def log_versions(self):
-        versions = VersionAction.inspect_versions()
+        versions = inspect_versions()
         logger.debug(
             "Running on %s %s.",
             versions['distname'], versions['distversion'])
@@ -242,29 +242,8 @@ class VersionAction(_VersionAction):
     """)
 
     def __call__(self, parser, *_):
-        print((self.fmt % self.inspect_versions()).strip())
+        print((self.fmt % inspect_versions()).strip())
         parser.exit()
-
-    @classmethod
-    def inspect_versions(cls):
-        from bottle import __version__ as bottle_version
-        from psycopg2 import __version__ as psycopg2_version
-        from cryptography import __version__ as cryptography_version
-
-        distinfos = read_distinfo()
-
-        return dict(
-            temboard=__version__,
-            temboardbin=sys.argv[0],
-            psycopg2=psycopg2_version,
-            python=python_version(),
-            pythonbin=sys.executable,
-            bottle=bottle_version,
-            distname=distinfos['NAME'],
-            distversion=distinfos['VERSION'],
-            libpq=format_pq_version(read_libpq_version()),
-            cryptography=cryptography_version,
-        )
 
 
 def list_options_specs():
