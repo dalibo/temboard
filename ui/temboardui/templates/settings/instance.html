@@ -3,8 +3,9 @@
 {% block title %}temBoard - settings{% end %}
 
 {% block head %}
-<!-- DataTables CSS -->
-<link href="/js/datatables/datatables.min.css" rel="stylesheet">
+{% if vitejs.PROD %}
+<link href="{{ vitejs.url_for('temboard.settings.instance.css') }}" rel="stylesheet" />
+{% end %}
 <!-- Multiselect -->
 <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
 {% end %}
@@ -94,7 +95,6 @@
   </div>
 </div>
 
-<script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
 <script type="module" src="{{ vitejs.url_for('temboard.settings.instance.js') }}">
 </script>

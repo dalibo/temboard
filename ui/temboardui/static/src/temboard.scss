@@ -245,6 +245,11 @@ table.dashboard-information {
   margin-top: 20px;
 }
 
+.dataTables_wrapper div.dt-buttons {
+  float: none;
+  display: inline-block;
+}
+
 table.dataTable thead {
   .sorting,
   .sorting_asc,
