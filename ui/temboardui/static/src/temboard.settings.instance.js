@@ -24,6 +24,8 @@ window.app = new Vue({
   created() {
     this.$nextTick(() => {
       var table = $('#tableInstances').DataTable({
+        lengthChange: false,
+        pageLength: 50,
         buttons: [{
           attr: {
             title: "Download inventory as CSV",
