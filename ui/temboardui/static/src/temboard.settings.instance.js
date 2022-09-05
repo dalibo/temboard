@@ -1,10 +1,12 @@
 import Vue from 'vue/dist/vue.esm'
+import DeleteInstanceDialog from './components/DeleteInstanceDialog.vue'
 import NewInstanceWizard from './components/NewInstanceWizard.vue'
 import UpdateInstanceDialog from './components/UpdateInstanceDialog.vue'
 
 window.app = new Vue({
   el: "#vue-app",
   components: {
+    'delete-instance-dialog': DeleteInstanceDialog,
     'new-instance-wizard': NewInstanceWizard,
     'update-instance-dialog': UpdateInstanceDialog
   },
