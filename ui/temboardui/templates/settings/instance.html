@@ -11,7 +11,7 @@
 
 {% block content %}
 <div id="vue-app">
-  <new-instance-wizard></new-instance-wizard>
+  <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
   <delete-instance-dialog ref="delete_modal"></delete-instance-dialog>
 
@@ -98,44 +98,10 @@
 <script src="/js/components/modal-dialog.js"></script>
 <script src="/js/components/instance-details.js"></script>
 <script src="/js/components/instance-form.js"></script>
-<script src="/js/components/new-instance-wizard.js"></script>
 <script src="/js/components/update-instance-dialog.js"></script>
 <script src="/js/components/delete-instance-dialog.js"></script>
 <script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
-<script>
-$(document).ready(function() {
-  new Vue({
-    el: "#vue-app",
-    created() {
-      this.$nextTick(() => {
-        var table = $('#tableInstances').DataTable({
-          buttons: [{
-            attr: {
-              title: "Download inventory as CSV",
-              id: "buttonDownload",
-              "data-toggle": "tooltip"
-            },
-            className: "btn-sm mx-1",
-            text: `<i class="fa fa-download"></i>`,
-            action: function(e, dt, node, config) {
-              /*
-              * Use temBoard UI API instead of datatable export. UI export includes
-              * more data and has reordered column.
-              */
-              var filter = $("#tableInstances_filter input").val();
-              var url = new URLSearchParams({filter});
-              window.location.replace("/settings/instances.csv?" + url.toString());
-            }
-          }],
-          stateSave: true
-        });
-
-        table.buttons().container().appendTo($("#tableInstances_filter"));
-      });
-    }
-  });
-});
-
+<script type="module" src="{{ vitejs.url_for('temboard.settings.instance.js') }}">
 </script>
 {% end %}
