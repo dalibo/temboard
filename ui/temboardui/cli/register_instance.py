@@ -216,18 +216,7 @@ class RegisterInstance(SubCommand):
         logger.info("Browse instance at %s.", dashboard_url)
 
     def output_instance(self, instance):
-        data = dict(
-            hostname=instance.hostname,
-            pg_port=instance.pg_port,
-            pg_data=instance.pg_data,
-            agent_address=instance.agent_address,
-            agent_port=instance.agent_port,
-            groups=[group.group_name for group in instance.groups],
-            plugins=[plugin.plugin_name for plugin in instance.plugins],
-            comment=instance.comment,
-            notify=instance.notify,
-        )
-        json.dump(data, sys.stdout, indent="  ")
+        json.dump(instance.asdict(), sys.stdout, indent="  ")
         sys.stdout.write(os.linesep)
 
 

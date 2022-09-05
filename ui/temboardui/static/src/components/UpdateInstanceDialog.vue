@@ -148,11 +148,11 @@ export default {
         // Will be overriden by discover, if agent is up.
         this.pg_host = data.hostname;
         this.pg_port = data.pg_port;
-        this.server_groups = data.groups;
-        this.server_plugins = data.loaded_plugins;
+        this.server_groups = data.server_groups;
+        this.server_plugins = data.server_plugins;
         this.current_data = data;
-        this.current_plugins = data.enabled_plugins;
-        this.current_groups = data.in_groups;
+        this.current_plugins = data.plugins;
+        this.current_groups = data.groups;
       });
     },
     update(data) {
