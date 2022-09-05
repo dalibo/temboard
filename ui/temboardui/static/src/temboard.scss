@@ -38,8 +38,8 @@ html {
     width: inherit;
     transition: max-width .2s ease;
     & > div {
-      min-width: $sidebar-width - $grid-gutter-width / 2;
-      max-width: $sidebar-width - $grid-gutter-width / 2;
+      min-width: calc($sidebar-width - $grid-gutter-width / 2);
+      max-width: calc($sidebar-width - $grid-gutter-width / 2);
     }
     position:relative;
     overflow: auto;
@@ -57,7 +57,7 @@ html {
       }
     }
     .sidebar-collapsed &:hover {
-      max-width: $sidebar-width + $grid-gutter-width / 2;
+      max-width: calc($sidebar-width + $grid-gutter-width / 2);
       box-shadow: 0 16px 10px 0 rgba(0,0,0,0.14), 0 11px 18px 0 rgba(0,0,0,0.12), 0 13px 5px -1px rgba(0,0,0,0.2);
 
       .info {
@@ -534,7 +534,7 @@ table td.auto-width {
 
 .progress-bar-striped-small {
   @include gradient-striped-small();
-  background-size: $progress-height/3*2 $progress-height/3*2;
+  background-size: calc($progress-height/3*2) calc($progress-height/3*2);
 }
 
 *:fullscreen {
