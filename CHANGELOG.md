@@ -55,6 +55,8 @@ script to proceed.
   authorization. By default, only 127/8 is allowed.
 - temBoard UI now accept to serve plain HTTP. For development purpose.
 - Dropped support of Internet Explorer 8 and below.
+- Out-of-band instance registration with new command `temboard
+  register-instance`.
 
 
 ## [7.11] - Unreleased
