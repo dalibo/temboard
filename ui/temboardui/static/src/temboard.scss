@@ -3,10 +3,6 @@
 @import "daterangepicker-override";
 @import "daterangepicker";
 
-@each $color, $value in $theme-colors {
-  @include bg-variant(".bg-#{$color}-light", lighten($value, 43));
-}
-
 html {
   font-size: 14px;
 }
