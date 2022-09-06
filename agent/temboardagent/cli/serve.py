@@ -29,6 +29,8 @@ class Serve(SubCommand):
             db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
 
         self.app.config.load_signing_key()
+        self.app.discover.refresh()
+        self.app.discover.write()
 
         if self.app.config.temboard.daemonize:
             daemonize(self.app.config.temboard.pidfile)
