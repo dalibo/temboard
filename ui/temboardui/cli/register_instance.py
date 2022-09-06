@@ -13,12 +13,13 @@ from ..application import (
 from ..model import Session
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
-from ..toolkit import taskmanager
 from ..toolkit import validators as v
 from ..handlers.settings.instance import (
     add_instance_in_groups,
     enable_instance_plugins,
 )
+from ..plugins.monitoring import collector
+from ..plugins.statements import statements_pull1
 
 logger = logging.getLogger(__name__)
 
@@ -176,30 +177,19 @@ class RegisterInstance(SubCommand):
         logger.info("Instance successfully registered.")
 
         logger.debug("Fast-collect monitoring metrics.")
-        tmsocket = os.path.join(self.app.config.temboard.home, '.tm.socket')
-        if os.path.exists(tmsocket):
+        if os.path.exists(self.app.scheduler.scheduler.address):
             if 'monitoring' in plugins:
                 logger.info("Schedule monitoring collect for agent now.")
-                taskmanager.schedule_task(
-                    'collector',
-                    listener_addr=tmsocket,
-                    options=dict(
-                        address=data['new_agent_address'],
-                        port=data['new_agent_port'],
-                    ),
-                    expire=0,
+                collector.defer(
+                    address=data['new_agent_address'],
+                    port=data['new_agent_port'],
                 )
 
             if 'statements' in plugins:
                 logger.info("Schedule statements collect for agent now.")
-                taskmanager.schedule_task(
-                    'statements_pull1',
-                    listener_addr=tmsocket,
-                    options=dict(
-                        host=data['new_agent_address'],
-                        port=data['new_agent_port'],
-                    ),
-                    expire=0,
+                statements_pull1.defer(
+                    host=data['new_agent_address'],
+                    port=data['new_agent_port'],
                 )
         else:
             logger.info(

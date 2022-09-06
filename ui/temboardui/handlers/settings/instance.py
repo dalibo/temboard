@@ -1,5 +1,4 @@
 import codecs
-import os.path
 import logging
 
 from temboardui.application import (
@@ -25,9 +24,10 @@ from temboardui.web.tornado import (
     render_template,
     Response,
 )
-from ...toolkit import taskmanager
 from ...toolkit.pycompat import StringIO
 from ...model import QUERIES
+from ...plugins.monitoring import collector as monitoring_collector
+from ...plugins.statements import statements_pull1
 
 
 logger = logging.getLogger(__name__)
@@ -50,30 +50,19 @@ def create_instance_helper(db_session, data):
         db_session, instance, plugins, app.config.temboard.plugins,
     )
 
-    tmsocket = os.path.join(app.config.temboard.home, '.tm.socket')
     if 'monitoring' in plugins:
         logger.info("Schedule monitoring collect for agent now.")
-        taskmanager.schedule_task(
-            'collector',
-            listener_addr=tmsocket,
-            options=dict(
-                address=data['new_agent_address'],
-                port=data['new_agent_port'],
-                key=data['agent_key'],
-            ),
-            expire=0,
+        monitoring_collector.defer(
+            address=data['new_agent_address'],
+            port=data['new_agent_port'],
+            key=data['agent_key'],
         )
 
     if 'statements' in plugins:
         logger.info("Schedule statements collect for agent now.")
-        taskmanager.schedule_task(
-            'statements_pull1',
-            listener_addr=tmsocket,
-            options=dict(
-                host=data['new_agent_address'],
-                port=data['new_agent_port'],
-            ),
-            expire=0,
+        statements_pull1.defer(
+            host=data['new_agent_address'],
+            port=data['new_agent_port'],
         )
 
 
