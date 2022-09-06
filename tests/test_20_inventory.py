@@ -16,7 +16,7 @@ def test_query_agent(ui_auto_configure, agent):
     url = f"{agent.base_url}/discover"
     out = client(url)
     data = json.loads(str(out))
-    assert 'hostname' in data
+    assert 'postgres' in data
 
     # username
     url = f"{agent.base_url}/profile"

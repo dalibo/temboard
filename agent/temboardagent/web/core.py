@@ -1,9 +1,8 @@
 import logging
 
-from bottle import default_app, get, post, request
+from bottle import default_app, get, post, request, response
 
 from ..notification import NotificationMgmt
-from ..inventory import SysInfo, PgInfo
 from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
 from ..version import __version__ as version
 
@@ -13,38 +12,9 @@ logger = logging.getLogger(__name__)
 
 @get('/discover', skip=['signature'])
 def get_discover():
-    logger.info('Starting discovery.')
     app = default_app().temboard
-    discover = dict(
-        pg_port=app.config.postgresql['port'],
-        pg_version=None,
-        pg_version_summary=None,
-        pg_data=None,
-        plugins=app.config.temboard['plugins'],
-        signature_status='enabled',
-    )
-
-    # Gather system informations
-    sysinfo = SysInfo()
-    discover.update(
-        hostname=sysinfo.hostname(app.config.temboard['hostname']),
-        cpu=sysinfo.n_cpu(),
-        memory_size=sysinfo.memory_size(),
-    )
-
-    try:
-        with app.postgres.connect() as conn:
-            pginfo = PgInfo(conn)
-            discover.update(
-                pg_block_size=int(pginfo.setting('block_size')),
-                pg_version=pginfo.version()['full'],
-                pg_version_summary=pginfo.version()['summary'],
-                pg_data=pginfo.setting('data_directory')
-            )
-    except Exception:
-        logger.exception('Postgres discovery failed.')
-        # Do not raise HTTPError, just keeping null values for Postgres
-        # informations.
+    discover = app.discover.ensure_latest().copy()
+    discover['signature_status'] = 'enabled'
 
     signature = request.headers.get('x-temboard-signature')
     if signature:
@@ -64,6 +34,7 @@ def get_discover():
         except InvalidSignature:
             discover['signature_status'] = 'invalid'
 
+    response.set_header('ETag', app.discover.etag)
     return discover
 
 

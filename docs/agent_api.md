@@ -3,42 +3,6 @@
 ## Core API {#core_api}
 
 
-> Get global informations about the environment
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-
-**Example request**:
-
-``` http
-GET /discover HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:33:19 GMT
-Content-type: application/json
-
-{
-    "hostname": "neptune",
-    "pg_data": "/var/lib/postgresql/9.4/main",
-    "pg_port": 5432,
-    "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance"],
-    "memory_size": 8241508352,
-    "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
-    "cpu": 4
-}
-```
-
 > Get current username
 >
 > status 200

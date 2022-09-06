@@ -83,11 +83,12 @@ class Register(SubCommand):
             logger.info("Discovering system and PostgreSQL ...")
             response = agentclient.get('/discover')
             response.raise_for_status()
-            infos = response.json()
+            discover = response.json()
             logger.info(
-                "temboard agent for %s instance serving %s on port %s.",
-                infos['pg_version_summary'],
-                infos['pg_data'], infos['pg_port'],
+                "temBoard agent for %s instance serving %s on port %s.",
+                discover['postgres']['version_summary'],
+                discover['postgres']['data_directory'],
+                discover['postgres']['port'],
             )
         except OSError as e:
             logger.error("Failed to connect to agent: %s", e)
@@ -148,23 +149,20 @@ class Register(SubCommand):
             logger.info(
                 "Registering instance/agent in %s ...", ui_url_raw)
             path = ui_url.path + '/json/register/instance'
-            response = uiclient.post(
-                path,
-                {
-                    'hostname': infos['hostname'],
-                    'agent_key': app.config.temboard['key'],
-                    'agent_address': args.host,
-                    'agent_port': str(app.config.temboard['port']),
-                    'cpu': infos['cpu'],
-                    'memory_size': infos['memory_size'],
-                    'pg_port': infos['pg_port'],
-                    'pg_data': infos['pg_data'],
-                    'pg_version': infos['pg_version'],
-                    'pg_version_summary': infos['pg_version_summary'],
-                    'plugins': infos['plugins'],
-                    'groups': groups
-                },
-            )
+            response = uiclient.post(path, {
+                'hostname': discover['system']['hostname'],
+                'agent_key': app.config.temboard['key'],
+                'agent_address': args.host,
+                'agent_port': str(app.config.temboard['port']),
+                'cpu': discover['system']['cpu_count'],
+                'memory_size': discover['system']['memory'],
+                'pg_port': discover['postgres']['port'],
+                'pg_data': discover['postgres']['data_directory'],
+                'pg_version': discover['postgres']['version'],
+                'pg_version_summary': discover['postgres']['version_summary'],
+                'plugins': discover['temboard']['plugins'],
+                'groups': groups
+            })
             response.raise_for_status()
             dashboard_url = ui_url_raw + '/server/%s/%s/dashboard' % (
                 args.host, self.app.config.temboard.port,

@@ -192,8 +192,34 @@ def discover(request, address, port):
             "Can't connect to agent. "
             "Please check address and port or that agent is running."))
     else:
-        # pass-through JSON
-        return response.json()
+        data = response.json()
+
+    if 'signature_status' in data:
+        return data
+    else:
+        # Transparently expose new format to JS from old agents.
+        return translate_v7_discover(data)
+
+
+def translate_v7_discover(data):
+    return dict(
+        temboard=dict(
+            plugins=data['plugins'],
+        ),
+        system=dict(
+            cpu_count=data['cpu'],
+            memory=data['memory_size'],
+            fqdn=data['hostname'],
+            os='Linux',  # We don't support anything else in v7.
+        ),
+        postgres=dict(
+            port=data['pg_port'],
+            version=data['pg_version'],
+            version_summary=data['pg_version_summary'],
+            block_size=data['pg_block_size'],
+            data_directory=data['pg_data'],
+        ),
+    )
 
 
 @app.route(r"/settings/instances")
