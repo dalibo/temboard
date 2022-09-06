@@ -16,4 +16,5 @@ class Discover(SubCommand):
         self.app.discover.refresh()
         self.app.discover.write()
         self.app.discover.write(sys.stdout)
+        logger.debug("Discover etag is %s.", self.app.discover.etag)
         return 0

@@ -1,8 +1,10 @@
 # Introspect Postgres instance, temBoard agent and system
 #
-# Discover is a stable set of properties identifying a running system.
+# Discover is a stable set of properties identifying a running system. temBoard
+# computes an ETag from discover data to ease change detection.
 #
 
+import hashlib
 import json
 import logging
 import os
@@ -30,6 +32,9 @@ class Discover:
         self.app = app
         self.path = self.app.config.temboard.home + '/discover.json'
         self.data = {}
+        self.json = None  # bytes
+        self.etag = None
+        self.file_etag = None
         self.mtime = None
 
     def ensure_latest(self):
@@ -41,19 +46,23 @@ class Discover:
     def read(self):
         logger.debug("Reading discover data from %s.", self.path)
         try:
-            fo = open(self.path, 'r')
+            fo = open(self.path, 'rb')
         except IOError as e:
             logger.debug("Failed to read manifest: %s.", e)
             return self.data
 
         with fo:
-            try:
-                data = json.load(fo)
-            except json.JSONDecodeError as e:
-                raise UserError("Malformed manifest: %s" % e)
+            self.json = fo.read()
 
-            if not isinstance(data, dict):
-                raise UserError("Malformed manifest: not a mapping")
+        self.etag = self.file_etag = compute_etag(self.json)
+
+        try:
+            data = json.loads(self.json.decode('utf-8'))
+        except json.JSONDecodeError as e:
+            raise UserError("Malformed manifest: %s" % e)
+
+        if not isinstance(data, dict):
+            raise UserError("Malformed manifest: not a mapping")
 
         self.data.update(data)
         self.mtime = os.stat(self.path).st_mtime
@@ -61,19 +70,16 @@ class Discover:
 
     def write(self, fo=None):
         if fo is None:
+            if self.etag == self.file_etag:
+                logger.debug("Discover file up to date.")
+                return
             self.mtime = None
 
         with (fo or open(self.path, 'w')) as fo:
-            json.dump(
-                self.data,
-                fo,
-                indent="  ",
-                sort_keys=True,
-                cls=JSONEncoder,
-            )
-            fo.write("\n")  # Final new line.
+            fo.write(self.json.decode('utf-8'))
 
         if self.mtime is None:  # if not sys.stdout.
+            logger.debug("Wrote discover.json with ETag %s.", self.etag)
             self.mtime = os.stat(self.path).st_mtime
 
     def refresh(self):
@@ -97,6 +103,21 @@ class Discover:
 
         with self.app.postgres.connect() as conn:
             collect_postgres(d, conn)
+
+        # Build JSON to compute ETag.
+        json_text = json.dumps(
+            self.data,
+            indent="  ",
+            sort_keys=True,
+            cls=JSONEncoder,
+        ) + "\n"
+        self.json = json_text.encode('utf-8')
+        self.etag = compute_etag(self.json)
+
+        if self.etag != self.file_etag:
+            logger.info("Instance discover updated.")
+        else:
+            logger.debug("Instance discover has not changed.")
 
         return self.data
 
@@ -192,3 +213,9 @@ def inspect_versions():
         libpq=format_pq_version(read_libpq_version()),
         cryptography=cryptography_version,
     )
+
+
+def compute_etag(data):
+    h = hashlib.new('sha256')
+    h.update(data)
+    return h.hexdigest()
