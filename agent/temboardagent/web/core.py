@@ -1,6 +1,6 @@
 import logging
 
-from bottle import default_app, get, request
+from bottle import default_app, get, post, request
 
 from ..notification import NotificationMgmt
 from ..inventory import SysInfo, PgInfo
@@ -65,6 +65,16 @@ def get_discover():
             discover['signature_status'] = 'invalid'
 
     return discover
+
+
+@post('/discover')
+def post_discover(pgconn):
+    app = default_app().temboard
+    data = app.discover.refresh(pgconn).copy()
+    # POST endpoint does not bypass signature verification.
+    data['signature_status'] = 'valid'
+    response.set_header('ETag', app.discover.etag)
+    return data
 
 
 @get

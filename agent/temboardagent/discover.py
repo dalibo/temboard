@@ -20,7 +20,7 @@ from .toolkit.versions import (
     read_distinfo,
     read_libpq_version,
 )
-from .tools import JSONEncoder
+from .tools import JSONEncoder, noop_manager
 from .version import __version__
 
 
@@ -82,7 +82,7 @@ class Discover:
             logger.debug("Wrote discover.json with ETag %s.", self.etag)
             self.mtime = os.stat(self.path).st_mtime
 
-    def refresh(self):
+    def refresh(self, conn=None):
         logger.debug("Inspecting PostgreSQL instance and system.")
         d = self.data
         d.clear()
@@ -101,7 +101,8 @@ class Discover:
         collect_memory(d)
         collect_system(d)
 
-        with self.app.postgres.connect() as conn:
+        mgr = noop_manager(conn) if conn else self.app.postgres.connect()
+        with mgr as conn:
             collect_postgres(d, conn)
 
         # Build JSON to compute ETag.

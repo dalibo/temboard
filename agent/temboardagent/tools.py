@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime
 from time import strftime, gmtime
+from contextlib import contextmanager
 
 from bottle import HTTPError
 
@@ -133,3 +134,8 @@ class JSONEncoder(json.JSONEncoder):
             return obj.isoformat()
         else:
             return super().default(obj)
+
+
+@contextmanager
+def noop_manager(ret=None):
+    yield ret
