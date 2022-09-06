@@ -248,6 +248,14 @@ class Instances(Model):
     def __str__(self):
         return '%s:%s' % (self.hostname, self.pg_port)
 
+    def dashboard_url(self, app):
+        scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
+        host = app.config.temboard.address
+        port = app.config.temboard.port
+        path = '/server/%s/%s/dashboard' % (
+            self.agent_address, self.agent_port)
+        return '%s://%s:%s%s' % (scheme, host, port, path)
+
     def asdict(self):
         return dict(
             hostname=self.hostname,

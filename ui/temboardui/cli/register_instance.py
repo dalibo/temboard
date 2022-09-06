@@ -105,6 +105,8 @@ class RegisterInstance(SubCommand):
                     instance.hostname, instance.pg_port,
                 )
                 self.output_instance(instance)
+                logger.info(
+                    "Browse instance at %s.", instance.dashboard_url(self.app))
                 return 0
 
         logger.info("Discovering temBoard agent at %s.", agent)
@@ -206,14 +208,7 @@ class RegisterInstance(SubCommand):
 
         self.output_instance(instance)
 
-        # Build Dashboard URL
-        scheme = 'https' if self.app.config.temboard.ssl_key_file else 'http'
-        host = self.app.config.temboard.address
-        port = self.app.config.temboard.port
-        path = '/server/%s/%s/dashboard' % (
-            args.agent_address, args.agent_port)
-        dashboard_url = '%s://%s:%s%s' % (scheme, host, port, path)
-        logger.info("Browse instance at %s.", dashboard_url)
+        logger.info("Browse instance at %s.", instance.dashboard_url(self.app))
 
     def output_instance(self, instance):
         json.dump(instance.asdict(), sys.stdout, indent="  ")
