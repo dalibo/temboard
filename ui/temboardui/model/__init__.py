@@ -7,12 +7,13 @@ from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy import create_engine
 
 from .migrator import Migrator
+from ..toolkit.queries import QueryFiler
 
 
 Session = sessionmaker(expire_on_commit=False)
 logger = logging.getLogger(__name__)
-# named queries, loaded with t.m.queries.load_queries() by temboardui.__main__.
-QUERIES = {}
+# named queries, loaded with QUERIES.load() by temboardui.__main__.
+QUERIES = QueryFiler(__path__[0] + '/queries')
 
 
 def format_dsn(dsn):

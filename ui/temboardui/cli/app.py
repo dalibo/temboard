@@ -20,7 +20,7 @@ from tornado import autoreload
 from tornado.httpserver import HTTPServer
 
 from ..autossl import AutoHTTPSServer
-from ..model import configure as configure_db_session, queries
+from ..model import configure as configure_db_session, QUERIES
 from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import (
     BaseApplication,
@@ -343,7 +343,7 @@ class TornadoService(Service):
         for path in self.iter_template_files():
             autoreload.watch(path)
 
-        for path in queries.iter_queries_files(queries.QUERIESDIR):
+        for path in QUERIES.iter_files():
             autoreload.watch(path)
 
 

@@ -22,7 +22,6 @@ import sys
 from .web.flask import create_app
 from .cli.app import app
 from .model import QUERIES
-from .model.queries import load_queries
 
 
 def main():
@@ -44,7 +43,7 @@ def main():
     __import__(__package__ + '.cli.serve')
     __import__(__package__ + '.cli.web')
 
-    QUERIES.update(load_queries())
+    QUERIES.load()
 
     return app()
 
