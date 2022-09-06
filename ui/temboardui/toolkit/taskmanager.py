@@ -1075,6 +1075,16 @@ class WorkerPoolService(Service):
         wrapper._tm_function = function
         return wrapper
 
+    def create_defer_function(self, name):
+        def defer(**kw):
+            return schedule_task(
+                name,
+                listener_addr=self.app.scheduler.scheduler.address,
+                options=kw,
+                expire=0,
+            )
+        return defer
+
     def add(self, workerset):
         if not self.is_my_process:
             return
@@ -1088,6 +1098,8 @@ class WorkerPoolService(Service):
             wrapper_name = '_tm_wrapper_' + function.__name__
             setattr(mod, wrapper_name, wrapper)
             conf['function'] = wrapper_name
+
+            function.defer = self.create_defer_function(conf['name'])
 
             # Add to current workers
             logger.debug("Register worker %s", conf['name'])
