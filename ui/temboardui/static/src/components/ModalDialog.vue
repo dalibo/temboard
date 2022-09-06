@@ -1,14 +1,16 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('modal-dialog', {
-  /* A simple boostrap Dialog */
+<script type="text/javascript">
+/* A simple boostrap Dialog */
+export default {
   props: ['id', 'title'],
   mounted() {
     $(this.$el).on("hidden.bs.modal", () => {
       this.$emit('closed');
     });
-  },
-  template: `
+  }
+}
+</script>
+
+<template>
   <div v-bind:id="id" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -22,5 +24,4 @@ $(function() { Vue.component('modal-dialog', {
       </div>
     </div>
   </div>
-  `
-})});
+</template>

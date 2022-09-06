@@ -1,21 +1,27 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('delete-instance-dialog', {
-  /* A confirm dialog */
-  props: [
-    'pg_host',
-    'pg_port',
-    'pg_data',
-    'pg_version_summary',
-    'cpu',
-    'mem_gb',
-  ],
+<script type="text/javascript">
+/* A confirm dialog */
+
+import InstanceDetails from './InstanceDetails.vue'
+import ModalDialog from './ModalDialog.vue'
+
+export default {
+  components: {
+    'instance-details': InstanceDetails,
+    'modal-dialog': ModalDialog
+  },
   data() { return {
     error: null,
     waiting: false,
 
     agent_address: null,
-    agent_port: null
+    agent_port: null,
+
+    pg_host: null,
+    pg_port: null,
+    pg_data: null,
+    pg_version_summary: null,
+    cpu: null,
+    mem_gb: null
   }},
   methods: {
     fetch_current_data() {
@@ -73,8 +79,11 @@ $(function() { Vue.component('delete-instance-dialog', {
         window.location.reload();
       });
     }
-  },
-  template: `
+  }
+}
+</script>
+
+<template>
   <modal-dialog id="modalDeleteInstance" title="Delete Instance">
     <div class="modal-body">
       <div class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
@@ -100,5 +109,4 @@ $(function() { Vue.component('delete-instance-dialog', {
       </button>
     </div>
   </modal-dialog>
-  `
-})});
+</template>

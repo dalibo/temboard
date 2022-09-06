@@ -14,7 +14,7 @@ insert_final_newline = true
 max_line_length = 79
 
 # 2 space indentation for UI
-[*.{css,html,js,json,scss,yml,yaml,sql}]
+[*.{css,html,js,json,scss,yml,yaml,sql,vue}]
 indent_size = 2
 
 [*.sql]

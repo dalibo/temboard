@@ -236,6 +236,12 @@ def browser(browser_session, request):
         fo.write(png)
     logger.info("Browser screenshot saved at %s.", path)
 
+    filename = f"{session_tag}_{request.node.nodeid}.html"
+    path = browser_session.downloads_dir / filename
+    with path.open('w') as fo:
+        fo.write(browser_session.page_source)
+    logger.info("HTML document saved at %s.", path)
+
 
 @pytest.fixture(scope='session')
 def registered_agent(

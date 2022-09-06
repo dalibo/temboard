@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue2'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [vue()],
   root: 'temboardui/static/src',
   base: '/static/',
   build: {
@@ -11,7 +13,8 @@ export default defineConfig({
     assetsDir: '.',
     rollupOptions: {
       input: {
-        'temboard': '/temboard.js'
+        'temboard': '/temboard.js',
+        'temboard.settings.instance': '/temboard.settings.instance.js'
       }
     }
   }

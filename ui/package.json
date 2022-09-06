@@ -8,11 +8,16 @@
   },
   "dependencies": {
     "bootstrap": "^4.1.1",
+    "datatables.net-bs4": "^1.12.1",
+    "datatables.net-buttons-dt": "^2.2.3",
+    "datatables.net-dt": "^1.12.1",
     "font-awesome": "4.7",
     "jquery": "^3.2.1",
-    "popper.js": "^1.12.3"
+    "popper.js": "^1.12.3",
+    "vue": "^2.7.10"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue2": "^1.1.2",
     "autoprefixer": "^6.7.7",
     "postcss": "^8.4.16",
     "sass": "^1.54.5",

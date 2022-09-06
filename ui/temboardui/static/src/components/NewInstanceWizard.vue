@@ -1,12 +1,19 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('new-instance-wizard', {    /*
-    * A Bootstrap dialog with two steps: discover and register.
-    *
-    * Supports temBoard 7.X agent with key. Discover before registration to
-    * render a preview of the managed instance. Disables plugins not loaded in
-    * agent.
-    */
+<script type="text/javascript">
+/** A Bootstrap dialog with two steps: discover and register.
+  *
+  * Supports temBoard 7.X agent with key. Discover before registration to
+  * render a preview of the managed instance. Disables plugins not loaded in
+  * agent.
+  */
+
+import InstanceForm from './InstanceForm.vue'
+import ModalDialog from './ModalDialog.vue'
+
+export default {
+  components: {
+    'instance-form': InstanceForm,
+    'modal-dialog': ModalDialog
+  },
   data() { return {
     // Wizard state.
     wizard_step: "discover",     //  discover, register
@@ -28,13 +35,13 @@ $(function() { Vue.component('new-instance-wizard', {    /*
     pg_host: null,
     pg_port: null,
     pg_version_summary: null,
-    ui_groups: null,
-    ui_plugins: [],
+    server_groups: [],
+    server_plugins: [],
     signature_status: null
   }},
   computed: {
     groups() {
-      return Array.from(this.ui_groups, group => {
+      return Array.from(this.server_groups, group => {
         return {
           name: group.name,
           disabled: false,
@@ -43,7 +50,7 @@ $(function() { Vue.component('new-instance-wizard', {    /*
       });
     },
     plugins() {
-      return Array.from(this.ui_plugins, name => {
+      return Array.from(this.server_plugins, name => {
         return {
           name,
           disabled: this.discover_data.plugins.indexOf(name) === -1,
@@ -117,8 +124,8 @@ $(function() { Vue.component('new-instance-wizard', {    /*
           this.waiting = false;
           this.error = this.format_xhr_error(xhr);
         }).done((data) => {
-          this.ui_groups = data.groups;
-          this.ui_plugins = data.loaded_plugins;
+          this.server_groups = data.groups;
+          this.server_plugins = data.loaded_plugins;
           this.waiting = false;
           this.wizard_step = "register";
         });
@@ -149,8 +156,11 @@ $(function() { Vue.component('new-instance-wizard', {    /*
       Object.assign(this.$data, this.$options.data());
       this.$refs.form.teardown_multiselects();
     }
-  },
-  template: `
+  }
+}
+</script>
+
+<template>
   <modal-dialog id="modalNewInstance" title="Register New Instance" v-on:closed="reset">
 
     <!-- Discover -->
@@ -211,5 +221,4 @@ $(function() { Vue.component('new-instance-wizard', {    /*
     </div>
 
   </modal-dialog>
-  `
-})});
+</template>

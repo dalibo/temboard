@@ -1,10 +1,6 @@
 from time import sleep
 
-import pytest
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import (
-    ElementClickInterceptedException,
-)
 
 
 def test_dashboard(browser, registered_agent, ui_url):
@@ -63,9 +59,5 @@ def test_dashboard(browser, registered_agent, ui_url):
     assert int(rollbacks) >= 0
 
     browser.select("a.fullscreen").click()  # Go fullscreen
-
-    # Ensure Activity link is hidden.
-    with pytest.raises(ElementClickInterceptedException):
-        browser.select("a.activity").click()
 
     browser.select("body").send_keys(Keys.ESCAPE)  # Exit fullscreen

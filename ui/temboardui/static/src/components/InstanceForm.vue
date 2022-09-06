@@ -1,10 +1,15 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('instance-form', {    /*
-    * An HTML form editing instance properties.
-    *
-    * This form has only presentation logic, no I/O.
-    */
+<script type="text/javascript">
+import InstanceDetails from './InstanceDetails.vue'
+
+export default {
+  /*
+   * An HTML form editing instance properties.
+   *
+   * This form has only presentation logic, no I/O.
+   */
+  components: {
+    'instance-details': InstanceDetails
+  },
   props: [
     'submit_text',  // Submit button label.
     'waiting',  // Whether parent is interacting with server.
@@ -75,8 +80,11 @@ $(function() { Vue.component('instance-form', {    /*
       };
       this.$emit('submit', data);
     }
-  },
-  template: `
+  }
+}
+</script>
+
+<template>
   <form v-on:submit.prevent="submit">
     <div class="modal-body p-3">
       <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
@@ -167,5 +175,4 @@ $(function() { Vue.component('instance-form', {    /*
       </button>
     </div>
   </form>
-  `
-})});
+</template>

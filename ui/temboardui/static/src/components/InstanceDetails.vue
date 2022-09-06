@@ -1,6 +1,5 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('instance-details', {
+<script type="text/javascript">
+export default {
   /* An instance identity card */
   props: [
     'pg_host',
@@ -9,8 +8,12 @@ $(function() { Vue.component('instance-details', {
     'pg_version_summary',
     'cpu',
     'mem_gb',
-  ],
-  template: `
+  ]
+}
+
+</script>
+
+<template>
   <div class="alert alert-light mx-auto pa-6">
     <h2 class="text-center"><span v-html="pg_host"/>:<span v-html="pg_port"/></h2>
     <p class="text-center">
@@ -18,5 +21,4 @@ $(function() { Vue.component('instance-details', {
       <strong v-if="pg_version_summary && pg_data"><span v-html="pg_version_summary"/> serving <span v-html="pg_data"/>.</strong><br/>
     </p>
   </div>
-  `
-})});
+</template>

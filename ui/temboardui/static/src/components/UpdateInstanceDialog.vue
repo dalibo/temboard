@@ -1,12 +1,20 @@
-/* eslint-env es6 */
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
-$(function() { Vue.component('update-instance-dialog', {    /*
-    * A Bootstrap dialog editing instance properties.
-    *
-    * Supports temBoard 7.X agent with key. Discover before registration to
-    * render a preview of the managed instance. Disables plugins not loaded in
-    * agent.
-    */
+<script type="text/javascript">
+/**
+  * A Bootstrap dialog editing instance properties.
+  *
+  * Supports temBoard 7.X agent with key. Discover before registration to
+  * render a preview of the managed instance. Disables plugins not loaded in
+  * agent.
+  */
+
+import ModalDialog from './ModalDialog.vue'
+import InstanceForm from './InstanceForm.vue'
+
+export default {
+  components: {
+    'instance-form': InstanceForm,
+    'modal-dialog': ModalDialog
+  },
   data() { return {
     error: null,
     waiting: false,
@@ -23,30 +31,30 @@ $(function() { Vue.component('update-instance-dialog', {    /*
     current_data: null,
     discover_data: null,
     cpu: null,
-    ui_groups: [],
+    server_groups: [],
     current_groups: [],
     mem_gb: null,
     pg_data: null,
     pg_host: null,
     pg_port: null,
     pg_version_summary: null,
-    ui_plugins: [],
+    server_plugins: [],
     current_plugins: [],
     agent_plugins: [],
     signature_status: null
   }},
   computed: {
     plugins() {
-      return Array.from(this.ui_plugins, name => {
+      return Array.from(this.server_plugins, name => {
         return {
           name,
-          disabled: this.agent_plugins.indexOf(name) === -1,
+          disabled: this.agent_plugins.length > 0 && this.agent_plugins.indexOf(name) === -1,
           selected: this.current_plugins.indexOf(name) !== -1
         }
       });
     },
     groups() {
-      return Array.from(this.ui_groups, group => { return {
+      return Array.from(this.server_groups, group => { return {
         name: group.name,
         selected: this.current_groups.indexOf(group.name) !== -1
       }});
@@ -97,6 +105,7 @@ $(function() { Vue.component('update-instance-dialog', {    /*
         }
 
         this.discover_data = data;
+        this.agent_plugins = data.plugins;
         this.cpu = data.cpu;
         var mem_gb = data.memory_size / 1024 / 1024 / 1024;
         this.mem_gb = mem_gb.toFixed(2);
@@ -105,7 +114,6 @@ $(function() { Vue.component('update-instance-dialog', {    /*
         this.pg_host = data.hostname;
         this.pg_port = data.pg_port;
         this.signature_status = data.signature_status;
-        this.agent_plugins = data.plugins;
       });
     },
     open(agent_address, agent_port) {
@@ -140,8 +148,8 @@ $(function() { Vue.component('update-instance-dialog', {    /*
         // Will be overriden by discover, if agent is up.
         this.pg_host = data.hostname;
         this.pg_port = data.pg_port;
-        this.ui_groups = data.groups;
-        this.ui_plugins = data.loaded_plugins;
+        this.server_groups = data.groups;
+        this.server_plugins = data.loaded_plugins;
         this.current_data = data;
         this.current_plugins = data.enabled_plugins;
         this.current_groups = data.in_groups;
@@ -171,8 +179,11 @@ $(function() { Vue.component('update-instance-dialog', {    /*
       Object.assign(this.$data, this.$options.data());
       this.$refs.form.teardown_multiselects();
     }
-  },
-  template: `
+  }
+}
+</script>
+
+<template>
   <modal-dialog id="modalUpdateInstance" title="Update Instance" v-on:closed="reset">
     <instance-form
       ref="form"
@@ -194,5 +205,4 @@ $(function() { Vue.component('update-instance-dialog', {    /*
       v-on:submit="update"
       />
   </modal-dialog>
-  `
-})});
+</template>
