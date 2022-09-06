@@ -248,6 +248,27 @@ class Instances(Model):
     def __str__(self):
         return '%s:%s' % (self.hostname, self.pg_port)
 
+    def dashboard_url(self, app):
+        scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
+        host = app.config.temboard.address
+        port = app.config.temboard.port
+        path = '/server/%s/%s/dashboard' % (
+            self.agent_address, self.agent_port)
+        return '%s://%s:%s%s' % (scheme, host, port, path)
+
+    def asdict(self):
+        return dict(
+            hostname=self.hostname,
+            pg_port=self.pg_port,
+            pg_data=self.pg_data,
+            agent_address=self.agent_address,
+            agent_port=self.agent_port,
+            groups=[group.group_name for group in self.groups],
+            plugins=[plugin.plugin_name for plugin in self.plugins],
+            comment=self.comment,
+            notify=self.notify,
+        )
+
 
 class Groups(Model):
     __table__ = tables.groups

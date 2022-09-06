@@ -37,6 +37,7 @@ def main():
     __import__(__package__ + '.cli.generate_key')
     __import__(__package__ + '.cli.migratedb')
     __import__(__package__ + '.cli.query_agent')
+    __import__(__package__ + '.cli.register_instance')
     __import__(__package__ + '.cli.routes')
     __import__(__package__ + '.cli.runtask')
     __import__(__package__ + '.cli.schedule')
