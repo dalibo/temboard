@@ -105,6 +105,7 @@ class MonitoringPlugin(object):
         self.app.worker_pool.add(workers)
 
 
+@workers.schedule(id='aggregate_data', redo_interval=30 * 60)
 @workers.register(pool_size=1)
 def aggregate_data_worker(app):
     # Worker in charge of aggregate data
@@ -139,6 +140,7 @@ def aggregate_data_worker(app):
     logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
+@workers.schedule(id='history_tables', redo_interval=3 * 60 * 60)  # 3h
 @workers.register(pool_size=1)
 def history_tables_worker(app):
     # Archive monitoring metric tables.
@@ -199,6 +201,7 @@ def check_data_worker(app, host_id, instance_id, data):
     worker_session.close()
 
 
+@workers.schedule(id='purge_data', redo_interval=24 * 60 * 60)  # 24h
 @workers.register(pool_size=1)
 def purge_data_worker(app):
     """Background worker in charge of purging monitoring data. Purge policy
@@ -379,6 +382,7 @@ def grouper(n, iterable, fillvalue=None):
     return zip_longest(fillvalue=fillvalue, *args)
 
 
+@workers.schedule(id='schedule_collector', redo_interval=60)  # Repeat each 60s
 @workers.register(pool_size=1)
 def schedule_collector(app):
     """Worker function in charge of scheduling collector (pull mode)."""
@@ -613,31 +617,3 @@ def collector(app, address, port, key=None):
 
     worker_session.close()
     logger.info("End of collector for agent %s.", agent_id)
-
-
-@taskmanager.bootstrap()
-def monitoring_bootstrap(context):
-    yield taskmanager.Task(
-            worker_name='aggregate_data_worker',
-            id='aggregate_data',
-            redo_interval=30 * 60,  # Repeat each 30m,
-            options={},
-    )
-    yield taskmanager.Task(
-            worker_name='history_tables_worker',
-            id='history_tables',
-            redo_interval=3 * 60 * 60,  # Repeat each 3h
-            options={},
-    )
-    yield taskmanager.Task(
-            worker_name='purge_data_worker',
-            id='purge_data',
-            redo_interval=24 * 60 * 60,  # Repeat each 24h
-            options={},
-    )
-    yield taskmanager.Task(
-            worker_name='schedule_collector',
-            id='schedule_collector',
-            redo_interval=60,  # Repeat each 60s
-            options={},
-    )

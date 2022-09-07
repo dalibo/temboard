@@ -798,6 +798,7 @@ def add_statement(session, instance, data):
         raise TemboardUIError(400, str(e))
 
 
+@workers.schedule(id='statements_pull_data', redo_interval=60)  # 1m
 @workers.register(pool_size=1)
 def pull_data_worker(app):
     engine = worker_engine(app.config.repository)
@@ -898,6 +899,7 @@ def pull_data_for_instance(app, session, instance):
         session.connection().connection.commit()
 
 
+@workers.schedule(id='statements_purge', redo_interval=24 * 60 * 60)  # 24h
 @workers.register(pool_size=1)
 def statements_purge_worker(app):
     """Background worker in charge of purging statements data.
@@ -924,19 +926,3 @@ def statements_purge_worker(app):
     except Exception:
         logger.exception('Could not purge statements data:')
         raise
-
-
-@taskmanager.bootstrap()
-def statements_bootstrap(context):
-    yield taskmanager.Task(
-        worker_name='pull_data_worker',
-        id='statementsdata',
-        redo_interval=1 * 60,  # Repeat each 1m,
-        options={},
-    )
-    yield taskmanager.Task(
-        worker_name='statements_purge_worker',
-        id='statements_purge_data',
-        redo_interval=24 * 60 * 60,  # Repeat each 24h,
-        options={},
-    )
