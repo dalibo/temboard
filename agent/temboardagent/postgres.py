@@ -56,6 +56,7 @@ class Postgres:
         self.dbname = dbname
         self.app = app
         self._server_version = None
+        self.connection_lost_observers = []
 
     def __repr__(self):
         return '<{} on {}@{}:{}/{}>'.format(
@@ -67,7 +68,11 @@ class Postgres:
         return DBConnectionPool(self)
 
     def pool(self):
-        return ConnectionPool(minconn=1, maxconn=2, **self.pqvars())
+        return ConnectionPool(
+            minconn=1, maxconn=2,
+            observers=self.connection_lost_observers,
+            **self.pqvars(),
+        )
 
     def connect(self):
         conn = connect(**self.pqvars())
@@ -253,6 +258,10 @@ class RetryManager(object):
 
 
 class ConnectionPool(ThreadedConnectionPool):
+    def __init__(self, observers=None, **kw):
+        super(ConnectionPool, self).__init__(**kw)
+        self.observers = observers
+
     def retry_connection(self):
         # Manage pooled connection lost. Yield a context manager for one or two
         # attempt. The first attempt uses the connection as returned by the
@@ -265,11 +274,17 @@ class ConnectionPool(ThreadedConnectionPool):
         manager = RetryManager(self)
         for try_ in 0, 1:
             yield manager
-            if not manager.retry:
-                return
+            if manager.retry:
+                self.notify_observers()
+            else:
+                break
 
     def close_all_connections(self):
         # Close all connection, keeping pool opened.
         for conn in self._pool + list(self._used.values()):
             conn.close()
             self.putconn(conn)
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer()

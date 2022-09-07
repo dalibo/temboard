@@ -3,6 +3,9 @@
 # Discover is a stable set of properties identifying a running system. temBoard
 # computes an ETag from discover data to ease change detection.
 #
+# Discover data is cached in a discover.json file. temBoard refreshes this file
+# in two cases : start of agent, connection lost.
+#
 
 import hashlib
 import json
@@ -13,6 +16,7 @@ import sys
 from platform import machine, python_version
 from multiprocessing import cpu_count
 
+from .core import workers
 from .queries import QUERIES
 from .toolkit.errors import UserError
 from .toolkit.versions import (
@@ -36,6 +40,11 @@ class Discover:
         self.etag = None
         self.file_etag = None
         self.mtime = None
+
+    def connection_lost(self):
+        # Callback for postgres.ConnectionPool connection lost event.
+        logger.info("Queueing discover refresh.")
+        discover.defer(self.app)
 
     def ensure_latest(self):
         if self.mtime != os.stat(self.path).st_mtime:
@@ -220,3 +229,11 @@ def compute_etag(data):
     h = hashlib.new('sha256')
     h.update(data)
     return h.hexdigest()
+
+
+@workers.register(pool_size=1)
+def discover(app):
+    """ Refresh discover data. """
+    app.discover.ensure_latest()
+    app.discover.refresh()
+    app.discover.write()

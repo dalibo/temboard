@@ -6,6 +6,7 @@ from argparse import _VersionAction
 from socket import getfqdn
 from textwrap import dedent
 
+from ..core import workers
 from ..discover import Discover, inspect_versions
 from ..queries import QUERIES
 from ..toolkit.configuration import OptionSpec
@@ -73,6 +74,7 @@ class TemboardAgentApplication(BaseApplication):
             app=self, setproctitle=setproctitle, name='worker pool',
             task_queue=task_queue, event_queue=event_queue)
         self.services.append(self.worker_pool)
+        self.worker_pool.add(workers)
 
         self.scheduler = taskmanager.SchedulerService(
             app=self, setproctitle=setproctitle, name='scheduler',
@@ -122,7 +124,8 @@ class TemboardAgentApplication(BaseApplication):
 
     def apply_config(self):
         self.postgres = Postgres(app=self, **self.config.postgresql)
-
+        self.postgres.connection_lost_observers.append(
+            self.discover.connection_lost)
         return super().apply_config()
 
     def bootstrap_plugins(self):
