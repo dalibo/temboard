@@ -218,5 +218,5 @@ class ServicesManager(object):
             timeout -= step
 
         for process in processes:
-            logger.warning(u"Killing %s.", process)
+            logger.warning(u"Killing %s pid=%s.", process, process.pid)
             os.kill(process.pid, signal.SIGKILL)
