@@ -70,8 +70,6 @@ export default {
       // /json/settings/instances/X.X.X.X/PPPP.
       var data = {
         // Define paramters.
-        new_agent_address: this.agent_address,
-        new_agent_port: this.agent_port,
         agent_key: this.agent_key,
         groups: $("#selectGroups").val(),
         plugins: $("#selectPlugins").val(),
