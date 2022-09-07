@@ -12,17 +12,11 @@ from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.toolkit.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 
-from . import functions as admin_functions
 from .types import T_CONTROL
 
 
 bottle = Bottle()
 logger = logging.getLogger(__name__)
-
-
-@bottle.get('/pg_version')
-def get_pg_version(pgconn):
-    return admin_functions.pg_version(pgconn)
 
 
 @bottle.post('/control')
