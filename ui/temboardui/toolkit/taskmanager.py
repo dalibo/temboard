@@ -889,6 +889,11 @@ class WorkerPool(object):
     def exec_worker(self, module, function, out, *args, **kws):
         # Function wrapper around worker function
         try:
+            # Reset signal handlers.
+            signal.signal(signal.SIGABRT, signal.SIG_DFL)
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
+            signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
             fun = getattr(sys.modules[module], function)
 
             modfun = "%s.%s" % (module, fun.__name__)
