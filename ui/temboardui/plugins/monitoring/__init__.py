@@ -190,11 +190,10 @@ def check_data_worker(app, host_id, instance_id, data):
     worker_session = Session()
 
     check_preprocessed_data(
+        app,
         worker_session,
         host_id,
         instance_id,
-        data,
-        app.config.temboard.home
     )
 
     worker_session.commit()
@@ -603,6 +602,7 @@ def collector(app, address, port, key=None, engine=None):
             agent_id)
         try:
             check_preprocessed_data(
+                app,
                 worker_session,
                 host.host_id,
                 instance_id,
@@ -611,7 +611,6 @@ def collector(app, address, port, key=None, engine=None):
                     get_instance_checks(worker_session, instance_id),
                     row['datetime']
                 ),
-                app.config.temboard.home,
             )
         except Exception:
             logger.exception("Failed to check monitoring data for alerting.")

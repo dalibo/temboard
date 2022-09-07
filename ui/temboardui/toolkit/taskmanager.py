@@ -68,27 +68,6 @@ def make_worker_definition(function, pool_size):
     }
 
 
-def schedule_task(worker_name, id=None, options=None, start=None,
-                  redo_interval=None, listener_addr=TM_DEF_LISTENER_ADDR,
-                  authkey=None, expire=3600):
-    # Schedule a new task
-    return TaskManager.send_message(
-                listener_addr,
-                Message(
-                    MSG_TYPE_TASK_NEW,
-                    Task(
-                        id=id,
-                        worker_name=worker_name,
-                        options=options,
-                        start_datetime=start or datetime.utcnow(),
-                        redo_interval=redo_interval,
-                        expire=expire,
-                    )
-                ),
-                authkey=authkey
-           )
-
-
 class Task(object):
 
     def __init__(self, worker_name=None, options=None, id=None,
@@ -760,22 +739,16 @@ class WorkerPool(object):
 class WorkerSet(list):
     def register(self, pool_size=1):
         def register(f):
-            f.defer = self.create_defer_function(f.__name__)
+            def defer(app, **kw):
+                return app.scheduler.schedule_task(
+                    f.__name__, options=kw, expire=0)
+            f.defer = defer
+
             f._tm_worker = make_worker_definition(f, pool_size)
             if f not in self:
                 self.append(f)
             return f
         return register
-
-    def create_defer_function(self, name):
-        def defer(app, **kw):
-            return schedule_task(
-                name,
-                listener_addr=app.scheduler.scheduler.address,
-                options=kw,
-                expire=0,
-            )
-        return defer
 
     def schedule(self, id=None, redo_interval=None, **options):
         def register(f):
