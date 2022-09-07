@@ -400,14 +400,7 @@ def schedule_collector(app):
             logger.info(
                 "Scheduling batch collector for %s agents.", len(batch))
 
-            taskmanager.schedule_task(
-                'collector_batch',
-                listener_addr=os.path.join(
-                    app.config.temboard.home, '.tm.socket'
-                ),
-                options=dict(batch=batch),
-                expire=0,
-            )
+            collector_batch.defer(app, batch=batch)
 
     logger.info("End of collector scheduler.")
 
