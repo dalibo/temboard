@@ -1118,6 +1118,11 @@ class WorkerPoolService(Service):
             logger.debug("Disable worker %s", conf['name'])
             self.worker_pool.workers.pop(conf['name'], None)
 
+    def sigterm_handler(self, *a):
+        logger.info("Aborting jobs on SIGTERM.")
+        self.worker_pool.abort_jobs()
+        super(WorkerPoolService, self).sigterm_handler(*a)
+
 
 class RunTaskMixin(object):
     # Shared code to execute a single task, for runtask commands.
