@@ -9,7 +9,6 @@ from bottle import (
     HTTPError, HTTPResponse, Response,
     default_app, request, response,
 )
-from psycopg2 import Error as Psycopg2Error
 
 from ..tools import JSONEncoder
 from ..toolkit.http import format_date
@@ -83,29 +82,23 @@ class PostgresPlugin(object):
 
         @functools.wraps(callback)
         def wrapper(*a, **kw):
-            # Retry execution one time to handle closed connection. This assume
-            # callbacks idempotence.
-            for try_ in 0, 1:
-                if 'pgconn' in wanted:
-                    conn = self.pool.getconn()
+            if 'pgpool' in wanted:
+                # dbpool is not threadsafe! But wsgiref simple server is
+                # not threaded.
+                kw['pgpool'] = self.dbpool
+
+            # Assume callbacks idempotence.
+            for attempt in self.pool.retry_connection():
+                with attempt() as conn:
                     conn.set_session(autocommit=True)
-                    kw['pgconn'] = conn
-
-                if 'pgpool' in wanted:
-                    # dbpool is not threadsafe! But wsgiref simple server is
-                    # not threaded.
-                    kw['pgpool'] = self.dbpool
-
-                try:
-                    return callback(*a, **kw)
-                except Psycopg2Error as e:
-                    if e.pgcode is None:
-                        logger.debug("Retrying lost connection: %s", e)
-                        self.dbpool.closeall()
-                        self.pool.closeall()
-                finally:
                     if 'pgconn' in wanted:
-                        self.pool.putconn(conn)
+                        kw['pgconn'] = conn
+
+                    return callback(*a, **kw)
+
+                if attempt.retry:
+                    # Propagate connection lost to dbpool.
+                    self.dbpool.closeall()
 
         return wrapper
 
@@ -148,10 +141,9 @@ class JSONPlugin(object):
                 return res
 
             body = json.dumps(body, cls=JSONEncoder)
-            if isinstance(res, HTTPResponse):
-                res.body = body
-            else:
-                res = HTTPResponse(body)
+            if not isinstance(res, HTTPResponse):
+                res = response.copy(cls=HTTPResponse)
+            res.body = body
 
             res.headers['Content-Type'] = 'application/json'
 

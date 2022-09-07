@@ -1023,11 +1023,22 @@ class WorkerPool(object):
 class WorkerSet(list):
     def register(self, pool_size=1):
         def register(f):
+            f.defer = self.create_defer_function(f.__name__)
             f._tm_worker = make_worker_definition(f, pool_size)
             if f not in self:
                 self.append(f)
             return f
         return register
+
+    def create_defer_function(self, name):
+        def defer(app, **kw):
+            return schedule_task(
+                name,
+                listener_addr=app.scheduler.scheduler.address,
+                options=kw,
+                expire=0,
+            )
+        return defer
 
     def schedule(self, id=None, redo_interval=None, **options):
         def register(f):
@@ -1075,16 +1086,6 @@ class WorkerPoolService(Service):
         wrapper._tm_function = function
         return wrapper
 
-    def create_defer_function(self, name):
-        def defer(**kw):
-            return schedule_task(
-                name,
-                listener_addr=self.app.scheduler.scheduler.address,
-                options=kw,
-                expire=0,
-            )
-        return defer
-
     def add(self, workerset):
         if not self.is_my_process:
             return
@@ -1098,8 +1099,6 @@ class WorkerPoolService(Service):
             wrapper_name = '_tm_wrapper_' + function.__name__
             setattr(mod, wrapper_name, wrapper)
             conf['function'] = wrapper_name
-
-            function.defer = self.create_defer_function(conf['name'])
 
             # Add to current workers
             logger.debug("Register worker %s", conf['name'])

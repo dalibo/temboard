@@ -13,6 +13,7 @@ import re
 from contextlib import closing
 
 from psycopg2 import connect
+from psycopg2 import Error as Psycopg2Error
 from psycopg2.pool import ThreadedConnectionPool
 import psycopg2.extensions
 
@@ -66,10 +67,7 @@ class Postgres:
         return DBConnectionPool(self)
 
     def pool(self):
-        return ThreadedConnectionPool(
-            minconn=1, maxconn=2,
-            **self.pqvars(),
-        )
+        return ConnectionPool(minconn=1, maxconn=2, **self.pqvars())
 
     def connect(self):
         conn = connect(**self.pqvars())
@@ -223,3 +221,56 @@ class FactoryCursor(psycopg2.extensions.cursor):  # pragma: nocover
 def scalar(**kw):
     # Row factory for scalar.
     return next(iter(kw.values()))
+
+
+class RetryMixin(object):
+    def retry_connection(self):
+        # Manage pooled connection lost. Yield a context manager for one or two
+        # attempt. The first attempt uses the connection as returned by the
+        # pool. The second attempt closes pool a request a fresh connection.
+        #
+        # for attempt in postgres.retry_connection_pool():
+        #     with attempt() as conn:
+        #         conn.queryscalar("SELECT 1")
+        #
+        manager = RetryManager(self)
+        for try_ in 0, 1:
+            yield manager
+            if not manager.retry:
+                return
+
+
+class RetryManager(object):
+    def __init__(self, pool):
+        self.pool = pool
+        self.conn = None
+        self.retry = False
+
+    def __call__(self):
+        return self
+
+    def __enter__(self):
+        self.conn = self.pool.getconn()
+        self.retry = False
+        return self.conn
+
+    def __exit__(self, exc_type, e, exc_tb):
+        if isinstance(e, Psycopg2Error):
+            if e.pgcode is None:
+                logger.debug("Retrying lost connection: %s", e)
+                self.pool.close_all_connections()
+                self.conn = None
+                self.retry = True
+                return True
+
+        # Else, just clean conn and let exception bubble.
+        self.pool.putconn(self.conn)
+        self.conn = None
+
+
+class ConnectionPool(ThreadedConnectionPool, RetryMixin):
+    def close_all_connections(self):
+        # Close all connection, keeping pool opened.
+        for conn in self._pool + list(self._used.values()):
+            conn.close()
+            self.putconn(conn)

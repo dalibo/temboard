@@ -181,6 +181,7 @@ class RegisterInstance(SubCommand):
             if 'monitoring' in plugins:
                 logger.info("Schedule monitoring collect for agent now.")
                 collector.defer(
+                    self.app,
                     address=data['new_agent_address'],
                     port=data['new_agent_port'],
                 )
@@ -188,6 +189,7 @@ class RegisterInstance(SubCommand):
             if 'statements' in plugins:
                 logger.info("Schedule statements collect for agent now.")
                 statements_pull1.defer(
+                    self.app,
                     host=data['new_agent_address'],
                     port=data['new_agent_port'],
                 )
