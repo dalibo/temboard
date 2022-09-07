@@ -11,10 +11,11 @@ from ...inventory import SysInfo, PgInfo
 def get_metrics(app, pool=None):
     res = dict()
     pool = pool or app.postgres.pool()
+    discover = app.discover.ensure_latest()
     for attempt in pool.retry_connection():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
-            pginfo = PgInfo(conn)
+            pgdiscover = discover['postgres']
             res.update(dict(
                 buffers=dm.get_buffers(),
                 hitratio=dm.get_hitratio(),
@@ -22,11 +23,12 @@ def get_metrics(app, pool=None):
                 max_connections=dm.get_max_connections(),
                 databases=dm.get_stat_db(),
                 pg_start_time=dm.get_pg_start_time(),
-                pg_version=pginfo.version()['full'],
-                pg_data=pginfo.setting('data_directory'),
-                pg_port=pginfo.setting('port'),
+                pg_version=pgdiscover['version'],
+                pg_data=pgdiscover['data_directory'],
+                pg_port=pgdiscover['port'],
             ))
 
+    sysdiscover = discover['system']
     dm = DashboardMetrics()
     res.update(dict(
         cpu=dm.get_cpu_usage(),
@@ -43,11 +45,11 @@ def get_metrics(app, pool=None):
         cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
 
     res.update(dict(
-        hostname=sysinfo.hostname(app.config.temboard.hostname),
-        os_version=sysinfo.os_release,
-        linux_distribution=sysinfo.linux_distribution(),
+        hostname=sysdiscover['fqdn'],
+        os_version=sysdiscover['os_version'],
+        linux_distribution=sysdiscover['distribution'],
         cpu_models=cpu_models_counter,
-        n_cpu=sysinfo.n_cpu(),
+        n_cpu=sysdiscover['cpu_count'],
         timestamp=time.time()
     ))
     return res
@@ -145,11 +147,6 @@ def get_databases(conn):
 def get_n_cpu():
     sysinfo = SysInfo()
     return dict(n_cpu=sysinfo.n_cpu())
-
-
-def get_pg_version(conn):
-    pginfo = PgInfo(conn)
-    return dict(pg_version=pginfo.version()['full'])
 
 
 class DashboardMetrics:

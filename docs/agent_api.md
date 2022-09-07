@@ -747,34 +747,6 @@ Content-type: application/json
 }
 ```
 
-> Get PostgreSQL server version.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/pg_version HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 16:59:26 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "pg_version": "PostgreSQL 9.5.5 on x86_64-pc-linux-gnu, compiled by x86_64-pc-linux-gnu-gcc (Gentoo 4.9.4 p1.0, pie-0.6.4) 4.9.4, 64-bit"
-}
-```
-
 > Number of CPU.
 >
 > status 200
