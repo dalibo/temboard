@@ -8,9 +8,10 @@ from ...notification import NotificationMgmt
 from ...inventory import SysInfo, PgInfo
 
 
-def get_metrics(app):
+def get_metrics(app, pool=None):
     res = dict()
-    for attempt in app.postgres.pool.retry_connection():
+    pool = pool or app.postgres.pool()
+    for attempt in pool.retry_connection():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
             pginfo = PgInfo(conn)
