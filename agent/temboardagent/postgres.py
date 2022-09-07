@@ -78,12 +78,6 @@ class Postgres:
     def connect(self):
         return closing(retry_connect(connect, **self.pqvars()))
 
-    def fetch_version(self):
-        if self._server_version is None:
-            with self.connect() as conn:
-                self._server_version = conn.server_version
-        return self._server_version
-
     def copy(self, **kw):
         defaults = dict(
             host=self.host,
