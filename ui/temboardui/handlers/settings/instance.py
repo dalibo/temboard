@@ -40,7 +40,10 @@ def add_instance_in_groups(db_session, instance, groups):
             group_name)
 
 
-def create_instance_helper(db_session, data):
+def create_instance_helper(request, data):
+    db_session = request.db_session
+    app = request.handler.application.temboard_app
+
     validate_instance_data(data)
     groups = data.pop('groups')
     plugins = data.pop('plugins') or []
@@ -53,6 +56,7 @@ def create_instance_helper(db_session, data):
     if 'monitoring' in plugins:
         logger.info("Schedule monitoring collect for agent now.")
         monitoring_collector.defer(
+            app,
             address=data['new_agent_address'],
             port=data['new_agent_port'],
             key=data['agent_key'],
@@ -61,6 +65,7 @@ def create_instance_helper(db_session, data):
     if 'statements' in plugins:
         logger.info("Schedule statements collect for agent now.")
         statements_pull1.defer(
+            app,
             host=data['new_agent_address'],
             port=data['new_agent_port'],
         )
@@ -97,7 +102,7 @@ def validate_instance_data(data):
 @app.route(r"/json/settings/instance", methods=['POST'])
 @admin_required
 def create_instance_handler(request):
-    create_instance_helper(request.db_session, request.json)
+    create_instance_helper(request, request.json)
     return {"message": "OK"}
 
 
@@ -238,5 +243,5 @@ def register(request):
 
     data['new_agent_address'] = agent_address
     data['new_agent_port'] = data.pop('agent_port', None)
-    create_instance_helper(request.db_session, data)
+    create_instance_helper(request, data)
     return {"message": "OK"}
