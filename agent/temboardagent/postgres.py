@@ -223,23 +223,6 @@ def scalar(**kw):
     return next(iter(kw.values()))
 
 
-class RetryMixin(object):
-    def retry_connection(self):
-        # Manage pooled connection lost. Yield a context manager for one or two
-        # attempt. The first attempt uses the connection as returned by the
-        # pool. The second attempt closes pool a request a fresh connection.
-        #
-        # for attempt in postgres.retry_connection_pool():
-        #     with attempt() as conn:
-        #         conn.queryscalar("SELECT 1")
-        #
-        manager = RetryManager(self)
-        for try_ in 0, 1:
-            yield manager
-            if not manager.retry:
-                return
-
-
 class RetryManager(object):
     def __init__(self, pool):
         self.pool = pool
@@ -251,6 +234,7 @@ class RetryManager(object):
 
     def __enter__(self):
         self.conn = self.pool.getconn()
+        self.conn.set_session(autocommit=True)
         self.retry = False
         return self.conn
 
@@ -268,7 +252,22 @@ class RetryManager(object):
         self.conn = None
 
 
-class ConnectionPool(ThreadedConnectionPool, RetryMixin):
+class ConnectionPool(ThreadedConnectionPool):
+    def retry_connection(self):
+        # Manage pooled connection lost. Yield a context manager for one or two
+        # attempt. The first attempt uses the connection as returned by the
+        # pool. The second attempt closes pool a request a fresh connection.
+        #
+        # for attempt in postgres.retry_connection_pool():
+        #     with attempt() as conn:
+        #         conn.queryscalar("SELECT 1")
+        #
+        manager = RetryManager(self)
+        for try_ in 0, 1:
+            yield manager
+            if not manager.retry:
+                return
+
     def close_all_connections(self):
         # Close all connection, keeping pool opened.
         for conn in self._pool + list(self._used.values()):

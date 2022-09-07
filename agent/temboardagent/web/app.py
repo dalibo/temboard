@@ -90,7 +90,6 @@ class PostgresPlugin(object):
             # Assume callbacks idempotence.
             for attempt in self.pool.retry_connection():
                 with attempt() as conn:
-                    conn.set_session(autocommit=True)
                     if 'pgconn' in wanted:
                         kw['pgconn'] = conn
 
