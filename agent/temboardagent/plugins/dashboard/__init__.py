@@ -125,6 +125,24 @@ def dashboard_collector_worker(app):
     logger.debug("Done")
 
 
+BATCH_DURATION = 5 * 60  # 5 minutes
+
+
+@workers.register(pool_size=1)
+def dashboard_collector_batch_worker(app):
+    # Loop each configured interval in the batch duration.
+    interval = app.config.dashboard.scheduler_interval
+    for elapsed in range(0, BATCH_DURATION, interval):
+        if elapsed > 0:
+            # Throttle interval after first run.
+            time.sleep(interval)
+
+        try:
+            dashboard_collector_worker(app)
+        except Exception as e:
+            logger.error("Dashboard collector error: %s", e)
+
+
 class DashboardPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     s = 'dashboard'
@@ -145,9 +163,9 @@ class DashboardPlugin:
         default_app().mount('/dashboard', bottle)
         self.app.worker_pool.add(workers)
         workers.schedule(
-            id='dashboard_collector',
-            redo_interval=self.app.config.dashboard.scheduler_interval
-        )(dashboard_collector_worker)
+            id='dashboard_collector_batch',
+            redo_interval=BATCH_DURATION,
+        )(dashboard_collector_batch_worker)
         self.app.scheduler.add(workers)
 
     def unload(self):
