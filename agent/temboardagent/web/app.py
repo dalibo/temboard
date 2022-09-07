@@ -148,10 +148,9 @@ class JSONPlugin(object):
                 return res
 
             body = json.dumps(body, cls=JSONEncoder)
-            if isinstance(res, HTTPResponse):
-                res.body = body
-            else:
-                res = HTTPResponse(body)
+            if not isinstance(res, HTTPResponse):
+                res = response.copy(cls=HTTPResponse)
+            res.body = body
 
             res.headers['Content-Type'] = 'application/json'
 
