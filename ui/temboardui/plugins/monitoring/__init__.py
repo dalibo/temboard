@@ -411,9 +411,13 @@ def schedule_collector(app):
 
 @workers.register(pool_size=20)
 def collector_batch(app, batch):
+    # Start new ORM DB session
+    engine = worker_engine(app.config.repository)
+    engine.connect().close()  # Warm pool.
+
     for address, port, key in batch:
         try:
-            collector(app, address, port, key)
+            collector(app, address, port, key, engine=engine)
         except UserError:
             raise
         except Exception as e:
@@ -421,7 +425,7 @@ def collector_batch(app, batch):
 
 
 @workers.register(pool_size=20)
-def collector(app, address, port, key=None):
+def collector(app, address, port, key=None, engine=None):
     agent_id = "%s:%s" % (address, port)
     logger.info("Starting collector for %s.", agent_id)
 
@@ -440,7 +444,7 @@ def collector(app, address, port, key=None):
     logger.debug("Discover data: %s", discover_data)
 
     # Start new ORM DB session
-    engine = worker_engine(app.config.repository)
+    engine = engine or worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
