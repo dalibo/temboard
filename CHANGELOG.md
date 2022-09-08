@@ -57,6 +57,7 @@ script to proceed.
 - Dropped support of Internet Explorer 8 and below.
 - Out-of-band instance registration with new command `temboard
   register-instance`.
+- Heavily reduction of connection opened by dashboard.
 
 
 ## [7.11] - Unreleased

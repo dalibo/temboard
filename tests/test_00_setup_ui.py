@@ -3,7 +3,7 @@ import csv
 from sh import temboard
 
 
-def test_start_ui(ui, browser):
+def test_start_ui(agent, ui, browser):
     # Start UI ASAP to save some times.
     pass
 

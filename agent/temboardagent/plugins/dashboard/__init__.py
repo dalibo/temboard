@@ -30,8 +30,8 @@ def dashboard_config():
 
 
 @bottle.get('/live')
-def dashboard_live():
-    return metrics.get_metrics(default_app().temboard)
+def dashboard_live(pgpool):
+    return metrics.get_metrics(default_app().temboard, pgpool)
 
 
 @bottle.get('/history')
@@ -105,10 +105,10 @@ def dashboard_max_connections(pgconn):
 
 
 @workers.register(pool_size=1)
-def dashboard_collector_worker(app):
+def dashboard_collector_worker(app, pool=None):
     logger.info("Running dashboard collector.")
 
-    data = metrics.get_metrics(app)
+    data = metrics.get_metrics(app, pool)
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)
@@ -123,6 +123,25 @@ def dashboard_collector_worker(app):
     )
 
     logger.debug("Done")
+
+
+BATCH_DURATION = 5 * 60  # 5 minutes
+
+
+@workers.register(pool_size=1)
+def dashboard_collector_batch_worker(app):
+    # Loop each configured interval in the batch duration.
+    interval = app.config.dashboard.scheduler_interval
+    pool = app.postgres.pool()
+    for elapsed in range(0, BATCH_DURATION, interval):
+        if elapsed > 0:
+            # Throttle interval after first run.
+            time.sleep(interval)
+
+        try:
+            dashboard_collector_worker(app, pool)
+        except Exception as e:
+            logger.error("Dashboard collector error: %s", e)
 
 
 class DashboardPlugin:
@@ -145,9 +164,9 @@ class DashboardPlugin:
         default_app().mount('/dashboard', bottle)
         self.app.worker_pool.add(workers)
         workers.schedule(
-            id='dashboard_collector',
-            redo_interval=self.app.config.dashboard.scheduler_interval
-        )(dashboard_collector_worker)
+            id='dashboard_collector_batch',
+            redo_interval=BATCH_DURATION,
+        )(dashboard_collector_batch_worker)
         self.app.scheduler.add(workers)
 
     def unload(self):

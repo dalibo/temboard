@@ -407,7 +407,7 @@ def test_recover():
     now = datetime.utcnow()
     engine.recover(st_doing, st_aborted, st_scheduled, st_default, now)
     t1 = engine.get('aaaaa')
-    assert t1.status == st_aborted
+    assert t1.status == st_default
     assert t1.stop_datetime.strftime("%Y-%m-%d %H:%M:%S") == now.strftime("%Y-%m-%d %H:%M:%S")  # noqa
     t2 = engine.get('bbbbb')
     assert t2.status == st_default

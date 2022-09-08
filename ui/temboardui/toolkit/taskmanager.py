@@ -5,7 +5,6 @@ import time
 import uuid
 import logging
 import os.path
-import types
 import signal
 from ast import literal_eval
 from select import select, error as SelectError
@@ -20,12 +19,6 @@ from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
 from .pycompat import PY2, Empty
 
-
-TM_WORKERS = []
-TM_BOOTSTRAP = []
-TM_SIGHUP = False
-TM_SIGTERM = False
-TM_SIGABRT = False
 
 TM_DEF_LISTENER_ADDR = '/tmp/.temboardsched.sock'
 
@@ -66,13 +59,6 @@ def ensure_str(value):
     return value
 
 
-def json_serial_datetime(obj):
-    # JSON serializer for datetime
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError("Type %s not serializable" % type(obj))
-
-
 def make_worker_definition(function, pool_size):
     return {
         'name': function.__name__,
@@ -80,76 +66,6 @@ def make_worker_definition(function, pool_size):
         'module': function.__module__,
         'function': function.__name__
     }
-
-
-def worker(pool_size=1):
-    # Decorator that defines a new worker function
-    def defines_worker(function):
-        global TM_WORKERS
-        TM_WORKERS.append(make_worker_definition(function, pool_size))
-        return function
-
-    return defines_worker
-
-
-def handler_sigterm(num, frame):
-    global TM_SIGTERM
-    TM_SIGTERM = True
-
-
-def handler_sighup(num, frame):
-    global TM_SIGHUP
-    TM_SIGHUP = True
-
-
-def handler_sigabrt(num, frame):
-    global TM_SIGABRT
-    TM_SIGABRT = True
-
-
-def bootstrap():
-    def defines_bootstrap(function):
-        global TM_BOOTSTRAP
-        TM_BOOTSTRAP.append({
-            'module': function.__module__,
-            'function': function.__name__
-        })
-        return function
-
-    return defines_bootstrap
-
-
-def schedule_task(worker_name, id=None, options=None, start=None,
-                  redo_interval=None, listener_addr=TM_DEF_LISTENER_ADDR,
-                  authkey=None, expire=3600):
-    # Schedule a new task
-    return TaskManager.send_message(
-                listener_addr,
-                Message(
-                    MSG_TYPE_TASK_NEW,
-                    Task(
-                        id=id,
-                        worker_name=worker_name,
-                        options=options,
-                        start_datetime=start or datetime.utcnow(),
-                        redo_interval=redo_interval,
-                        expire=expire,
-                    )
-                ),
-                authkey=authkey
-           )
-
-
-def set_context(k, v, listener_addr=TM_DEF_LISTENER_ADDR, authkey=None):
-    # Update a context variable
-    return TaskManager.send_message(
-                listener_addr,
-                Message(
-                    MSG_TYPE_CONTEXT,
-                    {k: v}
-                ),
-                authkey=authkey
-           )
 
 
 class Task(object):
@@ -252,48 +168,6 @@ class TaskList(object):
 
 
 class TaskManager(object):
-
-    def __init__(self, address=TM_DEF_LISTENER_ADDR, authkey=None):
-
-        self.scheduler = Scheduler(address, authkey)
-
-    def set_context(self, key, val):
-        self.scheduler.set_context(key, val)
-
-    def start(self):
-        logger.info("Starting TaskManager")
-        self.scheduler.start()
-
-    def restart(self, abort=False):
-        if abort:
-            self.stop()
-            self.start()
-        else:
-            self.shutdown()
-            self.start()
-
-    def shutdown(self):
-        # Will stop the scheduler and WP only when all the ongoing task are
-        # done.
-        logger.info("Shutting down scheduler")
-        os.kill(self.scheduler.process.pid, signal.SIGTERM)
-        self.join()
-
-    def stop(self):
-        # Abort all ongoing tasks and stop the scheduler and WP
-        logger.info("Aborting scheduler")
-        os.kill(self.scheduler.process.pid, signal.SIGABRT)
-        self.join()
-
-    def join(self):
-        try:
-            logger.debug("Joining processes")
-            self.scheduler.process.join()
-            self.scheduler.worker_pool.process.join()
-        except KeyboardInterrupt:
-            logger.debug("KeyboardInterrupt")
-            return
-
     @staticmethod
     def send_message(address, message, authkey=''):
         conn = Client(ensure_str(address), authkey=authkey)
@@ -306,8 +180,6 @@ class TaskManager(object):
 class Scheduler(object):
 
     def __init__(self, address, authkey):
-        # Process objet from multiprocessing
-        self.process = None
         # Listener for TM -> Scheduler IPC
         self.listener = None
         # Listener address
@@ -372,69 +244,12 @@ class Scheduler(object):
         # handle incoming message
         self.handle_message(message)
 
-    def sync_bootstrap_options(self):
-        # Reload bootstrap Task options and update Task from task_list with new
-        # options. This is usefull to reflect context changes into Task options
-        # like in a configuration update case.
-        for bs_func in TM_BOOTSTRAP:
-            func = getattr(sys.modules[bs_func['module']],
-                           bs_func['function'])(context=self.get_context())
-            if isinstance(func, types.GeneratorType):
-                for t in func:
-                    if isinstance(t, Task):
-                        try:
-                            self.task_list.update(
-                                    t.id,
-                                    options=t.options,
-                                    redo_interval=t.redo_interval,
-                            )
-                        except Exception as e:
-                            logger.exception(str(e))
-                            logger.error("Could not update Task %s with"
-                                         " options=%s" % (t.id, t.options))
-                    else:
-                        logger.error("Bootstrap task not Task instance")
-            else:
-                logger.error("Bootstrap function %s.%s not a generator"
-                             % (bs_func['module'], bs_func['function']))
-
-    def bootstrap(self):
-        # Load Tasks from generators decorated by @taskmanager.bootstrap()
-        for bs_func in TM_BOOTSTRAP:
-            func = getattr(sys.modules[bs_func['module']],
-                           bs_func['function'])(context=self.get_context())
-            if isinstance(func, types.GeneratorType):
-                for t in func:
-                    if isinstance(t, Task):
-                        try:
-                            try:
-                                self.task_list.push(t)
-                                logger.debug("Bootstrap Task=%s loaded" % t)
-                            except KeyError:
-                                logger.debug("Update Task %s with options=%s"
-                                             % (t.id, t.options))
-                                self.task_list.update(
-                                    t.id,
-                                    options=t.options,
-                                    redo_interval=t.redo_interval,
-                                )
-                        except StorageEngineError as e:
-                            # Just log the error and continue with other tasks
-                            logger.error(str(e))
-                    else:
-                        logger.error("Bootstrap task not Task instance")
-            else:
-                logger.error("Bootstrap function %s.%s not a generator"
-                             % (bs_func['module'], bs_func['function']))
-
     def setup(self):
         # Need to shutdown ?
         self.shutdown = False
         # Instanciate a new Listener
         self.listener = Listener(self.address, family='AF_UNIX',
                                  authkey=self.authkey)
-        # bootstrap
-        self.bootstrap()
         # TODO
         # self.sync_bootstrap_options()
         self.select_timeout = 1
@@ -483,61 +298,6 @@ class Scheduler(object):
         self.task_list.engine.bootstrap()
         # Reset task status
         self.task_list.recover()
-
-    def run(self):
-        # Add signal handlers
-        signal.signal(signal.SIGTERM, handler_sigterm)
-        signal.signal(signal.SIGHUP, handler_sighup)
-        signal.signal(signal.SIGABRT, handler_sigabrt)
-
-        global TM_SIGHUP
-        global TM_SIGTERM
-        global TM_SIGABRT
-
-        self.setup_task_list()
-        self.setup()
-
-        while True:
-            try:
-                self.serve1()
-
-                if TM_SIGTERM:
-                    # We perform shutdown on SIGTERM: we wait until all
-                    # ongoing tasks are done before stopping
-                    logger.debug("SIGTERM received")
-                    self.shutdown = True
-                    TM_SIGTERM = False
-                if TM_SIGHUP:
-                    logger.debug("SIGHUP received")
-                    self.sync_bootstrap_options()
-                    TM_SIGHUP = False
-
-                if TM_SIGABRT:
-                    logger.debug("SIGABRT received")
-                    TM_SIGABRT = False
-                    self.stop()
-                    return
-
-                try:
-                    # Check parent
-                    os.kill(os.getppid(), 0)
-                except Exception:
-                    self.stop()
-                    return
-
-                if self.shutdown and self.task_list.get_n_todo() == 0:
-                    # When shutting down, if there is no more ongoing task
-                    # then we can stop
-                    self.stop()
-                    return
-            except KeyboardInterrupt:
-                logger.error("KeyboardInterrupt")
-                self.stop()
-                return
-            except Exception as e:
-                logger.exception(e)
-                self.stop()
-                return
 
     def schedule(self):
         now = datetime.utcnow()
@@ -671,37 +431,6 @@ class Scheduler(object):
             else:
                 return Message(MSG_TYPE_ERROR, 'Unvalid type')
 
-        # TODO: handle other message types
-
-    def start(self):
-        # Queues
-        self.task_queue = Queue()
-        self.event_queue = Queue()
-        # Instanciate WP
-        self.worker_pool = WorkerPool(self.task_queue, self.event_queue)
-        # Start WP as new process
-        self.worker_pool.start()
-        # Start Scheduler as new Process
-        self.process = Process(target=self.run, args=())
-        self.process.start()
-
-    def stop(self):
-        logger.debug("Abort remaining jobs if any")
-        self.worker_pool.abort_jobs()
-        logger.debug("Terminating WP process")
-        self.worker_pool.process.terminate()
-        logger.debug("Closing Listener")
-        self.listener.close()
-        logger.debug("Closing task_queue")
-        self.task_queue.close()
-        logger.debug("Closing event_queue")
-        self.event_queue.close()
-        del self.listener
-        del self.worker_pool
-        del self.task_queue
-        del self.event_queue
-        del self.task_list
-
 
 class SchedulerService(Service):
     # Adapter from taskmanager.Scheduler to Service
@@ -820,9 +549,6 @@ class WorkerPool(object):
     def setup(self):
         if self.perf:
             self.perf['fork'] = 0
-        global TM_WORKERS
-        for worker in TM_WORKERS:
-            self.add(worker)
 
     def add(self, worker):
         if worker['name'] in self.workers:
@@ -875,20 +601,14 @@ class WorkerPool(object):
                 # If not aborted, task has been queued
                 self._rm_task_worker_queue(t.id)
 
-    def run(self):
-        self.setup()
-        while True:
-            try:
-                self.serve1()
-            except Exception as e:
-                logger.exception(e)
-            except KeyboardInterrupt:
-                logger.error("KeyboardInterrupt")
-                return
-
     def exec_worker(self, module, function, out, *args, **kws):
         # Function wrapper around worker function
         try:
+            # Reset signal handlers.
+            signal.signal(signal.SIGABRT, signal.SIG_DFL)
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
+            signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
             fun = getattr(sys.modules[module], function)
 
             modfun = "%s.%s" % (module, fun.__name__)
@@ -1001,10 +721,6 @@ class WorkerPool(object):
                     # Finally, remove the job from the pool
                     self.workers[name]['pool'].remove(job)
 
-    def start(self):
-        self.process = Process(target=self.run, args=())
-        self.process.start()
-
     def abort_jobs(self):
         # abort all running jobs
         for name, worker in self.workers.items():
@@ -1023,22 +739,16 @@ class WorkerPool(object):
 class WorkerSet(list):
     def register(self, pool_size=1):
         def register(f):
-            f.defer = self.create_defer_function(f.__name__)
+            def defer(app, **kw):
+                return app.scheduler.schedule_task(
+                    f.__name__, options=kw, expire=0)
+            f.defer = defer
+
             f._tm_worker = make_worker_definition(f, pool_size)
             if f not in self:
                 self.append(f)
             return f
         return register
-
-    def create_defer_function(self, name):
-        def defer(app, **kw):
-            return schedule_task(
-                name,
-                listener_addr=app.scheduler.scheduler.address,
-                options=kw,
-                expire=0,
-            )
-        return defer
 
     def schedule(self, id=None, redo_interval=None, **options):
         def register(f):
@@ -1112,6 +822,11 @@ class WorkerPoolService(Service):
             conf = function._tm_worker
             logger.debug("Disable worker %s", conf['name'])
             self.worker_pool.workers.pop(conf['name'], None)
+
+    def sigterm_handler(self, *a):
+        logger.info("Aborting jobs on SIGTERM.")
+        self.worker_pool.abort_jobs()
+        super(WorkerPoolService, self).sigterm_handler(*a)
 
 
 class RunTaskMixin(object):

@@ -6,13 +6,13 @@ import re
 from . import db
 from ...notification import NotificationMgmt
 from ...inventory import SysInfo, PgInfo
-from ...errors import UserError
 
 
-def get_metrics(app):
+def get_metrics(app, pool=None):
     res = dict()
-    try:
-        with app.postgres.connect() as conn:
+    pool = pool or app.postgres.pool()
+    for attempt in pool.retry_connection():
+        with attempt() as conn:
             dm = DashboardMetrics(conn)
             pginfo = PgInfo(conn)
             res.update(dict(
@@ -26,8 +26,6 @@ def get_metrics(app):
                 pg_data=pginfo.setting('data_directory'),
                 pg_port=pginfo.setting('port'),
             ))
-    except UserError:
-        pass
 
     dm = DashboardMetrics()
     res.update(dict(

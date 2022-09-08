@@ -1,5 +1,4 @@
 import logging
-import os.path
 try:
     from inspect import signature
 except ImportError:
@@ -7,7 +6,7 @@ except ImportError:
 from textwrap import dedent
 
 from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import RunTaskMixin, schedule_task
+from ..toolkit.taskmanager import RunTaskMixin
 from ..model import check_schema
 from .app import app
 
@@ -49,12 +48,9 @@ class Schedule(RunTaskMixin, SubCommand):
         else:
             worker, worker_args = self.compute_worker_args(workers, args)
             check_schema()
-            sock = os.path.join(self.app.config.temboard.home, '.tm.socket')
-            logger.debug("Using task manager socket: %s.", sock)
-            out = schedule_task(
-                args.worker_name, None,
-                listener_addr=sock,
-                options=build_kwargs_from_args(worker, worker_args),
+            out = worker.defer(
+                self.app,
+                **build_kwargs_from_args(worker, worker_args),
             )
             logger.info(
                 "Worker %s scheduled with task ID %s.",

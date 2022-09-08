@@ -536,15 +536,13 @@ def schedule_operation(operation_type, conn, database,
         if 'mode' in kwargs:
             options['mode'] = kwargs['mode']
 
-        res = taskmanager.schedule_task(
+        res = app.scheduler.schedule_task(
             operation_type + '_worker',
             id=m.hexdigest()[:8],
             options=options,
             # We add one microsecond here to be compliant with scheduler
             # datetime format expected during task recovery
             start=(dt + timedelta(microseconds=1)),
-            listener_addr=str(os.path.join(app.config.temboard.home,
-                                           '.tm.socket')),
             expire=0,
         )
     except Exception as e:

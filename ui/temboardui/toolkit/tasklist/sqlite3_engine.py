@@ -243,11 +243,11 @@ class TaskListSQLite3Engine(object):
                     """),
                     (st_aborted, datetime_to_epoch(now), st_doing)
                 )
-                # Reset scheduled task to default
-                c.execute(
-                    "UPDATE tasks SET status = ? WHERE status & ?",
-                    (st_default, st_scheduled)
-                )
+                # Reset scheduled task and recurrent tasks to default
+                c.execute(dedent("""
+                UPDATE tasks SET status = ?
+                WHERE status & ? OR redo_interval > 0
+                """), (st_default, st_scheduled))
         except sqlite3.Error as e:
             logger.exception(str(e))
             raise StorageEngineError("Could not recover tasks.")

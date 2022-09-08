@@ -12,8 +12,6 @@ SC_CLK_TCK = os.sysconf('SC_CLK_TCK')
 class PerfCounters(dict):
     @classmethod
     def setup(cls, **defaults):
-        if 'DEBUG' in os.environ:
-            os.environ.setdefault('PERF', '15')
         if 'PERF' not in os.environ:
             return
         return cls(**defaults)

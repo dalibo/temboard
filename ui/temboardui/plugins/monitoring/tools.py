@@ -2,11 +2,8 @@ from builtins import str
 from dateutil import parser as parse_datetime
 from datetime import datetime, timedelta
 import logging
-import os
 
 from sqlalchemy.orm.exc import NoResultFound
-
-from temboardui.toolkit import taskmanager
 
 from .model.orm import (
     Check,
@@ -333,7 +330,7 @@ def preprocess_data(data, checks, timestamp):
     return ret
 
 
-def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
+def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
     # Function in charge of checking preprocessed monitoring values
     keys = dict()
 
@@ -377,9 +374,8 @@ def check_preprocessed_data(session, host_id, instance_id, ppdata, home):
             ).one()
             # State has changed since last time
             if cs.state != state:
-                taskmanager.schedule_task(
+                app.scheduler.schedule_task(
                     'notify_state_change',
-                    listener_addr=os.path.join(home, '.tm.socket'),
                     options={
                         'check_id': c.check_id,
                         'key': key,
