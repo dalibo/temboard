@@ -43,14 +43,11 @@ SETUP_KWARGS = dict(
     name='temboard',
     version=__version__,  # noqa, imported by execfile.
     description='temBoard User Interface.',
-    author='Julien Tachoires, Étienne BERSAC',
+    author='Dalibo',
+    author_email='contact@dalibo.com',
     license='PostgreSQL',
-    install_requires=install_requires,
-    include_package_data=True,
-    zip_safe=False,
-    url='https://github.com/dalibo/temboard/',
+    url='https://labs.dalibo.com/temboard',
     classifiers=[
-        "Development Status :: 3 - Alpha",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved",
         "Operating System :: POSIX :: Linux",
@@ -59,6 +56,9 @@ SETUP_KWARGS = dict(
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
+    install_requires=install_requires,
+    include_package_data=True,
+    zip_safe=False,
     data_files=[
         ('share/temboard', [
             'share/auto_configure.sh',
