@@ -5,7 +5,7 @@ import re
 
 from . import db
 from ...notification import NotificationMgmt
-from ...inventory import SysInfo, PgInfo
+from ...inventory import SysInfo
 
 
 def get_metrics(app, pool=None):
@@ -20,7 +20,7 @@ def get_metrics(app, pool=None):
                 buffers=dm.get_buffers(),
                 hitratio=dm.get_hitratio(),
                 active_backends=dm.get_active_backends(),
-                max_connections=dm.get_max_connections(),
+                max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
                 pg_start_time=dm.get_pg_start_time(),
                 pg_version=pgdiscover['version'],
@@ -80,20 +80,6 @@ def get_history_metrics_queue(config):
     ]
 
 
-def get_info(conn, config):
-    dm = DashboardMetrics(conn)
-    sysinfo = SysInfo()
-    pginfo = PgInfo(conn)
-    return dict(
-        hostname=sysinfo.hostname(config.temboard.hostname),
-        os_version=' '.join([sysinfo.os, sysinfo.os_release]),
-        pg_start_time=dm.get_pg_start_time(),
-        pg_version=pginfo.version()['full'],
-        pg_data=pginfo.setting('data_directory'),
-        pg_port=pginfo.setting('port'),
-    )
-
-
 def get_buffers(conn):
     dm = DashboardMetrics(conn)
     return dict(buffers=dm.get_buffers())
@@ -107,11 +93,6 @@ def get_hitratio(conn):
 def get_active_backends(conn):
     dm = DashboardMetrics(conn)
     return dict(active_backends=dm.get_active_backends())
-
-
-def get_max_connections(conn):
-    dm = DashboardMetrics(conn)
-    return dict(max_connections=dm.get_max_connections())
 
 
 def get_cpu_usage():
@@ -177,11 +158,6 @@ class DashboardMetrics:
         current_active_backends = self._get_current_active_backends()
         return {'nb': current_active_backends,
                 'time': current_time}
-
-    def get_max_connections(self):
-        return int(self.conn.queryscalar("""\
-        SELECT setting FROM pg_settings WHERE name = 'max_connections'
-        """))
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()

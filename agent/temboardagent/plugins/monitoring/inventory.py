@@ -55,17 +55,14 @@ def instance_info(pool, conninfo, discover):
         # Get PostgreSQL informations using PgInfo
         pginfo = PgInfo(conn)
         # Gather the info while where are connected
-        instance_info['data_directory'] = pginfo.setting('data_directory')
         instance_info['version_num'] = p['version_num']
         instance_info['version'] = p['version']
+        instance_info['data_directory'] = p['data_directory']
+        instance_info['max_connections'] = p['max_connections']
         instance_info['start_time'] = pginfo.start_time()
 
         # hot standby is available from 9.0
         instance_info['standby'] = pginfo.is_in_recovery()
-
-        # max_connections
-        instance_info['max_connections'] = pginfo.setting(
-            'max_connections')
 
         # Grab the list of tablespaces
         instance_info['tablespaces'] = pginfo.tablespaces(

@@ -420,7 +420,7 @@ def collector_batch(app, batch):
         except UserError:
             raise
         except Exception as e:
-            logger.error("Failed to collect %s:%s: %s", address, port, e)
+            logger.exception("Failed to collect %s:%s: %s", address, port, e)
 
 
 @workers.register(pool_size=20)
@@ -515,8 +515,6 @@ def collector(app, address, port, key=None, engine=None):
         data = row['data']
         instance = row['instances'][0]
         port = instance['port']
-        if 'max_connections' in instance:
-            row['data']['max_connections'] = instance['max_connections']
 
         try:
             # Try to insert collected data
@@ -600,6 +598,14 @@ def collector(app, address, port, key=None, engine=None):
         logger.info(
             "Apply alerting checks against preprocessed data for agent %s.",
             agent_id)
+
+        # Hack: copy max_connections in metrics data to pass max_connections to
+        # alert processing. max_connections does NOT have the same type of
+        # other metrics in data. This is because alerting.PreProcess functions
+        # only accepts data as parameter.
+        if 'max_connections' in instance:
+            row['data']['max_connections'] = instance['max_connections']
+
         try:
             check_preprocessed_data(
                 app,

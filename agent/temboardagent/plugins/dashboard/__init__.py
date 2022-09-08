@@ -89,16 +89,6 @@ def dashboard_databases(pgconn):
     return metrics.get_databases(pgconn)
 
 
-@bottle.get('/info')
-def dashboard_info(pgconn):
-    return metrics.get_info(pgconn, default_app().temboard.config)
-
-
-@bottle.get('/max_connections')
-def dashboard_max_connections(pgconn):
-    return metrics.get_max_connections(pgconn)
-
-
 @workers.register(pool_size=1)
 def dashboard_collector_worker(app, pool=None):
     logger.info("Running dashboard collector.")
