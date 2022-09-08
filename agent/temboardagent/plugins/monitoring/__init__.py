@@ -126,7 +126,8 @@ def monitoring_collector_worker(app):
     )
 
     logger.info("Gathering host information.")
-    system_info = host_info(config.temboard.hostname)
+    discover = app.discover.ensure_latest()
+    system_info = host_info(discover)
     logger.info("Load the probes to run.")
     probes = load_probes(
         config.monitoring,

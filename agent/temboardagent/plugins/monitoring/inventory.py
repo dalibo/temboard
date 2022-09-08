@@ -15,17 +15,17 @@ from ...inventory import (
 )
 
 
-def host_info(hostname_cfg):
+def host_info(discover):
     """Gather system information."""
     sinfo = SysInfo()
     _, _, _, _, arch = sinfo.uname()
-    hostname = sinfo.hostname(hostname_cfg)
 
+    s = discover['system']
     hostinfo = {
-        "hostname": hostname,
         "os": sinfo.os,
         "os_version": sinfo.os_release,
-        "cpu_arch": arch
+        "cpu_arch": arch,
+        "hostname": s['fqdn'],
     }
     hostinfo.update(sinfo.cpu_info())
     hostinfo['memory_size'] = sinfo.mem_info()['MemTotal']
@@ -35,10 +35,10 @@ def host_info(hostname_cfg):
     return hostinfo
 
 
-def instance_info(pool, conninfo, hostname):
+def instance_info(pool, conninfo, discover):
     """Gather PostgreSQL instance information."""
     instance_info = {
-        'hostname': hostname,
+        'hostname': discover['system']['fqdn'],
         'instance': conninfo['instance'],
         'local_name': conninfo.get('local_name', conninfo['instance']),
         'available': True,

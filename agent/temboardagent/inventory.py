@@ -1,6 +1,5 @@
 import logging
 import platform
-import socket
 import os
 import re
 import sys
@@ -23,15 +22,6 @@ class SysInfo(Inventory):
 
     def _os_info(self):
         return (platform.system(), platform.release())
-
-    def hostname(self, hostname=None):
-        if not hostname:
-            # Find the hostname by ourself.
-            if self.os == 'Linux':
-                hostname = self._hostname_linux()
-            else:
-                raise Exception("Unsupported OS.")
-        return hostname
 
     def uname(self):
         return os.uname()
@@ -94,26 +84,6 @@ class SysInfo(Inventory):
             return " ".join(platform.linux_distribution()).strip()
         else:
             raise Exception("Unsupported OS.")
-
-    def _hostname_linux(self):
-        """
-        Returns system hostname.
-        """
-        # Default value found using platform
-        hostname = platform.node()
-        try:
-            # Try to get hostname (FQDN) using 'hostname -f'
-            (rc, out, err) = exec_command([which('hostname'), '-f'])
-            if rc == 0:
-                hostname = out.decode('utf-8').strip()
-        except Exception:
-            try:
-                # Try to get hostname (FQDN) using socket module
-                (hostname, _, _) = socket.gethostbyaddr(socket.gethostname())
-                hostname = hostname.strip()
-            except Exception:
-                pass
-        return hostname
 
     def _cpu_info_linux(self):
         cpus = []
