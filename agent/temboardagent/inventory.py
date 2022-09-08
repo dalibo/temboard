@@ -2,7 +2,6 @@ import logging
 import platform
 import os
 import re
-import sys
 
 from .tools import which, to_bytes
 from .command import exec_command
@@ -56,16 +55,6 @@ class SysInfo(Inventory):
     def os_flavor(self):
         if self.os == 'Linux':
             return self._os_flavor_linux()
-        else:
-            raise Exception("Unsupported OS.")
-
-    def linux_distribution(self):
-        if self.os == 'Linux':
-            # Fail safely for python3.8 and above
-            # platform.linux_distribution is not available
-            if sys.version_info >= (3, 8):
-                return 'Distrib. info N/A'
-            return " ".join(platform.linux_distribution()).strip()
         else:
             raise Exception("Unsupported OS.")
 
