@@ -336,6 +336,9 @@ conf=${ETCDIR}/${name}/temboard-agent.conf
 generate_configuration "$1" "$home" "${sslfiles[0]}" "${sslfiles[1]}" "$name" "$has_statements" | tee "$conf"
 chown "$SYSUSER:$SYSUSER" "$conf"
 
+# Use type -p to search in auto_configure.sh PATH.
+sudo -Eu "${SYSUSER}" $(type -p temboard-agent) -c "$conf" discover >/dev/null
+
 # systemd
 if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	unit="temboard-agent@$(systemd-escape "${name}").service"
@@ -351,7 +354,7 @@ if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	systemctl enable "$unit"
 	start_cmd="systemctl start $unit"
 else
-	start_cmd="sudo -u ${SYSUSER} temboard-agent -c ${ETCDIR}/${name}/temboard-agent.conf"
+	start_cmd="sudo -u ${SYSUSER} temboard-agent -c $conf"
 fi
 
 log
