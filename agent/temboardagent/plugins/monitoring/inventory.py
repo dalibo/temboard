@@ -47,17 +47,17 @@ def instance_info(pool, conninfo, discover):
         'database': conninfo['database'],
         'password': conninfo['password']
     }
+    p = discover['postgres']
 
     # Try the connection
     try:
         conn = pool.getconn(dbname=conninfo['database'])
         # Get PostgreSQL informations using PgInfo
         pginfo = PgInfo(conn)
-        pgv = pginfo.version()
         # Gather the info while where are connected
-        instance_info['version_num'] = pgv['num']
-        instance_info['version'] = pgv['server']
         instance_info['data_directory'] = pginfo.setting('data_directory')
+        instance_info['version_num'] = p['version_num']
+        instance_info['version'] = p['version']
         instance_info['start_time'] = pginfo.start_time()
 
         # hot standby is available from 9.0

@@ -266,21 +266,6 @@ class PgInfo(Inventory):
             (name,)
         )
 
-    def version(self):
-        """
-        Returns a dict with PostgreSQL full & numeric version.
-        """
-        row = self.db_conn.queryone(
-            "SELECT version(), setting AS server FROM pg_settings WHERE "
-            "name = 'server_version'"
-        )
-        return {
-            'full': row['version'],
-            'server': row['server'],
-            'num': self.db_conn.server_version,
-            'summary': ' '.join(row['version'].split(' ')[0:2]),
-        }
-
     def is_in_recovery(self):
         if self.db_conn.server_version >= 90000:
             return self.db_conn.queryscalar(

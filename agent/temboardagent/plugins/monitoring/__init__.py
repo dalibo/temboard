@@ -135,7 +135,7 @@ def monitoring_collector_worker(app):
     )
 
     with Postgres(**conninfo).dbpool() as pool:
-        instance = instance_info(pool, conninfo, system_info['hostname'])
+        instance = instance_info(pool, conninfo, discover)
         data = run_probes(probes, pool, [instance])
 
     # Prepare and send output
