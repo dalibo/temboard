@@ -30,7 +30,7 @@ def host_info(discover):
     hostinfo['memory_size'] = s['memory']
     hostinfo['ip_addresses'] = sinfo.ip_addresses()
     hostinfo['filesystems'] = sinfo.file_systems()
-    hostinfo['os_flavor'] = sinfo.os_flavor()
+    hostinfo['os_flavor'] = s['distribution']
     return hostinfo
 
 

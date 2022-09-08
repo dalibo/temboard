@@ -49,12 +49,6 @@ class SysInfo(Inventory):
         else:
             raise Exception("Unsupported OS.")
 
-    def os_flavor(self):
-        if self.os == 'Linux':
-            return self._os_flavor_linux()
-        else:
-            raise Exception("Unsupported OS.")
-
     def _cpu_info_linux(self):
         cpus = []
         # TODO: implement for other OSes
@@ -205,25 +199,6 @@ class SysInfo(Inventory):
                 return realpath
 
             realpath = os.path.dirname(realpath)
-
-    def _os_flavor_linux(self):
-        # Distribution
-        os_flavor = "Unknown"
-        if os.path.exists("/etc/redhat-release"):
-            try:
-                fd = open("/etc/redhat-release")
-                os_flavor = fd.readline().strip()
-                fd.close()
-            except OSError:
-                fd.close()
-        elif os.path.exists("/etc/debian_version"):
-            try:
-                fd = open("/etc/debian_version")
-                os_flavor = "Debian " + fd.readline().strip()
-                fd.close()
-            except OSError:
-                fd.close()
-        return os_flavor
 
 
 class PgInfo(Inventory):

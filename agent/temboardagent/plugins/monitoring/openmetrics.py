@@ -135,11 +135,7 @@ def generate_samples(temboard_data) -> List[Sample]:
     instance = temboard_data['instances'][0]
     yield Sample(
         'node_os_info',
-        dict(
-            # os_flavor is not from standard /etc/os-release but custom. Put it
-            # in os_flavor.
-            pretty_name=temboard_data['hostinfo']['os_flavor'],
-        ),
+        dict(pretty_name=temboard_data['hostinfo']['os_flavor']),
     )
     nodename, _, domainname = instance['hostname'].partition('.')
     yield Sample(
