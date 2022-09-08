@@ -434,7 +434,7 @@ def collector(app, address, port, key=None, engine=None):
     try:
         response = client.get('/discover')
         response.raise_for_status()
-    except (client.ConnectionError, client.Error) as e:
+    except (OSError, client.ConnectionError, client.Error) as e:
         logger.error("Could not discover %s: %s", agent_id, e)
         logger.error("Agent or host may be down or misconfigured.")
         return
@@ -490,7 +490,7 @@ def collector(app, address, port, key=None, engine=None):
         logger.info("Querying monitoring history from agent %s.", agent_id)
         response = client.get(history_url)
         response.raise_for_status()
-    except (client.ConnectionError, client.Error) as e:
+    except (OSError, client.ConnectionError, client.Error) as e:
         logger.error("Failed to query history: %s", e)
         # Update collector status only if instance_id is known
         if instance_id:
