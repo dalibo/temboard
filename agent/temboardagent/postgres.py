@@ -11,6 +11,7 @@ import ctypes
 import logging
 import re
 from contextlib import closing
+from time import sleep
 
 from psycopg2 import connect
 from psycopg2 import Error as Psycopg2Error
@@ -75,9 +76,7 @@ class Postgres:
         )
 
     def connect(self):
-        conn = connect(**self.pqvars())
-        conn.set_session(autocommit=True)
-        return closing(conn)
+        return closing(retry_connect(connect, **self.pqvars()))
 
     def fetch_version(self):
         if self._server_version is None:
@@ -239,7 +238,6 @@ class RetryManager(object):
 
     def __enter__(self):
         self.conn = self.pool.getconn()
-        self.conn.set_session(autocommit=True)
         self.retry = False
         return self.conn
 
@@ -261,6 +259,9 @@ class ConnectionPool(ThreadedConnectionPool):
     def __init__(self, observers=None, **kw):
         super(ConnectionPool, self).__init__(**kw)
         self.observers = observers
+
+    def _connect(self, *a, **kw):
+        return retry_connect(super(ConnectionPool, self)._connect, *a, **kw)
 
     def retry_connection(self):
         # Manage pooled connection lost. Yield a context manager for one or two
@@ -288,3 +289,17 @@ class ConnectionPool(ThreadedConnectionPool):
     def notify_observers(self):
         for observer in self.observers:
             observer()
+
+
+def retry_connect(connect, *a, **kw):
+    for wait in [1] * 30 + [0]:
+        try:
+            conn = connect(*a, **kw)
+            conn.set_session(autocommit=True)
+            return conn
+        except Exception as e:
+            if wait:
+                logger.debug("Retrying connection open in %ss: %s", wait, e)
+                sleep(wait)
+            else:  # Last wait is 0. Just give up.
+                raise
