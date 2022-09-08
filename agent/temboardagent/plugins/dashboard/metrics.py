@@ -115,11 +115,6 @@ def get_hostname(config):
     return dict(hostname=sysinfo.hostname(config.temboard.hostname))
 
 
-def get_os_version():
-    sysinfo = SysInfo()
-    return dict(os_version=' '.join((sysinfo.os, sysinfo.os_release)))
-
-
 def get_databases(conn):
     dm = DashboardMetrics(conn)
     return dict(databases=dm.get_stat_db())

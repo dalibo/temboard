@@ -17,10 +17,7 @@ class Inventory:
 
 class SysInfo(Inventory):
     def __init__(self):
-        (self.os, self.os_release) = self._os_info()
-
-    def _os_info(self):
-        return (platform.system(), platform.release())
+        self.os = platform.system()
 
     def cpu_info(self):
         if self.os == 'Linux':

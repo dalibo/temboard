@@ -74,11 +74,6 @@ def dashboard_hostname():
     return metrics.get_hostname(default_app().temboard.config)
 
 
-@bottle.get('/os_version')
-def dashboard_os_version():
-    return metrics.get_os_version()
-
-
 @bottle.get('/databases')
 def dashboard_databases(pgconn):
     return metrics.get_databases(pgconn)

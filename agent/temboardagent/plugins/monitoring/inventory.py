@@ -21,8 +21,8 @@ def host_info(discover):
 
     s = discover['system']
     hostinfo = {
-        "os": sinfo.os,
-        "os_version": sinfo.os_release,
+        "os": s['os'],
+        "os_version": s['os_version'],
         "cpu_arch": s['arch'],
         "hostname": s['fqdn'],
     }

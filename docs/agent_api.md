@@ -719,34 +719,6 @@ Content-type: application/json
 }
 ```
 
-> Operating system version.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/os_version HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 16:55:44 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "os_version": "Linux 4.9.6-gentoo-r1"
-}
-```
-
 > PostgreSQL cluster size & number of databases.
 >
 > status 200
