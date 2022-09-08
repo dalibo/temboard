@@ -62,6 +62,7 @@ def test_proctitle(agent):
 
 def test_discover(agent, agent_env, pg_version):
     res = agent.get('/discover')
+    res.raise_for_status()
     discover = res.json()
 
     assert pg_version in discover['pg_version']
