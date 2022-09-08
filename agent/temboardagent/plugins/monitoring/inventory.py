@@ -27,7 +27,7 @@ def host_info(discover):
         "hostname": s['fqdn'],
     }
     hostinfo.update(sinfo.cpu_info())
-    hostinfo['memory_size'] = sinfo.mem_info()['MemTotal']
+    hostinfo['memory_size'] = s['memory']
     hostinfo['ip_addresses'] = sinfo.ip_addresses()
     hostinfo['filesystems'] = sinfo.file_systems()
     hostinfo['os_flavor'] = sinfo.os_flavor()
