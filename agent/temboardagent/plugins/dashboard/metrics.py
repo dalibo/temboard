@@ -125,11 +125,6 @@ def get_databases(conn):
     return dict(databases=dm.get_stat_db())
 
 
-def get_n_cpu():
-    sysinfo = SysInfo()
-    return dict(n_cpu=sysinfo.n_cpu())
-
-
 class DashboardMetrics:
     conn = None
     config = None

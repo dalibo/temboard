@@ -23,13 +23,6 @@ class SysInfo(Inventory):
     def _os_info(self):
         return (platform.system(), platform.release())
 
-    def n_cpu(self):
-        """
-        Returns number of cpu using multiprocessinf.cpu_count().
-        """
-        from multiprocessing import cpu_count
-        return cpu_count()
-
     def memory_size(self):
         if self.os == 'Linux':
             return self._mem_info_linux()['MemTotal']

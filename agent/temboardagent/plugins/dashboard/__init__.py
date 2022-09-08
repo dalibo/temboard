@@ -79,11 +79,6 @@ def dashboard_os_version():
     return metrics.get_os_version()
 
 
-@bottle.get('/n_cpu')
-def dashboard_n_cpu():
-    return metrics.get_n_cpu()
-
-
 @bottle.get('/databases')
 def dashboard_databases(pgconn):
     return metrics.get_databases(pgconn)

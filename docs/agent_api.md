@@ -747,34 +747,6 @@ Content-type: application/json
 }
 ```
 
-> Number of CPU.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/n_cpu HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 17:03:55 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "n_cpu": 4
-}
-```
-
 > PostgreSQL cluster size & number of databases.
 >
 > status 200
