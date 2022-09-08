@@ -23,9 +23,6 @@ class SysInfo(Inventory):
     def _os_info(self):
         return (platform.system(), platform.release())
 
-    def uname(self):
-        return os.uname()
-
     def n_cpu(self):
         """
         Returns number of cpu using multiprocessinf.cpu_count().

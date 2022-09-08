@@ -18,13 +18,12 @@ from ...inventory import (
 def host_info(discover):
     """Gather system information."""
     sinfo = SysInfo()
-    _, _, _, _, arch = sinfo.uname()
 
     s = discover['system']
     hostinfo = {
         "os": sinfo.os,
         "os_version": sinfo.os_release,
-        "cpu_arch": arch,
+        "cpu_arch": s['arch'],
         "hostname": s['fqdn'],
     }
     hostinfo.update(sinfo.cpu_info())
