@@ -144,31 +144,43 @@ class RegisterInstance(SubCommand):
 
         logger.info(
             "Registering %s serving %s at %s:%s.",
-            discover['pg_version_summary'],
-            discover['pg_data'],
-            discover['hostname'], discover['pg_port'],
+            discover['postgres']['version_summary'],
+            discover['postgres']['data_directory'],
+            discover['system']['hostname'],
+            discover['postgres']['port'],
         )
-        data = discover
+        data = {}
         data['new_agent_address'] = args.agent_address
         data['new_agent_port'] = args.agent_port
         data['groups'] = groups
         data['comment'] = args.comment
         data['notify'] = args.notify
 
+        data['hostname'] = discover['system']['fqdn']
+        data['cpu'] = discover['system']['cpu_count']
+        data['memory_size'] = discover['system']['memory']
+        data['pg_port'] = discover['postgres']['port']
+        data['pg_data'] = discover['postgres']['data_directory']
+        data['pg_version'] = discover['postgres']['version']
+        data['pg_version_summary'] = discover['postgres']['version_summary']
+        data['pg_block_size'] = discover['postgres']['block_size']
+
         if plugins:
             for plugin in plugins:
-                if plugin not in discover['plugins']:
+                if plugin not in discover['temboard']['plugins']:
                     raise UserError(
                         "Plugin %s disabled on agent side." % plugin)
         else:
             plugins = guess_default_plugins(
                 ui_plugins=self.app.config.temboard.plugins,
-                agent_plugins=discover['plugins']
+                agent_plugins=discover['temboard']['plugins'],
             )
         logger.debug("Enabling plugins %s.", ', '.join(plugins))
         data['plugins'] = plugins
 
         instance = add_instance(session, **data)
+        session.add(instance)
+        session.flush()  # Get an Instance.id
         add_instance_in_groups(session, instance, groups)
         enable_instance_plugins(
             session, instance, plugins, self.app.config.temboard.plugins,
