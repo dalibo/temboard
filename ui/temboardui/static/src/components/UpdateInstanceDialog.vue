@@ -105,14 +105,14 @@ export default {
         }
 
         this.discover_data = data;
-        this.agent_plugins = data.plugins;
-        this.cpu = data.cpu;
-        var mem_gb = data.memory_size / 1024 / 1024 / 1024;
+        this.agent_plugins = data.temboard.plugins;
+        this.cpu = data.system.cpu_count;
+        var mem_gb = data.system.memory / 1024 / 1024 / 1024;
         this.mem_gb = mem_gb.toFixed(2);
-        this.pg_version_summary = data.pg_version_summary;
-        this.pg_data = data.pg_data;
-        this.pg_host = data.hostname;
-        this.pg_port = data.pg_port;
+        this.pg_version_summary = data.postgres.version_summary;
+        this.pg_data = data.postgres.data_directory;
+        this.pg_host = data.system.fqdn;
+        this.pg_port = data.postgres.port;
         this.signature_status = data.signature_status;
       });
     },
@@ -163,10 +163,16 @@ export default {
         contentType: "application/json",
         dataType: "json",
         data: JSON.stringify({
-          ...this.discover_data,
           ...data,
           new_agent_address: this.agent_address,
           new_agent_port: this.agent_port,
+          hostname: this.pg_host,
+          pg_port: this.pg_port,
+          pg_version: this.discover_data.postgres.version,
+          pg_data: this.pg_data,
+          pg_version_summary: this.pg_version_summary,
+          cpu: this.cpu,
+          memory_size: this.discover_data.system.memory
         }),
       }).fail(xhr => {
         this.waiting = false;

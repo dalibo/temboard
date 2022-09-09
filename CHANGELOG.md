@@ -16,6 +16,8 @@ script to proceed.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
   runtask`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
   `temboard-agent runtask` and `temboard-agent web` for debugging.
+- New command `temboard-agent discover` to introspect temBoard agent, system
+  and PostgreSQL.
 - New agent option: `[temboard] ui_url`, pointing to UI URL.
 - New agent auto_configure.sh required parameter: UI URL.
 - temBoard agent auto_configure.sh does not configure file logging anymore.

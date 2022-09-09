@@ -33,7 +33,8 @@ def get_statements(pgpool):
         conn = pgpool.getconn(dbname)
         data = list(conn.query(query))
     except Exception as e:
-        pg_version = app.postgres.fetch_version()
+        discover = app.discover.ensure_latest()
+        pg_version = discover['postgres']['version_num']
         if (
             pg_version < 90600 or
             'relation "pg_stat_statements" does not exist' in str(e)

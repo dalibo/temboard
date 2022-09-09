@@ -126,7 +126,8 @@ def monitoring_collector_worker(app):
     )
 
     logger.info("Gathering host information.")
-    system_info = host_info(config.temboard.hostname)
+    discover = app.discover.ensure_latest()
+    system_info = host_info(discover)
     logger.info("Load the probes to run.")
     probes = load_probes(
         config.monitoring,
@@ -134,7 +135,7 @@ def monitoring_collector_worker(app):
     )
 
     with Postgres(**conninfo).dbpool() as pool:
-        instance = instance_info(pool, conninfo, system_info['hostname'])
+        instance = instance_info(pool, conninfo, discover)
         data = run_probes(probes, pool, [instance])
 
     # Prepare and send output

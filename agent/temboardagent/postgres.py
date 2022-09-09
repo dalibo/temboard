@@ -11,6 +11,7 @@ import ctypes
 import logging
 import re
 from contextlib import closing
+from time import sleep
 
 from psycopg2 import connect
 from psycopg2 import Error as Psycopg2Error
@@ -56,6 +57,7 @@ class Postgres:
         self.dbname = dbname
         self.app = app
         self._server_version = None
+        self.connection_lost_observers = []
 
     def __repr__(self):
         return '<{} on {}@{}:{}/{}>'.format(
@@ -67,18 +69,14 @@ class Postgres:
         return DBConnectionPool(self)
 
     def pool(self):
-        return ConnectionPool(minconn=1, maxconn=2, **self.pqvars())
+        return ConnectionPool(
+            minconn=1, maxconn=2,
+            observers=self.connection_lost_observers,
+            **self.pqvars(),
+        )
 
     def connect(self):
-        conn = connect(**self.pqvars())
-        conn.set_session(autocommit=True)
-        return closing(conn)
-
-    def fetch_version(self):
-        if self._server_version is None:
-            with self.connect() as conn:
-                self._server_version = conn.server_version
-        return self._server_version
+        return closing(retry_connect(connect, **self.pqvars()))
 
     def copy(self, **kw):
         defaults = dict(
@@ -234,7 +232,6 @@ class RetryManager(object):
 
     def __enter__(self):
         self.conn = self.pool.getconn()
-        self.conn.set_session(autocommit=True)
         self.retry = False
         return self.conn
 
@@ -253,6 +250,13 @@ class RetryManager(object):
 
 
 class ConnectionPool(ThreadedConnectionPool):
+    def __init__(self, observers=None, **kw):
+        super(ConnectionPool, self).__init__(**kw)
+        self.observers = observers
+
+    def _connect(self, *a, **kw):
+        return retry_connect(super(ConnectionPool, self)._connect, *a, **kw)
+
     def retry_connection(self):
         # Manage pooled connection lost. Yield a context manager for one or two
         # attempt. The first attempt uses the connection as returned by the
@@ -265,11 +269,31 @@ class ConnectionPool(ThreadedConnectionPool):
         manager = RetryManager(self)
         for try_ in 0, 1:
             yield manager
-            if not manager.retry:
-                return
+            if manager.retry:
+                self.notify_observers()
+            else:
+                break
 
     def close_all_connections(self):
         # Close all connection, keeping pool opened.
         for conn in self._pool + list(self._used.values()):
             conn.close()
             self.putconn(conn)
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer()
+
+
+def retry_connect(connect, *a, **kw):
+    for wait in [1] * 30 + [0]:
+        try:
+            conn = connect(*a, **kw)
+            conn.set_session(autocommit=True)
+            return conn
+        except Exception as e:
+            if wait:
+                logger.debug("Retrying connection open in %ss: %s", wait, e)
+                sleep(wait)
+            else:  # Last wait is 0. Just give up.
+                raise

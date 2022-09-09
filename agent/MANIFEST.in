@@ -1,3 +1,4 @@
 graft share
 include LICENSE README.rst
 include packaging/temboard-agent@.service
+include temboardagent/queries/*.sql

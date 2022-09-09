@@ -1,9 +1,7 @@
 import logging
 import platform
-import socket
 import os
 import re
-import sys
 
 from .tools import which, to_bytes
 from .command import exec_command
@@ -19,35 +17,7 @@ class Inventory:
 
 class SysInfo(Inventory):
     def __init__(self):
-        (self.os, self.os_release) = self._os_info()
-
-    def _os_info(self):
-        return (platform.system(), platform.release())
-
-    def hostname(self, hostname=None):
-        if not hostname:
-            # Find the hostname by ourself.
-            if self.os == 'Linux':
-                hostname = self._hostname_linux()
-            else:
-                raise Exception("Unsupported OS.")
-        return hostname
-
-    def uname(self):
-        return os.uname()
-
-    def n_cpu(self):
-        """
-        Returns number of cpu using multiprocessinf.cpu_count().
-        """
-        from multiprocessing import cpu_count
-        return cpu_count()
-
-    def memory_size(self):
-        if self.os == 'Linux':
-            return self._mem_info_linux()['MemTotal']
-        else:
-            raise Exception("Unsupported OS.")
+        self.os = platform.system()
 
     def cpu_info(self):
         if self.os == 'Linux':
@@ -78,42 +48,6 @@ class SysInfo(Inventory):
             return self._find_mount_point_linux(path, mount_points)
         else:
             raise Exception("Unsupported OS.")
-
-    def os_flavor(self):
-        if self.os == 'Linux':
-            return self._os_flavor_linux()
-        else:
-            raise Exception("Unsupported OS.")
-
-    def linux_distribution(self):
-        if self.os == 'Linux':
-            # Fail safely for python3.8 and above
-            # platform.linux_distribution is not available
-            if sys.version_info >= (3, 8):
-                return 'Distrib. info N/A'
-            return " ".join(platform.linux_distribution()).strip()
-        else:
-            raise Exception("Unsupported OS.")
-
-    def _hostname_linux(self):
-        """
-        Returns system hostname.
-        """
-        # Default value found using platform
-        hostname = platform.node()
-        try:
-            # Try to get hostname (FQDN) using 'hostname -f'
-            (rc, out, err) = exec_command([which('hostname'), '-f'])
-            if rc == 0:
-                hostname = out.decode('utf-8').strip()
-        except Exception:
-            try:
-                # Try to get hostname (FQDN) using socket module
-                (hostname, _, _) = socket.gethostbyaddr(socket.gethostname())
-                hostname = hostname.strip()
-            except Exception:
-                pass
-        return hostname
 
     def _cpu_info_linux(self):
         cpus = []
@@ -266,53 +200,10 @@ class SysInfo(Inventory):
 
             realpath = os.path.dirname(realpath)
 
-    def _os_flavor_linux(self):
-        # Distribution
-        os_flavor = "Unknown"
-        if os.path.exists("/etc/redhat-release"):
-            try:
-                fd = open("/etc/redhat-release")
-                os_flavor = fd.readline().strip()
-                fd.close()
-            except OSError:
-                fd.close()
-        elif os.path.exists("/etc/debian_version"):
-            try:
-                fd = open("/etc/debian_version")
-                os_flavor = "Debian " + fd.readline().strip()
-                fd.close()
-            except OSError:
-                fd.close()
-        return os_flavor
-
 
 class PgInfo(Inventory):
     def __init__(self, db_conn):
         self.db_conn = db_conn
-
-    def setting(self, name):
-        """
-        Returns PostgreSQL setting value based on its name.
-        """
-        return self.db_conn.queryscalar(
-            "SELECT setting FROM pg_settings WHERE name = %s",
-            (name,)
-        )
-
-    def version(self):
-        """
-        Returns a dict with PostgreSQL full & numeric version.
-        """
-        row = self.db_conn.queryone(
-            "SELECT version(), setting AS server FROM pg_settings WHERE "
-            "name = 'server_version'"
-        )
-        return {
-            'full': row['version'],
-            'server': row['server'],
-            'num': self.db_conn.server_version,
-            'summary': ' '.join(row['version'].split(' ')[0:2]),
-        }
 
     def is_in_recovery(self):
         if self.db_conn.server_version >= 90000:

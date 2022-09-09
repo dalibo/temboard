@@ -3,42 +3,6 @@
 ## Core API {#core_api}
 
 
-> Get global informations about the environment
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-
-**Example request**:
-
-``` http
-GET /discover HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 12:33:19 GMT
-Content-type: application/json
-
-{
-    "hostname": "neptune",
-    "pg_data": "/var/lib/postgresql/9.4/main",
-    "pg_port": 5432,
-    "plugins": ["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance"],
-    "memory_size": 8241508352,
-    "pg_version": "PostgreSQL 9.4.5 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.9.2-10ubuntu13) 4.9.2, 64-bit",
-    "cpu": 4
-}
-```
-
 > Get current username
 >
 > status 200
@@ -755,90 +719,6 @@ Content-type: application/json
 }
 ```
 
-> Operating system version.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/os_version HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 16:55:44 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "os_version": "Linux 4.9.6-gentoo-r1"
-}
-```
-
-> Get PostgreSQL server version.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/pg_version HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 16:59:26 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "pg_version": "PostgreSQL 9.5.5 on x86_64-pc-linux-gnu, compiled by x86_64-pc-linux-gnu-gcc (Gentoo 4.9.4 p1.0, pie-0.6.4) 4.9.4, 64-bit"
-}
-```
-
-> Number of CPU.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/n_cpu HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 17:03:55 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "n_cpu": 4
-}
-```
-
 > PostgreSQL cluster size & number of databases.
 >
 > status 200
@@ -872,67 +752,6 @@ Content-type: application/json
         "total_commit": 2848707,
         "time": "19:08"
     }
-}
-```
-
-> Get a bunch of global informations about system and PostgreSQL.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/info HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 17:17:57 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "hostname": "poseidon.home.priv",
-    "os_version": "Linux 4.9.6-gentoo-r1",
-    "pg_port": "5432",
-    "pg_uptime": "03:14:08.029574",
-    "pg_version": "PostgreSQL 9.5.5 on x86_64-pc-linux-gnu, compiled by x86_64-pc-linux-gnu-gcc (Gentoo 4.9.4 p1.0, pie-0.6.4) 4.9.4, 64-bit",
-    "pg_data": "/var/lib/postgresql/9.5/data"
-}
-```
-
-> Get the max_connections settings value.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-``` http
-GET /dashboard/active_backends HTTP/1.1
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.12
-Date: Thu, 20 Apr 2017 16:35:55 GMT
-Access-Control-Allow-Origin: *
-Content-type: application/json
-
-{
-    "max_connections": 100
 }
 ```
 

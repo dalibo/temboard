@@ -5,28 +5,30 @@ import re
 
 from . import db
 from ...notification import NotificationMgmt
-from ...inventory import SysInfo, PgInfo
+from ...inventory import SysInfo
 
 
 def get_metrics(app, pool=None):
     res = dict()
     pool = pool or app.postgres.pool()
+    discover = app.discover.ensure_latest()
     for attempt in pool.retry_connection():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
-            pginfo = PgInfo(conn)
+            pgdiscover = discover['postgres']
             res.update(dict(
                 buffers=dm.get_buffers(),
                 hitratio=dm.get_hitratio(),
                 active_backends=dm.get_active_backends(),
-                max_connections=dm.get_max_connections(),
+                max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
                 pg_start_time=dm.get_pg_start_time(),
-                pg_version=pginfo.version()['full'],
-                pg_data=pginfo.setting('data_directory'),
-                pg_port=pginfo.setting('port'),
+                pg_version=pgdiscover['version'],
+                pg_data=pgdiscover['data_directory'],
+                pg_port=pgdiscover['port'],
             ))
 
+    sysdiscover = discover['system']
     dm = DashboardMetrics()
     res.update(dict(
         cpu=dm.get_cpu_usage(),
@@ -43,11 +45,11 @@ def get_metrics(app, pool=None):
         cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
 
     res.update(dict(
-        hostname=sysinfo.hostname(app.config.temboard.hostname),
-        os_version=sysinfo.os_release,
-        linux_distribution=sysinfo.linux_distribution(),
+        hostname=sysdiscover['fqdn'],
+        os_version=sysdiscover['os_version'],
+        linux_distribution=sysdiscover['distribution'],
         cpu_models=cpu_models_counter,
-        n_cpu=sysinfo.n_cpu(),
+        n_cpu=sysdiscover['cpu_count'],
         timestamp=time.time()
     ))
     return res
@@ -78,20 +80,6 @@ def get_history_metrics_queue(config):
     ]
 
 
-def get_info(conn, config):
-    dm = DashboardMetrics(conn)
-    sysinfo = SysInfo()
-    pginfo = PgInfo(conn)
-    return dict(
-        hostname=sysinfo.hostname(config.temboard.hostname),
-        os_version=' '.join([sysinfo.os, sysinfo.os_release]),
-        pg_start_time=dm.get_pg_start_time(),
-        pg_version=pginfo.version()['full'],
-        pg_data=pginfo.setting('data_directory'),
-        pg_port=pginfo.setting('port'),
-    )
-
-
 def get_buffers(conn):
     dm = DashboardMetrics(conn)
     return dict(buffers=dm.get_buffers())
@@ -105,11 +93,6 @@ def get_hitratio(conn):
 def get_active_backends(conn):
     dm = DashboardMetrics(conn)
     return dict(active_backends=dm.get_active_backends())
-
-
-def get_max_connections(conn):
-    dm = DashboardMetrics(conn)
-    return dict(max_connections=dm.get_max_connections())
 
 
 def get_cpu_usage():
@@ -132,24 +115,9 @@ def get_hostname(config):
     return dict(hostname=sysinfo.hostname(config.temboard.hostname))
 
 
-def get_os_version():
-    sysinfo = SysInfo()
-    return dict(os_version=' '.join((sysinfo.os, sysinfo.os_release)))
-
-
 def get_databases(conn):
     dm = DashboardMetrics(conn)
     return dict(databases=dm.get_stat_db())
-
-
-def get_n_cpu():
-    sysinfo = SysInfo()
-    return dict(n_cpu=sysinfo.n_cpu())
-
-
-def get_pg_version(conn):
-    pginfo = PgInfo(conn)
-    return dict(pg_version=pginfo.version()['full'])
 
 
 class DashboardMetrics:
@@ -180,11 +148,6 @@ class DashboardMetrics:
         current_active_backends = self._get_current_active_backends()
         return {'nb': current_active_backends,
                 'time': current_time}
-
-    def get_max_connections(self):
-        return int(self.conn.queryscalar("""\
-        SELECT setting FROM pg_settings WHERE name = 'max_connections'
-        """))
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()

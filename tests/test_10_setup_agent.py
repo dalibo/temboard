@@ -62,10 +62,11 @@ def test_proctitle(agent):
 
 def test_discover(agent, agent_env, pg_version):
     res = agent.get('/discover')
+    res.raise_for_status()
     discover = res.json()
 
-    assert pg_version in discover['pg_version']
-    assert int(agent_env['PGPORT']) == discover['pg_port']
+    assert pg_version in discover['postgres']['version']
+    assert int(agent_env['PGPORT']) == discover['postgres']['port']
 
 
 def test_status(agent, agent_env, pg_version):

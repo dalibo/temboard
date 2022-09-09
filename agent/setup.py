@@ -28,6 +28,7 @@ setup(**dict(
         "Topic :: System :: Monitoring",
     ],
     python_requires='~=3.5',
+    include_package_data=True,
     install_requires=[
         'bottle >= 0.12, <0.13',
         'cryptography',

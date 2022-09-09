@@ -15,30 +15,29 @@ from ...inventory import (
 )
 
 
-def host_info(hostname_cfg):
+def host_info(discover):
     """Gather system information."""
     sinfo = SysInfo()
-    _, _, _, _, arch = sinfo.uname()
-    hostname = sinfo.hostname(hostname_cfg)
 
+    s = discover['system']
     hostinfo = {
-        "hostname": hostname,
-        "os": sinfo.os,
-        "os_version": sinfo.os_release,
-        "cpu_arch": arch
+        "os": s['os'],
+        "os_version": s['os_version'],
+        "cpu_arch": s['arch'],
+        "hostname": s['fqdn'],
     }
     hostinfo.update(sinfo.cpu_info())
-    hostinfo['memory_size'] = sinfo.mem_info()['MemTotal']
+    hostinfo['memory_size'] = s['memory']
     hostinfo['ip_addresses'] = sinfo.ip_addresses()
     hostinfo['filesystems'] = sinfo.file_systems()
-    hostinfo['os_flavor'] = sinfo.os_flavor()
+    hostinfo['os_flavor'] = s['distribution']
     return hostinfo
 
 
-def instance_info(pool, conninfo, hostname):
+def instance_info(pool, conninfo, discover):
     """Gather PostgreSQL instance information."""
     instance_info = {
-        'hostname': hostname,
+        'hostname': discover['system']['fqdn'],
         'instance': conninfo['instance'],
         'local_name': conninfo.get('local_name', conninfo['instance']),
         'available': True,
@@ -48,25 +47,22 @@ def instance_info(pool, conninfo, hostname):
         'database': conninfo['database'],
         'password': conninfo['password']
     }
+    p = discover['postgres']
 
     # Try the connection
     try:
         conn = pool.getconn(dbname=conninfo['database'])
         # Get PostgreSQL informations using PgInfo
         pginfo = PgInfo(conn)
-        pgv = pginfo.version()
         # Gather the info while where are connected
-        instance_info['version_num'] = pgv['num']
-        instance_info['version'] = pgv['server']
-        instance_info['data_directory'] = pginfo.setting('data_directory')
+        instance_info['version_num'] = p['version_num']
+        instance_info['version'] = p['version']
+        instance_info['data_directory'] = p['data_directory']
+        instance_info['max_connections'] = p['max_connections']
         instance_info['start_time'] = pginfo.start_time()
 
         # hot standby is available from 9.0
         instance_info['standby'] = pginfo.is_in_recovery()
-
-        # max_connections
-        instance_info['max_connections'] = pginfo.setting(
-            'max_connections')
 
         # Grab the list of tablespaces
         instance_info['tablespaces'] = pginfo.tablespaces(
