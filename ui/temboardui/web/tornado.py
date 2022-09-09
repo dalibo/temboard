@@ -627,6 +627,7 @@ class WebApplication(TornadoApplication, Blueprint):
 
         # This comes from Tornado's __init__
         if self.settings.get('debug'):
+            logger.info("Enabling Tornado's autoreload.")
             self.settings.setdefault('autoreload', True)
             self.settings.setdefault('compiled_template_cache', False)
             self.settings.setdefault('static_hash_cache', False)
