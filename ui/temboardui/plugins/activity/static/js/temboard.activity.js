@@ -5,6 +5,7 @@ $(function() {
   var intervalDuration = 2;
   var loading = false;
   var loadTimeout;
+  var cols;
 
   var el = $('#tableActivity');
 
@@ -21,7 +22,8 @@ $(function() {
     {
       orderable: false,
       className: 'text-center',
-      data: function(row, type, val, meta) {
+      data: 'pid',
+      render: function(data, type, row) {
         var disabled = loading ? 'disabled' : '';
         var title = disabled ? checkboxDisabledTooltip : checkboxTooltip;
         var html = '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"';
@@ -33,27 +35,24 @@ $(function() {
     {title: 'PID', data: 'pid', className: 'text-right', orderable: false},
     {title: 'Database', data: 'database', orderable: false},
     {title: 'User', data: 'user', orderable: false},
+    {title: 'Application', data: 'application', orderable: false, defaultContent: ""},
     {title: 'CPU', data: 'cpu', className: 'text-right'},
     {title: 'mem', data: 'memory', className: 'text-right'},
     {
       title: 'Read/s',
-      data: function(row) {
-        return row.read_s.human2bytes();
-      },
+      data: 'read_s',
       render: function(data, type, row) {
-        return type == 'display' ? row.read_s : data;
+        return type == 'display' ? data : data.human2bytes();
       },
       className: 'text-right'
     },
     {
       title: 'Write/s',
-      data: function(row) {
-        return row.write_s.human2bytes();
-      },
+      data: 'write_s',
       render: function(data, type, row) {
-        return type == 'display' ? row.write_s : data;
+        return type == 'display' ? data : data.human2bytes();
       },
-      className: 'text-right'
+      className: 'text-right',
     },
     {
       title: 'IOW',
@@ -83,7 +82,8 @@ $(function() {
   columns = columns.concat([
     {
       title: 'State',
-      data: function(row, type, val, meta) {
+      data: 'state',
+      render: function(data, type, row) {
         return row.state && row.state.trunc(stateMaxLength);
       },
       className: 'text-center',
@@ -117,11 +117,11 @@ $(function() {
     {
       title: 'Query',
       className: 'query',
-      data: function(row, type, val, meta) {
+      data: 'query',
+      render: function(data, type, row) {
         return '<pre>' +
                  '<code class="sql">' + row.query + '</code>' +
-               '</pre>';
-      },
+               '</pre>';},
       createdCell: function(td, cellData) {
         $(td).attr('data-toggle', 'popover').attr('data-trigger', 'hover');
         $(td).mouseover(function() {
@@ -193,6 +193,32 @@ $(function() {
     $('[data-toggle=popover]').popover('hide');
     table.clear();
     table.rows.add(data[activityMode].rows).draw();
+    cols = data[activityMode].cols;
+    if (!cols)
+    {
+      //Default cols for V7 agent
+      cols = [
+        'pid',
+        'database',
+        'client',
+        'duration',
+        'wait',
+        'user',
+        'state',
+        'query',
+        'iow',
+        'read_s',
+        'write_s',
+        'cpu',
+        'memory'
+      ]
+    }
+    for (var mycol in columns){
+        if (!cols.includes( columns[mycol].data))
+        {
+          table.column(mycol).visible(false);
+        }
+    }
     $('pre code').each(function(i, block) {
       hljs.highlightBlock(block);
     });
