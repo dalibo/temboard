@@ -3,7 +3,9 @@
 {% block title %}temBoard - Home{% end %}
 
 {% block head %}
-<link href="/css/dygraph.css" rel="stylesheet" />
+{% if vitejs.PROD %}
+<link href="{{ vitejs.url_for('home.css') }}" rel="stylesheet" />
+{% end %}
 {% end %}
 
 {% block content %}
@@ -12,7 +14,6 @@
 <script src="/js/utils.js"></script>
 <script src="/js/vue.min.js"></script>
 <script src="/js/vue-router.min.js"></script>
-<script src="/js/dygraph.min.js"></script>
 <script>
 var instancesUrl = '/home/instances';
 var groups = {% raw json.dumps([i[0] for i in groups]) %};

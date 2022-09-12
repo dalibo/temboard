@@ -1,6 +1,8 @@
-/* global instances, Vue, VueRouter, Dygraph, getParameterByName */
+/* global instances, Vue, VueRouter, getParameterByName */
 import _ from 'lodash'
 import moment from 'moment'
+import Dygraph from 'dygraphs'
+import 'dygraphs/dist/dygraph.css'
 
 
 $(function() {
