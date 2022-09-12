@@ -1,8 +1,9 @@
-/* global instances, Vue, VueRouter */
+/* global instances, Vue */
 import _ from 'lodash'
 import moment from 'moment'
 import Dygraph from 'dygraphs'
 import 'dygraphs/dist/dygraph.css'
+import VueRouter from 'vue-router'
 
 import './fscreen.js'
 

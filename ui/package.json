@@ -17,7 +17,8 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "popper.js": "^1.12.3",
-    "vue": "^2.7.10"
+    "vue": "^2.7.10",
+    "vue-router": "3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue2": "^1.1.2",
