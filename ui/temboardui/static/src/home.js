@@ -1,5 +1,7 @@
-/* global instances, Vue, VueRouter, Dygraph, moment, getParameterByName */
+/* global instances, Vue, VueRouter, Dygraph, getParameterByName */
 import _ from 'lodash'
+import moment from 'moment'
+
 
 $(function() {
 
