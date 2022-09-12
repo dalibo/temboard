@@ -101,7 +101,8 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
                 TPS:
               </span>
               <span class="badge badge-secondary">
-                {{! instance.currentTps }}
+                <!-- Sparkline.vue defines currentTps -->
+                {{! instance.currentTps === null ? 'N/A' : instance.currentTps }}
               </span>
               <sparkline class="sparkline-container"
                    :instance="instance"
@@ -117,7 +118,8 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
                 Loadavg:
               </span>
               <span class="badge badge-secondary">
-              {{! instance.currentLoad1 }}
+                <!-- Sparkline.vue defines currentLoad1 -->
+                {{! instance.currentLoad1 === null ? 'N/A' : instance.currentLoad1 }}
               </span>
               <sparkline
                    class="sparkline-container"

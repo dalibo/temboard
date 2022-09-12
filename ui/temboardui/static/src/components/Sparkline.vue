@@ -82,7 +82,12 @@ export default {
         if (this.metric == 'tps') {
           var lastCommit = chart.getValue(chart.numRows() - 1, 1);
           var lastRollback = chart.getValue(chart.numRows() - 1, 2);
-          last = lastCommit + lastRollback;
+          if (lastCommit === null && lastRollback === null) {
+            last = null;
+          }
+          else {
+            last = lastCommit + lastRollback;
+          }
         } else {
           last = chart.getValue(chart.numRows() - 1, 1);
         }
