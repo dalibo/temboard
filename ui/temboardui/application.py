@@ -67,10 +67,6 @@ def add_role(session,
         elif str(e).find('roles_pkey') > 0:
             raise TemboardUIError(400,
                                   "Role '%s' already exists." % (role_name))
-        else:
-            raise TemboardUIError(str(e))
-    except Exception as e:
-        raise TemboardUIError(str(e))
 
 
 def update_role(session,
@@ -108,11 +104,9 @@ def update_role(session,
             raise TemboardUIError(400, "Role '%s' already exists." %
                                   (new_role_name))
         else:
-            raise TemboardUIError(str(e))
+            raise
     except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
-    except Exception as e:
-        raise TemboardUIError(500, str(e))
 
 
 def get_role(session, role_name):
@@ -122,8 +116,6 @@ def get_role(session, role_name):
                 role_name=str(role_name)).first()
     except AttributeError:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
-    except Exception as e:
-        raise TemboardUIError(str(e))
 
 
 def delete_role(session, role_name):
@@ -133,8 +125,6 @@ def delete_role(session, role_name):
         session.delete(role)
     except NoResultFound:
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
-    except Exception as e:
-        raise TemboardUIError(str(e))
 
 
 def get_role_list(
@@ -165,9 +155,7 @@ def add_group(session, group_name, group_description, group_kind):
             raise TemboardUIError(400, "Group '%s' ('%s') already exists." %
                                   (group_name, group_kind))
         else:
-            raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
+            raise
 
 
 def get_group(session, group_name, group_kind):
@@ -184,8 +172,6 @@ def get_group(session, group_name, group_kind):
     except AttributeError:
         raise TemboardUIError(400, "Group '%s' (%s) not found." % (group_name,
                                                                    group_kind))
-    except Exception as e:
-        raise TemboardUIError(str(e))
 
 
 def update_group(session,
@@ -211,12 +197,10 @@ def update_group(session,
             raise TemboardUIError(400, "Group name '%s' already in use." %
                                   (new_group_name))
         else:
-            raise TemboardUIError(400, str(e))
+            raise
     except AttributeError:
         raise TemboardUIError(400, "Group '%s' ('%s') not found." %
                               (group_name, group_kind))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def delete_group(session, group_name, group_kind):
@@ -227,8 +211,6 @@ def delete_group(session, group_name, group_kind):
         session.delete(group)
     except NoResultFound:
         raise TemboardUIError(400, "Group '%s' not found." % (group_name))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def get_group_list(session, group_kind='role'):
@@ -260,8 +242,6 @@ def add_role_in_group(session, role_name, group_name):
                                   (role_name, group_name))
         else:
             raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def delete_role_from_group(session, role_name, group_name):
@@ -273,8 +253,6 @@ def delete_role_from_group(session, role_name, group_name):
     except NoResultFound:
         raise TemboardUIError(400, "Role '%s' not found in group '%s'." %
                               (role_name, group_name))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def get_groups_by_role(session, role_name):
@@ -290,13 +268,6 @@ def get_instance_groups_by_role(session, role_name):
         RoleGroups.role_name == str(role_name)).group_by(
             InstanceGroups.group_name).order_by(
                 InstanceGroups.group_name).all()
-
-
-def get_roles_by_group(session, group_name):
-    return session.query(Roles).filter(
-        RoleGroups.group_name == str(group_name),
-        Roles.role_name == RoleGroups.role_name).order_by(
-            Roles.role_name).all()
 
 
 """
@@ -348,9 +319,7 @@ def add_instance(session,
                                   "Instance entry ('%s:%s') already exists." %
                                   (new_agent_address, new_agent_port))
         else:
-            raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
+            raise
 
 
 def get_instance(session, agent_address, agent_port):
@@ -363,8 +332,6 @@ def get_instance(session, agent_address, agent_port):
     except AttributeError:
         raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
                               (agent_address, agent_port))
-    except Exception as e:
-        raise TemboardUIError(str(e))
 
 
 def update_instance(session,
@@ -421,12 +388,10 @@ def update_instance(session,
                                   "Instance entry ('%s:%s') already exists." %
                                   (agent_address, agent_port))
         else:
-            raise TemboardUIError(400, str(e))
+            raise
     except AttributeError:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def delete_instance(session, agent_address, agent_port):
@@ -443,8 +408,6 @@ def delete_instance(session, agent_address, agent_port):
     except NoResultFound:
         raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
     # Also delete any monitoring data
     # First all instance data
@@ -457,8 +420,6 @@ def delete_instance(session, agent_address, agent_port):
         session.delete(monitoring_instance)
     except NoResultFound:
         pass
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
     # Then delete host data if there's no instance left referenced for this
     # host
@@ -507,8 +468,6 @@ def add_instance_in_group(session, agent_address, agent_port, group_name):
                 (agent_address, agent_port, group_name))
         else:
             raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def purge_instance_plugins(session, agent_address, agent_port):
@@ -539,9 +498,7 @@ def add_instance_plugin(session, agent_address, agent_port, plugin_name):
             raise TemboardUIError(400, "Instance '%s:%s' does not exist." %
                                   (agent_address, agent_port))
         else:
-            raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
+            raise
 
 
 def get_instance_list(
@@ -562,17 +519,6 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
         raise TemboardUIError(
             400, "Instance entry ('%s:%s)' not found in group '%s'." %
             (agent_address, agent_port, group_name))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
-
-
-def get_instances_by_group(session, group_name):
-    return session.query(Instances).options(
-        joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
-            InstanceGroups.group_name == str(group_name),
-            Instances.agent_address == InstanceGroups.agent_address,
-            Instances.agent_port == InstanceGroups.agent_port).order_by(
-                Instances.agent_address).all()
 
 
 def get_groups_by_instance(session, agent_address, agent_port):
@@ -617,9 +563,7 @@ def add_role_group_in_instance_group(session, role_group_name,
             raise TemboardUIError(400, "Role group '%s' does not exist." %
                                   (role_group_name))
         else:
-            raise TemboardUIError(400, str(e))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
+            raise
 
 
 def delete_role_group_from_instance_group(session, role_group_name,
@@ -634,8 +578,6 @@ def delete_role_group_from_instance_group(session, role_group_name,
         raise TemboardUIError(
             400, "Role group '%s' not found in instance group '%s'." %
             (role_group_name, instance_group_name))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def get_instances_by_role_name(session, role_name):
@@ -647,20 +589,6 @@ def get_instances_by_role_name(session, role_name):
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
             RoleGroups.role_name == str(role_name)).order_by(
                 InstanceGroups.group_name, Instances.agent_address)
-
-
-def role_name_can_access_instance(session, role_name, agent_address,
-                                  agent_port):
-    try:
-        session.query(AccessRoleInstance).filter(
-            AccessRoleInstance.instance_group_name ==
-            InstanceGroups.group_name,
-            AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == str(role_name),
-            InstanceGroups.agent_address == str(agent_address),
-            InstanceGroups.agent_port == agent_port).one()
-    except (NoResultFound, Exception):
-        raise TemboardUIError(400, "You don't have access to this instance.")
 
 
 def get_role_by_auth(session, role_name, role_password):
@@ -675,8 +603,6 @@ def get_role_by_auth(session, role_name, role_password):
     except NoResultFound:
         raise TemboardUIError(400, "Wrong user/password: %s/%s" %
                               (role_name, role_password))
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
 
 
 def hash_password(username, password):

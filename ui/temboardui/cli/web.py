@@ -15,6 +15,7 @@ class web(SubCommand):
 
     def main(self, args):
         check_schema()
+        self.app.config.load_signing_key()
 
         if self.app.config.temboard.daemonize:
             daemonize(self.app.config.temboard.pidfile, self.app.config)
