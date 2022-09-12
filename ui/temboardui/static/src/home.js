@@ -4,6 +4,8 @@ import moment from 'moment'
 import Dygraph from 'dygraphs'
 import 'dygraphs/dist/dygraph.css'
 
+import './fscreen.js'
+
 
 $(function() {
 
