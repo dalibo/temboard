@@ -270,13 +270,6 @@ def get_instance_groups_by_role(session, role_name):
                 InstanceGroups.group_name).all()
 
 
-def get_roles_by_group(session, group_name):
-    return session.query(Roles).filter(
-        RoleGroups.group_name == str(group_name),
-        Roles.role_name == RoleGroups.role_name).order_by(
-            Roles.role_name).all()
-
-
 """
 Instances
 """
@@ -528,15 +521,6 @@ def delete_instance_from_group(session, agent_address, agent_port, group_name):
             (agent_address, agent_port, group_name))
 
 
-def get_instances_by_group(session, group_name):
-    return session.query(Instances).options(
-        joinedload(Instances.groups), joinedload(Instances.plugins)).filter(
-            InstanceGroups.group_name == str(group_name),
-            Instances.agent_address == InstanceGroups.agent_address,
-            Instances.agent_port == InstanceGroups.agent_port).order_by(
-                Instances.agent_address).all()
-
-
 def get_groups_by_instance(session, agent_address, agent_port):
     return session.query(InstanceGroups).filter(
         InstanceGroups.agent_address == str(agent_address),
@@ -605,20 +589,6 @@ def get_instances_by_role_name(session, role_name):
             AccessRoleInstance.role_group_name == RoleGroups.group_name,
             RoleGroups.role_name == str(role_name)).order_by(
                 InstanceGroups.group_name, Instances.agent_address)
-
-
-def role_name_can_access_instance(session, role_name, agent_address,
-                                  agent_port):
-    try:
-        session.query(AccessRoleInstance).filter(
-            AccessRoleInstance.instance_group_name ==
-            InstanceGroups.group_name,
-            AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == str(role_name),
-            InstanceGroups.agent_address == str(agent_address),
-            InstanceGroups.agent_port == agent_port).one()
-    except (NoResultFound, Exception):
-        raise TemboardUIError(400, "You don't have access to this instance.")
 
 
 def get_role_by_auth(session, role_name, role_password):
