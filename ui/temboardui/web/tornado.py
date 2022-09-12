@@ -135,6 +135,10 @@ class CallableHandler(RequestHandler):
         # To enable @run_on_executor methods, we must have executor property.
         return self.application.executor
 
+    def compute_etag(self):
+        # We don't want automatic caching for API.
+        return None
+
     def initialize(self, callable_, blueprint=None, methods=None, logger=None):
         self.callable_ = callable_
         self.logger = logger or logging.getLogger(__name__)
