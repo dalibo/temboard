@@ -7,6 +7,7 @@ import Vue from 'vue/dist/vue.esm'
 import VueRouter from 'vue-router'
 
 import './fscreen.js'
+import Checks from './components/Checks.vue'
 import Sparkline from './components/Sparkline.vue'
 
 
@@ -15,59 +16,12 @@ Vue.use(VueRouter)
 
 var refreshInterval = 60 * 1000;
 
-Vue.component('checks', {
-  props: ['instance'],
-  computed: {
-    available: function() {
-      return this.instance.available;
-    },
-    checks: function() {
-      return getChecksCount(this.instance);
-    }
-  },
-  methods: {
-    popoverContent: function(instance) {
-      // don't show OK states
-      var filtered = instance.checks.filter(function(check) {
-        return check.state != 'OK';
-      });
-      var levels = ['CRITICAL', 'WARNING', 'UNDEF'];
-      // make sure we have higher levels checks first
-      var ordered = _.sortBy(filtered, function(check) {
-        return levels.indexOf(check.state);
-      });
-      var checksList = ordered.map(function(check) {
-        return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + '</span>';
-      });
-      return checksList.join('<br>');
-    }
-  },
-  template: `
-  <div
-      class="d-inline-block"
-      data-toggle="popover"
-      :data-content="popoverContent(instance)"
-      data-trigger="hover"
-      data-placement="bottom"
-      data-container="body"
-      data-html="true">
-    <span class="badge badge-critical" v-if="!available">UNAVAILABLE</span>
-    <span class="badge badge-critical" v-if="checks.CRITICAL">
-      CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-warning" v-if="checks.WARNING">
-      WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-undef" v-if="checks.UNDEF">
-      UNDEF: {{ checks.UNDEF }}</span>
-    <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
-  </div>
-  `
-});
-
 
 window.instancesVue = new Vue({
   el: '#instances',
   router: new VueRouter(),
   components: {
+    checks: Checks,
     sparkline: Sparkline
   },
   data: function() {
