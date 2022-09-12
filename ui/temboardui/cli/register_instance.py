@@ -128,6 +128,7 @@ class RegisterInstance(SubCommand):
             raise UserError("temBoard Agent error: %s" % e)
         else:
             discover = response.json()
+            discover_etag = response.headers['ETag']
 
         if 'signature_status' not in discover:
             logger.error(
@@ -152,18 +153,10 @@ class RegisterInstance(SubCommand):
         data = {}
         data['new_agent_address'] = args.agent_address
         data['new_agent_port'] = args.agent_port
-        data['groups'] = groups
         data['comment'] = args.comment
         data['notify'] = args.notify
-
-        data['hostname'] = discover['system']['fqdn']
-        data['cpu'] = discover['system']['cpu_count']
-        data['memory_size'] = discover['system']['memory']
-        data['pg_port'] = discover['postgres']['port']
-        data['pg_data'] = discover['postgres']['data_directory']
-        data['pg_version'] = discover['postgres']['version']
-        data['pg_version_summary'] = discover['postgres']['version_summary']
-        data['pg_block_size'] = discover['postgres']['block_size']
+        data['discover'] = discover
+        data['discover_etag'] = discover_etag
 
         if plugins:
             for plugin in plugins:
@@ -176,7 +169,6 @@ class RegisterInstance(SubCommand):
                 agent_plugins=discover['temboard']['plugins'],
             )
         logger.debug("Enabling plugins %s.", ', '.join(plugins))
-        data['plugins'] = plugins
 
         instance = add_instance(session, **data)
         session.add(instance)

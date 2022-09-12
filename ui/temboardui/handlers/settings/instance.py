@@ -13,7 +13,6 @@ from temboardui.application import (
     get_groups_by_instance,
     get_instance_list,
     purge_instance_plugins,
-    update_instance,
 )
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.web.tornado import (
@@ -25,6 +24,7 @@ from temboardui.web.tornado import (
     Response,
 )
 from ...toolkit.pycompat import StringIO
+from ...toolkit.utils import utcnow
 from ...model import QUERIES
 from ...plugins.monitoring import collector as monitoring_collector
 from ...plugins.statements import statements_pull1
@@ -113,16 +113,12 @@ def create_instance_handler(request):
     methods=['GET', 'POST'], with_instance=True)
 @admin_required
 def json_instance(request):
-    instance = request.instance
+    instance = request.instance.instance
     if 'GET' == request.method:
         groups = get_group_list(request.db_session, 'instance')
         data = instance.asdict()
         data.update({
             'agent_key': instance.agent_key,
-            'cpu': instance.cpu,
-            'memory_size': instance.memory_size,
-            'pg_version': instance.pg_version,
-            'pg_version_summary': instance.pg_version_summary,
             'server_groups': [{
                 'name': group.group_name,
                 'description': group.group_description
@@ -133,10 +129,19 @@ def json_instance(request):
     else:  # POST (update)
         data = request.json
         validate_instance_data(data)
-        groups = data.pop('groups')
-        plugins = data.pop('plugins') or []
 
-        # First step is to remove the instance from the groups it belongs to.
+        instance.discover = data['discover']
+        instance.discover_etag = data['discover_etag']
+        instance.discover_date = utcnow()
+        instance.hostname = data['discover']['system']['fqdn']
+        instance.agent_key = data['agent_key']
+        instance.pg_port = data['discover']['postgres']['port']
+        instance.comment = data['comment']
+        instance.notify = data['notify']
+        request.db_session.flush()
+
+        # Update groups.
+        groups = data.pop('groups')
         instance_groups = get_groups_by_instance(
             request.db_session, instance.agent_address,
             instance.agent_port)
@@ -144,17 +149,13 @@ def json_instance(request):
             delete_instance_from_group(
                 request.db_session, instance.agent_address,
                 instance.agent_port, instance_group.group_name)
-        # Remove plugins
+        add_instance_in_groups(request.db_session, instance, groups)
+
+        # Update plugins
+        plugins = data.pop('plugins') or []
         purge_instance_plugins(
             request.db_session, instance.agent_address,
             instance.agent_port)
-
-        instance = update_instance(
-            request.db_session,
-            instance.agent_address,
-            instance.agent_port,
-            **data)
-        add_instance_in_groups(request.db_session, instance, groups)
         enable_instance_plugins(
             request.db_session, instance, plugins,
             request.config.temboard.plugins,
@@ -265,6 +266,9 @@ def instances_csv(request):
 @admin_required
 def register(request):
     data = request.json
+    if 'discover' not in data:
+        raise HTTPError(400, "Missing discover data. Please upgrade agent.")
+
     agent_address = data.pop('agent_address', None)
     if not agent_address:
         # Try to find agent's IP

@@ -69,7 +69,7 @@ export default {
       // data generates payload for both POST /json/settings/instances and POST
       // /json/settings/instances/X.X.X.X/PPPP.
       var data = {
-        // Define paramters.
+        // Define parameters.
         agent_key: this.agent_key,
         groups: $("#selectGroups").val(),
         plugins: $("#selectPlugins").val(),
