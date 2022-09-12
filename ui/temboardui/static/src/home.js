@@ -1,4 +1,6 @@
-/* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
+/* global instances, Vue, VueRouter, Dygraph, moment, getParameterByName */
+import _ from 'lodash'
+
 $(function() {
 
   var refreshInterval = 60 * 1000;
