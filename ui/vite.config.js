@@ -13,6 +13,7 @@ export default defineConfig({
     assetsDir: '.',
     rollupOptions: {
       input: {
+        'home': '/home.js',
         'temboard': '/temboard.js',
         'settings.instance': '/settings.instance.js'
       }

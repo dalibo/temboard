@@ -19,7 +19,7 @@
 var instancesUrl = '/home/instances';
 var groups = {% raw json.dumps([i[0] for i in groups]) %};
 </script>
-<script src="/js/home.js"></script>
+<script type="module" src="{{ vitejs.url_for('home.js') }}"></script>
 <div class="position-absolute" style="z-index: 2; right: 0;">
   <a class="btn btn-link fullscreen" href data-toggle="popover" data-trigger="hover" data-content="Full screen" data-placement="bottom">
     <i class="fa fa-expand"></i>

@@ -1,4 +1,3 @@
-/* eslint-env es6 */
 /* global instances, Vue, VueRouter, Dygraph, moment, _, getParameterByName */
 $(function() {
 
