@@ -10,7 +10,6 @@
 
 {% block content %}
 {% import json %}
-<script src="/js/vue.min.js"></script>
 <script>
 var instancesUrl = '/home/instances';
 var groups = {% raw json.dumps([i[0] for i in groups]) %};
