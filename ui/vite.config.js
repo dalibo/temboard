@@ -14,7 +14,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         'temboard': '/temboard.js',
-        'temboard.settings.instance': '/temboard.settings.instance.js'
+        'settings.instance': '/settings.instance.js'
       }
     }
   }
