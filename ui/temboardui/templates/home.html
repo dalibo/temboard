@@ -3,23 +3,18 @@
 {% block title %}temBoard - Home{% end %}
 
 {% block head %}
-<link href="/css/dygraph.css" rel="stylesheet" />
+{% if vitejs.PROD %}
+<link href="{{ vitejs.url_for('home.css') }}" rel="stylesheet" />
+{% end %}
 {% end %}
 
 {% block content %}
 {% import json %}
-<script src="/js/fscreen.js"></script>
-<script src="/js/lodash.min.js"></script>
-<script src="/js/utils.js"></script>
-<script src="/js/vue.min.js"></script>
-<script src="/js/vue-router.min.js"></script>
-<script src="/js/moment.min.js"></script>
-<script src="/js/dygraph.min.js"></script>
 <script>
 var instancesUrl = '/home/instances';
 var groups = {% raw json.dumps([i[0] for i in groups]) %};
 </script>
-<script src="/js/home.js"></script>
+<script type="module" src="{{ vitejs.url_for('home.js') }}"></script>
 <div class="position-absolute" style="z-index: 2; right: 0;">
   <a class="btn btn-link fullscreen" href data-toggle="popover" data-trigger="hover" data-content="Full screen" data-placement="bottom">
     <i class="fa fa-expand"></i>
@@ -106,7 +101,8 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
                 TPS:
               </span>
               <span class="badge badge-secondary">
-                {{! instance.currentTps }}
+                <!-- Sparkline.vue defines currentTps -->
+                {{! instance.currentTps === null ? 'N/A' : instance.currentTps }}
               </span>
               <sparkline class="sparkline-container"
                    :instance="instance"
@@ -122,7 +118,8 @@ var groups = {% raw json.dumps([i[0] for i in groups]) %};
                 Loadavg:
               </span>
               <span class="badge badge-secondary">
-              {{! instance.currentLoad1 }}
+                <!-- Sparkline.vue defines currentLoad1 -->
+                {{! instance.currentLoad1 === null ? 'N/A' : instance.currentLoad1 }}
               </span>
               <sparkline
                    class="sparkline-container"

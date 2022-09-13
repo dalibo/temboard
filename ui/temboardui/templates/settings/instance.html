@@ -4,7 +4,7 @@
 
 {% block head %}
 {% if vitejs.PROD %}
-<link href="{{ vitejs.url_for('temboard.settings.instance.css') }}" rel="stylesheet" />
+<link href="{{ vitejs.url_for('settings.instance.css') }}" rel="stylesheet" />
 {% end %}
 <!-- Multiselect -->
 <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
@@ -96,6 +96,5 @@
 </div>
 
 <script src="/js/bootstrap-multiselect.js"></script>
-<script type="module" src="{{ vitejs.url_for('temboard.settings.instance.js') }}">
-</script>
+<script type="module" src="{{ vitejs.url_for('settings.instance.js') }}"></script>
 {% end %}

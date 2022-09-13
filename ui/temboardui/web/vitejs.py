@@ -42,4 +42,4 @@ class ViteJSExtension(object):
         if self.manifest:
             return self.app.static_url_path + '/' + self.manifest[name]['file']
         else:
-            return self.app.config['VITEJS'] + '/' + name
+            return self.app.config['VITEJS'] + '/static/' + name
