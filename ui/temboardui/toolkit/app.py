@@ -112,6 +112,9 @@ class BaseApplication(object):
         config.add_specs(self.config_specs.values())
         config.load(**self.config_sources)
 
+        # Save loaded file.
+        self.config['temboard']['configfile'] = configfile
+
         return self.config
 
     def init_specs(self, app_specs):
