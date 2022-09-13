@@ -70,6 +70,8 @@ def create_instance_helper(request, data):
             port=data['new_agent_port'],
         )
 
+    return instance
+
 
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
     for plugin_name in plugins or []:
@@ -102,8 +104,8 @@ def validate_instance_data(data):
 @app.route(r"/json/settings/instance", methods=['POST'])
 @admin_required
 def create_instance_handler(request):
-    create_instance_helper(request, request.json)
-    return {"message": "OK"}
+    instance = create_instance_helper(request, request.json)
+    return {"instance": instance.asdict()}
 
 
 @app.route(
@@ -157,7 +159,8 @@ def json_instance(request):
             request.db_session, instance, plugins,
             request.config.temboard.plugins,
         )
-        return {"message": "OK"}
+
+        return {"instance": instance.asdict()}
 
 
 @app.route(r"/json/settings/delete/instance$", methods=['POST'])
