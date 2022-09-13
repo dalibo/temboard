@@ -1,6 +1,24 @@
 # coding: utf-8
+import logging
+import functools
 from builtins import str
 from textwrap import dedent
+
+
+logger = logging.getLogger(__name__.replace('.db', ''))
+
+
+def handle_keyerror(fun):
+    metric_name = fun.__name__.replace('insert_metric_', '')
+
+    @functools.wraps(fun)
+    def wrapper(*a, **kw):
+        try:
+            return fun(*a, **kw)
+        except KeyError as e:
+            logger.warning("Missing point %s for %s.", e.args[0], metric_name)
+
+    return wrapper
 
 
 def insert_availability(session, dt, instance_id, available):
@@ -16,6 +34,7 @@ def insert_availability(session, dt, instance_id, available):
     )
 
 
+@handle_keyerror
 def insert_metric_sessions(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -41,6 +60,7 @@ def insert_metric_sessions(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_xacts(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -61,6 +81,7 @@ def insert_metric_xacts(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_locks(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -95,6 +116,7 @@ def insert_metric_locks(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_blocks(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -116,6 +138,7 @@ def insert_metric_blocks(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_bgwriter(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -144,6 +167,7 @@ def insert_metric_bgwriter(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_db_size(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -162,6 +186,7 @@ def insert_metric_db_size(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_tblspc_size(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -180,6 +205,7 @@ def insert_metric_tblspc_size(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_fs_size(session, host_id, metric):
     session.execute(
         dedent("""
@@ -200,6 +226,7 @@ def insert_metric_fs_size(session, host_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_temp_files_size_delta(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -219,6 +246,7 @@ def insert_metric_temp_files_size_delta(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_wal_files(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -241,6 +269,7 @@ def insert_metric_wal_files(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_cpu(session, host_id, metric):
     session.execute(
         dedent("""
@@ -264,6 +293,7 @@ def insert_metric_cpu(session, host_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_process(session, host_id, metric):
     session.execute(
         dedent("""
@@ -286,6 +316,7 @@ def insert_metric_process(session, host_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_memory(session, host_id, metric):
     session.execute(
         dedent("""
@@ -309,6 +340,7 @@ def insert_metric_memory(session, host_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_loadavg(session, host_id, metric):
     session.execute(
         dedent("""
@@ -328,6 +360,7 @@ def insert_metric_loadavg(session, host_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_vacuum_analyze(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -350,6 +383,7 @@ def insert_metric_vacuum_analyze(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_replication_lag(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -367,6 +401,7 @@ def insert_metric_replication_lag(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_replication_connection(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -385,6 +420,7 @@ def insert_metric_replication_connection(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_heap_bloat(session, instance_id, metric):
     session.execute(
         dedent("""
@@ -403,6 +439,7 @@ def insert_metric_heap_bloat(session, instance_id, metric):
     )
 
 
+@handle_keyerror
 def insert_metric_btree_bloat(session, instance_id, metric):
     session.execute(
         dedent("""

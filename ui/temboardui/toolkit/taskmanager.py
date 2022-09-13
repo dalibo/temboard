@@ -516,6 +516,9 @@ class SchedulerService(Service):
         conn.close()
         return res
 
+    def can_schedule(self):
+        return os.path.exists(self.scheduler.address)
+
 
 class WorkerPool(object):
 
@@ -740,6 +743,7 @@ class WorkerSet(list):
     def register(self, pool_size=1):
         def register(f):
             def defer(app, **kw):
+                logger.debug("Scheduling %s.", f.__name__)
                 return app.scheduler.schedule_task(
                     f.__name__, options=kw, expire=0)
             f.defer = defer

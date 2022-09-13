@@ -94,6 +94,7 @@ def get_monitoring():
         # Dropping current value, use /metrics to get them.
         db.drop_current_for_delta_metrics(metrics)
         out.append(metrics)
+    response.set_header('X-TemBoard-Discover-ETag', app.discover.etag)
     return out
 
 

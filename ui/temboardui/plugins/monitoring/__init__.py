@@ -33,14 +33,16 @@ from textwrap import dedent
 import tornado.web
 import tornado.escape
 
-from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import ProgrammingError, IntegrityError, DataError
 from sqlalchemy.sql import text
 
 from psycopg2.extensions import AsIs
 
+from ...core import refresh_discover
+from ...model import Session
 from temboardui.toolkit import taskmanager
 from temboardui.application import (
+    get_instance,
     get_roles_by_instance,
     send_mail,
     send_sms,
@@ -184,10 +186,7 @@ def history_tables_worker(app):
 @workers.register(pool_size=10)
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
-    engine = worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=worker_engine(app.config.repository))
 
     check_preprocessed_data(
         app,
@@ -299,10 +298,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         return
 
     # Worker in charge of sending notifications
-    engine = worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=worker_engine(app.config.repository))
 
     check = worker_session.query(Check).filter(
         Check.check_id == check_id,
@@ -426,28 +422,15 @@ def collector_batch(app, batch):
 @workers.register(pool_size=20)
 def collector(app, address, port, key=None, engine=None):
     agent_id = "%s:%s" % (address, port)
-    logger.info("Starting collector for %s.", agent_id)
+    logger.info("Starting monitoring collector for %s.", agent_id)
 
-    # First, we need to call discover API because we want to know the hostname
-    logger.info("Discovering hostname from agent %s.", agent_id)
     client = TemboardAgentClient.factory(app.config, address, port, key)
-    try:
-        response = client.get('/discover')
-        response.raise_for_status()
-    except (OSError, client.ConnectionError, client.Error) as e:
-        logger.error("Could not discover %s: %s", agent_id, e)
-        logger.error("Agent or host may be down or misconfigured.")
-        return
-
-    discover_data = response.json()
-    logger.debug("Discover data: %s", discover_data)
-
     # Start new ORM DB session
     engine = engine or worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=engine)
 
+    instance = get_instance(worker_session, address, port)
+    worker_session.expunge(instance)
     host_id = instance_id = None
     # Agent monitoring API endpoint
     history_url = '/monitoring/history?limit=100'
@@ -456,21 +439,21 @@ def collector(app, address, port, key=None, engine=None):
         # inserted record.
 
         # Find host_id and instance_id by hostname and PG port
-        host_id = get_host_id(worker_session, discover_data['hostname'])
+        host_id = get_host_id(worker_session, instance.hostname)
         instance_id = get_instance_id(
             worker_session,
             host_id,
-            discover_data['pg_port']
+            instance.pg_port
         )
         logger.info(
-            "Found host #%s and instance #%s for agent %s, hostname %s.",
-            host_id, instance_id, agent_id, discover_data['hostname'])
+            "Found host #%s and instance #%s %s.",
+            host_id, instance_id, instance)
     except Exception:
         # This case happens on the very first pull when no data have been
         # previously added.
         logger.debug(
             "Could not find host or instance records in monitoring inventory "
-            "tables for agent %s.", agent_id,
+            "tables for %s.", instance,
         )
     else:
         # Get last inserted data timestamp from collector status
@@ -487,11 +470,12 @@ def collector(app, address, port, key=None, engine=None):
     # Finally, let's call /monitoring/history agent API for getting metrics
     # history.
     try:
-        logger.info("Querying monitoring history from agent %s.", agent_id)
+        logger.info("Querying monitoring history from %s.", instance)
         response = client.get(history_url)
         response.raise_for_status()
     except (OSError, client.ConnectionError, client.Error) as e:
-        logger.error("Failed to query history: %s", e)
+        logger.error("Failed to query history for %s: %s", instance, e)
+        logger.error("Agent or host may be down or misconfigured.")
         # Update collector status only if instance_id is known
         if instance_id:
             update_collector_status(
@@ -504,33 +488,47 @@ def collector(app, address, port, key=None, engine=None):
         worker_session.close()
         return
     else:
-        response = response.json()
+        rows = response.json()
 
-    if not response:
-        logger.info("Agent %s returned no monitoring data.", agent_id)
+    # monitoring is still the better place to queue a discover. This allow us
+    # to have sub-minute reactivity on instance change.
+    discover_etag = response.headers.get('X-TemBoard-Discover-ETag')
+    if discover_etag:
+        if discover_etag != instance.discover_etag:
+            logger.info("Detected discover data changes.")
+            logger.debug(
+                "New etag. old=%s new=%s",
+                instance.discover_etag, discover_etag)
+            if app.scheduler.can_schedule:
+                refresh_discover.defer(app, address=address, port=port)
+    else:
+        logger.debug("Agent did not send discover ETag.")
 
-    for row in response:
-        logger.info("Got points for %s at %s.", agent_id, row['datetime'])
+    if not rows:
+        logger.info("Instance %s returned no monitoring data.", instance)
+
+    for row in rows:
+        logger.info("Got points for %s at %s.", instance, row['datetime'])
         hostinfo = row['hostinfo']
         data = row['data']
-        instance = row['instances'][0]
-        port = instance['port']
+        instance_d = row['instances'][0]
 
         try:
             # Try to insert collected data
 
-            logger.info("Update the inventory for %s.", agent_id)
-            host = merge_agent_info(worker_session, hostinfo, instance)
-            instance_id = get_instance_id(worker_session, host.host_id, port)
-            logger.info("Insert instance availability for %s.", agent_id)
+            logger.info("Update the inventory for %s.", instance)
+            host = merge_agent_info(worker_session, hostinfo, instance_d)
+            instance_id = get_instance_id(
+                worker_session, host.host_id, instance.pg_port)
+            logger.info("Insert instance availability for %s.", instance)
             insert_availability(
                 worker_session,
                 row['datetime'],
                 instance_id,
-                row['instances'][0]['available']
+                instance_d['available']
             )
             worker_session.commit()
-            logger.info("Insert collected metrics for %s.", agent_id)
+            logger.info("Insert collected metrics for %s.", instance)
             insert_metrics(
                 worker_session, host.host_id, instance_id, data, dict(
                     agent=agent_id,
@@ -603,8 +601,8 @@ def collector(app, address, port, key=None, engine=None):
         # alert processing. max_connections does NOT have the same type of
         # other metrics in data. This is because alerting.PreProcess functions
         # only accepts data as parameter.
-        if 'max_connections' in instance:
-            row['data']['max_connections'] = instance['max_connections']
+        if 'max_connections' in instance_d:
+            row['data']['max_connections'] = instance_d['max_connections']
 
         try:
             check_preprocessed_data(

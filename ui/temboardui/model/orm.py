@@ -232,14 +232,16 @@ class Instances(Model):
         InstanceGroups,
         order_by="InstanceGroups.group_name",
         backref="instances",
-        cascade="save-update, merge, delete, delete-orphan"
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy='joined',
     )
 
     plugins = relationship(
         Plugins,
         order_by="Plugins.plugin_name",
         backref="instances",
-        cascade="save-update, merge, delete, delete-orphan"
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy='joined',
     )
 
     def __str__(self):
@@ -266,6 +268,15 @@ class Instances(Model):
             agent_key=agent_key,
             notify=bool(notify),
             comment=comment or '',
+        )
+
+    @classmethod
+    def get(cls, agent_address, agent_port):
+        return (
+            Query(cls)
+            .prefix_with('-- Instances.get\n')
+            .filter(cls.agent_address == str(agent_address))
+            .filter(cls.agent_port == int(agent_port))
         )
 
     # Compatibility from new JSONb discover to old column discover.
