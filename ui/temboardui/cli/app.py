@@ -20,6 +20,7 @@ from tornado import autoreload
 from tornado.httpserver import HTTPServer
 
 from ..autossl import AutoHTTPSServer
+from ..core import workers
 from ..model import configure as configure_db_session, QUERIES
 from ..toolkit import taskmanager, validators as v
 from ..toolkit.app import (
@@ -119,6 +120,7 @@ class TemboardApplication(BaseApplication):
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
+        self.worker_pool.add(workers)
         self.services.append(self.worker_pool)
         self.scheduler = taskmanager.SchedulerService(
             app=self, name=u'scheduler',
