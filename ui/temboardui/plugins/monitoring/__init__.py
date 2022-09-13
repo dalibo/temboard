@@ -33,13 +33,13 @@ from textwrap import dedent
 import tornado.web
 import tornado.escape
 
-from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import ProgrammingError, IntegrityError, DataError
 from sqlalchemy.sql import text
 
 from psycopg2.extensions import AsIs
 
 from ...core import refresh_discover
+from ...model import Session
 from temboardui.toolkit import taskmanager
 from temboardui.application import (
     get_instance,
@@ -186,10 +186,7 @@ def history_tables_worker(app):
 @workers.register(pool_size=10)
 def check_data_worker(app, host_id, instance_id, data):
     # Worker in charge of checking preprocessed monitoring values
-    engine = worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=worker_engine(app.config.repository))
 
     check_preprocessed_data(
         app,
@@ -301,10 +298,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         return
 
     # Worker in charge of sending notifications
-    engine = worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=worker_engine(app.config.repository))
 
     check = worker_session.query(Check).filter(
         Check.check_id == check_id,
@@ -433,9 +427,7 @@ def collector(app, address, port, key=None, engine=None):
     client = TemboardAgentClient.factory(app.config, address, port, key)
     # Start new ORM DB session
     engine = engine or worker_engine(app.config.repository)
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    worker_session = Session()
+    worker_session = Session(bind=engine)
 
     instance = get_instance(worker_session, address, port)
     worker_session.expunge(instance)
