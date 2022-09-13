@@ -134,7 +134,7 @@ class RegisterInstance(SubCommand):
         if 'signature_status' not in discover:
             logger.error(
                 "Legacy agent does not support out of band registration.")
-            logger.error("Use temboard-agent-register or web interface.")
+            logger.error("Please upgrade agent or use web UI.")
             raise UserError("Legacy agent registration refused")
 
         if 'valid' != discover['signature_status']:
