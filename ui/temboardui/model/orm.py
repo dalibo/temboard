@@ -32,6 +32,7 @@ from sqlalchemy.sql import (
 
 from temboardui.model import tables
 from . import QUERIES
+from ..toolkit.utils import utcnow
 
 
 Model = declarative_base()
@@ -190,11 +191,7 @@ class ApiKeys(Model):
 
     @property
     def expired(self):
-        true_utc_now = (
-            datetime.datetime.utcnow()
-            .replace(tzinfo=datetime.timezone.utc)
-        )
-        return self.edate < true_utc_now
+        return self.edate < utcnow()
 
 
 class Plugins(Model):
@@ -248,6 +245,55 @@ class Instances(Model):
     def __str__(self):
         return '%s:%s' % (self.hostname, self.pg_port)
 
+    @classmethod
+    def factory(
+            cls,
+            agent_address,
+            agent_port,
+            discover,
+            discover_etag=None,
+            agent_key=None,
+            notify=False,
+            comment=None,
+    ):
+        return cls(
+            agent_address=str(agent_address),
+            agent_port=int(agent_port),
+            discover=discover,
+            discover_etag=discover_etag,
+            pg_port=int(discover['postgres']['port']),
+            hostname=discover['system']['fqdn'],
+            agent_key=agent_key,
+            notify=bool(notify),
+            comment=comment or '',
+        )
+
+    # Compatibility from new JSONb discover to old column discover.
+    @property
+    def cpu(self):
+        d = self.discover or {}
+        return d.get('system', {}).get('cpu_count')
+
+    @property
+    def memory_size(self):
+        d = self.discover or {}
+        return d.get('system', {}).get('memory')
+
+    @property
+    def pg_data(self):
+        d = self.discover or {}
+        return d.get('postgres', {}).get('data_directory')
+
+    @property
+    def pg_version(self):
+        d = self.discover or {}
+        return d.get('postgres', {}).get('version')
+
+    @property
+    def pg_version_summary(self):
+        d = self.discover or {}
+        return d.get('postgres', {}).get('version_summary')
+
     def dashboard_url(self, app):
         scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
         host = app.config.temboard.address
@@ -260,13 +306,15 @@ class Instances(Model):
         return dict(
             hostname=self.hostname,
             pg_port=self.pg_port,
-            pg_data=self.pg_data,
             agent_address=self.agent_address,
             agent_port=self.agent_port,
             groups=[group.group_name for group in self.groups],
             plugins=[plugin.plugin_name for plugin in self.plugins],
             comment=self.comment,
             notify=self.notify,
+            discover=self.discover,
+            discover_etag=self.discover_etag,
+            discover_date=self.discover_date,
         )
 
 

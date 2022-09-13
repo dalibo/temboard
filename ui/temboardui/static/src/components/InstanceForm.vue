@@ -69,7 +69,7 @@ export default {
       // data generates payload for both POST /json/settings/instances and POST
       // /json/settings/instances/X.X.X.X/PPPP.
       var data = {
-        // Define paramters.
+        // Define parameters.
         agent_key: this.agent_key,
         groups: $("#selectGroups").val(),
         plugins: $("#selectPlugins").val(),
@@ -97,7 +97,7 @@ export default {
           v-bind:mem_gb="mem_gb"
           />
       </div>
-      <div class="row" v-if="signature_status === undefined">
+      <div class="row" v-if="signature_status === 'unchecked'">
         <!-- Ask for legacy agent key. -->
         <div class="form-group col-sm-12">
           <label for="inputAgentKey" class="control-label">

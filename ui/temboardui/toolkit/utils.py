@@ -1,5 +1,13 @@
 # coding: utf-8
 
+import json
+from datetime import datetime
+try:
+    from datetime import timezone
+    UTC = timezone.utc
+except ImportError:  # PY2
+    UTC = None
+
 from .pycompat import IterableUserDict
 
 
@@ -56,3 +64,18 @@ def ensure_bytes(value, encoding='utf-8'):
     if hasattr(value, "isdecimal"):
         return value.encode(encoding)
     return value
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, bytes):
+            return obj.decode("utf-8")
+        else:
+            return super(JSONEncoder, self).default(obj)
+
+
+def utcnow():
+    # TZ aware UTC now. Except on Python2.
+    return datetime.utcnow().replace(tzinfo=UTC)

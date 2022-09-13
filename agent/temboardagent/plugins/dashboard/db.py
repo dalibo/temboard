@@ -3,7 +3,7 @@ import os
 import sqlite3
 from textwrap import dedent
 
-from ...tools import JSONEncoder
+from ...toolkit.utils import JSONEncoder
 
 
 def bootstrap(path, dbname):

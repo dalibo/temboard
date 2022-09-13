@@ -278,43 +278,18 @@ Instances
 def add_instance(session,
                  new_agent_address,
                  new_agent_port,
-                 hostname,
-                 agent_key=None,
-                 cpu=None,
-                 memory_size=None,
-                 pg_port=None,
-                 pg_version=None,
-                 pg_version_summary=None,
-                 pg_data=None,
-                 notify=False,
-                 comment=None,
-                 **_):
+                 **kw):
     try:
-        instance = Instances(
+        instance = Instances.factory(
             agent_address=str(new_agent_address),
             agent_port=int(new_agent_port),
-            hostname=str(hostname))
-        if agent_key is not None:
-            instance.agent_key = str(agent_key)
-        if cpu is not None and cpu != u'':
-            instance.cpu = int(cpu)
-        if memory_size is not None and memory_size != u'':
-            instance.memory_size = int(memory_size)
-        if pg_port is not None and pg_port != u'':
-            instance.pg_port = int(pg_port)
-        if pg_version is not None:
-            instance.pg_version = str(pg_version)
-        if pg_version_summary is not None:
-            instance.pg_version_summary = str(pg_version_summary)
-        if pg_data is not None:
-            instance.pg_data = str(pg_data)
-        instance.notify = bool(notify)
-        instance.comment = comment or ''
+            **kw
+        )
         session.add(instance)
         session.flush()
         return instance
     except IntegrityError as e:
-        if str(str(e)).find('instances_pkey') > 0:
+        if 'instances_pkey' in str(e):
             raise TemboardUIError(400,
                                   "Instance entry ('%s:%s') already exists." %
                                   (new_agent_address, new_agent_port))
@@ -331,66 +306,6 @@ def get_instance(session, agent_address, agent_port):
                 agent_port=agent_port).first()
     except AttributeError:
         raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
-                              (agent_address, agent_port))
-
-
-def update_instance(session,
-                    agent_address,
-                    agent_port,
-                    new_agent_address=None,
-                    new_agent_port=None,
-                    agent_key=None,
-                    hostname=None,
-                    cpu=None,
-                    memory_size=None,
-                    pg_port=None,
-                    pg_version=None,
-                    pg_version_summary=None,
-                    pg_data=None,
-                    notify=True,
-                    comment=None,
-                    **_):
-    try:
-        instance = session.query(Instances) \
-            .filter_by(
-                agent_address=str(agent_address),
-                agent_port=agent_port) \
-            .first()
-        if new_agent_address is not None:
-            instance.agent_address = str(new_agent_address)
-        if new_agent_port is not None:
-            instance.agent_port = int(new_agent_port)
-        if cpu is not None and cpu != u'':
-            instance.cpu = int(cpu)
-        else:
-            instance.cpu = None
-        if memory_size is not None and memory_size != u'':
-            instance.memory_size = int(memory_size)
-        else:
-            instance.memory_size = None
-        if pg_port is not None and pg_port != u'':
-            instance.pg_port = int(pg_port)
-        else:
-            instance.pg_port = None
-        instance.notify = bool(notify)
-        instance.comment = comment
-
-        for prop in ['agent_key', 'hostname', 'pg_version',
-                     'pg_version_summary', 'pg_data']:
-            if locals().get(prop) is not None:
-                setattr(instance, prop, str(locals().get(prop)))
-        session.merge(instance)
-        session.flush()
-        return instance
-    except IntegrityError as e:
-        if str(e).find('instances_pkey') > 0:
-            raise TemboardUIError(400,
-                                  "Instance entry ('%s:%s') already exists." %
-                                  (agent_address, agent_port))
-        else:
-            raise
-    except AttributeError:
-        raise TemboardUIError(400, "Instance entry ('%s:%s') not found." %
                               (agent_address, agent_port))
 
 

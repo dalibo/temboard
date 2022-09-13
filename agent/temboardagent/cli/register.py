@@ -154,12 +154,8 @@ class Register(SubCommand):
                 'agent_key': app.config.temboard['key'],
                 'agent_address': args.host,
                 'agent_port': str(app.config.temboard['port']),
-                'cpu': discover['system']['cpu_count'],
-                'memory_size': discover['system']['memory'],
-                'pg_port': discover['postgres']['port'],
-                'pg_data': discover['postgres']['data_directory'],
-                'pg_version': discover['postgres']['version'],
-                'pg_version_summary': discover['postgres']['version_summary'],
+                'discover': discover,
+                # Loosely reuse agent plugin as UI plugins.
                 'plugins': discover['temboard']['plugins'],
                 'groups': groups
             })

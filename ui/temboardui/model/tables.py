@@ -1,16 +1,19 @@
 from sqlalchemy.sql import text
-
+from sqlalchemy.dialects.postgresql import (
+    JSONB,
+    TIMESTAMP,
+)
 from sqlalchemy.schema import (
     MetaData,
     Table,
     Column,
     CheckConstraint,
+    FetchedValue,
     ForeignKeyConstraint
 )
 from sqlalchemy.types import (
     Integer,
     UnicodeText,
-    BigInteger,
     Boolean,
 )
 
@@ -40,14 +43,12 @@ instances = Table(
     Column('agent_port', Integer, nullable=False, primary_key=True),
     Column('agent_key', UnicodeText),
     Column('hostname', UnicodeText, nullable=False),
-    Column('cpu', Integer),
-    Column('memory_size', BigInteger),
     Column('pg_port', Integer),
-    Column('pg_version', UnicodeText),
-    Column('pg_version_summary', UnicodeText),
-    Column('pg_data', UnicodeText),
-    Column('notify', Boolean, nullable=False, server_default=text('True')),
+    Column('notify', Boolean, nullable=False, server_default=FetchedValue()),
     Column('comment', UnicodeText),
+    Column('discover', JSONB),
+    Column('discover_date', TIMESTAMP, server_default=FetchedValue()),
+    Column('discover_etag', UnicodeText),
     schema="application")
 
 plugins = Table(

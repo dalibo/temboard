@@ -24,7 +24,7 @@ from .toolkit.versions import (
     read_distinfo,
     read_libpq_version,
 )
-from .tools import JSONEncoder, noop_manager
+from .tools import noop_manager
 from .version import __version__
 
 
@@ -119,7 +119,6 @@ class Discover:
             self.data,
             indent="  ",
             sort_keys=True,
-            cls=JSONEncoder,
         ) + "\n"
         self.json = json_text.encode('utf-8')
         self.etag = compute_etag(self.json)

@@ -30,6 +30,7 @@ export default {
     // Instance information from API.
     current_data: null,
     discover_data: null,
+    discover_etag: null,
     cpu: null,
     server_groups: [],
     current_groups: [],
@@ -91,7 +92,7 @@ export default {
       }).fail(xhr => {
         this.waiting = false;
         this.error = this.format_xhr_error(xhr);
-      }).done(data => {
+      }).done((data, _, xhr) => {
         if ('invalid' == data.signature_status) {
           this.error = `
             <p><strong>Signature missmatch !</strong></p>
@@ -105,6 +106,7 @@ export default {
         }
 
         this.discover_data = data;
+        this.discover_etag = xhr.getResponseHeader('ETag')
         this.agent_plugins = data.temboard.plugins;
         this.cpu = data.system.cpu_count;
         var mem_gb = data.system.memory / 1024 / 1024 / 1024;
@@ -166,13 +168,8 @@ export default {
           ...data,
           new_agent_address: this.agent_address,
           new_agent_port: this.agent_port,
-          hostname: this.pg_host,
-          pg_port: this.pg_port,
-          pg_version: this.discover_data.postgres.version,
-          pg_data: this.pg_data,
-          pg_version_summary: this.pg_version_summary,
-          cpu: this.cpu,
-          memory_size: this.discover_data.system.memory
+          discover: this.discover_data,
+          discover_etag: this.discover_etag
         }),
       }).fail(xhr => {
         this.waiting = false;
