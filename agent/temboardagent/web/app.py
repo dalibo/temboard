@@ -2,7 +2,7 @@ import functools
 import inspect
 import logging
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from bottle import (
     Bottle,
@@ -11,6 +11,7 @@ from bottle import (
 )
 
 from ..tools import JSONEncoder
+from ..toolkit.utils import utcnow
 from ..toolkit.http import format_date
 from ..toolkit.signing import (
     InvalidSignature,
@@ -167,8 +168,7 @@ class SignaturePlugin(object):
         app = default_app().temboard
 
         date = request.headers['x-temboard-date']
-        utcnow = datetime.utcnow().replace(tzinfo=timezone.utc)
-        oldest_date = format_date(utcnow - timedelta(hours=2))
+        oldest_date = format_date(utcnow() - timedelta(hours=2))
         if date < oldest_date:
             raise HTTPError(400, "Request older than 2 hours.")
 

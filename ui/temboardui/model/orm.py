@@ -32,6 +32,7 @@ from sqlalchemy.sql import (
 
 from temboardui.model import tables
 from . import QUERIES
+from ..toolkit.utils import utcnow
 
 
 Model = declarative_base()
@@ -190,11 +191,7 @@ class ApiKeys(Model):
 
     @property
     def expired(self):
-        true_utc_now = (
-            datetime.datetime.utcnow()
-            .replace(tzinfo=datetime.timezone.utc)
-        )
-        return self.edate < true_utc_now
+        return self.edate < utcnow()
 
 
 class Plugins(Model):

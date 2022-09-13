@@ -12,7 +12,6 @@ try:
 except Exception:
     from io import StringIO
 from csv import writer as CSVWriter
-from datetime import datetime
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
@@ -35,6 +34,7 @@ from ..model import Session as DBSession
 from ..agentclient import TemboardAgentClient
 from ..toolkit.pycompat import PY2
 from ..toolkit.perf import PerfCounters
+from ..toolkit.utils import utcnow
 
 
 logger = logging.getLogger(__name__)
@@ -566,7 +566,7 @@ class Blueprint(object):
             @run_on_executor
             @functools.wraps(func)
             def sync_request_wrapper(request, *args):
-                start = datetime.utcnow() if self.perf else None
+                start = utcnow() if self.perf else None
                 status = 500
                 try:
                     response = func(request, *args)
@@ -585,7 +585,7 @@ class Blueprint(object):
                     raise HTTPError(500, str(e))
                 finally:
                     if self.perf:
-                        response_time = datetime.utcnow() - start
+                        response_time = utcnow() - start
                         instance_helper = getattr(request, 'instance', None)
                         if (
                                 with_instance and
@@ -637,7 +637,7 @@ class WebApplication(TornadoApplication, Blueprint):
             self.settings.setdefault('static_hash_cache', False)
             self.settings.setdefault('serve_traceback', True)
 
-        self.start_time = datetime.utcnow()
+        self.start_time = utcnow()
 
     def add_rules(self, rules):
         if hasattr(self, 'wildcard_router'):  # Tornado 4.5+
