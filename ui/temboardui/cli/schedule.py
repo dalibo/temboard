@@ -50,7 +50,7 @@ class Schedule(RunTaskMixin, SubCommand):
             check_schema()
             out = worker.defer(
                 self.app,
-                **build_kwargs_from_args(worker, worker_args),
+                **build_kwargs_from_args(worker, worker_args)
             )
             logger.info(
                 "Worker %s scheduled with task ID %s.",
