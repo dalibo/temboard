@@ -39,10 +39,17 @@
           <img id="logo" src="/images/temboard-150x32-w.png" />
         </a>
         {% if 'instance' in globals() %}
-        <div class="navbar-text mr-auto">
-          <b>
-            {{instance.hostname}}:{{instance.pg_port}}
-          </b>
+        <div class="navbar-text text-white mr-auto">
+          <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
+          {% if 'configfile' not in instance.discover['temboard'] %}
+          <span class="badge badge-secondary" style="font-size: 110%;">
+          {% try %}
+          {{ '@' + agent_username }}
+          {% except %}
+          Not logged in
+          {% end %}
+          </span>
+          {% end %}
         </div>
         {% end %}
         <ul class="navbar-nav">
@@ -63,11 +70,10 @@
           <li class="dropdown nav-item">
             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
               <i class="fa fa-user"></i>
+              {{role.role_name}}
               <span class="caret"></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
-              <h6 class="dropdown-header">Signed in as <b>{{role.role_name}}</b></h6>
-              <span role="separator" class="dropdown-divider"></span>
               <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
             </div>
           </li>
@@ -164,41 +170,6 @@
                 </a>
               </li>
             </ul>
-            <div class="info mt-auto">
-              <b>
-                {{instance.hostname}}
-              </b>
-              <p>
-              {% for group in instance.groups %}
-              <span class="badge border text-muted">
-                {{group.group_name}}
-              </span>&nbsp;
-              {% end %}
-              </p>
-              <table class="table table-sm table-no-margin small">
-                <tr><td>Host: </td><td class="text-right">{{instance.agent_address}}</td></tr>
-                <tr>
-                  <td>Data: </td>
-                  <td class="text-right auto-width">
-                    <div title="{{instance.pg_data}}">
-                      {{instance.pg_data}}
-                    </div>
-                  </td>
-                </tr>
-                <tr><td>Port: </td><td class="text-right">{{instance.pg_port}}</td></tr>
-                <tr>
-                  <td>Version: </td>
-                  <td class="text-right">{{instance.pg_version_summary or instance.pg_version}}</td>
-                </tr>
-              </table>
-              {% try %}
-              {% if agent_username %}
-              <small class="text-muted">Logged in as <strong>{{agent_username}}</strong></small>
-              {% end %}
-              {% except %}
-              <small class="text-muted">Not logged in</small>
-              {% end %}
-            </div>
           </div>
         </div>
         <div class="main ml-auto p-3 position-relative">
