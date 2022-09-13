@@ -39,6 +39,7 @@ from sqlalchemy.sql import text
 
 from psycopg2.extensions import AsIs
 
+from ...core import refresh_discover
 from temboardui.toolkit import taskmanager
 from temboardui.application import (
     get_instance,
@@ -495,12 +496,26 @@ def collector(app, address, port, key=None, engine=None):
         worker_session.close()
         return
     else:
-        response = response.json()
+        rows = response.json()
 
-    if not response:
+    # monitoring is still the better place to queue a discover. This allow us
+    # to have sub-minute reactivity on instance change.
+    discover_etag = response.headers.get('X-TemBoard-Discover-ETag')
+    if discover_etag:
+        if discover_etag != instance.discover_etag:
+            logger.info("Detected discover data changes.")
+            logger.debug(
+                "New etag. old=%s new=%s",
+                instance.discover_etag, discover_etag)
+            if app.scheduler.can_schedule:
+                refresh_discover.defer(app, address=address, port=port)
+    else:
+        logger.debug("Agent did not send discover ETag.")
+
+    if not rows:
         logger.info("Instance %s returned no monitoring data.", instance)
 
-    for row in response:
+    for row in rows:
         logger.info("Got points for %s at %s.", instance, row['datetime'])
         hostinfo = row['hostinfo']
         data = row['data']
