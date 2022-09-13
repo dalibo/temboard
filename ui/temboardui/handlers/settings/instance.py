@@ -219,6 +219,7 @@ def translate_v7_discover(data):
             block_size=data['pg_block_size'],
             data_directory=data['pg_data'],
         ),
+        signature_status='unchecked',
     )
 
 

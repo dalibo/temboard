@@ -97,7 +97,7 @@ export default {
           v-bind:mem_gb="mem_gb"
           />
       </div>
-      <div class="row" v-if="signature_status === undefined">
+      <div class="row" v-if="signature_status === 'unchecked'">
         <!-- Ask for legacy agent key. -->
         <div class="form-group col-sm-12">
           <label for="inputAgentKey" class="control-label">
