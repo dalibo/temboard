@@ -298,15 +298,11 @@ def add_instance(session,
 
 
 def get_instance(session, agent_address, agent_port):
-    try:
-        return session.query(Instances).options(
-            joinedload(Instances.groups),
-            joinedload(Instances.plugins)).filter_by(
-                agent_address=str(agent_address),
-                agent_port=agent_port).first()
-    except AttributeError:
-        raise TemboardUIError(400, "Instance entry '%s:%s' not found." %
-                              (agent_address, agent_port))
+    return (
+        Instances.get(agent_address, agent_port)
+        .with_session(session)
+        .first()
+    )
 
 
 def delete_instance(session, agent_address, agent_port):
