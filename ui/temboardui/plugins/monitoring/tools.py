@@ -374,17 +374,20 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
             ).one()
             # State has changed since last time
             if cs.state != state:
-                app.scheduler.schedule_task(
-                    'notify_state_change',
-                    options={
-                        'check_id': c.check_id,
-                        'key': key,
-                        'value': value,
-                        'state': state,
-                        'prev_state': cs.state
-                    },
-                    expire=0,
-                )
+                if app.scheduler.can_schedule:
+                    app.scheduler.schedule_task(
+                        'notify_state_change',
+                        options={
+                            'check_id': c.check_id,
+                            'key': key,
+                            'value': value,
+                            'state': state,
+                            'prev_state': cs.state
+                        },
+                        expire=0,
+                    )
+                else:
+                    logger.warning("Can't schedule state change task.")
             cs.state = str(state)
             session.merge(cs)
 

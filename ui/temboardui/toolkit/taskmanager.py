@@ -516,6 +516,9 @@ class SchedulerService(Service):
         conn.close()
         return res
 
+    def can_schedule(self):
+        return os.path.exists(self.scheduler.address)
+
 
 class WorkerPool(object):
 
