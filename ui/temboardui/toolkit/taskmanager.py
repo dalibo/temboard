@@ -178,6 +178,7 @@ class TaskManager(object):
 
 
 class Scheduler(object):
+    trace = False
 
     def __init__(self, address, authkey):
         # Listener for TM -> Scheduler IPC
@@ -223,7 +224,8 @@ class Scheduler(object):
             return
 
         message.type = message.type[0]
-        logger.debug("Received Message=%s" % message)
+        if self.trace:
+            logger.debug("Received Message=%s" % message)
 
         # handle incoming message and return a response
         conn.send(self.handle_message(message))
@@ -239,7 +241,8 @@ class Scheduler(object):
             return
 
         message.type = message.type[0]
-        logger.debug("Received Message=%s" % message)
+        if self.trace:
+            logger.debug("Received Message=%s" % message)
 
         # handle incoming message
         self.handle_message(message)
@@ -316,8 +319,7 @@ class Scheduler(object):
         for task in to_do:
             task.status = TASK_STATUS_SCHEDULED
 
-            logger.debug("Pushing task to the worker queue")
-            logger.debug(task)
+            logger.debug("Pushing task %s to the worker queue.", task.id)
 
             try:
                 self.task_list.update(
@@ -341,8 +343,7 @@ class Scheduler(object):
             task.stop_datetime = None
             task.output = ''
 
-            logger.debug("Pushing task to the worker queue")
-            logger.debug(task)
+            logger.debug("Pushing task %s to the worker queue.", task.id)
 
             try:
                 self.task_list.update(
@@ -521,6 +522,7 @@ class SchedulerService(Service):
 
 
 class WorkerPool(object):
+    trace = False
 
     def __init__(self, task_queue, event_queue, setproctitle=None):
         self.thread = None
@@ -577,7 +579,7 @@ class WorkerPool(object):
             return
 
         if t.status & TASK_STATUS_SCHEDULED:
-            logger.debug("Add Task %s to worker '%s' queue"
+            logger.debug("Got task %s for worker '%s' queue"
                          % (t.id, t.worker_name))
             self.workers[t.worker_name]['queue'].appendleft(t)
             # Update task status
@@ -615,7 +617,7 @@ class WorkerPool(object):
             fun = getattr(sys.modules[module], function)
 
             modfun = "%s.%s" % (module, fun.__name__)
-            logger.debug("Starting new worker %s", modfun)
+            logger.debug("Starting new job for %s", modfun)
             if self.setproctitle:
                 self.setproctitle('task %s' % (modfun))
             perf = PerfCounters.setup(service='task', task=modfun)
@@ -676,13 +678,14 @@ class WorkerPool(object):
             for job in worker['pool']:
                 if not job['process'].is_alive():
                     # Dead process case
-                    logger.debug("Job %s is dead" % job['id'])
+                    logger.debug("Job %s terminated.", job['id'])
                     try:
                         # Fetch the message from job's output queue
                         message_out = job['out'].get(False)
                     except Empty:
                         message_out = None
-                    logger.debug("Job output : %s" % message_out)
+                    if self.trace:
+                        logger.debug("Job output : %s" % message_out)
                     # Close job's output queue
                     job['out'].close()
                     # join the process
