@@ -14,6 +14,7 @@ from ..model import Session
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from ..toolkit import validators as v
+from ..toolkit.utils import JSONEncoder
 from ..handlers.settings.instance import (
     add_instance_in_groups,
     enable_instance_plugins,
@@ -207,7 +208,7 @@ class RegisterInstance(SubCommand):
         logger.info("Browse instance at %s.", instance.dashboard_url(self.app))
 
     def output_instance(self, instance):
-        json.dump(instance.asdict(), sys.stdout, indent="  ")
+        json.dump(instance.asdict(), sys.stdout, indent="  ", cls=JSONEncoder)
         sys.stdout.write(os.linesep)
 
 

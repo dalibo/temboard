@@ -1,5 +1,4 @@
 import errno
-import json
 import logging
 import os
 import re
@@ -126,14 +125,6 @@ def fromisoformat(datestr):
     datetime_part, tz_part = datestr.split('+')
     datestr = datetime_part + '+' + tz_part.replace(':', '')
     return datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%S.%f%z")
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        else:
-            return super().default(obj)
 
 
 @contextmanager

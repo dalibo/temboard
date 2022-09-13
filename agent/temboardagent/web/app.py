@@ -10,8 +10,7 @@ from bottle import (
     default_app, request, response,
 )
 
-from ..tools import JSONEncoder
-from ..toolkit.utils import utcnow
+from ..toolkit.utils import JSONEncoder, utcnow
 from ..toolkit.http import format_date
 from ..toolkit.signing import (
     InvalidSignature,

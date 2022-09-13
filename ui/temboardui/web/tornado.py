@@ -34,7 +34,7 @@ from ..model import Session as DBSession
 from ..agentclient import TemboardAgentClient
 from ..toolkit.pycompat import PY2
 from ..toolkit.perf import PerfCounters
-from ..toolkit.utils import utcnow
+from ..toolkit.utils import JSONEncoder, utcnow
 
 
 logger = logging.getLogger(__name__)
@@ -671,16 +671,6 @@ def make_error(request, code, message):
     )
     response.status_code = code
     return response
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        elif isinstance(obj, bytes):
-            return obj.decode("utf-8")
-        else:
-            return super(JSONEncoder, self).default(obj)
 
 
 # Change default cls argument to custom encoder.
