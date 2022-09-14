@@ -286,7 +286,9 @@ class ConnectionPool(ThreadedConnectionPool):
 
 
 def retry_connect(connect, *a, **kw):
-    for wait in [1] * 30 + [0]:
+    # Retry 3 times, 1 second wait between each try. This allows to wait for
+    # Postgres to restart, but give up to consider Postgres as unavailable.
+    for wait in [1] * 3 + [0]:
         try:
             conn = connect(*a, **kw)
             conn.set_session(autocommit=True)
