@@ -34,12 +34,14 @@ def host_info(discover):
     return hostinfo
 
 
-def instance_info(pool, conninfo, discover):
+def instance_info(pool, dbnames, discover):
     """Gather PostgreSQL instance information."""
+    p = discover['postgres']
+    conninfo = pool.postgres.pqvars()
     instance_info = {
         'hostname': discover['system']['fqdn'],
-        'instance': conninfo['instance'],
-        'local_name': conninfo.get('local_name', conninfo['instance']),
+        'instance': p.get('cluster_name'),
+        'local_name': p.get('cluster_name'),
         'available': True,
         'host': conninfo['host'],
         'port': conninfo['port'],
@@ -47,7 +49,6 @@ def instance_info(pool, conninfo, discover):
         'database': conninfo['database'],
         'password': conninfo['password']
     }
-    p = discover['postgres']
 
     # Try the connection
     try:
@@ -78,7 +79,7 @@ def instance_info(pool, conninfo, discover):
     # we have a working connection, let's do it now.
     dbs = pginfo.databases()
     instance_info['dbnames'] = []
-    for db in conninfo['dbnames']:
+    for db in dbnames:
         if db == '*':
             instance_info['dbnames'] = list(dbs.values())
             break
