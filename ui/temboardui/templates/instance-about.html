@@ -1,0 +1,134 @@
+{% extends base.html %}
+
+{% block title %}[{{instance}}] - About{% end %}
+
+{% block content %}
+<div class="text-center mt-4">
+  <h1>{{ instance }} <span class="align-top badge badge-secondary">{{ instance.groups[0].group_name }}</span></h1>
+  {% if len(instance.groups) > 1 %}
+  <h3>
+    {% for group in instance.groups %}
+    <span class="badge badge-secondary">{{ group.group_name }}</span>
+    {% end %}
+  </h3>
+  {% end %}
+  <h2 class="text-secondary pb-4 mb-4">{{ instance.pg_version_summary }} serving {{ instance.pg_data }}.</h2>
+</div>
+
+<table class="table table-sm w-100 mt-4 mx-auto" style="max-width: 1000px;">
+  {% set d = instance.discover['postgres'] %}
+  <thead class="thead-light">
+    <tr>
+      <th colspan="2"><h3 class="m-1">PostgreSQL <span class="align-middle badge badge-secondary">{{ d.get('cluster_name', '') }}</span></h3></th>
+    </tr>
+  </thead>
+  <tbody class="postgres">
+    <tr>
+      <td>Full version</td>
+      <td><pre class="version">{{ d['version'].replace(', ', '\n') }}</pre></td>
+    </tr>
+    {% set settings = ['listen_address', 'max_connections', 'data_checksums'] %}
+    {% for setting in settings %}
+    {%   if setting in d %}
+    <tr>
+      <td><tt>{{ setting }}</tt></td>
+      <td>
+        {% set value = d[setting] %}
+        {% if type(value) is bool %}
+        <i class="fa {{ 'fa-check' if value else 'fa-times' }}"></i>
+        {% else %}
+        <pre>{{ value }}</pre>
+        {% end %}
+      </td>
+    </tr>
+    {%   end %}
+    {% end %}
+  </tbody>
+
+  {% set d = instance.discover['system'] %}
+  <thead class="thead-light">
+    <tr>
+      <th colspan="2"><h3 class="m-1">{{ d.get('distribution', 'System') }}</h3></th>
+    </tr>
+  </thead>
+  <tbody class="system">
+    {% if 'cpu_model' in d %}
+    <tr>
+      <td>CPU</td>
+      <td><tt>{{ d['cpu_count'] }} x {{ d['cpu_model'] }}</tt></td>
+    </tr>
+    {% end %}
+    <tr>
+      <td>Memory</td>
+      <td><tt>{{ '%.2f' % (d['memory'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
+    </tr>
+    {% if 'swap' in d %}
+    <tr>
+      <td>Swap</td>
+      <td><tt>{{ '%.2f' % (d['swap'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
+    </tr>
+    {% end %}
+    {% if 'os_version' in d %}
+    <tr>
+      <td>Kernel</td>
+      <td><tt>{{ d['os'] }} {{ d['os_version'] }}</tt></td>
+    </tr>
+    {% end %}
+  </tbody>
+
+  {% set d = instance.discover['temboard'] %}
+  <thead class="thead-light">
+    <tr>
+      <th colspan="2"><h3 class="m-1">temBoard Agent {{ d.get('agent_version', '') }}</h3></th>
+    </tr>
+  </thead>
+  <tbody class="temboard">
+    {% if 'pythonbin' not in d %}
+    <tr>
+      <td>Agent User</td>
+      <td style="font-size: 150%;">
+        <span class="badge badge-warning align-top">
+        {% try %}
+        {{ '@' + agent_username }}
+        {% except %}
+        Not logged in
+        {% end %}
+        </span>
+      </td>
+    </tr>
+    {% end %}
+    <tr>
+      <td>Plugins</td>
+      <td>
+        <ul class="list-inline plugins">
+          {% for plugin in d['plugins'] %}
+          <li class="list-inline-item {{ plugin }}" style="font-size: 135%;"><span class="badge badge-light">{{ plugin }}</span></li>
+          {% end %}
+        </ul>
+      </td>
+    </tr>
+    {% if 'configfile' in d %}
+    <tr>
+      <td>Configuration file</td>
+      <td><tt>{{ d['configfile'] }}</tt></td>
+    </tr>
+    {% end %}
+    {% if 'python_version' in d %}
+    <tr>
+      <td>Python {{ d['python_version'] }}</td>
+      <td><tt>{{ d['pythonbin'] }}</tt></td>
+    </tr>
+    {% end %}
+    {% set components = ['psycopg2', 'libpq', 'bottle', 'cyptography'] %}
+    {% for component in components %}
+    {%   set key = '%s_version' % component %}
+    {%   if key in d %}
+    <tr>
+      <td>{{ component }}</td>
+      <td><tt>{{ d[key] }}</tt></td>
+    </tr>
+    {%   end %}
+    {% end %}
+  </tbody>
+</table>
+{% end %}

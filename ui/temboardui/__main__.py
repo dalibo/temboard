@@ -29,6 +29,7 @@ def main():
     flask.app_context().push()
 
     # Import main routes
+    __import__(__package__ + '.handlers.core')
     __import__(__package__ + '.web.routes')
 
     # Load sub commands.

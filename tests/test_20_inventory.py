@@ -25,7 +25,7 @@ def test_query_agent(ui_auto_configure, agent):
     assert 'toto' == data['username']
 
 
-def test_about(admin_session, browser, ui_url):
+def test_about_temboard(admin_session, browser, ui_url):
     browser.get(ui_url + '/about')
     metadata = browser.select('#metadata').text
     assert "Version" in metadata
@@ -45,7 +45,15 @@ def test_web_register(
     assert 'default' in browser.select(fmt(col=groups)).text
 
 
-def test_edit_instance(registered_agent, browser):
+def test_about_instance(registered_agent, agent_conf, browser, ui_url):
+    port = agent_conf.get('temboard', 'port')
+    browser.get(ui_url + '/server/0.0.0.0/' + port + '/about')
+    browser.select('.postgres .version')
+    browser.select('.temboard .plugins .pgconf')
+
+
+def test_edit_instance(registered_agent, browser, ui_url):
+    browser.get(ui_url + '/settings/instances')
     browser.select("td button.buttonEdit").click()
     browser.select("#inputNotify").click()
     comment = browser.select("#inputComment").get_attribute('value')

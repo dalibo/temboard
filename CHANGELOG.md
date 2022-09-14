@@ -60,6 +60,7 @@ script to proceed.
 - Out-of-band instance registration with new command `temboard
   register-instance`.
 - Heavily reduction of connection opened by dashboard.
+- New About instance page with detailed informations.
 
 
 ## [7.11] - Unreleased
