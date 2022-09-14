@@ -107,8 +107,14 @@ BATCH_DURATION = 5 * 60  # 5 minutes
 def dashboard_collector_batch_worker(app):
     # Loop each configured interval in the batch duration.
     interval = app.config.dashboard.scheduler_interval
-    pool = app.postgres.pool()
+    pool = None
     for elapsed in range(0, BATCH_DURATION, interval):
+        try:
+            pool = pool or app.postgres.pool()
+        except Exception as e:
+            logger.error("Failed to connect to Postgres: %s", e)
+            continue
+
         if elapsed > 0:
             # Throttle interval after first run.
             time.sleep(interval)

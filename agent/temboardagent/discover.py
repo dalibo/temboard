@@ -110,9 +110,13 @@ class Discover:
         collect_memory(d)
         collect_system(d)
 
-        mgr = noop_manager(conn) if conn else self.app.postgres.connect()
-        with mgr as conn:
-            collect_postgres(d, conn)
+        try:
+            mgr = noop_manager(conn) if conn else self.app.postgres.connect()
+        except Exception as e:
+            logger.error("Failed to collect Postgres data: %s", e)
+        else:
+            with mgr as conn:
+                collect_postgres(d, conn)
 
         # Build JSON to compute ETag.
         json_text = json.dumps(
