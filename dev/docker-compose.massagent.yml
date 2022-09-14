@@ -17,7 +17,11 @@ services:
     image: postgres:14-alpine
     environment:
       POSTGRES_PASSWORD: confinment
-    command: postgres -c shared_preload_libraries=pg_stat_statements
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, cluster_name=postgres-${TEMBOARD_REGISTER_PORT},
+    ]
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
