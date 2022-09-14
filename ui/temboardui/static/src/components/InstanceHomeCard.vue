@@ -30,11 +30,17 @@
       sparkline: Sparkline
     },
     mounted: function() {
+      if (this.index >= 18) {
+        return
+      }
       this.fetchChartData('tps')
       this.fetchChartData('load1')
     },
     watch: {
       instance: function() {
+        if (this.index >= 18) {
+          return
+        }
         // Global start and end for each charts.
         this.start = moment().subtract(1, 'hours')
         this.end = moment()
@@ -104,7 +110,8 @@
           <checks :instance="instance"></checks>
         </div>
       </div>
-      <div class="row" v-if="hasMonitoring && index < 10">
+      <!-- Limit graph to top 3 rows. -->
+      <div class="row" v-if="hasMonitoring && index < 18">
         <div class="col-md-6 mt-2 small text-center">
           <span class="text-muted">
             TPS:
