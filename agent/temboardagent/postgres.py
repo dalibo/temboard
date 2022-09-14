@@ -70,13 +70,14 @@ class Postgres:
 
     def pool(self):
         return ConnectionPool(
-            minconn=1, maxconn=2,
+            app=self.app,
             observers=self.connection_lost_observers,
+            minconn=1, maxconn=2,
             **self.pqvars(),
         )
 
     def connect(self):
-        return closing(retry_connect(connect, **self.pqvars()))
+        return closing(retry_connect(connect, self.app, **self.pqvars()))
 
     def copy(self, **kw):
         defaults = dict(
@@ -100,6 +101,10 @@ class Postgres:
             connection_factory=FactoryConnection,
             application_name='temboard-agent',
         )
+
+    def notify_observers(self):
+        for observer in self.connection_lost_observers:
+            observer()
 
 
 class DBConnectionPool:
@@ -250,17 +255,21 @@ class RetryManager(object):
 
 
 class ConnectionPool(ThreadedConnectionPool):
-    def __init__(self, observers=None, **kw):
-        super(ConnectionPool, self).__init__(**kw)
+    def __init__(self, app, observers=None, **kw):
+        self.app = app
         self.observers = observers
+        super(ConnectionPool, self).__init__(**kw)
 
     def _connect(self, *a, **kw):
-        return retry_connect(super(ConnectionPool, self)._connect, *a, **kw)
+        return retry_connect(
+            super(ConnectionPool, self)._connect, self.app, *a, **kw)
 
     def retry_connection(self):
+        # Helper to retry a code block on connection lost.
+        #
         # Manage pooled connection lost. Yield a context manager for one or two
         # attempt. The first attempt uses the connection as returned by the
-        # pool. The second attempt closes pool a request a fresh connection.
+        # pool. The second attempt closes pool and request a fresh connection.
         #
         # for attempt in postgres.retry_connection_pool():
         #     with attempt() as conn:
@@ -269,9 +278,7 @@ class ConnectionPool(ThreadedConnectionPool):
         manager = RetryManager(self)
         for try_ in 0, 1:
             yield manager
-            if manager.retry:
-                self.notify_observers()
-            else:
+            if not manager.retry:
                 break
 
     def close_all_connections(self):
@@ -280,20 +287,21 @@ class ConnectionPool(ThreadedConnectionPool):
             conn.close()
             self.putconn(conn)
 
-    def notify_observers(self):
-        for observer in self.observers:
-            observer()
 
-
-def retry_connect(connect, *a, **kw):
+def retry_connect(connect, app, *a, **kw):
     # Retry 3 times, 1 second wait between each try. This allows to wait for
     # Postgres to restart, but give up to consider Postgres as unavailable.
     for wait in [1] * 3 + [0]:
         try:
             conn = connect(*a, **kw)
+            if not app.status.data['postgres']['available']:
+                logger.info("Recovered Postgres connexion.")
+                app.postgres.notify_observers()
+            app.status.data['postgres']['available'] = True
             conn.set_session(autocommit=True)
             return conn
         except Exception as e:
+            app.status.data['postgres']['available'] = False
             if wait:
                 logger.debug("Retrying connection open in %ss: %s", wait, e)
                 sleep(wait)

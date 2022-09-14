@@ -40,8 +40,11 @@ class Discover:
         self.etag = None
         self.file_etag = None
         self.mtime = None
+        self.inhibit_observer = False
 
     def connection_lost(self):
+        if self.inhibit_observer:
+            return
         # Callback for postgres.ConnectionPool connection lost event.
         logger.info("Queueing discover refresh.")
         discover.defer(self.app)
@@ -242,5 +245,7 @@ def compute_etag(data):
 def discover(app):
     """ Refresh discover data. """
     app.discover.ensure_latest()
+    app.discover.inhibit_observer = True
     app.discover.refresh()
+    app.discover.inhibit_observer = False
     app.discover.write()
