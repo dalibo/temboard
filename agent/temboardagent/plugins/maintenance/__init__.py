@@ -113,8 +113,7 @@ def scheduled_vacuum():
 
 @workers.register(pool_size=10)
 def vacuum_worker(app, dbname, mode, schema=None, table=None):
-    with functions.get_postgres(app.config, dbname).connect() \
-            as conn:
+    with app.postgres.connect(database=dbname) as conn:
         return functions.vacuum(conn, dbname, mode, schema, table)
 
 
@@ -168,8 +167,7 @@ def scheduled_analyze():
 
 @workers.register(pool_size=10)
 def analyze_worker(app, dbname, schema=None, table=None):
-    with functions.get_postgres(app.config, dbname).connect() \
-            as conn:
+    with app.postgres.connect(database=dbname) as conn:
         return functions.analyze(conn, dbname, schema, table)
 
 
@@ -233,7 +231,7 @@ def scheduled_reindex(http_context, app):
 
 @workers.register(pool_size=10)
 def reindex_worker(app, dbname, schema=None, table=None, index=None):
-    with functions.get_postgres(app.config, dbname).connect() as conn:
+    with app.postgres.connect(database=dbname) as conn:
         return functions.reindex(conn, dbname, schema, table, index)
 
 

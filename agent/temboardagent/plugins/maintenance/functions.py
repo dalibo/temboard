@@ -6,7 +6,6 @@ import os
 from bottle import HTTPError
 
 from temboardagent.errors import UserError
-from temboardagent.postgres import Postgres
 from temboardagent.toolkit import taskmanager
 
 logger = logging.getLogger(__package__)
@@ -273,15 +272,6 @@ WHERE i.schemaname = '{schema}'
 {table_filter}
 ORDER BY 1,2
 """  # noqa
-
-
-def get_postgres(app_config, database):
-    '''
-    Same as `app.postgres` but with specific database not the default one.
-    '''
-    config = dict(**app_config.postgresql)
-    config.update(dbname=database)
-    return Postgres(**config)
 
 
 def get_instance(conn):

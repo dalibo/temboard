@@ -76,8 +76,11 @@ class Postgres:
             **self.pqvars(),
         )
 
-    def connect(self):
-        return closing(retry_connect(connect, self.app, **self.pqvars()))
+    def connect(self, database=None):
+        kw = self.pqvars()
+        if database:
+            kw['dbname'] = database
+        return closing(retry_connect(connect, self.app, **kw))
 
     def copy(self, **kw):
         defaults = dict(
