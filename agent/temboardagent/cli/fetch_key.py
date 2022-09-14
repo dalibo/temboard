@@ -33,7 +33,8 @@ class FetchKey(SubCommand):
         ui_url_raw = self.app.config.temboard.ui_url.rstrip('/')
         ui_url = urlparse(ui_url_raw)
         ui_client = TemboardClient.factory(
-            self.app.config, ui_url.hostname, ui_url.port,
+            self.app.config,
+            scheme=ui_url.scheme, host=ui_url.hostname, port=ui_url.port,
         )
 
         logger.info("Requesting public key from %s.", ui_url_raw)

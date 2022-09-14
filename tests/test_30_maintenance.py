@@ -87,6 +87,7 @@ def test_schema(browser, browse_toto_schema):
 
 
 def test_schema_reindex_now(browser, browse_toto_schema):
+    browser.refresh_until('.main td.index')
     browser.select("td.reindex .buttonReindex").click()
 
     browser.select("#reindexNow").click()

@@ -9,6 +9,7 @@ from textwrap import dedent
 from ..core import workers
 from ..discover import Discover, inspect_versions
 from ..queries import QUERIES
+from ..status import Status
 from ..toolkit.configuration import OptionSpec
 from ..toolkit.errors import UserError
 from ..web import HTTPDService
@@ -91,6 +92,7 @@ class TemboardAgentApplication(BaseApplication):
 
         self.discover = Discover(self)
         self.discover.read()
+        self.status = Status(self)
 
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(

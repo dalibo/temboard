@@ -40,8 +40,11 @@ class Discover:
         self.etag = None
         self.file_etag = None
         self.mtime = None
+        self.inhibit_observer = False
 
     def connection_lost(self):
+        if self.inhibit_observer:
+            return
         # Callback for postgres.ConnectionPool connection lost event.
         logger.info("Queueing discover refresh.")
         discover.defer(self.app)
@@ -90,10 +93,12 @@ class Discover:
         if self.mtime is None:  # if not sys.stdout.
             logger.debug("Wrote discover.json with ETag %s.", self.etag)
             self.mtime = os.stat(self.path).st_mtime
+            self.file_etag = self.etag
 
     def refresh(self, conn=None):
-        logger.debug("Inspecting PostgreSQL instance and system.")
+        logger.debug("Inspecting temBoard and system.")
         d = self.data
+        old_postgres = self.data.get('postgres', {})
         d.clear()
 
         d['postgres'] = {}
@@ -110,9 +115,15 @@ class Discover:
         collect_memory(d)
         collect_system(d)
 
-        mgr = noop_manager(conn) if conn else self.app.postgres.connect()
-        with mgr as conn:
-            collect_postgres(d, conn)
+        try:
+            mgr = noop_manager(conn) if conn else self.app.postgres.connect()
+        except Exception as e:
+            logger.error("Failed to collect Postgres data: %s", e)
+            d['postgres'] = old_postgres
+        else:
+            with mgr as conn:
+                logger.debug("Inspecting Postgres instance.")
+                collect_postgres(d, conn)
 
         # Build JSON to compute ETag.
         json_text = json.dumps(
@@ -234,5 +245,7 @@ def compute_etag(data):
 def discover(app):
     """ Refresh discover data. """
     app.discover.ensure_latest()
+    app.discover.inhibit_observer = True
     app.discover.refresh()
+    app.discover.inhibit_observer = False
     app.discover.write()

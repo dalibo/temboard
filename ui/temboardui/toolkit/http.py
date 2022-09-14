@@ -55,14 +55,15 @@ class TemboardClient(object):
     log_headers = False
 
     @classmethod
-    def factory(cls, config, host, port):
+    def factory(cls, config, host, port, scheme='https'):
         return cls(
-            host, port,
+            host, port, scheme=scheme,
             ca_cert_file=config.temboard.ssl_ca_cert_file,
         )
 
-    def __init__(self, host, port, ca_cert_file=None):
+    def __init__(self, host, port, ca_cert_file=None, scheme='https'):
         """ If ca_cert_file is None, HTTPS connection is unverified. """
+        self.scheme = scheme
         self.host = host
         self.port = port
         self.ca_cert_file = ca_cert_file
@@ -70,9 +71,9 @@ class TemboardClient(object):
         self._cookies = set()
 
     def __repr__(self):
-        return '<%s %s:%s %s>' % (
+        return '<%s %s://%s:%s %s>' % (
             self.__class__.__name__,
-            self.host, self.port,
+            self.scheme, self.host, self.port,
             'verified' if self.ca_cert_file else 'unverified',
         )
 
@@ -92,7 +93,7 @@ class TemboardClient(object):
 
     def request(self, method, path, headers=None, body=None):
         hostport = '%s:%s' % (self.host, self.port)
-        fullurl = 'https://%s%s' % (hostport, path)
+        fullurl = '%s://%s%s' % (self.scheme, hostport, path)
 
         logger.debug("Requesting %s %s.", method, fullurl)
 
@@ -109,9 +110,14 @@ class TemboardClient(object):
         if body is not None:
             body = ensure_bytes(body)
 
-        conn = http.client.HTTPSConnection(
-            self.host, self.port, context=self.ssl_context, timeout=30,
-        )
+        if 'https' == self.scheme:
+            conn = http.client.HTTPSConnection(
+                self.host, self.port, context=self.ssl_context, timeout=30,
+            )
+        else:
+            conn = http.client.HTTPConnection(
+                self.host, self.port, timeout=30,
+            )
         conn.response_class = TemboardResponse
 
         if self.log_headers:

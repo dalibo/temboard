@@ -11,6 +11,7 @@ from psycopg2.extras import PhysicalReplicationConnection
 
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+from ...toolkit.utils import utcnow
 
 from . import db
 
@@ -41,7 +42,7 @@ def load_probes(options, home):
 def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    now = pool.getconn().queryscalar("SELECT NOW()")
+    now = utcnow()
     logger.info("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
