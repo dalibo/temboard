@@ -15,8 +15,10 @@
   <h2 class="text-secondary pb-4 mb-4">{{ instance.pg_version_summary }} serving {{ instance.pg_data }}.</h2>
 </div>
 
+{# Default if discover is None, this happen in development mode only. #}
+{% set discover = instance.discover or dict(postgres={}, temboard={}, system={}) %}
 <table class="table table-sm w-100 mt-4 mx-auto" style="max-width: 1000px;">
-  {% set d = instance.discover['postgres'] %}
+  {% set d = discover['postgres'] %}
   <thead class="thead-light">
     <tr>
       <th colspan="2"><h3 class="m-1">PostgreSQL <span class="align-middle badge badge-secondary">{{ d.get('cluster_name', '') }}</span></h3></th>
@@ -25,7 +27,7 @@
   <tbody class="postgres">
     <tr>
       <td>Full version</td>
-      <td><pre class="version">{{ d['version'].replace(', ', '\n') }}</pre></td>
+      <td><pre class="version">{{ d.get('version', 'Unknown').replace(', ', '\n') }}</pre></td>
     </tr>
     {% set settings = ['listen_address', 'max_connections', 'data_checksums'] %}
     {% for setting in settings %}
@@ -45,7 +47,7 @@
     {% end %}
   </tbody>
 
-  {% set d = instance.discover['system'] %}
+  {% set d = discover['system'] %}
   <thead class="thead-light">
     <tr>
       <th colspan="2"><h3 class="m-1">{{ d.get('distribution', 'System') }}</h3></th>
@@ -58,25 +60,25 @@
       <td><tt>{{ d['cpu_count'] }} x {{ d['cpu_model'] }}</tt></td>
     </tr>
     {% end %}
+    {% if 'memory' in d %}
     <tr>
       <td>Memory</td>
       <td><tt>{{ '%.2f' % (d['memory'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
     </tr>
+    {% end %}
     {% if 'swap' in d %}
     <tr>
       <td>Swap</td>
       <td><tt>{{ '%.2f' % (d['swap'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
     </tr>
     {% end %}
-    {% if 'os_version' in d %}
     <tr>
       <td>Kernel</td>
-      <td><tt>{{ d['os'] }} {{ d['os_version'] }}</tt></td>
+      <td><tt>{{ d.get('os', 'Linux') }} {{ d.get('os_version', '') }}</tt></td>
     </tr>
-    {% end %}
   </tbody>
 
-  {% set d = instance.discover['temboard'] %}
+  {% set d = discover['temboard'] %}
   <thead class="thead-light">
     <tr>
       <th colspan="2"><h3 class="m-1">temBoard Agent {{ d.get('agent_version', '') }}</h3></th>
@@ -97,6 +99,7 @@
       </td>
     </tr>
     {% end %}
+    {% if 'plugins' in d %}
     <tr>
       <td>Plugins</td>
       <td>
@@ -107,6 +110,7 @@
         </ul>
       </td>
     </tr>
+    {% end %}
     {% if 'configfile' in d %}
     <tr>
       <td>Configuration file</td>
