@@ -74,7 +74,8 @@ class Register(SubCommand):
         ui_url_raw = self.app.config.temboard.ui_url.rstrip('/')
         ui_url = urlparse(ui_url_raw)
         uiclient = TemboardClient.factory(
-            self.app.config, ui_url.hostname, ui_url.port,
+            self.app.config,
+            scheme=ui_url.scheme, host=ui_url.hostname, port=ui_url.port,
         )
 
         try:
