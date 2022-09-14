@@ -31,6 +31,13 @@ html {
   text-overflow: ellipsis;
 }
 
+// For home
+@each $color, $value in $theme-colors {
+  .bg-#{$color}-light {
+    background-color: lighten($value, 43);
+  }
+}
+
 @include media-breakpoint-up(lg) {
   $sidebar-width: 270px;
   $sidebar-width-collapsed: 60px;
