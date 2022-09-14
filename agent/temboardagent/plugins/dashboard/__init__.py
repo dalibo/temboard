@@ -5,6 +5,7 @@ from bottle import Bottle, default_app
 
 from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
+from ...toolkit.utils import utcnow
 
 from . import db
 from . import metrics
@@ -108,21 +109,27 @@ def dashboard_collector_batch_worker(app):
     # Loop each configured interval in the batch duration.
     interval = app.config.dashboard.scheduler_interval
     pool = None
-    for elapsed in range(0, BATCH_DURATION, interval):
-        try:
-            pool = pool or app.postgres.pool()
-        except Exception as e:
-            logger.error("Failed to connect to Postgres: %s", e)
-            continue
-
+    start = utcnow()
+    elapsed = 0
+    while elapsed < BATCH_DURATION:
         if elapsed > 0:
             # Throttle interval after first run.
             time.sleep(interval)
 
         try:
-            dashboard_collector_worker(app, pool)
+            pool = pool or app.postgres.pool()
         except Exception as e:
-            logger.error("Dashboard collector error: %s", e)
+            logger.error("Failed to connect to Postgres: %s", e)
+        else:
+            try:
+                for attempt in pool.retry_connection():
+                    with attempt:
+                        dashboard_collector_worker(app, pool)
+            except Exception as e:
+                logger.error("Dashboard collector error: %s", e)
+
+        elapsed = utcnow() - start
+        elapsed = elapsed.total_seconds()
 
 
 class DashboardPlugin:
