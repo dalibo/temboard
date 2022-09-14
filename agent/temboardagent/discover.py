@@ -35,7 +35,7 @@ class Discover:
     def __init__(self, app):
         self.app = app
         self.path = self.app.config.temboard.home + '/discover.json'
-        self.data = {}
+        self.data = dict(postgres={}, system={}, temboard={})
         self.json = None  # bytes
         self.etag = None
         self.file_etag = None
