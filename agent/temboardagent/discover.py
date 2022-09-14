@@ -93,8 +93,9 @@ class Discover:
             self.file_etag = self.etag
 
     def refresh(self, conn=None):
-        logger.debug("Inspecting PostgreSQL instance and system.")
+        logger.debug("Inspecting temBoard and system.")
         d = self.data
+        old_postgres = self.data.get('postgres', {})
         d.clear()
 
         d['postgres'] = {}
@@ -115,8 +116,10 @@ class Discover:
             mgr = noop_manager(conn) if conn else self.app.postgres.connect()
         except Exception as e:
             logger.error("Failed to collect Postgres data: %s", e)
+            d['postgres'] = old_postgres
         else:
             with mgr as conn:
+                logger.debug("Inspecting Postgres instance.")
                 collect_postgres(d, conn)
 
         # Build JSON to compute ETag.
