@@ -90,6 +90,7 @@ class Discover:
         if self.mtime is None:  # if not sys.stdout.
             logger.debug("Wrote discover.json with ETag %s.", self.etag)
             self.mtime = os.stat(self.path).st_mtime
+            self.file_etag = self.etag
 
     def refresh(self, conn=None):
         logger.debug("Inspecting PostgreSQL instance and system.")
