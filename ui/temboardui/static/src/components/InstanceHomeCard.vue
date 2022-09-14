@@ -170,3 +170,9 @@
   </div>
 
 </template>
+
+<style scoped>
+  .sparkline-container {
+    height: 30px;
+  }
+</style>
