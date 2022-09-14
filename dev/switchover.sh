@@ -9,7 +9,7 @@ _psql()
 {
 	# Usage: psql SERVICE COMMAND [ARGS...]
 	local num=${1#postgres}; shift
-	PGUSER=postgres PGPASSWORD=postgres PGHOST=0.0.0.0 PGPORT=$((1+num))5432 psql -AqtX "$@"
+	PGUSER=postgres PGPASSWORD=postgres PGHOST=0.0.0.0 PGPORT=$((1+num))5432 PGDATABASE=postgres psql -AqtX "$@"
 }
 
 
