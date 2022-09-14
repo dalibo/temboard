@@ -3,102 +3,65 @@
   import Dygraph from 'dygraphs'
   import moment from 'moment'
 
-export default {
-  props: ['instance', 'metric'],
-  mounted: function() {
-    this.createChart()
-  },
-  watch: {
-    instance: function() {
-      this.createChart()
-    }
-  },
-  methods: {
-    createChart: function() {
-      var api_url = ['/server', this.instance.agent_address, this.instance.agent_port, 'monitoring'].join('/');
-
-      var start = moment().subtract(1, 'hours');
-      var end = moment();
-      var defaultOptions = {
-        axes: {
-          x: {
-            drawAxis: false,
-            drawGrid: false
-          },
-          y: {
-            drawAxis: false,
-            drawGrid: false
-          }
-        },
-        dateWindow: [start, end],
-        legend: 'never',
-        xValueParser: function(x) {
-          var m = moment(x);
-          return m.toDate().getTime();
-        },
-        highlightCircleSize: 0,
-        interactionModel: {}
-      };
-
-      var options = defaultOptions;
-      switch (this.metric) {
-      case 'load1':
-        options = $.extend({colors: ['#FAA43A']}, options);
-        break;
-      case 'tps':
-        options = $.extend({colors: ['#50BD68', '#F15854']}, options);
-        break;
+  export default {
+    data: function() {
+      return {
+        chartOptions: {},
+        chart: null
       }
-
-      var params = "?start=" + start.toISOString() + "&end=" + end.toISOString();
-      var metricsUrl = api_url + "/data/" + this.metric + params;
-      var data = null;
-      var dataReq = $.get(metricsUrl, function(_data) {
-        data = _data;
-      });
-      // Get the dates when the instance was unavailable
-      var unavailabilityData = '';
-      var promise = $.when(dataReq);
-      var unavailabilityUrl = api_url + '/unavailability' + params;
-      if (this.metric == 'tps') {
-
-        promise = $.when(dataReq,
-          $.get(unavailabilityUrl, function(_data) { unavailabilityData = _data; })
-        );
+    },
+    props: ['instance', 'metric', 'data', 'start', 'end', 'colors'],
+    mounted: function() {
+      if (this.data) {
+        this.createChart()
       }
-      promise.then(function() {
-        // fill unavailability data with NaN
-        var colsCount = data.split('\n')[0].split(',').length;
-        var nanArray = new Array(colsCount - 1).fill('NaN');
-        nanArray.unshift('');
-        unavailabilityData = unavailabilityData.replace(/\n/g, nanArray.join(',') + '\n');
-
-        var chart = new Dygraph(
-          this.$el,
-          data + unavailabilityData,
-          options
-        );
-        var last;
-        if (this.metric == 'tps') {
-          var lastCommit = chart.getValue(chart.numRows() - 1, 1);
-          var lastRollback = chart.getValue(chart.numRows() - 1, 2);
-          if (lastCommit === null && lastRollback === null) {
-            last = null;
-          }
-          else {
-            last = lastCommit + lastRollback;
-          }
-        } else {
-          last = chart.getValue(chart.numRows() - 1, 1);
+    },
+    watch: {
+      data: function() {
+        if (this.chart) {
+          // From vue-dygraphs.
+          // Merge data and options
+          let obj = Object.assign({}, this.chartOptions, {file: this.data})
+          this.chart.updateOptions(obj)
+          this.$emit('chart-updated', this.metric, this.chart)
         }
-        this.instance['current' + _.capitalize(this.metric)] = last;
-        instancesVue.$forceUpdate();
-      }.bind(this));
+        else if (this.data) {
+          this.createChart()
+        }
+      }
+    },
+    methods: {
+      createChart: function() {
+        this.chartOptions = {
+          axes: {
+            x: {
+              drawAxis: false,
+              drawGrid: false
+            },
+            y: {
+              drawAxis: false,
+              drawGrid: false
+            }
+          },
+          dateWindow: [this.start, this.end],
+          legend: 'never',
+          xValueParser: function(x) {
+            return moment(x).toDate().getTime();
+          }.bind(this),
+          highlightCircleSize: 0,
+          interactionModel: {},
+          colors: this.colors
+        }
+
+        this.chart = new Dygraph(this.$el, this.data, this.chartOptions)
+        this.$emit('chart-created', this.metric, this.chart)
+      }
     }
   }
-}
 </script>
 
 <template>
-  <div></div>
+  <div>
+    <div style="height: 100%; line-height: 30px;" class="text-secondary align-bottom" v-if="!data">No data</div>
+  </div>
 </template>

@@ -1,15 +1,10 @@
 /* global instances, Vue */
 import _ from 'lodash'
-import moment from 'moment'
-import Dygraph from 'dygraphs'
-import 'dygraphs/dist/dygraph.css'
 import Vue from 'vue/dist/vue.esm'
 import VueRouter from 'vue-router'
 
 import './fscreen.js'
-import Checks from './components/Checks.vue'
-import Sparkline from './components/Sparkline.vue'
-
+import InstanceHomeCard from './components/InstanceHomeCard.vue'
 
 Vue.use(VueRouter)
 
@@ -21,8 +16,7 @@ window.instancesVue = new Vue({
   el: '#instances',
   router: new VueRouter(),
   components: {
-    checks: Checks,
-    sparkline: Sparkline
+    "instance-home-card": InstanceHomeCard
   },
   data: function() {
     var groupsFilter = [];
@@ -37,25 +31,6 @@ window.instancesVue = new Vue({
       groups: groups,
       groupsFilter: groupsFilter
     }
-  },
-  methods: {
-    hasMonitoring: function(instance) {
-      return instance.plugins.indexOf('monitoring') != -1;
-    },
-    toggleGroupFilter: function(group, e) {
-      e.preventDefault();
-      var index = this.groupsFilter.indexOf(group);
-      if (index != -1) {
-        this.groupsFilter.splice(index, 1);
-      } else {
-        this.groupsFilter.push(group);
-      }
-    },
-    changeSort: function(sort, e) {
-      e.preventDefault();
-      this.sort = sort;
-    },
-    getStatusValue: getStatusValue
   },
   computed: {
     filteredInstances: function() {
@@ -86,6 +61,35 @@ window.instancesVue = new Vue({
       return groupFiltered;
     }
   },
+  mounted: function() {
+    this.fetchInstances();
+    window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval);
+  },
+  methods: {
+    toggleGroupFilter: function(group, e) {
+      e.preventDefault();
+      var index = this.groupsFilter.indexOf(group);
+      if (index != -1) {
+        this.groupsFilter.splice(index, 1);
+      } else {
+        this.groupsFilter.push(group);
+      }
+    },
+    changeSort: function(sort, e) {
+      e.preventDefault();
+      this.sort = sort;
+    },
+    getStatusValue: getStatusValue,
+    fetchInstances: function() {
+      $.ajax('/home/instances').success(data => {
+        this.instances = data
+        this.loading = false
+        this.$nextTick(function() {
+          $('[data-toggle="popover"]').popover();
+        })
+      })
+    }
+  },
   watch: {
     search: function(newVal) {
       this.$router.replace({ query: _.assign({}, this.$route.query, {q: newVal })} );
@@ -98,11 +102,6 @@ window.instancesVue = new Vue({
     }
   }
 });
-
-fetchInstances.call(instancesVue);
-window.setInterval(function() {
-  fetchInstances.call(instancesVue);
-}, refreshInterval);
 
 function sortByStatus(items) {
   return items.sort(function(a, b) {
@@ -126,17 +125,6 @@ function getStatusValue(instance) {
     value += checks.UNDEF;
   }
   return value;
-}
-
-function fetchInstances() {
-  $.ajax(instancesUrl)
-    .success(function(data) {
-      this.instances = data;
-      this.loading = false;
-      Vue.nextTick(function() {
-        $('[data-toggle="popover"]').popover();
-      });
-    }.bind(this));
 }
 
 function getChecksCount(instance) {
