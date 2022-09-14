@@ -38,7 +38,7 @@ services:
     environment:
       TEMBOARD_HOSTNAME: postgres-${TEMBOARD_REGISTER_PORT}.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
-      TEMBOARD_UI_URL: https://172.17.0.1:8888
+      TEMBOARD_UI_URL: http://172.17.0.1:8888
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_REGISTER_HOST: 172.17.0.1
