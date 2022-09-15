@@ -27,7 +27,25 @@
     </div>
   </div>
 </div>
-{% include menu.html %}
+
+<!-- Mode Tabs -->
+<ul class="nav nav-tabs">
+  <li class="{{'active' if mode == 'running' else ''}} nav-item">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/running" class="nav-link running"> Running</a>
+  </li>
+  <li class="{{'active' if mode == 'waiting' else ''}} nav-item">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/waiting" class="nav-link waiting"> Waiting
+      <div id="waiting-count" class="badge badge-light" style="min-width: 2em;">&nbsp;</div>
+    </a>
+  </li>
+  <li class="{{'active' if mode == 'blocking' else ''}} nav-item">
+    <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity/blocking" class="nav-link blocking">Blocking
+      <div id="blocking-count" class="badge badge-light" style="min-width: 2em;">&nbsp;</div>
+    </a>
+  </li>
+</ul>
+
+<!-- Action bar -->
 <div class="row d-flex justify-content-between">
   <div class="col-auto">
     <span class="d-inline-block" data-toggle="tooltip" title="Terminate the backends selected below">
@@ -39,7 +57,7 @@
       <a class="btn btn-secondary" id="resumeAutoRefresh" role="button" href><i class="fa fa-play"></i> resume auto refresh</a>
     </span>
     <span id="autoRefreshMsg" class="text-muted">
-      <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw">
+      <img id="loadingIndicator" src="/images/ring-alt.svg" width="24" class="fa-fw">
       Auto refresh
       <span id="intervalDuration">2s</span>
       <span id="autoRefreshPaused">paused</span>
@@ -51,6 +69,8 @@
     </a>
   </div>
 </div>
+
+<!-- Filters drop down -->
 <div class="row">
   <div class="col-12 collapse" id="filters">
     <div class="justify-content-end d-flex">
@@ -71,6 +91,8 @@
     </form>
   </div>
 </div>
+
+<!-- Sessions table -->
 <div class="row">
   <div class="col-12">
     <table id="tableActivity" class="table-activity table table-sm table-striped small table-query"></table>
