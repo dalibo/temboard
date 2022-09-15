@@ -1,7 +1,6 @@
 {% autoescape None %}
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity{% end %}
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
 
 {% block head %}
