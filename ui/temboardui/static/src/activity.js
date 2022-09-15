@@ -1,5 +1,12 @@
 "use strict";
 
+import datatables from 'datatables.net-dt'
+import dtbs4 from 'datatables.net-bs4'
+import 'datatables.net-bs4/css/dataTables.bootstrap4.css'
+
+datatables(window, $)
+dtbs4(window, $)
+
 var request = null;
 var intervalDuration = 2;
 var loading = false;
