@@ -298,6 +298,7 @@ table.table-query {
     padding: 0;
     text-overflow: ellipsis;
     overflow: hidden;
+    white-space: pre;
   }
 
   .hljs {

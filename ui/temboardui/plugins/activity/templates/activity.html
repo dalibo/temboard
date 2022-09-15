@@ -4,7 +4,6 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
 
 {% block head %}
-<link href="/js/highlightjs/default.css" rel="stylesheet" />
 {%   if vitejs.PROD %}
 <link href="{{ vitejs.url_for('activity.css') }}" rel="stylesheet" />
 {%   end %}
@@ -78,7 +77,6 @@
   </div>
 </div>
 
-<script src="/js/highlightjs/highlight.pack.js"></script>
 <script type="module" src="{{ vitejs.url_for('activity.js') }}"></script>
 <script>
 var xsession = {{ json_encode(xsession) }};

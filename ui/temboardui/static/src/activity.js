@@ -3,6 +3,8 @@
 import datatables from 'datatables.net-dt'
 import dtbs4 from 'datatables.net-bs4'
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/default.css'
 
 datatables(window, $)
 dtbs4(window, $)
@@ -226,7 +228,7 @@ function updateActivity(data) {
       }
   }
   $('pre code').each(function(i, block) {
-    hljs.highlightBlock(block);
+    hljs.highlightElement(block);
   });
 
   $('[data-toggle="popover"]').popover({
