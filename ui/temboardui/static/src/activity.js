@@ -1,13 +1,23 @@
 "use strict";
 
+import Vue from 'vue/dist/vue.esm'
 import datatables from 'datatables.net-dt'
 import dtbs4 from 'datatables.net-bs4'
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/default.css'
 
+import ErrorRow from './components/ErrorRow.vue'
+
 datatables(window, $)
 dtbs4(window, $)
+
+window.activityVue = new Vue({
+  components: {
+    'error': ErrorRow
+  },
+  el: "#activityVue"
+})
 
 var request = null;
 var intervalDuration = 2;
@@ -169,24 +179,14 @@ function load() {
     async: true,
     contentType: "application/json",
     success: function (data) {
-      $('#ErrorModal').modal('hide');
+      activityVue.$refs.error.clear()
       updateActivity(data);
     },
     error: function(xhr, status) {
       if (status == 'abort') {
         return;
       }
-      var code = xhr.status;
-      var error = 'Internal error.';
-      if (code > 0) {
-        error = escapeHtml(JSON.parse(xhr.responseText).error);
-      } else {
-        code = '';
-      }
-      // first hide to avoid duplication of the modal "backdrop"
-      $('#ErrorModal').modal('hide');
-      $('#modalError').html(html_error_modal(code, error));
-      $('#ErrorModal').modal('show');
+      activityVue.$refs.error.fromXHR(xhr)
     },
     complete: function(xhr, status) {
       $('#loadingIndicator').addClass('invisible');
@@ -245,27 +245,6 @@ function updateActivity(data) {
   $('#blocking-count').html(data['blocking'].rows.length || '&nbsp;')
     .toggleClass('badge-warning', data['blocking'].rows.length > 0)
     .toggleClass('badge-light', !data['blocking'].rows.length > 0);
-}
-
-function html_error_modal(code, error) {
-  var error_html = '';
-  error_html += '<div class="modal" id="ErrorModal" tabindex="-1" role="dialog" aria-labelledby="ErrorModalLabel" aria-hidden="true">';
-  error_html += '   <div class="modal-dialog">';
-  error_html += '     <div class="modal-content">';
-  error_html += '       <div class="modal-header">';
-  error_html += '         <h4 class="modal-title" id="ErrorModalLabel">Error '+code+'</h4>';
-  error_html += '         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
-  error_html += '       </div>';
-  error_html += '       <div class="modal-body">';
-  error_html += '         <div class="alert alert-danger" role="alert">'+error+'</div>';
-  error_html += '       </div>';
-  error_html += '       <div class="modal-footer" id="ErrorModalFooter">';
-  error_html += '         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>';
-  error_html += '       </div>';
-  error_html += '     </div>';
-  error_html += '   </div>';
-  error_html += '</div>';
-  return error_html;
 }
 
 function pause() {
