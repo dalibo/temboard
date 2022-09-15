@@ -20,6 +20,17 @@
   {% block head %}{# Put link and meta in head block to inject here #}{% end %}
 </head>
 <body>
+  <script type="text/javascript">
+    var currentRole = {
+      {% try %}
+      name: "{{ role.role_name }}",
+      isAdmin: {{ 'true' if role.is_admin else 'false' }}
+      {% except %}
+      name: null,
+      isAdmin: false
+      {% end %}
+    }
+  </script>
   <div id="modalError" /></div>
   <div>
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>

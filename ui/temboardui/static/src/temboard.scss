@@ -116,19 +116,6 @@ html {
 }
 
 /**
- * Home page instance list
- */
-.instance-list {
-  .sparkline-container {
-    height: 30px;
-
-    .dygraph-axis-label {
-      color: $text-muted;
-    }
-  }
-}
-
-/**
  * This rule can be useful for plugins for which we don't need the full width.
  * Should be used just like Bootstrap's `.container` (ie. with rows and col-xx
  * inside).

@@ -45,13 +45,13 @@
     data-placement="bottom"
     data-container="body"
     data-html="true">
-    <span class="badge badge-critical" v-if="!available">UNAVAILABLE</span>
-    <span class="badge badge-critical" v-if="checks.CRITICAL">
+    <span class="badge badge-critical mr-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
+    <span class="badge badge-critical mr-1" v-if="checks.CRITICAL">
       CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-warning" v-if="checks.WARNING">
+    <span class="badge badge-warning mr-1" v-if="checks.WARNING">
       WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-undef" v-if="checks.UNDEF">
+    <span class="badge badge-undef mr-1" v-if="checks.UNDEF">
       UNDEF: {{ checks.UNDEF }}</span>
-      <span class="badge badge-ok" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
+      <span class="badge badge-ok mr-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
     </div>
 </template>
