@@ -1,57 +1,27 @@
 <script type="text/javascript">
   // A Bootstrap grid row showing a global page error.
 
+  import Error from './Error.vue'
+
   export default {
-    data: function() { return {
-      // my* data avoid conflicts with props.
-      myCode: null,
-      myError: null
-    }},
-    props: ['error', 'code'],
-    watch: {
-      code: function(val) {
-        this.myCode = val
-      },
-      error: function(val) {
-        this.myError = val
-      },
+    components: {
+      'error': Error
     },
     methods: {
       clear: function() {
-        this.myError = null
-        this.myCode = null
+        this.$refs.error.clear()
       },
       fromXHR: function(xhr) {
-        if (0 === xhr.status) {
-          this.myError = "Failed to contact server."
-        }
-        else if (xhr.getResponseHeader('content-type').includes('application/json')) {
-          this.myCode = xhr.status
-          this.myError = JSON.parse(xhr.responseText).error
-        }
-        else if ('text/plain' == xhr.getResponseHeader('content-type')) {
-          this.myCode = xhr.status
-          this.myError = `<pre>${xhr.responseText}</pre>`
-        }
-        else {
-          this.myCode = xhr.status
-          this.myError = 'Unknown error. Please contact temBoard administrator.'
-        }
+        this.$refs.error.fromXHR(xhr)
       }
     }
   }
 </script>
 
 <template>
-  <div class="row justify-content-center" v-if="myError" v-cloak>
-    <div id="divError" class="col col-xl-6 col-10">
-      <div class="alert alert-danger" role="alert">
-        <h4 class="modal-title" id="ErrorLabel">
-          Error {{myCode}}
-          <button type="button" class="close" aria-label="Close" @click.prevent="clear"><span aria-hidden="true">&times;</span></button>
-        </h4>
-        <p>{{myError}}</p>
-      </div>
+  <div class="row justify-content-center" v-cloak>
+    <div class="col col-xl-6 col-10">
+      <error ref="error"></error>
     </div>
   </div>
 </template>
