@@ -1,16 +1,17 @@
 <script type="text/javascript">
 /* A confirm dialog */
 
+  import Error from './Error.vue'
 import InstanceDetails from './InstanceDetails.vue'
 import ModalDialog from './ModalDialog.vue'
 
 export default {
   components: {
+    'error': Error,
     'instance-details': InstanceDetails,
     'modal-dialog': ModalDialog
   },
   data() { return {
-    error: null,
     waiting: false,
 
     agent_address: null,
@@ -29,7 +30,7 @@ export default {
         url: ['/json/settings/instance', this.agent_address, this.agent_port].join('/')
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr);
+        this.$refs.error.fromXHR(xhr)
       }).done(data => {
         this.pg_host = data.hostname;
         this.pg_port = data.pg_port;
@@ -39,20 +40,6 @@ export default {
         var mem_gb = data.memory_size / 1024 / 1024 / 1024;
         this.mem_gb = mem_gb.toFixed(2);
       });
-    },
-    format_xhr_error(xhr) {
-      if (0 === xhr.status) {
-        return "Failed to contact server."
-      }
-      else if (xhr.getResponseHeader('content-type').includes('application/json')) {
-          return JSON.parse(xhr.responseText).error;
-      }
-      else if ('text/plain' == xhr.getResponseHeader('content-type')) {
-        return `<pre>${xhr.responseText}</pre>`;
-      }
-      else {
-        return 'Unknown error. Please contact temBoard administrator.'
-      }
     },
     open(agent_address, agent_port) {
       this.agent_address = agent_address;
@@ -74,7 +61,7 @@ export default {
         data: JSON.stringify({agent_address: this.agent_address, agent_port: this.agent_port})
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr);
+        this.$refs.error.fromXHR(xhr)
       }).done(() => {
         window.location.reload();
       });
@@ -86,7 +73,7 @@ export default {
 <template>
   <modal-dialog id="modalDeleteInstance" title="Delete Instance">
     <div class="modal-body">
-      <div class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
+      <error ref="error" :showTitle="false"></error>
       <p class="text-center"><strong>Please confirm the deletion of the following instance:</strong></p>
       <instance-details
         v-bind:pg_host="pg_host"

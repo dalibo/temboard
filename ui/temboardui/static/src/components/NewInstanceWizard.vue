@@ -8,16 +8,17 @@
 
 import InstanceForm from './InstanceForm.vue'
 import ModalDialog from './ModalDialog.vue'
+  import Error from './Error.vue'
 
 export default {
   components: {
+    'error': Error,
     'instance-form': InstanceForm,
     'modal-dialog': ModalDialog
   },
   data() { return {
     // Wizard state.
     wizard_step: "discover",     //  discover, register
-    error: null,
     waiting: false,
 
     // Form model.
@@ -71,22 +72,7 @@ export default {
     }
   },
   methods: {
-    format_xhr_error(xhr) {
-      if (0 === xhr.status) {
-        return "Failed to contact server."
-      }
-      else if (xhr.getResponseHeader('content-type').includes('application/json')) {
-          return JSON.parse(xhr.responseText).error;
-        }
-        else if ('text/plain' == xhr.getResponseHeader('content-type')) {
-          return `<pre>${xhr.responseText}</pre>`;
-        }
-        else {
-          return 'Unknown error. Please contact temBoard administrator.'
-        }
-    },
     discover() {
-      this.error = null;
       this.waiting = true;
       $.ajax({
         url: ['/json/discover/instance', this.agent_address, this.agent_port].join('/'),
@@ -95,16 +81,16 @@ export default {
         dataType: "json"
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr);
+        this.$refs.error.fromXHR(xhr)
       }).done((data, _, xhr) => {
         if ('invalid' == data.signature_status) {
-          this.error = `
+          this.$refs.error.setHTML(`
             <p><strong>Signature missmatch !</strong></p>
 
             <p>Agent is not configured for this UI. You must accept
             <strong>this</strong> UI signing key in agent configuration. See
             installation documentation.</p>
-          `;
+          `)
           this.waiting = false;
           return;
         }
@@ -124,7 +110,7 @@ export default {
           url: '/json/settings/all/group/instance',
         }).fail(xhr => {
           this.waiting = false;
-          this.error = this.format_xhr_error(xhr);
+          this.$refs.error.fromXHR(xhr)
         }).done((data) => {
           this.server_groups = data.groups;
           this.server_plugins = data.loaded_plugins;
@@ -149,14 +135,16 @@ export default {
         }),
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr)
+        this.$refs.error.fromXHR(xhr)
       }).done(() => {
         window.location.reload();
       });
     },
     reset() {
       Object.assign(this.$data, this.$options.data());
-      this.$refs.form.teardown_multiselects();
+      if (this.$refs.form) {
+        this.$refs.form.teardown_multiselects();
+      }
     }
   }
 }
@@ -166,16 +154,17 @@ export default {
   <modal-dialog id="modalNewInstance" title="Register New Instance" v-on:closed="reset">
 
     <!-- Discover -->
-    <div v-if="wizard_step == 'discover'">
+    <div v-if="wizard_step == 'discover'" v-cloak>
       <form v-on:submit.prevent="discover">
-        <div class="modal-body" v-if="wizard_step == 'discover'">
+        <div class="modal-body">
 
           <p class="alert alert-info">temBoard requires an agent to manage
           a PostgreSQL instance. Follow documentation to setup the agent
           next to your PostgreSQL instance. Set here agent address and
           port, not PostgreSQL.</p>
 
-          <div class="alert alert-danger" v-if="error"><div v-html="error"></div></div>
+          <error ref="error" :showTitle="false"></error>
+
           <div class="row">
             <div class="form-group col-sm-6">
               <label for="inputAgentAddress" class="control-label">Agent address</label>
@@ -200,11 +189,10 @@ export default {
     </div>
 
     <!-- Register -->
-    <div v-if="wizard_step == 'register'">
+    <div v-if="wizard_step == 'register'" v-cloak>
       <instance-form
         ref="form"
         submit_text="Register"
-        v-bind:error="error"
         v-bind:pg_host="pg_host"
         v-bind:pg_port="pg_port"
         v-bind:pg_data="pg_data"
@@ -219,7 +207,9 @@ export default {
         v-bind:agent_key="agent_key"
         v-bind:waiting="waiting"
         v-on:submit="register"
-        />
+        >
+        <error ref="error" :showTitle="false"></error>
+      </instance-form>
     </div>
 
   </modal-dialog>

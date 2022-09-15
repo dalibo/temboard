@@ -7,16 +7,17 @@
   * agent.
   */
 
+  import Error from './Error.vue'
 import ModalDialog from './ModalDialog.vue'
 import InstanceForm from './InstanceForm.vue'
 
 export default {
   components: {
+    'error': Error,
     'instance-form': InstanceForm,
     'modal-dialog': ModalDialog
   },
   data() { return {
-    error: null,
     waiting: false,
 
     agent_address: null,
@@ -69,20 +70,6 @@ export default {
     }
   },
   methods: {
-    format_xhr_error(xhr) {
-      if (0 === xhr.status) {
-        return "Failed to contact server."
-      }
-      else if (xhr.getResponseHeader('content-type').includes('application/json')) {
-          return JSON.parse(xhr.responseText).error;
-      }
-      else if ('text/plain' == xhr.getResponseHeader('content-type')) {
-        return `<pre>${xhr.responseText}</pre>`;
-      }
-      else {
-        return 'Unknown error. Please contact temBoard administrator.'
-      }
-    },
     discover_agent() {
       return $.ajax({
         url: ['/json/discover/instance', this.agent_address, this.agent_port].join('/'),
@@ -91,16 +78,16 @@ export default {
         dataType: "json"
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr);
+        this.$refs.error.fromXHR(xhr)
       }).done((data, _, xhr) => {
         if ('invalid' == data.signature_status) {
-          this.error = `
+          this.$refs.error.setHTML(`
             <p><strong>Signature missmatch !</strong></p>
 
             <p>Agent is not configured for this UI. You must accept
             <strong>this</strong> UI signing key in agent configuration. See
             installation documentation.</p>
-          `;
+          `)
           this.waiting = false;
           return;
         }
@@ -120,7 +107,7 @@ export default {
     },
     open(agent_address, agent_port) {
       // Reset dialog state.
-      this.error = null;
+      this.$refs.error.clear()
       this.waiting = true;
 
       // Configure for target instance data.
@@ -142,7 +129,7 @@ export default {
         url: ['/json/settings/instance', this.agent_address, this.agent_port].join('/')
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr);
+        this.$refs.error.fromXHR(xhr)
       }).done(data => {
         this.notify = data.notify;
         this.comment = data.comment;
@@ -173,7 +160,7 @@ export default {
         }),
       }).fail(xhr => {
         this.waiting = false;
-        this.error = this.format_xhr_error(xhr)
+        this.$refs.error.fromXHR(xhr)
       }).done(() => {
         window.location.reload();
       });
@@ -191,7 +178,6 @@ export default {
     <instance-form
       ref="form"
       submit_text="Update"
-      v-bind:error="error"
       v-bind:pg_host="pg_host"
       v-bind:pg_port="pg_port"
       v-bind:pg_data="pg_data"
@@ -206,6 +192,8 @@ export default {
       v-bind:agent_key="agent_key"
       v-bind:waiting="waiting"
       v-on:submit="update"
-      />
+      >
+      <error ref="error"></error>
+    </instance-form>
   </modal-dialog>
 </template>

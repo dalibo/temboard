@@ -13,7 +13,6 @@ export default {
   props: [
     'submit_text',  // Submit button label.
     'waiting',  // Whether parent is interacting with server.
-    'error',
 
     // Discover readonly data.
     'pg_host',
@@ -85,7 +84,6 @@ export default {
 <template>
   <form v-on:submit.prevent="submit">
     <div class="modal-body p-3">
-      <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
 
       <div class="row">
         <instance-details
@@ -97,6 +95,14 @@ export default {
           v-bind:mem_gb="mem_gb"
           />
       </div>
+
+      <div class="row" v-if="$slots.default">
+        <div class="col">
+          <!-- Error slot -->
+          <slot></slot>
+        </div>
+      </div>
+
       <div class="row" v-if="signature_status === 'unchecked'">
         <!-- Ask for legacy agent key. -->
         <div class="form-group col-sm-12">
