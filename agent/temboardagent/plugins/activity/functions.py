@@ -3,6 +3,24 @@ import time
 from resource import getpagesize
 
 
+cols = [
+    'pid',
+    'database',
+    'client',
+    'duration',
+    'wait',
+    'user',
+    'application',
+    'state',
+    'query',
+    'iow',
+    'read_s',
+    'write_s',
+    'cpu',
+    'memory'
+]
+
+
 def get_activity(conn):
     """
     Returns PostgreSQL backend list based on pg_stat_activity view.
@@ -23,7 +41,8 @@ SELECT
     DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
-  pg_stat_activity.query AS query
+  pg_stat_activity.query AS query,
+  pg_stat_activity.application_name as application
 FROM
   pg_stat_activity
 WHERE
@@ -42,7 +61,8 @@ SELECT
   CASE WHEN pg_stat_activity.waiting = 't' THEN 'Y' ELSE 'N' END AS wait,
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
-  pg_stat_activity.query AS query
+  pg_stat_activity.query AS query,
+  pg_stat_activity.application_name as application
 FROM
   pg_stat_activity
 WHERE
@@ -62,7 +82,8 @@ SELECT
     DISTINCT FROM 'Lock' THEN 'N' ELSE 'Y' END AS wait,
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
-  pg_stat_activity.query AS query
+  pg_stat_activity.query AS query,
+  pg_stat_activity.application_name as application
 FROM
   pg_stat_activity
 WHERE
@@ -82,6 +103,7 @@ ORDER BY
                 'duration': row['duration'],
                 'wait': row['wait'],
                 'user': row['user'],
+                'application': row['application'],
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
@@ -102,6 +124,7 @@ ORDER BY
                 'duration': row['duration'],
                 'wait': row['wait'],
                 'user': row['user'],
+                'application': row['application'],
                 'state': row['state'],
                 'query': row['query'],
                 'iow': row['process'].iow,
@@ -112,7 +135,10 @@ ORDER BY
             })
         except Exception:
             pass
-    return {'rows': final_backend_list}
+    return {
+        'rows': final_backend_list,
+        'cols': cols
+    }
 
 
 def get_activity_waiting(conn):
@@ -133,7 +159,8 @@ SELECT
   round(EXTRACT(epoch FROM (NOW()
     - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
   pg_stat_activity.state AS state,
-  pg_stat_activity.query AS query
+  pg_stat_activity.query AS query,
+  pg_stat_activity.application_name as application
 FROM
   pg_catalog.pg_locks JOIN pg_catalog.pg_stat_activity
     ON (pg_catalog.pg_locks.pid = pg_catalog.pg_stat_activity.pid)
@@ -150,6 +177,7 @@ ORDER BY
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
+                'application': row['application'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -171,6 +199,7 @@ ORDER BY
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
+                'application': row['application'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -185,7 +214,10 @@ ORDER BY
             })
         except Exception:
             pass
-    return {'rows': final_backend_list}
+    return {
+        'rows': final_backend_list,
+        'cols': cols
+    }
 
 
 def get_activity_blocking(conn):
@@ -205,7 +237,8 @@ SELECT
   locktype AS type,
   duration,
   state,
-  query
+  query,
+  application
 FROM (
   SELECT
     blocking.pid,
@@ -217,7 +250,8 @@ FROM (
     round(EXTRACT(epoch FROM (NOW()
       - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
     blocking.relation::regclass AS relation,
-    pg_stat_activity.state AS state
+    pg_stat_activity.state AS state,
+    pg_stat_activity.application_name as application
   FROM
     pg_locks AS blocking
     JOIN (SELECT transactionid FROM pg_locks WHERE NOT granted) AS blocked
@@ -237,7 +271,8 @@ FROM (
     round(EXTRACT(epoch FROM (NOW()
       - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
     blocking.relation::regclass AS relation,
-    pg_stat_activity.state AS state
+    pg_stat_activity.state AS state,
+    pg_stat_activity.application_name as application
   FROM
     pg_locks AS blocking
     JOIN (SELECT database, relation, mode FROM pg_locks WHERE NOT granted
@@ -249,8 +284,8 @@ FROM (
   WHERE
     blocking.granted
 ) AS sq
-GROUP BY pid, query, mode, locktype, duration, datname, usename, relation,
-  state
+GROUP BY pid, query, mode, locktype, duration, datname, usename, application,
+  relation, state
 ORDER BY duration DESC
     """
     backend_list = []
@@ -260,6 +295,7 @@ ORDER BY duration DESC
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
+                'application': row['application'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -281,6 +317,7 @@ ORDER BY duration DESC
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
+                'application': row['application'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -295,4 +332,7 @@ ORDER BY duration DESC
             })
         except Exception:
             pass
-    return {'rows': final_backend_list}
+    return {
+        'rows': final_backend_list,
+        'cols': cols
+    }
