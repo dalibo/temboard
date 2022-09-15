@@ -94,7 +94,7 @@
       this.$nextTick(function() {
         this.fetchInstances()
         window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval)
-        $("[data-toggle]=tooltip", this.$el).tooltip()
+        $("[data-toggle=tooltip]", this.$el).tooltip()
       })
     },
     methods: {
