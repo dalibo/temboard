@@ -28,6 +28,7 @@ def create_app(temboard):
     app.temboard = temboard
     app.add_hook('before_request', before_request_log)
     app.add_hook('after_request', after_request_log)
+    # First declared, first executed.
     app.install(JSONPlugin())
     app.install(ErrorPlugin())
     app.install(SignaturePlugin())
@@ -115,10 +116,10 @@ class ErrorPlugin(object):
             except HTTPError as e:
                 if isinstance(e.body, str):
                     e.body = {'error': e.body}
-                logger.debug("Error: %s.", e.body)
-                raise
-            except HTTPResponse:
-                raise
+                # Use HTTPResponse to customize body.
+                response = HTTPResponse(e.body, e.status)
+            except HTTPResponse as e:
+                response = e
             except Exception:
                 logger.exception("Unhandled error:")
                 response = HTTPResponse({'error': 'Internal error.'}, 500)
