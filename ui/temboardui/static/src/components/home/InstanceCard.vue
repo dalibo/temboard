@@ -1,6 +1,7 @@
 <script type="text/javascript">
   import _ from 'lodash'
   import Dygraph from 'dygraphs'
+  import 'dygraphs/dist/dygraph.css'
   import moment from 'moment'
 
   import Checks from './Checks.vue'
