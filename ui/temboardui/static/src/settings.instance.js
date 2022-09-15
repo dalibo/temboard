@@ -1,7 +1,7 @@
 import Vue from 'vue/dist/vue.esm'
-import DeleteInstanceDialog from './components/DeleteInstanceDialog.vue'
-import NewInstanceWizard from './components/NewInstanceWizard.vue'
-import UpdateInstanceDialog from './components/UpdateInstanceDialog.vue'
+import DeleteInstanceDialog from './components/settings/DeleteInstanceDialog.vue'
+import NewInstanceWizard from './components/settings/NewInstanceWizard.vue'
+import UpdateInstanceDialog from './components/settings/UpdateInstanceDialog.vue'
 
 import datatables from 'datatables.net-dt'
 import dtbuttons from 'datatables.net-buttons-dt'
