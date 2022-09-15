@@ -1,6 +1,7 @@
 <script type="text/javascript">
   import _ from 'lodash'
 
+  import ErrorRow from '../ErrorRow.vue'
   import InstanceCard from './InstanceCard.vue'
 
   var refreshInterval = 60 * 1000;
@@ -40,6 +41,7 @@
 
   export default {
     components: {
+      'error': ErrorRow,
       'instance-card': InstanceCard
     },
     data: function() {
@@ -89,9 +91,9 @@
       }
     },
     mounted: function() {
-      this.fetchInstances()
-      window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval)
-      this.$nextTick(() => {
+      this.$nextTick(function() {
+        this.fetchInstances()
+        window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval)
         $("[data-toggle]=tooltip", this.$el).tooltip()
       })
     },
@@ -111,12 +113,15 @@
       },
       getStatusValue: getStatusValue,
       fetchInstances: function() {
+        this.$refs.error.clear()
         $.ajax('/home/instances').success(data => {
           this.instances = data
           this.loading = false
           this.$nextTick(function() {
             $('[data-toggle="popover"]').popover();
           })
+        }).fail(xhr => {
+          this.$refs.error.fromXHR(xhr)
         })
       }
     },
@@ -179,6 +184,9 @@
         <p class="text-secondary text-right mt-2 mb-0 mr-4">Refreshed every 1m.</p>
       </div>
     </div>
+
+    <error ref="error"></error>
+
     <div class="row instance-list">
       <div
         v-for="instance, instanceIndex in filteredInstances"
