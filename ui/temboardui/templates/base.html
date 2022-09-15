@@ -39,9 +39,10 @@
           <img id="logo" src="/images/temboard-150x32-w.png" />
         </a>
         {% if 'instance' in globals() %}
+        {% set d = instance.discover or {} %}
         <div class="navbar-text text-white mr-auto">
           <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
-          {% if 'configfile' not in instance.discover['temboard'] %}
+          {% if 'configfile' not in d.get('temboard', {}) %}
           <span class="badge badge-secondary" style="font-size: 110%;">
           {% try %}
           {{ '@' + agent_username }}

@@ -107,8 +107,9 @@ class TemboardAgentApplication(BaseApplication):
                 self.config.temboard.hostname
             )
 
-        if config.postgresql.instance:
-            setproctitle.prefix += config.postgresql.instance + ': '
+        cluster_name = self.discover.data['postgres'].get('cluster_name')
+        if cluster_name:
+            setproctitle.prefix += cluster_name + ': '
 
         QUERIES.load()
 
@@ -176,7 +177,6 @@ class TemboardAgentApplication(BaseApplication):
         add_specs(
             OptionSpec(
                 s, 'host', default='/var/run/postgresql', validator=v.dir_),
-            OptionSpec(s, 'instance', default='main'),
             OptionSpec(s, 'port', default=5432, validator=v.port),
             OptionSpec(s, 'user', default='postgres'),
             OptionSpec(s, 'password'),

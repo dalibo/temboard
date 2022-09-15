@@ -61,6 +61,8 @@ script to proceed.
   register-instance`.
 - Heavily reduction of connection opened by dashboard.
 - New About instance page with detailed informations.
+- Drop agent configuration `postgresql:cluster_name` in favor of Postgres
+  setting `cluster_name`.
 
 
 ## [7.11] - Unreleased

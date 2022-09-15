@@ -151,8 +151,6 @@ generate_configuration() {
 	${PGPASSWORD:+# }password = ${PGPASSWORD-}
 	# Default database for connection.
 	dbname = ${PGDATABASE}
-	# Cluster name.
-	instance = ${instance}
 
 	#
 	# temBoard Agent logging configuration

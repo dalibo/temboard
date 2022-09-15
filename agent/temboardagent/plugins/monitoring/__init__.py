@@ -10,7 +10,6 @@ from ...toolkit.configuration import OptionSpec
 from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
 from ... import __version__ as __VERSION__
-from ...postgres import Postgres
 
 from . import db
 from .inventory import host_info, instance_info
@@ -116,16 +115,6 @@ def monitoring_collector_worker(app):
     """
     logger.info("Starting monitoring collector.")
     config = app.config
-    conninfo = dict(
-        host=config.postgresql.host,
-        port=config.postgresql.port,
-        user=config.postgresql.user,
-        database=config.postgresql.dbname,
-        password=config.postgresql.password,
-        dbnames=config.monitoring.dbnames,
-        instance=config.postgresql.instance,
-    )
-
     logger.info("Gathering host information.")
     discover = app.discover.ensure_latest()
     system_info = host_info(discover)
@@ -135,8 +124,8 @@ def monitoring_collector_worker(app):
         config.temboard.home
     )
 
-    with Postgres(**conninfo).dbpool() as pool:
-        instance = instance_info(pool, conninfo, discover)
+    with app.postgres.dbpool() as pool:
+        instance = instance_info(pool, app.config.monitoring.dbnames, discover)
         data = run_probes(probes, pool, [instance])
 
     # Prepare and send output
