@@ -91,6 +91,9 @@
     mounted: function() {
       this.fetchInstances()
       window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval)
+      this.$nextTick(() => {
+        $("[data-toggle]=tooltip", this.$el).tooltip()
+      })
     },
     methods: {
       toggleGroupFilter: function(group, e) {
@@ -154,7 +157,7 @@
               </a>
             </div>
           </div>
-          <div class="dropdown">
+          <div class="dropdown" v-if="groups.length > 1">
             <button type="button" class="btn btn-secondary dropdown-toggle"
               data-toggle="dropdown">
               Groups ({{ groupsFilter.length || 'all' }})
@@ -168,6 +171,9 @@
             </div>
           </div>
         </form>
+      </div>
+      <div class="col text-center" v-if="groups.length === 1">
+        <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-toggle="tooltip">{{ groups[0] }}</span>
       </div>
       <div class="col">
         <p class="text-secondary text-right mt-2 mb-0 mr-4">Refreshed every 1m.</p>
