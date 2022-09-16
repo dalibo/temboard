@@ -2,70 +2,104 @@
 
 ## [8.0] - Unreleased
 
-This release requires a database schema migration. Use temboard-migratedb
-script to proceed.
+This release requires specific upgrade instructions. See [server_upgrade.md]
+and [agent_upgrade.md] for details.
 
-- Unified authentification: agents now accepts UI as source of identity.
-- New database migration engine.
-- Removed parameter of `temboard --debug` CLI option.
-- Improved error logging.
-- Move `temboard-migratedb` as `temboard migratedb` subcommand.
-- Move `temboard-agent-register` as `temboard-agent register` subcommand.
-- New command `temboard generate-key` for generating signing key.
-- New command `temboard-agent fetch-key` to accept UI signing key.
-- New subcommands `temboard tasks flush` and `temboard-agent tasks flush`.
-- New subcommands `temboard query-agent`, `temboard routes`, `temboard
-  tasks run`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
-  `temboard-agent tasks run` and `temboard-agent web` for debugging.
-- New command `temboard-agent discover` to introspect temBoard agent, system
-  and PostgreSQL.
-- New agent option: `[temboard] ui_url`, pointing to UI URL.
-- New agent auto_configure.sh required parameter: UI URL.
-- temBoard agent auto_configure.sh does not configure file logging anymore.
-  temBoard UI & agent package does not ship logrotate file anymore. temBoard UI
-  & agent can still log to file if you configure it to do so.
-- temBoard agent packages does not ship mono-installation service file. Use
-  `auto_configure.sh` and `temboard-agent@.service` instead.
-- temBoard agent RPM packages does not ship `temboard-agent.conf` anymore. Use
-  `auto_configure.sh` instead.
-- temBoard agent deb does not ship `temboard-agent.init` anymore. Use systemd
-  instead.
-- Post install script of temBoard UI RPM does not execute auto_configure.sh.
+temBoard UI is compatible with temBoard agent 7.11 to ease migration. Upgrade
+UI first and then upgrade agents one at a time. temBoard agent 8 is **NOT**
+compatible with temBoard UI 7.11.
+
+
+**Breaking changes**
+
+- temBoard UI dropped support for Internet Explorer 8. You may have issues with
+  browsers older than 5 years.
+- Removed `temboard --debug` CLI option.
+- temBoard UI dropped push-metrics handler from pre-6.0 push metric collect.
+- temBoard UI RPM does not execute `auto_configure.sh` upon installation.
 - temBoard UI RPM does not create `temboard` UNIX user. Use auto_configure.sh
   instead.
-- Fast collect of monitoring and statements metrics upon agent registration.
-- temBoard UI dropped push-metrics handler from pre-6.0 push metric collect.
-- Removed scripts `temboard-agent-adduser` and `temboard-agent-password`.
-- Agent dropped users file and configuration.
-- Python 2.7 and 3.5 support is deprecated and will be removed in next major
-  release.
-- Debian Stretch support is deprecated and will be removed in next major
-  release.
-- temBoard agent now depends on cryptography and bottle.
-- temBoard agent pools connections to PostgreSQL used by web API, reducing
-  connections stress on PostgreSQL.
+- Commands `temboard-migratedb`, `temboard-agent-register` are moved as
+  subcommands of `temboard` and `temboard-agent`.
+- Packages does not provide logrotate configuration anymore. temBoard can still
+  log to file.
+- Agent auto_configure.sh now requires a parameter: the UI url.
+- temBoard agent does not provide legacy single-installation systemd unit file
+  `temboard-agent.service` in favor of `temboard-agent@.service`.
+- temBoard agent debian package does not provide legacy `temboard-agent.init`
+  SysV script. Use sytemd instead.
+- temBoard agent auto_configure.sh now generates a single configuration file
+  instead of `temboard-agent.conf.d/auto.conf`.
+- temBoard agent auto_configure.sh does not configure file logging anymore.
+- Dropped temBoard agent HTTP endpoint `/monitoring/probe/*`, some
+  `/dashboard/` probes and more. Use `temboard routes` and `temboard-agent
+  routes` to inspect availables HTTP urls.
+- Dropped commands `temboard-agent-adduser` and `temboard-agent-password`.
+
+
+**Deprecation**
+
+- Running temBoard UI with Python 2.7 and Python 3.5 is deprecated. All RPM and
+  deb packages ships with Python 3.
+- Debian stretch support is deprecated (EOL June 2022).
+
+
+**New Features**
+
+- Unified authentication. Signing in UI open full DBA access to agents, without
+  double login.
+- Register instance without querying UI API using `temboard register-instance`.
 - Download instance inventory as CSV.
-- Format PostgreSQL start time in dashboard.
-- Avoid modal for dashboard refresh error.
-- temBoard agent auto_configure.sh conditionnaly enable statements plugins.
-- temBoard agent auto_configure.sh now generates a single configuration file.
-- Dropped temBoard agent HTTP endpoint /monitoring/probe/*.
-- temBoard server waits for locks in monitoring collect. Abort long collect
+- Automatically refresh introspection data from agent.
+- New *About temBoard* page with detailed installation's informations.
+- New *About instance* page with PostgreSQL, system and agent informations.
+- OpenMetrics endpoint. Accessible using temBoard UI as authenticating proxy to
+  agent.
+
+
+**UI changes**
+
+- Sign agent requests with an asymetric cryptographic key. New agent does not
+  require double authentification anymore.
+- New command `temboard generate-key` for generating signing key.
+- New database migration engine. Dropped dependency on Alembic, Mako, etc.
+- Move `temboard-migratedb` as `temboard migratedb` subcommand.
+- New command `temboard tasks flush` to flush old tasks when upgrading.
+- Fast collect of monitoring and statements metrics upon agent registration.
+- Format PostgreSQL start time in dashboard as relative date.
+- temBoard UI waits for locks in monitoring collect. Abort long collect
   task. New parameter `[monitoring] collect_max_duration`.
-- temBoard UI now has API key authorization, use for very few specific
-  endpoint.
+- temBoard UI now has API key authorization, use for /metrics proxy to agent.
 - New temBoard UI parameter `[auth] allowed_ip` to restrict API Key
   authorization. By default, only 127/8 is allowed.
+- Improved refresh error handling in dashboard, activity and home page. Error
+  are now inlined instead of modal.
+- Improved error logging. Log format is now Postgres-like.
 - temBoard UI now accept to serve plain HTTP. For development purpose.
-- Dropped support of Internet Explorer 8 and below.
-- Out-of-band instance registration with new command `temboard
-  register-instance`.
+- New commands `temboard query-agent`, `temboard routes`, `temboard tasks
+  run`, `temboard tasks schedule` and `temboard web` for debugging.
+
+
+**Agent changes**
+
+- Unified authentification: agent now uses UI as source of identity.
+- Dropped `users` file and relative configuration.
+- New command `temboard-agent fetch-key` to accept UI signing key.
+- New option: `[temboard] ui_url`, pointing to UI URL.
+- auto_configure.sh conditionnaly enable statements plugins.
+- Move `temboard-agent-register` as `temboard-agent register` subcommand.
+- New command `temboard-agent discover` to introspect temBoard agent, system
+  and PostgreSQL.
+- Refresh discover data on startup and Postgres connection recovery.
+- temBoard agent pools connections to PostgreSQL used by web API, reducing
+  connections stress on PostgreSQL.
 - Heavily reduction of connection opened by dashboard.
-- New About instance page with detailed informations.
 - Drop agent configuration `postgresql:cluster_name` in favor of Postgres
   setting `cluster_name`.
-- Improved refresh error handling in dashboard, activity and home page. Error
-  are now transient instead of modal.
+- temBoard agent now depends on cryptography and bottle.
+- Improved error logging. Log format is now Postgres-like.
+- New subcommands `temboard-agent routes`, `temboard-agent tasks run` and
+  `temboard-agent web` for debugging.
 
 
 ## [7.11] - Unreleased
