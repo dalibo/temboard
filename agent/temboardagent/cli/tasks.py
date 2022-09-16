@@ -11,7 +11,7 @@ import logging.config
 
 from .app import app
 from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import RunTaskMixin
+from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
 from ..toolkit.errors import UserError
 
 
@@ -24,6 +24,11 @@ class Tasks(SubCommand):
 
     def main(self, args):
         raise UserError("Missing sub-command. See --help for details.")
+
+
+@Tasks.command
+class Flush(FlushTasksMixin, SubCommand):
+    """ Flush all tasks. """
 
 
 @Tasks.command

@@ -24,8 +24,8 @@ def test_register_command_help(agent_auto_configure, sudo_pguser):
     sudo_pguser("temboard-agent", "register", "--help")
 
 
-def test_runtask(agent_auto_configure, sudo_pguser):
-    out = sudo_pguser('temboard-agent', "runtask", "?")
+def test_tasks_run(agent_auto_configure, sudo_pguser):
+    out = sudo_pguser('temboard-agent', 'tasks', 'run', '?')
     assert 'vacuum_worker' in out
 
 
