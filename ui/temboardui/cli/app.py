@@ -127,6 +127,7 @@ class TemboardApplication(BaseApplication):
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
+        self.scheduler.add(workers)
         self.services.append(self.scheduler)
 
         self.webservice = TornadoService(

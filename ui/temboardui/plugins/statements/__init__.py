@@ -65,6 +65,7 @@ class StatementsPlugin(object):
             }),
         ])
         self.app.worker_pool.add(workers)
+        self.app.scheduler.add(workers)
 
 
 METAS_QUERY = text("""
