@@ -53,6 +53,10 @@ def create_instance_helper(request, data):
         db_session, instance, plugins, app.config.temboard.plugins,
     )
 
+    if not app.scheduler.can_schedule():
+        logger.warning("Can't schedule fast collect.")
+        return instance
+
     if 'monitoring' in plugins:
         logger.info("Schedule monitoring collect for agent now.")
         monitoring_collector.defer(
