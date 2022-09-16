@@ -4,9 +4,7 @@
 {% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
 
 {% block head %}
-{%   if vitejs.PROD %}
-<link href="{{ vitejs.url_for('activity.css') }}" rel="stylesheet" />
-{%   end %}
+{% for link in vitejs.css_links_for('activity.js') %}{% raw link %}{% end %}
 {% end %}
 
 {% block content %}

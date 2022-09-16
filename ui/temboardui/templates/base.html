@@ -8,15 +8,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
 
   <title>{% block title %} {% end %}</title>
-
   {% if vitejs.PROD %}
-  <!-- temBoard UI CSS module -->
-  <link href="{{ vitejs.url_for('temboard.css') }}" rel="stylesheet" type="text/css"/>
+  {% for link in vitejs.css_links_for('temboard.js') %}{% raw link %}{% end %}
   {% else %}
   <!-- Require starting vitejs dev server with npm run dev. -->
   <script type="module" src="{{ vitejs.url_for('@vite/client') }}"></script>
   {% end %}
-
   {% block head %}{# Put link and meta in head block to inject here #}{% end %}
 </head>
 <body>

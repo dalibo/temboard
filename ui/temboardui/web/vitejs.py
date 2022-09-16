@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+from textwrap import dedent
 
 
 logger = logging.getLogger(__name__)
@@ -43,3 +44,22 @@ class ViteJSExtension(object):
             return self.app.static_url_path + '/' + self.manifest[name]['file']
         else:
             return self.app.config['VITEJS'] + '/static/' + name
+
+    def css_links_for(self, name):
+        if not self.manifest:
+            return
+
+        for css in self.manifest[name].get('css', []):
+            yield self.tag_for(css)
+
+        for import_ in self.manifest[name].get('imports', []):
+            for link in self.css_links_for(import_):
+                yield link
+
+    def tag_for(self, file_):
+        if file_.endswith('css'):
+            return dedent("""\
+            <link rel="stylesheet" href="%s/%s" />
+            """) % (self.app.static_url_path, file_)
+        else:
+            raise Exception("Unhandled assets file type for %s" % file_)
