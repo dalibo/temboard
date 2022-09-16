@@ -302,6 +302,16 @@ class TaskListSQLite3Engine(object):
             logger.exception(str(e))
             raise StorageEngineError("Could not get task list.")
 
+    def flush(self):
+        try:
+            with self.conn:
+                c = self.conn.cursor()
+                c.execute("DELETE FROM tasks")
+                return c.rowcount
+        except sqlite3.Error as e:
+            logger.exception(str(e))
+            raise StorageEngineError("Could not purge task list.")
+
     def purge(self, status, now):
         try:
             with self.conn:

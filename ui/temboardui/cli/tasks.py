@@ -5,16 +5,47 @@ except ImportError:
     from inspect import getargspec
 from textwrap import dedent
 
-from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import RunTaskMixin
-from ..model import check_schema
+
 from .app import app
+from ..model import check_schema
+from ..toolkit.app import SubCommand
+from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+from ..toolkit.errors import UserError
 
 
 logger = logging.getLogger(__name__)
 
 
 @app.command
+class Tasks(SubCommand):
+    """ Manage background tasks. """
+
+    def main(self, args):
+        raise UserError("Missing sub-command. See --help for details.")
+
+
+@Tasks.command
+class Flush(FlushTasksMixin, SubCommand):
+    """ Flush all tasks. """
+
+
+@Tasks.command
+class Run(RunTaskMixin, SubCommand):
+    """ Run a task foreground. """
+
+    def main(self, args):
+        workers = self.iter_workers()
+
+        if '?' == args.worker_name:
+            self.print_workers(workers)
+        else:
+            worker, worker_args = self.compute_worker_args(workers, args)
+            check_schema()
+            worker(*worker_args)
+        return 0
+
+
+@Tasks.command
 class Schedule(RunTaskMixin, SubCommand):
     """ Schedule a background task. """
 
@@ -48,6 +79,9 @@ class Schedule(RunTaskMixin, SubCommand):
         else:
             worker, worker_args = self.compute_worker_args(workers, args)
             check_schema()
+            if not self.app.scheduler.can_schedule():
+                raise UserError("temBoard is not running.")
+
             out = worker.defer(
                 self.app,
                 **build_kwargs_from_args(worker, worker_args)

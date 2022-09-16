@@ -51,8 +51,8 @@ def test_migratedb(ui_auto_configure):
     temboard('migratedb', 'check')
 
 
-def test_runtask(ui_auto_configure):
-    out = temboard("runtask", "?")
+def test_tasks_run(ui_auto_configure):
+    out = temboard.tasks.run("?")
 
     assert '\ncollector\n' in out
 
