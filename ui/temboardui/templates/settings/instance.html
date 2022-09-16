@@ -3,9 +3,7 @@
 {% block title %}temBoard - settings{% end %}
 
 {% block head %}
-{% if vitejs.PROD %}
-<link href="{{ vitejs.url_for('settings.instance.css') }}" rel="stylesheet" />
-{% end %}
+{% for link in vitejs.css_links_for('settings.instance.js') %}{% raw link %}{% end %}
 <!-- Multiselect -->
 <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
 {% end %}

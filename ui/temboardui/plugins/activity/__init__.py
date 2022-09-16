@@ -1,7 +1,5 @@
 from os import path
 
-import tornado.web
-
 from ...web.tornado import (
     Blueprint,
     TemplateRenderer,
@@ -20,11 +18,6 @@ class ActivityPlugin(object):
 
     def load(self):
         self.app.tornado_app.add_rules(blueprint.rules)
-        self.app.tornado_app.add_rules([
-            (r"/js/activity/(.*)", tornado.web.StaticFileHandler, {
-                'path': plugin_path + "/static/js"
-            }),
-        ])
 
     def unload(self):
         raise NotImplementedError()

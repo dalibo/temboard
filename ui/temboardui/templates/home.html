@@ -3,9 +3,7 @@
 {% block title %}temBoard - Home{% end %}
 
 {% block head %}
-{% if vitejs.PROD %}
-<link href="{{ vitejs.url_for('home.css') }}" rel="stylesheet" />
-{% end %}
+{% for link in vitejs.css_links_for('home.js') %}{% raw link %}{% end %}
 {% end %}
 
 {% block content %}

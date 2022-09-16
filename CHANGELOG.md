@@ -63,6 +63,8 @@ script to proceed.
 - New About instance page with detailed informations.
 - Drop agent configuration `postgresql:cluster_name` in favor of Postgres
   setting `cluster_name`.
+- Improved refresh error handling in dashboard, activity and home page. Error
+  are now transient instead of modal.
 
 
 ## [7.11] - Unreleased

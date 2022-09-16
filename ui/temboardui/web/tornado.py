@@ -359,13 +359,17 @@ class InstanceHelper(object):
                 body=body,
             )
             response.raise_for_status()
+        except OSError as e:
+            raise HTTPError(500, (
+                "Failed to contact agent %s:%s: %s. Is it running?"
+                % (self.instance.agent_address, self.instance.agent_port, e)))
         except ConnectionError as e:
             raise HTTPError(500, str(e))
         except TemboardAgentClient.Error as e:
             raise HTTPError(e.response.status, e.message)
         except Exception as e:
             logger.error("Proxied request failed: %s", e)
-            raise HTTPError(500)
+            raise HTTPError(500, "Unhandled error")
         else:
             return response.json()
 

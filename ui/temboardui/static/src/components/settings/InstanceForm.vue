@@ -1,91 +1,89 @@
 <script type="text/javascript">
-import InstanceDetails from './InstanceDetails.vue'
+  import InstanceDetails from './InstanceDetails.vue'
 
-export default {
-  /*
-   * An HTML form editing instance properties.
-   *
-   * This form has only presentation logic, no I/O.
-   */
-  components: {
-    'instance-details': InstanceDetails
-  },
-  props: [
-    'submit_text',  // Submit button label.
-    'waiting',  // Whether parent is interacting with server.
-    'error',
-
-    // Discover readonly data.
-    'pg_host',
-    'pg_port',
-    'pg_data',
-    'pg_version_summary',
-    'cpu',
-    'mem_gb',
-    'signature_status',
-
-    // Agent configuration
-    'agent_key',
-    'comment',
-    'notify',
-    'groups',
-    'plugins'
-  ],
-  updated() {
-    $('[data-toggle="tooltip"]', this.$el).tooltip();
-    if ($("#selectGroups").data('multiselect')) {
-      $("#selectGroups").multiselect(this.waiting ? 'disable' : 'enable');
-      $("#selectPlugins").multiselect(this.waiting ? 'disable' : 'enable');
-    }
-  },
-  methods: {
-    setup_multiselects() {
-      // jQuery multiselect plugin must be called once Vue template is rendered.
-      var options = {
-        templates: {
-          button: `
-          <button type="button"
-                  class="multiselect dropdown-toggle border-secondary"
-                  data-toggle="dropdown">
-            <span class="multiselect-selected-text"></span> <b class="caret"></b>
-          </button>
-          `,
-          li: `
-          <li class="dropdown-item">
-            <label class="w-100"></label>
-          </li>
-          `
-        },
-        numberDisplayed: 1
-      };
-      $("#selectGroups").multiselect(options);
-      $("#selectPlugins").multiselect(options);
+  export default {
+    /*
+    * An HTML form editing instance properties.
+    *
+    * This form has only presentation logic, no I/O.
+    */
+    components: {
+      'instance-details': InstanceDetails
     },
-    teardown_multiselects() {
-      $("#selectGroups").multiselect('destroy');
-      $("#selectPlugins").multiselect('destroy');
+    props: [
+      'submit_text',  // Submit button label.
+      'waiting',  // Whether parent is interacting with server.
+
+      // Discover readonly data.
+      'pg_host',
+      'pg_port',
+      'pg_data',
+      'pg_version_summary',
+      'cpu',
+      'mem_gb',
+      'signature_status',
+
+      // Agent configuration
+      'agent_key',
+      'comment',
+      'notify',
+      'groups',
+      'plugins'
+    ],
+    updated() {
+      $('[data-toggle="tooltip"]', this.$el).tooltip();
+      if ($("#selectGroups").data('multiselect')) {
+        $("#selectGroups").multiselect(this.waiting ? 'disable' : 'enable');
+        $("#selectPlugins").multiselect(this.waiting ? 'disable' : 'enable');
+      }
     },
-    submit() {
-      // data generates payload for both POST /json/settings/instances and POST
-      // /json/settings/instances/X.X.X.X/PPPP.
-      var data = {
-        // Define parameters.
-        agent_key: this.agent_key,
-        groups: $("#selectGroups").val(),
-        plugins: $("#selectPlugins").val(),
-        notify: this.notify,
-        comment: this.comment
-      };
-      this.$emit('submit', data);
+    methods: {
+      setup_multiselects() {
+        // jQuery multiselect plugin must be called once Vue template is rendered.
+        var options = {
+          templates: {
+            button: `
+            <button type="button"
+                    class="multiselect dropdown-toggle border-secondary"
+                    data-toggle="dropdown">
+              <span class="multiselect-selected-text"></span> <b class="caret"></b>
+            </button>
+            `,
+            li: `
+            <li class="dropdown-item">
+              <label class="w-100"></label>
+            </li>
+            `
+          },
+          numberDisplayed: 1
+        };
+        $("#selectGroups").multiselect(options);
+        $("#selectPlugins").multiselect(options);
+      },
+      teardown_multiselects() {
+        $("#selectGroups").multiselect('destroy');
+        $("#selectPlugins").multiselect('destroy');
+      },
+      submit() {
+        // data generates payload for both POST /json/settings/instances and POST
+        // /json/settings/instances/X.X.X.X/PPPP.
+        var data = {
+          // Define parameters.
+          agent_key: this.agent_key,
+          groups: $("#selectGroups").val(),
+          plugins: $("#selectPlugins").val(),
+          notify: this.notify,
+          comment: this.comment
+        };
+        this.$emit('submit', data);
+      }
     }
   }
-}
 </script>
 
 <template>
   <form v-on:submit.prevent="submit">
     <div class="modal-body p-3">
-      <div class="row alert alert-danger" v-if="error"><div v-html="error"></div></div>
 
       <div class="row">
         <instance-details
@@ -97,6 +95,14 @@ export default {
           v-bind:mem_gb="mem_gb"
           />
       </div>
+
+      <div class="row" v-if="$slots.default">
+        <div class="col">
+          <!-- Error slot -->
+          <slot></slot>
+        </div>
+      </div>
+
       <div class="row" v-if="signature_status === 'unchecked'">
         <!-- Ask for legacy agent key. -->
         <div class="form-group col-sm-12">

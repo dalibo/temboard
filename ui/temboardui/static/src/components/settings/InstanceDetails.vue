@@ -1,16 +1,15 @@
 <script type="text/javascript">
-export default {
-  /* An instance identity card */
-  props: [
-    'pg_host',
-    'pg_port',
-    'pg_data',
-    'pg_version_summary',
-    'cpu',
-    'mem_gb',
-  ]
-}
-
+  export default {
+    /* An instance identity card */
+    props: [
+      'pg_host',
+      'pg_port',
+      'pg_data',
+      'pg_version_summary',
+      'cpu',
+      'mem_gb',
+    ]
+  }
 </script>
 
 <template>
