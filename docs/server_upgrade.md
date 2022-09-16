@@ -27,8 +27,17 @@ Update temboard package with your [preferred installation method].
 Then apply `repository` database upgrade with the following command:
 
 ``` shell
-$ sudo -u temboard temboard-migratedb upgrade
+$ sudo -u temboard migratedb upgrade
 ```
+
+### Flush tasks
+
+Flush background tasks with the following command:
+
+``` shell
+$ sudo -u temboard tasks flush
+```
+
 
 ### Generate Signing Key
 

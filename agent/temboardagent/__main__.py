@@ -18,9 +18,9 @@ def main():
     __import__(__package__ + '.cli.fetch_key')
     __import__(__package__ + '.cli.register')
     __import__(__package__ + '.cli.routes')
-    __import__(__package__ + '.cli.runtask')
     __import__(__package__ + '.cli.runscript')
     __import__(__package__ + '.cli.serve')
+    __import__(__package__ + '.cli.tasks')
     __import__(__package__ + '.cli.web')
     return app()
 

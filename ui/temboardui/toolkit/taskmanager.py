@@ -836,6 +836,30 @@ class WorkerPoolService(Service):
         super(WorkerPoolService, self).sigterm_handler(*a)
 
 
+class FlushTasksMixin(object):
+    # Shared code for flush-task command
+
+    def define_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action='store_true', default=False,
+            help="Force overwriting existing files.",
+        )
+
+    def main(self, args):
+        if self.app.scheduler.can_schedule():
+            if args.force:
+                logger.warning(
+                    "Scheduler socket exists. Is temBoard scheduler running?")
+            else:
+                logger.error("Scheduler socket exists. Use --force to bypass.")
+                raise UserError("You must stop temBoard before flushing tasks")
+
+        count = self.app.scheduler.task_list_engine.flush()
+        logger.info("Flushed %s tasks.", count)
+        return 0
+
+
 class RunTaskMixin(object):
     # Shared code to execute a single task, for runtask commands.
     #

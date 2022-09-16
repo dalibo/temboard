@@ -1,6 +1,6 @@
 # Upgrade (RHEL/CentOS) {#temboard-agent-upgrade}
 
-## 7.11 to 8.0
+## From 7.11 to 8.0
 
 temBoard Agent 8.0 requires temBoard UI 8.0.
 
@@ -25,6 +25,12 @@ ui_url = https://temboard.acme.tld:8888
 ```
 
 Fetch signing key using `temboard-agent fetch-key`.
+
+Flush background tasks with the following command:
+
+``` bash
+temboard-agent tasks flush
+```
 
 Start the agent:
 

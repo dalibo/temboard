@@ -105,6 +105,7 @@ class MonitoringPlugin(object):
              {'path': plugin_path + "/static/js"}),
         ])
         self.app.worker_pool.add(workers)
+        self.app.scheduler.add(workers)
 
 
 @workers.schedule(id='aggregate_data', redo_interval=30 * 60)

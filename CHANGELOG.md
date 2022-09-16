@@ -13,9 +13,10 @@ script to proceed.
 - Move `temboard-agent-register` as `temboard-agent register` subcommand.
 - New command `temboard generate-key` for generating signing key.
 - New command `temboard-agent fetch-key` to accept UI signing key.
+- New subcommands `temboard tasks flush` and `temboard-agent tasks flush`.
 - New subcommands `temboard query-agent`, `temboard routes`, `temboard
-  runtask`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
-  `temboard-agent runtask` and `temboard-agent web` for debugging.
+  tasks run`, `temboard schedule`, `temboard web`, `temboard-agent routes`,
+  `temboard-agent tasks run` and `temboard-agent web` for debugging.
 - New command `temboard-agent discover` to introspect temBoard agent, system
   and PostgreSQL.
 - New agent option: `[temboard] ui_url`, pointing to UI URL.
