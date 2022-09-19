@@ -16,7 +16,7 @@ volumes:
 
 services:
   ui:
-    image: dalibo/temboard:latest
+    image: dalibo/temboard:7
     environment:
       PGHOST: repository
       PGUSER: temboard
@@ -44,7 +44,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent13:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
     - data13:/var/lib/postgresql/data
     - run13:/var/run/postgresql/
@@ -70,7 +70,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent12:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data12:/var/lib/postgresql/data
       - run12:/var/run/postgresql/
@@ -96,7 +96,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent10:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data10:/var/lib/postgresql/data
       - run10:/var/run/postgresql/
@@ -122,7 +122,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent96:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:7
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql/
