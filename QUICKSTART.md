@@ -4,7 +4,7 @@ We provide `docker-compose.yml` file to quickly try temBoard with a few
 PostgreSQL clusters. Requires docker-compose 1.10+ and docker engine 1.10+.
 
 ``` console
-wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker-compose.yml
+wget https://raw.githubusercontent.com/dalibo/temboard/v7/docker/docker-compose.yml
 docker-compose up
 ```
 
