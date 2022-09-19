@@ -40,5 +40,7 @@ chmod 0600 ~/.pgpass
 
 DEV=1 bash /usr/local/share/temboard/create_repository.sh
 
+sudo -EHu temboard temboard generate-key
+
 set -x
 exec sudo -EHu temboard "${@-temboard}"
