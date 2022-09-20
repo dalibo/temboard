@@ -4,7 +4,7 @@ import sys
 from time import sleep
 
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import __version__ as sa_version, create_engine
 
 from .migrator import Migrator
 from ..toolkit.queries import QueryFiler
@@ -45,9 +45,15 @@ def configure(dsn, **kwargs):
 
 
 def check_connectivity(engine):
-    for i in range(10):
+    for i in range(1, 10):
         try:
-            engine.connect().close()
+            # Use raw psycopg2 conn to workaround old SA bug in initialization.
+            conn = engine.pool._invoke_creator()
+            with conn.cursor() as cur:
+                cur.execute("SELECT version();")
+                pgversion, = cur.fetchone()
+                logger.debug("Using PostgreSQL %s.", pgversion)
+            conn.close()
             break
         except Exception as e:
             if i == 9:
@@ -55,6 +61,11 @@ def check_connectivity(engine):
             logger.warning("Failed to connect to database: %s", e)
             logger.info("Retrying in %ss.", i)
             sleep(i)
+
+    server, pgversion, _ = pgversion.split(' ', 2)
+    if '.' not in pgversion and sa_version < '1.2':
+        msg = "SQLAlchemy 1.1 does not support version %s."
+        raise Exception(msg % pgversion)
 
 
 def worker_engine(dbconf):

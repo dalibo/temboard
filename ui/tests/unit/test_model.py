@@ -1,33 +1,46 @@
 import pytest
 
 
-def test_check_connectivity_ok(mocker):
-    from temboardui.model import check_connectivity
+@pytest.fixture
+def engine(mocker):
     engine = mocker.Mock(name='engine')
+    conn = mocker.MagicMock(name='conn')
+    engine.pool._invoke_creator.return_value = conn
+    engine.conn = conn
+    cur = conn.cursor.return_value.__enter__.return_value
+    cur.fetchone.return_value = ('PostgreSQL 15 Debian',)
+    engine.cur = cur
+    return engine
+
+
+def test_check_connectivity_ok(engine, mocker):
+    sleep = mocker.patch('temboardui.model.sleep')
+    sleep.side_effect = Exception("Must not sleep")
+    from temboardui.model import check_connectivity
 
     check_connectivity(engine)
 
-    assert engine.connect().close.called is True
+    assert engine.conn.close.called is True
 
 
-def test_check_connectivity_sleep(mocker):
+def test_check_connectivity_sleep(engine, mocker):
     sleep = mocker.patch('temboardui.model.sleep')
     from temboardui.model import check_connectivity
 
-    engine = mocker.Mock(name='engine')
-    engine.connect.side_effect = [Exception(), mocker.Mock(name='connection')]
+    engine.pool._invoke_creator.side_effect = [
+        Exception(), engine.conn,
+    ]
 
     check_connectivity(engine)
 
     assert sleep.called is True
 
 
-def test_check_connectivity_fail(mocker):
+def test_check_connectivity_fail(engine, mocker):
     sleep = mocker.patch('temboardui.model.sleep')
     from temboardui.model import check_connectivity
 
-    engine = mocker.Mock(name='engine')
-    engine.connect.side_effect = Exception()
+    engine.pool._invoke_creator.side_effect = Exception()
 
     with pytest.raises(Exception):
         check_connectivity(engine)
