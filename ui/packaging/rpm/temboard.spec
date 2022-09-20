@@ -29,7 +29,11 @@ Requires:      python36-setuptools
 Requires:      python36-sqlalchemy
 Requires:      python36-tornado
 %else
+%if 0%{?rhel} < 9
 BuildRequires: python36
+%else
+BuildRequires: python3
+%endif
 BuildRequires: python3-setuptools
 BuildRequires: python3-rpm-macros
 Requires:      python3-cryptography
