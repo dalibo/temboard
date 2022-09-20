@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  rhel7: &rhel
-    image: dalibo/buildpack-pkg:centos7
+  rhel9: &rhel
+    image: dalibo/buildpack-pkg:rockylinux9
     working_dir: /workspace
     environment:
     - VERSION
@@ -14,3 +14,7 @@ services:
   rhel8:
     <<: *rhel
     image: dalibo/buildpack-pkg:rockylinux8
+
+  rhel7:
+    <<: *rhel
+    image: dalibo/buildpack-pkg:centos7

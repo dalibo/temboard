@@ -19,7 +19,7 @@ workflows:
         name: stage1-pkg-<< matrix.codename >>
         matrix:
           parameters:
-            codename: [rockylinux8, centos7]
+            codename: [rockylinux9, rockylinux8, centos7]
         requires: [stage0-dist]
     - deb:
         name: stage1-pkg-<< matrix.codename >>
@@ -211,7 +211,7 @@ jobs:
       codename:
         description: "RHEL-clone distribution"
         type: enum
-        enum: [rockylinux8, centos7]
+        enum: [rockylinux9, rockylinux8, centos7]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -226,9 +226,7 @@ jobs:
         path: /workspace/agent/dist/
     - run:
         name: Build UI RPM snapshot
-        command: |
-          yum-builddep -y ui/packaging/rpm/temboard.spec
-          ui/packaging/rpm/build.sh
+        command: ui/packaging/rpm/build.sh
     - store_artifacts:
         path: /workspace/ui/dist/
     - persist_to_workspace:
