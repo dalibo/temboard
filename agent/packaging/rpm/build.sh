@@ -4,6 +4,7 @@ top_srcdir=$(readlink -m "$0/../../..")
 cd "$top_srcdir"
 test -f setup.py
 
+retry yum-builddep -y packaging/rpm/temboard-agent.spec
 
 #       S O U R C E S
 
@@ -29,8 +30,6 @@ chown -R testuser "$topdir"
 
 
 #       B U I L D
-
-yum-builddep -y packaging/rpm/temboard-agent.spec
 
 sudo -u testuser rpmbuild \
     --clean \
