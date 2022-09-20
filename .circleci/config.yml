@@ -34,8 +34,14 @@ workflows:
         - stage1-pkg-<< matrix.dist >>
         matrix:
           parameters:
+            dist: [rockylinux9]
+            pgversion: ["14"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
             dist: [rockylinux8]
-            pgversion: ["14", "11"]
+            pgversion: ["11"]
     - func:
         <<: *func
         matrix:
@@ -274,7 +280,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bullseye, buster, stretch, centos7, rockylinux8]
+        enum: [bullseye, buster, stretch, centos7, rockylinux8, rockylinux9]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
