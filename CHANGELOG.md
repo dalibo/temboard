@@ -2,6 +2,11 @@
 
 ## [8.0] - Unreleased
 
+- RHEL9 packages.
+
+
+## [8.0b1] - 2022-09-16
+
 This release requires specific upgrade instructions. See [server_upgrade.md]
 and [agent_upgrade.md] for details.
 

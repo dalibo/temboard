@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  rhel8: &rhel
-    image: dalibo/buildpack-pkg:rockylinux8
+  rhel9: &rhel
+    image: dalibo/buildpack-pkg:rockylinux9
     working_dir: /workspace
     environment:
     - VERSION
@@ -10,6 +10,10 @@ services:
     volumes:
     - ../../:/workspace
     command: /workspace/packaging/rpm/build.sh
+
+  rhel8:
+    <<: *rhel
+    image: dalibo/buildpack-pkg:rockylinux8
 
   rhel7:
     <<: *rhel
