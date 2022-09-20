@@ -133,7 +133,7 @@ release:  #: Tag and push a new git release.
 	git diff --quiet
 	$(MAKE) static
 	$(MAKE) dist
-	git tag --annotate --message "Version $(VERSION)" $(VERSION)
+	git tag --annotate --message "Version $(VERSION)" v$(VERSION)
 	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
 dist:  #: Build sources and wheels.
