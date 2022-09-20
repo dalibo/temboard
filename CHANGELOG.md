@@ -3,6 +3,7 @@
 ## [8.0] - Unreleased
 
 - RHEL9 packages.
+- PostgreSQL 15 support.
 
 
 ## [8.0b1] - 2022-09-16
