@@ -49,7 +49,10 @@ class PostgreSQLVersions(dict):
                 assert '(PostgreSQL)' == out[1]
                 version = out[2]
                 if not version.startswith('9.'):
-                    version, _ = version.split('.')
+                    if '.' in version:
+                        version, _ = version.split('.')
+                    elif 'beta' in version:
+                        version, _ = version.split('beta')
                 else:
                     version = version[:3]
 
