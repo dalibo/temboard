@@ -22,6 +22,7 @@ class PostgreSQLVersions(dict):
 
     # List of agent supported PostgreSQL versions.
     SUPPORTED_VERSIONS = [
+        '15',
         '14',
         '13',
         '12',
