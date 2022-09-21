@@ -84,7 +84,7 @@ jobs:
         paths: [ui/temboardui/static/]
 
   dist:
-    docker: [{image: python:3.6}]
+    docker: [{image: dalibo/buildpack-python:bullseye}]
     working_directory: *working_directory
     steps:
     - checkout
@@ -94,6 +94,10 @@ jobs:
         name: Build Agent & UI
         command: |
           make dist
+    - run:
+        name: Check artifacts
+        command: |
+          twine check --strict agent/dist/* ui/dist/*
     - store_artifacts:
         path: /workspace/agent/dist/
     - store_artifacts:
