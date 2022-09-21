@@ -1,0 +1,38 @@
+name: Dist
+description: Build statics and Python eggs
+
+runs:
+  using: 'composite'
+  steps:
+  - uses: actions/setup-node@v3
+    with:
+      node-version: "16"
+  - name: Install Browser packages
+    run: |
+      cd ui;
+      npm install-clean
+    shell: bash
+  - name: Build browser assets
+    run: make static
+    shell: bash
+
+  - uses: actions/setup-python@v3
+    with:
+      python-version: "3.9"
+  - name: Install Python tooling
+    run: pip3 install twine wheel
+    shell: bash
+  - name: Build Agent & UI
+    run: make dist
+    shell: bash
+  - name: Check artifacts
+    run: twine check --strict agent/dist/* ui/dist/*
+    shell: bash
+
+  - name: Upload Python Eggs
+    uses: actions/upload-artifact@v3
+    with:
+      name: dist
+      path: |
+        agent/dist/
+        ui/dist/

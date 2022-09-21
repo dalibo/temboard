@@ -1,0 +1,13 @@
+name: Build
+
+on: [push, pull_request, workflow_call]
+
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: ./.github/actions/dist/
+      id: dist

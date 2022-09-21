@@ -6,6 +6,7 @@
 # Buildtime files
 build/
 dist/
+!.github/actions/dist
 # ViteJS assets
 ui/temboardui/static/*.css
 ui/temboardui/static/css/

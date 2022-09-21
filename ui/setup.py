@@ -97,6 +97,7 @@ SETUP_KWARGS = dict(
 if __name__ == '__main__':
     setup(
         long_description=open(setup_path + '/README.rst').read(),
+        long_description_content_type='text/x-rst',
         packages=find_packages(),
         **SETUP_KWARGS
     )
