@@ -1,5 +1,7 @@
 from sh import temboard_agent
 
+from fixtures.utils import retry_fast
+
 
 def test_version():
     out = temboard_agent('--version')
@@ -52,12 +54,14 @@ def test_proctitle(agent):
     children = children.split()
 
     for childpid in children:
-        with open(f"/proc/{childpid}/cmdline") as fo:
-            cmdline = fo.read()
+        for attempt in retry_fast():
+            with attempt:
+                with open(f"/proc/{childpid}/cmdline") as fo:
+                    cmdline = fo.read()
 
-        assert cmdline.startswith('temboard-agent: temboard-tests: ')
+                assert cmdline.startswith('temboard-agent: temboard-tests: ')
 
-        assert ': worker' in cmdline or ': scheduler' in cmdline
+                assert ': worker' in cmdline or ': scheduler' in cmdline
 
 
 def test_discover(agent, agent_env, pg_version):
