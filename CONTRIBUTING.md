@@ -454,7 +454,8 @@ To release a new version:
 - Update `ui/temboardui/version.py` and `agent/temboardagent/version.py`
   without committing. The version must be the same.
 - Generate and push commit and tag with `make release`.
-- Push Python eggs to PyPI using `make release-pypi`.
+- Wait for CircleCI to push eggs on PyPI.
+  Then download eggs with `make download-eggs`.
 - Build and upload Debian and RPM package with `make release-packages`.
 
 

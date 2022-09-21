@@ -4,17 +4,34 @@ workflows:
   version: 2
   default:
     jobs:
-    - static: {name: stage0-static}
-    - doc: {name: stage0-doc}
-    - lint: {name: stage0-lint}
+    - static:
+        name: stage0-static
+        filters: &filter-tags
+          tags:
+            only: '/v.+/'
+    - doc:
+        name: stage0-doc
+    - lint:
+        name: stage0-lint
     - unit:
-       name: stage0-unit-py<< matrix.pyversion >>
-       matrix:
-         parameters:
-           pyversion: ["3.6", "3.5", "2.7"]
+        name: stage0-unit-py<< matrix.pyversion >>
+        matrix:
+          parameters:
+            pyversion: ["3.6", "3.5", "2.7"]
     - dist:
         name: stage0-dist
         requires: [stage0-static]
+        filters:
+          <<: *filter-tags
+    - upload-pypi:
+        name: stage0-upload-pypi
+        # Send secrets to this jobs from temboard CircleCI context.
+        context: temboard
+        requires: [stage0-dist]
+        filters:
+          <<: *filter-tags
+          branches:
+            ignore: '/.*/'
     - rpm:
         name: stage1-pkg-<< matrix.codename >>
         matrix:
@@ -60,24 +77,6 @@ workflows:
           parameters:
             dist: [buster]
             pgversion: ["10"]
-
-  release:
-    when:
-      matches:
-        pattern: '/^v.+/'
-        value: << pipeline.git.tag >>
-    jobs:
-    - static
-    - dist:
-        requires: [static]
-        filters: &filter_tag
-          tags:
-            only: '/v.+/'
-    - upload-pypi:
-        # Send secrets to this jobs from temboard CircleCI context.
-        context: temboard
-        requires: [dist]
-        <<: *filter_tag
 
 
 jobs:
@@ -138,18 +137,22 @@ jobs:
         at: *working_directory
     - run:
         name: Upload Agent to PyPI
-        command: twine upload agent/dist/*
+        command: |
+          set -eu
+          export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
+          twine upload agent/dist/*
         environment:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: "$AGENT_PYPI_TEST_TOKEN"
-          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
+          TWINE_NON_INTERACTIVE: 'true'
     - run:
         name: Upload UI to PyPI
-        command: twine upload ui/dist/*
+        command: |
+          set -eu
+          export TWINE_PASSWORD="$UI_PYPI_TOKEN"
+          twine upload ui/dist/*
         environment:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: "$UI_PYPI_TEST_TOKEN"
-          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
+          TWINE_NON_INTERACTIVE: 'true'
 
 
   doc:
