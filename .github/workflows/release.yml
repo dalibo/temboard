@@ -23,3 +23,10 @@ jobs:
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.UI_PYPI_TOKEN }}
+    - name: Create GitHub release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          agent/dist/*
+          ui/dist/*
+        token: ${{ secrets.GITHUB_TOKEN }}
