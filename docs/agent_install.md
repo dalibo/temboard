@@ -223,6 +223,12 @@ agent host and port and the path to the temBoard UI.:
 admin privileges.
 
 
+!!! Note
+
+    temBoard agent OOM score is configured to 15, so that OOM killer will likely kill temBoard agent before Postgres.
+    A good practice is to disable memory overcommit on PostgreSQL host by setting sysctl `vm.overcommit_memory = 2`.
+
+
 ## It's up!
 
 Congratulation! You can continue on the UI and see the agent appeared,
