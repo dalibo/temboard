@@ -70,10 +70,14 @@ workflows:
     - static
     - dist:
         requires: [static]
+        filters: &filter_tag
+          tags:
+            only: '/v.+/'
     - upload-pypi:
         # Send secrets to this jobs from temboard CircleCI context.
         context: temboard
         requires: [dist]
+        <<: *filter_tag
 
 
 jobs:
