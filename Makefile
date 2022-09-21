@@ -137,9 +137,9 @@ release:  #: Tag and push a new git release.
 	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
 dist:  #: Build sources and wheels.
-	cd agent/; python setup.py sdist bdist_wheel
+	cd agent/; python3 setup.py sdist bdist_wheel
 	test -f ui/temboardui/static/manifest.json
-	cd ui/; python setup.py sdist bdist_wheel --universal
+	cd ui/; python3 setup.py sdist bdist_wheel --universal
 
 static:  #: Build UI browser assets.
 	cd ui/; npm run build
