@@ -2,6 +2,8 @@ import csv
 
 from sh import temboard
 
+from fixtures.utils import retry_fast
+
 
 def test_start_ui(agent, ui, browser):
     # Start UI ASAP to save some times.
@@ -109,12 +111,14 @@ def test_proctitle(ui):
     children = children.split()
 
     for childpid in children:
-        with open(f"/proc/{childpid}/cmdline") as fo:
-            cmdline = fo.read()
+        for attempt in retry_fast():
+            with open(f"/proc/{childpid}/cmdline") as fo:
+                cmdline = fo.read()
 
-        assert cmdline.startswith('temboard: ')
+            with attempt:
+                assert cmdline.startswith('temboard: ')
 
-        assert ': worker' in cmdline or ': scheduler' in cmdline
+                assert ': worker' in cmdline or ': scheduler' in cmdline
 
 
 def test_autossl(ui):
