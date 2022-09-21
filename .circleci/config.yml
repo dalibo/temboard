@@ -61,6 +61,20 @@ workflows:
             dist: [buster]
             pgversion: ["10"]
 
+  release:
+    when:
+      matches:
+        pattern: '/^v.+/'
+        value: << pipeline.git.tag >>
+    jobs:
+    - static
+    - dist:
+        requires: [static]
+    - upload-pypi:
+        # Send secrets to this jobs from temboard CircleCI context.
+        context: temboard
+        requires: [dist]
+
 
 jobs:
   static:
@@ -109,6 +123,30 @@ jobs:
         - agent/dist/*.whl
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
+
+  upload-pypi:
+    # Configure secrets of this job in temboard CircleCI context.
+    docker: [{image: dalibo/buildpack-python:bullseye}]
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - attach_workspace:
+        at: *working_directory
+    - run:
+        name: Upload Agent to PyPI
+        command: twine upload agent/dist/*
+        environment:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: "$AGENT_PYPI_TEST_TOKEN"
+          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
+    - run:
+        name: Upload UI to PyPI
+        command: twine upload ui/dist/*
+        environment:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: "$UI_PYPI_TEST_TOKEN"
+          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
+
 
   doc:
     docker: [{image: "python:3.6"}]
