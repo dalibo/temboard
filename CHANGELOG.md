@@ -4,6 +4,7 @@
 
 - RHEL9 packages.
 - PostgreSQL 15 support.
+- Increase agent OOM score with systemd.
 
 
 ## [8.0b1] - 2022-09-16
