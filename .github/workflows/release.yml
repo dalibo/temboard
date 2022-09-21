@@ -16,12 +16,10 @@ jobs:
         twine upload agent/dist/*
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.AGENT_PYPI_TEST_TOKEN }}
-        TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+        TWINE_PASSWORD: ${{ secrets.AGENT_PYPI_TOKEN }}
     - name: Upload UI to PyPI
       run: |
         twine upload ui/dist/*
       env:
         TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.UI_PYPI_TEST_TOKEN }}
-        TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+        TWINE_PASSWORD: ${{ secrets.UI_PYPI_TOKEN }}
