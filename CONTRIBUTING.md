@@ -455,6 +455,7 @@ To release a new version:
   without committing. The version must be the same.
 - Generate and push commit and tag with `make release`.
 - Wait for CircleCI to push eggs on PyPI.
+  Then download eggs with `make download-eggs`.
 - Build and upload Debian and RPM package with `make release-packages`.
 
 
