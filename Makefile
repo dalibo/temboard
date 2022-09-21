@@ -151,16 +151,6 @@ clean-static:  #: Clean UI browser assets.
 		ui/temboardui/static/images/ \
 		ui/temboardui/static/js/
 
-PYDIST=\
-	agent/dist/temboard-agent-$(VERSION).tar.gz \
-	agent/dist/temboard_agent-$(VERSION)-py3-none-any.whl \
-	ui/dist/temboard-$(VERSION).tar.gz \
-	ui/dist/temboard-$(VERSION)-py2.py3-none-any.whl \
-
-# To test PyPI upload, set TWINE_REPOSITORY=testpypi environment variable.
-release-pypi:  #: Upload Python artefacts to PyPI.
-	twine upload $(PYDIST)
-
 release-packages:  #: Build and upload packages to Dalibo Labs repositories.
 	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
 	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
