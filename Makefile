@@ -152,7 +152,7 @@ clean-static:  #: Clean UI browser assets.
 		ui/temboardui/static/js/
 
 release-packages:  #: Build and upload packages to Dalibo Labs repositories.
-	$(MAKE) -c agent/packaging/rpm rhel8 rhel7
+	$(MAKE) -c agent/packaging/rpm release-rhel9 release-rhel8 release-rhel7
 	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
-	$(MAKE) -c ui/packaging/rpm rhel8 rhel7
+	$(MAKE) -c ui/packaging/rpm release-rhel9 release-rhel8 release-rhel7
 	$(MAKE) -c ui/packaging/deb release-bullseye release-buster release-stretch
