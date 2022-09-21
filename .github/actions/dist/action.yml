@@ -28,3 +28,11 @@ runs:
   - name: Check artifacts
     run: twine check --strict agent/dist/* ui/dist/*
     shell: bash
+
+  - name: Upload Python Eggs
+    uses: actions/upload-artifact@v3
+    with:
+      name: dist
+      path: |
+        agent/dist/
+        ui/dist/
