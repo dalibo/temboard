@@ -61,8 +61,8 @@ workflows:
             pgversion: ["11"]
     - func:
         <<: *func
-        filters:
-          <<: *enable-for-tags
+        # filters:
+        #   <<: *enable-for-tags
         matrix:
           parameters:
             dist: [centos7]
@@ -84,7 +84,9 @@ workflows:
         # Send secrets to this jobs from temboard CircleCI context.
         context: temboard
         # Limit release pipeline to RHEL 7.
-        requires: [stage2-func-pg13-centos7, stage1-pkg-bullseye]
+        requires:
+        # - stage2-func-pg13-centos7
+        - stage1-pkg-bullseye
         filters:
           <<: *enable-for-tags
           # Skip on branches!
