@@ -1,5 +1,10 @@
 # Changelog
 
+<!--
+CI release job extracts changes from this file and attaches them as GitHub release notes.
+Ensure you use consistent title format.
+-->
+
 ## [8.0] - Unreleased
 
 - RHEL9 packages.
