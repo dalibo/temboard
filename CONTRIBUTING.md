@@ -441,9 +441,7 @@ written targets.
 ## Releasing
 
 Releasing a new version of temBoard requires write access to master branch on
-[main repository](https://github.com/dalibo/temboard), [PyPI
-project](https://pypi.org/project/temboard), [Docker Hub
-repository](https://hub.docker.com/r/dalibo/temboard) and Dalibo Labs YUM and
+[main repository](https://github.com/dalibo/temboard) and Dalibo Labs YUM and
 APT repositories.
 
 To release a new version:
