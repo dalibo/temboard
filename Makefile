@@ -156,8 +156,33 @@ download-eggs:
 	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
 	pip3 download --no-deps --dest ui/dist/ temboard==$(VERSION)
 
-release-packages:  #: Build and upload packages to Dalibo Labs repositories.
-	$(MAKE) -c agent/packaging/rpm release-rhel9 release-rhel8 release-rhel7
-	$(MAKE) -c agent/packaging/deb release-bullseye release-buster release-stretch
-	$(MAKE) -c ui/packaging/rpm release-rhel9 release-rhel8 release-rhel7
-	$(MAKE) -c ui/packaging/deb release-bullseye release-buster release-stretch
+YUM_LABS?=../yum-labs
+CURL=curl --fail --create-dirs --location --silent --show-error
+GH_DOWNLOAD=https://github.com/dalibo/temboard/releases/download/v$(VERSION)
+AGENT_DIST_BASE=agent/dist/temboard-agent
+UI_DIST_BASE=agent/dist/temboard
+download-packages: download-rhel9 download-rhel8 download-rhel7 download-deb-bullseye download-deb-buster download-deb-stretch  #: Download packages from GitHub release
+download-rhel%:
+	$(CURL) --output-dir agent/dist/ --remote-name $(GH_DOWNLOAD)/temboard-agent-$(VERSION)-1.el$*.noarch.rpm
+	$(CURL) --output-dir ui/dist/ --remote-name $(GH_DOWNLOAD)/temboard-$(VERSION)-1.el$*.noarch.rpm
+
+DEBIANVERSION=$(shell pep440deb $(VERSION))
+# GitHub replace tilde by dot in asset filename.
+GH_DEBIANVERSION=$(subst ~,.,$(DEBIANVERSION))
+download-deb-%:
+	$(CURL) --output $(AGENT_DIST_BASE)_$(DEBIANVERSION)-0dlb1$*1_all.deb -LO $(GH_DOWNLOAD)/temboard-agent_$(GH_DEBIANVERSION)-0dlb1$*1_all.deb
+	$(CURL) --output $(UI_DIST_BASE)_$(DEBIANVERSION)-0dlb1$*1_amd64.deb -LO $(GH_DOWNLOAD)/temboard_$(GH_DEBIANVERSION)-0dlb1$*1_amd64.deb
+
+publish-packages: publish-rhel publish-deb-bullseye publish-deb-buster publish-deb-stretch  #: Upload packages to Dalibo Labs repositories.
+publish-rhel: copy-rhel9 copy-rhel8 copy-rhel7
+	@make -C $(YUM_LABS) push createrepos clean
+
+publish-deb-%:
+	agent/packaging/deb/mkchanges.sh agent/dist/temboard-agent_$(DEBIANVERSION)-0dlb1$*1_all.deb $*
+	ui/packaging/deb/mkchanges.sh ui/dist/temboard_$(DEBIANVERSION)-0dlb1$*1_amd64.deb $*
+	dput labs agent/dist/temboard-agent_$(DEBIANVERSION)-0dlb1$*1_all_$*.changes ui/dist/temboard_$(DEBIANVERSION)-0dlb1$*1_amd64_$*.changes
+
+copy-rhel%:
+	rm -rvf $(YUM_LABS)/rpms/RHEL$*-x86_64/*.rpm
+	mkdir -p $(YUM_LABS)/rpms/RHEL$*-x86_64/
+	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/

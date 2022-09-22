@@ -448,15 +448,17 @@ APT repositories.
 
 To release a new version:
 
-- Checkout release branch (like v7).
+- Checkout release branch like master or v8.
 - Choose the next version according to [PEP
   440](https://www.python.org/dev/peps/pep-0440/#version-scheme).
 - Update `ui/temboardui/version.py` and `agent/temboardagent/version.py`
   without committing. The version must be the same.
 - Generate and push commit and tag with `make release`.
-- Wait for CircleCI to push eggs on PyPI.
-  Then download eggs with `make download-eggs`.
-- Build and upload Debian and RPM package with `make release-packages`.
+- Wait for CircleCI pipeline to publish [GitHub releases].
+  Then download packages with `make download-packages`.
+- Publish Debian and RPM packages with `make publish-packages`.
+
+[GitHub releases]: https://github.com/dalibo/temboard/releases
 
 
 ## Throw Development Environment
