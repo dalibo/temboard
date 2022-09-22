@@ -151,7 +151,7 @@ clean-static:  #: Clean UI browser assets.
 
 download-eggs:
 	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
-	pip3 download --no-deps --dest dist/ temboard==$(VERSION)
+	pip3 download --no-deps --dest ui/dist/ temboard==$(VERSION)
 
 release-packages:  #: Build and upload packages to Dalibo Labs repositories.
 	$(MAKE) -c agent/packaging/rpm release-rhel9 release-rhel8 release-rhel7
