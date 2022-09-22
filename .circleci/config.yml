@@ -140,49 +140,6 @@ jobs:
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
 
-  release:
-    # Configure secrets of this job in temboard CircleCI context.
-    docker: [{image: dalibo/buildpack-python:bullseye}]
-    working_directory: *working_directory
-    steps:
-    - checkout
-    - attach_workspace:
-        at: *working_directory
-    - run:
-        name: Create GitHub release
-        command: |
-          if [[ "$CIRCLE_TAG" =~ [a-z] ]] ; then
-            args=(--prerelease)
-          else
-            args=()
-          fi
-
-          gh release create \
-            $CIRCLE_TAG \
-            agent/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
-            ui/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
-            -F <(sed -En "/^#+ \[${CIRCLE_TAG#v}\]/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
-            "${args[@]}"
-    - run:
-        name: Upload Agent to PyPI
-        command: |
-          set -eu
-          export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
-          twine upload agent/dist/*
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
-    - run:
-        name: Upload UI to PyPI
-        command: |
-          set -eu
-          export TWINE_PASSWORD="$UI_PYPI_TOKEN"
-          twine upload ui/dist/*
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
-
-
   doc:
     docker: [{image: "python:3.6"}]
     working_directory: *working_directory
@@ -409,3 +366,45 @@ jobs:
     - store_artifacts:
         path: /workspace/tests/screenshots/
     - *pip-cache-save
+
+  release:
+    # Configure secrets of this job in temboard CircleCI context.
+    docker: [{image: dalibo/buildpack-python:bullseye}]
+    working_directory: *working_directory
+    steps:
+    - checkout
+    - attach_workspace:
+        at: *working_directory
+    - run:
+        name: Create GitHub release
+        command: |
+          if [[ "$CIRCLE_TAG" =~ [a-z] ]] ; then
+            args=(--prerelease)
+          else
+            args=()
+          fi
+
+          gh release create \
+            $CIRCLE_TAG \
+            agent/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
+            ui/dist/*.{tar.gz,whl,_amd64.deb,noarch.rpm} \
+            -F <(sed -En "/^#+ \[${CIRCLE_TAG#v}\]/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
+            "${args[@]}"
+    - run:
+        name: Upload Agent to PyPI
+        command: |
+          set -eu
+          export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
+          twine upload agent/dist/*
+        environment:
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 'true'
+    - run:
+        name: Upload UI to PyPI
+        command: |
+          set -eu
+          export TWINE_PASSWORD="$UI_PYPI_TOKEN"
+          twine upload ui/dist/*
+        environment:
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 'true'
