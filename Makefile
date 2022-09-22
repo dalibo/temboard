@@ -112,7 +112,7 @@ tests:  #: Execute all tests.
 	pytest -x ui/tests/unit/
 	pytest -x tests/
 
-testclean:  #: Clean tests runtime files
+clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
 prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
