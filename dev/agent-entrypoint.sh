@@ -14,4 +14,4 @@ if ! [ -f /etc/temboard-agent/signing-public.pem ] ; then
 	cp -v /usr/local/src/temboard/dev/signing-public.pem /etc/temboard-agent/
 fi
 
-exec /usr/local/src/temboard/agent/docker/entrypoint.sh "$@"
+exec /usr/local/src/temboard/agent/packaging/docker/entrypoint.sh "$@"
