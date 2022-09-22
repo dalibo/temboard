@@ -402,7 +402,7 @@ jobs:
         command: |
           set -eu
           export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
-          twine upload agent/dist/*
+          twine upload agent/dist/*.{tar.gz,whl}
         environment:
           TWINE_USERNAME: __token__
           TWINE_NON_INTERACTIVE: 'true'
@@ -411,7 +411,7 @@ jobs:
         command: |
           set -eu
           export TWINE_PASSWORD="$UI_PYPI_TOKEN"
-          twine upload ui/dist/*
+          twine upload ui/dist/*.{tar.gz,whl}
         environment:
           TWINE_USERNAME: __token__
           TWINE_NON_INTERACTIVE: 'true'
