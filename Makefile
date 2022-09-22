@@ -152,7 +152,7 @@ clean-static:  #: Clean UI browser assets.
 		ui/temboardui/static/images/ \
 		ui/temboardui/static/js/
 
-download-eggs:
+download-eggs:  #: Download Python eggs from PyPI
 	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
 	pip3 download --no-deps --dest ui/dist/ temboard==$(VERSION)
 
