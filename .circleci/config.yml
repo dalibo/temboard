@@ -2,6 +2,11 @@ version: 2.1
 
 workflows:
   version: 2
+  # In CircleCI, release pipeline is a subset of main pipeline. By default,
+  # jobs as skipped on tags. Jobs enabled for tags constitute the release
+  # pipeline.
+  #
+  # release job is skipped on branches.
   default:
     jobs:
     - static:
