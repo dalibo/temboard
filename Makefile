@@ -120,7 +120,10 @@ dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
 	$^ > $@
 
 VERSION=$(shell cd ui; python setup.py --version)
-BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
+BRANCH?=master
+# When stable branch v8 is created, use this:
+# BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
+
 # To test release target, override GIT_REMOTE with your own fork.
 GIT_REMOTE=git@github.com:dalibo/temboard.git
 release:  #: Tag and push a new git release.
