@@ -142,6 +142,21 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
+        name: Create GitHub release
+        command: |
+          if [[ "$CIRCLE_TAG" =~ [a-z] ]] ; then
+            args=(--prerelease)
+          else
+            args=()
+          fi
+
+          gh release create \
+            $CIRCLE_TAG \
+            agent/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
+            ui/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
+            -F <(sed -En "/^#+ \[${CIRCLE_TAG#v}\]/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
+            "${args[@]}"
+    - run:
         name: Upload Agent to PyPI
         command: |
           set -eu
