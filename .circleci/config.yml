@@ -384,6 +384,8 @@ jobs:
             args=()
           fi
 
+          find agent/dist ui/dist
+
           gh release create \
             $CIRCLE_TAG \
             agent/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
