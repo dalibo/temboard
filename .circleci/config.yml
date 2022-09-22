@@ -277,8 +277,8 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - agent/dist/*.rpm
-        - ui/dist/*.rpm
+        - agent/dist/*.noarch.rpm
+        - ui/dist/*.noarch.rpm
 
   deb:
     parameters:
@@ -311,8 +311,8 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - agent/dist/*.deb
-        - ui/dist/*.deb
+        - 'agent/dist/*_all.deb'
+        - 'ui/dist/*_amd64.deb'
 
   func:
     parameters:
