@@ -454,10 +454,11 @@ To release a new version:
 - Update `ui/temboardui/version.py` and `agent/temboardagent/version.py`
   without committing. The version must be the same.
 - Generate and push commit and tag with `make release`.
-- Wait for CircleCI pipeline to publish [GitHub releases].
+- Wait for [CircleCI pipeline] to publish [GitHub releases].
   Then download packages with `make download-packages`.
 - Publish Debian and RPM packages with `make publish-packages`.
 
+[CircleCI pipeline]: https://app.circleci.com/pipelines/github/dalibo/temboard
 [GitHub releases]: https://github.com/dalibo/temboard/releases
 
 
