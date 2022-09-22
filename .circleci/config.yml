@@ -6,7 +6,7 @@ workflows:
     jobs:
     - static:
         name: stage0-static
-        filters: &filter-tags
+        filters: &enable-for-tags
           tags:
             only: '/v.+/'
     - doc:
@@ -22,18 +22,11 @@ workflows:
         name: stage0-dist
         requires: [stage0-static]
         filters:
-          <<: *filter-tags
-    - upload-pypi:
-        name: stage0-upload-pypi
-        # Send secrets to this jobs from temboard CircleCI context.
-        context: temboard
-        requires: [stage0-dist]
-        filters:
-          <<: *filter-tags
-          branches:
-            ignore: '/.*/'
+          <<: *enable-for-tags
     - rpm:
         name: stage1-pkg-<< matrix.codename >>
+        filters:
+          <<: *enable-for-tags
         matrix:
           parameters:
             codename: [rockylinux9, rockylinux8, centos7]
@@ -61,6 +54,8 @@ workflows:
             pgversion: ["11"]
     - func:
         <<: *func
+        filters:
+          <<: *enable-for-tags
         matrix:
           parameters:
             dist: [centos7]
@@ -77,6 +72,17 @@ workflows:
           parameters:
             dist: [buster]
             pgversion: ["10"]
+    - release:
+        name: stage3-release
+        # Send secrets to this jobs from temboard CircleCI context.
+        context: temboard
+        # Limit release pipeline to RHEL 7.
+        requires: [stage2-func-pg13-centos7]
+        filters:
+          <<: *enable-for-tags
+          # Skip on branches!
+          branches:
+            ignore: '/.*/'
 
 
 jobs:
@@ -127,7 +133,7 @@ jobs:
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
 
-  upload-pypi:
+  release:
     # Configure secrets of this job in temboard CircleCI context.
     docker: [{image: dalibo/buildpack-python:bullseye}]
     working_directory: *working_directory
@@ -135,6 +141,21 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
+    - run:
+        name: Create GitHub release
+        command: |
+          if [[ "$CIRCLE_TAG" =~ [a-z] ]] ; then
+            args=(--prerelease)
+          else
+            args=()
+          fi
+
+          gh release create \
+            $CIRCLE_TAG \
+            agent/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
+            ui/dist/*.{tar.gz,whl,_all.deb,noarch.rpm} \
+            -F <(sed -En "/^#+ \[${CIRCLE_TAG#v}\]/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
+            "${args[@]}"
     - run:
         name: Upload Agent to PyPI
         command: |

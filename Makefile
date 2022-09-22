@@ -131,8 +131,6 @@ release:  #: Tag and push a new git release.
 	git commit agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
 	$(info Checking source tree is clean)
 	git diff --quiet
-	$(MAKE) static
-	$(MAKE) dist
 	git tag --annotate --message "Version $(VERSION)" v$(VERSION)
 	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
@@ -153,7 +151,7 @@ clean-static:  #: Clean UI browser assets.
 
 download-eggs:
 	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
-	pip3 download --no-deps --dest dist/ temboard==$(VERSION)
+	pip3 download --no-deps --dest ui/dist/ temboard==$(VERSION)
 
 release-packages:  #: Build and upload packages to Dalibo Labs repositories.
 	$(MAKE) -c agent/packaging/rpm release-rhel9 release-rhel8 release-rhel7
