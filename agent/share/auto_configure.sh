@@ -103,7 +103,11 @@ generate_configuration() {
 	port="${TEMBOARD_PORT-$(find_next_free_port)}"
 	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
-	pg_ctl="$(command -v pg_ctl)"
+	if ! pg_ctl="$(command -v pg_ctl)" ; then
+		pg_ctl="/bin/false"
+		log "Can't find pg_ctl in PATH."
+		log "Please configure it manually to enable restart feature."
+	fi
 
 	plugins=(administration dashboard maintenance monitoring pgconf)
 	if [ -n "$has_statements" ] ; then
@@ -238,9 +242,10 @@ setup_pq() {
 
 	read -r PGVERSION < "${PGDATA}/PG_VERSION"
 	if ! command -v pg_ctl &>/dev/null ; then
-		bindir=$(search_bindir "$PGVERSION")
-		log "Using ${bindir}/pg_ctl."
-		export PATH=$bindir:$PATH
+	    if bindir=$(search_bindir "$PGVERSION") ; then
+			log "Using ${bindir}/pg_ctl."
+			export PATH=$bindir:$PATH
+	    fi
 	fi
 
 	# Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
