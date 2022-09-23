@@ -61,6 +61,7 @@ services:
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG
+      PGPASSWORD: postgres
 
   instance12:
     image: postgres:12
