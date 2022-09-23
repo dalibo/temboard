@@ -97,6 +97,9 @@ generate_configuration() {
 	local pg_ctl
 	local port
 
+	sudo -u "$SYSUSER" test -r "$sslkey"
+	sudo -u "$SYSUSER" test -r "$sslcert"
+
 	port="${TEMBOARD_PORT-$(find_next_free_port)}"
 	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
