@@ -12,7 +12,9 @@ RUN set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
     apt-get install -y --no-install-recommends \
+        openssl \
         postgresql-client \
+        ssl-cert \
         sudo \
     ; \
     apt-get clean ; \
