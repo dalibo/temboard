@@ -191,7 +191,7 @@ copy-rhel%:
 
 DOCKER_TAG=$(VERSION)
 docker-build-agent:
-	docker build \
+	DOCKER_BUILDKIT=1 docker build \
 		--file agent/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
