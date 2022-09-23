@@ -175,7 +175,7 @@ fi
 
 
 log "Configuring temboard in ${ETCDIR}."
-mapfile sslfiles < <(set -eu; setup_ssl)
+mapfile -t sslfiles < <(set -eu; setup_ssl)
 install -o "$SYSUSER" -g "$SYSUSER" -m 0750 -d "$ETCDIR" "$LOGDIR" "$VARDIR"
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 /dev/null "$ETCDIR/temboard.conf"
 generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
