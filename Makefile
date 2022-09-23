@@ -162,7 +162,7 @@ YUM_LABS?=../yum-labs
 CURL=curl --fail --create-dirs --location --silent --show-error
 GH_DOWNLOAD=https://github.com/dalibo/temboard/releases/download/v$(VERSION)
 AGENT_DIST_BASE=agent/dist/temboard-agent
-UI_DIST_BASE=agent/dist/temboard
+UI_DIST_BASE=ui/dist/temboard
 download-packages: download-rhel9 download-rhel8 download-rhel7 download-deb-bullseye download-deb-buster download-deb-stretch  #: Download packages from GitHub release
 download-rhel%:
 	$(CURL) --output-dir agent/dist/ --remote-name $(GH_DOWNLOAD)/temboard-agent-$(VERSION)-1.el$*.noarch.rpm
