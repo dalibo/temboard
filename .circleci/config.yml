@@ -185,7 +185,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement dev/requirements.txt --editable ui/
+            pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
           command: |
