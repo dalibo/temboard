@@ -10,6 +10,14 @@ Ensure you use consistent title format.
 - RHEL9 packages.
 - PostgreSQL 15 support.
 - Increase agent OOM score with systemd.
+- Each temBoard release has it's own docker tag. e.g. dalibo/temboard:8.0,
+  dalibo/temboard:8.0rc1, etc. See Docker Hub repositories [dalibo/temboard]
+  and [dalibo/temboard-agent].
+- Streamlined docker images, basing on Debian Bullseye, with temBoard installed
+  with APT instead of pip.
+
+[dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
+[dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
 
 
 ## [8.0b1] - 2022-09-16
