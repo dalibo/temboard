@@ -20,7 +20,6 @@ graft share
 global-exclude *.pyc
 
 prune docker
-exclude docker-compose.yml
 prune docs
 exclude .gitmodules
 exclude *.config.js
@@ -30,5 +29,4 @@ exclude package-lock.json
 prune temboardui/static/src
 prune packaging/deb
 prune packaging/rpm
-exclude dev/requirements.txt
 prune tests
