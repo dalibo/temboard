@@ -15,7 +15,7 @@ Ensure you use consistent title format.
   and [dalibo/temboard-agent].
 - Streamlined docker images, basing on Debian Bullseye, with temBoard installed
   with APT instead of pip.
-- Use auto_configure.sh in docker image. Image is now idempotent.
+- Use auto_configure.sh in docker images. Images are now idempotent.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent

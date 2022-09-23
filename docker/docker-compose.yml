@@ -18,9 +18,10 @@ services:
   ui:
     image: dalibo/temboard:8.0b1
     environment:
+      # These PG* vars are for auto_configure.sh
       PGHOST: repository
-      PGUSER: temboard
-      PGPASSWORD: temboard
+      PGUSER: postgres
+      PGPASSWORD: postgres
       TEMBOARD_LOGGING_LEVEL: DEBUG
     links:
       - repository
@@ -30,8 +31,8 @@ services:
   repository:
     image: postgres:13
     environment:
-      POSTGRES_USER: temboard
-      POSTGRES_PASSWORD: temboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   instance13:
     image: postgres:13

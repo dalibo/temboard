@@ -9,9 +9,6 @@ FROM debian:bullseye-slim
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN set -ex; \
     chmod 0755 /usr/local/bin/wait-for-it; \
-    useradd --home-dir /var/lib/temboard --create-home --system temboard ; \
-    mkdir -p /etc/temboard ; \
-    chown temboard: /etc/temboard; \
     :
 
 RUN set -ex; \
