@@ -192,6 +192,7 @@ jobs:
             cd agent/
             flake8 temboardagent
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            check-manifest
       - run:
           name: Lint UI
           command: |
