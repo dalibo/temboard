@@ -115,6 +115,13 @@ generate_configuration() {
 	fi
 	printf -v qplugins ', "%s"' "${plugins[@]}"  # loose jsonify
 
+	local usepeer
+	if [ -n "${PGPASSWORD-}" ] ; then
+	    usepeer=
+	else
+	    usepeer=1
+	fi
+
 	cat <<-EOF
 	#
 	#   T E M B O A R D   A G E N T   C O N F I G U R A T I O N
@@ -155,7 +162,7 @@ generate_configuration() {
 	# PostgreSQL connection role.
 	user = ${PGUSER}
 	# PostgreSQL password if peer authentication is disabled.
-	${PGPASSWORD:+# }password = ${PGPASSWORD-}
+	${usepeer:+# }password = ${PGPASSWORD-}
 	# Default database for connection.
 	dbname = ${PGDATABASE}
 
