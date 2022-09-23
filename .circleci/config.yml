@@ -185,13 +185,14 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement dev/requirements.txt --editable ui/
+            pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
           command: |
             cd agent/
             flake8 temboardagent
             python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
+            check-manifest
       - run:
           name: Lint UI
           command: |
@@ -436,23 +437,29 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        name: Build Agent Image
+        name: Build Agent & UI Images
         command: |
           DOCKER_TAG="${CIRCLE_TAG#v}"
           if [ -z "$DOCKER_TAG" ] ; then
             # If on branch, don't build version tag.
             DOCKER_TAG=snapshot
           fi
-          make docker-build-agent DOCKER_TAG=$DOCKER_TAG
+          make docker-build-agent docker-build-ui DOCKER_TAG=$DOCKER_TAG
+
           # Always tag last build for 8.
           docker tag dalibo/temboard-agent:latest dalibo/temboard-agent:8
-          # Drop snapshot.
-          docker rmi --force dalibo/temboard-agent:snapshot
+          docker tag dalibo/temboard:latest dalibo/temboard:8
+          # Drop snapshots.
+          docker rmi --force dalibo/temboard-agent:snapshot dalibo/temboard:snapshot
+          # Log available tags. Next steps will push them all.
           docker images dalibo/temboard-agent
+          docker images dalibo/temboard
     - run:
         name: Login to Docker Hub
         command: |
           docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"
     - run:
         name: Push to Docker Hub
-        command: docker push --all-tags dalibo/temboard-agent
+        command: |
+          docker push --all-tags dalibo/temboard-agent
+          docker push --all-tags dalibo/temboard

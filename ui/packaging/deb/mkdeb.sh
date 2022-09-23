@@ -69,6 +69,7 @@ export PATH=${PATH#*/bin:}
 
 python_pkg="$(dpkg -S "$PYTHON")"
 python_pkg="${python_pkg%:*}"
+python_pkg="${python_pkg/-minimal}"
 
 fpm --verbose \
     --force \

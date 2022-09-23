@@ -57,7 +57,7 @@ guess_pkg_type() {
 
 
 install_rpm() {
-	yum --quiet --assumeyes  install "$@"
+	"$(type -p retry)" yum --quiet --assumeyes  install "$@"
 }
 
 

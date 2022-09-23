@@ -2,13 +2,19 @@ FROM debian:bullseye-slim AS copier
 # RUN --mount syntax does not accept arg. Thus first stage copy with arg in
 # static path for future RUN --mount.
 ARG VERSION
-COPY dist/temboard-agent_${VERSION}-0dlb1bullseye1_all.deb /tmp/temboard-agent.deb
+COPY dist/temboard_${VERSION}-0dlb1bullseye1_amd64.deb /tmp/temboard.deb
 
 FROM debian:bullseye-slim
 
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN set -ex; \
     chmod 0755 /usr/local/bin/wait-for-it; \
+    useradd --home-dir /var/lib/temboard --create-home --system temboard ; \
+    mkdir -p /etc/temboard ; \
+    chown temboard: /etc/temboard; \
+    :
+
+RUN set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
     apt-get install -y --no-install-recommends \
@@ -16,25 +22,27 @@ RUN set -ex; \
         sudo \
     ; \
     apt-get clean ; \
-    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*.7*; \
+    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*; \
     :
 
-ADD packaging/docker/sudoers /etc/sudoers.d/temboard-agent
 ADD packaging/docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ADD packaging/docker/pg_ctl_temboard.sh /usr/local/bin/pg_ctl_temboard.sh
 
-RUN --mount=type=bind,from=copier,source=/tmp/temboard-agent.deb,target=/tmp/temboard-agent.deb \
+ARG VERSION
+RUN --mount=type=bind,from=copier,source=/tmp/temboard.deb,target=/tmp/temboard.deb \
     set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
-    apt-get install -y --no-install-recommends /tmp/temboard-agent.deb ; \
+    apt-get install -y --no-install-recommends /tmp/temboard.deb ; \
     apt-get clean ; \
-    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*.7*; \
-    temboard-agent --version ; \
+    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*; \
+    temboard --version ; \
     :
 
-VOLUME /etc/temboard-agent
-VOLUME /var/lib/temboard-agent
-WORKDIR /var/lib/temboard-agent
+VOLUME /var/lib/temboard
+VOLUME /etc/temboard
+
+WORKDIR /var/lib/temboard
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["temboard-agent"]
+CMD ["temboard"]
+
+EXPOSE 8888

@@ -2,3 +2,9 @@ graft share
 include LICENSE README.rst
 include packaging/temboard-agent@.service
 include temboardagent/queries/*.sql
+
+exclude .dockerignore
+prune packaging/deb
+prune packaging/docker
+prune packaging/rpm
+prune tests
