@@ -186,3 +186,14 @@ copy-rhel%:
 	rm -rvf $(YUM_LABS)/rpms/RHEL$*-x86_64/*.rpm
 	mkdir -p $(YUM_LABS)/rpms/RHEL$*-x86_64/
 	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/
+
+DOCKER_TAG=$(VERSION)
+docker-build-agent:
+	docker build \
+		--file agent/packaging/docker/Dockerfile \
+		--build-arg http_proxy \
+		--build-arg VERSION=$(DEBIANVERSION) \
+		--tag dalibo/temboard-agent:$(DOCKER_TAG) \
+		--tag dalibo/temboard-agent:8 \
+		--tag dalibo/temboard-agent:latest \
+		agent/
