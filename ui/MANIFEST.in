@@ -20,14 +20,14 @@ graft share
 global-exclude *.pyc
 
 exclude .dockerignore
-prune docs
 exclude .gitmodules
 exclude *.config.js
 exclude Makefile
 exclude package.json
 exclude package-lock.json
-prune temboardui/static/src
+prune docs
 prune packaging/deb
 prune packaging/docker
 prune packaging/rpm
+prune temboardui/static/src
 prune tests
