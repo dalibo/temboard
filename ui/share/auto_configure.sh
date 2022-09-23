@@ -107,6 +107,9 @@ generate_configuration() {
 	local sslcert=$1; shift
 	local sslkey=$1; shift
 
+	sudo -iu "$SYSUSER" test -r "$sslcert"
+	sudo -iu "$SYSUSER" test -r "$sslkey"
+
 	cat <<-EOF
 	# Configuration initiated by $0 on $(date)
 	#
