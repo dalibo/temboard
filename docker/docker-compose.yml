@@ -86,7 +86,6 @@ services:
       - ui
     environment:
       TEMBOARD_HOSTNAME: instance12.fqdn
-      TEMBOARD_KEY: key_for_agent_12
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_LOGGING_LEVEL: DEBUG
 
@@ -113,7 +112,6 @@ services:
       - ui
     environment:
       TEMBOARD_HOSTNAME: instance10.fqdn
-      TEMBOARD_KEY: key_for_agent_10
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
@@ -142,7 +140,6 @@ services:
       - ui
     environment:
       TEMBOARD_HOSTNAME: instance96.fqdn
-      TEMBOARD_KEY: key_for_agent_96
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
