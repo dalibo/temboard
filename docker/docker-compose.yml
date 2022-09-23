@@ -69,7 +69,7 @@ services:
     links:
     - instance14:instance14.fqdn
     - ui
-    environment:
+    environment: &agent-env
       TEMBOARD_HOSTNAME: instance14.fqdn
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
@@ -106,9 +106,8 @@ services:
       - instance12:instance12.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance12.fqdn
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance10:
     image: postgres:10
@@ -139,11 +138,8 @@ services:
       - instance10:instance10.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance10.fqdn
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_UI_USER: admin
-      TEMBOARD_UI_PASSWORD: admin
-      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance96:
     image: postgres:9.6
@@ -174,8 +170,5 @@ services:
       - instance96:instance96.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance96.fqdn
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_UI_USER: admin
-      TEMBOARD_UI_PASSWORD: admin
-      TEMBOARD_LOGGING_LEVEL: DEBUG
