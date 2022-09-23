@@ -1,22 +1,18 @@
-FROM python:3.7-slim AS builder
+FROM debian:bullseye-slim AS copier
+# RUN --mount syntax does not accept arg. Thus first stage copy with arg in
+# static path for future RUN --mount.
+ARG VERSION
+COPY dist/temboard_${VERSION}-0dlb1bullseye1_amd64.deb /tmp/temboard.deb
 
+FROM debian:bullseye-slim
+
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN set -ex; \
-    apt-get update -y ; \
-    mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
-    apt-get install -y --no-install-recommends \
-        git-core \
-    ; \
-    rm -rf /var/lib/apt/lists/* ; \
-    apt-get clean ; \
+    chmod 0755 /usr/local/bin/wait-for-it; \
+    useradd --home-dir /var/lib/temboard --create-home --system temboard ; \
+    mkdir -p /etc/temboard ; \
+    chown temboard: /etc/temboard; \
     :
-
-RUN set -ex; \
-    git clone --depth=1 https://github.com/dalibo/temboard/ /root/temboard ; \
-    cd /root/temboard/ui ; \
-    python setup.py bdist_wheel ; \
-    :
-
-FROM python:3.7-slim
 
 RUN set -ex; \
     apt-get update -y ; \
@@ -25,20 +21,21 @@ RUN set -ex; \
         postgresql-client \
         sudo \
     ; \
-    rm -rf /var/lib/apt/lists/* ; \
     apt-get clean ; \
+    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*; \
     :
 
-COPY --from=builder /root/temboard/ui/dist/*.whl /root
-COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
+ADD packaging/docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-RUN set -ex; \
-    chmod 0755 /usr/local/bin/wait-for-it ; \
-    pip --no-cache-dir install /root/temboard*.whl psycopg2-binary ; \
-    useradd --home-dir /var/lib/temboard --create-home --system temboard ; \
-    mkdir -p /etc/temboard ; \
-    chown temboard. /etc/temboard; \
+ARG VERSION
+RUN --mount=type=bind,from=copier,source=/tmp/temboard.deb,target=/tmp/temboard.deb \
+    set -ex; \
+    apt-get update -y ; \
+    mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
+    apt-get install -y --no-install-recommends /tmp/temboard.deb ; \
+    apt-get clean ; \
+    rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*; \
+    temboard --version ; \
     :
 
 VOLUME /var/lib/temboard

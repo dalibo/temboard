@@ -19,7 +19,7 @@ graft temboardui/plugins/statements/templates
 graft share
 global-exclude *.pyc
 
-prune docker
+exclude .dockerignore
 prune docs
 exclude .gitmodules
 exclude *.config.js
@@ -28,5 +28,6 @@ exclude package.json
 exclude package-lock.json
 prune temboardui/static/src
 prune packaging/deb
+prune packaging/docker
 prune packaging/rpm
 prune tests

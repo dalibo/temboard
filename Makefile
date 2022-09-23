@@ -198,3 +198,12 @@ docker-build-agent:
 		--tag dalibo/temboard-agent:$(DOCKER_TAG) \
 		--tag dalibo/temboard-agent:latest \
 		agent/
+
+docker-build-ui:
+	DOCKER_BUILDKIT=1 docker build \
+		--file ui/packaging/docker/Dockerfile \
+		--build-arg http_proxy \
+		--build-arg VERSION=$(DEBIANVERSION) \
+		--tag dalibo/temboard:$(DOCKER_TAG) \
+		--tag dalibo/temboard:latest \
+		ui/

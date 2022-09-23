@@ -1,7 +1,0 @@
-version: '2'
-
-services:
-  ui:
-    volumes:
-      - ./entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
-    command: tail -f /dev/null
