@@ -16,6 +16,7 @@ develop-%:: .env
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
+	docker-compose build
 	docker-compose up -d
 	@echo
 	@echo
@@ -59,6 +60,7 @@ install-2.7: venv-2.7
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
+	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
@@ -119,7 +121,7 @@ prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus d
 dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
 	$^ > $@
 
-VERSION=$(shell cd ui; python setup.py --version)
+VERSION=$(shell cd ui; python3 setup.py --version)
 BRANCH?=master
 # When stable branch v8 is created, use this:
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
@@ -186,3 +188,13 @@ copy-rhel%:
 	rm -rvf $(YUM_LABS)/rpms/RHEL$*-x86_64/*.rpm
 	mkdir -p $(YUM_LABS)/rpms/RHEL$*-x86_64/
 	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/
+
+DOCKER_TAG=$(VERSION)
+docker-build-agent:
+	docker build \
+		--file agent/packaging/docker/Dockerfile \
+		--build-arg http_proxy \
+		--build-arg VERSION=$(DEBIANVERSION) \
+		--tag dalibo/temboard-agent:$(DOCKER_TAG) \
+		--tag dalibo/temboard-agent:latest \
+		agent/

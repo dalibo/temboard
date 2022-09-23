@@ -5,7 +5,8 @@ mkdir -p $PIP_CACHE_DIR
 chown "$(id -u):$(id -g)" $PIP_CACHE_DIR
 pip cache dir
 
-pip install -e /usr/local/src/temboard/agent/ psycopg2-binary hupper
+pip install --ignore-installed --no-deps -e /usr/local/src/temboard/agent/
+temboard-agent --version
 chown -R "$(stat -c "%u:%g" "$0")" /usr/local/src/temboard/agent
 
 if ! [ -f /etc/temboard-agent/signing-public.pem ] ; then
@@ -14,4 +15,4 @@ if ! [ -f /etc/temboard-agent/signing-public.pem ] ; then
 	cp -v /usr/local/src/temboard/dev/signing-public.pem /etc/temboard-agent/
 fi
 
-exec /usr/local/src/temboard/agent/docker/entrypoint.sh "$@"
+exec /usr/local/src/temboard/agent/packaging/docker/entrypoint.sh "$@"

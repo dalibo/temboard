@@ -83,6 +83,7 @@ fpm --verbose \
     --depends python3-cryptography \
     --depends python3-pkg-resources \
     --depends 'python3-psycopg2 >= 2.7' \
+    --depends python3-setuptools \
     --depends ssl-cert \
     --after-install share/restart-all.sh \
     "$@" \

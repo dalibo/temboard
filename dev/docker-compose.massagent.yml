@@ -30,7 +30,7 @@ services:
         target: /docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
 
   agent:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:dev
     ports:
       - ${TEMBOARD_REGISTER_PORT}:2345
     volumes:
