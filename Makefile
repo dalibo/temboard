@@ -121,7 +121,7 @@ prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus d
 dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
 	$^ > $@
 
-VERSION=$(shell cd ui; python setup.py --version)
+VERSION=$(shell cd ui; python3 setup.py --version)
 BRANCH?=master
 # When stable branch v8 is created, use this:
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
