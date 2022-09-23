@@ -16,7 +16,7 @@ volumes:
 
 services:
   ui:
-    image: dalibo/temboard:8.0b1
+    image: dalibo/temboard:8
     environment:
       # These PG* vars are for auto_configure.sh
       PGHOST: repository
@@ -75,7 +75,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent12:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data12:/var/lib/postgresql/data
       - run12:/var/run/postgresql/
@@ -102,7 +102,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent10:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data10:/var/lib/postgresql/data
       - run10:/var/run/postgresql/
@@ -131,7 +131,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   agent96:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql/
