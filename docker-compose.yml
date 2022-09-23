@@ -51,7 +51,10 @@ services:
     ]
 
   agent0:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:dev
+    build: &build-agent
+      context: agent/
+      dockerfile: packaging/docker/Dockerfile.dev
     ports: [2345:2345]
     volumes:
     - data0:/var/lib/postgresql/data
@@ -103,6 +106,8 @@ services:
 
   agent1:
     image: dalibo/temboard-agent
+    build:
+      <<: *build-agent
     ports: [2346:2345]
     volumes:
     - data1:/var/lib/postgresql/data

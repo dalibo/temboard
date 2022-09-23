@@ -16,6 +16,7 @@ develop-%:: .env
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
+	docker-compose build
 	docker-compose up -d
 	@echo
 	@echo
@@ -59,6 +60,7 @@ install-2.7: venv-2.7
 
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
+	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
