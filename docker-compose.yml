@@ -26,7 +26,7 @@ services:
 
   # First instance.
   postgres0:
-    image: &postgres_image postgres:15beta4-alpine
+    image: &postgres_image postgres:14-alpine
     # Exposed port is important for dev/switchover.sh
     ports: [15432:5432]
     environment: &postgres_env
@@ -76,6 +76,8 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard/agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
+      # Actually, entrypoint set TEMBOARD_CONFIGFILE, but not for docker-compose exec
+      TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres0/temboard-agent.conf
     entrypoint: &agent_entrypoint [/usr/bin/tini, /usr/local/src/temboard/dev/agent-entrypoint.sh]
     command: &agent_command [sleep, infinity]
 
@@ -118,6 +120,7 @@ services:
     - postgres1:postgres1.dev
     environment:
       <<: *agent_env
+      TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres1/temboard-agent.conf
       TEMBOARD_HOSTNAME: postgres1.dev
     entrypoint: *agent_entrypoint
     command: *agent_command
