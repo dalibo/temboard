@@ -23,15 +23,15 @@ export PGUSER=${PGUSER-postgres}
 export PGPASSWORD=${PGPASSWORD-}
 export PGDATABASE=${PGDATABASE-postgres}
 
-dir=$(ls /etc/temboard-agent)  # Expect to have an empty dir if unconfigured.
-if ! [ -d "${dir}" ] ; then
+conf=$(find /etc/temboard-agent -name temboard-agent.conf)
+if [ -z "${conf}" ] ; then
 	if ! PGHOST=/var/run/postgresql /usr/share/temboard-agent/auto_configure.sh "${TEMBOARD_UI_URL}" ; then
 		cat /var/log/temboard-agent-auto-configure.log >&2
 		exit 1
 	fi
+	conf="$(find /etc/temboard-agent -name temboard-agent.conf)"
 fi
 
-conf="$(find /etc/temboard-agent -name temboard-agent.conf)"
 export TEMBOARD_CONFIGFILE="$conf"
 
 if ! [ -f "${conf}.d/administration.conf" ] ; then
