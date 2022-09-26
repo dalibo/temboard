@@ -7,7 +7,6 @@ RUN set -ex; \
         docker.io \
         iproute2 \
         python3-pip \
+        python3-hupper \
     ; \
     :
-
-RUN pip3 install --no-cache-dir hupper
