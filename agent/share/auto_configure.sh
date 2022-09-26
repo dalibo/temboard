@@ -97,16 +97,30 @@ generate_configuration() {
 	local pg_ctl
 	local port
 
+	sudo -u "$SYSUSER" test -r "$sslkey"
+	sudo -u "$SYSUSER" test -r "$sslcert"
+
 	port="${TEMBOARD_PORT-$(find_next_free_port)}"
 	test -n "$port"
 	log "Configuring temboard-agent to run on port ${port}."
-	pg_ctl="$(command -v pg_ctl)"
+	if ! pg_ctl="$(command -v pg_ctl)" ; then
+		pg_ctl="/bin/false"
+		log "Can't find pg_ctl in PATH."
+		log "Please configure it manually to enable restart feature."
+	fi
 
 	plugins=(administration dashboard maintenance monitoring pgconf)
 	if [ -n "$has_statements" ] ; then
 		plugins+=(statements)
 	fi
 	printf -v qplugins ', "%s"' "${plugins[@]}"  # loose jsonify
+
+	local usepeer
+	if [ -n "${PGPASSWORD-}" ] ; then
+	    usepeer=
+	else
+	    usepeer=1
+	fi
 
 	cat <<-EOF
 	#
@@ -148,7 +162,7 @@ generate_configuration() {
 	# PostgreSQL connection role.
 	user = ${PGUSER}
 	# PostgreSQL password if peer authentication is disabled.
-	${PGPASSWORD:+# }password = ${PGPASSWORD-}
+	${usepeer:+# }password = ${PGPASSWORD-}
 	# Default database for connection.
 	dbname = ${PGDATABASE}
 
@@ -235,9 +249,10 @@ setup_pq() {
 
 	read -r PGVERSION < "${PGDATA}/PG_VERSION"
 	if ! command -v pg_ctl &>/dev/null ; then
-		bindir=$(search_bindir "$PGVERSION")
-		log "Using ${bindir}/pg_ctl."
-		export PATH=$bindir:$PATH
+	    if bindir=$(search_bindir "$PGVERSION") ; then
+			log "Using ${bindir}/pg_ctl."
+			export PATH=$bindir:$PATH
+	    fi
 	fi
 
 	# Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
@@ -271,7 +286,8 @@ setup_ssl() {
 		openssl req -new -x509 -days 365 -nodes \
 			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
 			-out "$sslcert" -keyout "$sslkey"
-		chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
+		chmod 0640 "$sslkey"
+		chgrp "$(id --group --name "$SYSUSER")" "$sslcert" "$sslkey"
 	fi
 
 	readlink -e "$sslcert" "$sslkey"

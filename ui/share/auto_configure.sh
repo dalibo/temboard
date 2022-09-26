@@ -89,15 +89,16 @@ setup_ssl() {
 		sslcert=$pki/certs/ssl-cert-snakeoil.pem
 		sslkey=$pki/private/ssl-cert-snakeoil.key
 	else
-	     sslcert=$pki/certs/temboard.pem
-	     sslkey=$pki/private/temboard.key
-	     if ! [ -f $sslcert ] ; then
-		     log "Generating self-signed certificate."
-		     openssl req -new -x509 -days 365 -nodes \
-			     -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
-			     -out $sslcert -keyout $sslkey
-		     chmod 644 $sslkey
-	     fi
+		sslcert=$pki/certs/temboard-auto.pem
+		sslkey=$pki/private/temboard-auto.key
+		if ! [ -f $sslcert ] ; then
+			log "Generating self-signed certificate."
+			openssl req -new -x509 -days 365 -nodes \
+				-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
+				-out $sslcert -keyout $sslkey
+		fi
+		chmod 640 $sslkey
+		chgrp "$SYSUSER" "$sslkey"
 	fi
 	readlink -e $sslcert $sslkey
 }
@@ -106,6 +107,9 @@ setup_ssl() {
 generate_configuration() {
 	local sslcert=$1; shift
 	local sslkey=$1; shift
+
+	sudo -iu "$SYSUSER" test -r "$sslcert"
+	sudo -iu "$SYSUSER" test -r "$sslkey"
 
 	cat <<-EOF
 	# Configuration initiated by $0 on $(date)
@@ -172,7 +176,7 @@ fi
 
 
 log "Configuring temboard in ${ETCDIR}."
-mapfile sslfiles < <(set -eu; setup_ssl)
+mapfile -t sslfiles < <(set -eu; setup_ssl)
 install -o "$SYSUSER" -g "$SYSUSER" -m 0750 -d "$ETCDIR" "$LOGDIR" "$VARDIR"
 install -o "$SYSUSER" -g "$SYSUSER" -m 0640 /dev/null "$ETCDIR/temboard.conf"
 generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"

@@ -9,16 +9,15 @@ FROM debian:bullseye-slim
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN set -ex; \
     chmod 0755 /usr/local/bin/wait-for-it; \
-    useradd --home-dir /var/lib/temboard --create-home --system temboard ; \
-    mkdir -p /etc/temboard ; \
-    chown temboard: /etc/temboard; \
     :
 
 RUN set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
     apt-get install -y --no-install-recommends \
+        openssl \
         postgresql-client \
+        ssl-cert \
         sudo \
     ; \
     apt-get clean ; \

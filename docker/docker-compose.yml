@@ -1,8 +1,8 @@
-version: '2'
+version: '3'
 
 volumes:
-  data13:
-  run13:
+  data14:
+  run14:
 
   data12:
   run12:
@@ -16,11 +16,12 @@ volumes:
 
 services:
   ui:
-    image: dalibo/temboard:8.0b1
+    image: dalibo/temboard:8
     environment:
+      # These PG* vars are for auto_configure.sh
       PGHOST: repository
-      PGUSER: temboard
-      PGPASSWORD: temboard
+      PGUSER: postgres
+      PGPASSWORD: postgres
       TEMBOARD_LOGGING_LEVEL: DEBUG
     links:
       - repository
@@ -28,43 +29,56 @@ services:
       - "8888:8888"
 
   repository:
-    image: postgres:13
+    image: postgres:14
     environment:
-      POSTGRES_USER: temboard
-      POSTGRES_PASSWORD: temboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    command: [
+      postgres,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=repository,
+    ]
 
-  instance13:
-    image: postgres:13
-    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
+  instance14:
+    image: postgres:14
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=instance14,
+    ]
     ports:
       - 5432:5432
     volumes:
-    - data13:/var/lib/postgresql/data
-    - run13:/var/run/postgresql
+    - data14:/var/lib/postgresql/data
+    - run14:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
 
-  agent13:
-    image: dalibo/temboard-agent:8.0b1
+  agent14:
+    image: dalibo/temboard-agent:8
     volumes:
-    - data13:/var/lib/postgresql/data
-    - run13:/var/run/postgresql/
+    - data14:/var/lib/postgresql/data
+    - run14:/var/run/postgresql/
     - /usr/bin/docker:/usr/bin/docker
     - /var/run/docker.sock:/var/run/docker.sock
     links:
-    - instance13:instance13.fqdn
+    - instance14:instance14.fqdn
     - ui
-    environment:
-      TEMBOARD_HOSTNAME: instance13.fqdn
-      TEMBOARD_KEY: key_for_agent_13
+    environment: &agent-env
+      TEMBOARD_HOSTNAME: instance14.fqdn
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG
+      PGPASSWORD: postgres
 
   instance12:
     image: postgres:12
-    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5433:5432
     volumes:
@@ -72,9 +86,17 @@ services:
       - run12:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=instance12,
+    ]
 
   agent12:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data12:/var/lib/postgresql/data
       - run12:/var/run/postgresql/
@@ -84,14 +106,11 @@ services:
       - instance12:instance12.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance12.fqdn
-      TEMBOARD_KEY: key_for_agent_12
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance10:
     image: postgres:10
-    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5434:5432
     volumes:
@@ -99,9 +118,17 @@ services:
       - run10:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=instance10,
+    ]
 
   agent10:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data10:/var/lib/postgresql/data
       - run10:/var/run/postgresql/
@@ -111,16 +138,11 @@ services:
       - instance10:instance10.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance10.fqdn
-      TEMBOARD_KEY: key_for_agent_10
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_UI_USER: admin
-      TEMBOARD_UI_PASSWORD: admin
-      TEMBOARD_LOGGING_LEVEL: DEBUG
 
   instance96:
     image: postgres:9.6
-    command: ["-c", "shared_preload_libraries=pg_stat_statements"]
     ports:
       - 5435:5432
     volumes:
@@ -128,9 +150,17 @@ services:
       - run96:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=instance96,
+    ]
 
   agent96:
-    image: dalibo/temboard-agent:8.0b1
+    image: dalibo/temboard-agent:8
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql/
@@ -140,9 +170,5 @@ services:
       - instance96:instance96.fqdn
       - ui
     environment:
+      <<: *agent-env
       TEMBOARD_HOSTNAME: instance96.fqdn
-      TEMBOARD_KEY: key_for_agent_96
-      TEMBOARD_UI_URL: https://ui:8888/
-      TEMBOARD_UI_USER: admin
-      TEMBOARD_UI_PASSWORD: admin
-      TEMBOARD_LOGGING_LEVEL: DEBUG
