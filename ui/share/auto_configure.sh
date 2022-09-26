@@ -89,15 +89,16 @@ setup_ssl() {
 		sslcert=$pki/certs/ssl-cert-snakeoil.pem
 		sslkey=$pki/private/ssl-cert-snakeoil.key
 	else
-	     sslcert=$pki/certs/temboard.pem
-	     sslkey=$pki/private/temboard.key
-	     if ! [ -f $sslcert ] ; then
-		     log "Generating self-signed certificate."
-		     openssl req -new -x509 -days 365 -nodes \
-			     -subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
-			     -out $sslcert -keyout $sslkey
-		     chmod 640 $sslkey
-	     fi
+		sslcert=$pki/certs/temboard.pem
+		sslkey=$pki/private/temboard.key
+		if ! [ -f $sslcert ] ; then
+			log "Generating self-signed certificate."
+			openssl req -new -x509 -days 365 -nodes \
+				-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
+				-out $sslcert -keyout $sslkey
+		fi
+		chmod 640 $sslkey
+		chgrp "$SYSUSER" "$sslkey"
 	fi
 	readlink -e $sslcert $sslkey
 }
