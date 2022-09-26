@@ -286,7 +286,8 @@ setup_ssl() {
 		openssl req -new -x509 -days 365 -nodes \
 			-subj "/C=XX/ST= /L=Default/O=Default/OU= /CN= " \
 			-out "$sslcert" -keyout "$sslkey"
-		chown "$SYSUSER:$SYSUSER" "$sslcert" "$sslkey"
+		chmod 0640 "$sslkey"
+		chgrp "$(id --group --name "$SYSUSER")" "$sslcert" "$sslkey"
 	fi
 
 	readlink -e "$sslcert" "$sslkey"
