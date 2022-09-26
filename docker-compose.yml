@@ -26,7 +26,7 @@ services:
 
   # First instance.
   postgres0:
-    image: &postgres_image postgres:15beta4-alpine
+    image: &postgres_image postgres:14-alpine
     # Exposed port is important for dev/switchover.sh
     ports: [15432:5432]
     environment: &postgres_env
