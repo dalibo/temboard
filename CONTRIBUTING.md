@@ -95,7 +95,7 @@ agent and execute the following commands.
 
 ``` console
 $ docker-compose exec agent0 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper3 -m temboardagent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres hupper3 -m temboardagent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
@@ -132,7 +132,7 @@ for it likewise:
 
 ``` console
 $ docker-compose exec agent1 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -u postgres hupper3 -m temboardagent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres hupper3 -m temboardagent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2022-01-11 10:12:55,130 [ 1568] [app             ] DEBUG: Looking for plugin activity.
