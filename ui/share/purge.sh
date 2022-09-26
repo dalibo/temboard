@@ -57,6 +57,6 @@ fi
 "${run_as_postgres[@]}" dropdb --if-exists "${TEMBOARD_DATABASE-temboard}"
 "${run_as_postgres[@]}" dropuser --if-exists temboard || :
 
-rm -rf "${ETCDIR}" "${VARDIR}" "${LOGDIR}"
+rm -rf "${ETCDIR}" "${VARDIR}" "${LOGDIR}" "/etc/pki/tls/*/temboard-auto.*"
 
 log "temBoard UI unconfigured."

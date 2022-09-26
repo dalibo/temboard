@@ -89,8 +89,8 @@ setup_ssl() {
 		sslcert=$pki/certs/ssl-cert-snakeoil.pem
 		sslkey=$pki/private/ssl-cert-snakeoil.key
 	else
-		sslcert=$pki/certs/temboard.pem
-		sslkey=$pki/private/temboard.key
+		sslcert=$pki/certs/temboard-auto.pem
+		sslkey=$pki/private/temboard-auto.key
 		if ! [ -f $sslcert ] ; then
 			log "Generating self-signed certificate."
 			openssl req -new -x509 -days 365 -nodes \
