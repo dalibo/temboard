@@ -35,7 +35,10 @@ fi
 mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 pep440v=${versions[0]}
 debianv=${versions[1]}
-codename=$(lsb_release --codename --short)
+# Testing/sid has LSB release as `n\a`. Stable as debian_version as X.Y.
+if ! codename=$(grep -Po '(.+(?=/))' /etc/debian_version) ; then
+    codename=$(lsb_release --codename --short)
+fi
 release=0dlb1${codename}1
 
 #       I N S T A L L
@@ -46,11 +49,20 @@ if ! [ -f "$whl" ] ; then
 fi
 
 # Install from sources
-pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps --no-compile "$whl"
+pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
 # Fake --install-layout=deb, when using wheel.
-pythonv=$(python3 --version |& grep -Po 'Python \K([3]\..)')
+pythonv=$(python3 --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
+if [ -d "$DESTDIR/usr/local" ] ; then
+    mv "$DESTDIR"/usr/local/* "$DESTDIR/usr/"
+    rmdir "$DESTDIR/usr/local"
+fi
+if [ -d "$DESTDIR/usr/lib/python${pythonv}/site-packages" ] ; then
+    mv "$DESTDIR/usr/lib/python${pythonv}/site-packages" "$DESTDIR/usr/lib/python$pythonv/dist-packages"
+fi
 mkdir -p "${DESTDIR}/usr/lib/python3/dist-packages/"
-mv "$DESTDIR/usr/lib/python${pythonv}/site-packages"/* "$DESTDIR/usr/lib/python3/dist-packages/"
+mv "$DESTDIR/usr/lib/python${pythonv}/dist-packages"/* "$DESTDIR/usr/lib/python3/dist-packages/"
+rm -rf "$DESTDIR/usr/lib/python$pythonv"
+rm -vf $(find "$DESTDIR/usr/lib" -name "*cpython-*.pyc" | grep -v "cpython-${pythonv/\.}.pyc")
 
 #       B U I L D
 
