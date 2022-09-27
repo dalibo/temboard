@@ -108,7 +108,7 @@ services:
     ]
 
   agent1:
-    image: dalibo/temboard-agent
+    image: dalibo/temboard-agent:dev
     build:
       <<: *build-agent
     ports: [2346:2345]
