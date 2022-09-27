@@ -53,6 +53,7 @@ services:
   agent0:
     image: dalibo/temboard-agent:dev
     build: &build-agent
+      args: [http_proxy]
       context: agent/
       dockerfile: packaging/docker/Dockerfile.dev
     ports: [2345:2345]
