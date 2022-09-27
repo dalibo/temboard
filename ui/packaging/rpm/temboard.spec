@@ -14,7 +14,7 @@ Summary:       temBoard Web Interface
 
 Group:         Applications/Databases
 License:       PostgreSQL
-URL:           http://temboard.io/
+URL:           https://labs.dalibo.com/temboard/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)

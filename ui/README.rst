@@ -71,7 +71,7 @@ temBoard is available under the `PostgreSQL License
    :alt: Documentation
 
 .. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/docs/temboard.png
-   :target: http://temboard.io/
+   :target: http://labs.dalibo.com/temboard/
    :alt: temBoard logo: a woodpecker
 
 .. |Travis| image:: https://travis-ci.org/dalibo/temboard.svg?branch=master

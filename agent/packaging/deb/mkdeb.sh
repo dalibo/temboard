@@ -77,7 +77,7 @@ fpm --verbose \
     --category database \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
-    --url http://temboard.io/ \
+    --url https://labs.dalibo.com/temboard/ \
     --depends python3 \
     --depends python3-bottle \
     --depends python3-cryptography \

@@ -85,7 +85,7 @@ fpm --verbose \
     --category database \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
-    --url http://temboard.io/ \
+    --url https://labs.dalibo.com/temboard/ \
     --after-install packaging/deb/postinst.sh \
     --depends "$python_pkg" \
     "$DESTDIR/=/"
