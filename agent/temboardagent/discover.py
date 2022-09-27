@@ -229,7 +229,7 @@ def inspect_versions():
         pythonbin=sys.executable,
         bottle=bottle_version,
         distname=distinfos['NAME'],
-        distversion=distinfos['VERSION'],
+        distversion=distinfos.get('VERSION', 'n/a'),
         libpq=format_pq_version(read_libpq_version()),
         cryptography=cryptography_version,
     )
