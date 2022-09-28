@@ -26,7 +26,7 @@ temBoard UI requires:
 
 # Prepare repository
 
-Before installing temBoard UI, ensure you have a running PostgreSQL 9.5+
+Before installing temBoard UI, ensure you have a running PostgreSQL 9.6+
 cluster. The auto-configuration script works well with a local Postgres cluster,
 running as UNIX user `postgres`. If it's not the case, post-inst script will
 fail gracefully and let you handle the configuration later.
