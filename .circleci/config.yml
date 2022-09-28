@@ -362,7 +362,7 @@ jobs:
           shellcheck ui/packaging/deb/mkdeb.sh
     - run:
         name: Install temBoard UI & agent
-        command: tests/install-all
+        command: tests/install-all.sh
     - run:
         name: Install test dependencies
         command: pip3 install -r dev/requirements.txt
