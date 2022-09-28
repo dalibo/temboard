@@ -38,7 +38,7 @@ def inspect_versions():
     return dict(
         cryptography=cryptography.__version__,
         distname=distinfos['NAME'],
-        distversion=distinfos['VERSION'],
+        distversion=distinfos.get('VERSION', 'n/a'),
         libpq=format_pq_version(read_libpq_version()),
         psycopg2=psycopg2_version,
         python=python_version(),
