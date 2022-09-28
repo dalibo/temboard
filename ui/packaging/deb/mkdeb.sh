@@ -29,7 +29,7 @@ mkdir -p "$DESTDIR"
 
 #       V E R S I O N S
 
-PYTHON="$(type -p python3.9 python3.7 python3.6 python3.5 python2.7 python2 | head -1)"
+PYTHON="$(type -p python3)"
 if [ -z "${VERSION-}" ] ; then
 	VERSION=$("$PYTHON" setup.py --version)
 fi
