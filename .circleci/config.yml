@@ -42,7 +42,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bullseye, buster, stretch]
+            codename: [bookworm, bullseye, buster, stretch]
         requires: [stage0-dist]
     - func: &func
         name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
@@ -294,7 +294,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bullseye, buster, stretch]
+        enum: [bookworm, bullseye, buster, stretch]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:

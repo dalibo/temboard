@@ -7,7 +7,7 @@ Ensure you use consistent title format.
 
 ## [8.0] - Unreleased
 
-- RHEL9 packages.
+- RHEL9, Debian Bookworm (testing) packages.
 - PostgreSQL 15 support.
 - Dropped support for PostgreSQL 9.5 and 9.4.
 - Increase agent OOM score with systemd.
