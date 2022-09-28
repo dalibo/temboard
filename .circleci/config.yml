@@ -52,7 +52,7 @@ workflows:
         matrix:
           parameters:
             dist: [rockylinux9]
-            pgversion: ["15beta4", "14"]
+            pgversion: ["15beta4"]
     - func:
         <<: *func
         matrix:
@@ -65,6 +65,12 @@ workflows:
           parameters:
             dist: [centos7]
             pgversion: ["13", "9.6"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
+            dist: [bookworm]
+            pgversion: ["14"]
     - func:
         <<: *func
         matrix:
@@ -328,7 +334,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bullseye, buster, stretch, centos7, rockylinux8, rockylinux9]
+        enum: [bookworm, bullseye, buster, stretch, centos7, rockylinux8, rockylinux9]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
