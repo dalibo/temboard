@@ -19,14 +19,14 @@ This document guides you to quickly setup all these components together.
 
 temBoard UI requires:
 
-- Python 2.7 or 3.6
+- Python 3.6+.
 - openssl
 - bash, sudo and psql for setup script.
 
 
 # Prepare repository
 
-Before installing temBoard UI, ensure you have a running PostgreSQL 9.5+
+Before installing temBoard UI, ensure you have a running PostgreSQL 9.6+
 cluster. The auto-configuration script works well with a local Postgres cluster,
 running as UNIX user `postgres`. If it's not the case, post-inst script will
 fail gracefully and let you handle the configuration later.

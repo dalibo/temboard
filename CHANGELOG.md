@@ -9,6 +9,7 @@ Ensure you use consistent title format.
 
 - RHEL9 packages.
 - PostgreSQL 15 support.
+- Dropped support for PostgreSQL 9.5 and 9.4.
 - Increase agent OOM score with systemd.
 - Each temBoard release has it's own docker tag. e.g. dalibo/temboard:8.0,
   dalibo/temboard:8.0rc1, etc. See Docker Hub repositories [dalibo/temboard]

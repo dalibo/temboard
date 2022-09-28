@@ -8,7 +8,7 @@ system, you may want to use trusted certificate and other enhancement.
 In order to run temBoard agent, you need:
 
 - Linux as underlying OS.
-- PostgreSQL 9.4+, listening on UNIX socket. Check with
+- PostgreSQL 9.6+, listening on UNIX socket. Check with
   `sudo -u postgres psql`.
 - openssl.
 - Python 3.6+. Check with `python --version`.

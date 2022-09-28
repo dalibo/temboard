@@ -8,7 +8,7 @@ temBoard_ is a powerful management tool for PostgreSQL.
 
 temBoard agent is a Python service designed to run along PostgreSQL, exposing a
 REST API to implement various management tasks on PostgreSQL instance. See
-http://temboard.io/ for the big picture.
+https://labs.dalibo.com/temboard/ for the big picture.
 
 
 ==========
@@ -50,5 +50,5 @@ configuration.
    :target: http://temboard-agent.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation
 
-.. _`temBoard`: http://temboard.io/
+.. _`temBoard`: https://labs.dalibo.com/temboard/
 .. _`temBoard documentation`: http://temboard.readthedocs.io/
