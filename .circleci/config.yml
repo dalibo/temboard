@@ -61,8 +61,6 @@ workflows:
             pgversion: ["11"]
     - func:
         <<: *func
-        # filters:
-        #   <<: *enable-for-tags
         matrix:
           parameters:
             dist: [centos7]
