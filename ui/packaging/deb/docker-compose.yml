@@ -1,8 +1,8 @@
 version: '2'
 
 services:
-  bullseye: &mkdeb
-    image: dalibo/buildpack-pkg:bullseye
+  bookworm: &mkdeb
+    image: dalibo/buildpack-pkg:bookworm
     environment:
       # See dch(1)
     - DEBFULLNAME
@@ -11,6 +11,10 @@ services:
     volumes:
     - ../..:/workspace
     command: /workspace/packaging/deb/mkdeb.sh
+
+  bullseye:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:bullseye
 
   buster:
     <<: *mkdeb
