@@ -37,8 +37,11 @@ mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 
 pep440v="${versions[0]}"
 debianv="${versions[1]}"
-CODENAME="$(lsb_release --short --codename)"
-release="0dlb1${CODENAME}1"
+# Testing/sid has LSB release as `n\a`. Stable as debian_version as X.Y.
+if ! codename=$(grep -Po '(.+(?=/))' /etc/debian_version) ; then
+    codename=$(lsb_release --codename --short)
+fi
+release="0dlb1${codename}1"
 
 #       I N S T A L L
 
