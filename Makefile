@@ -177,9 +177,11 @@ download-deb-%:
 
 publish-packages: publish-rhel publish-deb-bullseye publish-deb-buster publish-deb-stretch  #: Upload packages to Dalibo Labs repositories.
 publish-rhel: copy-rhel9 copy-rhel8 copy-rhel7
+	@if expr match "$(VERSION)" ".*[a-z]\+" >/dev/null; then echo 'Refusing tu publish prerelease in YUM repository.'; false ; fi
 	@make -C $(YUM_LABS) push createrepos clean
 
 publish-deb-%:
+	@if expr match "$(VERSION)" ".*[a-z]\+" >/dev/null; then echo 'Refusing tu publish prerelease in APT repository.'; false ; fi
 	agent/packaging/deb/mkchanges.sh agent/dist/temboard-agent_$(DEBIANVERSION)-0dlb1$*1_all.deb $*
 	ui/packaging/deb/mkchanges.sh ui/dist/temboard_$(DEBIANVERSION)-0dlb1$*1_amd64.deb $*
 	dput labs agent/dist/temboard-agent_$(DEBIANVERSION)-0dlb1$*1_all_$*.changes ui/dist/temboard_$(DEBIANVERSION)-0dlb1$*1_amd64_$*.changes
