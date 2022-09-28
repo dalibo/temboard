@@ -29,7 +29,10 @@ guess_disttag() {
 			echo "${PLATFORM_ID#platform:}"
 			;;
 		debian)
-			echo "$VERSION_CODENAME"
+		    # Debian testing does not have VERSION* vars.
+			if ! grep -Po '(.+(?=/))' /etc/debian_version ; then
+				echo "$VERSION_CODENAME"
+			fi
 			;;
 		*)
 			echo "Unsupported distribution $ID." >&2
