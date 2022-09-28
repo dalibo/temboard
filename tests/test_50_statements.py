@@ -83,9 +83,4 @@ def ensure_statements_data(
     """Waits for statements data to come up."""
     browser = browser_session
     browser.select("div.sidebar a.statements").click()
-    ui_sudo.temboard.tasks.schedule(
-        "statements_pull1", "0.0.0.0", str(agent_conf['temboard']['port']))
-    ui_sudo.temboard.tasks.schedule(
-        "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
-    )
     browser.refresh_until(".main table tr td.database")

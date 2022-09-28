@@ -73,10 +73,6 @@ def ensure_monitoring_data(
     """Ensure agent process has two minutes running."""
     browser = browser_session
     browser.select("div.sidebar a.monitoring").click()
-    ui_sudo.temboard.tasks.schedule(
-        "collector", "0.0.0.0", str(agent_conf['temboard']['port']),
-    )
-
     browser.refresh_until("#nodataCPU")
 
     for attempt in retry_slow(TimeoutException):
