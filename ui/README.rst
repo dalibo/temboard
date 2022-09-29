@@ -17,9 +17,9 @@ temBoard is composed of two services:
   you want to manage.
 - A central **web app** to control the agents and collect metrics.
 
-temBoard project provides packages for RHEL 8 & 7, Debian bullseye, buster &
-stretch. See `temboard.readthedocs.io
-<http://temboard.readthedocs.io/en/latest/>`_ for installation instructions.
+temBoard project provides packages for RHEL and clones as well as Debian. See
+`temboard.readthedocs.io <http://temboard.readthedocs.io/en/latest/>`_ for
+installation instructions.
 
 
 ===================
