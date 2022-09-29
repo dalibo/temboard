@@ -2,7 +2,7 @@
 
 Monitor, optimize and configure multiple PostgreSQL instances.
 
-| |Python| |RTD| |Travis| |CircleCI| |PyPI|
+| |PyPI| |Python| |CircleCI| |RTD|
 
 | |Demo|
 
@@ -17,9 +17,9 @@ temBoard is composed of two services:
   you want to manage.
 - A central **web app** to control the agents and collect metrics.
 
-temBoard project provides packages for RHEL 8 & 7, Debian bullseye, buster &
-stretch. See `temboard.readthedocs.io
-<http://temboard.readthedocs.io/en/latest/>`_ for installation instructions.
+temBoard project provides packages for RHEL and clones as well as Debian. See
+`temboard.readthedocs.io <http://temboard.readthedocs.io/en/latest/>`_ for
+installation instructions.
 
 
 ===================
@@ -72,8 +72,4 @@ temBoard is available under the `PostgreSQL License
 
 .. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/docs/temboard.png
    :target: http://labs.dalibo.com/temboard/
-   :alt: temBoard logo: a woodpecker
-
-.. |Travis| image:: https://travis-ci.org/dalibo/temboard.svg?branch=master
-   :target: https://travis-ci.org/dalibo/temboard
-   :alt: Travis
+   :alt: temBoard logo: a bird
