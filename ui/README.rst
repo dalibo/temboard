@@ -72,4 +72,4 @@ temBoard is available under the `PostgreSQL License
 
 .. |temBoard| image:: https://github.com/dalibo/temboard/raw/master/docs/temboard.png
    :target: http://labs.dalibo.com/temboard/
-   :alt: temBoard logo: a woodpecker
+   :alt: temBoard logo: a bird
