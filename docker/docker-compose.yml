@@ -67,10 +67,10 @@ services:
     - /usr/bin/docker:/usr/bin/docker
     - /var/run/docker.sock:/var/run/docker.sock
     links:
-    - instance14:instance14.fqdn
+    - instance14:instance14.acme.tld
     - ui
     environment: &agent-env
-      TEMBOARD_HOSTNAME: instance14.fqdn
+      TEMBOARD_HOSTNAME: instance14.acme.tld
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
@@ -103,11 +103,11 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance12:instance12.fqdn
+      - instance12:instance12.acme.tld
       - ui
     environment:
       <<: *agent-env
-      TEMBOARD_HOSTNAME: instance12.fqdn
+      TEMBOARD_HOSTNAME: instance12.acme.tld
 
   instance10:
     image: postgres:10-alpine
@@ -135,11 +135,11 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance10:instance10.fqdn
+      - instance10:instance10.acme.tld
       - ui
     environment:
       <<: *agent-env
-      TEMBOARD_HOSTNAME: instance10.fqdn
+      TEMBOARD_HOSTNAME: instance10.acme.tld
 
   instance96:
     image: postgres:9.6-alpine
@@ -167,8 +167,8 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance96:instance96.fqdn
+      - instance96:instance96.acme.tld
       - ui
     environment:
       <<: *agent-env
-      TEMBOARD_HOSTNAME: instance96.fqdn
+      TEMBOARD_HOSTNAME: instance96.acme.tld
