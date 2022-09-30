@@ -54,8 +54,8 @@ temBoard is available under the `PostgreSQL License
    :target: https://circleci.com/gh/dalibo/temboard
    :alt: CircleCI
 
-.. |Demo| image:: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
-   :target: https://github.com/dalibo/temboard/raw/master/docs/sc/alerting_dashboard.png
+.. |Demo| image:: https://github.com/dalibo/temboard/raw/master/docs/sc/instance-dashboard.png
+   :target: https://labs.dalibo.com/temboard
    :alt: Screenshot temBoard
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/temboard.svg
