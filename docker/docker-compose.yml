@@ -29,7 +29,7 @@ services:
       - "8888:8888"
 
   repository:
-    image: postgres:14
+    image: postgres:14-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -42,7 +42,7 @@ services:
     ]
 
   instance14:
-    image: postgres:14
+    image: postgres:14-alpine
     command: [
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
@@ -78,7 +78,7 @@ services:
       PGPASSWORD: postgres
 
   instance12:
-    image: postgres:12
+    image: postgres:12-alpine
     ports:
       - 5433:5432
     volumes:
@@ -110,7 +110,7 @@ services:
       TEMBOARD_HOSTNAME: instance12.fqdn
 
   instance10:
-    image: postgres:10
+    image: postgres:10-alpine
     ports:
       - 5434:5432
     volumes:
@@ -142,7 +142,7 @@ services:
       TEMBOARD_HOSTNAME: instance10.fqdn
 
   instance96:
-    image: postgres:9.6
+    image: postgres:9.6-alpine
     ports:
       - 5435:5432
     volumes:
