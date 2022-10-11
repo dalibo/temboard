@@ -446,18 +446,23 @@ APT repositories.
 
 To release a new version:
 
-- Checkout release branch like master or v8.
-- Choose the next version according to [PEP
-  440](https://www.python.org/dev/peps/pep-0440/#version-scheme).
-- Update `ui/temboardui/version.py` and `agent/temboardagent/version.py`
-  without committing. The version must be the same.
-- Generate and push commit and tag with `make release`.
+- Checkout release branch : master for v8.
+- Edit `ui/temboardui/version.py` and `agent/temboardagent/version.py` without
+  committing. The version must be the same and follow [PEP440].
+- Check, commit, tag and push using `make release`.
+
+For stable release, you need write access to Dalibo Labs repositories:
+
 - Wait for [CircleCI pipeline] to publish [GitHub releases].
-  Then download packages with `make download-packages`.
+- Download packages with `make download-packages`.
 - Publish Debian and RPM packages with `make publish-packages`.
+
+To release a v7 minor version, please follow [v7
+documentation](https://temboard.readthedocs.io/en/v7/CONTRIBUTING/#releasing-the-server).
 
 [CircleCI pipeline]: https://app.circleci.com/pipelines/github/dalibo/temboard
 [GitHub releases]: https://github.com/dalibo/temboard/releases
+[PEP440]: https://www.python.org/dev/peps/pep-0440/#version-scheme
 
 
 ## Throw Development Environment
