@@ -127,8 +127,11 @@ BRANCH?=master
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 
 # To test release target, override GIT_REMOTE with your own fork.
-GIT_REMOTE=git@github.com:dalibo/temboard.git
+REMOTE=git@github.com:dalibo/temboard.git
 release:  #: Tag and push a new git release.
+	$(info Checking $(BRANCH) is uptodate)
+	git fetch $(REMOTE) refs/heads/$(BRANCH)
+	git diff --check @..FETCH_HEAD
 	$(info Checking we are on branch $(BRANCH).)
 	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
 	$(info Checking agent and UI version are same)
@@ -137,7 +140,7 @@ release:  #: Tag and push a new git release.
 	$(info Checking source tree is clean)
 	git diff --quiet
 	git tag --annotate --message "Version $(VERSION)" v$(VERSION)
-	git push --follow-tags $(GIT_REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+	git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
