@@ -129,18 +129,21 @@ BRANCH?=master
 # To test release target, override GIT_REMOTE with your own fork.
 REMOTE=git@github.com:dalibo/temboard.git
 release:  #: Tag and push a new git release.
-	$(info Checking $(BRANCH) is uptodate)
-	git fetch $(REMOTE) refs/heads/$(BRANCH)
-	git diff --check @..FETCH_HEAD
-	$(info Checking we are on branch $(BRANCH).)
-	git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
-	$(info Checking agent and UI version are same)
-	grep -q "$(VERSION)" agent/temboardagent/version.py
-	git commit agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
-	$(info Checking source tree is clean)
-	git diff --quiet
-	git tag --annotate --message "Version $(VERSION)" v$(VERSION)
-	git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+	@echo Checking we are on branch $(BRANCH).
+	@git rev-parse --abbrev-ref HEAD | grep -q '^$(BRANCH)$$'
+	@echo Checking $(BRANCH) branch is uptodate.
+	@git fetch --quiet $(REMOTE) refs/heads/$(BRANCH)
+	@git diff --check @..FETCH_HEAD
+	@echo Checking agent and UI version are same.
+	@grep -Fq "$(VERSION)" agent/temboardagent/version.py
+	@echo Creating release commit.
+	@git commit --only --quiet agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
+	@echo Checking source tree is clean.
+	@git diff --quiet
+	@echo Tagging v$(VERSION).
+	@git tag --annotate --message "Version $(VERSION)" v$(VERSION)
+	@echo Pushing tag to $(REMOTE).
+	@git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
