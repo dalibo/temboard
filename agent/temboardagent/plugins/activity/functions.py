@@ -1,6 +1,8 @@
-from .process import Process, memory_total_size
+import logging
 import time
 from resource import getpagesize
+
+from .process import Process, memory_total_size
 
 
 cols = [
@@ -19,9 +21,10 @@ cols = [
     'cpu',
     'memory'
 ]
+logger = logging.getLogger(__name__)
 
 
-def get_activity(conn):
+def get_activity(conn, limit):
     """
     Returns PostgreSQL backend list based on pg_stat_activity view.
     For each backend (process) we need to compute: CPU and mem. usage, I/O
@@ -93,6 +96,7 @@ ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
 
+    query = query + " LIMIT %d" % limit
     backend_list = []
     for row in conn.query(query):
         try:
@@ -133,8 +137,8 @@ ORDER BY
                 'cpu': row['process'].cpu_usage(),
                 'memory': row['process'].mem_usage()
             })
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to process activity row: %s", e)
     return {
         'rows': final_backend_list,
         'cols': cols

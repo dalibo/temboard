@@ -17,6 +17,7 @@ Ensure you use consistent title format.
 - Streamlined docker images, basing on Debian Bullseye, with temBoard installed
   with APT instead of pip.
 - Use auto_configure.sh in docker images. Images are now idempotent.
+- Limit activity view to 300 longest queries.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
