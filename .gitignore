@@ -19,6 +19,7 @@ ui/temboardui/static/manifest.json
 # From dev compose project
 .env
 dev/agent-bash_history
+dev/agent-psql_history
 dev/pip-cache
 dev/venv-py*
 dev/prometheus/targets/*.yaml

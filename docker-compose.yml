@@ -68,6 +68,8 @@ services:
       # Persists bash history. Eases reuse of hupper command when recreating
       # container.
       HISTFILE: /usr/local/src/temboard/dev/agent-bash_history
+      PGUSER: postgres
+      PSQL_HISTORY: /usr/local/src/temboard/dev/agent-psql_history
       # Send TEMBOARD_UI_URL from .env file
       TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
       TEMBOARD_UI_USER: admin
