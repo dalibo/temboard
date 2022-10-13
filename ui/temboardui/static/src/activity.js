@@ -23,7 +23,7 @@ var request = null;
 var intervalDuration = 2;
 var loading = false;
 var loadTimeout;
-var cols;
+var agentColumns;
 
 var el = $('#tableActivity');
 
@@ -201,11 +201,10 @@ function updateActivity(data) {
   $('[data-toggle=popover]').popover('hide');
   table.clear();
   table.rows.add(data[activityMode].rows).draw();
-  cols = data[activityMode].cols;
-  if (!cols)
-  {
-    //Default cols for V7 agent
-    cols = [
+  agentColumns = data[activityMode].columns;
+  if (agentColumns === undefined) {
+    //Default agentColumns for V7 agent
+    agentColumns = [
       'pid',
       'database',
       'client',
@@ -221,11 +220,8 @@ function updateActivity(data) {
       'memory'
     ]
   }
-  for (var mycol in columns){
-      if (!cols.includes( columns[mycol].data))
-      {
-        table.column(mycol).visible(false);
-      }
+  for (var i in columns) {
+    table.column(i).visible(agentColumns.includes(columns[i].data));
   }
   $('pre code').each(function(i, block) {
     hljs.highlightElement(block);

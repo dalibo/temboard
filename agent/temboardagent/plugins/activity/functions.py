@@ -5,7 +5,7 @@ from resource import getpagesize
 from .process import Process, memory_total_size
 
 
-cols = [
+columns = [
     'pid',
     'database',
     'client',
@@ -141,7 +141,7 @@ ORDER BY
             logger.debug("Failed to process activity row: %s", e)
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }
 
 
@@ -220,7 +220,7 @@ ORDER BY
             pass
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }
 
 
@@ -336,5 +336,5 @@ ORDER BY duration DESC
             pass
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }
