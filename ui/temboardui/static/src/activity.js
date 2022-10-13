@@ -53,7 +53,7 @@ var columns = [
   {title: 'PID', data: 'pid', className: 'text-right', orderable: false},
   {title: 'Database', data: 'database', orderable: false},
   {title: 'User', data: 'user', orderable: false},
-  {title: 'Application', data: 'application', orderable: false, defaultContent: ""},
+  {title: 'Application', data: 'application_name', orderable: true, defaultContent: ""},
   {title: 'CPU', data: 'cpu', className: 'text-right'},
   {title: 'mem', data: 'memory', className: 'text-right'},
   {
