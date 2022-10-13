@@ -423,21 +423,6 @@ if (initStateFilters || searchFilter.val()) {
   $('#filters').collapse('show');
 }
 
-/**
-  * Find the index of the column for a given title
-  */
-function getColumnIndex(title) {
-  var i = 0;
-  var len = columns.length;
-  for (i; i < len; i++) {
-    var col = columns[i];
-    if (col.title == title) {
-      return i;
-    }
-  }
-  return undefined;
-}
-
 // copy to clipboard on sql cell click
 $('#tableActivity').on('click', '.sql', function(e) {
   e.preventDefault();
