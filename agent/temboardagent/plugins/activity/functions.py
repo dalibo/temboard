@@ -1,16 +1,18 @@
-from .process import Process, memory_total_size
+import logging
 import time
 from resource import getpagesize
 
+from .process import Process, memory_total_size
 
-cols = [
+
+columns = [
     'pid',
     'database',
     'client',
     'duration',
     'wait',
     'user',
-    'application',
+    'application_name',
     'state',
     'query',
     'iow',
@@ -19,9 +21,10 @@ cols = [
     'cpu',
     'memory'
 ]
+logger = logging.getLogger(__name__)
 
 
-def get_activity(conn):
+def get_activity(conn, limit):
     """
     Returns PostgreSQL backend list based on pg_stat_activity view.
     For each backend (process) we need to compute: CPU and mem. usage, I/O
@@ -42,7 +45,7 @@ SELECT
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
   pg_stat_activity.query AS query,
-  pg_stat_activity.application_name as application
+  pg_stat_activity.application_name as application_name
 FROM
   pg_stat_activity
 WHERE
@@ -62,7 +65,7 @@ SELECT
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
   pg_stat_activity.query AS query,
-  pg_stat_activity.application_name as application
+  pg_stat_activity.application_name as application_name
 FROM
   pg_stat_activity
 WHERE
@@ -83,7 +86,7 @@ SELECT
   pg_stat_activity.usename AS user,
   pg_stat_activity.state AS state,
   pg_stat_activity.query AS query,
-  pg_stat_activity.application_name as application
+  pg_stat_activity.application_name as application_name
 FROM
   pg_stat_activity
 WHERE
@@ -93,6 +96,7 @@ ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
         """
 
+    query = query + " LIMIT %d" % limit
     backend_list = []
     for row in conn.query(query):
         try:
@@ -103,7 +107,7 @@ ORDER BY
                 'duration': row['duration'],
                 'wait': row['wait'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
@@ -124,7 +128,7 @@ ORDER BY
                 'duration': row['duration'],
                 'wait': row['wait'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'state': row['state'],
                 'query': row['query'],
                 'iow': row['process'].iow,
@@ -133,11 +137,11 @@ ORDER BY
                 'cpu': row['process'].cpu_usage(),
                 'memory': row['process'].mem_usage()
             })
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to process activity row: %s", e)
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }
 
 
@@ -160,7 +164,7 @@ SELECT
     - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
   pg_stat_activity.state AS state,
   pg_stat_activity.query AS query,
-  pg_stat_activity.application_name as application
+  pg_stat_activity.application_name as application_name
 FROM
   pg_catalog.pg_locks JOIN pg_catalog.pg_stat_activity
     ON (pg_catalog.pg_locks.pid = pg_catalog.pg_stat_activity.pid)
@@ -177,7 +181,7 @@ ORDER BY
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -199,7 +203,7 @@ ORDER BY
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -216,7 +220,7 @@ ORDER BY
             pass
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }
 
 
@@ -238,7 +242,7 @@ SELECT
   duration,
   state,
   query,
-  application
+  application_name
 FROM (
   SELECT
     blocking.pid,
@@ -251,7 +255,7 @@ FROM (
       - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
     blocking.relation::regclass AS relation,
     pg_stat_activity.state AS state,
-    pg_stat_activity.application_name as application
+    pg_stat_activity.application_name as application_name
   FROM
     pg_locks AS blocking
     JOIN (SELECT transactionid FROM pg_locks WHERE NOT granted) AS blocked
@@ -272,7 +276,7 @@ FROM (
       - pg_stat_activity.query_start))::numeric,2)::FLOAT AS duration,
     blocking.relation::regclass AS relation,
     pg_stat_activity.state AS state,
-    pg_stat_activity.application_name as application
+    pg_stat_activity.application_name as application_name
   FROM
     pg_locks AS blocking
     JOIN (SELECT database, relation, mode FROM pg_locks WHERE NOT granted
@@ -284,8 +288,6 @@ FROM (
   WHERE
     blocking.granted
 ) AS sq
-GROUP BY pid, query, mode, locktype, duration, datname, usename, application,
-  relation, state
 ORDER BY duration DESC
     """
     backend_list = []
@@ -295,7 +297,7 @@ ORDER BY duration DESC
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -317,7 +319,7 @@ ORDER BY duration DESC
                 'pid': row['pid'],
                 'database': row['database'],
                 'user': row['user'],
-                'application': row['application'],
+                'application_name': row['application_name'],
                 'mode': row['mode'],
                 'type': row['type'],
                 'relation': row['relation'],
@@ -334,5 +336,5 @@ ORDER BY duration DESC
             pass
     return {
         'rows': final_backend_list,
-        'cols': cols
+        'columns': columns
     }

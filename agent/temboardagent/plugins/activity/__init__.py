@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 @bottle.get('/')
 def get_activity(pgconn):
-    return activity_functions.get_activity(pgconn)
+    limit = int(request.query.get('limit', 300))
+    return activity_functions.get_activity(pgconn, limit)
 
 
 @bottle.get('/waiting')

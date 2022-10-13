@@ -23,7 +23,7 @@ var request = null;
 var intervalDuration = 2;
 var loading = false;
 var loadTimeout;
-var cols;
+var agentColumns;
 
 var el = $('#tableActivity');
 
@@ -53,7 +53,7 @@ var columns = [
   {title: 'PID', data: 'pid', className: 'text-right', orderable: false},
   {title: 'Database', data: 'database', orderable: false},
   {title: 'User', data: 'user', orderable: false},
-  {title: 'Application', data: 'application', orderable: false, defaultContent: ""},
+  {title: 'Application', data: 'application_name', orderable: true, defaultContent: ""},
   {title: 'CPU', data: 'cpu', className: 'text-right'},
   {title: 'mem', data: 'memory', className: 'text-right'},
   {
@@ -201,11 +201,10 @@ function updateActivity(data) {
   $('[data-toggle=popover]').popover('hide');
   table.clear();
   table.rows.add(data[activityMode].rows).draw();
-  cols = data[activityMode].cols;
-  if (!cols)
-  {
-    //Default cols for V7 agent
-    cols = [
+  agentColumns = data[activityMode].columns;
+  if (agentColumns === undefined) {
+    //Default agentColumns for V7 agent
+    agentColumns = [
       'pid',
       'database',
       'client',
@@ -221,11 +220,8 @@ function updateActivity(data) {
       'memory'
     ]
   }
-  for (var mycol in columns){
-      if (!cols.includes( columns[mycol].data))
-      {
-        table.column(mycol).visible(false);
-      }
+  for (var i in columns) {
+    table.column(i).visible(agentColumns.includes(columns[i].data));
   }
   $('pre code').each(function(i, block) {
     hljs.highlightElement(block);
@@ -421,21 +417,6 @@ $.fn.dataTable.ext.search.push(
 
 if (initStateFilters || searchFilter.val()) {
   $('#filters').collapse('show');
-}
-
-/**
-  * Find the index of the column for a given title
-  */
-function getColumnIndex(title) {
-  var i = 0;
-  var len = columns.length;
-  for (i; i < len; i++) {
-    var col = columns[i];
-    if (col.title == title) {
-      return i;
-    }
-  }
-  return undefined;
 }
 
 // copy to clipboard on sql cell click

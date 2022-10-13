@@ -131,7 +131,8 @@ class DBConnectionPool:
         if not conn:
             logger.debug("Opening connection to db %s.", dbname)
             pqvars = self.postgres.pqvars(dbname=dbname)
-            conn = self.pool.setdefault(dbname, connect(**pqvars))
+            conn = retry_connect(connect, self.postgres.app, **pqvars)
+            self.pool[dbname] = conn
 
         return conn
 

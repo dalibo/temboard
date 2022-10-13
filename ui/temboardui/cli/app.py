@@ -108,7 +108,6 @@ class TemboardApplication(BaseApplication):
         self.log_versions()
 
         setproctitle = ProcTitleManager(prefix='temboard: ')
-        setproctitle.setup()
 
         # T A S K   M A N A G E R
 
@@ -141,6 +140,7 @@ class TemboardApplication(BaseApplication):
         )
 
         self.apply_config()
+        setproctitle.setup()
 
         return command.main(args)
 

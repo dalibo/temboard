@@ -115,7 +115,7 @@ If you need to execute queries in monitored PostgreSQL instances, execute psql
 inside the corresponding agent container using the following command:
 
 ``` console
-$ docker-compose exec agent0 sudo -iu postgres psql
+$ docker-compose exec agent0 psql
 psql (13.5 (Debian 13.5-0+deb11u1), server 14.1)
 WARNING: psql major version 13, server major version 14.
          Some psql features might not work.
@@ -159,7 +159,7 @@ Access Postgres instance monitored by stable agent using the following compose
 invocation:
 
 ``` console
-$ docker-compose exec agent-stable sudo -u postgres psql
+$ docker-compose exec agent-stable psql
 psql (13.5 (Debian 13.5-0+deb11u1), server 13.7)
 Type "help" for help.
 
