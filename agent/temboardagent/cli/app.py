@@ -66,7 +66,6 @@ class TemboardAgentApplication(BaseApplication):
         command = self.commands[command_name]
 
         setproctitle = ProcTitleManager(prefix='temboard-agent: ')
-        setproctitle.setup()
 
         task_queue = taskmanager.Queue()
         event_queue = taskmanager.Queue()
@@ -100,6 +99,7 @@ class TemboardAgentApplication(BaseApplication):
         )
 
         self.apply_config()
+        setproctitle.setup()
 
         if '.' not in self.config.temboard.hostname:
             logger.warning(
