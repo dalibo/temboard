@@ -5,6 +5,7 @@ from bottle import Bottle, default_app, request
 from . import functions as activity_functions
 from ...notification import NotificationMgmt, Notification
 from ...tools import validate_parameters
+from ...queries import QUERIES
 
 
 bottle = Bottle()
@@ -52,6 +53,40 @@ def post_activity_kill(pgconn):
             logger.exception("Failed to push notification:")
 
     return dict(backends=backends)
+
+
+LOCKS_COLUMNS = [
+    'pid',
+    'locktype',
+    'database',
+    'schema',
+    'relation',
+    'mode',
+    'granted',
+    'blocking_pid',
+    'waitstart',
+    'waiting_pids',
+]
+
+
+@bottle.get('/locks')
+def get_locks(pgconn):
+    # Returns waiting and blocking locks
+
+    discover = default_app().temboard.discover.ensure_latest()
+    if discover['postgres']['version_num'] < 100000:
+        try:
+            LOCKS_COLUMNS.remove('waitstart')
+        except ValueError:
+            pass
+
+    limit = int(request.query.get('limit', 300))
+    query = QUERIES['activity-locks'] + " LIMIT %d" % limit
+
+    return dict(
+        columns=SESSION_COLUMNS,
+        rows=[row for row in pgconn.query(query)],
+    )
 
 
 class ActivityPlugin:

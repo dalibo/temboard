@@ -111,8 +111,8 @@ ORDER BY
                 'state': row['state'],
                 'query': row['query'],
                 'process': Process(row['pid'], mem_total, page_size)})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to process activity row: %s", e)
 
     time.sleep(0.1)
     final_backend_list = []

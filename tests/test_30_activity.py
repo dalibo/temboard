@@ -1,3 +1,5 @@
+import errno
+import json
 import logging
 from queue import Queue
 from time import sleep
@@ -52,7 +54,7 @@ def test_running(browser, pg_sleep, registered_agent, ui_url):
         assert 'pg_sleep' not in query
 
 
-def test_lock(browser, pg_lock, registered_agent, ui_url):
+def test_blocking_waiting(browser, pg_lock, registered_agent, ui_url):
     browser.get(ui_url)  # Goto home
     browser.select("a.instance-link").click()  # Click first instance
     browser.select("div.sidebar a.activity").click()  # Click Activity
@@ -87,15 +89,38 @@ def test_lock(browser, pg_lock, registered_agent, ui_url):
     assert 'LOCK TABLE locked_table' in td.text
 
 
+def test_locks(query_agent, pg_lock):
+    out = query_agent('/activity/locks')
+    data = json.loads(out)
+    assert data['rows']
+
+    waiting = False
+    blocking = False
+    for row in data['rows']:
+        waiting = waiting or not row['granted']
+        blocking = blocking or len(row['waiting_pids']) > 0
+
+    assert waiting
+    assert blocking
+
+
 @pytest.fixture
 def pg_lock(psql, agent_env):
     """Ensure one backend is waiting for another in monitored postgres."""
     EOF = None  # For amoffat/sh stdin Queue.
 
-    locking = psql(_in=Queue(), _bg=True, _iter=True)
+    locking = psql(_in=Queue(), _bg=True, _iter_noblock=True)
+    locking.process.stdin.put("DROP TABLE IF EXISTS locked_table;\n")
     locking.process.stdin.put(
         "CREATE TABLE locked_table AS SELECT generate_series(1, 5);\n")
-    assert 'SELECT 5' in next(locking)  # Wait for CREATE to return.
+    for attempt in retry_fast(OSError):
+        with attempt:
+            line = next(locking)
+            if line == errno.EWOULDBLOCK:
+                raise OSError()
+            if 'DROP TABLE' in line:
+                continue
+            assert 'SELECT 5' in line, line  # Wait for CREATE to return.
     locking.process.stdin.put("BEGIN;\n")
     locking.process.stdin.put("LOCK TABLE locked_table IN EXCLUSIVE MODE;\n")
     assert locking.is_alive()
@@ -104,11 +129,11 @@ def pg_lock(psql, agent_env):
     waiting = psql(_in=Queue(), _bg=True)
     waiting.process.stdin.put(
         "UPDATE locked_table SET generate_series = generate_series + 1;\n")
-    waiting.process.stdin.put(EOF)
     assert waiting.is_alive()
 
     yield None
 
+    waiting.process.stdin.put(EOF)
     locking.process.stdin.put(EOF)
     terminate(locking)
     terminate(waiting)

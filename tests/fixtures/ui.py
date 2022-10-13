@@ -465,3 +465,28 @@ def ui_url(ui_env):
     out = hostname("--all-ip-addresses")
     ip, *_ = str(out).split()
     yield f"https://{ip}:{ui_env['TEMBOARD_PORT']}"
+
+
+@pytest.fixture
+def query_agent(agent, ui_auto_configure, ui_env, ui_sudo):
+    # Workaround a mis-behaviour with amoffat/sh on Python 3.10 where stdout is
+    # empty.
+    def client(path):
+        url = f"{agent.base_url}{path}"
+        proc = subprocess.Popen(
+            [ui_sudo._path] + ui_sudo._partial_baked_args +
+            ['temboard', 'query-agent', url],
+            env=ui_env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        proc.stdin.close()
+        proc.wait()
+        # Copy to capsys
+        for line in proc.stderr:
+            sys.stderr.buffer.write(line)
+        assert 0 == proc.returncode
+        return proc.stdout.read()
+
+    return client
