@@ -110,9 +110,9 @@ tests:  #: Execute all tests.
 	cd agent/; flake8
 	cd ui/; flake8
 	flake8 tests/ dev/importlog.py
-	pytest -x agent/tests/unit/
-	pytest -x ui/tests/unit/
-	pytest -x tests/
+	pytest --exitfirst agent/tests/unit/
+	pytest --exitfirst ui/tests/unit/
+	pytest --exitfirst tests/
 
 clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
