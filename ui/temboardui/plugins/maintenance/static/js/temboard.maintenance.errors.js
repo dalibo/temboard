@@ -2,7 +2,7 @@ function onError(xhr) {
   if (xhr.status == 401) {
     showNeedsLoginMsg();
   } else {
-    alert("There was an error: " + xhr.responseJSON.error);
+    showError(xhr)
   }
 }
 
