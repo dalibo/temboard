@@ -34,6 +34,7 @@
         }
       },
       setHTML: function(html) {
+        this.code = null
         this.error = html
       }
     }
