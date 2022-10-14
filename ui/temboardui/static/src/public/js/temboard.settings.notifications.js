@@ -1,4 +1,5 @@
 function sendEmail() {
+  clearError()
   $.ajax({
     url: '/json/test_email',
     type: 'post',
@@ -11,17 +12,14 @@ function sendEmail() {
       alert(msg);
     },
     error: function(xhr) {
-      var msg = 'Mail could not be sent.';
-      if (xhr.responseText) {
-        msg += '\nError: ';
-        msg += escapeHtml(JSON.parse(xhr.responseText).error);
-      }
-      alert(msg);
+      console.log("error", xhr)
+      showError(xhr)
     }
   });
 }
 
 function sendSms() {
+  clearError()
   $.ajax({
     url: '/json/test_sms',
     type: 'post',
@@ -31,14 +29,7 @@ function sendSms() {
     success: function(data) {
       alert("Test SMS sent");
     },
-    error: function(xhr) {
-      var msg = 'SMS could not be sent.';
-      if (xhr.responseText) {
-        msg += '\nError: ';
-        msg += escapeHtml(JSON.parse(xhr.responseText).error);
-      }
-      alert(msg);
-    }
+    error: showError
   });
 }
 

@@ -1,5 +1,30 @@
-import './temboard.scss'
+import Vue from 'vue/dist/vue.esm'
 import 'font-awesome/css/font-awesome.css'
+
+import './temboard.scss'
+import ErrorRow from './components/ErrorRow.vue'
+
+
+window.errorApp = new Vue({
+  el: '#errorApp',
+  components: {
+    error: ErrorRow,
+  },
+  template: '<error ref="error"></error>'
+})
+
+// Error shortcuts
+window.clearError = function() {
+  window.errorApp.$refs.error.clear()
+}
+
+window.showError = function(error) {
+  if (typeof error === 'string') {
+    window.errorApp.$refs.error.$refs.error.setHTML(error)
+  } else {
+    window.errorApp.$refs.error.fromXHR(error)
+  }
+}
 
 $(() => {
   // Mark active link in sidebar
