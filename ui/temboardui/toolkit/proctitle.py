@@ -3,7 +3,7 @@
 # This is a pure python implementation of process title edition
 #
 # It is based on https://github.com/dvarrazzo/py-setproctitle which contains
-# codes from Postgres itself. Postgres as a good experience one editing process
+# codes from Postgres itself. Postgres has a good experience on editing process
 # title on various plateform. However, it's in C.
 #
 # There is not a single portable way accross OS, Python version and even ps
@@ -200,7 +200,7 @@ class ProcTitleManager(object):
         if not self.address:
             return
 
-        # cf. https://dali.bo/tYIql
+        # cf. https://dali.bo/tYIql
         title = self.prefix + title
         title = title.encode('utf-8')
         # Truncate title to fit in argv memory segment.
