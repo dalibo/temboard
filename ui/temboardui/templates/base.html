@@ -28,7 +28,6 @@
       {% end %}
     }
   </script>
-  <div id="modalError" /></div>
   <div>
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
     <script src="/js/jquery-2.1.4.min.js"></script>
@@ -188,6 +187,7 @@
     </div>
     {% else %}
     <div class="container-fluid pt-3">
+      <div id="errorApp"></div>
       {% block content %} {% end %}
     </div>
     {% end %} {# end if instance #}
