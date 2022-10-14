@@ -24,6 +24,9 @@
           var contentType = xhr.getResponseHeader('content-type')
           if (contentType.includes('application/json')) {
             this.error = JSON.parse(xhr.responseText).error
+            if (this.error === "") {
+              this.error = 'Unknown error. Please contact temBoard administrator.'
+            }
           }
           else if (contentType.includes('text/plain')) {
             this.error = `<pre>${xhr.responseText}</pre>`
