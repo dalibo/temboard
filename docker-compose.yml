@@ -145,7 +145,7 @@ services:
 
   # First instance.
   postgres-stable:
-    image: postgres:13-alpine
+    image: postgres:9.6-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
