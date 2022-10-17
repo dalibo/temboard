@@ -354,6 +354,12 @@ jobs:
       environment:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: *PGPASSWORD
+      command: [
+      -c, log_statement=all,
+      -c, log_connections=on,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=repository,
+      ]
     - image: selenium/standalone-firefox
       environment:
         SCREEN_WIDTH: 1280
