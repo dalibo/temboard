@@ -136,7 +136,7 @@ generate_configuration() {
 	level = ${TEMBOARD_LOGGING_LEVEL-INFO}
 
 	[monitoring]
-	# purge_after = 365
+	# purge_after = 730
 
 	[statements]
 	# purge_after = 7

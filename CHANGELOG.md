@@ -18,6 +18,8 @@ Ensure you use consistent title format.
   with APT instead of pip.
 - Use auto_configure.sh in docker images. Images are now idempotent.
 - Limit activity view to 300 longest queries.
+- Monitoring purge_after default value is now set to 730 (2 years), it was empty
+  before (no limit).
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
