@@ -4,7 +4,7 @@ version: '3.8'
 services:
   # The Postgres server to store temBoard data.
   repository:
-    image: postgres:15beta4-alpine
+    image: postgres:15-alpine
     ports: ["5432:5432"]
     environment:
       POSTGRES_USER: postgres
@@ -26,7 +26,7 @@ services:
 
   # First instance.
   postgres0:
-    image: &postgres_image postgres:14-alpine
+    image: &postgres_image postgres:15-alpine
     # Exposed port is important for dev/switchover.sh
     ports: [15432:5432]
     environment: &postgres_env
@@ -145,7 +145,7 @@ services:
 
   # First instance.
   postgres-stable:
-    image: postgres:13-alpine
+    image: postgres:9.6-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
