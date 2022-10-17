@@ -185,7 +185,7 @@ def test_handle_connection(mocker):
     handle_stream = mocker.patch(
         'temboardui.autossl.AutoHTTPSServer.handle_stream'
     )
-    ssl_wrap_socket = mocker.patch('temboardui.autossl.ssl_wrap_socket')
+    sotc = mocker.patch('temboardui.autossl.ssl_options_to_context')
     EasySSLIOStream = mocker.patch('temboardui.autossl.EasySSLIOStream')
 
     from temboardui.autossl import AutoHTTPSServer
@@ -198,7 +198,7 @@ def test_handle_connection(mocker):
     handle_stream.return_value = Future()
     server._handle_connection(Mock(name='connection'), '127.0.0.1')
 
-    assert ssl_wrap_socket.called is True
+    assert sotc.called is True
     assert EasySSLIOStream.called is True
     assert handle_stream.called is True
 
