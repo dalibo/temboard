@@ -101,6 +101,19 @@ def iter_configparser_values(parser, filename='config'):
     for section in parser.sections():
         for name, value in parser.items(section):
             name = '%s_%s' % (section, name)
+
+            if value.startswith('"') and value.startswith('"'):
+                raise UserError(
+                    "You must not quote string in configuration (%s)."
+                    % name.replace('_', '.')
+                )
+
+            if value.startswith("'") and value.startswith("'"):
+                raise UserError(
+                    "You must not quote string in configuration (%s)."
+                    % name.replace('_', '.')
+                )
+
             yield Value(name, value, origin=filename)
 
 
