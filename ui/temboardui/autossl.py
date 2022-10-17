@@ -46,7 +46,7 @@ from tornado.log import (
     app_log,
     gen_log,
 )
-from tornado.netutil import ssl_wrap_socket
+from tornado.netutil import ssl_options_to_context
 from tornado.util import errno_from_exception
 
 
@@ -174,10 +174,18 @@ class AutoHTTPSServer(HTTPServer):
         #
         # Actually, connection is just a socket.
         try:
-            connection = ssl_wrap_socket(connection,
-                                         self.ssl_options,
-                                         server_side=True,
-                                         do_handshake_on_connect=False)
+            context = ssl_options_to_context(self.ssl_options)
+        except Exception as e:
+            logger.error("Failed to setup SSL context: %s", e)
+            logger.error("Check SSL configuration and files.")
+            return connection.close()
+
+        try:
+            connection = context.wrap_socket(
+                connection,
+                server_side=True,
+                do_handshake_on_connect=False,
+            )
         except ssl.SSLError as err:
             if err.args[0] == ssl.SSL_ERROR_EOF:
                 return connection.close()
