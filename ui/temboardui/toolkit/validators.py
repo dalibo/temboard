@@ -140,13 +140,6 @@ def commalist(raw):
     return list(filter(None, [w.strip() for w in raw.split(',')]))
 
 
-def quoted(raw):
-    for char in ['"', '\'']:
-        if raw.startswith(char) and raw.endswith(char):
-            raw = raw[1:-1]
-    return raw
-
-
 def nday(raw):
     nday = int(raw)
 

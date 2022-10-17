@@ -9,7 +9,6 @@ from temboardagent.command import (
     exec_script,
 )
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.toolkit.validators import quoted
 from temboardagent.notification import NotificationMgmt, Notification
 
 from .types import T_CONTROL
@@ -85,7 +84,7 @@ def post_pg_control(pgconn):
 class AdministrationPlugin:
     PG_MIN_VERSION = (90400, 9.4)
     options_specs = [
-        OptionSpec('administration', 'pg_ctl', default=None, validator=quoted),
+        OptionSpec('administration', 'pg_ctl', default=None),
     ]
 
     def __init__(self, app, **kw):
