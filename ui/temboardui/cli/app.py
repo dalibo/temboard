@@ -426,7 +426,7 @@ def list_options_specs():
     yield OptionSpec(s, 'twilio_from', default=None)
 
     s = 'monitoring'
-    yield OptionSpec(s, 'purge_after', default=None, validator=v.nday)
+    yield OptionSpec(s, 'purge_after', default=730, validator=v.nday)
 
     s = 'statements'
     yield OptionSpec(s, 'purge_after', default=7, validator=v.nday)
