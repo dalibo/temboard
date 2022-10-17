@@ -101,6 +101,19 @@ def iter_configparser_values(parser, filename='config'):
     for section in parser.sections():
         for name, value in parser.items(section):
             name = '%s_%s' % (section, name)
+
+            if value.startswith('"') and value.startswith('"'):
+                raise UserError(
+                    "You must not quote string in configuration (%s)."
+                    % name.replace('_', '.')
+                )
+
+            if value.startswith("'") and value.startswith("'"):
+                raise UserError(
+                    "You must not quote string in configuration (%s)."
+                    % name.replace('_', '.')
+                )
+
             yield Value(name, value, origin=filename)
 
 
@@ -194,26 +207,37 @@ class MergedConfiguration(DotDict):
         try:
             self.add_values(iter_args_values(args))
             self.add_values(iter_environ_values(environ))
-
-            if pwd:
-                # configfile and default values are relative to configfile
-                # directory.
-                oldpwd = os.getcwd()
-                os.chdir(pwd)
-            else:
-                oldpwd = None
-
-            if parser:
-                self.add_values(iter_configparser_values(parser))
-            self.add_values(iter_defaults(self.specs))
-
-            if oldpwd:
-                try:
-                    os.chdir(oldpwd)
-                except OSError as e:
-                    logger.warning("Can't move back to %s: %s", oldpwd, e)
         except ValueError as e:
             logger.debug("Bad value %s.", e)
             raise UserError("Failed to load configuration.")
+
+        if pwd:
+            try:
+                # configfile and default values are relative to configfile
+                # directory.
+                oldpwd = os.getcwd()
+            except OSError as e:
+                raise UserError("Failed to get CWD: %s" % e)
+
+            try:
+                os.chdir(pwd)
+            except OSError as e:
+                raise UserError("Failed to access %s: %s" % (pwd, e))
+        else:
+            oldpwd = None
+
+        try:
+            if parser:
+                self.add_values(iter_configparser_values(parser))
+            self.add_values(iter_defaults(self.specs))
+        except ValueError as e:
+            logger.debug("Bad value %s.", e)
+            raise UserError("Failed to load configuration.")
+
+        if oldpwd:
+            try:
+                os.chdir(oldpwd)
+            except OSError as e:
+                logger.warning("Can't move back to %s: %s", oldpwd, e)
 
         self.check_required()

@@ -185,7 +185,7 @@ generate_configuration() {
 	#
 	[administration]
 	# Path to pg_ctl. %s is either start, restart or reload.
-	pg_ctl = '${pg_ctl} %s -D ${PGDATA}'
+	pg_ctl = ${pg_ctl} %s -D ${PGDATA}
 
 	[dashboard]
 	# Interval, in second, between each run of the process collecting

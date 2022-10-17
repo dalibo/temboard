@@ -24,6 +24,12 @@ like this:
 ui_url = https://temboard.acme.tld:8888
 ```
 
+Remove quotes around `pg_ctl` command like this:
+``` conf
+[administration]
+pg_ctl = /usr/pgsql-15/bin/pg_ctl ...
+```
+
 Fetch signing key using `temboard-agent fetch-key`.
 
 Flush background tasks with the following command:

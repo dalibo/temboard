@@ -20,6 +20,7 @@ Ensure you use consistent title format.
 - Limit activity view to 300 longest queries.
 - Monitoring purge_after default value is now set to 730 (2 years), it was empty
   before (no limit).
+- pg_ctl parameter must not be quoted now.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
