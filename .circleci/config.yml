@@ -93,6 +93,7 @@ workflows:
         - stage1-pkg-rockylinux9
         - stage1-pkg-rockylinux8
         - stage1-pkg-centos7
+        - stage1-pkg-bookworm
         - stage1-pkg-bullseye
         - stage1-pkg-buster
         - stage1-pkg-stretch
