@@ -7,15 +7,10 @@ import 'datatables.net-bs4/css/dataTables.bootstrap4.css'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/default.css'
 
-import ErrorRow from './components/ErrorRow.vue'
-
 datatables(window, $)
 dtbs4(window, $)
 
 window.activityVue = new Vue({
-  components: {
-    'error': ErrorRow
-  },
   el: "#activityVue"
 })
 
@@ -179,14 +174,14 @@ function load() {
     async: true,
     contentType: "application/json",
     success: function (data) {
-      activityVue.$refs.error.clear()
+      clearError()
       updateActivity(data);
     },
     error: function(xhr, status) {
       if (status == 'abort') {
         return;
       }
-      activityVue.$refs.error.fromXHR(xhr)
+      showError(xhr)
     },
     complete: function(xhr, status) {
       $('#loadingIndicator').addClass('invisible');
