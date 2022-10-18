@@ -120,7 +120,7 @@ class TemboardAgentApplication(BaseApplication):
         if cluster_name:
             setproctitle.prefix += cluster_name + ': '
 
-        QUERIES.load()
+        QUERIES.load(self.discover.data['postgres'].get('version_num'))
 
         self.start_datetime = datetime.datetime.now()
         self.reload_datetime = None
