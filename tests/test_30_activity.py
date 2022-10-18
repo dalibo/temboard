@@ -104,6 +104,22 @@ def test_locks(query_agent, pg_lock):
     assert blocking
 
 
+def test_sessions(query_agent, pg_lock):
+    out = query_agent('/activity/sessions')
+    data = json.loads(out)
+    assert data['rows']
+
+    waiting = False
+    blocking = False
+    for row in data['rows']:
+        waiting = waiting or row['waiting']
+        blocking = blocking or row['blocking']
+        assert row['proc_state'] in ('R', 'S', 'D', None)
+
+    assert waiting
+    assert blocking
+
+
 @pytest.fixture
 def pg_lock(psql, agent_env):
     """Ensure one backend is waiting for another in monitored postgres."""
