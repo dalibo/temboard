@@ -6,6 +6,7 @@
 
 ## Upgrade `7.11` to `8.0`
 
+temBoard UI 8.0 supports agent version 7.11 and 8.0.
 Upgrade temBoard UI before upgrading agents.
 
 temBoard 8.0 requires changes in database schema.
