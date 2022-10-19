@@ -6,6 +6,11 @@ from argparse import _VersionAction
 from socket import getfqdn
 from textwrap import dedent
 
+try:
+    import hupper
+except ImportError:
+    hupper = None
+
 from ..core import workers
 from ..discover import Discover, inspect_versions
 from ..queries import QUERIES
@@ -99,6 +104,10 @@ class TemboardAgentApplication(BaseApplication):
         )
 
         self.apply_config()
+
+        if self.debug and hupper and command.is_service:
+            self.setup_autoreload()
+
         setproctitle.setup()
 
         if '.' not in self.config.temboard.hostname:
@@ -209,6 +218,17 @@ class TemboardAgentApplication(BaseApplication):
     def reload(self):
         super().reload()
         self.reload_datetime = datetime.datetime.now()
+
+    def setup_autoreload(self):
+        logger.debug("Enabling code autoreload using hupper.")
+        reloader = hupper.start_reloader('temboardagent.__main__.main')
+        reloader.watch_files(QUERIES.iter_files())
+        reloader.watch_files(filter(None, [
+            self.config.temboard.configfile,
+            self.config.temboard.ssl_ca_cert_file,
+            self.config.temboard.ssl_cert_file,
+            self.config.temboard.ssl_key_file,
+        ]))
 
 
 class TemboardAgentConfiguration(MergedConfiguration):

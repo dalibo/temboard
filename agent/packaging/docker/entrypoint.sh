@@ -25,6 +25,14 @@ export PGDATABASE=${PGDATABASE-postgres}
 
 conf=$(find /etc/temboard-agent -name temboard-agent.conf)
 if [ -z "${conf}" ] ; then
+	for _ in {10..0} ; do
+		if PGHOST=/var/run/postgresql psql -Atc 'SELECT 1' ; then
+			break
+		else
+			sleep 0.5
+		fi
+	done
+
 	if ! PGHOST=/var/run/postgresql /usr/share/temboard-agent/auto_configure.sh "${TEMBOARD_UI_URL}" ; then
 		cat /var/log/temboard-agent-auto-configure.log >&2
 		exit 1

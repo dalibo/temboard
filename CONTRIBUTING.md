@@ -95,7 +95,7 @@ agent and execute the following commands.
 
 ``` console
 $ docker-compose exec agent0 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres hupper3 -m temboardagent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
@@ -107,6 +107,16 @@ monitored Postgres instance is named `postgres0.dev`.
 
 Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
+
+
+## Executing in debug mode
+
+temboard and temboard-agent commands has a debug mode. In debug mode, logs are
+verbose, file changes triggers an automatic restart of the process, an
+unhandled exception drops in an interactive PDB debugger prompt.
+
+Enable debug mode by setting DEBUG=y environment variable. For agent, only long
+running commands have autoreload.
 
 
 ## psql for Monitored PostgreSQL
@@ -132,7 +142,7 @@ for it likewise:
 
 ``` console
 $ docker-compose exec agent1 /bin/bash
-root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres hupper3 -m temboardagent
+root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
 2022-01-11 10:12:55,130 [ 1568] [app             ] DEBUG: Looking for plugin activity.
