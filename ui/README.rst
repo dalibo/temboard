@@ -26,9 +26,10 @@ installation instructions.
  Docker Quickstart
 ===================
 
-We provide a complete *testing* environment based on Docker ! Please read our
-`QUICKSTART <https://github.com/dalibo/temboard/blob/master/QUICKSTART.md>`_
-guide for more details.
+We provide a complete *testing* environment based on Docker !
+Please read our QUICKSTART_ guide for more details.
+
+.. _QUICKSTART: https://temboard.readthedocs.io/en/latest/quickstart/
 
 
 ============

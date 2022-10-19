@@ -8,7 +8,7 @@ theme:
   name: readthedocs
 nav:
 - Home: index.md
-- Quick Start: QUICKSTART.md
+- Quick Start: quickstart.md
 - Install:
   - Install the server: server_install.md
   - Install the agent: agent_install.md
