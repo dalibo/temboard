@@ -1,4 +1,4 @@
-# Contributing
+<h1>Contributing</h1>
 
 Thanks for your interest in contributing to temBoard. temBoard is an open
 source project welcoming contribution from idea to code and more.
@@ -159,7 +159,7 @@ instances. Executing `dev/switchover.sh` one more time restore the original
 topology.
 
 
-## Testing with previous stable version
+## Testing previous version
 
 Compose project for development configures a stable agent named `agent-stable`.
 This agent is preregistered in development UI. Browser `postgres-stable`
@@ -383,18 +383,19 @@ Building RPM packages for RHEL and compatible clones requires Docker and Docker
 Compose for isolation. Uploading to Dalibo Labs requires internal project
 yum-labs and access.
 
-UI and agent each has `packaging/rpm` directory with a Makefile and scripts to
-build RPM packages. Use the following targets to build and push packages:
+UI and agent each has `packaging/rpm` directory with a Makefile and scripts to build RPM packages.
+Use `build-rhelX` make target like this:
 
-- `make -C ui/packaging/rpm/ build-rhel<version>` - Build RPM.
-- `make -C ui/packaging/rpm/ push` - Push **all** packages to yum.dalibo.org/labs.
-- `make -C ui/packaging/rpm/ release-rhel<version>` - Build and push alltogether.
+``` bash
+make -C ui/packaging/rpm/ build-rhel9
+```
 
-Version can be either 8 or 7. `agent/packaging/rpm/Makefile` provides the same
-targets.
+Version can be either 9, 8 or 7.
+`agent/packaging/rpm/Makefile` provides the same targets.
 
-The builder script search for wheels in `ui/dist/` and if not found, tries to
-download wheel from PyPI. Use top level `make dist` to generate a snapshot.
+The builder script search for wheels in `ui/dist/`
+and if not found, tries to download wheel from PyPI.
+Use top level `make dist` to generate wheels.
 
 
 ## Building Debian Package
@@ -411,17 +412,18 @@ Define environment variables `DEBFULLNAME` and `DEBEMAIL`. mkchanges.sh scripts
 signs changes with your GPG key matching these environment variables.
 
 Each UI and agent has `packaging/deb/` directory with a Makefile and scripts to
-build packages. Use the following make target to build and push packages:
+build packages. Use `build-<codename>` target like this:
 
-- `make -C ui/packaging/deb build-<codename>` - Build.
-- `make -C ui/packaging/deb push` - Push previously build package.
-- `make -C ui/packaging/deb release-<codename>` - Build and push alltogether.
+``` bash
+make -C ui/packaging/deb build-bullseye
+```
 
-`codename` is one of `bullseye`, `buster` or `stretch`.
+`codename` is one of `bookworm`, `bullseye`, `buster` or `stretch`.
 `agent/packaging/deb/Makefile` provides the same targets.
 
-The builder script search for wheels in `ui/dist/` and if not found, tries to
-download wheel from PyPI. Use top level `make dist` to generate a snapshot.
+The builder script search for wheels in `ui/dist/`
+and if not found, tries to download wheel from PyPI.
+Use top level `make dist` to generate wheels.
 
 
 ## Testing with Grafana
@@ -475,7 +477,7 @@ documentation](https://temboard.readthedocs.io/en/v7/CONTRIBUTING/#releasing-the
 [PEP440]: https://www.python.org/dev/peps/pep-0440/#version-scheme
 
 
-## Throw Development Environment
+## Throw Environment
 
 `make clean` destroy virtual environments and docker services. Restart from
 `make develop` as documented above. If you only need to trash services, use

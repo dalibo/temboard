@@ -159,7 +159,7 @@ jobs:
         - ui/dist/*.whl
 
   doc:
-    docker: [{image: "python:3.6"}]
+    docker: [{image: "python:3.7"}]
     working_directory: *working_directory
     steps:
     - checkout

@@ -1,5 +1,3 @@
-# Upgrade (RHEL/CentOS) {#temboard-agent-upgrade}
-
 ## From 7.11 to 8.0
 
 temBoard Agent 8.0 requires temBoard UI 8.0.

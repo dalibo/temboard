@@ -1,5 +1,3 @@
-# Investigate temBoard UI performances
-
 temBoard UI has a built-in, logfmt based, performances tracing. You enable
 performance tracing, execute temBoard UI and analyze the logs afterward using a
 development grafana setup.
@@ -49,7 +47,7 @@ You will see the following `perf` messages in temBoard logs.
 ```
 
 
-## Visualize Performances Traces with Grafana
+## Visualize with Grafana
 
 To visualize temBoard's performances traces, the development environment of
 temBoard ships et Grafana setup with Prometheus and Loki. See

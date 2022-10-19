@@ -1,4 +1,4 @@
-# Changelog
+<h1>Changelog</h1>
 
 <!--
 CI release job extracts changes from this file and attaches them as GitHub release notes.
@@ -25,6 +25,7 @@ Unreleased.
   before (no limit).
 - pg_ctl parameter must not be quoted now.
 - agent: Add new unified sessions and detailed locks endpoint.
+- Restyled documentation.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent

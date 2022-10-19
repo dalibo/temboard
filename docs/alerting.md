@@ -1,5 +1,3 @@
-# Alerting
-
 temBoard alerting feature intends to trigger visual signals to end users when monitoring data reach defined threshold. This feature is part of `monitoring` plugin.
 
 ## Data flow

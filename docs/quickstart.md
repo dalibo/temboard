@@ -1,4 +1,9 @@
-# Quickstart
+---
+hide:
+  - navigation
+---
+
+<h1>Quickstart</h1>
 
 We provide a `docker-compose.yml` file to quickly try temBoard with a few PostgreSQL instances.
 You'll need docker-compose 1.10+ and docker engine 1.10+.
@@ -27,15 +32,15 @@ $ pgbench -i pgbench
 $ pgbench -c 8 -T 60 pgbench
 ```
 
-## /!\\ DO NOT USE THIS IN PRODUCTION /!\\
+!!! danger
 
-temBoard docker images are designed for *testing* and *demo*. The SSL
-certificate is *self-signed* and the default passwords are dumb and public.
+    **DO NOT USE THIS IN PRODUCTION !**
 
-temBoard agent is designed to run on same host as PostgreSQL which is
-incompatible with Docker service-minded architecture. temBoard agent images
-require *access to docker socket* to restart PostgreSQL, which you do not want
-in production.
+    temBoard docker images are designed for *testing* and *demo*.
 
-To deploy temBoard in a production environment, take some time to
-read <http://temboard.rtfd.io>.
+    - The SSL certificate is *self-signed*.
+    - Default passwords are dumb and public.
+    - temBoard agent is designed to run on same host as PostgreSQL which is incompatible with Docker service-minded architecture.
+    - temBoard agent image requires *access to docker socket* to restart PostgreSQL, which you do not want in production.
+
+To deploy temBoard in a production environment, follow [installation documentation](server_install.md).

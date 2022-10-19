@@ -1,23 +1,64 @@
-site_dir: dev/build/docs
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
+site_dir: dev/build/docs
 copyright: Copyright 2015-2022 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/
+
 theme:
-  name: readthedocs
+  name: material
+  favicon: assets/temboard-logo-64.png
+  icon:
+    repo: fontawesome/brands/github
+  logo: assets/temboard-logo-blanc-256.png
+  features:
+  - navigation.indexes
+  - navigation.instant
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - navigation.tracking
+  - search.suggest
+  - search.highlight
+  - toc.follow
+  - toc.integrate
+  font: false
+
+plugins:
+- git-revision-date-localized:
+    enable_creation_date: false
+    type: timeago
+- glightbox:
+    skip_classes:
+    - no-lightbox
+
+extra:
+  homepage: https://labs.dalibo.com/temboard
+  social:
+  - icon: fontawesome/solid/rss
+    link: https://blog.dalibo.com/
+  - icon: fontawesome/brands/github
+    link: https://github.com/dalibo/temboard
+  - icon: fontawesome/brands/docker
+    link: https://hub.docker.com/r/dalibo/temboard
+  - icon: fontawesome/brands/twitter
+    link: https://twitter.com/DaliboLabs
+  - icon: fontawesome/brands/mastodon
+    link: https://mastodon.online/@dalibo
+
+extra_css:
+- assets/temboard.css
+
 nav:
 - Home: index.md
-- Quick Start: quickstart.md
+- quickstart.md
 - Install:
   - Install the server: server_install.md
   - Install the agent: agent_install.md
-  - Configure the server: server_configure.md
-  - Configure the agent: agent_configure.md
 - Upgrade:
-  - Changelog: CHANGELOG.md
   - Upgrade the server: server_upgrade.md
   - Upgrade the agent: agent_upgrade.md
+  - Changelog: changelog.md
 - How To:
   - temBoard UI howto: temboard-howto.md
   - Alerting: temboard-howto-alerting.md
@@ -25,6 +66,9 @@ nav:
   - Statements: temboard-howto-statements.md
   - Upgrade PostgreSQL: postgres_upgrade.md
   - temBoard performances: howto-temboard-performances.md
+- Reference:
+  - Configure the server: server_configure.md
+  - Configure the agent: agent_configure.md
 - Develop:
   - Contributing: CONTRIBUTING.md
   - Alerting internals: alerting.md
@@ -35,10 +79,26 @@ nav:
 strict: yes
 markdown_extensions:
 - admonition
+- attr_list
 - fenced_code
 - extra
+- md_in_html
 - meta
+- pymdownx.emoji:
+    emoji_index: !!python/name:materialx.emoji.twemoji
+    emoji_generator: !!python/name:materialx.emoji.to_svg
+- pymdownx.highlight:
+    anchor_linenums: true
+- pymdownx.inlinehilite
+- pymdownx.snippets
+- pymdownx.superfences
+- pymdownx.tabbed:
+    alternate_style: true
 - tables
 - toc:
     baselevel: 2
+    toc_depth: 3
     permalink: yes
+- sane_lists
+- smarty
+- wikilinks
