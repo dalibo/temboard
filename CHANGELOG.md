@@ -1,11 +1,14 @@
-# Changelog
+<h1>Changelog</h1>
 
 <!--
 CI release job extracts changes from this file and attaches them as GitHub release notes.
 Ensure you use consistent title format.
 -->
 
-## [8.0] - Unreleased
+
+## 8.0
+
+Unreleased.
 
 - RHEL9, Debian Bookworm (testing) packages.
 - PostgreSQL 15 support.
@@ -22,12 +25,15 @@ Ensure you use consistent title format.
   before (no limit).
 - pg_ctl parameter must not be quoted now.
 - agent: Add new unified sessions and detailed locks endpoint.
+- Restyled documentation.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
 
 
-## [8.0b1] - 2022-09-16
+## 8.0b1
+
+Released on 2022-09-16.
 
 This release requires specific upgrade instructions. See [server_upgrade.md]
 and [agent_upgrade.md] for details.
@@ -129,7 +135,9 @@ compatible with temBoard UI 7.11.
   `temboard-agent web` for debugging.
 
 
-## [7.11] - Unreleased
+## 7.11
+
+Released on 2022-05-23
 
 - Fix heap bloat probe.
 - Fix statements not purged.
@@ -145,7 +153,9 @@ compatible with temBoard UI 7.11.
 - docker: Properly stop container on failure.
 
 
-## [7.10] - 2022-02-22
+## 7.10
+
+Released on 2022-02-22
 
 - Fix performances issues with monitoring.
 - Show runtime libpq version in logs and --version.
@@ -180,7 +190,9 @@ compatible with temBoard UI 7.11.
 - Build RHEL8 package with RockyLinux 8.
 
 
-## [7.9] - 2022-01-03
+## 7.9
+
+Released on 2022-01-03
 
 - Support PostgreSQL 14.
 - Fix deadlock in monitoring.
@@ -194,46 +206,60 @@ compatible with temBoard UI 7.11.
 - agent: Fix sysv init script shipped on systemd by debian package.
 
 
-## [7.6] - 2021-02-10
+## 7.6
+
+Released on 2021-02-10
 
 - Fix wrong column name in SQL for chartdata for rollback transactions
     (monitoring) [@pgiraud]
 
-## [7.5] - 2021-01-12
+## 7.5
+
+Released on 2021-01-12
 
 - Return valid JSON if no result is returned by postgres (monitoring)
     [@pgiraud]
 
-## [7.4] - 2020-12-15
+## 7.4
+
+Released on 2020-12-15
 
 - Take userid into account for statdata query [@pgiraud]
 - Fix daterange picker behavior [@pgiraud]
 
-## [7.3] - 2020-10-15
+## 7.3
+
+Released on 2020-10-15
 
 - Commit after alert processing [@bersace]
 
-## [7.2] - 2020-09-29
+## 7.2
 
-### Fixed
+Released on 2020-09-29
+
+**Fixed**
 
 - Extension btree_gist is not required anymore [@pgiraud]
 - Various packaging fixes [@dlax]
 
-## [7.1] - 2020-09-29
+## 7.1
 
-### Fixed
+Released on 2020-09-29
+
+**Fixed**
 
 - Fixed bug in wheel generation [@pgiraud].
 
-## [7.0] - 2020-09-28
+## 7.0
 
-### Added
+Released on 2020-09-28
+
+**Added**
 
 - Statements plugin by [@pgiraud] and [@dlax].
 - Load `PG*` vars, by [@bersace].
 
-### Changed
+**Changed**
 
 - Improved performance of the home page (instances list), by [@pgiraud].
 - Activity filters are kept, by [@pgiraud].
@@ -245,21 +271,23 @@ compatible with temBoard UI 7.11.
 - Agent: support for RHEL/CentOS 6 has been dropped.
 - Agent: support for RHEL/CentOS 8 has been added.
 
-### Fixed
+**Fixed**
 
 - Agent scripts now use the Python interpreter of their installation, not the
   first found in env, by [@bersace].
 
 
-## [6.2] - 2020-08-07
+## 6.2
+
+Released on 2020-08-07
 
 
-### Changed
+**Changed**
 
 - Alembic version table is now hosted in `application` schema, by [@bersace].
 
 
-### Fixed
+**Fixed**
 
 - Always using TLS even if set to False, by [@bersace].
 - SMTP port misinterpreted, by [@bersace].
@@ -267,12 +295,16 @@ compatible with temBoard UI 7.11.
 - Double error with unserializable error in worker, by [@bersace].
 - Test PG access by temboard role after repo creation, by [@l00ptr]
 
-## [6.1] - 2020-06-15
+## 6.1
+
+Released on 2020-06-15
 
 Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
 
 
-## [6.0] - 2020-06-15
+## 6.0
+
+Released on 2020-06-15
 
 This release requires a special step before restarting temBoard. Please read
 [upgrade to 6.0] documentation.
@@ -280,7 +312,7 @@ This release requires a special step before restarting temBoard. Please read
 [upgrade to 6.0]: server_upgrade.md
 
 
-### Added
+**Added**
 
 - Full PostgreSQL 12 support, including monitoring and configuration, by [@pgiraud].
 - Search config `temboard.conf` default config file in working directory by
@@ -290,14 +322,14 @@ This release requires a special step before restarting temBoard. Please read
 - Debian Buster testing & packaging, by [@bersace].
 - Agent: `purge.sh` script to clean an agent installation, by [@bersace].
 
-### Fixed
+**Fixed**
 
 - Double loading of legacy plugins, by [@bersace].
 - Impossibility to delete instance with SQLAlchemy < 1, by [@pgiraud].
 - Impossibility to schedule ANALYZE, VACCUM or REINDEX, by [@bersace].
 - Fix list of scheduled tasks in maintenance plugin, by [@pgiraud].
 
-### Changed
+**Changed**
 
 - Default configuration file is not required, by [@bersace].
 - Log error message when alert processing fails, by [@bersace].
@@ -305,50 +337,56 @@ This release requires a special step before restarting temBoard. Please read
   [@bersace].
 
 
-## [5.0] - 2020-04-16
+## 5.0
 
-### Added
+Released on 2020-04-16
+
+**Added**
 
 - Purge policy for monitoring data by [@julmon](https://github.com/julmon)
 - Pull mode: temboard server can now pull monitoring data from the agents by [@julmon](https://github.com/julmon)
 
-### Removed
+**Removed**
 
 - Agent does not support push mode anymore [@julmon](https://github.com/julmon)
 
-### Fixed
+**Fixed**
 
 - Performances improvements of asynchronous task management by [@julmon](https://github.com/julmon)
 
-## [4.0] - 2019-06-26
+## 4.0
 
-### Added
+Released on 2019-06-26
+
+**Added**
 
 - Support for reindex on table and database by [@pgiraud](https://github.com/pgiraud)
 - Support for analyze/vacuum for database by [@pgiraud](https://github.com/pgiraud)
 - Send notifications by SMS or email on state changes by [@pgiraud](https://github.com/pgiraud)
 
-### Changed
+**Changed**
 
 - Allow to use either psycopg2 or psycopg2-binary by [@bersace](https://github.com/bersace)
 - Monitoring shareable urls by [@pgiraud](https://github.com/pgiraud)
 - Use `pg_version_summary` when possible by [@pgiraud](https://github.com/pgiraud)
 - Database schema, please see the [upgrade documentation](server_upgrade.md)
 
-### Removed
+**Removed**
 
 - Removed user notifications from dashboard by [@pgiraud](https://github.com/pgiraud)
 
-### Fixed
+**Fixed**
 
 - Prevent endless chart height increase on Chrome 75 by [@pgiraud](https://github.com/pgiraud)
 - Restrict access to instance to authorized users by [@julmon](https://github.com/julmon)
 - Remove monitoring data when removing an instance by [@pgiraud](https://github.com/pgiraud)
 - Move `metric_cpu_record.time` to `BIGINT` by [@julmon](https://github.com/julmon)
 
-## [3.0] - 2019-03-20
+## 3.0
 
-### Added
+Released on 2019-03-20
+
+**Added**
 
 - Full screen mode for home page by [@pgiraud](https://github.com/pgiraud)
 - Full screen mode for dashboard by [@pgiraud](https://github.com/pgiraud)
@@ -362,18 +400,18 @@ This release requires a special step before restarting temBoard. Please read
 - Show number of waiting/blocking req in activity tabs by [@pgiraud](https://github.com/pgiraud)
 - Show availability status on home page by [@pgiraud](https://github.com/pgiraud)
 
-### Changed
+**Changed**
 
 - Dashboard like home page by [@pgiraud](https://github.com/pgiraud)
 - Improve activity views by [@pgiraud](https://github.com/pgiraud)
 - Review web framework by [@bersace](https://github.com/bersace)
 - Review debian packaging by [@bersace](https://github.com/bersace)
 
-### Removed
+**Removed**
 
 - `pg_hba.conf` and `pg_ident.conf` edition removed from `pgconf` plugin by [@pgiraud](https://github.com/pgiraud)
 
-### Fixed
+**Fixed**
 
 - Avoid monitoring data to get stuck in agent sending queue by [@julmon](https://github.com/julmon)
 - Documentation cleaning and updates by [@bersace](https://github.com/bersace)

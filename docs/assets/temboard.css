@@ -1,0 +1,35 @@
+:root {
+  --md-primary-fg-color:        #d65916;
+  --md-primary-fg-color--dark:  #622a11;
+  --md-accent-fg-color:         #d65916;
+}
+
+.md-grid {
+  max-width: 1200px;
+}
+
+.md-sidebar[hidden] + .md-content {
+  max-width: 990px;
+  margin: 0 auto;
+}
+
+.md-container .md-main h2.doc-hide {
+  display: none;
+}
+
+.md-container .md-main img.logo {
+  display: block;
+  margin: 3rem auto;
+  max-width: 75%;
+}
+
+.display-none
+{
+  display: none !important;
+}
+
+.md-container .md-main article > p img {
+  display: block;
+  max-width: 90%;
+  margin: 1em auto;
+}

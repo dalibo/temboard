@@ -159,7 +159,7 @@ jobs:
         - ui/dist/*.whl
 
   doc:
-    docker: [{image: "python:3.6"}]
+    docker: [{image: "python:3.7"}]
     working_directory: *working_directory
     steps:
     - checkout
@@ -205,7 +205,6 @@ jobs:
             flake8 tests/
             cd ui/
             flake8
-            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
       - &pip-cache-save
         save_cache:
@@ -416,7 +415,7 @@ jobs:
             agent/dist/*{.tar.gz,.whl,_all.deb,.noarch.rpm} \
             ui/dist/*{.tar.gz,.whl,_amd64.deb,.noarch.rpm} \
             --title "${CIRCLE_TAG#v}" \
-            -F <(sed -En "/^#+ \[${CIRCLE_TAG#v}\]/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
+            -F <(sed -En "/^#+ ${CIRCLE_TAG#v}/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
             "${args[@]}"
     - run:
         name: Upload Agent to PyPI

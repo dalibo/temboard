@@ -1,12 +1,5 @@
-# cf.
-# https://docs.readthedocs.io/en/latest/guides/specifying-dependencies.html#specifying-a-requirements-file
-#
-# markdown 3.3.6 and mkdocs 1.3.0 require importlib-metadata 4.4 which includes
-# breaking changes. Thus, markdown is incompatible with flake8.
-#
-# https://github.com/Python-Markdown/markdown/issues/1203
-# https://github.com/PyCQA/flake8/commit/975a3f45334861ebd8960c00e881443c23654bca
-markdown<3.3.5
-importlib-metadata<4.3
-
-mkdocs>=1.0,<1.3.0
+# Read The Docs uses Python 3.7 as of late 2022.
+mkdocs==1.4.1 ; python_version >= '3.7'
+mkdocs-material==8.5.6 ; python_version >= '3.7'
+mkdocs-git-revision-date-localized-plugin==1.1.0; python_version >= '3.7'
+mkdocs-glightbox==0.3.0; python_version >= '3.7'

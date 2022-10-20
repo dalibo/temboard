@@ -1,11 +1,9 @@
-# Upgrade the server
-
-
 [preferred installation method]: server_install.md#install
 [upgrade the agents]: agent_upgrade.md
 
 ## Upgrade `7.11` to `8.0`
 
+temBoard UI 8.0 supports agent version 7.11 and 8.0.
 Upgrade temBoard UI before upgrading agents.
 
 temBoard 8.0 requires changes in database schema.
@@ -27,7 +25,7 @@ Update temboard package with your [preferred installation method].
 Then apply `repository` database upgrade with the following command:
 
 ``` shell
-$ sudo -u temboard migratedb upgrade
+sudo -u temboard migratedb upgrade
 ```
 
 ### Flush tasks
@@ -35,7 +33,7 @@ $ sudo -u temboard migratedb upgrade
 Flush background tasks with the following command:
 
 ``` shell
-$ sudo -u temboard tasks flush
+sudo -u temboard tasks flush
 ```
 
 
@@ -44,7 +42,7 @@ $ sudo -u temboard tasks flush
 Generate signing key:
 
 ``` console
-$ sudo -u temboard generate-key
+sudo -u temboard generate-key
 ```
 
 ### Start service
@@ -75,7 +73,7 @@ Update temboard package with your [preferred installation method].
 Then apply `repository` database upgrade with the following command:
 
 ``` shell
-$ sudo -u temboard temboard-migratedb upgrade
+sudo -u temboard temboard-migratedb upgrade
 ```
 
 ### Start service
@@ -119,7 +117,7 @@ This is very important!
 Then apply `repository` database structure upgrade with the following command:
 
 ``` shell
-$ sudo -u temboard temboard-migratedb upgrade
+sudo -u temboard temboard-migratedb upgrade
 ```
 
 ### Start service
@@ -157,7 +155,7 @@ updates a lot.
 The `repository` database schema must be stamped to the latest version with:
 
 ``` shell
-$ sudo -u temboard temboard-migratedb stamp
+sudo -u temboard temboard-migratedb stamp
 ```
 
 Start `temboard` service:
@@ -165,7 +163,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `4.x` to `5.0` (RHEL/CentOS)
+## Upgrade `4.x` to `5.0`
 
 Stop `temboard` service:
 ```shell
@@ -180,13 +178,13 @@ sudo yum install temboard
 Upgrade `repository` database schema:
 
 ```shell
-$ curl https://raw.githubusercontent.com/dalibo/temboard/master/share/sql/upgrade-4-5.sql | sudo -u postgres psql temboard
+curl https://raw.githubusercontent.com/dalibo/temboard/master/share/sql/upgrade-4-5.sql | sudo -u postgres psql temboard
 ```
 
 or
 
 ```shell
-$ sudo -u postgres psql -U postgres -1 -f \
+sudo -u postgres psql -U postgres -1 -f \
      /usr/share/temboard/sql/upgrade-4-5.sql temboard
 ```
 
@@ -208,7 +206,7 @@ Starting from version 5, temboard server is now able to pull monitoring data
 if the target agent has been deployed in version 5 or upper. The server still
 supports push mode for the agents still running in version 4.
 
-## Upgrade `3.0` to `4.0` (RHEL/CentOS)
+## Upgrade `3.0` to `4.0`
 
 Stop `temboard` service:
 ```shell
@@ -223,7 +221,7 @@ sudo yum install temboard
 Upgrade `repository` database schema:
 
 ```shell
-$ sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
+sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
      /usr/share/temboard/sql/upgrade-3.0-4.0.sql temboard
 ```
 
@@ -236,7 +234,7 @@ Start `temboard` service:
 sudo systemctl start temboard
 ```
 
-## Upgrade `2.x` to `3.0` (RHEL/CentOS)
+## Upgrade `2.x` to `3.0`
 
 Stop `temboard` service:
 ```shell
@@ -254,7 +252,7 @@ your `temboard.conf` file.
 Upgrade `repository` database schema:
 
 ```shell
-$ sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
+sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
      /usr/share/temboard/sql/upgrade-2.2-3.0.sql temboard
 ```
 
@@ -266,7 +264,7 @@ sudo systemctl start temboard
 Activate the maintenance plugin for the instances in the settings view in
 your browser.
 
-## Upgrade `1.2` to `2.0` (RHEL/CentOS)
+## Upgrade `1.2` to `2.0`
 
 Stop `temboard` service:
 ```shell
@@ -281,9 +279,9 @@ sudo yum install temboard
 Upgrade `repository` database schema:
 
 ```shell
-$ sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
+sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
      /usr/share/temboard/sql/alerting.sql temboard
-$ sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
+sudo -u postgres /usr/pgsql-10/bin/psql -U postgres -f \
      /usr/share/temboard/sql/upgrade-1.2-2.0.sql temboard
 ```
 
@@ -291,7 +289,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `1.1` to `1.2` (RHEL/CentOS)
+## Upgrade `1.1` to `1.2`
 
 Stop `temboard` service:
 ```shell
@@ -307,7 +305,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `0.0.1` to `1.1` (RHEL/CentOS)
+## Upgrade `0.0.1` to `1.1`
 
 `temboard` upgrade process is going to be done within 4 stages:
 

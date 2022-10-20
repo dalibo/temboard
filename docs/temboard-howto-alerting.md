@@ -1,5 +1,3 @@
-# Alerting
-
 Note: `alerting` is part of the `monitoring` plugin. This means that you need
 to activate the `monitoring` plugin in order to take advantage of `alerting`.
 

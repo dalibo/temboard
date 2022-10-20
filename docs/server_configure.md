@@ -1,13 +1,11 @@
-# `temboard` configuration
-
-## The configuraton file
+<h1>Configure the server</h1>
 
 The configuration file `temboard.conf` is formated using INI format.
 
 Configuration parameters are distributed under sections:
 
 
-### `temboard`
+## `temboard`
 
 This is the main section grouping core parameters :
 
@@ -43,7 +41,7 @@ This is the main section grouping core parameters :
   "statements"]`
 
 
-### `repository`
+## `repository`
 
 Connection parameters to the data repository aka `temboard` database.
 
@@ -69,7 +67,7 @@ Connection parameters to the data repository aka `temboard` database.
   Default: `temboard`
 
 
-### `logging`
+## `logging`
 
 How and where to log.
 
@@ -91,7 +89,7 @@ How and where to log.
   Default: `INFO`
 
 
-### `notifications`
+## `notifications`
 
 This section groups SMTP and Twilio parameters to send notifications.
 
@@ -133,7 +131,7 @@ This section groups SMTP and Twilio parameters to send notifications.
   Default: *empty*
 
 
-### `monitoring`
+## `monitoring`
 
 Parameters related to the monitoring plugin.
 
@@ -143,7 +141,7 @@ Parameters related to the monitoring plugin.
   Default: 730
 
 
-### `statements`
+## `statements`
 
 Parameters related to the statements plugin.
 

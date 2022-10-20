@@ -1,5 +1,3 @@
-# Maintenance
-
 The aim of the *maintenance* plugin is to give the users an overview on the
 **databases**, **schemas**, **tables** or **indexes** respective **size**.
 

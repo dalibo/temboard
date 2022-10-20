@@ -1,13 +1,11 @@
-# Upgrade (RHEL/CentOS) {#temboard-agent-upgrade}
-
 ## From 7.11 to 8.0
 
 temBoard Agent 8.0 requires temBoard UI 8.0.
 
-Stop the agent:
+Stop all agents:
 
 ``` bash
-sudo systemctl stop temboard-agent
+sudo systemctl stop temboard-agent@...
 ```
 
 Update the package:
@@ -16,8 +14,16 @@ Update the package:
 sudo yum install temboard-agent
 ```
 
-Edit configuration, comment out `key` parameter and define `[temboard] ui_url`
-like this:
+Repeat the following steps for each agents.
+
+Edit configuration, comment out `key` parameter:
+
+``` conf
+[temboard]
+# key = deadbeefc0ffee
+```
+
+Define `[temboard] ui_url` like this:
 
 ``` conf
 [temboard]
@@ -27,21 +33,34 @@ ui_url = https://temboard.acme.tld:8888
 Remove quotes around `pg_ctl` command like this:
 ``` conf
 [administration]
+#   Before:
+# pg_ctl = '/usr/pgsql-15/bin/pg_ctl ...'
+#   After:
 pg_ctl = /usr/pgsql-15/bin/pg_ctl ...
 ```
 
-Fetch signing key using `temboard-agent fetch-key`.
+!!! note
+
+    Execute temboard-agent commands as `postgres` or another UNIX user as described by systemd unit.
+
+    Execute temboard-agent commands with `--config` option for target argent.
+
+Fetch signing key with the following command:
+
+``` bash
+temboard-agent --config=/etc/temboard-agent/.../temboard-agent.conf fetch-key
+```
 
 Flush background tasks with the following command:
 
 ``` bash
-temboard-agent tasks flush
+temboard-agent --config=/etc/temboard-agent/.../temboard-agent.conf tasks flush
 ```
 
 Start the agent:
 
 ``` bash
-sudo systemctl start temboard-agent
+sudo systemctl start temboard-agent@...
 ```
 
 Check agent logs and dashboard in temBoard UI.
