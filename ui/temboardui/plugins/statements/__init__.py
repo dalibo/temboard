@@ -812,6 +812,7 @@ def pull_data_worker(app):
         plugin_names = [plugin.plugin_name for plugin in instance.plugins]
 
         if 'statements' not in plugin_names:
+            logger.debug("Skipping instance %s. Plugin disabled.", instance)
             continue
 
         # FIXME should be done in parallel
@@ -822,6 +823,8 @@ def pull_data_worker(app):
                 "Failed to pull data from %s:%s",
                 instance.agent_address, instance.agent_port,
             )
+    else:
+        logger.info("No instances to pull data from.")
 
 
 @workers.register(pool_size=1)
