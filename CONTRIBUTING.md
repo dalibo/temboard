@@ -41,7 +41,7 @@ agent.
 
 ## Development Requirements
 
-You need the following software to contribute to temBoard:
+You need the following software to develop temBoard:
 
 - bash, git, make, psql.
 - Docker Compose.
@@ -54,9 +54,12 @@ You need the following software to contribute to temBoard:
 Running development version of UI and agent requires two terminals, one for
 each.
 
-The `develop` make target creates a virtual environment for Python 3.6,
-installs temBoard UI, its dependencies, development tools, starts docker
-services and initializes temBoard database.
+The `develop` make target
+builds assets,
+creates a virtual environment for Python 3.6,
+installs temBoard UI, its requirements, development tools,
+builds agent Docker image,
+starts docker services and initializes temBoard database.
 
 ``` console
 $ make develop
@@ -109,14 +112,25 @@ Beware that two Postgres instances are set up with replication. The primary
 instance may be either postgres0 or postgres1. See below for details.
 
 
+## Coding Style
+
+An `.editorconfig` file configures whitespace and charset handling in various
+programming language. The [EditorConfig]( http://editorconfig.org/#download)
+site links to plugins for various editors. See `.editorconfig` for a
+description of the conventions. Please stick to these conventions.
+
+Python syntax must conform to flake8. CI checks new code with flake8.
+
+
 ## Executing in debug mode
 
-temboard and temboard-agent commands has a debug mode. In debug mode, logs are
-verbose, file changes triggers an automatic restart of the process, an
-unhandled exception drops in an interactive PDB debugger prompt.
+temboard and temboard-agent commands has a debug mode.
+In debug mode, logs are verbose,
+files change triggers an automatic restart of the process,
+an unhandled exception drops in an interactive PDB debugger prompt.
 
-Enable debug mode by setting DEBUG=y environment variable. For agent, only long
-running commands have autoreload.
+Enable debug mode by setting DEBUG=y environment variable.
+For agent, only long running commands have autoreload.
 
 
 ## psql for Monitored PostgreSQL
@@ -151,8 +165,8 @@ root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
 
 bash history is shared amongst these two containers.
 
-In UI, the second agent is pre-registered with address 0.0.0.0 and port 2346
-instead of 2345. The instance FQDN is `postgres1.dev`.
+In UI, the second agent is pre-registered with address 0.0.0.0 and port 2346 instead of 2345.
+Second instance FQDN is `postgres1.dev`.
 
 The script `dev/switchover.sh` triggers a switchover between the two postgres
 instances. Executing `dev/switchover.sh` one more time restore the original
@@ -162,8 +176,8 @@ topology.
 ## Testing previous version
 
 Compose project for development configures a stable agent named `agent-stable`.
-This agent is preregistered in development UI. Browser `postgres-stable`
-instance in UI to ensure temBoard UI is compatible with stable agent.
+This agent is preregistered in development UI.
+Browse `postgres-stable` instance in UI to ensure temBoard UI is compatible with stable agent.
 
 Access Postgres instance monitored by stable agent using the following compose
 invocation:
@@ -177,27 +191,12 @@ postgres=#
 ```
 
 
-## Launching Multiple Agents
-
-Default development environment instanciates two PostgreSQL instances and their
-temBoard agents. Root Makefile offers two targets to help testing big scale
-setup :
-
-- `make mass-agents` loops from 2348 to 3000 and instanciates a PostgreSQL
-  instance for each number and an agent to monitor it. Number is used as agent
-  port. Each instanciation requires you to type `y` and Enter. This allows to
-  throttle instanciations and to stop when enough instances are up.
-- `make clean-agents` trashes every existing instances from 2348 to 3000,
-  without interaction. **make clean-agents does not unregister agents!**
-
-
 ## Choosing PostgreSQL Version
 
 You can change the version of the monitored PostgreSQL instance by overriding
 image tag in `docker-compose.override.yml`.
 
-``` yml
-# file docker-compose.override.yml
+``` yaml title="docker-compose.override.yml" linenums="1" hl_lines="5 8"
 version: "3.8"
 
 services:
@@ -215,10 +214,24 @@ Note that defining a different major version for postgres0 and postgres1 breaks
 physical replication.
 
 
+## Launching Multiple Agents
+
+Default development environment instanciates two PostgreSQL instances and their
+temBoard agents. Root Makefile offers two targets to help testing big scale
+setup :
+
+- `make mass-agents` loops from 2348 to 3000 and instanciates a PostgreSQL
+  instance for each number and an agent to monitor it. Number is used as agent
+  port. Each instanciation requires you to type `y` and Enter. This allows to
+  throttle instanciations and to stop when enough instances are up.
+- `make clean-agents` trashes every existing instances from 2348 to 3000,
+  without interaction. **make clean-agents does not unregister agents!**
+
+
 ## Execute Unit Tests
 
-Each UI and agent project has its own unit tests battery. Enable the virtualenv
-and use pytest to run unit tests:
+Each UI and agent projects has its own unit tests battery.
+Enable the virtualenv and use pytest to run unit tests:
 
 ``` console
 $ . dev/venv-py3.6/bin/activate
@@ -278,28 +291,18 @@ Fixtures configure a postgres for monitoring, an agent and the UI in `workdir/`
 prefix. This may help you write a new test.
 
 Selenium standalone container runs a headless Xvfb server with noVNC enabled.
-View live tests in your browser at http://localhost:7900/ . Click the connect
-button and interract with the browser and UI.
+View live tests in your browser at http://localhost:7900/ .
+Click the connect button and interract with the tested UI using the embedded Firefox.
 
 Selenium container may be flaky. If you suspend your computer, you may have
 timeout from selenium. Use `make restart-selenium` to workaround this.
 
 
-## Coding Style
-
-An `.editorconfig` file configures whitespace and charset handling in various
-programming language. The [EditorConfig]( http://editorconfig.org/#download)
-site links to plugins for various editors. See `.editorconfig` for a
-description of the conventions. Please stick to these conventions.
-
-Python syntax must conform to flake8. CI checks new code with flake8.
-
-
 ## UI Database Schema Version
 
-temBoard repository is versionned. A version is the name of a file in
-`temboardui/model/versions`. Each file contains the code to execute to upgrade
-to this version.
+temBoard database is versionned.
+A version is the name of a file in `temboardui/model/versions`.
+Each file contains the code to execute to upgrade to this version.
 
 To create a new version, put a new file in `temboardui/model/versions/`
 prefixed with a discrete number following the last version. As of now, version
@@ -359,9 +362,10 @@ does not required reloading server-side.
 ## Editing Documentation
 
 The documentation is written in Markdown and built with `mkdocs`.
+Editing documentation requires Python 3.7.
 
 ``` console
-$ dev/venv-py3.6/bin/mkdocs serve
+$ dev/venv-py3.7/bin/mkdocs serve
 INFO     -  Building documentation...
 INFO     -  Cleaning site directory
 INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
@@ -376,6 +380,12 @@ Go to [http://127.0.0.1:8000/](http://127.0.0.1:8000/) to view the
 documentation. mkdocs has hot reload: saving file triggers a refresh in your
 browser.
 
+Try to use [semantic line breaks]:
+split lines by idea instead of reflowing words.
+This helps reading diff, handling conflicts when rebasing.
+
+[semantic line breaks]: https://sembr.org/
+
 
 ## Building RHEL Package
 
@@ -384,7 +394,7 @@ Compose for isolation. Uploading to Dalibo Labs requires internal project
 yum-labs and access.
 
 UI and agent each has `packaging/rpm` directory with a Makefile and scripts to build RPM packages.
-Use `build-rhelX` make target like this:
+Use `build-rhel<version>` make target like this:
 
 ``` bash
 make -C ui/packaging/rpm/ build-rhel9
@@ -393,7 +403,7 @@ make -C ui/packaging/rpm/ build-rhel9
 Version can be either 9, 8 or 7.
 `agent/packaging/rpm/Makefile` provides the same targets.
 
-The builder script search for wheels in `ui/dist/`
+The builder script searches for wheels in `ui/dist/`
 and if not found, tries to download wheel from PyPI.
 Use top level `make dist` to generate wheels.
 
