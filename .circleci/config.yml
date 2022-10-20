@@ -146,10 +146,6 @@ jobs:
         name: Build Agent & UI
         command: |
           make dist
-    - run:
-        name: Check artifacts
-        command: |
-          twine check --strict agent/dist/* ui/dist/*
     - store_artifacts:
         path: /workspace/agent/dist/
     - store_artifacts:
