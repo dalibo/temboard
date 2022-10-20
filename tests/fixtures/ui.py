@@ -238,7 +238,7 @@ def browser(browser_session, request):
 
     filename = f"{session_tag}_{request.node.nodeid}.html"
     path = browser_session.downloads_dir / filename
-    with path.open('w') as fo:
+    with path.open('w', encoding='utf-8') as fo:
         fo.write(browser_session.page_source)
     logger.info("HTML document saved at %s.", path)
 
