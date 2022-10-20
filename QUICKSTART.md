@@ -10,17 +10,14 @@ docker-compose up
 
 `docker-compose` will launch:
 
-- a PG 13 cluster (exposed at 5432)
-- a PG 12 cluster (exposed at 5433)
-- a PG 10 cluster (exposed at 5434)
-- a PG 9.6 cluster (exposed at 5435)
-- a temBoard agent for each PG cluster
-- a standard PG 13 cluster for the UI (not exposed)
-- a container for temBoard UI
+- a PostgreSQL instance for temboard owns data
+- the temBoard UI
+- four PostgreSQL instances exposed on ports 5432, 5433, 5434 and 5435.
+- a temBoard agent for each instance exposed on port 2345, 2346, 2347, 2348.
 
 temBoard UI is available on <https://0.0.0.0:8888/> with `admin` / `admin`
-credentials. You can access clusters with user and password `postgres`. For
-example with pgbench:
+credentials. You can access PostgreSQL instance with user and password
+`postgres`. For example with pgbench:
 
 ``` console
 $ export PGHOST=0.0.0.0 PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres
