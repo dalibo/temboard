@@ -205,7 +205,6 @@ jobs:
             flake8 tests/
             cd ui/
             flake8
-            python setup.py --long-description | rst2html.py --verbose --halt=warning - >/dev/null
             check-manifest
       - &pip-cache-save
         save_cache:
