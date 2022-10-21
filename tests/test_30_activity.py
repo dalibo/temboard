@@ -129,14 +129,20 @@ def pg_lock(psql, agent_env):
     locking.process.stdin.put("DROP TABLE IF EXISTS locked_table;\n")
     locking.process.stdin.put(
         "CREATE TABLE locked_table AS SELECT generate_series(1, 5);\n")
+
+    table_created = False
     for attempt in retry_fast(OSError):
         with attempt:
-            line = next(locking)
-            if line == errno.EWOULDBLOCK:
-                raise OSError()
-            if 'DROP TABLE' in line:
-                continue
-            assert 'SELECT 5' in line, line  # Wait for CREATE to return.
+            for _ in range(1000):
+                line = next(locking)
+                if line == errno.EWOULDBLOCK:
+                    raise OSError()
+                if line.startswith('SELECT 5'):
+                    logger.info("locked_table created.")
+                    table_created = True
+                    break
+    assert table_created, "Timeout creating table"
+
     locking.process.stdin.put("BEGIN;\n")
     locking.process.stdin.put("LOCK TABLE locked_table IN EXCLUSIVE MODE;\n")
     assert locking.is_alive()

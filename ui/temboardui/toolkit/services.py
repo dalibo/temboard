@@ -27,7 +27,6 @@ import sys
 from multiprocessing import Process
 from time import sleep
 
-from .errors import UserError
 from .perf import PerfCounters
 
 
@@ -171,6 +170,7 @@ class ServicesManager(object):
     def __init__(self):
         self.processes = []
         self.pid = os.getpid()
+        self.stopping = False
 
     def __enter__(self):
         self.start()
@@ -183,8 +183,9 @@ class ServicesManager(object):
 
     def add(self, service):
         service.parentpid = self.pid
-        self.processes.append(
-            (service, Process(target=service.run, name=service.name)))
+        process = Process(target=service.run, name=service.name)
+        self.processes.append((service, process))
+        return process
 
     def start(self):
         for service, process in self.processes:
@@ -197,15 +198,23 @@ class ServicesManager(object):
 
     def check(self):
         for i in self.processes[:]:
-            _, p = i
+            service, p = i
             logger.debug(u"Checking child %s (%s).", p.name, p.pid)
-            if not p.is_alive():
-                logger.debug("%s (%s) is dead.", p.name, p.pid)
-                self.processes.remove(i)
-                msg = u"Child %s (%s) died." % (p.name, p.pid)
-                raise UserError(msg)
+            if p.is_alive():
+                continue
+
+            logger.debug("%s (%s) is dead.", p.name, p.pid)
+            self.processes.remove(i)
+
+            if self.stopping:
+                continue
+
+            logger.warning("Restarting background service %s.", service)
+            process = self.add(service)
+            process.start()
 
     def stop(self):
+        self.stopping = True
         for _, process in self.processes:
             process.terminate()
 
