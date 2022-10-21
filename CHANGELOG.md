@@ -27,6 +27,7 @@ Unreleased.
 - agent: Add new unified sessions and detailed locks endpoint.
 - Restyled documentation.
 - Restart scheduler and worker pool on crash.
+- Handle SIGCHLD in temboard UI too.
 
 [dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
 [dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent

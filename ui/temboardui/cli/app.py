@@ -277,6 +277,11 @@ def map_pgvars(environ):
 
 
 class TornadoService(Service):
+    def sigchld_handler(self, *a):
+        if self.services:
+            loop = tornado.ioloop.IOLoop.instance()
+            loop.add_callback_from_signal(self.services.check)
+
     def setup(self):
         flask_app.vitejs.read_manifest()
 
