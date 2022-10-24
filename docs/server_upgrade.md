@@ -25,7 +25,7 @@ Update temboard package with your [preferred installation method].
 Then apply `repository` database upgrade with the following command:
 
 ``` shell
-sudo -u temboard migratedb upgrade
+sudo -u temboard temboard migratedb upgrade
 ```
 
 ### Flush tasks
@@ -33,7 +33,7 @@ sudo -u temboard migratedb upgrade
 Flush background tasks with the following command:
 
 ``` shell
-sudo -u temboard tasks flush
+sudo -u temboard temboard tasks flush
 ```
 
 
@@ -42,7 +42,7 @@ sudo -u temboard tasks flush
 Generate signing key:
 
 ``` console
-sudo -u temboard generate-key
+sudo -u temboard temboard generate-key
 ```
 
 ### Start service
