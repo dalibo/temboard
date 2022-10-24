@@ -84,6 +84,12 @@ Start `temboard` service:
 sudo systemctl start temboard
 ```
 
+!!! note
+
+    Upon restart, temBoard UI will fetch missing monitoring supervision.
+    This may take some time and ressources depending on the time of interruption and the number of monitoring instances.
+
+
 ## Upgrade `6.X` to `7.0`
 
 ### Update agents
