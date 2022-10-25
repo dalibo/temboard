@@ -1,12 +1,12 @@
 # This compose file requires a few environment variables, see root Makefile for
 # details.
-version: '3.2'
+version: '3.8'
 
 networks:
   # By default, hook containers in network managed by root docker-compose.yml
   default:
     external:
-      name: ${NETWORK}
+      name: "${NETWORK}"
 
 volumes:
   data:
@@ -20,7 +20,7 @@ services:
     command: [
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
-      -c, cluster_name=postgres-${TEMBOARD_REGISTER_PORT},
+      -c, "cluster_name=postgres-${TEMBOARD_REGISTER_PORT}",
     ]
     volumes:
       - data:/var/lib/postgresql/data
@@ -38,13 +38,13 @@ services:
       - run:/var/run/postgresql
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - postgres:postgres-${TEMBOARD_REGISTER_PORT}.dev
+      - "postgres:postgres-${TEMBOARD_REGISTER_PORT}.dev"
     environment:
-      TEMBOARD_HOSTNAME: postgres-${TEMBOARD_REGISTER_PORT}.dev
+      TEMBOARD_HOSTNAME: "postgres-${TEMBOARD_REGISTER_PORT}.dev"
       TEMBOARD_LOGGING_LEVEL: DEBUG
       TEMBOARD_UI_URL: http://172.17.0.1:8888
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_REGISTER_HOST: 172.17.0.1
-      TEMBOARD_REGISTER_PORT: ${TEMBOARD_REGISTER_PORT}
-      TEMBOARD_GROUPS: default
+      TEMBOARD_REGISTER_PORT: "${TEMBOARD_REGISTER_PORT}"
+      TEMBOARD_GROUPS: mass
