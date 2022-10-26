@@ -9,7 +9,6 @@ pytz  # for dev/perfui/
 mock
 docutils
 pep440deb
-psycopg2-binary
 wheel
 # For integration tests
 httpx; python_version >= '3.6'
