@@ -238,7 +238,7 @@ jobs:
               apt-get install -q -y --no-install-recommends python3-cffi
           fi
 
-          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt
+          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt psycopg2-binary
     - run:
         name: Install Agent.
         command: |
@@ -246,7 +246,7 @@ jobs:
               echo "Skipping agent for 2.7."
               exit
           fi
-          pip<< parameters.pyversion >> install --upgrade --editable agent/
+          pip<< parameters.pyversion >> install --upgrade --editable agent/ psycopg2-binary
     - run:
         name: Agent Unit Tests
         command: |

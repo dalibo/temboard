@@ -50,7 +50,7 @@ venv-2.7:
 	dev/venv-py2.7/bin/python --version  # pen test
 
 install-%: venv-%
-	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/
+	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # pen test
 	dev/venv-py$*/bin/temboard-agent --version  # pen test
 

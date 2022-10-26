@@ -27,7 +27,7 @@
   <tbody class="postgres">
     <tr>
       <td>Full version</td>
-      <td><pre class="version">{{ d.get('version', 'Unknown').replace(', ', '\n') }}</pre></td>
+      <td><pre class="version">{{ (d.get('version') or 'Unknown').replace(', ', '\n') }}</pre></td>
     </tr>
     {% set settings = ['listen_address', 'max_connections', 'data_checksums'] %}
     {% for setting in settings %}

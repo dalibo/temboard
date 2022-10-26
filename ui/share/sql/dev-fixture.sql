@@ -14,6 +14,15 @@ INSERT INTO application.access_role_instance
 VALUES
 ('stable', 'role', 'stable', 'instance');
 
+-- Create a third group for mass agents
+INSERT INTO application.groups
+VALUES
+('mass', 'Mass agent instance group', 'instance'),
+('mass', 'Mass agent role group', 'role');
+INSERT INTO application.access_role_instance
+VALUES
+('mass', 'role', 'mass', 'instance');
+
 INSERT INTO application.roles (role_name, role_password, role_email, is_active, is_admin)
 VALUES
 -- alice // alice
@@ -26,7 +35,8 @@ VALUES
 ('alice', 'default', 'role'),
 ('alice', 'stable', 'role'),
 ('bob', 'default', 'role'),
-('admin', 'stable', 'role');
+('admin', 'stable', 'role'),
+('admin', 'mass', 'role');
 
 -- Pre-register agents
 
