@@ -71,13 +71,13 @@
         var params = "?start=" + this.start.toISOString() + "&end=" + this.end.toISOString();
         return $.get(url + params)
       },
-      setLastLoad1: function(metric, chart) {
+      setLastLoad1: function(last_value) {
         // Use Dygraphs to parse CSV and report last point in VueJS context.
-        this.load1_last = chart.getValue(chart.numRows() - 1, 1) || 'N/A'
+        this.load1_last = last_value || 'N/A'
       },
-      setLastTPS: function(metric, chart) {
+      setLastTPS: function(last_value) {
         // Use Dygraphs to parse CSV and report last point in VueJS context.
-        this.tps_last = chart.getValue(chart.numRows() - 1, 1) || 'N/A'
+        this.tps_last = last_value || 'N/A'
       }
     }
   }
@@ -121,13 +121,11 @@
             {{ tps_last }}
           </span>
           <sparkline
-            :instance="instance"
-            :metric="'tps'"
             :data="tps_data"
             :start="start"
             :end="end"
             :colors="['#50BD68', '#F15854']"
-            @chart-created="setLastTPS"
+            @chart-rendered="setLastTPS"
             ref="tps_chart"
             class="sparkline-container"
             data-toggle="tooltip"
@@ -150,13 +148,11 @@
             data-placement="bottom">
           </div>
           <sparkline
-            :instance="instance"
-            :metric="'load1'"
             :data="load1_data"
             :start="start"
             :end="end"
             :colors="['#FAA43A']"
-            @chart-created="setLastLoad1"
+            @chart-rendered="setLastLoad1"
             ref="load1_chart"
             class="sparkline-container"
             data-toggle="tooltip"

@@ -6,26 +6,36 @@
   export default {
     data: function() {
       return {
-        chartOptions: {},
         chart: null
       }
     },
-    props: ['instance', 'metric', 'data', 'start', 'end', 'colors'],
-    mounted: function() {
-      if (this.data) {
-        this.renderChart()
-      }
-    },
+    props: ['data', 'start', 'end', 'colors'],
     watch: {
       data: function() {
-        if (this.data) {
-          this.renderChart()
+        if (this.chart) {
+          if (this.data) {
+            this.chart.updateOptions({
+              dateWindow: [this.start, this.end],
+              file: this.data,
+            })
+          } else {
+            this.chart.destroy()
+            this.chart = null
+          }
+        } else if (this.data) {
+          this.chart = this.renderChart()
         }
+
+        var last_value = null
+        if (this.chart) {
+          last_value = this.chart.getValue(this.chart.numRows() - 1, 1)
+        }
+        this.$emit('chart-rendered', last_value)
       }
     },
     methods: {
       renderChart: function() {
-        this.chartOptions = {
+        var chartOptions = {
           axes: {
             x: {
               drawAxis: false,
@@ -46,8 +56,7 @@
           colors: this.colors
         }
 
-        this.chart = new Dygraph(this.$el, this.data, this.chartOptions)
-        this.$emit('chart-created', this.metric, this.chart)
+        return new Dygraph(this.$el, this.data, chartOptions)
       }
     }
   }
