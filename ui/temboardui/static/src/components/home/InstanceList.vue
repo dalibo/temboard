@@ -96,9 +96,9 @@
       }
     },
     mounted: function() {
+      this.refreshCards()
+      window.setInterval(() => this.refreshCards(), refreshInterval)
       this.$nextTick(() => {
-        this.refreshCards()
-        window.setInterval(() => this.refreshCards(), refreshInterval)
         $("[data-toggle=tooltip]", this.$el).tooltip()
       })
     },
@@ -133,19 +133,18 @@
         this.fetchInstances()
         this.end = moment()
         this.start = moment().subtract(1, 'hours')
-        for (var i in this.$children) {
-          var child = this.$children[i]
-          if (child.index === undefined) {
-            continue
+        this.$nextTick(function() {
+          for (var i in this.$children) {
+            var child = this.$children[i]
+            if (child.index >= 18) {
+              break
+            }
+            child.fetchLoad1()
+            child.fetchTPS()
           }
-          if (child.index >= 18) {
-            break
-          }
-          child.fetchLoad1()
-          child.fetchTPS()
-        }
-        this.refreshDate = moment()
-        this.loading = false
+          this.refreshDate = moment()
+          this.loading = false
+        })
       }
     },
     watch: {
@@ -206,7 +205,7 @@
       <div class="col">
         <p class="text-secondary text-right mt-2 mb-0 mr-4">
           <i v-if="loading" class="fa fa-spinner fa-spin loader"></i>
-          <span :title="refreshDate ? 'last refresh ' + refreshDate.fromNow() : ''">Refreshed every 1m</span>
+          <span :title="refreshDate ? 'last refresh at ' + refreshDate.format('HH:mm:ss') : ''">Refreshed every 1m</span>
         </p>
       </div>
     </div>
