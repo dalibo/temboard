@@ -13,25 +13,18 @@
     props: ['instance', 'metric', 'data', 'start', 'end', 'colors'],
     mounted: function() {
       if (this.data) {
-        this.createChart()
+        this.renderChart()
       }
     },
     watch: {
       data: function() {
-        if (this.chart) {
-          // From vue-dygraphs.
-          // Merge data and options
-          let obj = Object.assign({}, this.chartOptions, {file: this.data})
-          this.chart.updateOptions(obj)
-          this.$emit('chart-updated', this.metric, this.chart)
-        }
-        else if (this.data) {
-          this.createChart()
+        if (this.data) {
+          this.renderChart()
         }
       }
     },
     methods: {
-      createChart: function() {
+      renderChart: function() {
         this.chartOptions = {
           axes: {
             x: {

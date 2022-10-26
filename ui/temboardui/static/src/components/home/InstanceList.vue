@@ -1,6 +1,8 @@
 <script type="text/javascript">
   // Global: clearError, showError
   import _ from 'lodash'
+  import moment from 'moment'
+  import { ref } from 'vue/dist/vue.esm'
 
   import InstanceCard from './InstanceCard.vue'
 
@@ -54,7 +56,11 @@
         search: this.$route.query.q,
         sort: this.$route.query.sort || 'status',
         groups: groups,
-        groupsFilter: groupsFilter
+        groupsFilter: groupsFilter,
+        start: moment().subtract(1, 'hours'),
+        end: moment(),
+        refreshDate: null,
+        refreshInterval
       }
     },
     props: [
@@ -90,9 +96,9 @@
       }
     },
     mounted: function() {
-      this.$nextTick(function() {
-        this.fetchInstances()
-        window.setInterval(function() { this.fetchInstances() }.bind(this), refreshInterval)
+      this.$nextTick(() => {
+        this.refreshCards()
+        window.setInterval(() => this.refreshCards(), refreshInterval)
         $("[data-toggle=tooltip]", this.$el).tooltip()
       })
     },
@@ -115,13 +121,31 @@
         clearError()
         $.ajax('/home/instances').success(data => {
           this.instances = data
-          this.loading = false
           this.$nextTick(function() {
             $('[data-toggle="popover"]').popover();
           })
         }).fail(xhr => {
           showError(xhr)
         })
+      },
+      refreshCards: function() {
+        this.loading = true
+        this.fetchInstances()
+        this.end = moment()
+        this.start = moment().subtract(1, 'hours')
+        for (var i in this.$children) {
+          var child = this.$children[i]
+          if (child.index === undefined) {
+            continue
+          }
+          if (child.index >= 18) {
+            break
+          }
+          child.fetchLoad1()
+          child.fetchTPS()
+        }
+        this.refreshDate = moment()
+        this.loading = false
       }
     },
     watch: {
@@ -180,7 +204,10 @@
         <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-toggle="tooltip">{{ groups[0] }}</span>
       </div>
       <div class="col">
-        <p class="text-secondary text-right mt-2 mb-0 mr-4">Refreshed every 1m.</p>
+        <p class="text-secondary text-right mt-2 mb-0 mr-4">
+          <i v-if="loading" class="fa fa-spinner fa-spin loader"></i>
+          <span :title="refreshDate ? 'last refresh ' + refreshDate.fromNow() : ''">Refreshed every 1m</span>
+        </p>
       </div>
     </div>
 
@@ -188,12 +215,16 @@
       <div
         v-for="instance, instanceIndex in filteredInstances"
         :key="instance.hostname + instance.pg_port"
+        ref="cards"
         v-cloak
         class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 pb-3">
         <instance-card
           v-bind:instance="instance"
           v-bind:status_value="getStatusValue(instance)"
+          v-bind:refreshInterval="refreshInterval"
           v-bind:index="instanceIndex"
+          v-bind:start="start"
+          v-bind:end="end"
         ></instance-card>
       </div>
     </div>
