@@ -46,6 +46,24 @@
       {% include ".icons/material/menu" ~ ".svg" %}
     </label>
 
+    <!-- CUSTOM START -->
+    <!-- See. https://github.com/squidfunk/mkdocs-material/blob/419740831daf2c487b94a9713c82c2712c00b242/src/assets/javascripts/templates/version/index.tsx -->
+    <!-- Let's hard-code version selector. -->
+    <div class="md-header__option">
+      <div class="md-version">
+        <button class="md-header__button md-version__current">latest</button>
+        <ul class="md-version__list">
+          <li class="md-version__item">
+            <a href="/en/latest/" class="md-version__link">latest</a>
+          </li>
+          <li class="md-version__item">
+            <a href="/en/v7/" class="md-version__link">v7</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- CUSTOM END -->
+
     <!-- Header title -->
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">

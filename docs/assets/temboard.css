@@ -38,3 +38,8 @@
 div.injected {
   display: none !important;
 }
+
+.md-header__option {
+  height: 2.4rem;
+  line-height: 2.4rem;
+}
