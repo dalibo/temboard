@@ -7,6 +7,7 @@ repo_url: https://github.com/dalibo/temboard/
 
 theme:
   name: material
+  custom_dir: docs/overrides
   favicon: assets/temboard-logo-64.png
   icon:
     repo: fontawesome/brands/github
