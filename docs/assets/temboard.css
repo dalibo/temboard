@@ -33,3 +33,8 @@
   max-width: 90%;
   margin: 1em auto;
 }
+
+/* Hide RTD injected code. */
+div.injected {
+  display: none !important;
+}

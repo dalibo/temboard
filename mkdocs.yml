@@ -50,6 +50,9 @@ extra:
 extra_css:
 - assets/temboard.css
 
+extra_javascript:
+- assets/rtd-material.js
+
 nav:
 - Home: index.md
 - quickstart.md
