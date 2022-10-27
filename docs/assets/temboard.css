@@ -33,3 +33,13 @@
   max-width: 90%;
   margin: 1em auto;
 }
+
+/* Hide RTD injected code. */
+div.injected {
+  display: none !important;
+}
+
+.md-header__option {
+  height: 2.4rem;
+  line-height: 2.4rem;
+}
