@@ -60,10 +60,8 @@ This packages holds the web user interface
 
 %post
 systemctl daemon-reload &>/dev/null || :
+systemctl restart --state=ACTIVE temboard
 
-if systemctl is-active temboard >&/dev/null ; then
-	systemctl restart temboard
-fi
 
 %postun
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
