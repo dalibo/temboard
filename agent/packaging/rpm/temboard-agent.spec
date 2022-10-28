@@ -74,9 +74,8 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 
 %preun
 if systemctl is-system-running &>/dev/null ; then
-    systemctl stop temboard-agent*
-    systemctl disable $(systemctl --plain list-units temboard-agent@* | grep -Po temboard-agent.*\\.service)
-    systemctl reset-failed temboard-agent*
+    systemctl disable --now temboard-agent@*
+    systemctl reset-failed temboard-agent@*
 fi
 
 
