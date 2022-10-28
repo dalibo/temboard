@@ -145,7 +145,7 @@ Now start the agent using the command suggested by `auto_configure.sh`.
 On most systems now, it\'s a systemd service:
 
 ``` console
-# systemctl start temboard-agent@14-main
+# systemctl enable --now temboard-agent@14-main
 ```
 
 Check that it has started successfully:
