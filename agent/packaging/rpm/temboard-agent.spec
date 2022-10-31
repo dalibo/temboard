@@ -59,16 +59,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 # pidfile directory
 %{__install} -d %{buildroot}/var/run/temboard-agent
 
-%post
-if [ -x /usr/share/temboard-agent/restart-all.sh ] ; then
-    /usr/share/temboard-agent/restart-all.sh
-elif systemctl is-system-running &>/dev/null ; then
-    systemctl daemon-reload
-    if systemctl is-active temboard-agent &>/dev/null; then
-        systemctl restart temboard-agent
-    fi
-fi
-
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
 %{python3_sitelib}/*
@@ -79,11 +69,13 @@ fi
 
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 
+%post
+/usr/share/temboard-agent/restart-all.sh
+
 %preun
 if systemctl is-system-running &>/dev/null ; then
-    systemctl stop temboard-agent*
-    systemctl disable $(systemctl --plain list-units temboard-agent@* | grep -Po temboard-agent.*\\.service)
-    systemctl reset-failed temboard-agent*
+    systemctl disable --now temboard-agent@*
+    systemctl reset-failed temboard-agent@*
 fi
 
 

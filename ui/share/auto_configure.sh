@@ -201,10 +201,9 @@ fi
 TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" "${run_as_temboard[@]}" temboard generate-key
 
 if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
-	start_cmd="systemctl start temboard"
+	start_cmd="systemctl enable-now temboard"
 	if systemctl is-system-running &>/dev/null ; then
 		systemctl daemon-reload
-		systemctl enable temboard
 	fi
 else
 	start_cmd="sudo -iu $SYSUSER temboard -c ${ETCDIR}/temboard.conf"

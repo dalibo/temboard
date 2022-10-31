@@ -60,13 +60,16 @@ This packages holds the web user interface
 
 %post
 systemctl daemon-reload &>/dev/null || :
+systemctl restart --state=ACTIVE temboard
 
-if systemctl is-active temboard >&/dev/null ; then
-	systemctl restart temboard
+%preun
+if systemctl is-system-running &>/dev/null ; then
+    systemctl disable --now temboard
+    systemctl reset-failed temboard
 fi
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/bin/systemctl daemon-reload &>/dev/null || :
 
 %install
 PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}

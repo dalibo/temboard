@@ -162,7 +162,7 @@ the certificate and the cookie secret key.
     By default, temBoard is set up with a dumb `admin` user with password `admin`. This
     is totally unsecured. It is **strongly recommended to change default password**! See below.
 
-First, start temboard using `systemctl start temboard`.
+First, start temboard using `systemctl enable --now temboard`.
 Then point your browser to <https://temboard_server_host:8888>, log in as
 `admin:admin` and change the password.
 

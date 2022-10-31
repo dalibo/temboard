@@ -10,7 +10,7 @@ Group=postgres
 Environment="SYSTEMD=1"
 ExecStart=/usr/bin/temboard-agent -c /etc/temboard-agent/%I/temboard-agent.conf
 # Increase OOM Score to ensure agent is killed before Postgres.
-OOMAdjustScore=15
+OOMScoreAdjust=15
 
 [Install]
 WantedBy=multi-user.target

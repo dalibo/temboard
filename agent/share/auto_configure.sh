@@ -356,7 +356,7 @@ sudo -Eu "${SYSUSER}" $(type -p temboard-agent) -c "$conf" discover >/dev/null
 # systemd
 if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	unit="temboard-agent@$(systemd-escape "${name}").service"
-	log "Enabling systemd unit ${unit}."
+	log "Configuring systemd unit ${unit}."
 	if [ "${SYSUSER}" != "postgres" ] ; then
 		mkdir -p "/etc/systemd/system/$unit.d/"
 		cat > "/etc/systemd/system/$unit.d/user.conf" <<-EOF
@@ -365,8 +365,7 @@ if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 		Group=${SYSGROUP}
 		EOF
 	fi
-	systemctl enable "$unit"
-	start_cmd="systemctl start $unit"
+	start_cmd="systemctl enable --now $unit"
 else
 	start_cmd="sudo -u ${SYSUSER} temboard-agent -c $conf"
 fi
