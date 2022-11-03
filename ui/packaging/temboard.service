@@ -8,7 +8,7 @@ User=temboard
 Group=temboard
 Environment="SYSTEMD=1"
 ExecStart=/usr/bin/temboard -c /etc/temboard/temboard.conf serve
-ExecReload=kill -HUP $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
