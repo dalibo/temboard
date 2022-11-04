@@ -145,6 +145,9 @@ release:  #: Tag and push a new git release.
 	@echo Pushing tag to $(REMOTE).
 	@git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
 
+release-notes:  #: Extract changes for current release
+	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
+
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
 	test -f ui/temboardui/static/manifest.json

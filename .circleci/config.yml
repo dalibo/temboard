@@ -171,6 +171,13 @@ jobs:
         name: Build documentation with mkdocs
         command: |
           mkdocs build --strict
+    - run:
+        name: Extract release notes
+        command: |
+          mkdir -p build
+          make -s release-notes > build/RELEASE-NOTES.md
+    - store_artifacts:
+        path: build/RELEASE-NOTES.md
     - store_artifacts:
         path: README.html
         destination: build/README.html
@@ -415,7 +422,7 @@ jobs:
             agent/dist/*{.tar.gz,.whl,_all.deb,.noarch.rpm} \
             ui/dist/*{.tar.gz,.whl,_amd64.deb,.noarch.rpm} \
             --title "${CIRCLE_TAG#v}" \
-            -F <(sed -En "/^#+ ${CIRCLE_TAG#v}/,/^#/p" CHANGELOG.md  | sed '1d;$d') \
+            -F <(make -s release-notes VERSION=${CIRCLE_TAG#v}) \
             "${args[@]}"
     - run:
         name: Upload Agent to PyPI
