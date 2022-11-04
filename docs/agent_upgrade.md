@@ -68,7 +68,9 @@ Check agent logs and dashboard in temBoard UI.
 You can drop `users` file.
 
 
-## 6.X to 7.0
+## Older versions
+
+### 6.X to 7.0
 
 First of all, beware that support for `RHEL/CentOS 6` has been dropped.
 
@@ -109,7 +111,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 5.X to 6.0
+### 5.X to 6.0
 
 Stop the agent:
 
@@ -129,7 +131,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 4.X to 5.0
+### 4.X to 5.0
 
 Stop the agent:
 
@@ -149,7 +151,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 3.X to 4.0
+### 3.X to 4.0
 
 Stop the agent:
 
@@ -169,7 +171,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 2.X to 3.0
+### 2.X to 3.0
 
 Stop the agent:
 
@@ -192,7 +194,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 1.2 to 2.0
+### 1.2 to 2.0
 
 Stop the agent:
 
@@ -213,7 +215,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 1.1 to 1.2
+### 1.1 to 1.2
 
 Stop the agent:
 
@@ -233,7 +235,7 @@ Start the agent:
 sudo systemctl start temboard-agent
 ```
 
-## 0.0.1 to 1.1
+### 0.0.1 to 1.1
 
 Stop the agent:
 

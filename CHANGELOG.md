@@ -284,7 +284,9 @@ Released on 2020-09-28
   first found in env, by [@bersace].
 
 
-## 6.2
+## Older releases
+
+### 6.2
 
 Released on 2020-08-07
 
@@ -302,14 +304,14 @@ Released on 2020-08-07
 - Double error with unserializable error in worker, by [@bersace].
 - Test PG access by temboard role after repo creation, by [@l00ptr]
 
-## 6.1
+### 6.1
 
 Released on 2020-06-15
 
 Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
 
 
-## 6.0
+### 6.0
 
 Released on 2020-06-15
 
@@ -344,7 +346,7 @@ This release requires a special step before restarting temBoard. Please read
   [@bersace].
 
 
-## 5.0
+### 5.0
 
 Released on 2020-04-16
 
@@ -361,7 +363,7 @@ Released on 2020-04-16
 
 - Performances improvements of asynchronous task management by [@julmon](https://github.com/julmon)
 
-## 4.0
+### 4.0
 
 Released on 2019-06-26
 
@@ -389,7 +391,7 @@ Released on 2019-06-26
 - Remove monitoring data when removing an instance by [@pgiraud](https://github.com/pgiraud)
 - Move `metric_cpu_record.time` to `BIGINT` by [@julmon](https://github.com/julmon)
 
-## 3.0
+### 3.0
 
 Released on 2019-03-20
 

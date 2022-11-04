@@ -8,7 +8,7 @@ Upgrade temBoard UI before upgrading agents.
 
 temBoard 8.0 requires changes in database schema.
 
-### Stop service
+**Stop service**
 
 Stop `temboard` service:
 
@@ -16,11 +16,11 @@ Stop `temboard` service:
 sudo systemctl stop temboard
 ```
 
-### Update package
+**Update package**
 
 Update temboard package with your [preferred installation method].
 
-### Upgrade Database Schema
+**Upgrade Database Schema**
 
 Then apply `repository` database upgrade with the following command:
 
@@ -28,7 +28,7 @@ Then apply `repository` database upgrade with the following command:
 sudo -u temboard temboard migratedb upgrade
 ```
 
-### Flush tasks
+**Flush tasks**
 
 Flush background tasks with the following command:
 
@@ -36,8 +36,7 @@ Flush background tasks with the following command:
 sudo -u temboard temboard tasks flush
 ```
 
-
-### Generate Signing Key
+**Generate Signing Key**
 
 Generate signing key:
 
@@ -45,7 +44,7 @@ Generate signing key:
 sudo -u temboard temboard generate-key
 ```
 
-### Start service
+**Start service**
 
 Start `temboard` service:
 
@@ -56,7 +55,7 @@ sudo systemctl start temboard
 
 ## Upgrade `7.X` to `7.9`
 
-### Stop service
+**Stop service**
 
 Stop `temboard` service:
 
@@ -64,11 +63,11 @@ Stop `temboard` service:
 sudo systemctl stop temboard
 ```
 
-### Update package
+**Update package**
 
 Update temboard package with your [preferred installation method].
 
-### Upgrade SQL procedures
+**Upgrade SQL procedures**
 
 Then apply `repository` database upgrade with the following command:
 
@@ -76,7 +75,7 @@ Then apply `repository` database upgrade with the following command:
 sudo -u temboard temboard-migratedb upgrade
 ```
 
-### Start service
+**Start service**
 
 Start `temboard` service:
 
@@ -90,9 +89,11 @@ sudo systemctl start temboard
     This may take some time and ressources depending on the time of interruption and the number of monitoring instances.
 
 
-## Upgrade `6.X` to `7.0`
+## Older versions
 
-### Update agents
+### Upgrade `6.X` to `7.0`
+
+**Update agents**
 
 temBoard UI 7.0 is compatible with agent 6.X. Still, we suggest you to [upgrade
 the agents](agent_upgrade.md).
@@ -100,7 +101,7 @@ the agents](agent_upgrade.md).
 *Note: An upgrade of the agent is required if you want to use the new `statements`
 plugin.*
 
-### Stop service
+**Stop service**
 
 Stop `temboard` service:
 
@@ -108,11 +109,11 @@ Stop `temboard` service:
 sudo systemctl stop temboard
 ```
 
-### Update package
+**Update package**
 
 Update temboard package with your [preferred installation method]
 
-### Upgrade database structure
+**Upgrade database structure**
 
 With the addition of the `statements` plugin, an upgrade of the repository
 database schema is required.
@@ -126,7 +127,7 @@ Then apply `repository` database structure upgrade with the following command:
 sudo -u temboard temboard-migratedb upgrade
 ```
 
-### Start service
+**Start service**
 
 Start `temboard` service:
 
@@ -134,14 +135,14 @@ Start `temboard` service:
 sudo systemctl start temboard
 ```
 
-### Activate statements plugin
+**Activate statements plugin**
 
 Open temBoard in your browser and activate the `statements` plugin for the
 different instances on which you want to use it.
 
 ---
 
-## Upgrade `5.X` to `6.0`
+### Upgrade `5.X` to `6.0`
 
 temBoard UI 6.0 is compatible with agent 5.X. Still, we suggest you to
 [upgrade the agents]
@@ -169,7 +170,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `4.x` to `5.0`
+### Upgrade `4.x` to `5.0`
 
 Stop `temboard` service:
 ```shell
@@ -204,7 +205,7 @@ Start `temboard` service:
 sudo systemctl start temboard
 ```
 
-### Pull mode
+**Pull mode**
 
 Version 5 comes with a new way to collect monitoring data from the agents.
 Before this version, agents were pushing monitoring data to temboard server.
@@ -212,7 +213,7 @@ Starting from version 5, temboard server is now able to pull monitoring data
 if the target agent has been deployed in version 5 or upper. The server still
 supports push mode for the agents still running in version 4.
 
-## Upgrade `3.0` to `4.0`
+### Upgrade `3.0` to `4.0`
 
 Stop `temboard` service:
 ```shell
@@ -240,7 +241,7 @@ Start `temboard` service:
 sudo systemctl start temboard
 ```
 
-## Upgrade `2.x` to `3.0`
+### Upgrade `2.x` to `3.0`
 
 Stop `temboard` service:
 ```shell
@@ -270,7 +271,7 @@ sudo systemctl start temboard
 Activate the maintenance plugin for the instances in the settings view in
 your browser.
 
-## Upgrade `1.2` to `2.0`
+### Upgrade `1.2` to `2.0`
 
 Stop `temboard` service:
 ```shell
@@ -295,7 +296,7 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `1.1` to `1.2`
+### Upgrade `1.1` to `1.2`
 
 Stop `temboard` service:
 ```shell
@@ -311,7 +312,8 @@ Start `temboard` service:
 ```shell
 sudo systemctl start temboard
 ```
-## Upgrade `0.0.1` to `1.1`
+
+### Upgrade `0.0.1` to `1.1`
 
 `temboard` upgrade process is going to be done within 4 stages:
 
@@ -320,7 +322,7 @@ sudo systemctl start temboard
 * Repository upgrade
 * Post-upgrade operations
 
-### Software upgrade
+**Software upgrade**
 
 First, `temboard` must be stopped:
 ```shell
@@ -332,7 +334,7 @@ New package installation:
 sudo yum install temboard
 ```
 
-### Configuration update
+**Configuration update**
 
 The following changes should be reflected into the configuration file:
 
@@ -340,7 +342,7 @@ The following changes should be reflected into the configuration file:
 * plugin `settings` renamed to `pgconf` : parameter `plugins`
 * CA cert. file not required anymore : parameter `ssl_ca_cert_file` can be commented
 
-### Repository upgrade
+**Repository upgrade**
 
 `temboard` database structure needs to be upgraded too. Before doing anything, you should make a backup of `temboard` database with `pg_dump`.
 
@@ -354,7 +356,7 @@ If everything goes well, you can drop old data:
 DROP SCHEMA supervision CASCADE;
 ```
 
-### Post-upgrade operations
+**Post-upgrade operations**
 
 Task list clean-up:
 ```shell
