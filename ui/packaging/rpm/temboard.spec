@@ -10,7 +10,7 @@
 Name:          %{pkgname}
 Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
-Summary:       temBoard Web Interface
+Summary:       PostgreSQL Remote Control - Web Interface
 
 Group:         Applications/Databases
 License:       PostgreSQL
@@ -74,6 +74,9 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{_unitdir}/temboard.service
 
 %changelog
+* Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
+- New Upstream Release
+
 * Wed Nov 8 2017 Julien Tachoires <julmon@gmail.com> - 1.1-1
 - Handling /var/lib/temboard directory
 - Auto-signed SSL certs.

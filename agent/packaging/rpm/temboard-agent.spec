@@ -5,7 +5,7 @@
 Name:          %{pkgname}
 Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
-Summary:       temBoard agent
+Summary:       PostgreSQL Remote Control - Agent Service
 
 Group:         Applications/Databases
 License:       PostgreSQL
@@ -25,8 +25,8 @@ Requires:      python3-cryptography
 %endif
 
 %description
-Administration & monitoring PostgreSQL agent.
-
+temBoard agent monitor and operates on a PostgreSQL instance.
+Requires a temBoard UI installation.
 
 %prep
 %setup -q -n %{pkgname}-%{version}
@@ -85,6 +85,9 @@ fi
 
 
 %changelog
+* Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
+- New Upstream Release
+
 * Fri Oct  9 2020 Denis Laxalde <denis.laxalde@dalibo.com> - 7.1-2
 - Build with Python 3 on CentOS/RHEL 7
 
