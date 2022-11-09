@@ -18,35 +18,24 @@ URL:           https://labs.dalibo.com/temboard/
 Source0:       %{pkgname}-%{version}.tar.gz
 BuildArch:     noarch
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-%if 0%{?rhel} < 8
-BuildRequires: python36-setuptools
-Requires:      python36-cryptography
-Requires:      python36-dateutil
-Requires:      python36-flask
-Requires:      python36-future
-Requires:      python36-psycopg2
-Requires:      python36-setuptools
-Requires:      python36-sqlalchemy
-Requires:      python36-tornado
-%else
-%if 0%{?rhel} < 9
-BuildRequires: python36
-%else
-BuildRequires: python3
-%endif
-BuildRequires: python3-setuptools
 BuildRequires: python3-rpm-macros
-Requires:      python3-cryptography
-Requires:      python3-dateutil >= 1.5
+BuildRequires: python3-setuptools
+Requires:      mailcap
+Requires:      openssl
 Requires:      python3-flask
 Requires:      python3-future
 Requires:      python3-psycopg2
 Requires:      python3-setuptools
-Requires:      python3-sqlalchemy >= 0.9.8
 Requires:      python3-tornado
+%if 0%{?rhel} < 8
+Requires:      python36-cryptography
+Requires:      python36-dateutil
+Requires:      python36-sqlalchemy
+%else
+Requires:      python3-cryptography
+Requires:      python3-dateutil >= 1.5
+Requires:      python3-sqlalchemy >= 0.9.8
 %endif
-Requires:      openssl
-Requires:      mailcap
 
 %description
 temBoard is a monitoring and remote control solution for PostgreSQL

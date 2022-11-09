@@ -10,54 +10,36 @@ Ensure you use consistent title format.
 
 Unreleased.
 
-- RHEL9, Debian Bookworm (testing) packages.
-- PostgreSQL 15 support.
-- Dropped support for PostgreSQL 9.5 and 9.4.
-- Increase agent OOM score with systemd.
-- Each temBoard release has it's own docker tag. e.g. dalibo/temboard:8.0,
-  dalibo/temboard:8.0rc1, etc. See Docker Hub repositories [dalibo/temboard]
-  and [dalibo/temboard-agent].
-- Streamlined docker images, basing on Debian Bullseye, with temBoard installed
-  with APT instead of pip.
-- Use auto_configure.sh in docker images. Images are now idempotent.
-- Limit activity view to 300 longest queries.
-- Monitoring purge_after default value is now set to 730 (2 years), it was empty
-  before (no limit).
-- pg_ctl parameter must not be quoted now.
-- agent: Add new unified sessions and detailed locks endpoint.
-- Restyled documentation.
-- Restart scheduler and worker pool on crash.
-- Handle SIGCHLD in temboard UI too.
+!!! warning
 
-[dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
-[dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
+    temBoard UI 8.0 is compatible with temBoard agent 7.11 to ease migration.
+    Upgrade UI first and then upgrade agents one at a time.
 
+    temBoard agent 8 is **NOT** compatible with temBoard UI 7.11.
 
-## 8.0b1
-
-Released on 2022-09-16.
-
-This release requires specific upgrade instructions. See [server_upgrade.md]
-and [agent_upgrade.md] for details.
-
-temBoard UI is compatible with temBoard agent 7.11 to ease migration. Upgrade
-UI first and then upgrade agents one at a time. temBoard agent 8 is **NOT**
-compatible with temBoard UI 7.11.
+    This release requires specific upgrade instructions.
+    See [Server Upgrade](server_upgrade.md) and [Agent Upgrade](agent_upgrade.md) for details.
 
 
 **Breaking changes**
 
 - temBoard UI dropped support for Internet Explorer 8. You may have issues with
   browsers older than 5 years.
-- Removed `temboard --debug` CLI option.
+- Dropped support for PostgreSQL 9.5 and 9.4. For both UI and agent.
+- Dropped key-only authentication on agent. Access to UI grants full access on managed agent.
+- New CLI for both UI and agent. `temboard` and `temboard-agent` are the single CLI entrypoints.
+    - Removed `temboard --debug` CLI option.
+    - Dropped commands `temboard-agent-adduser` and `temboard-agent-password`.
+    - Commands `temboard-migratedb`, `temboard-agent-register` are moved as
+        subcommands of `temboard` and `temboard-agent`.
 - temBoard UI dropped push-metrics handler from pre-6.0 push metric collect.
 - temBoard UI RPM does not execute `auto_configure.sh` upon installation.
 - temBoard UI RPM does not create `temboard` UNIX user. Use auto_configure.sh
   instead.
-- Commands `temboard-migratedb`, `temboard-agent-register` are moved as
-  subcommands of `temboard` and `temboard-agent`.
+- temBoard Agent RPM does not create `postgres` UNIX user. Use PostgreSQL packages instead.
 - Packages does not provide logrotate configuration anymore. temBoard can still
   log to file.
+- pg_ctl agent parameter must **not** be quoted now, in temboard-agent.conf.
 - Agent auto_configure.sh now requires a parameter: the UI url.
 - temBoard agent does not provide legacy single-installation systemd unit file
   `temboard-agent.service` in favor of `temboard-agent@.service`.
@@ -68,8 +50,10 @@ compatible with temBoard UI 7.11.
 - temBoard agent auto_configure.sh does not configure file logging anymore.
 - Dropped temBoard agent HTTP endpoint `/monitoring/probe/*`, some
   `/dashboard/` probes and more. Use `temboard routes` and `temboard-agent
-  routes` to inspect availables HTTP urls.
-- Dropped commands `temboard-agent-adduser` and `temboard-agent-password`.
+  routes` to inspect availables HTTP URLs.
+- Docker image for agent now configures agent with `auto_configure.sh`.
+  temBoard agent configuration moved from `/etc/temboard-agent` to
+  `/etc/temboard-agent/<cluster_name>`.
 
 
 **Deprecation**
@@ -81,6 +65,7 @@ compatible with temBoard UI 7.11.
 
 **New Features**
 
+- PostgreSQL 15 support.
 - Unified authentication. Signing in UI open full DBA access to agents, without
   double login.
 - Register instance without querying UI API using `temboard register-instance`.
@@ -90,6 +75,23 @@ compatible with temBoard UI 7.11.
 - New *About instance* page with PostgreSQL, system and agent informations.
 - OpenMetrics endpoint. Accessible using temBoard UI as authenticating proxy to
   agent.
+- RHEL9, Debian Bookworm (testing) packages.
+- Increase agent OOM score with systemd.
+- Restyled documentation with improved search and navigation.
+
+
+**Changes**
+
+- Each temBoard release has it's own docker tag. e.g. dalibo/temboard:8.0,
+  dalibo/temboard:8.0rc1, etc. See Docker Hub repositories [dalibo/temboard]
+  and [dalibo/temboard-agent].
+- Streamlined docker images, basing on Debian Bullseye, with temBoard installed
+  with APT instead of pip.
+- Restart scheduler and worker pool background processes on crash.
+- Improved error logging. Log format is now Postgres-like.
+
+[dalibo/temboard]: https://hub.docker.com/repository/docker/dalibo/temboard
+[dalibo/temboard-agent]: https://hub.docker.com/repository/docker/dalibo/temboard-agent
 
 
 **UI changes**
@@ -109,16 +111,17 @@ compatible with temBoard UI 7.11.
   authorization. By default, only 127/8 is allowed.
 - Improved refresh error handling in dashboard, activity and home page. Error
   are now inlined instead of modal.
-- Improved error logging. Log format is now Postgres-like.
 - temBoard UI now accept to serve plain HTTP. For development purpose.
 - New commands `temboard query-agent`, `temboard routes`, `temboard tasks
   run`, `temboard tasks schedule` and `temboard web` for debugging.
+- Handle SIGCHLD in temboard UI too. No more zombies.
+- Limit activity view to 300 longest queries.
 
 
 **Agent changes**
 
 - Unified authentification: agent now uses UI as source of identity.
-- Dropped `users` file and relative configuration.
+- Dropped `users` file and related configuration.
 - New command `temboard-agent fetch-key` to accept UI signing key.
 - New option: `[temboard] ui_url`, pointing to UI URL.
 - auto_configure.sh conditionnaly enable statements plugins.
@@ -129,12 +132,14 @@ compatible with temBoard UI 7.11.
 - temBoard agent pools connections to PostgreSQL used by web API, reducing
   connections stress on PostgreSQL.
 - Heavily reduction of connection opened by dashboard.
-- Drop agent configuration `postgresql:cluster_name` in favor of Postgres
+- Drop agent configuration `postgresql:instance` in favor of Postgres
   setting `cluster_name`.
+- Add new unified sessions and detailed locks endpoint.
 - temBoard agent now depends on cryptography and bottle.
-- Improved error logging. Log format is now Postgres-like.
 - New subcommands `temboard-agent routes`, `temboard-agent tasks run` and
   `temboard-agent web` for debugging.
+- Monitoring purge_after default value is now set to 730 (2 years), it was empty
+  before (no limit).
 
 
 ## 7.11
@@ -279,7 +284,9 @@ Released on 2020-09-28
   first found in env, by [@bersace].
 
 
-## 6.2
+## Older releases
+
+### 6.2
 
 Released on 2020-08-07
 
@@ -297,14 +304,14 @@ Released on 2020-08-07
 - Double error with unserializable error in worker, by [@bersace].
 - Test PG access by temboard role after repo creation, by [@l00ptr]
 
-## 6.1
+### 6.1
 
 Released on 2020-06-15
 
 Fixed compatibility with old Alembic 0.8.3 shipped on RHEL7, by [@bersace].
 
 
-## 6.0
+### 6.0
 
 Released on 2020-06-15
 
@@ -339,7 +346,7 @@ This release requires a special step before restarting temBoard. Please read
   [@bersace].
 
 
-## 5.0
+### 5.0
 
 Released on 2020-04-16
 
@@ -356,7 +363,7 @@ Released on 2020-04-16
 
 - Performances improvements of asynchronous task management by [@julmon](https://github.com/julmon)
 
-## 4.0
+### 4.0
 
 Released on 2019-06-26
 
@@ -384,7 +391,7 @@ Released on 2019-06-26
 - Remove monitoring data when removing an instance by [@pgiraud](https://github.com/pgiraud)
 - Move `metric_cpu_record.time` to `BIGINT` by [@julmon](https://github.com/julmon)
 
-## 3.0
+### 3.0
 
 Released on 2019-03-20
 
