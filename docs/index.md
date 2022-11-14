@@ -1,7 +1,7 @@
 
 !!! warning
 
-    **[temBoard 8 is available !]()**
+    **[temBoard 8 is available !](https://blog.dalibo.com/2022/11/14/temboard8-en.html)**
 
     You are reading the documentation of an **old** version.
 
