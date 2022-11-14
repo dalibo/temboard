@@ -1,4 +1,13 @@
 
+!!! warning
+
+    **[temBoard 8 is available !]()**
+
+    You are reading the documentation of an **old** version.
+
+    Do you want to read [temBoard v8 documentation](https://temboard.rtfd.io/) ?
+
+
 ![temBoard](temboard.png)
 
 temBoard is a powerful management tool for PostgreSQL. You can use it to monitor, optimize or configure multiple PostgreSQL instances.
