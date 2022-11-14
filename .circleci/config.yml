@@ -409,7 +409,7 @@ jobs:
     - run:
         name: Create GitHub release
         command: |
-          if [[ "$CIRCLE_TAG" =~ [a-z] ]] ; then
+          if [[ "${CIRCLE_TAG#v}" =~ [a-z] ]] ; then
             args=(--prerelease)
           else
             args=()
