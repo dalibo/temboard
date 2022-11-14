@@ -5,7 +5,7 @@
 
     You are reading the documentation of an **old** version.
 
-    Do you want to read [temBoard v8 documentation](https://temboard.rtfd.io/) ?
+    Do you want to read [temBoard v8 documentation](https://temboard.rtfd.io/en/latest/) ?
 
 
 ![temBoard](temboard.png)
