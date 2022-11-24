@@ -8,7 +8,8 @@ COPY (
 			string_agg(DISTINCT group_name, ',') AS "Groups",
 			i.agent_address AS "Agent Address",
 			i.agent_port AS "Agent Port",
-			string_agg(DISTINCT plugin_name, ',') AS "Plugins"
+			string_agg(DISTINCT plugin_name, ',') AS "Plugins",
+			i.comment AS "Comment"
 		FROM application.instances AS i
 		LEFT OUTER JOIN application.instance_groups AS groups
 				ON groups.agent_port = i.agent_port
