@@ -30,13 +30,13 @@ def metadata(request):
         "Uptime": app.start_time,
         "OS": "%(distname)s %(distversion)s" % versions_info,
         "Python": "%(python)s (%(pythonbin)s)" % versions_info,
-        "cryptography": "%(cryptography)s" % versions_info,
-        "Tornado": "%(tornado)s" % versions_info,
-        "libpq": "%(libpq)s" % versions_info,
-        "psycopg2": "%(psycopg2)s" % versions_info,
-        "SQLAlchemy": "%(sqlalchemy)s" % versions_info,
+        "cryptography": versions_info['cryptography'],
+        "Tornado": versions_info['tornado'],
+        "libpq": versions_info['libpq'],
+        "psycopg2": versions_info['psycopg2'],
+        "SQLAlchemy": versions_info['sqlalchemy'],
     }
-    temboard_version = "%(temboard)s" % versions_info
+    temboard_version = versions_info['temboard']
 
     return render_template(
         'about.html',
