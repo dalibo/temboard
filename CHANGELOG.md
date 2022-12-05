@@ -11,6 +11,9 @@ Ensure you use consistent title format.
 **Unreleased**
 
 - Accept hostname down to 1 char long.
+- Fix PGDATA always empty in CSV inventory.
+- Export comment in CSV inventory.
+- Unquote PGDATA from CSV inventory.
 
 
 ## 8.0

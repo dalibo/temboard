@@ -3,8 +3,8 @@ COPY (
 		inventory AS (SELECT DISTINCT
 			i.hostname AS "Hostname",
 			i.pg_port AS "Port",
-			i.discover->'postgres'->'data_directory' AS "PGDATA",
-			i.discover->'postgres'->'version_summary' AS "Version",
+			i.discover->'postgres'->'data_directory'#>>'{}' AS "PGDATA",
+			i.discover->'postgres'->'version_summary'#>>'{}' AS "Version",
 			string_agg(DISTINCT group_name, ',') AS "Groups",
 			i.agent_address AS "Agent Address",
 			i.agent_port AS "Agent Port",
