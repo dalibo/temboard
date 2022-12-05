@@ -8,7 +8,7 @@ Ensure you use consistent title format.
 
 ## 8.0
 
-Unreleased.
+Released 14 november 2022.
 
 !!! warning
 
