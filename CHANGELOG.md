@@ -6,9 +6,16 @@ Ensure you use consistent title format.
 -->
 
 
+## 8.1
+
+**Unreleased**
+
+- Accept hostname down to 1 char long.
+
+
 ## 8.0
 
-Unreleased.
+Released 14 november 2022.
 
 !!! warning
 

@@ -283,7 +283,6 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - run: find agent/dist
     - run:
         name: Build Agent RPM snapshot
         command: agent/packaging/rpm/build.sh

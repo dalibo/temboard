@@ -122,6 +122,7 @@ def test_nday():
 
 def test_fqdn():
     valid_hostname = [
+        "a",
         "localhost",
         "localhost.localdomain",
         "host-name.localdomain",

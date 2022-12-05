@@ -38,7 +38,7 @@ class QueryFiler(dict):
             with open(path) as fo:
                 if pg_version:
                     sql = ''.join(filter(
-                        lambda l: filter_pragma_version(l, pg_version),
+                        lambda line: filter_pragma_version(line, pg_version),
                         fo,
                     ))
                 else:
