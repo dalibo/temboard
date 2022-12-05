@@ -26,6 +26,7 @@ def home(request):
 def metadata(request):
     versions_info = inspect_versions()
     infos = {
+        "Browser": request.headers.get('User-Agent', 'Unknown'),
         "Version": "%(temboard)s (%(temboardbin)s)" % versions_info,
         "Uptime": app.start_time,
         "OS": "%(distname)s %(distversion)s" % versions_info,
