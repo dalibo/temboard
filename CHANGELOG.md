@@ -12,6 +12,7 @@ Ensure you use consistent title format.
 
 - Accept hostname down to 1 char long.
 - Fix PGDATA always empty in CSV inventory.
+- Fix missing schema in upgrade script.
 - Export comment in CSV inventory.
 - Unquote PGDATA from CSV inventory.
 
