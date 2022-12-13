@@ -1,7 +1,7 @@
 {% autoescape None %}
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
+{% block title %}temBoard / {{instance}} / Activity / {% if mode == 'waiting' %}Waiting{% elif mode == 'blocking' %}Blocking{% elif mode == 'running' %}Running{% end %} queries{% end %}
 
 {% block head %}
 {% for link in vitejs.css_links_for('activity.js') %}{% raw link %}{% end %}
