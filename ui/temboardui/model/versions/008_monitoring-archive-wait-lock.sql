@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION archive_current_metrics(table_name TEXT, record_type TEXT, query TEXT) RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
+CREATE OR REPLACE FUNCTION monitoring.archive_current_metrics(table_name TEXT, record_type TEXT, query TEXT)
+RETURNS TABLE(tblname TEXT, nb_rows INTEGER)
 LANGUAGE plpgsql
 AS $$
 DECLARE

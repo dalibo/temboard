@@ -47,7 +47,7 @@ release="0dlb1${codename}1"
 
 export PIP_CACHE_DIR=build/pip-cache/
 VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
-virtualenv --python="$PYTHON" "$VIRTUAL_ENV"
+virtualenv --python="$PYTHON" --system-site-package "$VIRTUAL_ENV"
 export PATH=${VIRTUAL_ENV}/bin:$PATH
 hash -r pip
 pip --version
@@ -56,7 +56,7 @@ dist="$DISTDIR/temboard-$pep440v"-py2.py3-none-any.whl
 if ! [ -f "$dist" ] ; then
 	pip download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
 fi
-pip install --only-binary cffi,cryptography,psycopg2-binary "$dist" psycopg2-binary
+pip install --only-binary cffi,cryptography "$dist"
 pip check
 virtualenv --python="$PYTHON" --relocatable "$VIRTUAL_ENV"
 
@@ -91,6 +91,7 @@ fpm --verbose \
     --url https://labs.dalibo.com/temboard/ \
     --after-install packaging/deb/postinst.sh \
     --depends "$python_pkg" \
+    --depends python3-psycopg2 \
     "$DESTDIR/=/"
 
 #       T E S T

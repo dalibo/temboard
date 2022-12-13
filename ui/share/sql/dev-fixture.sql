@@ -1,3 +1,5 @@
+DROP SCHEMA "public";
+
 \echo ---------------------------------
 \echo --
 \echo -- Adding some users and groups
