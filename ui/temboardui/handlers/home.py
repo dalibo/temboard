@@ -26,17 +26,18 @@ def home(request):
 def metadata(request):
     versions_info = inspect_versions()
     infos = {
+        "Browser": request.headers.get('User-Agent', 'Unknown'),
         "Version": "%(temboard)s (%(temboardbin)s)" % versions_info,
         "Uptime": app.start_time,
         "OS": "%(distname)s %(distversion)s" % versions_info,
         "Python": "%(python)s (%(pythonbin)s)" % versions_info,
-        "cryptography": "%(cryptography)s" % versions_info,
-        "Tornado": "%(tornado)s" % versions_info,
-        "libpq": "%(libpq)s" % versions_info,
-        "psycopg2": "%(psycopg2)s" % versions_info,
-        "SQLAlchemy": "%(sqlalchemy)s" % versions_info,
+        "cryptography": versions_info['cryptography'],
+        "Tornado": versions_info['tornado'],
+        "libpq": versions_info['libpq'],
+        "psycopg2": versions_info['psycopg2'],
+        "SQLAlchemy": versions_info['sqlalchemy'],
     }
-    temboard_version = "%(temboard)s" % versions_info
+    temboard_version = versions_info['temboard']
 
     return render_template(
         'about.html',

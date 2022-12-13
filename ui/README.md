@@ -74,3 +74,5 @@ if you\'re interested in getting involved.
 temBoard is available under the [PostgreSQL License].
 
 [PostgreSQL License]: https://github.com/dalibo/temboard/blob/master/LICENSE
+
+Candy Scordia drew *héron garde-bœuf* sketches.

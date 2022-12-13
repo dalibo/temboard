@@ -16,6 +16,7 @@ Ensure you use consistent title format.
 - Export comment in CSV inventory.
 - Unquote PGDATA from CSV inventory.
 - Debian package now use system psycopg2.
+- Add user-agent in about page.
 
 
 ## 8.0
