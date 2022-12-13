@@ -19,8 +19,12 @@ if setuptoolsv < '1.0':
 BLEEDING_EDGE_TORNADO = '7'
 if sys.version_info < (2, 7, 9):
     BLEEDING_EDGE_TORNADO = '4.5'
+    open_kw = dict()
 elif sys.version_info < (3,):
     BLEEDING_EDGE_TORNADO = '6'
+    open_kw = dict()
+else:
+    open_kw = dict(encoding='utf-8')
 
 install_requires = [
     'cryptography',
@@ -96,7 +100,7 @@ SETUP_KWARGS = dict(
 
 if __name__ == '__main__':
     setup(
-        long_description=open(setup_path + '/README.md').read(),
+        long_description=open('README.md', **open_kw).read(),
         long_description_content_type='text/markdown',
         packages=find_packages(),
         **SETUP_KWARGS
