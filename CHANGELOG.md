@@ -15,6 +15,7 @@ Ensure you use consistent title format.
 - Fix missing schema in upgrade script.
 - Export comment in CSV inventory.
 - Unquote PGDATA from CSV inventory.
+- Debian package now use system psycopg2.
 
 
 ## 8.0
