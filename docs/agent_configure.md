@@ -32,12 +32,11 @@ are distributed under sections:
 
 # `temboard`
 
+- `ui_url`: base URL of the UI managing this agent.
 - `port`: port number that the agent will listen on to serve its
   `HTTP API`. Default: `2345`;
 - `address`: IP v4 address that the agent will listen on. Default:
   `0.0.0.0` (all);
-- `users`: Path to the file containing the list of the users allowed
-  to use the `HTTP API`. Default: `/etc/temboard-agent/users`;
 - `plugins`: Array of plugin (name) to load. Default:
   `["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance", "statements"]`;
 - `ssl_cert_file`: Path to SSL certificate file (.pem) for the
