@@ -70,7 +70,7 @@ are distributed under sections:
 # `logging`
 
 - `method`: Method used to send the logs: `stderr`, `syslog` or
-  `file`. Default: `syslog`;
+  `file`. Default: `stderr`;
 - `facility`: Syslog facility. Default: `local0`;
 - `destination`: Path to the log file. Default: `/dev/log`;
 - `level`: Log level, can be set to `DEBUG`, `INFO`, `WARNING`,
