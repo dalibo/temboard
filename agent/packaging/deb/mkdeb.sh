@@ -23,7 +23,7 @@ teardown () {
     set -x
 }
 trap teardown EXIT INT TERM
-teardown
+CLEAN=1 teardown
 
 mkdir -p "$DESTDIR"
 
