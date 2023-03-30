@@ -49,7 +49,7 @@ ln -fs "$rpm" dist/temboard-last.rpm
 chown --no-dereference "$(stat -c %u:%g setup.py)" "dist/$rpm" dist/temboard-last.rpm
 
 
-#       P E N   T E S T
+#       S M O K E T E S T
 
 retry yum install -y dist/temboard-last.rpm
 rpm -q --list --changelog "temboard-${VERSION}"

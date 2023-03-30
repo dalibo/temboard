@@ -23,7 +23,7 @@ teardown () {
     set -x
 }
 trap teardown EXIT INT TERM
-teardown
+CLEAN=1 teardown
 
 mkdir -p "$DESTDIR"
 
@@ -46,27 +46,21 @@ release="0dlb1${codename}1"
 #       I N S T A L L
 
 export PIP_CACHE_DIR=build/pip-cache/
-VIRTUAL_ENV=$DESTDIR/usr/lib/temboard
-virtualenv --python="$PYTHON" --system-site-package "$VIRTUAL_ENV"
-export PATH=${VIRTUAL_ENV}/bin:$PATH
-hash -r pip
-pip --version
-pip install -U pip setuptools wheel
 dist="$DISTDIR/temboard-$pep440v"-py2.py3-none-any.whl
 if ! [ -f "$dist" ] ; then
-	pip download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
+	pip3 download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
 fi
-pip install --only-binary cffi,cryptography "$dist"
-pip check
-virtualenv --python="$PYTHON" --relocatable "$VIRTUAL_ENV"
+pip3 install --target "$DESTDIR/usr/lib/temboard" --only-binary cffi,cryptography "$dist"
 
-sed -i "s,$DESTDIR,," "$VIRTUAL_ENV/bin/temboard"
 mkdir -p "$DESTDIR/usr/bin"
-ln -fsv ../lib/temboard/bin/temboard "${DESTDIR}/usr/bin/temboard"
-mv "$VIRTUAL_ENV/share" "$DESTDIR/usr/share"
-mv "$VIRTUAL_ENV/lib/systemd" "$DESTDIR/usr/lib"
-pip uninstall --yes pip wheel
-export PATH=${PATH#*/bin:}
+cat > "$DESTDIR/usr/bin/temboard" <<'EOF'
+#!/bin/bash
+set -eu
+export PYTHONPATH=/usr/lib/temboard
+exec /usr/lib/temboard/bin/temboard "$@"
+EOF
+
+chmod +x "$DESTDIR/usr/bin/temboard"
 
 #       B U I L D
 
@@ -99,11 +93,12 @@ fpm --verbose \
 deb="$(ls "temboard_${debianv}-${release}_"*.deb)"
 dpkg-deb -I "$deb"
 dpkg-deb -c "$deb"
-dpkg -i "$deb"
+apt-get update --yes --quiet
+apt-get install --yes --no-install-recommends "./$deb"
 (
 	cd /
 	temboard --version
-	test -f /usr/lib/temboard/lib/python3.*/site-packages/temboardui/static/manifest.json
+	test -f /usr/lib/temboard/temboardui/static/manifest.json
 )
 
 #       S A V E

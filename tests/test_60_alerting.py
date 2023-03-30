@@ -2,7 +2,7 @@ import pytest
 
 
 def test_quick_alerting(browser, browse_alerting):
-    # Quick pentest of status page.
+    # Quick smoketest of status page.
     browser.select("#checks-container")
 
 

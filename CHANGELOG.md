@@ -5,7 +5,6 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
-
 ## 8.1
 
 **Unreleased**
@@ -17,6 +16,7 @@ Ensure you use consistent title format.
 - Unquote PGDATA from CSV inventory.
 - Debian package now use system psycopg2.
 - Add user-agent in about page.
+- Internalize deps without virtualenv on UI debian package.
 
 
 ## 8.0

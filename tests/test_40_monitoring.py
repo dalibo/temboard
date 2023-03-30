@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_quick_monitoring(browser, browse_monitoring):
-    # Quick pentest of the monitoring page
+    # Quick smoketest of the monitoring page
     browser.select("a[aria-controls=metrics]").click()
     browser.select("#buttonPicker").click()
 
