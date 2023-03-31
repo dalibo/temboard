@@ -9,6 +9,7 @@ services:
     - HISTFILE=/workspace/packaging/rpm/.docker-bash-history
     volumes:
     - ../../:/workspace
+    entrypoint: ["/usr/local/sbin/tini"]
     command: /workspace/packaging/rpm/build.sh
 
   rhel8:
