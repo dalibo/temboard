@@ -13,5 +13,5 @@ wheel
 # For integration tests
 httpx; python_version >= '3.6'
 selenium; python_version >= '3.6'
-sh; python_version >= '3.6'
+sh<2; python_version >= '3.6'
 tenacity; python_version >= '3.6'
