@@ -166,12 +166,12 @@ TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 if [ "$(whoami)" != "$SYSUSER" ] ; then
 	# Run as temboard UNIX user. Wipe environment, this requires properly
 	# temboard.conf.
-	run_as_temboard=(sudo -Enu "$SYSUSER")
+	run_as_temboard=(sudo -nu "$SYSUSER")
 else
-	run_as_temboard=()
+	run_as_temboard=(env)
 fi
 
-TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" "${run_as_temboard[@]}" temboard generate-key
+"${run_as_temboard[@]}" TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" temboard generate-key
 
 if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
 	start_cmd="systemctl enable-now temboard"
