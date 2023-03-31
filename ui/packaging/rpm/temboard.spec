@@ -30,11 +30,11 @@ Requires:      python3-tornado
 %if 0%{?rhel} < 8
 Requires:      python36-cryptography
 Requires:      python36-dateutil
-Requires:      python36-sqlalchemy
+Requires:      python36-sqlalchemy < 2
 %else
 Requires:      python3-cryptography
 Requires:      python3-dateutil >= 1.5
-Requires:      python3-sqlalchemy >= 0.9.8
+Requires:      python3-sqlalchemy >= 0.9.8, python3-sqlalchemy < 2
 %endif
 
 %description
