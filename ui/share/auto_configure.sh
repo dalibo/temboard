@@ -161,7 +161,7 @@ generate_configuration "${sslfiles[@]}" > "$ETCDIR/temboard.conf"
 
 log "Creating Postgres user, database and schema."
 # For temboard migratedb
-DEBUG=y TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
+TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" ./create_repository.sh
 
 if [ "$(whoami)" != "$SYSUSER" ] ; then
 	# Run as temboard UNIX user. Wipe environment, this requires properly
