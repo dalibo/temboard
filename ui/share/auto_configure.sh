@@ -51,27 +51,6 @@ setup_logging() {
 }
 
 
-setup_pq() {
-	local psql
-
-	# Ensure used libpq vars are defined for configuration template.
-
-	export PGHOST=${PGHOST-/var/run/postgresql}
-	export PGPORT=${PGPORT-5432}
-	export PGUSER=${PGUSER-postgres}
-
-	if [ -d "$PGHOST" ] ; then
-		psql=(sudo -nEu "$PGUSER" psql)
-	else
-		psql=(psql)
-	fi
-
-	if ! "${psql[@]}" -tc "SELECT 'Postgres connection working.';" ; then
-		fatal "Can't connect to Postgres cluster."
-	fi
-}
-
-
 setup_ssl() {
 	local pki;
 	for d in /etc/pki/tls /etc/ssl /etc/temboard; do
@@ -125,8 +104,8 @@ generate_configuration() {
 	home = ${VARDIR}
 
 	[repository]
-	host = ${PGHOST}
-	port = ${PGPORT}
+	host = ${PGHOST-/var/run/postgresql}
+	port = ${PGPORT-5432}
 	user = temboard
 	password = ${TEMBOARD_PASSWORD}
 	dbname = ${TEMBOARD_DATABASE-temboard}
@@ -155,7 +134,6 @@ pwgen() {
 cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
 
 setup_logging
-setup_pq
 
 export TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-$(pwgen)}
 if ! getent passwd "$SYSUSER" ; then
@@ -191,11 +169,6 @@ if [ "$(whoami)" != "$SYSUSER" ] ; then
 	run_as_temboard=(sudo -Enu "$SYSUSER")
 else
 	run_as_temboard=()
-fi
-
-dsn="postgres://temboard:${TEMBOARD_PASSWORD}@/${TEMBOARD_DATABASE-temboard}"
-if ! "${run_as_temboard[@]}" psql -Atc "SELECT 'CONNECTED';" "$dsn" | grep -q 'CONNECTED' ; then
-	fatal "Can't configure access to Postgres database."
 fi
 
 TEMBOARD_CONFIGFILE="$ETCDIR/temboard.conf" "${run_as_temboard[@]}" temboard generate-key
