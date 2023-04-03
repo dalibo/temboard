@@ -10,14 +10,17 @@ from bottle import (
     default_app, request, response,
 )
 
-from ..toolkit.utils import JSONEncoder, utcnow
 from ..toolkit.http import format_date
-from ..toolkit.signing import (
-    InvalidSignature,
-    canonicalize_request,
-    verify_v1,
-)
+from ..toolkit.signing import InvalidSignature, canonicalize_request, verify_v1
+from ..toolkit.utils import JSONEncoder, utcnow
 
+# getfullargspec does not exist in python <= 2.7
+# getargspec no longer exist in python 3.11
+getargspec = (
+    inspect.getfullargspec
+    if not hasattr(inspect, "getargspec")
+    else inspect.getargspec
+)
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +106,7 @@ class PostgresPlugin(object):
         return wrapper
 
     def wants_postgres(self, callback):
-        argspec = inspect.getargspec(callback)
+        argspec = getargspec(callback)
         return [a for a in argspec.args if a in ('pgconn', 'pgpool')]
 
 
