@@ -17,13 +17,19 @@ def test_setproctitle_script():
 def test_setproctitle_inline():
     from sh import python3
 
-    python3(c='import temboardui.toolkit.proctitle as pc; pc.test_main()')
+    python3(
+        c='import temboardui.toolkit.proctitle as pc; pc.test_main()',
+        _env={"PYTHONPATH": "/usr/lib/temboard"}
+    )
 
 
 def test_setproctitle_module():
     from sh import python3
 
-    python3(m='temboardui.toolkit.proctitle')
+    python3(
+        m='temboardui.toolkit.proctitle',
+        _env={"PYTHONPATH": "/usr/lib/temboard"}
+    )
 
 
 def test_temboard_version():

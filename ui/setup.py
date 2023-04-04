@@ -35,7 +35,7 @@ install_requires = [
     # and there is no way to state an OR dependency in Python. It's up to
     # the user or package manager to ensure psycopg2 dependency. See
     # documentation.
-    'sqlalchemy>=0.9.8',
+    'sqlalchemy>=0.9.8,<2',
     'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
     'future',
 ]

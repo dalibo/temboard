@@ -33,16 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='session', autouse=True)
-def activate_virtualenv():
-    """Automatically activate temBoard UI virtualenv on debian."""
-
-    bindir = Path('/usr/lib/temboard/bin/')
-    if bindir.exists():
-        logger.debug("Activating %s virtualenv.", bindir.parent)
-        os.environ['PATH'] = f"{bindir}:{os.environ['PATH']}"
-
-
-@pytest.fixture(scope='session', autouse=True)
 def env():
     """
     Configure environment with superuser privileges.
