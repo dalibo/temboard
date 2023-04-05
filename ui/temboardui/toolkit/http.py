@@ -1,20 +1,14 @@
 # coding: utf-8
-from __future__ import absolute_import
-
 import http.client
 import json
 import logging
 import ssl
-from datetime import datetime
-try:
-    from datetime import timezone
-except ImportError:  # PY2
-    timezone = None
+from datetime import datetime, timezone
 from time import time
+from urllib.error import HTTPError
 
-from .utils import ensure_bytes
 from .errors import TemboardError
-from .pycompat import PY2, HTTPError
+from .utils import ensure_bytes
 
 try:
     ConnectionError = ConnectionError
@@ -153,11 +147,6 @@ class TemboardClient(object):
 
 class TemboardResponse(http.client.HTTPResponse):
     # Extensions to HTTPResponse, inspired by httpx
-
-    if PY2:
-        @property
-        def headers(self):
-            return dict(self.getheaders())
 
     def __str__(self):
         return '%s %s' % (self.status, self.reason)

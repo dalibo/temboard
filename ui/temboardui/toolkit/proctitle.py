@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 # This is a pure python implementation of process title edition
 #
@@ -16,18 +15,11 @@
 # Finding the actual address and size of argv is tricky. Once the memory chunk
 # is located, we can just write process title in it and pad it with \0.
 
-from __future__ import print_function
 
 import ctypes
 import logging
-import sys
 import os
-
-if __package__:
-    from .pycompat import PY3
-else:
-    PY3 = sys.version_info > (3,)
-
+import sys
 
 libc = ctypes.CDLL('libc.so.6')
 logger = logging.getLogger(__name__)
@@ -85,8 +77,7 @@ def find_argv_memory_from_pythonapi():  # pragma: nocover
     # http://docs.cherrypy.org/en/latest/_modules/cherrypy/process/wspbus.html
 
     # Allocate variable to point to argv
-    argv_type = ctypes.c_wchar_p if PY3 else ctypes.c_char_p
-    argv = ctypes.POINTER(argv_type)()
+    argv = ctypes.POINTER(ctypes.c_wchar_p)()
     argc = ctypes.c_int()
 
     # Get them from CPython API.
@@ -118,14 +109,14 @@ def reverse_walk_memory(address, limit=8192):
 def reverse_find_nulstring(walker):
     # Search backward null-terminated strings.
     string = ''
-    null = 0 if PY3 else '\x00'
+    null = 0
     for addr, b in walker:
         if null == b:
             if string:
                 yield addr + 1, string
             string = ''
         else:
-            c = chr(b) if PY3 else b
+            c = chr(b)
             string = c + string
 
 
@@ -176,7 +167,7 @@ def find_argv_memory_from_maps(maps, argv, environ=os.environ):
             raise Exception("Can't find argv in stack segment")
 
 
-class ProcTitleManager(object):
+class ProcTitleManager:
     def __init__(self, prefix):
         self.prefix = prefix
         self.address = self.size = None
@@ -230,10 +221,7 @@ def test_main():  # pragma: nocover
     if os.environ.get('WAIT'):
         logger.debug("Process title should be %r", wanted)
         print("Hit RET to terminate.", file=sys.stderr, end='')
-        if PY3:
-            input()
-        else:
-            raw_input()
+        input()
 
     logger.info("OK")
 

@@ -1,7 +1,4 @@
 # Flask WSGI app is served by Tornado's fallback handler.
-
-from __future__ import absolute_import
-
 import logging
 import os
 from ipaddress import ip_address, ip_network

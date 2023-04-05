@@ -1,4 +1,3 @@
-from __future__ import division
 from builtins import str
 from decimal import Decimal
 from past.utils import old_div

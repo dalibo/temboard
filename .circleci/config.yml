@@ -22,7 +22,7 @@ workflows:
         name: stage0-unit-py<< matrix.pyversion >>
         matrix:
           parameters:
-            pyversion: ["3.6", "3.5", "2.7"]
+            pyversion: ["3.6", "3.5"]
     - dist:
         name: stage0-dist
         requires: [stage0-static]
@@ -223,7 +223,7 @@ jobs:
       pyversion:
         description: "Python version"
         type: enum
-        enum: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9"]
+        enum: ["3.5", "3.6", "3.7", "3.8", "3.9"]
     docker:
       - image: dalibo/buildpack-python:<< parameters.pyversion >>
     working_directory: *working_directory
@@ -249,18 +249,10 @@ jobs:
     - run:
         name: Install Agent.
         command: |
-          if [ "2.7" = "<< parameters.pyversion >>" ] ; then  # PY2
-              echo "Skipping agent for 2.7."
-              exit
-          fi
           pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
     - run:
         name: Agent Unit Tests
         command: |
-          if ! type -p temboard-agent ; then  # PY2
-              echo "Skipping uninstalled agent."
-              exit
-          fi
           pytest --full-trace --cov-report=xml agent/tests/unit/
     - run:
         name: UI Unit Tests

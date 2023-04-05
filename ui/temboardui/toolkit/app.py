@@ -1,38 +1,36 @@
 # coding: utf-8
 
 import bdb
-import pkg_resources
-from distutils.util import strtobool
-from glob import glob
 import logging
 import os
 import pdb
+import sys
+from argparse import SUPPRESS as SUPPRESS_ARG
+from argparse import Action as ArgAction
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from codecs import open
+from distutils.util import strtobool
+from glob import glob
 from site import main as refresh_pythonpath
 from textwrap import dedent
-import sys
-from argparse import (
-    ArgumentParser,
-    Action as ArgAction,
-    SUPPRESS as SUPPRESS_ARG,
-    RawDescriptionHelpFormatter,
-)
+
+import pkg_resources
 
 try:
     from pkg_resources import (
-        _initialize_master_working_set as refresh_distributions
+        _initialize_master_working_set as refresh_distributions,
     )
 except ImportError:  # pragma: nocover
     def refresh_distributions():
         logger.info("setuptools is too old for plugin hotload.")
         logger.info("If new plugin can't be found, just restart.")
 
-from .configuration import MergedConfiguration, OptionSpec
-from .log import setup_logging, LastnameFilter
-from .errors import UserError
-from . import validators as v
-from .pycompat import configparser
+import configparser
 
+from . import validators as v
+from .configuration import MergedConfiguration, OptionSpec
+from .errors import UserError
+from .log import LastnameFilter, setup_logging
 
 logger = logging.getLogger(__name__)
 

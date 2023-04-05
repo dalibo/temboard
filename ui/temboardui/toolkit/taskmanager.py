@@ -1,24 +1,24 @@
 import errno
 import functools
-import sys
-import time
-import uuid
 import logging
 import os.path
 import signal
+import sys
+import time
+import uuid
 from ast import literal_eval
-from select import select, error as SelectError
-from datetime import datetime
 from collections import deque
+from datetime import datetime
 from multiprocessing import AuthenticationError, Process, Queue
-from multiprocessing.connection import Listener, Client
+from multiprocessing.connection import Client, Listener
+from queue import Empty
+from select import error as SelectError
+from select import select
 from textwrap import dedent
 
-from .services import Service
 from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
-from .pycompat import PY2, Empty
-
+from .services import Service
 
 TM_DEF_LISTENER_ADDR = '/tmp/.temboardsched.sock'
 
@@ -50,12 +50,8 @@ def ensure_str(value):
     # This code is used to instanciate multiprocessing.connection.Client. It
     # requires a str object in both Python 2 and 3.
     if type(value) is not str:
-        if PY2:
-            # From unicode to str.
-            value = value.encode('utf-8')
-        else:
-            # From bytes to str.
-            value = value.decode('utf-8')
+        # From bytes to str.
+        value = value.decode('utf-8')
     return value
 
 

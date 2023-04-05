@@ -1,17 +1,11 @@
 # coding: utf-8
 
 import json
-from datetime import datetime
-try:
-    from datetime import timezone
-    UTC = timezone.utc
-except ImportError:  # PY2
-    UTC = None
-
-from .pycompat import IterableUserDict
-
+from collections import UserDict
+from datetime import datetime, timezone
 
 _UNDEFINED = object()
+UTC = timezone.utc
 
 
 def dict_factory(iterable=_UNDEFINED, **kw):
@@ -24,7 +18,7 @@ def dict_factory(iterable=_UNDEFINED, **kw):
         return dict(iterable, **kw)
 
 
-class DotDict(IterableUserDict):
+class DotDict(UserDict):
     # A wrapper around dict that allows read and write through dot style
     # accessors.
 
@@ -55,7 +49,7 @@ class DotDict(IterableUserDict):
     def setdefault(self, name, default):
         if hasattr(default, 'items'):
             default = DotDict(default)
-        return IterableUserDict.setdefault(self, name, default)
+        return UserDict.setdefault(self, name, default)
 
 
 def ensure_bytes(value, encoding='utf-8'):

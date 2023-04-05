@@ -1,29 +1,21 @@
 # coding: utf-8
-from __future__ import absolute_import
-
-from builtins import str
-from builtins import object
 import functools
 import json
 import logging
 import os
-try:
-    from StringIO import StringIO
-except Exception:
-    from io import StringIO
+from builtins import object, str
 from csv import writer as CSVWriter
+from io import StringIO
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
 from tornado.escape import json_decode, json_encode, url_escape
 from tornado.gen import coroutine
-from tornado.web import (
-    Application as TornadoApplication,
-    HTTPError,
-    RequestHandler,
-)
 from tornado.template import Loader as TemplateLoader
+from tornado.web import Application as TornadoApplication
+from tornado.web import HTTPError, RequestHandler
 
+from ..agentclient import TemboardAgentClient
 from ..application import (
     get_instance,
     get_role_by_cookie,
@@ -31,11 +23,8 @@ from ..application import (
 )
 from ..errors import TemboardUIError
 from ..model import Session as DBSession
-from ..agentclient import TemboardAgentClient
-from ..toolkit.pycompat import PY2
 from ..toolkit.perf import PerfCounters
 from ..toolkit.utils import JSONEncoder, utcnow
-
 
 logger = logging.getLogger(__name__)
 
@@ -678,14 +667,9 @@ def make_error(request, code, message):
 
 
 # Change default cls argument to custom encoder.
-if PY2:
-    defaults = list(json.dumps.__defaults__)
-    defaults[4] = JSONEncoder
-    json.dumps.__defaults__ = tuple(defaults)
-else:
-    if json.dumps.__kwdefaults__ is None:
-        json.dumps.__kwdefaults__ = dict()
-    json.dumps.__kwdefaults__['cls'] = JSONEncoder
+if json.dumps.__kwdefaults__ is None:
+    json.dumps.__kwdefaults__ = dict()
+json.dumps.__kwdefaults__['cls'] = JSONEncoder
 
 
 app = WebApplication()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from setuptools import setup, find_packages, __version__ as setuptoolsv
 
@@ -14,18 +13,6 @@ exec(open(os.path.join(setup_path, 'temboardui', 'version.py'), 'r').read())
 if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
 
-# Accept Tornado 5.X on Python 2.7.9+
-# Accept Tornado 6.X on Python 3+
-BLEEDING_EDGE_TORNADO = '7'
-if sys.version_info < (2, 7, 9):
-    BLEEDING_EDGE_TORNADO = '4.5'
-    open_kw = dict()
-elif sys.version_info < (3,):
-    BLEEDING_EDGE_TORNADO = '6'
-    open_kw = dict()
-else:
-    open_kw = dict(encoding='utf-8')
-
 install_requires = [
     'cryptography',
     'flask',
@@ -36,12 +23,10 @@ install_requires = [
     # the user or package manager to ensure psycopg2 dependency. See
     # documentation.
     'sqlalchemy>=0.9.8,<2',
-    'tornado>=3.2,<' + BLEEDING_EDGE_TORNADO,
+    'tornado>=3.2,<7',
     'future',
 ]
 
-if sys.version_info < (3,):
-    install_requires.append('futures')
 
 SETUP_KWARGS = dict(
     name='temboard',
@@ -55,7 +40,6 @@ SETUP_KWARGS = dict(
         "Intended Audience :: System Administrators",
         "License :: OSI Approved",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
@@ -100,7 +84,7 @@ SETUP_KWARGS = dict(
 
 if __name__ == '__main__':
     setup(
-        long_description=open('README.md', **open_kw).read(),
+        long_description=open('README.md', encoding='utf-8').read(),
         long_description_content_type='text/markdown',
         packages=find_packages(),
         **SETUP_KWARGS

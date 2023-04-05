@@ -14,10 +14,9 @@ import os.path
 import re
 from distutils.util import strtobool
 from logging.handlers import SysLogHandler
+from urllib.parse import urlparse
 
 from .log import HANDLERS as LOG_METHODS
-from .pycompat import urlparse
-
 
 _address_re = re.compile(
     r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
@@ -107,11 +106,7 @@ def port(raw):
 
 def loglevel(raw):
     raw = raw.upper()
-    levelnames = list()
-    if hasattr(logging, '_levelNames'):  # pragma: nocover_py3
-        levelnames = logging._levelNames
-    elif hasattr(logging, '_nameToLevel'):  # pragma: nocover_py2
-        levelnames = logging._nameToLevel
+    levelnames = logging._nameToLevel
     if raw not in levelnames:
         raise ValueError('unkown log level')
     return raw

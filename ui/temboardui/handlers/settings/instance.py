@@ -1,6 +1,8 @@
 import codecs
 import logging
+from io import StringIO
 
+from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import (
     add_instance,
     add_instance_in_group,
@@ -14,21 +16,19 @@ from temboardui.application import (
     get_instance_list,
     purge_instance_plugins,
 )
-from temboardui.agentclient import TemboardAgentClient
 from temboardui.web.tornado import (
     HTTPError,
     InstanceHelper,
+    Response,
     admin_required,
     app,
     render_template,
-    Response,
 )
-from ...toolkit.pycompat import StringIO
-from ...toolkit.utils import utcnow
+
 from ...model import QUERIES
 from ...plugins.monitoring import collector as monitoring_collector
 from ...plugins.statements import statements_pull1
-
+from ...toolkit.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
