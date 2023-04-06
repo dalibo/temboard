@@ -2,7 +2,8 @@
 #
 # Switch over replication of development instances postgres0 and postgres1.
 #
-# Tested with postgres-14
+# Tested with postgres-15.
+# It's designed to work only on latest supported Postgres.
 #
 
 _psql()
