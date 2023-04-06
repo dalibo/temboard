@@ -51,15 +51,11 @@ _ha_setup() {
 				echo "Restarting as primary."
 			else
 				echo "Rewind pgdata to failback."
-				PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c "SELECT pg_backup_start('docker-rewind');"
-				trap _ha_stop_peer_backup INT EXIT TERM
 				su-exec postgres pg_rewind \
 					--source-server="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$PEER_HOST:5432/" \
 					--target-pgdata="$PGDATA" \
 					--write-recovery-conf \
 					--no-ensure-shutdown
-				_ha_stop_peer_backup
-				trap - INT EXIT TERM
 			fi
 		else
 			echo "$PEER_HOST does not respond. Restarting."
@@ -77,10 +73,6 @@ _ha_setup() {
 			_ha_init_secondary
 		fi
 	fi
-}
-
-_ha_stop_peer_backup() {
-	PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c "SELECT pg_backup_stop();"
 }
 
 _retry() {

@@ -42,7 +42,7 @@ _psql $secondary -c 'SELECT pg_promote();'
 servers=("$secondary" "$primary")
 primary="${servers[0]}"
 secondary="${servers[1]}"
-# failback
+# failback. The entrypoint takes care of rebuilding the data with pg_rewind.
 docker-compose up -d "$secondary"
 
 sleep 3
