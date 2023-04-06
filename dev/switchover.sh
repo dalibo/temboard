@@ -48,7 +48,7 @@ docker-compose up -d "$secondary"
 sleep 3
 
 # Check primary has a replication client.
-_psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep walreceiver
+_psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep "$secondary"
 # Check secondary is in recovery.
 _psql "$secondary" -c "SELECT pg_is_in_recovery();" | grep t
 
