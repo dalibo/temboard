@@ -2,7 +2,8 @@
 #
 # Switch over replication of development instances postgres0 and postgres1.
 #
-# Tested with postgres-14
+# Tested with postgres-15.
+# It's designed to work only on latest supported Postgres.
 #
 
 _psql()
@@ -42,15 +43,15 @@ _psql $secondary -c 'SELECT pg_promote();'
 servers=("$secondary" "$primary")
 primary="${servers[0]}"
 secondary="${servers[1]}"
-# failback
+# failback. The entrypoint takes care of rebuilding the data with pg_rewind.
 docker-compose up -d "$secondary"
 
 sleep 3
 
 # Check primary has a replication client.
-_psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep walreceiver
+_psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep "$secondary"
 # Check secondary is in recovery.
 _psql "$secondary" -c "SELECT pg_is_in_recovery();" | grep t
 
-: Primary is $primary
-: Secondary is $secondary
+: "Primary is $primary (postgres://postgres:postgres@0.0.0.0:$((1 + ${primary#postgres}))5432/postgres))"
+: "Secondary is $secondary (postgres://postgres:postgres@0.0.0.0:$((1 + ${secondary#postgres}))5432/postgres))"
