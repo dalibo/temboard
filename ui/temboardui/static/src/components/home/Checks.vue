@@ -20,9 +20,9 @@
       popoverContent: function(instance) {
         // don't show OK states
         var filtered = instance.checks.filter(function(check) {
-          return check.state != 'OK';
+          return !['OK', 'UNDEF'].includes(check.state);
         });
-        var levels = ['CRITICAL', 'WARNING', 'UNDEF'];
+        var levels = ['CRITICAL', 'WARNING'];
         // make sure we have higher levels checks first
         var ordered = _.sortBy(filtered, function(check) {
           return levels.indexOf(check.state);
@@ -50,8 +50,6 @@
       CRITICAL: {{ checks.CRITICAL }}</span>
     <span class="badge badge-warning mr-1" v-if="checks.WARNING">
       WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-undef mr-1" v-if="checks.UNDEF">
-      UNDEF: {{ checks.UNDEF }}</span>
-      <span class="badge badge-ok mr-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
+    <span class="badge badge-ok mr-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
     </div>
 </template>

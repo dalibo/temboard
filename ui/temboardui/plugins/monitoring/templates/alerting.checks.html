@@ -6,7 +6,7 @@
 
 <div class="text-right text-muted small">Auto refresh every 1 min</div>
 <div id="checks-container" class="row" v-cloak>
-  <div class="col-3" v-for="check in checks">
+  <div class="col-3" v-for="check in checks" v-if="check.state!='UNDEF'">
     <div v-bind:id="'status-' + check.name" class="card mb-3 w-100 border" v-bind:class="['border-' + getBorderColor(check.state), {'striped bg-light': !check.enabled}]">
       <div class="card-body p-2">
         <div>

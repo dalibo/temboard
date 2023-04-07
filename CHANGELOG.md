@@ -17,6 +17,7 @@ Ensure you use consistent title format.
 - Debian package now use system psycopg2.
 - Add user-agent in about page.
 - Internalize deps without virtualenv on UI debian package.
+- No longer displays UNDEF items in the UI
 
 
 ## 8.0
