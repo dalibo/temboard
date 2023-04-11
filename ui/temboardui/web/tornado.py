@@ -295,6 +295,9 @@ class InstanceHelper(object):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.instance.hostname)
 
+    def __str__(self):
+        return "%s:%s" % (self.instance.hostname, self.instance.pg_port)
+
     def check_active_plugin(self, name):
         '''
         Ensure that the plugin is active for given instance
