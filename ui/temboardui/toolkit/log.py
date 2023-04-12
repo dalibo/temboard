@@ -18,7 +18,7 @@ class ColoredStreamHandler(logging.StreamHandler):
         lines = logging.StreamHandler.format(self, record)
         color = self._color_map.get(record.levelno, '39')
         lines = ''.join([
-            '\033[0;%sm%s\033[0m' % (color, line)
+            '\033[0;{}m{}\033[0m'.format(color, line)
             for line in lines.splitlines(True)
         ])
         return lines

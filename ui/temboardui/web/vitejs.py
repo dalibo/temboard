@@ -8,7 +8,7 @@ from textwrap import dedent
 logger = logging.getLogger(__name__)
 
 
-class ViteJSExtension(object):
+class ViteJSExtension:
     # Flask extension managing ViteJS
 
     def __init__(self, app=None):
@@ -53,8 +53,7 @@ class ViteJSExtension(object):
             yield self.tag_for(css)
 
         for import_ in self.manifest[name].get('imports', []):
-            for link in self.css_links_for(import_):
-                yield link
+            yield from self.css_links_for(import_)
 
     def tag_for(self, file_):
         if file_.endswith('css'):

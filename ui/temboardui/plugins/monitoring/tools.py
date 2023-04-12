@@ -1,4 +1,3 @@
-from builtins import str
 from dateutil import parser as parse_datetime
 from datetime import datetime, timedelta
 import logging
@@ -238,7 +237,7 @@ def generate_logfmt_records(metric, points):
             if k in ('dbname',):
                 logkey = k
             else:
-                logkey = '%s_%s' % (metric, k)
+                logkey = '{}_{}'.format(metric, k)
             record[logkey] = v
         yield record
 
@@ -433,12 +432,12 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
 
 
 # Stolen from ldap2pg
-class Stopwatch(object):
+class Stopwatch:
     def __init__(self):
         self.delta = timedelta()
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.delta)
+        return '<{} {}>'.format(self.__class__.__name__, self.delta)
 
     def __enter__(self):
         self.start = datetime.utcnow()

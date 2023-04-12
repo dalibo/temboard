@@ -60,5 +60,5 @@ def test_pickle_dotdict():
 def test_ensure_str():
     from temboardui.toolkit.taskmanager import ensure_str
 
-    assert type(ensure_str(u'toto')) is str
+    assert type(ensure_str('toto')) is str
     assert type(ensure_str(b'toto')) is str

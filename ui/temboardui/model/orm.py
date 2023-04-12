@@ -1,6 +1,4 @@
-from builtins import str
 from past.builtins import basestring
-from builtins import object
 from past.utils import old_div
 import datetime
 from sqlalchemy import (
@@ -219,7 +217,7 @@ class Roles(Model):
     )
 
 
-class StubRole(object):
+class StubRole:
     # Fake object for roles not in database.
     def __init__(self, role_name):
         self.role_name = role_name
@@ -244,7 +242,7 @@ class Instances(Model):
     )
 
     def __str__(self):
-        return '%s:%s' % (self.hostname, self.pg_port)
+        return '{}:{}'.format(self.hostname, self.pg_port)
 
     @classmethod
     def factory(
@@ -308,9 +306,9 @@ class Instances(Model):
         scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
         host = app.config.temboard.address
         port = app.config.temboard.port
-        path = '/server/%s/%s/dashboard' % (
+        path = '/server/{}/{}/dashboard'.format(
             self.agent_address, self.agent_port)
-        return '%s://%s:%s%s' % (scheme, host, port, path)
+        return '{}://{}:{}{}'.format(scheme, host, port, path)
 
     def asdict(self):
         return dict(
@@ -342,7 +340,7 @@ class Groups(Model):
     )
 
 
-class Biggest(object):
+class Biggest:
 
     def __init__(self, order_by):
         self.order_by = order_by
@@ -357,7 +355,7 @@ class Biggest(object):
         ).label(label)
 
 
-class Biggestsum(object):
+class Biggestsum:
 
     def __init__(self, order_by):
         self.order_by = order_by

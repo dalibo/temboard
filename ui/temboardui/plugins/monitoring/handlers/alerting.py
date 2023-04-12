@@ -1,5 +1,4 @@
 from future import standard_library
-from builtins import str
 import logging
 import io
 from datetime import datetime
@@ -126,23 +125,23 @@ def checks(request):
                         Check.instance_id == instance_id).first()
             enabled_before = check.enabled
 
-            if u'enabled' in row:
-                enabled_after = bool(row.get(u'enabled'))
+            if 'enabled' in row:
+                enabled_after = bool(row.get('enabled'))
                 check.enabled = enabled_after
                 # detect any change from enabled to disabled
                 is_getting_disabled = enabled_before and not enabled_after
-            if u'warning' in row:
-                warning = row.get(u'warning')
+            if 'warning' in row:
+                warning = row.get('warning')
                 if type(warning) not in (int, float):
                     raise HTTPError(400, "Post data not valid.")
                 check.warning = warning
-            if u'critical' in row:
-                critical = row.get(u'critical')
+            if 'critical' in row:
+                critical = row.get('critical')
                 if type(critical) not in (int, float):
                     raise HTTPError(400, "Post data not valid.")
                 check.critical = critical
-            if u'description' in row:
-                check.description = row.get(u'description')
+            if 'description' in row:
+                check.description = row.get('description')
 
             request.db_session.merge(check)
 
@@ -151,7 +150,7 @@ def checks(request):
                     CheckState.check_id == check.check_id,
                 )
                 for i in cs:
-                    i.state = str('UNDEF')
+                    i.state = 'UNDEF'
                     request.db_session.merge(i)
                     request.db_session.execute(
                         "SELECT monitoring.append_state_changes(:d, :i,"

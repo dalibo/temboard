@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Somes notes on monitoring in temBoard
 #
@@ -20,7 +19,6 @@
 #   metric_*_6h_current.
 #
 
-from builtins import str
 from datetime import datetime, timedelta
 import logging
 import os
@@ -81,7 +79,7 @@ logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 
 
-class MonitoringPlugin(object):
+class MonitoringPlugin:
     s = 'monitoring'
     options_specs = [
         OptionSpec(s, 'collect_max_duration', default=30, validator=int),
@@ -422,7 +420,7 @@ def collector_batch(app, batch):
 
 @workers.register(pool_size=20)
 def collector(app, address, port, key=None, engine=None):
-    agent_id = "%s:%s" % (address, port)
+    agent_id = "{}:{}".format(address, port)
     logger.info("Starting monitoring collector for %s.", agent_id)
 
     client = TemboardAgentClient.factory(app.config, address, port, key)
@@ -482,7 +480,7 @@ def collector(app, address, port, key=None, engine=None):
             update_collector_status(
                 worker_session,
                 instance_id,
-                u'FAIL',
+                'FAIL',
                 last_pull=datetime.utcnow(),
             )
             worker_session.commit()
@@ -564,7 +562,7 @@ def collector(app, address, port, key=None, engine=None):
                 update_collector_status(
                     worker_session,
                     instance_id,
-                    u'FAIL',
+                    'FAIL',
                     last_pull=datetime.utcnow(),
                     last_insert=last_insert,
                 )
@@ -576,7 +574,7 @@ def collector(app, address, port, key=None, engine=None):
         update_collector_status(
             worker_session,
             instance_id,
-            u'OK',
+            'OK',
             last_pull=datetime.utcnow(),
             # This is the datetime format used by the agent
             last_insert=datetime.strptime(

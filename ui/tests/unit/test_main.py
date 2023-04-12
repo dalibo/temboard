@@ -1,6 +1,3 @@
-# coding: utf-8
-
-
 def test_pgvar_map():
     from temboardui.cli.app import map_pgvars
 

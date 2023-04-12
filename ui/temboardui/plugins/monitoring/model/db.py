@@ -1,7 +1,5 @@
-# coding: utf-8
 import logging
 import functools
-from builtins import str
 from textwrap import dedent
 
 

@@ -12,7 +12,7 @@ plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-class ActivityPlugin(object):
+class ActivityPlugin:
     def __init__(self, app, **kw):
         self.app = app
 

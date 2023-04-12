@@ -31,7 +31,7 @@ def login_common(db_session, rolename, password):
     # Common logic between json and HTML login.
     passhash = hash_password(rolename, password).decode("utf-8")
     role = get_role_by_auth(db_session, rolename, passhash)
-    logger.info(u"Role '%s' authentificated.", role.role_name)
+    logger.info("Role '%s' authentificated.", role.role_name)
     return dict(temboard=gen_cookie(role.role_name, passhash))
 
 
@@ -54,11 +54,11 @@ def login(request):
             referer = request.handler.get_secure_cookie('referer_uri')
             return Redirect(referer or '/home', secure_cookies=cookies)
         except TemboardUIError as e:
-            logger.error(u"Login failed: %s", e)
+            logger.error("Login failed: %s", e)
             response = render_template(
                 'login.html',
                 nav=False,
-                error=u"Wrong username/password.",
+                error="Wrong username/password.",
             )
             response.status_code = 401
             return response
@@ -80,7 +80,7 @@ def json_login(request):
             secure_cookies=cookies,
         )
     except TemboardUIError as e:
-        logger.error(u"Login failed: %s", e)
+        logger.error("Login failed: %s", e)
         return Response(
             status_code=401,
             body={"error": "Wrong username/password."},

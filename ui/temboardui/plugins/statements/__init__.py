@@ -1,4 +1,3 @@
-from builtins import str
 from decimal import Decimal
 from past.utils import old_div
 import json
@@ -52,7 +51,7 @@ plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-class StatementsPlugin(object):
+class StatementsPlugin:
     def __init__(self, app):
         self.app = app
 
@@ -736,7 +735,7 @@ def statements(request):
 
 
 def add_statement(session, instance, data):
-    agent_id = "%s:%s" % (instance.agent_address, instance.agent_port)
+    agent_id = "{}:{}".format(instance.agent_address, instance.agent_port)
     try:
         cur = session.connection().connection.cursor()
         cur.execute("SET search_path TO statements")
@@ -844,7 +843,7 @@ def statements_pull1(app, host, port):
 
 
 def pull_data_for_instance(app, session, instance):
-    agent_id = "%s:%s" % (instance.agent_address, instance.agent_port)
+    agent_id = "{}:{}".format(instance.agent_address, instance.agent_port)
     logger.info("Pulling statements from %s.", agent_id)
     client = TemboardAgentClient.factory(
         app.config,

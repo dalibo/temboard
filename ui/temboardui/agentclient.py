@@ -23,13 +23,13 @@ class TemboardAgentClient(TemboardClient):
     def __init__(
             self, signing_key, host, port, ca_cert_file=None, key=None,
             username='temboard'):
-        super(TemboardAgentClient, self).__init__(host, port, ca_cert_file)
+        super().__init__(host, port, ca_cert_file)
         self.key = key  # Authentication key
         self.signing_key = signing_key
         self.username = username
 
     def request(self, method, path, headers=None, body=None):
-        hostport = '%s:%s' % (self.host, self.port)
+        hostport = '{}:{}'.format(self.host, self.port)
         headers = headers or {}
 
         headers.setdefault('Host', hostport)
@@ -58,5 +58,5 @@ class TemboardAgentClient(TemboardClient):
         signature = sign_v1(self.signing_key, canonical_request)
         headers['X-TemBoard-Signature'] = 'v1:%s' % signature
 
-        return super(TemboardAgentClient, self).request(
+        return super().request(
             method, path, headers, body)

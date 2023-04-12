@@ -76,7 +76,7 @@ class RegisterInstance(SubCommand):
             help="temBoard agent listenning port",
         )
 
-        super(RegisterInstance, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, args):
         groups = v.commalist(args.groups)
@@ -92,14 +92,14 @@ class RegisterInstance(SubCommand):
         except Exception as e:
             raise UserError(str(e))
 
-        agent = "%s:%s" % (args.agent_address, args.agent_port)
+        agent = "{}:{}".format(args.agent_address, args.agent_port)
 
         session = Session()
         logger.debug("Check for existing instance.")
         instance = get_instance(session, args.agent_address, args.agent_port)
         if instance:
             if not args.skip_existing:
-                raise UserError("Instance %s:%s already registered." % (
+                raise UserError("Instance {}:{} already registered.".format(
                     instance.hostname, instance.pg_port))
             else:
                 logger.warning(

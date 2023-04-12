@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from datetime import datetime
 import json
 import logging
@@ -23,7 +21,7 @@ def datetime_to_epoch(timestamp):
     return 0
 
 
-class TaskListSQLite3Engine(object):
+class TaskListSQLite3Engine:
     """SQLite3 storage engine for task list management."""
 
     def __init__(self, dbpath):
