@@ -18,6 +18,7 @@ Ensure you use consistent title format.
 - Add user-agent in about page.
 - Internalize deps without virtualenv on UI debian package.
 - No longer displays UNDEF items in the UI
+- Fix logging on light terminal.
 
 
 ## 8.0
