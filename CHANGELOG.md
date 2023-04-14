@@ -21,6 +21,7 @@ Ensure you use consistent title format.
 - Fix logging on light terminal.
 - Improve errors displayed in the agent log
 - Remove stretch from packages and CI
+- Fix monitoring probe when the OS release includes a + sign.
 
 
 ## 8.0

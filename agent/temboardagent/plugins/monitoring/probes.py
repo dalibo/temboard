@@ -301,7 +301,7 @@ class HostProbe(Probe):
                 return False
 
         version = [int(x) for x
-                   in re.sub(r'[-_].*$', '', os.uname()[2]).split('.')]
+                   in re.sub(r'[-_+].*$', '', os.uname()[2]).split('.')]
         if self.min_version is not None:
             if version[0:len(self.min_version)] < self.min_version:
                 return False
