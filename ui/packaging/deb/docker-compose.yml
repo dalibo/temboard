@@ -19,7 +19,3 @@ services:
   buster:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:buster
-
-  stretch:
-    <<: *mkdeb
-    image: dalibo/buildpack-pkg:stretch

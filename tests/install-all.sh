@@ -45,7 +45,7 @@ guess_pkg_type() {
 	local disttag="$1"
 
 	case "$disttag" in
-		bookworm|bullseye|buster|stretch|jessie)
+		bookworm|bullseye|buster)
 			echo deb
 			;;
 		el*)

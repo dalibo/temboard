@@ -428,7 +428,7 @@ build packages. Use `build-<codename>` target like this:
 make -C ui/packaging/deb build-bullseye
 ```
 
-`codename` is one of `bookworm`, `bullseye`, `buster` or `stretch`.
+`codename` is one of `bookworm`, `bullseye` or `buster`.
 `agent/packaging/deb/Makefile` provides the same targets.
 
 The builder script search for wheels in `ui/dist/`

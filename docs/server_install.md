@@ -95,7 +95,7 @@ proper parameters, once temBoard package is installed.
 
     temBoard debs are published on [Dalibo Labs APT
     repository](https://apt.dalibo.org/labs/). temBoard supports Debian *bookworm*,
-    *bullseye*, *buster* and *stretch*. Start by enabling Dalibo Labs APT
+    *bullseye* and *buster*. Start by enabling Dalibo Labs APT
     repository.
 
 
