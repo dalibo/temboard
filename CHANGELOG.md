@@ -19,6 +19,7 @@ Ensure you use consistent title format.
 - Internalize deps without virtualenv on UI debian package.
 - No longer displays UNDEF items in the UI
 - Fix logging on light terminal.
+- Improve errors displayed in the agent log
 
 
 ## 8.0

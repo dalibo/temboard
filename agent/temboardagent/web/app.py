@@ -30,10 +30,8 @@ def create_app(temboard):
     app = CustomBottle(autojson=False)
     app.temboard = temboard
     app.add_hook('before_request', before_request_log)
-    app.add_hook('after_request', after_request_log)
     # First declared, first executed.
     app.install(JSONPlugin())
-    app.install(ErrorPlugin())
     app.install(SignaturePlugin())
     app.install(PostgresPlugin())
     return app
@@ -42,12 +40,36 @@ def create_app(temboard):
 class CustomBottle(Bottle):
     def default_error_handler(self, res):
         # Skip HTML template.
-        return res.body
+
+        headers = response.headers.dict.copy()
+        headers['Content-Type'] = 'application/json'
+
+        # res.exception is set by the bottle's catchall
+        if res.exception:
+            logger.exception(
+                "Unhandled error:",
+                exc_info=res.exception
+            )
+        if isinstance(res.body, str):
+            res.body = {'error': res.body}
+        return HTTPResponse(
+            json.dumps(res.body),
+            res.status,
+            headers=headers
+        )
 
     def mount(self, prefix, app, **options):
         for plugin in self.plugins:
             app.install(plugin)
         return super(CustomBottle, self).mount(prefix, app, **options)
+
+    def wsgi(self, environ, start_response):
+        # We don't use after_request hook because it doesn't handle errors
+        # correctly, for example we were seeing 200 status request in log
+        # but error 500 on web page.
+        result = super().wsgi(environ, start_response)
+        after_request_log()
+        return result
 
 
 def before_request_log():
@@ -108,27 +130,6 @@ class PostgresPlugin(object):
     def wants_postgres(self, callback):
         argspec = getargspec(callback)
         return [a for a in argspec.args if a in ('pgconn', 'pgpool')]
-
-
-class ErrorPlugin(object):
-    def apply(self, callback, route):
-        @functools.wraps(callback)
-        def wrapper(*a, **kw):
-            try:
-                response = callback(*a, **kw)
-            except HTTPError as e:
-                if isinstance(e.body, str):
-                    e.body = {'error': e.body}
-                # Use HTTPResponse to customize body.
-                response = HTTPResponse(e.body, e.status)
-            except HTTPResponse as e:
-                response = e
-            except Exception:
-                logger.exception("Unhandled error:")
-                response = HTTPResponse({'error': 'Internal error.'}, 500)
-
-            return response
-        return wrapper
 
 
 class JSONPlugin(object):

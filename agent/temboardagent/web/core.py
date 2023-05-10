@@ -1,6 +1,8 @@
 import logging
 
-from bottle import default_app, get, post, request, response
+from bottle import (
+    default_app, get, post, request, response, HTTPError, HTTPResponse
+)
 
 from ..notification import NotificationMgmt
 from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
@@ -8,6 +10,16 @@ from ..version import __version__ as version
 
 
 logger = logging.getLogger(__name__)
+
+
+@get('/error/<error_code:int>', skip=['signature'])
+def get_error(error_code):
+    if error_code < 400:
+        raise HTTPResponse('HTTPResponse raised', error_code)
+    elif error_code < 500:
+        raise HTTPError(error_code, 'HTTPError raised')
+    else:
+        raise Exception("This is an Exception %s" % error_code)
 
 
 @get('/discover', skip=['signature'])
