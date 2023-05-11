@@ -20,6 +20,7 @@ Ensure you use consistent title format.
 - No longer displays UNDEF items in the UI
 - Fix logging on light terminal.
 - Improve errors displayed in the agent log
+- Remove stretch from packages and CI
 
 
 ## 8.0
