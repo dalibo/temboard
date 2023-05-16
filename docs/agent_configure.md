@@ -44,6 +44,8 @@ are distributed under sections:
   `/etc/temboard-agent/temboard-agent_CHANGEME.pem`;
 - `ssl_key_file`: Path to SSL private key file. Default:
   `/etc/temboard-agent/temboard-agent_CHANGEME.key`;
+- `ssl_ca_cert_file`: File where to store each agent's SSL certificate.
+  Comment it to disable SSL certifcate checks.
 - `home`: Path to agent home directory, it contains files used to
   store temporary data. When running multiple agents on the same
   host, each agent must have its own home directory. Default:
