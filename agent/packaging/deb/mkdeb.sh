@@ -66,6 +66,11 @@ rm -vf $(find "$DESTDIR/usr/lib" -name "*cpython-*.pyc" | grep -v "cpython-${pyt
 
 #       B U I L D
 
+PYTHON="$(readlink -e "$(type -p python3)")"
+python_pkg="$(dpkg -S "$PYTHON")"
+python_pkg="${python_pkg%:*}"
+python_pkg="${python_pkg/-minimal}"
+
 fpm --verbose \
     --force \
     --debug-workspace \
@@ -81,7 +86,7 @@ fpm --verbose \
     --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
     --license PostgreSQL \
     --url https://labs.dalibo.com/temboard/ \
-    --depends python3 \
+    --depends "$python_pkg" \
     --depends python3-bottle \
     --depends python3-cryptography \
     --depends python3-pkg-resources \
