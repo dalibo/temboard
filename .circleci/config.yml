@@ -207,7 +207,7 @@ jobs:
           command: |
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
-            git diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+            git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             flake8 tests/
             cd ui/
             flake8

@@ -22,6 +22,7 @@ Ensure you use consistent title format.
 - Improve errors displayed in the agent log
 - Remove stretch from packages and CI
 - Fix monitoring probe when the OS release includes a + sign.
+- Pin minor version of Python dependency in debian packages.
 
 
 ## 8.0
