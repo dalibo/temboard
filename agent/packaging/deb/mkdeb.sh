@@ -1,4 +1,5 @@
 #!/bin/bash -eux
+# use CLEAN=0 to avoid the final teardown tidoudou dou
 
 TOP_SRCDIR=$(readlink -m "$0/../../..")
 UID_GID=$(stat -c %u:%g "$0")
@@ -35,10 +36,7 @@ fi
 mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 pep440v=${versions[0]}
 debianv=${versions[1]}
-# Testing/sid has LSB release as `n\a`. Stable as debian_version as X.Y.
-if ! codename=$(grep -Po '(.+(?=/))' /etc/debian_version) ; then
-    codename=$(lsb_release --codename --short)
-fi
+codename=$(grep -Po 'VERSION_CODENAME=\K(.+)' /etc/os-release)
 release=0dlb1${codename}1
 
 #       I N S T A L L
@@ -71,32 +69,13 @@ python_pkg="$(dpkg -S "$PYTHON")"
 python_pkg="${python_pkg%:*}"
 python_pkg="${python_pkg/-minimal}"
 
-fpm --verbose \
-    --force \
-    --debug-workspace \
-    --chdir "$DESTDIR" \
-    --input-type dir \
-    --output-type deb \
-    --name temboard-agent \
-    --version "$debianv" \
-    --iteration "$release" \
-    --architecture all \
-    --description "PostgreSQL Remote Control Agent" \
-    --category database \
-    --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
-    --license PostgreSQL \
-    --url https://labs.dalibo.com/temboard/ \
-    --depends "$python_pkg" \
-    --depends python3-bottle \
-    --depends python3-cryptography \
-    --depends python3-pkg-resources \
-    --depends 'python3-psycopg2 >= 2.7' \
-    --depends python3-setuptools \
-    --depends python3-distutils \
-    --depends ssl-cert \
-    --after-install share/restart-all.sh \
-    "$@" \
-    ./=/
+
+(
+	export DEBIANV=$debianv
+	export RELEASE=$release
+	export PYTHON_PKG=$python_pkg
+	nfpm pkg --config packaging/deb/nfpm.yaml --packager deb
+)
 
 #       T E S T
 
