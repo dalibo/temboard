@@ -332,6 +332,10 @@ class OpenMetricsWriter:
             logger.debug("Unknown metric %s.", name)
 
 
+if 'http_proxy' in os.environ:
+    # http_proxy will likely break loki requests.
+    del os.environ['http_proxy']
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)1.1s: %(message)s",
