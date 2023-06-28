@@ -105,6 +105,7 @@ def main(logfile):
 
     loki_batch = []
     epoch_ns = None
+    prev_epoch_s = None
     with open(logfile) as fo, \
          open('dev/prometheus/import/data.txt', 'w') as metrics_fo:
         omw = OpenMetricsWriter(metrics_fo, KNOWN_METRICS)
@@ -149,6 +150,14 @@ def main(logfile):
                 loki_batch[:] = []
 
             if ' io_rchar=' in tail or ' up=1 ' in tail or ' method=' in tail:
+                # Accept a single sample per second.
+                if prev_epoch_s and prev_epoch_s == epoch_s:
+                    logger.warning(
+                        "Skipping duplicated sample: timestamp=%s %s.",
+                        epoch_s, tail.strip())
+                    continue
+                prev_epoch_s = epoch_s
+
                 # métriques
                 _, _, message = tail.partition(':')
                 try:
