@@ -149,6 +149,12 @@ def main(logfile):
                 log_count += len(loki_batch)
                 loki_batch[:] = []
 
+            # UI output contains agent metrics. This may mess with out of order
+            # sample.
+            if ' agent=' in tail:
+                logger.warning("Skipping agent metrics.")
+                continue
+
             if ' io_rchar=' in tail or ' up=1 ' in tail or ' method=' in tail:
                 # Accept a single sample per second.
                 if prev_epoch_s and prev_epoch_s == epoch_s:
