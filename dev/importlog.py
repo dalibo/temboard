@@ -106,7 +106,7 @@ def main(logfile):
     loki_batch = []
     epoch_ns = None
     with open(logfile) as fo, \
-         open('prometheus/import/data.txt', 'w') as metrics_fo:
+         open('dev/prometheus/import/data.txt', 'w') as metrics_fo:
         omw = OpenMetricsWriter(metrics_fo, KNOWN_METRICS)
         for line in fo:
             if not line.startswith('20'):
