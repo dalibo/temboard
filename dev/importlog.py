@@ -219,8 +219,7 @@ def main(logfile):
 
 def send_log_batch_to_loki(lines, labels):
     # cf. https://grafana.com/docs/loki/latest/api/#post-lokiapiv1push
-    logger.info("Sending %s lines to loki.", len(lines))
-    return
+    logger.info("Sending %s lines to loki. %s", len(lines), labels)
     r = httpx.post(
         'http://0.0.0.0:3100/loki/api/v1/push',
         json=dict(streams=[dict(
