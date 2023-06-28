@@ -93,7 +93,7 @@ def main(logfile):
     global LOCALTZ
 
     log_count = 0
-    metric_count = 0
+    point_count = 0
     start = None
 
     labels = dict(
@@ -186,7 +186,7 @@ def main(logfile):
                         if k in metrics
                     ))
                     omw.append(name, local_labels, value, epoch_s)
-                metric_count += 1
+                point_count += 1
         omw.close()
 
     end = timestamp
@@ -197,7 +197,7 @@ def main(logfile):
 
     logger.info("Parsed messages from %s to %s.", start, end)
     logger.info("Log time span is %s.", end - start)
-    logger.info("Exported %s points in OpenMetrics format.", metric_count)
+    logger.info("Exported %s points in OpenMetrics format.", point_count)
     logger.info("Inserted %s log messages in Loki.", log_count)
     logger.info("Backfilling Prometheus from OpenMetrics.")
     check_call([
