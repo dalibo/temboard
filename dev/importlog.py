@@ -4,6 +4,7 @@
 #
 
 import logging
+import math
 import os
 import pdb
 import sys
@@ -137,6 +138,7 @@ def main(logfile):
                 continue
             epoch_s = timestamp.timestamp()
             epoch_ns = epoch_s * 1_000_000_000
+            epoch_s = math.floor(epoch_s)
 
             if not start:
                 start = timestamp
@@ -321,7 +323,7 @@ class OpenMetricsWriter:
 
         labels = ','.join('%s="%s"' % label for label in labels.items())
         self.fo.write(dedent(f"""\
-        {metric}{{{labels}}} {value} {epoch_s}
+        {metric}{{{labels}}} {value} {epoch_s:.0f}
         """))
         self.end = epoch_s
 
