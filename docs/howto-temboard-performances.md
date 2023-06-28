@@ -46,6 +46,14 @@ You will see the following `perf` messages in temBoard logs.
 ...
 ```
 
+To export logs from journald, use the following command:
+
+``` console
+# journalctl -u temboard --utc --output=short-iso --since '-30 minutes'
+```
+
+Adapt `--since` argument to your needs.
+
 
 ## Visualize with Grafana
 
