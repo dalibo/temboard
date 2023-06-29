@@ -302,6 +302,8 @@ setup_ssl() {
 	readlink -e "$sslcert" "$sslkey"
 }
 
+exec 0>&-  # Close stdin.
+
 if [ -n "${DEBUG-}" ] ; then
 	exec 3>/dev/null
 else

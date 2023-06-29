@@ -140,6 +140,8 @@ pwgen() {
 
 #       M A I N
 
+exec 0>&-  # Close stdin.
+
 cd "$(readlink -m "${BASH_SOURCE[0]}/..")"
 
 setup_logging
