@@ -105,42 +105,6 @@ class Postgres:
             observer()
 
 
-class DBConnectionPool:
-    # Pool one connection per database.
-    #
-    # Not thread-safe.
-
-    def __init__(self, postgres):
-        self.postgres = postgres
-        self.pool = dict()
-
-    def getconn(self, dbname=None):
-        dbname = dbname or self.postgres.dbname
-        conn = self.pool.get(dbname)
-        if not conn:
-            logger.debug("Opening connection to db %s.", dbname)
-            pqvars = self.postgres.pqvars(dbname=dbname)
-            conn = retry_connect(connect, self.postgres.app, **pqvars)
-            self.pool[dbname] = conn
-
-        return conn
-
-    def closeall(self):
-        for dbname in list(self.pool):
-            conn = self.pool.pop(dbname)
-            logger.debug("Closing pooled connection to %s.", dbname)
-            conn.close()
-
-    def __del__(self):
-        self.closeall()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *_):
-        self.closeall()
-
-
 class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
     def cursor(self, *a, **kw):
         row_factory = kw.pop('row_factory', None)
@@ -206,34 +170,6 @@ def scalar(**kw):
     return next(iter(kw.values()))
 
 
-class RetryManager(object):
-    def __init__(self, pool):
-        self.pool = pool
-        self.conn = None
-        self.retry = False
-
-    def __call__(self):
-        return self
-
-    def __enter__(self):
-        self.conn = self.pool.getconn()
-        self.retry = False
-        return self.conn
-
-    def __exit__(self, exc_type, e, exc_tb):
-        if isinstance(e, Psycopg2Error):
-            if e.pgcode is None:
-                logger.debug("Retrying lost connection: %s", e)
-                self.pool.close_all_connections()
-                self.conn = None
-                self.retry = True
-                return True
-
-        # Else, just clean conn and let exception bubble.
-        self.pool.putconn(self.conn)
-        self.conn = None
-
-
 class ConnectionPool(ThreadedConnectionPool):
     def __init__(self, app, observers=None, **kw):
         self.app = app
@@ -244,28 +180,86 @@ class ConnectionPool(ThreadedConnectionPool):
         return retry_connect(
             super(ConnectionPool, self)._connect, self.app, *a, **kw)
 
-    def retry_connection(self):
-        # Helper to retry a code block on connection lost.
+    def auto_reconnect(self):
+        # Helper to recover a connection lost in a code block
         #
         # Manage pooled connection lost. Yield a context manager for one or two
         # attempt. The first attempt uses the connection as returned by the
         # pool. The second attempt closes pool and request a fresh connection.
         #
-        # for attempt in postgres.retry_connection_pool():
+        # for attempt in pool.auto_reconnect():
         #     with attempt() as conn:
         #         conn.queryscalar("SELECT 1")
         #
-        manager = RetryManager(self)
+        manager = ReconnectManager(self)
         for try_ in 0, 1:
             yield manager
             if not manager.retry:
                 break
 
-    def close_all_connections(self):
+    def closeall(self):
         # Close all connection, keeping pool opened.
         for conn in self._pool + list(self._used.values()):
             conn.close()
             self.putconn(conn)
+
+
+class DBConnectionPool:
+    # Pool one connection per database.
+    #
+    # Not thread-safe.
+
+    def __init__(self, postgres):
+        self.postgres = postgres
+        self.pool = dict()
+
+    def getconn(self, dbname=None):
+        dbname = dbname or self.postgres.dbname
+        conn = self.pool.get(dbname)
+        if not conn:
+            logger.debug("Opening connection to db %s.", dbname)
+            pqvars = self.postgres.pqvars(dbname=dbname)
+            conn = retry_connect(connect, self.postgres.app, **pqvars)
+            self.pool[dbname] = conn
+
+        return conn
+
+    def auto_reconnect(self, dbname=None):
+        # Helper to recover a connection lost in a code block
+        #
+        # Manage pooled connection lost. Yield a context manager for one or two
+        # attempt. The first attempt uses the connection as returned by the
+        # pool. The second attempt closes pool and request a fresh connection.
+        #
+        # for attempt in dbpool.auto_reconnect():
+        #     with attempt() as conn:
+        #         conn.queryscalar("SELECT 1")
+        #
+        manager = ReconnectManager(self, dbname)
+        for try_ in 0, 1:
+            yield manager
+            if not manager.retry:
+                break
+
+    def putconn(self, *_):
+        # Keep a single connection open, per database. Closes only upon pool
+        # closing.
+        pass
+
+    def closeall(self):
+        for dbname in list(self.pool):
+            conn = self.pool.pop(dbname)
+            logger.debug("Closing pooled connection to %s.", dbname)
+            conn.close()
+
+    def __del__(self):
+        self.closeall()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.closeall()
 
 
 def retry_connect(connect, app, *a, **kw):
@@ -287,3 +281,34 @@ def retry_connect(connect, app, *a, **kw):
                 sleep(wait)
             else:  # Last wait is 0. Just give up.
                 raise
+
+
+class ReconnectManager(object):
+    def __init__(self, pool, *connect_args):
+        self.pool = pool
+        self.connect_args = connect_args
+        self.conn = None
+        self.retry = False
+
+    def __call__(self, *connect_args):
+        if connect_args:
+            self.connect_args = connect_args
+        return self
+
+    def __enter__(self):
+        self.conn = self.pool.getconn(*self.connect_args)
+        self.retry = False
+        return self.conn
+
+    def __exit__(self, exc_type, e, exc_tb):
+        if isinstance(e, Psycopg2Error):
+            if e.pgcode is None:
+                logger.debug("Retrying lost connection: %s", e)
+                self.pool.closeall()
+                self.conn = None
+                self.retry = True
+                return True
+
+        # Else, just clean conn and let exception bubble.
+        self.pool.putconn(self.conn)
+        self.conn = None

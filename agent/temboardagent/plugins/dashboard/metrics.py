@@ -12,7 +12,7 @@ def get_metrics(app, pool=None):
     res = dict()
     pool = pool or app.postgres.pool()
     discover = app.discover.ensure_latest()
-    for attempt in pool.retry_connection():
+    for attempt in pool.auto_reconnect():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
             pgdiscover = discover['postgres']
