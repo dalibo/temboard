@@ -23,8 +23,9 @@ def get_instance(pgconn, pgpool):
         database = dict(database)
         # we need to connect with a different database
         dbname = database['datname']
-        dbconn = pgpool.getconn(dbname)
-        database.update(**functions.get_database(dbconn))
+        for getconn in pgpool.auto_reconnect():
+            with getconn(dbname) as dbconn:
+                database.update(**functions.get_database(dbconn))
         databases.append(database)
 
     return {'instance': instance, 'databases': databases}
@@ -36,26 +37,29 @@ T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
 
 @bottle.get('/<dbname>')
 def get_database(pgpool, dbname):
-    conn = pgpool.getconn(dbname)
-    database = functions.get_database_size(conn)
-    schemas = functions.get_schemas(conn)
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            database = functions.get_database_size(conn)
+            schemas = functions.get_schemas(conn)
     return dict(database, **{'schemas': schemas})
 
 
 @bottle.get('/<dbname>/schema/<schema>')
 def get_schema(pgpool, dbname, schema):
-    conn = pgpool.getconn(dbname)
-    tables = functions.get_tables(conn, schema)
-    indexes = functions.get_schema_indexes(conn, schema)
-    schema = functions.get_schema(conn, schema)
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            tables = functions.get_tables(conn, schema)
+            indexes = functions.get_schema_indexes(conn, schema)
+            schema = functions.get_schema(conn, schema)
     return dict(dict(tables, **indexes), **schema)
 
 
 @bottle.get('/<dbname>/schema/<schema>/table/<table>')
 def get_table(pgpool, dbname, schema, table):
-    conn = pgpool.getconn(dbname)
-    ret = functions.get_table(conn, schema, table)
-    ret.update(**functions.get_table_indexes(conn, schema, table))
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            ret = functions.get_table(conn, schema, table)
+            ret.update(**functions.get_table_indexes(conn, schema, table))
     return ret
 
 
@@ -83,8 +87,10 @@ def post_vacuum(pgpool, post, dbname, schema=None, table=None):
         ])
     mode = post.get('mode', '')
 
-    return functions.schedule_vacuum(
-        pgpool.getconn(dbname), dbname, mode, dt, app, schema, table)
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            return functions.schedule_vacuum(
+                conn, dbname, mode, dt, app, schema, table)
 
 
 @bottle.get('/<dbname>/vacuum/scheduled')
@@ -135,9 +141,10 @@ def post_analyze(pgpool, post, dbname, schema=None, table=None):
             ('datetime', T_TIMESTAMP_UTC, False),
         ])
     dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
-
-    conn = pgpool.getconn(dbname)
-    return functions.schedule_analyze(conn, dbname, dt, app, schema, table)
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            return functions.schedule_analyze(
+                conn, dbname, dt, app, schema, table)
 
 
 @bottle.get('/<dbname>/analyze/scheduled')
@@ -195,8 +202,10 @@ def post_reindex(pgpool, post, dbname, schema=None, table=None, index=None):
         ])
     dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
 
-    return functions.schedule_reindex(
-        pgpool.getconn(dbname), dbname, dt, app, schema, table, index)
+    for getconn in pgpool.auto_reconnect():
+        with getconn(dbname) as conn:
+            return functions.schedule_reindex(
+                conn, dbname, dt, app, schema, table, index)
 
 
 @bottle.get('/<dbname>/reindex/scheduled')
