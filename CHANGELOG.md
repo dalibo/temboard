@@ -23,6 +23,8 @@ Ensure you use consistent title format.
 - Remove stretch from packages and CI
 - Fix monitoring probe when the OS release includes a + sign.
 - Pin minor version of Python dependency in debian packages.
+- Auto reconnect PostgreSQL on connection lost in statements and maintenance
+  agent endpoints.
 
 
 ## 8.0

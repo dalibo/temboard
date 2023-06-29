@@ -122,7 +122,7 @@ def dashboard_collector_batch_worker(app):
             logger.error("Failed to connect to Postgres: %s", e)
         else:
             try:
-                for attempt in pool.retry_connection():
+                for attempt in pool.auto_reconnect():
                     with attempt:
                         dashboard_collector_worker(app, pool)
             except Exception as e:

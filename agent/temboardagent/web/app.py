@@ -114,7 +114,7 @@ class PostgresPlugin(object):
                 kw['pgpool'] = self.dbpool
 
             # Assume callbacks idempotence.
-            for attempt in self.pool.retry_connection():
+            for attempt in self.pool.auto_reconnect():
                 with attempt() as conn:
                     if 'pgconn' in wanted:
                         kw['pgconn'] = conn

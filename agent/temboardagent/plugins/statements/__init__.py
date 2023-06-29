@@ -30,8 +30,9 @@ def get_statements(pgpool):
     dbname = config.statements.dbname
     snapshot_datetime = now()
     try:
-        conn = pgpool.getconn(dbname)
-        data = list(conn.query(query))
+        for connect in pgpool.auto_reconnect():
+            with connect(dbname) as conn:
+                data = list(conn.query(query))
     except Exception as e:
         discover = app.discover.ensure_latest()
         pg_version = discover['postgres']['version_num']
