@@ -4,6 +4,7 @@
 #
 
 import logging
+import math
 import os
 import pdb
 import sys
@@ -92,7 +93,7 @@ def main(logfile):
     global LOCALTZ
 
     log_count = 0
-    metric_count = 0
+    point_count = 0
     start = None
 
     labels = dict(
@@ -105,8 +106,9 @@ def main(logfile):
 
     loki_batch = []
     epoch_ns = None
+    prev_epoch_s = None
     with open(logfile) as fo, \
-         open('prometheus/import/data.txt', 'w') as metrics_fo:
+         open('dev/prometheus/import/data.txt', 'w') as metrics_fo:
         omw = OpenMetricsWriter(metrics_fo, KNOWN_METRICS)
         for line in fo:
             if not line.startswith('20'):
@@ -136,6 +138,7 @@ def main(logfile):
                 continue
             epoch_s = timestamp.timestamp()
             epoch_ns = epoch_s * 1_000_000_000
+            epoch_s = math.floor(epoch_s)
 
             if not start:
                 start = timestamp
@@ -148,9 +151,23 @@ def main(logfile):
                 log_count += len(loki_batch)
                 loki_batch[:] = []
 
+            # UI output contains agent metrics. This may mess with out of order
+            # sample.
+            if ' agent=' in tail:
+                logger.warning("Skipping agent metrics.")
+                continue
+
             if ' io_rchar=' in tail or ' up=1 ' in tail or ' method=' in tail:
+                # Accept a single sample per second.
+                if prev_epoch_s and prev_epoch_s == epoch_s:
+                    logger.warning(
+                        "Skipping duplicated sample: timestamp=%s %s.",
+                        epoch_s, tail.strip())
+                    continue
+                prev_epoch_s = epoch_s
+
                 # métriques
-                _, _, message = tail.split(':', 2)
+                _, _, message = tail.partition(':')
                 try:
                     metrics = dict(parse_logfmt(message))
                 except Exception as e:
@@ -169,7 +186,7 @@ def main(logfile):
                         if k in metrics
                     ))
                     omw.append(name, local_labels, value, epoch_s)
-                metric_count += 1
+                point_count += 1
         omw.close()
 
     end = timestamp
@@ -180,7 +197,7 @@ def main(logfile):
 
     logger.info("Parsed messages from %s to %s.", start, end)
     logger.info("Log time span is %s.", end - start)
-    logger.info("Exported %s points in OpenMetrics format.", metric_count)
+    logger.info("Exported %s points in OpenMetrics format.", point_count)
     logger.info("Inserted %s log messages in Loki.", log_count)
     logger.info("Backfilling Prometheus from OpenMetrics.")
     check_call([
@@ -202,8 +219,7 @@ def main(logfile):
 
 def send_log_batch_to_loki(lines, labels):
     # cf. https://grafana.com/docs/loki/latest/api/#post-lokiapiv1push
-    logger.info("Sending %s lines to loki.", len(lines))
-    return
+    logger.info("Sending %s lines to loki. %s", len(lines), labels)
     r = httpx.post(
         'http://0.0.0.0:3100/loki/api/v1/push',
         json=dict(streams=[dict(
@@ -306,7 +322,7 @@ class OpenMetricsWriter:
 
         labels = ','.join('%s="%s"' % label for label in labels.items())
         self.fo.write(dedent(f"""\
-        {metric}{{{labels}}} {value} {epoch_s}
+        {metric}{{{labels}}} {value} {epoch_s:.0f}
         """))
         self.end = epoch_s
 
@@ -315,6 +331,10 @@ class OpenMetricsWriter:
         for name in self.unknown:
             logger.debug("Unknown metric %s.", name)
 
+
+if 'http_proxy' in os.environ:
+    # http_proxy will likely break loki requests.
+    del os.environ['http_proxy']
 
 logging.basicConfig(
     level=logging.DEBUG,
