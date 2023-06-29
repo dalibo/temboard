@@ -293,6 +293,8 @@ class TornadoService(Service):
             }
             server = AutoHTTPSServer(self.app.tornado_app, ssl_options=ssl_ctx)
         else:
+            # Use plain HTTP for development to mix vitejs dev server and
+            # tornado server in the same browser page.
             server = HTTPServer(self.app.tornado_app)
         try:
             server.listen(
