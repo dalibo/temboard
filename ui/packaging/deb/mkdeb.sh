@@ -1,4 +1,5 @@
 #!/bin/bash -eux
+# use CLEAN=0 to avoid the final teardown tidoudou dou
 
 UID_GID=$(stat -c %u:%g "$0")
 cd "$(readlink -m "$0/../../..")"
@@ -14,7 +15,7 @@ teardown () {
         return
     fi
 
-    rm -rf "$WORKDIR"
+     rm -rf "$WORKDIR"
 
     if hash temboard &>/dev/null; then
 	echo "Cleaning previous installation." >&2
@@ -37,10 +38,7 @@ mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 
 pep440v="${versions[0]}"
 debianv="${versions[1]}"
-# Testing/sid has LSB release as `n\a`. Stable as debian_version as X.Y.
-if ! codename=$(grep -Po '(.+(?=/))' /etc/debian_version) ; then
-    codename=$(lsb_release --codename --short)
-fi
+codename=$(grep -Po 'VERSION_CODENAME=\K(.+)' /etc/os-release)
 release="0dlb1${codename}1"
 
 #       I N S T A L L
@@ -62,31 +60,22 @@ EOF
 
 chmod +x "$DESTDIR/usr/bin/temboard"
 
+mv "$DESTDIR/usr/lib/temboard/share/"  "$DESTDIR/usr/share/"
+
 #       B U I L D
 
 python_pkg="$(dpkg -S "$PYTHON")"
 python_pkg="${python_pkg%:*}"
 python_pkg="${python_pkg/-minimal}"
 
-fpm --verbose \
-    --force \
-    --debug-workspace \
-    --workdir="$WORKDIR" \
-    --input-type dir \
-    --output-type deb \
-    --name temboard \
-    --version "$debianv" \
-    --iteration "$release" \
-    --architecture "$(dpkg-architecture --query DEB_HOST_ARCH)" \
-    --description "PostgreSQL Remote Control UI" \
-    --category database \
-    --maintainer "${DEBFULLNAME} <${DEBEMAIL}>" \
-    --license PostgreSQL \
-    --url https://labs.dalibo.com/temboard/ \
-    --after-install packaging/deb/postinst.sh \
-    --depends "$python_pkg" \
-    --depends python3-psycopg2 \
-    "$DESTDIR/=/"
+(
+	export DEBIANV=$debianv
+	export RELEASE=$release
+	export PYTHON_PKG=$python_pkg
+	ARCH=$(dpkg-architecture --query DEB_HOST_ARCH)
+	export ARCH
+	nfpm pkg --config packaging/deb/nfpm.yaml --packager deb
+)
 
 #       T E S T
 
@@ -99,6 +88,7 @@ apt-get install --yes --no-install-recommends "./$deb"
 	cd /
 	temboard --version
 	test -f /usr/lib/temboard/temboardui/static/manifest.json
+	test -x /usr/share/temboard/auto_configure.sh
 )
 
 #       S A V E
