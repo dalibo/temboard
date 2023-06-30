@@ -51,15 +51,8 @@ def test_check_connectivity_fail(engine, mocker):
 def test_configure(mocker):
     mod = 'temboardui.model'
     Session = mocker.patch(mod + '.Session')
-    check = mocker.patch(mod + '.check_connectivity')
 
     from temboardui.model import configure
 
     configure(dsn='sqlite://')  # LOL
     assert Session.configure.called is True
-    assert check.called is True
-
-    check.side_effect = Exception()
-    with pytest.raises(SystemExit):
-        config = dict(host='h', port=5432, user='u', password='X', dbname='db')
-        configure(dsn=config)

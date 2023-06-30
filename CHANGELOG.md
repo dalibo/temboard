@@ -25,6 +25,7 @@ Ensure you use consistent title format.
 - Pin minor version of Python dependency in debian packages.
 - Auto reconnect PostgreSQL on connection lost in statements and maintenance
   agent endpoints.
+- UI: Check DB connectivity only for serve and web command.
 
 
 ## 8.0
