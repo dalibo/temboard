@@ -31,7 +31,6 @@ def configure(dsn, **kwargs):
 
     try:
         engine = create_engine(dsn)
-        check_connectivity(engine)
     except Exception as e:
         logger.warning("Connection to the database failed: %s", e)
         logger.warning("Please check your configuration.")
@@ -77,6 +76,7 @@ def worker_engine(dbconf):
 
 def check_schema():
     engine = Session.kw['bind']
+    check_connectivity(engine)
     migrator = Migrator()
     migrator.inspect_available_versions()
     migrator.inspect_current_version(engine.raw_connection().connection)
