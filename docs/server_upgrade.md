@@ -1,6 +1,21 @@
 [preferred installation method]: server_install.md#install
 [upgrade the agents]: agent_upgrade.md
 
+## From 8.0 to 8.1
+
+Update the package:
+
+``` bash
+sudo yum install temboard
+```
+
+Restart temBoard:
+
+``` bash
+sudo systemctl restart temboard
+```
+
+
 ## Upgrade `7.11` to `8.0`
 
 temBoard UI 8.0 supports agent version 7.11 and 8.0.
