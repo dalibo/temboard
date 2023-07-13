@@ -1,3 +1,18 @@
+## From 8.0 to 8.1
+
+Update the package:
+
+``` bash
+sudo yum install temboard-agent
+```
+
+Restart all agents:
+
+``` bash
+sudo systemctl restart temboard-agent@...
+```
+
+
 ## From 7.11 to 8.0
 
 temBoard Agent 8.0 requires temBoard UI 8.0.

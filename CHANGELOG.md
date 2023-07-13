@@ -9,23 +9,32 @@ Ensure you use consistent title format.
 
 **Unreleased**
 
-- Accept hostname down to 1 char long.
+**UI & Agent changes**
+
+- Remove stretch from packages and CI
+- Fix logging on light terminal.
+- Pin minor version of Python dependency in debian packages.
+
+
+**UI changes**
+
 - Fix PGDATA always empty in CSV inventory.
-- Fix missing schema in upgrade script.
 - Export comment in CSV inventory.
 - Unquote PGDATA from CSV inventory.
+- Fix missing schema in upgrade script.
 - Debian package now use system psycopg2.
 - Add user-agent in about page.
-- Internalize deps without virtualenv on UI debian package.
-- No longer displays UNDEF items in the UI
-- Fix logging on light terminal.
-- Improve errors displayed in the agent log
-- Remove stretch from packages and CI
+- Internalize deps without virtualenv on debian package.
+- No longer displays UNDEF items.
+- Check DB connectivity only for serve and web command.
+
+**Agent changes**
+
+- Accept hostname down to 1 char long.
 - Fix monitoring probe when the OS release includes a + sign.
-- Pin minor version of Python dependency in debian packages.
 - Auto reconnect PostgreSQL on connection lost in statements and maintenance
-  agent endpoints.
-- UI: Check DB connectivity only for serve and web command.
+  endpoints.
+- Improve displaying errors in log.
 
 
 ## 8.0
