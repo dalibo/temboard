@@ -1,5 +1,5 @@
 #!/bin/bash -eu
 
-if systemctl daemon-reload &>/dev/null ; then
-	systemctl restart --state=ACTIVE temboard
+if systemctl is-active temboard &>/dev/null ; then
+	systemctl restart temboard
 fi
