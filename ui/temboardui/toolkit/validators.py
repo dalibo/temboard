@@ -12,11 +12,11 @@ import json
 import logging
 import os.path
 import re
-from distutils.util import strtobool
 from logging.handlers import SysLogHandler
 
 from .log import HANDLERS as LOG_METHODS
 from .pycompat import urlparse
+from .utils import strtobool
 
 
 _address_re = re.compile(
@@ -36,7 +36,7 @@ def boolean(raw):
     if raw in (True, False):
         return raw
 
-    return bool(strtobool(raw))
+    return strtobool(raw)
 
 
 def dir_(raw):

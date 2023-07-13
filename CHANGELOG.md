@@ -14,6 +14,7 @@ Ensure you use consistent title format.
 - Remove stretch from packages and CI
 - Fix logging on light terminal.
 - Pin minor version of Python dependency in debian packages.
+- Remove dependency on distutils.
 
 
 **UI changes**

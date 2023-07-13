@@ -24,6 +24,17 @@ def dict_factory(iterable=_UNDEFINED, **kw):
         return dict(iterable, **kw)
 
 
+def strtobool(value):
+    if not value:
+        return False
+    value = str(value).lower()
+    if value in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    if value in ("n", "no", "f", "false", "off", "0"):
+        return False
+    raise ValueError("invalid truth value %s" % value)
+
+
 class DotDict(IterableUserDict):
     # A wrapper around dict that allows read and write through dot style
     # accessors.
