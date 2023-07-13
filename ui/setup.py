@@ -30,6 +30,7 @@ install_requires = [
     'cryptography',
     'flask',
     'python-dateutil>=1.5',
+    'setuptools',
     # There is no hard dependency on psycopg2 to allow using
     # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
     # and there is no way to state an OR dependency in Python. It's up to
