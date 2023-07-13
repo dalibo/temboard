@@ -2,7 +2,6 @@
 
 import bdb
 import pkg_resources
-from distutils.util import strtobool
 from glob import glob
 import logging
 import os
@@ -32,6 +31,7 @@ from .log import setup_logging, LastnameFilter
 from .errors import UserError
 from . import validators as v
 from .pycompat import configparser
+from .utils import strtobool
 
 
 logger = logging.getLogger(__name__)
