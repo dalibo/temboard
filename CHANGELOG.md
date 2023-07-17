@@ -15,6 +15,7 @@ Ensure you use consistent title format.
 - Fix logging on light terminal.
 - Pin minor version of Python dependency in debian packages.
 - Remove dependency on distutils.
+- Disable 3DES and other loose SSL algorithmes.
 
 
 **UI changes**
