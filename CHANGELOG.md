@@ -24,6 +24,7 @@ Ensure you use consistent title format.
 - Unquote PGDATA from CSV inventory.
 - Fix missing schema in upgrade script.
 - Debian package now use system psycopg2.
+- Fix restart of temBoard when upgrading package.
 - Add user-agent in about page.
 - Internalize deps without virtualenv on debian package.
 - No longer displays UNDEF items.
