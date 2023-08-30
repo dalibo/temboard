@@ -27,9 +27,9 @@ class Notification:
 
     def __init__(self, username, message):
 
-        if type(username) == bytes:
+        if isinstance(username, bytes):
             username = username.decode('utf-8')
-        if type(message) == bytes:
+        if isinstance(message, bytes):
             message = message.decode('utf-8')
 
         self.time = time.time()

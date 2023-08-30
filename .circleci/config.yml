@@ -353,7 +353,7 @@ jobs:
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
       -c, cluster_name=repository,
       ]
-    - image: selenium/standalone-firefox
+    - image: selenium/standalone-firefox@sha256:b6d8279268b3183d0d33e667e82fec1824298902f77718764076de763673124f
       environment:
         SCREEN_WIDTH: 1280
         SCREEN_HEIGHT: 768

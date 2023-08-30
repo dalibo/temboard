@@ -129,7 +129,7 @@ services:
     command: *agent_command
 
   selenium:
-    image: selenium/standalone-firefox
+    image: selenium/standalone-firefox@sha256:b6d8279268b3183d0d33e667e82fec1824298902f77718764076de763673124f
     ports:
     - "4444:4444"
     - "7900:7900"

@@ -425,7 +425,7 @@ class Scheduler(object):
                 self.task_queue.put(t)
         elif message.type == MSG_TYPE_CONTEXT:
             # context update
-            if type(message.content) == dict:
+            if isinstance(message.content, dict):
                 for k, v in message.content.items():
                     self.set_context(k, v)
                 return Message(MSG_TYPE_RESP, self.get_context())

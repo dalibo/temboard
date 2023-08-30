@@ -23,24 +23,25 @@ def validate_parameters(values, types):
     """
     for (key, typ, is_list) in types:
         try:
-            if type(typ) == bytes and hasattr(typ, 'decode'):
+            if isinstance(typ, bytes):
                 typ = str(typ.decode('utf-8'))
             if not is_list:
                 # If 'typ' is a string, it must be considered as a regexp
                 # pattern.
-                if type(typ) == str and \
+                if isinstance(typ, str) and \
                         re.match(typ, str(values[key])) is None:
                     raise HTTPError(406, "Parameter '%s' is malformed."
                                          % (key))
-                if type(typ) != str and isinstance(values[key], type(typ)):
+                if not isinstance(typ, str) and \
+                   isinstance(values[key], type(typ)):
                     raise HTTPError(406, "Parameter '%s' is malformed."
                                          % (key))
             if is_list:
                 for value in values[key]:
-                    if type(typ) == str and re.match(typ, str(value)) is None:
+                    if isinstance(typ, str) and not re.match(typ, str(value)):
                         raise HTTPError(406, "Parameter '%s' is malformed."
                                              % (key))
-                    if type(typ) != str and typ != type(value):
+                    if not isinstance(typ, str) and typ != type(value):
                         raise HTTPError(406, "Parameter '%s' is malformed."
                                              % (key))
         except HTTPError as e:

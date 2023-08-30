@@ -224,6 +224,7 @@ def pg_version(request):
 def psql(postgres, sudo_pguser, agent_env):
     """Returns a psql command line to monitored Postgres."""
     return sudo_pguser.psql.bake(
+        "--no-psqlrc",
         _env=dict(agent_env, PGAPPNAME='pytest-psql'),
         _bg_exc=False,
     )

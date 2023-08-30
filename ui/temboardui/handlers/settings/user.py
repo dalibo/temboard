@@ -141,7 +141,7 @@ def validate_user_data(data, role=None):
         if data['password'] != data['password2']:
             raise TemboardUIError(
                 400, "Password confirmation can not be checked.")
-    if data['groups'] is not None and type(data['groups']) != list:
+    if data['groups'] is not None and not isinstance(data['groups'], list):
         raise TemboardUIError(400, "Invalid group list.")
 
     check_role_name(data['new_username'])
