@@ -39,10 +39,26 @@ class HTTPDService(Service):
             logger.debug(
                 "Using SSL certificate %s.",
                 self.app.config.temboard.ssl_cert_file)
-            self.server.socket = ssl.wrap_socket(
+            ctx = ssl.SSLContext()
+            ctx.load_cert_chain(
+                self.app.config.temboard.ssl_cert_file,
+                self.app.config.temboard.ssl_key_file,
+            )
+            ctx.set_ciphers(':'.join([
+                # From Mozilla SSL configuration generator. 2023-07-28
+                'ECDHE-ECDSA-AES128-GCM-SHA256',
+                'ECDHE-RSA-AES128-GCM-SHA256',
+                'ECDHE-ECDSA-AES256-GCM-SHA384',
+                'ECDHE-RSA-AES256-GCM-SHA384',
+                'ECDHE-ECDSA-CHACHA20-POLY1305',
+                'ECDHE-RSA-CHACHA20-POLY1305',
+                'DHE-RSA-AES128-GCM-SHA256',
+                'DHE-RSA-AES256-GCM-SHA384',
+                'DHE-RSA-CHACHA20-POLY1305',
+            ]))
+
+            self.server.socket = ctx.wrap_socket(
                 self.server.socket,
-                keyfile=self.app.config.temboard.ssl_key_file,
-                certfile=self.app.config.temboard.ssl_cert_file,
                 server_side=True,
             )
         except Exception as e:
