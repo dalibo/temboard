@@ -72,7 +72,7 @@ workflows:
         matrix:
           parameters:
             dist: [bullseye]
-            pgversion: ["12"]
+            pgversion: ["14"]
     - func:
         <<: *func
         matrix:
