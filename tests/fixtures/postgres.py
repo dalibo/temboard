@@ -22,6 +22,7 @@ class PostgreSQLVersions(dict):
 
     # List of agent supported PostgreSQL versions.
     SUPPORTED_VERSIONS = [
+        '16',
         '15',
         '14',
         '13',
@@ -54,6 +55,8 @@ class PostgreSQLVersions(dict):
                         version, _ = version.split('.')
                     elif 'beta' in version:
                         version, _ = version.split('beta')
+                    elif 'rc' in version:
+                        version, _ = version.split('rc')
                 else:
                     version = version[:3]
 

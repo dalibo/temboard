@@ -60,7 +60,7 @@ workflows:
           parameters:
             dist: [bookworm]
             # Even version of Postgres for Debian
-            pgversion: ["14"]
+            pgversion: ["16rc1"]
     - func:
         <<: *func
         matrix:
@@ -72,7 +72,7 @@ workflows:
         matrix:
           parameters:
             dist: [bullseye]
-            pgversion: ["12"]
+            pgversion: ["14"]
     - func:
         <<: *func
         matrix:
@@ -334,7 +334,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["16rc1", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>
@@ -380,7 +380,9 @@ jobs:
           set -ux
           upstream=master  # Update when branching to v8.
           PGVERSION=<< parameters.pgversion >>
-          tests/pytest-ci $upstream -vvv --pg-version=${PGVERSION%beta*} tests/
+          PGVERSION=${PGVERSION%rc*}
+          PGVERSION=${PGVERSION%beta*}
+          tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION tests/
     - store_artifacts:
         path: /workspace/tests/downloads/
     - store_artifacts:
