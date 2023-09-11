@@ -2,6 +2,8 @@
 name: temboard-agent
 arch: all
 version: ${DEBIANV}
+# Accept PEP440
+version_schema: none
 release: ${RELEASE}
 depends:
 - ${PYTHON_PKG}
