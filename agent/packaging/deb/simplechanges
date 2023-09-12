@@ -110,7 +110,7 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
     changes['Files'] = [' '.join([
         md5,
         str(filesize),
-        controls['Section'],
+        controls['Section'] or 'default',
         controls['Priority'],
         filename,
     ])]
