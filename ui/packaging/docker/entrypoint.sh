@@ -7,7 +7,7 @@ PGPASSWORD=${PGPASSWORD-}
 export PGDATABASE=${PGDATABASE-$PGUSER}
 
 wait-for-it "${PGHOST}:${PGPORT}"
-if ! -f /etc/temboard/temboard.conf ; then
+if [ ! -f /etc/temboard/temboard.conf ] ; then
 	if ! DEBUG=y PGPASSWORD="$PGPASSWORD" /usr/share/temboard/auto_configure.sh; then
 		cat /var/log/temboard-auto-configure.log >&2
 		exit 1
