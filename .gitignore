@@ -37,8 +37,7 @@ tests/workdir/
 node_modules/
 
 # temBoard runtime files
-server_tasks.db
-temboard*.pid
+dev/temboard/
 temboard-func.log
 
 # Help developer customize their development environment
