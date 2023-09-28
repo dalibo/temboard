@@ -5,9 +5,15 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
-## 8.1
+## 8.2.dev0
 
 **Unreleased**
+
+
+## 8.1
+
+[Released](https://blog.dalibo.com/2023/09/11/temboard-8.1-en.html): 11 september 2023
+
 
 **UI & Agent changes**
 
