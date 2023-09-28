@@ -9,6 +9,10 @@ Ensure you use consistent title format.
 
 **Unreleased**
 
+**UI changes**
+
+- Display number of instances and users in about page.
+
 
 ## 8.1
 
