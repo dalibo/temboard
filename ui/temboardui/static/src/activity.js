@@ -1,6 +1,5 @@
 "use strict";
 
-import Vue from 'vue/dist/vue.esm'
 import datatables from 'datatables.net-dt'
 import dtbs4 from 'datatables.net-bs4'
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css'
@@ -9,10 +8,6 @@ import 'highlight.js/styles/default.css'
 
 datatables(window, $)
 dtbs4(window, $)
-
-window.activityVue = new Vue({
-  el: "#activityVue"
-})
 
 var request = null;
 var intervalDuration = 2;
