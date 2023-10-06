@@ -19,7 +19,7 @@ def test_all_databases(browser, browse_maintenance):
     browser.select("td.temboard-tables .table-bloat")
     browser.select("td.indexes span.badge")
     browser.select("td.indexes .index-bloat")
-    browser.select("td.toast")
+    browser.select("td.temboard-toast")
 
 
 def test_database(browser, browse_toto_db):
@@ -37,6 +37,7 @@ def test_database(browser, browse_toto_db):
     browser.select("td.temboard-tables .table-bloat")
     browser.select("td.indexes span.badge")
     browser.select("td.indexes .index-bloat")
+    browser.select("td.temboard-toast")
 
 
 def test_database_analyze_now(browser, browse_toto_db):
@@ -83,7 +84,7 @@ def test_schema(browser, browse_toto_schema):
     browser.select("td.heap")
     browser.select("td.indexes span.badge")
     browser.select("td.indexes .index-bloat")
-    browser.select("td.toast")
+    browser.select("td.temboard-toast")
 
 
 def test_schema_reindex_now(browser, browse_toto_schema):
