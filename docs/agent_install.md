@@ -141,6 +141,16 @@ The script shows you some important information for the next steps:
     `/etc/temboard-agent/14/main/temboard-agent.conf.d/auto.conf` too and
     override the main configuration file.
 
+Next you need to fetch the signing public key of temBoard UI.
+An agent accepts requests from a single temBoard UI.
+temBoard UI signs each requests using an asymetric key.
+Use `temboard-agent fetch-key` to download the signing key from the configured UI.
+Or push the signing using a configuration management service.
+
+``` console
+# temboard-agent --config /etc/temboard-agent/14/main/temboard-agent.conf fetch-key
+```
+
 Now start the agent using the command suggested by `auto_configure.sh`.
 On most systems now, it\'s a systemd service:
 
