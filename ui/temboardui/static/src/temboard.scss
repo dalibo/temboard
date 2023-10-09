@@ -304,6 +304,8 @@ table.table-query {
   .hljs {
     background: none;
     white-space: nowrap;
+    overflow-x: hidden;
+    padding: 0;
   }
 
   .detail {
