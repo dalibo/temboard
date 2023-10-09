@@ -60,7 +60,7 @@ workflows:
           parameters:
             dist: [bookworm]
             # Even version of Postgres for Debian
-            pgversion: ["16rc1"]
+            pgversion: ["16"]
     - func:
         <<: *func
         matrix:
@@ -334,7 +334,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["16rc1", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>
