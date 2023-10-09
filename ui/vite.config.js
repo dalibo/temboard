@@ -16,7 +16,8 @@ export default defineConfig({
         'activity': '/activity.js',
         'home': '/home.js',
         'temboard': '/temboard.js',
-        'settings.instance': '/settings.instance.js'
+        'settings.instance': '/settings.instance.js',
+        'statements': '/statements.js'
       }
     }
   },
