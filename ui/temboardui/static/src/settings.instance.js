@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue.esm'
+import Vue from 'vue'
 import DeleteInstanceDialog from './components/settings/DeleteInstanceDialog.vue'
 import NewInstanceWizard from './components/settings/NewInstanceWizard.vue'
 import UpdateInstanceDialog from './components/settings/UpdateInstanceDialog.vue'

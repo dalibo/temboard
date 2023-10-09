@@ -1,5 +1,5 @@
 /* global instances, isAdmin, Vue */
-import Vue from 'vue/dist/vue.esm'
+import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import './fscreen.js'
