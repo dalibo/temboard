@@ -2,6 +2,7 @@ import Vue from 'vue'
 import * as _ from 'lodash'
 import './daterangepicker.vue.js'
 import VueRouter from 'vue-router'
+import {formatDuration} from './utils/duration'
 Vue.use(VueRouter)
 
 import BootstrapVue from 'bootstrap-vue'
@@ -205,10 +206,6 @@ function getFields() {
   return _.filter(fields, function(field) {
     return ignored.indexOf(field.key) === -1;
   });
-}
-
-function formatDuration(value) {
-  return moment(parseFloat(value, 10)).preciseDiff(moment(0), 1);
 }
 
 function formatSize(bytes) {
