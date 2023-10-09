@@ -19,5 +19,10 @@ export default defineConfig({
         'settings.instance': '/settings.instance.js'
       }
     }
-  }
+  },
+  resolve: {
+    alias: {
+      vue: 'vue/dist/vue.esm.js'
+    },
+  },
 })

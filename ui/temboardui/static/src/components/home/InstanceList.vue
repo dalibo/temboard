@@ -2,7 +2,6 @@
   // Global: clearError, showError
   import _ from 'lodash'
   import moment from 'moment'
-  import { ref } from 'vue/dist/vue.esm'
 
   import InstanceCard from './InstanceCard.vue'
 
