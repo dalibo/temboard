@@ -9,6 +9,7 @@
  * Requires `moment` and `loadash`.
  */
 import * as _ from 'lodash'
+import moment from 'moment'
 
 var units = ['y', 'M', 'w', 'd', 'h', 'm', 's'];
 function parse(text, roundUp, timezone) {
