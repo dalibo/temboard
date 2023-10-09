@@ -37,7 +37,11 @@ TEMBOARD_DATABASE=${TEMBOARD_DATABASE-temboard}
 TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-temboard}
 
 if ! "${psql[@]}" -c "SELECT 'SKIP' FROM pg_catalog.pg_user WHERE usename = 'temboard'" | grep -q SKIP ; then
-    "${psql[@]}" -awc "CREATE ROLE temboard LOGIN PASSWORD '${TEMBOARD_PASSWORD}';"
+	"${psql[@]}" -aw <<-EOF
+	CREATE ROLE temboard LOGIN PASSWORD '${TEMBOARD_PASSWORD}';
+	-- Drop public from search_path.
+	ALTER ROLE temboard SET search_path = '\$user';
+	EOF
 fi
 
 if ! "${psql[@]}" -c "SELECT 'SKIP' FROM pg_catalog.pg_database WHERE datname = '$TEMBOARD_DATABASE'" | grep -q SKIP ; then

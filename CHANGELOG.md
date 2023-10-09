@@ -13,6 +13,7 @@ Ensure you use consistent title format.
 
 - Display number of instances and users in about page.
 - Fix plugin list according to agent configuration in settings instance update.
+- Drop public from temboard role.
 
 
 ## 8.1
