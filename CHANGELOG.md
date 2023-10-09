@@ -12,6 +12,7 @@ Ensure you use consistent title format.
 **UI changes**
 
 - Display number of instances and users in about page.
+- Fix plugin list according to agent configuration in settings instance update.
 
 
 ## 8.1

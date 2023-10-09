@@ -117,9 +117,9 @@
         $(this.$el).modal('show');
 
         this.fetch_current_data().done(() => {
-          this.$nextTick(this.$refs.form.setup_multiselects);
           // Discover may fail if agent is down.
           this.discover_agent().done(() => {
+            this.$nextTick(this.$refs.form.setup_multiselects);
             this.waiting = false;
           });
         });
