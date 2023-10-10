@@ -10,7 +10,7 @@
 # with pg_rewind.
 #
 # There is nothing like automatic failover. You can trigger manually a
-# switchover with dev/switchover.sh script which will promote the secondary.
+# switchover with dev/bin/switchover.sh script which will promote the secondary.
 #
 # If a postgres is down, restart it manually with docker-compose.
 # If you need to reset the setup, trash with make clean.

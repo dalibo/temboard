@@ -27,7 +27,7 @@ services:
   # First instance.
   postgres0:
     image: &postgres_image postgres:16rc1-alpine
-    # Exposed port is important for dev/switchover.sh
+    # Exposed port is important for dev/bin/switchover.sh
     ports: [15432:5432]
     environment: &postgres_env
       POSTGRES_INITDB_ARGS: "--data-checksums"
@@ -91,7 +91,7 @@ services:
     environment:
       <<: *postgres_env
       PEER_HOST: postgres0
-    # Exposed port is important for dev/switchover.sh
+    # Exposed port is important for dev/bin/switchover.sh
     ports: [25432:5432]
     volumes:
     - data1:/var/lib/postgresql/data

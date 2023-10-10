@@ -32,6 +32,7 @@ overview.
 - `agent/` - Bare Python project for temBoard agent.
     - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
 - `dev/` - Development scripts and data.
+  - `dev/bin/` - Development scripts.
 - `docker/` - Quickstart Docker Compose file.
 - `tests/` - Functional integration tests.
 

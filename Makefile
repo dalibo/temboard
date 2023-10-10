@@ -25,7 +25,7 @@ develop-%:: .env
 	@echo
 	@echo
 
-.env: dev/mkenv
+.env: dev/bin/mkenv
 	$^ > $@
 
 repository:  #: Initialize temBoard UI database.
@@ -110,7 +110,7 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 tests:  #: Execute all tests.
 	cd agent/; flake8
 	cd ui/; flake8
-	flake8 tests/ dev/importlog.py
+	flake8 tests/ dev/bin/importlog.py
 	pytest --exitfirst agent/tests/unit/
 	pytest --exitfirst ui/tests/unit/
 	pytest --exitfirst tests/
@@ -119,7 +119,7 @@ clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
 prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
-dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
+dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
 	$^ > $@
 
 VERSION=$(shell cd ui; python3 setup.py --version)
