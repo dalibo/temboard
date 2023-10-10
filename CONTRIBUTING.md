@@ -190,6 +190,24 @@ Type "help" for help.
 postgres=#
 ```
 
+## Connect to the repository database
+
+The own Postgres instance of the temBoard UI is exposed on the 5432 port of
+the host machine so that it can be accessed with:
+
+``` console
+$ PGPASSWORD=temboard psql -h localhost -U temboard temboard
+```
+
+Alternatively, it is also reachable with:
+
+``` console
+$ docker-compose exec repository psql -U postgres temboard
+psql (16.0)
+Type "help" for help.
+
+temboard=#
+```
 
 ## Choosing PostgreSQL Version
 
