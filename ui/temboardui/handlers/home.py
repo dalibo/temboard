@@ -1,6 +1,5 @@
 from ..application import (
     get_instance_groups_by_role,
-    get_instance_list,
 )
 from ..model.orm import Instances, Roles
 from ..version import inspect_versions
