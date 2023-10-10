@@ -219,6 +219,10 @@ class Roles(Model):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
+    @classmethod
+    def count(cls):
+        return text(QUERIES['users-count']).columns(count=Integer)
+
 
 class StubRole(object):
     # Fake object for roles not in database.
@@ -278,6 +282,10 @@ class Instances(Model):
             .filter(cls.agent_address == str(agent_address))
             .filter(cls.agent_port == int(agent_port))
         )
+
+    @classmethod
+    def count(cls):
+        return text(QUERIES['instances-count']).columns(count=Integer)
 
     # Compatibility from new JSONb discover to old column discover.
     @property
