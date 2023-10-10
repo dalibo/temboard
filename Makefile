@@ -29,7 +29,7 @@ develop-%:: .env
 
 repository:  #: Initialize temBoard UI database.
 	docker-compose up -d repository
-	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGHOST=0.0.0.0 psql -t -c 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
+	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGDATABASE=postgres PGHOST=0.0.0.0 psql -Xtc 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=$${DEV-1} ui/share/create_repository.sh
 
 recreate-repository:  #: Reinitialize temBoard UI database.
