@@ -26,7 +26,7 @@ def home(request):
 @app.route("/about")
 def metadata(request):
     versions_info = inspect_versions()
-    instances = request.db_session.execute(Instances.count()).scalar()
+    instances = request.db_session.scalar(Instances.count())
     roles = request.db_session.scalar(Roles.count())
     infos = {
         "Browser": request.headers.get('User-Agent', 'Unknown'),
