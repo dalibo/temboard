@@ -279,6 +279,10 @@ class Instances(Model):
             .filter(cls.agent_port == int(agent_port))
         )
 
+    @classmethod
+    def count(cls):
+        return text(QUERIES['instances-count']).columns(count=Integer)
+
     # Compatibility from new JSONb discover to old column discover.
     @property
     def cpu(self):
