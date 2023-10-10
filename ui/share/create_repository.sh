@@ -26,7 +26,7 @@ SYSUSER="${SYSUSER-temboard}"
 
 export PGUSER=${PGUSER-postgres}
 export PGHOST=${PGHOST-/var/run/postgresql}
-psql=(psql -d "$PGUSER")
+psql=(psql -Xd "$PGUSER")
 
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to PGUSER.
@@ -37,7 +37,11 @@ TEMBOARD_DATABASE=${TEMBOARD_DATABASE-temboard}
 TEMBOARD_PASSWORD=${TEMBOARD_PASSWORD-temboard}
 
 if ! "${psql[@]}" -c "SELECT 'SKIP' FROM pg_catalog.pg_user WHERE usename = 'temboard'" | grep -q SKIP ; then
-    "${psql[@]}" -awc "CREATE ROLE temboard LOGIN PASSWORD '${TEMBOARD_PASSWORD}';"
+	"${psql[@]}" -aw <<-EOF
+	CREATE ROLE temboard LOGIN PASSWORD '${TEMBOARD_PASSWORD}';
+	-- Drop public from search_path.
+	ALTER ROLE temboard SET search_path = '\$user';
+	EOF
 fi
 
 if ! "${psql[@]}" -c "SELECT 'SKIP' FROM pg_catalog.pg_database WHERE datname = '$TEMBOARD_DATABASE'" | grep -q SKIP ; then
@@ -64,7 +68,7 @@ migratedb=(
 	migratedb
 )
 
-psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off')
+psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off' --no-psqlrc)
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to temboard.
 	psql=("${runas[@]}" "${psql[@]}")
