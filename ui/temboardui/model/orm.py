@@ -219,6 +219,10 @@ class Roles(Model):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
+    @classmethod
+    def count(cls):
+        return text(QUERIES['users-count']).columns(count=Integer)
+
 
 class StubRole(object):
     # Fake object for roles not in database.

@@ -1,9 +1,8 @@
 from ..application import (
     get_instance_groups_by_role,
     get_instance_list,
-    get_role_list,
 )
-from ..model.orm import Instances
+from ..model.orm import Instances, Roles
 from ..version import inspect_versions
 from ..web.tornado import (
     app,
@@ -29,7 +28,7 @@ def home(request):
 def metadata(request):
     versions_info = inspect_versions()
     instances = request.db_session.execute(Instances.count()).scalar()
-    roles = get_role_list(request.db_session)
+    roles = request.db_session.execute(Roles.count()).scalar()
     infos = {
         "Browser": request.headers.get('User-Agent', 'Unknown'),
         "Version": "%(temboard)s (%(temboardbin)s)" % versions_info,
@@ -42,7 +41,7 @@ def metadata(request):
         "psycopg2": versions_info['psycopg2'],
         "SQLAlchemy": versions_info['sqlalchemy'],
         "Instances": instances,
-        "Users": len(roles),
+        "Users": roles,
     }
     temboard_version = versions_info['temboard']
 
