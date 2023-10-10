@@ -137,9 +137,12 @@ def json_instance(request):
         instance.discover = data['discover']
         instance.discover_etag = data['discover_etag']
         instance.discover_date = utcnow()
-        instance.hostname = data['discover']['system']['fqdn']
         instance.agent_key = data['agent_key']
-        instance.pg_port = data['discover']['postgres']['port']
+        try:
+            instance.hostname = data['discover']['system']['fqdn']
+            instance.pg_port = data['discover']['postgres']['port']
+        except TypeError as e:
+            logger.debug("No discover for instance: %s", e)
         instance.comment = data['comment']
         instance.notify = data['notify']
         request.db_session.flush()

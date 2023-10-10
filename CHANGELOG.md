@@ -15,6 +15,7 @@ Ensure you use consistent title format.
 - Fix plugin list according to agent configuration in settings instance update.
 - Drop public from temboard role.
 - Ignore psqlrc in `create_repository.sh`.
+- Allow to edit unavailable instance.
 
 
 ## 8.1
