@@ -26,7 +26,7 @@ SYSUSER="${SYSUSER-temboard}"
 
 export PGUSER=${PGUSER-postgres}
 export PGHOST=${PGHOST-/var/run/postgresql}
-psql=(psql -d "$PGUSER")
+psql=(psql -Xd "$PGUSER")
 
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to PGUSER.
@@ -68,7 +68,7 @@ migratedb=(
 	migratedb
 )
 
-psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off')
+psql=(psql --set 'ON_ERROR_STOP=on' --pset 'pager=off' --no-psqlrc)
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to temboard.
 	psql=("${runas[@]}" "${psql[@]}")
