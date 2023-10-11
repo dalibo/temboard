@@ -12,7 +12,7 @@ apropos:  #: Show dev Makefile help.
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
-	$(MAKE) install-$*
+	$(MAKE) -j 2 install-$* dev/bin/prometheus
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
