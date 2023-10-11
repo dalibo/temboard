@@ -8,6 +8,8 @@ Vue.use(VueRouter)
 import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 
+import daterangepicker from 'bootstrap-daterangepicker';
+
 var dataRequest;
 var chartRequest;
 
