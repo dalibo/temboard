@@ -24,6 +24,7 @@ from builtins import str
 from datetime import datetime, timedelta
 import logging
 import os
+import shutil
 try:
     from itertools import zip_longest
 except ImportError:
@@ -40,7 +41,10 @@ from psycopg2.extensions import AsIs
 
 from ...core import refresh_discover
 from ...model import Session
-from temboardui.toolkit import taskmanager
+from ...toolkit import (
+    taskmanager,
+    validators as v,
+)
 from temboardui.application import (
     get_instance,
     get_roles_by_instance,
@@ -83,8 +87,13 @@ workers = taskmanager.WorkerSet()
 
 class MonitoringPlugin(object):
     s = 'monitoring'
+    try:
+        prometheus = shutil.which("prometheus")
+    except AttributeError:  # Python 2.7
+        prometheus = None
     options_specs = [
         OptionSpec(s, 'collect_max_duration', default=30, validator=int),
+        OptionSpec(s, 'prometheus', default=prometheus, validator=v.file_),
     ]
 
     def __init__(self, app):
