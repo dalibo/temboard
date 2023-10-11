@@ -95,7 +95,14 @@ class TemplateRenderer(object):
         data = dict(self.GLOBAL_NAMESPACE, **data)
         return Response(
             body=self.loader.load(template).generate(**data),
-            headers={'Content-Type': 'text/html; charset=UTF-8'},
+            headers={
+                'Content-Type': 'text/html; charset=UTF-8',
+                'Content-Security-Policy': (
+                    # unsafe-eval is for jquery. unsafe-inline because we have
+                    # script tags in templates.
+                    "default-src 'self' 'unsafe-eval' 'unsafe-inline'"
+                ),
+            },
         )
 
 

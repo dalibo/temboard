@@ -16,6 +16,7 @@ Ensure you use consistent title format.
 - Drop public from temboard role.
 - Ignore psqlrc in `create_repository.sh`.
 - Allow to edit unavailable instance.
+- Configure Content-Security-Policy header.
 
 
 ## 8.1

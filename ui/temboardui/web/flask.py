@@ -40,6 +40,14 @@ def create_app(temboard_app):
     UserMiddleware(app)
     AuthMiddleware(app)
     app.errorhandler(Exception)(json_error_handler)
+
+    @app.after_request
+    def add_csp(resp):
+        resp.headers['Content-Security-Policy'] = (
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        )
+        return resp
+
     ViteJSExtension(app)
     # finalize_app() must be called before serving, to enable configured
     # blueprints.
