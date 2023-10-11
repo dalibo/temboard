@@ -59,10 +59,21 @@ install-2.7: venv-2.7
 	dev/venv-py2.7/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e ui/
 	dev/venv-py2.7/bin/temboard --version  # pen test
 
+# LTS
+PROMETHEUS_VERSION=2.45.1
+dev/downloads/prometheus-%.linux-amd64.tar.gz:
+	mkdir -p $(dir $@)
+	curl --fail --silent -L "https://github.com/prometheus/prometheus/releases/download/v$*/$(notdir $@)" --output $@
+
+dev/bin/prometheus dev/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+	tar --extract --file "$<" --directory "$(dir $@)" --strip-component=1 --touch "prometheus-$(PROMETHEUS_VERSION).linux-amd64/$(notdir $@)"
+	"$@" --version  # Smoketest
+
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -vf dev/bin/prometheus dev/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static

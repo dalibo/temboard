@@ -3,6 +3,10 @@
 *.ipynb_checkpoints
 *.pyc
 
+dev/downloads/
+dev/bin/prometheus
+dev/bin/promtool
+
 # Buildtime files
 build/
 dist/
