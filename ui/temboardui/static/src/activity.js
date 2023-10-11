@@ -158,9 +158,8 @@ var table = el.DataTable({
 
 function load() {
   var lastLoad = new Date();
-  var url_end = activityMode != 'running' ?  '/' + activityMode : '';
   request = $.ajax({
-    url: '/proxy/'+agent_address+'/'+agent_port+'/activity'+url_end,
+    url: '/proxy/'+agent_address+'/'+agent_port+'/activity',
     type: 'GET',
     beforeSend: function(xhr) {
       $('#loadingIndicator').removeClass('invisible');
