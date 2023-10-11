@@ -78,6 +78,9 @@ clean:  #: Trash venv and containers.
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
 
+distclean: clean  #: Clean also dev env caches.
+	rm -rvf dev/downloads/
+
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
 COMPOSE_PROJECT=$(notdir $(CURDIR))
