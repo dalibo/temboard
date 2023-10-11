@@ -24,7 +24,7 @@ from .cli.app import app
 from .model import QUERIES
 
 
-def main():
+def main(*a, **kw):
     flask = create_app(app)
     flask.app_context().push()
 
@@ -35,6 +35,8 @@ def main():
     # Load sub commands.
     __import__(__package__ + '.cli.apikey')
     __import__(__package__ + '.cli.generate_key')
+    # Don't import prometheus command yet.
+    # Use python -m temboardui.cli.prometheus until 9.0.
     __import__(__package__ + '.cli.migratedb')
     __import__(__package__ + '.cli.query_agent')
     __import__(__package__ + '.cli.register_instance')
@@ -45,7 +47,7 @@ def main():
 
     QUERIES.load()
 
-    return app()
+    return app(*a, **kw)
 
 
 if '__main__' == __name__:
