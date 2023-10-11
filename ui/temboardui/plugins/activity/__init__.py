@@ -40,7 +40,7 @@ def activity(request, mode):
     )
 
 
-@blueprint.instance_proxy(r'/activity(?:/blocking|/waiting)?')
+@blueprint.instance_proxy(r'/activity')
 def activity_proxy(request):
     request.instance.check_active_plugin('activity')
     return dict(
