@@ -1,65 +1,69 @@
 /* global Vue */
-$(function() {
+$(function () {
   "use strict";
 
   new Vue({
-    el: '#app',
+    el: "#app",
     data: {
       instance: {},
       databases: [],
-      sortCriteria: 'total_bytes',
+      sortCriteria: "total_bytes",
       sortCriterias: {
-        name: ['Name'],
-        total_bytes: ['Database Size', 'desc'],
-        tables_bytes: ['Tables Size', 'desc'],
-        tables_bloat_ratio: ['Tables Bloat', 'desc'],
-        indexes_bytes: ['Indexes Size', 'desc'],
-        indexes_bloat_ratio: ['Indexes Bloat', 'desc'],
-        toast_bytes: ['Toast Size', 'desc']
+        name: ["Name"],
+        total_bytes: ["Database Size", "desc"],
+        tables_bytes: ["Tables Size", "desc"],
+        tables_bloat_ratio: ["Tables Bloat", "desc"],
+        indexes_bytes: ["Indexes Size", "desc"],
+        indexes_bloat_ratio: ["Indexes Bloat", "desc"],
+        toast_bytes: ["Toast Size", "desc"],
       },
-      loading: true
+      loading: true,
     },
-    created: function() {
+    created: function () {
       this.fetchData();
     },
     computed: {
-      sortOrder: function() {
+      sortOrder: function () {
         return this.sortCriterias[this.sortCriteria][1];
       },
-      databasesSorted: function() {
+      databasesSorted: function () {
         return _.orderBy(this.databases, this.sortCriteria, this.sortOrder);
-      }
+      },
     },
     methods: {
       fetchData: getInstanceData,
-      sortBy: sortBy
-    }
+      sortBy: sortBy,
+    },
   });
 
   function getInstanceData() {
     $.ajax({
       url: apiUrl,
       contentType: "application/json",
-      success: (function(data) {
+      success: function (data) {
         this.instance = data.instance;
         this.databases = data.databases;
 
-        this.databases.forEach(function(database) {
+        this.databases.forEach(function (database) {
           database.tables_bloat_ratio = 0;
           if (database.tables_bytes) {
-            database.tables_bloat_ratio = parseFloat((100 * (database.tables_bloat_bytes / database.tables_bytes)).toFixed(1));
+            database.tables_bloat_ratio = parseFloat(
+              (100 * (database.tables_bloat_bytes / database.tables_bytes)).toFixed(1),
+            );
           }
           database.indexes_bloat_ratio = 0;
           if (database.indexes_bytes) {
-            database.indexes_bloat_ratio = parseFloat((100 * (database.indexes_bloat_bytes / database.indexes_bytes)).toFixed(1));
+            database.indexes_bloat_ratio = parseFloat(
+              (100 * (database.indexes_bloat_bytes / database.indexes_bytes)).toFixed(1),
+            );
           }
         });
         window.setTimeout(postCreated.bind(this), 1);
-      }).bind(this),
+      }.bind(this),
       error: onError,
-      complete: function() {
+      complete: function () {
         this.loading = false;
-      }.bind(this)
+      }.bind(this),
     });
   }
 
@@ -69,6 +73,6 @@ $(function() {
 
   function sortBy(criteria, order) {
     this.sortCriteria = criteria;
-    this.sortOrder = order || 'asc';
+    this.sortOrder = order || "asc";
   }
 });

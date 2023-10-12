@@ -1,51 +1,43 @@
 /* global apiUrl, checkName, Vue, VueRouter, Dygraph, moment, dateMath */
-$(function() {
-
+$(function () {
   var v = new Vue({
-    el: '#check-container',
+    el: "#check-container",
     router: new VueRouter(),
     data: {
       keys: [],
       from: null,
-      to: null
+      to: null,
     },
     computed: {
-      fromTo: function() {
-        return '' + this.from + this.to;
+      fromTo: function () {
+        return "" + this.from + this.to;
       },
-      sortedKeys: function() {
-        return this.keys.sort(function(a, b) {
+      sortedKeys: function () {
+        return this.keys.sort(function (a, b) {
           return a.key > b.key;
         });
-      }
-    }
+      },
+    },
   });
 
-  Vue.component('monitoring-chart', {
-    props: [
-      'check',
-      'key_',
-      'valueType',
-      'foo',
-      'from',
-      'to'
-    ],
+  Vue.component("monitoring-chart", {
+    props: ["check", "key_", "valueType", "foo", "from", "to"],
     mounted: createOrUpdateChart,
-    data: function() {
+    data: function () {
       return {
-        chart: null
+        chart: null,
       };
     },
     watch: {
       // only one watcher for from + to
-      fromTo: createOrUpdateChart
+      fromTo: createOrUpdateChart,
     },
     computed: {
-      fromTo: function() {
-        return '' + this.from + this.to;
-      }
+      fromTo: function () {
+        return "" + this.from + this.to;
+      },
     },
-    template: '<div class="monitoring-chart"></div>'
+    template: '<div class="monitoring-chart"></div>',
   });
 
   function createOrUpdateChart() {
@@ -55,16 +47,13 @@ $(function() {
     var defaultOptions = {
       axisLabelFontSize: 10,
       yLabelWidth: 14,
-      ylabel: this.valueType == 'percent' ? '%' : '',
+      ylabel: this.valueType == "percent" ? "%" : "",
       includeZero: true,
-      legend: 'always',
+      legend: "always",
       labelsDiv: "legend" + this.key_,
-      gridLineColor: 'rgba(128, 128, 128, 0.3)',
-      dateWindow: [
-        new Date(startDate).getTime(),
-        new Date(endDate).getTime()
-      ],
-      xValueParser: function(x) {
+      gridLineColor: "rgba(128, 128, 128, 0.3)",
+      dateWindow: [new Date(startDate).getTime(), new Date(endDate).getTime()],
+      xValueParser: function (x) {
         var m = moment(x);
         return m.toDate().getTime();
       },
@@ -102,60 +91,58 @@ $(function() {
             // don't do the same since zoom is animated
             // zoomCallback will do the job
           }
-        }
-      }
+        },
+      },
     };
 
     switch (this.valueType) {
-    case 'percent':
-      defaultOptions.valueRange = [0, 105];
-      break;
-    case 'memory':
-      defaultOptions.labelsKMG2 = true;
-      break;
+      case "percent":
+        defaultOptions.valueRange = [0, 105];
+        break;
+      case "memory":
+        defaultOptions.labelsKMG2 = true;
+        break;
     }
 
     var url = apiUrl + "/../monitoring/data/" + this.check + "?";
     url += $.param({
       key: this.key_,
       start: timestampToIsoDate(startDate),
-      end: timestampToIsoDate(endDate)
+      end: timestampToIsoDate(endDate),
     });
 
     var chart = this.chart;
     if (!this.chart) {
-      chart = new Dygraph(
-        document.getElementById("chart" + this.key_),
-        url,
-        defaultOptions
-      );
+      chart = new Dygraph(document.getElementById("chart" + this.key_), url, defaultOptions);
     } else {
       chart.updateOptions({
         dateWindow: [startDate, endDate],
-        file: url
+        file: url,
       });
     }
 
     var self = this;
-    chart.ready(function() {
+    chart.ready(function () {
       // Wait for both state changes and check changes to load
       // before drawing alerts and thresholds
-      $.when(loadStateChanges(self.check, self.key_, startDate, endDate),
-             loadCheckChanges(self.check, startDate, endDate))
-        .done(function(states, checks) {
+      $.when(
+        loadStateChanges(self.check, self.key_, startDate, endDate),
+        loadCheckChanges(self.check, startDate, endDate),
+      )
+        .done(function (states, checks) {
           var statesData = states[0].reverse();
           drawAlerts(chart, statesData);
 
           var checksData = checks[0].reverse();
 
           chart.updateOptions({
-            underlayCallback: function(canvas, area) {
+            underlayCallback: function (canvas, area) {
               drawThreshold(chart, checksData, canvas);
               drawAlertsBg(chart, statesData, canvas, area);
-            }
+            },
           });
         })
-        .fail(function() {
+        .fail(function () {
           console.error("Something went wrong");
         });
     });
@@ -163,12 +150,12 @@ $(function() {
   }
 
   function drawThreshold(chart, data, canvas) {
-    data.forEach(function(alert, index) {
+    data.forEach(function (alert, index) {
       if (index == data.length - 1) {
         return;
       }
 
-      ['warning', 'critical'].forEach(function(level) {
+      ["warning", "critical"].forEach(function (level) {
         var y = alert[level];
         var left = chart.toDomCoords(new Date(alert.datetime), y);
         var right = chart.toDomCoords(new Date(data[index + 1].datetime), y);
@@ -187,51 +174,40 @@ $(function() {
   }
 
   function drawAlerts(chart, data) {
-    var annotations = data.map(function(alert) {
+    var annotations = data.map(function (alert) {
       var x = getClosestX(chart, alert.datetime);
-      var text = [
-        '<span class="badge badge-',
-        alert.state.toLowerCase(),
-        '">',
-        alert.state,
-        '</span><br>'
-      ];
-      if (alert.state == 'WARNING' || alert.state == 'CRITICAL') {
-        text = text.concat([
-          alert.value,
-          ' > ',
-          alert[alert.state.toLowerCase()],
-          '<br>'
-        ]);
+      var text = ['<span class="badge badge-', alert.state.toLowerCase(), '">', alert.state, "</span><br>"];
+      if (alert.state == "WARNING" || alert.state == "CRITICAL") {
+        text = text.concat([alert.value, " > ", alert[alert.state.toLowerCase()], "<br>"]);
       }
       text.push(alert.datetime);
       return {
         series: chart.getLabels()[1],
         x: x,
-        shortText: '♥',
-        cssClass: 'alert-' + alert.state.toLowerCase(),
-        text: text.join(''),
+        shortText: "♥",
+        cssClass: "alert-" + alert.state.toLowerCase(),
+        text: text.join(""),
         tickColor: bgColors[alert.state.toLowerCase()],
-        attachAtBottom: true
+        attachAtBottom: true,
       };
     });
     chart.setAnnotations(annotations);
-    window.setTimeout(function() {
-      $('.dygraph-annotation').each(function() {
-        $(this).attr('data-content', $(this).attr('title'));
-        $(this).attr('title', '');
+    window.setTimeout(function () {
+      $(".dygraph-annotation").each(function () {
+        $(this).attr("data-content", $(this).attr("title"));
+        $(this).attr("title", "");
       });
-      $('.dygraph-annotation').popover({
-        trigger: 'hover',
-        placement: 'top',
-        html: true
+      $(".dygraph-annotation").popover({
+        trigger: "hover",
+        placement: "top",
+        html: true,
       });
     }, 1);
   }
 
   function drawAlertsBg(chart, data, canvas, area) {
-    data.forEach(function(alert, index) {
-      if (alert.state == 'OK') {
+    data.forEach(function (alert, index) {
+      if (alert.state == "OK") {
         return;
       }
 
@@ -267,24 +243,24 @@ $(function() {
     var params = {
       start: timestampToIsoDate(from),
       end: timestampToIsoDate(to),
-      noerror: 1
+      noerror: 1,
     };
-    url += '?' + $.param(params);
-    return $.ajax({url: url});
+    url += "?" + $.param(params);
+    return $.ajax({ url: url });
   }
 
   var colors = {
-    'ok': 'green',
-    'warning': 'orange',
-    'critical': 'red',
-    'undef': '#ccc'
+    ok: "green",
+    warning: "orange",
+    critical: "red",
+    undef: "#ccc",
   };
 
   var bgColors = {
-    'ok': 'green',
-    'warning': 'rgba(255, 120, 0, .2)',
-    'critical': 'rgba(255, 0, 0, .2)',
-    'undef': 'rgba(192, 192, 192, .2)'
+    ok: "green",
+    warning: "rgba(255, 120, 0, .2)",
+    critical: "rgba(255, 0, 0, .2)",
+    undef: "rgba(192, 192, 192, .2)",
   };
 
   /**
@@ -303,10 +279,10 @@ $(function() {
       key: key,
       start: timestampToIsoDate(from),
       end: timestampToIsoDate(to),
-      noerror: 1
+      noerror: 1,
     };
-    url += '?' + $.param(params);
-    return $.ajax({url: url});
+    url += "?" + $.param(params);
+    return $.ajax({ url: url });
   }
 
   // Find the corresponding x in already existing data
@@ -340,11 +316,11 @@ $(function() {
     return ndate.toISOString();
   }
 
-  $('#submitFormUpdateCheck').click(function() {
-    $('#updateForm').submit();
+  $("#submitFormUpdateCheck").click(function () {
+    $("#updateForm").submit();
   });
 
-  $('#updateForm').submit(function(event) {
+  $("#updateForm").submit(function (event) {
     event.preventDefault();
     updateCheck();
   });
@@ -352,38 +328,48 @@ $(function() {
   function updateCheck() {
     $.ajax({
       url: apiUrl + "/checks.json",
-      method: 'post',
+      method: "post",
       dataType: "json",
       beforeSend: showWaiter,
       data: JSON.stringify({
-        checks: [{
-          name: checkName,
-          description: $('#descriptionInput').val(),
-          warning: parseFloat($('#warningThresholdInput').val()),
-          critical: parseFloat($('#criticalThresholdInput').val()),
-          enabled: $('#enabledInput').is(':checked')
-        }]
+        checks: [
+          {
+            name: checkName,
+            description: $("#descriptionInput").val(),
+            warning: parseFloat($("#warningThresholdInput").val()),
+            critical: parseFloat($("#criticalThresholdInput").val()),
+            enabled: $("#enabledInput").is(":checked"),
+          },
+        ],
+      }),
+    })
+      .success(function () {
+        $("#submitFormUpdateCheck").attr("disabled", true);
+        $("#modalInfo").html(
+          '<div class="alert alert-success" role="alert">SUCESS: Will be taken into account shortly (next check)</div>',
+        );
+        hideWaiter();
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 3000);
       })
-    }).success(function() {
-      $('#submitFormUpdateCheck').attr('disabled', true);
-      $('#modalInfo').html('<div class="alert alert-success" role="alert">SUCESS: Will be taken into account shortly (next check)</div>');
-      hideWaiter();
-      window.setTimeout(function() {
-        window.location.reload();
-      }, 3000);
-    }).error(function(xhr) {
-      hideWaiter();
-      $('#modalInfo').html('<div class="alert alert-danger" role="alert">ERROR: '+escapeHtml(JSON.parse(xhr.responseText).error)+'</div>');
-    });
+      .error(function (xhr) {
+        hideWaiter();
+        $("#modalInfo").html(
+          '<div class="alert alert-danger" role="alert">ERROR: ' +
+            escapeHtml(JSON.parse(xhr.responseText).error) +
+            "</div>",
+        );
+      });
   }
 
   var entityMap = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
+    '"': "&quot;",
+    "'": "&#39;",
+    "/": "&#x2F;",
   };
 
   function escapeHtml(string) {
@@ -393,25 +379,24 @@ $(function() {
   }
 
   function showWaiter() {
-    $('#updateModal .loader').removeClass('d-none');
+    $("#updateModal .loader").removeClass("d-none");
   }
 
   function hideWaiter() {
-    $('#updateModal .loader').addClass('d-none');
+    $("#updateModal .loader").addClass("d-none");
   }
 
   function getHashParams() {
-
     var hashParams = {};
     var e;
-    var a = /\+/g;  // Regex for replacing addition symbol with a space
+    var a = /\+/g; // Regex for replacing addition symbol with a space
     var r = /([^&;=]+)=?([^&;]*)/g;
     var d = function (s) {
       return decodeURIComponent(s.replace(a, " "));
     };
     var q = window.location.hash.substring(1);
 
-    while (e = r.exec(q)) {
+    while ((e = r.exec(q))) {
       hashParams[d(e[1])] = d(e[2]);
     }
 
@@ -423,12 +408,14 @@ $(function() {
   }
 
   // remove any previous popover on annotation
-  $('.dygraph-annotation').popover('dispose');
+  $(".dygraph-annotation").popover("dispose");
   $.ajax({
-    url: apiUrl + "/states/" + checkName + ".json"
-  }).success(function(data) {
-    v.keys = data;
-  }).error(function(error) {
-    console.error(error);
-  });
+    url: apiUrl + "/states/" + checkName + ".json",
+  })
+    .success(function (data) {
+      v.keys = data;
+    })
+    .error(function (error) {
+      console.error(error);
+    });
 });

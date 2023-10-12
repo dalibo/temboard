@@ -1,8 +1,8 @@
 $primary: #3c424c;
 $success: #1d9d74;
 $undef: #ccc;
-$cat1: #78B8FA;
-$cat2: #FA9E78;
+$cat1: #78b8fa;
+$cat2: #fa9e78;
 $navbar-inverse-bg: $primary;
 $link-color: lighten(saturate($primary, 15%), 15%);
 
@@ -18,7 +18,7 @@ $grid-breakpoints: (
   md: 768px,
   lg: 992px,
   xl: 1200px,
-  xxl: 1500px
+  xxl: 1500px,
 ) !default;
 
 $red: #dc3545 !default;

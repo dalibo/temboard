@@ -1,5 +1,5 @@
 /* global Vue, moment */
-$(function() {
+$(function () {
   "use strict";
 
   function html_error(code, error) {
@@ -16,70 +16,70 @@ $(function() {
    * updateDashboard() callback.
    */
   function refreshDashboard() {
-    var start_time = $('#pg_start_time time').attr("datetime");
-    $('#pg_start_time time').text((moment(start_time).fromNow()));
-    $('#pg_start_time time').attr("title", (moment(start_time).format("LLLL")));
+    var start_time = $("#pg_start_time time").attr("datetime");
+    $("#pg_start_time time").text(moment(start_time).fromNow());
+    $("#pg_start_time time").attr("title", moment(start_time).format("LLLL"));
 
     $.ajax({
-      url: '/proxy/'+agent_address+'/'+agent_port+'/dashboard',
-      type: 'GET',
+      url: "/proxy/" + agent_address + "/" + agent_port + "/dashboard",
+      type: "GET",
       async: true,
       contentType: "application/json",
       success: function (data) {
-        $('#divError').html('');
+        $("#divError").html("");
         updateDashboard(data, true);
         updateTps([data]);
         updateLoadaverage([data]);
       },
-      error: function(xhr) {
+      error: function (xhr) {
         if (xhr.status == 401 || xhr.status == 302) {
           // force a reload of the page, should lead to the server login page
           location.href = location.href;
         }
         var code = xhr.status;
-        var error = 'Internal error.';
+        var error = "Internal error.";
         if (code > 0) {
           error = escapeHtml(JSON.parse(xhr.responseText).error);
         } else {
-          code = '';
+          code = "";
         }
-        $('#divError').html(html_error(code, error));
-      }
+        $("#divError").html(html_error(code, error));
+      },
     });
   }
 
   function updateDashboard(data) {
     /** Update time **/
-    $('#hostname').html(data['hostname']);
-    $('#os_version').html(data['os_version']);
-    $('#n_cpu').html(data['n_cpu']);
-    $('#memory').html(filesize(data['memory']['total'] * 1000));
-    $('#pg_version').html(data['pg_version'] || null);
-    var databases = data['databases'];
-    $('#size').html(databases ? databases.total_size : null);
-    $('#nb_db').html(databases ? databases.databases : null);
-    $('#pg_data').html(data['pg_data']);
-    $('#pg_port').html(data['pg_port']);
+    $("#hostname").html(data["hostname"]);
+    $("#os_version").html(data["os_version"]);
+    $("#n_cpu").html(data["n_cpu"]);
+    $("#memory").html(filesize(data["memory"]["total"] * 1000));
+    $("#pg_version").html(data["pg_version"] || null);
+    var databases = data["databases"];
+    $("#size").html(databases ? databases.total_size : null);
+    $("#nb_db").html(databases ? databases.databases : null);
+    $("#pg_data").html(data["pg_data"]);
+    $("#pg_port").html(data["pg_port"]);
 
     /** Update memory usage chart **/
-    memorychart.data.datasets[0].data[0] = data['memory']['active'];
-    memorychart.data.datasets[0].data[1] = data['memory']['cached'];
-    memorychart.data.datasets[0].data[2] = data['memory']['free'];
+    memorychart.data.datasets[0].data[0] = data["memory"]["active"];
+    memorychart.data.datasets[0].data[1] = data["memory"]["cached"];
+    memorychart.data.datasets[0].data[2] = data["memory"]["free"];
     memorychart.update();
     updateTotalMemory();
 
     /** Update CPU usage chart **/
-    cpuchart.data.datasets[0].data[0] = data['cpu']['iowait'];
-    cpuchart.data.datasets[0].data[1] = data['cpu']['steal'];
-    cpuchart.data.datasets[0].data[2] = data['cpu']['user'];
-    cpuchart.data.datasets[0].data[3] = data['cpu']['system'];
-    cpuchart.data.datasets[0].data[4] = data['cpu']['idle'];
+    cpuchart.data.datasets[0].data[0] = data["cpu"]["iowait"];
+    cpuchart.data.datasets[0].data[1] = data["cpu"]["steal"];
+    cpuchart.data.datasets[0].data[2] = data["cpu"]["user"];
+    cpuchart.data.datasets[0].data[3] = data["cpu"]["system"];
+    cpuchart.data.datasets[0].data[4] = data["cpu"]["idle"];
     cpuchart.update();
     updateTotalCpu();
 
     /** Hitratio chart **/
-    hitratiochart.data.datasets[0].data[0] = data['hitratio'];
-    hitratiochart.data.datasets[0].data[1] = (100 - data['hitratio']);
+    hitratiochart.data.datasets[0].data[0] = data["hitratio"];
+    hitratiochart.data.datasets[0].data[1] = 100 - data["hitratio"];
     hitratiochart.update();
     updateTotalHit();
 
@@ -87,7 +87,7 @@ $(function() {
     var active_backends = data.active_backends;
     var nb_active_backends = active_backends ? active_backends.nb : null;
     sessionschart.data.datasets[0].data[0] = nb_active_backends;
-    sessionschart.data.datasets[0].data[1] = data['max_connections'] - nb_active_backends;
+    sessionschart.data.datasets[0].data[1] = data["max_connections"] - nb_active_backends;
     sessionschart.update();
     updateTotalSessions();
   }
@@ -98,8 +98,10 @@ $(function() {
     var data = cpuchart.data.datasets[0].data.slice(0);
     // last element is "idle", don't take it into account
     data.pop();
-    var totalCpu = data.reduce(function(a, b) {return a + b;}, 0);
-    $('#total-cpu').html(parseInt(totalCpu) + ' %');
+    var totalCpu = data.reduce(function (a, b) {
+      return a + b;
+    }, 0);
+    $("#total-cpu").html(parseInt(totalCpu) + " %");
   }
 
   function updateTotalMemory() {
@@ -108,36 +110,38 @@ $(function() {
     var data = memorychart.data.datasets[0].data.slice(0);
     // last element is "Free", don't take it into account
     data.pop();
-    var totalMemory = data.reduce(function(a, b) {return a + b;}, 0);
-    $('#total-memory').html(parseInt(totalMemory) + ' %');
+    var totalMemory = data.reduce(function (a, b) {
+      return a + b;
+    }, 0);
+    $("#total-memory").html(parseInt(totalMemory) + " %");
   }
 
   function updateTotalHit() {
     var totalHit = hitratiochart.data.datasets[0].data[0];
-    $('#total-hit').html(totalHit ? totalHit + ' %' : 'N/A');
+    $("#total-hit").html(totalHit ? totalHit + " %" : "N/A");
   }
 
   function updateTotalSessions() {
     var data = sessionschart.data.datasets[0].data;
     var html = data[0];
     if (data[1]) {
-      html += ' / ' + (data[0] + data[1]);
+      html += " / " + (data[0] + data[1]);
     }
-    $('#total-sessions').html(html);
+    $("#total-sessions").html(html);
   }
 
   function updateTimeRange(chart) {
     // update date range
     var timeConfig = chart.options.scales.xAxes[0].time;
     var now = moment();
-    timeConfig.min = now.clone().subtract(timeRange, 's');
+    timeConfig.min = now.clone().subtract(timeRange, "s");
     timeConfig.max = now;
 
     // Remove old data
     var datasets = chart.data.datasets;
     for (var i = 0; i < datasets.length; i++) {
       var dataset = datasets[i];
-      dataset.data = dataset.data.filter(function(datum) {
+      dataset.data = dataset.data.filter(function (datum) {
         return datum.x > moment(chart.options.scales.xAxes[0].time.min).unix() * 1000;
       });
     }
@@ -152,10 +156,10 @@ $(function() {
     for (var i = 0; i < data.length; i++) {
       chart.data.datasets[0].data.push({
         x: data[i].timestamp * 1000,
-        y: data[i].loadaverage
+        y: data[i].loadaverage,
       });
     }
-    $('#loadaverage').html(data[data.length - 1]['loadaverage']);
+    $("#loadaverage").html(data[data.length - 1]["loadaverage"]);
     chart.update();
   }
 
@@ -181,12 +185,12 @@ $(function() {
       var datum = data[i];
       var databases = datum.databases;
       if (!databases) {
-        commitData.push({x: datum.timestamp * 1000, y: NaN});
-        rollbackData.push({x: datum.timestamp * 1000, y: NaN});
+        commitData.push({ x: datum.timestamp * 1000, y: NaN });
+        rollbackData.push({ x: datum.timestamp * 1000, y: NaN });
         lastDatabasesDatum = {
           total_commit: NaN,
           total_rollback: NaN,
-          timestamp: datum.timestamp
+          timestamp: datum.timestamp,
         };
       } else {
         var duration = databases.timestamp - lastDatabasesDatum.timestamp;
@@ -196,34 +200,34 @@ $(function() {
         var deltaCommit = computeDelta(databases.total_commit, lastDatabasesDatum.total_commit, duration);
         var deltaRollback = computeDelta(databases.total_rollback, lastDatabasesDatum.total_rollback, duration);
 
-        commitData.push({x: databases.timestamp * 1000, y: deltaCommit});
-        rollbackData.push({x: databases.timestamp * 1000, y: deltaRollback});
+        commitData.push({ x: databases.timestamp * 1000, y: deltaCommit });
+        rollbackData.push({ x: databases.timestamp * 1000, y: deltaRollback });
         lastDatabasesDatum = databases;
       }
     }
 
-    $('#tps_commit').html(commitData[commitData.length -1].y);
-    $('#tps_rollback').html(rollbackData[rollbackData.length - 1].y);
+    $("#tps_commit").html(commitData[commitData.length - 1].y);
+    $("#tps_rollback").html(rollbackData[rollbackData.length - 1].y);
     chart.update();
 
-    $('#postgres-stopped-msg').toggleClass('d-none', !!data[data.length - 1].databases);
+    $("#postgres-stopped-msg").toggleClass("d-none", !!data[data.length - 1].databases);
   }
 
   var alertsView = new Vue({
-    el: '#divAlerts',
+    el: "#divAlerts",
     data: {
       alerts: [],
       states: [],
-      moment: moment
+      moment: moment,
     },
     methods: {
-      getBorderColor: function(state) {
-        if (state != 'OK' && state != 'UNDEF') {
-          return 'border border-2 border-' + state.toLowerCase();
+      getBorderColor: function (state) {
+        if (state != "OK" && state != "UNDEF") {
+          return "border border-2 border-" + state.toLowerCase();
         }
-        return 'border border-light';
-      }
-    }
+        return "border border-light";
+      },
+    },
   });
 
   /**
@@ -231,110 +235,101 @@ $(function() {
    */
   function updateAlerts() {
     $.ajax({
-      url: '/server/'+agent_address+'/'+agent_port+'/alerting/alerts.json',
-    }).success(function(data) {
-      // remove any previous popover to avoid conflicts with
-      // recycled div elements
-      $('#divAlerts [data-toggle-popover]').popover('dispose');
-      alertsView.alerts = data;
-      window.setTimeout(function() {
-        $('#divAlerts [data-toggle-popover]').popover({
-          placement: 'top',
-          container: 'body',
-          boundary: 'window',
-          content: function() {
-            return $(this).find('.popover-content')[0].outerHTML.replace('d-none', '');
-          },
-          html: true
-        });
-      }, 1);
-    }).error(function(error) {
-      // FIXME handle error
-      console.error(error);
-    });
+      url: "/server/" + agent_address + "/" + agent_port + "/alerting/alerts.json",
+    })
+      .success(function (data) {
+        // remove any previous popover to avoid conflicts with
+        // recycled div elements
+        $("#divAlerts [data-toggle-popover]").popover("dispose");
+        alertsView.alerts = data;
+        window.setTimeout(function () {
+          $("#divAlerts [data-toggle-popover]").popover({
+            placement: "top",
+            container: "body",
+            boundary: "window",
+            content: function () {
+              return $(this).find(".popover-content")[0].outerHTML.replace("d-none", "");
+            },
+            html: true,
+          });
+        }, 1);
+      })
+      .error(function (error) {
+        // FIXME handle error
+        console.error(error);
+      });
 
     $.ajax({
-      url: '/server/'+agent_address+'/'+agent_port+'/alerting/checks.json',
-    }).success(function(data) {
-      alertsView.states = data;
-    }).error(function(error) {
-      // FIXME handle error
-      console.error(error);
-    });
-
+      url: "/server/" + agent_address + "/" + agent_port + "/alerting/checks.json",
+    })
+      .success(function (data) {
+        alertsView.states = data;
+      })
+      .error(function (error) {
+        // FIXME handle error
+        console.error(error);
+      });
   }
 
   var options = {
-    responsive : true,
+    responsive: true,
     maintainAspectRatio: false,
     legend: false,
     rotation: Math.PI,
-    circumference: Math.PI
+    circumference: Math.PI,
   };
 
-  var memorychart = new Chart(
-    $('#chart-memory').get(0).getContext('2d'),
-    {
-      type: 'doughnut',
-      data: {
-        labels: ["Active", "Cached", "Free"],
-        datasets: [
-          {
-            backgroundColor: ["#cc2936", "#29cc36","#eeeeee"]
-          }
-        ]
-      },
-      options: options
-    }
-  );
+  var memorychart = new Chart($("#chart-memory").get(0).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Active", "Cached", "Free"],
+      datasets: [
+        {
+          backgroundColor: ["#cc2936", "#29cc36", "#eeeeee"],
+        },
+      ],
+    },
+    options: options,
+  });
 
-  var cpuchart = new Chart(
-    $('#chart-cpu').get(0).getContext('2d'),
-    {
-      type: 'doughnut',
-      data: {
-        labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
-        datasets: [
-          {
-            backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"]
-          }
-        ]
-      },
-      options: options
-    }
-  );
+  var cpuchart = new Chart($("#chart-cpu").get(0).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["IO Wait", "Steal", "User", "System", "IDLE"],
+      datasets: [
+        {
+          backgroundColor: ["#cc2936", "#cbff00", "#29cc36", "#cbff00", "#eeeeee"],
+        },
+      ],
+    },
+    options: options,
+  });
 
-  var hitratiochart = new Chart(
-    $('#chart-hitratio').get(0).getContext('2d'),
-    {
-      type: 'doughnut',
-      data: {
-        labels: ["Hit", "Read"],
-        datasets: [
-          {
-            backgroundColor: ["#29cc36", "#cc2936"]
-          }
-        ]
-      },
-      options: options
-    }
-  );
+  var hitratiochart = new Chart($("#chart-hitratio").get(0).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Hit", "Read"],
+      datasets: [
+        {
+          backgroundColor: ["#29cc36", "#cc2936"],
+        },
+      ],
+    },
+    options: options,
+  });
 
-  var sessionschart = new Chart(
-    $('#chart-sessions').get(0).getContext('2d'),
-    {
-      type: 'doughnut',
-      data: {
-        labels: ["Active backends", "Free"],
-        datasets: [
-          {
-            backgroundColor: ["#29cc36", "#eeeeee"]
-          }
-        ]
-      },
-      options: options
-    }
-  );
+  var sessionschart = new Chart($("#chart-sessions").get(0).getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Active backends", "Free"],
+      datasets: [
+        {
+          backgroundColor: ["#29cc36", "#eeeeee"],
+        },
+      ],
+    },
+    options: options,
+  });
   updateTotalSessions();
 
   var now = moment();
@@ -345,115 +340,114 @@ $(function() {
     maintainAspectRatio: false,
     animation: false,
     legend: {
-      display: false
+      display: false,
     },
     scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        type: 'time',
-        time: {
-          min: now.clone().subtract(timeRange, 's'),
-          max: now,
-          displayFormats: {
-            second: 'h:mm a',
-            minute: 'h:mm a'
-          }
-        }
-      }]
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+      xAxes: [
+        {
+          type: "time",
+          time: {
+            min: now.clone().subtract(timeRange, "s"),
+            max: now,
+            displayFormats: {
+              second: "h:mm a",
+              minute: "h:mm a",
+            },
+          },
+        },
+      ],
     },
     elements: {
       point: {
         radius: 0,
-        hoverRadius: 0
+        hoverRadius: 0,
       },
       line: {
-        borderWidth: 1
-      }
+        borderWidth: 1,
+      },
     },
     tooltips: {
-      enabled: false
-    }
+      enabled: false,
+    },
   };
 
-  var tpschart = new Chart(
-    $('#chart-tps').get(0).getContext('2d'),
-    {
-      type: 'line',
-      data: {
-        datasets : [
-          {
-            label: "Commit",
-            backgroundColor: "rgba(0,188,18,0.2)",
-            borderColor: "rgba(0,188,18,1)"
-          },
-          {
-            label: "Rollback",
-            backgroundColor: "rgba(188,0,0,0.2)",
-            borderColor: "rgba(188,0,0,1)"
-          }
-        ]
-      },
-      options: lineChartsOptions
-    }
-  );
+  var tpschart = new Chart($("#chart-tps").get(0).getContext("2d"), {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          label: "Commit",
+          backgroundColor: "rgba(0,188,18,0.2)",
+          borderColor: "rgba(0,188,18,1)",
+        },
+        {
+          label: "Rollback",
+          backgroundColor: "rgba(188,0,0,0.2)",
+          borderColor: "rgba(188,0,0,1)",
+        },
+      ],
+    },
+    options: lineChartsOptions,
+  });
   updateTps(jdata_history);
 
-  var loadaveragechart = new Chart(
-    $('#chart-loadaverage').get(0).getContext('2d'),
-    {
-      type: 'line',
-      data: {
-        datasets : [
-          {
-            label: "Loadaverage",
-            backgroundColor: 'rgba(250, 164, 58, 0.2)',
-            borderColor: 'rgba(250, 164, 58, 1)', //'#FAA43A'
-          }
-        ]
-      },
-      options: lineChartsOptions
-    }
-  );
+  var loadaveragechart = new Chart($("#chart-loadaverage").get(0).getContext("2d"), {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          label: "Loadaverage",
+          backgroundColor: "rgba(250, 164, 58, 0.2)",
+          borderColor: "rgba(250, 164, 58, 1)", //'#FAA43A'
+        },
+      ],
+    },
+    options: lineChartsOptions,
+  });
   updateLoadaverage(jdata_history);
 
   var refreshInterval = config.scheduler_interval * 1000;
   window.setInterval(refreshDashboard, refreshInterval);
   refreshDashboard();
 
-  if ($('#divAlerts')) { // monitoring plugin enabled
+  if ($("#divAlerts")) {
+    // monitoring plugin enabled
     var alertRefreshInterval = 60 * 1000;
     window.setInterval(updateAlerts, alertRefreshInterval);
     updateAlerts();
   }
 
-  $('.fullscreen').on('click', function(e) {
+  $(".fullscreen").on("click", function (e) {
     e.preventDefault();
-    $(this).addClass('d-none');
-    const el = $(this).parents('.main')[0];
+    $(this).addClass("d-none");
+    const el = $(this).parents(".main")[0];
     fscreen.requestFullscreen(el);
   });
 
   fscreen.onfullscreenchange = function onFullScreenChange(event) {
     if (!fscreen.fullscreenElement) {
-      $('.fullscreen').removeClass('d-none');
+      $(".fullscreen").removeClass("d-none");
     }
-  }
+  };
 
   // hide fullscreen button if not supported
-  $('.fullscreen').toggleClass('d-none', !fscreen.fullscreenEnabled);
+  $(".fullscreen").toggleClass("d-none", !fscreen.fullscreenEnabled);
 });
 
 var entityMap = {
   "&": "&amp;",
   "<": "&lt;",
   ">": "&gt;",
-  '"': '&quot;',
-  "'": '&#39;',
-  "/": '&#x2F;'
+  '"': "&quot;",
+  "'": "&#39;",
+  "/": "&#x2F;",
 };
 
 function escapeHtml(string) {

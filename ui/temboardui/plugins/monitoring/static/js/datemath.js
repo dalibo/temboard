@@ -9,13 +9,15 @@
  * Requires `moment` and `loadash`.
  */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-      global.dateMath = factory();
-}(this, (function () {
-  'use strict';
+  typeof exports === "object" && typeof module !== "undefined"
+    ? (module.exports = factory())
+    : typeof define === "function" && define.amd
+    ? define(factory)
+    : (global.dateMath = factory());
+})(this, function () {
+  "use strict";
 
-  var units = ['y', 'M', 'w', 'd', 'h', 'm', 's'];
+  var units = ["y", "M", "w", "d", "h", "m", "s"];
   function parse(text, roundUp, timezone) {
     if (!text) {
       return undefined;
@@ -27,21 +29,21 @@
       return moment(text);
     }
     var time;
-    var mathString = '';
+    var mathString = "";
     var index;
     var parseString;
-    if (text.substring(0, 3) === 'now') {
-      if (timezone === 'utc') {
+    if (text.substring(0, 3) === "now") {
+      if (timezone === "utc") {
         time = moment.utc();
       } else {
         time = moment();
       }
-      mathString = text.substring('now'.length);
+      mathString = text.substring("now".length);
     } else {
-      index = text.indexOf('||');
+      index = text.indexOf("||");
       if (index === -1) {
         parseString = text;
-        mathString = ''; // nothing else
+        mathString = ""; // nothing else
       } else {
         parseString = text.substring(0, index);
         mathString = text.substring(index + 2);
@@ -73,11 +75,11 @@
       var type;
       var num;
       var unit;
-      if (c === '/') {
+      if (c === "/") {
         type = 0;
-      } else if (c === '+') {
+      } else if (c === "+") {
         type = 1;
-      } else if (c === '-') {
+      } else if (c === "-") {
         type = 2;
       } else {
         return undefined;
@@ -124,7 +126,6 @@
 
   return {
     parse: parse,
-    isValid: isValid
+    isValid: isValid,
   };
-
-})));
+});

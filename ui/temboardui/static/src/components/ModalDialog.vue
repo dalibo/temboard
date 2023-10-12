@@ -1,13 +1,13 @@
 <script type="text/javascript">
 /* A simple boostrap Dialog */
 export default {
-  props: ['id', 'title'],
+  props: ["id", "title"],
   mounted() {
     $(this.$el).on("hidden.bs.modal", () => {
-      this.$emit('closed');
+      this.$emit("closed");
     });
-  }
-}
+  },
+};
 </script>
 
 <template>
@@ -16,11 +16,12 @@ export default {
       <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">{{ title }}</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
 
         <slot></slot>
-
       </div>
     </div>
   </div>
