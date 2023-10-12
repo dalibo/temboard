@@ -25,6 +25,8 @@ exclude *.config.js
 exclude Makefile
 exclude package.json
 exclude package-lock.json
+exclude .prettier*
+exclude .husky/*
 prune docs
 prune packaging/deb
 prune packaging/docker
