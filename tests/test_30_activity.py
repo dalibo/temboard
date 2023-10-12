@@ -68,6 +68,7 @@ def test_blocking_waiting(browser, pg_lock, registered_agent, ui_url):
     browser.select(".nav-tabs a.waiting").click()  # Go to waiting tab
 
     # Pause auto-refresh
+    browser.hover(".main tr td.query")
     browser.select("td input[type=checkbox]").click()
     # Ensure auto_refresh button is shown
     auto_refresh_resume = browser.select("span#autoRefreshResume")
@@ -80,6 +81,7 @@ def test_blocking_waiting(browser, pg_lock, registered_agent, ui_url):
     browser.select(".nav-tabs a.blocking").click()  # Go to blocking tab
 
     # Pause auto-refresh
+    browser.hover(".main tr td.query")
     browser.select("td input[type=checkbox]").click()
     # Ensure auto_refresh button is shown
     auto_refresh_resume = browser.select("span#autoRefreshResume")

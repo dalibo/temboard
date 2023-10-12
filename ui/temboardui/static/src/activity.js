@@ -1,185 +1,52 @@
-"use strict";
-
-import datatables from "datatables.net-dt";
-import dtbs4 from "datatables.net-bs4";
-import "datatables.net-bs4/css/dataTables.bootstrap4.css";
+import Vue from "vue";
+import { ref } from "vue";
+import { formatDuration } from "./utils/duration";
+import BootstrapVue from "bootstrap-vue";
+import "bootstrap-vue/dist/bootstrap-vue.css";
+import Copy from "./copy.vue";
+import * as _ from "lodash";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
 
-datatables(window, $);
-dtbs4(window, $);
+Vue.use(BootstrapVue);
 
-var request = null;
-var intervalDuration = 2;
-var loading = false;
-var loadTimeout;
-var agentColumns;
+let request = null;
+const intervalDuration = 2;
+let loadTimeout;
 
-var el = $("#tableActivity");
-
-function onCreatedCellDangerY(td, cellData) {
-  if (cellData == "Y") {
-    $(td).addClass("text-danger font-weight-bold");
-  }
-}
-
-var checkboxTooltip = "Select to terminate";
-var checkboxDisabledTooltip = "Disable auto-refresh and select to terminate";
-
-var columns = [
-  {
-    orderable: false,
-    className: "text-center",
-    data: "pid",
-    render: function (data, type, row) {
-      var disabled = loading ? "disabled" : "";
-      var title = disabled ? checkboxDisabledTooltip : checkboxTooltip;
-      var html = '<input type="checkbox" ' + disabled + ' class="input-xs" data-pid="' + row.pid + '"';
-      html += 'title="' + title + '"';
-      html += " />";
-      return html;
-    },
-  },
-  { title: "PID", data: "pid", className: "text-right", orderable: false },
-  { title: "Database", data: "database", orderable: false },
-  { title: "User", data: "user", orderable: false },
-  {
-    title: "Application",
-    data: "application_name",
-    orderable: true,
-    defaultContent: "",
-  },
-  { title: "CPU", data: "cpu", className: "text-right" },
-  { title: "mem", data: "memory", className: "text-right" },
-  {
-    title: "Read/s",
-    data: "read_s",
-    render: function (data, type, row) {
-      return type == "display" ? data : data.human2bytes();
-    },
-    className: "text-right",
-  },
-  {
-    title: "Write/s",
-    data: "write_s",
-    render: function (data, type, row) {
-      return type == "display" ? data : data.human2bytes();
-    },
-    className: "text-right",
-  },
-  {
-    title: "IOW",
-    data: "iow",
-    className: "text-center",
-    createdCell: onCreatedCellDangerY,
-  },
+let loading = ref(false);
+const sessions = ref([]);
+const waitingCount = ref(0);
+const blockingCount = ref(0);
+const paused = ref(false);
+const selectedPids = ref([]);
+const filter = ref(null);
+const states = [
+  "active",
+  "idle",
+  "idle in transaction",
+  "idle in transaction (aborted)",
+  "fastpath function call",
+  "disabled",
 ];
-if (activityMode == "running") {
-  columns = columns.concat([
-    {
-      title: "W",
-      data: "wait",
-      className: "text-center",
-      createdCell: onCreatedCellDangerY,
-    },
-  ]);
-} else {
-  columns = columns.concat([
-    {
-      title: "Lock Rel.",
-      data: "relation",
-      className: "text-right",
-      orderable: false,
-    },
-    { title: "Lock Mode", data: "mode", orderable: false },
-    { title: "Lock Type", data: "type", orderable: false },
-  ]);
-}
-
-var stateMaxLength = 12;
-columns = columns.concat([
-  {
-    title: "State",
-    data: "state",
-    render: function (data, type, row) {
-      return row.state && row.state.trunc(stateMaxLength);
-    },
-    className: "text-center",
-    createdCell: function (td, cellData, rowData, row, col) {
-      var cls = "";
-      switch (rowData.state) {
-        case "active":
-          cls = "text-success font-weight-bold";
-          break;
-        case "idle in transaction":
-        case "idle in transaction (aborted)":
-          if (rowData.duration > intervalDuration) {
-            cls = "text-danger font-weight-bold";
-          }
-          break;
-      }
-      $(td).addClass(cls);
-      if (rowData.state.length > stateMaxLength) {
-        $(td).attr("title", rowData.state);
-      }
-    },
-  },
-  {
-    title: "Time",
-    className: "text-right",
-    data: "duration",
-    render: function (data, type, row) {
-      return type === "display" ? data + " s" : data;
-    },
-  },
-  {
-    title: "Query",
-    className: "query",
-    data: "query",
-    render: function (data, type, row) {
-      return "<pre>" + '<code class="sql">' + row.query + "</code>" + "</pre>";
-    },
-    createdCell: function (td, cellData) {
-      $(td).attr("data-toggle", "popover").attr("data-trigger", "hover");
-      $(td).mouseover(function () {
-        var copyEl = $("<span>", {
-          class: "copy position-absolute right-0 pr-1 pl-1 bg-secondary text-white rounded",
-          html: "Click to copy",
-        });
-        $(this).prepend(copyEl);
-      });
-      $(td).mouseout(function () {
-        $(this).find(".copy").remove();
-      });
-    },
-  },
-]);
-
-var table = el.DataTable({
-  paging: false,
-  stateSave: true,
-  lengthChange: false,
-  autoWidth: false,
-  order: [[columns.length - 2, "desc"]] /* order by duration */,
-  columns: columns,
-  dom: "t", // only show table
-});
+const selectedStates = ref(JSON.parse(localStorage.getItem("temboardActivityStateFilters")) || states);
 
 function load() {
-  var lastLoad = new Date();
-  var url_end = activityMode != "running" ? "/" + activityMode : "";
+  const lastLoad = new Date();
+
   request = $.ajax({
     url: "/proxy/" + agent_address + "/" + agent_port + "/activity",
     type: "GET",
     beforeSend: function (xhr) {
-      $("#loadingIndicator").removeClass("invisible");
-      loading = true;
+      loading.value = true;
     },
     async: true,
     contentType: "application/json",
     success: function (data) {
       clearError();
-      updateActivity(data);
+      sessions.value = data[activityMode].rows;
+      waitingCount.value = data["waiting"].rows.length;
+      blockingCount.value = data["blocking"].rows.length;
     },
     error: function (xhr, status) {
       if (status == "abort") {
@@ -188,109 +55,17 @@ function load() {
       showError(xhr);
     },
     complete: function (xhr, status) {
-      $("#loadingIndicator").addClass("invisible");
-      loading = false;
-      var timeoutDelay = intervalDuration * 1000 - (new Date() - lastLoad);
+      loading.value = false;
+      const timeoutDelay = intervalDuration * 1000 - (new Date() - lastLoad);
       loadTimeout = window.setTimeout(load, timeoutDelay);
     },
   });
 }
 
-function updateActivity(data) {
-  $("[data-toggle=popover]").popover("hide");
-  table.clear();
-  table.rows.add(data[activityMode].rows).draw();
-  agentColumns = data[activityMode].columns;
-  if (agentColumns === undefined) {
-    //Default agentColumns for V7 agent
-    agentColumns = [
-      "pid",
-      "database",
-      "client",
-      "duration",
-      "wait",
-      "user",
-      "state",
-      "query",
-      "iow",
-      "read_s",
-      "write_s",
-      "cpu",
-      "memory",
-    ];
-  }
-  for (var i in columns) {
-    table.column(i).visible(agentColumns.includes(columns[i].data));
-  }
-  $("pre code").each(function (i, block) {
-    hljs.highlightElement(block);
-  });
-
-  $('[data-toggle="popover"]').popover({
-    html: true,
-    content: function () {
-      return $(this).find("pre").html();
-    },
-    template:
-      '<div class="popover sql" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-  });
-
-  $("#waiting-count")
-    .html(data["waiting"].rows.length || "&nbsp;")
-    .toggleClass("badge-warning", data["waiting"].rows.length > 0)
-    .toggleClass("badge-light", !data["waiting"].rows.length > 0);
-  $("#blocking-count")
-    .html(data["blocking"].rows.length || "&nbsp;")
-    .toggleClass("badge-warning", data["blocking"].rows.length > 0)
-    .toggleClass("badge-light", !data["blocking"].rows.length > 0);
-}
-
-function pause() {
-  $("#autoRefreshPaused").removeClass("d-none");
-  $("#intervalDuration").addClass("d-none");
-  request && request.abort();
-  window.clearTimeout(loadTimeout);
-  $("#tableActivity input[type=checkbox]").each(function () {
-    $(this).attr("disabled", false);
-    $(this).attr("title", checkboxTooltip);
-  });
-}
-
-function play() {
-  $("#killButton").addClass("disabled");
-  $("#autoRefreshResume").addClass("d-none");
-  $("#autoRefreshMsg").removeClass("d-none");
-  $("#autoRefreshPaused").addClass("d-none");
-  $("#intervalDuration").removeClass("d-none");
-  $("#tableActivity input:checked").each(function () {
-    $(this).attr("checked", false);
-  });
-  $("#tableActivity input[type=checkbox]").each(function () {
-    $(this).attr("disabled", true);
-    $(this).attr("title", checkboxDisabledTooltip);
-  });
-  load();
-}
-
 // Launch once
-play();
+load();
 
-// show the kill button only when backends have been selected
-$(document.body).on("click", "input[type=checkbox]", function () {
-  var active = $("#tableActivity input:checked").length === 0;
-  $("#killButton").toggleClass("disabled", active);
-  $("#autoRefreshResume").toggleClass("d-none", active);
-  $("#autoRefreshMsg").toggleClass("d-none", !active);
-});
-
-$("#killButton").click(function terminate() {
-  var pids = [];
-  $("#tableActivity input:checked").each(function () {
-    pids.push($(this).data("pid"));
-  });
-  if (pids.length === 0) {
-    return;
-  }
+function terminate(pids) {
   $("#Modal").modal("show");
   $("#ModalLabel").html("Terminate backend");
   var pids_html = "";
@@ -359,108 +134,7 @@ $("#killButton").click(function terminate() {
       },
     });
   });
-});
-
-var stateFilters = $("#state-filter input[type=checkbox]");
-
-function getCheckedStateFilters() {
-  var states = [];
-  stateFilters.each(function (index, el) {
-    var input = $(el);
-    if (input.prop("checked")) {
-      states.push(input.val());
-    }
-  });
-  return states;
 }
-stateFilters.change(table.draw);
-
-var initStateFilters = localStorage.getItem("temboardActivityStateFilters");
-if (initStateFilters) {
-  initStateFilters = JSON.parse(initStateFilters);
-  stateFilters.each(function (index, el) {
-    var input = $(el);
-    input.prop("checked", initStateFilters.indexOf(input.val()) != -1);
-  });
-}
-
-// Store in localStorage the states filter selection
-stateFilters.change(function () {
-  if (stateFilters.length != getCheckedStateFilters().length) {
-    localStorage.setItem("temboardActivityStateFilters", JSON.stringify(getCheckedStateFilters()));
-  } else {
-    localStorage.removeItem("temboardActivityStateFilters");
-  }
-});
-
-/* State filtering function */
-$.fn.dataTable.ext.search.push(function stateFilter(settings, data, index, rawData) {
-  var states = getCheckedStateFilters();
-  return states.indexOf(rawData.state) > -1;
-});
-
-var searchFilter = $("#searchFilter");
-searchFilter.keyup(table.draw);
-
-var initSearchFilter = localStorage.getItem("temboardActivitySearchFilter");
-if (initSearchFilter) {
-  searchFilter.val(initSearchFilter);
-}
-// Store in localStorage the states filter selection
-searchFilter.keyup(function () {
-  var search = searchFilter.val();
-  if (search) {
-    localStorage.setItem("temboardActivitySearchFilter", searchFilter.val());
-  } else {
-    localStorage.removeItem("temboardActivitySearchFilter");
-  }
-});
-
-/* Custom filtering function */
-$.fn.dataTable.ext.search.push(function searchFilterFn(settings, data) {
-  var criteria = searchFilter.val();
-  var i = 0;
-  var len = data.length;
-  for (i; i < len; i++) {
-    if (data[i].toUpperCase().indexOf(criteria.toUpperCase()) != -1) {
-      return true;
-    }
-  }
-  return false;
-});
-
-if (initStateFilters || searchFilter.val()) {
-  $("#filters").collapse("show");
-}
-
-// copy to clipboard on sql cell click
-$("#tableActivity").on("click", ".sql", function (e) {
-  e.preventDefault();
-  var range = document.createRange();
-  var sel = window.getSelection();
-  range.selectNodeContents(this);
-  sel.removeAllRanges();
-  sel.addRange(range);
-  document.execCommand("copy");
-  $(this).parents("td").find(".copy").html("Copied to clipboard");
-});
-
-$("#tableActivity").on("mouseenter", function (e) {
-  pause();
-});
-
-$("#tableActivity").on("mouseleave", function (e) {
-  var checkedRows = $("#tableActivity input:checked");
-  if (checkedRows.size() == 0) {
-    // resume auto refresh only if there are no checked rows
-    play();
-  }
-});
-
-$("#resumeAutoRefresh").on("click", function (e) {
-  play();
-  e.preventDefault();
-});
 
 var entityMap = {
   "&": "&amp;",
@@ -483,14 +157,129 @@ String.prototype.trunc =
     return this.length > n ? this.substr(0, n - 1) + "&hellip;" : this;
   };
 
-String.prototype.human2bytes =
-  String.prototype.human2bytes ||
-  function () {
-    var val = parseFloat(this);
-    if (typeof val == "number") {
-      var suffix = this.slice(-1);
-      var suffixes = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
-      return val * Math.pow(2, suffixes.indexOf(suffix) * 10);
-    }
-    return this;
-  };
+function human2bytes(value) {
+  const val = parseFloat(value);
+  if (_.isFinite(val)) {
+    const suffix = value.slice(-1);
+    const suffixes = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+    return val * Math.pow(2, suffixes.indexOf(suffix) * 10);
+  }
+  return value;
+}
+
+function formatDurationSeconds(duration) {
+  return formatDuration(duration * 1000, true);
+}
+
+function truncateState(value) {
+  return value && value.trunc(12);
+}
+
+function stateClass(value, key, item) {
+  if (value == "active") {
+    return "text-success font-weight-bold";
+  } else if (value.indexOf("idle in transaction") != -1) {
+    return "text-danger font-weight-bold";
+  }
+}
+
+function pause() {
+  paused.value = true;
+  request && request.abort();
+  window.clearTimeout(loadTimeout);
+}
+
+function resume() {
+  paused.value = false;
+  selectedPids.value = [];
+  load();
+}
+
+function doFilter(row) {
+  return (
+    _.includes(selectedStates.value, row.state) &&
+    _.some(_.map(_.values(row), _.upperCase), (v) => _.includes(v, _.upperCase(filter.value)))
+  );
+}
+
+function highlight(src) {
+  return hljs.highlight("sql", src).value;
+}
+let fields = [
+  { label: "", key: "check" },
+  { label: "PID", key: "pid", class: "text-right" },
+  { label: "Database", key: "database" },
+  { label: "User", key: "user", orderable: false },
+  { label: "Application", key: "application_name" },
+  { label: "CPU", key: "cpu", class: "text-right" },
+  { label: "mem", key: "memory", class: "text-right" },
+  { label: "Read/s", key: "read_s", class: "text-right", formatter: human2bytes },
+  { label: "Write/s", key: "write_s", class: "text-right", formatter: human2bytes },
+  { label: "IOW", key: "iow", sortable: true, class: "text-center" },
+];
+
+if (activityMode == "running") {
+  fields = fields.concat([{ label: "W", key: "wait", class: "text-center" }]);
+} else {
+  fields = fields.concat([
+    { label: "Lock Rel.", data: "relation", class: "text-right" },
+    { label: "Lock Mode", key: "mode" },
+    { label: "Lock Type", key: "type" },
+  ]);
+}
+
+fields = fields.concat([
+  { label: "State", key: "state", sortable: true, class: "text-center", tdClass: stateClass },
+  {
+    label: "Time",
+    key: "duration",
+    class: "text-right",
+    formatter: formatDurationSeconds,
+    sortable: true,
+  },
+  {
+    label: "Query",
+    key: "query",
+    class: "query",
+    sortable: true,
+    tdAttr: {
+      "data-toggle": "popover",
+      "data-trigger": "hover",
+    },
+  },
+]);
+
+new Vue({
+  el: "#app",
+  data: {
+    blockingCount,
+    fields,
+    filter,
+    states,
+    paused,
+    selectedStates,
+    selectedPids,
+    sessions,
+    waitingCount,
+    loading,
+  },
+  methods: {
+    doFilter,
+    highlight,
+    pause,
+    resume,
+    terminate,
+    truncateState,
+  },
+  computed: {
+    freezed: () => selectedPids.value.length > 0,
+  },
+  watch: {
+    selectedStates: function (val) {
+      localStorage.setItem("temboardActivityStateFilters", JSON.stringify(val));
+    },
+  },
+  components: {
+    copy: Copy,
+  },
+});
