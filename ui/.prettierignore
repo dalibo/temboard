@@ -1,0 +1,5 @@
+**/*.md
+**/*.yml
+**/*.yaml
+**/*.html
+temboardui/static/src/public
