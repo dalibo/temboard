@@ -1,8 +1,7 @@
 apiVersion: 1
 
 datasources:
-- "id": 1
-  "uid": "01lWBBhnk"
+- "uid": "01lWBBhnk"
   "orgId": 1
   "name": "Prometheus"
   "type": "prometheus"
@@ -18,4 +17,24 @@ datasources:
   "jsonData":
     "httpMethod": "POST"
     "timeInterval": "60s"
+  "readOnly": false
+
+- "uid": "Kme6NfMSz"
+  "orgId": 1
+  "name": "temBoard prometheus"
+  "type": "prometheus"
+  "typeName": "Prometheus"
+  "typeLogoUrl": "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
+  "access": "proxy"
+  # This IP is the default docker0 host IP.
+  # Binding to 0.0.0.0 on docker host exposes to container through this IP at least.
+  # You may need to update if docker0 host IP is different.
+  # And then recreate Grafana container.
+  "url": "http://172.17.0.1:8890/"
+  "user": ""
+  "database": ""
+  "basicAuth": false
+  "isDefault": false
+  "jsonData":
+    "httpMethod": "POST"
   "readOnly": false
