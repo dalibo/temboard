@@ -121,6 +121,16 @@ description of the conventions. Please stick to these conventions.
 
 Python syntax must conform to flake8. CI checks new code with flake8.
 
+Javascript and CSS syntax should conform to prettier. It is recommended to
+configure your editor to automatically format on save. CI checks new code with
+prettier.
+
+You can optionally install `husky` pre-commit hooks.
+
+``` console
+cd ui
+npm run install-husky
+```
 
 ## Executing in debug mode
 
