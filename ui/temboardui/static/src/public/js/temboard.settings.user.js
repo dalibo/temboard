@@ -62,26 +62,27 @@ function load_update_user_form(modal_id, username)
         descriptions[group['name']] = group['description'];
       }
       body_html += '      </select><br />';
-      body_html += '      <label for="selectActive" class="control-label">Active</label><br />';
-      body_html += '      <select id="selectActive">';
-      body_html += '        <option value="No">No</options>';
+      body_html += '        <div class="custom-control custom-switch"><br />  ';
       sel_active = '';
-      if (data['is_active'])
-      {
-        sel_active = 'selected';
+      val_active = 'no'
+      if (data['is_active']) {
+        sel_active = 'checked';
+        val_active = 'yes'
       }
-      body_html += '        <option value="yes" '+sel_active+'>Yes</options>';
-      body_html += '      </select><br />';
-      body_html += '      <label for="selectAdmin" class="control-label">Administrator</label><br />';
-      body_html += '      <select id="selectAdmin">';
-      body_html += '        <option value="No">No</options>';
+      body_html += '          <input type="checkbox" class="custom-control-input" id="switchActive" value="'+val_active+'" '+sel_active+'>';
+      body_html += '          <label class="custom-control-label" for="switchActive">Active</label><br /> ';
+      body_html += '         </div> ';
+      body_html += '        <div class="custom-control custom-switch"><br />  ';
       sel_admin = '';
+      val_admin = 'no';
       if (data['is_admin'])
       {
-        sel_admin = 'selected';
+        sel_admin = 'checked';
+        val_admin = 'yes';
       }
-      body_html += '        <option value="yes" '+sel_admin+'>Yes</options>';
-      body_html += '      </select>';
+      body_html += '          <input type="checkbox" class="custom-control-input" id="switchAdmin" value="'+val_admin+'" '+sel_admin+'>';
+      body_html += '          <label class="custom-control-label" for="switchAdmin">Administrator</label><br /> ';
+      body_html += '         </div> ';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -104,9 +105,21 @@ function load_update_user_form(modal_id, username)
 
       // Activate multiselect plugin for group selecting.
       $('#selectGroups').multiselect(multiselectOptions);
-      // Use multiselect style for Active & Admin selects.
-      $('#selectActive').multiselect(multiselectOptions);
-      $('#selectAdmin').multiselect(multiselectOptions);
+      // Update value for Active and Admin input
+      $('#switchActive').on('change', function() {
+        if ($(this).is(':checked')){
+          $(this).attr('value', 'yes');
+        } else{
+          $(this).attr('value', 'no');
+        }
+      });
+      $('#switchAdmin').on('change', function() {
+        if ($(this).is(':checked')){
+          $(this).attr('value', 'yes');
+        } else{
+          $(this).attr('value', 'no');
+        }
+      });
       $('#formUpdateUser').submit(function( event ) {
           event.preventDefault();
         send_update_user_form(modal_id);
@@ -136,8 +149,8 @@ function send_update_user_form(modal_id)
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),
-      'is_active': $('#selectActive').val(),
-      'is_admin': $('#selectAdmin').val()
+      'is_active': $('#switchActive').val(),
+      'is_admin': $('#switchAdmin').val()
     }),
     async: true,
     contentType: "application/json",
@@ -266,16 +279,14 @@ function load_add_user_form(modal_id)
         descriptions[group['name']] = group['description'];
       }
       body_html += '      </select><br />';
-      body_html += '      <label for="selectActive" class="control-label">Active</label><br />';
-      body_html += '      <select id="selectActive">';
-      body_html += '        <option value="yes" selected>Yes</options>';
-      body_html += '        <option value="No">No</options>';
-      body_html += '      </select><br />';
-      body_html += '      <label for="selectAdmin" class="control-label">Administrator</label><br />';
-      body_html += '      <select id="selectAdmin">';
-      body_html += '        <option value="No" selected>No</options>';
-      body_html += '        <option value="yes">Yes</options>';
-      body_html += '      </select>';
+      body_html += '        <div class="custom-control custom-switch"><br />  ';
+      body_html += '          <input type="checkbox" class="custom-control-input" id="switchActive" checked>';
+      body_html += '          <label class="custom-control-label" for="switchActive">Active</label><br /> ';
+      body_html += '         </div> ';
+      body_html += '        <div class="custom-control custom-switch"><br />  ';
+      body_html += '          <input type="checkbox" class="custom-control-input" id="switchAdmin">';
+      body_html += '          <label class="custom-control-label" for="switchAdmin">Administrator</label><br /> ';
+      body_html += '         </div> ';
       body_html += '    </div>';
       body_html += '  </div>';
       body_html += '  <div class="row">';
@@ -307,9 +318,21 @@ function load_add_user_form(modal_id)
           return descriptions[value];
         }
       });
-      // Use multiselect style for Active & Admin selects.
-      $('#selectActive').multiselect(multiselectOptions);
-      $('#selectAdmin').multiselect(multiselectOptions);
+      // Update value for Active and Admin input
+      $('#switchActive').on('change', function() {
+        if ($(this).is(':checked')){
+          $(this).attr('value', 'yes');
+        } else{
+          $(this).attr('value', 'no');
+        }
+      });
+      $('#switchAdmin').on('change', function() {
+        if ($(this).is(':checked')){
+          $(this).attr('value', 'yes');
+        } else{
+          $(this).attr('value', 'no');
+        }
+      });
       $('#formAddUser').submit(function( event ) {
           event.preventDefault();
         send_add_user_form(modal_id);
@@ -338,8 +361,8 @@ function send_add_user_form(modal_id)
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),
-      'is_active': $('#selectActive').val(),
-      'is_admin': $('#selectAdmin').val()
+      'is_active': $('#switchActive').val(),
+      'is_admin': $('#switchAdmin').val()
     }),
     async: true,
     contentType: "application/json",
