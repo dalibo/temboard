@@ -1,29 +1,29 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue2'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue2";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  root: 'temboardui/static/src',
-  base: '/static/',
+  root: "temboardui/static/src",
+  base: "/static/",
   build: {
     manifest: true,
-    outDir: '..',
+    outDir: "..",
     emptyOutDir: false,
-    assetsDir: '.',
+    assetsDir: ".",
     rollupOptions: {
       input: {
-        'activity': '/activity.js',
-        'home': '/home.js',
-        'temboard': '/temboard.js',
-        'settings.instance': '/settings.instance.js',
-        'statements': '/statements.js'
-      }
-    }
+        activity: "/activity.js",
+        home: "/home.js",
+        temboard: "/temboard.js",
+        "settings.instance": "/settings.instance.js",
+        statements: "/statements.js",
+      },
+    },
   },
   resolve: {
     alias: {
-      vue: 'vue/dist/vue.esm.js'
+      vue: "vue/dist/vue.esm.js",
     },
   },
-})
+});

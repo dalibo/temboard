@@ -1,19 +1,18 @@
-import Vue from 'vue'
-import * as _ from 'lodash'
-import './daterangepicker.vue.js'
-import VueRouter from 'vue-router'
-import {formatDuration} from './utils/duration'
-Vue.use(VueRouter)
+import Vue from "vue";
+import * as _ from "lodash";
+import "./daterangepicker.vue.js";
+import VueRouter from "vue-router";
+import { formatDuration } from "./utils/duration";
+Vue.use(VueRouter);
 
-import BootstrapVue from 'bootstrap-vue'
+import BootstrapVue from "bootstrap-vue";
 Vue.use(BootstrapVue);
 
 var dataRequest;
 var chartRequest;
 
-
 var v = new Vue({
-  el: '#app',
+  el: "#app",
   router: new VueRouter(),
   data: {
     statements: [],
@@ -24,31 +23,31 @@ var v = new Vue({
     queryid: null,
     userid: null,
     datname: null,
-    sortBy: 'total_exec_time',
-    filter: '',
+    sortBy: "total_exec_time",
+    filter: "",
     from: null,
     to: null,
     totalRows: 1,
     currentPage: 1,
-    perPage: 20
+    perPage: 20,
   },
   computed: {
     fields: getFields,
-    fromTo: function() {
-      return '' + this.from + this.to;
+    fromTo: function () {
+      return "" + this.from + this.to;
     },
-    queryidUserid: function() {
+    queryidUserid: function () {
       return this.queryid, this.userid;
-    }
+    },
   },
   methods: {
     fetchData: fetchData,
     highlight: highlight,
-    onFiltered: onFiltered
+    onFiltered: onFiltered,
   },
   watch: {
     fromTo: fetchData,
-    dbid: function() {
+    dbid: function () {
       var newQueryParams = _.assign({}, this.$route.query);
       if (!this.dbid) {
         delete newQueryParams.dbid;
@@ -60,7 +59,7 @@ var v = new Vue({
       this.$router.push({ query: newQueryParams });
       this.fetchData();
     },
-    queryidUserid: function() {
+    queryidUserid: function () {
       var newQueryParams = _.assign({}, this.$route.query);
       if (!this.queryid) {
         delete newQueryParams.queryid;
@@ -73,12 +72,12 @@ var v = new Vue({
       this.$router.push({ query: newQueryParams });
       this.fetchData();
     },
-    $route: function(to, from) {
+    $route: function (to, from) {
       this.dbid = to.query.dbid;
       this.queryid = to.query.queryid;
       this.userid = to.query.userid;
-    }
-  }
+    },
+  },
 });
 
 function fetchData() {
@@ -86,9 +85,9 @@ function fetchData() {
   var startDate = this.from;
   var endDate = this.to;
 
-  var url = this.dbid ? '/' + this.dbid : '';
-  url += this.queryid ? '/' + this.queryid : '';
-  url += this.userid ? '/' + this.userid : '';
+  var url = this.dbid ? "/" + this.dbid : "";
+  url += this.queryid ? "/" + this.queryid : "";
+  url += this.userid ? "/" + this.userid : "";
 
   this.isLoading = true;
   dataRequest && dataRequest.abort();
@@ -97,9 +96,9 @@ function fetchData() {
     {
       start: timestampToIsoDate(startDate),
       end: timestampToIsoDate(endDate),
-      noerror: 1
+      noerror: 1,
     },
-    function(data) {
+    function (data) {
       this.isLoading = false;
       this.datname = data.datname;
       this.statements = data.data;
@@ -110,7 +109,7 @@ function fetchData() {
       this.totalRows = this.statements.length;
 
       this.metas = data.metas;
-    }.bind(this)
+    }.bind(this),
   );
 
   chartRequest && chartRequest.abort();
@@ -119,105 +118,118 @@ function fetchData() {
     {
       start: timestampToIsoDate(startDate),
       end: timestampToIsoDate(endDate),
-      noerror: 1
+      noerror: 1,
     },
-    createOrUpdateCharts
+    createOrUpdateCharts,
   );
 }
 
 function getFields() {
-  var fields = [{
-    key: 'query',
-    label: 'Query',
-    class: 'query',
-    sortable: true,
-    sortDirection: 'asc'
-  }, {
-    key: 'datname',
-    label: 'DB',
-    class: 'database',
-    sortable: true,
-    sortDirection: 'asc'
-  }, {
-    key: 'rolname',
-    label: 'User',
-    sortable: true,
-    sortDirection: 'asc'
-  }, {
-    key: 'calls',
-    label: 'Calls',
-    class: 'text-right',
-    sortable: true
-  }, {
-    key: 'total_exec_time',
-    label: 'Total',
-    formatter: formatDuration,
-    class: 'text-right border-left',
-    sortable: true
-  }, {
-    key: 'mean_time',
-    label: 'AVG',
-    formatter: formatDuration,
-    class: 'text-right',
-    sortable: true
-  }, {
-    key: 'shared_blks_read',
-    label: 'Read',
-    class: 'text-right border-left',
-    formatter: formatSize,
-    sortable: true
-  }, {
-    key: 'shared_blks_hit',
-    label: 'Hit',
-    class: 'text-right',
-    formatter: formatSize,
-    sortable: true
-  }, {
-    key: 'shared_blks_dirtied',
-    label: 'Dirt.',
-    class: 'text-right',
-    formatter: formatSize,
-    sortable: true
-  }, {
-    key: 'shared_blks_written',
-    label: 'Writ.',
-    class: 'text-right',
-    formatter: formatSize,
-    sortable: true
-  }, {
-    key: 'temp_blks_read',
-    label: 'Read',
-    class: 'text-right border-left',
-    formatter: formatSize,
-    sortable: true
-  }, {
-    key: 'temp_blks_written',
-    label: 'Writ.',
-    class: 'text-right',
-    formatter: formatSize,
-    sortable: true
-  }];
+  var fields = [
+    {
+      key: "query",
+      label: "Query",
+      class: "query",
+      sortable: true,
+      sortDirection: "asc",
+    },
+    {
+      key: "datname",
+      label: "DB",
+      class: "database",
+      sortable: true,
+      sortDirection: "asc",
+    },
+    {
+      key: "rolname",
+      label: "User",
+      sortable: true,
+      sortDirection: "asc",
+    },
+    {
+      key: "calls",
+      label: "Calls",
+      class: "text-right",
+      sortable: true,
+    },
+    {
+      key: "total_exec_time",
+      label: "Total",
+      formatter: formatDuration,
+      class: "text-right border-left",
+      sortable: true,
+    },
+    {
+      key: "mean_time",
+      label: "AVG",
+      formatter: formatDuration,
+      class: "text-right",
+      sortable: true,
+    },
+    {
+      key: "shared_blks_read",
+      label: "Read",
+      class: "text-right border-left",
+      formatter: formatSize,
+      sortable: true,
+    },
+    {
+      key: "shared_blks_hit",
+      label: "Hit",
+      class: "text-right",
+      formatter: formatSize,
+      sortable: true,
+    },
+    {
+      key: "shared_blks_dirtied",
+      label: "Dirt.",
+      class: "text-right",
+      formatter: formatSize,
+      sortable: true,
+    },
+    {
+      key: "shared_blks_written",
+      label: "Writ.",
+      class: "text-right",
+      formatter: formatSize,
+      sortable: true,
+    },
+    {
+      key: "temp_blks_read",
+      label: "Read",
+      class: "text-right border-left",
+      formatter: formatSize,
+      sortable: true,
+    },
+    {
+      key: "temp_blks_written",
+      label: "Writ.",
+      class: "text-right",
+      formatter: formatSize,
+      sortable: true,
+    },
+  ];
 
-  var ignored = ['rolname', 'query'];
+  var ignored = ["rolname", "query"];
   if (this.dbid) {
-    ignored = ['datname'];
+    ignored = ["datname"];
   }
 
-  return _.filter(fields, function(field) {
+  return _.filter(fields, function (field) {
     return ignored.indexOf(field.key) === -1;
   });
 }
 
 function formatSize(bytes) {
   bytes *= 8192;
-  var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  var sizes = ["B", "KB", "MB", "GB", "TB"];
   if (bytes == 0) return '<span class="text-muted">0</span>';
   var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
 }
 
 function highlight(src) {
-  return hljs.highlight('sql', src).value;
+  return hljs.highlight("sql", src).value;
 }
 
 function onFiltered(filteredItems) {
@@ -237,14 +249,11 @@ function createOrUpdateCharts(data) {
     axisLabelFontSize: 10,
     yLabelWidth: 14,
     includeZero: true,
-    legend: 'always',
+    legend: "always",
     labelsKMB: true,
-    gridLineColor: 'rgba(128, 128, 128, 0.3)',
-    dateWindow: [
-      new Date(startDate).getTime(),
-      new Date(endDate).getTime()
-    ],
-    xValueParser: function(x) {
+    gridLineColor: "rgba(128, 128, 128, 0.3)",
+    dateWindow: [new Date(startDate).getTime(), new Date(endDate).getTime()],
+    xValueParser: function (x) {
       var m = moment(x);
       return m.toDate().getTime();
     },
@@ -279,69 +288,58 @@ function createOrUpdateCharts(data) {
           // don't do the same since zoom is animated
           // zoomCallback will do the job
         }
-      }
-    }
+      },
+    },
   };
 
   var chart = this.chart;
 
-  var chart1Data = _.map(data.data, function(datum) {
-    return [
-      moment.unix(datum.ts).toDate(),
-      datum.calls
-    ];
+  var chart1Data = _.map(data.data, function (datum) {
+    return [moment.unix(datum.ts).toDate(), datum.calls];
   });
   new Dygraph(
-    document.getElementById('chart1'),
+    document.getElementById("chart1"),
     chart1Data,
     Object.assign({}, defaultOptions, {
-      labels: ['time', 'Queries per sec'],
-      labelsDiv: 'legend-chart1'
-    })
+      labels: ["time", "Queries per sec"],
+      labelsDiv: "legend-chart1",
+    }),
   );
 
-  var chart2Data = _.map(data.data, function(datum) {
-    return [
-      moment.unix(datum.ts).toDate(),
-      datum.load,
-      datum.avg_runtime
-    ];
+  var chart2Data = _.map(data.data, function (datum) {
+    return [moment.unix(datum.ts).toDate(), datum.load, datum.avg_runtime];
   });
   new Dygraph(
-    document.getElementById('chart2'),
+    document.getElementById("chart2"),
     chart2Data,
     Object.assign({}, defaultOptions, {
-      labels: ['time', 'Time per sec', 'Avg runtime'],
-      labelsDiv: 'legend-chart2',
+      labels: ["time", "Time per sec", "Avg runtime"],
+      labelsDiv: "legend-chart2",
       axes: {
         y: {
           valueFormatter: formatDuration,
-          axisLabelFormatter: formatDuration
-        }
-      }
-    })
+          axisLabelFormatter: formatDuration,
+        },
+      },
+    }),
   );
 
-  var chart3Data = _.map(data.data, function(datum) {
-    return [
-      moment.unix(datum.ts).toDate(),
-      datum.total_blks_hit,
-      datum.total_blks_read
-    ];
+  var chart3Data = _.map(data.data, function (datum) {
+    return [moment.unix(datum.ts).toDate(), datum.total_blks_hit, datum.total_blks_read];
   });
   new Dygraph(
-    document.getElementById('chart3'),
+    document.getElementById("chart3"),
     chart3Data,
     Object.assign({}, defaultOptions, {
-      labels: ['time', 'Hit /s', 'Read /s'],
-      labelsDiv: 'legend-chart3',
+      labels: ["time", "Hit /s", "Read /s"],
+      labelsDiv: "legend-chart3",
       axes: {
         y: {
           valueFormatter: formatSize,
-          axisLabelFormatter: formatSize
-        }
-      }
-    })
+          axisLabelFormatter: formatSize,
+        },
+      },
+    }),
   );
 }
 

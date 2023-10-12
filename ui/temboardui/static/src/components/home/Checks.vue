@@ -1,39 +1,39 @@
 <script type="text/javascript">
-  import _ from 'lodash'
+import _ from "lodash";
 
-  export default {
-    props: ['instance'],
-    computed: {
-      available: function() {
-        return this.instance.available;
-      },
-      checks: function() {
-        var count = _.countBy(
-          this.instance.checks.map(
-            function(state) { return state.state; }
-          )
-        );
-        return count;
-      }
+export default {
+  props: ["instance"],
+  computed: {
+    available: function () {
+      return this.instance.available;
     },
-    methods: {
-      popoverContent: function(instance) {
-        // don't show OK states
-        var filtered = instance.checks.filter(function(check) {
-          return !['OK', 'UNDEF'].includes(check.state);
-        });
-        var levels = ['CRITICAL', 'WARNING'];
-        // make sure we have higher levels checks first
-        var ordered = _.sortBy(filtered, function(check) {
-          return levels.indexOf(check.state);
-        });
-        var checksList = ordered.map(function(check) {
-          return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + '</span>';
-        });
-        return checksList.join('<br>');
-      }
-    }
-  }
+    checks: function () {
+      var count = _.countBy(
+        this.instance.checks.map(function (state) {
+          return state.state;
+        }),
+      );
+      return count;
+    },
+  },
+  methods: {
+    popoverContent: function (instance) {
+      // don't show OK states
+      var filtered = instance.checks.filter(function (check) {
+        return !["OK", "UNDEF"].includes(check.state);
+      });
+      var levels = ["CRITICAL", "WARNING"];
+      // make sure we have higher levels checks first
+      var ordered = _.sortBy(filtered, function (check) {
+        return levels.indexOf(check.state);
+      });
+      var checksList = ordered.map(function (check) {
+        return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + "</span>";
+      });
+      return checksList.join("<br>");
+    },
+  },
+};
 </script>
 
 <template>
@@ -44,12 +44,11 @@
     data-trigger="hover"
     data-placement="bottom"
     data-container="body"
-    data-html="true">
+    data-html="true"
+  >
     <span class="badge badge-critical mr-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
-    <span class="badge badge-critical mr-1" v-if="checks.CRITICAL">
-      CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-warning mr-1" v-if="checks.WARNING">
-      WARNING: {{ checks.WARNING }}</span>
+    <span class="badge badge-critical mr-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
+    <span class="badge badge-warning mr-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
     <span class="badge badge-ok mr-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
-    </div>
+  </div>
 </template>

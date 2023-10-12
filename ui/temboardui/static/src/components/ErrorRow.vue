@@ -1,21 +1,21 @@
 <script type="text/javascript">
-  // A Bootstrap grid row showing a global page error.
+// A Bootstrap grid row showing a global page error.
 
-  import Error from './Error.vue'
+import Error from "./Error.vue";
 
-  export default {
-    components: {
-      'error': Error
+export default {
+  components: {
+    error: Error,
+  },
+  methods: {
+    clear: function () {
+      this.$refs.error.clear();
     },
-    methods: {
-      clear: function() {
-        this.$refs.error.clear()
-      },
-      fromXHR: function(xhr) {
-        this.$refs.error.fromXHR(xhr)
-      }
-    }
-  }
+    fromXHR: function (xhr) {
+      this.$refs.error.fromXHR(xhr);
+    },
+  },
+};
 </script>
 
 <template>

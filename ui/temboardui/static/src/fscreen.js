@@ -5,7 +5,7 @@ const key = {
   requestFullscreen: 2,
   exitFullscreen: 3,
   fullscreenchange: 4,
-  fullscreenerror: 5
+  fullscreenerror: 5,
 };
 const webkit = [
   "webkitFullscreenEnabled",
@@ -13,7 +13,7 @@ const webkit = [
   "webkitRequestFullscreen",
   "webkitExitFullscreen",
   "webkitfullscreenchange",
-  "webkitfullscreenerror"
+  "webkitfullscreenerror",
 ];
 const moz = [
   "mozFullScreenEnabled",
@@ -21,7 +21,7 @@ const moz = [
   "mozRequestFullScreen",
   "mozCancelFullScreen",
   "mozfullscreenchange",
-  "mozfullscreenerror"
+  "mozfullscreenerror",
 ];
 const ms = [
   "msFullscreenEnabled",
@@ -29,13 +29,10 @@ const ms = [
   "msRequestFullscreen",
   "msExitFullscreen",
   "MSFullscreenChange",
-  "MSFullscreenError"
+  "MSFullscreenError",
 ]; // so it doesn't throw if no window or document
 
-const document =
-  typeof window !== "undefined" && typeof window.document !== "undefined"
-    ? window.document
-    : {};
+const document = typeof window !== "undefined" && typeof window.document !== "undefined" ? window.document : {};
 const vendor =
   ("fullscreenEnabled" in document && Object.keys(key)) ||
   (webkit[0] in document && webkit) ||
@@ -44,17 +41,15 @@ const vendor =
   [];
 
 const fscreen = {
-  requestFullscreen: element => element[vendor[key.requestFullscreen]](),
-  requestFullscreenFunction: element => element[vendor[key.requestFullscreen]],
+  requestFullscreen: (element) => element[vendor[key.requestFullscreen]](),
+  requestFullscreenFunction: (element) => element[vendor[key.requestFullscreen]],
 
   get exitFullscreen() {
     return document[vendor[key.exitFullscreen]].bind(document);
   },
 
-  addEventListener: (type, handler, options) =>
-    document.addEventListener(vendor[key[type]], handler, options),
-  removeEventListener: (type, handler, options) =>
-    document.removeEventListener(vendor[key[type]], handler, options),
+  addEventListener: (type, handler, options) => document.addEventListener(vendor[key[type]], handler, options),
+  removeEventListener: (type, handler, options) => document.removeEventListener(vendor[key[type]], handler, options),
 
   get fullscreenEnabled() {
     return Boolean(document[vendor[key.fullscreenEnabled]]);
@@ -73,9 +68,7 @@ const fscreen = {
   },
 
   set onfullscreenchange(handler) {
-    return (document[
-      `on${vendor[key.fullscreenchange]}`.toLowerCase()
-    ] = handler);
+    return (document[`on${vendor[key.fullscreenchange]}`.toLowerCase()] = handler);
   },
 
   get onfullscreenerror() {
@@ -83,10 +76,8 @@ const fscreen = {
   },
 
   set onfullscreenerror(handler) {
-    return (document[
-      `on${vendor[key.fullscreenerror]}`.toLowerCase()
-    ] = handler);
-  }
+    return (document[`on${vendor[key.fullscreenerror]}`.toLowerCase()] = handler);
+  },
 };
 
 window.fscreen = fscreen;

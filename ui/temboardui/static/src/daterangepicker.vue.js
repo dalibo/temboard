@@ -1,7 +1,7 @@
-import Vue from 'vue'
-import dateMath from './datemath.js'
-import rangeUtils from './rangeutils.js'
-import * as _ from 'lodash'
+import Vue from "vue";
+import dateMath from "./datemath.js";
+import rangeUtils from "./rangeutils.js";
+import * as _ from "lodash";
 var html = `
   <div v-cloak>
     <button id="buttonPicker" class="btn btn-secondary" v-on:click="showHidePicker()">
@@ -77,16 +77,19 @@ var fromPicker;
 var toPicker;
 var refreshTimeoutId;
 
-Vue.component('daterangepicker', {
-  props: ['from', 'to'],
-  data: function() {
+Vue.component("daterangepicker", {
+  props: ["from", "to"],
+  data: function () {
     return {
       ranges: rangeUtils.getRelativeTimesList(),
-      rangeString: function() {
+      rangeString: function () {
         if (!this.rawFrom || !this.rawTo) {
           return;
         }
-        return rangeUtils.describeTimeRange({from: this.rawFrom, to: this.rawTo});
+        return rangeUtils.describeTimeRange({
+          from: this.rawFrom,
+          to: this.rawTo,
+        });
       },
       // The raw values (examples: 'now-24h', 'Tue Sep 01 2020 10:16:00 GMT+0200')
       // Interaction with parent component is done with from/to props which
@@ -100,11 +103,11 @@ Vue.component('daterangepicker', {
       inputTo: null,
       refreshInterval: null,
       intervals: {
-        '60': '1m',
-        '300': '5m',
-        '900': '15m'
+        60: "1m",
+        300: "5m",
+        900: "15m",
       },
-      isPickerOpen: false
+      isPickerOpen: false,
     };
   },
   methods: {
@@ -114,33 +117,37 @@ Vue.component('daterangepicker', {
     onApply: onApply,
     setFromTo: setFromTo,
     notify: notify,
-    refresh: refresh
+    refresh: refresh,
   },
   computed: {
-    rawFromTo: function() {
-      return '' + this.rawFrom + this.rawTo;
+    rawFromTo: function () {
+      return "" + this.rawFrom + this.rawTo;
     },
-    isRefreshable: function() {
-      return this.rawFrom && this.rawFrom.toString().indexOf('now') != -1 ||
-        this.rawTo && this.rawTo.toString().indexOf('now') != -1;
-    }
+    isRefreshable: function () {
+      return (
+        (this.rawFrom && this.rawFrom.toString().indexOf("now") != -1) ||
+        (this.rawTo && this.rawTo.toString().indexOf("now") != -1)
+      );
+    },
   },
   mounted: onMounted,
   template: html,
   watch: {
-    rawFromTo: function() {
+    rawFromTo: function () {
       // "'' + date" will:
       //  - convert 'date' to unix timestamp (ms) if it's a moment object
       //  - not do anything if date is a string ('now - 24h' for example)
-      this.$router.push({ query: _.assign({}, this.$route.query, {
-        start: '' + this.rawFrom,
-        end: '' + this.rawTo
-      })});
+      this.$router.push({
+        query: _.assign({}, this.$route.query, {
+          start: "" + this.rawFrom,
+          end: "" + this.rawTo,
+        }),
+      });
       this.inputFrom = this.rawFrom;
       this.inputTo = this.rawTo;
     },
     refreshInterval: refresh,
-    $route: function(to, from) {
+    $route: function (to, from) {
       // Detect changes in browser history (back button for example)
       if (to.query.start) {
         this.rawFrom = convertTimestampToDate(to.query.start);
@@ -149,8 +156,8 @@ Vue.component('daterangepicker', {
         this.rawTo = convertTimestampToDate(to.query.end);
       }
       this.refresh();
-    }
-  }
+    },
+  },
 });
 
 function onMounted() {
@@ -159,8 +166,8 @@ function onMounted() {
    * If dates are not provided, falls back to the date range corresponding to
    * the last 24 hours.
    */
-  var start = this.$route.query.start || this.from || 'now-24h';
-  var end = this.$route.query.end || this.to || 'now';
+  var start = this.$route.query.start || this.from || "now-24h";
+  var end = this.$route.query.end || this.to || "now";
   this.rawFrom = convertTimestampToDate(start);
   this.rawTo = convertTimestampToDate(end);
   this.notify();
@@ -190,7 +197,7 @@ function parseInputDate(date) {
    * Returns value unchanged if not a valid date
    */
   if (moment.isMoment(date)) {
-    return date
+    return date;
   }
   const newDate = moment(new Date(date));
   return newDate.isValid() ? newDate : date;
@@ -210,7 +217,7 @@ var pickerOptions = {
   singleDatePicker: true,
   timePicker: true,
   timePicker24Hour: true,
-  timePickerSeconds: false
+  timePickerSeconds: false,
 };
 
 /*
@@ -220,39 +227,54 @@ var pickerOptions = {
 function synchronizePickers() {
   // update 'from' date picker only if not currently open
   // and 'from' is updating (ie. contains 'now')
-  if (!fromPicker || !fromPicker.data('daterangepicker').isShowing) {
-    fromPicker = $(this.$el).find('[data-role=from-picker]').daterangepicker(
-      $.extend({
-        startDate: dateMath.parse(this.rawFrom)
-      }, pickerOptions),
-      onPickerApply.bind(this, 'inputFrom')
-    );
+  if (!fromPicker || !fromPicker.data("daterangepicker").isShowing) {
+    fromPicker = $(this.$el)
+      .find("[data-role=from-picker]")
+      .daterangepicker(
+        $.extend(
+          {
+            startDate: dateMath.parse(this.rawFrom),
+          },
+          pickerOptions,
+        ),
+        onPickerApply.bind(this, "inputFrom"),
+      );
   }
   // update 'to' date picker only if not currently open
   // and 'to' is updating (ie. contains 'now')
-  if (!toPicker || !toPicker.data('daterangepicker').isShowing) {
-    toPicker = $(this.$el).find('[data-role=to-picker]').daterangepicker(
-      $.extend({
-        startDate: dateMath.parse(this.rawTo),
-        minDate: dateMath.parse(this.rawFrom)
-      }, pickerOptions),
-      onPickerApply.bind(this, 'inputTo')
-    );
+  if (!toPicker || !toPicker.data("daterangepicker").isShowing) {
+    toPicker = $(this.$el)
+      .find("[data-role=to-picker]")
+      .daterangepicker(
+        $.extend(
+          {
+            startDate: dateMath.parse(this.rawTo),
+            minDate: dateMath.parse(this.rawFrom),
+          },
+          pickerOptions,
+        ),
+        onPickerApply.bind(this, "inputTo"),
+      );
   }
 }
 
 function setToPickerMinDate() {
-  $(this.$el).find('[data-role=to-picker]').daterangepicker(
-    $.extend({
-      minDate: dateMath.parse(this.inputFrom)
-    }, pickerOptions),
-    onPickerApply.bind(this, 'inputTo')
-  );
+  $(this.$el)
+    .find("[data-role=to-picker]")
+    .daterangepicker(
+      $.extend(
+        {
+          minDate: dateMath.parse(this.inputFrom),
+        },
+        pickerOptions,
+      ),
+      onPickerApply.bind(this, "inputTo"),
+    );
 }
 
 function onPickerApply(targetProperty, date) {
   this[targetProperty] = date;
-  if (targetProperty === 'inputFrom') {
+  if (targetProperty === "inputFrom") {
     setToPickerMinDate.call(this);
   }
 }
@@ -272,6 +294,6 @@ function setFromTo(from, to) {
 }
 
 function notify() {
-  this.$emit('update:from', dateMath.parse(this.rawFrom));
-  this.$emit('update:to', dateMath.parse(this.rawTo, true));
+  this.$emit("update:from", dateMath.parse(this.rawFrom));
+  this.$emit("update:to", dateMath.parse(this.rawTo, true));
 }

@@ -1,58 +1,58 @@
 /* global Vue */
-$(function() {
+$(function () {
   "use strict";
 
   var getScheduledReindexesTimeout;
 
   new Vue({
-    el: '#app',
+    el: "#app",
     data: {
       schema: {
         tables: [],
-        indexes:[]
+        indexes: [],
       },
-      sortCriteria: 'total_bytes',
+      sortCriteria: "total_bytes",
       sortCriterias: {
-        name: ['Name'],
-        total_bytes: ['Table Size', 'desc'],
-        table_bytes: ['Heap Size', 'desc'],
-        bloat_ratio: ['Heap Bloat', 'desc'],
-        index_bytes: ['Index Size', 'desc'],
-        index_bloat_ratio: ['Index Bloat', 'desc'],
-        toast_bytes: ['Toast Size', 'desc']
+        name: ["Name"],
+        total_bytes: ["Table Size", "desc"],
+        table_bytes: ["Heap Size", "desc"],
+        bloat_ratio: ["Heap Bloat", "desc"],
+        index_bytes: ["Index Size", "desc"],
+        index_bloat_ratio: ["Index Bloat", "desc"],
+        toast_bytes: ["Toast Size", "desc"],
       },
-      indexSortCriteria: 'total_bytes',
+      indexSortCriteria: "total_bytes",
       indexSortCriterias: {
-        name: ['Name'],
-        total_bytes: ['Size', 'desc'],
-        bloat_ratio: ['Bloat', 'desc']
+        name: ["Name"],
+        total_bytes: ["Size", "desc"],
+        bloat_ratio: ["Bloat", "desc"],
       },
       loading: true,
-      reindexWhen: 'now',
+      reindexWhen: "now",
       reindexScheduledTime: moment(),
       scheduledReindexes: [],
-      reindexElementType: 'index',
-      reindexElementName: null
+      reindexElementType: "index",
+      reindexElementName: null,
     },
     computed: {
-      sortOrder: function() {
+      sortOrder: function () {
         return this.sortCriterias[this.sortCriteria][1];
       },
-      indexSortOrder: function() {
+      indexSortOrder: function () {
         return this.indexSortCriterias[this.indexSortCriteria][1];
       },
-      tablesSorted: function() {
+      tablesSorted: function () {
         return _.orderBy(this.schema.tables, this.sortCriteria, this.sortOrder);
       },
-      indexesSorted: function() {
+      indexesSorted: function () {
         return _.orderBy(this.schema.indexes, this.indexSortCriteria, this.indexSortOrder);
-      }
+      },
     },
-    created: function() {
+    created: function () {
       this.fetchData();
     },
     methods: {
-      fetchData: function() {
+      fetchData: function () {
         getSchemaData.call(this);
         getScheduledReindexes.call(this);
       },
@@ -60,17 +60,17 @@ $(function() {
       indexSortBy: indexSortBy,
       doReindex: doReindex,
       cancelReindex: cancelReindex,
-    }
+    },
   });
 
   function getSchemaData() {
     $.ajax({
       url: apiUrl,
       contentType: "application/json",
-      success: (function(data) {
+      success: function (data) {
         this.schema = data;
 
-        this.schema.tables.forEach(function(table) {
+        this.schema.tables.forEach(function (table) {
           table.bloat_ratio = 0;
           if (table.table_bytes) {
             table.bloat_ratio = parseFloat((100 * (table.bloat_bytes / table.table_bytes)).toFixed(1));
@@ -80,23 +80,23 @@ $(function() {
             table.index_bloat_ratio = parseFloat((100 * (table.index_bloat_bytes / table.index_bytes)).toFixed(1));
           }
         });
-        this.schema.indexes.forEach(function(index) {
+        this.schema.indexes.forEach(function (index) {
           index.bloat_ratio = 0;
           if (index.total_bytes) {
             index.bloat_ratio = parseFloat((100 * (index.bloat_bytes / index.total_bytes)).toFixed(1));
           }
         });
-        window.setTimeout(function() {
-          $('pre code.sql').each(function(i, block) {
+        window.setTimeout(function () {
+          $("pre code.sql").each(function (i, block) {
             hljs.highlightBlock(block);
           });
         }, 1);
         window.setTimeout(postCreated.bind(this), 1);
-      }).bind(this),
+      }.bind(this),
       error: onError,
-      complete: function() {
+      complete: function () {
         this.loading = false;
-      }.bind(this)
+      }.bind(this),
     });
   }
 
@@ -105,13 +105,19 @@ $(function() {
       singleDatePicker: true,
       timePicker: true,
       timePicker24Hour: true,
-      timePickerSeconds: false
+      timePickerSeconds: false,
     };
-    $('#reindexScheduledTime').daterangepicker($.extend({
-      startDate: this.reindexScheduledTime
-    }, options), function(start) {
-      this.reindexScheduledTime = start;
-    }.bind(this));
+    $("#reindexScheduledTime").daterangepicker(
+      $.extend(
+        {
+          startDate: this.reindexScheduledTime,
+        },
+        options,
+      ),
+      function (start) {
+        this.reindexScheduledTime = start;
+      }.bind(this),
+    );
     $('[data-toggle="popover"]').popover();
   }
 
@@ -119,84 +125,101 @@ $(function() {
     window.clearTimeout(getScheduledReindexesTimeout);
     var count = this.scheduledReindexes.length;
     $.ajax({
-      url: apiUrl + '/reindex/scheduled',
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      url: apiUrl + "/reindex/scheduled",
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("X-Session", xsession);
+      },
       contentType: "application/json",
-      success: (function(data) {
+      success: function (data) {
         this.scheduledReindexes = data;
         // refresh list
-        getScheduledReindexesTimeout = window.setTimeout(function() {
-          getScheduledReindexes.call(this);
-        }.bind(this), 5000);
+        getScheduledReindexesTimeout = window.setTimeout(
+          function () {
+            getScheduledReindexes.call(this);
+          }.bind(this),
+          5000,
+        );
 
         // There are less reindexes than before
         // It may mean that a reindex is finished
         if (data.length < count) {
           getSchemaData.call(this);
         }
-      }).bind(this),
-      error: onError
+      }.bind(this),
+      error: onError,
     });
   }
 
   function doReindex() {
-
-    var fields = $('#reindexForm').serializeArray();
+    var fields = $("#reindexForm").serializeArray();
     var data = {};
-    var datetime = fields.filter(function(field) {
-      return field.name == 'datetime';
-    }).map(function(field) {
-      return field.value;
-    }).join('');
+    var datetime = fields
+      .filter(function (field) {
+        return field.name == "datetime";
+      })
+      .map(function (field) {
+        return field.value;
+      })
+      .join("");
     if (datetime) {
-      data['datetime'] = datetime;
+      data["datetime"] = datetime;
     }
 
     // get the element type (either table or index)
-    var elementType = fields.filter(function(field) {
-      return field.name == 'elementType';
-    }).map(function(field) {
-      return field.value;
-    }).join('');
+    var elementType = fields
+      .filter(function (field) {
+        return field.name == "elementType";
+      })
+      .map(function (field) {
+        return field.value;
+      })
+      .join("");
     // get the element name
-    var element = fields.filter(function(field) {
-      return field.name == elementType;
-    }).map(function(field) {
-      return field.value;
-    }).join('');
+    var element = fields
+      .filter(function (field) {
+        return field.name == elementType;
+      })
+      .map(function (field) {
+        return field.value;
+      })
+      .join("");
     $.ajax({
-      method: 'POST',
-      url: [schemaApiUrl, elementType, element, 'reindex'].join('/'),
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      method: "POST",
+      url: [schemaApiUrl, elementType, element, "reindex"].join("/"),
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("X-Session", xsession);
+      },
       data: JSON.stringify(data),
       contentType: "application/json",
-      success: (function(data) {
+      success: function (data) {
         getScheduledReindexes.call(this);
-      }).bind(this),
-      error: onError
+      }.bind(this),
+      error: onError,
     });
   }
 
   function cancelReindex(id) {
     $.ajax({
-      method: 'DELETE',
-      url: maintenanceBaseUrl + '/reindex/' + id,
-      beforeSend: function(xhr){xhr.setRequestHeader('X-Session', xsession);},
+      method: "DELETE",
+      url: maintenanceBaseUrl + "/reindex/" + id,
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("X-Session", xsession);
+      },
       contentType: "application/json",
-      success: (function(data) {
+      success: function (data) {
         getScheduledReindexes.call(this);
-      }).bind(this),
-      error: onError
+      }.bind(this),
+      error: onError,
     });
   }
 
   function sortBy(criteria, order) {
     this.sortCriteria = criteria;
-    this.sortOrder = order || 'asc';
+    this.sortOrder = order || "asc";
   }
 
   function indexSortBy(criteria, order) {
     this.indexSortCriteria = criteria;
-    this.indexSortOrder = order || 'asc';
+    this.indexSortOrder = order || "asc";
   }
 });
