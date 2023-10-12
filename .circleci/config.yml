@@ -16,8 +16,10 @@ workflows:
             only: '/v.+/'
     - doc:
         name: stage0-doc
-    - lint:
-        name: stage0-lint
+    - lint-python:
+        name: stage0-lint-python
+    - lint-js:
+        name: stage0-lint-js
     - unit:
         name: stage0-unit-py<< matrix.pyversion >>
         matrix:
@@ -181,7 +183,7 @@ jobs:
         path: README.html
         destination: build/README.html
 
-  lint:
+  lint-python:
     docker: [image: python:3.9]
     working_directory: *working_directory
     steps:
@@ -216,6 +218,23 @@ jobs:
         save_cache:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
+
+  lint-js:
+    docker: [image: node:16]
+    working_directory: *working_directory
+    steps:
+      - checkout
+      - &pip-cache-restore
+        restore_cache:
+          keys:
+            - temboard-{{ .Branch }}
+            - temboard-master
+      - run:
+          name: Setup and Lint
+          command: |
+            cd ui/
+            npm ci
+            npx prettier --check .
 
   unit:
     parameters:
