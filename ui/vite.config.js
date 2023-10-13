@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [vue()],
   root: "temboardui/static/src",
   base: "/static/",
+  server: {
+    origin: "http://localhost:5173",
+    port: 5173,
+  },
   build: {
     manifest: true,
     outDir: "..",
