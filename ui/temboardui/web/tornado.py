@@ -93,15 +93,16 @@ class TemplateRenderer(object):
 
     def __call__(self, template, **data):
         data = dict(self.GLOBAL_NAMESPACE, **data)
+        # unsafe-eval is for jquery. unsafe-inline because we have
+        # script tags in templates.
+        csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval'"
+        if 'VITEJS' in os.environ:
+            csp += " localhost:5173 ws:"
         return Response(
             body=self.loader.load(template).generate(**data),
             headers={
                 'Content-Type': 'text/html; charset=UTF-8',
-                'Content-Security-Policy': (
-                    # unsafe-eval is for jquery. unsafe-inline because we have
-                    # script tags in templates.
-                    "default-src 'self' 'unsafe-eval' 'unsafe-inline'"
-                ),
+                'Content-Security-Policy': csp,
             },
         )
 

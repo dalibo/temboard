@@ -41,11 +41,15 @@ def create_app(temboard_app):
     AuthMiddleware(app)
     app.errorhandler(Exception)(json_error_handler)
 
+    # unsafe-eval is for jquery. unsafe-inline because we have
+    # script tags in templates.
+    csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    if 'VITEJS' in os.environ:
+        csp += " localhost:5173 ws:"
+
     @app.after_request
     def add_csp(resp):
-        resp.headers['Content-Security-Policy'] = (
-            "default-src 'self' 'unsafe-inline' 'unsafe-eval'"
-        )
+        resp.headers['Content-Security-Policy'] = csp
         return resp
 
     ViteJSExtension(app)
