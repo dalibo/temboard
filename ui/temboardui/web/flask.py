@@ -43,7 +43,7 @@ def create_app(temboard_app):
 
     # unsafe-eval is for jquery. unsafe-inline because we have
     # script tags in templates.
-    csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
     if 'VITEJS' in os.environ:
         csp += " localhost:5173 ws:"
 
