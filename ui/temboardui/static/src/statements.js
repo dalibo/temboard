@@ -6,6 +6,7 @@ import { formatDuration } from "./utils/duration";
 Vue.use(VueRouter);
 
 import BootstrapVue from "bootstrap-vue";
+import "bootstrap-vue/dist/bootstrap-vue.css";
 Vue.use(BootstrapVue);
 
 var dataRequest;
