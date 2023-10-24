@@ -5,7 +5,6 @@ ALTER SYSTEM SET max_wal_senders TO '10';
 ALTER SYSTEM SET archive_mode TO 'ON';
 ALTER SYSTEM SET archive_command TO '/bin/cp -nv %p /var/lib/postgresql/archive/%f';
 ALTER SYSTEM SET restore_command TO '/bin/cp -nv /var/lib/postgresql/archive/%f %p';
-ALTER SYSTEM SET wal_log_hints TO 'on';
 EOF
 
 cat >> "$PGDATA/pg_hba.conf" <<EOF

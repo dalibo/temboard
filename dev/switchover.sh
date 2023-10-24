@@ -37,8 +37,11 @@ for server in postgres0 postgres1 ; do
 	esac
 done
 
+: "Current Primary is $primary"
+: "Current secondary is $secondary"
+
 docker-compose stop $primary
-_psql $secondary -c 'SELECT pg_promote();'
+_psql "$secondary" -c 'SELECT pg_promote();'
 # Swap variables
 servers=("$secondary" "$primary")
 primary="${servers[0]}"
@@ -53,5 +56,5 @@ _psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep "$secondary"
 # Check secondary is in recovery.
 _psql "$secondary" -c "SELECT pg_is_in_recovery();" | grep t
 
-: "Primary is $primary (postgres://postgres:postgres@0.0.0.0:$((1 + ${primary#postgres}))5432/postgres))"
-: "Secondary is $secondary (postgres://postgres:postgres@0.0.0.0:$((1 + ${secondary#postgres}))5432/postgres))"
+: "New Primary is $primary (postgres://postgres:postgres@0.0.0.0:$((1 + ${primary#postgres}))5432/postgres))"
+: "New Secondary is $secondary (postgres://postgres:postgres@0.0.0.0:$((1 + ${secondary#postgres}))5432/postgres))"
