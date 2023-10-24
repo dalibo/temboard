@@ -26,12 +26,12 @@
   "devDependencies": {
     "@vitejs/plugin-vue2": "^1.1.2",
     "autoprefixer": "^10.4.12",
-    "postcss": "^8.4.16",
-    "sass": "^1.54.5",
-    "vite": "^3.0.7",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "prettier": "^3.0.3"
+    "postcss": "^8.4.16",
+    "prettier": "^3.0.3",
+    "sass": "^1.54.5",
+    "vite": "^3.0.7"
   },
   "lint-staged": {
     "*.{js,css,vue}": "prettier --write"
