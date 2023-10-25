@@ -124,7 +124,7 @@ export default {
 
       this.fetch_current_data().done(() => {
         // Discover may fail if agent is down.
-        this.discover_agent().done(() => {
+        this.discover_agent().complete(() => {
           this.$nextTick(this.$refs.form.setup_multiselects);
           this.waiting = false;
         });

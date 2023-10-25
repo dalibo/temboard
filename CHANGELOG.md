@@ -19,6 +19,7 @@ Ensure you use consistent title format.
 - Configure Content-Security-Policy header.
 - Warn outdated agent.
 - Transparently drop unused agent key.
+- Fix garbled select when updating offline instance.
 
 
 ## 8.1
