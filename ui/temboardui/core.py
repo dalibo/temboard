@@ -25,12 +25,19 @@ def refresh_discover(app, address, port):
         logger.error("Agent or host may be down or misconfigured.")
         return
 
+    data = response.json()
+    if instance.agent_key and 'temboard' in data:
+        logger.debug("Dropping legacy agent key for agent %s.", instance)
+        instance.agent_key = None
+
     discover_etag = response.headers.get('ETag')
     if discover_etag == instance.discover_etag:
         logger.info("Discover data up to date for %s.", instance)
+        if session.is_modified(instance):
+            session.commit()
         return
 
-    instance.discover = response.json()
+    instance.discover = data
     instance.discover_etag = discover_etag
     instance.discover_date = utcnow()
     session.commit()

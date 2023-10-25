@@ -54,7 +54,12 @@
           </td>
           <td>{{instance.pg_data}}</td>
           <td>{% for group in instance.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
-          <td class="agent_hostport">{{instance.agent_address}}:{{instance.agent_port}}</td>
+          <td class="agent_hostport">
+            {{instance.agent_address}}:{{instance.agent_port}}
+            {% if instance.agent_key %}
+            <i class="fa fa-warning text-warning" title="This temBoard agent is running an old version. Consider upgrading."/>
+            {% end %}
+          </td>
           <td class="text-center">
             {% if instance.notify %}
             <i class="fa fa-check"></i>
