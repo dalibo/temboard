@@ -17,6 +17,7 @@ Ensure you use consistent title format.
 - Ignore psqlrc in `create_repository.sh`.
 - Allow to edit unavailable instance.
 - Configure Content-Security-Policy header.
+- Warn outdated agent.
 
 
 ## 8.1
