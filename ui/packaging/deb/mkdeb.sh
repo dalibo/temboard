@@ -48,8 +48,22 @@ dist="$DISTDIR/temboard-$pep440v"-py2.py3-none-any.whl
 if ! [ -f "$dist" ] ; then
 	pip3 download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
 fi
-pip3 install --target "$DESTDIR/usr/lib/temboard" --only-binary cffi,cryptography "$dist"
 
+pip3 install --root "$DESTDIR/" --only-binary cffi,cryptography "$dist"
+# Follows a list of hacks to make pip install result FHS compliant while
+# keeping temboard dependencies private.
+#
+# --prefix and --root does not work together. Let's fix this.
+mv "$DESTDIR/usr/local/share" "$DESTDIR/usr/"
+# Move temboard out of FHS.
+mkdir "$DESTDIR/usr/lib"
+mv "$DESTDIR/usr/local/lib"/*/dist-packages  "$DESTDIR/usr/lib/temboard"
+mv "$DESTDIR/usr/local/lib/systemd"  "$DESTDIR/usr/lib"
+# Move binaries out of FHS.
+mv "$DESTDIR/usr/local/bin" "$DESTDIR/usr/lib/temboard/"
+rm -rf "${DESTDIR:?}/usr/local"
+
+# Create FHS wrapper.
 mkdir -p "$DESTDIR/usr/bin"
 cat > "$DESTDIR/usr/bin/temboard" <<'EOF'
 #!/bin/bash
@@ -60,7 +74,6 @@ EOF
 
 chmod +x "$DESTDIR/usr/bin/temboard"
 
-mv "$DESTDIR/usr/lib/temboard/share/"  "$DESTDIR/usr/share/"
 
 #       B U I L D
 
@@ -89,6 +102,7 @@ apt-get install --yes --no-install-recommends "./$deb"
 	temboard --version
 	test -f /usr/lib/temboard/temboardui/static/manifest.json
 	test -x /usr/share/temboard/auto_configure.sh
+	test -f /usr/lib/systemd/system/temboard.service
 )
 
 #       S A V E

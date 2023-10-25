@@ -20,6 +20,7 @@ Ensure you use consistent title format.
 - Warn outdated agent.
 - Transparently drop unused agent key.
 - Fix garbled select when updating offline instance.
+- Fix missing service file in debian package.
 
 
 ## 8.1
