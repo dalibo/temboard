@@ -23,8 +23,8 @@ class ActivityPlugin(object):
         raise NotImplementedError()
 
 
-@blueprint.instance_route(r'/activity/(running|blocking|waiting)')
-def activity(request, mode):
+@blueprint.instance_route(r'/activity')
+def activity(request):
     request.instance.check_active_plugin('activity')
     agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
@@ -34,7 +34,6 @@ def activity(request, mode):
         agent_username=agent_username,
         instance=request.instance,
         plugin='activity',
-        mode=mode,
         xsession=xsession,
         role=request.current_user,
     )
