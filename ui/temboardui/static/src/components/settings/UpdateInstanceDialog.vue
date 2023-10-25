@@ -154,6 +154,11 @@ export default {
     },
     update(data) {
       this.waiting = true;
+      if (this.discover_data.signature_status === "valid") {
+        // Ensure agent key is dropped for new agents.
+        data.agent_key = null;
+      }
+
       $.ajax({
         url: ["/json/settings/instance", this.agent_address, this.agent_port].join("/"),
         method: "POST",
