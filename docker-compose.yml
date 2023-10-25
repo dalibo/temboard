@@ -30,6 +30,7 @@ services:
     # Exposed port is important for dev/switchover.sh
     ports: [15432:5432]
     environment: &postgres_env
+      POSTGRES_INITDB_ARGS: "--data-checksums"
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PEER_HOST: postgres1
