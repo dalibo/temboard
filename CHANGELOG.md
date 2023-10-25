@@ -18,6 +18,7 @@ Ensure you use consistent title format.
 - Allow to edit unavailable instance.
 - Configure Content-Security-Policy header.
 - Warn outdated agent.
+- Transparently drop unused agent key.
 
 
 ## 8.1
