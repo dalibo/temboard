@@ -1,5 +1,6 @@
 import Vue from "vue";
 import DeleteInstanceDialog from "./components/settings/DeleteInstanceDialog.vue";
+import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 import NewInstanceWizard from "./components/settings/NewInstanceWizard.vue";
 import UpdateInstanceDialog from "./components/settings/UpdateInstanceDialog.vue";
 
@@ -18,6 +19,7 @@ window.app = new Vue({
   el: "#vue-app",
   components: {
     "delete-instance-dialog": DeleteInstanceDialog,
+    "environment-migration-dialog": EnvironmentMigrationDialog,
     "new-instance-wizard": NewInstanceWizard,
     "update-instance-dialog": UpdateInstanceDialog,
   },
