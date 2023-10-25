@@ -13,11 +13,11 @@ Vue.use(BootstrapVue);
 let request = null;
 const intervalDuration = 2;
 let loadTimeout;
+const activityData = ref({});
 
 let loading = ref(false);
+const mode = ref("running");
 const sessions = ref([]);
-const waitingCount = ref(0);
-const blockingCount = ref(0);
 const paused = ref(false);
 const selectedPids = ref([]);
 const filter = ref(null);
@@ -44,9 +44,7 @@ function load() {
     contentType: "application/json",
     success: function (data) {
       clearError();
-      sessions.value = data[activityMode].rows;
-      waitingCount.value = data["waiting"].rows.length;
-      blockingCount.value = data["blocking"].rows.length;
+      activityData.value = data;
     },
     error: function (xhr, status) {
       if (status == "abort") {
@@ -205,63 +203,64 @@ function doFilter(row) {
 function highlight(src) {
   return hljs.highlight("sql", src).value;
 }
-let fields = [
-  { label: "", key: "check" },
-  { label: "PID", key: "pid", class: "text-right" },
-  { label: "Database", key: "database" },
-  { label: "User", key: "user", orderable: false },
-  { label: "Application", key: "application_name" },
-  { label: "CPU", key: "cpu", class: "text-right" },
-  { label: "mem", key: "memory", class: "text-right" },
-  { label: "Read/s", key: "read_s", class: "text-right", formatter: human2bytes },
-  { label: "Write/s", key: "write_s", class: "text-right", formatter: human2bytes },
-  { label: "IOW", key: "iow", sortable: true, class: "text-center" },
-];
 
-if (activityMode == "running") {
-  fields = fields.concat([{ label: "W", key: "wait", class: "text-center" }]);
-} else {
+function fields() {
+  let fields = [
+    { label: "", key: "check" },
+    { label: "PID", key: "pid", class: "text-right" },
+    { label: "Database", key: "database" },
+    { label: "User", key: "user", orderable: false },
+    { label: "Application", key: "application_name" },
+    { label: "CPU", key: "cpu", class: "text-right" },
+    { label: "mem", key: "memory", class: "text-right" },
+    { label: "Read/s", key: "read_s", class: "text-right", formatter: human2bytes },
+    { label: "Write/s", key: "write_s", class: "text-right", formatter: human2bytes },
+    { label: "IOW", key: "iow", sortable: true, class: "text-center" },
+  ];
+
+  if (mode.value == "running") {
+    fields = fields.concat([{ label: "W", key: "wait", class: "text-center" }]);
+  } else {
+    fields = fields.concat([
+      { label: "Lock Rel.", data: "relation", class: "text-right" },
+      { label: "Lock Mode", key: "mode" },
+      { label: "Lock Type", key: "type" },
+    ]);
+  }
+
   fields = fields.concat([
-    { label: "Lock Rel.", data: "relation", class: "text-right" },
-    { label: "Lock Mode", key: "mode" },
-    { label: "Lock Type", key: "type" },
-  ]);
-}
-
-fields = fields.concat([
-  { label: "State", key: "state", sortable: true, class: "text-center", tdClass: stateClass },
-  {
-    label: "Time",
-    key: "duration",
-    class: "text-right",
-    formatter: formatDurationSeconds,
-    sortable: true,
-  },
-  {
-    label: "Query",
-    key: "query",
-    class: "query",
-    sortable: true,
-    tdAttr: {
-      "data-toggle": "popover",
-      "data-trigger": "hover",
+    { label: "State", key: "state", sortable: true, class: "text-center", tdClass: stateClass },
+    {
+      label: "Time",
+      key: "duration",
+      class: "text-right",
+      formatter: formatDurationSeconds,
+      sortable: true,
     },
-  },
-]);
+    {
+      label: "Query",
+      key: "query",
+      class: "query",
+      sortable: true,
+      tdAttr: {
+        "data-toggle": "popover",
+        "data-trigger": "hover",
+      },
+    },
+  ]);
+  return fields;
+}
 
 new Vue({
   el: "#app",
   data: {
-    blockingCount,
-    fields,
     filter,
     states,
     paused,
     selectedStates,
     selectedPids,
-    sessions,
-    waitingCount,
     loading,
+    mode,
   },
   methods: {
     doFilter,
@@ -273,6 +272,10 @@ new Vue({
   },
   computed: {
     freezed: () => selectedPids.value.length > 0,
+    fields,
+    sessions: () => (activityData.value[mode.value] ? activityData.value[mode.value].rows : []),
+    waitingCount: () => (activityData.value["waiting"] ? activityData.value["waiting"].rows.length : undefined),
+    blockingCount: () => (activityData.value["blocking"] ? activityData.value["blocking"].rows.length : undefined),
   },
   watch: {
     selectedStates: function (val) {

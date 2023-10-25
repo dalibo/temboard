@@ -23,6 +23,8 @@ Ensure you use consistent title format.
 - Fix missing service file in debian package.
 - Fix detection of running systemd.
 - Warn about instance in multiple groups.
+- The `activity/running|blocking|waiting` endpoints don't exist anymore, only
+  `activity` is available now.
 
 **Agent changes**
 
