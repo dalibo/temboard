@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { formatDuration } from "../utils/duration";
 import Copy from "../copy.vue";
+import ModalDialog from "../components/ModalDialog.vue";
 import * as _ from "lodash";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
@@ -12,6 +13,9 @@ let loadTimeout;
 const activityData = ref({});
 
 let loading = ref(false);
+let terminateLoading = ref(false);
+let terminateError = ref(undefined);
+let errorUrl = ref(undefined);
 const mode = ref("running");
 const paused = ref(false);
 const selectedPids = ref([]);
@@ -58,74 +62,34 @@ function load() {
 // Launch once
 load();
 
-function terminate(pids) {
-  $("#Modal").modal("show");
-  $("#ModalLabel").html("Terminate backend");
-  var pids_html = "";
-  for (var i = 0; i < pids.length; i++) {
-    pids_html += '<span class="badge badge-primary">' + pids[i] + "</span> ";
-  }
-  $("#ModalInfo").html("Please confirm you want to terminated the following backend PIDs: " + pids_html);
-  var footer_html = "";
-  footer_html += '<button type="button" id="submitKill" class="btn btn-danger">Yes, terminate</button>';
-  footer_html += ' <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>';
-  $("#ModalFooter").html(footer_html);
-  $("#submitKill").click(function () {
-    $.ajax({
-      url: "/proxy/" + agent_address + "/" + agent_port + "/activity/kill",
-      type: "POST",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-        $("#ModalInfo").html(
-          '<div class="row"><div class="col-4 offset-4"><div class="progress"><div class="progress-bar progress-bar-striped" style="width: 100%;">Please wait ...</div></div></div></div>',
-        );
-      },
-      async: true,
-      contentType: "application/json",
-      dataType: "json",
-      data: JSON.stringify({ pids: pids }),
-      success: function () {
-        $("#Modal").modal("hide");
-        var url = window.location.href;
-        window.location.replace(url);
-      },
-      error: function (xhr) {
-        console.log(xhr.status);
-        // 406 is for malformed X-Session.
-        if (xhr.status == 401 || xhr.status == 406) {
-          var params = $.param({ redirect_to: window.location.href });
-          var info = "";
-          info += '<div class="row">';
-          info += '  <div class="col-12">';
-          info +=
-            '    <div class="alert alert-danger" role="alert">Agent login required: ' +
-            escapeHtml(JSON.parse(xhr.responseText).error) +
-            "</div>";
-          info +=
-            '    <p>Go to <a href="' +
-            agentLoginUrl +
-            "?" +
-            params +
-            '">Agent Login form</a> and try again to terminate backend.</div>';
-          info += "  </div>";
-          info += "</div>";
-          // Reuse Info dialog to avoid flicker while closing info and opening error.
-          $("#ModalInfo").html(info);
-          $("#ModalFooter").html(
-            '<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>',
-          );
-        } else {
-          $("#ModalInfo").html(
-            '<div class="row"><div class="col-12"><div class="alert alert-danger" role="alert">Error: ' +
-              escapeHtml(JSON.parse(xhr.responseText).error) +
-              "</div></div></div>",
-          );
-          $("#ModalFooter").html(
-            '<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>',
-          );
-        }
-      },
-    });
+function terminate() {
+  $.ajax({
+    url: "/proxy/" + agent_address + "/" + agent_port + "/activity/kill",
+    type: "POST",
+    beforeSend: function (xhr) {
+      xhr.setRequestHeader("X-Session", xsession);
+      terminateLoading.value = true;
+    },
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    data: JSON.stringify({ pids: selectedPids.value }),
+    success: function () {
+      $("#terminateModal").modal("hide");
+      var url = window.location.href;
+      window.location.replace(url);
+      terminateLoading.value = false;
+    },
+    error: function (xhr) {
+      terminateLoading.value = false;
+      console.log(xhr.status);
+      terminateError.value = escapeHtml(JSON.parse(xhr.responseText).error);
+      // 406 is for malformed X-Session.
+      if (xhr.status == 401 || xhr.status == 406) {
+        var params = $.param({ redirect_to: window.location.href });
+        errorUrl.value = agentLoginUrl + "?" + params;
+      }
+    },
   });
 }
 
@@ -263,6 +227,11 @@ const blockingCount = computed(() => {
 watch(selectedStates, (val) => {
   localStorage.setItem("temboardActivityStateFilters", JSON.stringify(val));
 });
+
+function reset() {
+  terminateError.value = undefined;
+  terminateLoading.value = undefined;
+}
 </script>
 
 <template>
@@ -309,7 +278,8 @@ watch(selectedStates, (val) => {
             type="button"
             class="btn btn-danger"
             :class="{ disabled: !freezed }"
-            @click="terminate(selectedPids)"
+            data-toggle="modal"
+            data-target="#terminateModal"
           >
             Terminate
           </button>
@@ -411,5 +381,44 @@ watch(selectedStates, (val) => {
         <p class="text-center text-muted">Showing 300 longest queries.</p>
       </div>
     </div>
+    <ModalDialog id="terminateModal" title="Terminate Backend" v-on:closed="reset">
+      <div class="modal-body">
+        Please confirm you want to terminated the following backend PIDs:
+        <span class="badge badge-primary" v-for="pid in selectedPids">{{ pid }}</span>
+      </div>
+
+      <div class="modal-body">
+        <div class="row" v-if="terminateLoading">
+          <div class="col-4 offset-4">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped" style="width: 100%">Please wait ...</div>
+            </div>
+          </div>
+        </div>
+        <div class="row" v-else-if="terminateError">
+          <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+              Agent login required:
+              {{ terminateError }}
+            </div>
+            <div>Go to <a :href="errorUrl">Agent Login form</a> and try again to terminate backend.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          id="submitKill"
+          type="button"
+          class="btn btn-danger"
+          :disabled="terminateLoading"
+          @click="terminate"
+          v-if="!terminateError"
+        >
+          Yes, terminate
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </ModalDialog>
   </div>
 </template>
