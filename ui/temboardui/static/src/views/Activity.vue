@@ -76,9 +76,10 @@ function terminate() {
     data: JSON.stringify({ pids: selectedPids.value }),
     success: function () {
       $("#terminateModal").modal("hide");
-      var url = window.location.href;
-      window.location.replace(url);
       terminateLoading.value = false;
+      selectedPids.value = [];
+      paused.value = false;
+      load();
     },
     error: function (xhr) {
       terminateLoading.value = false;
