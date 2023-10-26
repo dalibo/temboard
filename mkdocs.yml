@@ -60,6 +60,7 @@ nav:
 - Install:
   - Install the server: server_install.md
   - Install the agent: agent_install.md
+  - Compatibility Guide: compatibility_guide.md
 - Upgrade:
   - Upgrade the server: server_upgrade.md
   - Upgrade the agent: agent_upgrade.md
