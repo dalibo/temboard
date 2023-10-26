@@ -20,12 +20,14 @@ def get_activity(pgconn):
 
 @bottle.get('/waiting')
 def get_activity_waiting(pgconn):
-    return activity_functions.get_activity_waiting(pgconn)
+    limit = int(request.query.get('limit', 300))
+    return activity_functions.get_activity_waiting(pgconn, limit)
 
 
 @bottle.get('/blocking')
 def get_activity_blocking(pgconn):
-    return activity_functions.get_activity_blocking(pgconn)
+    limit = int(request.query.get('limit', 300))
+    return activity_functions.get_activity_blocking(pgconn, limit)
 
 
 @bottle.post('/kill')

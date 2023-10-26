@@ -21,6 +21,12 @@ Ensure you use consistent title format.
 - Transparently drop unused agent key.
 - Fix garbled select when updating offline instance.
 
+**Agent changes**
+
+- Limit activity response to 300 longest queries (also for blocking and waiting
+  endpoints)
+
+
 
 ## 8.1
 

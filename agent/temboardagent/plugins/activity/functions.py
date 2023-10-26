@@ -145,7 +145,7 @@ ORDER BY
     }
 
 
-def get_activity_waiting(conn):
+def get_activity_waiting(conn, limit):
     """
     Returns the list of waiting (on lock) queries.
     """
@@ -174,6 +174,7 @@ WHERE
 ORDER BY
   EXTRACT(epoch FROM (NOW() - pg_stat_activity.query_start)) DESC
     """
+    query = query + " LIMIT %d" % limit
     backend_list = []
     for row in conn.query(query):
         try:
@@ -224,7 +225,7 @@ ORDER BY
     }
 
 
-def get_activity_blocking(conn):
+def get_activity_blocking(conn, limit):
     """
     Returns the list of blocking (lock) queries.
     """
@@ -290,6 +291,7 @@ FROM (
 ) AS sq
 ORDER BY duration DESC
     """
+    query = query + " LIMIT %d" % limit
     backend_list = []
     for row in conn.query(query):
         try:
