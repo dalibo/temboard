@@ -60,12 +60,12 @@ Adapt `--since` argument to your needs.
 To visualize temBoard's performances traces, the development environment of
 temBoard ships et Grafana setup with Prometheus and Loki. See
 [Contributing](CONTRIBUTING.md) to setup a development environment.
-`dev/importlog.py` Python script backfills Prometheus and Loki from temBoard
+`dev/bin/importlog.py` Python script backfills Prometheus and Loki from temBoard
 traces file.
 
 ``` console
 $ docker-compose up -d
-$ ./dev/importlog.py my-temboard.log
+$ ./dev/bin/importlog.py my-temboard.log
 I: Analyzing systemd.log.
 I: Read timezone from /etc: Europe/Paris.
 ...

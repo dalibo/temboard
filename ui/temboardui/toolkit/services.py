@@ -57,6 +57,7 @@ class Service(object):
         # in parent process once the service is forked. See
         # ServicesManager.start().
         self.is_my_process = True
+        self.perf = None
 
     def __str__(self):
         return self.logname
@@ -118,6 +119,7 @@ class Service(object):
             self.serve()
         except KeyboardInterrupt:
             logger.info(u"%s interrupted.", self)
+            self.teardown()
             sys.exit(0)
 
     def serve(self):
@@ -156,6 +158,9 @@ class Service(object):
         # This method should not block for too long waiting for work to be
         # done. Reload is applied between two calls of this method.
         raise NotImplementedError
+
+    def teardown(self):
+        pass
 
 
 class ServicesManager(object):

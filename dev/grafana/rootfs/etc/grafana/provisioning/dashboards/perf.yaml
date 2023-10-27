@@ -13,3 +13,9 @@ providers:
   allowUiUpdates: true
   options:
     path: /usr/share/temboard/postgres.json
+- name: "temBoard Prometheus"
+  type: file
+  folder: ''
+  allowUiUpdates: true
+  options:
+    path: /usr/share/temboard/temboard-prometheus.json

@@ -12,7 +12,8 @@ apropos:  #: Show dev Makefile help.
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
-	$(MAKE) install-$*
+	$(MAKE) -j 2 install-$* dev/bin/prometheus
+	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
@@ -24,7 +25,7 @@ develop-%:: .env
 	@echo
 	@echo
 
-.env: dev/mkenv
+.env: dev/bin/mkenv
 	$^ > $@
 
 repository:  #: Initialize temBoard UI database.
@@ -58,13 +59,27 @@ install-2.7: venv-2.7
 	dev/venv-py2.7/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e ui/
 	dev/venv-py2.7/bin/temboard --version  # pen test
 
+# LTS
+PROMETHEUS_VERSION=2.45.1
+dev/downloads/prometheus-%.linux-amd64.tar.gz:
+	mkdir -p $(dir $@)
+	curl --fail --silent -L "https://github.com/prometheus/prometheus/releases/download/v$*/$(notdir $@)" --output $@
+
+dev/bin/prometheus dev/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+	tar --extract --file "$<" --directory "$(dir $@)" --strip-component=1 --touch "prometheus-$(PROMETHEUS_VERSION).linux-amd64/$(notdir $@)"
+	"$@" --version  # Smoketest
+
 clean:  #: Trash venv and containers.
 	docker-compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -vf dev/bin/prometheus dev/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
+
+distclean: clean  #: Clean also dev env caches.
+	rm -rvf dev/downloads/
 
 # This is the default compose project name as computed by docker-compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
@@ -109,7 +124,7 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 tests:  #: Execute all tests.
 	cd agent/; flake8
 	cd ui/; flake8
-	flake8 tests/ dev/importlog.py
+	flake8 tests/ dev/bin/importlog.py
 	pytest --exitfirst agent/tests/unit/
 	pytest --exitfirst ui/tests/unit/
 	pytest --exitfirst tests/
@@ -118,7 +133,7 @@ clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
 prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
-dev/prometheus/targets/temboard-dev.yaml: dev/prometheus/mktargets .env
+dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
 	$^ > $@
 
 VERSION=$(shell cd ui; python3 setup.py --version)

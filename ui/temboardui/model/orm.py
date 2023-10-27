@@ -287,6 +287,13 @@ class Instances(Model):
     def count(cls):
         return text(QUERIES['instances-count']).columns(count=Integer)
 
+    @classmethod
+    def all(cls):
+        return Query(cls).from_statement(
+            text(QUERIES["instances-all"])
+            .columns(*cls.__mapper__.c.values())
+        )
+
     # Compatibility from new JSONb discover to old column discover.
     @property
     def cpu(self):
