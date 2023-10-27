@@ -323,14 +323,6 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        name: Build Agent Debian Snapshot
-        command: agent/packaging/deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
-    - store_artifacts:
-        path: /workspace/agent/dist/
-    - run:
         name: Build UI Debian Snapshot
         command: ui/packaging/deb/mkdeb.sh
         environment:
@@ -338,6 +330,14 @@ jobs:
           DEBEMAIL: none@example.com
     - store_artifacts:
         path: /workspace/ui/dist/
+    - run:
+        name: Build Agent Debian Snapshot
+        command: agent/packaging/deb/mkdeb.sh
+        environment:
+          DEBFULLNAME: CircleCI
+          DEBEMAIL: none@example.com
+    - store_artifacts:
+        path: /workspace/agent/dist/
     - persist_to_workspace:
         root: .
         paths:
