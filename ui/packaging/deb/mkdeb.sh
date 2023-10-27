@@ -49,7 +49,7 @@ if ! [ -f "$dist" ] ; then
 	pip3 download --only-binary :all: --no-deps --pre --dest "$DISTDIR/" "temboard==$pep440v"
 fi
 
-pip3 install --root "$DESTDIR/" --only-binary cffi,cryptography "$dist"
+pip3 install --ignore-installed --root "$DESTDIR/" --only-binary cffi,cryptography "$dist"
 # Follows a list of hacks to make pip install result FHS compliant while
 # keeping temboard dependencies private.
 #
