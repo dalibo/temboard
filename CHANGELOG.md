@@ -22,6 +22,7 @@ Ensure you use consistent title format.
 - Fix garbled select when updating offline instance.
 - Fix missing service file in debian package.
 - Fix detection of running systemd.
+- Warn about instance in multiple groups.
 
 **Agent changes**
 

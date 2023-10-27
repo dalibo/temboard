@@ -10,6 +10,7 @@
 
 {% block content %}
 <div id="vue-app">
+  <environment-migration-dialog ref="environment_migration_dialog" object-class="instance" title="Instance in multiple groups"></environment-migration-dialog>
   <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
   <delete-instance-dialog ref="delete_modal"></delete-instance-dialog>
@@ -53,7 +54,18 @@
             </div>
           </td>
           <td>{{instance.pg_data}}</td>
-          <td>{% for group in instance.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
+          <td>
+            {% for group in instance.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}
+            {% if len(instance.groups) > 1 %}
+              <i
+                class="fa fa-warning text-warning"
+                style="cursor: pointer;"
+                title="Instance in multiple groups. Click for details."
+                data-toggle="modal"
+                v-on:click="$refs.environment_migration_dialog.show()">
+              </i>
+            {% end %}
+          </td>
           <td class="agent_hostport">
             {{instance.agent_address}}:{{instance.agent_port}}
             {% if instance.agent_key %}
