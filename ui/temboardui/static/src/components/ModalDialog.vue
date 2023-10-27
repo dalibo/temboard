@@ -1,17 +1,18 @@
-<script type="text/javascript">
+<script setup>
 /* A simple boostrap Dialog */
-export default {
-  props: ["id", "title"],
-  mounted() {
-    $(this.$el).on("hidden.bs.modal", () => {
-      this.$emit("closed");
-    });
-  },
-};
+import { defineEmits, defineProps, onMounted, ref } from "vue";
+defineProps(["id", "title"]);
+const emit = defineEmits(["closed"]);
+const root = ref(null);
+onMounted(() => {
+  $(root.value).on("hidden.bs.modal", () => {
+    emit("closed");
+  });
+});
 </script>
 
 <template>
-  <div v-bind:id="id" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+  <div v-bind:id="id" ref="root" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
