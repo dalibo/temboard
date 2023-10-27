@@ -365,7 +365,7 @@ chown "$SYSUSER:$SYSUSER" "$conf"
 sudo -Eu "${SYSUSER}" $(type -p temboard-agent) -c "$conf" discover >/dev/null
 
 # systemd
-if grep -q systemd /proc/1/cmdline && [ -w /etc/systemd/system ] ; then
+if readlink /proc/1/exec | grep -q systemd && [ -w /etc/systemd/system ] ; then
 	unit="temboard-agent@$(systemd-escape "${name}").service"
 	log "Configuring systemd unit ${unit}."
 	if [ "${SYSUSER}" != "postgres" ] ; then
