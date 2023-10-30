@@ -6,7 +6,6 @@ from bottle import (
 
 from ..notification import NotificationMgmt
 from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
-from ..version import __version__ as version
 
 
 logger = logging.getLogger(__name__)
@@ -72,19 +71,7 @@ def notifications():
 
 
 @get('/status', skip=['signature'])
-def get_status():
+def get_status(pgconn):
     app = default_app().temboard
-
-    try:
-        reload_datetime = app.reload_datetime.strftime("%Y-%m-%dT%H:%M:%S%Z")
-    except AttributeError:
-        reload_datetime = None
-
-    return dict(
-        pid=app.pid,
-        user=app.user,
-        start_datetime=app.start_datetime.strftime("%Y-%m-%dT%H:%M:%S%Z"),
-        reload_datetime=reload_datetime,
-        configfile=app.config.temboard.configfile,
-        version=version,
-    )
+    response.set_header('X-TemBoard-Discover-ETag', app.discover.etag)
+    return app.status.get(pgconn)

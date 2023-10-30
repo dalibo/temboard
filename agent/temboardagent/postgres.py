@@ -17,6 +17,7 @@ from psycopg2 import Error as Psycopg2Error
 from psycopg2.pool import ThreadedConnectionPool
 import psycopg2.extensions
 
+from .tools import noop_manager
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,9 @@ class Postgres:
     def connect(self, database=None):
         kw = self.pqvars(database)
         return closing(retry_connect(connect, self.app, **kw))
+
+    def maybe_connect(self, conn=None, database=None):
+        return noop_manager(conn) if conn else self.connect(database)
 
     def copy(self, **kw):
         defaults = dict(
@@ -312,3 +316,17 @@ class ReconnectManager(object):
         # Else, just clean conn and let exception bubble.
         self.pool.putconn(self.conn)
         self.conn = None
+
+
+def extract_conninfo_fields(conninfo, searched_keys=["host", "port"]):
+    """Return only searched_keys from conninfo"""
+    if conninfo is None:
+        return None
+    if "password" in searched_keys:
+        raise Exception("Password should not be fetched from conninfo.")
+    filterred_conninfo = {}
+    for kv in conninfo.split(' '):
+        k, _, v = kv.partition('=')
+        if k in searched_keys:
+            filterred_conninfo[k] = v
+    return filterred_conninfo

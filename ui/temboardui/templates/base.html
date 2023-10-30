@@ -180,6 +180,20 @@
             </ul>
           </div>
         </div>
+        {% set s = instance.status or {} %}
+        {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
+        <div class="main ml-auto px-3 pt-3 position-relative">
+          <div class="alert alert-warning" role="alert" >
+            <h2>
+              <i class="fa fa-warning fa-fw"></i>WARNING
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </h2>
+              <p> Some changes are pending and PostgreSQL should be restarted.</p>
+          </div>
+        </div>
+        {% end %}
         <div class="main ml-auto p-3 position-relative">
           <div id="errorApp"></div>
           {% block content %} {% end %}

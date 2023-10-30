@@ -26,7 +26,6 @@ from .toolkit.versions import (
     read_distinfo,
     read_libpq_version,
 )
-from .tools import noop_manager
 from .version import __version__
 
 
@@ -118,14 +117,12 @@ class Discover:
         collect_system(d)
 
         try:
-            mgr = noop_manager(conn) if conn else self.app.postgres.connect()
+            with self.app.postgres.maybe_connect(conn) as pgconn:
+                logger.debug("Inspecting Postgres instance.")
+                collect_postgres(d, pgconn)
         except Exception as e:
             logger.error("Failed to collect Postgres data: %s", e)
             d['postgres'] = old_postgres
-        else:
-            with mgr as conn:
-                logger.debug("Inspecting Postgres instance.")
-                collect_postgres(d, conn)
 
         # Build JSON to compute ETag.
         json_text = json.dumps(

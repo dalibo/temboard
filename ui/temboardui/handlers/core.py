@@ -9,7 +9,7 @@ def home(request):
     return render_template(
         'instance-about.html',
         nav=True,
-        instance=request.instance.instance,
+        instance=request.instance,
         agent_username=request.instance.get_username(),
         role=request.current_user,
     )

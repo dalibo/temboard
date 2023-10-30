@@ -79,8 +79,7 @@
 <div class="row">
   <div class="col-12">
     <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
-      <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
-      <p> Some changes are pending and PostgreSQL should be restarted:</p>
+        <p> The options below will be applied after restart :</p>
       <ul>
       {% for change in configuration_status['restart_changes'] %}
       <li>

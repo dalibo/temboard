@@ -25,8 +25,9 @@ Ensure you use consistent title format.
 - Warn about instance in multiple groups.
 - The `activity/running|blocking|waiting` endpoints don't exist anymore, only
   `activity` is available now.
-- Accept temboard-agent-register from v7 agent
-- Fix content for popover content in /pgconf/configuration page
+- Accept temboard-agent-register from v7 agent.
+- Fix content for popover content in /pgconf/configuration page.
+- Warn that instance needs to be restarted in all instance pages.
 
 **Agent changes**
 
