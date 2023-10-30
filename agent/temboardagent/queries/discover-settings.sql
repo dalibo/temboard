@@ -7,6 +7,7 @@ WHERE "name" IN (
   ,'cluster_name'
   ,'data_checksums'
   ,'data_directory'
+	,'external_pid_file'
   ,'hba_file'
   ,'ident_file'
   ,'lc_collate'

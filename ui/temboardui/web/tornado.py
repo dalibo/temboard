@@ -465,7 +465,7 @@ def add_user_instance_middleware(func):
     # Ensures user is allowed to access to the instance
     @functools.wraps(func)
     def user_instance_middleware(request, address, port, *args):
-        user = request.current_user = request.handler.current_user
+        user = request.current_user
 
         if user is None:
             # Not logged in
@@ -563,7 +563,6 @@ class Blueprint(object):
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__
 
-            func = UserHelper.add_middleware(func)
             if with_instance:
                 func = InstanceHelper.add_middleware(func)
 
@@ -572,6 +571,7 @@ class Blueprint(object):
                     # /proxy/.
                     # Admin area access control has already been performed
                     func = add_user_instance_middleware(func)
+            func = UserHelper.add_middleware(func)
 
             if json:
                 func = add_json_middleware(func)

@@ -119,7 +119,10 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     logdir.mkdir(exist_ok=True)
     socketdir = Path(agent_env['PGHOST'])
     socketdir.mkdir(exist_ok=True)
-    chown("--recursive", pguser, pgdata, logdir, socketdir)
+    piddir = workdir / 'external_pid'
+    logger.info("Creating %s.", piddir)
+    piddir.mkdir(exist_ok=True)
+    chown("--recursive", pguser, pgdata, logdir, socketdir, piddir)
 
     locale_ = find_locale()
 
@@ -146,7 +149,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     conffile = pgdata / 'conf.d' / 'temboard-tests.conf'
     conffile.parent.mkdir()
     logger.info("Writing %s.", conffile)
-    pidfile = workdir / 'run/postgres.pid'
+    pidfile = piddir / 'postgres.pid'
     conffile.write_text(dedent(f"""\
     cluster_name = 'temboard-tests'
     external_pid_file = '{pidfile}'

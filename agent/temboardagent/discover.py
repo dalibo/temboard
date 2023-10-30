@@ -13,6 +13,8 @@ import logging
 import os
 import socket
 import sys
+import time
+from datetime import datetime
 from platform import machine, python_version
 from multiprocessing import cpu_count
 
@@ -172,6 +174,9 @@ def collect_memory(data):
 def collect_postgres(data, conn):
     row = conn.queryone(QUERIES['discover'])
     data['postgres'].update(row)
+    data['postgres']['start_time'] = row['start_time'].strftime(
+        "%Y-%m-%dT%H:%M:%S%Z"
+    )
 
     for row in conn.query(QUERIES['discover-settings']):
         t = row['vartype']
@@ -189,6 +194,21 @@ def collect_postgres(data, conn):
         else:
             raise ValueError("Unsupported unit %s" % u)
         data['postgres'][row['name']] = v
+    pid_file_path = find_pid_file(data['postgres'])
+    data['postgres']['pid'] = get_postmaster_pid(pid_file_path)
+
+
+def get_postmaster_pid(pid_file):
+    """Return the pid of the postmaster process"""
+    with open(pid_file) as f:
+        return int(f.readline().split()[0])
+
+
+def find_pid_file(postgres_data):
+    """Return the pid file path"""
+    if postgres_data["external_pid_file"]:
+        return postgres_data["external_pid_file"]
+    return '%s/postmaster.pid' % postgres_data["data_directory"]
 
 
 def collect_system(data):
@@ -198,6 +218,11 @@ def collect_system(data):
     s['os_version'] = uname.release
     s['arch'] = machine()
     s['hostname'] = socket.gethostname()
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = float(f.readline().split()[0])
+        s['start_time'] = datetime.utcfromtimestamp(
+            int(time.time() - uptime_seconds)
+        ).strftime("%Y-%m-%dT%H:%M:%S%Z")
 
 
 def collect_versions(data):
