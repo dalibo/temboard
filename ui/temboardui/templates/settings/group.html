@@ -10,6 +10,7 @@
 
 {% block content %}
 <div id="vue-app">
+  <environment-migration-dialog ref="environment_migration_dialog" object-class="group" title="Instance group in multiple user groups"></environment-migration-dialog>
   <!-- Group update modal -->
   <div class="modal fade" id="GroupModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel">
     <div class="modal-dialog" role="document">
@@ -60,7 +61,17 @@
           <td>{{group_item.group_name}}</td>
           <td>{{group_item.group_description}}</td>
           {% if group_kind == 'instance' %}
-          <td>{% for ari in group_item.ari %} <span class="badge border text-muted">{{ari.role_group_name}}</span>{% end %}</td>
+          <td>{% for ari in group_item.ari %} <span class="badge border text-muted">{{ari.role_group_name}}</span>{% end %}
+            {% if len(group_item.ari) > 1 %}
+              <i
+                class="fa fa-warning text-warning"
+                style="cursor: pointer;"
+                title="Group in multiple user groups. Click for details."
+                data-toggle="modal"
+                v-on:click="$refs.environment_migration_dialog.show()">
+              </i>
+            {% end %}
+          </td>
           {% end %}
           <td class="text-center">
             <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>

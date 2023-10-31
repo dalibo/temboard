@@ -1,4 +1,5 @@
 import Vue from "vue";
+import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 
 import datatables from "datatables.net-dt";
 import dtbuttons from "datatables.net-buttons-dt";
@@ -13,6 +14,9 @@ dtbs4(window, $);
 
 window.app = new Vue({
   el: "#vue-app",
+  components: {
+    "environment-migration-dialog": EnvironmentMigrationDialog,
+  },
   created() {
     this.$nextTick(() => {
       var table = $("#tableGroups").DataTable({ stateSave: true });

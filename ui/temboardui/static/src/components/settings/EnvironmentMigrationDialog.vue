@@ -24,6 +24,13 @@ defineExpose({
 <template>
   <ModalDialog id="modalMigrationGroups" :title="title">
     <div class="modal-body text-justify">
+      <template v-if="objectClass === 'group'">
+        <p><b>This group belongs to more than one user group.</b></p>
+        <p>
+          temBoard 9.0 is planned to remove the ability to put an instance group in several user groups. To prepare the
+          upgrade, review your configuration to put this group in a single user group.
+        </p>
+      </template>
       <template v-if="objectClass === 'instance'">
         <p><b>This instance belongs to more than one group of instances.</b></p>
         <p>
