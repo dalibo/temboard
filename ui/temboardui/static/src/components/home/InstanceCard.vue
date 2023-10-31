@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script setup>
 import _ from "lodash";
 import Dygraph from "dygraphs";
 import "dygraphs/dist/dygraph.css";
@@ -6,76 +6,77 @@ import "dygraphs/dist/dygraph.css";
 import Checks from "./Checks.vue";
 import Sparkline from "./Sparkline.vue";
 
-export default {
-  data: function () {
-    return {
-      load1_data: null,
-      load1_last: "N/A",
-      tps_data: null,
-      tps_last: "N/A",
-    };
-  },
-  computed: {
-    dashboard_url: function () {
-      return ["/server", this.instance.agent_address, this.instance.agent_port, "dashboard"].join("/");
-    },
-    hasMonitoring: function () {
-      return this.instance.plugins.indexOf("monitoring") != -1;
-    },
-  },
-  props: ["end", "index", "refreshInterval", "start", "status_value", "instance"],
-  components: {
-    checks: Checks,
-    sparkline: Sparkline,
-  },
-  mounted: function () {
-    if (this.index >= 18) {
-      return;
-    }
+import { computed, onMounted, ref, watch } from "vue";
 
-    this.fetchTPS();
-    this.fetchLoad1();
+const load1_data = ref(null);
+const load1_last = ref("N/A");
+const tps_data = ref(null);
+const tps_last = ref("N/A");
+
+const props = defineProps(["end", "index", "refreshInterval", "start", "status_value", "instance"]);
+
+const dashboard_url = computed(() => {
+  return ["/server", props.instance.agent_address, props.instance.agent_port, "dashboard"].join("/");
+});
+
+const hasMonitoring = computed(() => {
+  return props.instance.plugins.indexOf("monitoring") != -1;
+});
+
+onMounted(() => {
+  if (props.index >= 18) {
+    return;
+  }
+
+  fetchTPS();
+  fetchLoad1();
+});
+
+watch(
+  () => props.index,
+  (newValue) => {
+    if (newValue >= 18) {
+      load1_data.value = null;
+      load1_last.value = null;
+      tps_data.value = null;
+      tps_last.value = null;
+    }
   },
-  watch: {
-    index: function () {
-      if (this.index >= 18) {
-        this.load1_data = null;
-        this.load1_last = null;
-        this.tps_data = null;
-        this.tps_last = null;
-      }
-    },
-  },
-  methods: {
-    fetchLoad1: function () {
-      this.fetchMetric("load1").done((data) => {
-        if (data) {
-          this.load1_data = data;
-        }
-      });
-    },
-    fetchTPS: function () {
-      this.fetchMetric("tps").done((data) => {
-        if (data) {
-          this.tps_data = data;
-        }
-      });
-    },
-    fetchMetric: function (metric) {
-      var url = ["/server", this.instance.agent_address, this.instance.agent_port, "monitoring/data", metric].join("/");
-      var params = "?start=" + this.start.toISOString() + "&end=" + this.end.toISOString();
-      return $.get(url + params);
-    },
-    setLastLoad1: function (last_value) {
-      // Use Dygraphs to parse CSV and report last point in VueJS context.
-      this.load1_last = last_value || "N/A";
-    },
-    setLastTPS: function (last_value) {
-      // Use Dygraphs to parse CSV and report last point in VueJS context.
-      this.tps_last = last_value || "N/A";
-    },
-  },
-};
+);
+
+function fetchLoad1() {
+  fetchMetric("load1").done((data) => {
+    if (data) {
+      load1_data.value = data;
+    }
+  });
+}
+
+function fetchTPS() {
+  fetchMetric("tps").done((data) => {
+    if (data) {
+      tps_data.value = data;
+    }
+  });
+}
+
+function fetchMetric(metric) {
+  var url = ["/server", props.instance.agent_address, props.instance.agent_port, "monitoring/data", metric].join("/");
+  var params = "?start=" + props.start.toISOString() + "&end=" + props.end.toISOString();
+  return $.get(url + params);
+}
+
+function setLastLoad1(last_value) {
+  // Use Dygraphs to parse CSV and report last point in VueJS context.
+  load1_last.value = last_value || "N/A";
+}
+
+function setLastTPS(last_value) {
+  // Use Dygraphs to parse CSV and report last point in VueJS context.
+  tps_last.value = last_value || "N/A";
+}
+
+defineExpose({ fetchLoad1, fetchTPS });
 </script>
 
 <template>
@@ -114,7 +115,7 @@ export default {
             </template>
             <span class="pg_version">{{ instance.pg_version_summary || "Unknown version" }}</span>
           </p>
-          <checks :instance="instance"></checks>
+          <Checks :instance="instance"></Checks>
         </div>
       </div>
       <!-- Limit graph to top 3 rows. -->
@@ -124,7 +125,7 @@ export default {
           <span class="badge badge-secondary" v-if="tps_last">
             {{ tps_last }}
           </span>
-          <sparkline
+          <Sparkline
             :data="tps_data"
             :start="start"
             :end="end"
@@ -137,7 +138,7 @@ export default {
             data-container="body"
             data-placement="bottom"
           >
-          </sparkline>
+          </Sparkline>
         </div>
         <div class="col-md-6 mt-2 small text-center">
           <span class="text-muted" v-if="load1_last"> Loadavg: </span>
@@ -145,7 +146,7 @@ export default {
             {{ load1_last }}
           </span>
           <div ref="chart" data-toggle="tooltip" data-title="Load average (last hour)" data-placement="bottom"></div>
-          <sparkline
+          <Sparkline
             :data="load1_data"
             :start="start"
             :end="end"
@@ -157,7 +158,7 @@ export default {
             data-title="Load average (last hour)"
             data-placement="bottom"
           >
-          </sparkline>
+          </Sparkline>
         </div>
       </div>
     </div>

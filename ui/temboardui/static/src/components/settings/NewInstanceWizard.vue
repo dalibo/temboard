@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script setup>
 /* A Bootstrap dialog with two steps: discover and register.
  *
  * Supports temBoard 7.X agent with key. Discover before registration to
@@ -10,158 +10,158 @@ import Error from "../Error.vue";
 import InstanceForm from "./InstanceForm.vue";
 import ModalDialog from "../ModalDialog.vue";
 
-export default {
-  components: {
-    error: Error,
-    "instance-form": InstanceForm,
-    "modal-dialog": ModalDialog,
-  },
-  data() {
+import { computed, nextTick, onUpdated, reactive, ref } from "vue";
+
+const root = ref(null);
+const error = ref(null);
+const formCmp = ref(null);
+const waiting = ref(false);
+
+const initialState = {
+  // Wizard state.
+  wizard_step: "discover",
+
+  // Form model.
+  agent_address: null,
+  agent_port: null,
+  agent_key: "",
+  comment: "",
+  notify: true,
+
+  // Instance information from API.
+  cpu: null,
+  discover_data: null,
+  discover_etag: null,
+  mem_gb: null,
+  pg_data: null,
+  pg_host: null,
+  pg_port: null,
+  pg_version_summary: null,
+  server_groups: [],
+  server_plugins: [],
+  signature_status: null,
+};
+const state = reactive({ ...initialState });
+
+const groups = computed(() => {
+  return Array.from(state.server_groups, (group) => {
     return {
-      // Wizard state.
-      wizard_step: "discover", //  discover, register
-      waiting: false,
-
-      // Form model.
-      agent_address: null,
-      agent_port: null,
-      agent_key: "",
-      comment: "",
-      notify: true,
-
-      // Instance information from API.
-      cpu: null,
-      discover_data: null,
-      discover_etag: null,
-      mem_gb: null,
-      pg_data: null,
-      pg_host: null,
-      pg_port: null,
-      pg_version_summary: null,
-      server_groups: [],
-      server_plugins: [],
-      signature_status: null,
+      name: group.name,
+      disabled: false,
+      selected: false,
     };
-  },
-  computed: {
-    groups() {
-      return Array.from(this.server_groups, (group) => {
-        return {
-          name: group.name,
-          disabled: false,
-          selected: false,
-        };
-      });
-    },
-    plugins() {
-      return Array.from(this.server_plugins, (name) => {
-        return {
-          name,
-          disabled: this.discover_data.temboard.plugins.indexOf(name) === -1,
-          selected: this.discover_data.temboard.plugins.indexOf(name) !== -1,
-        };
-      });
-    },
-  },
-  updated() {
-    $('[data-toggle="tooltip"]', this.$el).tooltip();
-    if ("register" === this.wizard_step && this.plugins && !$("#selectGroups").data("multiselect")) {
-      this.$nextTick(this.$refs.form.setup_multiselects);
-    }
-    if ("register" === this.wizard_step && $("#selectGroups").data("multiselect")) {
-      $("#selectGroups").multiselect(this.waiting ? "disable" : "enable");
-      $("#selectPlugins").multiselect(this.waiting ? "disable" : "enable");
-    }
-  },
-  methods: {
-    discover() {
-      this.waiting = true;
-      $.ajax({
-        url: ["/json/discover/instance", this.agent_address, this.agent_port].join("/"),
-        type: "get",
-        contentType: "application/json",
-        dataType: "json",
-      })
-        .fail((xhr) => {
-          this.waiting = false;
-          this.$refs.error.fromXHR(xhr);
-        })
-        .done((data, _, xhr) => {
-          if ("invalid" == data.signature_status) {
-            this.$refs.error.setHTML(`
+  });
+});
+
+const plugins = computed(() => {
+  return Array.from(state.server_plugins, (name) => {
+    return {
+      name,
+      disabled: state.discover_data.temboard.plugins.indexOf(name) === -1,
+      selected: state.discover_data.temboard.plugins.indexOf(name) !== -1,
+    };
+  });
+});
+
+onUpdated(() => {
+  $('[data-toggle="tooltip"]', root.value.$el).tooltip();
+  if ("register" === state.wizard_step && plugins && !$("#selectGroups").data("multiselect")) {
+    nextTick(formCmp.value.setup_multiselects);
+  }
+  if ("register" === state.wizard_step && $("#selectGroups").data("multiselect")) {
+    $("#selectGroups").multiselect(waiting.value ? "disable" : "enable");
+    $("#selectPlugins").multiselect(waiting.value ? "disable" : "enable");
+  }
+});
+
+function discover() {
+  waiting.value = true;
+  $.ajax({
+    url: ["/json/discover/instance", state.agent_address, state.agent_port].join("/"),
+    type: "get",
+    contentType: "application/json",
+    dataType: "json",
+  })
+    .fail((xhr) => {
+      waiting.value = false;
+      error.value.fromXHR(xhr);
+    })
+    .done((data, _, xhr) => {
+      if ("invalid" == data.signature_status) {
+        error.value.setHTML(`
               <p><strong>Signature missmatch !</strong></p>
 
               <p>Agent is not configured for this UI. You must accept
               <strong>this</strong> UI signing key in agent configuration. See
               installation documentation.</p>
             `);
-            this.waiting = false;
-            return;
-          }
+        waiting.value = false;
+        return;
+      }
 
-          this.discover_data = data;
-          this.discover_etag = xhr.getResponseHeader("ETag");
-          this.cpu = data.system.cpu_count;
-          var mem_gb = data.system.memory / 1024 / 1024 / 1024;
-          this.mem_gb = mem_gb.toFixed(2);
-          this.pg_version_summary = data.postgres.version_summary;
-          this.pg_data = data.postgres.data_directory;
-          this.pg_host = data.system.fqdn;
-          this.pg_port = data.postgres.port;
-          this.signature_status = data.signature_status;
+      state.discover_data = data;
+      state.discover_etag = xhr.getResponseHeader("ETag");
+      state.cpu = data.system.cpu_count;
+      var mem_gb = data.system.memory / 1024 / 1024 / 1024;
+      state.mem_gb = mem_gb.toFixed(2);
+      state.pg_version_summary = data.postgres.version_summary;
+      state.pg_data = data.postgres.data_directory;
+      state.pg_host = data.system.fqdn;
+      state.pg_port = data.postgres.port;
+      state.signature_status = data.signature_status;
 
-          $.ajax({
-            url: "/json/settings/all/group/instance",
-          })
-            .fail((xhr) => {
-              this.waiting = false;
-              this.$refs.error.fromXHR(xhr);
-            })
-            .done((data) => {
-              this.server_groups = data.groups;
-              this.server_plugins = data.loaded_plugins;
-              this.waiting = false;
-              this.wizard_step = "register";
-            });
-        });
-    },
-    register(data) {
-      this.waiting = true;
       $.ajax({
-        url: "/json/settings/instance",
-        method: "POST",
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify({
-          ...data,
-          new_agent_address: this.agent_address,
-          new_agent_port: this.agent_port,
-          discover: this.discover_data,
-          discover_etag: this.discover_etag,
-        }),
+        url: "/json/settings/all/group/instance",
       })
         .fail((xhr) => {
-          this.waiting = false;
-          this.$refs.error.fromXHR(xhr);
+          waiting.value = false;
+          error.value.fromXHR(xhr);
         })
-        .done(() => {
-          window.location.reload();
+        .done((data) => {
+          state.server_groups = data.groups;
+          state.server_plugins = data.loaded_plugins;
+          waiting.value = false;
+          state.wizard_step = "register";
         });
-    },
-    reset() {
-      Object.assign(this.$data, this.$options.data());
-      if (this.$refs.form) {
-        this.$refs.form.teardown_multiselects();
-      }
-    },
-  },
-};
+    });
+}
+
+function register(data) {
+  waiting.value = true;
+  $.ajax({
+    url: "/json/settings/instance",
+    method: "POST",
+    contentType: "application/json",
+    dataType: "json",
+    data: JSON.stringify({
+      ...data,
+      new_agent_address: state.agent_address,
+      new_agent_port: state.agent_port,
+      discover: state.discover_data,
+      discover_etag: state.discover_etag,
+    }),
+  })
+    .fail((xhr) => {
+      waiting.value = false;
+      error.value.fromXHR(xhr);
+    })
+    .done(() => {
+      window.location.reload();
+    });
+}
+
+function reset() {
+  Object.assign(state, initialState);
+  if (formCmp.value) {
+    formCmp.value.teardown_multiselects();
+  }
+}
 </script>
 
 <template>
-  <modal-dialog id="modalNewInstance" title="Register New Instance" v-on:closed="reset">
+  <ModalDialog id="modalNewInstance" title="Register New Instance" v-on:closed="reset" ref="root">
     <!-- Discover -->
-    <div v-if="wizard_step == 'discover'" v-cloak>
+    <div v-if="state.wizard_step == 'discover'" v-cloak>
       <form v-on:submit.prevent="discover">
         <div class="modal-body">
           <p class="alert alert-info">
@@ -169,7 +169,7 @@ export default {
             your PostgreSQL instance. Set here agent address and port, not PostgreSQL.
           </p>
 
-          <error ref="error" :showTitle="false"></error>
+          <Error ref="error" :showTitle="false"></Error>
 
           <div class="row">
             <div class="form-group col-sm-6">
@@ -178,7 +178,7 @@ export default {
                 v-bind:disabled="waiting"
                 id="inputAgentAddress"
                 type="text"
-                v-model.lazy.trim="agent_address"
+                v-model.lazy.trim="state.agent_address"
                 class="form-control"
                 placeholder="ex: db.entreprise.lan"
               />
@@ -189,7 +189,7 @@ export default {
                 v-bind:disabled="waiting"
                 id="inputAgentPort"
                 type="text"
-                v-model.lazy.number.trim="agent_port"
+                v-model.lazy.number.trim="state.agent_port"
                 class="form-control"
                 placeholder="ex: 2345"
               />
@@ -207,27 +207,27 @@ export default {
     </div>
 
     <!-- Register -->
-    <div v-if="wizard_step == 'register'" v-cloak>
-      <instance-form
-        ref="form"
+    <div v-if="state.wizard_step == 'register'" v-cloak>
+      <InstanceForm
+        ref="formCmp"
         submit_text="Register"
-        v-bind:pg_host="pg_host"
-        v-bind:pg_port="pg_port"
-        v-bind:pg_data="pg_data"
-        v-bind:pg_version_summary="pg_version_summary"
-        v-bind:cpu="cpu"
-        v-bind:mem_gb="mem_gb"
-        v-bind:signature_status="signature_status"
+        v-bind:pg_host="state.pg_host"
+        v-bind:pg_port="state.pg_port"
+        v-bind:pg_data="state.pg_data"
+        v-bind:pg_version_summary="state.pg_version_summary"
+        v-bind:cpu="state.cpu"
+        v-bind:mem_gb="state.mem_gb"
+        v-bind:signature_status="state.signature_status"
         v-bind:groups="groups"
         v-bind:plugins="plugins"
-        v-bind:notify="notify"
-        v-bind:comment="comment"
-        v-bind:agent_key="agent_key"
+        v-bind:notify="state.notify"
+        v-bind:comment="state.comment"
+        v-bind:agent_key="state.agent_key"
         v-bind:waiting="waiting"
         v-on:submit="register"
       >
-        <error ref="error" :showTitle="false"></error>
-      </instance-form>
+        <Error ref="error" :showTitle="false"></Error>
+      </InstanceForm>
     </div>
-  </modal-dialog>
+  </ModalDialog>
 </template>

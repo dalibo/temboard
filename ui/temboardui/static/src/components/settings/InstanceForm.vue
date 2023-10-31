@@ -1,91 +1,97 @@
-<script type="text/javascript">
+<script setup>
 import InstanceDetails from "./InstanceDetails.vue";
 
-export default {
-  /*
-   * An HTML form editing instance properties.
-   *
-   * This form has only presentation logic, no I/O.
-   */
-  components: {
-    "instance-details": InstanceDetails,
-  },
-  props: [
-    "submit_text", // Submit button label.
-    "waiting", // Whether parent is interacting with server.
+import { onUpdated, ref, watch } from "vue";
 
-    // Discover readonly data.
-    "pg_host",
-    "pg_port",
-    "pg_data",
-    "pg_version_summary",
-    "cpu",
-    "mem_gb",
-    "signature_status",
+const props = defineProps([
+  "submit_text", // Submit button label.
+  "waiting", // Whether parent is interacting with server.
 
-    // Agent configuration
-    "agent_key",
-    "comment",
-    "notify",
-    "groups",
-    "plugins",
-  ],
-  updated() {
-    $('[data-toggle="tooltip"]', this.$el).tooltip();
-    if ($("#selectGroups").data("multiselect")) {
-      $("#selectGroups").multiselect(this.waiting ? "disable" : "enable");
-      $("#selectPlugins").multiselect(this.waiting ? "disable" : "enable");
-    }
+  // Discover readonly data.
+  "pg_host",
+  "pg_port",
+  "pg_data",
+  "pg_version_summary",
+  "cpu",
+  "mem_gb",
+  "signature_status",
+
+  // Agent configuration
+  "agent_key",
+  "comment",
+  "notify",
+  "groups",
+  "plugins",
+]);
+
+const root = ref(null);
+const commentModel = ref(null);
+watch(
+  () => props.comment,
+  (newValue) => {
+    commentModel.value = newValue;
   },
-  methods: {
-    setup_multiselects() {
-      // jQuery multiselect plugin must be called once Vue template is rendered.
-      var options = {
-        templates: {
-          button: `
+);
+
+onUpdated(() => {
+  $('[data-toggle="tooltip"]', root.value.$el).tooltip();
+  if ($("#selectGroups").data("multiselect")) {
+    $("#selectGroups").multiselect(props.waiting ? "disable" : "enable");
+    $("#selectPlugins").multiselect(props.waiting ? "disable" : "enable");
+  }
+});
+
+function setup_multiselects() {
+  // jQuery multiselect plugin must be called once Vue template is rendered.
+  const options = {
+    templates: {
+      button: `
             <button type="button"
                     class="multiselect dropdown-toggle border-secondary"
                     data-toggle="dropdown">
               <span class="multiselect-selected-text"></span> <b class="caret"></b>
             </button>
             `,
-          li: `
+      li: `
             <li class="dropdown-item">
               <label class="w-100"></label>
             </li>
             `,
-        },
-        numberDisplayed: 1,
-      };
-      $("#selectGroups").multiselect(options);
-      $("#selectPlugins").multiselect(options);
     },
-    teardown_multiselects() {
-      $("#selectGroups").multiselect("destroy");
-      $("#selectPlugins").multiselect("destroy");
-    },
-    submit() {
-      // data generates payload for both POST /json/settings/instances and POST
-      // /json/settings/instances/X.X.X.X/PPPP.
-      var data = {
-        // Define parameters.
-        agent_key: this.agent_key,
-        groups: $("#selectGroups").val(),
-        plugins: $("#selectPlugins").val(),
-        notify: this.notify,
-        comment: this.comment,
-      };
-      this.$emit("submit", data);
-    },
-  },
-};
+    numberDisplayed: 1,
+  };
+  $("#selectGroups").multiselect(options);
+  $("#selectPlugins").multiselect(options);
+}
+
+function teardown_multiselects() {
+  $("#selectGroups").multiselect("destroy");
+  $("#selectPlugins").multiselect("destroy");
+}
+
+function submit() {
+  // data generates payload for both POST /json/settings/instances and POST
+  // /json/settings/instances/X.X.X.X/PPPP.
+  const data = {
+    // Define parameters.
+    agent_key: props.agent_key,
+    groups: $("#selectGroups").val(),
+    plugins: $("#selectPlugins").val(),
+    notify: props.notify,
+    comment: commentModel.value,
+  };
+  emit("submit", data);
+}
+
+const emit = defineEmits(["submit"]);
+defineExpose({ setup_multiselects, teardown_multiselects });
 </script>
 
 <template>
-  <form v-on:submit.prevent="submit">
+  <form v-on:submit.prevent="submit" ref="root">
     <div class="modal-body p-3">
       <div class="row">
-        <instance-details
+        <InstanceDetails
           v-bind:pg_host="pg_host"
           v-bind:pg_port="pg_port"
           v-bind:pg_version_summary="pg_version_summary"
@@ -174,7 +180,7 @@ export default {
       <div class="row">
         <div class="form-group col-sm-12">
           <label for="inputComment" class="control-label">Comment</label>
-          <textarea id="inputComment" class="form-control" rows="3" v-model="comment" v-bind:disabled="waiting">
+          <textarea id="inputComment" class="form-control" rows="3" v-model="commentModel" v-bind:disabled="waiting">
           </textarea>
         </div>
       </div>
