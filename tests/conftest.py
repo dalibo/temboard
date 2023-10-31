@@ -65,8 +65,10 @@ def log_tweaks():
     """
 
     formatter = logging.Formatter(
-        fmt="[%(module)-16.16s] %(levelname)1.1s: %(message)s"
+        fmt="%(asctime)s pytest[%(process)d] %(levelname)s:  "
+        "%(module)s: %(message)s"
     )
+    formatter.datefmt = '%Y-%m-%d %H:%M:%S %Z'
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     root = logging.getLogger()
