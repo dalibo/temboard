@@ -3,87 +3,82 @@
 {% block title %}temBoard - settings{% end %}
 
 {% block head %}
-<!-- DataTables CSS -->
-<link href="/js/datatables/datatables.min.css" rel="stylesheet">
+{% for link in vitejs.css_links_for('settings.group.js') %}{% raw link %}{% end %}
 <!-- Multiselect -->
 <link href="/css/bootstrap-multiselect.css" rel="stylesheet">
 {% end %}
 
 {% block content %}
-<!-- Group update modal -->
-<div class="modal fade" id="GroupModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="GroupModalLabel"></h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body" id="GroupModalInfo">
-      </div>
-      <div class="modal-body" id="GroupModalBody">
-      </div>
-      <div class="modal-footer" id="GroupModalFooter">
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+<div id="vue-app">
+  <!-- Group update modal -->
+  <div class="modal fade" id="GroupModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="GroupModalLabel"></h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body" id="GroupModalInfo">
+        </div>
+        <div class="modal-body" id="GroupModalBody">
+        </div>
+        <div class="modal-footer" id="GroupModalFooter">
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<div class="row">
-  <div class="col-md-3 col-xl-2">
-    {% include menu.html %}
-  </div>
-  <div class="col-md-9 col-xl-10">
-    <div class="row">
-      <div class="col-md-12 text-right">
-        <p>
-          <button id="buttonLoadAddGroupForm" class="btn btn-success btn-sm">
-            New {%if group_kind == 'role'%}user{%else%}instance{%end%} group
-          </button>
-        </p>
-      </div>
+  <div class="row">
+    <div class="col-md-3 col-xl-2">
+      {% include menu.html %}
     </div>
-    <table class="table table-striped table-bordered table-hover" id="tableGroups" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        {% if group_kind == 'instance' %}
-        <th>User groups</th>
-        {% end %}
-        <th class="no-sort"></th>
-        <th class="no-sort"></th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for group_item in group_list %}
-      <tr>
-        <td>{{group_item.group_name}}</td>
-        <td>{{group_item.group_description}}</td>
-        {% if group_kind == 'instance' %}
-        <td>{% for ari in group_item.ari %} <span class="badge border text-muted">{{ari.role_group_name}}</span>{% end %}</td>
-        {% end %}
-        <td class="text-center">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
-        </td>
-        <td class="text-center">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="fa fa-trash-o"></i></button>
-        </td>
-      </tr>
-    {% end %}
-    </tbody>
-    </table>
+    <div class="col-md-9 col-xl-10">
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <p>
+            <button id="buttonLoadAddGroupForm" class="btn btn-success btn-sm">
+              New {%if group_kind == 'role'%}user{%else%}instance{%end%} group
+            </button>
+          </p>
+        </div>
+      </div>
+      <table class="table table-striped table-bordered table-hover" id="tableGroups" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          {% if group_kind == 'instance' %}
+          <th>User groups</th>
+          {% end %}
+          <th class="no-sort"></th>
+          <th class="no-sort"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for group_item in group_list %}
+        <tr>
+          <td>{{group_item.group_name}}</td>
+          <td>{{group_item.group_description}}</td>
+          {% if group_kind == 'instance' %}
+          <td>{% for ari in group_item.ari %} <span class="badge border text-muted">{{ari.role_group_name}}</span>{% end %}</td>
+          {% end %}
+          <td class="text-center">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Edit" data-action="edit" data-group_name="{{group_item.group_name}}"><i class="fa fa-edit"></i></button>
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete" data-action="delete" data-group_name="{{group_item.group_name}}"><i class="fa fa-trash-o"></i></button>
+          </td>
+        </tr>
+      {% end %}
+      </tbody>
+      </table>
+    </div>
   </div>
 </div>
 <script src="/js/temboard.settings.group.js"></script>
-<script src="/js/datatables/datatables.min.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
+<script type="module" src="{{ vitejs.url_for('settings.group.js') }}"></script>
 <script>
-$(document).ready(function() {
-  $('#tableGroups').DataTable({
-    stateSave: true
-  });
-});
-
 $('#buttonLoadAddGroupForm').click(function () {
   $('#GroupModal').modal('show');
   $('[data-toggle=popover]').popover('hide');

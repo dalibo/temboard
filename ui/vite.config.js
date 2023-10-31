@@ -21,6 +21,7 @@ export default defineConfig({
         home: "/home.js",
         temboard: "/temboard.js",
         "settings.instance": "/settings.instance.js",
+        "settings.group": "/settings.group.js",
         statements: "/statements.js",
       },
     },
