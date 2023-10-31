@@ -1,46 +1,38 @@
-<script type="text/javascript">
+<script setup>
 import _ from "lodash";
 
-export default {
-  props: ["instance"],
-  computed: {
-    available: function () {
-      return this.instance.available;
-    },
-    checks: function () {
-      var count = _.countBy(
-        this.instance.checks.map(function (state) {
-          return state.state;
-        }),
-      );
-      return count;
-    },
-  },
-  methods: {
-    popoverContent: function (instance) {
-      // don't show OK states
-      var filtered = instance.checks.filter(function (check) {
-        return !["OK", "UNDEF"].includes(check.state);
-      });
-      var levels = ["CRITICAL", "WARNING"];
-      // make sure we have higher levels checks first
-      var ordered = _.sortBy(filtered, function (check) {
-        return levels.indexOf(check.state);
-      });
-      var checksList = ordered.map(function (check) {
-        return '<span class="badge badge-' + check.state.toLowerCase() + '">' + check.description + "</span>";
-      });
-      return checksList.join("<br>");
-    },
-  },
-};
+import { computed } from "vue";
+
+const props = defineProps(["instance"]);
+const available = computed(() => {
+  return props.instance.available;
+});
+const checks = computed(() => {
+  return _.countBy(props.instance.checks.map((state) => state.state));
+});
+
+function popoverContent(instance) {
+  // don't show OK states
+  const filtered = instance.checks.filter((check) => {
+    return !["OK", "UNDEF"].includes(check.state);
+  });
+  const levels = ["CRITICAL", "WARNING"];
+  // make sure we have higher levels checks first
+  const ordered = _.sortBy(filtered, (check) => {
+    return levels.indexOf(check.state);
+  });
+  const checksList = ordered.map((check) => {
+    return `<span class="badge badge-${check.state.toLowerCase()}">${check.description}</span>`;
+  });
+  return checksList.join("<br>");
+}
 </script>
 
 <template>
   <div
     class="d-inline-block"
     data-toggle="popover"
-    :data-content="popoverContent(instance)"
+    :data-content="popoverContent(props.instance)"
     data-trigger="hover"
     data-placement="bottom"
     data-container="body"

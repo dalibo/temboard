@@ -1,46 +1,45 @@
-<script type="text/javascript">
+<script setup>
 // A Bootstrap error alert.
 
-export default {
-  data: function () {
-    return {
-      code: null,
-      error: null,
-    };
-  },
-  props: {
-    showTitle: { default: true },
-  },
-  methods: {
-    clear: function () {
-      this.error = null;
-      this.code = null;
-    },
-    fromXHR: function (xhr) {
-      if (0 === xhr.status) {
-        this.code = null;
-        this.error = "Failed to contact temBoard server.";
-      } else {
-        this.code = xhr.status;
-        var contentType = xhr.getResponseHeader("content-type");
-        if (contentType.includes("application/json")) {
-          this.error = JSON.parse(xhr.responseText).error;
-          if (this.error === "") {
-            this.error = "Unknown error. Please contact temBoard administrator.";
-          }
-        } else if (contentType.includes("text/plain")) {
-          this.error = `<pre>${xhr.responseText}</pre>`;
-        } else {
-          this.error = "Unknown error. Please contact temBoard administrator.";
-        }
+import { ref } from "vue";
+
+const code = ref(null);
+const error = ref(null);
+
+const props = defineProps({
+  showTitle: { default: true },
+});
+
+function clear() {
+  error.value = null;
+  code.value = null;
+}
+
+function fromXHR(xhr) {
+  if (0 === xhr.status) {
+    code.value = null;
+    error.value = "Failed to contact temBoard server.";
+  } else {
+    code.value = xhr.status;
+    const contentType = xhr.getResponseHeader("content-type");
+    if (contentType.includes("application/json")) {
+      error.value = JSON.parse(xhr.responseText).error;
+      if (error.value === "") {
+        error.value = "Unknown error. Please contact temBoard administrator.";
       }
-    },
-    setHTML: function (html) {
-      this.code = null;
-      this.error = html;
-    },
-  },
-};
+    } else if (contentType.includes("text/plain")) {
+      error.value = `<pre>${xhr.responseText}</pre>`;
+    } else {
+      error.value = "Unknown error. Please contact temBoard administrator.";
+    }
+  }
+}
+function setHTML(html) {
+  code.value = null;
+  error.value = html;
+}
+
+defineExpose({ clear, fromXHR, setHTML });
 </script>
 
 <template>

@@ -1,27 +1,25 @@
-<script type="text/javascript">
+<script setup>
 // A Bootstrap grid row showing a global page error.
 
 import Error from "./Error.vue";
 
-export default {
-  components: {
-    error: Error,
-  },
-  methods: {
-    clear: function () {
-      this.$refs.error.clear();
-    },
-    fromXHR: function (xhr) {
-      this.$refs.error.fromXHR(xhr);
-    },
-  },
-};
+import { ref } from "vue";
+
+const error = ref(null);
+
+function clear() {
+  error.value.clear();
+}
+function fromXHR(xhr) {
+  error.value.fromXHR(xhr);
+}
+defineExpose({ clear, fromXHR });
 </script>
 
 <template>
   <div class="row justify-content-center" v-cloak>
     <div class="col col-xl-6 col-10">
-      <error ref="error"></error>
+      <Error ref="error"></Error>
     </div>
   </div>
 </template>

@@ -1,69 +1,69 @@
-<script type="text/javascript">
+<script setup>
 import _ from "lodash";
 import Dygraph from "dygraphs";
 import moment from "moment";
 
-export default {
-  data: function () {
-    return {
-      chart: null,
-    };
-  },
-  props: ["data", "start", "end", "colors"],
-  watch: {
-    data: function () {
-      if (this.chart) {
-        if (this.data) {
-          this.chart.updateOptions({
-            dateWindow: [this.start, this.end],
-            file: this.data,
-          });
-        } else {
-          this.chart.destroy();
-          this.chart = null;
-        }
-      } else if (this.data) {
-        this.chart = this.renderChart();
-      }
+import { ref, watch } from "vue";
 
-      var last_value = null;
-      if (this.chart) {
-        last_value = this.chart.getValue(this.chart.numRows() - 1, 1);
-      }
-      this.$emit("chart-rendered", last_value);
-    },
-  },
-  methods: {
-    renderChart: function () {
-      var chartOptions = {
-        axes: {
-          x: {
-            drawAxis: false,
-            drawGrid: false,
-          },
-          y: {
-            drawAxis: false,
-            drawGrid: false,
-          },
-        },
-        dateWindow: [this.start, this.end],
-        legend: "never",
-        xValueParser: function (x) {
-          return moment(x).toDate().getTime();
-        }.bind(this),
-        highlightCircleSize: 0,
-        interactionModel: {},
-        colors: this.colors,
-      };
+const root = ref(null);
+const chart = ref(null);
+const props = defineProps(["data", "start", "end", "colors"]);
 
-      return new Dygraph(this.$el, this.data, chartOptions);
-    },
+watch(
+  () => props.data,
+  () => {
+    if (chart.value) {
+      if (props.data) {
+        chart.value.updateOptions({
+          dateWindow: [props.start, props.end],
+          file: props.data,
+        });
+      } else {
+        chart.value.destroy();
+        chart.value = null;
+      }
+    } else if (props.data) {
+      chart.value = renderChart();
+    }
+
+    let last_value = null;
+    if (chart.value) {
+      last_value = chart.value.getValue(chart.value.numRows() - 1, 1);
+    }
+    emit("chart-rendered", last_value);
   },
-};
+);
+
+function renderChart() {
+  const chartOptions = {
+    axes: {
+      x: {
+        drawAxis: false,
+        drawGrid: false,
+      },
+      y: {
+        drawAxis: false,
+        drawGrid: false,
+      },
+    },
+    dateWindow: [props.start, props.end],
+    legend: "never",
+    xValueParser: function (x) {
+      return moment(x).toDate().getTime();
+    },
+    highlightCircleSize: 0,
+    interactionModel: {},
+    colors: props.colors,
+  };
+
+  return new Dygraph(root.value, props.data, chartOptions);
+}
+
+const emit = defineEmits(["chart-rendered"]);
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <div style="height: 100%; line-height: 30px" class="text-secondary align-bottom" v-if="!data">No data</div>
   </div>
 </template>
