@@ -14,6 +14,7 @@ SELECT
   sessions."state" AS "state",
   sessions.backend_start AS backend_start,
   sessions.query_start AS query_start,
+  round(EXTRACT(epoch FROM (NOW() - sessions.query_start))::numeric, 2)::FLOAT AS duration,
   sessions.query AS query,
 	waiting.waiting_pid IS NOT NULL AS waiting,
 	blocking.blocking_pid IS NOT NULL AS blocking

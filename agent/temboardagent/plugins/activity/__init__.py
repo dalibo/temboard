@@ -100,6 +100,7 @@ SESSION_COLUMNS = [
     'state',
     'backend_start',
     'query_start',
+    'duration',
     'query',
     'waiting',
     'blocking',
