@@ -213,7 +213,7 @@ def discover(request, address, port):
 
 
 def translate_v7_discover(data):
-    return dict(
+    translated_data = dict(
         temboard=dict(
             plugins=data['plugins'],
         ),
@@ -227,11 +227,13 @@ def translate_v7_discover(data):
             port=data['pg_port'],
             version=data['pg_version'],
             version_summary=data['pg_version_summary'],
-            block_size=data['pg_block_size'],
             data_directory=data['pg_data'],
         ),
         signature_status='unchecked',
     )
+    if "pg_block_size" in data:
+        translated_data["postgres"]["block_size"] = data["pg_block_size"]
+    return translated_data
 
 
 @app.route(r"/settings/instances")
@@ -269,13 +271,28 @@ def instances_csv(request):
     )
 
 
+def translate_v7_register(data):
+    data["discover"] = translate_v7_discover(data)
+    felds_to_pop = [
+        "cpu",
+        "hostname",
+        "memory_size",
+        "pg_data",
+        "pg_port",
+        "pg_version",
+        "pg_version_summary",
+    ]
+    for field in felds_to_pop:
+        data.pop(field)
+    return data
+
+
 @app.route(r"/json/register/instance", methods=['POST'])
 @admin_required
 def register(request):
     data = request.json
     if 'discover' not in data:
-        raise HTTPError(400, "Missing discover data. Please upgrade agent.")
-
+        data = translate_v7_register(data)
     agent_address = data.pop('agent_address', None)
     if not agent_address:
         # Try to find agent's IP
