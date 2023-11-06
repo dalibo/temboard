@@ -55,6 +55,6 @@ $(() => {
   });
 
   // Popover and tooltip initialization
-  $('[data-toggle="popover"]').popover();
-  $('[data-toggle="tooltip"]').tooltip();
+  $('[data-toggle="popover"]').popover({ sanitize: false });
+  $('[data-toggle="tooltip"]').tooltip({ sanitize: false });
 });
