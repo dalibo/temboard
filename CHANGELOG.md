@@ -9,30 +9,39 @@ Ensure you use consistent title format.
 
 **Unreleased**
 
+!!! note "Multiple groups of instances and groups of users"
+
+    In temBoard 9.0, we plan to remove the ability to put an instance in several groups of instances
+    or a group of instances in several groups of users.
+
+    An instance will be attached to a single *Environment*
+    and each *Environment* will be administred by a single group of users.
+
+    temboard 8.2 warns you about instances and groups of instances matching these cases.
+    Read [GitHub issue #1283](https://github.com/dalibo/temboard/issues/1283) for details.
+
+
 **UI changes**
 
-- Display number of instances and users in about page.
-- Fix plugin list according to agent configuration in settings instance update.
-- Drop public from temboard role.
-- Ignore psqlrc in `create_repository.sh`.
+- Fix missing service file in debian package.
+- Fix plugin list according to agent configuration when editing an instance.
+- Fix garbled select when editing offline instance.
+- Fix detection of running systemd in `auto_configure.sh`.
+- Fix content for popover content in /pgconf/configuration page.
 - Allow to edit unavailable instance.
 - Configure Content-Security-Policy header.
-- Warn outdated agent.
-- Transparently drop unused agent key.
-- Fix garbled select when updating offline instance.
-- Fix missing service file in debian package.
-- Fix detection of running systemd.
-- Warn about instance in multiple groups.
-- The `activity/running|blocking|waiting` endpoints don't exist anymore, only
-  `activity` is available now.
+- Drop public schema from temboard role search_path.
+- Ignore psqlrc in `create_repository.sh`.
 - Accept temboard-agent-register from v7 agent.
-- Fix content for popover content in /pgconf/configuration page.
-- Warn that instance needs to be restarted in all instance pages.
+- Transparently drop unused agent key.
+- Warn pending restart of a PostgreSQL instance in UI.
+- Warn outdated agent.
+- Warn about instance in multiple groups of instance.
+- Warn about group of instance in multiple groups of users.
 
 **Agent changes**
 
-- Limit activity response to 300 longest queries (also for blocking and waiting
-  endpoints)
+- Limit activity response to 300 longest queries (also for blocking and waiting endpoints).
 
 
 
