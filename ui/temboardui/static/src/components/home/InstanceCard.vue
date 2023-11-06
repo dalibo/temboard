@@ -113,7 +113,9 @@ defineExpose({ fetchLoad1, fetchTPS });
                 {{ group }}
               </span>
             </template>
-            <span class="pg_version">{{ instance.pg_version_summary || "Unknown version" }}</span>
+            <span class="pg_version" :class="{ 'text-muted': !instance.pg_version_summary }">{{
+              instance.pg_version_summary || "Unknown version"
+            }}</span>
           </p>
           <Checks :instance="instance"></Checks>
         </div>
