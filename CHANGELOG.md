@@ -26,6 +26,7 @@ Ensure you use consistent title format.
 - The `activity/running|blocking|waiting` endpoints don't exist anymore, only
   `activity` is available now.
 - Accept temboard-agent-register from v7 agent
+- Fix content for popover content in /pgconf/configuration page
 
 **Agent changes**
 
