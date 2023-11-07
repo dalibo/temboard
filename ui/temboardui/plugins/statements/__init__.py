@@ -101,7 +101,7 @@ BASE_QUERY_STATDATA = text("""
 """)
 
 
-@blueprint.instance_route(r'/statements/data')
+@blueprint.instance_route(r'/statements/data', json=True)
 def json_data_instance(request):
     start, end = parse_start_end(request)
 
@@ -397,12 +397,14 @@ WHERE (lo.calls - fo.calls) > 0;
 """
 
 
-@blueprint.instance_route(r'/statements/data/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
+@blueprint.instance_route(
+    r'/statements/data/([0-9]*)/([-]?[0-9]*)/([0-9]*)', json=True
+)
 def json_data_query(request, dbid, queryid, userid):
     return json_data(request, dbid, queryid, userid)
 
 
-@blueprint.instance_route(r'/statements/data/(.*)')
+@blueprint.instance_route(r'/statements/data/(.*)', json=True)
 def json_data_database(request, dbid):
     return json_data(request, dbid)
 
@@ -695,7 +697,7 @@ def convert_decimal_to_float(data):
         return data
 
 
-@blueprint.instance_route(r'/statements/chart')
+@blueprint.instance_route(r'/statements/chart', json=True)
 def json_chart_data_instance(request):
     start, end = parse_start_end(request)
 
@@ -704,7 +706,9 @@ def json_chart_data_instance(request):
     return jsonify(dict(data=data))
 
 
-@blueprint.instance_route(r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)')
+@blueprint.instance_route(
+    r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)', json=True
+)
 def json_chart_data_query(request, dbid, queryid, userid):
     start, end = parse_start_end(request)
 
@@ -714,7 +718,7 @@ def json_chart_data_query(request, dbid, queryid, userid):
     return jsonify(dict(data=data))
 
 
-@blueprint.instance_route(r'/statements/chart/(.*)')
+@blueprint.instance_route(r'/statements/chart/(.*)', json=True)
 def json_chart_data_db(request, dbid):
     start, end = parse_start_end(request)
 
