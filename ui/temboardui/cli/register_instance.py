@@ -19,8 +19,7 @@ from ..handlers.settings.instance import (
     add_instance_in_groups,
     enable_instance_plugins,
 )
-from ..plugins.monitoring import collector
-from ..plugins.statements import statements_pull1
+
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +183,8 @@ class RegisterInstance(SubCommand):
         logger.debug("Fast-collect monitoring metrics.")
         if os.path.exists(self.app.scheduler.scheduler.address):
             if 'monitoring' in plugins:
+                from ..plugins.monitoring import collector
+
                 logger.info("Schedule monitoring collect for agent now.")
                 collector.defer(
                     self.app,
@@ -192,6 +193,8 @@ class RegisterInstance(SubCommand):
                 )
 
             if 'statements' in plugins:
+                from ..plugins.statements import statements_pull1
+
                 logger.info("Schedule statements collect for agent now.")
                 statements_pull1.defer(
                     self.app,

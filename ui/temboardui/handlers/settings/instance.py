@@ -26,8 +26,6 @@ from temboardui.web.tornado import (
 from ...toolkit.pycompat import StringIO
 from ...toolkit.utils import utcnow
 from ...model import QUERIES
-from ...plugins.monitoring import collector as monitoring_collector
-from ...plugins.statements import statements_pull1
 
 
 logger = logging.getLogger(__name__)
@@ -58,6 +56,8 @@ def create_instance_helper(request, data):
         return instance
 
     if 'monitoring' in plugins:
+        from ...plugins.monitoring import collector as monitoring_collector
+
         logger.info("Schedule monitoring collect for agent now.")
         monitoring_collector.defer(
             app,
@@ -67,6 +67,8 @@ def create_instance_helper(request, data):
         )
 
     if 'statements' in plugins:
+        from ...plugins.statements import statements_pull1
+
         logger.info("Schedule statements collect for agent now.")
         statements_pull1.defer(
             app,
