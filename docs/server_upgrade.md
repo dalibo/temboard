@@ -1,6 +1,23 @@
 [preferred installation method]: server_install.md#install
 [upgrade the agents]: agent_upgrade.md
 
+## From 8.1 to 8.2
+
+**Unreleased**
+
+Update the package:
+
+``` bash
+sudo yum install temboard
+```
+
+Restart temBoard:
+
+``` bash
+sudo systemctl restart temboard
+```
+
+
 ## From 8.0 to 8.1
 
 Update the package:

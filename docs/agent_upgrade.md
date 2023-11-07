@@ -1,3 +1,20 @@
+## From 8.1 to 8.2
+
+**Unreleased**
+
+Update the package:
+
+``` bash
+sudo yum install temboard-agent
+```
+
+Restart all agents:
+
+``` bash
+sudo systemctl restart temboard-agent@...
+```
+
+
 ## From 8.0 to 8.1
 
 Update the package:
