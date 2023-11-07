@@ -289,6 +289,10 @@ class InstanceHelper(object):
             # Swallow adddress and port arguments.
             request.instance = cls(request)
             request.instance.fetch_instance(address, port)
+            # Disable status prefetch for the API
+            # as we prefetch status for base.html template.
+            if not hasattr(request, "json"):
+                request.instance.fetch_status()
             return callable_(request, *args)
 
         return instance_middleware
@@ -321,6 +325,25 @@ class InstanceHelper(object):
             self.instance.agent_address,
             self.instance.agent_port,
         )
+
+    def fetch_status(self):
+        data = self.request_agent("/status")
+        if "temboard" not in data:
+            logger.debug("Old agent detected, translating status.")
+            data = {
+                "temboard": {
+                    "status": "running",
+                    "pid": data["pid"],
+                    "start_time": data["start_datetime"],
+                },
+                "postgres": {
+                    "status": "running",
+                },
+                "system": {
+                    "status": "running",
+                },
+            }
+        self.instance.status = data
 
     @property
     def cookie_name(self):
@@ -558,7 +581,7 @@ class Blueprint(object):
 
         # Enable JSON middleware on /json/ handlers.
         if json is None:
-            json = url.startswith('/json/')
+            json = url.startswith('/json/') or url.endswith(".json")
 
         def decorator(func):
             logger_name = func.__module__ + '.' + func.__name__

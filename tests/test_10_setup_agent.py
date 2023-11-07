@@ -76,5 +76,4 @@ def test_discover(agent, agent_env, pg_version):
 def test_status(agent, agent_env, pg_version):
     res = agent.get('/status')
     status = res.json()
-
-    assert 'start_datetime' in status
+    assert not status['postgres']['pending_restart']
