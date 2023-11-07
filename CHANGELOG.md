@@ -9,7 +9,7 @@ Ensure you use consistent title format.
 
 **Unreleased**
 
-!!! note "Multiple groups of instances and groups of users"
+!!! info "Multiple groups of instances and groups of users"
 
     In temBoard 9.0, we plan to remove the ability to put an instance in several groups of instances
     or a group of instances in several groups of users.
