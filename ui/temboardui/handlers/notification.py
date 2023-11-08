@@ -11,6 +11,7 @@ def notifications(request):
     except Exception:
         agent_username = None
     notifications = request.instance.get("/notifications")
+    request.instance.fetch_status()
     return render_template(
         'notifications.html',
         agent_username=agent_username,

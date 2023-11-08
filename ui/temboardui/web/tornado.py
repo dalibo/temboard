@@ -289,10 +289,6 @@ class InstanceHelper(object):
             # Swallow adddress and port arguments.
             request.instance = cls(request)
             request.instance.fetch_instance(address, port)
-            # Disable status prefetch for the API
-            # as we prefetch status for base.html template.
-            if not hasattr(request, "json"):
-                request.instance.fetch_status()
             return callable_(request, *args)
 
         return instance_middleware
@@ -319,6 +315,7 @@ class InstanceHelper(object):
 
     def fetch_instance(self, address, port):
         self.instance = get_instance(self.request.db_session, address, port)
+        self.instance.status = None
         if not self.instance:
             raise HTTPError(404)
         self.agent_id = '%s:%s' % (
@@ -327,7 +324,23 @@ class InstanceHelper(object):
         )
 
     def fetch_status(self):
-        data = self.request_agent("/status")
+        try:
+            data = self.request_agent("/status")
+        except Exception as e:
+            # agent is unreachable we forge a status response
+            logger.error("Failed to fetch status: %s", e)
+            data = {
+                "temboard": {
+                    "status": "unreachable",
+                },
+                "postgres": {
+                    "status": "unreachable",
+                    "pending_restart": False,
+                },
+                "system": {
+                    "status": "unreachable",
+                },
+            }
         if "temboard" not in data:
             logger.debug("Old agent detected, translating status.")
             data = {
@@ -338,6 +351,7 @@ class InstanceHelper(object):
                 },
                 "postgres": {
                     "status": "running",
+                    "pending_restart": False,
                 },
                 "system": {
                     "status": "running",

@@ -730,6 +730,7 @@ def json_chart_data_db(request, dbid):
 @blueprint.instance_route(r'/statements')
 def statements(request):
     request.instance.check_active_plugin('statements')
+    request.instance.fetch_status()
     return render_template(
         'index.html',
         nav=True,

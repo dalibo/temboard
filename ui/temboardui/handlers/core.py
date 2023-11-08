@@ -6,6 +6,7 @@ from ..web.tornado import (
 
 @app.instance_route('/about')
 def home(request):
+    request.instance.fetch_status()
     return render_template(
         'instance-about.html',
         nav=True,
