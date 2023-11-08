@@ -7,9 +7,18 @@
 
 Update the package:
 
-``` bash
-sudo yum install temboard
-```
+=== "RHEL and compatible"
+
+    ``` bash
+    sudo yum install temboard
+    ```
+
+=== "Debian and derived"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard
+    ```
 
 Restart temBoard:
 
@@ -22,9 +31,18 @@ sudo systemctl restart temboard
 
 Update the package:
 
-``` bash
-sudo yum install temboard
-```
+=== "RHEL and compatible"
+
+    ``` bash
+    sudo yum install temboard
+    ```
+
+=== "Debian and derived"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard
+    ```
 
 Restart temBoard:
 
