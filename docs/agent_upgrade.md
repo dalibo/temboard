@@ -4,9 +4,18 @@
 
 Update the package:
 
-``` bash
-sudo yum install temboard-agent
-```
+=== "RHEL and compatible"
+
+    ``` bash
+    sudo yum install temboard-agent
+    ```
+
+=== "Debian and derived"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard-agent
+    ```
 
 Restart all agents:
 
@@ -19,9 +28,18 @@ sudo systemctl restart temboard-agent@...
 
 Update the package:
 
-``` bash
-sudo yum install temboard-agent
-```
+=== "RHEL and compatible"
+
+    ``` bash
+    sudo yum install temboard-agent
+    ```
+
+=== "Debian and derived"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard-agent
+    ```
 
 Restart all agents:
 
