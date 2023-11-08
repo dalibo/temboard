@@ -81,7 +81,7 @@ def configuration_handler(request, category=None):
             # Rerender HTML page with errors.
             template_vars['error_code'] = e
             template_vars['error_message'] = e.log_message
-
+    request.instance.fetch_status()
     return render_template(
         'configuration.html',
         nav=True,

@@ -180,7 +180,8 @@
             </ul>
           </div>
         </div>
-        {% set s = instance.status or {} %}
+        {% if instance.status %}
+        {% set s = instance.status %}
         {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
         <div class="main ml-auto px-3 pt-3 position-relative">
           <div class="alert alert-warning" role="alert" >
@@ -193,6 +194,7 @@
               <p> Some changes are pending and PostgreSQL should be restarted.</p>
           </div>
         </div>
+        {% end %}
         {% end %}
         <div class="main ml-auto p-3 position-relative">
           <div id="errorApp"></div>

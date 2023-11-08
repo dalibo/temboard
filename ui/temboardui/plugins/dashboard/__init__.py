@@ -57,6 +57,7 @@ def dashboard(request):
     else:
         last_data = request.instance.get('/dashboard/live')
 
+    request.instance.fetch_status()
     return render_template(
         'dashboard.html',
         nav=True, role=request.current_user,

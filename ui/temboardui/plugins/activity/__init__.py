@@ -28,6 +28,7 @@ def activity(request):
     request.instance.check_active_plugin('activity')
     agent_username = request.instance.get_username()
     xsession = request.instance.xsession if agent_username else None
+    request.instance.fetch_status()
     return render_template(
         'activity.html',
         nav=True,

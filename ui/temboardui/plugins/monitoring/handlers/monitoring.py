@@ -29,7 +29,7 @@ def index(request):
         # Don't fail if there's a session error (for example when the agent
         # has been restarted)
         agent_username = None
-
+    request.instance.fetch_status()
     return render_template(
         'index.html',
         nav=True, role=request.current_user, instance=request.instance,

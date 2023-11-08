@@ -85,7 +85,7 @@ def index(request):
         # Don't fail if there's a session error (for example when the agent
         # has been restarted)
         agent_username = None
-
+    request.instance.fetch_status()
     return render_template(
         'alerting.checks.html',
         nav=True, role=request.current_user,
@@ -191,7 +191,7 @@ def check(request, name):
     ))
     check = res.fetchone()
     spec = check_specs[name]
-
+    request.instance.fetch_status()
     return render_template(
         'alerting.check.html',
         nav=True, role=request.current_user,
