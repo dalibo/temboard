@@ -18,13 +18,13 @@ and restart the service manually.
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update
@@ -36,13 +36,13 @@ Update the package:
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update

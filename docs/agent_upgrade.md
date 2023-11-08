@@ -15,13 +15,13 @@ and restart the service manually.
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard-agent
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update
@@ -33,13 +33,13 @@ Update the package:
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard-agent
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update
