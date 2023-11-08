@@ -1,3 +1,14 @@
+<!--
+RPM and DEB packages automatically restarts running services
+
+If an upgrade requires manual steps:
+stop service manually,
+update the package,
+execute manual steps
+and restart the service manually.
+
+-->
+
 ## From 8.1 to 8.2
 
 **Unreleased**
@@ -17,12 +28,6 @@ Update the package:
     sudo apt install temboard-agent
     ```
 
-Restart all agents:
-
-``` bash
-sudo systemctl restart temboard-agent@...
-```
-
 
 ## From 8.0 to 8.1
 
@@ -40,12 +45,6 @@ Update the package:
     sudo apt update
     sudo apt install temboard-agent
     ```
-
-Restart all agents:
-
-``` bash
-sudo systemctl restart temboard-agent@...
-```
 
 
 ## From 7.11 to 8.0
