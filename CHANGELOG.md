@@ -34,6 +34,7 @@ Ensure you use consistent title format.
 - Ignore psqlrc in `create_repository.sh`.
 - Accept temboard-agent-register from v7 agent.
 - Transparently drop unused agent key.
+- Link to instance dahsboard from Instances settings.
 - Warn pending restart of a PostgreSQL instance in UI.
 - Warn outdated agent.
 - Warn about instance in multiple groups of instance.

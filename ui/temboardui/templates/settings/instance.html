@@ -46,7 +46,12 @@
       <tbody>
       {% for instance in instance_list %}
         <tr>
-          <td>{{instance.hostname}}:{{instance.pg_port}}</td>
+          <td>
+            <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
+              <i class="fa fa-database"></i>
+              {{instance.hostname}}:{{instance.pg_port}}
+            </a>
+          </td>
           <td>
             {{instance.pg_version_summary}}
             <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance.pg_version}}">
