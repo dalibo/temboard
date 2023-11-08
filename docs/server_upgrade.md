@@ -1,54 +1,53 @@
 [preferred installation method]: server_install.md#install
 [upgrade the agents]: agent_upgrade.md
 
+<!--
+RPM and DEB packages automatically restarts running services
+
+If an upgrade requires manual steps:
+stop service manually,
+update the package,
+execute manual steps
+and restart the service manually.
+
+-->
+
 ## From 8.1 to 8.2
 
 **Unreleased**
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update
     sudo apt install temboard
     ```
-
-Restart temBoard:
-
-``` bash
-sudo systemctl restart temboard
-```
 
 
 ## From 8.0 to 8.1
 
 Update the package:
 
-=== "RHEL and compatible"
+=== "RHEL"
 
     ``` bash
     sudo yum install temboard
     ```
 
-=== "Debian and derived"
+=== "Debian"
 
     ``` bash
     sudo apt update
     sudo apt install temboard
     ```
-
-Restart temBoard:
-
-``` bash
-sudo systemctl restart temboard
-```
 
 
 ## Upgrade `7.11` to `8.0`

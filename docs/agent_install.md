@@ -70,7 +70,7 @@ In order to run temBoard agent, you need:
     ``` console
     # echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
     # curl https://apt.dalibo.org/labs/debian-dalibo.asc | apt-key add -
-    # apt update -y  # You may use apt-get here.
+    # apt update  # You may use apt-get here.
     ```
 
     You can install now temBoard agent with:

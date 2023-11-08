@@ -5,7 +5,7 @@ if ! hash systemctl &>/dev/null; then
 	exit 0
 fi
 
-if ! systemctl is-system-running &>/dev/null ; then
+if ! readlink /proc/1/exe | grep -q systemd ; then
 	echo You must restart manually temboard-agent services. >&2
 	exit 0
 fi
