@@ -88,25 +88,8 @@
 </div>
 <script src="/js/temboard.settings.group.js"></script>
 <script src="/js/bootstrap-multiselect.js"></script>
-<script type="module" src="{{ vitejs.url_for('settings.group.js') }}"></script>
-<script>
-$('#buttonLoadAddGroupForm').click(function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_add_group_form('GroupModal', '{{group_kind}}');
-});
-
-$(document).on('click', '[data-action=edit]', function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_update_group_form('GroupModal', '{{group_kind}}', $(this).data('group_name'));
-});
-
-$(document).on('click', '[data-action=delete]', function () {
-  $('#GroupModal').modal('show');
-  $('[data-toggle=popover]').popover('hide');
-  load_delete_group_confirm('GroupModal', '{{group_kind}}', $(this).data('group_name'));
-});
-
+<script type="application/javascript">
+  var group_kind = "{{ group_kind }}";
 </script>
+<script type="module" src="{{ vitejs.url_for('settings.group.js') }}"></script>
 {% end %}
