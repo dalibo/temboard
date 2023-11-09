@@ -163,7 +163,7 @@ class Register(SubCommand):
                 args.host, self.app.config.temboard.port,
             )
             logger.info(
-                "Instance registered. Managed it at %s.", dashboard_url)
+                "Instance registered. Manage it at %s.", dashboard_url)
         except TemboardClient.Error as e:
             raise UserError("UI returned error: %s" % e)
 
