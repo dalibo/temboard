@@ -12,4 +12,4 @@ fi
 
 systemctl daemon-reload
 
-systemctl restart --state=active temboard-agent@*
+systemctl try-restart temboard-agent@*

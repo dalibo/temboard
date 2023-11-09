@@ -20,6 +20,10 @@ Ensure you use consistent title format.
     temboard 8.2 warns you about instances and groups of instances matching these cases.
     Read [GitHub issue #1283](https://github.com/dalibo/temboard/issues/1283) for details.
 
+**Global changes**
+
+- Packages postinst don't start stopped systemd units.
+
 
 **UI changes**
 
