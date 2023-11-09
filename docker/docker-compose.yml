@@ -64,7 +64,6 @@ services:
     volumes:
     - data15:/var/lib/postgresql/data
     - run15:/var/run/postgresql/
-    - /usr/bin/docker:/usr/bin/docker
     - /var/run/docker.sock:/var/run/docker.sock
     links:
     - instance15:instance15.acme.tld
@@ -100,7 +99,6 @@ services:
     volumes:
       - data13:/var/lib/postgresql/data
       - run13:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - instance13:instance13.acme.tld
@@ -132,7 +130,6 @@ services:
     volumes:
       - data11:/var/lib/postgresql/data
       - run11:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - instance11:instance11.acme.tld
@@ -164,7 +161,6 @@ services:
     volumes:
       - data96:/var/lib/postgresql/data
       - run96:/var/run/postgresql/
-      - /usr/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     links:
       - instance96:instance96.acme.tld
