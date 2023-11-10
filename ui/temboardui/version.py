@@ -2,7 +2,7 @@ import sys
 from platform import python_version
 
 
-__version__ = "8.2rc2"
+__version__ = "8.2rc3"
 
 
 # This output is parsed by tests/conftest.py::pytest_report_header.
