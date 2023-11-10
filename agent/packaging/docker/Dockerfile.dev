@@ -1,4 +1,4 @@
-FROM dalibo/temboard-agent:latest
+FROM dalibo/temboard-agent:snapshot
 
 RUN set -ex; \
     apt-get update -y ; \

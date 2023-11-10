@@ -227,7 +227,7 @@ docker-build-agent:
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
 		--tag dalibo/temboard-agent:$(DOCKER_TAG) \
-		--tag dalibo/temboard-agent:latest \
+		--tag dalibo/temboard-agent:snapshot \
 		agent/
 
 docker-build-ui:
@@ -236,5 +236,5 @@ docker-build-ui:
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
 		--tag dalibo/temboard:$(DOCKER_TAG) \
-		--tag dalibo/temboard:latest \
+		--tag dalibo/temboard:snapshot \
 		ui/
