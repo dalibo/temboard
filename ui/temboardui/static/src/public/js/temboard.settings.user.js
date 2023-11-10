@@ -149,8 +149,8 @@ function send_update_user_form(modal_id)
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),
-      'is_active': $('#switchActive').val(),
-      'is_admin': $('#switchAdmin').val()
+      'is_active': $('#switchActive').is(":checked"),
+      'is_admin': $('#switchAdmin').is(":checked")
     }),
     async: true,
     contentType: "application/json",
@@ -361,8 +361,8 @@ function send_add_user_form(modal_id)
       'password': $('#inputPassword').val(),
       'password2': $('#inputPassword2').val(),
       'groups': $('#selectGroups').val(),
-      'is_active': $('#switchActive').val(),
-      'is_admin': $('#switchAdmin').val()
+      'is_active': $('#switchActive').is(":checked"),
+      'is_admin': $('#switchAdmin').is(":checked")
     }),
     async: true,
     contentType: "application/json",
