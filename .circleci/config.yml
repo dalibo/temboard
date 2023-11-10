@@ -466,18 +466,23 @@ jobs:
     - run:
         name: Build Agent & UI Images
         command: |
-          DOCKER_TAG="${CIRCLE_TAG#v}"
-          if [ -z "$DOCKER_TAG" ] ; then
-            # If on branch, don't build version tag.
-            DOCKER_TAG=snapshot
-          fi
-          make docker-build-agent docker-build-ui DOCKER_TAG=$DOCKER_TAG
+          RELEASE_TAG="${CIRCLE_TAG#v}"
+          # Skip release tag on branch
+          make docker-build-agent docker-build-ui DOCKER_TAG="${RELEASE_TAG:-$CIRCLE_BRANCH}"
 
-          # Always tag last build for 8.
-          docker tag dalibo/temboard-agent:latest dalibo/temboard-agent:8
-          docker tag dalibo/temboard:latest dalibo/temboard:8
-          # Drop snapshots.
-          docker rmi --force dalibo/temboard-agent:snapshot dalibo/temboard:snapshot
+          # Stable release tags (without letters in version)
+          if [ -n "$RELEASE_TAG" ] && ! expr match "$RELEASE_TAG" ".*[a-z]\+" >/dev/null ; then
+            # Point latest to this build
+            docker tag dalibo/temboard-agent:$RELEASE_TAG dalibo/temboard-agent:latest
+            docker tag dalibo/temboard:$RELEASE_TAG dalibo/temboard:latest
+            # Point 8 to this build.
+            docker tag dalibo/temboard-agent:latest dalibo/temboard-agent:8
+            docker tag dalibo/temboard:latest dalibo/temboard:8
+          fi
+
+          # Drop branch tag, we don't want to publish it.
+          docker rmi --force dalibo/temboard:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
+
           # Log available tags. Next steps will push them all.
           docker images dalibo/temboard-agent
           docker images dalibo/temboard
