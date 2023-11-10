@@ -481,7 +481,7 @@ jobs:
           fi
 
           # Drop branch tag, we don't want to publish it.
-          docker rmi --force dalibo/temboard:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
+          docker rmi --force dalibo/temboard-agent:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
 
           # Log available tags. Next steps will push them all.
           docker images dalibo/temboard-agent
