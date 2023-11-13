@@ -19,3 +19,7 @@ services:
   buster:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:buster
+
+  jammy:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:jammy
