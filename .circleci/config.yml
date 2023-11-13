@@ -109,10 +109,6 @@ workflows:
         requires: [stage1-pkg-bullseye]
         filters:
           <<: *enable-for-tags
-          # Skip on branches!
-          branches:
-            # master points to docker tag 8 and latest
-            only: master
 
 
 jobs:
@@ -493,7 +489,7 @@ jobs:
         command: |
           docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"
     - run:
-        name: Push to Docker Hub
+        name: Push to Docker Hub (only master and tags)
         command: |
           set -x
           if [ -n "${CIRCLE_TAG-}" ] || [ master = "${CIRCLE_BRANCH-}" ] ; then
