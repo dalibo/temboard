@@ -485,14 +485,12 @@ jobs:
           # Log available tags. Next steps will push them all.
           docker images dalibo/temboard*
     - run:
-        name: Login to Docker Hub
-        command: |
-          docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"
-    - run:
         name: Push to Docker Hub (only master and tags)
         command: |
           set -x
-          if [ -n "${CIRCLE_TAG-}" ] || [ master = "${CIRCLE_BRANCH-}" ] ; then
-            docker push --all-tags dalibo/temboard-agent
-            docker push --all-tags dalibo/temboard
+          if [ -z "${CIRCLE_TAG-}" ] && [ master != "${CIRCLE_BRANCH-}" ] ; then
+            exit 0;
           fi
+          docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"
+          docker push --all-tags dalibo/temboard-agent
+          docker push --all-tags dalibo/temboard
