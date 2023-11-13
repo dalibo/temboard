@@ -109,10 +109,6 @@ workflows:
         requires: [stage1-pkg-bullseye]
         filters:
           <<: *enable-for-tags
-          # Skip on branches!
-          branches:
-            # master points to docker tag 8 and latest
-            only: master
 
 
 jobs:
@@ -466,6 +462,7 @@ jobs:
     - run:
         name: Build Agent & UI Images
         command: |
+          set -x
           RELEASE_TAG="${CIRCLE_TAG#v}"
           # Skip release tag on branch
           make docker-build-agent docker-build-ui DOCKER_TAG="${RELEASE_TAG:-$CIRCLE_BRANCH}"
@@ -480,18 +477,20 @@ jobs:
             docker tag dalibo/temboard:latest dalibo/temboard:8
           fi
 
-          # Drop branch tag, we don't want to publish it.
-          docker rmi --force dalibo/temboard-agent:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
+          if [ -n "${CIRCLE_BRANCH-}" ] ; then
+            # Drop branch tag, we don't want to publish it.
+            docker rmi --force dalibo/temboard-agent:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
+          fi
 
           # Log available tags. Next steps will push them all.
-          docker images dalibo/temboard-agent
-          docker images dalibo/temboard
+          docker images dalibo/temboard*
     - run:
-        name: Login to Docker Hub
+        name: Push to Docker Hub (only master and tags)
         command: |
+          set -x
+          if [ -z "${CIRCLE_TAG-}" ] && [ master != "${CIRCLE_BRANCH-}" ] ; then
+            exit 0;
+          fi
           docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"
-    - run:
-        name: Push to Docker Hub
-        command: |
           docker push --all-tags dalibo/temboard-agent
           docker push --all-tags dalibo/temboard
