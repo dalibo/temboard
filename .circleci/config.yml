@@ -494,5 +494,7 @@ jobs:
     - run:
         name: Push to Docker Hub
         command: |
-          docker push --all-tags dalibo/temboard-agent
-          docker push --all-tags dalibo/temboard
+          if [ -n "${CIRCLE_TAG-}" ] || [ master = "${CIRCLE_BRANCH-}" ] ; then
+            docker push --all-tags dalibo/temboard-agent
+            docker push --all-tags dalibo/temboard
+          fi
