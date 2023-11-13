@@ -486,8 +486,7 @@ jobs:
           fi
 
           # Log available tags. Next steps will push them all.
-          docker images dalibo/temboard-agent
-          docker images dalibo/temboard
+          docker images dalibo/temboard*
     - run:
         name: Login to Docker Hub
         command: |
