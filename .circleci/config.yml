@@ -466,6 +466,7 @@ jobs:
     - run:
         name: Build Agent & UI Images
         command: |
+          set -x
           RELEASE_TAG="${CIRCLE_TAG#v}"
           # Skip release tag on branch
           make docker-build-agent docker-build-ui DOCKER_TAG="${RELEASE_TAG:-$CIRCLE_BRANCH}"
@@ -494,6 +495,7 @@ jobs:
     - run:
         name: Push to Docker Hub
         command: |
+          set -x
           if [ -n "${CIRCLE_TAG-}" ] || [ master = "${CIRCLE_BRANCH-}" ] ; then
             docker push --all-tags dalibo/temboard-agent
             docker push --all-tags dalibo/temboard
