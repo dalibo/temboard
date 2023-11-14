@@ -220,13 +220,11 @@ copy-rhel%:
 	mkdir -p $(YUM_LABS)/rpms/RHEL$*-x86_64/
 	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/
 
-DOCKER_TAG=$(VERSION)
 docker-build-agent:
 	DOCKER_BUILDKIT=1 docker build \
 		--file agent/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
-		--tag dalibo/temboard-agent:$(DOCKER_TAG) \
 		--tag dalibo/temboard-agent:snapshot \
 		agent/
 
@@ -235,6 +233,5 @@ docker-build-ui:
 		--file ui/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
-		--tag dalibo/temboard:$(DOCKER_TAG) \
 		--tag dalibo/temboard:snapshot \
 		ui/

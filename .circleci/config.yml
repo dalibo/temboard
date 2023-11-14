@@ -463,23 +463,23 @@ jobs:
         name: Build Agent & UI Images
         command: |
           set -x
+          make docker-build-agent docker-build-ui
+
           RELEASE_TAG="${CIRCLE_TAG#v}"
-          # Skip release tag on branch
-          make docker-build-agent docker-build-ui DOCKER_TAG="${RELEASE_TAG:-$CIRCLE_BRANCH}"
+          if [ -n "$RELEASE_TAG" ] ; then
+            # Create release tag from snapshot.
+            docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:$RELEASE_TAG
+            docker tag dalibo/temboard:snapshot dalibo/temboard:$RELEASE_TAG
 
-          # Stable release tags (without letters in version)
-          if [ -n "$RELEASE_TAG" ] && ! expr match "$RELEASE_TAG" ".*[a-z]\+" >/dev/null ; then
-            # Point latest to this build
-            docker tag dalibo/temboard-agent:$RELEASE_TAG dalibo/temboard-agent:latest
-            docker tag dalibo/temboard:$RELEASE_TAG dalibo/temboard:latest
-            # Point 8 to this build.
-            docker tag dalibo/temboard-agent:latest dalibo/temboard-agent:8
-            docker tag dalibo/temboard:latest dalibo/temboard:8
-          fi
-
-          if [ -n "${CIRCLE_BRANCH-}" ] ; then
-            # Drop branch tag, we don't want to publish it.
-            docker rmi --force dalibo/temboard-agent:$CIRCLE_BRANCH dalibo/temboard:$CIRCLE_BRANCH
+            # Stable release tags (without letters in version)
+            if ! expr match "$RELEASE_TAG" ".*[a-z]\+" >/dev/null ; then
+              # Point latest to this build
+              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:latest
+              docker tag dalibo/temboard:snapshot dalibo/temboard:latest
+              # Point 8 to this build.
+              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:8
+              docker tag dalibo/temboard:snapshot dalibo/temboard:8
+            fi
           fi
 
           # Log available tags. Next steps will push them all.
