@@ -192,7 +192,7 @@ CURL=curl --fail --create-dirs --location --silent --show-error
 GH_DOWNLOAD=https://github.com/dalibo/temboard/releases/download/v$(VERSION)
 AGENT_DIST_BASE=agent/dist/temboard-agent
 UI_DIST_BASE=ui/dist/temboard
-download-packages: download-rhel9 download-rhel8 download-rhel7 download-deb-bookworm download-deb-bullseye download-deb-buster  #: Download packages from GitHub release
+download-packages: download-rhel9 download-rhel8 download-rhel7 download-deb-bookworm download-deb-bullseye download-deb-buster download-deb-jammy #: Download packages from GitHub release
 download-rhel%:
 	$(CURL) --output-dir agent/dist/ --remote-name $(GH_DOWNLOAD)/temboard-agent-$(VERSION)-1.el$*.noarch.rpm
 	$(CURL) --output-dir ui/dist/ --remote-name $(GH_DOWNLOAD)/temboard-$(VERSION)-1.el$*.noarch.rpm
@@ -204,7 +204,7 @@ download-deb-%:
 	$(CURL) --output $(AGENT_DIST_BASE)_$(DEBIANVERSION)-0dlb1$*1_all.deb -LO $(GH_DOWNLOAD)/temboard-agent_$(GH_DEBIANVERSION)-0dlb1$*1_all.deb
 	$(CURL) --output $(UI_DIST_BASE)_$(DEBIANVERSION)-0dlb1$*1_amd64.deb -LO $(GH_DOWNLOAD)/temboard_$(GH_DEBIANVERSION)-0dlb1$*1_amd64.deb
 
-publish-packages: publish-rhel publish-deb-bookworm publish-deb-bullseye publish-deb-buster  #: Upload packages to Dalibo Labs repositories.
+publish-packages: publish-rhel publish-deb-bookworm publish-deb-bullseye publish-deb-buster publish-deb-jammy  #: Upload packages to Dalibo Labs repositories.
 publish-rhel: copy-rhel9 copy-rhel8 copy-rhel7
 	@if expr match "$(VERSION)" ".*[a-z]\+" >/dev/null; then echo 'Refusing tu publish prerelease in YUM repository.'; false ; fi
 	@make -C $(YUM_LABS) push createrepos clean

@@ -25,7 +25,7 @@ Ensure you use consistent title format.
 - Packages postinst don't start stopped systemd units.
 - Docker tag `snapshot` points to last build.
 - Docker image latest and `8` points to last stable tag.
-
+- Release packages for Ubuntu 22.04 Jammy.
 
 
 **UI changes**
