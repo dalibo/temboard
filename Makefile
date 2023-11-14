@@ -233,6 +233,5 @@ docker-build-ui:
 		--file ui/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
-		--tag dalibo/temboard:$(DOCKER_TAG) \
 		--tag dalibo/temboard:snapshot \
 		ui/
