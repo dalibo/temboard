@@ -10,5 +10,5 @@ dist="dist/temboard-agent-$VERSION.tar.gz"
 test -f "$dist"
 cp --preserve --force packaging/rpm/temboard-agent.spec /tmp/temboard-agent.spec
 sed -i "/^Version:/s/GENERATED/$VERSION/" /tmp/temboard-agent.spec
-export BUILDDIR="$PWD/dist/"
+export BUILDDIR="$PWD/dist/" SMOKETEST=1
 exec rpmbuild.sh /tmp/temboard-agent.spec "$dist"

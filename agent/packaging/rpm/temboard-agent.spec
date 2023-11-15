@@ -70,7 +70,12 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 /usr/share/temboard-agent/preun.sh "$@"
 
 %verifyscript
-temboard-agent --version >/dev/null
+# Smoketest with SMOKETEST=1 rpm -v --verify -p <rpm>
+if ! [ -v SMOKETEST ] ; then
+    echo "Skipping smoketest." >&2
+    exit 0
+fi
+temboard-agent --version
 
 
 %changelog

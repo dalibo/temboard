@@ -64,6 +64,12 @@ This packages holds the web user interface.
 /usr/share/temboard/preun.sh "$@"
 
 %verifyscript
+# Smoketest with SMOKETEST=1 rpm -v --verify -p <rpm>
+# This test is run by verify with *installed* package instead of in buildroot like %check.
+if ! [ -v SMOKETEST ] ; then
+    echo "Skipping smoketest." >&2
+    exit 0
+fi
 temboard --version
 test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
 
