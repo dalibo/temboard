@@ -68,6 +68,8 @@ SETUP_KWARGS = dict(
         ('share/temboard', [
             'share/auto_configure.sh',
             'share/create_repository.sh',
+            'share/postinst.sh',
+            'share/preun.sh',
             'share/purge.sh',
         ]),
         ('share/temboard/sql/', [
