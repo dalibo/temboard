@@ -9,6 +9,7 @@ Ensure you use consistent title format.
 
 **UNRELEASED**
 
+- Fix package upgrade and remove on RHEL and DEB.
 - ui: purge.sh does not requires PGHOST or PGUSER.
 
 
