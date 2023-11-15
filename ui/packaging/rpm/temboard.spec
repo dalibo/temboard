@@ -36,30 +36,16 @@ Requires:      python3-sqlalchemy >= 0.9.8, python3-sqlalchemy < 2
 %endif
 
 %description
-temBoard is a monitoring and remote control solution for PostgreSQL
-This packages holds the web user interface
+temBoard is a monitoring and remote control solution for PostgreSQL.
+This packages holds the web user interface.
 
 %prep
-%setup -q -n %{pkgname}-%{version}
+%setup -q
 
 %build
 %{__python} setup.py build
 
-%post
-systemctl daemon-reload &>/dev/null || :
-systemctl restart --state=ACTIVE temboard
-
-%preun
-if systemctl is-system-running &>/dev/null ; then
-    systemctl disable --now temboard
-    systemctl reset-failed temboard
-fi
-
-%postun
-/bin/systemctl daemon-reload &>/dev/null || :
-
 %install
-PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__python} setup.py install --root=%{buildroot}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
@@ -70,6 +56,12 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 /usr/share/temboard/*
 /usr/bin/temboard
 %{_unitdir}/temboard.service
+
+%post
+/usr/share/temboard/postinst.sh "$@"
+
+%preun
+/usr/share/temboard/preun.sh "$@"
 
 %verifyscript
 temboard --version
