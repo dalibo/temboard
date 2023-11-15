@@ -76,7 +76,7 @@ temboard --version
 test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
 
 %changelog
-* Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
+* Fri Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
 - New Upstream Release
 
 * Wed Nov 8 2017 Julien Tachoires <julmon@gmail.com> - 1.1-1
