@@ -11,8 +11,6 @@ and restart the service manually.
 
 ## From 8.1 to 8.2.1
 
-**Unreleased**
-
 Ensure [temBoard UI is upgraded](server_upgrade.md) first.
 
 Install last the package:

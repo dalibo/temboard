@@ -7,7 +7,7 @@ Ensure you use consistent title format.
 
 ## 8.2.1
 
-**UNRELEASED**
+Released: 15 november 2023
 
 - Fix package upgrade and remove on RHEL and DEB.
 - ui: purge.sh does not requires PGHOST or PGUSER.
@@ -15,7 +15,7 @@ Ensure you use consistent title format.
 
 ## 8.2.0
 
-Released: 15 november 2023
+Released: 14 november 2023
 
 !!! info "Multiple groups of instances and groups of users"
 

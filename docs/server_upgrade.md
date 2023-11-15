@@ -14,8 +14,6 @@ and restart the service manually.
 
 ## From 8.1 to 8.2.1
 
-**Unreleased**
-
 === "RHEL"
 
     Stop the service.
