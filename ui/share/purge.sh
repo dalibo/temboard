@@ -49,7 +49,7 @@ fi
 
 if [ -d "${PGHOST-/var/run/postgresql/}" ] ; then
 	# If local, sudo to PGUSER.
-	run_as_postgres=(sudo -nEHu "${PGUSER}")
+	run_as_postgres=(sudo -nEHu "${PGUSER-postgres}")
 else
 	run_as_postgres=(env)
 fi
