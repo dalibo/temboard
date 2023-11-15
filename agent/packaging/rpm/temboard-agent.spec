@@ -1,10 +1,8 @@
 %global pkgname temboard-agent
-%{!?pkgversion: %global pkgversion 1.1}
-%{!?pkgrevision: %global pkgrevision 1}
 
 Name:          %{pkgname}
-Version:       %{pkgversion}
-Release:       %{pkgrevision}%{?dist}
+Version:       GENERATED
+Release:       1%{?dist}
 Summary:       PostgreSQL Remote Control - Agent Service
 
 Group:         Applications/Databases
@@ -29,8 +27,7 @@ temBoard agent monitor and operates on a PostgreSQL instance.
 Requires a temBoard UI installation.
 
 %prep
-%setup -q -n %{pkgname}-%{version}
-
+%setup -q
 
 %build
 %{__python3} setup.py build
@@ -63,29 +60,26 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 %{python3_sitelib}/*
 /usr/share/temboard-agent/*
 /usr/bin/temboard-agent*
-
 %{_unitdir}/temboard-agent@.service
-
 %attr(-,postgres,postgres) /var/lib/temboard-agent
 
 %post
 /usr/share/temboard-agent/restart-all.sh
 
 %preun
-if systemctl is-system-running &>/dev/null ; then
-    systemctl disable --now temboard-agent@*
-    systemctl reset-failed temboard-agent@*
-fi
+/usr/share/temboard-agent/preun.sh "$@"
 
-
-%postun
-if systemctl is-system-running &>/dev/null ; then
-    systemctl daemon-reload
+%verifyscript
+# Smoketest with SMOKETEST=1 rpm -v --verify -p <rpm>
+if ! [ -v SMOKETEST ] ; then
+    echo "Skipping smoketest." >&2
+    exit 0
 fi
+temboard-agent --version
 
 
 %changelog
-* Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
+* Fri Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
 - New Upstream Release
 
 * Fri Oct  9 2020 Denis Laxalde <denis.laxalde@dalibo.com> - 7.1-2

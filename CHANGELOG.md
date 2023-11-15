@@ -5,6 +5,14 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
+## 8.2.1
+
+**UNRELEASED**
+
+- Fix package upgrade and remove on RHEL and DEB.
+- ui: purge.sh does not requires PGHOST or PGUSER.
+
+
 ## 8.2.0
 
 Released: 15 november 2023

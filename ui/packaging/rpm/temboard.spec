@@ -1,15 +1,13 @@
 %global pkgname temboard
 %global confdir %{_sysconfdir}/%{pkgname}
-%{!?pkgversion: %global pkgversion 1.1}
-%{!?pkgrevision: %global pkgrevision 1}
 
 %global __python /usr/bin/python3
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:          %{pkgname}
-Version:       %{pkgversion}
-Release:       %{pkgrevision}%{?dist}
+Version:       GENERATED
+Release:       1%{?dist}
 Summary:       PostgreSQL Remote Control - Web Interface
 
 Group:         Applications/Databases
@@ -38,30 +36,16 @@ Requires:      python3-sqlalchemy >= 0.9.8, python3-sqlalchemy < 2
 %endif
 
 %description
-temBoard is a monitoring and remote control solution for PostgreSQL
-This packages holds the web user interface
+temBoard is a monitoring and remote control solution for PostgreSQL.
+This packages holds the web user interface.
 
 %prep
-%setup -q -n %{pkgname}-%{version}
+%setup -q
 
 %build
 %{__python} setup.py build
 
-%post
-systemctl daemon-reload &>/dev/null || :
-systemctl restart --state=ACTIVE temboard
-
-%preun
-if systemctl is-system-running &>/dev/null ; then
-    systemctl disable --now temboard
-    systemctl reset-failed temboard
-fi
-
-%postun
-/bin/systemctl daemon-reload &>/dev/null || :
-
 %install
-PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 %{__python} setup.py install --root=%{buildroot}
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
@@ -73,8 +57,24 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 /usr/bin/temboard
 %{_unitdir}/temboard.service
 
+%post
+/usr/share/temboard/postinst.sh "$@"
+
+%preun
+/usr/share/temboard/preun.sh "$@"
+
+%verifyscript
+# Smoketest with SMOKETEST=1 rpm -v --verify -p <rpm>
+# This test is run by verify with *installed* package instead of in buildroot like %check.
+if ! [ -v SMOKETEST ] ; then
+    echo "Skipping smoketest." >&2
+    exit 0
+fi
+temboard --version
+test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
+
 %changelog
-* Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
+* Fri Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
 - New Upstream Release
 
 * Wed Nov 8 2017 Julien Tachoires <julmon@gmail.com> - 1.1-1

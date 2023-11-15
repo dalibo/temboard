@@ -6,6 +6,4 @@ if ! readlink /proc/1/exe | grep -q systemd ; then
 fi
 
 systemctl daemon-reload
-
-# Restart if running.
 systemctl try-restart temboard

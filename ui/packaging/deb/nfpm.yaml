@@ -17,4 +17,5 @@ contents:
 overrides:
   deb:
     scripts:
-      postinstall: packaging/deb/postinst.sh
+      postinstall: share/postinst.sh
+      preremove: share/preun.sh
