@@ -298,7 +298,9 @@ jobs:
         path: /workspace/agent/dist/
     - run:
         name: Build UI RPM snapshot
-        command: ui/packaging/rpm/build.sh
+        command: |
+          ui/packaging/rpm/build.sh
+          mv -v ui/dist/rhel*/temboard/*.rpm ui/dist/
     - store_artifacts:
         path: /workspace/ui/dist/
     - persist_to_workspace:

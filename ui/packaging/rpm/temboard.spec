@@ -1,15 +1,13 @@
 %global pkgname temboard
 %global confdir %{_sysconfdir}/%{pkgname}
-%{!?pkgversion: %global pkgversion 1.1}
-%{!?pkgrevision: %global pkgrevision 1}
 
 %global __python /usr/bin/python3
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
 Name:          %{pkgname}
-Version:       %{pkgversion}
-Release:       %{pkgrevision}%{?dist}
+Version:       GENERATED
+Release:       1%{?dist}
 Summary:       PostgreSQL Remote Control - Web Interface
 
 Group:         Applications/Databases
@@ -72,6 +70,10 @@ PATH=$PATH:%{buildroot}%{python_sitelib}/%{pkgname}
 /usr/share/temboard/*
 /usr/bin/temboard
 %{_unitdir}/temboard.service
+
+%verifyscript
+temboard --version
+test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
 
 %changelog
 * Mon Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1
