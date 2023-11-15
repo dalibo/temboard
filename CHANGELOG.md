@@ -5,9 +5,9 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
-## 8.2.dev0
+## 8.2.0
 
-**Unreleased**
+Released: 15 november 2023
 
 !!! info "Multiple groups of instances and groups of users"
 
