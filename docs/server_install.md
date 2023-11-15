@@ -163,13 +163,21 @@ the certificate and the cookie secret key.
     is totally unsecured. It is **strongly recommended to change default password**! See below.
 
 First, start temboard using `systemctl enable --now temboard`.
+
+You may need to open port using :
+
+``` console
+$ sudo firewall-cmd --add-port 8888/tcp --permanent
+$ sudo firewall-cmd --reload
+```
+
+Adapt to your setup.
 Then point your browser to <https://temboard_server_host:8888>, log in as
 `admin:admin` and change the password.
 
 !!! note "Using firewall"
     To increase security, you may protect temBoard using
     a firewall rule, until the quickstart admin is secured.
-
 
 # Install agents
 
