@@ -47,7 +47,7 @@ if getent passwd "$SYSUSER" && [ "$(whoami)" != "$SYSUSER" ]; then
 	userdel "$SYSUSER"
 fi
 
-if [ -d "$PGHOST" ] ; then
+if [ -d "${PGHOST-/var/run/postgresql/}" ] ; then
 	# If local, sudo to PGUSER.
 	run_as_postgres=(sudo -nEHu "${PGUSER}")
 else
