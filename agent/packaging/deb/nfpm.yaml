@@ -24,3 +24,4 @@ overrides:
   deb:
     scripts:
       postinstall: share/restart-all.sh
+      preremove: share/preun.sh

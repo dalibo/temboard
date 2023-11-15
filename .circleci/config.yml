@@ -293,7 +293,9 @@ jobs:
         at: *working_directory
     - run:
         name: Build Agent RPM snapshot
-        command: agent/packaging/rpm/build.sh
+        command: |
+          agent/packaging/rpm/build.sh
+          mv -v agent/dist/rhel*/temboard-agent/*.rpm agent/dist/
     - store_artifacts:
         path: /workspace/agent/dist/
     - run:

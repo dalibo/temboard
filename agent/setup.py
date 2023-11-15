@@ -38,6 +38,7 @@ setup(**dict(
             'share/auto_configure.sh',
             'share/purge.sh',
             'share/restart-all.sh',
+            'share/preun.sh',
         ]),
         ('share/temboard-agent/quickstart/', [
             'share/temboard-agent_CHANGEME.pem',

@@ -9,11 +9,13 @@ and restart the service manually.
 
 -->
 
-## From 8.1 to 8.2
+## From 8.1 to 8.2.1
 
 **Unreleased**
 
-Update the package:
+Ensure [temBoard UI is upgraded](server_upgrade.md) first.
+
+Install last the package:
 
 === "RHEL"
 

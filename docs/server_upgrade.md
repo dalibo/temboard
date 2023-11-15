@@ -16,26 +16,30 @@ and restart the service manually.
 
 **Unreleased**
 
-Stop the service.
-
-``` bash
-sudo systemctl stop temboard
-```
-
-Remove the old package:
-
 === "RHEL"
+
+    Stop the service.
+
+    ``` bash
+    sudo systemctl stop temboard
+    ```
+
+    Remove the old package:
 
     ``` bash
     sudo rpm --noscripts --erase temboard
     ```
 
-Install last package:
-
-=== "RHEL"
+    Install last package:
 
     ``` bash
     sudo yum install temboard-8.2.1
+    ```
+
+    Enable the service:
+
+    ``` bash
+    sudo systemctl start temboard
     ```
 
 === "Debian"
@@ -44,12 +48,6 @@ Install last package:
     sudo apt update
     sudo apt install temboard
     ```
-
-Enable the service:
-
-``` bash
-sudo systemctl start temboard
-```
 
 
 ## From 8.0 to 8.1
