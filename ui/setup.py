@@ -3,8 +3,8 @@
 import os
 import sys
 
-from setuptools import setup, find_packages, __version__ as setuptoolsv
-
+from setuptools import __version__ as setuptoolsv
+from setuptools import find_packages, setup
 
 # Load version number
 __version__ = None
@@ -15,8 +15,9 @@ if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')
 
 # Accept Tornado 5.X on Python 2.7.9+
-# Accept Tornado 6.X on Python 3+
-BLEEDING_EDGE_TORNADO = '7'
+# Accept Tornado < 6.4 on Python 3+
+# _verify_cert in SSLIOStream is removed on Tornado 6.4+ on Python 3+.
+BLEEDING_EDGE_TORNADO = '6.4'
 if sys.version_info < (2, 7, 9):
     BLEEDING_EDGE_TORNADO = '4.5'
     open_kw = dict()
