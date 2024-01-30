@@ -9,9 +9,12 @@ apropos:  #: Show dev Makefile help.
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
 
+DOCKER_VERSION=$(shell docker version --format "{{ .Server.Version }}")
+DOCKER_VERSION_MAX=26
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
+	if [ "$(DOCKER_VERSION_MAX)" = "$$(echo "$(DOCKER_VERSION_MAX)\n$(DOCKER_VERSION)" | sort --version-sort | head -1)" ] ; then echo "Unsupported Docker version $(DOCKER_VERSION). Please fix develop for this version of Docker." ; false ; fi
 	$(MAKE) -j 2 install-$* dev/bin/prometheus
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
