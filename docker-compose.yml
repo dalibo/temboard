@@ -41,6 +41,10 @@ services:
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./dev/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    networks:
+      default:
+        aliases:
+        - postgres0.dev
     entrypoint: &postgres_entrypoint [/usr/local/bin/postgres-ha-entrypoint.sh]
     command: [
       postgres,
@@ -63,8 +67,6 @@ services:
     - run0:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
-    links:
-    - postgres0:postgres0.dev
     environment: &agent_env
       # Persists bash history. Eases reuse of hupper command when recreating
       # container.
@@ -100,6 +102,10 @@ services:
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./dev/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    networks:
+      default:
+        aliases:
+        - postgres1.dev
     entrypoint: *postgres_entrypoint
     command: [
       postgres,
@@ -120,8 +126,6 @@ services:
     - run1:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
-    links:
-    - postgres1:postgres1.dev
     environment:
       <<: *agent_env
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres1/temboard-agent.conf
@@ -155,6 +159,10 @@ services:
     - run-stable:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    networks:
+      default:
+        aliases:
+        - postgres-stable.dev
     command: [
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
@@ -171,8 +179,6 @@ services:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
-    links:
-    - postgres-stable:postgres-stable.dev
     environment:
       TEMBOARD_HOSTNAME: postgres-stable.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
