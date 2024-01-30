@@ -201,7 +201,7 @@ def main(logfile):
     logger.info("Inserted %s log messages in Loki.", log_count)
     logger.info("Backfilling Prometheus from OpenMetrics.")
     check_call([
-        "docker-compose", "exec", "prometheus",
+        "docker", "compose", "exec", "prometheus",
         "promtool", "tsdb", "create-blocks-from", "openmetrics",
         "/import/data.txt", "/prometheus",
     ])

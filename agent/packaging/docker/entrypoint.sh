@@ -105,5 +105,5 @@ if [[ "${*} " =~ "temboard-agent " ]] ; then
 	register &
 fi
 
-set -x
+: "Agent environment ready. Running $*" >&2
 exec sudo -Eu postgres "$@"

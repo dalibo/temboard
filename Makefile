@@ -9,16 +9,19 @@ apropos:  #: Show dev Makefile help.
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
 
+DOCKER_VERSION=$(shell docker version --format "{{ .Server.Version }}")
+DOCKER_VERSION_MAX=26
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
+	if [ "$(DOCKER_VERSION_MAX)" = "$$(echo "$(DOCKER_VERSION_MAX)\n$(DOCKER_VERSION)" | sort --version-sort | head -1)" ] ; then echo "Unsupported Docker version $(DOCKER_VERSION). Please fix develop for this version of Docker." ; false ; fi
 	$(MAKE) -j 2 install-$* dev/bin/prometheus
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
-	docker-compose build
-	docker-compose up -d
+	docker compose build
+	docker compose up -d
 	@echo
 	@echo
 	@echo "    You can now execute temBoard UI with dev/venv-py$*/bin/temboard"
@@ -29,16 +32,16 @@ develop-%:: .env
 	$^ > $@
 
 repository:  #: Initialize temBoard UI database.
-	docker-compose up -d repository
+	docker compose up -d repository
 	for i in $$(seq 10) ; do if PGPASSWORD=postgres PGUSER=postgres PGDATABASE=postgres PGHOST=0.0.0.0 psql -Xtc 'SELECT version();' "connect_timeout=15" ; then break ; else sleep 1 ; fi ; done
 	PGHOST=0.0.0.0 PGPASSWORD=postgres DEV=$${DEV-1} ui/share/create_repository.sh
 
 recreate-repository:  #: Reinitialize temBoard UI database.
-	docker-compose up --detach --force-recreate --renew-anon-volumes repository
+	docker compose up --detach --force-recreate --renew-anon-volumes repository
 	$(MAKE) repository
 
 restart-selenium:  #: Restart selenium development container.
-	docker-compose up --detach --force-recreate --renew-anon-volumes selenium
+	docker compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
@@ -70,7 +73,7 @@ dev/bin/prometheus dev/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSI
 	"$@" --version  # Smoketest
 
 clean:  #: Trash venv and containers.
-	docker-compose down --volumes --remove-orphans
+	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf dev/bin/prometheus dev/bin/promtool
@@ -81,7 +84,7 @@ clean:  #: Trash venv and containers.
 distclean: clean  #: Clean also dev env caches.
 	rm -rvf dev/downloads/
 
-# This is the default compose project name as computed by docker-compose. See
+# This is the default compose project name as computed by docker compose. See
 # https://github.com/docker/compose/blob/13bacba2b9aecdf1f3d9a4aa9e01fbc1f9e293ce/compose/cli/command.py#L191
 COMPOSE_PROJECT=$(notdir $(CURDIR))
 # Spawning a networks for each agent is costly. Default docker installation
@@ -94,7 +97,7 @@ mass-agents:  #: Interactively trigger new agent.
 		env \
 			TEMBOARD_REGISTER_PORT=% \
 			NETWORK=$(NETWORK) \
-		docker-compose \
+		docker compose \
 			--project-name temboardagent% \
 			--file dev/docker-compose.massagent.yml \
 		up -d
@@ -104,7 +107,7 @@ clean-agents:  #: Aggressively trash agent from mass-agents.
 		env \
 			TEMBOARD_REGISTER_PORT=% \
 			NETWORK=$(subst -,,$(notdir $(CURDIR)))_default \
-		docker-compose \
+		docker compose \
 			--project-name temboardagent% \
 			--file dev/docker-compose.massagent.yml \
 		down --volumes

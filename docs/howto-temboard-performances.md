@@ -64,7 +64,7 @@ temBoard ships et Grafana setup with Prometheus and Loki. See
 traces file.
 
 ``` console
-$ docker-compose up -d
+$ docker compose up -d
 $ ./dev/bin/importlog.py my-temboard.log
 I: Analyzing systemd.log.
 I: Read timezone from /etc: Europe/Paris.
@@ -97,7 +97,7 @@ Please take advise:
 If you need to restart from scratch, just trash the compose setup and restart.
 
 ``` console
-$ docker-compose down -v
+$ docker compose down -v
 Stopping perfui_prometheus_1 ... done
 Stopping perfui_loki_1       ... done
 Stopping perfui_grafana_1    ... done

@@ -1,5 +1,7 @@
 version: '3.8'
 
+# For consistency, each service stanza a configured in order : data (image,
+# volumes, etc.), network and process (user, env, command, etc.).
 
 services:
   # The Postgres server to store temBoard data.
@@ -27,13 +29,6 @@ services:
   # First instance.
   postgres0:
     image: &postgres_image postgres:16rc1-alpine
-    # Exposed port is important for dev/bin/switchover.sh
-    ports: [15432:5432]
-    environment: &postgres_env
-      POSTGRES_INITDB_ARGS: "--data-checksums"
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      PEER_HOST: postgres1
     volumes:
     - data0:/var/lib/postgresql/data
     - run0:/var/run/postgresql
@@ -41,6 +36,17 @@ services:
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./dev/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    networks:
+      default:
+        aliases:
+        - postgres0.dev
+    # Exposed port is important for dev/bin/switchover.sh
+    ports: [15432:5432]
+    environment: &postgres_env
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PEER_HOST: postgres1
     entrypoint: &postgres_entrypoint [/usr/local/bin/postgres-ha-entrypoint.sh]
     command: [
       postgres,
@@ -57,14 +63,12 @@ services:
       args: [http_proxy]
       context: agent/
       dockerfile: packaging/docker/Dockerfile.dev
-    ports: [2345:2345]
     volumes:
     - data0:/var/lib/postgresql/data
     - run0:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
-    links:
-    - postgres0:postgres0.dev
+    ports: [2345:2345]
     environment: &agent_env
       # Persists bash history. Eases reuse of hupper command when recreating
       # container.
@@ -80,7 +84,7 @@ services:
       TEMBOARD_SSL_CA: /usr/local/src/temboard/agent/share/temboard-agent_ca_certs_CHANGEME.pem
       TEMBOARD_SSL_CERT: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.pem
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
-      # Actually, entrypoint set TEMBOARD_CONFIGFILE, but not for docker-compose exec
+      # Actually, entrypoint set TEMBOARD_CONFIGFILE, but not for docker compose exec
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres0/temboard-agent.conf
     entrypoint: &agent_entrypoint [/usr/bin/tini, /usr/local/src/temboard/dev/agent-entrypoint.sh]
     command: &agent_command [sleep, infinity]
@@ -88,11 +92,6 @@ services:
   # Second instance, with replication of first instance.
   postgres1:
     image: *postgres_image
-    environment:
-      <<: *postgres_env
-      PEER_HOST: postgres0
-    # Exposed port is important for dev/bin/switchover.sh
-    ports: [25432:5432]
     volumes:
     - data1:/var/lib/postgresql/data
     - run1:/var/run/postgresql
@@ -100,6 +99,15 @@ services:
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
     - ./dev/postgres-setup-replication.sh:/docker-entrypoint-initdb.d/setup-replication.sh
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    # Exposed port is important for dev/bin/switchover.sh
+    networks:
+      default:
+        aliases:
+        - postgres1.dev
+    ports: [25432:5432]
+    environment:
+      <<: *postgres_env
+      PEER_HOST: postgres0
     entrypoint: *postgres_entrypoint
     command: [
       postgres,
@@ -114,14 +122,12 @@ services:
     image: dalibo/temboard-agent:dev
     build:
       <<: *build-agent
-    ports: [2346:2345]
     volumes:
     - data1:/var/lib/postgresql/data
     - run1:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
-    links:
-    - postgres1:postgres1.dev
+    ports: [2346:2345]
     environment:
       <<: *agent_env
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres1/temboard-agent.conf
@@ -147,14 +153,18 @@ services:
   # An old instance for last stable temBoard agent.
   postgres-stable:
     image: postgres:9.6-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    networks:
+      default:
+        aliases:
+        - postgres-stable.dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     command: [
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
@@ -166,13 +176,11 @@ services:
 
   agent-stable:
     image: dalibo/temboard-agent:7
-    ports: [2347:2345]
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
-    links:
-    - postgres-stable:postgres-stable.dev
+    ports: [2347:2345]
     environment:
       TEMBOARD_HOSTNAME: postgres-stable.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
@@ -185,15 +193,13 @@ services:
     - ./dev/grafana/entrypoint.sh:/usr/local/sbin/grafana-entrypoint.sh
     - ./dev/grafana/rootfs:/usr/local/lib/grafana/rootfs
     entrypoint: [/usr/local/sbin/grafana-entrypoint.sh]
+    ports: ["3000:3000"]
     user: root
-    ports:
-    - 3000:3000
 
   loki:
     image: grafana/loki:2.6.0
     command: -config.file=/etc/loki/local-config.yaml
-    ports:
-    - 3100:3100
+    ports: ["3100:3100"]
 
   prometheus:
     image: prom/prometheus:v2.36.2
