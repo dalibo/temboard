@@ -40,14 +40,14 @@ done
 : "Current Primary is $primary"
 : "Current secondary is $secondary"
 
-docker-compose stop $primary
+docker compose stop $primary
 _psql "$secondary" -c 'SELECT pg_promote();'
 # Swap variables
 servers=("$secondary" "$primary")
 primary="${servers[0]}"
 secondary="${servers[1]}"
 # failback. The entrypoint takes care of rebuilding the data with pg_rewind.
-docker-compose up -d "$secondary"
+docker compose up -d "$secondary"
 
 sleep 3
 

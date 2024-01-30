@@ -8,7 +8,7 @@
 #
 # Tested with Postgres 13 and 9.6, excluding any other version. Easy test with:
 #
-# docker-compose down -v ; docker-compose up primary secondary
+# docker compose down -v ; docker compose up primary secondary
 #
 
 primary_psql() {

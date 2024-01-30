@@ -45,7 +45,7 @@ agent.
 You need the following software to develop temBoard:
 
 - bash, git, make, psql.
-- Docker Compose.
+- Docker Compose v2.
 - Python 3.6 with `venv` module.
 - NodeJS 16+ and npm for building some browser assets.
 
@@ -70,7 +70,7 @@ python3.6 -m venv dev/venv-py3.6/
 ...
 2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.
 Initialized role temboard and database temboard.
-docker-compose up -d
+docker compose up -d
 temboard_repository_1 is up-to-date
 Creating temboard_instance_1 ... done
 Creating temboard_agent_1    ... done
@@ -98,7 +98,7 @@ You now need to run the agent. Open a second terminal to interact with the
 agent and execute the following commands.
 
 ``` console
-$ docker-compose exec agent0 /bin/bash
+$ docker compose exec agent0 /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
@@ -150,7 +150,7 @@ If you need to execute queries in monitored PostgreSQL instances, execute psql
 inside the corresponding agent container using the following command:
 
 ``` console
-$ docker-compose exec agent0 psql
+$ docker compose exec agent0 psql
 psql (13.5 (Debian 13.5-0+deb11u1), server 14.1)
 WARNING: psql major version 13, server major version 14.
          Some psql features might not work.
@@ -166,7 +166,7 @@ Two postgres instances are up with replication. You can execute a second agent
 for it likewise:
 
 ``` console
-$ docker-compose exec agent1 /bin/bash
+$ docker compose exec agent1 /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
  INFO: Starting temboard-agent 8.0.dev0.
  INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
@@ -194,7 +194,7 @@ Access Postgres instance monitored by stable agent using the following compose
 invocation:
 
 ``` console
-$ docker-compose exec agent-stable psql
+$ docker compose exec agent-stable psql
 psql (13.5 (Debian 13.5-0+deb11u1), server 13.7)
 Type "help" for help.
 
@@ -213,7 +213,7 @@ $ PGPASSWORD=temboard psql -h localhost -U temboard temboard
 Alternatively, it is also reachable with:
 
 ``` console
-$ docker-compose exec repository psql -U postgres temboard
+$ docker compose exec repository psql -U postgres temboard
 psql (16.0)
 Type "help" for help.
 
@@ -520,7 +520,7 @@ documentation](https://temboard.readthedocs.io/en/v7/CONTRIBUTING/#releasing-the
 
 `make clean` destroy virtual environments and docker services. Restart from
 `make develop` as documented above. If you only need to trash services, use
-docker-compose as usual : `docker-compose down -v`, running `make develop` will
+docker compose as usual : `docker compose down -v`, running `make develop` will
 restart them and configure the database.
 
 
