@@ -1,8 +1,8 @@
 import logging
 
-from flask import current_app as app, g, redirect, jsonify
+from flask import current_app as app, g, redirect, jsonify, render_template
 
-from .flask import anonymous_allowed
+from .flask import anonymous_allowed, instance_routes
 from ..application import (
     get_instances_by_role_name,
 )
@@ -117,3 +117,15 @@ def home_instances():
         instance['checks'] = checks
 
     return jsonify(instances)
+
+
+@instance_routes.route('/about')
+def instance_about():
+    app.instance.fetch_status()
+    return render_template(
+        'instance-about.html',
+        instance=g.instance,
+        nav=True,
+        role=g.current_user,
+        vitejs=app.vitejs,
+    )
