@@ -1,0 +1,10 @@
+#!/bin/bash -eu
+# Usage: dev/bin/checkdocker <max-version>
+
+max="$1"
+current="$(docker version --format "{{ .Server.Version }}")"
+lowest="$(echo -e "$max\n$current" | sort --version-sort | head -1)"
+if [ "$lowest" == "$max" ]; then
+    echo "Unsupported Docker version $current. Please fix develop for this version of Docker." >&2
+    exit 1
+fi
