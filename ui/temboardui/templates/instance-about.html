@@ -85,20 +85,6 @@
     </tr>
   </thead>
   <tbody class="temboard">
-    {% if 'pythonbin' not in d %}
-    <tr>
-      <td>Agent User</td>
-      <td style="font-size: 150%;">
-        <span class="badge badge-warning align-top">
-        {% try %}
-        {{ '@' + agent_username }}
-        {% except %}
-        Not logged in
-        {% end %}
-        </span>
-      </td>
-    </tr>
-    {% end %}
     {% if 'plugins' in d %}
     <tr>
       <td>Plugins</td>

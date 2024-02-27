@@ -36,11 +36,6 @@ def dashboard(request):
     request.instance.check_active_plugin('dashboard')
 
     try:
-        agent_username = request.instance.get_profile()['username']
-    except Exception:
-        agent_username = None
-
-    try:
         config = request.instance.get('/dashboard/config')
     except TemboardAgentClient.Error as e:
         if 404 != e.code:
@@ -62,7 +57,6 @@ def dashboard(request):
         'dashboard.html',
         nav=True, role=request.current_user,
         instance=request.instance,
-        agent_username=agent_username,
         plugin='dashboard',
         config=json_encode(config),
         dashboard=last_data,

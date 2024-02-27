@@ -126,9 +126,6 @@ $(function () {
     var count = this.scheduledReindexes.length;
     $.ajax({
       url: apiUrl + "/reindex/scheduled",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         this.scheduledReindexes = data;
@@ -186,9 +183,6 @@ $(function () {
     $.ajax({
       method: "POST",
       url: [schemaApiUrl, elementType, element, "reindex"].join("/"),
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       data: JSON.stringify(data),
       contentType: "application/json",
       success: function (data) {
@@ -202,9 +196,6 @@ $(function () {
     $.ajax({
       method: "DELETE",
       url: maintenanceBaseUrl + "/reindex/" + id,
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         getScheduledReindexes.call(this);

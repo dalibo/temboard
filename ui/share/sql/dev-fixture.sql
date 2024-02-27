@@ -43,11 +43,11 @@ VALUES
 -- Pre-register agents
 
 INSERT INTO application.instances
-(agent_address, agent_port, agent_key, hostname, pg_port, comment, notify)
+(agent_address, agent_port, hostname, pg_port, comment, notify)
 VALUES
-('0.0.0.0', 2345, NULL, 'postgres0.dev', 5432, '', FALSE),
-('0.0.0.0', 2346, NULL, 'postgres1.dev', 5432, '', FALSE),
-('0.0.0.0', 2347, 'key_for_agent', 'postgres-stable.dev', 5432, '', FALSE);
+('0.0.0.0', 2347, 'postgres-stable.dev', 5432, '', FALSE),
+('0.0.0.0', 2345, 'postgres0.dev', 5432, '', FALSE),
+('0.0.0.0', 2346, 'postgres1.dev', 5432, '', FALSE);
 
 INSERT INTO application.instance_groups
 (agent_address, agent_port, group_name, group_kind)

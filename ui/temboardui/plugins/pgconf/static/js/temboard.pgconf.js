@@ -2,7 +2,7 @@
  * Pgconf plugin
  */
 
-function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal_id, json_params) {
+function modal_api_call(api_host, api_port, api_url, api_method, modal_id, json_params) {
   $.ajax({
     url: "/proxy/" + api_host + "/" + api_port + api_url,
     type: api_method,
@@ -15,7 +15,6 @@ function modal_api_call(api_host, api_port, api_url, api_method, xsession, modal
       $("#" + modal_id + "Footer").html(
         '<button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>',
       );
-      xhr.setRequestHeader("X-Session", xsession);
     },
     async: true,
     contentType: "application/json",

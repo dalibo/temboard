@@ -217,7 +217,7 @@ $(document).ready(function() {
         'click',
         function(event) {
           event.preventDefault();
-          modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
+          modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
         }
       );
     });
@@ -236,7 +236,7 @@ $(document).ready(function() {
         'click',
         function(event) {
         event.preventDefault();
-        modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', '{{xsession}}', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
+        modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
   }
 );
   });

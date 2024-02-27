@@ -399,7 +399,7 @@ def schedule_collector(app):
     with engine.connect() as conn:
         # Get the list of agents
         res = conn.execute(
-            "SELECT agent_address, agent_port, agent_key "
+            "SELECT agent_address, agent_port "
             "FROM application.instances ORDER BY 1, 2"
         )
 
@@ -420,9 +420,9 @@ def collector_batch(app, batch):
     engine = worker_engine(app.config.repository)
     engine.connect().close()  # Warm pool.
 
-    for address, port, key in batch:
+    for address, port in batch:
         try:
-            collector(app, address, port, key, engine=engine)
+            collector(app, address, port, engine=engine)
         except UserError:
             raise
         except Exception as e:
@@ -430,11 +430,11 @@ def collector_batch(app, batch):
 
 
 @workers.register(pool_size=20)
-def collector(app, address, port, key=None, engine=None):
+def collector(app, address, port, engine=None):
     agent_id = "%s:%s" % (address, port)
     logger.info("Starting monitoring collector for %s.", agent_id)
 
-    client = TemboardAgentClient.factory(app.config, address, port, key)
+    client = TemboardAgentClient.factory(app.config, address, port)
     # Start new ORM DB session
     engine = engine or worker_engine(app.config.repository)
     worker_session = Session(bind=engine)

@@ -45,6 +45,7 @@ def create_instance_helper(request, data):
     validate_instance_data(data)
     groups = data.pop('groups')
     plugins = data.pop('plugins') or []
+    data.pop("agent_key", None)  # Drop agent_key agent v8
     instance = add_instance(db_session, **data)
     add_instance_in_groups(db_session, instance, groups)
     enable_instance_plugins(
@@ -63,7 +64,6 @@ def create_instance_helper(request, data):
             app,
             address=data['new_agent_address'],
             port=data['new_agent_port'],
-            key=data['agent_key'],
         )
 
     if 'statements' in plugins:
@@ -124,7 +124,6 @@ def json_instance(request):
         groups = get_group_list(request.db_session, 'instance')
         data = instance.asdict()
         data.update({
-            'agent_key': instance.agent_key,
             'server_groups': [{
                 'name': group.group_name,
                 'description': group.group_description
@@ -139,7 +138,6 @@ def json_instance(request):
         instance.discover = data['discover']
         instance.discover_etag = data['discover_etag']
         instance.discover_date = utcnow()
-        instance.agent_key = data['agent_key']
         try:
             instance.hostname = data['discover']['system']['fqdn']
             instance.pg_port = data['discover']['postgres']['port']
@@ -192,7 +190,6 @@ def discover(request, address, port):
     client = TemboardAgentClient.factory(
         request.config,
         address, port,
-        key=request.headers.get('X-TemBoard-Agent-Key'),
         username=request.current_user.role_name,
     )
     try:
@@ -207,35 +204,7 @@ def discover(request, address, port):
     else:
         data = response.json()
 
-    if 'signature_status' in data:
-        return data
-    else:
-        # Transparently expose new format to JS from old agents.
-        return translate_v7_discover(data)
-
-
-def translate_v7_discover(data):
-    translated_data = dict(
-        temboard=dict(
-            plugins=data['plugins'],
-        ),
-        system=dict(
-            cpu_count=data['cpu'],
-            memory=data['memory_size'],
-            fqdn=data['hostname'],
-            os='Linux',  # We don't support anything else in v7.
-        ),
-        postgres=dict(
-            port=data['pg_port'],
-            version=data['pg_version'],
-            version_summary=data['pg_version_summary'],
-            data_directory=data['pg_data'],
-        ),
-        signature_status='unchecked',
-    )
-    if "pg_block_size" in data:
-        translated_data["postgres"]["block_size"] = data["pg_block_size"]
-    return translated_data
+    return data
 
 
 @app.route(r"/settings/instances")
@@ -273,28 +242,10 @@ def instances_csv(request):
     )
 
 
-def translate_v7_register(data):
-    data["discover"] = translate_v7_discover(data)
-    felds_to_pop = [
-        "cpu",
-        "hostname",
-        "memory_size",
-        "pg_data",
-        "pg_port",
-        "pg_version",
-        "pg_version_summary",
-    ]
-    for field in felds_to_pop:
-        data.pop(field)
-    return data
-
-
 @app.route(r"/json/register/instance", methods=['POST'])
 @admin_required
 def register(request):
     data = request.json
-    if 'discover' not in data:
-        data = translate_v7_register(data)
     agent_address = data.pop('agent_address', None)
     if not agent_address:
         # Try to find agent's IP

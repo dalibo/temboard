@@ -24,7 +24,6 @@ const initialState = {
   // Form model.
   agent_address: null,
   agent_port: null,
-  agent_key: "",
   comment: "",
   notify: true,
 
@@ -222,7 +221,6 @@ function reset() {
         v-bind:plugins="plugins"
         v-bind:notify="state.notify"
         v-bind:comment="state.comment"
-        v-bind:agent_key="state.agent_key"
         v-bind:waiting="waiting"
         v-on:submit="register"
       >

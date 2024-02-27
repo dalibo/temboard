@@ -77,19 +77,11 @@ def alerts(request):
 
 @blueprint.instance_route(r"/alerting")
 def index(request):
-    try:
-        agent_username = request.instance.get_profile()['username']
-    except Exception:
-        # Monitoring plugin doesn't require agent authentication since we
-        # already have the data.
-        # Don't fail if there's a session error (for example when the agent
-        # has been restarted)
-        agent_username = None
     request.instance.fetch_status()
     return render_template(
         'alerting.checks.html',
         nav=True, role=request.current_user,
-        instance=request.instance, agent_username=agent_username,
+        instance=request.instance,
         plugin='alerting',  # we cheat here
     )
 
@@ -167,15 +159,6 @@ def checks(request):
 
 @blueprint.instance_route(r"/alerting/([a-z\-_.0-9]{1,64})")
 def check(request, name):
-    try:
-        agent_username = request.instance.get_profile()['username']
-    except Exception:
-        # Monitoring plugin doesn't require agent authentication since we
-        # already have the data.
-        # Don't fail if there's a session error (for example when the agent
-        # has been restarted)
-        agent_username = None
-
     host_id, instance_id = get_request_ids(request)
     query = dedent("""\
     SELECT *
@@ -195,7 +178,7 @@ def check(request, name):
     return render_template(
         'alerting.check.html',
         nav=True, role=request.current_user,
-        instance=request.instance, agent_username=agent_username,
+        instance=request.instance,
         plugin='alerting',  # we cheat here
         check=check,
         value_type=spec.get('value_type'),

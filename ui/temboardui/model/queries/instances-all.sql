@@ -1,7 +1,6 @@
 SELECT
  agent_address,
  agent_port,
- agent_key,
  hostname,
  pg_port,
  notify,

@@ -49,15 +49,6 @@
         {% set d = instance.discover or {} %}
         <div class="navbar-text text-white mr-auto">
           <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
-          {% if 'configfile' not in d.get('temboard', {}) %}
-          <span class="badge badge-secondary" style="font-size: 110%;">
-          {% try %}
-          {{ '@' + agent_username }}
-          {% except %}
-          Not logged in
-          {% end %}
-          </span>
-          {% end %}
         </div>
         {% end %}
         <ul class="navbar-nav">

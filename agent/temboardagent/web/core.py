@@ -59,11 +59,6 @@ def post_discover(pgconn):
     return data
 
 
-@get
-def profile():
-    return {'username': request.username, 'signature': 'valid'}
-
-
 @get('/notifications')
 def notifications():
     config = default_app().temboard.config

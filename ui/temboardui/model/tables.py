@@ -41,7 +41,6 @@ instances = Table(
     'instances', metadata,
     Column('agent_address', UnicodeText, nullable=False, primary_key=True),
     Column('agent_port', Integer, nullable=False, primary_key=True),
-    Column('agent_key', UnicodeText),
     Column('hostname', UnicodeText, nullable=False),
     Column('pg_port', Integer),
     Column('notify', Boolean, nullable=False, server_default=FetchedValue()),

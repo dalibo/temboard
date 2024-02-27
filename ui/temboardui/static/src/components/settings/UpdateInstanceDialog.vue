@@ -17,7 +17,6 @@ const error = ref(null);
 const formCmp = ref(null);
 const waiting = ref(false);
 const initialForm = {
-  agent_key: "",
   comment: "",
   notify: true,
   cpu: null,
@@ -135,7 +134,6 @@ function fetch_current_data() {
     .done((data) => {
       form.notify = data.notify;
       form.comment = data.comment;
-      form.agent_key = data.agent_key;
       // Will be overriden by discover, if agent is up.
       form.pg_host = data.hostname;
       form.pg_port = data.pg_port;
@@ -148,10 +146,6 @@ function fetch_current_data() {
 
 function update(data) {
   waiting.value = true;
-  if (discover_data.signature_status === "valid") {
-    // Ensure agent key is dropped for new agents.
-    data.agent_key = null;
-  }
 
   $.ajax({
     url: ["/json/settings/instance", agent_address, agent_port].join("/"),
@@ -199,7 +193,6 @@ defineExpose({ open });
       v-bind:plugins="plugins"
       v-bind:notify="form.notify"
       v-bind:comment="form.comment"
-      v-bind:agent_key="form.agent_key"
       v-bind:waiting="waiting"
       v-on:submit="update"
     >

@@ -734,7 +734,6 @@ def statements(request):
     return render_template(
         'index.html',
         nav=True,
-        agent_username=request.instance.get_username(),
         instance=request.instance,
         plugin=__name__,
         role=request.current_user,
@@ -855,7 +854,6 @@ def pull_data_for_instance(app, session, instance):
     client = TemboardAgentClient.factory(
         app.config,
         instance.agent_address, instance.agent_port,
-        instance.agent_key,
     )
     try:
         response = client.get('/statements')

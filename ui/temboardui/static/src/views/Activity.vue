@@ -66,10 +66,6 @@ function terminate() {
   $.ajax({
     url: "/proxy/" + agent_address + "/" + agent_port + "/activity/kill",
     type: "POST",
-    beforeSend: function (xhr) {
-      xhr.setRequestHeader("X-Session", xsession);
-      terminateLoading.value = true;
-    },
     async: true,
     contentType: "application/json",
     dataType: "json",
@@ -85,8 +81,7 @@ function terminate() {
       terminateLoading.value = false;
       console.log(xhr.status);
       terminateError.value = escapeHtml(JSON.parse(xhr.responseText).error);
-      // 406 is for malformed X-Session.
-      if (xhr.status == 401 || xhr.status == 406) {
+      if (xhr.status == 401) {
         var params = $.param({ redirect_to: window.location.href });
         errorUrl.value = agentLoginUrl + "?" + params;
       }

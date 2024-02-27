@@ -1,39 +1,21 @@
 from __future__ import division
-from builtins import str
-from past.builtins import basestring
-from builtins import object
-from past.utils import old_div
+
 import datetime
-from sqlalchemy import (
-    Boolean,
-    DateTime,
-    Integer,
-    String,
-    event,
-    text,
-)
+from builtins import object, str
+
+from past.builtins import basestring
+from past.utils import old_div
+from sqlalchemy import Boolean, DateTime, Integer, String, event, text
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.query import Query
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.schema import (
-    Column,
-)
-from sqlalchemy.types import (
-    UnicodeText,
-    BigInteger,
-    TIMESTAMP,
-)
-from sqlalchemy.sql import (
-    case,
-    column,
-    extract,
-    func,
-)
-
+from sqlalchemy.schema import Column
+from sqlalchemy.sql import case, column, extract, func
+from sqlalchemy.types import TIMESTAMP, BigInteger, UnicodeText
 from temboardui.model import tables
-from . import QUERIES
-from ..toolkit.utils import utcnow
 
+from ..toolkit.utils import utcnow
+from . import QUERIES
 
 Model = declarative_base()
 
@@ -258,7 +240,6 @@ class Instances(Model):
             agent_port,
             discover,
             discover_etag=None,
-            agent_key=None,
             notify=False,
             comment=None,
     ):
@@ -269,7 +250,6 @@ class Instances(Model):
             discover_etag=discover_etag,
             pg_port=int(discover['postgres']['port']),
             hostname=discover['system']['fqdn'],
-            agent_key=agent_key,
             notify=bool(notify),
             comment=comment or '',
         )

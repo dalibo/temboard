@@ -73,9 +73,6 @@
           </td>
           <td class="agent_hostport">
             {{instance.agent_address}}:{{instance.agent_port}}
-            {% if instance.agent_key %}
-            <i class="fa fa-warning text-warning" title="This temBoard agent is running an old version. Consider upgrading."/>
-            {% end %}
           </td>
           <td class="text-center">
             {% if instance.notify %}
