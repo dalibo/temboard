@@ -290,7 +290,6 @@ def list_options_specs():
     yield OptionSpec(
         section, 'signing_public_key', default='signing-public.pem',
         validator=v.path)
-    yield OptionSpec(section, 'key')
     yield OptionSpec(section, 'hostname', default=getfqdn(), validator=v.fqdn)
     home = os.environ.get('HOME', '/var/lib/temboard-agent')
     yield OptionSpec(section, 'home', default=home, validator=v.writeabledir)
