@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { formatDuration } from "../utils/duration";
-import Copy from "../copy.vue";
+import Copy from "../components/Copy.vue";
 import ModalDialog from "../components/ModalDialog.vue";
 import * as _ from "lodash";
 import hljs from "highlight.js";
