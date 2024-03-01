@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { filesize } from "filesize";
+import { useFullscreen } from "@vueuse/core";
+
 // FIXME import chart.js and moment
 const instance = ref(window.instance);
 const dashboard = ref(window.dashboardInitialData);
@@ -30,6 +32,9 @@ const sessionsChartEl = ref(null);
 const tpsChartEl = ref(null);
 const loadAverageChartEl = ref(null);
 const divAlertsEl = ref(null);
+const rootEl = ref(null);
+
+const { toggle } = useFullscreen(rootEl);
 
 // Charts objects
 let memoryChart;
@@ -468,8 +473,6 @@ onMounted(() => {
   });
   updateLoadaverage(jdata_history);
 
-  // FIXME handle fullscreen with VueUse
-
   const refreshInterval = window.config.scheduler_interval * 1000;
   window.setInterval(refreshDashboard, refreshInterval);
   refreshDashboard();
@@ -484,7 +487,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div ref="rootEl">
+    <div class="position-absolute" style="z-index: 2">
+      <button id="fullscreen" class="btn btn-link" @click="toggle">
+        <i class="fa fa-expand"></i>
+      </button>
+    </div>
     <div class="row d-fullscreen">
       <div class="col d-flex justify-content-center">
         <strong class="bg-secondary p-2 border-radius-2 rounded text-white">
