@@ -14,6 +14,7 @@
     "datatables.net-buttons-dt": "^2.2.3",
     "datatables.net-dt": "^1.12.1",
     "dygraphs": "^2.1.0",
+    "filesize": "^10.1.0",
     "font-awesome": "4.7",
     "highlight.js": "^11.6.0",
     "jquery": "^3.2.1",

@@ -17,12 +17,13 @@ export default defineConfig({
     assetsDir: ".",
     rollupOptions: {
       input: {
-        activity: "/activity.js",
-        home: "/home.js",
-        temboard: "/temboard.js",
-        "settings.instance": "/settings.instance.js",
         "settings.group": "/settings.group.js",
+        "settings.instance": "/settings.instance.js",
+        activity: "/activity.js",
+        dashboard: "/dashboard.js",
+        home: "/home.js",
         statements: "/statements.js",
+        temboard: "/temboard.js",
       },
     },
   },
