@@ -8,6 +8,7 @@
     "install-husky": "cd .. && husky install ui/.husky"
   },
   "dependencies": {
+    "@vueuse/core": "^10.9.0",
     "bootstrap": "^4.1.1",
     "bootstrap-vue": "^2.23.1",
     "datatables.net-bs4": "^1.12.1",

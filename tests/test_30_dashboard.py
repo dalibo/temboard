@@ -58,6 +58,6 @@ def test_dashboard(browser, registered_agent, ui_url):
     rollbacks = browser.select("#tps_rollback").text
     assert int(rollbacks) >= 0
 
-    browser.select("a.fullscreen").click()  # Go fullscreen
+    browser.select("button#fullscreen").click()  # Go fullscreen
 
     browser.select("body").send_keys(Keys.ESCAPE)  # Exit fullscreen
