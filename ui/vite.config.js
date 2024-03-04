@@ -17,6 +17,7 @@ export default defineConfig({
     assetsDir: ".",
     rollupOptions: {
       input: {
+        "alerting.checks": "/alerting.checks.js",
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",
         activity: "/activity.js",
