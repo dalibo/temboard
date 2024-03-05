@@ -9,10 +9,10 @@
 {% block content %}
 {% import json %}
 <div id="app">
-  <instance-list
+  <home
     :is-admin="{{ 'true' if role.is_admin else 'false' }}"
     :groups='{% raw json.dumps([i[0] for i in groups]) %}'>
-  </instance-list>
+  </home>
 </div>
 <script type="module" src="{{ vitejs.url_for('home.js') }}"></script>
 {% end %}

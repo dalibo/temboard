@@ -3,7 +3,7 @@
 import _ from "lodash";
 import moment from "moment";
 
-import InstanceCard from "./InstanceCard.vue";
+import InstanceCard from "../components/home/InstanceCard.vue";
 
 import { useFullscreen } from "@vueuse/core";
 import { computed, nextTick, onMounted, ref, watch } from "vue";

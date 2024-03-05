@@ -2,7 +2,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 
-import InstanceList from "./components/home/InstanceList.vue";
+import Home from "./views/Home.vue";
 
 Vue.use(VueRouter);
 
@@ -10,6 +10,6 @@ new Vue({
   el: "#app",
   router: new VueRouter(),
   components: {
-    "instance-list": InstanceList,
+    home: Home,
   },
 });
