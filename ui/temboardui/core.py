@@ -26,9 +26,6 @@ def refresh_discover(app, address, port):
         return
 
     data = response.json()
-    if instance.agent_key and 'temboard' in data:
-        logger.debug("Dropping legacy agent key for agent %s.", instance)
-        instance.agent_key = None
 
     discover_etag = response.headers.get('ETag')
     if discover_etag == instance.discover_etag:

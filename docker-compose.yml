@@ -175,7 +175,7 @@ services:
     ]
 
   agent-stable:
-    image: dalibo/temboard-agent:7
+    image: dalibo/temboard-agent:8
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
@@ -184,7 +184,7 @@ services:
     environment:
       TEMBOARD_HOSTNAME: postgres-stable.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
-      TEMBOARD_KEY: key_for_agent
+      TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
 
   grafana:
     image: grafana/grafana:9.0.2

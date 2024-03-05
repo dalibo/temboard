@@ -295,7 +295,6 @@ class InstanceHelper(object):
 
     def __init__(self, request):
         self.request = request
-        self._xsession = False
 
     def __getattr__(self, name):
         return getattr(self.instance, name)
@@ -359,19 +358,6 @@ class InstanceHelper(object):
             }
         self.instance.status = data
 
-    @property
-    def cookie_name(self):
-        return 'temboard_%s_%s' % (
-            self.instance.agent_address, self.instance.agent_port,
-        )
-
-    @property
-    def xsession(self):
-        if self._xsession is False:
-            self._xsession = self.request.handler.get_secure_cookie(
-                self.cookie_name)
-        return self._xsession
-
     def format_url(self, path=''):
         return "/server/%s/%s%s" % (self.agent_address, self.agent_port, path)
 
@@ -383,7 +369,6 @@ class InstanceHelper(object):
             self.request.config,
             self.instance.agent_address,
             self.instance.agent_port,
-            self.instance.agent_key,
             self.request.current_user.role_name,
         )
 
@@ -394,16 +379,10 @@ class InstanceHelper(object):
         if query:
             pathinfo += "?" + serialize_querystring(query)
 
-        headers = {}
-        xsession = self.xsession
-        if xsession:
-            headers['X-Session'] = xsession
-
         try:
             response = client.request(
                 method=method,
                 path=pathinfo,
-                headers=headers,
                 body=body,
             )
             response.raise_for_status()
@@ -428,54 +407,6 @@ class InstanceHelper(object):
     def post(self, *args, **kwargs):
         kwargs['method'] = 'POST'
         return self.request_agent(*args, **kwargs)
-
-    def get_profile(self):
-        i = self.instance
-        if i.agent_key:
-            # Try without key to detect agent upgrade.
-            client = self.client()
-            try:
-                logger.debug(
-                    "Testing session handling of agent for %s.",
-                    self.instance)
-                headers = {'X-Session': '__bad_session__'}
-                res = client.get('/profile', headers=headers)
-                res.raise_for_status()
-            except TemboardAgentClient.Error as e:
-                if 406 == e.response.status:
-                    logger.debug("Agent for %s still validates X-Session.", i)
-                    logger.warning("You should upgrade agent for %s.", i)
-                else:
-                    raise
-            else:
-                logger.info(
-                    "Detected agent upgrade for %s. Dropping legacy key.", i)
-                self.instance.agent_key = None
-                self.request.db_session.commit()
-
-        if self.instance.agent_key:  # Agent 7.X
-            try:
-                return self.get("/profile")
-            except HTTPError as e:
-                if 401 == e.status_code:
-                    logger.debug("Legacy agent login required for %s.", i)
-                    self.redirect('/login')
-                elif 406 == e.status_code and 'X-Session' in e.log_message:
-                    logger.debug("Bad X-Session: %s Re-login.", e.log_message)
-                    self.redirect('/login')
-                else:
-                    logger.error("XXX: %s", e)
-                    raise
-        else:
-            # Agent 8+ does not have users anymore. Use UI user.
-            return {"username": self.request.current_user.role_name}
-
-    def get_username(self):
-        try:
-            agent_username = self.get_profile()['username']
-        except Exception:
-            agent_username = None
-        return agent_username
 
 
 def add_json_middleware(func):

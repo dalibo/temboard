@@ -26,16 +26,12 @@ class ActivityPlugin(object):
 @blueprint.instance_route(r'/activity')
 def activity(request):
     request.instance.check_active_plugin('activity')
-    agent_username = request.instance.get_username()
-    xsession = request.instance.xsession if agent_username else None
     request.instance.fetch_status()
     return render_template(
         'activity.html',
         nav=True,
-        agent_username=agent_username,
         instance=request.instance,
         plugin='activity',
-        xsession=xsession,
         role=request.current_user,
     )
 

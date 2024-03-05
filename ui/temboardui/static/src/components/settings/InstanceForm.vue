@@ -17,7 +17,6 @@ const props = defineProps([
   "signature_status",
 
   // Agent configuration
-  "agent_key",
   "comment",
   "notify",
   "groups",
@@ -74,7 +73,6 @@ function submit() {
   // /json/settings/instances/X.X.X.X/PPPP.
   const data = {
     // Define parameters.
-    agent_key: props.agent_key,
     groups: $("#selectGroups").val(),
     plugins: $("#selectPlugins").val(),
     notify: props.notify,
@@ -108,29 +106,6 @@ defineExpose({ setup_multiselects, teardown_multiselects });
         </div>
       </div>
 
-      <div class="row" v-if="signature_status === 'unchecked'">
-        <!-- Ask for legacy agent key. -->
-        <div class="form-group col-sm-12">
-          <label for="inputAgentKey" class="control-label">
-            Agent secret key
-            <i
-              id="cpu-info"
-              class="fa fa-info-circle text-muted"
-              data-toggle="tooltip"
-              title="Using agent secret key is deprecated. You should upgrade agent to version 8."
-            >
-            </i>
-          </label>
-          <input
-            id="inputAgentKey"
-            class="form-control"
-            placeholder="Find it in agent configuration file."
-            required
-            v-model="agent_key"
-            v-bind:disabled="waiting"
-          />
-        </div>
-      </div>
       <div class="row">
         <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
           <label for="selectGroups">Groups</label>

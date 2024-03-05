@@ -49,7 +49,6 @@ def maintenance(request):
     return render_template(
         'index.html',
         nav=True,
-        agent_username=request.instance.get_username(),
         instance=request.instance,
         plugin=PLUGIN_NAME,
         role=request.current_user,
@@ -59,16 +58,12 @@ def maintenance(request):
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)/table/(.*)')
 def table(request, database, schema, table):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = request.instance.get_username()
-    xsession = request.instance.xsession if agent_username else None
     request.instance.fetch_status()
     return render_template(
         'table.html',
         nav=True,
-        agent_username=agent_username,
         instance=request.instance,
         plugin=PLUGIN_NAME,
-        xsession=xsession,
         role=request.current_user,
         database=database,
         schema=schema,
@@ -79,16 +74,12 @@ def table(request, database, schema, table):
 @blueprint.instance_route(r'/maintenance/(.*)/schema/(.*)')
 def schema(request, database, schema):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = request.instance.get_username()
-    xsession = request.instance.xsession if agent_username else None
     request.instance.fetch_status()
     return render_template(
         'schema.html',
         nav=True,
-        agent_username=agent_username,
         instance=request.instance,
         plugin=PLUGIN_NAME,
-        xsession=xsession,
         role=request.current_user,
         database=database,
         schema=schema,
@@ -98,16 +89,12 @@ def schema(request, database, schema):
 @blueprint.instance_route(r'/maintenance/(.*)')
 def database(request, database):
     request.instance.check_active_plugin(PLUGIN_NAME)
-    agent_username = request.instance.get_username()
-    xsession = request.instance.xsession if agent_username else None
     request.instance.fetch_status()
     return render_template(
         'database.html',
         nav=True,
-        agent_username=agent_username,
         instance=request.instance,
         plugin=PLUGIN_NAME,
-        xsession=xsession,
         role=request.current_user,
         database=database,
     )

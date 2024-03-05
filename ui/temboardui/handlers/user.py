@@ -8,7 +8,6 @@ from ..application import (
 )
 from ..errors import TemboardUIError
 from ..web.tornado import (
-    HTTPError,
     Redirect,
     Response,
     anonymous_allowed,
@@ -85,48 +84,3 @@ def json_login(request):
             status_code=401,
             body={"error": "Wrong username/password."},
         )
-
-
-@app.instance_route(r'/login', methods=['GET', 'POST'])
-def agent_login(request):
-    error = None
-    username = None
-    if 'GET' == request.method:
-        if not request.current_user:
-            return Redirect('/login')
-
-        redirect_to = request.handler.get_query_argument('redirect_to', None)
-        if redirect_to:
-            request.handler.set_secure_cookie('referer_uri', redirect_to,
-                                              expires_days=30)
-        if request.instance.xsession:
-            try:
-                profile = request.instance.get_profile()
-            except Exception as e:
-                logger.debug("Failed to get profile: %s.", e)
-                logger.debug("Is X-Session valid? Showing login form.")
-            else:
-                username = profile['username']
-    else:
-        creds = dict(
-            username=request.handler.get_argument('username'),
-            password=request.handler.get_argument('password'),
-        )
-        try:
-            response = request.instance.post("/login", body=creds)
-            xsession = response['session']
-        except HTTPError as e:
-            error = e.log_message
-        else:
-            cookies = {request.instance.cookie_name: xsession}
-            location = request.handler.get_secure_cookie('referer_uri')
-            if not location:
-                location = request.instance.format_url('/dashboard')
-            return Redirect(location, secure_cookies=cookies)
-
-    return render_template(
-        'agent-login.html',
-        nav=True, instance=request.instance, username=username,
-        role=request.current_user,
-        error=error,
-    )

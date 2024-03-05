@@ -65,8 +65,6 @@ are distributed under sections:
 - `password`: User password. Default: `None`;
 - `dbname`: Database name for the connection. Default: `postgres`;
 - `instance`: Cluster name. Default: `main`.
-- `key`: Authentication key used to send data to the UI. Default:
-  `None`;
 
 
 # `logging`

@@ -269,7 +269,6 @@ class InstanceMiddleware(object):
             current_app.temboard.config,
             g.instance.agent_address,
             g.instance.agent_port,
-            g.instance.agent_key,
             g.current_user.role_name,
         )
 

@@ -42,8 +42,6 @@ class PGConfPlugin(object):
                           methods=["GET", "POST"])
 def configuration_handler(request, category=None):
     request.instance.check_active_plugin('pgconf')
-    profile = request.instance.get_profile()
-    agent_username = profile['username']
     template_vars = {}
     # Deduplicate HTTP prefix of plugin on agent.
     prefix = "/pgconf/configuration"
@@ -87,9 +85,7 @@ def configuration_handler(request, category=None):
         nav=True,
         role=request.current_user,
         instance=request.instance,
-        agent_username=agent_username,
         plugin='pgconf',
-        xsession=request.instance.xsession,
         current_cat=category,
         configuration_categories=categories,
         configuration_status=status,

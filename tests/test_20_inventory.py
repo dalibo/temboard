@@ -18,12 +18,6 @@ def test_query_agent(ui_auto_configure, agent):
     data = json.loads(str(out))
     assert 'postgres' in data
 
-    # username
-    url = f"{agent.base_url}/profile"
-    out = client("--username=toto", url)
-    data = json.loads(str(out))
-    assert 'toto' == data['username']
-
 
 def test_about_temboard(admin_session, browser, ui_url):
     browser.get(ui_url + '/about')

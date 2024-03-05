@@ -4,6 +4,12 @@
 CI release job extracts changes from this file and attaches them as GitHub release notes.
 Ensure you use consistent title format.
 -->
+## 9.0.0
+
+**UNRELEASED**
+
+- ui: Remove support for 7.x agents.
+
 
 ## 8.2.1
 

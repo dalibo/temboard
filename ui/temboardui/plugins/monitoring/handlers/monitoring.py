@@ -21,19 +21,11 @@ logger = logging.getLogger(__name__)
 @blueprint.instance_route("/monitoring")
 def index(request):
     request.instance.check_active_plugin('monitoring')
-    try:
-        agent_username = request.instance.get_profile()['username']
-    except Exception:
-        # Monitoring plugin doesn't require agent authentication since we
-        # already have the data.
-        # Don't fail if there's a session error (for example when the agent
-        # has been restarted)
-        agent_username = None
     request.instance.fetch_status()
     return render_template(
         'index.html',
         nav=True, role=request.current_user, instance=request.instance,
-        plugin='monitoring', agent_username=agent_username,
+        plugin='monitoring',
     )
 
 

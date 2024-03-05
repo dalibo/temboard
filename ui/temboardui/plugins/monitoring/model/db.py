@@ -478,37 +478,6 @@ def get_instance_id(session, host_id, port):
     return row[0] if row else None
 
 
-def get_agent_key(session, hostname, pg_data, pg_port):
-    row = session.execute(
-        dedent("""
-            SELECT agent_key
-            FROM application.instances
-            WHERE hostname = :hostname AND pg_data=:pg_data
-            AND pg_port = :pg_port
-            LIMIT 1
-        """),
-        dict(
-            hostname=hostname,
-            pg_data=pg_data,
-            pg_port=pg_port
-        )
-    ).fetchone()
-    return row[0] if row else None
-
-
-def get_agent_keys(session, hostname):
-    return session.execute(
-        dedent("""
-            SELECT agent_key
-            FROM application.instances
-            WHERE hostname = :hostname
-        """),
-        dict(
-            hostname=hostname
-        )
-    ).fetchall()
-
-
 def append_state_changes(
     session, dt, check_id, state, key, value, warning, critical
 ):

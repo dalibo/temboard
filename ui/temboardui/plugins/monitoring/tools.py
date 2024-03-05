@@ -112,30 +112,6 @@ def parse_start_end(request):
     return start, end
 
 
-def check_agent_key(session, hostname, pg_data, pg_port, agent_key):
-    """Check that the given key matches with the registered one.
-    """
-    row_key = db.get_agent_key(session, hostname, pg_data, pg_port)
-
-    if not row_key:
-        raise Exception("Could not find agent key.")
-
-    if row_key != agent_key:
-        raise Exception("Agent key does not match.")
-
-
-def check_host_key(session, hostname, agent_key):
-    """Check that the given key matches with one of .
-    """
-    matched = False
-
-    if agent_key in db.get_agent_keys(session, hostname):
-        matched = True
-
-    if not matched:
-        raise Exception("Agent key does not match.")
-
-
 class TimeoutError(UserError):
     pass
 

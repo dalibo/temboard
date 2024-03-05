@@ -32,7 +32,6 @@
 
 <script type="module" src="{{ vitejs.url_for('activity.js') }}"></script>
 <script>
-var xsession = {{ json_encode(xsession) }};
 var agent_address = "{{instance.agent_address}}";
 var agent_port = "{{instance.agent_port}}";
 var agentLoginUrl = '/server/{{ instance.agent_address }}/{{ instance.agent_port }}/login';

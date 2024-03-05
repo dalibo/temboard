@@ -200,9 +200,6 @@ $(function () {
     $.ajax({
       method: "POST",
       url: apiUrl + "/vacuum",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       data: JSON.stringify(data),
       contentType: "application/json",
       success: function (data) {
@@ -216,9 +213,6 @@ $(function () {
     $.ajax({
       method: "DELETE",
       url: maintenanceBaseUrl + "/vacuum/" + id,
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         getScheduledVacuums.call(this);
@@ -281,9 +275,6 @@ $(function () {
     $.ajax({
       method: "POST",
       url: apiUrl + "/analyze",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       data: JSON.stringify(data),
       contentType: "application/json",
       success: function (data) {
@@ -297,9 +288,6 @@ $(function () {
     $.ajax({
       method: "DELETE",
       url: maintenanceBaseUrl + "/analyze/" + id,
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         getScheduledAnalyzes.call(this);
@@ -313,9 +301,6 @@ $(function () {
     var count = this.scheduledReindexes.length;
     $.ajax({
       url: apiUrl + "/reindex/scheduled",
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         this.scheduledReindexes = data;
@@ -354,9 +339,6 @@ $(function () {
     $.ajax({
       method: "POST",
       url: [apiUrl, "reindex"].join("/"),
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       data: JSON.stringify(data),
       contentType: "application/json",
       success: function (data) {
@@ -370,9 +352,6 @@ $(function () {
     $.ajax({
       method: "DELETE",
       url: maintenanceBaseUrl + "/reindex/" + id,
-      beforeSend: function (xhr) {
-        xhr.setRequestHeader("X-Session", xsession);
-      },
       contentType: "application/json",
       success: function (data) {
         getScheduledReindexes.call(this);

@@ -150,7 +150,6 @@ class Register(SubCommand):
             logger.info("Registering instance/agent in %s ...", ui_url_raw)
             path = ui_url.path + '/json/register/instance'
             response = uiclient.post(path, {
-                'agent_key': app.config.temboard['key'],
                 'agent_address': args.host,
                 'agent_port': str(app.config.temboard['port']),
                 'discover': discover,
