@@ -18,6 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         "alerting.checks": "/alerting.checks.js",
+        "alerting.check": "/alerting.check.js",
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",
         activity: "/activity.js",
