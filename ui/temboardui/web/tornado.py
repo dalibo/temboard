@@ -340,22 +340,6 @@ class InstanceHelper(object):
                     "status": "unreachable",
                 },
             }
-        if "temboard" not in data:
-            logger.debug("Old agent detected, translating status.")
-            data = {
-                "temboard": {
-                    "status": "running",
-                    "pid": data["pid"],
-                    "start_time": data["start_datetime"],
-                },
-                "postgres": {
-                    "status": "running",
-                    "pending_restart": False,
-                },
-                "system": {
-                    "status": "running",
-                },
-            }
         self.instance.status = data
 
     def format_url(self, path=''):
