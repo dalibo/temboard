@@ -24,6 +24,7 @@ export default defineConfig({
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
+        monitoring: "/monitoring.js",
         statements: "/statements.js",
         temboard: "/temboard.js",
       },

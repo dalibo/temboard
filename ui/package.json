@@ -23,7 +23,8 @@
     "moment": "^2.29.4",
     "popper.js": "^1.12.3",
     "vue": "^2.7.10",
-    "vue-router": "^3.6.5"
+    "vue-router": "^3.6.5",
+    "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
