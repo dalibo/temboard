@@ -17,7 +17,7 @@ const loading = ref(false);
 const instances = ref([]);
 const search = ref(route.query.q);
 const sort = ref(route.query.sort || "status");
-const groups = ref([]);
+const groups = ref(window.groups || []);
 const groupsFilter = ref(route.query.groups ? route.query.groups.split(",") : []);
 const start = ref(moment().subtract(1, "hours"));
 const end = ref(moment());
@@ -50,8 +50,8 @@ const filteredInstances = computed(() => {
     if (!groupsFilter.value.length) {
       return true;
     }
-    return groupsFilter.value.every((group) => {
-      return instance.groups.indexOf(group) != -1;
+    return instance.groups.every((group) => {
+      return groupsFilter.value.indexOf(group) != -1;
     });
   });
 });
@@ -154,7 +154,7 @@ watch(sort, (newVal) => {
     query: _.assign({}, route.query, { sort: newVal }),
   });
 });
-watch(groupsFilter, (newVal) => {
+watch(groupsFilter.value, (newVal) => {
   router.replace({
     query: _.assign({}, route.query, { groups: newVal.join(",") }),
   });
