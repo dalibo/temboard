@@ -5,8 +5,9 @@ import moment from "moment";
 
 import InstanceCard from "./InstanceCard.vue";
 
+import { useFullscreen } from "@vueuse/core";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router/composables";
+import { useRoute, useRouter } from "vue-router/composables";
 
 const root = ref(null);
 const instanceCards = ref(null);
@@ -17,16 +18,15 @@ const loading = ref(false);
 const instances = ref([]);
 const search = ref(route.query.q);
 const sort = ref(route.query.sort || "status");
-const groups = ref(window.groups || []);
 const groupsFilter = ref(route.query.groups ? route.query.groups.split(",") : []);
 const start = ref(moment().subtract(1, "hours"));
 const end = ref(moment());
 const refreshDate = ref(null);
 const refreshInterval = ref(3 * 1000);
 
-defineProps([
-  "isAdmin", // Whether connection user is Admin.
-]);
+const { toggle } = useFullscreen(root);
+
+const props = defineProps(["isAdmin", "groups"]);
 
 const filteredInstances = computed(() => {
   const searchRegex = new RegExp(search.value, "i");
@@ -163,6 +163,11 @@ watch(groupsFilter.value, (newVal) => {
 
 <template>
   <div ref="root">
+    <div class="position-absolute" style="z-index: 2; right: 0">
+      <button id="fullscreen" class="btn btn-link" @click="toggle">
+        <i class="fa fa-expand"></i>
+      </button>
+    </div>
     <div class="row">
       <div class="col mb-2">
         <form class="form-inline" onsubmit="event.preventDefault();">
