@@ -22,6 +22,7 @@ export default defineConfig({
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",
         maintenance: "/maintenance.js",
+        "maintenance.database": "/maintenance.database.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
