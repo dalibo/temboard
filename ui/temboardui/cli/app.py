@@ -1,6 +1,3 @@
-# coding: utf-8
-
-from builtins import str
 import logging.config
 import os
 import sys
@@ -56,7 +53,7 @@ class TemboardApplication(BaseApplication):
     ]
 
     def __init__(self, *a, **kw):
-        super(TemboardApplication, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.config = TemboardUIConfiguration()
 
     def define_arguments(self, parser):
@@ -78,7 +75,7 @@ class TemboardApplication(BaseApplication):
         )
 
         # Chain up for sub-commands arguments initialization.
-        super(TemboardApplication, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, argv, environ):
 
@@ -112,14 +109,14 @@ class TemboardApplication(BaseApplication):
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self, name=u'worker pool',
+            app=self, name='worker pool',
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
         self.worker_pool.add(workers)
         self.services.append(self.worker_pool)
         self.scheduler = taskmanager.SchedulerService(
-            app=self, name=u'scheduler',
+            app=self, name='scheduler',
             task_queue=task_queue, event_queue=event_queue,
             setproctitle=setproctitle,
         )
@@ -127,7 +124,7 @@ class TemboardApplication(BaseApplication):
         self.services.append(self.scheduler)
 
         self.webservice = TornadoService(
-            app=self, name=u'web',
+            app=self, name='web',
             setproctitle=setproctitle,
         )
 
@@ -150,7 +147,7 @@ class TemboardApplication(BaseApplication):
             self.tornado_app.executor = ThreadPoolExecutor(12)
             self.tornado_app.temboard_app = self
 
-        super(TemboardApplication, self).apply_config()
+        super().apply_config()
 
         finalize_tornado_app(tornado_app, self.config)
         finalize_flask_app()  # Uses current_app thread local
@@ -308,7 +305,7 @@ class TornadoService(Service):
         try:
             server.listen(
                 config.temboard.port, address=config.temboard.address)
-        except socket.error as e:
+        except OSError as e:
             logger.error("FATAL: " + str(e) + '. Quit')
             sys.exit(3)
 

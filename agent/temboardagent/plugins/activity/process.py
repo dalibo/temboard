@@ -19,8 +19,8 @@ def bytes2human(num):
     for sym in reversed(symbols):
         if num >= prefix[sym]:
             value = "%.2f" % float(float(num) / float(prefix[sym]))
-            return "{}{}{}".format(nume, value, sym)
-    return "{}{:.2f}B".format(nume, num)
+            return f"{nume}{value}{sym}"
+    return f"{nume}{num:.2f}B"
 
 
 def memory_total_size():

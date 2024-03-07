@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import http.client
 import json
 import logging
@@ -19,7 +17,7 @@ class TemboardHTTPError(TemboardError):
     def __init__(self, response):
         self.response = response
         self._message = None
-        super(TemboardHTTPError, self).__init__(response.status, self.message)
+        super().__init__(response.status, self.message)
 
     @property
     def message(self):
@@ -32,13 +30,13 @@ class TemboardHTTPError(TemboardError):
         return self._message
 
     def __str__(self):
-        return '%s: %s' % (self.response.status, self.message)
+        return f'{self.response.status}: {self.message}'
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self)
+        return f'<{self.__class__.__name__} {self}>'
 
 
-class TemboardClient(object):
+class TemboardClient:
     Error = TemboardHTTPError
 
     log_headers = False
@@ -60,7 +58,7 @@ class TemboardClient(object):
         self._cookies = set()
 
     def __repr__(self):
-        return '<%s %s://%s:%s %s>' % (
+        return '<{} {}://{}:{} {}>'.format(
             self.__class__.__name__,
             self.scheme, self.host, self.port,
             'verified' if self.ca_cert_file else 'unverified',
@@ -81,8 +79,8 @@ class TemboardClient(object):
         return self._ssl_context
 
     def request(self, method, path, headers=None, body=None):
-        hostport = '%s:%s' % (self.host, self.port)
-        fullurl = '%s://%s%s' % (self.scheme, hostport, path)
+        hostport = f'{self.host}:{self.port}'
+        fullurl = f'{self.scheme}://{hostport}{path}'
 
         logger.debug("Requesting %s %s.", method, fullurl)
 
@@ -144,10 +142,10 @@ class TemboardResponse(http.client.HTTPResponse):
     # Extensions to HTTPResponse, inspired by httpx
 
     def __str__(self):
-        return '%s %s' % (self.status, self.reason)
+        return f'{self.status} {self.reason}'
 
     def __repr__(self):
-        return '<%s %s %s -> %s %s %s>' % (
+        return '<{} {} {} -> {} {} {}>'.format(
             self.__class__.__name__,
             self._method, self.path,
             self.status, self.reason,

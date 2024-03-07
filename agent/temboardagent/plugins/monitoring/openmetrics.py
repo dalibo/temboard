@@ -40,7 +40,7 @@ class Sample:
 
     def format(self) -> List[str]:
         labels = ','.join([
-            '%s="%s"' % (name, value)
+            f'{name}="{value}"'
             for name, value in
             sorted(self.labels.items())
         ])
@@ -48,16 +48,16 @@ class Sample:
             labels = "{%s}" % labels
         if type(self.value) is str:
             raise Exception(
-                "String value %s for %s." % (self.value, self.name))
+                f"String value {self.value} for {self.name}.")
         elif type(self.value) in (int, float):
             value = str(self.value)
         elif hasattr(self.value, 'timestamp'):
             value = str(self.value.timestamp())
         else:
-            raise ValueError("Bad value {self.value}".format(self=self))
+            raise ValueError(f"Bad value {self.value}")
 
         tokens = [
-            "{self.name}{labels}".format(self=self, labels=labels),
+            f"{self.name}{labels}",
             value,
             str(self.timestamp or ""),
         ]

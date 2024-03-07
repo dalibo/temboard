@@ -18,7 +18,7 @@ plugin_path = realpath(__file__ + '/..')
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-class DashboardPlugin(object):
+class DashboardPlugin:
     def __init__(self, app, **kw):
         self.app = app
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 from tempfile import NamedTemporaryFile
 import json
@@ -62,7 +60,7 @@ def test_insert():
         "options, redo_interval, expire FROM tasks WHERE id='bbbb'"
     )
     # worker_name
-    assert r[0][0] == u'foo'
+    assert r[0][0] == 'foo'
     # start_datetime
     assert r[0][1] == 1584835200  # Epoch for 2020-03-22 00:00:00 UTC
     # stop_datetime
@@ -70,7 +68,7 @@ def test_insert():
     # status
     assert r[0][3] == 1
     # output
-    assert r[0][4] == u'bar'
+    assert r[0][4] == 'bar'
     # options
     assert json.loads(r[0][5]) == {'foo': 'bar'}
     # redo_interval
@@ -114,7 +112,7 @@ def test_update():
         "options, redo_interval, expire FROM tasks WHERE id='aaaa'"
     )
     # worker_name
-    assert r[0][0] == u'foo'
+    assert r[0][0] == 'foo'
     # start_datetime
     assert r[0][1] == 1584835200  # Epoch for 2020-03-22 00:00:00 UTC
     # stop_datetime
@@ -122,7 +120,7 @@ def test_update():
     # status
     assert r[0][3] == 1
     # output
-    assert r[0][4] == u'bar'
+    assert r[0][4] == 'bar'
     # options
     assert json.loads(r[0][5]) == {'foo': 'bar'}
     # redo_interval
@@ -182,12 +180,12 @@ def test_get():
 
     task = engine.get('dddd')
 
-    assert task.id == u'dddd'
-    assert task.worker_name == u'foo'
+    assert task.id == 'dddd'
+    assert task.worker_name == 'foo'
     assert task.start_datetime == datetime(2020, 3, 22)
     assert task.stop_datetime is None
     assert task.status == 1
-    assert task.output == u'bar'
+    assert task.output == 'bar'
     assert task.options == {'foo': 'bar'}
     assert task.redo_interval == 42
     assert task.expire == 90
@@ -245,18 +243,18 @@ def test_list():
 
     tasks = list(engine.list())
 
-    assert tasks[0].id == u'aaaaa'
-    assert tasks[0].worker_name == u'worker_a'
+    assert tasks[0].id == 'aaaaa'
+    assert tasks[0].worker_name == 'worker_a'
     assert tasks[0].start_datetime == datetime(2020, 3, 22)
     assert tasks[0].stop_datetime is None
     assert tasks[0].status == 1
-    assert tasks[0].output == u'bar'
+    assert tasks[0].output == 'bar'
     assert tasks[0].options == {'foo': 'bar'}
     assert tasks[0].redo_interval == 42
     assert tasks[0].expire == 90
 
-    assert tasks[1].id == u'bbbbb'
-    assert tasks[1].worker_name == u'worker_b'
+    assert tasks[1].id == 'bbbbb'
+    assert tasks[1].worker_name == 'worker_b'
     assert tasks[1].start_datetime == datetime(2020, 3, 23)
     assert tasks[1].stop_datetime is None
     assert tasks[1].status == 1
@@ -495,11 +493,11 @@ def test_list_to_do():
     tasks = list(engine.list_to_do(st_default, datetime.utcnow()))
     assert len(tasks) == 1
     assert tasks[0].id == 'to_do'
-    assert tasks[0].worker_name == u'worker_a'
+    assert tasks[0].worker_name == 'worker_a'
     assert tasks[0].start_datetime == datetime(2020, 3, 22)
     assert tasks[0].stop_datetime is None
     assert tasks[0].status == st_default
-    assert tasks[0].output == u'bar'
+    assert tasks[0].output == 'bar'
     assert tasks[0].options == {'foo': 'bar'}
     assert tasks[0].redo_interval == 0
     assert tasks[0].expire == 90

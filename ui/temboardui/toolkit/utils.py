@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import json
 from datetime import datetime, timezone
 from collections import UserDict
@@ -79,7 +77,7 @@ class JSONEncoder(json.JSONEncoder):
         elif isinstance(obj, bytes):
             return obj.decode("utf-8")
         else:
-            return super(JSONEncoder, self).default(obj)
+            return super().default(obj)
 
 
 def utcnow():

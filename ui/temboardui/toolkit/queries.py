@@ -24,7 +24,7 @@ class QueryFiler(dict):
 
     def __init__(self, path):
         self.path = path
-        super(QueryFiler, self).__init__()
+        super().__init__()
 
     def load(self, pg_version=None):
         fmt = dedent("""\

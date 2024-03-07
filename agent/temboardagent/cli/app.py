@@ -51,7 +51,7 @@ class TemboardAgentApplication(BaseApplication):
     ]
 
     def __init__(self, *a, **kw):
-        super(TemboardAgentApplication, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.config = TemboardAgentConfiguration()
 
     def main(self, argv, environ):
@@ -172,7 +172,7 @@ class TemboardAgentApplication(BaseApplication):
             action='store', dest='temboard_pidfile',
             help="PID file.",
         )
-        super(TemboardAgentApplication, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def init_specs(self, app_specs):
         specs = super().init_specs(app_specs)
@@ -233,7 +233,7 @@ class TemboardAgentApplication(BaseApplication):
 
 class TemboardAgentConfiguration(MergedConfiguration):
     def __init__(self, *a, **kw):
-        super(TemboardAgentConfiguration, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self._signing_key = None
 
     @property

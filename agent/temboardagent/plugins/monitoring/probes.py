@@ -360,7 +360,7 @@ class SqlProbe(Probe):
                     "SET statement_timeout = '%ss';", (self.timeout,))
 
             cluster_name = conninfo['instance'].replace('/', '')
-            sql = "-- probe %s\n%s" % (self, sql)
+            sql = f"-- probe {self}\n{sql}"
             for r in conn.query(sql):
                 # Compute delta if the probe needs that
                 if self.delta_columns is not None:

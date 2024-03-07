@@ -1,6 +1,3 @@
-# coding: utf-8
-from builtins import str
-from builtins import object
 import functools
 import json
 import logging
@@ -52,15 +49,15 @@ def anonymous_allowed(func):
 
 def serialize_querystring(query):
     return "&".join([
-        "%s=%s" % (url_escape(name), url_escape(value))
+        f"{url_escape(name)}={url_escape(value)}"
         for name, value in sorted(query.items())
     ])
 
 
-class Response(object):
+class Response:
     def __init__(
             self, status_code=200, headers=None, secure_cookies=None,
-            body=u''):
+            body=''):
         self.status_code = status_code
         self.headers = headers or {}
         self.secure_cookies = secure_cookies or {}
@@ -69,15 +66,15 @@ class Response(object):
 
 class Redirect(Response, Exception):
     def __init__(self, location, permanent=False, secure_cookies=None):
-        super(Redirect, self).__init__(
+        super().__init__(
             status_code=301 if permanent else 302,
             headers={'Location': location},
-            body=u'Redirected to %s' % location,
+            body='Redirected to %s' % location,
             secure_cookies=secure_cookies,
         )
 
 
-class TemplateRenderer(object):
+class TemplateRenderer:
     # Flask-like HTML render function, without thread local.
 
     GLOBAL_NAMESPACE = {}
@@ -170,7 +167,7 @@ class CallableHandler(RequestHandler):
             response = r
 
         if response is None:
-            response = u''
+            response = ''
         if isinstance(response, (dict, str)):
             response = Response(body=response)
         self.write_response(response)
@@ -207,7 +204,7 @@ class Error404Handler(RequestHandler):
             self.write('404: Not found.')
 
 
-class DatabaseHelper(object):
+class DatabaseHelper:
     @classmethod
     def add_middleware(cls, func):
         @functools.wraps(func)
@@ -234,7 +231,7 @@ class DatabaseHelper(object):
         return database_middleware
 
 
-class ErrorHelper(object):
+class ErrorHelper:
     @classmethod
     def add_middleware(cls, func):
         @functools.wraps(func)
@@ -266,7 +263,7 @@ class ErrorHelper(object):
         return error_middleware
 
 
-class InstanceHelper(object):
+class InstanceHelper:
     # This helper class implements all operations related to instance dedicated
     # request.
 
@@ -294,10 +291,10 @@ class InstanceHelper(object):
         return getattr(self.instance, name)
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, self.instance.hostname)
+        return f'<{self.__class__.__name__} {self.instance.hostname}>'
 
     def __str__(self):
-        return "%s:%s" % (self.instance.hostname, self.instance.pg_port)
+        return f"{self.instance.hostname}:{self.instance.pg_port}"
 
     def check_active_plugin(self, name):
         '''
@@ -311,7 +308,7 @@ class InstanceHelper(object):
         self.instance.status = None
         if not self.instance:
             raise HTTPError(404)
-        self.agent_id = '%s:%s' % (
+        self.agent_id = '{}:{}'.format(
             self.instance.agent_address,
             self.instance.agent_port,
         )
@@ -337,7 +334,7 @@ class InstanceHelper(object):
         self.instance.status = data
 
     def format_url(self, path=''):
-        return "/server/%s/%s%s" % (self.agent_address, self.agent_port, path)
+        return f"/server/{self.agent_address}/{self.agent_port}{path}"
 
     def redirect(self, path):
         raise Redirect(location=self.format_url(path))
@@ -429,7 +426,7 @@ def add_user_instance_middleware(func):
     return user_instance_middleware
 
 
-class UserHelper(object):
+class UserHelper:
     @classmethod
     def add_middleware(cls, func):
 
@@ -459,7 +456,7 @@ functools.WRAPPER_UPDATES += (
 )
 
 
-class Blueprint(object):
+class Blueprint:
     def __init__(self, plugin_name=None):
         self.plugin_name = plugin_name
         self.rules = []
@@ -579,7 +576,7 @@ class Blueprint(object):
 
 class WebApplication(TornadoApplication, Blueprint):
     def __init__(self, *a, **kwargs):
-        super(WebApplication, self).__init__(*a, **kwargs)
+        super().__init__(*a, **kwargs)
         Blueprint.__init__(self)
 
     def configure(self, **settings):

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 # This module implements background service management.
 #
@@ -33,7 +32,7 @@ from .perf import PerfCounters
 logger = logging.getLogger(__name__)
 
 
-class Service(object):
+class Service:
     # Manage long running process. This include setup, signal management and
     # loop.
     #
@@ -44,7 +43,7 @@ class Service(object):
     def __init__(self, app, name=None, services=None, setproctitle=None):
         self.app = app
         self.name = name
-        self.logname = name or u'service'
+        self.logname = name or 'service'
         # Must be None for children or ServicesManager instance for main
         # service. Used to propagate signals. See reload() method.
         self.services = services
@@ -96,7 +95,7 @@ class Service(object):
         self.sighup = True
 
     def sigterm_handler(self, *a):
-        logger.info(u"%s terminated.", self)
+        logger.info("%s terminated.", self)
         sys.exit(0)
 
     def apply_config(self):
@@ -105,7 +104,7 @@ class Service(object):
     def run(self):
         if self.name and self.setproctitle:
             self.setproctitle(self.name)
-        logger.info(u"Starting %s.", self)
+        logger.info("Starting %s.", self)
         self.perf = PerfCounters.setup(service=self.logname.replace(' ', '-'))
         if self.perf:
             self.perf.run()
@@ -115,17 +114,17 @@ class Service(object):
         try:
             self.serve()
         except KeyboardInterrupt:
-            logger.info(u"%s interrupted.", self)
+            logger.info("%s interrupted.", self)
             self.teardown()
             sys.exit(0)
 
     def serve(self):
         with self:
-            logger.debug(u"Entering %s loop.", self)
+            logger.debug("Entering %s loop.", self)
             while True:
                 if not self.check_parent_running():
                     logger.warn(
-                        u"Parent process %d is dead. Committing suicide.",
+                        "Parent process %d is dead. Committing suicide.",
                         self.parentpid)
                     sys.exit(1)
 
@@ -160,7 +159,7 @@ class Service(object):
         pass
 
 
-class ServicesManager(object):
+class ServicesManager:
     # Manage child services : starting in background, tracking PID, replicating
     # signals, checking status, stopping and killing.
     #
@@ -179,7 +178,7 @@ class ServicesManager(object):
 
     def __exit__(self, *a):
         self.stop()
-        logger.debug(u"Waiting background services.")
+        logger.debug("Waiting background services.")
         sleep(0.125)
         self.kill()
 
@@ -201,7 +200,7 @@ class ServicesManager(object):
     def check(self):
         for i in self.processes[:]:
             service, p = i
-            logger.debug(u"Checking child %s (%s).", p.name, p.pid)
+            logger.debug("Checking child %s (%s).", p.name, p.pid)
             if p.is_alive():
                 continue
 
@@ -229,5 +228,5 @@ class ServicesManager(object):
             timeout -= step
 
         for process in processes:
-            logger.warning(u"Killing %s pid=%s.", process, process.pid)
+            logger.warning("Killing %s pid=%s.", process, process.pid)
             os.kill(process.pid, signal.SIGKILL)

@@ -9,7 +9,7 @@ from ..toolkit.errors import UserError
 logger = logging.getLogger(__name__)
 
 
-class Migrator(object):
+class Migrator:
     versionsdir = os.path.dirname(__file__) + '/versions'
     UNDEFINED = object()
     LAST_ALEMBIC_VERSION = '005_statements.sql'

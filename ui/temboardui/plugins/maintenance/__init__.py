@@ -29,7 +29,7 @@ plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + '/templates')
 
 
-class MaintenancePlugin(object):
+class MaintenancePlugin:
     def __init__(self, app):
         self.app = app
 

@@ -84,7 +84,7 @@ def json_error_handler(e):
     return response
 
 
-class SQLAlchemy(object):
+class SQLAlchemy:
     # Flask extension to manage a SQLAlchemy session per request.
     def __init__(self, app=None):
         self.app = app
@@ -114,7 +114,7 @@ class SQLAlchemy(object):
         del g.db_session
 
 
-class APIKeyMiddleware(object):
+class APIKeyMiddleware:
     # Flask extension validating API key header
 
     def __init__(self, app):
@@ -133,11 +133,11 @@ class APIKeyMiddleware(object):
             return
 
         remote_addr = ip_address(request.remote_addr)
-        if not any((
+        if not any(
                 remote_addr in ip_network(cidr)
                 for cidr in
                 self.app.temboard.config.auth.allowed_ip
-        )):
+        ):
             logger.debug("Authorization ignored for IP %s.", remote_addr)
             return
 
@@ -166,7 +166,7 @@ class APIKeyMiddleware(object):
         g.apikey = key
 
 
-class AuthMiddleware(object):
+class AuthMiddleware:
     # Flask extension enforcing authentication
 
     def __init__(self, app=None):
@@ -203,7 +203,7 @@ class AuthMiddleware(object):
             abort(403)
 
 
-class UserMiddleware(object):
+class UserMiddleware:
     # Flask extension to load current user.
 
     def __init__(self, app=None):
@@ -233,7 +233,7 @@ class UserMiddleware(object):
             return get_role_by_cookie(g.db_session, cookie)
 
 
-class InstanceMiddleware(object):
+class InstanceMiddleware:
     # Flask extension providing instance helpers to view, setting up
     # instance_proxy middleware. Must be initialize once instance_proxy has its
     # routes.

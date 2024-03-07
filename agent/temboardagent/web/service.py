@@ -32,7 +32,7 @@ class HTTPDService(Service):
                 handler_class=CustomWSGIRequestHandler,
             )
         except SocketError as e:
-            raise UserError("Failed to start HTTPS server: {}.".format(e))
+            raise UserError(f"Failed to start HTTPS server: {e}.")
         try:
             logger.debug(
                 "Using SSL key %s.", self.app.config.temboard.ssl_key_file)
@@ -62,7 +62,7 @@ class HTTPDService(Service):
                 server_side=True,
             )
         except Exception as e:
-            raise UserError("Failed to setup SSL: {}.".format(e))
+            raise UserError(f"Failed to setup SSL: {e}.")
         self.server.timeout = 1
 
     def serve1(self):
@@ -71,7 +71,7 @@ class HTTPDService(Service):
 
 class CustomWSGIRequestHandler(WSGIRequestHandler):
     def get_environ(self):
-        env = super(CustomWSGIRequestHandler, self).get_environ()
+        env = super().get_environ()
 
         # Save raw PATH_INFO for signature computation.
         path, _, _ = self.path.partition('?')

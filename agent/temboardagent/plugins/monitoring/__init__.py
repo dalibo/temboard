@@ -178,7 +178,7 @@ def iter_metrics_for_logfmt(data):
                 elif k == 'lag':
                     record[k] = vvv
                 else:
-                    record['%s_%s' % (k, kkk)] = vvv
+                    record[f'{k}_{kkk}'] = vvv
             yield record
 
 

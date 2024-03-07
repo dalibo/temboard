@@ -114,7 +114,7 @@ class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
         row_factory = kw.pop('row_factory', None)
         kw['cursor_factory'] = FactoryCursor.make_factory(
             row_factory=row_factory)
-        return super(FactoryConnection, self).cursor(*a, **kw)
+        return super().cursor(*a, **kw)
 
     def execute(self, sql, *args):
         with self.cursor() as cur:
@@ -123,8 +123,7 @@ class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
     def query(self, sql, *args, row_factory=None):
         with self.cursor(row_factory=row_factory) as cur:
             cur.execute(sql, *args)
-            for row in cur.fetchall():
-                yield row
+            yield from cur.fetchall()
 
     def queryone(self, sql, *args, row_factory=None):
         with self.cursor(row_factory=row_factory) as cur:
@@ -147,24 +146,24 @@ class FactoryCursor(psycopg2.extensions.cursor):  # pragma: nocover
         return factory
 
     def __init__(self, conn, name=None, row_factory=None):
-        super(FactoryCursor, self).__init__(conn)
+        super().__init__(conn)
         if not row_factory:
             def row_factory(**kw):
                 return kw
         self._row_factory = row_factory
 
     def fetchone(self):
-        row = super(FactoryCursor, self).fetchone()
+        row = super().fetchone()
         kw = dict(zip([c.name for c in self.description], row))
         return self._row_factory(**kw)
 
     def fetchmany(self, size=None):
-        for row in super(FactoryCursor, self).fetchmany(size):
+        for row in super().fetchmany(size):
             kw = dict(zip([c.name for c in self.description], row))
             yield self._row_factory(**kw)
 
     def fetchall(self):
-        for row in super(FactoryCursor, self).fetchall():
+        for row in super().fetchall():
             kw = dict(zip([c.name for c in self.description], row))
             yield self._row_factory(**kw)
 
@@ -178,11 +177,11 @@ class ConnectionPool(ThreadedConnectionPool):
     def __init__(self, app, observers=None, **kw):
         self.app = app
         self.observers = observers
-        super(ConnectionPool, self).__init__(**kw)
+        super().__init__(**kw)
 
     def _connect(self, *a, **kw):
         return retry_connect(
-            super(ConnectionPool, self)._connect, self.app, *a, **kw)
+            super()._connect, self.app, *a, **kw)
 
     def auto_reconnect(self):
         # Helper to recover a connection lost in a code block
@@ -287,7 +286,7 @@ def retry_connect(connect, app, *a, **kw):
                 raise
 
 
-class ReconnectManager(object):
+class ReconnectManager:
     def __init__(self, pool, *connect_args):
         self.pool = pool
         self.connect_args = connect_args

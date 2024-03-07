@@ -12,7 +12,7 @@ from .errors import UserError
 logger = logging.getLogger(__name__)
 
 
-class OptionSpec(object):
+class OptionSpec:
     REQUIRED = object()
 
     # Hold known name and default of an option.
@@ -36,10 +36,10 @@ class OptionSpec(object):
         self.validator = validator
 
     def __repr__(self):
-        return '<OptionSpec %s>' % (self,)
+        return f'<OptionSpec {self}>'
 
     def __str__(self):
-        return '%s_%s' % (self.section, self.name)
+        return f'{self.section}_{self.name}'
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -77,7 +77,7 @@ class OptionSpec(object):
             raise
 
 
-class Value(object):
+class Value:
     # Hold an option value and its origin
     def __init__(self, name, value, origin):
         self.name = name
@@ -100,7 +100,7 @@ def iter_args_values(args):
 def iter_configparser_values(parser, filename='config'):
     for section in parser.sections():
         for name, value in parser.items(section):
-            name = '%s_%s' % (section, name)
+            name = f'{section}_{name}'
 
             if value.startswith('"') and value.startswith('"'):
                 raise UserError(
@@ -174,7 +174,7 @@ class MergedConfiguration(DotDict):
     def add_values(self, values):
         # Search missing values in values and validate them.
 
-        values = dict((v.name, v) for v in values)
+        values = {v.name: v for v in values}
         for name in list(self.unvalidated_specs):
             try:
                 value = values[name]
@@ -191,7 +191,7 @@ class MergedConfiguration(DotDict):
         for name in self.unvalidated_specs:
             spec = self.specs[name]
             if spec.required:
-                msg = "Missing %s:%s configuration" % (spec.section, spec.name)
+                msg = f"Missing {spec.section}:{spec.name} configuration"
                 raise UserError(msg)
 
     def load(self, args=None, environ=None, parser=None, pwd=None,
@@ -222,7 +222,7 @@ class MergedConfiguration(DotDict):
             try:
                 os.chdir(pwd)
             except OSError as e:
-                raise UserError("Failed to access %s: %s" % (pwd, e))
+                raise UserError(f"Failed to access {pwd}: {e}")
         else:
             oldpwd = None
 
