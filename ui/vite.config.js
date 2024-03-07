@@ -21,6 +21,7 @@ export default defineConfig({
         "alerting.check": "/alerting.check.js",
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",
+        maintenance: "/maintenance.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
