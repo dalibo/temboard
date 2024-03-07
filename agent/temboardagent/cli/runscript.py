@@ -17,7 +17,7 @@ class RunScript(SubCommand):
             help="Path to script file.",
         )
 
-        super(RunScript, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, args):
         with open(args.script) as fo:

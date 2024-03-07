@@ -53,7 +53,7 @@ class Prometheus(SubCommand):
 
 class PrometheusService(Service):
     def __init__(self, **kwargs):
-        super(PrometheusService, self).__init__(
+        super().__init__(
             name="prometheus manager",
             **kwargs,
         )
@@ -117,7 +117,7 @@ class PrometheusService(Service):
             self.proc.send_signal(signal.SIGHUP)
 
     def reload(self):
-        super(PrometheusService, self).reload()
+        super().reload()
         if self.proc:
             self.proc.send_signal(signal.SIGHUP)
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 from setuptools import __version__ as setuptoolsv
@@ -8,7 +6,7 @@ from setuptools import find_packages, setup
 # Load version number
 __version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
-exec(open(os.path.join(setup_path, 'temboardui', 'version.py'), 'r').read())
+exec(open(os.path.join(setup_path, 'temboardui', 'version.py')).read())
 
 if setuptoolsv < '1.0':
     __version__ = __version__.replace('+', '.')

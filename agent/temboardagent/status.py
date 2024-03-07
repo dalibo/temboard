@@ -6,7 +6,7 @@ from .queries import QUERIES
 logger = logging.getLogger(__name__)
 
 
-class Status(object):
+class Status:
     def __init__(self, app):
         self.app = app
         self.data = dict(
@@ -51,7 +51,7 @@ def collect_postgres(data, conn, discover_data):
         )
         data["postgres"]["primary"] = conninfo
         data["postgres"]["primary_conninfo"] = " ".join(
-            "{}={}".format(k, v) for k, v in conninfo.items()
+            f"{k}={v}" for k, v in conninfo.items()
         )
     except Exception as e:
         logger.warning("Cannot collect extra Postgres info: %s", e)

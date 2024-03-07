@@ -1,4 +1,3 @@
-from builtins import range
 import logging
 import sys
 from time import sleep

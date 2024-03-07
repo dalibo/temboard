@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 # This is a pure python implementation of process title edition
 #

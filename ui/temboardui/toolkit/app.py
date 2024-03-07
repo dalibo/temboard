@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import bdb
 import pkg_resources
 import configparser
@@ -45,7 +43,7 @@ class StoreDefinedAction(ArgAction):
         setattr(namespace, self.dest, values)
 
 
-class BaseApplication(object):
+class BaseApplication:
     # This object contains application context and logic.
     #
     # The core logic is managing configuration and plugins, this is the
@@ -59,7 +57,7 @@ class BaseApplication(object):
 
     DEFAULT_CONFIGFILES = [
         '%s.conf' % (LastnameFilter.root),
-        '/etc/%s/%s.conf' % (LastnameFilter.root, LastnameFilter.root),
+        f'/etc/{LastnameFilter.root}/{LastnameFilter.root}.conf',
     ]
     DEFAULT_PLUGINS_EP = LastnameFilter.root + '.plugins'
     DEFAULT_PLUGINS = []
@@ -210,7 +208,7 @@ class BaseApplication(object):
         try:
             self.setup_logging()
         except Exception as e:
-            raise UserError("Failed to setup logging: %s." % (e,))
+            raise UserError(f"Failed to setup logging: {e}.")
         for service in self.services:
             service.apply_config()
 
@@ -240,7 +238,7 @@ class BaseApplication(object):
         try:
             with open(filename, 'r', 'utf-8') as fp:
                 parser.readfp(fp)
-        except IOError as e:
+        except OSError as e:
             raise UserError(str(e))
 
     def read_dir(self, parser, dirname):
@@ -257,9 +255,9 @@ class BaseApplication(object):
                 return ep.load()
             except Exception:
                 logger.exception("Error while loading %s.", ep)
-                raise UserError("Failed to load %s." % (ep.name,))
+                raise UserError(f"Failed to load {ep.name}.")
         else:
-            raise UserError("Missing plugin: %s." % (name,))
+            raise UserError(f"Missing plugin: {name}.")
 
     def create_plugins(self):
         self.config.plugins = dict()
@@ -377,7 +375,7 @@ class BaseApplication(object):
             return self._main(self, argv, environ)
 
 
-class SubCommand(object):
+class SubCommand:
     # Base class for sub-command.
     #
     # Almost everything keeps in app object. Sub commands is roughly a set of
@@ -491,7 +489,7 @@ def extract_help_description_from_docstring(docstring):
 
     if "\n " in docstring:
         title, description = docstring.split("\n", 1)
-        description = "%s\n%s" % (title, dedent(description))
+        description = f"{title}\n{dedent(description)}"
     else:
         title = description = docstring
 

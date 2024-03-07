@@ -60,7 +60,7 @@ class Discover:
         logger.debug("Reading discover data from %s.", self.path)
         try:
             fo = open(self.path, 'rb')
-        except IOError as e:
+        except OSError as e:
             logger.debug("Failed to read manifest: %s.", e)
             return self.data
 
@@ -155,7 +155,7 @@ def collect_cpu(data):
 
 def collect_memory(data):
     meminfo = {}
-    with open('/proc/meminfo', 'r') as fo:
+    with open('/proc/meminfo') as fo:
         for line in fo:
             if 'kB' not in line:
                 continue
@@ -215,7 +215,7 @@ def collect_system(data):
     s['os_version'] = uname.release
     s['arch'] = machine()
     s['hostname'] = socket.gethostname()
-    with open('/proc/uptime', 'r') as f:
+    with open('/proc/uptime') as f:
         uptime_seconds = float(f.readline().split()[0])
         s['start_time'] = datetime.utcfromtimestamp(
             int(time.time() - uptime_seconds)

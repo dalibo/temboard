@@ -39,7 +39,7 @@ class QueryAgent(SubCommand):
             help="JSON payload for POST request.",
         )
 
-        super(QueryAgent, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, args):
         url = urlparse(args.url)
@@ -55,7 +55,7 @@ class QueryAgent(SubCommand):
         method = 'POST' if args.body else 'GET'
         pathinfo = url.path
         if url.query:
-            pathinfo = "%s?%s" % (pathinfo, url.query)
+            pathinfo = f"{pathinfo}?{url.query}"
 
         client = TemboardAgentClient.factory(
             self.app.config, url.hostname, url.port,

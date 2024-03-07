@@ -1,4 +1,3 @@
-from builtins import str
 from binascii import hexlify
 from hashlib import sha512
 import base64
@@ -163,8 +162,10 @@ def get_group(session, group_name, group_kind):
                     Groups.group_name == str(group_name),
                     Groups.group_kind == str(group_kind)).one()
     except AttributeError:
-        raise TemboardUIError(400, "Group '%s' (%s) not found." % (group_name,
-                                                                   group_kind))
+        raise TemboardUIError(
+            400,
+            f"Group '{group_name}' ({group_kind}) not found.",
+        )
 
 
 def update_group(session,
@@ -348,7 +349,7 @@ def delete_instance(session, agent_address, agent_port):
 def add_instance_in_group(session, agent_address, agent_port, group_name):
     try:
         # Create instance group if not exists
-        group = Groups(group_name=str(group_name), group_kind=u'instance')
+        group = Groups(group_name=str(group_name), group_kind='instance')
         session.merge(group)
         session.flush()
 
@@ -537,8 +538,8 @@ def gen_cookie(username, hash_password):
 
         2/ We don't want to see the full hash password stored in a cookie.
     """
-    content = "%s:%s" % (username, hash_password[:15])
-    return "%s:%s" % (len(content) + 1, content)
+    content = f"{username}:{hash_password[:15]}"
+    return f"{len(content) + 1}:{content}"
 
 
 def get_role_by_cookie(session, content):
@@ -666,7 +667,7 @@ def send_sms(config, content, phones):
     token = config.twilio_auth_token
     from_ = config.twilio_from
     uri = 'https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json' % sid
-    s = base64.b64encode('%s:%s' % (sid, token))
+    s = base64.b64encode(f'{sid}:{token}')
 
     errors = []
     for recipient in phones:

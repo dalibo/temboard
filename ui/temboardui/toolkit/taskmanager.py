@@ -64,7 +64,7 @@ def make_worker_definition(function, pool_size):
     }
 
 
-class Task(object):
+class Task:
 
     def __init__(self, worker_name=None, options=None, id=None,
                  status=TASK_STATUS_DEFAULT, start_datetime=None,
@@ -87,7 +87,7 @@ class Task(object):
         return str(self.__dict__)
 
 
-class Message(object):
+class Message:
 
     def __init__(self, type, content):
         self.type = type,
@@ -97,7 +97,7 @@ class Message(object):
         return str(self.__dict__)
 
 
-class TaskList(object):
+class TaskList:
 
     def __init__(self, engine):
         self.engine = engine
@@ -163,7 +163,7 @@ class TaskList(object):
         return self.engine.purge(status, now)
 
 
-class TaskManager(object):
+class TaskManager:
     @staticmethod
     def send_message(address, message, authkey=''):
         conn = Client(ensure_str(address), authkey=authkey)
@@ -173,7 +173,7 @@ class TaskManager(object):
         return res
 
 
-class Scheduler(object):
+class Scheduler:
     trace = False
 
     def __init__(self, address, authkey):
@@ -433,7 +433,7 @@ class SchedulerService(Service):
     # Adapter from taskmanager.Scheduler to Service
 
     def __init__(self, task_queue, event_queue, **kw):
-        super(SchedulerService, self).__init__(**kw)
+        super().__init__(**kw)
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.scheduler = None
@@ -517,7 +517,7 @@ class SchedulerService(Service):
         return os.path.exists(self.scheduler.address)
 
 
-class WorkerPool(object):
+class WorkerPool:
     trace = False
 
     def __init__(self, task_queue, event_queue, setproctitle=None):
@@ -612,7 +612,7 @@ class WorkerPool(object):
 
             fun = getattr(sys.modules[module], function)
 
-            modfun = "%s.%s" % (module, fun.__name__)
+            modfun = f"{module}.{fun.__name__}"
             logger.debug("Starting new job for %s", modfun)
             if self.setproctitle:
                 self.setproctitle('task %s' % (modfun))
@@ -626,7 +626,7 @@ class WorkerPool(object):
         except UserError as e:
             logger.critical("%s", e)
         except Exception as e:
-            e = Exception("%s: %s" % (type(e), e))
+            e = Exception(f"{type(e)}: {e}")
             out.put(Message(MSG_TYPE_ERROR, e))
             logger.exception(e)
         except KeyboardInterrupt:
@@ -777,7 +777,7 @@ class WorkerPoolService(Service):
     # Adapter from taskmanager.WorkerPool to Service
 
     def __init__(self, task_queue, event_queue, **kw):
-        super(WorkerPoolService, self).__init__(**kw)
+        super().__init__(**kw)
         self.worker_pool = WorkerPool(
             task_queue, event_queue, self.setproctitle)
 
@@ -829,10 +829,10 @@ class WorkerPoolService(Service):
     def sigterm_handler(self, *a):
         logger.info("Aborting jobs on SIGTERM.")
         self.worker_pool.abort_jobs()
-        super(WorkerPoolService, self).sigterm_handler(*a)
+        super().sigterm_handler(*a)
 
 
-class FlushTasksMixin(object):
+class FlushTasksMixin:
     # Shared code for flush-task command
 
     def define_arguments(self, parser):
@@ -856,7 +856,7 @@ class FlushTasksMixin(object):
         return 0
 
 
-class RunTaskMixin(object):
+class RunTaskMixin:
     # Shared code to execute a single task, for runtask commands.
     #
     # To combines with toolkit.app.SubCommand

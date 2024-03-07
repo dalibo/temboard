@@ -4,8 +4,7 @@ import operator
 
 def get_csv_data(fd):
     # CSV parser as generator
-    for r in csv.DictReader(fd):
-        yield r
+    yield from csv.DictReader(fd)
 
 
 def pivot_timeserie(fd, index, key, value, output):

@@ -46,7 +46,7 @@ def save_file_content(content, filepath, new_version=False):
         """
         # Build new version's file path.
         dt_str = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        filepath_version = "{}.{}".format(filepath, dt_str)
+        filepath_version = f"{filepath}.{dt_str}"
         ret['last_version'] = dt_str
         # Read current version's content.
         cur_content = None
@@ -79,7 +79,7 @@ def read_file_content(filepath, version=None):
     if version is not None:
         # Check the version is well formatted.
         check_version_format(version)
-        filepath_version = "{}.{}".format(filepath, version)
+        filepath_version = f"{filepath}.{version}"
         if not os.path.isfile(filepath_version):
             raise HTTPError(404, "Version %s of file %s does not exist."
                                  % (version, filepath))
@@ -126,7 +126,7 @@ def delete_file_version(filepath, version):
     """
     check_version_format(version)
     if version in get_file_versions(filepath):
-        filepath_version = "{}.{}".format(filepath, version)
+        filepath_version = f"{filepath}.{version}"
         os.remove(filepath_version)
         return {'version': version, 'deleted': True}
     else:

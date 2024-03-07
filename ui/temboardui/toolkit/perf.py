@@ -29,7 +29,7 @@ class PerfCounters(dict):
             load15=0,
             **defaults
         )
-        super(PerfCounters, self).__init__(**defaults)
+        super().__init__(**defaults)
 
         try:
             self.delay = int(os.environ['PERF'])

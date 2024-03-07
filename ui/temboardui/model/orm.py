@@ -1,6 +1,4 @@
-
 import datetime
-from builtins import object, str
 
 from past.builtins import basestring
 from past.utils import old_div
@@ -205,7 +203,7 @@ class Roles(Model):
         return text(QUERIES['users-count']).columns(count=Integer)
 
 
-class StubRole(object):
+class StubRole:
     # Fake object for roles not in database.
     def __init__(self, role_name):
         self.role_name = role_name
@@ -230,7 +228,7 @@ class Instances(Model):
     )
 
     def __str__(self):
-        return '%s:%s' % (self.hostname, self.pg_port)
+        return f'{self.hostname}:{self.pg_port}'
 
     @classmethod
     def factory(
@@ -303,9 +301,8 @@ class Instances(Model):
         scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
         host = app.config.temboard.address
         port = app.config.temboard.port
-        path = '/server/%s/%s/dashboard' % (
-            self.agent_address, self.agent_port)
-        return '%s://%s:%s%s' % (scheme, host, port, path)
+        path = f"/server/{self.agent_address}/{self.agent_port}/dashboard"
+        return f'{scheme}://{host}:{port}{path}'
 
     def asdict(self):
         return dict(
@@ -337,7 +334,7 @@ class Groups(Model):
     )
 
 
-class Biggest(object):
+class Biggest:
 
     def __init__(self, order_by):
         self.order_by = order_by
@@ -352,7 +349,7 @@ class Biggest(object):
         ).label(label)
 
 
-class Biggestsum(object):
+class Biggestsum:
 
     def __init__(self, order_by):
         self.order_by = order_by

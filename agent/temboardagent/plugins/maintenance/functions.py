@@ -215,7 +215,7 @@ LEFT JOIN (
   SELECT SUM(bloat_size) AS bloat_size,
          schemaname
   FROM (
-    %s
+    {}
   ) AS a
   GROUP BY schemaname
 ) AS tbloat
@@ -224,14 +224,14 @@ LEFT JOIN (
   SELECT SUM(bloat_size) AS bloat_size,
          schemaname
   FROM (
-    %s
+    {}
   ) AS a
   GROUP BY schemaname
 ) AS ibloat
 ON ibloat.schemaname = n.nspname
 WHERE n.nspname !~ '^pg_temp'
 AND n.nspname !~ '^pg_toast'
-""" % (TABLE_BLOAT_SQL, INDEX_BTREE_BLOAT_SQL)  # noqa
+""".format(TABLE_BLOAT_SQL, INDEX_BTREE_BLOAT_SQL)  # noqa
 
 
 INDEXES_SQL = """
@@ -473,7 +473,7 @@ def check_table_exists(conn, schema, table):
         "schemaname = '{schema}'".format(table=table, schema=schema)
     )
     if not list(rows):
-        raise UserError("Table {}.{} not found".format(schema, table))
+        raise UserError(f"Table {schema}.{table} not found")
 
 
 def check_index_exists(conn, schema, index):
@@ -483,7 +483,7 @@ def check_index_exists(conn, schema, index):
         "schemaname = '{schema}'".format(index=index, schema=schema)
     )
     if not list(rows):
-        raise UserError("Index {}.{} not found".format(schema, index))
+        raise UserError(f"Index {schema}.{index} not found")
 
 
 def schedule_operation(operation_type, conn, database,
@@ -563,11 +563,11 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
     q += " (%s) " % mode.upper() if mode else ""
 
     if schema and table:
-        q += " {schema}.{table}".format(schema=schema, table=table)
+        q += f" {schema}.{table}"
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB {}: {}".format(dbname, q))
+        logger.info(f"Running SQL on DB {dbname}: {q}")
         conn.execute(q)
         logger.info("VACCUM done.")
     except Exception as e:
@@ -575,7 +575,7 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run vacuum %s" % mode
         if schema and table:
-            message += " on {}.{}".format(schema, table)
+            message += f" on {schema}.{table}"
 
         raise UserError(message)
 
@@ -654,11 +654,11 @@ def analyze(conn, dbname, schema=None, table=None):
     # Build the SQL query
     q = "ANALYZE"
     if schema and table:
-        q += " {schema}.{table}".format(schema=schema, table=table)
+        q += f" {schema}.{table}"
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB {}: {}".format(dbname, q))
+        logger.info(f"Running SQL on DB {dbname}: {q}")
         conn.execute(q)
         logger.info("ANALYZE done.")
     except Exception as e:
@@ -666,7 +666,7 @@ def analyze(conn, dbname, schema=None, table=None):
         logger.error("Unable to execute SQL: %s" % q)
         message = "Unable to run analyze"
         if schema and table:
-            message += " on {}.{}".format(schema, table)
+            message += f" on {schema}.{table}"
 
         raise UserError(message)
 
@@ -690,18 +690,18 @@ def reindex(conn, dbname, schema, table, index):
     # Build the SQL query
     q = "REINDEX"
     if table:
-        element = '{schema}.{table}'.format(schema=schema, table=table)
-        q += " TABLE {element}".format(element=element)
+        element = f'{schema}.{table}'
+        q += f" TABLE {element}"
     elif index:
-        element = '{schema}.{index}'.format(schema=schema, index=index)
-        q += " INDEX {element}".format(element=element)
+        element = f'{schema}.{index}'
+        q += f" INDEX {element}"
     else:
-        element = '{dbname}'.format(dbname=dbname)
-        q += " DATABASE {element}".format(element=element)
+        element = f'{dbname}'
+        q += f" DATABASE {element}"
 
     try:
         # Try to execute the statement
-        logger.info("Running SQL on DB {}: {}".format(dbname, q))
+        logger.info(f"Running SQL on DB {dbname}: {q}")
         conn.execute(q)
         logger.info("reindex done.")
     except Exception as e:

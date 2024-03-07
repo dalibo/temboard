@@ -59,10 +59,10 @@ class Register(SubCommand):
             metavar='URL',
             help="temBoard UI address to register to.",
         )
-        super(Register, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, args):
-        agent_hostport = "%s:%s" % (args.host, self.app.config.temboard.port)
+        agent_hostport = f"{args.host}:{self.app.config.temboard.port}"
         agent_baseurl = "https://%s" % agent_hostport
 
         logger.info("Working for agent listening at %s.", agent_baseurl)
@@ -158,8 +158,8 @@ class Register(SubCommand):
                 'groups': groups
             })
             response.raise_for_status()
-            dashboard_url = ui_url_raw + '/server/%s/%s/dashboard' % (
-                args.host, self.app.config.temboard.port,
+            dashboard_url = '{}/server/{}/{}/dashboard'.format(
+                ui_url_raw, args.host, self.app.config.temboard.port,
             )
             logger.info(
                 "Instance registered. Manage it at %s.", dashboard_url)

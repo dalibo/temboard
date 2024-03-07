@@ -53,7 +53,7 @@ class CustomBottle(Bottle):
     def mount(self, prefix, app, **options):
         for plugin in self.plugins:
             app.install(plugin)
-        return super(CustomBottle, self).mount(prefix, app, **options)
+        return super().mount(prefix, app, **options)
 
     def wsgi(self, environ, start_response):
         # We don't use after_request hook because it doesn't handle errors
@@ -76,7 +76,7 @@ def after_request_log():
     logmethod("%s %s %s", request.method, request.path, response.status)
 
 
-class PostgresPlugin(object):
+class PostgresPlugin:
     def __init__(self):
         self._pool = None
         self._dbpool = None
@@ -124,7 +124,7 @@ class PostgresPlugin(object):
         return [a for a in argspec.args if a in ('pgconn', 'pgpool')]
 
 
-class JSONPlugin(object):
+class JSONPlugin:
     # Bottle jsonify only dict. JSON Array was a security issue for some
     # browser.
     def apply(self, callback, route):
@@ -147,7 +147,7 @@ class JSONPlugin(object):
         return wrapper
 
 
-class SignaturePlugin(object):
+class SignaturePlugin:
     name = 'signature'
 
     def setup(self, app):

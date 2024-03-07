@@ -75,7 +75,7 @@ class RegisterInstance(SubCommand):
             help="temBoard agent listenning port",
         )
 
-        super(RegisterInstance, self).define_arguments(parser)
+        super().define_arguments(parser)
 
     def main(self, args):
         groups = v.commalist(args.groups)
@@ -91,7 +91,7 @@ class RegisterInstance(SubCommand):
         except Exception as e:
             raise UserError(str(e))
 
-        agent = "%s:%s" % (args.agent_address, args.agent_port)
+        agent = f"{args.agent_address}:{args.agent_port}"
 
         session = Session()
         logger.debug("Check for existing instance.")
