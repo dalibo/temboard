@@ -5,16 +5,9 @@ import base64
 import json
 import logging
 import re
-try:
-    # python2
-    from urllib import urlencode
-    from urllib2 import Request, urlopen
-    from urllib2 import HTTPError
-except Exception:
-    # python3
-    from urllib.parse import urlencode
-    from urllib.request import Request, urlopen
-    from urllib.error import HTTPError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import (

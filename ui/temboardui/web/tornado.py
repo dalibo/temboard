@@ -1,16 +1,11 @@
 # coding: utf-8
-from __future__ import absolute_import
-
 from builtins import str
 from builtins import object
 import functools
 import json
 import logging
 import os
-try:
-    from StringIO import StringIO
-except Exception:
-    from io import StringIO
+from io import StringIO
 from csv import writer as CSVWriter
 
 from tornado import web as tornadoweb
@@ -32,7 +27,6 @@ from ..application import (
 from ..errors import TemboardUIError
 from ..model import Session as DBSession
 from ..agentclient import TemboardAgentClient
-from ..toolkit.pycompat import PY2
 from ..toolkit.perf import PerfCounters
 from ..toolkit.utils import JSONEncoder, utcnow
 
@@ -641,14 +635,9 @@ def make_error(request, code, message):
 
 
 # Change default cls argument to custom encoder.
-if PY2:
-    defaults = list(json.dumps.__defaults__)
-    defaults[4] = JSONEncoder
-    json.dumps.__defaults__ = tuple(defaults)
-else:
-    if json.dumps.__kwdefaults__ is None:
-        json.dumps.__kwdefaults__ = dict()
-    json.dumps.__kwdefaults__['cls'] = JSONEncoder
+if json.dumps.__kwdefaults__ is None:
+    json.dumps.__kwdefaults__ = dict()
+json.dumps.__kwdefaults__['cls'] = JSONEncoder
 
 
 app = WebApplication()

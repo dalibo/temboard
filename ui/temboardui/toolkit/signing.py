@@ -1,5 +1,6 @@
 from base64 import b64decode, b64encode
 from hashlib import sha256
+from urllib.parse import quote_plus
 
 from cryptography.hazmat.backends.openssl import backend as openssl_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -7,7 +8,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 
 from .errors import TemboardError
-from .pycompat import quote_plus
 from .utils import ensure_bytes
 
 

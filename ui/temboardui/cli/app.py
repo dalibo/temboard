@@ -1,11 +1,8 @@
 # coding: utf-8
 
-from __future__ import print_function
-
 from builtins import str
 import logging.config
 import os
-import socket
 import sys
 from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
@@ -176,7 +173,7 @@ class TemboardApplication(BaseApplication):
 
 class TemboardUIConfiguration(MergedConfiguration):
     def __init__(self, *a, **kw):
-        MergedConfiguration.__init__(self, *a, **kw)  # PY2, use super.
+        super().__init__(*a, **kw)
         self._signing_key = None
 
     @property

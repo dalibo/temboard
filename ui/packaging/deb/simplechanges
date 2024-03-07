@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import unicode_literals
-
 import codecs
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -14,10 +12,7 @@ import subprocess
 import sys
 from tempfile import mkdtemp
 
-
 logger = logging.getLogger('simplechanges')
-
-PY2 = sys.version_info < (3,)
 
 
 @contextmanager
@@ -105,16 +100,10 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
         k: v for k, v in controls.items()
         if k in {'Architecture', 'Description', 'Maintainer', 'Version'}
     })
-    if PY2:
-        changes['Changed-By'] = u"%s <%s>" % (
-            os.environ['DEBFULLNAME'].decode('utf-8'),
-            os.environ['DEBEMAIL'].decode('utf-8'),
-        )
-    else:
-        changes['Changed-By'] = u"%s <%s>" % (
-            os.environ['DEBFULLNAME'],
-            os.environ['DEBEMAIL'],
-        )
+    changes['Changed-By'] = u"%s <%s>" % (
+        os.environ['DEBFULLNAME'],
+        os.environ['DEBEMAIL'],
+    )
     changes['Changes'] = CHANGELOG_FMT % changes
     changes['Files'] = [u' '.join([
         md5,
@@ -135,10 +124,7 @@ def generate_changes(controls, filename, filesize, md5, sha1, sha256):
 
 def main():
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
-    deb = sys.argv[1]
-    if PY2:
-        deb = deb.decode('utf-8')
-    deb = os.path.realpath(deb)
+    deb = os.path.realpath(sys.argv[1])
 
     with tmpdir():
         logger.info("Extracting control file.")
@@ -155,8 +141,6 @@ def main():
         )
 
     for payload in format(changes):
-        if PY2:
-            payload = payload.encode('UTF-8')
         sys.stdout.write(payload)
     logger.info(".changes generated for %s.", deb)
 

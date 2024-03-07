@@ -9,6 +9,7 @@ Ensure you use consistent title format.
 **UNRELEASED**
 
 - ui: Remove support for 7.x agents.
+- Remove python 2.7 support.
 
 
 ## 8.2.1

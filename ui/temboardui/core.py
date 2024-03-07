@@ -20,7 +20,7 @@ def refresh_discover(app, address, port):
         logger.info("Discovering %s.", instance)
         response = client.get('/discover')
         response.raise_for_status()
-    except (OSError, client.ConnectionError, client.Error) as e:
+    except (OSError, ConnectionError, client.Error) as e:
         logger.error("Failed to discover %s: %s", instance, e)
         logger.error("Agent or host may be down or misconfigured.")
         return

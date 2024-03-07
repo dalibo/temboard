@@ -87,10 +87,7 @@ workers = taskmanager.WorkerSet()
 
 class MonitoringPlugin(object):
     s = 'monitoring'
-    try:
-        prometheus = shutil.which("prometheus")
-    except AttributeError:  # Python 2.7
-        prometheus = None
+    prometheus = shutil.which("prometheus")
     options_specs = [
         OptionSpec(s, 'collect_max_duration', default=30, validator=int),
         OptionSpec(s, 'prometheus', default=prometheus, validator=v.file_),
@@ -483,7 +480,7 @@ def collector(app, address, port, engine=None):
         logger.info("Querying monitoring history from %s.", instance)
         response = client.get(history_url)
         response.raise_for_status()
-    except (OSError, client.ConnectionError, client.Error) as e:
+    except (OSError, ConnectionError, client.Error) as e:
         logger.error("Failed to query history for %s: %s", instance, e)
         logger.error("Agent or host may be down or misconfigured.")
         # Update collector status only if instance_id is known

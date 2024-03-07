@@ -13,9 +13,9 @@ import logging
 import os.path
 import re
 from logging.handlers import SysLogHandler
+from urllib.parse import urlparse
 
 from .log import HANDLERS as LOG_METHODS
-from .pycompat import urlparse
 from .utils import strtobool
 
 
@@ -107,11 +107,7 @@ def port(raw):
 
 def loglevel(raw):
     raw = raw.upper()
-    levelnames = list()
-    if hasattr(logging, '_levelNames'):  # pragma: nocover_py3
-        levelnames = logging._levelNames
-    elif hasattr(logging, '_nameToLevel'):  # pragma: nocover_py2
-        levelnames = logging._nameToLevel
+    levelnames = logging._nameToLevel
     if raw not in levelnames:
         raise ValueError('unkown log level')
     return raw

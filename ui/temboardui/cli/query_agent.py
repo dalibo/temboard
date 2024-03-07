@@ -1,10 +1,10 @@
 import logging
 import sys
+from urllib.parse import urlparse
 
 from ..agentclient import TemboardAgentClient
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
-from ..toolkit.pycompat import urlparse
 from ..toolkit import validators as v
 from .app import app
 
@@ -67,7 +67,7 @@ class QueryAgent(SubCommand):
             response = client.request(method, pathinfo, headers, args.body)
             sys.stdout.write(response.read().decode('utf-8'))
             response.raise_for_status()
-        except client.ConnectionError as e:
+        except ConnectionError as e:
             logger.critical("%s", e)
             return 1
         except client.Error as e:

@@ -26,16 +26,9 @@ def test_app_route(mocker):
         yield ''
 
     request = mocker.Mock(name='request', host_name='0.0.0.0', path='/')
-    try:
-        router = app.default_router
-    except AttributeError:  # PY2
-        request = mocker.Mock(name='request', host='0.0.0.0', path='/')
-        dispatcher = app.start_request(request, None)
-        dispatcher.set_request(request)
-        kwargs = dispatcher.handler_kwargs
-    else:
-        handler = router.find_handler(request)
-        kwargs = handler.handler_kwargs
+    router = app.default_router
+    handler = router.find_handler(request)
+    kwargs = handler.handler_kwargs
 
     assert kwargs['methods'] == ['GET', 'POST']
 
