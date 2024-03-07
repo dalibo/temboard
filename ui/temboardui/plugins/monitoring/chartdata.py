@@ -1,9 +1,4 @@
-try:
-    # python2
-    from StringIO import StringIO
-except Exception:
-    # python3
-    from io import StringIO
+from io import StringIO
 import datetime
 from textwrap import dedent
 

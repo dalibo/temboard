@@ -11,7 +11,6 @@ apropos:  #: Show dev Makefile help.
 
 DOCKER_MAX_VERSION=27
 develop: develop-3.6  #: Create Python venv and docker services.
-develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	$(MAKE) -j 2 install-$* dev/bin/prometheus
@@ -48,18 +47,10 @@ venv-%:
 	dev/venv-py$*/bin/python --version  # pen test
 	dev/venv-py$*/bin/pip --version  # pen test
 
-venv-2.7:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/2.7*/bin | sort -rV | head -1):$(PATH)" python2.7 -m virtualenv dev/venv-py2.7/ --prompt "$${PWD##*/}-py2.7"
-	dev/venv-py2.7/bin/python --version  # pen test
-
 install-%: venv-%
 	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # pen test
 	dev/venv-py$*/bin/temboard-agent --version  # pen test
-
-install-2.7: venv-2.7
-	dev/venv-py2.7/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e ui/
-	dev/venv-py2.7/bin/temboard --version  # pen test
 
 # LTS
 PROMETHEUS_VERSION=2.45.1

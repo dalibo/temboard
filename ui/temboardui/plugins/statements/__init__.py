@@ -1,4 +1,3 @@
-from __future__ import division
 from builtins import str
 from decimal import Decimal
 from past.utils import old_div
@@ -867,7 +866,7 @@ def pull_data_for_instance(app, session, instance):
         else:
             error += str(e)
 
-        if isinstance(e, (OSError, client.ConnectionError, client.Error)):
+        if isinstance(e, (OSError, ConnectionError, client.Error)):
             logger.error("Agent %s is not available: %s", agent_id, error)
         else:
             logger.exception("Failed to pull statements data: %s", error)

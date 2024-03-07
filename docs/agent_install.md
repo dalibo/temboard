@@ -86,13 +86,11 @@ In order to run temBoard agent, you need:
     temBoard agent wheel and source tarball are published on
     [PyPI](https://pypi.org/project/temboard-agent).
 
-    Installing from PyPI requires Python2.6+, pip and wheel. It\'s better to
-    have a recent version of pip. For Python 2.6, you will need some
-    backports libraries.
+    Installing from PyPI requires Python3.6+, pip and wheel. It\'s better to
+    have a recent version of pip.
 
     ``` console
     $ sudo pip install temboard-agent
-    $ sudo pip2.6 install logutils argparse  # Only for Python 2.6
     $ temboard-agent --version
     ```
 

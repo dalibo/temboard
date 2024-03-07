@@ -1,8 +1,5 @@
 import logging
-try:
-    from secrets import choice
-except ImportError:  # For Python 3.5 and lower
-    from random import choice
+from secrets import choice
 import string
 import sys
 from textwrap import dedent

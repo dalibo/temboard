@@ -251,6 +251,7 @@ def test_handle_stream_http_request(mocker):
         'temboardui.autossl.AutoHTTPSServer.handle_http_connection'
     )
     IOStream = mocker.patch('temboardui.autossl.IOStream')
+    mocker.patch('socket.socket')
 
     from tornado.concurrent import Future
     from temboardui.autossl import AutoHTTPSServer, SSLErrorHTTPRequest
@@ -279,6 +280,7 @@ def test_handle_stream_http_request_fails(mocker):
         'temboardui.autossl.AutoHTTPSServer.handle_http_connection'
     )
     IOStream = mocker.patch('temboardui.autossl.IOStream')
+    mocker.patch('socket.socket')
 
     from temboardui.autossl import AutoHTTPSServer, SSLErrorHTTPRequest
 

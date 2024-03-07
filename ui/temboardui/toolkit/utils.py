@@ -1,15 +1,8 @@
 # coding: utf-8
 
 import json
-from datetime import datetime
-try:
-    from datetime import timezone
-    UTC = timezone.utc
-except ImportError:  # PY2
-    UTC = None
-
-from .pycompat import IterableUserDict
-
+from datetime import datetime, timezone
+from collections import UserDict
 
 _UNDEFINED = object()
 
@@ -35,11 +28,12 @@ def strtobool(value):
     raise ValueError("invalid truth value %s" % value)
 
 
-class DotDict(IterableUserDict):
+class DotDict(UserDict):
     # A wrapper around dict that allows read and write through dot style
     # accessors.
 
     def __init__(self, *a, **kw):
+        # don't call super()__init__ to avoid RecursionError
         self.__dict__['data'] = dict_factory(*a, **kw)
 
     def __getattr__(self, name):
@@ -53,8 +47,9 @@ class DotDict(IterableUserDict):
             raise AttributeError(name)
 
     def __setattr__(self, name, value):
+        # only public property are in the dictionnary
         if name.startswith('_'):
-            self.__dict__[name] = value  # PY2, use __setattr__
+            super().__setattr__(name, value)
         else:
             if hasattr(value, 'items'):
                 value = DotDict(value)
@@ -66,7 +61,7 @@ class DotDict(IterableUserDict):
     def setdefault(self, name, default):
         if hasattr(default, 'items'):
             default = DotDict(default)
-        return IterableUserDict.setdefault(self, name, default)
+        return UserDict.setdefault(self, name, default)
 
 
 def ensure_bytes(value, encoding='utf-8'):
@@ -88,5 +83,5 @@ class JSONEncoder(json.JSONEncoder):
 
 
 def utcnow():
-    # TZ aware UTC now. Except on Python2.
-    return datetime.utcnow().replace(tzinfo=UTC)
+    # TZ aware UTC now.
+    return datetime.utcnow().replace(tzinfo=timezone.utc)

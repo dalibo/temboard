@@ -117,7 +117,7 @@ proper parameters, once temBoard package is installed.
 
     temBoard UI wheel and source tarball are published on
     [PyPI](https://pypi.org/project/temboard). Installing from PyPI requires
-    Python2.7, pip and wheel. It's better to have a recent version of pip.
+    Python3.6, pip and wheel. It's better to have a recent version of pip.
 
     Due to the [binary strategy of
     psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/)

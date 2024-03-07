@@ -1,5 +1,6 @@
 import codecs
 import logging
+from io import StringIO
 
 from temboardui.application import (
     add_instance,
@@ -23,7 +24,6 @@ from temboardui.web.tornado import (
     render_template,
     Response,
 )
-from ...toolkit.pycompat import StringIO
 from ...toolkit.utils import utcnow
 from ...model import QUERIES
 

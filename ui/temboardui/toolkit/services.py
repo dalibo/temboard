@@ -62,9 +62,6 @@ class Service(object):
     def __str__(self):
         return self.logname
 
-    def __unicode__(self):
-        return self.logname
-
     def __enter__(self):
         self.sigchld = False
         if self.services:

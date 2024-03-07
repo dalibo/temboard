@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from textwrap import dedent
 
 import pytest
@@ -20,15 +18,11 @@ def test_fix_argv(mocker):
     cmmn = mocker.patch(
         'temboardui.toolkit.proctitle.compute_main_module_name',
         autospec=True)
-    from temboardui.toolkit.pycompat import PY3
     from temboardui.toolkit.proctitle import fix_argv
 
     wanted = ['python', '-m', 'my.module']
     cmmn.return_value = 'my.module'
-    if PY3:
-        input_ = ['python', '-m', '-m']
-    else:
-        input_ = ['python', '-m', '-c']
+    input_ = ['python', '-m', '-m']
     assert wanted == fix_argv(input_)
 
     wanted = ['python', 'my-script.py']
@@ -43,12 +37,11 @@ def test_fix_argv(mocker):
 
 def test_read_memory():
     import ctypes
-    from temboardui.toolkit.proctitle import PY3, read_byte
+    from temboardui.toolkit.proctitle import read_byte
 
     data = ctypes.create_string_buffer(b'abcdef')
     b = read_byte(ctypes.addressof(data))
-    wanted = 0x61 if PY3 else b'a'
-    assert wanted == b
+    assert 0x61 == b
 
 
 def test_walk_bytes_backwards():

@@ -13,11 +13,11 @@ from collections import deque
 from multiprocessing import AuthenticationError, Process, Queue
 from multiprocessing.connection import Listener, Client
 from textwrap import dedent
+from queue import Empty
 
 from .services import Service
 from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
-from .pycompat import PY2, Empty
 
 
 TM_DEF_LISTENER_ADDR = '/tmp/.temboardsched.sock'
@@ -50,12 +50,8 @@ def ensure_str(value):
     # This code is used to instanciate multiprocessing.connection.Client. It
     # requires a str object in both Python 2 and 3.
     if type(value) is not str:
-        if PY2:
-            # From unicode to str.
-            value = value.encode('utf-8')
-        else:
-            # From bytes to str.
-            value = value.decode('utf-8')
+        # From bytes to str.
+        value = value.decode('utf-8')
     return value
 
 
