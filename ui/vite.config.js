@@ -23,6 +23,7 @@ export default defineConfig({
         "settings.instance": "/settings.instance.js",
         maintenance: "/maintenance.js",
         "maintenance.database": "/maintenance.database.js",
+        "maintenance.schema": "/maintenance.schema.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
