@@ -39,12 +39,15 @@ $(function () {
         return _.orderBy(this.table.indexes, this.indexSortCriteria, this.indexSortOrder);
       },
       filteredScheduledReindexes: function () {
-        return _.filter(this.scheduledReindexes, function (reindex) {
-          // only reindexes with defined table
-          // others are for indexes
-          return reindex.table != null;
-        });
-      },
+        return _.filter(
+          this.scheduledReindexes,
+          function (reindex) {
+            // only reindexes with defined table
+            // others are for indexes
+            return reindex.table == this.table.name;
+          }.bind(this),
+        );
+      }.bind(this),
     },
     created: function () {
       this.fetchData();
@@ -289,7 +292,7 @@ $(function () {
     window.clearTimeout(getScheduledReindexesTimeout);
     var count = this.scheduledReindexes.length;
     $.ajax({
-      url: apiUrl + "/reindex/scheduled",
+      url: schemaApiUrl + "/reindex/scheduled",
       contentType: "application/json",
       success: function (data) {
         this.scheduledReindexes = data;
