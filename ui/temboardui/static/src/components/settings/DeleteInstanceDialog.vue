@@ -1,11 +1,10 @@
 <script setup>
 // A confirm dialog
-
 import { ref } from "vue";
 
 import Error from "../Error.vue";
-import InstanceDetails from "./InstanceDetails.vue";
 import ModalDialog from "../ModalDialog.vue";
+import InstanceDetails from "./InstanceDetails.vue";
 
 const root = ref(null);
 const error = ref(null);

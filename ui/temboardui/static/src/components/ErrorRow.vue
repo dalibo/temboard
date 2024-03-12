@@ -1,9 +1,8 @@
 <script setup>
 // A Bootstrap grid row showing a global page error.
+import { ref } from "vue";
 
 import Error from "./Error.vue";
-
-import { ref } from "vue";
 
 const error = ref(null);
 

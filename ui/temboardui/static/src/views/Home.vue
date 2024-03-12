@@ -1,13 +1,12 @@
 <script setup>
 // Global: clearError, showError
+import { useFullscreen } from "@vueuse/core";
 import _ from "lodash";
 import moment from "moment";
-
-import InstanceCard from "../components/home/InstanceCard.vue";
-
-import { useFullscreen } from "@vueuse/core";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router/composables";
+
+import InstanceCard from "../components/home/InstanceCard.vue";
 
 const root = ref(null);
 const instanceCards = ref(null);

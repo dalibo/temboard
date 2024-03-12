@@ -1,7 +1,7 @@
 <script setup>
-import InstanceDetails from "./InstanceDetails.vue";
-
 import { onUpdated, ref, watch } from "vue";
+
+import InstanceDetails from "./InstanceDetails.vue";
 
 const props = defineProps([
   "submit_text", // Submit button label.

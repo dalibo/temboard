@@ -1,11 +1,12 @@
 <script setup>
-import { computed, ref, watch } from "vue";
-import { formatDuration } from "../utils/duration";
-import Copy from "../components/Copy.vue";
-import ModalDialog from "../components/ModalDialog.vue";
-import * as _ from "lodash";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
+import * as _ from "lodash";
+import { computed, ref, watch } from "vue";
+
+import Copy from "../components/Copy.vue";
+import ModalDialog from "../components/ModalDialog.vue";
+import { formatDuration } from "../utils/duration";
 
 let request = null;
 const intervalDuration = 2;

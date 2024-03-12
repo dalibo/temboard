@@ -1,4 +1,5 @@
 import Vue from "vue";
+
 import AlertingChecks from "./views/AlertingChecks.vue";
 
 new Vue({

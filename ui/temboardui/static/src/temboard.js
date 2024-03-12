@@ -1,8 +1,8 @@
-import Vue from "vue";
 import "font-awesome/css/font-awesome.css";
+import Vue from "vue";
 
-import "./temboard.scss";
 import ErrorRow from "./components/ErrorRow.vue";
+import "./temboard.scss";
 
 window.errorApp = new Vue({
   el: "#errorApp",

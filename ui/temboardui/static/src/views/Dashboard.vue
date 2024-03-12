@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { filesize } from "filesize";
 import { useFullscreen } from "@vueuse/core";
+import { filesize } from "filesize";
+import { computed, onMounted, ref } from "vue";
 
 // FIXME import chart.js and moment
 const instance = ref(window.instance);

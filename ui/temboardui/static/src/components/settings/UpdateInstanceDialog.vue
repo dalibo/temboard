@@ -6,8 +6,8 @@
  * render a preview of the managed instance. Disables plugins not loaded in
  * agent.
  */
-
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
+
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
 import InstanceForm from "./InstanceForm.vue";

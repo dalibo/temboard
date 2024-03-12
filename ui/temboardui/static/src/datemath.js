@@ -1,4 +1,5 @@
 /* global define, moment, _ */
+
 /*
  * This is a port of the excellent grafana's dateMath utils package.
  * From TypeScript to pure Javascript.
