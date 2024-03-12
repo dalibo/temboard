@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from "vue";
+
 const isHovered = ref(false);
 const content = ref(null);
 const copied = ref(false);

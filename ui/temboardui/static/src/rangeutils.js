@@ -1,4 +1,5 @@
 /* global define, moment, _, dateMath */
+
 /*
  * This is a port of the excellent grafana's RangeUtils utils package.
  * From TypeScript to pure Javascript.
@@ -7,6 +8,7 @@
  * Requires `dateMath`, `moment` and `loadash`.
  */
 import * as _ from "lodash";
+
 var spans = {
   s: { display: "second" },
   m: { display: "minute" },

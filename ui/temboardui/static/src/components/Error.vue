@@ -1,6 +1,5 @@
 <script setup>
 // A Bootstrap error alert.
-
 import { ref } from "vue";
 
 const code = ref(null);

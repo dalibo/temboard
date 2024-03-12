@@ -1,8 +1,7 @@
 <script setup>
-import _ from "lodash";
 import Dygraph from "dygraphs";
+import _ from "lodash";
 import moment from "moment";
-
 import { ref, watch } from "vue";
 
 const root = ref(null);

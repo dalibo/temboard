@@ -1,7 +1,9 @@
+import * as _ from "lodash";
 import Vue from "vue";
+
 import dateMath from "./datemath.js";
 import rangeUtils from "./rangeutils.js";
-import * as _ from "lodash";
+
 var html = `
   <div v-cloak>
     <button id="buttonPicker" class="btn btn-secondary" v-on:click="showHidePicker()">

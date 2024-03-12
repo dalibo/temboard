@@ -1,12 +1,11 @@
 <script setup>
-import _ from "lodash";
 import Dygraph from "dygraphs";
 import "dygraphs/dist/dygraph.css";
+import _ from "lodash";
+import { computed, onMounted, ref, watch } from "vue";
 
 import Checks from "./Checks.vue";
 import Sparkline from "./Sparkline.vue";
-
-import { computed, onMounted, ref, watch } from "vue";
 
 const load1_data = ref(null);
 const load1_last = ref("N/A");

@@ -1,12 +1,14 @@
-import Vue from "vue";
-import * as _ from "lodash";
-import "./daterangepicker.vue.js";
-import VueRouter from "vue-router";
-import { formatDuration } from "./utils/duration";
-Vue.use(VueRouter);
-
 import BootstrapVue from "bootstrap-vue";
 import "bootstrap-vue/dist/bootstrap-vue.css";
+import * as _ from "lodash";
+import Vue from "vue";
+import VueRouter from "vue-router";
+
+import "./daterangepicker.vue.js";
+import { formatDuration } from "./utils/duration";
+
+Vue.use(VueRouter);
+
 Vue.use(BootstrapVue);
 
 var dataRequest;
