@@ -1,5 +1,6 @@
 <script setup>
 import { computed, provide, ref } from "vue";
+
 import AlertingChart from "../components/AlertingChart.vue";
 
 const check = ref(window.checkInitialData);
