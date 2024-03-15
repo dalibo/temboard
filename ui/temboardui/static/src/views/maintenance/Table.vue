@@ -56,13 +56,6 @@ const filteredScheduledReindexes = computed(() => {
   });
 });
 
-function postCreated() {
-  $("pre code.sql").each(function (i, block) {
-    hljs.highlightBlock(block);
-  });
-  $('[data-toggle="popover"]').popover();
-}
-
 function getData() {
   $.ajax({
     url: apiUrl,
@@ -75,7 +68,12 @@ function getData() {
           index.bloat_ratio = parseFloat((100 * (index.bloat_bytes / index.total_bytes)).toFixed(1));
         }
       });
-      window.setTimeout(postCreated, 1);
+      window.setTimeout(() => {
+        $("pre code.sql").each(function (_, block) {
+          hljs.highlightBlock(block);
+        });
+        $('[data-toggle="popover"]').popover();
+      }, 1);
     },
     error: onError,
     complete: function () {

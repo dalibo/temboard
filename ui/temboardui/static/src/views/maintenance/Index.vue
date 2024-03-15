@@ -49,17 +49,15 @@ function fetchData() {
           );
         }
       });
-      window.setTimeout(postCreated, 1);
+      window.setTimeout(() => {
+        $('[data-toggle="popover"]').popover();
+      }, 1);
     },
     error: onError,
     complete: function () {
       loading.value = false;
     },
   });
-}
-
-function postCreated() {
-  $('[data-toggle="popover"]').popover();
 }
 
 fetchData();

@@ -72,8 +72,8 @@ function getSchemaData() {
           index.bloat_ratio = parseFloat((100 * (index.bloat_bytes / index.total_bytes)).toFixed(1));
         }
       });
-      window.setTimeout(function () {
-        $("pre code.sql").each(function (i, block) {
+      window.setTimeout(() => {
+        $("pre code.sql").each((_, block) => {
           hljs.highlightBlock(block);
         });
         $('[data-toggle="popover"]').popover();
