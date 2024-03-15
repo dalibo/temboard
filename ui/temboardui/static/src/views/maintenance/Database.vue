@@ -67,6 +67,9 @@ function getData() {
           );
         }
       });
+      window.setTimeout(function () {
+        $('[data-toggle="popover"]').popover();
+      }, 1);
     },
     error: onError,
     complete: function () {
