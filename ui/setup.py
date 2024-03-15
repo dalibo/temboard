@@ -23,7 +23,7 @@ install_requires = [
     # documentation.
     'sqlalchemy>=0.9.8,<2',
     # _verify_cert in SSLIOStream is removed on Tornado 6.4+ on Python 3+.
-    'tornado>=3.2,<6.4',
+    'tornado>=4.5,<6.4',
     'future',
 ]
 
