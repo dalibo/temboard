@@ -34,7 +34,7 @@ function popoverContent(cat) {
 </script>
 
 <template>
-  <div class="progress border rounded-0" :style="{ height: height + 'px' }">
+  <div class="progress border rounded-0" :style="{ height: props.height + 'px' }">
     <div
       class="progress-bar"
       role="progressbar"
