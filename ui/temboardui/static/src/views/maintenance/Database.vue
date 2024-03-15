@@ -20,7 +20,7 @@ const dbName = ref(window.database);
 provide("dbName", dbName);
 const sortCriteria = ref("total_bytes");
 const sortCriterias = ref({
-  name: ["Name"],
+  name: ["Name", "asc"],
   total_bytes: ["Database Size", "desc"],
   tables_bytes: ["Tables Size", "desc"],
   tables_bloat_ratio: ["Tables Bloat", "desc"],
@@ -354,12 +354,7 @@ fetchData();
           </button>
           <div class="dropdown-menu">
             <h6 class="dropdown-header">Sort by:</h6>
-            <a
-              v-for="(criteria, key) in sortCriterias"
-              class="dropdown-item"
-              href="#"
-              v-on:click="sortCriteria = criteria"
-            >
+            <a v-for="(criteria, key) in sortCriterias" class="dropdown-item" href="#" v-on:click="sortCriteria = key">
               <i :class="['fa fa-fw', { 'fa-check': sortCriteria == key }]"></i>
               {{ criteria[0] }}
             </a>
