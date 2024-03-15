@@ -76,6 +76,7 @@ function getSchemaData() {
         $("pre code.sql").each(function (i, block) {
           hljs.highlightBlock(block);
         });
+        $('[data-toggle="popover"]').popover();
       }, 1);
     },
     error: onError,
