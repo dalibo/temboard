@@ -209,7 +209,7 @@ fetchData();
           <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0 }">
             <td colspan="5" class="border-top-0">
               <SizeDistributionBar
-                :height="'7px;'"
+                height="7"
                 :total="total_bytes"
                 :cat1="database.tables_size"
                 :cat1raw="database.tables_bytes"

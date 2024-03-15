@@ -335,7 +335,7 @@ fetchData();
       <div class="row mb-2">
         <div class="col">
           <size-distribution-bar
-            :height="'10px;'"
+            height="10"
             :total="table.total_bytes"
             :cat1="table.table_size"
             :cat1raw="table.table_bytes"
