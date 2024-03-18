@@ -1,6 +1,6 @@
 <script setup>
 import _ from "lodash";
-import { provide, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router/composables";
 import draggable from "vuedraggable";
 
@@ -297,8 +297,6 @@ function setFromTo(from, to) {
   dateRangePickerEl.value.setFromTo(from, to);
 }
 
-provide("setFromTo", setFromTo);
-
 watch(graphs.value, () => {
   if (route.query.graphs !== graphs.value) {
     router.push({
@@ -432,6 +430,7 @@ watch(graphs.value, () => {
             :metrics="metrics"
             :from="from"
             :to="to"
+            @onZoom="setFromTo"
           ></MonitoringChart>
           <div :id="'visibility' + graph" class="visibility-chart"></div>
         </div>

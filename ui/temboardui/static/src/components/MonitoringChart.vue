@@ -1,12 +1,12 @@
 <script setup>
-import { inject, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 const props = defineProps(["graph", "metrics", "from", "to"]);
 const chartEl = ref(null);
 
 let chart;
 
-const setFromTo = inject("setFromTo");
+const emit = defineEmits(["onZoom"]);
 
 watch(() => "" + props.from + props.to, createOrUpdateChart);
 
@@ -166,7 +166,7 @@ function addVisibilityCb(chartId, g, isInitial) {
 }
 
 function onChartZoom(min, max) {
-  setFromTo(moment(min), moment(max));
+  emit("onZoom", moment(min), moment(max));
 }
 </script>
 <template>
