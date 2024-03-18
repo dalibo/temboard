@@ -3,7 +3,15 @@ import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          whitespace: "preserve",
+        },
+      },
+    }),
+  ],
   root: "temboardui/static/src",
   base: "/static/",
   server: {
