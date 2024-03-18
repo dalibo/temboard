@@ -4,6 +4,7 @@ import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router/composables";
 import draggable from "vuedraggable";
 
+import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 import MonitoringChart from "../components/MonitoringChart.vue";
 
 const route = useRoute();
@@ -307,6 +308,11 @@ watch(graphs.value, () => {
   }
   updateLocalStorage();
 });
+
+function onFromToUpdate(from_, to_) {
+  from.value = from_;
+  to.value = to_;
+}
 </script>
 
 <template>
@@ -324,7 +330,7 @@ watch(graphs.value, () => {
           <i class="fa fa-area-chart"></i>
           Metrics
         </a>
-        <daterangepicker :from.sync="from" :to.sync="to" ref="dateRangePickerEl"></daterangepicker>
+        <DateRangePicker @fromto-updated="onFromToUpdate" ref="dateRangePickerEl"></DateRangePicker>
       </div>
     </div>
 
