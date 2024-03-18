@@ -1,13 +1,12 @@
-/* global define, moment, _, dateMath */
-
 /*
  * This is a port of the excellent grafana's RangeUtils utils package.
  * From TypeScript to pure Javascript.
  * See https://github.com/grafana/grafana/blob/master/public/app/core/utils/rangeutils.ts
- *
- * Requires `dateMath`, `moment` and `loadash`.
  */
 import * as _ from "lodash";
+import moment from "moment";
+
+import dateMath from "./datemath.js";
 
 var spans = {
   s: { display: "second" },
