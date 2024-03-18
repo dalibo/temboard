@@ -458,10 +458,11 @@ class UserHelper(object):
         return user_middleware
 
 
-# Ensure @functools.wraps preserves User middleware attributes.
+# Ensure @functools.wraps preserves User and Instance middleware attributes.
 functools.WRAPPER_UPDATES += (
     '__admin_required',
     '__anonymous_allowed',
+    '__legacy_xsession',
 )
 
 

@@ -5,9 +5,17 @@ from __future__ import absolute_import
 import logging
 import os
 from ipaddress import ip_address, ip_network
+import json
 
 from flask import (
-    Blueprint, Flask, abort, current_app, g, make_response, request, jsonify,
+    Blueprint,
+    Flask,
+    abort,
+    current_app,
+    g,
+    make_response,
+    request,
+    jsonify,
 )
 from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
@@ -24,10 +32,19 @@ from .vitejs import ViteJSExtension
 
 
 logger = logging.getLogger(__name__)
+
 # InstanceMiddleware extension controls request context for the following
 # blueprint routes.
 instance_proxy = Blueprint(
-    "instance_proxy", __name__, url_prefix='/proxy/<address>/<port>',
+    "instance_proxy",
+    __name__,
+    url_prefix='/proxy/<address>/<port>',
+)
+
+instance_routes = Blueprint(
+    "instance_routes",
+    __name__,
+    url_prefix='/server/<address>/<port>',
 )
 
 
@@ -248,10 +265,21 @@ class InstanceMiddleware(object):
     def init_app(self, app):
         app.instance = self
         app.register_blueprint(instance_proxy)
+        app.register_blueprint(instance_routes)
         brf = app.before_request_funcs
         brf[instance_proxy.name] = [
             self.load_instance_before_request,
         ]
+        brf[instance_routes.name] = [
+            self.load_instance_before_request,
+        ]
+
+    @property
+    def cookie_name(self):
+        return 'temboard_%s_%s' % (
+            g.instance.agent_address,
+            g.instance.agent_port,
+        )
 
     def load_instance_before_request(self):
         address = request.view_args.pop('address')
@@ -260,9 +288,29 @@ class InstanceMiddleware(object):
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
             abort(404)
-
+        g.instance.status = None
         prefix = current_app.blueprints[request.blueprint].url_prefix
         request.instance_path = request.url_rule.rule.replace(prefix, "")
+
+    def fetch_status(self):
+        try:
+            data = json.load(self.request("/status"))
+        except Exception as e:
+            # agent is unreachable we forge a status response
+            logger.error("Failed to fetch status: %s", e)
+            data = {
+                "temboard": {
+                    "status": "unreachable",
+                },
+                "postgres": {
+                    "status": "unreachable",
+                    "pending_restart": False,
+                },
+                "system": {
+                    "status": "unreachable",
+                },
+            }
+        g.instance.status = data
 
     def client(self):
         return TemboardAgentClient.factory(
@@ -279,11 +327,16 @@ class InstanceMiddleware(object):
         if query:
             pathinfo += "?" + serialize_querystring(query)
 
+        headers = {}
+        # monitoring/metrics is a new API only available on v8 agents.
+        # It does not require X-session (only for v7.X).
+        func = self.app.view_functions.get(request.endpoint)
+        if not func:
+            abort(404)
+
         try:
             response = client.request(
-                method=method,
-                path=pathinfo,
-                body=body,
+                method=method, path=pathinfo, body=body, headers=headers
             )
             response.raise_for_status()
         except ConnectionError as e:

@@ -1,17 +1,17 @@
-{% extends base.html %}
+{% extends "base.jinja2.html" %}
 
-{% block title %}temBoard / {{instance}} / About{% end %}
+{% block title %}temBoard / {{instance}} / About{% endblock %}
 
 {% block content %}
 <div class="text-center mt-4">
   <h1>{{ instance }} <span class="align-top badge badge-secondary">{{ instance.groups[0].group_name }}</span></h1>
-  {% if len(instance.groups) > 1 %}
+  {% if instance.groups|length > 1 %}
   <h3>
     {% for group in instance.groups %}
     <span class="badge badge-secondary">{{ group.group_name }}</span>
-    {% end %}
+    {% endfor %}
   </h3>
-  {% end %}
+  {% endif %}
   <h2 class="text-secondary pb-4 mb-4">{{ instance.pg_version_summary }} serving {{ instance.pg_data }}.</h2>
 </div>
 
@@ -21,36 +21,42 @@
   {% set d = discover['postgres'] %}
   <thead class="thead-light">
     <tr>
-      <th colspan="2"><h3 class="m-1">PostgreSQL <span class="align-middle badge badge-secondary">{{ d.get('cluster_name', '') }}</span></h3></th>
+      <th colspan="2">
+        <h3 class="m-1">PostgreSQL <span class="align-middle badge badge-secondary">{{ d.get('cluster_name', '') }}</span></h3>
+      </th>
     </tr>
   </thead>
   <tbody class="postgres">
     <tr>
       <td>Full version</td>
-      <td><pre class="version">{{ (d.get('version') or 'Unknown').replace(', ', '\n') }}</pre></td>
+      <td>
+        <pre class="version">{{ (d.get('version') or 'Unknown').replace(', ', '\n') }}</pre>
+      </td>
     </tr>
     {% set settings = ['listen_address', 'max_connections', 'data_checksums'] %}
     {% for setting in settings %}
-    {%   if setting in d %}
+    {% if setting in d %}
     <tr>
       <td><tt>{{ setting }}</tt></td>
       <td>
         {% set value = d[setting] %}
-        {% if type(value) is bool %}
+        {% if value is sameas true or value is sameas false %}
         <i class="fa {{ 'fa-check' if value else 'fa-times' }}"></i>
         {% else %}
         <pre>{{ value }}</pre>
-        {% end %}
+        {% endif %}
       </td>
     </tr>
-    {%   end %}
-    {% end %}
+    {% endif %}
+    {% endfor %}
   </tbody>
 
   {% set d = discover['system'] %}
   <thead class="thead-light">
     <tr>
-      <th colspan="2"><h3 class="m-1">{{ d.get('distribution', 'System') }}</h3></th>
+      <th colspan="2">
+        <h3 class="m-1">{{ d.get('distribution', 'System') }}</h3>
+      </th>
     </tr>
   </thead>
   <tbody class="system">
@@ -59,29 +65,30 @@
       <td>CPU</td>
       <td><tt>{{ d['cpu_count'] }} x {{ d['cpu_model'] }}</tt></td>
     </tr>
-    {% end %}
+    {% endif %}
     {% if 'memory' in d %}
     <tr>
       <td>Memory</td>
-      <td><tt>{{ '%.2f' % (d['memory'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
+      <td><tt>{{ '%.2f' % (d['memory'] / 1024 / 1024 / 1024) }} GiB</tt></td>
     </tr>
-    {% end %}
+    {% endif %}
     {% if 'swap' in d %}
     <tr>
       <td>Swap</td>
-      <td><tt>{{ '%.2f' % (d['swap'] / 1024. / 1024. / 1024.) }} GiB</tt></td>
+      <td><tt>{{ '%.2f' % (d['swap'] / 1024 / 1024 / 1024) }} GiB</tt></td>
     </tr>
-    {% end %}
+    {% endif %}
     <tr>
       <td>Kernel</td>
       <td><tt>{{ d.get('os', 'Linux') }} {{ d.get('os_version', '') }}</tt></td>
     </tr>
   </tbody>
-
   {% set d = discover['temboard'] %}
   <thead class="thead-light">
     <tr>
-      <th colspan="2"><h3 class="m-1">temBoard Agent {{ d.get('agent_version', '') }}</h3></th>
+      <th colspan="2">
+        <h3 class="m-1">temBoard Agent {{ d.get('agent_version', '') }}</h3>
+      </th>
     </tr>
   </thead>
   <tbody class="temboard">
@@ -92,33 +99,33 @@
         <ul class="list-inline plugins">
           {% for plugin in d['plugins'] %}
           <li class="list-inline-item {{ plugin }}" style="font-size: 135%;"><span class="badge badge-light">{{ plugin }}</span></li>
-          {% end %}
+          {% endfor %}
         </ul>
       </td>
     </tr>
-    {% end %}
+    {% endif %}
     {% if 'configfile' in d %}
     <tr>
       <td>Configuration file</td>
       <td><tt>{{ d['configfile'] }}</tt></td>
     </tr>
-    {% end %}
+    {% endif %}
     {% if 'python_version' in d %}
     <tr>
       <td>Python {{ d['python_version'] }}</td>
       <td><tt>{{ d['pythonbin'] }}</tt></td>
     </tr>
-    {% end %}
+    {% endif %}
     {% set components = ['psycopg2', 'libpq', 'bottle', 'cyptography'] %}
     {% for component in components %}
-    {%   set key = '%s_version' % component %}
-    {%   if key in d %}
+    {% set key = '%s_version' % component %}
+    {% if key in d %}
     <tr>
       <td>{{ component }}</td>
       <td><tt>{{ d[key] }}</tt></td>
     </tr>
-    {%   end %}
-    {% end %}
+    {% endif %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endblock %}

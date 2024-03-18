@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
+
+    <title>{% block title %} {% endblock %}</title>
+    {% if vitejs.PROD %}
+    {% for link in vitejs.css_links_for('temboard.js') %}{{ link|safe }}{% endfor %}
+    {% else %}
+    <!-- Require starting vitejs dev server with npm run dev. -->
+    <script type="module" src="{{ vitejs.url_for('@vite/client') }}"></script>
+    {% endif %}
+    {% block head %}{# Put link and meta in head block to inject here #}{% endblock %}
+  </head>
+  <body>
+    <div>
+      <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
+      <script src="/js/jquery-2.1.4.min.js"></script>
+      <script src="/js/popper.min.js"></script>
+      <script src="/js/bootstrap.min.js"></script>
+      {% if nav %}
+      <!-- Navigation -->
+      <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand sticky-top">
+        <div class="collapse navbar-collapse">
+          {% if instance %}
+          <a class="navbar-brand ml-3 mr-0" href id="menu-collapse">
+            <i class="fa fa-bars"></i>
+          </a>
+          {% endif %}
+          <a class="navbar-brand mr-auto" href="/home">
+            <img id="logo" src="/images/temboard-150x32-w.png" />
+          </a>
+          {% if instance %}
+          {% set d = instance.discover or {} %}
+          <div class="navbar-text text-white mr-auto">
+            <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
+          </div>
+          {% endif %}
+          <ul class="navbar-nav">
+            {% if role.is_admin %}
+            <li class="{{'active' if request and 'settings' in request.uri else ''}} nav-item">
+              <a id="linkSettings"
+                href="/settings/instances"
+                data-toggle="tooltip"
+                data-placement="bottom"
+                class="nav-link"
+                title="Manage instances and users">
+                <i class="fa fa-wrench"></i>
+                Settings
+              </a>
+            </li>
+            {% endif %}
+            <li class="dropdown nav-item">
+              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-user"></i>
+                {{role.role_name}}
+                <span class="caret"></span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if instance %}
+      <div class="container-fluid">
+        <div class="row">
+          <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
+            <div class="sidebar-sticky pt-3 d-flex flex-column">
+              <ul class="nav nav-pills flex-column">
+                {% set plugin_names = [] %}
+                {% for plugin in instance.plugins %}
+                {% set _ = plugin_names.append(plugin.plugin_name) %}
+                {% endfor %}
+                {% if 'dashboard' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
+                    class="{{'active' if plugin == 'dashboard' else ''}} dashboard nav-link">
+                    <i class="fa fa-dashboard fa-fw"></i>
+                    <span>Dashboard</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'activity' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"
+                    class="{{'active' if plugin == 'activity' else ''}} activity nav-link">
+                    <i class="fa fa-bars fa-fw"></i>
+                    <span>Activity</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'monitoring' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
+                    class="{{'active' if plugin == 'monitoring' else ''}} monitoring nav-link">
+                    <i class="fa fa-bar-chart-o fa-fw"></i>
+                    <span>Monitoring</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'monitoring' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
+                    class="{{'active' if plugin == 'alerting' else ''}} alerting nav-link">
+                    <i class="fa fa-heart fa-fw"></i>
+                    <span>Status</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'pgconf' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
+                    class="{{'active' if plugin == 'pgconf' else ''}} pgconf nav-link">
+                    <i class="fa fa-cog fa-fw"></i>
+                    <span>Configuration</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'maintenance' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
+                    class="{{'active' if plugin == 'maintenance' else ''}} maintenance nav-link">
+                    <i class="fa fa-wrench fa-fw"></i>
+                    <span>Maintenance</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% if 'statements' in plugin_names %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
+                    class="{{'active' if plugin == 'statements' else ''}} statements nav-link">
+                    <i class="fa fa-tasks fa-fw"></i>
+                    <span>Statements</span>
+                  </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
+                    class="{{'active' if plugin == 'notifications' else ''}} nav-link">
+                    <i class="fa fa-envelope fa-fw"></i>
+                    <span>Notifications</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/about"
+                    class="nav-link">
+                    <i class="fa fa-info fa-fw"></i>
+                    <span>About</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="main ml-auto p-3 position-relative">
+          {% if instance.status %}
+          {% set s = instance.status %}
+          {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
+            <div class="alert alert-warning" role="alert" >
+              <h2>
+                <i class="fa fa-warning fa-fw"></i>WARNING
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </h2>
+                <p> Some changes are pending and PostgreSQL should be restarted.</p>
+            </div>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            <div class="container-fluid pt-3">
+              {% endif %} {# end if instance #}
+              <div id="errorApp"></div>
+              {% block content %} {% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+  </body>
+</html>
