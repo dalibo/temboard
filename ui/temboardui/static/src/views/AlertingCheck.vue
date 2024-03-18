@@ -2,6 +2,7 @@
 import { computed, provide, ref } from "vue";
 
 import AlertingChart from "../components/AlertingChart.vue";
+import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 
 const check = ref(window.checkInitialData);
 const keys = ref([]);
@@ -30,6 +31,11 @@ function setFromTo(from, to) {
 }
 
 provide("setFromTo", setFromTo);
+
+function onFromToUpdate(from_, to_) {
+  from.value = from_;
+  to.value = to_;
+}
 </script>
 
 <template>
@@ -40,7 +46,7 @@ provide("setFromTo", setFromTo);
           <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
           <li class="breadcrumb-item active" aria-current="page">{{ check.description }}</li>
         </ol>
-        <daterangepicker :from.sync="from" :to.sync="to" ref="dateRangePickerEl"></daterangepicker>
+        <DateRangePicker @fromto-updated="onFromToUpdate" ref="dateRangePickerEl"></DateRangePicker>
       </div>
     </div>
 

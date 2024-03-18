@@ -13,8 +13,6 @@
 </div>
 
 <script src="/js/dygraph.min.js"></script>
-<script src="/js/moment.min.js"></script>
-<script src="/js/daterangepicker.js"></script>
 <script type="module" src="{{ vitejs.url_for('monitoring.js') }}"></script>
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/data";

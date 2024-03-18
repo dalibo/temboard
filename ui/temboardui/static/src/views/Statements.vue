@@ -1,9 +1,10 @@
 <script setup>
 import _ from "lodash";
+import moment from "moment";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router/composables";
 
-import "../daterangepicker.vue.js";
+import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 import { formatDuration } from "../utils/duration";
 
 const router = useRouter();
@@ -26,7 +27,7 @@ const to = ref(null);
 const totalRows = ref(1);
 const currentPage = ref(1);
 const perPage = ref(20);
-const daterangepickerEl = ref(null);
+const dateRangePickerEl = ref(null);
 
 const fields = computed(getFields);
 const fromTo = computed(() => "" + from.value + to.value);
@@ -331,7 +332,12 @@ function createOrUpdateCharts(data) {
 }
 
 function onChartZoom(min, max) {
-  daterangepickerEl.value.setFromTo(moment(min), moment(max));
+  dateRangePickerEl.value.setFromTo(moment(min), moment(max));
+}
+
+function onFromToUpdate(from_, to_) {
+  from.value = from_;
+  to.value = to_;
 }
 </script>
 
@@ -375,7 +381,7 @@ function onChartZoom(min, max) {
             </li>
           </ol>
         </nav>
-        <daterangepicker :from.sync="from" :to.sync="to" ref="daterangepickerEl"></daterangepicker>
+        <DateRangePicker @fromto-updated="onFromToUpdate" ref="dateRangePickerEl"></DateRangePicker>
       </div>
     </div>
     <div class="row mb-1">
