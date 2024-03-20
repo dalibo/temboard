@@ -11,6 +11,8 @@ Vue.use(VueRouter);
 
 Vue.use(BootstrapVue);
 
+import daterangepicker from 'bootstrap-daterangepicker';
+
 var dataRequest;
 var chartRequest;
 
