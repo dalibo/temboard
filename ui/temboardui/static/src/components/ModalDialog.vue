@@ -1,6 +1,6 @@
 <script setup>
 /* A simple boostrap Dialog */
-import { defineEmits, defineProps, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 defineProps(["id", "title"]);
 const emit = defineEmits(["closed"]);
