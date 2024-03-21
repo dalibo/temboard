@@ -4,7 +4,18 @@
 
 {% block content %}
 <div id="app">
-  <dashboard></dashboard>
+  <dashboard
+    :config='{% raw config %}'
+    :instance="{
+      'hostname': '{{instance.hostname}}',
+      'agentAddress': '{{instance.agent_address}}',
+      'agentPort': '{{instance.agent_port}}',
+      'pgPort': '{{instance.pg_port}}',
+      'plugins': {% raw [p.plugin_name for p in instance.plugins] %}
+    }"
+    :jdata-history='{% raw history %}'
+    :initial-data='{% raw json_encode(dashboard) %}'
+  />
 </div>
 
 <!-- <script src="/js/Chart.js"></script>
@@ -12,17 +23,4 @@
 <script src="/js/moment.min.js"></script>
 <script src="/js/Chart.min.js"></script>
 <script type="module" src="{{ vitejs.url_for('dashboard.js') }}"></script>
-<script>
-  var config = JSON.parse('{% raw config %}');
-  var jdata_history = JSON.parse('{% raw history %}');
-  var lastDatabasesDatum = jdata_history[jdata_history.length -1].databases;
-  var instance = {
-    plugins: {% raw [p.plugin_name for p in instance.plugins] %},
-    hostname: "{{instance.hostname}}",
-    agentAddress: "{{instance.agent_address}}",
-    agentPort: "{{instance.agent_port}}",
-    pgPort: "{{instance.pg_port}}"
-  }
-  var dashboardInitialData = {% raw json_encode(dashboard) %};
-</script>
 {% end %}

@@ -4,16 +4,16 @@ import { filesize } from "filesize";
 import { computed, onMounted, ref } from "vue";
 
 // FIXME import chart.js and moment
-const instance = ref(window.instance);
-const dashboard = ref(window.dashboardInitialData);
+const props = defineProps(["config", "instance", "jdataHistory", "initialData"]);
+const dashboard = ref(props.initialData);
 const errors = ref("");
-const osVersion = ref(window.dashboardInitialData.os_version);
-const nCpu = ref(window.dashboardInitialData.n_cpu);
-const memory = ref(window.dashboardInitialData.memory);
-const databases = window.dashboardInitialData.databases;
+const osVersion = ref(props.initialData.os_version);
+const nCpu = ref(props.initialData.n_cpu);
+const memory = ref(props.initialData.memory);
+const databases = props.initialData.databases;
 const totalSize = ref(databases ? databases.total_size : null);
 const nbDb = ref(databases ? databases.databases : null);
-const loadAverage = ref(window.dashboardInitialData.loadaverage);
+const loadAverage = ref(props.initialData.loadaverage);
 const totalMemory = ref(0);
 const totalHit = ref("&nbsp;");
 const totalCpu = ref("&nbsp;");
@@ -69,7 +69,7 @@ const start_time = computed(() => {
  */
 function refreshDashboard() {
   $.ajax({
-    url: "/proxy/" + instance.value.agentAddress + "/" + instance.value.agentPort + "/dashboard",
+    url: "/proxy/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/dashboard",
     type: "GET",
     async: true,
     contentType: "application/json",
@@ -292,7 +292,7 @@ function getBorderColor(state) {
  */
 function updateAlerts() {
   $.ajax({
-    url: "/server/" + instance.value.agentAddress + "/" + instance.value.agentPort + "/alerting/alerts.json",
+    url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
   })
     .success(function (data) {
       // remove any previous popover to avoid conflicts with
@@ -319,7 +319,7 @@ function updateAlerts() {
     });
 
   $.ajax({
-    url: "/server/" + instance.value.agentAddress + "/" + instance.value.agentPort + "/alerting/checks.json",
+    url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/checks.json",
   })
     .success(function (data) {
       states.value = data;
@@ -393,7 +393,7 @@ onMounted(() => {
   updateTotalSessions();
 
   const now = moment();
-  timeRange = window.config.history_length * window.config.scheduler_interval;
+  timeRange = props.config.history_length * props.config.scheduler_interval;
 
   const lineChartsOptions = {
     responsive: true,
@@ -456,7 +456,7 @@ onMounted(() => {
     },
     options: lineChartsOptions,
   });
-  updateTps(jdata_history);
+  updateTps(props.jdataHistory);
 
   loadAverageChart = new Chart(loadAverageChartEl.value.getContext("2d"), {
     type: "line",
@@ -471,13 +471,13 @@ onMounted(() => {
     },
     options: lineChartsOptions,
   });
-  updateLoadaverage(jdata_history);
+  updateLoadaverage(props.jdataHistory);
 
-  const refreshInterval = window.config.scheduler_interval * 1000;
+  const refreshInterval = props.config.scheduler_interval * 1000;
   window.setInterval(refreshDashboard, refreshInterval);
   refreshDashboard();
 
-  if (instance.value.plugins.includes("monitoring")) {
+  if (props.instance.plugins.includes("monitoring")) {
     // monitoring plugin enabled
     const alertRefreshInterval = 60 * 1000;
     window.setInterval(updateAlerts, alertRefreshInterval);
@@ -496,7 +496,7 @@ onMounted(() => {
     <div class="row d-fullscreen">
       <div class="col d-flex justify-content-center">
         <strong class="bg-secondary p-2 border-radius-2 rounded text-white">
-          {{ instance.hostname }}:{{ instance.pgPort }}
+          {{ props.instance.hostname }}:{{ props.instance.pgPort }}
         </strong>
       </div>
     </div>
@@ -637,7 +637,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="row" v-if="instance.plugins.includes('monitoring')">
+    <div class="row" v-if="props.instance.plugins.includes('monitoring')">
       <div class="col-8">
         <div class="text-center small">
           Current status
