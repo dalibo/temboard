@@ -337,7 +337,6 @@ function onChartZoom(min, max) {
 
 <template>
   <div>
-    {{ dbid }}
     <div class="row mb-1">
       <div class="col-12 d-flex justify-content-between" v-cloak>
         <nav aria-label="breadcrumb" class="d-inline-block">
