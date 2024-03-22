@@ -8,11 +8,11 @@ import SizeDistributionBar from "../../components/maintenance/SizeDistributionBa
 
 let getScheduledReindexesTimeout;
 
-const instance = ref(window.instance);
-provide("instance", instance);
-const dbName = ref(window.database);
+const props = defineProps(["apiUrl", "instance", "database", "schema", "maintenanceBaseUrl", "schemaApiUrl"]);
+provide("instance", props.instance);
+const dbName = ref(props.database);
 provide("dbName", dbName);
-const schemaName = ref(window.schema);
+const schemaName = ref(props.schema);
 const sortCriteria = ref("total_bytes");
 const sortCriterias = ref({
   name: ["Name", "asc"],
@@ -51,7 +51,7 @@ function fetchData() {
 
 function getSchemaData() {
   $.ajax({
-    url: apiUrl,
+    url: props.apiUrl,
     contentType: "application/json",
     success: function (data) {
       schema.value = data;
@@ -90,7 +90,7 @@ function getScheduledReindexes() {
   window.clearTimeout(getScheduledReindexesTimeout);
   const count = scheduledReindexes.value.length;
   $.ajax({
-    url: apiUrl + "/reindex/scheduled",
+    url: props.apiUrl + "/reindex/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledReindexes.value = data;
@@ -144,7 +144,7 @@ function doReindex() {
     .join("");
   $.ajax({
     method: "POST",
-    url: [schemaApiUrl, elementType, element, "reindex"].join("/"),
+    url: [props.schemaApiUrl, elementType, element, "reindex"].join("/"),
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledReindexes,
@@ -155,7 +155,7 @@ function doReindex() {
 function cancelReindex(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/reindex/" + id,
+    url: props.maintenanceBaseUrl + "/reindex/" + id,
     contentType: "application/json",
     success: getScheduledReindexes,
     error: showError,
@@ -237,7 +237,7 @@ fetchData();
             <tr v-bind:class="{ 'bg-light2': index % 2 == 0 }">
               <td class="temboard-table">
                 <a
-                  :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${schemaName}/table/${table.name}`"
+                  :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${schemaName}/table/${table.name}`"
                 >
                   <strong>{{ table.name }}</strong>
                 </a>
@@ -381,7 +381,7 @@ fetchData();
               <br />
               <em class="text-muted small">on </em>
               <a
-                :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${schemaName}/table/${index.tablename}`"
+                :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${schemaName}/table/${index.tablename}`"
               >
                 {{ index.tablename }}
               </a>

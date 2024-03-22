@@ -12,7 +12,17 @@
 {% include breadcrumb.html %}
 
 <div id="app">
-  <maintenanceschema />
+  <maintenanceschema
+    api-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}/schema/{{ schema }}"
+    schema-api-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}/schema/{{ schema }}"
+    :instance="{
+      'agentAddress': '{{instance.agent_address}}',
+      'agentPort': '{{instance.agent_port}}'
+    }"
+    maintenance-base-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance"
+    database="{{ database }}"
+    schema="{{ schema }}"
+  />
 </div>
 
 <script src="/js/moment.min.js"></script>
@@ -20,15 +30,4 @@
 <script src="/js/daterangepicker.js"></script>
 <script type="module" src="{{ vitejs.url_for('maintenance.schema.js') }}"></script>
 <script>
-var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}/schema/{{ schema }}';
-var schemaApiUrl = apiUrl;
-var maintenanceBaseUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
-var instance = {
-  agent_address: "{{instance.agent_address}}",
-  agent_port: {{instance.agent_port}},
-}
-var database = "{{database}}";
-var schema = "{{schema}}";
-</script>
-
 {% end %}

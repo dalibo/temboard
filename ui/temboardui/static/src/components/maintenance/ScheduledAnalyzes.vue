@@ -22,10 +22,10 @@ const emit = defineEmits(["cancel"]);
       <li v-for="scheduledAnalyze in scheduledAnalyzes" class="pb-1 text-muted">
         <pre class="mb-0 text-truncate">
         <code class="bg-light small">ANALYZE<span v-if="scheduledAnalyze.table"> <a
-                  :href="`/server/*{instance.agent_address}/${
-                  instance.agent_port}/maintenance/${dbName}/schema/${scheduledAnalyze.schema}`">{{
+                  :href="`/server/${instance.agentAddress}/${
+                  instance.agentPort}/maintenance/${dbName}/schema/${scheduledAnalyze.schema}`">{{
                   scheduledAnalyze.schema }}</a>.<a
-                  :href="`/server/${instance.agent_address}/${ instance.agent_port}/maintenance/${dbName}/schema/${scheduledAnalyze.schema}/table/${scheduledAnalyze.table}`">{{ scheduledAnalyze.table }}</a></span>
+                  :href="`/server/${instance.agentAddress}/${ instance.agentPort}/maintenance/${dbName}/schema/${scheduledAnalyze.schema}/table/${scheduledAnalyze.table}`">{{ scheduledAnalyze.table }}</a></span>
         </code>
         </pre>
         <template v-if="scheduledAnalyze.status == 'todo'">

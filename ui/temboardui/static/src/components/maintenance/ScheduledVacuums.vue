@@ -23,7 +23,7 @@ const emit = defineEmits(["cancel"]);
         <pre class="mb-0 text-truncate">
         <code class="bg-light small">VACUUM
         <span v-if="scheduledVacuum.mode"> ({{ scheduledVacuum.mode.toUpperCase() }})</span>
-        <span v-if="scheduledVacuum.table"> <a :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${scheduledVacuum.schema}`">{{ scheduledVacuum.schema }}</a>.<a :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${scheduledVacuum.schema}/table/${scheduledVacuum.table}`">{{ scheduledVacuum.table }}</a></span>
+        <span v-if="scheduledVacuum.table"> <a :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${scheduledVacuum.schema}`">{{ scheduledVacuum.schema }}</a>.<a :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${scheduledVacuum.schema}/table/${scheduledVacuum.table}`">{{ scheduledVacuum.table }}</a></span>
         </code>
         </pre>
         <template v-if="scheduledVacuum.status == 'todo'">
