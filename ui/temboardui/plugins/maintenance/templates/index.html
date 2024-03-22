@@ -6,16 +6,14 @@
 
 {% include breadcrumb.html %}
 <div id="app">
-  <maintenanceindex />
+  <maintenanceindex
+    api-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance"
+    :instance="{
+      'agentAddress': '{{instance.agent_address}}',
+      'agentPort': '{{instance.agent_port}}'
+    }"
+  />
 </div>
 
 <script type="module" src="{{ vitejs.url_for('maintenance.js') }}"></script>
-<script>
-var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
-var instance = {
-  agent_address: "{{instance.agent_address}}",
-  agent_port: {{instance.agent_port}},
-}
-</script>
-
 {% end %}

@@ -27,8 +27,8 @@ const emit = defineEmits(["cancel"]);
         !scheduledReindex.index"> DATABASE {{ scheduledReindex.dbname }}</span>
         <span v-if="scheduledReindex.table"> TABLE
         <a
-        :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${scheduledReindex.schema}`">{{scheduledReindex.schema
-        }}</a>.<a :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${scheduledReindex.schema}/table/${scheduledReindex.table}`">{{ scheduledReindex.table }}</a></span><span v-if="scheduledReindex.index"> INDEX <a :href="`/server/${instance.agent_address}/${ instance.agent_port}/maintenance/${dbName}/schema/${scheduledReindex.schema}`">{{  scheduledReindex.schema }}</a>.{{  scheduledReindex.index }}
+        :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${scheduledReindex.schema}`">{{scheduledReindex.schema
+        }}</a>.<a :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${scheduledReindex.schema}/table/${scheduledReindex.table}`">{{ scheduledReindex.table }}</a></span><span v-if="scheduledReindex.index"> INDEX <a :href="`/server/${instance.agentAddress}/${ instance.agentPort}/maintenance/${dbName}/schema/${scheduledReindex.schema}`">{{  scheduledReindex.schema }}</a>.{{  scheduledReindex.index }}
         </span>
         </code>
         </pre>

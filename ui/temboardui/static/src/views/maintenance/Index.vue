@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 
 import SizeDistributionBar from "../../components/maintenance/SizeDistributionBar.vue";
 
-const instance = ref(window.instance);
+const props = defineProps(["apiUrl", "instance"]);
 const total_bytes = ref(0);
 const total_size = ref(0);
 const databases = ref([]);
@@ -28,7 +28,7 @@ const databasesSorted = computed(() => {
 
 function fetchData() {
   $.ajax({
-    url: apiUrl,
+    url: props.apiUrl,
     contentType: "application/json",
     success: function (data) {
       total_bytes.value = data.instance.total_bytes;
@@ -133,7 +133,7 @@ fetchData();
         <template v-for="(database, loop_index) in databasesSorted">
           <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0 }">
             <td class="database font-weight-bold">
-              <a :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${database.datname}`">
+              <a :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${database.datname}`">
                 {{ database.datname }}
               </a>
             </td>

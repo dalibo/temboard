@@ -15,11 +15,11 @@ let getScheduledVacuumsTimeout;
 let getScheduledAnalyzesTimeout;
 let getScheduledReindexesTimeout;
 
-const instance = ref(window.instance);
-provide("instance", instance);
-const dbName = ref(window.database);
+const props = defineProps(["apiUrl", "instance", "database", "schema", "table", "maintenanceBaseUrl", "schemaApiUrl"]);
+provide("instance", props.instance);
+const dbName = ref(props.database);
 provide("dbName", dbName);
-const tableName = ref(window.table);
+const tableName = ref(props.table);
 provide("tableName", tableName);
 const indexSortCriteria = ref("total_bytes");
 const indexSortCriterias = ref({
@@ -58,7 +58,7 @@ const filteredScheduledReindexes = computed(() => {
 
 function getData() {
   $.ajax({
-    url: apiUrl,
+    url: props.apiUrl,
     contentType: "application/json",
     success: function (data) {
       table.value = data;
@@ -86,7 +86,7 @@ function getScheduledVacuums() {
   window.clearTimeout(getScheduledVacuumsTimeout);
   const count = scheduledVacuums.value.length;
   $.ajax({
-    url: apiUrl + "/vacuum/scheduled",
+    url: props.apiUrl + "/vacuum/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledVacuums.value = data;
@@ -132,7 +132,7 @@ function doVacuum() {
   }
   $.ajax({
     method: "POST",
-    url: apiUrl + "/vacuum",
+    url: props.apiUrl + "/vacuum",
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledVacuums,
@@ -154,7 +154,7 @@ function getScheduledAnalyzes() {
   window.clearTimeout(getScheduledAnalyzesTimeout);
   const count = scheduledAnalyzes.value.length;
   $.ajax({
-    url: apiUrl + "/analyze/scheduled",
+    url: props.apiUrl + "/analyze/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledAnalyzes.value = data;
@@ -200,7 +200,7 @@ function doAnalyze() {
   }
   $.ajax({
     method: "POST",
-    url: apiUrl + "/analyze",
+    url: props.apiUrl + "/analyze",
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledAnalyzes,
@@ -222,7 +222,7 @@ function getScheduledReindexes() {
   window.clearTimeout(getScheduledReindexesTimeout);
   const count = scheduledReindexes.value.length;
   $.ajax({
-    url: schemaApiUrl + "/reindex/scheduled",
+    url: props.schemaApiUrl + "/reindex/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledReindexes.value = data;
@@ -275,7 +275,7 @@ function doReindex() {
     .join("");
   $.ajax({
     method: "POST",
-    url: [schemaApiUrl, elementType, element, "reindex"].join("/"),
+    url: [props.schemaApiUrl, elementType, element, "reindex"].join("/"),
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledReindexes,

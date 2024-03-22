@@ -9,20 +9,19 @@
 
 
 <div id="app">
-  <maintenancedatabase />
+  <maintenancedatabase
+    api-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}"
+    :instance="{
+      'agentAddress': '{{instance.agent_address}}',
+      'agentPort': '{{instance.agent_port}}'
+    }"
+    maintenance-base-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance"
+    database="{{ database }}"
+  />
 </div>
 
 <script src="/js/moment.min.js"></script>
 <script src="/js/daterangepicker.js"></script>
 <script type="module" src="{{ vitejs.url_for('maintenance.database.js') }}"></script>
 <script>
-var apiUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance/{{ database }}';
-var maintenanceBaseUrl = '/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance';
-var instance = {
-  agent_address: "{{instance.agent_address}}",
-  agent_port: {{instance.agent_port}},
-}
-var database = "{{database}}";
-</script>
-
 {% end %}

@@ -14,9 +14,9 @@ let getScheduledVacuumsTimeout;
 let getScheduledAnalyzesTimeout;
 let getScheduledReindexesTimeout;
 
-const instance = ref(window.instance);
-provide("instance", instance);
-const dbName = ref(window.database);
+const props = defineProps(["apiUrl", "instance", "database", "maintenanceBaseUrl"]);
+provide("instance", props.instance);
+const dbName = ref(props.database);
 provide("dbName", dbName);
 const sortCriteria = ref("total_bytes");
 const sortCriterias = ref({
@@ -50,7 +50,7 @@ const schemasSorted = computed(() => {
 
 function getData() {
   $.ajax({
-    url: apiUrl,
+    url: props.apiUrl,
     contentType: "application/json",
     success: function (data) {
       database.value = data;
@@ -82,7 +82,7 @@ function getScheduledVacuums() {
   window.clearTimeout(getScheduledVacuumsTimeout);
   const count = scheduledVacuums.value.length;
   $.ajax({
-    url: apiUrl + "/vacuum/scheduled",
+    url: props.apiUrl + "/vacuum/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledVacuums.value = data;
@@ -128,7 +128,7 @@ function doVacuum() {
   }
   $.ajax({
     method: "POST",
-    url: apiUrl + "/vacuum",
+    url: props.apiUrl + "/vacuum",
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledVacuums,
@@ -139,7 +139,7 @@ function doVacuum() {
 function cancelVacuum(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/vacuum/" + id,
+    url: props.maintenanceBaseUrl + "/vacuum/" + id,
     contentType: "application/json",
     success: getScheduledVacuums,
     error: showError,
@@ -150,7 +150,7 @@ function getScheduledAnalyzes() {
   window.clearTimeout(getScheduledAnalyzesTimeout);
   const count = scheduledAnalyzes.value.length;
   $.ajax({
-    url: apiUrl + "/analyze/scheduled",
+    url: props.apiUrl + "/analyze/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledAnalyzes.value = data;
@@ -196,7 +196,7 @@ function doAnalyze() {
   }
   $.ajax({
     method: "POST",
-    url: apiUrl + "/analyze",
+    url: props.apiUrl + "/analyze",
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledAnalyzes,
@@ -207,7 +207,7 @@ function doAnalyze() {
 function cancelAnalyze(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/analyze/" + id,
+    url: props.maintenanceBaseUrl + "/analyze/" + id,
     contentType: "application/json",
     success: getScheduledAnalyzes,
     error: showError,
@@ -218,7 +218,7 @@ function getScheduledReindexes() {
   window.clearTimeout(getScheduledReindexesTimeout);
   const count = scheduledReindexes.value.length;
   $.ajax({
-    url: apiUrl + "/reindex/scheduled",
+    url: props.apiUrl + "/reindex/scheduled",
     contentType: "application/json",
     success: function (data) {
       scheduledReindexes.value = data;
@@ -253,7 +253,7 @@ function doReindex() {
   }
   $.ajax({
     method: "POST",
-    url: [apiUrl, "reindex"].join("/"),
+    url: [props.apiUrl, "reindex"].join("/"),
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledReindexes,
@@ -401,7 +401,7 @@ fetchData();
           <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0 }">
             <td class="schema font-weight-bold">
               <a
-                :href="`/server/${instance.agent_address}/${instance.agent_port}/maintenance/${dbName}/schema/${schema.name}`"
+                :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${schema.name}`"
               >
                 {{ schema.name }}
               </a>
