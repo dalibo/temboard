@@ -1,4 +1,5 @@
 <script setup>
+import daterangepicker from "daterangepicker";
 import moment from "moment";
 import { onMounted, ref } from "vue";
 
