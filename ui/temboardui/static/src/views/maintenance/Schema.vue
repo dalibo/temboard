@@ -79,7 +79,7 @@ function getSchemaData() {
         $('[data-toggle="popover"]').popover();
       }, 1);
     },
-    error: onError,
+    error: showError,
     complete: function () {
       loading.value = false;
     },
@@ -105,7 +105,7 @@ function getScheduledReindexes() {
         getSchemaData();
       }
     },
-    error: onError,
+    error: showError,
   });
 }
 
@@ -148,7 +148,7 @@ function doReindex() {
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledReindexes,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -158,7 +158,7 @@ function cancelReindex(id) {
     url: maintenanceBaseUrl + "/reindex/" + id,
     contentType: "application/json",
     success: getScheduledReindexes,
-    error: onError,
+    error: showError,
   });
 }
 fetchData();

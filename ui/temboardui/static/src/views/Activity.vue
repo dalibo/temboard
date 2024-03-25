@@ -15,8 +15,6 @@ const activityData = ref({});
 
 let loading = ref(false);
 let terminateLoading = ref(false);
-let terminateError = ref(undefined);
-let errorUrl = ref(undefined);
 const mode = ref("running");
 const paused = ref(false);
 const selectedPids = ref([]);
@@ -81,11 +79,6 @@ function terminate() {
     error: function (xhr) {
       terminateLoading.value = false;
       console.log(xhr.status);
-      terminateError.value = escapeHtml(JSON.parse(xhr.responseText).error);
-      if (xhr.status == 401) {
-        var params = $.param({ redirect_to: window.location.href });
-        errorUrl.value = agentLoginUrl + "?" + params;
-      }
     },
   });
 }
@@ -226,7 +219,6 @@ watch(selectedStates, (val) => {
 });
 
 function reset() {
-  terminateError.value = undefined;
   terminateLoading.value = undefined;
 }
 </script>
@@ -392,26 +384,10 @@ function reset() {
             </div>
           </div>
         </div>
-        <div class="row" v-else-if="terminateError">
-          <div class="col-12">
-            <div class="alert alert-danger" role="alert">
-              Agent login required:
-              {{ terminateError }}
-            </div>
-            <div>Go to <a :href="errorUrl">Agent Login form</a> and try again to terminate backend.</div>
-          </div>
-        </div>
       </div>
 
       <div class="modal-footer">
-        <button
-          id="submitKill"
-          type="button"
-          class="btn btn-danger"
-          :disabled="terminateLoading"
-          @click="terminate"
-          v-if="!terminateError"
-        >
+        <button id="submitKill" type="button" class="btn btn-danger" :disabled="terminateLoading" @click="terminate">
           Yes, terminate
         </button>
         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
