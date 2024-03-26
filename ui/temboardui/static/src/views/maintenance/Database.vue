@@ -71,7 +71,7 @@ function getData() {
         $('[data-toggle="popover"]').popover();
       }, 1);
     },
-    error: onError,
+    error: showError,
     complete: function () {
       loading.value = false;
     },
@@ -97,7 +97,7 @@ function getScheduledVacuums() {
         getData();
       }
     },
-    onError: onError,
+    error: showError,
   });
 }
 
@@ -132,7 +132,7 @@ function doVacuum() {
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledVacuums,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -142,7 +142,7 @@ function cancelVacuum(id) {
     url: maintenanceBaseUrl + "/vacuum/" + id,
     contentType: "application/json",
     success: getScheduledVacuums,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -165,7 +165,7 @@ function getScheduledAnalyzes() {
         getData();
       }
     },
-    onError: onError,
+    error: showError,
   });
 }
 
@@ -200,7 +200,7 @@ function doAnalyze() {
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledAnalyzes,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -210,7 +210,7 @@ function cancelAnalyze(id) {
     url: maintenanceBaseUrl + "/analyze/" + id,
     contentType: "application/json",
     success: getScheduledAnalyzes,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -233,7 +233,7 @@ function getScheduledReindexes() {
         getData();
       }
     },
-    error: onError,
+    error: showError,
   });
 }
 
@@ -257,7 +257,7 @@ function doReindex() {
     data: JSON.stringify(data),
     contentType: "application/json",
     success: getScheduledReindexes,
-    error: onError,
+    error: showError,
   });
 }
 
@@ -267,7 +267,7 @@ function cancelReindex(id) {
     url: maintenanceBaseUrl + "/reindex/" + id,
     contentType: "application/json",
     success: getScheduledReindexes,
-    error: onError,
+    error: showError,
   });
 }
 

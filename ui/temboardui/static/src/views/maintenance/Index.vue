@@ -53,7 +53,7 @@ function fetchData() {
         $('[data-toggle="popover"]').popover();
       }, 1);
     },
-    error: onError,
+    error: showError,
     complete: function () {
       loading.value = false;
     },
