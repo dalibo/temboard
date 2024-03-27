@@ -20,9 +20,9 @@ def test_fix_argv(mocker):
         autospec=True)
     from temboardui.toolkit.proctitle import fix_argv
 
-    wanted = ['python', '-m', 'my.module']
     cmmn.return_value = 'my.module'
     input_ = ['python', '-m', '-m']
+    wanted = ['python', '-m', 'my.module']
     assert wanted == fix_argv(input_)
 
     wanted = ['python', 'my-script.py']
@@ -40,8 +40,9 @@ def test_read_memory():
     from temboardui.toolkit.proctitle import read_byte
 
     data = ctypes.create_string_buffer(b'abcdef')
-    b = read_byte(ctypes.addressof(data))
-    assert 0x61 == b
+    a = read_byte(ctypes.addressof(data))
+    wanted = ord('a')
+    assert wanted == a
 
 
 def test_walk_bytes_backwards():
@@ -57,17 +58,19 @@ def test_walk_bytes_backwards():
 
 
 def test_find_nulstrings():
+    import ctypes
     from temboardui.toolkit.proctitle import reverse_find_nulstring
 
-    segment = b'\x00string0\x00string1\x00'
-    bytes_ = ((0xbebed0d0, b) for b in reversed(segment))
-    iterator = reverse_find_nulstring(bytes_)
+    data = b'\x00string0\x00string1\x00'
+    buf = ctypes.create_string_buffer(data)
+    address_of_nul = ctypes.addressof(buf) + len(data)
+    iterator = reverse_find_nulstring(address_of_nul, limit=len(data)+1)
     out = [b for _, b in iterator]
     wanted = ['string1', 'string0']
     assert wanted == out
 
 
-def test_find_stack_segment():
+def test_find_stack_address_and_size():
     from temboardui.toolkit.proctitle import find_stack_segment_from_maps
 
     lines = dedent("""\
@@ -79,48 +82,42 @@ def test_find_stack_segment():
     7fff737f9000-7fff737fb000 r--p 00000000 00:00 0                          [vvar]
     """).splitlines(True)  # noqa
 
-    start, end = find_stack_segment_from_maps(lines)
+    start, size = find_stack_segment_from_maps(lines)
     assert 0x7fff737c3000 == start
-    assert 0x7fff737e5000 == end
+    assert 0x7fff737e5000 - 0x7fff737c3000 == size
 
     with pytest.raises(Exception):
         find_stack_segment_from_maps(lines=[])
 
 
-def test_find_argv_from_procmaps_mod(mocker):
+def test_find_argv_in_stack_module(mocker):
     mod = 'temboardui.toolkit.proctitle'
-    fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
-    mocker.patch(mod + '.reverse_walk_memory', autospec=True)
     rfn = mocker.patch(mod + '.reverse_find_nulstring', autospec=True)
 
-    from temboardui.toolkit.proctitle import find_argv_memory_from_maps
+    from temboardui.toolkit.proctitle import find_argv_in_stack
 
-    fss.return_value = 0xdeb, 0xf1
     rfn.return_value = reversed([
-        # This is the nul-terminated of string in stack segment.
+        # This is the list of nul-terminated string in stack segment.
         (0xbad, 'garbadge'),
         (0x1c1, 'python'),
         (0xbad, '-m'),
-        (0xbad, 'temboard.script.tool'),
+        (0xbad, 'main.module'),
         (0xbad, 'LC_ALL=fr_FR.UTF-8'),
         (0xbad, '/usr/lib/python3.6/site-packages/...'),
     ])
 
-    argv = ['python', '-m', 'temboard.script.tool']
+    argv = ['python', '-m', 'main.module']
     env = dict(LC_ALL='fr_FR.UTF-8')
-    _, address = find_argv_memory_from_maps(maps=None, argv=argv, environ=env)
+    _, address = find_argv_in_stack(0xdead, 0x514e, argv, environ=env)
     assert 0x1c1 == address
 
 
-def test_find_argv_from_procmaps_command_string(mocker):
+def test_find_argv_in_stack_command_string(mocker):
     mod = 'temboardui.toolkit.proctitle'
-    fss = mocker.patch(mod + '.find_stack_segment_from_maps', autospec=True)
-    mocker.patch(mod + '.reverse_walk_memory', autospec=True)
     rfn = mocker.patch(mod + '.reverse_find_nulstring', autospec=True)
 
-    from temboardui.toolkit.proctitle import find_argv_memory_from_maps
+    from temboardui.toolkit.proctitle import find_argv_in_stack
 
-    fss.return_value = 0xdeb, 0xf1
     rfn.return_value = reversed([
         # This is the nul-terminated of string in stack segment.
         (0xbad, 'garbadge'),
@@ -133,7 +130,7 @@ def test_find_argv_from_procmaps_command_string(mocker):
 
     argv = ['python', '-c', '__COMMAND_STRING__']
     env = dict(LC_ALL='fr_FR.UTF-8')
-    _, address = find_argv_memory_from_maps(maps=None, argv=argv, environ=env)
+    _, address = find_argv_in_stack(0, 0, argv=argv, environ=env)
     assert 0x1c1 == address
 
 
