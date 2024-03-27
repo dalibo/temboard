@@ -76,21 +76,15 @@ def find_argv_memory_from_pythonapi():  # pragma: nocover
     # http://docs.cherrypy.org/en/latest/_modules/cherrypy/process/wspbus.html
 
     # Allocate variable to point to argv
-    argv = ctypes.POINTER(ctypes.c_wchar_p)()
+    arga = ctypes.POINTER(ctypes.c_wchar_p)()
     argc = ctypes.c_int()
 
     # Get them from CPython API.
-    ctypes.pythonapi.Py_GetArgcArgv(ctypes.byref(argc), ctypes.byref(argv))
+    ctypes.pythonapi.Py_GetArgcArgv(ctypes.byref(argc), ctypes.byref(arga))
 
-    argl = [argv[i] for i in range(argc.value)]
-    fix_argv(argl)
-
-    # Point to first entry of argv.
-    address = ctypes.addressof(argv.contents)
-    # Compute memory segment size, including all NULLs.
-    size = sum(len(arg) for arg in argl) + argc.value
-
-    return argl, address, size
+    # Transform C Array as Python list.
+    argv = [arga[i] for i in range(argc.value)]
+    return fix_argv(argv)
 
 
 def read_byte(address):
