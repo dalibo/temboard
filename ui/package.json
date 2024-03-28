@@ -37,7 +37,7 @@
     "postcss": "^8.4.16",
     "prettier": "^3.0.3",
     "sass": "^1.54.5",
-    "vite": "^3.0.7"
+    "vite": "^3.2.10"
   },
   "lint-staged": {
     "*.{js,css,vue}": "prettier --write"
