@@ -164,7 +164,7 @@ release-notes:  #: Extract changes for current release
 
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
-	test -f ui/temboardui/static/manifest.json
+	test -f ui/temboardui/static/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel --universal
 	twine check --strict \
 		agent/dist/temboard-agent-$(VERSION).tar.gz \

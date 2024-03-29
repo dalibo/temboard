@@ -4,7 +4,7 @@ import { useFullscreen } from "@vueuse/core";
 import _ from "lodash";
 import moment from "moment";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router/composables";
+import { useRoute, useRouter } from "vue-router";
 
 import InstanceCard from "../components/home/InstanceCard.vue";
 

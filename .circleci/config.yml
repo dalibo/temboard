@@ -98,7 +98,7 @@ workflows:
 
 jobs:
   static:
-    docker: [{image: node:16}]
+    docker: [{image: node:20}]
     working_directory: &working_directory /workspace
     steps:
     - checkout
@@ -182,7 +182,7 @@ jobs:
           paths: ["~/.cache/pip/"]
 
   lint-js:
-    docker: [image: node:16]
+    docker: [image: node:20]
     working_directory: *working_directory
     steps:
       - checkout
