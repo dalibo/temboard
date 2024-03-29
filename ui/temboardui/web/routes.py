@@ -125,6 +125,11 @@ def instance_about():
     return render_template(
         'instance-about.html',
         instance=g.instance,
+        instance_name=g.instance.__str__(),
+        pg_data=g.instance.pg_data,
+        pg_version_summary=g.instance.pg_version_summary,
+        discover=g.instance.discover,
+        groups=[group.group_name for group in g.instance.groups],
         nav=True,
         role=g.current_user,
         vitejs=app.vitejs,

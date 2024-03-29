@@ -27,6 +27,7 @@ export default defineConfig({
       input: {
         "alerting.checks": "/alerting.checks.js",
         "alerting.check": "/alerting.check.js",
+        "instance.about": "/instance.about.js",
         "settings.about": "/settings.about.js",
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",

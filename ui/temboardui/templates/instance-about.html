@@ -3,129 +3,15 @@
 {% block title %}temBoard / {{instance}} / About{% endblock %}
 
 {% block content %}
-<div class="text-center mt-4">
-  <h1>{{ instance }} <span class="align-top badge badge-secondary">{{ instance.groups[0].group_name }}</span></h1>
-  {% if instance.groups|length > 1 %}
-  <h3>
-    {% for group in instance.groups %}
-    <span class="badge badge-secondary">{{ group.group_name }}</span>
-    {% endfor %}
-  </h3>
-  {% endif %}
-  <h2 class="text-secondary pb-4 mb-4">{{ instance.pg_version_summary }} serving {{ instance.pg_data }}.</h2>
+<div id="app">
+  <instance-about
+    instance_name='{{instance_name}}'
+    pg_version_summary='{{pg_version_summary}}'
+    pg_data='{{pg_data}}'
+    :groups='{{groups | tojson}}'
+    :discover='{{discover | tojson}}'
+    >
+  </instance-about>
 </div>
-
-{# Default if discover is None, this happen in development mode only. #}
-{% set discover = instance.discover or dict(postgres={}, temboard={}, system={}) %}
-<table class="table table-sm w-100 mt-4 mx-auto" style="max-width: 1000px;">
-  {% set d = discover['postgres'] %}
-  <thead class="thead-light">
-    <tr>
-      <th colspan="2">
-        <h3 class="m-1">PostgreSQL <span class="align-middle badge badge-secondary">{{ d.get('cluster_name', '') }}</span></h3>
-      </th>
-    </tr>
-  </thead>
-  <tbody class="postgres">
-    <tr>
-      <td>Full version</td>
-      <td>
-        <pre class="version">{{ (d.get('version') or 'Unknown').replace(', ', '\n') }}</pre>
-      </td>
-    </tr>
-    {% set settings = ['listen_address', 'max_connections', 'data_checksums'] %}
-    {% for setting in settings %}
-    {% if setting in d %}
-    <tr>
-      <td><tt>{{ setting }}</tt></td>
-      <td>
-        {% set value = d[setting] %}
-        {% if value is sameas true or value is sameas false %}
-        <i class="fa {{ 'fa-check' if value else 'fa-times' }}"></i>
-        {% else %}
-        <pre>{{ value }}</pre>
-        {% endif %}
-      </td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-  </tbody>
-
-  {% set d = discover['system'] %}
-  <thead class="thead-light">
-    <tr>
-      <th colspan="2">
-        <h3 class="m-1">{{ d.get('distribution', 'System') }}</h3>
-      </th>
-    </tr>
-  </thead>
-  <tbody class="system">
-    {% if 'cpu_model' in d %}
-    <tr>
-      <td>CPU</td>
-      <td><tt>{{ d['cpu_count'] }} x {{ d['cpu_model'] }}</tt></td>
-    </tr>
-    {% endif %}
-    {% if 'memory' in d %}
-    <tr>
-      <td>Memory</td>
-      <td><tt>{{ '%.2f' % (d['memory'] / 1024 / 1024 / 1024) }} GiB</tt></td>
-    </tr>
-    {% endif %}
-    {% if 'swap' in d %}
-    <tr>
-      <td>Swap</td>
-      <td><tt>{{ '%.2f' % (d['swap'] / 1024 / 1024 / 1024) }} GiB</tt></td>
-    </tr>
-    {% endif %}
-    <tr>
-      <td>Kernel</td>
-      <td><tt>{{ d.get('os', 'Linux') }} {{ d.get('os_version', '') }}</tt></td>
-    </tr>
-  </tbody>
-  {% set d = discover['temboard'] %}
-  <thead class="thead-light">
-    <tr>
-      <th colspan="2">
-        <h3 class="m-1">temBoard Agent {{ d.get('agent_version', '') }}</h3>
-      </th>
-    </tr>
-  </thead>
-  <tbody class="temboard">
-    {% if 'plugins' in d %}
-    <tr>
-      <td>Plugins</td>
-      <td>
-        <ul class="list-inline plugins">
-          {% for plugin in d['plugins'] %}
-          <li class="list-inline-item {{ plugin }}" style="font-size: 135%;"><span class="badge badge-light">{{ plugin }}</span></li>
-          {% endfor %}
-        </ul>
-      </td>
-    </tr>
-    {% endif %}
-    {% if 'configfile' in d %}
-    <tr>
-      <td>Configuration file</td>
-      <td><tt>{{ d['configfile'] }}</tt></td>
-    </tr>
-    {% endif %}
-    {% if 'python_version' in d %}
-    <tr>
-      <td>Python {{ d['python_version'] }}</td>
-      <td><tt>{{ d['pythonbin'] }}</tt></td>
-    </tr>
-    {% endif %}
-    {% set components = ['psycopg2', 'libpq', 'bottle', 'cyptography'] %}
-    {% for component in components %}
-    {% set key = '%s_version' % component %}
-    {% if key in d %}
-    <tr>
-      <td>{{ component }}</td>
-      <td><tt>{{ d[key] }}</tt></td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-  </tbody>
-</table>
+<script type="module" src="{{ vitejs.url_for('instance.about.js') }}"></script>
 {% endblock %}
