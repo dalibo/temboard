@@ -17,8 +17,9 @@ ui/temboardui/static/css/
 ui/temboardui/static/images/
 ui/temboardui/static/*.js
 ui/temboardui/static/js/
-ui/temboardui/static/fontawesome-webfont.*
+ui/temboardui/static/fontawesome-webfont*
 ui/temboardui/static/manifest.json
+ui/temboardui/static/.vite/
 
 # From dev compose project
 .env

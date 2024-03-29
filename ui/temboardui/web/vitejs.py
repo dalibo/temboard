@@ -25,7 +25,7 @@ class ViteJSExtension:
         app.config["VITEJS"] = uri = os.environ.get("VITEJS", "").rstrip("/")
         if uri and not uri.startswith("http://localhost:"):
             raise Exception("Refusing to delegate to non-localhost ViteJS.")
-        self.manifest_path = self.app.static_folder + "/manifest.json"
+        self.manifest_path = self.app.static_folder + "/.vite/manifest.json"
 
     def read_manifest(self):
         if self.app.config["VITEJS"]:

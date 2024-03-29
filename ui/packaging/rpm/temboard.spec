@@ -71,7 +71,7 @@ if ! [ -v SMOKETEST ] ; then
     exit 0
 fi
 temboard --version
-test -f /usr/lib/python*/site-packages/temboardui/static/manifest.json
+test -f /usr/lib/python*/site-packages/temboardui/static/.vite/manifest.json
 
 %changelog
 * Fri Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1

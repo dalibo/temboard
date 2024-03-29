@@ -27,6 +27,7 @@ exclude package.json
 exclude package-lock.json
 exclude .prettier*
 exclude .husky/*
+exclude .npmrc
 prune docs
 prune packaging/deb
 prune packaging/docker

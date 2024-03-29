@@ -1,15 +1,17 @@
-/* global instances, isAdmin, Vue */
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createApp } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "./views/Home.vue";
 
-Vue.use(VueRouter);
+const router = createRouter({
+  routes: [],
+  history: createWebHistory(),
+});
 
-new Vue({
-  el: "#app",
-  router: new VueRouter(),
+createApp({
   components: {
     home: Home,
   },
-});
+})
+  .use(router)
+  .mount("#app");
