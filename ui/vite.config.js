@@ -20,7 +20,7 @@ export default defineConfig({
   },
   build: {
     manifest: true,
-    outDir: "..",
+    outDir: "../dist",
     emptyOutDir: false,
     assetsDir: ".",
     rollupOptions: {

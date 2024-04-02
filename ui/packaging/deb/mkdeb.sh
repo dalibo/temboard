@@ -100,7 +100,7 @@ apt-get install --yes --no-install-recommends "./$deb"
 (
 	cd /
 	temboard --version
-	test -f /usr/lib/temboard/temboardui/static/.vite/manifest.json
+	test -f /usr/lib/temboard/temboardui/static/dist/.vite/manifest.json
 	test -x /usr/share/temboard/auto_configure.sh
 	test -f /usr/lib/systemd/system/temboard.service
 )

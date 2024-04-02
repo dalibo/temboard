@@ -202,17 +202,17 @@ def finalize_tornado_app(tornado_app, config):
         (
             r"/css/(.*)",
             tornado.web.StaticFileHandler,
-            {"path": base_path + "/static/css"},
+            {"path": base_path + "/static/dist/css"},
         ),
         (
             r"/js/(.*)",
             tornado.web.StaticFileHandler,
-            {"path": base_path + "/static/js"},
+            {"path": base_path + "/static/dist/js"},
         ),
         (
             r"/images/(.*)",
             tornado.web.StaticFileHandler,
-            {"path": base_path + "/static/images"},
+            {"path": base_path + "/static/dist/images"},
         ),
         # Path needs a (unused) path parameter, not used by subclass
         # SingleFileHandler.

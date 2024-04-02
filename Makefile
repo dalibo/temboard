@@ -164,7 +164,7 @@ release-notes:  #: Extract changes for current release
 
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
-	test -f ui/temboardui/static/.vite/manifest.json
+	test -f ui/temboardui/static/dist/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel --universal
 	twine check --strict \
 		agent/dist/temboard-agent-$(VERSION).tar.gz \
@@ -177,10 +177,7 @@ static:  #: Build UI browser assets.
 
 clean-static:  #: Clean UI browser assets.
 	rm -vrf \
-		ui/temboardui/static/*.* \
-		ui/temboardui/static/css/ \
-		ui/temboardui/static/images/ \
-		ui/temboardui/static/js/
+		ui/temboardui/static/dist
 
 download-eggs:  #: Download Python eggs from PyPI
 	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
