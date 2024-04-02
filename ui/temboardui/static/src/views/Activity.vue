@@ -1,5 +1,6 @@
 <script setup>
 import { UseClipboard } from "@vueuse/components";
+import { BTable } from "bootstrap-vue-next";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
 import * as _ from "lodash";
@@ -142,18 +143,20 @@ function resume() {
   load();
 }
 
-function doFilter(row) {
-  return (
-    _.includes(selectedStates.value, row.state) &&
-    _.some(_.map(_.values(row), _.upperCase), (v) => _.includes(v, _.upperCase(filter.value)))
-  );
-}
+const filteredSessions = computed(() => {
+  return _.filter(sessions.value, (session) => {
+    return (
+      _.includes(selectedStates.value, session.state) &&
+      _.some(_.map(_.values(session), _.upperCase), (v) => _.includes(v, _.upperCase(filter.value)))
+    );
+  });
+});
 
 function highlight(src) {
   return hljs.highlight(src, { language: "sql" }).value;
 }
 
-function fields() {
+const fields = computed(() => {
   let fields = [
     { label: "", key: "check" },
     { label: "PID", key: "pid", class: "text-right" },
@@ -198,7 +201,7 @@ function fields() {
     },
   ]);
   return fields;
-}
+});
 
 const freezed = computed(() => selectedPids.value.length > 0);
 
@@ -330,16 +333,14 @@ function reset() {
     <!-- Sessions table -->
     <div class="row">
       <div class="col-12">
-        <b-table
+        <BTable
           striped
           small
-          :items="sessions"
-          :fields="fields()"
+          :items="filteredSessions"
+          :fields="fields"
           class="table-query mt-1 small"
           @row-hovered="pause"
           @row-unhovered="!freezed && resume()"
-          filter="null"
-          :filter-function="doFilter"
           sort-by="duration"
           sort-desc
         >
@@ -373,7 +374,7 @@ function reset() {
           <template v-slot:cell(state)="data">
             <span :title="data.value" v-html="truncateState(data.value)"></span>
           </template>
-        </b-table>
+        </BTable>
         <p class="text-center text-muted">Showing 300 longest queries.</p>
       </div>
     </div>

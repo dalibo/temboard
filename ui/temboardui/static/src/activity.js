@@ -1,14 +1,9 @@
-import BootstrapVue from "bootstrap-vue";
-import "bootstrap-vue/dist/bootstrap-vue.css";
-import Vue from "vue";
+import { createApp } from "vue";
 
 import Activity from "./views/Activity.vue";
 
-Vue.use(BootstrapVue);
-
-new Vue({
-  el: "#app",
+createApp({
   components: {
     activity: Activity,
   },
-});
+}).mount("#app");
