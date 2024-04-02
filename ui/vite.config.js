@@ -33,6 +33,7 @@ export default defineConfig({
         },
       },
       input: {
+        dashboard: "/dashboard.js",
         home: "/home.js",
         temboard: "/temboard.js",
       },
