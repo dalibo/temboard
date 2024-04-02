@@ -42,6 +42,8 @@ def create_app(temboard_app):
     app = Flask("temboardui")
     app.config["DEBUG"] = app.config["TESTING"] = "DEBUG" in os.environ
     app.temboard = temboard_app
+    app.static_folder = "static/dist"
+    app.static_url_path = "/static"
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
