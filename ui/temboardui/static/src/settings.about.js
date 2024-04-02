@@ -1,10 +1,9 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import About from "./views/About.vue";
 
-new Vue({
-  el: "#app",
+createApp({
   components: {
     about: About,
   },
-});
+}).mount("#app");
