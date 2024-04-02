@@ -63,6 +63,6 @@ const emit = defineEmits(["chart-rendered"]);
 
 <template>
   <div ref="root">
-    <div style="height: 100%; line-height: 30px" class="text-secondary align-bottom" v-if="!data">No data</div>
+    <div style="height: 100%; line-height: 30px" class="text-secondary align-bottom">No data</div>
   </div>
 </template>
