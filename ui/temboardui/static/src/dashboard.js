@@ -1,10 +1,9 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import Dashboard from "./views/Dashboard.vue";
 
-new Vue({
-  el: "#app",
+createApp({
   components: {
     dashboard: Dashboard,
   },
-});
+}).mount("#app");
