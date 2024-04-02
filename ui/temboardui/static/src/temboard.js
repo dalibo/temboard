@@ -1,16 +1,15 @@
 import "font-awesome/css/font-awesome.css";
-import Vue from "vue";
+import { createApp } from "vue";
 
 import ErrorRow from "./components/ErrorRow.vue";
 import "./temboard.scss";
 
-window.errorApp = new Vue({
-  el: "#errorApp",
+window.errorApp = createApp({
   components: {
     error: ErrorRow,
   },
   template: '<error ref="error"></error>',
-});
+}).mount("#errorApp");
 
 // Error shortcuts
 window.clearError = function () {

@@ -34,6 +34,7 @@ export default defineConfig({
       },
       input: {
         home: "/home.js",
+        temboard: "/temboard.js",
       },
     },
   },
