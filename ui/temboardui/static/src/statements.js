@@ -1,21 +1,19 @@
-import BootstrapVue from "bootstrap-vue";
-import "bootstrap-vue/dist/bootstrap-vue.css";
-import * as _ from "lodash";
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createApp } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
 
 import Statements from "./views/Statements.vue";
 
-const router = new VueRouter();
+const NotFound = { template: "" };
+const router = createRouter({
+  history: createWebHistory(),
+  // at least one route is required, we use a fake one
+  routes: [{ path: "/:pathMatch(.*)*", name: "not-found", component: NotFound }],
+});
 
-Vue.use(VueRouter);
-
-Vue.use(BootstrapVue);
-
-new Vue({
-  el: "#app",
+createApp({
   components: {
     statements: Statements,
   },
-  router,
-});
+})
+  .use(router)
+  .mount("#app");
