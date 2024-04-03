@@ -1,8 +1,7 @@
 <script setup>
 import _ from "lodash";
 import { ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router/composables";
-import draggable from "vuedraggable";
+import { useRoute, useRouter } from "vue-router";
 
 import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 import MonitoringChart from "../components/MonitoringChart.vue";
@@ -301,6 +300,7 @@ function setFromTo(from, to) {
 watch(graphs.value, () => {
   if (route.query.graphs !== graphs.value) {
     router.push({
+      path: route.path,
       query: _.assign({}, route.query, {
         graphs: JSON.stringify(graphs.value),
       }),
@@ -401,47 +401,46 @@ function onFromToUpdate(from_, to_) {
         </div>
       </div>
     </div>
-    <draggable v-model="graphs" handle=".card-header" v-cloak>
-      <div class="card w-100 mb-2" v-for="graph in graphs" :key="graph">
-        <div class="card-header">
-          {{ metrics[graph].title }}
-          <a
-            :href="'#/?graphs=[&quot;' + graph + '&quot;]&start=' + from + '&end=' + to"
-            class="small ml-2"
-            target="_blank"
-            title="Link to this graph."
-            ><i class="fa fa-external-link"></i
-          ></a>
-          <span class="copy"></span>
-          <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph)">
-            <span aria-hidden="true">&times;</span>
-          </button>
+    <div class="card w-100 mb-2" v-for="graph in graphs" :key="graph">
+      <div class="card-header">
+        {{ metrics[graph].title }}
+        <a
+          :href="'#/?graphs=[&quot;' + graph + '&quot;]&start=' + from + '&end=' + to"
+          class="small ml-2"
+          target="_blank"
+          title="Link to this graph."
+          ><i class="fa fa-external-link"></i
+        ></a>
+        <span class="copy"></span>
+        <button type="button" class="close" aria-label="Close" v-on:click="removeGraph(graph)">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="card-body">
+        <div :id="'nodata' + graph" class="nodata-chart text-center d-none alert alert-secondary p-1">
+          No data available
         </div>
-        <div class="card-body">
-          <div :id="'nodata' + graph" class="nodata-chart text-center d-none alert alert-secondary p-1">
-            No data available
-          </div>
-          <div :id="'legend' + graph" class="legend-chart">
-            <div class="row">
-              <div class="col-md-4 col-md-offset-4">
-                <div class="progress">
-                  <div class="progress-bar progress-bar-striped" style="width: 100%">Loading, please wait ...</div>
-                </div>
+        <div :id="'legend' + graph" class="legend-chart">
+          <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped" style="width: 100%">Loading, please wait ...</div>
               </div>
             </div>
           </div>
-          <MonitoringChart
-            :graph="graph"
-            :id="'chart' + graph"
-            :metrics="metrics"
-            :from="from"
-            :to="to"
-            @onZoom="setFromTo"
-          ></MonitoringChart>
-          <div :id="'visibility' + graph" class="visibility-chart"></div>
         </div>
+        <MonitoringChart
+          :graph="graph"
+          :id="'chart' + graph"
+          :metrics="metrics"
+          :from="from"
+          :to="to"
+          @onZoom="setFromTo"
+          v-if="from && to"
+        ></MonitoringChart>
+        <div :id="'visibility' + graph" class="visibility-chart"></div>
       </div>
-    </draggable>
+    </div>
     <div class="text-center w-100">
       <a
         href="#"
