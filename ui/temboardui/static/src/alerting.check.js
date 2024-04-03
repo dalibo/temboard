@@ -1,16 +1,19 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createApp } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
 
 import AlertingCheck from "./views/AlertingCheck.vue";
 
-const router = new VueRouter();
+const NotFound = { template: "" };
+const router = createRouter({
+  history: createWebHistory(),
+  // at least one route is required, we use a fake one
+  routes: [{ path: "/:pathMatch(.*)*", name: "not-found", component: NotFound }],
+});
 
-Vue.use(VueRouter);
-
-new Vue({
-  el: "#app",
+createApp({
   components: {
     alertingCheck: AlertingCheck,
   },
-  router,
-});
+})
+  .use(router)
+  .mount("#app");
