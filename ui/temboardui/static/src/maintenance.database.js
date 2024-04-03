@@ -1,10 +1,9 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import MaintenanceDatabase from "./views/maintenance/Database.vue";
 
-new Vue({
-  el: "#app",
+createApp({
   components: {
     maintenancedatabase: MaintenanceDatabase,
   },
-});
+}).mount("#app");

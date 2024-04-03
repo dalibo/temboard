@@ -1,10 +1,9 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import MaintenanceIndex from "./views/maintenance/Index.vue";
 
-new Vue({
-  el: "#app",
+createApp({
   components: {
     maintenanceindex: MaintenanceIndex,
   },
-});
+}).mount("#app");

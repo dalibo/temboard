@@ -35,9 +35,13 @@ export default defineConfig({
       input: {
         "alerting.check": "/alerting.check.js",
         "alerting.checks": "/alerting.checks.js",
+        "maintenance.database": "/maintenance.database.js",
+        "maintenance.schema": "/maintenance.schema.js",
+        "maintenance.table": "/maintenance.table.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
+        maintenance: "/maintenance.js",
         monitoring: "/monitoring.js",
         temboard: "/temboard.js",
       },
