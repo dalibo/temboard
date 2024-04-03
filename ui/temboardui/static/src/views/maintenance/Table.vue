@@ -609,37 +609,39 @@ fetchData();
                 Reindex
               </button>
               <ul class="list list-unstyled mb-0" v-if="scheduledReindexes.length > 0">
-                <li v-for="scheduledReindex in scheduledReindexes" v-if="scheduledReindex.index == index.name">
-                  <template v-if="scheduledReindex.status == 'todo'">
-                    <em v-if="scheduledReindex.status == 'todo'">
-                      <span class="text-muted" :title="scheduledReindex.datetime.toString()"
-                        ><i class="fa fa-clock-o"></i>&nbsp;
-                        <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">{{
-                          timeAgo
-                        }}</UseTimeAgo></span
+                <template v-for="scheduledReindex in scheduledReindexes">
+                  <li v-if="scheduledReindex.index == index.name">
+                    <template v-if="scheduledReindex.status == 'todo'">
+                      <em v-if="scheduledReindex.status == 'todo'">
+                        <span class="text-muted" :title="scheduledReindex.datetime.toString()"
+                          ><i class="fa fa-clock-o"></i>&nbsp;
+                          <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">{{
+                            timeAgo
+                          }}</UseTimeAgo></span
+                        >
+                      </em>
+                      <button
+                        class="buttonCancel btn btn-link py-0"
+                        v-on:click="cancelReindex(scheduledReindex.id)"
+                        v-if="scheduledReindex.status == 'todo'"
                       >
-                    </em>
-                    <button
-                      class="buttonCancel btn btn-link py-0"
-                      v-on:click="cancelReindex(scheduledReindex.id)"
-                      v-if="scheduledReindex.status == 'todo'"
-                    >
-                      Cancel
-                    </button>
-                  </template>
-                  <template v-else-if="scheduledReindex.status == 'doing'">
-                    <em class="text-muted">
-                      <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
-                      in progress
-                    </em>
-                  </template>
-                  <template v-else-if="scheduledReindex.status == 'canceled'">
-                    <em class="text-muted">canceled</em>
-                  </template>
-                  <template v-else>
-                    <em class="text-muted">{{ scheduledReindex.status }}</em>
-                  </template>
-                </li>
+                        Cancel
+                      </button>
+                    </template>
+                    <template v-else-if="scheduledReindex.status == 'doing'">
+                      <em class="text-muted">
+                        <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
+                        in progress
+                      </em>
+                    </template>
+                    <template v-else-if="scheduledReindex.status == 'canceled'">
+                      <em class="text-muted">canceled</em>
+                    </template>
+                    <template v-else>
+                      <em class="text-muted">{{ scheduledReindex.status }}</em>
+                    </template>
+                  </li>
+                </template>
               </ul>
             </td>
           </tr>
