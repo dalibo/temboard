@@ -1,13 +1,16 @@
 <script setup>
 import { UseClipboard } from "@vueuse/components";
 import { BTable } from "bootstrap-vue-next";
-import hljs from "highlight.js";
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
 import * as _ from "lodash";
 import { computed, ref, watch } from "vue";
 
 import ModalDialog from "../components/ModalDialog.vue";
 import { formatDuration } from "../utils/duration";
+
+hljs.registerLanguage("sql", sql);
 
 let request = null;
 const intervalDuration = 2;
