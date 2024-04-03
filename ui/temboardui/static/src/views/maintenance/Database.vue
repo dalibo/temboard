@@ -264,7 +264,7 @@ function doReindex() {
 function cancelReindex(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/reindex/" + id,
+    url: props.maintenanceBaseUrl + "/reindex/" + id,
     contentType: "application/json",
     success: getScheduledReindexes,
     error: showError,

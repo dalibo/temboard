@@ -143,7 +143,7 @@ function doVacuum() {
 function cancelVacuum(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/vacuum/" + id,
+    url: props.maintenanceBaseUrl + "/vacuum/" + id,
     contentType: "application/json",
     success: getScheduledVacuums,
     error: showError,
@@ -211,7 +211,7 @@ function doAnalyze() {
 function cancelAnalyze(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/analyze/" + id,
+    url: props.maintenanceBaseUrl + "/analyze/" + id,
     contentType: "application/json",
     success: getScheduledAnalyzes,
     error: showError,
@@ -286,7 +286,7 @@ function doReindex() {
 function cancelReindex(id) {
   $.ajax({
     method: "DELETE",
-    url: maintenanceBaseUrl + "/reindex/" + id,
+    url: props.maintenanceBaseUrl + "/reindex/" + id,
     contentType: "application/json",
     success: getScheduledReindexes,
     error: showError,
