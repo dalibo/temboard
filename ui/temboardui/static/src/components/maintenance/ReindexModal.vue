@@ -92,8 +92,8 @@ const emit = defineEmits(["apply"]);
                 </div>
               </div>
             </fieldset>
-            <input type="hidden" name="elementType" v-model="reindexType" />
-            <input type="hidden" v-bind:name="reindexType" v-model="reindexElementName" />
+            <input type="hidden" name="elementType" :value="reindexType" />
+            <input type="hidden" v-bind:name="reindexType" :value="reindexElementName" />
           </form>
         </div>
         <div class="modal-footer">
