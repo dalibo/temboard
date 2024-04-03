@@ -1,10 +1,10 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import MaintenanceSchema from "./views/maintenance/Schema.vue";
 
-new Vue({
+createApp({
   el: "#app",
   components: {
     maintenanceschema: MaintenanceSchema,
   },
-});
+}).mount("#app");

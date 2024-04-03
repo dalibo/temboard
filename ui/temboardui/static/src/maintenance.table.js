@@ -1,10 +1,10 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import MaintenanceTable from "./views/maintenance/Table.vue";
 
-new Vue({
+createApp({
   el: "#app",
   components: {
     maintenancetable: MaintenanceTable,
   },
-});
+}).mount("#app");
