@@ -1,10 +1,10 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import AlertingChecks from "./views/AlertingChecks.vue";
 
-new Vue({
+createApp({
   el: "#app",
   components: {
     "alerting-checks": AlertingChecks,
   },
-});
+}).mount("#app");
