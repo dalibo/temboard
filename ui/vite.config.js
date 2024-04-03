@@ -43,6 +43,7 @@ export default defineConfig({
         home: "/home.js",
         maintenance: "/maintenance.js",
         monitoring: "/monitoring.js",
+        statements: "/statements.js",
         temboard: "/temboard.js",
       },
     },

@@ -67,7 +67,7 @@ def test_query(browser, browse_statements, ensure_statements_data):
     browser.select(".main td.query pre.sql").click()
 
     # Ensure full SQL query is detailed an highlighed.
-    browser.select(".main tr.b-table-details pre.hljs")
+    browser.select(".main .b-table tr .detail pre.hljs")
 
 
 @pytest.fixture

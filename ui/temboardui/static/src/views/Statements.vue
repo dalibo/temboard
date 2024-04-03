@@ -1,8 +1,23 @@
 <script setup>
+import {
+  BButton,
+  BCard,
+  BCol,
+  BFormGroup,
+  BFormInput,
+  BInputGroup,
+  BInputGroupAppend,
+  BPagination,
+  BRow,
+  BSpinner,
+  BTable,
+  BTh,
+  BTr,
+} from "bootstrap-vue-next";
 import _ from "lodash";
 import moment from "moment";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router/composables";
+import { useRoute, useRouter } from "vue-router";
 
 import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 import { formatDuration } from "../utils/duration";
@@ -31,37 +46,31 @@ const dateRangePickerEl = ref(null);
 
 const fields = computed(getFields);
 const fromTo = computed(() => "" + from.value + to.value);
-const queryidUserid = computed(() => {
-  return queryid.value, userid.value;
-});
 
 watch(fromTo, fetchData);
-watch(dbid, () => {
-  const newQueryParams = _.assign({}, route.query);
-  if (!dbid.value) {
-    delete newQueryParams.dbid;
-    delete newQueryParams.queryid;
-    delete newQueryParams.userid;
-  } else {
-    newQueryParams.dbid = dbid.value;
-  }
-  router.push({ query: newQueryParams });
-  fetchData();
-});
 
-watch(queryidUserid, () => {
-  const newQueryParams = _.assign({}, route.query);
-  if (!queryid.value) {
-    delete newQueryParams.queryid;
-    delete newQueryParams.userid;
-  } else {
-    newQueryParams.dbid = dbid.value;
-    newQueryParams.queryid = queryid.value;
-    newQueryParams.userid = userid.value;
-  }
-  router.push({ query: newQueryParams });
-  fetchData();
-});
+watch(
+  () => {
+    return [dbid.value, queryid.value, userid.value].join("_");
+  },
+  () => {
+    const newQueryParams = _.assign({}, route.query);
+    if (!dbid.value) {
+      delete newQueryParams.dbid;
+    } else {
+      newQueryParams.dbid = dbid.value;
+    }
+    if (!queryid.value) {
+      delete newQueryParams.queryid;
+      delete newQueryParams.userid;
+    } else {
+      newQueryParams.queryid = queryid.value;
+      newQueryParams.userid = userid.value;
+    }
+    router.push({ query: newQueryParams });
+    fetchData();
+  },
+);
 
 watch(route, (oldVal, newVal) => {
   dbid.value = newVal.query.dbid;
@@ -416,17 +425,17 @@ function onFromToUpdate(from_, to_) {
     </div>
     <div class="row mb-1" v-cloak>
       <div class="col-6 offset-6">
-        <b-form-group label="Filter" label-cols-sm="3" label-align-sm="right" label-for="filterInput" class="mb-0">
-          <b-input-group>
-            <b-form-input v-model="filter" type="search" id="filterInput" placeholder="Type to Search"></b-form-input>
-            <b-input-group-append>
-              <b-button id="buttonClearFilter" :disabled="!filter" @click="filter = ''">Clear</b-button>
-            </b-input-group-append>
-          </b-input-group>
-        </b-form-group>
+        <BFormGroup label="Filter" label-cols-sm="3" label-align-sm="right" label-for="filterInput" class="mb-0">
+          <BInputGroup>
+            <BFormInput v-model="filter" type="search" id="filterInput" placeholder="Type to Search"></BFormInput>
+            <BInputGroupAppend>
+              <BButton id="buttonClearFilter" :disabled="!filter" @click="filter = ''">Clear</BButton>
+            </BInputGroupAppend>
+          </BInputGroup>
+        </BFormGroup>
       </div>
     </div>
-    <b-table
+    <BTable
       striped
       small
       :items="statements"
@@ -444,17 +453,17 @@ function onFromToUpdate(from_, to_) {
     >
       <template v-slot:table-busy>
         <div class="text-center text-danger my-2">
-          <b-spinner class="align-middle"></b-spinner>
+          <BSpinner class="align-middle"></BSpinner>
           <strong>Loading...</strong>
         </div>
       </template>
       <template v-slot:thead-top="data">
-        <b-tr>
-          <b-th :colspan="dbid ? 3 : 2"></b-th>
-          <b-th class="text-center border-left" colspan="2">Time</b-th>
-          <b-th class="text-center border-left" colspan="4">Shared Blocks</b-th>
-          <b-th class="text-center border-left" colspan="2">Temp Blocks</b-th>
-        </b-tr>
+        <BTr>
+          <BTh :colspan="dbid ? 3 : 2"></BTh>
+          <BTh class="text-center border-left" colspan="2">Time</BTh>
+          <BTh class="text-center border-left" colspan="4">Shared Blocks</BTh>
+          <BTh class="text-center border-left" colspan="2">Temp Blocks</BTh>
+        </BTr>
       </template>
       <template v-slot:cell(query)="row">
         <pre
@@ -472,13 +481,13 @@ function onFromToUpdate(from_, to_) {
         </a>
       </template>
       <template v-slot:row-details="row">
-        <b-card class="detail">
-          <b-row class="mb-2">
-            <b-col>
+        <BCard class="detail">
+          <BRow class="mb-2">
+            <BCol>
               <pre class="sql hljs" v-html="highlight(row.item.query)"></pre>
-            </b-col>
-          </b-row>
-        </b-card>
+            </BCol>
+          </BRow>
+        </BCard>
       </template>
       <template v-slot:cell()="data">
         <span v-html="data.value"></span>
@@ -493,17 +502,17 @@ function onFromToUpdate(from_, to_) {
           <span class="text-muted" v-else-if="metas.error">There are errors</span>
         </div>
       </template>
-    </b-table>
+    </BTable>
     <div class="row" v-if="!queryid && !userid">
       <div class="col-6">
-        <b-pagination
+        <BPagination
           v-model="currentPage"
           :total-rows="totalRows"
           :per-page="perPage"
           align="fill"
           size="sm"
           class="my-0"
-        ></b-pagination>
+        ></BPagination>
       </div>
     </div>
   </div>
