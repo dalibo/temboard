@@ -50,7 +50,7 @@ watch(dbid, () => {
 });
 
 watch(queryidUserid, () => {
-  const newQueryParams = _.assign({}, route.query.value);
+  const newQueryParams = _.assign({}, route.query);
   if (!queryid.value) {
     delete newQueryParams.queryid;
     delete newQueryParams.userid;
