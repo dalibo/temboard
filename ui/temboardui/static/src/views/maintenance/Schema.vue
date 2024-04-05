@@ -1,10 +1,15 @@
 <script setup>
 import { UseTimeAgo } from "@vueuse/components";
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/default.css";
 import _ from "lodash";
 import { computed, provide, ref } from "vue";
 
 import MaintenanceReindexModal from "../../components/maintenance/ReindexModal.vue";
 import SizeDistributionBar from "../../components/maintenance/SizeDistributionBar.vue";
+
+hljs.registerLanguage("sql", sql);
 
 let getScheduledReindexesTimeout;
 

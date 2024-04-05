@@ -14,6 +14,9 @@ import {
   BTh,
   BTr,
 } from "bootstrap-vue-next";
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/default.css";
 import _ from "lodash";
 import moment from "moment";
 import { computed, ref, watch } from "vue";
@@ -21,6 +24,8 @@ import { useRoute, useRouter } from "vue-router";
 
 import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
 import { formatDuration } from "../utils/duration";
+
+hljs.registerLanguage("sql", sql);
 
 const router = useRouter();
 const route = useRoute();
@@ -229,7 +234,7 @@ function formatSize(bytes) {
 }
 
 function highlight(src) {
-  return hljs.highlight("sql", src).value;
+  return hljs.highlight(src, { language: "sql" }).value;
 }
 
 function onFiltered(filteredItems) {
