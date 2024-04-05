@@ -4,7 +4,7 @@
 {% block title %}temBoard / {{instance}} / Maintenance / {{database}} / {{schema}} / {{table}}{% end %}
 
 {% block head %}
-<link href="/js/highlightjs/default.css" rel="stylesheet" />
+{% for link in vitejs.css_links_for('maintenance.table.js') %}{% raw link %}{% end %}
 {% end %}
 
 {% block content %}
@@ -26,6 +26,5 @@
   />
 </div>
 
-<script src="/js/highlightjs/highlight.pack.js"></script>
 <script type="module" src="{{ vitejs.url_for('maintenance.table.js') }}"></script>
 {% end %}

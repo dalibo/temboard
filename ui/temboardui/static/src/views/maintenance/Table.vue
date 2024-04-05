@@ -1,5 +1,8 @@
 <script setup>
 import { UseTimeAgo } from "@vueuse/components";
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/default.css";
 import _ from "lodash";
 import { computed, provide, ref } from "vue";
 
@@ -10,6 +13,8 @@ import MaintenanceScheduledReindexes from "../../components/maintenance/Schedule
 import MaintenanceScheduledVacuums from "../../components/maintenance/ScheduledVacuums.vue";
 import SizeDistributionBar from "../../components/maintenance/SizeDistributionBar.vue";
 import MaintenanceVacuumModal from "../../components/maintenance/VacuumModal.vue";
+
+hljs.registerLanguage("sql", sql);
 
 let getScheduledVacuumsTimeout;
 let getScheduledAnalyzesTimeout;
