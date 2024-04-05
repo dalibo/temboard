@@ -1,10 +1,10 @@
 <script setup>
+import { UseClipboard } from "@vueuse/components";
 import hljs from "highlight.js";
 import "highlight.js/styles/default.css";
 import * as _ from "lodash";
 import { computed, ref, watch } from "vue";
 
-import Copy from "../components/Copy.vue";
 import ModalDialog from "../components/ModalDialog.vue";
 import { formatDuration } from "../utils/duration";
 
@@ -357,10 +357,17 @@ function reset() {
             />
           </template>
           <template v-slot:cell(query)="data">
-            <div class="position-relative" @click="copy(data.item.query)">
-              <copy>
-                <pre class="sql hljs" v-html="highlight(data.value)"></pre>
-              </copy>
+            <div class="position-relative clipboard-parent">
+              <UseClipboard v-slot="{ copy, copied }" :legacy="true">
+                <span
+                  class="copy invisible position-absolute top-0 right-0 pr-1 pl-1 bg-secondary text-white rounded"
+                  title="Copy to clipboard"
+                  @click="copy(data.item.query)"
+                >
+                  {{ copied ? "Copied" : "Copy" }}
+                </span>
+              </UseClipboard>
+              <pre class="sql hljs" v-html="highlight(data.value)"></pre>
             </div>
           </template>
           <template v-slot:cell(state)="data">
@@ -395,3 +402,9 @@ function reset() {
     </ModalDialog>
   </div>
 </template>
+
+<style scoped>
+.clipboard-parent:hover .copy {
+  visibility: visible !important;
+}
+</style>
