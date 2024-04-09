@@ -150,7 +150,7 @@ function doFilter(row) {
 }
 
 function highlight(src) {
-  return hljs.highlight("sql", src).value;
+  return hljs.highlight(src, { language: "sql" }).value;
 }
 
 function fields() {
