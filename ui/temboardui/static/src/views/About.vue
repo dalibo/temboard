@@ -21,7 +21,7 @@ function getMetadata() {
           </div>
         </div>
         <div style="position: relative">
-          <UseClipboard v-slot="{ copy, copied }">
+          <UseClipboard v-slot="{ copy, copied }" :legacy="true">
             <button
               id="buttonCopy"
               class="btn btn-light"
