@@ -1,22 +1,13 @@
-import dtbs4 from "datatables.net-bs4";
-// Import only bootstrap4 styling. Importing other styles conflicts, producing
-// weird result.
-import "datatables.net-bs4/css/dataTables.bootstrap4.css";
-import dtbuttons from "datatables.net-buttons-dt";
-import datatables from "datatables.net-dt";
-import Vue from "vue";
+import DataTable from "datatables.net-bs4";
+import "datatables.net-buttons-bs4";
+import { createApp } from "vue";
 
 import DeleteInstanceDialog from "./components/settings/DeleteInstanceDialog.vue";
 import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 import NewInstanceWizard from "./components/settings/NewInstanceWizard.vue";
 import UpdateInstanceDialog from "./components/settings/UpdateInstanceDialog.vue";
 
-datatables(window, $);
-dtbuttons(window, $);
-dtbs4(window, $);
-
-window.app = new Vue({
-  el: "#vue-app",
+createApp({
   components: {
     "delete-instance-dialog": DeleteInstanceDialog,
     "environment-migration-dialog": EnvironmentMigrationDialog,
@@ -25,7 +16,7 @@ window.app = new Vue({
   },
   created() {
     this.$nextTick(() => {
-      var table = $("#tableInstances").DataTable({
+      const table = new DataTable("#tableInstances", {
         lengthChange: false,
         pageLength: 50,
         buttons: [
@@ -42,8 +33,8 @@ window.app = new Vue({
                * Use temBoard UI API instead of datatable export. UI export includes
                * more data and has reordered column.
                */
-              var filter = $("#tableInstances_filter input").val();
-              var url = new URLSearchParams({ filter });
+              const filter = $(".dt-search input", table.table().container()).val();
+              const url = new URLSearchParams({ filter });
               window.location.replace("/settings/instances.csv?" + url.toString());
             },
           },
@@ -51,7 +42,7 @@ window.app = new Vue({
         stateSave: true,
       });
 
-      table.buttons().container().appendTo($("#tableInstances_filter"));
+      table.buttons().container().appendTo($(".dt-search", table.table().container()));
     });
   },
-});
+}).mount("#vue-app");

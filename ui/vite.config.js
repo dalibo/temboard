@@ -39,6 +39,7 @@ export default defineConfig({
         "maintenance.schema": "/maintenance.schema.js",
         "maintenance.table": "/maintenance.table.js",
         "settings.about": "/settings.about.js",
+        "settings.instance": "/settings.instance.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
