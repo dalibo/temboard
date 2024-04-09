@@ -108,7 +108,7 @@ const emit = defineEmits(["submit"]);
       <div class="row">
         <div class="col-sm-12">
           <div class="form-check">
-            <input id="inputNotify" class="form-check-input" type="checkbox" v-model="notify" :disabled="waiting" />
+            <input id="inputNotify" class="form-check-input" type="checkbox" :value="notify" :disabled="waiting" />
             <label for="inputNotify" class="control-label">Notify users of any status alert.</label>
           </div>
         </div>
