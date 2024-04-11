@@ -10,16 +10,19 @@ def user_rick(admin_session, browser_session):
     browser_session.select("a[href='/settings/users']").click()
 
     browser_session.select("#buttonLoadAddUserForm").click()
-    browser_session.select("#inputNewUsername").send_keys("rick")
-    browser_session.select("#inputEmail").send_keys("rick@test.com")
-    browser_session.select("#inputPassword").send_keys("!rick0.@9")
-    browser_session.select("#inputPassword2").send_keys("!rick0.@9")
-    browser_session.select("#inputPhone").send_keys("+33611223344")
-    browser_session.select("button.multiselect").click()
-    browser_session.select("input[value='default']").click()
+    browser_session.select("input[placeholder='Username']").send_keys("rick")
+    browser_session.select(
+        "input[placeholder='Email']").send_keys("rick@test.com")
+    browser_session.select(
+        "input[placeholder='Password']").send_keys("!rick0.@9")
+    browser_session.select(
+        "input[placeholder='Confirm password']").send_keys("!rick0.@9")
+    browser_session.select(
+        "input[placeholder='Phone']").send_keys("+33611223344")
+    browser_session.select("option[value='default']").click()
     browser_session.select("label[for='switchActive']").click()
     browser_session.select("label[for='switchAdmin']").click()
-    browser_session.select("#submitFormAddUser").click()
+    browser_session.select("button[type=submit]").click()
 
 
 def test_create_user(user_rick, browser):
@@ -53,21 +56,23 @@ def test_update_user(user_rick, browser):
         if "rick" in tr.text
     ][0]
     edit_button_rick = filtered_rick_row.find_element(
-        By.CSS_SELECTOR, "td button[data-original-title='Edit']"
+        By.CSS_SELECTOR, "td button[title='Edit']"
     )
     edit_button_rick.click()
 
-    browser.select("#inputNewUsername").clear()
-    browser.select("#inputNewUsername").send_keys("rick0")
-    browser.select("#inputEmail").clear()
-    browser.select("#inputEmail").send_keys("rick@test.me")
-    browser.select("#inputPassword").send_keys("NEW!rick0.@9")
-    browser.select("#inputPassword2").send_keys("NEW!rick0.@9")
-    browser.select("button.multiselect").click()
-    browser.select("input[value='default']").click()
+    browser.select("input[placeholder='Username']").clear()
+    browser.select("input[placeholder='Username']").send_keys("rick0")
+    browser.select("input[placeholder='Email']").clear()
+    browser.select(
+        "input[placeholder='Email']").send_keys("rick@test.me")
+    browser.select(
+        "input[placeholder='Password']").send_keys("NEW!rick0.@9")
+    browser.select(
+        "input[placeholder='Confirm password']").send_keys("NEW!rick0.@9")
+    browser.select("option[value='default']").click()
     browser.select("label[for='switchActive']").click()
     browser.select("label[for='switchAdmin']").click()
-    browser.select("#submitFormUpdateUser").click()
+    browser.select("button[type=submit]").click()
 
     user_rick_line = [
         tr
@@ -99,13 +104,11 @@ def test_delete_user(user_rick, browser):
         if "rick@" in tr.text
     ][0]
     delete_button_rick = filtered_rick_row.find_element(
-        By.CSS_SELECTOR, "td button[data-original-title='Delete']"
+        By.CSS_SELECTOR, "td button[title='Delete']"
     )
     delete_button_rick.click()
 
-    browser.find_element(
-        By.XPATH, "//button[text()='Yes, delete this user']"
-    ).click()
+    browser.select("#buttonDelete").click()
 
     assert len(browser.select_all("#tableUsers tr")) == 2
 
