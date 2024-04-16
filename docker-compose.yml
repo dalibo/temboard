@@ -158,6 +158,11 @@ services:
     - run-stable:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -U postgres -c \"SELECT 'HAS_STATEMENTS' FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pg_stat_statements';\""]
+      interval: 2s
+      timeout: 2s
+      retries: 5
     networks:
       default:
         aliases:
@@ -181,6 +186,9 @@ services:
     - run-stable:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     ports: [2347:2345]
+    depends_on:
+      postgres-stable:
+        condition: service_healthy
     environment:
       TEMBOARD_HOSTNAME: postgres-stable.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
