@@ -9,11 +9,11 @@ We provide a `docker-compose.yml` file to quickly try temBoard with a few Postgr
 You'll need docker compose 1.10+ and docker engine 1.10+.
 
 ``` console
-wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker compose.yml
-docker compose up
+wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker-compose.yml
+docker-compose up
 ```
 
-`docker compose` will launch:
+`docker-compose` will launch:
 
 - a PostgreSQL instance for temboard owns data
 - the temBoard UI
