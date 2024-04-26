@@ -318,7 +318,7 @@ function updateCheck() {
     .success(function () {
       $("#submitFormUpdateCheck").attr("disabled", true);
       $("#modalInfo").html(
-        '<div class="alert alert-success" role="alert">SUCESS: Will be taken into account shortly (next check)</div>',
+        '<div class="alert alert-success" role="alert">SUCCESS: Will be taken into account shortly (next check)</div>',
       );
       hideWaiter();
       window.setTimeout(function () {
