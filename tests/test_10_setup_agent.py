@@ -1,3 +1,4 @@
+import json
 from sh import temboard_agent
 
 from fixtures.utils import retry_fast
@@ -29,6 +30,13 @@ def test_register_command_help(agent_auto_configure, sudo_pguser):
 def test_tasks_run(agent_auto_configure, sudo_pguser):
     out = sudo_pguser('temboard-agent', 'tasks', 'run', '?')
     assert 'vacuum_worker' in out
+
+
+def test_discover_cli(agent_auto_configure, sudo_pguser):
+    out = sudo_pguser('temboard-agent', 'discover')
+    assert 'postgres' in out
+    out = json.loads(out.stdout)
+    assert out['postgres']
 
 
 def test_start(agent):
@@ -64,7 +72,7 @@ def test_proctitle(agent):
                 assert ': worker' in cmdline or ': scheduler' in cmdline
 
 
-def test_discover(agent, agent_env, pg_version):
+def test_discover_http(agent, agent_env, pg_version):
     res = agent.get('/discover')
     res.raise_for_status()
     discover = res.json()
