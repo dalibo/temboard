@@ -301,7 +301,7 @@ function createOrUpdateCharts(data) {
     document.getElementById("chart2"),
     chart2Data,
     Object.assign({}, defaultOptions, {
-      labels: ["time", "Time per sec", "Avg runtime"],
+      labels: ["time", "Total", "Avg"],
       labelsDiv: "legend-chart2",
       axes: {
         y: {
