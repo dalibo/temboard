@@ -45,6 +45,7 @@ def create_user(request):
                     data['new_username'],
                     h_passwd,
                     data['email'],
+                    data['phone'],
                     data['is_active'],
                     data['is_admin'])
     add_user_to_groups(request, data, role)

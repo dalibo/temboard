@@ -40,6 +40,7 @@ def add_role(session,
              role_name,
              role_password,
              role_email,
+             role_phone,
              is_active=True,
              is_admin=False):
     try:
@@ -47,6 +48,7 @@ def add_role(session,
             role_name=str(role_name),
             role_password=str(role_password),
             role_email=str(role_email),
+            role_phone=str(role_phone),
             is_active=is_active,
             is_admin=is_admin)
         session.add(role)
