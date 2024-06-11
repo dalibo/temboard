@@ -1,7 +1,7 @@
 {% autoescape None %}
 {% extends ../../../templates/base.html %}
 
-{% block title %}[{{instance.hostname}}:{{instance.pg_port}}] - Maintenance{% end %}
+{% block title %}temBoard / {{instance}} / Maintenance / {{database}} / {{schema}} / {{table}}{% end %}
 
 {% block head %}
 <link href="/js/highlightjs/default.css" rel="stylesheet" />
