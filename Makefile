@@ -161,6 +161,8 @@ release:  #: Tag and push a new git release.
 	@git tag --annotate --message "Version $(VERSION)" v$(VERSION)
 	@echo Pushing tag to $(REMOTE).
 	@git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+	@echo "Cleaning dist dirs."
+	@rm -rf agent/dist/ ui/dist/
 
 release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
