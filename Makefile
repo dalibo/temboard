@@ -44,13 +44,13 @@ restart-selenium:  #: Restart selenium development container.
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
 	dev/venv-py$*/bin/pip install -U pip   # Upgrade pip to install cryptography
-	dev/venv-py$*/bin/python --version  # pen test
-	dev/venv-py$*/bin/pip --version  # pen test
+	dev/venv-py$*/bin/python --version  # smoke test
+	dev/venv-py$*/bin/pip --version  # smoke test
 
 install-%: venv-%
 	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary
-	dev/venv-py$*/bin/temboard --version  # pen test
-	dev/venv-py$*/bin/temboard-agent --version  # pen test
+	dev/venv-py$*/bin/temboard --version  # smoke test
+	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
 # LTS
 PROMETHEUS_VERSION=2.45.1
