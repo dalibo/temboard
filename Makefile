@@ -153,6 +153,8 @@ release:  #: Tag and push a new git release.
 	@git diff --check @..FETCH_HEAD
 	@echo Checking agent and UI version are same.
 	@grep -Fq "$(VERSION)" agent/temboardagent/version.py
+	@echo Checking version is PEP440 compliant.
+	@pep440deb "$(VERSION)" >/dev/null
 	@echo Creating release commit.
 	@git commit --only --quiet agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
