@@ -46,8 +46,8 @@ workflows:
           parameters:
             codename: [bookworm, bullseye, buster, jammy]
         requires: [stage0-dist]
-    - func: &func
-        name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
+    - e2e: &e2e
+        name: stage2-e2e-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires:
         - stage0-unit-py3.6
         - stage1-pkg-<< matrix.dist >>
@@ -56,33 +56,33 @@ workflows:
             dist: [rockylinux9]
             # Odd version of Postgres for RHEL
             pgversion: ["15"]
-    - func:
-        <<: *func
+    - e2e:
+        <<: *e2e
         matrix:
           parameters:
             dist: [bookworm]
             # Even version of Postgres for Debian
             pgversion: ["16"]
-    - func:
-        <<: *func
+    - e2e:
+        <<: *e2e
         matrix:
           parameters:
             dist: [rockylinux8]
             pgversion: ["13"]
-    - func:
-        <<: *func
+    - e2e:
+        <<: *e2e
         matrix:
           parameters:
             dist: [bullseye]
             pgversion: ["14"]
-    - func:
-        <<: *func
+    - e2e:
+        <<: *e2e
         matrix:
           parameters:
             dist: [centos7]
             pgversion: ["11", "9.6"]
-    - func:
-        <<: *func
+    - e2e:
+        <<: *e2e
         matrix:
           parameters:
             dist: [buster]
@@ -337,7 +337,7 @@ jobs:
         - 'agent/dist/*_all.deb'
         - 'ui/dist/*_amd64.deb'
 
-  func:
+  e2e:
     parameters:
       dist:
         description: "Distribution"
