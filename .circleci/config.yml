@@ -394,13 +394,15 @@ jobs:
           PGVERSION=<< parameters.pgversion >>
           PGVERSION=${PGVERSION%rc*}
           PGVERSION=${PGVERSION%beta*}
-          tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION tests/
+          tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION --junit-xml=tests/results.xml tests/
     - store_artifacts:
         path: /workspace/tests/downloads/
     - store_artifacts:
         path: /workspace/tests/logs/
     - store_artifacts:
         path: /workspace/tests/screenshots/
+    - store_test_results:
+        path: /workspace/tests/results.xml
     - *pip-cache-save
 
   release:
