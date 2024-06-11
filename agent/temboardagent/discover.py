@@ -188,6 +188,8 @@ def collect_postgres(data, conn):
             pass
         elif '8kB' == u:
             v = v * 8 * 1024
+        elif 'MB' == u:
+            v = v * 1024 * 1024
         else:
             raise ValueError("Unsupported unit %s" % u)
         data['postgres'][row['name']] = v
