@@ -9,6 +9,7 @@ Ensure you use consistent title format.
 **UNRELEASED**
 
 - ui: Remove support for 7.x agents.
+- ui: Accept editing an offline instance.
 - Remove python 2.7 support.
 - Remove daemonization. Use nohup or systemd.
 

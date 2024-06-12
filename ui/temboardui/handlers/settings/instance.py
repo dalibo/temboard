@@ -135,14 +135,14 @@ def json_instance(request):
         data = request.json
         validate_instance_data(data)
 
-        instance.discover = data['discover']
-        instance.discover_etag = data['discover_etag']
-        instance.discover_date = utcnow()
-        try:
+        if 'discover' in data:
+            instance.discover = data['discover']
+            instance.discover_etag = data['discover_etag']
+            instance.discover_date = utcnow()
             instance.hostname = data['discover']['system']['fqdn']
             instance.pg_port = data['discover']['postgres']['port']
-        except TypeError as e:
-            logger.debug("No discover for instance: %s", e)
+        else:
+            logger.debug("No discover for instance %s.", instance)
         instance.comment = data['comment']
         instance.notify = data['notify']
         request.db_session.flush()
