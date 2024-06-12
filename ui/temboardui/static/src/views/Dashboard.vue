@@ -503,8 +503,10 @@ onMounted(() => {
     <div class="row justify-content-center">
       <div class="col-xl-6 col-10" v-html="errors"></div>
     </div>
+    <!-- charts row -->
     <div class="row mb-3">
       <div class="col-xl-4 col-12 mb-3 mb-xl-0">
+        <!-- System -->
         <div class="row">
           <div class="col-xl-12 col mb-xl-2">
             <div class="small text-muted text-center">System</div>
@@ -512,88 +514,91 @@ onMounted(() => {
               <span v-if="dashboard.linux_distribution"> {{ dashboard.linux_distribution }} / </span>
               <span id="os_version">{{ osVersion }}</span>
             </div>
-          </div>
-          <div class="row mt-2">
-            <div class="col-6 small text-center">
-              <div class="chart-title">
-                CPU &times; {{ nCpu }}
-                <i id="cpu-info" class="fa fa-info-circle text-muted" data-toggle="tooltip" :title="cpuTooltip"> </i>
+            <div class="row mt-2">
+              <div class="col-6 small text-center">
+                <div class="chart-title">
+                  CPU &times; {{ nCpu }}
+                  <i id="cpu-info" class="fa fa-info-circle text-muted" data-toggle="tooltip" :title="cpuTooltip"> </i>
+                </div>
+                <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>
+                <div class="card-body p-2 chart-small">
+                  <canvas ref="cpuChartEl"></canvas>
+                </div>
               </div>
-              <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>
-              <div class="card-body p-2 chart-small">
-                <canvas ref="cpuChartEl"></canvas>
-              </div>
-            </div>
-            <div class="col-6 small text-center">
-              <div class="chart-title">Memory</div>
-              <div>
-                <span id="total-memory" class="font-weight-bold" v-html="totalMemory"></span>
-                of
-                <span id="memory" class="font-weight-bold">{{ memory }}</span>
-              </div>
-              <div class="card-body p-2 chart-small">
-                <canvas ref="memoryChartEl"></canvas>
+              <div class="col-6 small text-center">
+                <div class="chart-title">Memory</div>
+                <div>
+                  <span id="total-memory" class="font-weight-bold" v-html="totalMemory"></span>
+                  of
+                  <span id="memory" class="font-weight-bold">{{ memory }}</span>
+                </div>
+                <div class="card-body p-2 chart-small">
+                  <canvas ref="memoryChartEl"></canvas>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-xl-12 col">
-          <div class="small text-muted text-center">Postgres</div>
-          <div class="small text-center">
-            <b>
-              <span id="nb_db" v-if="nbDb">
-                {{ nbDb }}
-              </span>
-            </b>
-            Databases -
-            <b id="size" v-if="totalSize">
-              {{ totalSize }}
-            </b>
-            <br />
-            Start Time:
-            <strong id="pg_start_time">
-              <span v-if="dashboard.pg_start_time">
-                <time :datetime="dashboard.pg_start_time">
-                  {{ dashboard.pg_start_time }}
-                </time>
-              </span>
-            </strong>
-          </div>
-          <div class="row mt-2">
-            <div class="col-6 small text-center">
-              <div class="chart-title">Cache Hit Ratio</div>
-              <div id="total-hit" class="font-weight-bold">{{ totalHit }}</div>
-              <div class="card-body p-2 chart-small">
-                <canvas ref="hitRatioChartEl"></canvas>
-              </div>
+        <!-- Postgres -->
+        <div class="row">
+          <div class="col-xl-12 col mb-xl-2">
+            <div class="small text-muted text-center">Postgres</div>
+            <div class="small text-center">
+              <b>
+                <span id="nb_db" v-if="nbDb">
+                  {{ nbDb }}
+                </span>
+              </b>
+              Databases -
+              <b id="size" v-if="totalSize">
+                {{ totalSize }}
+              </b>
+              <br />
+              Start Time:
+              <strong id="pg_start_time">
+                <span v-if="dashboard.pg_start_time">
+                  <time :datetime="dashboard.pg_start_time">
+                    {{ dashboard.pg_start_time }}
+                  </time>
+                </span>
+              </strong>
             </div>
-            <div class="col-6 small text-center">
-              <div class="chart-title">Sessions</div>
-              <div id="total-sessions" class="font-weight-bold">{{ totalSessions }}</div>
-              <div class="card-body p-2 chart-small">
-                <canvas ref="sessionsChartEl"></canvas>
+            <div class="row mt-2">
+              <div class="col-6 small text-center">
+                <div class="chart-title">Cache Hit Ratio</div>
+                <div id="total-hit" class="font-weight-bold">{{ totalHit }}</div>
+                <div class="card-body p-2 chart-small">
+                  <canvas ref="hitRatioChartEl"></canvas>
+                </div>
               </div>
-            </div>
-            <div
-              id="postgres-stopped-msg"
-              style="
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0.9;
-              "
-              class="alert alert-warning border border-warning d-none"
-            >
-              <div class="text-center">
-                <i class="fa fa-exclamation-triangle fa-2x"></i>
-                <br />
-                PostgreSQL instance
-                <br />
-                is unreachable
+              <div class="col-6 small text-center">
+                <div class="chart-title">Sessions</div>
+                <div id="total-sessions" class="font-weight-bold">{{ totalSessions }}</div>
+                <div class="card-body p-2 chart-small">
+                  <canvas ref="sessionsChartEl"></canvas>
+                </div>
+              </div>
+              <div
+                id="postgres-stopped-msg"
+                style="
+                  position: absolute;
+                  width: 100%;
+                  height: 100%;
+                  top: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  opacity: 0.9;
+                "
+                class="alert alert-warning border border-warning d-none"
+              >
+                <div class="text-center">
+                  <i class="fa fa-exclamation-triangle fa-2x"></i>
+                  <br />
+                  PostgreSQL instance
+                  <br />
+                  is unreachable
+                </div>
               </div>
             </div>
           </div>
