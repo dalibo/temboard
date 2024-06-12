@@ -10,6 +10,7 @@ Ensure you use consistent title format.
 
 - ui: Remove support for 7.x agents.
 - Remove python 2.7 support.
+- Remove daemonization. Use nohup or systemd.
 
 
 ## 8.2.1

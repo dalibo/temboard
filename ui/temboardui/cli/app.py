@@ -63,17 +63,6 @@ class TemboardApplication(BaseApplication):
             action=VersionAction,
             help='show version and exit',
         )
-        parser.add_argument(
-            '-d', '--daemon',
-            action='store_true', dest='temboard_daemonize',
-            help="Run in background.",
-        )
-        parser.add_argument(
-            '-p', '--pid-file',
-            action='store', dest='temboard_pidfile',
-            help="PID file.", metavar='PIDFILE',
-        )
-
         # Chain up for sub-commands arguments initialization.
         super().define_arguments(parser)
 
@@ -398,8 +387,6 @@ def list_options_specs():
         default=TemboardApplication.DEFAULT_PLUGINS,
         validator=v.jsonlist,
     )
-    yield OptionSpec(s, 'daemonize', default=False)
-    yield OptionSpec(s, 'pidfile', default='/run/temboard.pid')
     yield OptionSpec(s, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(s, 'port', validator=v.port, default=8888)
     yield OptionSpec(s, 'ssl_cert_file', default=None, validator=v.file_)

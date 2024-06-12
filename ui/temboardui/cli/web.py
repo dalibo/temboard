@@ -1,4 +1,3 @@
-from ..daemon import daemonize
 from ..model import check_schema
 from ..toolkit.app import SubCommand
 from .app import app
@@ -16,8 +15,4 @@ class web(SubCommand):
     def main(self, args):
         check_schema()
         self.app.config.load_signing_key()
-
-        if self.app.config.temboard.daemonize:
-            daemonize(self.app.config.temboard.pidfile, self.app.config)
-
         self.app.webservice.run()

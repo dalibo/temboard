@@ -162,16 +162,6 @@ class TemboardAgentApplication(BaseApplication):
             action=VersionAction,
             help='show version and exit',
         )
-        parser.add_argument(
-            '-d', '--daemon',
-            action='store_true', dest='temboard_daemonize',
-            help="Run in background.",
-        )
-        parser.add_argument(
-            '-p', '--pid-file',
-            action='store', dest='temboard_pidfile',
-            help="PID file.",
-        )
         super().define_arguments(parser)
 
     def init_specs(self, app_specs):
@@ -275,8 +265,6 @@ def list_options_specs():
     # Generate each option specs.
     section = 'temboard'
     yield OptionSpec(section, 'ui_url', validator=v.url)
-    yield OptionSpec(section, 'daemonize', default=False)
-    yield OptionSpec(section, 'pidfile', default='/run/temboard-agent.pid')
     yield OptionSpec(
         section, 'address', default='0.0.0.0', validator=v.address)
     yield OptionSpec(section, 'port', validator=v.port, default=2345)

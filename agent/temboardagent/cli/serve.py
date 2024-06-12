@@ -1,7 +1,6 @@
 import logging
 import os
 
-from ..daemon import daemonize
 from ..plugins.monitoring import db
 from ..toolkit.app import SubCommand
 from ..toolkit.services import ServicesManager
@@ -31,9 +30,6 @@ class Serve(SubCommand):
         self.app.config.load_signing_key()
         self.app.discover.refresh()
         self.app.discover.write()
-
-        if self.app.config.temboard.daemonize:
-            daemonize(self.app.config.temboard.pidfile)
 
         self.app.httpd.services = services = ServicesManager()
         services.add(self.app.worker_pool)

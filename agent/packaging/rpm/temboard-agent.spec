@@ -52,8 +52,6 @@ useradd -M -n -g postgres -o -r -d /var/lib/pgsql -s /bin/bash \
 
 # work directory
 %{__install} -d %{buildroot}/var/lib/temboard-agent/main
-# pidfile directory
-%{__install} -d %{buildroot}/var/run/temboard-agent
 
 %files
 %config(noreplace) %attr(-,postgres,postgres) %{_sysconfdir}/temboard-agent
