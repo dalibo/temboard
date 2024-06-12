@@ -31,12 +31,12 @@ def test_web_register(
     browser.get(ui_url + '/settings/instances')
     port = agent_conf.get('temboard', 'port')
 
-    server, pg_version_col, pgdata, groups, agent = range(1, 6)
+    server, postgres, agent = range(1, 4)
     fmt = "table#tableInstances tr td:nth-child({col})".format
 
+    assert 'default' in browser.select(fmt(col=server)).text
     assert port in browser.select(fmt(col=agent)).text
-    assert pg_version in browser.select(fmt(col=pg_version_col)).text
-    assert 'default' in browser.select(fmt(col=groups)).text
+    assert pg_version in browser.select(fmt(col=postgres)).text
 
 
 def test_about_instance(registered_agent, agent_conf, browser, ui_url):

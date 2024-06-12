@@ -33,13 +33,9 @@
       <thead>
         <tr>
           <th>Server</th>
-          <th>PG Version</th>
-          <th>PG Data</th>
-          <th>Groups</th>
+          <th>PostgreSQL</th>
           <th>Agent</th>
           <th>Notify</th>
-          <th>Comment</th>
-          <th class="no-sort"></th>
           <th class="no-sort"></th>
         </tr>
       </thead>
@@ -47,43 +43,46 @@
       {% for instance in instance_list %}
         <tr>
           <td>
-            <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
-              <i class="fa fa-database"></i>
-              {{instance.hostname}}:{{instance.pg_port}}
-            </a>
-          </td>
-          <td>
-            {{instance.pg_version_summary}}
-            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{instance.pg_version}}">
-              {{instance.pg_version}}
+            <p>
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
+                <i class="fa fa-database"></i>
+                {{instance.hostname}}:{{instance.pg_port}}
+              </a>
+              {% for group in instance.groups %} <span class="badge border text-muted align-middle">{{group.group_name}}</span>{% end %}
+              {% if len(instance.groups) > 1 %}
+                <i
+                  class="fa fa-warning text-warning"
+                  style="cursor: pointer;"
+                  title="Instance in multiple groups. Click for details."
+                  data-toggle="modal"
+                  v-on:click="$refs.environment_migration_dialog.show()">
+                </i>
+              {% end %}
+            </p>
+            {% set comment = instance.comment if instance.comment is not None else '' %}
+            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{comment}}">
+              {{comment}}
             </div>
           </td>
-          <td>{{instance.pg_data}}</td>
           <td>
-            {% for group in instance.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}
-            {% if len(instance.groups) > 1 %}
-              <i
-                class="fa fa-warning text-warning"
-                style="cursor: pointer;"
-                title="Instance in multiple groups. Click for details."
-                data-toggle="modal"
-                v-on:click="$refs.environment_migration_dialog.show()">
-              </i>
-            {% end %}
+            <span title="{{instance.pg_version}}">
+            {{instance.pg_version_summary or 'Unknown'}}
+            </span>
+            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="Data directory">
+              {{instance.pg_data or 'Unknown'}}
+            </div>
           </td>
-          <td class="agent_hostport">
-            {{instance.agent_address}}:{{instance.agent_port}}
+          <td class="agent">
+            <span class="hostport">{{instance.agent_address}}:{{instance.agent_port}}</span>
+            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="Agent version">
+              {% set discover = instance.discover or {} %}
+              temBoard Agent {{discover.get('temboard', {}).get('agent_version', 'unknown')}}
+            </div>
           </td>
           <td class="text-center">
             {% if instance.notify %}
             <i class="fa fa-check"></i>
             {% end %}
-          </td>
-          <td>
-            {% set comment = instance.comment if instance.comment is not None else '' %}
-            <div class="overflow-ellipsis" style="max-width: 100px;" title="{{comment}}">
-              {{comment}}
-            </div>
           </td>
           <td class="text-center">
             <button type="button"
@@ -93,8 +92,6 @@
               title="Edit"
               v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
             ><i class="fa fa-edit"></i></button>
-          </td>
-          <td class="text-center">
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm buttonDelete"
