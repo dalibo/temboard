@@ -36,6 +36,7 @@ tests/downloads/
 tests/logs/
 tests/screenshots/
 tests/workdir/
+tests/results.xml
 
 # Nodejs buildtime files
 node_modules/
