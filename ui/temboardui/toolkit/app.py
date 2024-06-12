@@ -478,7 +478,7 @@ def define_core_arguments(parser, appversion=None):
         help="Configuration file", metavar='CONFIGFILE',
     )
     parser.add_argument(
-        '--debug',
+        '--verbose', '--debug',
         action='store_const', const='temboardui', dest='logging_debug',
         help="Enable verbose messages for temBoard.",
     )
