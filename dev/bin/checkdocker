@@ -8,3 +8,7 @@ if [ "$lowest" == "$max" ]; then
     echo "Unsupported Docker version $current. Please fix develop for this version of Docker." >&2
     exit 1
 fi
+if ! docker compose version >/dev/null; then
+    echo "docker compose not found. Please install docker compose v2." >&2
+    exit 1
+fi
