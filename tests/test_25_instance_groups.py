@@ -12,10 +12,7 @@ def instance_group_prod(browse_settings_instance_groups, browser_session):
     browser_session.select("#buttonLoadAddGroupForm").click()
     browser_session.select("#inputNewGroupname").send_keys("prod")
     browser_session.select("#inputDescription").send_keys("Production")
-    browser_session.select(".multiselect-native-select .btn-group").click()
-    browser_session.select_all(".multiselect-container .dropdown-item")[
-        0
-    ].click()
+    browser_session.select("#selectGroups option").click()
     browser_session.select("button[type=submit]").click()
 
 
@@ -63,7 +60,7 @@ def test_delete_instance_group(instance_group_prod, browser):
         for group in browser.select_all("#tableGroups tbody tr")
     )
     tr.find_element(by=By.CSS_SELECTOR, value="[data-action=delete]").click()
-    browser.select("button[type=submit]").click()
+    browser.select("#buttonDeleteGroup").click()
     assert not any(
         "Production" in group.text
         for group in browser.select_all("#tableGroups tbody tr")

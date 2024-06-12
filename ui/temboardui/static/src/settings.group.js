@@ -7,7 +7,9 @@ import dtbuttons from "datatables.net-buttons-dt";
 import datatables from "datatables.net-dt";
 import Vue from "vue";
 
+import DeleteGroupDialog from "./components/settings/DeleteGroupDialog.vue";
 import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
+import UpdateGroupDialog from "./components/settings/UpdateGroupDialog.vue";
 
 datatables(window, $);
 dtbuttons(window, $);
@@ -17,28 +19,12 @@ window.app = new Vue({
   el: "#vue-app",
   components: {
     "environment-migration-dialog": EnvironmentMigrationDialog,
+    "delete-group-dialog": DeleteGroupDialog,
+    "update-group-dialog": UpdateGroupDialog,
   },
   created() {
     this.$nextTick(() => {
       var table = $("#tableGroups").DataTable({ stateSave: true });
-
-      $("#buttonLoadAddGroupForm").click(function () {
-        $("#GroupModal").modal("show");
-        $("[data-toggle=popover]").popover("hide");
-        load_add_group_form("GroupModal", group_kind);
-      });
-
-      $(document).on("click", "[data-action=edit]", function () {
-        $("#GroupModal").modal("show");
-        $("[data-toggle=popover]").popover("hide");
-        load_update_group_form("GroupModal", group_kind, $(this).data("group_name"));
-      });
-
-      $(document).on("click", "[data-action=delete]", function () {
-        $("#GroupModal").modal("show");
-        $("[data-toggle=popover]").popover("hide");
-        load_delete_group_confirm("GroupModal", group_kind, $(this).data("group_name"));
-      });
     });
   },
 });
