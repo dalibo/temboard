@@ -557,10 +557,6 @@ onMounted(() => {
                   {{ dashboard.pg_start_time }}
                 </time>
               </span>
-              <span v-else-if="dashboard.pg_uptime">
-                <!-- For v7 agent -->
-                <time :datetime="start_time"> {{ dashboard.pg_uptime }} seconds ago </time>
-              </span>
             </strong>
           </div>
           <div class="row mt-2">
