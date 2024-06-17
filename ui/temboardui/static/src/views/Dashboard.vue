@@ -1,4 +1,5 @@
 <script setup>
+import { UseTimeAgo } from "@vueuse/components";
 import { useFullscreen } from "@vueuse/core";
 import { filesize } from "filesize";
 import { computed, onMounted, ref } from "vue";
@@ -554,14 +555,14 @@ onMounted(() => {
                 {{ totalSize }}
               </b>
               <br />
-              Start Time:
-              <strong id="pg_start_time">
-                <span v-if="dashboard.pg_start_time">
-                  <time :datetime="dashboard.pg_start_time">
-                    {{ dashboard.pg_start_time }}
-                  </time>
-                </span>
-              </strong>
+              <span v-if="dashboard.pg_start_time" :title="moment(dashboard.pg_start_time).format('LLLL')">
+                Start Time:
+                <strong id="pg_start_time">
+                  <UseTimeAgo v-slot="{ timeAgo }" :time="dashboard.pg_start_time">
+                    {{ timeAgo }}
+                  </UseTimeAgo>
+                </strong>
+              </span>
             </div>
             <div class="row mt-2">
               <div class="col-6 small text-center">
