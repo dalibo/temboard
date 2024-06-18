@@ -24,7 +24,7 @@ def home(request):
 
 
 @app.route("/about")
-def metadata(request):
+def about(request):
     versions_info = inspect_versions()
     instances = request.db_session.scalar(Instances.count())
     roles = request.db_session.scalar(Roles.count())
@@ -41,6 +41,8 @@ def metadata(request):
         "SQLAlchemy": versions_info['sqlalchemy'],
         "Instances": instances,
         "Users": roles,
+        "SMTP": request.config.notifications.smtp_host is not None,
+        "Twilio": request.config.notifications.twilio_account_sid is not None,
     }
     temboard_version = versions_info['temboard']
 

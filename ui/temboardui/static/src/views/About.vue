@@ -54,7 +54,10 @@ function getMetadata() {
             <div v-for="(value, key) in infos" :key="key">
               <p class="mb-1">
                 <strong>{{ key }}:</strong>
-                <template v-if="key === 'Uptime'">
+                <template v-if="value === true || value === false">
+                  <i class="fa" :class="{ 'fa-check': value, 'fa-times': !value }" :data-value="value"></i>
+                </template>
+                <template v-else-if="key === 'Uptime'">
                   <UseTimeAgo v-slot="{ timeAgo }" :time="value">
                     {{ timeAgo }}
                   </UseTimeAgo>
