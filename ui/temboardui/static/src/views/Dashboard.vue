@@ -9,8 +9,6 @@ const props = defineProps(["config", "instance", "discover", "jdataHistory", "in
 const dashboard = ref(props.initialData);
 const discover = ref(props.discover);
 const errors = ref("");
-const osVersion = ref(props.initialData.os_version);
-const nCpu = ref(props.discover.system.cpu_count);
 const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
 const totalSize = ref(databases ? databases.total_size : null);
@@ -49,12 +47,9 @@ let loadAverageChart;
 let timeRange;
 
 const cpuTooltip = computed(() => {
-  const models = dashboard.value.cpu_models;
-  let r = "";
-  for (const [model, count] of Object.entries(models)) {
-    r += `${count} × ${model}`;
-  }
-  return r;
+  const count = discover.value.system.cpu_count;
+  const model = discover.value.system.cpu_model;
+  return `${count} × ${model}`;
 });
 
 const start_time = computed(() => {
@@ -63,6 +58,7 @@ const start_time = computed(() => {
     return;
   }
   return new Date(new Date() - dashboard.value.pg_uptime * 1000).toISOString();
+  return `${count} × ${model}`;
 });
 
 /*
@@ -518,7 +514,7 @@ onMounted(() => {
             <div class="row mt-2">
               <div class="col-6 small text-center">
                 <div class="chart-title">
-                  CPU &times; {{ nCpu }}
+                  CPU &times; {{ discover.system.cpu_count }}
                   <i id="cpu-info" class="fa fa-info-circle text-muted" data-toggle="tooltip" :title="cpuTooltip"> </i>
                 </div>
                 <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>

@@ -37,19 +37,10 @@ def get_metrics(app, pool=None):
         notifications=dm.get_notifications(app.config),
     ))
 
-    sysinfo = SysInfo()
-
-    cpu_models = [cpu['model_name'] for cpu in sysinfo.cpu_info()['cpus']]
-    cpu_models_counter = {}
-    for elem in cpu_models:
-        cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
-
     res.update(dict(
         hostname=sysdiscover['fqdn'],
         os_version=sysdiscover['os_version'],
         linux_distribution=sysdiscover['distribution'],
-        cpu_models=cpu_models_counter,
-        n_cpu=sysdiscover['cpu_count'],
         timestamp=time.time()
     ))
     return res
