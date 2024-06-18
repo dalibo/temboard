@@ -5,11 +5,12 @@ import { filesize } from "filesize";
 import { computed, onMounted, ref } from "vue";
 
 // FIXME import chart.js and moment
-const props = defineProps(["config", "instance", "jdataHistory", "initialData"]);
+const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
+const discover = ref(props.discover);
 const errors = ref("");
 const osVersion = ref(props.initialData.os_version);
-const nCpu = ref(props.initialData.n_cpu);
+const nCpu = ref(props.discover.system.cpu_count);
 const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
 const totalSize = ref(databases ? databases.total_size : null);
@@ -100,7 +101,6 @@ function refreshDashboard() {
 function updateDashboard(data) {
   /** Update time **/
   osVersion.value = data.os_version;
-  nCpu.value = data.n_cpu;
   memory.value = filesize(data.memory.total * 1000);
   const databases = data["databases"];
   totalSize.value = databases ? databases.total_size : null;
