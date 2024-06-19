@@ -2,6 +2,8 @@ import logging
 
 from .postgres import extract_conninfo_fields
 from .queries import QUERIES
+from . import discover
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,9 @@ class Status:
         self.data["system"]["start_time"] = discover_data["system"][
             "start_time"
         ]
+        # Collect CPU and memory info in case of hotplug.
+        discover.collect_cpu(self.data)
+        discover.collect_memory(self.data)
         return self.data
 
 
