@@ -80,46 +80,6 @@ def get_history_metrics_queue(config):
     ]
 
 
-def get_buffers(conn):
-    dm = DashboardMetrics(conn)
-    return dict(buffers=dm.get_buffers())
-
-
-def get_hitratio(conn):
-    dm = DashboardMetrics(conn)
-    return dict(hitratio=dm.get_hitratio())
-
-
-def get_active_backends(conn):
-    dm = DashboardMetrics(conn)
-    return dict(active_backends=dm.get_active_backends())
-
-
-def get_cpu_usage():
-    dm = DashboardMetrics()
-    return dict(cpu=dm.get_cpu_usage())
-
-
-def get_loadaverage():
-    dm = DashboardMetrics()
-    return dict(loadaverage=dm.get_load_average())
-
-
-def get_memory_usage():
-    dm = DashboardMetrics()
-    return dict(memory=dm.get_memory_usage())
-
-
-def get_hostname(config):
-    sysinfo = SysInfo()
-    return dict(hostname=sysinfo.hostname(config.temboard.hostname))
-
-
-def get_databases(conn):
-    dm = DashboardMetrics(conn)
-    return dict(databases=dm.get_stat_db())
-
-
 class DashboardMetrics:
     conn = None
     config = None
