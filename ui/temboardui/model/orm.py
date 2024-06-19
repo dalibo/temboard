@@ -1,4 +1,6 @@
 import datetime
+import string
+from secrets import choice
 
 from past.builtins import basestring
 from past.utils import old_div
@@ -136,6 +138,12 @@ class ApiKeys(Model):
     comment = Column(UnicodeText)
     cdate = Column(TIMESTAMP(timezone=True))
     edate = Column(TIMESTAMP(timezone=True))
+
+    _SECRET_LETTERS = string.ascii_letters + string.digits + "+/-_"
+
+    @classmethod
+    def generate_secret(cls, length=40):
+        return "".join(choice(cls._SECRET_LETTERS) for _ in range(length))
 
     # See
     # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
