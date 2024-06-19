@@ -151,6 +151,7 @@ def collect_cpu(data):
                 continue
             _, _, model = line.partition("\t: ")
             s['cpu_model'] = model.rstrip()
+            break
 
 
 def collect_memory(data):
