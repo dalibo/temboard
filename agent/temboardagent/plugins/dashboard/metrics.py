@@ -72,10 +72,7 @@ class DashboardMetrics:
         self.conn = conn
 
     def get_buffers(self,):
-        current_time = time.time()
-        current_buffers = self._get_current_buffers()
-        return {'nb': current_buffers,
-                'time': current_time}
+        return {'nb': self._get_current_buffers()}
 
     def get_hitratio(self,):
         return self.conn.queryscalar("""\
@@ -87,10 +84,7 @@ class DashboardMetrics:
         """)
 
     def get_active_backends(self,):
-        current_time = time.time()
-        current_active_backends = self._get_current_active_backends()
-        return {'nb': current_active_backends,
-                'time': current_time}
+        return {'nb': self._get_current_active_backends()}
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()
