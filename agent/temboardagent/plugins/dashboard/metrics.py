@@ -23,9 +23,6 @@ def get_metrics(app, pool=None):
                 max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
                 pg_start_time=dm.get_pg_start_time(),
-                pg_version=pgdiscover['version'],
-                pg_data=pgdiscover['data_directory'],
-                pg_port=pgdiscover['port'],
             ))
 
     sysdiscover = discover['system']
