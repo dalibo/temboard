@@ -54,8 +54,6 @@ def dashboard_collector_worker(app, pool=None):
         app.config.dashboard.history_length
     )
 
-    logger.debug("Done")
-
 
 BATCH_DURATION = 5 * 60  # 5 minutes
 
