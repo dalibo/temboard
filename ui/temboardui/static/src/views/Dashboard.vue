@@ -52,15 +52,6 @@ const cpuTooltip = computed(() => {
   return `${count} × ${model}`;
 });
 
-const start_time = computed(() => {
-  if (!dashboard.value.pg_uptime) {
-    console.error("pg_uptime not set");
-    return;
-  }
-  return new Date(new Date() - dashboard.value.pg_uptime * 1000).toISOString();
-  return `${count} × ${model}`;
-});
-
 /*
  * Call the agent's dashboard API and update the view through
  * updateDashboard() callback.
@@ -95,7 +86,6 @@ function refreshDashboard() {
 }
 
 function updateDashboard(data) {
-  /** Update time **/
   memory.value = filesize(data.memory.total * 1000);
   const databases = data["databases"];
   totalSize.value = databases ? databases.total_size : null;
@@ -550,10 +540,10 @@ onMounted(() => {
                 {{ totalSize }}
               </b>
               <br />
-              <span v-if="dashboard.pg_start_time" :title="moment(dashboard.pg_start_time).format('LLLL')">
+              <span :title="moment(discover.postgres.start_time).format('LLLL')">
                 Start Time:
                 <strong id="pg_start_time">
-                  <UseTimeAgo v-slot="{ timeAgo }" :time="dashboard.pg_start_time">
+                  <UseTimeAgo v-slot="{ timeAgo }" :time="moment(discover.postgres.start_time)">
                     {{ timeAgo }}
                   </UseTimeAgo>
                 </strong>

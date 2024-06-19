@@ -22,7 +22,6 @@ def get_metrics(app, pool=None):
                 active_backends=dm.get_active_backends(),
                 max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
-                pg_start_time=dm.get_pg_start_time(),
             ))
 
     dm = DashboardMetrics()
@@ -125,9 +124,6 @@ class DashboardMetrics:
                 'total_commit': row['total_commit'],
                 'total_rollback': row['total_rollback'],
                 'timestamp': time.time()}
-
-    def get_pg_start_time(self):
-        return self.conn.queryscalar("SELECT pg_postmaster_start_time();")
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
