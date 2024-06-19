@@ -39,8 +39,6 @@ def get_metrics(app, pool=None):
 
     res.update(dict(
         hostname=sysdiscover['fqdn'],
-        os_version=sysdiscover['os_version'],
-        linux_distribution=sysdiscover['distribution'],
         timestamp=time.time()
     ))
     return res

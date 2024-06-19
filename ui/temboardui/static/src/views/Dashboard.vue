@@ -96,7 +96,6 @@ function refreshDashboard() {
 
 function updateDashboard(data) {
   /** Update time **/
-  osVersion.value = data.os_version;
   memory.value = filesize(data.memory.total * 1000);
   const databases = data["databases"];
   totalSize.value = databases ? databases.total_size : null;
@@ -508,8 +507,8 @@ onMounted(() => {
           <div class="col-xl-12 col mb-xl-2">
             <div class="small text-muted text-center">System</div>
             <div class="small text-center">
-              <span v-if="dashboard.linux_distribution"> {{ dashboard.linux_distribution }} / </span>
-              <span id="os_version">{{ osVersion }}</span>
+              {{ props.discover.system.distribution }} /
+              <span id="os_version">{{ props.discover.system.os_version }}</span>
             </div>
             <div class="row mt-2">
               <div class="col-6 small text-center">
