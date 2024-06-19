@@ -25,7 +25,6 @@ def get_metrics(app, pool=None):
                 pg_start_time=dm.get_pg_start_time(),
             ))
 
-    sysdiscover = discover['system']
     dm = DashboardMetrics()
     res.update(dict(
         cpu=dm.get_cpu_usage(),
@@ -35,7 +34,6 @@ def get_metrics(app, pool=None):
     ))
 
     res.update(dict(
-        hostname=sysdiscover['fqdn'],
         timestamp=time.time()
     ))
     return res
