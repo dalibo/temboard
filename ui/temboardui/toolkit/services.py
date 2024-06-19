@@ -112,7 +112,7 @@ class Service:
         self.setup()
 
         try:
-            self.serve()
+            return self.serve()
         except KeyboardInterrupt:
             logger.info("%s interrupted.", self)
             self.teardown()
