@@ -1,7 +1,5 @@
 import logging
-import string
 import sys
-from secrets import choice
 from textwrap import dedent
 
 from ..model import Session
@@ -31,7 +29,7 @@ class Create(SubCommand):
     def main(self, args):
         session = Session()
         key = (
-            ApiKeys.insert(secret=generate_secret(), comment=args.comment)
+            ApiKeys.insert(secret=ApiKeys.generate_secret(), comment=args.comment)
             .with_session(session)
             .scalar()
         )
@@ -101,10 +99,3 @@ class Purge(SubCommand):
             logger.info("Purged %d keys.", count)
         else:
             logger.info("No expired keys to purge.")
-
-
-_SECRET_LETTERS = string.ascii_letters + string.digits + "+/-_"
-
-
-def generate_secret(length=40):
-    return "".join(choice(_SECRET_LETTERS) for _ in range(length))
