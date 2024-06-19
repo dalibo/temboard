@@ -111,7 +111,6 @@ class DashboardMetrics:
             count(datid) as databases,
             pg_size_pretty(sum(pg_database_size(
                 pg_database.datname))::bigint) as total_size,
-            to_char(now(),'HH24:MI') as time,
             sum(xact_commit)::BIGINT as total_commit,
             sum(xact_rollback)::BIGINT as total_rollback
         FROM pg_database
@@ -120,7 +119,6 @@ class DashboardMetrics:
         """)
         return {'databases': row['databases'],
                 'total_size': row['total_size'],
-                'time': row['time'],
                 'total_commit': row['total_commit'],
                 'total_rollback': row['total_rollback'],
                 'timestamp': time.time()}
