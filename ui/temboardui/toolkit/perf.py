@@ -4,6 +4,8 @@ import logging
 import os
 import signal
 
+from . import logfmt
+
 
 logger = logging.getLogger(__name__)
 SC_CLK_TCK = os.sysconf('SC_CLK_TCK')
@@ -40,10 +42,7 @@ class PerfCounters(dict):
         logger.debug("Scheduling perf counters each %s seconds.", self.delay)
 
     def __str__(self):
-        return ' '.join([
-            '%s=%s' % i
-            for i in sorted(self.items())
-        ])
+        return logfmt.format(**self)
 
     def run(self):
         try:

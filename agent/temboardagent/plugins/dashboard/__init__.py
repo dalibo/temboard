@@ -9,6 +9,7 @@ from ...toolkit.utils import utcnow
 
 from . import db
 from . import metrics
+from ...toolkit import logfmt
 
 
 bottle = Bottle()
@@ -43,7 +44,7 @@ def dashboard_collector_worker(app, pool=None):
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)
-    logger.debug(data)
+    logger.debug(logfmt.format(**data))
 
     db.add_metric(
         app.config.temboard.home,
