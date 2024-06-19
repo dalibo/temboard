@@ -11,16 +11,13 @@ from ...inventory import SysInfo
 def get_metrics(app, pool=None):
     res = dict()
     pool = pool or app.postgres.pool()
-    discover = app.discover.ensure_latest()
     for attempt in pool.auto_reconnect():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
-            pgdiscover = discover['postgres']
             res.update(dict(
                 buffers=dm.get_buffers(),
                 hitratio=dm.get_hitratio(),
                 active_backends=dm.get_active_backends(),
-                max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
             ))
 

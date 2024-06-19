@@ -118,7 +118,7 @@ function updateDashboard(data) {
   const active_backends = data.active_backends;
   const nb_active_backends = active_backends ? active_backends.nb : null;
   sessionsChart.data.datasets[0].data[0] = nb_active_backends;
-  sessionsChart.data.datasets[0].data[1] = data["max_connections"] - nb_active_backends;
+  sessionsChart.data.datasets[0].data[1] = discover.value.postgres.max_connections - nb_active_backends;
   sessionsChart.update();
   updateTotalSessions();
 }
