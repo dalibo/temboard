@@ -105,6 +105,8 @@ class DashboardMetrics:
             count(datid) as databases,
             pg_size_pretty(sum(pg_database_size(
                 pg_database.datname))::bigint) as total_size,
+            sum(pg_database_size(pg_database.datname))::bigint
+              AS total_size_bytes,
             sum(xact_commit)::BIGINT as total_commit,
             sum(xact_rollback)::BIGINT as total_rollback
         FROM pg_database
@@ -113,6 +115,8 @@ class DashboardMetrics:
         """)
         return {'databases': row['databases'],
                 'total_size': row['total_size'],
+                'nb': row['databases'],
+                'total_size_bytes': row['total_size_bytes'],
                 'total_commit': row['total_commit'],
                 'total_rollback': row['total_rollback'],
                 'timestamp': time.time()}
@@ -141,7 +145,11 @@ class DashboardMetrics:
         return {'total': mem_total,
                 'free': round(float(mem_free) / float(mem_total) * 100, 1),
                 'active': round(float(mem_active) / float(mem_total) * 100, 1),
-                'cached': round(float(mem_cached) / float(mem_total) * 100, 1)}
+                'cached': round(float(mem_cached) / float(mem_total) * 100, 1),
+                'free_bytes': mem_free,
+                'active_bytes': mem_active,
+                'cached_bytes': mem_cached,
+                }
 
     def _get_cpu_usage_linux(self,):
         cpu_time_snap_0 = self._get_current_cpu_usage_linux()

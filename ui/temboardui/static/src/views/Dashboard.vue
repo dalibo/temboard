@@ -11,6 +11,7 @@ const discover = ref(props.discover);
 const errors = ref("");
 const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
+// total_size is formated by agent. Use total_size_bytes when dropping agent v8.
 const totalSize = ref(databases ? databases.total_size : null);
 const nbDb = ref(databases ? databases.databases : null);
 const loadAverage = ref(props.initialData.loadaverage);
