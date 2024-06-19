@@ -64,7 +64,7 @@ function refreshDashboard() {
     contentType: "application/json",
     success: function (data) {
       errors.value = "";
-      updateDashboard(data, true);
+      updateDashboard(data);
       updateTps([data]);
       updateLoadaverage([data]);
     },
