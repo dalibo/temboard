@@ -13,6 +13,7 @@ const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
 // total_size is formated by agent. Use total_size_bytes when dropping agent v8.
 const totalSize = ref(databases ? databases.total_size : null);
+// Using databases.databases for v8 compat. Use databases.nb later.
 const nbDb = ref(databases ? databases.databases : null);
 const loadAverage = ref(props.initialData.loadaverage);
 const totalMemory = ref(0);
@@ -200,7 +201,8 @@ function computeDelta(a, b, duration) {
   return Math.ceil((a - b) / duration);
 }
 
-let lastDatabasesDatum = {};
+// Track last datum to compute TPS.
+let lastDatum = {};
 
 function updateTps(data) {
   const chart = tpsChart;
@@ -210,30 +212,26 @@ function updateTps(data) {
   const commitData = datasets[0].data;
   const rollbackData = datasets[1].data;
 
+  if (data.length > 1) {
+    // Initial call. Bootstrap first datum.
+    lastDatum = data[0];
+    data.shift();
+  }
+
   let duration;
   for (let i = 0; i < data.length; i++) {
     const datum = data[i];
     const databases = datum.databases;
-    if (!databases) {
-      commitData.push({ x: datum.timestamp * 1000, y: NaN });
-      rollbackData.push({ x: datum.timestamp * 1000, y: NaN });
-      lastDatabasesDatum = {
-        total_commit: NaN,
-        total_rollback: NaN,
-        timestamp: datum.timestamp,
-      };
-    } else {
-      duration = databases.timestamp - lastDatabasesDatum.timestamp;
-      if (duration === 0) {
-        continue;
-      }
-      const deltaCommit = computeDelta(databases.total_commit, lastDatabasesDatum.total_commit, duration);
-      const deltaRollback = computeDelta(databases.total_rollback, lastDatabasesDatum.total_rollback, duration);
-
-      commitData.push({ x: databases.timestamp * 1000, y: deltaCommit });
-      rollbackData.push({ x: databases.timestamp * 1000, y: deltaRollback });
-      lastDatabasesDatum = databases;
+    duration = datum.timestamp - lastDatum.timestamp;
+    if (duration === 0) {
+      continue;
     }
+    const deltaCommit = computeDelta(databases.total_commit, lastDatum.databases.total_commit, duration);
+    const deltaRollback = computeDelta(databases.total_rollback, lastDatum.databases.total_rollback, duration);
+
+    commitData.push({ x: datum.timestamp * 1000, y: deltaCommit });
+    rollbackData.push({ x: datum.timestamp * 1000, y: deltaRollback });
+    lastDatum = datum;
   }
 
   tpsCommit.value = commitData[commitData.length - 1].y;

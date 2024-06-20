@@ -115,8 +115,7 @@ class DashboardMetrics:
                 'nb': row['databases'],
                 'total_size_bytes': row['total_size_bytes'],
                 'total_commit': row['total_commit'],
-                'total_rollback': row['total_rollback'],
-                'timestamp': time.time()}
+                'total_rollback': row['total_rollback']}
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
