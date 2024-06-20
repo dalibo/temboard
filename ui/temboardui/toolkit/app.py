@@ -309,7 +309,7 @@ class BaseApplication:
         return old_plugins
 
     def reload(self):
-        logger.warning("Reloading configuration.")
+        logger.info("Reloading configuration.")
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
@@ -318,7 +318,7 @@ class BaseApplication:
         self.config.load(reload_=True, **self.config_sources)
 
         self.apply_config()
-        logger.info("Configuration reloaded.")
+        logger.debug("Configuration reloaded.")
         return self
 
     def setup_logging(self):
