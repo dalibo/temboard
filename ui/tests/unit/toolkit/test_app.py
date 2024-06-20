@@ -248,7 +248,7 @@ def test_reload(mocker):
     from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
-    app.config = mocker.Mock(name='config')
+    app.config = mocker.MagicMock(name='config')
     app.config.temboard.configfile = 'pouet.conf'
     app.reload()
 

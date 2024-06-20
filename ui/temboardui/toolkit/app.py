@@ -313,9 +313,11 @@ class BaseApplication:
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
-        self.read_file(parser, self.config.temboard.configfile)
-        self.read_dir(parser, self.config.temboard.configfile + '.d')
+        configfile = self.config.temboard.configfile
+        self.read_file(parser, configfile)
+        self.read_dir(parser, configfile + '.d')
         self.config.load(reload_=True, **self.config_sources)
+        self.config['temboard']['configfile'] = configfile
 
         self.apply_config()
         logger.debug("Configuration reloaded.")
