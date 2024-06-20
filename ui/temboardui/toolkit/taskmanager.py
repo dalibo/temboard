@@ -16,10 +16,9 @@ from select import error as SelectError
 from select import select
 from textwrap import dedent
 
-from . import proctitle
+from . import proctitle, syncio
 from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
-from .services import Service
 
 TM_DEF_LISTENER_ADDR = "/tmp/.temboardsched.sock"
 
@@ -433,16 +432,34 @@ class Scheduler:
                 return Message(MSG_TYPE_ERROR, "Unvalid type")
 
 
-class SchedulerService(Service):
-    # Adapter from taskmanager.Scheduler to Service
+class SchedulerService(syncio.Service):
+    # Adapter from taskmanager.Scheduler for services.run()
 
-    def __init__(self, task_queue, event_queue, **kw):
-        super().__init__(**kw)
+    name = "scheduler"
+
+    def __init__(self, app, task_queue, event_queue):
+        super().__init__(app)
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.scheduler = None
         self.task_list_engine = None
+        # For services.run
+        self.perf = PerfCounters.setup(service=self.name)
 
+    # interface for services.run
+    def setup(self):
+        if os.path.exists(self.scheduler.address):
+            os.unlink(self.scheduler.address)
+
+        self.scheduler.setup()
+        if self.perf:
+            self.perf.run()
+
+    # interface for syncio.Loop
+    def accept(self):
+        self.scheduler.serve1()
+
+    # interface for toolkit.app
     def apply_config(self):
         # Setup scheduler as soon as configuration is loaded, before
         # plugins, so that tasklist is created before plugins.
@@ -456,19 +473,7 @@ class SchedulerService(Service):
             self.scheduler.task_list_engine = self.task_list_engine
             self.scheduler.setup_task_list()
 
-    def setup(self):
-        if os.path.exists(self.scheduler.address):
-            os.unlink(self.scheduler.address)
-
-        self.scheduler.setup()
-
-    def serve1(self):
-        self.scheduler.serve1()
-
     def add(self, workerset):
-        if not self.is_my_process:
-            return
-
         for task in workerset.list_tasks():
             try:
                 task_from_db = self.scheduler.task_list.get(task.id)
@@ -527,6 +532,7 @@ class WorkerPool:
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.workers = {}
+        # For service.run()
         self.perf = None
 
     def _abort_job(self, task_id):
@@ -552,6 +558,7 @@ class WorkerPool:
     def setup(self):
         if self.perf:
             self.perf["fork"] = 0
+            self.perf.run()
 
     def add(self, worker):
         if worker["name"] in self.workers:
@@ -771,23 +778,37 @@ class WorkerSet(list):
                 yield task
 
 
-class WorkerPoolService(Service):
+class WorkerPoolService(syncio.Service):
     # Adapter from taskmanager.WorkerPool to Service
 
-    def __init__(self, task_queue, event_queue, **kw):
-        super().__init__(**kw)
-        self.worker_pool = WorkerPool(task_queue, event_queue)
+    name = "worker pool"
 
+    def __init__(self, app, task_queue, event_queue):
+        super().__init__(app)
+        self.worker_pool = WorkerPool(task_queue, event_queue)
+        # For service.run
+        self.perf = PerfCounters.setup(service=self.name)
+
+    # interface for services.run
     def setup(self):
         self.worker_pool.perf = self.perf
         self.worker_pool.setup()
 
-    def serve1(self):
+    def teardown(self):
+        logger.info("Aborting jobs.")
+        self.worker_pool.abort_jobs()
+
+    # interface for syncio.Loop
+    def accept(self):
         try:
             self.worker_pool.serve1()
         except Exception:
             logger.exception("Unhandled error in worker:")
             logger.error("Not stopping worker process.")
+
+    # interface for toolkit.app
+    def apply_config(self):
+        pass
 
     def create_task_function_app_wrapper(self, function):
         @functools.wraps(function)
@@ -798,9 +819,6 @@ class WorkerPoolService(Service):
         return wrapper
 
     def add(self, workerset):
-        if not self.is_my_process:
-            return
-
         for function in workerset:
             conf = function._tm_worker
             wrapper = self.create_task_function_app_wrapper(function)
@@ -814,11 +832,6 @@ class WorkerPoolService(Service):
             # Add to current workers
             logger.debug("Register worker %s", conf["name"])
             self.worker_pool.add(conf)
-
-    def sigterm_handler(self, *a):
-        logger.info("Aborting jobs on SIGTERM.")
-        self.worker_pool.abort_jobs()
-        super().sigterm_handler(*a)
 
 
 class FlushTasksMixin:

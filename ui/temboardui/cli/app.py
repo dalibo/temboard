@@ -16,12 +16,11 @@ from ..autossl import AutoHTTPSServer
 from ..core import workers
 from ..model import QUERIES
 from ..model import configure as configure_db_session
-from ..toolkit import proctitle, taskmanager
+from ..toolkit import perf, proctitle, taskmanager
 from ..toolkit import validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
 from ..toolkit.configuration import MergedConfiguration, OptionSpec
 from ..toolkit.errors import UserError
-from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
@@ -91,17 +90,17 @@ class TemboardApplication(BaseApplication):
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self, name="worker pool", task_queue=task_queue, event_queue=event_queue
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.worker_pool.add(workers)
         self.services.append(self.worker_pool)
         self.scheduler = taskmanager.SchedulerService(
-            app=self, name="scheduler", task_queue=task_queue, event_queue=event_queue
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.scheduler.add(workers)
         self.services.append(self.scheduler)
 
-        self.webservice = TornadoService(app=self, name="web")
+        self.webservice = TornadoService(self)
 
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(
@@ -260,13 +259,27 @@ def map_pgvars(environ):
     return mapped
 
 
-class TornadoService(Service):
-    def sigchld_handler(self, *a):
-        if self.services:
-            loop = tornado.ioloop.IOLoop.instance()
-            loop.add_callback_from_signal(self.services.check)
+class TornadoService:
+    name = "web"
+
+    def __init__(self, app):
+        self.app = app
+        # Ref to services.BackgroundManager
+        self.background = None
+        # For services.run()
+        self.perf = perf.PerfCounters.setup(service=self.name)
+
+    def __str__(self):
+        return self.name
+
+    # Interface for services.run()
+    def create_loop(self):
+        return tornado.ioloop.IOLoop.instance()
 
     def setup(self):
+        if self.perf:
+            self.perf.run()
+
         flask_app.vitejs.read_manifest()
 
         config = self.app.config
@@ -300,22 +313,40 @@ class TornadoService(Service):
             logger.error("FATAL: " + str(e) + ". Quit")
             sys.exit(3)
 
-    def autoreload_hook(self):
-        if not self.services:
-            return
+        logger.info(
+            "Serving temboardui on http%s://%s:%d",
+            "s" if self.app.config.temboard.ssl_cert_file else "",
+            self.app.config.temboard.address,
+            self.app.config.temboard.port,
+        )
 
-        self.services.stop()
-        try:
-            self.services.check()
-        except UserError as e:
-            logger.debug("%s.", e)
-        self.services.kill()
-        try:
-            self.services.check()
-        except UserError as e:
-            logger.debug("%s.", e)
+        # Automatically reload modified modules (from Tornado's
+        # Application.__init__). This code must be done here *after*
+        # daemonize, because it instanciates ioloop for current PID.
+        if self.app.tornado_app.settings.get("autoreload"):
+            self._setup_autoreload()
+            autoreload.start()
 
-    def iter_template_files(self):
+    def _setup_autoreload(self):
+        autoreload.add_reload_hook(self._autoreload_hook)
+
+        autoreload.watch(self.app.config.temboard.configfile)
+        autoreload.watch(self.app.config.temboard.signing_public_key)
+        autoreload.watch(self.app.config.temboard.signing_private_key)
+        autoreload.watch(flask_app.vitejs.manifest_path)
+
+        for path in self._iter_template_files():
+            autoreload.watch(path)
+
+        for path in QUERIES.iter_files():
+            autoreload.watch(path)
+
+    def _autoreload_hook(self):
+        if self.background:
+            logger.debug("Stopping background service before reloading.")
+            self.background.stop()
+
+    def _iter_template_files(self):
         rootpkg = __import__(__name__)
         rootdir = rootpkg.__path__[0]
         for dirpath, dirnames, filenames in os.walk(rootdir):
@@ -323,36 +354,9 @@ class TornadoService(Service):
                 if filename.endswith(".html"):
                     yield dirpath + "/" + filename
 
-    def serve(self):
-        with self:
-            # Automatically reload modified modules (from Tornado's
-            # Application.__init__). This code must be done here *after*
-            # daemonize, because it instanciates ioloop for current PID.
-            if self.app.tornado_app.settings.get("autoreload"):
-                self.setup_autoreload()
-                autoreload.start()
-
-            logger.info(
-                "Serving temboardui on http%s://%s:%d",
-                "s" if self.app.config.temboard.ssl_cert_file else "",
-                self.app.config.temboard.address,
-                self.app.config.temboard.port,
-            )
-            tornado.ioloop.IOLoop.instance().start()
-
-    def setup_autoreload(self):
-        autoreload.add_reload_hook(self.autoreload_hook)
-
-        autoreload.watch(self.app.config.temboard.configfile)
-        autoreload.watch(self.app.config.temboard.signing_public_key)
-        autoreload.watch(self.app.config.temboard.signing_private_key)
-        autoreload.watch(flask_app.vitejs.manifest_path)
-
-        for path in self.iter_template_files():
-            autoreload.watch(path)
-
-        for path in QUERIES.iter_files():
-            autoreload.watch(path)
+    # Interface for SignalMultiplexer
+    def sighup_handler(self, *a):
+        self.app.reload()
 
 
 class SingleFileHandler(tornado.web.StaticFileHandler):

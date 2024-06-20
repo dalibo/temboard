@@ -2,8 +2,8 @@ import logging
 import os
 
 from ..plugins.monitoring import db
+from ..toolkit import services
 from ..toolkit.app import SubCommand
-from ..toolkit.services import ServicesManager
 from .app import app
 
 logger = logging.getLogger(__name__)
@@ -33,13 +33,4 @@ class Serve(SubCommand):
         self.app.discover.refresh()
         self.app.discover.write()
 
-        self.app.httpd.services = services = ServicesManager()
-        services.add(self.app.worker_pool)
-        services.add(self.app.scheduler)
-
-        logger.info("Starting main process.")
-
-        with services:
-            self.app.httpd.run()
-
-        return 0
+        return services.run(self.app.httpd, self.app.scheduler, self.app.worker_pool)

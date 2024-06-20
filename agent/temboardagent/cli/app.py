@@ -69,21 +69,21 @@ class TemboardAgentApplication(BaseApplication):
         command_name = getattr(args, "command_fullname", "serve")
         command = self.commands[command_name]
 
+        self.httpd = HTTPDService(self)
+
         task_queue = taskmanager.Queue()
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self, name="worker pool", task_queue=task_queue, event_queue=event_queue
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.services.append(self.worker_pool)
         self.worker_pool.add(workers)
 
         self.scheduler = taskmanager.SchedulerService(
-            app=self, name="scheduler", task_queue=task_queue, event_queue=event_queue
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.services.append(self.scheduler)
-
-        self.httpd = HTTPDService(self, name="web")
 
         self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()

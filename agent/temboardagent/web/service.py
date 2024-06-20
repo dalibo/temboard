@@ -7,12 +7,21 @@ from bottle import debug, default_app
 
 from .. import __version__
 from ..errors import UserError
-from ..toolkit.services import Service
+from ..toolkit import syncio
 
 logger = logging.getLogger(__name__)
 
 
-class HTTPDService(Service):
+class HTTPDService(syncio.Service):
+    name = "web"
+
+    def __init__(self, app):
+        self.app = app
+
+    def __str__(self):
+        return self.name
+
+    # for services.run
     def setup(self):
         ServerHandler.server_software = "temBoard-agent/%s" % __version__
 
@@ -60,7 +69,8 @@ class HTTPDService(Service):
             raise UserError(f"Failed to setup SSL: {e}.")
         self.server.timeout = 1
 
-    def serve1(self):
+    # for syncio.Loop
+    def accept(self):
         self.server.handle_request()
 
 
