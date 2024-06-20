@@ -52,7 +52,7 @@ def test_edit_instance(registered_agent, browser, ui_url):
     browser.select("#inputNotify").click()
     comment = browser.select("#inputComment").get_attribute('value')
     assert "Registered by tests." == comment
-    browser.select("#buttonSubmit").click()
+    browser.by_text("Update", "button").click()
 
 
 def test_download_inventory(registered_agent, browser):
