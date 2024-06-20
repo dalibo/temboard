@@ -310,12 +310,12 @@ tests/test_20_register.py::test_web_register PASSED                      [100%]
 $
 ```
 
-`pytests tests/ --help` describes custom options `--pg-version` and
+`pytest tests/ --help` describes custom options `--pg-version` and
 `--selenium`. Take care of the custom pytest report header, it shows which
 temboard and temboard-agent binary is used, the bin directory of PostgreSQL and
 more.
 
-`pytests tests/ --fixtures` describes fixtures defined by tests/conftest.py.
+`pytest tests/ --fixtures` describes fixtures defined by tests/conftest.py.
 Fixtures configure a postgres for monitoring, an agent and the UI in `workdir/`
 prefix. This may help you write a new test.
 
