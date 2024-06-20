@@ -91,6 +91,11 @@ class Browser:
     def select_all(self, selector):
         return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
+    def by_text(self, text, tag_name="*"):
+        return self.webdriver.find_element(
+            by=By.XPATH, value=f"//{tag_name}[contains(text(), {text!r})]"
+        )
+
     def list_download_filenames(self):
         self.webdriver.command_executor._commands["SET_CONTEXT"] = (
             "POST", "/session/$sessionId/moz/context")
