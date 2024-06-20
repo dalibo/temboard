@@ -62,6 +62,12 @@ class Manager(syncio.Service):
         self.sighup = False
         self.provisionner = Provisionner(self.home)
         self.configuration_expiry = None
+        # Set by services.BackgroundManager
+        self.pid = None
+
+    def trigger_reload(self):
+        logger.debug("Triggering Prometheus configuration reload. pid=%s", self.pid)
+        os.kill(self.pid, signal.SIGHUP)
 
     @property
     def home(self):
@@ -102,7 +108,6 @@ class Manager(syncio.Service):
 
         if self.sighup:
             self.sighup = False
-            logger.debug("Prometheus configuration reload requested.")
             self.app.reload()
             self._setup_instances()
 

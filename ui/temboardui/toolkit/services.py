@@ -182,6 +182,7 @@ class BackgroundManager:
                 )
 
     def _save_pid(self, service, pid):
+        service.pid = pid
         self.pids[str(service)] = pid
         if hasattr(service, "pidfile"):
             with open(service.pidfile, "w") as fo:
@@ -190,6 +191,7 @@ class BackgroundManager:
     def _drop_pid(self, name):
         del self.pids[name]
         s = self.services[name]
+        s.pid = None
         if not hasattr(s, "pidfile"):
             return
         if os.path.exists(s.pidfile):

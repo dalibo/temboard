@@ -57,6 +57,7 @@ def create_instance_helper(request, data):
     if "monitoring" in plugins:
         from ...plugins.monitoring import collector as monitoring_collector
 
+        app.prometheus.trigger_reload()
         logger.info("Schedule monitoring collect for agent now.")
         monitoring_collector.defer(
             app, address=data["new_agent_address"], port=data["new_agent_port"]
@@ -180,6 +181,7 @@ def json_delete_instance(request):
     if not data.get("agent_port"):
         raise HTTPError(400, "Agent port field is missing.")
     delete_instance(request.db_session, **data)
+    request.handler.application.temboard_app.prometheus.trigger_reload()
     return {"delete": True}
 
 
