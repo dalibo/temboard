@@ -126,6 +126,17 @@ Javascript and CSS syntax should conform to prettier. It is recommended to
 configure your editor to automatically format on save. CI checks new code with
 prettier.
 
+Make sure to be in ui/ directory to first check if files are already formatted:
+
+``` console
+npx prettier --check .
+
+```
+If necessary, you can then format your file:
+``` console
+npx prettier --write temboardui/static/src/
+```
+
 You can optionally install `husky` pre-commit hooks.
 
 ``` console
