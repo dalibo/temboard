@@ -11,24 +11,16 @@ from ...inventory import SysInfo
 def get_metrics(app, pool=None):
     res = dict()
     pool = pool or app.postgres.pool()
-    discover = app.discover.ensure_latest()
     for attempt in pool.auto_reconnect():
         with attempt() as conn:
             dm = DashboardMetrics(conn)
-            pgdiscover = discover['postgres']
             res.update(dict(
                 buffers=dm.get_buffers(),
                 hitratio=dm.get_hitratio(),
                 active_backends=dm.get_active_backends(),
-                max_connections=pgdiscover['max_connections'],
                 databases=dm.get_stat_db(),
-                pg_start_time=dm.get_pg_start_time(),
-                pg_version=pgdiscover['version'],
-                pg_data=pgdiscover['data_directory'],
-                pg_port=pgdiscover['port'],
             ))
 
-    sysdiscover = discover['system']
     dm = DashboardMetrics()
     res.update(dict(
         cpu=dm.get_cpu_usage(),
@@ -37,19 +29,7 @@ def get_metrics(app, pool=None):
         notifications=dm.get_notifications(app.config),
     ))
 
-    sysinfo = SysInfo()
-
-    cpu_models = [cpu['model_name'] for cpu in sysinfo.cpu_info()['cpus']]
-    cpu_models_counter = {}
-    for elem in cpu_models:
-        cpu_models_counter[elem] = cpu_models_counter.get(elem, 0) + 1
-
     res.update(dict(
-        hostname=sysdiscover['fqdn'],
-        os_version=sysdiscover['os_version'],
-        linux_distribution=sysdiscover['distribution'],
-        cpu_models=cpu_models_counter,
-        n_cpu=sysdiscover['cpu_count'],
         timestamp=time.time()
     ))
     return res
@@ -80,46 +60,6 @@ def get_history_metrics_queue(config):
     ]
 
 
-def get_buffers(conn):
-    dm = DashboardMetrics(conn)
-    return dict(buffers=dm.get_buffers())
-
-
-def get_hitratio(conn):
-    dm = DashboardMetrics(conn)
-    return dict(hitratio=dm.get_hitratio())
-
-
-def get_active_backends(conn):
-    dm = DashboardMetrics(conn)
-    return dict(active_backends=dm.get_active_backends())
-
-
-def get_cpu_usage():
-    dm = DashboardMetrics()
-    return dict(cpu=dm.get_cpu_usage())
-
-
-def get_loadaverage():
-    dm = DashboardMetrics()
-    return dict(loadaverage=dm.get_load_average())
-
-
-def get_memory_usage():
-    dm = DashboardMetrics()
-    return dict(memory=dm.get_memory_usage())
-
-
-def get_hostname(config):
-    sysinfo = SysInfo()
-    return dict(hostname=sysinfo.hostname(config.temboard.hostname))
-
-
-def get_databases(conn):
-    dm = DashboardMetrics(conn)
-    return dict(databases=dm.get_stat_db())
-
-
 class DashboardMetrics:
     conn = None
     config = None
@@ -129,10 +69,7 @@ class DashboardMetrics:
         self.conn = conn
 
     def get_buffers(self,):
-        current_time = time.time()
-        current_buffers = self._get_current_buffers()
-        return {'nb': current_buffers,
-                'time': current_time}
+        return {'nb': self._get_current_buffers()}
 
     def get_hitratio(self,):
         return self.conn.queryscalar("""\
@@ -144,10 +81,7 @@ class DashboardMetrics:
         """)
 
     def get_active_backends(self,):
-        current_time = time.time()
-        current_active_backends = self._get_current_active_backends()
-        return {'nb': current_active_backends,
-                'time': current_time}
+        return {'nb': self._get_current_active_backends()}
 
     def get_cpu_usage(self,):
         sysinfo = SysInfo()
@@ -168,7 +102,8 @@ class DashboardMetrics:
             count(datid) as databases,
             pg_size_pretty(sum(pg_database_size(
                 pg_database.datname))::bigint) as total_size,
-            to_char(now(),'HH24:MI') as time,
+            sum(pg_database_size(pg_database.datname))::bigint
+              AS total_size_bytes,
             sum(xact_commit)::BIGINT as total_commit,
             sum(xact_rollback)::BIGINT as total_rollback
         FROM pg_database
@@ -177,13 +112,10 @@ class DashboardMetrics:
         """)
         return {'databases': row['databases'],
                 'total_size': row['total_size'],
-                'time': row['time'],
+                'nb': row['databases'],
+                'total_size_bytes': row['total_size_bytes'],
                 'total_commit': row['total_commit'],
-                'total_rollback': row['total_rollback'],
-                'timestamp': time.time()}
-
-    def get_pg_start_time(self):
-        return self.conn.queryscalar("SELECT pg_postmaster_start_time();")
+                'total_rollback': row['total_rollback']}
 
     def _get_memory_usage_linux(self,):
         mem_total = 0
@@ -209,7 +141,11 @@ class DashboardMetrics:
         return {'total': mem_total,
                 'free': round(float(mem_free) / float(mem_total) * 100, 1),
                 'active': round(float(mem_active) / float(mem_total) * 100, 1),
-                'cached': round(float(mem_cached) / float(mem_total) * 100, 1)}
+                'cached': round(float(mem_cached) / float(mem_total) * 100, 1),
+                'free_bytes': mem_free,
+                'active_bytes': mem_active,
+                'cached_bytes': mem_cached,
+                }
 
     def _get_cpu_usage_linux(self,):
         cpu_time_snap_0 = self._get_current_cpu_usage_linux()

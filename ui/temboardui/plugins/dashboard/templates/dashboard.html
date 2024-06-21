@@ -13,6 +13,7 @@
       'pgPort': '{{instance.pg_port}}',
       'plugins': {% raw [p.plugin_name for p in instance.plugins] %}
     }"
+    :discover='{% raw json_encode(instance.discover) %}'
     :jdata-history='{% raw history %}'
     :initial-data='{% raw json_encode(dashboard) %}'
   />

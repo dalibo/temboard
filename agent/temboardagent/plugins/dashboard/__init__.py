@@ -9,6 +9,7 @@ from ...toolkit.utils import utcnow
 
 from . import db
 from . import metrics
+from ...toolkit import logfmt
 
 
 bottle = Bottle()
@@ -30,54 +31,9 @@ def dashboard_config():
     )
 
 
-@bottle.get('/live')
-def dashboard_live(pgpool):
-    return metrics.get_metrics(default_app().temboard, pgpool)
-
-
 @bottle.get('/history')
 def dashboard_history():
     return metrics.get_history_metrics_queue(default_app().temboard.config)
-
-
-@bottle.get('/buffers')
-def dashboard_buffers(pgconn):
-    return metrics.get_buffers(pgconn)
-
-
-@bottle.get('/hitratio')
-def dashboard_hitratio(pgconn):
-    return metrics.get_hitratio(pgconn)
-
-
-@bottle.get('/active_backends')
-def dashboard_active_backends(pgconn):
-    return metrics.get_active_backends(pgconn)
-
-
-@bottle.get('/cpu')
-def dashboard_cpu():
-    return metrics.get_cpu_usage()
-
-
-@bottle.get('/loadaverage')
-def dashboard_loadaverage():
-    return metrics.get_loadaverage()
-
-
-@bottle.get('/memory')
-def dashboard_memory():
-    return metrics.get_memory_usage()
-
-
-@bottle.get('/hostname')
-def dashboard_hostname():
-    return metrics.get_hostname(default_app().temboard.config)
-
-
-@bottle.get('/databases')
-def dashboard_databases(pgconn):
-    return metrics.get_databases(pgconn)
 
 
 @workers.register(pool_size=1)
@@ -88,7 +44,7 @@ def dashboard_collector_worker(app, pool=None):
 
     # We don't want to store notifications in the history.
     data.pop('notifications', None)
-    logger.debug(data)
+    logger.debug(logfmt.format(**data))
 
     db.add_metric(
         app.config.temboard.home,
@@ -97,8 +53,6 @@ def dashboard_collector_worker(app, pool=None):
         data,
         app.config.dashboard.history_length
     )
-
-    logger.debug("Done")
 
 
 BATCH_DURATION = 5 * 60  # 5 minutes

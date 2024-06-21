@@ -5,14 +5,15 @@ import { filesize } from "filesize";
 import { computed, onMounted, ref } from "vue";
 
 // FIXME import chart.js and moment
-const props = defineProps(["config", "instance", "jdataHistory", "initialData"]);
+const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
+const discover = ref(props.discover);
 const errors = ref("");
-const osVersion = ref(props.initialData.os_version);
-const nCpu = ref(props.initialData.n_cpu);
 const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
+// total_size is formated by agent. Use total_size_bytes when dropping agent v8.
 const totalSize = ref(databases ? databases.total_size : null);
+// Using databases.databases for v8 compat. Use databases.nb later.
 const nbDb = ref(databases ? databases.databases : null);
 const loadAverage = ref(props.initialData.loadaverage);
 const totalMemory = ref(0);
@@ -48,20 +49,9 @@ let loadAverageChart;
 let timeRange;
 
 const cpuTooltip = computed(() => {
-  const models = dashboard.value.cpu_models;
-  let r = "";
-  for (const [model, count] of Object.entries(models)) {
-    r += `${count} × ${model}`;
-  }
-  return r;
-});
-
-const start_time = computed(() => {
-  if (!dashboard.value.pg_uptime) {
-    console.error("pg_uptime not set");
-    return;
-  }
-  return new Date(new Date() - dashboard.value.pg_uptime * 1000).toISOString();
+  const count = discover.value.system.cpu_count;
+  const model = discover.value.system.cpu_model;
+  return `${count} × ${model}`;
 });
 
 /*
@@ -76,7 +66,7 @@ function refreshDashboard() {
     contentType: "application/json",
     success: function (data) {
       errors.value = "";
-      updateDashboard(data, true);
+      updateDashboard(data);
       updateTps([data]);
       updateLoadaverage([data]);
     },
@@ -98,9 +88,6 @@ function refreshDashboard() {
 }
 
 function updateDashboard(data) {
-  /** Update time **/
-  osVersion.value = data.os_version;
-  nCpu.value = data.n_cpu;
   memory.value = filesize(data.memory.total * 1000);
   const databases = data["databases"];
   totalSize.value = databases ? databases.total_size : null;
@@ -132,7 +119,7 @@ function updateDashboard(data) {
   const active_backends = data.active_backends;
   const nb_active_backends = active_backends ? active_backends.nb : null;
   sessionsChart.data.datasets[0].data[0] = nb_active_backends;
-  sessionsChart.data.datasets[0].data[1] = data["max_connections"] - nb_active_backends;
+  sessionsChart.data.datasets[0].data[1] = discover.value.postgres.max_connections - nb_active_backends;
   sessionsChart.update();
   updateTotalSessions();
 }
@@ -214,7 +201,8 @@ function computeDelta(a, b, duration) {
   return Math.ceil((a - b) / duration);
 }
 
-let lastDatabasesDatum = {};
+// Track last datum to compute TPS.
+let lastDatum = {};
 
 function updateTps(data) {
   const chart = tpsChart;
@@ -224,30 +212,26 @@ function updateTps(data) {
   const commitData = datasets[0].data;
   const rollbackData = datasets[1].data;
 
+  if (data.length > 1) {
+    // Initial call. Bootstrap first datum.
+    lastDatum = data[0];
+    data.shift();
+  }
+
   let duration;
   for (let i = 0; i < data.length; i++) {
     const datum = data[i];
     const databases = datum.databases;
-    if (!databases) {
-      commitData.push({ x: datum.timestamp * 1000, y: NaN });
-      rollbackData.push({ x: datum.timestamp * 1000, y: NaN });
-      lastDatabasesDatum = {
-        total_commit: NaN,
-        total_rollback: NaN,
-        timestamp: datum.timestamp,
-      };
-    } else {
-      duration = databases.timestamp - lastDatabasesDatum.timestamp;
-      if (duration === 0) {
-        continue;
-      }
-      const deltaCommit = computeDelta(databases.total_commit, lastDatabasesDatum.total_commit, duration);
-      const deltaRollback = computeDelta(databases.total_rollback, lastDatabasesDatum.total_rollback, duration);
-
-      commitData.push({ x: databases.timestamp * 1000, y: deltaCommit });
-      rollbackData.push({ x: databases.timestamp * 1000, y: deltaRollback });
-      lastDatabasesDatum = databases;
+    duration = datum.timestamp - lastDatum.timestamp;
+    if (duration === 0) {
+      continue;
     }
+    const deltaCommit = computeDelta(databases.total_commit, lastDatum.databases.total_commit, duration);
+    const deltaRollback = computeDelta(databases.total_rollback, lastDatum.databases.total_rollback, duration);
+
+    commitData.push({ x: datum.timestamp * 1000, y: deltaCommit });
+    rollbackData.push({ x: datum.timestamp * 1000, y: deltaRollback });
+    lastDatum = datum;
   }
 
   tpsCommit.value = commitData[commitData.length - 1].y;
@@ -512,13 +496,13 @@ onMounted(() => {
           <div class="col-xl-12 col mb-xl-2">
             <div class="small text-muted text-center">System</div>
             <div class="small text-center">
-              <span v-if="dashboard.linux_distribution"> {{ dashboard.linux_distribution }} / </span>
-              <span id="os_version">{{ osVersion }}</span>
+              {{ props.discover.system.distribution }} /
+              <span id="os_version">{{ props.discover.system.os_version }}</span>
             </div>
             <div class="row mt-2">
               <div class="col-6 small text-center">
                 <div class="chart-title">
-                  CPU &times; {{ nCpu }}
+                  CPU &times; {{ discover.system.cpu_count }}
                   <i id="cpu-info" class="fa fa-info-circle text-muted" data-toggle="tooltip" :title="cpuTooltip"> </i>
                 </div>
                 <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>
@@ -555,10 +539,10 @@ onMounted(() => {
                 {{ totalSize }}
               </b>
               <br />
-              <span v-if="dashboard.pg_start_time" :title="moment(dashboard.pg_start_time).format('LLLL')">
+              <span :title="moment(discover.postgres.start_time).format('LLLL')">
                 Start Time:
                 <strong id="pg_start_time">
-                  <UseTimeAgo v-slot="{ timeAgo }" :time="dashboard.pg_start_time">
+                  <UseTimeAgo v-slot="{ timeAgo }" :time="moment(discover.postgres.start_time)">
                     {{ timeAgo }}
                   </UseTimeAgo>
                 </strong>
