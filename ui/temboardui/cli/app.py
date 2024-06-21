@@ -128,18 +128,18 @@ class TemboardApplication(BaseApplication):
         return command.main(args)
 
     def apply_config(self):
-        bootstrap_tornado = not hasattr(self, 'tornado_app')
-        if bootstrap_tornado:
-            # For now, just create web app once. One time, we'll be able to
-            # unload plugin routes.
+        firstrun = not hasattr(self, 'tornado_app')
+        if firstrun:
+            # For now, just create web app once.
             self.tornado_app = bootstrap_tornado_app(tornado_app, self.config)
             self.tornado_app.executor = ThreadPoolExecutor(12)
             self.tornado_app.temboard_app = self
 
         super().apply_config()
 
-        finalize_tornado_app(tornado_app, self.config)
-        finalize_flask_app()  # Uses current_app thread local
+        if firstrun:
+            finalize_tornado_app(tornado_app, self.config)
+            finalize_flask_app()  # Uses current_app thread local
 
         self.tornado_app.engine = configure_db_session(self.config.repository)
 
