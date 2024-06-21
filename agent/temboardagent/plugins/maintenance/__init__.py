@@ -253,6 +253,3 @@ class MaintenancePlugin:
     def load(self):
         default_app().mount('/maintenance', bottle)
         self.app.worker_pool.add(workers)
-
-    def unload(self):
-        self.app.worker_pool.remove(workers)
