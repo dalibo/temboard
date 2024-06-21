@@ -484,16 +484,6 @@ class SchedulerService(Service):
             except StorageEngineError as e:
                 logger.error(str(e))
 
-    def remove(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for task in workerset.list_tasks():
-            try:
-                self.scheduler.task_list.rm(task.id)
-            except StorageEngineError as e:
-                logger.error(str(e))
-
     def schedule_task(
             self, worker_name, id=None, options=None, start=None,
             redo_interval=None, expire=3600):
@@ -816,15 +806,6 @@ class WorkerPoolService(Service):
             # Add to current workers
             logger.debug("Register worker %s", conf['name'])
             self.worker_pool.add(conf)
-
-    def remove(self, workerset):
-        if not self.is_my_process:
-            return
-
-        for function in workerset:
-            conf = function._tm_worker
-            logger.debug("Disable worker %s", conf['name'])
-            self.worker_pool.workers.pop(conf['name'], None)
 
     def sigterm_handler(self, *a):
         logger.info("Aborting jobs on SIGTERM.")
