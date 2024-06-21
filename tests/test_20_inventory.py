@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from sh import temboard, ErrorReturnCode
+from sh import ErrorReturnCode, temboard
 
 
 def test_query_agent(ui_auto_configure, agent):
@@ -27,7 +27,8 @@ def test_about_temboard(admin_session, browser, ui_url):
 
 
 def test_web_register(
-        registered_agent, agent_conf, browser, pg_version, ui_url):
+    registered_agent, agent_conf, browser, pg_version, ui_url
+):
     browser.get(ui_url + '/settings/instances')
     port = agent_conf.get('temboard', 'port')
 
@@ -52,6 +53,8 @@ def test_edit_instance(registered_agent, browser, ui_url):
     browser.select("#inputNotify").click()
     comment = browser.select("#inputComment").get_attribute('value')
     assert "Registered by tests." == comment
+    group = browser.select("#divGroups .multiselect-selected-text").text
+    assert group == "default"
     browser.select("#buttonSubmit").click()
 
 
