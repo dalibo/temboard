@@ -34,9 +34,8 @@ def main(*a, **kw):
     # Load sub commands.
     __import__(__package__ + ".cli.apikey")
     __import__(__package__ + ".cli.generate_key")
-    # Don't import prometheus command yet.
-    # Use python -m temboardui.cli.prometheus until 9.0.
     __import__(__package__ + ".cli.migratedb")
+    __import__(__package__ + ".cli.prometheus")
     __import__(__package__ + ".cli.query_agent")
     __import__(__package__ + ".cli.register_instance")
     __import__(__package__ + ".cli.routes")

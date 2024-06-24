@@ -26,6 +26,8 @@
 # - pkill -ef 'temboard: web' -KILL: scheduler and worker pool should stop.
 # - pkill -ef 'temboard: scheduler' -KILL: scheduler is restarted
 # - pkill -ef 'temboard: web' -HUP : all process must reload configuration
+# - pkill -ef 'temboard: prometheus' -KILL: prometheus is restarted.
+# - pkill -e prometheus -KILL: prometheus is restarted.
 # - Tornado autoreload: all processes are restarted.
 #
 # Same for temBoard agent.

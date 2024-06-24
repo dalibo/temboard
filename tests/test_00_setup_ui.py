@@ -119,7 +119,7 @@ def test_proctitle(ui):
             continue
 
         assert cmdline.startswith("temboard: "), cmdline
-        assert ": worker" in cmdline or ": scheduler" in cmdline
+        assert ": web" not in cmdline
 
 
 def test_autossl(ui):

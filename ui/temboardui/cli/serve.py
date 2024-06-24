@@ -14,4 +14,9 @@ class Serve(SubCommand):
         check_schema()
         self.app.config.load_signing_key()
 
-        services.run(self.app.webservice, self.app.scheduler, self.app.worker_pool)
+        services.run(
+            self.app.webservice,
+            self.app.scheduler,
+            self.app.worker_pool,
+            self.app.prometheus,
+        )

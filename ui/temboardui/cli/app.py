@@ -13,6 +13,7 @@ from tornado import autoreload
 from tornado.httpserver import HTTPServer
 from tornado.wsgi import WSGIContainer
 
+from .. import prometheus
 from ..autossl import AutoHTTPSServer
 from ..core import workers
 from ..model import QUERIES
@@ -106,6 +107,10 @@ class TemboardApplication(BaseApplication):
         self.services.append(self.scheduler)
 
         self.webservice = TornadoService(self)
+
+        self.prometheus = prometheus.Manager(app=self)
+        # Not appending prometheus to services, because prometheus does not
+        # need apply_config.
 
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(
