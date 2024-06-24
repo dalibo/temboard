@@ -6,7 +6,6 @@ import logging
 import os
 import pdb
 from codecs import open
-from site import main as refresh_pythonpath
 from textwrap import dedent
 import sys
 from argparse import (
@@ -15,15 +14,6 @@ from argparse import (
     SUPPRESS as SUPPRESS_ARG,
     RawDescriptionHelpFormatter,
 )
-
-try:
-    from pkg_resources import (
-        _initialize_master_working_set as refresh_distributions
-    )
-except ImportError:  # pragma: nocover
-    def refresh_distributions():
-        logger.info("setuptools is too old for plugin hotload.")
-        logger.info("If new plugin can't be found, just restart.")
 
 from .configuration import MergedConfiguration, OptionSpec
 from .log import setup_logging, LastnameFilter
@@ -215,12 +205,11 @@ class BaseApplication:
         if not self.with_plugins:
             return
 
-        old_plugins = self.purge_plugins()
-        new_plugins = self.create_plugins()
-        if new_plugins:
-            logger.debug("Reading new plugins configuration.")
+        plugins = self.create_plugins()
+        if plugins:
+            logger.debug("Reading plugins configuration.")
             self.config.load(**self.config_sources)
-        self.update_plugins(old_plugins=old_plugins)
+        self.load_plugins(plugins)
 
     def find_config_file(self):
         configfile = self.config.temboard.configfile
@@ -273,10 +262,6 @@ class BaseApplication:
             if n not in self.plugins
         ]
 
-        # Refresh sys.path and working_set to ensure new code is loadable.
-        refresh_pythonpath()
-        refresh_distributions()
-
         for name in unloaded_names:
             cls = self.fetch_plugin(name)
             plugin = cls(self)
@@ -285,40 +270,24 @@ class BaseApplication:
 
         return unloaded_names
 
-    def update_plugins(self, old_plugins=None):
-        # Load and unload plugins
-        old_names = set(old_plugins or [])
-        new_names = set(self.plugins)
-
-        to_unload = old_names - new_names
-        for name in to_unload:
-            logger.info("Unloading plugin %s.", name)
-            old_plugins[name].unload()
-
-        to_load = new_names - old_names
-        for name in to_load:
+    def load_plugins(self, plugins):
+        for name in plugins:
             logger.debug("Loading plugin %s.", name)
             self.plugins[name].load()
 
-    def purge_plugins(self):
-        old_plugins = self.plugins.copy()
-        for name in list(self.plugins):
-            if name in self.config.temboard.plugins:
-                continue
-            del self.plugins[name]
-        return old_plugins
-
     def reload(self):
-        logger.warning("Reloading configuration.")
+        logger.info("Reloading configuration.")
 
         # Reset file parser and load values.
         self.config_sources['parser'] = parser = configparser.RawConfigParser()
-        self.read_file(parser, self.config.temboard.configfile)
-        self.read_dir(parser, self.config.temboard.configfile + '.d')
+        configfile = self.config.temboard.configfile
+        self.read_file(parser, configfile)
+        self.read_dir(parser, configfile + '.d')
         self.config.load(reload_=True, **self.config_sources)
+        self.config['temboard']['configfile'] = configfile
 
         self.apply_config()
-        logger.info("Configuration reloaded.")
+        logger.debug("Configuration reloaded.")
         return self
 
     def setup_logging(self):

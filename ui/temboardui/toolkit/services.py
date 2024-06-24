@@ -112,7 +112,7 @@ class Service:
         self.setup()
 
         try:
-            self.serve()
+            return self.serve()
         except KeyboardInterrupt:
             logger.info("%s interrupted.", self)
             self.teardown()
@@ -180,7 +180,8 @@ class ServicesManager:
         self.stop()
         logger.debug("Waiting background services.")
         sleep(0.125)
-        self.kill()
+        if self.wait():
+            self.kill()
 
     def add(self, service):
         service.parentpid = self.pid
@@ -219,14 +220,19 @@ class ServicesManager:
         for _, process in self.processes:
             process.terminate()
 
-    def kill(self, timeout=5, step=0.5):
+    def wait(self, timeout=5, step=0.5):
+        """Return true if process are still alive"""
         while timeout > 0:
             processes = [p for _, p in self.processes if p.is_alive()]
             if not processes:
-                break
+                return False
             sleep(step)
             timeout -= step
 
+        return True
+
+    def kill(self):
+        processes = [p for _, p in self.processes if p.is_alive()]
         for process in processes:
             logger.warning("Killing %s pid=%s.", process, process.pid)
             os.kill(process.pid, signal.SIGKILL)

@@ -157,8 +157,7 @@ def test_apply_config_with_plugins(mocker):
     mod = 'temboardui.toolkit.app.'
     mocker.patch(mod + 'BaseApplication.setup_logging', autospec=True)
     cp = mocker.patch(mod + 'BaseApplication.create_plugins', autospec=True)
-    mocker.patch(mod + 'BaseApplication.update_plugins', autospec=True)
-    mocker.patch(mod + 'BaseApplication.purge_plugins', autospec=True)
+    mocker.patch(mod + 'BaseApplication.load_plugins', autospec=True)
     from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
@@ -170,8 +169,7 @@ def test_apply_config_with_plugins(mocker):
     app.apply_config()
 
     assert app.setup_logging.called is True
-    assert app.update_plugins.called is True
-    assert app.purge_plugins.called is True
+    assert app.load_plugins.called is True
 
 
 def test_apply_config_without_plugins(mocker):
@@ -248,7 +246,7 @@ def test_reload(mocker):
     from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
-    app.config = mocker.Mock(name='config')
+    app.config = mocker.MagicMock(name='config')
     app.config.temboard.configfile = 'pouet.conf'
     app.reload()
 
@@ -295,8 +293,6 @@ def test_fetch_missing(mocker):
 
 def test_create_plugins(mocker):
     mod = 'temboardui.toolkit.app'
-    mocker.patch(mod + '.refresh_distributions')
-    mocker.patch(mod + '.refresh_pythonpath')
     mocker.patch(mod + '.BaseApplication.fetch_plugin', autospec=True)
     from temboardui.toolkit.app import BaseApplication
 
@@ -306,34 +302,6 @@ def test_create_plugins(mocker):
     app.create_plugins()
 
     assert 'ng' in app.plugins
-
-
-def test_update_plugins(mocker):
-    from temboardui.toolkit.app import BaseApplication
-
-    app = BaseApplication()
-
-    unloadme = mocker.Mock(name='unloadme')
-    old_plugins = dict(unloadme=unloadme)
-
-    loadme = mocker.Mock(name='loadme')
-    app.plugins = dict(loadme=loadme)
-
-    app.update_plugins(old_plugins=old_plugins)
-
-    assert loadme.load.called is True
-    assert unloadme.unload.called is True
-
-
-def test_purge_plugins():
-    from temboardui.toolkit.app import BaseApplication, MergedConfiguration
-
-    app = BaseApplication()
-    app.plugins = dict(destroyme=1, keepme=1)
-    app.config = MergedConfiguration()
-    app.config.update(dict(temboard=dict(plugins=['keepme'])))
-    app.purge_plugins()
-    assert 'destroyme' not in app.plugins
 
 
 def test_create_parser():

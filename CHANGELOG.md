@@ -12,6 +12,7 @@ Ensure you use consistent title format.
 - ui: Accept editing an offline instance.
 - Remove python 2.7 support.
 - Remove daemonization. Use nohup or systemd.
+- Dropped pluging hotplug.
 
 
 ## 8.2.1

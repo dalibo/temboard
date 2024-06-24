@@ -65,6 +65,3 @@ class StatementsPlugin:
 
     def load(self):
         default_app().mount('/statements', bottle)
-
-    def unload(self):
-        self.app.config.remove_specs(self.option_specs)

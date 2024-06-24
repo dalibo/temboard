@@ -110,8 +110,3 @@ class DashboardPlugin:
             redo_interval=BATCH_DURATION,
         )(dashboard_collector_batch_worker)
         self.app.scheduler.add(workers)
-
-    def unload(self):
-        self.app.scheduler.remove(workers)
-        self.app.worker_pool.remove(workers)
-        self.app.config.remove_specs(self.option_specs)

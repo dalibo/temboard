@@ -208,8 +208,3 @@ class MonitoringPlugin:
             redo_interval=self.app.config.monitoring.scheduler_interval,
         )(monitoring_collector_worker)
         self.app.scheduler.add(workers)
-
-    def unload(self):
-        self.app.scheduler.remove(workers)
-        self.app.worker_pool.remove(workers)
-        self.app.config.remove_specs(self.option_specs)

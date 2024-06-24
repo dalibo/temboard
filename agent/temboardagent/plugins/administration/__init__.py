@@ -93,6 +93,3 @@ class AdministrationPlugin:
 
     def load(self):
         default_app().mount('/administration/', bottle)
-
-    def unload(self):
-        self.app.config.remove_specs(self.options_specs)

@@ -19,9 +19,6 @@ class ActivityPlugin:
     def load(self):
         self.app.tornado_app.add_rules(blueprint.rules)
 
-    def unload(self):
-        raise NotImplementedError()
-
 
 @blueprint.instance_route(r'/activity')
 def activity(request):
