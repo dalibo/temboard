@@ -33,9 +33,22 @@ import os
 import sys
 
 logger = logging.getLogger(__name__)
+_setter = None
 
 
-class ProcTitleManager:
+def set(title):
+    return _setter(title)
+
+
+def init(prefix):
+    global _setter
+    assert not _setter
+    _setter = ProcTitleSetter(prefix)
+    _setter.setup()
+    set("init")
+
+
+class ProcTitleSetter:
     def __init__(self, prefix):
         self.prefix = prefix
         # Memory segment containing argv. Will be overriden with new title.
@@ -64,7 +77,7 @@ class ProcTitleManager:
             return
 
         # cf. https://dali.bo/tYIql
-        title = self.prefix + title
+        title = self.prefix + str(title)
         title = title.encode("utf-8")
         # Truncate title to fit in argv memory segment.
         title = title[: self.size - 1]
@@ -235,7 +248,7 @@ def test_main():  # pragma: nocover
     # RET before failing.
 
     logging.basicConfig(level=logging.DEBUG)
-    setproctitle = ProcTitleManager(prefix="temboard-process: ")
+    setproctitle = ProcTitleSetter(prefix="temboard-process: ")
     setproctitle.setup()
     setproctitle("test process")
     with open("/proc/self/cmdline") as fo:

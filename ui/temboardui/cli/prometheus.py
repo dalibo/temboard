@@ -43,9 +43,7 @@ class Prometheus(SubCommand):
         if not self.app.config.monitoring.prometheus:
             raise UserError("missing prometheus binary")
 
-        prometheus = PrometheusService(
-            app=self.app, setproctitle=self.app.webservice.setproctitle
-        )
+        prometheus = PrometheusService(app=self.app)
         with prometheus:
             prometheus.run()
 

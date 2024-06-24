@@ -16,6 +16,7 @@ from select import error as SelectError
 from select import select
 from textwrap import dedent
 
+from . import proctitle
 from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
 from .services import Service
@@ -521,12 +522,11 @@ class SchedulerService(Service):
 class WorkerPool:
     trace = False
 
-    def __init__(self, task_queue, event_queue, setproctitle=None):
+    def __init__(self, task_queue, event_queue):
         self.thread = None
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.workers = {}
-        self.setproctitle = setproctitle
         self.perf = None
 
     def _abort_job(self, task_id):
@@ -613,8 +613,7 @@ class WorkerPool:
 
             modfun = f"{module}.{fun.__name__}"
             logger.debug("Starting new job. task=%s", modfun)
-            if self.setproctitle:
-                self.setproctitle("task %s" % (modfun))
+            proctitle.set("task %s" % (modfun))
             perf = PerfCounters.setup(service="task", task=modfun)
             if perf:
                 perf.schedule()
@@ -777,7 +776,7 @@ class WorkerPoolService(Service):
 
     def __init__(self, task_queue, event_queue, **kw):
         super().__init__(**kw)
-        self.worker_pool = WorkerPool(task_queue, event_queue, self.setproctitle)
+        self.worker_pool = WorkerPool(task_queue, event_queue)
 
     def setup(self):
         self.worker_pool.perf = self.perf

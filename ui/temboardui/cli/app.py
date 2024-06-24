@@ -16,12 +16,11 @@ from ..autossl import AutoHTTPSServer
 from ..core import workers
 from ..model import QUERIES
 from ..model import configure as configure_db_session
-from ..toolkit import taskmanager
+from ..toolkit import proctitle, taskmanager
 from ..toolkit import validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
 from ..toolkit.configuration import MergedConfiguration, OptionSpec
 from ..toolkit.errors import UserError
-from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
@@ -79,11 +78,12 @@ class TemboardApplication(BaseApplication):
         command_name = getattr(args, "command_fullname", "serve")
         command = self.commands[command_name]
 
+        if command.is_service:
+            proctitle.init("%s: " % self.PROGRAM)
+
         environ = map_pgvars(environ)
         self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()
-
-        setproctitle = ProcTitleManager(prefix="temboard: ")
 
         # T A S K   M A N A G E R
 
@@ -91,27 +91,17 @@ class TemboardApplication(BaseApplication):
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self,
-            name="worker pool",
-            task_queue=task_queue,
-            event_queue=event_queue,
-            setproctitle=setproctitle,
+            app=self, name="worker pool", task_queue=task_queue, event_queue=event_queue
         )
         self.worker_pool.add(workers)
         self.services.append(self.worker_pool)
         self.scheduler = taskmanager.SchedulerService(
-            app=self,
-            name="scheduler",
-            task_queue=task_queue,
-            event_queue=event_queue,
-            setproctitle=setproctitle,
+            app=self, name="scheduler", task_queue=task_queue, event_queue=event_queue
         )
         self.scheduler.add(workers)
         self.services.append(self.scheduler)
 
-        self.webservice = TornadoService(
-            app=self, name="web", setproctitle=setproctitle
-        )
+        self.webservice = TornadoService(app=self, name="web")
 
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(
@@ -119,7 +109,6 @@ class TemboardApplication(BaseApplication):
         )
 
         self.apply_config()
-        setproctitle.setup()
 
         return command.main(args)
 

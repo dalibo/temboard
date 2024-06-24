@@ -26,6 +26,7 @@ import sys
 from multiprocessing import Process
 from time import sleep
 
+from . import proctitle
 from .perf import PerfCounters
 
 logger = logging.getLogger(__name__)
@@ -39,14 +40,13 @@ class Service:
     # service is responsible to propagate signals to children with
     # ServicesManager.
 
-    def __init__(self, app, name=None, services=None, setproctitle=None):
+    def __init__(self, app, name=None, services=None):
         self.app = app
         self.name = name
         self.logname = name or "service"
         # Must be None for children or ServicesManager instance for main
         # service. Used to propagate signals. See reload() method.
         self.services = services
-        self.setproctitle = setproctitle
 
         self.parentpid = None
         # Once the process is forked to run the service loop, we still use this
@@ -101,8 +101,8 @@ class Service:
         pass
 
     def run(self):
-        if self.name and self.setproctitle:
-            self.setproctitle(self.name)
+        if self.name:
+            proctitle.set(self.name)
         logger.info("Starting %s.", self)
         self.perf = PerfCounters.setup(service=self.logname.replace(" ", "-"))
         if self.perf:
