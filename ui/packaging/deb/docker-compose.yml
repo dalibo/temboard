@@ -16,10 +16,6 @@ services:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:bullseye
 
-  buster:
-    <<: *mkdeb
-    image: dalibo/buildpack-pkg:buster
-
   jammy:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:jammy
