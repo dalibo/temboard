@@ -36,7 +36,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [rockylinux9, rockylinux8, centos7]
+            codename: [rockylinux9, rockylinux8]
         requires: [stage0-dist]
     - deb:
         name: stage1-pkg-<< matrix.codename >>
@@ -44,7 +44,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bookworm, bullseye, buster, jammy]
+            codename: [bookworm, bullseye, jammy]
         requires: [stage0-dist]
     - e2e: &e2e
         name: stage2-e2e-pg<< matrix.pgversion >>-<< matrix.dist >>
@@ -75,18 +75,6 @@ workflows:
           parameters:
             dist: [bullseye]
             pgversion: ["14"]
-    - e2e:
-        <<: *e2e
-        matrix:
-          parameters:
-            dist: [centos7]
-            pgversion: ["11", "9.6"]
-    - e2e:
-        <<: *e2e
-        matrix:
-          parameters:
-            dist: [buster]
-            pgversion: ["10"]
     - release:
         name: stage3-release
         # Send secrets to this jobs from temboard CircleCI context.
@@ -94,10 +82,8 @@ workflows:
         requires:
         - stage1-pkg-rockylinux9
         - stage1-pkg-rockylinux8
-        - stage1-pkg-centos7
         - stage1-pkg-bookworm
         - stage1-pkg-bullseye
-        - stage1-pkg-buster
         - stage1-pkg-jammy
         filters:
           <<: *enable-for-tags
@@ -276,7 +262,7 @@ jobs:
       codename:
         description: "RHEL-clone distribution"
         type: enum
-        enum: [rockylinux9, rockylinux8, centos7]
+        enum: [rockylinux9, rockylinux8]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -308,7 +294,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bookworm, bullseye, buster, jammy]
+        enum: [bookworm, bullseye, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -342,7 +328,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bookworm, bullseye, buster, centos7, rockylinux8, rockylinux9]
+        enum: [bookworm, bullseye, rockylinux8, rockylinux9]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
