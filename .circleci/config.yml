@@ -179,12 +179,14 @@ jobs:
       - run:
           name: Setup python environment
           command: |
+            # Synchronise this line with Makefile
+            pip install --ignore-requires-python --only-binary :all: ruff==0.4.10
             pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
           command: |
             cd agent/
-            flake8 temboardagent
+            ruff check temboardagent
             python setup.py --long-description | rst2html --verbose --halt=warning - >/dev/null
             check-manifest
       - run:
@@ -193,9 +195,9 @@ jobs:
             set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-            flake8 tests/
+            ruff check tests/
             cd ui/
-            flake8
+            ruff check
             check-manifest
       - &pip-cache-save
         save_cache:

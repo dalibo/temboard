@@ -1,0 +1,12 @@
+# ruff does not have Python 3.6, Python 3.7 should make the job
+target-version = "py37"
+
+[lint]
+ignore = [
+    "E721",  # Do not compare types, use `isinstance()`
+]
+
+[format]
+skip-magic-trailing-comma = true
+line-ending = "lf"
+docstring-code-format = true

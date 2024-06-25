@@ -1,5 +1,4 @@
 check-manifest
-flake8
 pytest
 pytest-cov
 pytest-mock

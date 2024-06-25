@@ -48,6 +48,7 @@ venv-%:
 	dev/venv-py$*/bin/pip --version  # smoke test
 
 install-%: venv-%
+	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.4.10 # Synchronise this line with .circleci/config.yml
 	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # smoke test
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
@@ -115,9 +116,7 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 
 .PHONY: tests
 tests:  #: Execute all tests.
-	cd agent/; flake8
-	cd ui/; flake8
-	flake8 tests/ dev/bin/importlog.py
+	ruff check
 	pytest --exitfirst agent/tests/unit/
 	pytest --exitfirst ui/tests/unit/
 	pytest --exitfirst tests/
