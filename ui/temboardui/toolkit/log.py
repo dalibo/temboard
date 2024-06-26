@@ -133,11 +133,13 @@ def generate_logging_config(
     if sys.stderr.isatty():
         stderr_handler = __name__ + ".ColoredStreamHandler"
         timestamp = "%(asctime)s "
+        datefmt = "%H:%M:%S"
     else:
         # strftime does not support milliseconds. Modifying datefmt disables Python hack
         # to append milliseconds to timestamp. Thus, hardcode timezone in message format
         # rather than datefmt.
         timestamp = "%(asctime)s " + localoffset() + " "
+        datefmt = None
 
     minimal_fmt = "%(levelname)s:  %(lastname)s: %(message)s"
     verbose_fmt = timestamp + core + "[%(process)d] " + minimal_fmt
@@ -151,6 +153,7 @@ def generate_logging_config(
             "console": {
                 "()": __name__ + ".MultilineFormatter",
                 "format": verbose_fmt if verbose else minimal_fmt,
+                "datefmt": datefmt,
             },
             "dated_syslog": {
                 "()": __name__ + ".MultilineFormatter",
