@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sys
 from logging.config import dictConfig
@@ -131,9 +132,15 @@ def generate_logging_config(
     stderr_handler = "logging.StreamHandler"
     if sys.stderr.isatty():
         stderr_handler = __name__ + ".ColoredStreamHandler"
+        timestamp = "%(asctime)s "
+    else:
+        # strftime does not support milliseconds. Modifying datefmt disables Python hack
+        # to append milliseconds to timestamp. Thus, hardcode timezone in message format
+        # rather than datefmt.
+        timestamp = "%(asctime)s " + localoffset() + " "
 
     minimal_fmt = "%(levelname)s:  %(lastname)s: %(message)s"
-    verbose_fmt = "%(asctime)s " + core + "[%(process)d] " + minimal_fmt
+    verbose_fmt = timestamp + core + "[%(process)d] " + minimal_fmt
     syslog_fmt = core + "[%(process)d] %(levelname)s:  %(lastname)s: %(message)s"
 
     logging_config = {
@@ -144,12 +151,10 @@ def generate_logging_config(
             "console": {
                 "()": __name__ + ".MultilineFormatter",
                 "format": verbose_fmt if verbose else minimal_fmt,
-                "datefmt": "%Y-%m-%d %H:%M:%S %Z",
             },
             "dated_syslog": {
                 "()": __name__ + ".MultilineFormatter",
-                "format": "%(asctime)s " + syslog_fmt,
-                "datefmt": "%Y-%m-%d %H:%M:%S %Z",
+                "format": timestamp + syslog_fmt,
             },
             "syslog": {"()": __name__ + ".MultilineFormatter", "format": syslog_fmt},
             "systemd": {
@@ -180,3 +185,12 @@ def generate_logging_config(
     configure_debug(logging_config, core, debug)
 
     return logging_config
+
+
+def localoffset():
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    now_local = now_utc.astimezone()
+    offset = now_local - now_utc
+    hours = offset.seconds // 3600
+    minutes = (offset.seconds // 60) % 60
+    return "+%02d%02d" % (hours, minutes)
