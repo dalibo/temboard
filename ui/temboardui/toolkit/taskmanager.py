@@ -323,7 +323,8 @@ class Scheduler:
         for task in to_do:
             task.status = TASK_STATUS_SCHEDULED
 
-            logger.debug("Pushing task %s to the worker queue.", task.id)
+            if self.trace:
+                logger.debug("Pushing task %s to the worker queue.", task.id)
 
             try:
                 self.task_list.update(id=task.id, status=task.status)
@@ -576,7 +577,8 @@ class WorkerPool:
             return
 
         if t.status & TASK_STATUS_SCHEDULED:
-            logger.debug("Got task %s for worker '%s' queue" % (t.id, t.worker_name))
+            if self.trace:
+                logger.debug("Got task %s for worker '%s' queue", t.id, t.worker_name)
             self.workers[t.worker_name]["queue"].appendleft(t)
             # Update task status
             self.event_queue.put(
@@ -610,7 +612,7 @@ class WorkerPool:
             fun = getattr(sys.modules[module], function)
 
             modfun = f"{module}.{fun.__name__}"
-            logger.debug("Starting new job for %s", modfun)
+            logger.debug("Starting new job. task=%s", modfun)
             if self.setproctitle:
                 self.setproctitle("task %s" % (modfun))
             perf = PerfCounters.setup(service="task", task=modfun)
@@ -620,14 +622,15 @@ class WorkerPool:
             res = fun(*args, **kws)
             # Put function result into output queue as a Message
             out.put(Message(MSG_TYPE_RESP, res))
+            logger.debug("Job done. task=%s", modfun)
         except UserError as e:
-            logger.critical("%s", e)
+            logger.critical("%s. task=%s", e, modfun)
         except Exception as e:
             e = Exception(f"{type(e)}: {e}")
             out.put(Message(MSG_TYPE_ERROR, e))
-            logger.exception(e)
+            logger.exception("%s. task=%s", e, modfun)
         except KeyboardInterrupt:
-            logger.error("KeyboardInterrupt")
+            logger.info("Interrupted. task=%s", modfun)
         if perf:
             perf.run()
 
@@ -668,7 +671,8 @@ class WorkerPool:
             for job in worker["pool"]:
                 if not job["process"].is_alive():
                     # Dead process case
-                    logger.debug("Job %s terminated.", job["id"])
+                    if self.trace:
+                        logger.debug("Job %s terminated.", job["id"])
                     try:
                         # Fetch the message from job's output queue
                         message_out = job["out"].get(False)
