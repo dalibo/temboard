@@ -9,7 +9,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import column, extract, func, select, text
 
 from temboardui.agentclient import TemboardAgentClient
-from temboardui.errors import TemboardUIError
 from temboardui.model import worker_engine
 from temboardui.model.orm import (
     Biggest,
@@ -736,59 +735,59 @@ def statements(request):
 
 def add_statement(session, instance, data):
     agent_id = f"{instance.agent_address}:{instance.agent_port}"
-    try:
-        cur = session.connection().connection.cursor()
-        cur.execute("SET search_path TO statements")
-        if not data.get("data"):
-            logger.info("No statement data from %s.", agent_id)
-        for statement in data.get("data"):
-            query = """
-                INSERT INTO statements_src_tmp
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            cur.execute(
-                query,
-                (
-                    instance.agent_address,
-                    instance.agent_port,
-                    data["snapshot_datetime"],
-                    statement["userid"],
-                    statement["rolname"],
-                    statement["dbid"],
-                    statement["datname"],
-                    statement["queryid"],
-                    statement["query"],
-                    statement["calls"],
-                    statement["total_exec_time"]
-                    if "total_exec_time" in statement
-                    else statement["total_time"],
-                    statement["rows"],
-                    statement["shared_blks_hit"],
-                    statement["shared_blks_read"],
-                    statement["shared_blks_dirtied"],
-                    statement["shared_blks_written"],
-                    statement["local_blks_hit"],
-                    statement["local_blks_read"],
-                    statement["local_blks_dirtied"],
-                    statement["local_blks_written"],
-                    statement["temp_blks_read"],
-                    statement["temp_blks_written"],
-                    statement["blk_read_time"],
-                    statement["blk_write_time"],
-                    statement["total_plan_time"]
-                    if "total_plan_time" in statement
-                    else None,
-                    statement["wal_records"] if "wal_records" in statement else None,
-                    statement["wal_fpi"] if "wal_fpi" in statement else None,
-                    statement["wal_bytes"] if "wal_bytes" in statement else None,
-                ),
-            )
-        query = """SELECT process_statements(%s, %s)"""
-        cur.execute(query, (instance.agent_address, instance.agent_port))
-        session.connection().connection.commit()
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
+    if not data.get("data"):
+        logger.info("No statement data from %s.", agent_id)
+        return
+
+    conn = session.connection().connection
+    cur = conn.cursor()
+    cur.execute("SET search_path TO statements")
+    for statement in data.get("data"):
+        query = """
+            INSERT INTO statements_src_tmp
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cur.execute(
+            query,
+            (
+                instance.agent_address,
+                instance.agent_port,
+                data["snapshot_datetime"],
+                statement["userid"],
+                statement["rolname"],
+                statement["dbid"],
+                statement["datname"],
+                statement["queryid"],
+                statement["query"],
+                statement["calls"],
+                statement["total_exec_time"]
+                if "total_exec_time" in statement
+                else statement["total_time"],
+                statement["rows"],
+                statement["shared_blks_hit"],
+                statement["shared_blks_read"],
+                statement["shared_blks_dirtied"],
+                statement["shared_blks_written"],
+                statement["local_blks_hit"],
+                statement["local_blks_read"],
+                statement["local_blks_dirtied"],
+                statement["local_blks_written"],
+                statement["temp_blks_read"],
+                statement["temp_blks_written"],
+                statement["blk_read_time"],
+                statement["blk_write_time"],
+                statement["total_plan_time"]
+                if "total_plan_time" in statement
+                else None,
+                statement["wal_records"] if "wal_records" in statement else None,
+                statement["wal_fpi"] if "wal_fpi" in statement else None,
+                statement["wal_bytes"] if "wal_bytes" in statement else None,
+            ),
+        )
+    query = """SELECT process_statements(%s, %s)"""
+    cur.execute(query, (instance.agent_address, instance.agent_port))
+    conn.commit()
 
 
 @workers.schedule(id="statements_pull_data", redo_interval=60)  # 1m
