@@ -1,0 +1,48 @@
+{
+    "$schema": "https://lnav.org/schemas/format-v1.schema.json",
+    "temboard_log": {
+        "description": "Format file generated from regex101 entry -- https://regex101.com/r/wRMZLm. See ui/temboardui/toolkit/log.py.",
+        "regex": {
+            "minimal": {
+                "pattern": "^(?<level>[A-Z]{4,}):  ?(?<component>[.\\w]+): (?<body>.+)$",
+                "module-format": true
+            },
+            "verbose": {
+                "pattern": "^(?<timestamp>.+) (?<service>\\w+)\\[(?<pid>\\d+)\\] (?<level>[A-Z]{4,}):  (?<component>[.\\w]+): (?<body>.+)$"
+            },
+            "syslog": {
+                "pattern": "^(?<service>[a-z]+)\\[(?<pid>\\d+)\\]:? (?<level>[A-Z]{4,}):  ?(?<component>[.\\w]+): (?<body>.+)$",
+                "module-format": true
+            },
+            "dated_syslog": {
+                "pattern": "^(?<timestamp>.+) (?<service>[a-z]+)\\[(?<pid>\\d+)\\]:? (?<level>[A-Z]{4,}):  ?(?<component>[.\\w]+): (?<body>.+)$"
+            },
+            "systemd": {
+                "pattern": "^(?<component>[.\\w]+): (?<body>.+)$",
+                "module-format": true
+            }
+        },
+        "value": {
+            "pid": {
+                "kind": "integer",
+                "identifier": true
+            },
+            "level": {
+                "kind": "string",
+                "identifier": true
+            },
+            "component": {
+                "kind": "string",
+                "identifier": true
+            }
+        },
+        "sample": [
+            {
+                "line": "2024-06-20 13:50:52 CEST temboardui[1541817] DEBUG:  app: Starting temboard 9.0.dev0."
+            },
+            {
+                "line": "monitoring: Inserting data for metric locks."
+            }
+        ]
+    }
+}

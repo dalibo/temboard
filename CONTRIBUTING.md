@@ -495,6 +495,18 @@ Prometheus also watch `dev/prometheus/targets/custom.yaml` files for hand
 written targets.
 
 
+## Investigate logs with lnav
+
+[lnav] is an awesome tool to browse and analyze log files.
+temBoard provides configuration for lnav to enhance experience.
+`make develop` configures lnav for better analysis of PostgreSQL and temBoard logs.
+Just run lnav on temBoard logs and you're good to go.
+
+```
+$ temboard |& lnav
+```
+
+
 ## Releasing
 
 Releasing a new version of temBoard requires write access to master branch on
