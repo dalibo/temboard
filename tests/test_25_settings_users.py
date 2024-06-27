@@ -22,10 +22,10 @@ def user_rick(admin_session, browser_session):
     browser_session.select("#submitFormAddUser").click()
 
 
-def test_create_user(user_rick, browser_session):
+def test_create_user(user_rick, browser):
     user_rick_line = [
         tr
-        for tr in browser_session.select_all("#tableUsers tr")
+        for tr in browser.select_all("#tableUsers tr")
         if "rick" in tr.text
     ][0]
     user_rick = user_rick_line.text.split()
@@ -45,11 +45,11 @@ def test_create_user(user_rick, browser_session):
     )
 
 
-def test_update_user(user_rick, browser_session):
+def test_update_user(user_rick, browser):
     # Find button edit for user rick
     filtered_rick_row = [
         tr
-        for tr in browser_session.select_all("#tableUsers tr")
+        for tr in browser.select_all("#tableUsers tr")
         if "rick" in tr.text
     ][0]
     edit_button_rick = filtered_rick_row.find_element(
@@ -57,21 +57,21 @@ def test_update_user(user_rick, browser_session):
     )
     edit_button_rick.click()
 
-    browser_session.select("#inputNewUsername").clear()
-    browser_session.select("#inputNewUsername").send_keys("rick0")
-    browser_session.select("#inputEmail").clear()
-    browser_session.select("#inputEmail").send_keys("rick@test.me")
-    browser_session.select("#inputPassword").send_keys("NEW!rick0.@9")
-    browser_session.select("#inputPassword2").send_keys("NEW!rick0.@9")
-    browser_session.select("button.multiselect").click()
-    browser_session.select("input[value='default']").click()
-    browser_session.select("label[for='switchActive']").click()
-    browser_session.select("label[for='switchAdmin']").click()
-    browser_session.select("#submitFormUpdateUser").click()
+    browser.select("#inputNewUsername").clear()
+    browser.select("#inputNewUsername").send_keys("rick0")
+    browser.select("#inputEmail").clear()
+    browser.select("#inputEmail").send_keys("rick@test.me")
+    browser.select("#inputPassword").send_keys("NEW!rick0.@9")
+    browser.select("#inputPassword2").send_keys("NEW!rick0.@9")
+    browser.select("button.multiselect").click()
+    browser.select("input[value='default']").click()
+    browser.select("label[for='switchActive']").click()
+    browser.select("label[for='switchAdmin']").click()
+    browser.select("#submitFormUpdateUser").click()
 
     user_rick_line = [
         tr
-        for tr in browser_session.select_all("#tableUsers tr")
+        for tr in browser.select_all("#tableUsers tr")
         if "rick0" in tr.text
     ][0]
     user_rick = user_rick_line.text.split()
@@ -91,11 +91,11 @@ def test_update_user(user_rick, browser_session):
     )
 
 
-def test_delete_user(user_rick, browser_session):
+def test_delete_user(user_rick, browser):
     # Find button delete for user rick
     filtered_rick_row = [
         tr
-        for tr in browser_session.select_all("#tableUsers tr")
+        for tr in browser.select_all("#tableUsers tr")
         if "rick@" in tr.text
     ][0]
     delete_button_rick = filtered_rick_row.find_element(
@@ -103,13 +103,13 @@ def test_delete_user(user_rick, browser_session):
     )
     delete_button_rick.click()
 
-    browser_session.find_element(
+    browser.find_element(
         By.XPATH, "//button[text()='Yes, delete this user']"
     ).click()
 
-    assert len(browser_session.select_all("#tableUsers tr")) == 2
+    assert len(browser.select_all("#tableUsers tr")) == 2
 
     assert "rick" not in [
         tr.text
-        for tr in browser_session.select_all("#tableUsers tr")
+        for tr in browser.select_all("#tableUsers tr")
     ]
