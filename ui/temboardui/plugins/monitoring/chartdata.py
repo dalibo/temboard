@@ -121,7 +121,7 @@ SELECT
 FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime ORDER BY datetime
-        """,  # noqa,
+        """,  # noqa
         probename="process",
     ),
     db_size=dict(
@@ -183,7 +183,7 @@ SELECT
 FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
-        """,  # noqa,
+        """,  # noqa
         probename="filesystems_size",
         pivot=dict(index="date", key="mount_point", value="usage"),
     ),
@@ -203,7 +203,7 @@ SELECT
 FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND mount_point = %(key)s
 ORDER BY 1,2 ASC
-        """,  # noqa,
+        """,  # noqa
         probename="filesystems_size",
     ),
     hitreadratio=dict(
@@ -434,7 +434,7 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
-        """,  # noqa,
+        """,  # noqa
         probename="sessions",
     ),
     sessions_usage=dict(
@@ -453,7 +453,7 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
-        """,  # noqa,
+        """,  # noqa
         probename="sessions",
     ),
     swap=dict(
@@ -509,7 +509,7 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
-        """,  # noqa,
+        """,  # noqa
         probename="tblspc_size",
         pivot=dict(index="date", key="spcname", value="size"),
     ),
