@@ -7,6 +7,15 @@ As we are trying to find the right balance between innovation and backward
 compatibility, we define a comprehensive list of platforms and software that
 we support for each version.
 
+## Temboard 9 UNREALEASED
+
+|                |                                            |
+| -------------- | -------------------------------------------|
+| Linux          | Debian 11 up to 12, RHEL 8 and 9            |
+| Python         | 3.6+                                       |
+| Postgres       | 12 to 17                                   |
+| Temboard Agent | 8.2 and later
+
 ## Temboard 8
 
 Temboard 8 was released in May 2022.

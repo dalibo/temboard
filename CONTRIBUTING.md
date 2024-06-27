@@ -522,6 +522,8 @@ For stable release, you need write access to Dalibo Labs repositories:
 To release a v7 minor version, please follow [v7
 documentation](https://temboard.readthedocs.io/en/v7/CONTRIBUTING/#releasing-the-server).
 
+Don't forget to update [Compatibility Guide](compatibility_guide.md).
+
 [CircleCI pipeline]: https://app.circleci.com/pipelines/github/dalibo/temboard
 [GitHub releases]: https://github.com/dalibo/temboard/releases
 [PEP440]: https://www.python.org/dev/peps/pep-0440/#version-scheme

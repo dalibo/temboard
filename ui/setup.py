@@ -21,9 +21,9 @@ install_requires = [
     # and there is no way to state an OR dependency in Python. It's up to
     # the user or package manager to ensure psycopg2 dependency. See
     # documentation.
-    'sqlalchemy>=0.9.8,<2',
+    'sqlalchemy>=1.3.2,<2',
     # _verify_cert in SSLIOStream is removed on Tornado 6.4+ on Python 3+.
-    'tornado>=4.5,<6.4',
+    'tornado>=6.0.2,<6.4',
     'future',
 ]
 
