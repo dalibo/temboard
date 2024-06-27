@@ -134,7 +134,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     log_connections = on
     log_directory = '{logdir}'
     log_filename = 'postgres.log'
-    log_line_prefix = '%t [%p]: user=%u,db=%d,app=%a,client=%h '
+    log_line_prefix = '%m [%p]: [%l-1] user=%u,client=%h,db=%d,app=%a '
     log_lock_waits = on
     log_statement = all
     logging_collector = on

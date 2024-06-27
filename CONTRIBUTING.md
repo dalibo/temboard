@@ -80,14 +80,11 @@ Creating temboard_agent_1    ... done
 
 
 $ dev/venv-py3.6/bin/temboard --debug
- INFO: Starting temboard 8.0.dev0.
- INFO: Found config file /home/.../temboard/temboard.conf.
- INFO: Running on Debian GNU/Linux 11 (bullseye).
- INFO: Using Python 3.6.8 (/home/.../.cache/pyenv/versions/temboard-uoBqmXGk-py3.6/bin/python) and Tornado 4.4.3 .
- INFO: Using libpq 11.5, Psycopg2 2.8.6 (dt dec pq3 ext lo64) and SQLAlchemy 1.3.24 .
-2022-03-16 14:08:06,425 temboardui[1593889]: [pluginsmgmt     ]  INFO: Loaded plugin 'dashboard'.
+INFO:  app: Using config file /home/bersace/src/dalibo/temboard/temboard.conf.
+INFO:  tornado: Enabling Tornado's autoreload.
+14:42:13 temboardui[1145101] DEBUG:  app: Looking for plugin dashboard.
 ...
-2022-03-16 14:08:06,489 temboardui[1593889]: [temboardui      ]  INFO: Serving temboardui on http://localhost:8888
+14:42:13 temboardui[1145101] INFO:  temboardui: Serving temboardui on http://0.0.0.0:8888
 ...
 ```
 
@@ -100,9 +97,7 @@ agent and execute the following commands.
 ``` console
 $ docker compose exec agent0 /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
- INFO: Starting temboard-agent 8.0.dev0.
- INFO: Found config file /etc/temboard-agent/temboard-agent.conf.
-2020-08-11 14:29:45,834 [ 3769] [app             ] DEBUG: Looking for plugin activity.
+12:41:10 temboardagent[67] DEBUG:  app: Starting temboard-agent 9.0.dev0.
 ...
 ```
 
@@ -498,6 +493,18 @@ postgres\_exporter, plus a set of custom metrics prefixed with `x`, e.g.
 
 Prometheus also watch `dev/prometheus/targets/custom.yaml` files for hand
 written targets.
+
+
+## Investigate logs with lnav
+
+[lnav] is an awesome tool to browse and analyze log files.
+temBoard provides configuration for lnav to enhance experience.
+`make develop` configures lnav for better analysis of PostgreSQL and temBoard logs.
+Just run lnav on temBoard logs and you're good to go.
+
+```
+$ temboard |& lnav
+```
 
 
 ## Releasing

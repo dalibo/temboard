@@ -23,3 +23,6 @@ indent_style = tab
 [{*.sh,Makefile}]
 indent_size = 8
 indent_style = tab
+
+[dev/lnav/**.json]
+indent_size = 4

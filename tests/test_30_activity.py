@@ -1,6 +1,7 @@
 import errno
 import json
 import logging
+import textwrap
 from queue import Queue
 from time import sleep
 
@@ -126,26 +127,27 @@ def pg_lock(psql, agent_env):
     EOF = None  # For amoffat/sh stdin Queue.
 
     locking = psql(_in=Queue(), _bg=True, _iter_noblock=True)
-    locking.process.stdin.put("DROP TABLE IF EXISTS locked_table;\n")
     locking.process.stdin.put(
-        "CREATE TABLE locked_table AS SELECT generate_series(1, 5);\n"
+        textwrap.dedent("""\
+        DROP TABLE IF EXISTS locked_table;
+        CREATE TABLE locked_table AS SELECT generate_series(1, 5);
+        BEGIN;
+        LOCK TABLE locked_table IN EXCLUSIVE MODE;
+    """)
     )
 
-    table_created = False
+    locked = False
     for attempt in retry_fast(OSError):
         with attempt:
             for _ in range(1000):
                 line = next(locking)
                 if line == errno.EWOULDBLOCK:
-                    raise OSError()
-                if line.startswith("SELECT 5"):
-                    logger.info("locked_table created.")
-                    table_created = True
+                    raise OSError()  # Retry.
+                if line.startswith("LOCK TABLE"):
+                    logger.info("locked_table locked.")
+                    locked = True
                     break
-    assert table_created, "Timeout creating table"
-
-    locking.process.stdin.put("BEGIN;\n")
-    locking.process.stdin.put("LOCK TABLE locked_table IN EXCLUSIVE MODE;\n")
+    assert locked, "Timeout creating table"
     assert locking.is_alive()
 
     logger.info("Starting waiting process.")

@@ -1,0 +1,44 @@
+{
+    "$schema": "https://lnav.org/schemas/format-v1.schema.json",
+    "postgresql_log": {
+        "description": "Format file generated from regex101 entry -- https://regex101.com/r/2ofpAY",
+        "regex": {
+            "std": {
+                "pattern": "(?<timestamp>.+) \\[(?<pid>\\d+)\\]:(?: \\[(?<line>\\d+)-\\d+\\])? (?:(?:app=(?<app>[^,]*)|db=(?<db>[^,]*)|client=(?<client>[^,]*)|user=(?<user>[^, ]*)),?)+ (?<level>[A-Z]+):  (?<body>.+)"
+            }
+        },
+        "value": {
+            "level": {
+                "kind": "string",
+                "identifier": true
+            },
+            "user": {
+                "kind": "string",
+                "identifier": true
+            },
+            "client": {
+                "kind": "string",
+                "collate": "ipaddress"
+            },
+            "app": {
+                "kind": "string"
+            },
+            "db": {
+                "kind": "string",
+                "identifier": true
+            },
+            "pid": {
+                "kind": "string",
+                "identifier": true
+            },
+            "line": {
+                "kind": "integer"
+            }
+        },
+        "sample": [
+            {
+                "line": "2024-06-25 14:54:20 UTC [551]: user=,db=,app=,client= LOG:  starting PostgreSQL 13.15 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-20), 64-bit\n2024-06-25 14:54:20 UTC [551]: user=,db=,app=,client= LOG:  listening on IPv4 address \"127.0.0.1\", port 55432"
+            }
+        ]
+    }
+}
