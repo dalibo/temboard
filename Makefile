@@ -9,7 +9,7 @@ apropos:  #: Show dev Makefile help.
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
 
-DOCKER_MAX_VERSION=26
+DOCKER_MAX_VERSION=27
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-2.7:: .env  #: Create development environment for Python 2.7.
 develop-%:: .env
@@ -153,6 +153,8 @@ release:  #: Tag and push a new git release.
 	@git diff --check @..FETCH_HEAD
 	@echo Checking agent and UI version are same.
 	@grep -Fq "$(VERSION)" agent/temboardagent/version.py
+	@echo Checking version is PEP440 compliant.
+	@pep440deb "$(VERSION)" >/dev/null
 	@echo Creating release commit.
 	@git commit --only --quiet agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
@@ -161,6 +163,8 @@ release:  #: Tag and push a new git release.
 	@git tag --annotate --message "Version $(VERSION)" v$(VERSION)
 	@echo Pushing tag to $(REMOTE).
 	@git push --follow-tags $(REMOTE) refs/heads/$(BRANCH):refs/heads/$(BRANCH)
+	@echo "Cleaning dist dirs."
+	@rm -rf agent/dist/ ui/dist/
 
 release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
