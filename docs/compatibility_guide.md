@@ -1,5 +1,3 @@
-# Compatibility Guide
-
 Temboard is designed to interact with many components: systemd, PostgreSQL,
 agents, etc.
 
