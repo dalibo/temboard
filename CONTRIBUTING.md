@@ -400,7 +400,7 @@ The documentation is written in Markdown and built with `mkdocs`.
 Editing documentation requires Python 3.8.
 
 ``` console
-$ dev/venv-py3.8/bin/mkdocs serve
+$ dev/venv-py3.8/bin/mkdocs serve --file docs/mkdocs.yml
 INFO     -  Building documentation...
 INFO     -  Cleaning site directory
 INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
