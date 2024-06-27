@@ -166,6 +166,7 @@ def generate_logging_config(
             },
         },
         "handlers": {
+            # Avoid instanciate all handlers, especially syslog which opens /dev/log.
             "configured": dict(HANDLERS[method], filters=["lastname"]),
             "stderr": {
                 "()": stderr_handler,
@@ -173,12 +174,7 @@ def generate_logging_config(
                 "filters": ["lastname"],
             },
         },
-        "root": {
-            "level": "INFO",
-            # Avoid instanciate all handlers, especially syslog which open
-            # /dev/log
-            "handlers": ["stderr", "configured"],
-        },
+        "root": {"level": "INFO", "handlers": ["stderr", "configured"]},
         "loggers": {},
     }
 
