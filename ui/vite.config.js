@@ -41,6 +41,7 @@ export default defineConfig({
         "settings.about": "/settings.about.js",
         "settings.group": "/settings.group.js",
         "settings.instance": "/settings.instance.js",
+        "settings.user": "/settings.users.js",
         activity: "/activity.js",
         dashboard: "/dashboard.js",
         home: "/home.js",
