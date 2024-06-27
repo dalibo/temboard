@@ -13,6 +13,8 @@ Ensure you use consistent title format.
 - Remove python 2.7 support.
 - Remove daemonization. Use nohup or systemd.
 - Dropped pluging hotplug.
+- Drop rhel7 and buster support, minimum versions are now 6.0.2 for tornado
+and 1.3.2 for sqlalchemy.
 
 
 ## 8.2.1
