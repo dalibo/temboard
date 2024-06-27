@@ -1,5 +1,5 @@
-# Read The Docs uses Python 3.7 as of late 2022.
-mkdocs==1.4.1 ; python_version >= '3.7'
-mkdocs-material==8.5.6 ; python_version >= '3.7'
-mkdocs-git-revision-date-localized-plugin==1.1.0; python_version >= '3.7'
-mkdocs-glightbox==0.3.0; python_version >= '3.7'
+# Install only on minimum required version of Python.
+mkdocs==1.6.0 ; python_version >= '3.8'
+mkdocs-material==9.5.27 ; python_version >= '3.8'
+mkdocs-git-revision-date-localized-plugin==1.2.6; python_version >= '3.8'
+mkdocs-glightbox==0.4.0; python_version >= '3.8'
