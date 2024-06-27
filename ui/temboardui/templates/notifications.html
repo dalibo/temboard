@@ -3,13 +3,12 @@
 {% block title %}temBoard / {{instance}} / Notifications{% end %}
 
 {% block head %}
-<!-- DataTables CSS -->
-<link href="/js/datatables/datatables.min.css" rel="stylesheet">
+{% for link in vitejs.css_links_for('settings.users.js') %}{% raw link %}{% end %}
 {% end %}
 
 {% block content %}
 <div class="limiter">
-<div class="row">
+<div class="row" id="app">
   <div class="col-12">
     <table id="tableNotifications" class="table table-sm table-striped" cellspacing="0">
     <thead>
@@ -32,13 +31,5 @@
   </div>
 </div>
 </div> <!-- end limiter -->
-<script src="/js/datatables/datatables.min.js"></script>
-<script>
-$(document).ready(function() {
-  $('#tableNotifications').DataTable({
-    order: [[0, 'desc']],
-    pageLength: 25
-  });
-});
-</script>
+<script type="module" src="{{ vitejs.url_for('notifications.js') }}"></script>
 {% end %}

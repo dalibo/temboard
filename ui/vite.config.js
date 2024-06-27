@@ -40,6 +40,7 @@ export default defineConfig({
         dashboard: "/dashboard.js",
         home: "/home.js",
         monitoring: "/monitoring.js",
+        notifications: "/notifications.js",
         statements: "/statements.js",
         temboard: "/temboard.js",
       },
