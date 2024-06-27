@@ -90,12 +90,12 @@ defineExpose({ setup_multiselects, teardown_multiselects });
     <div class="modal-body p-3">
       <div class="row">
         <InstanceDetails
-          v-bind:pg_host="pg_host"
-          v-bind:pg_port="pg_port"
-          v-bind:pg_version_summary="pg_version_summary"
-          v-bind:pg_data="pg_data"
-          v-bind:cpu="cpu"
-          v-bind:mem_gb="mem_gb"
+          :pg_host="pg_host"
+          :pg_port="pg_port"
+          :pg_version_summary="pg_version_summary"
+          :pg_data="pg_data"
+          :cpu="cpu"
+          :mem_gb="mem_gb"
         />
       </div>
 
@@ -109,12 +109,12 @@ defineExpose({ setup_multiselects, teardown_multiselects });
       <div class="row">
         <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
           <label for="selectGroups">Groups</label>
-          <select id="selectGroups" v-bind:disabled="waiting" multiple required>
+          <select id="selectGroups" :disabled="waiting" multiple required>
             <option
               v-for="group of groups"
-              v-bind:key="group.name"
-              v-bind:selected="group.selected ? 'selected' : null"
-              v-bind:value="group.name"
+              :key="group.name"
+              :selected="group.selected ? 'selected' : null"
+              :value="group.name"
             >
               {{ group.name }}
             </option>
@@ -123,15 +123,15 @@ defineExpose({ setup_multiselects, teardown_multiselects });
         </div>
         <div id="divPlugins" class="form-group col-sm-6" v-if="plugins.length > 0">
           <label for="selectPlugins" class="control-label">Plugins</label>
-          <select id="selectPlugins" v-bind:disabled="waiting" multiple="multiple">
+          <select id="selectPlugins" :disabled="waiting" multiple="multiple">
             <option
               v-for="plugin of plugins"
-              v-bind:key="plugin.name"
-              v-bind:value="plugin.name"
-              v-bind:selected="plugin.selected"
-              v-bind:disabled="plugin.disabled ? 'disabled' : null"
-              v-bind:class="{ disabled: plugin.disabled }"
-              v-bind:title="plugin.disabled ? 'Plugin disabled by agent.' : null"
+              :key="plugin.name"
+              :value="plugin.name"
+              :selected="plugin.selected"
+              :disabled="plugin.disabled ? 'disabled' : null"
+              :class="{ disabled: plugin.disabled }"
+              :title="plugin.disabled ? 'Plugin disabled by agent.' : null"
             >
               {{ plugin.name }}
             </option>
@@ -141,13 +141,7 @@ defineExpose({ setup_multiselects, teardown_multiselects });
       <div class="row">
         <div class="col-sm-12">
           <div class="form-check">
-            <input
-              id="inputNotify"
-              class="form-check-input"
-              type="checkbox"
-              v-model="notify"
-              v-bind:disabled="waiting"
-            />
+            <input id="inputNotify" class="form-check-input" type="checkbox" v-model="notify" :disabled="waiting" />
             <label for="inputNotify" class="control-label">Notify users of any status alert.</label>
           </div>
         </div>
@@ -155,14 +149,14 @@ defineExpose({ setup_multiselects, teardown_multiselects });
       <div class="row">
         <div class="form-group col-sm-12">
           <label for="inputComment" class="control-label">Comment</label>
-          <textarea id="inputComment" class="form-control" rows="3" v-model="commentModel" v-bind:disabled="waiting">
+          <textarea id="inputComment" class="form-control" rows="3" v-model="commentModel" :disabled="waiting">
           </textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-      <button id="buttonSubmit" class="btn btn-success ml-auto" type="submit" v-bind:disabled="waiting">
+      <button id="buttonSubmit" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
         {{ submit_text }}
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>

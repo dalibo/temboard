@@ -173,7 +173,7 @@ function reset() {
             <div class="form-group col-sm-6">
               <label for="inputAgentAddress" class="control-label">Agent address</label>
               <input
-                v-bind:disabled="waiting"
+                :disabled="waiting"
                 id="inputAgentAddress"
                 type="text"
                 v-model.lazy.trim="state.agent_address"
@@ -184,7 +184,7 @@ function reset() {
             <div class="form-group col-sm-6">
               <label for="inputAgentPort" class="control-label">Agent port</label>
               <input
-                v-bind:disabled="waiting"
+                :disabled="waiting"
                 id="inputAgentPort"
                 type="text"
                 v-model.lazy.number.trim="state.agent_port"
@@ -196,7 +196,7 @@ function reset() {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-          <button id="buttonDiscover" class="btn btn-success ml-auto" type="submit" v-bind:disabled="waiting">
+          <button id="buttonDiscover" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
             Discover
             <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
           </button>
@@ -209,18 +209,18 @@ function reset() {
       <InstanceForm
         ref="formCmp"
         submit_text="Register"
-        v-bind:pg_host="state.pg_host"
-        v-bind:pg_port="state.pg_port"
-        v-bind:pg_data="state.pg_data"
-        v-bind:pg_version_summary="state.pg_version_summary"
-        v-bind:cpu="state.cpu"
-        v-bind:mem_gb="state.mem_gb"
-        v-bind:signature_status="state.signature_status"
-        v-bind:groups="groups"
-        v-bind:plugins="plugins"
-        v-bind:notify="state.notify"
-        v-bind:comment="state.comment"
-        v-bind:waiting="waiting"
+        :pg_host="state.pg_host"
+        :pg_port="state.pg_port"
+        :pg_data="state.pg_data"
+        :pg_version_summary="state.pg_version_summary"
+        :cpu="state.cpu"
+        :mem_gb="state.mem_gb"
+        :signature_status="state.signature_status"
+        :groups="groups"
+        :plugins="plugins"
+        :notify="state.notify"
+        :comment="state.comment"
+        :waiting="waiting"
         v-on:submit="register"
       >
         <Error ref="error" :showTitle="false"></Error>
