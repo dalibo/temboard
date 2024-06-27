@@ -1,6 +1,6 @@
 import json
-from datetime import datetime, timezone
 from collections import UserDict
+from datetime import datetime, timezone
 
 _UNDEFINED = object()
 
@@ -32,7 +32,7 @@ class DotDict(UserDict):
 
     def __init__(self, *a, **kw):
         # don't call super()__init__ to avoid RecursionError
-        self.__dict__['data'] = dict_factory(*a, **kw)
+        self.__dict__["data"] = dict_factory(*a, **kw)
 
     def __getattr__(self, name):
         try:
@@ -46,10 +46,10 @@ class DotDict(UserDict):
 
     def __setattr__(self, name, value):
         # only public property are in the dictionnary
-        if name.startswith('_'):
+        if name.startswith("_"):
             super().__setattr__(name, value)
         else:
-            if hasattr(value, 'items'):
+            if hasattr(value, "items"):
                 value = DotDict(value)
             self[name] = value
 
@@ -57,12 +57,12 @@ class DotDict(UserDict):
         self.__dict__.update(state)
 
     def setdefault(self, name, default):
-        if hasattr(default, 'items'):
+        if hasattr(default, "items"):
             default = DotDict(default)
         return UserDict.setdefault(self, name, default)
 
 
-def ensure_bytes(value, encoding='utf-8'):
+def ensure_bytes(value, encoding="utf-8"):
     if not hasattr(value, "lower"):
         value = str(value)
     if hasattr(value, "isdecimal"):

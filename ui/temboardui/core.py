@@ -1,11 +1,10 @@
 import logging
 
 from .agentclient import TemboardAgentClient
-from .model import worker_engine, Session
+from .model import Session, worker_engine
 from .model.orm import Instances
 from .toolkit.taskmanager import WorkerSet
 from .toolkit.utils import utcnow
-
 
 logger = logging.getLogger(__name__)
 workers = WorkerSet()
@@ -18,7 +17,7 @@ def refresh_discover(app, address, port):
     client = TemboardAgentClient.factory(app.config, address, port)
     try:
         logger.info("Discovering %s.", instance)
-        response = client.get('/discover')
+        response = client.get("/discover")
         response.raise_for_status()
     except (OSError, ConnectionError, client.Error) as e:
         logger.error("Failed to discover %s: %s", instance, e)
@@ -27,7 +26,7 @@ def refresh_discover(app, address, port):
 
     data = response.json()
 
-    discover_etag = response.headers.get('ETag')
+    discover_etag = response.headers.get("ETag")
     if discover_etag == instance.discover_etag:
         logger.info("Discover data up to date for %s.", instance)
         if session.is_modified(instance):

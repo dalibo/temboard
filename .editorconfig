@@ -10,8 +10,8 @@ end_of_line = lf
 trim_trailing_whitespace = true
 # Newline ending every file
 insert_final_newline = true
-# Sync it with default flake8 value.
-max_line_length = 79
+# Sync it with default ruff value.
+max_line_length = 88
 
 # 2 space indentation for UI
 [*.{css,html,js,json,scss,yml,yaml,sql,vue}]

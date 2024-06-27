@@ -5,9 +5,8 @@ import logging
 import os
 from argparse import SUPPRESS as SUPPRESS_ARG
 
-from .utils import DotDict
 from .errors import UserError
-
+from .utils import DotDict
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +35,10 @@ class OptionSpec:
         self.validator = validator
 
     def __repr__(self):
-        return f'<OptionSpec {self}>'
+        return f"<OptionSpec {self}>"
 
     def __str__(self):
-        return f'{self.section}_{self.name}'
+        return f"{self.section}_{self.name}"
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -52,16 +51,16 @@ class OptionSpec:
         return self.default is self.REQUIRED
 
     def add_argument(self, parser, *a, **kw):
-        help_ = kw.get('help')
+        help_ = kw.get("help")
         if help_:
             help_ = help_ % dict(
-                default="*required*" if self.required else self.default,
+                default="*required*" if self.required else self.default
             )
             # Escape % for Argparse formatting.
-            kw['help'] = help_.replace("%", "%%")
+            kw["help"] = help_.replace("%", "%%")
 
-        kw.setdefault('dest', str(self))
-        kw.setdefault('default', SUPPRESS_ARG)
+        kw.setdefault("dest", str(self))
+        kw.setdefault("default", SUPPRESS_ARG)
 
         return parser.add_argument(*a, **kw)
 
@@ -72,8 +71,7 @@ class OptionSpec:
         try:
             return self.validator(value.value)
         except ValueError as e:
-            logger.error(
-                "Invalid %s from %s: %s...", value.name, value.origin, e)
+            logger.error("Invalid %s from %s: %s...", value.name, value.origin, e)
             raise
 
 
@@ -85,7 +83,7 @@ class Value:
         self.origin = origin
 
     def __repr__(self):
-        return '<%(name)s=%(value)r %(origin)s>' % self.__dict__
+        return "<%(name)s=%(value)r %(origin)s>" % self.__dict__
 
 
 def iter_args_values(args):
@@ -94,24 +92,24 @@ def iter_args_values(args):
         return
 
     for k, v in args.__dict__.items():
-        yield Value(k, v, 'args')
+        yield Value(k, v, "args")
 
 
-def iter_configparser_values(parser, filename='config'):
+def iter_configparser_values(parser, filename="config"):
     for section in parser.sections():
         for name, value in parser.items(section):
-            name = f'{section}_{name}'
+            name = f"{section}_{name}"
 
             if value.startswith('"') and value.startswith('"'):
                 raise UserError(
                     "You must not quote string in configuration (%s)."
-                    % name.replace('_', '.')
+                    % name.replace("_", ".")
                 )
 
             if value.startswith("'") and value.startswith("'"):
                 raise UserError(
                     "You must not quote string in configuration (%s)."
-                    % name.replace('_', '.')
+                    % name.replace("_", ".")
                 )
 
             yield Value(name, value, origin=filename)
@@ -119,19 +117,19 @@ def iter_configparser_values(parser, filename='config'):
 
 def iter_environ_values(environ):
     environ = environ or {}
-    prefix = 'TEMBOARD_'
+    prefix = "TEMBOARD_"
     for k, v in environ.items():
         if not k.startswith(prefix):
             continue
 
         k = k.lower()
-        if hasattr(v, 'decode'):
-            v = v.decode('utf-8')
+        if hasattr(v, "decode"):
+            v = v.decode("utf-8")
 
         # Yield the value with temboard prefix so we don't have to define
         # TEMBOARD_TEMBOARD_* to set a value in temboard section.
-        yield Value(k, v, 'environ')
-        yield Value(k[len(prefix):], v, 'environ')
+        yield Value(k, v, "environ")
+        yield Value(k[len(prefix) :], v, "environ")
 
 
 def iter_defaults(specs):
@@ -139,7 +137,7 @@ def iter_defaults(specs):
     for spec in specs.values():
         if spec.required:
             continue
-        yield Value(str(spec), spec.default, 'defaults')
+        yield Value(str(spec), spec.default, "defaults")
 
 
 class MergedConfiguration(DotDict):
@@ -149,8 +147,8 @@ class MergedConfiguration(DotDict):
 
     def __init__(self, specs=None):
         super().__init__()
-        setattr(self, 'specs', {s: s for s in specs or []})
-        setattr(self, 'unvalidated_specs', set(self.specs))
+        setattr(self, "specs", {s: s for s in specs or []})
+        setattr(self, "unvalidated_specs", set(self.specs))
 
     def add_specs(self, specs):
         for s in specs:
@@ -194,8 +192,7 @@ class MergedConfiguration(DotDict):
                 msg = f"Missing {spec.section}:{spec.name} configuration"
                 raise UserError(msg)
 
-    def load(self, args=None, environ=None, parser=None, pwd=None,
-             reload_=False):
+    def load(self, args=None, environ=None, parser=None, pwd=None, reload_=False):
         # Origins are loaded in order. First wins..
         #
         # Loading in this order avoid validating ignored values.

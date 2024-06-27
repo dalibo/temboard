@@ -1,27 +1,18 @@
-from future import standard_library
-import logging
 import io
+import logging
 from datetime import datetime
 from textwrap import dedent
 
-import tornado.web
 import tornado.escape
+import tornado.web
+from future import standard_library
 
-from temboardui.plugins.monitoring.model.orm import (
-    Check,
-    CheckState,
-)
-from temboardui.web.tornado import (
-    HTTPError,
-    jsonify,
-)
+from temboardui.plugins.monitoring.model.orm import Check, CheckState
+from temboardui.web.tornado import HTTPError, jsonify
 
-from . import (
-    blueprint,
-    render_template,
-)
+from ..alerting import check_specs, check_state_detail, checks_info
 from ..tools import get_request_ids, parse_start_end
-from ..alerting import checks_info, check_state_detail, check_specs
+from . import blueprint, render_template
 
 standard_library.install_aliases()
 
@@ -78,14 +69,15 @@ def alerts(request):
 def index(request):
     request.instance.fetch_status()
     return render_template(
-        'alerting.checks.html',
-        nav=True, role=request.current_user,
+        "alerting.checks.html",
+        nav=True,
+        role=request.current_user,
         instance=request.instance,
-        plugin='alerting',  # we cheat here
+        plugin="alerting",  # we cheat here
     )
 
 
-@blueprint.instance_route("/alerting/checks.json", methods=['GET', 'POST'])
+@blueprint.instance_route("/alerting/checks.json", methods=["GET", "POST"])
 def checks(request):
     try:
         host_id, instance_id = get_request_ids(request)
@@ -93,63 +85,75 @@ def checks(request):
         logger.info("Unknown host or no data: %s." % e)
         return jsonify([])
 
-    if 'GET' == request.method:
+    if "GET" == request.method:
         data = checks_info(request.db_session, host_id, instance_id)
         for datum in data:
-            spec = check_specs[datum['name']]
-            if 'value_type' in spec:
-                datum['value_type'] = spec['value_type']
+            spec = check_specs[datum["name"]]
+            if "value_type" in spec:
+                datum["value_type"] = spec["value_type"]
         return jsonify(data)
     else:
         post = tornado.escape.json_decode(request.body)
-        if 'checks' not in post or type(post.get('checks')) is not list:
+        if "checks" not in post or type(post.get("checks")) is not list:
             raise HTTPError(400, "Post data not valid.")
 
-        for row in post['checks']:
-            if row.get('name') not in check_specs:
-                raise HTTPError(404, "Unknown check '%s'" % row.get('name'))
+        for row in post["checks"]:
+            if row.get("name") not in check_specs:
+                raise HTTPError(404, "Unknown check '%s'" % row.get("name"))
 
-        for row in post['checks']:
+        for row in post["checks"]:
             # Find the check from its name
-            check = request.db_session.query(Check).filter(
-                        Check.name == str(row.get('name')),
-                        Check.host_id == host_id,
-                        Check.instance_id == instance_id).first()
+            check = (
+                request.db_session.query(Check)
+                .filter(
+                    Check.name == str(row.get("name")),
+                    Check.host_id == host_id,
+                    Check.instance_id == instance_id,
+                )
+                .first()
+            )
             enabled_before = check.enabled
 
-            if 'enabled' in row:
-                enabled_after = bool(row.get('enabled'))
+            if "enabled" in row:
+                enabled_after = bool(row.get("enabled"))
                 check.enabled = enabled_after
                 # detect any change from enabled to disabled
                 is_getting_disabled = enabled_before and not enabled_after
-            if 'warning' in row:
-                warning = row.get('warning')
+            if "warning" in row:
+                warning = row.get("warning")
                 if type(warning) not in (int, float):
                     raise HTTPError(400, "Post data not valid.")
                 check.warning = warning
-            if 'critical' in row:
-                critical = row.get('critical')
+            if "critical" in row:
+                critical = row.get("critical")
                 if type(critical) not in (int, float):
                     raise HTTPError(400, "Post data not valid.")
                 check.critical = critical
-            if 'description' in row:
-                check.description = row.get('description')
+            if "description" in row:
+                check.description = row.get("description")
 
             request.db_session.merge(check)
 
             if is_getting_disabled:
                 cs = request.db_session.query(CheckState).filter(
-                    CheckState.check_id == check.check_id,
+                    CheckState.check_id == check.check_id
                 )
                 for i in cs:
-                    i.state = 'UNDEF'
+                    i.state = "UNDEF"
                     request.db_session.merge(i)
                     request.db_session.execute(
                         "SELECT monitoring.append_state_changes(:d, :i,"
                         ":s, :k, :v, :w, :c)",
-                        {'d': datetime.utcnow(), 'i': check.check_id,
-                         's': 'UNDEF', 'k': i.key, 'v': None,
-                         'w': check.warning, 'c': check.critical})
+                        {
+                            "d": datetime.utcnow(),
+                            "i": check.check_id,
+                            "s": "UNDEF",
+                            "k": i.key,
+                            "v": None,
+                            "w": check.warning,
+                            "c": check.critical,
+                        },
+                    )
 
         request.db_session.commit()
 
@@ -166,21 +170,20 @@ def check(request, name):
       AND instance_id = :instance_id
       AND name = :check_name
     """)
-    res = request.db_session.execute(query, dict(
-        host_id=host_id,
-        instance_id=instance_id,
-        check_name=name,
-    ))
+    res = request.db_session.execute(
+        query, dict(host_id=host_id, instance_id=instance_id, check_name=name)
+    )
     check = res.fetchone()
     spec = check_specs[name]
     request.instance.fetch_status()
     return render_template(
-        'alerting.check.html',
-        nav=True, role=request.current_user,
+        "alerting.check.html",
+        nav=True,
+        role=request.current_user,
         instance=request.instance,
-        plugin='alerting',  # we cheat here
+        plugin="alerting",  # we cheat here
         check=check,
-        value_type=spec.get('value_type'),
+        value_type=spec.get("value_type"),
     )
 
 
@@ -200,17 +203,16 @@ def check_changes(request, name):
         )), '{}')) FROM monitoring.get_check_changes(%s, %s, %s, %s, %s) f
     ) TO STDOUT
     """)
-    return jsonify(sql_json_query(
-        request, query,
-        host_id, instance_id, name, start, end,
-    ))
+    return jsonify(
+        sql_json_query(request, query, host_id, instance_id, name, start, end)
+    )
 
 
 @blueprint.instance_route(r"/alerting/state_changes/([a-z\-_.0-9]{1,64}).json")
 def state_changes(request, name):
     host_id, instance_id = get_request_ids(request)
     start, end = parse_start_end(request)
-    key = request.handler.get_argument('key', default=None)
+    key = request.handler.get_argument("key", default=None)
     if name not in check_specs:
         raise HTTPError(404, "Unknown check '%s'" % name)
 
@@ -226,10 +228,9 @@ def state_changes(request, name):
     ) TO STDOUT
     """)
 
-    return jsonify(sql_json_query(
-        request, query,
-        host_id, instance_id, name, key, start, end,
-    ))
+    return jsonify(
+        sql_json_query(request, query, host_id, instance_id, name, key, start, end)
+    )
 
 
 @blueprint.instance_route(r"/alerting/states/([a-z\-_.0-9]{1,64}).json")
@@ -241,7 +242,7 @@ def states(request, name):
     detail = check_state_detail(request.db_session, host_id, instance_id, name)
     for d in detail:
         spec = check_specs[name]
-        if 'value_type' in spec:
-            d['value_type'] = spec['value_type']
+        if "value_type" in spec:
+            d["value_type"] = spec["value_type"]
 
     return jsonify(detail)

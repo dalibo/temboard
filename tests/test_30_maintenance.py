@@ -1,18 +1,16 @@
 from contextlib import suppress
 
 import pytest
-from tenacity import (
-    Retrying, retry_unless_exception_type, stop_after_delay, wait_fixed,
-)
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.common.by import By
+from tenacity import Retrying, retry_unless_exception_type, stop_after_delay, wait_fixed
 
 
 def test_all_databases(browser, browse_maintenance):
     ol = browser.select("ol.breadcrumb")
     # Ensure there is a single li
-    li, = ol.find_elements(By.TAG_NAME, 'li')
-    assert 'All Databases' == li.text
+    (li,) = ol.find_elements(By.TAG_NAME, "li")
+    assert "All Databases" == li.text
 
     browser.select("td.database")
     browser.select("td.temboard-tables span.badge")
@@ -24,9 +22,9 @@ def test_all_databases(browser, browse_maintenance):
 
 def test_database(browser, browse_toto_db):
     ol = browser.select("ol.breadcrumb")
-    li0, li1 = ol.find_elements(By.TAG_NAME, 'li')
-    assert 'All Databases' == li0.text
-    assert 'toto' in li1.text
+    li0, li1 = ol.find_elements(By.TAG_NAME, "li")
+    assert "All Databases" == li0.text
+    assert "toto" in li1.text
 
     browser.select("#buttonAnalyze")
     browser.select("#buttonVacuum")
@@ -74,10 +72,10 @@ def test_database_vacuum_now(browser, browse_toto_db):
 
 def test_schema(browser, browse_toto_schema):
     ol = browser.select("ol.breadcrumb")
-    li0, li1, li2 = ol.find_elements(By.TAG_NAME, 'li')
-    assert 'All Databases' == li0.text
-    assert 'toto' in li1.text
-    assert 'toto' in li2.text
+    li0, li1, li2 = ol.find_elements(By.TAG_NAME, "li")
+    assert "All Databases" == li0.text
+    assert "toto" in li1.text
+    assert "toto" in li2.text
 
     browser.select("td.temboard-table")
     browser.select("td.temboard-table-total-size")
@@ -88,7 +86,7 @@ def test_schema(browser, browse_toto_schema):
 
 
 def test_schema_reindex_now(browser, browse_toto_schema):
-    browser.refresh_until('.main td.index')
+    browser.refresh_until(".main td.index")
     browser.select("td.reindex .buttonReindex").click()
 
     browser.select("#reindexNow").click()
@@ -164,7 +162,7 @@ def browse_maintenance(browse_instance, browser):
 @pytest.fixture
 def browse_toto_db(browse_maintenance, browser):
     for a in browser.select_all(".main td.database a"):
-        if 'toto' == a.text:
+        if "toto" == a.text:
             a.click()
             break
 
@@ -172,7 +170,7 @@ def browse_toto_db(browse_maintenance, browser):
 @pytest.fixture
 def browse_toto_table(browse_toto_schema, browser):
     for a in browser.select_all(".main td.temboard-table a"):
-        if 'toto' == a.text:
+        if "toto" == a.text:
             a.click()
             break
 
@@ -180,7 +178,7 @@ def browse_toto_table(browse_toto_schema, browser):
 @pytest.fixture
 def browse_toto_schema(browse_toto_db, browser):
     for a in browser.select_all(".main td.schema a"):
-        if 'toto' == a.text:
+        if "toto" == a.text:
             a.click()
             break
 
@@ -190,5 +188,5 @@ def retry_until_hidden():
         yield from Retrying(
             retry=retry_unless_exception_type(ElementNotInteractableException),
             stop=stop_after_delay(10),
-            wait=wait_fixed(.1),
+            wait=wait_fixed(0.1),
         )

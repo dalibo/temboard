@@ -17,7 +17,6 @@ def instance_group_prod(browse_settings_instance_groups, browser_session):
 
 
 def test_create_instance_group(instance_group_prod, browser):
-
     assert any(
         "Production" in group.text
         for group in browser.select_all("#tableGroups tbody tr")
@@ -25,17 +24,12 @@ def test_create_instance_group(instance_group_prod, browser):
 
 
 def test_update_instance_group(instance_group_prod, browser):
-
     tr = [
-        tr
-        for tr in browser.select_all("#tableGroups tbody tr")
-        if "prod" in tr.text
+        tr for tr in browser.select_all("#tableGroups tbody tr") if "prod" in tr.text
     ][0]
 
     tr.find_element(by=By.CSS_SELECTOR, value="[data-action=edit]").click()
-    assert (
-        browser.select("#inputNewGroupname").get_attribute("value") == "prod"
-    )
+    assert browser.select("#inputNewGroupname").get_attribute("value") == "prod"
     description_input = browser.select("#inputDescription")
     assert description_input.get_attribute("value") == "Production"
 
@@ -48,11 +42,8 @@ def test_update_instance_group(instance_group_prod, browser):
 
 
 def test_delete_instance_group(instance_group_prod, browser):
-
     tr = [
-        tr
-        for tr in browser.select_all("#tableGroups tbody tr")
-        if "prod" in tr.text
+        tr for tr in browser.select_all("#tableGroups tbody tr") if "prod" in tr.text
     ][0]
 
     assert any(

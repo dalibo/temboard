@@ -3,18 +3,18 @@ import pytest
 
 @pytest.fixture
 def engine(mocker):
-    engine = mocker.Mock(name='engine')
-    conn = mocker.MagicMock(name='conn')
+    engine = mocker.Mock(name="engine")
+    conn = mocker.MagicMock(name="conn")
     engine.pool._invoke_creator.return_value = conn
     engine.conn = conn
     cur = conn.cursor.return_value.__enter__.return_value
-    cur.fetchone.return_value = ('PostgreSQL 15 Debian',)
+    cur.fetchone.return_value = ("PostgreSQL 15 Debian",)
     engine.cur = cur
     return engine
 
 
 def test_check_connectivity_ok(engine, mocker):
-    sleep = mocker.patch('temboardui.model.sleep')
+    sleep = mocker.patch("temboardui.model.sleep")
     sleep.side_effect = Exception("Must not sleep")
     from temboardui.model import check_connectivity
 
@@ -24,12 +24,10 @@ def test_check_connectivity_ok(engine, mocker):
 
 
 def test_check_connectivity_sleep(engine, mocker):
-    sleep = mocker.patch('temboardui.model.sleep')
+    sleep = mocker.patch("temboardui.model.sleep")
     from temboardui.model import check_connectivity
 
-    engine.pool._invoke_creator.side_effect = [
-        Exception(), engine.conn,
-    ]
+    engine.pool._invoke_creator.side_effect = [Exception(), engine.conn]
 
     check_connectivity(engine)
 
@@ -37,7 +35,7 @@ def test_check_connectivity_sleep(engine, mocker):
 
 
 def test_check_connectivity_fail(engine, mocker):
-    sleep = mocker.patch('temboardui.model.sleep')
+    sleep = mocker.patch("temboardui.model.sleep")
     from temboardui.model import check_connectivity
 
     engine.pool._invoke_creator.side_effect = Exception()
@@ -49,10 +47,10 @@ def test_check_connectivity_fail(engine, mocker):
 
 
 def test_configure(mocker):
-    mod = 'temboardui.model'
-    Session = mocker.patch(mod + '.Session')
+    mod = "temboardui.model"
+    Session = mocker.patch(mod + ".Session")
 
     from temboardui.model import configure
 
-    configure(dsn='sqlite://')  # LOL
+    configure(dsn="sqlite://")  # LOL
     assert Session.configure.called is True

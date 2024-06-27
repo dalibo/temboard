@@ -27,27 +27,15 @@ import ssl
 
 from tornado import gen
 from tornado.escape import native_str
-from tornado.httpserver import HTTPServer, HTTPRequest
-from tornado.httpclient import HTTPResponse
-from tornado.httputil import (
-    HTTPHeaders,
-    parse_request_start_line,
-    ResponseStartLine,
-)
 from tornado.http1connection import HTTP1Connection
+from tornado.httpclient import HTTPResponse
+from tornado.httpserver import HTTPRequest, HTTPServer
+from tornado.httputil import HTTPHeaders, ResponseStartLine, parse_request_start_line
 from tornado.ioloop import IOLoop
-from tornado.iostream import (
-    IOStream,
-    SSLIOStream,
-    StreamClosedError,
-)
-from tornado.log import (
-    app_log,
-    gen_log,
-)
+from tornado.iostream import IOStream, SSLIOStream, StreamClosedError
+from tornado.log import app_log, gen_log
 from tornado.netutil import ssl_options_to_context
 from tornado.util import errno_from_exception
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,34 +44,34 @@ def parse_http_headers(payload):
     payload = native_str(payload)
     # Implements simple HTTP1Connection._read_message but IO-free.
     lines = payload.splitlines()
-    if lines and ':' not in lines[0]:
+    if lines and ":" not in lines[0]:
         # Drop start line
         lines.pop(0)
     # Drop contents
-    if '' in lines:
-        lines[:] = lines[:lines.index('')]
+    if "" in lines:
+        lines[:] = lines[: lines.index("")]
     return (
-        parse_request_start_line('GET / HTTP/1.1'),
-        HTTPHeaders.parse('\r\n'.join(lines)),
+        parse_request_start_line("GET / HTTP/1.1"),
+        HTTPHeaders.parse("\r\n".join(lines)),
     )
 
 
 def protocol_switcher(request):
     try:
-        host = request.headers['Host']
+        host = request.headers["Host"]
     except KeyError:
         # We don't have FQDN. Fallback to socket address. This breaks
         # name-based virtualhost.
-        host = '%(address)s:%(port)s' % dict(
-            request.config.temboard, address=request.host)
-    new_url = f'https://{host}{request.uri}'
-    headers = HTTPHeaders({
-        'Content-Length': '0',
-        'Location': new_url,
-    })
+        host = "%(address)s:%(port)s" % dict(
+            request.config.temboard, address=request.host
+        )
+    new_url = f"https://{host}{request.uri}"
+    headers = HTTPHeaders({"Content-Length": "0", "Location": new_url})
     logger.debug("Redirecting client to %s.", new_url)
     return HTTPResponse(
-        request=request, code=301, headers=headers,
+        request=request,
+        code=301,
+        headers=headers,
         # If effective_url is not set, HTTPResponse falls back to request.url,
         # which does not exists... See tornado.httpclient.HTTPResponse.__init__
         # and tornado.httpserver.HTTPRequest.
@@ -117,26 +105,23 @@ class EasySSLIOStream(SSLIOStream):
             elif err.args[0] == ssl.SSL_ERROR_WANT_WRITE:
                 self._handshake_writing = True
                 return
-            elif err.args[0] in (ssl.SSL_ERROR_EOF,
-                                 ssl.SSL_ERROR_ZERO_RETURN):
+            elif err.args[0] in (ssl.SSL_ERROR_EOF, ssl.SSL_ERROR_ZERO_RETURN):
                 return self.close(exc_info=True)
             elif err.args[0] == ssl.SSL_ERROR_SSL:
                 try:
                     peer = self.socket.getpeername()
                 except Exception:
-                    peer = '(not connected)'
+                    peer = "(not connected)"
 
-                if getattr(err, 'reason', None) == 'HTTP_REQUEST':
+                if getattr(err, "reason", None) == "HTTP_REQUEST":
                     # Async raise HTTP_REQUEST error.
-                    self._ssl_connect_future.set_exception(
-                        SSLErrorHTTPRequest()
-                    )
-                    gen_log.warning("HTTP_REQUEST on SSL handshake from %s.",
-                                    peer)
+                    self._ssl_connect_future.set_exception(SSLErrorHTTPRequest())
+                    gen_log.warning("HTTP_REQUEST on SSL handshake from %s.", peer)
                     return
 
-                gen_log.warning("SSL Error on %s %s: %s",
-                                self.socket.fileno(), peer, err)
+                gen_log.warning(
+                    "SSL Error on %s %s: %s", self.socket.fileno(), peer, err
+                )
                 return self.close(exc_info=True)
             raise
         except OSError as err:
@@ -144,8 +129,7 @@ class EasySSLIOStream(SSLIOStream):
             # to cause do_handshake to raise EBADF and ENOTCONN, so make
             # those errors quiet as well.
             # https://groups.google.com/forum/?fromgroups#!topic/python-tornado/ApucKJat1_0
-            if (self._is_connreset(err) or
-                    err.args[0] in (errno.EBADF, errno.ENOTCONN)):
+            if self._is_connreset(err) or err.args[0] in (errno.EBADF, errno.ENOTCONN):
                 return self.close(exc_info=True)
             raise
         except AttributeError:
@@ -181,9 +165,7 @@ class AutoHTTPSServer(HTTPServer):
 
         try:
             connection = context.wrap_socket(
-                connection,
-                server_side=True,
-                do_handshake_on_connect=False,
+                connection, server_side=True, do_handshake_on_connect=False
             )
         except ssl.SSLError as err:
             if err.args[0] == ssl.SSL_ERROR_EOF:
@@ -218,7 +200,7 @@ class AutoHTTPSServer(HTTPServer):
                 connection,
                 max_buffer_size=self.max_buffer_size,
                 read_chunk_size=self.read_chunk_size,
-                **kw
+                **kw,
             )
             future = self.handle_stream(stream, address)
             if future is not None:
@@ -244,7 +226,9 @@ class AutoHTTPSServer(HTTPServer):
         except (OSError, StreamClosedError) as e:
             logger.debug(
                 "Error during SSL handshake: %s %s",
-                e.__class__.__name__, getattr(e, "strerror", str(e)))
+                e.__class__.__name__,
+                getattr(e, "strerror", str(e)),
+            )
             logger.debug("Stream closed by client during handshake. Skipping.")
             return
         else:
@@ -267,29 +251,26 @@ class AutoHTTPSServer(HTTPServer):
             logger.debug("Received %r", payload[:128])
         # Simulate conn._read_message side effect. This is required by
         # HTTP1Connection.write_headers()
-        conn._request_start_line = parse_request_start_line('GET / HTTP/1.1')
+        conn._request_start_line = parse_request_start_line("GET / HTTP/1.1")
         conn._request_headers = HTTPHeaders()
         try:
             start_line, headers = parse_http_headers(payload)
             conn._request_start_line = start_line
             request = HTTPRequest(
-                connection=conn,
-                headers=headers,
-                start_line=start_line,
+                connection=conn, headers=headers, start_line=start_line
             )
             request.config = self.request_callback.config
             response = protocol_switcher(request)
         except Exception as e:
             logger.error("Failed to switch to HTTPS: %s", e)
             response = HTTPResponse(
-                request=object(), code=500,
-                headers=HTTPHeaders({'Content-Length': '0'}),
-                effective_url='https://useless_effective_url'
+                request=object(),
+                code=500,
+                headers=HTTPHeaders({"Content-Length": "0"}),
+                effective_url="https://useless_effective_url",
             )
         yield conn.write_headers(
-            start_line=ResponseStartLine(
-                'HTTP/1.1', response.code, response.reason,
-            ),
+            start_line=ResponseStartLine("HTTP/1.1", response.code, response.reason),
             headers=response.headers,
         )
 

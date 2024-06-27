@@ -12,7 +12,6 @@ class Web(SubCommand):
     """
 
     def main(self, args):
-
         self.app.httpd.run()
 
         return 0

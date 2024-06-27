@@ -36,7 +36,7 @@ def add_metric(path, dbname, time, data, keep_limit):
         c = conn.cursor()
         c.execute(
             "INSERT INTO metrics VALUES(?, ?)",
-            (time, json.dumps(data, cls=JSONEncoder))
+            (time, json.dumps(data, cls=JSONEncoder)),
         )
         # Purge
         c.execute(
@@ -47,23 +47,19 @@ def add_metric(path, dbname, time, data, keep_limit):
                     LIMIT ?
                 )
             """),
-            (keep_limit,)
+            (keep_limit,),
         )
 
 
 def get_last_metric(path, dbname):
     with sqlite3.connect(os.path.join(path, dbname)) as conn:
         c = conn.cursor()
-        c.execute(
-            "SELECT data FROM metrics ORDER BY time DESC LIMIT 1"
-        )
+        c.execute("SELECT data FROM metrics ORDER BY time DESC LIMIT 1")
         return c.fetchone()
 
 
 def get_all_metrics(path, dbname):
     with sqlite3.connect(os.path.join(path, dbname)) as conn:
         c = conn.cursor()
-        c.execute(
-            "SELECT data FROM metrics ORDER BY time ASC"
-        )
+        c.execute("SELECT data FROM metrics ORDER BY time ASC")
         return c.fetchall()

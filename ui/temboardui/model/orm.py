@@ -9,6 +9,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.schema import Column
 from sqlalchemy.sql import case, column, extract, func
 from sqlalchemy.types import TIMESTAMP, BigInteger, UnicodeText
+
 from temboardui.model import tables
 
 from ..toolkit.utils import utcnow
@@ -45,13 +46,19 @@ def validate_boolean(value):
         if value == 0:
             value = False
     if isinstance(value, basestring):
-        if str(value).lower() == 'yes' or \
-           str(value).lower() == 'true' or \
-           str(value).lower() == 't' or value == '1':
+        if (
+            str(value).lower() == "yes"
+            or str(value).lower() == "true"
+            or str(value).lower() == "t"
+            or value == "1"
+        ):
             value = True
-        if str(value).lower() == 'no' or \
-           str(value).lower() == 'false' or \
-           str(value).lower() == 'f' or value == '0':
+        if (
+            str(value).lower() == "no"
+            or str(value).lower() == "false"
+            or str(value).lower() == "f"
+            or value == "0"
+        ):
             value = False
     assert isinstance(value, bool)
     return value
@@ -61,7 +68,7 @@ validators = {
     Integer: validate_int,
     String: validate_string,
     DateTime: validate_datetime,
-    Boolean: validate_boolean
+    Boolean: validate_boolean,
 }
 
 
@@ -76,8 +83,8 @@ def to_epoch(column):
 def total_measure_interval(column):
     return extract(
         "epoch",
-        case([(func.min(column) == '0 second', '1 second')],
-             else_=func.min(column)))
+        case([(func.min(column) == "0 second", "1 second")], else_=func.min(column)),
+    )
 
 
 # We use 8192 as default value for block size
@@ -87,22 +94,25 @@ block_size = 8192
 
 def total_read(c):
     return (
-        old_div(func.sum(c.shared_blks_read + c.local_blks_read +
-                         c.temp_blks_read),
-                total_measure_interval(c.mesure_interval))
+        old_div(
+            func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read),
+            total_measure_interval(c.mesure_interval),
+        )
     ).label("total_blks_read")
 
 
 def total_hit(c):
     return (
-        old_div(func.sum(c.shared_blks_hit + c.local_blks_hit),
-                total_measure_interval(c.mesure_interval))
+        old_div(
+            func.sum(c.shared_blks_hit + c.local_blks_hit),
+            total_measure_interval(c.mesure_interval),
+        )
     ).label("total_blks_hit")
 
 
-@event.listens_for(Model, 'attribute_instrument')
+@event.listens_for(Model, "attribute_instrument")
 def configure_listener(class_, key, inst):
-    if not hasattr(inst.property, 'columns'):
+    if not hasattr(inst.property, "columns"):
         return
 
     @event.listens_for(inst, "set", retval=True)
@@ -118,8 +128,8 @@ def configure_listener(class_, key, inst):
 
 
 class ApiKeys(Model):
-    __tablename__ = 'apikeys'
-    __table_args__ = {'schema': 'application'}
+    __tablename__ = "apikeys"
+    __table_args__ = {"schema": "application"}
 
     id = Column(BigInteger, primary_key=True)
     secret = Column(UnicodeText)
@@ -133,7 +143,7 @@ class ApiKeys(Model):
     @classmethod
     def insert(cls, secret, comment):
         return Query(cls).from_statement(
-            text(QUERIES['apikeys-insert'])
+            text(QUERIES["apikeys-insert"])
             .bindparams(secret=secret, comment=comment)
             .columns(*cls.__mapper__.c.values())
         )
@@ -141,29 +151,27 @@ class ApiKeys(Model):
     @classmethod
     def select_active(cls):
         return Query(cls).from_statement(
-            text(QUERIES['apikeys-select-active'])
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["apikeys-select-active"]).columns(*cls.__mapper__.c.values())
         )
 
     @classmethod
     def delete(cls, id):
         return Query(cls).from_statement(
-            text(QUERIES['apikeys-delete'])
+            text(QUERIES["apikeys-delete"])
             .bindparams(id=id)
             .columns(cls.id, cls.comment)
-            )
+        )
 
     @classmethod
     def purge(cls):
         return Query(cls).from_statement(
-            text(QUERIES['apikeys-purge'])
-            .columns(cls.id, cls.comment)
-            )
+            text(QUERIES["apikeys-purge"]).columns(cls.id, cls.comment)
+        )
 
     @classmethod
     def select_secret(cls, secret):
         return Query(cls).from_statement(
-            text(QUERIES['apikeys-select-secret'])
+            text(QUERIES["apikeys-select-secret"])
             .bindparams(secret=secret)
             .columns(*cls.__mapper__.c.values())
         )
@@ -195,12 +203,12 @@ class Roles(Model):
         RoleGroups,
         order_by=RoleGroups.group_name,
         backref="roles",
-        cascade="save-update, merge, delete, delete-orphan"
+        cascade="save-update, merge, delete, delete-orphan",
     )
 
     @classmethod
     def count(cls):
-        return text(QUERIES['users-count']).columns(count=Integer)
+        return text(QUERIES["users-count"]).columns(count=Integer)
 
 
 class StubRole:
@@ -216,7 +224,7 @@ class Instances(Model):
         order_by="InstanceGroups.group_name",
         backref="instances",
         cascade="save-update, merge, delete, delete-orphan",
-        lazy='joined',
+        lazy="joined",
     )
 
     plugins = relationship(
@@ -224,85 +232,84 @@ class Instances(Model):
         order_by="Plugins.plugin_name",
         backref="instances",
         cascade="save-update, merge, delete, delete-orphan",
-        lazy='joined',
+        lazy="joined",
     )
 
     def __str__(self):
-        return f'{self.hostname}:{self.pg_port}'
+        return f"{self.hostname}:{self.pg_port}"
 
     @classmethod
     def factory(
-            cls,
-            agent_address,
-            agent_port,
-            discover,
-            discover_etag=None,
-            notify=False,
-            comment=None,
+        cls,
+        agent_address,
+        agent_port,
+        discover,
+        discover_etag=None,
+        notify=False,
+        comment=None,
     ):
         return cls(
             agent_address=str(agent_address),
             agent_port=int(agent_port),
             discover=discover,
             discover_etag=discover_etag,
-            pg_port=int(discover['postgres']['port']),
-            hostname=discover['system']['fqdn'],
+            pg_port=int(discover["postgres"]["port"]),
+            hostname=discover["system"]["fqdn"],
             notify=bool(notify),
-            comment=comment or '',
+            comment=comment or "",
         )
 
     @classmethod
     def get(cls, agent_address, agent_port):
         return (
             Query(cls)
-            .prefix_with('-- Instances.get\n')
+            .prefix_with("-- Instances.get\n")
             .filter(cls.agent_address == str(agent_address))
             .filter(cls.agent_port == int(agent_port))
         )
 
     @classmethod
     def count(cls):
-        return text(QUERIES['instances-count']).columns(count=Integer)
+        return text(QUERIES["instances-count"]).columns(count=Integer)
 
     @classmethod
     def all(cls):
         return Query(cls).from_statement(
-            text(QUERIES["instances-all"])
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["instances-all"]).columns(*cls.__mapper__.c.values())
         )
 
     # Compatibility from new JSONb discover to old column discover.
     @property
     def cpu(self):
         d = self.discover or {}
-        return d.get('system', {}).get('cpu_count')
+        return d.get("system", {}).get("cpu_count")
 
     @property
     def memory_size(self):
         d = self.discover or {}
-        return d.get('system', {}).get('memory')
+        return d.get("system", {}).get("memory")
 
     @property
     def pg_data(self):
         d = self.discover or {}
-        return d.get('postgres', {}).get('data_directory')
+        return d.get("postgres", {}).get("data_directory")
 
     @property
     def pg_version(self):
         d = self.discover or {}
-        return d.get('postgres', {}).get('version')
+        return d.get("postgres", {}).get("version")
 
     @property
     def pg_version_summary(self):
         d = self.discover or {}
-        return d.get('postgres', {}).get('version_summary')
+        return d.get("postgres", {}).get("version_summary")
 
     def dashboard_url(self, app):
-        scheme = 'https' if app.config.temboard.ssl_key_file else 'http'
+        scheme = "https" if app.config.temboard.ssl_key_file else "http"
         host = app.config.temboard.address
         port = app.config.temboard.port
         path = f"/server/{self.agent_address}/{self.agent_port}/dashboard"
-        return f'{scheme}://{host}:{port}{path}'
+        return f"{scheme}://{host}:{port}{path}"
 
     def asdict(self):
         return dict(
@@ -329,36 +336,30 @@ class Groups(Model):
         cascade="save-update, merge, delete, delete-orphan",
         foreign_keys=[
             AccessRoleInstance.instance_group_name,
-            AccessRoleInstance.instance_group_kind
-        ]
+            AccessRoleInstance.instance_group_kind,
+        ],
     )
 
 
 class Biggest:
-
     def __init__(self, order_by):
         self.order_by = order_by
 
     def __call__(self, var, minval=0, label=None):
         label = label or var
         return func.greatest(
-            column(var) -
-            func.lag(column(var))
-            .over(order_by=self.order_by),
-            minval
+            column(var) - func.lag(column(var)).over(order_by=self.order_by), minval
         ).label(label)
 
 
 class Biggestsum:
-
     def __init__(self, order_by):
         self.order_by = order_by
 
     def __call__(self, var, minval=0, label=None):
         label = label or var
         return func.greatest(
-            func.sum(column(var)) -
-            func.lag(func.sum(column(var)))
-            .over(order_by=self.order_by),
-            minval
+            func.sum(column(var))
+            - func.lag(func.sum(column(var))).over(order_by=self.order_by),
+            minval,
         ).label(label)

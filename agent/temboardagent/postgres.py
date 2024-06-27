@@ -12,10 +12,10 @@ import re
 from contextlib import closing
 from time import sleep
 
-from psycopg2 import connect
-from psycopg2 import Error as Psycopg2Error
-from psycopg2.pool import ThreadedConnectionPool
 import psycopg2.extensions
+from psycopg2 import Error as Psycopg2Error
+from psycopg2 import connect
+from psycopg2.pool import ThreadedConnectionPool
 
 from .tools import noop_manager
 
@@ -25,13 +25,14 @@ logger = logging.getLogger(__name__)
 # See https://www.psycopg.org/docs/faq.html#faq-float
 DEC2FLOAT = psycopg2.extensions.new_type(
     psycopg2.extensions.DECIMAL.values,
-    'DEC2FLOAT',
-    lambda value, curs: float(value) if value is not None else None)
+    "DEC2FLOAT",
+    lambda value, curs: float(value) if value is not None else None,
+)
 psycopg2.extensions.register_type(DEC2FLOAT)
 
 
 def pg_escape(in_string, escapee_char=r"'"):
-    out_string = ''
+    out_string = ""
     out_string += escapee_char
     out_string += re.sub(escapee_char, escapee_char * 2, in_string)
     out_string += escapee_char
@@ -42,25 +43,30 @@ class Postgres:
     # main object holding Postgres parameters and methods.
 
     def __init__(
-            self, host=None, port=5432, user=None, password=None, dbname=None,
-            app=None,
-            **kw):
+        self,
+        host=None,
+        port=5432,
+        user=None,
+        password=None,
+        dbname=None,
+        app=None,
+        **kw,
+    ):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         # Compat with conninfo dict.
-        if 'database' in kw:
-            dbname = kw['database']
+        if "database" in kw:
+            dbname = kw["database"]
         self.dbname = dbname
         self.app = app
         self._server_version = None
         self.connection_lost_observers = []
 
     def __repr__(self):
-        return '<{} on {}@{}:{}/{}>'.format(
-            self.__class__.__name__,
-            self.user, self.host, self.port, self.dbname,
+        return "<{} on {}@{}:{}/{}>".format(
+            self.__class__.__name__, self.user, self.host, self.port, self.dbname
         )
 
     def dbpool(self):
@@ -70,7 +76,8 @@ class Postgres:
         return ConnectionPool(
             app=self.app,
             observers=self.connection_lost_observers,
-            minconn=1, maxconn=2,
+            minconn=1,
+            maxconn=2,
             **self.pqvars(),
         )
 
@@ -101,7 +108,7 @@ class Postgres:
             password=self.password,
             database=dbname or self.dbname,
             connection_factory=FactoryConnection,
-            application_name='temboard-agent',
+            application_name="temboard-agent",
         )
 
     def notify_observers(self):
@@ -111,9 +118,8 @@ class Postgres:
 
 class FactoryConnection(psycopg2.extensions.connection):  # pragma: nocover
     def cursor(self, *a, **kw):
-        row_factory = kw.pop('row_factory', None)
-        kw['cursor_factory'] = FactoryCursor.make_factory(
-            row_factory=row_factory)
+        row_factory = kw.pop("row_factory", None)
+        kw["cursor_factory"] = FactoryCursor.make_factory(row_factory=row_factory)
         return super().cursor(*a, **kw)
 
     def execute(self, sql, *args):
@@ -141,15 +147,18 @@ class FactoryCursor(psycopg2.extensions.cursor):  # pragma: nocover
     def make_factory(cls, row_factory=None):
         # Build a cursor_factory for psycopg2 connection.
         def factory(*a, **kw):
-            kw['row_factory'] = row_factory
+            kw["row_factory"] = row_factory
             return cls(*a, **kw)
+
         return factory
 
     def __init__(self, conn, name=None, row_factory=None):
         super().__init__(conn)
         if not row_factory:
+
             def row_factory(**kw):
                 return kw
+
         self._row_factory = row_factory
 
     def fetchone(self):
@@ -180,8 +189,7 @@ class ConnectionPool(ThreadedConnectionPool):
         super().__init__(**kw)
 
     def _connect(self, *a, **kw):
-        return retry_connect(
-            super()._connect, self.app, *a, **kw)
+        return retry_connect(super()._connect, self.app, *a, **kw)
 
     def auto_reconnect(self):
         # Helper to recover a connection lost in a code block
@@ -271,14 +279,14 @@ def retry_connect(connect, app, *a, **kw):
     for wait in [1] * 3 + [0]:
         try:
             conn = connect(*a, **kw)
-            if not app.status.data['postgres']['available']:
+            if not app.status.data["postgres"]["available"]:
                 logger.info("Recovered Postgres connexion.")
                 app.postgres.notify_observers()
-            app.status.data['postgres']['available'] = True
+            app.status.data["postgres"]["available"] = True
             conn.set_session(autocommit=True)
             return conn
         except Exception as e:
-            app.status.data['postgres']['available'] = False
+            app.status.data["postgres"]["available"] = False
             if wait:
                 logger.debug("Retrying connection open in %ss: %s", wait, e)
                 sleep(wait)
@@ -324,8 +332,8 @@ def extract_conninfo_fields(conninfo, searched_keys=["host", "port"]):
     if "password" in searched_keys:
         raise Exception("Password should not be fetched from conninfo.")
     filterred_conninfo = {}
-    for kv in conninfo.split(' '):
-        k, _, v = kv.partition('=')
+    for kv in conninfo.split(" "):
+        k, _, v = kv.partition("=")
         if k in searched_keys:
             filterred_conninfo[k] = v
     return filterred_conninfo

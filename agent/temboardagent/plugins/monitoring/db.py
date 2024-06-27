@@ -46,24 +46,18 @@ def add_metric(path, dbname, time, data):
         c = conn.cursor()
         c.execute(
             "INSERT INTO metrics VALUES(?, ?)",
-            (time, json.dumps(data, cls=JSONEncoder))
+            (time, json.dumps(data, cls=JSONEncoder)),
         )
         # When data are pulled from temboard server, we need to keep 6 hours of
         # data history for recovery.
         time_limit = current_time() - (60 * 60 * 6)
-        c.execute(
-            "DELETE FROM metrics WHERE time < ?",
-            (time_limit,)
-        )
+        c.execute("DELETE FROM metrics WHERE time < ?", (time_limit,))
 
 
 def delete_metric(path, dbname, time):
     with sqlite3.connect(os.path.join(path, dbname)) as conn:
         c = conn.cursor()
-        c.execute(
-            "DELETE FROM metrics WHERE time = ?",
-            (time,)
-        )
+        c.execute("DELETE FROM metrics WHERE time = ?", (time,))
 
 
 def get_metrics(path, dbname, limit=50, start_timestamp=None):
@@ -93,10 +87,7 @@ def get_metrics(path, dbname, limit=50, start_timestamp=None):
 def get_last_measure(path, dbname, key):
     with sqlite3.connect(os.path.join(path, dbname)) as conn:
         c = conn.cursor()
-        c.execute(
-            "SELECT time, data FROM last_measures WHERE key = ?",
-            (key,)
-        )
+        c.execute("SELECT time, data FROM last_measures WHERE key = ?", (key,))
         return c.fetchone()
 
 
@@ -106,35 +97,35 @@ def upsert_last_measure(path, dbname, time, key, data):
         try:
             c.execute(
                 "INSERT INTO last_measures VALUES(?, ?, ?)",
-                (time, key, json.dumps(data, cls=JSONEncoder))
+                (time, key, json.dumps(data, cls=JSONEncoder)),
             )
         except sqlite3.IntegrityError:
             c.execute(
-                "UPDATE last_measures SET time = ?, data = ? "
-                "WHERE key = ?",
-                (time, json.dumps(data, cls=JSONEncoder), key)
+                "UPDATE last_measures SET time = ?, data = ? " "WHERE key = ?",
+                (time, json.dumps(data, cls=JSONEncoder), key),
             )
 
 
 def drop_current_for_delta_metrics(metrics):
     # Drop current value. Keeping only delta value.
-    for probe, samples in metrics['data'].items():
+    for probe, samples in metrics["data"].items():
         samples[:] = [
-            sample for sample in samples
+            sample
+            for sample in samples
             # Keep non-delta sample or delta with last measure.
-            if 'current' not in sample or 'measure_interval' in sample
+            if "current" not in sample or "measure_interval" in sample
         ]
 
         for sample in samples:
-            sample.pop('current', None)
+            sample.pop("current", None)
 
     return metrics
 
 
 def use_current_for_delta_metrics(metrics):
     # Override delta measures with current value.
-    for probe, samples in metrics['data'].items():
+    for probe, samples in metrics["data"].items():
         for sample in samples:
-            sample.update(sample.pop('current', {}))
-            sample.pop('measure_interval', None)
+            sample.update(sample.pop("current", {}))
+            sample.pop("measure_interval", None)
     return metrics

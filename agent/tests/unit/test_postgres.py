@@ -1,7 +1,9 @@
 def test_pickle():
-    from pickle import dumps as pickle, loads as unpickle
+    from pickle import dumps as pickle
+    from pickle import loads as unpickle
+
     from temboardagent.postgres import Postgres
 
-    orig = Postgres(host='myhost')
+    orig = Postgres(host="myhost")
     copy = unpickle(pickle(orig))
-    assert 'myhost' == copy.host
+    assert "myhost" == copy.host

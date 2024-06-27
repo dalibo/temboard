@@ -1,9 +1,8 @@
 import logging
 
+from . import discover
 from .postgres import extract_conninfo_fields
 from .queries import QUERIES
-from . import discover
-
 
 logger = logging.getLogger(__name__)
 
@@ -11,11 +10,7 @@ logger = logging.getLogger(__name__)
 class Status:
     def __init__(self, app):
         self.app = app
-        self.data = dict(
-            postgres=dict(available=True),
-            temboard=dict(),
-            system=dict(),
-        )
+        self.data = dict(postgres=dict(available=True), temboard=dict(), system=dict())
 
     def get(self, conn=None):
         self.data["postgres"] = {}
@@ -24,20 +19,14 @@ class Status:
         discover_data = self.app.discover.ensure_latest()
         with self.app.postgres.maybe_connect(conn=conn) as conn:
             logger.debug("Inspecting Postgres instance.")
-            collect_postgres(
-                self.data,
-                conn,
-                discover_data,
-            )
+            collect_postgres(self.data, conn, discover_data)
         self.data["temboard"]["status"] = "running"
         self.data["temboard"]["pid"] = self.app.pid
         self.data["temboard"]["start_time"] = self.app.start_datetime.strftime(
             "%Y-%m-%dT%H:%M:%S%Z"
         )
         self.data["system"]["status"] = "running"
-        self.data["system"]["start_time"] = discover_data["system"][
-            "start_time"
-        ]
+        self.data["system"]["start_time"] = discover_data["system"]["start_time"]
         # Collect CPU and memory info in case of hotplug.
         discover.collect_cpu(self.data)
         discover.collect_memory(self.data)
@@ -51,9 +40,7 @@ def collect_postgres(data, conn, discover_data):
     try:
         row = conn.queryone(QUERIES["status"])
         data["postgres"].update(row)
-        conninfo = extract_conninfo_fields(
-            data["postgres"]["primary_conninfo"]
-        )
+        conninfo = extract_conninfo_fields(data["postgres"]["primary_conninfo"])
         data["postgres"]["primary"] = conninfo
         data["postgres"]["primary_conninfo"] = " ".join(
             f"{k}={v}" for k, v in conninfo.items()

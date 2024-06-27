@@ -37,22 +37,21 @@ class QueryFiler(dict):
             name, ext = os.path.splitext(filename)
             with open(path) as fo:
                 if pg_version:
-                    sql = ''.join(filter(
-                        lambda line: filter_pragma_version(line, pg_version),
-                        fo,
-                    ))
+                    sql = "".join(
+                        filter(lambda line: filter_pragma_version(line, pg_version), fo)
+                    )
                 else:
                     sql = fo.read()
             self[name] = fmt % (path, sql)
 
     def iter_files(self):
         for filename in os.listdir(self.path):
-            if not filename.endswith('.sql'):
+            if not filename.endswith(".sql"):
                 continue
-            yield self.path + '/' + filename
+            yield self.path + "/" + filename
 
 
-_pragma_version_re = re.compile(r'-- pragma:pg_version_(min|max) (\d{6})')
+_pragma_version_re = re.compile(r"-- pragma:pg_version_(min|max) (\d{6})")
 
 
 def filter_pragma_version(line, pg_version):
@@ -63,9 +62,9 @@ def filter_pragma_version(line, pg_version):
     operator = match.group(1)
     target = int(match.group(2))
 
-    if 'min' == operator and target <= pg_version:
+    if "min" == operator and target <= pg_version:
         return True
-    if 'max' == operator and pg_version <= target:
+    if "max" == operator and pg_version <= target:
         return True
 
     return False

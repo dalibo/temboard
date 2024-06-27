@@ -2,12 +2,11 @@ import errno
 import logging
 import os
 import re
-from datetime import datetime
-from time import strftime, gmtime
 from contextlib import contextmanager
+from datetime import datetime
+from time import gmtime, strftime
 
 from bottle import HTTPError
-
 
 logger = logging.getLogger(__name__)
 
@@ -21,29 +20,23 @@ def validate_parameters(values, types):
     If values[key] (or each element of it when it's a list) does not match
     with the regexp then we trow an error.
     """
-    for (key, typ, is_list) in types:
+    for key, typ, is_list in types:
         try:
             if isinstance(typ, bytes):
-                typ = str(typ.decode('utf-8'))
+                typ = str(typ.decode("utf-8"))
             if not is_list:
                 # If 'typ' is a string, it must be considered as a regexp
                 # pattern.
-                if isinstance(typ, str) and \
-                        re.match(typ, str(values[key])) is None:
-                    raise HTTPError(406, "Parameter '%s' is malformed."
-                                         % (key))
-                if not isinstance(typ, str) and \
-                   isinstance(values[key], type(typ)):
-                    raise HTTPError(406, "Parameter '%s' is malformed."
-                                         % (key))
+                if isinstance(typ, str) and re.match(typ, str(values[key])) is None:
+                    raise HTTPError(406, "Parameter '%s' is malformed." % (key))
+                if not isinstance(typ, str) and isinstance(values[key], type(typ)):
+                    raise HTTPError(406, "Parameter '%s' is malformed." % (key))
             if is_list:
                 for value in values[key]:
                     if isinstance(typ, str) and not re.match(typ, str(value)):
-                        raise HTTPError(406, "Parameter '%s' is malformed."
-                                             % (key))
+                        raise HTTPError(406, "Parameter '%s' is malformed." % (key))
                     if not isinstance(typ, str) and typ != type(value):
-                        raise HTTPError(406, "Parameter '%s' is malformed."
-                                             % (key))
+                        raise HTTPError(406, "Parameter '%s' is malformed." % (key))
         except HTTPError as e:
             raise e
         except KeyError:
@@ -53,7 +46,7 @@ def validate_parameters(values, types):
             raise HTTPError(500, "Internal error.")
 
 
-MULTIPLIERS = ['', 'k', 'M', 'G', 'T', 'P']
+MULTIPLIERS = ["", "k", "M", "G", "T", "P"]
 
 
 def to_bytes(size, unit):
@@ -68,9 +61,9 @@ def to_bytes(size, unit):
 
     Example:
 
-    >>> to_bytes(7890, 'M')
+    >>> to_bytes(7890, "M")
     8273264640
-    >>> to_bytes(7890, 'unexistent_unit')
+    >>> to_bytes(7890, "unexistent_unit")
     Traceback (most recent call last):
     ...
     KeyError: 'Invalid unit: unexistent_unit'
@@ -93,24 +86,24 @@ def which(prog, search_path=None):
 
     Example:
 
-    >>> which('ls') #doctest: +SKIP
+    >>> which("ls")  # doctest: +SKIP
     '/bin/ls'
-    >>> which('ifconfig') #doctest: +SKIP
+    >>> which("ifconfig")  # doctest: +SKIP
     Traceback (most recent call last):
     ...
     OSError: No such file or directory
-    >>> which('ifconfig', ['/sbin']) #doctest: +SKIP
+    >>> which("ifconfig", ["/sbin"])  # doctest: +SKIP
     '/sbin/ifconfig'
     """
 
-    env_path = re.split(r':', os.environ['PATH'])
+    env_path = re.split(r":", os.environ["PATH"])
     if search_path is None:
         search_path = env_path
     else:
         search_path += env_path
 
     for d in search_path:
-        path = d + '/' + prog
+        path = d + "/" + prog
         if os.path.exists(path):
             return path
 
@@ -123,8 +116,8 @@ def now():
 
 
 def fromisoformat(datestr):
-    datetime_part, tz_part = datestr.split('+')
-    datestr = datetime_part + '+' + tz_part.replace(':', '')
+    datetime_part, tz_part = datestr.split("+")
+    datestr = datetime_part + "+" + tz_part.replace(":", "")
     return datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%S.%f%z")
 
 

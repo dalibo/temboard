@@ -1,24 +1,15 @@
-from decimal import Decimal
-from past.utils import old_div
 import json
 import logging
+from decimal import Decimal
 from os import path
 
 import tornado.web
+from past.utils import old_div
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.sql import column, extract, func, select, text
 
-from sqlalchemy.orm import (
-    sessionmaker,
-    scoped_session,
-)
-from sqlalchemy.sql import (
-    column,
-    extract,
-    func,
-    select,
-    text,
-)
-
-from ...application import get_instance
+from temboardui.agentclient import TemboardAgentClient
+from temboardui.errors import TemboardUIError
 from temboardui.model import worker_engine
 from temboardui.model.orm import (
     Biggest,
@@ -29,26 +20,18 @@ from temboardui.model.orm import (
     total_hit,
     total_read,
 )
-from temboardui.errors import TemboardUIError
-
-from temboardui.web.tornado import (
-    Blueprint,
-    TemplateRenderer,
-    jsonify,
-)
-from temboardui.plugins.monitoring.tools import (
-    parse_start_end,
-)
+from temboardui.plugins.monitoring.tools import parse_start_end
 from temboardui.toolkit import taskmanager
-from temboardui.agentclient import TemboardAgentClient
+from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
 
+from ...application import get_instance
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 
 blueprint = Blueprint()
 plugin_path = path.dirname(path.realpath(__file__))
-render_template = TemplateRenderer(plugin_path + '/templates')
+render_template = TemplateRenderer(plugin_path + "/templates")
 
 
 class StatementsPlugin:
@@ -57,11 +40,15 @@ class StatementsPlugin:
 
     def load(self):
         self.app.tornado_app.add_rules(blueprint.rules)
-        self.app.tornado_app.add_rules([
-            (r"/js/statements/(.*)", tornado.web.StaticFileHandler, {
-                'path': plugin_path + "/static/js"
-            }),
-        ])
+        self.app.tornado_app.add_rules(
+            [
+                (
+                    r"/js/statements/(.*)",
+                    tornado.web.StaticFileHandler,
+                    {"path": plugin_path + "/static/js"},
+                )
+            ]
+        )
         self.app.worker_pool.add(workers)
         self.app.scheduler.add(workers)
 
@@ -99,33 +86,37 @@ BASE_QUERY_STATDATA = text("""
 """)
 
 
-@blueprint.instance_route(r'/statements/data', json=True)
+@blueprint.instance_route(r"/statements/data", json=True)
 def json_data_instance(request):
     start, end = parse_start_end(request)
 
     base_query = BASE_QUERY_STATDATA
     diffs = get_diffs_forstatdata()
-    query = (select([
-        column("datname"),
-        column("dbid"),
-    ] + diffs)
-            .select_from(base_query)
-            .group_by(column("dbid"), column("datname"))
-            .having(func.max(column("calls")) - func.min(column("calls")) > 0))
+    query = (
+        select([column("datname"), column("dbid")] + diffs)
+        .select_from(base_query)
+        .group_by(column("dbid"), column("datname"))
+        .having(func.max(column("calls")) - func.min(column("calls")) > 0)
+    )
 
     statements = request.db_session.execute(
         query,
-        dict(agent_address=request.instance.agent_address,
-             agent_port=request.instance.agent_port,
-             start=start,
-             end=end)) \
-        .fetchall()
+        dict(
+            agent_address=request.instance.agent_address,
+            agent_port=request.instance.agent_port,
+            start=start,
+            end=end,
+        ),
+    ).fetchall()
     statements = [dict(statement) for statement in statements]
 
     metas = request.db_session.execute(
         METAS_QUERY,
-        dict(agent_address=request.instance.agent_address,
-             agent_port=request.instance.agent_port)).fetchone()
+        dict(
+            agent_address=request.instance.agent_address,
+            agent_port=request.instance.agent_port,
+        ),
+    ).fetchone()
     metas = dict(metas) if metas is not None else None
     return jsonify(dict(data=statements, metas=metas))
 
@@ -395,14 +386,12 @@ WHERE (lo.calls - fo.calls) > 0;
 """
 
 
-@blueprint.instance_route(
-    r'/statements/data/([0-9]*)/([-]?[0-9]*)/([0-9]*)', json=True
-)
+@blueprint.instance_route(r"/statements/data/([0-9]*)/([-]?[0-9]*)/([0-9]*)", json=True)
 def json_data_query(request, dbid, queryid, userid):
     return json_data(request, dbid, queryid, userid)
 
 
-@blueprint.instance_route(r'/statements/data/(.*)', json=True)
+@blueprint.instance_route(r"/statements/data/(.*)", json=True)
 def json_data_database(request, dbid):
     return json_data(request, dbid)
 
@@ -419,21 +408,25 @@ def json_data(request, dbid, queryid=None, userid=None):
     """)
     datname = request.db_session.execute(
         query,
-        dict(agent_address=request.instance.agent_address,
-             agent_port=request.instance.agent_port,
-             dbid=dbid)
+        dict(
+            agent_address=request.instance.agent_address,
+            agent_port=request.instance.agent_port,
+            dbid=dbid,
+        ),
     ).fetchone()[0]
 
-    params = dict(agent_address=request.instance.agent_address,
-                  agent_port=request.instance.agent_port,
-                  dbid=dbid,
-                  start=start,
-                  end=end)
+    params = dict(
+        agent_address=request.instance.agent_address,
+        agent_port=request.instance.agent_port,
+        dbid=dbid,
+        start=start,
+        end=end,
+    )
 
     query = BASE_QUERY_STATDATA_DATABASE
-    queryidfilter = ''
+    queryidfilter = ""
     if queryid is not None and userid is not None:
-        queryidfilter = 'AND queryid = :queryid AND userid = :userid'
+        queryidfilter = "AND queryid = :queryid AND userid = :userid"
         params.update(dict(queryid=queryid, userid=userid))
     query = query.format(**dict(queryidfilter=queryidfilter))
 
@@ -458,7 +451,7 @@ def get_diffs_forstatdata():
         diff("temp_blks_read"),
         diff("temp_blks_written"),
         diff("blk_read_time"),
-        diff("blk_write_time")
+        diff("blk_write_time"),
     ]
 
 
@@ -594,9 +587,8 @@ BASE_QUERY_STATDATA_SAMPLE_QUERY = text("""
 """)
 
 
-def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
-                       userid=None):
-    if mode == 'instance':
+def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None, userid=None):
+    if mode == "instance":
         base_query = BASE_QUERY_STATDATA_SAMPLE_INSTANCE
 
     elif mode == "db":
@@ -605,32 +597,36 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
     elif mode == "query":
         base_query = BASE_QUERY_STATDATA_SAMPLE_QUERY
 
-    ts = column('ts')
+    ts = column("ts")
     biggest = Biggest(ts)
     biggestsum = Biggestsum(ts)
 
-    subquery = (select([
-        ts,
-        biggest("ts", '0 s', "mesure_interval"),
-        biggestsum("calls"),
-        biggestsum("total_exec_time", label="runtime"),
-        biggestsum("rows"),
-        biggestsum("shared_blks_read"),
-        biggestsum("shared_blks_hit"),
-        biggestsum("shared_blks_dirtied"),
-        biggestsum("shared_blks_written"),
-        biggestsum("local_blks_read"),
-        biggestsum("local_blks_hit"),
-        biggestsum("local_blks_dirtied"),
-        biggestsum("local_blks_written"),
-        biggestsum("temp_blks_read"),
-        biggestsum("temp_blks_written"),
-        biggestsum("blk_read_time"),
-        biggestsum("blk_write_time")
-        ])
-            .select_from(base_query)
-            .apply_labels()
-            .group_by(*([ts])))
+    subquery = (
+        select(
+            [
+                ts,
+                biggest("ts", "0 s", "mesure_interval"),
+                biggestsum("calls"),
+                biggestsum("total_exec_time", label="runtime"),
+                biggestsum("rows"),
+                biggestsum("shared_blks_read"),
+                biggestsum("shared_blks_hit"),
+                biggestsum("shared_blks_dirtied"),
+                biggestsum("shared_blks_written"),
+                biggestsum("local_blks_read"),
+                biggestsum("local_blks_hit"),
+                biggestsum("local_blks_dirtied"),
+                biggestsum("local_blks_written"),
+                biggestsum("temp_blks_read"),
+                biggestsum("temp_blks_written"),
+                biggestsum("blk_read_time"),
+                biggestsum("blk_write_time"),
+            ]
+        )
+        .select_from(base_query)
+        .apply_labels()
+        .group_by(*([ts]))
+    )
 
     subquery = subquery.alias()
     c = subquery.c
@@ -639,18 +635,18 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
     cols = [
         to_epoch(c.ts),
         (
-            old_div(func.sum(c.calls),
-                    greatest(extract("epoch", c.mesure_interval), 1))
+            old_div(func.sum(c.calls), greatest(extract("epoch", c.mesure_interval), 1))
         ).label("calls"),
+        (old_div(func.sum(c.runtime), greatest(func.sum(c.calls), 1.0))).label(
+            "avg_runtime"
+        ),
         (
-            old_div(func.sum(c.runtime), greatest(func.sum(c.calls), 1.))
-        ).label("avg_runtime"),
-        (
-            old_div(func.sum(c.runtime),
-                    greatest(extract("epoch", c.mesure_interval), 1))
+            old_div(
+                func.sum(c.runtime), greatest(extract("epoch", c.mesure_interval), 1)
+            )
         ).label("load"),
         total_read(c),
-        total_hit(c)
+        total_hit(c),
     ]
 
     query = (
@@ -661,17 +657,19 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None,
         .order_by(c.ts)
     )
 
-    params = dict(agent_address=request.instance.agent_address,
-                  agent_port=request.instance.agent_port,
-                  samples=50,
-                  start=start,
-                  end=end)
+    params = dict(
+        agent_address=request.instance.agent_address,
+        agent_port=request.instance.agent_port,
+        samples=50,
+        start=start,
+        end=end,
+    )
 
-    if mode == 'db' or mode == 'query':
-        params['dbid'] = dbid
-    if mode == 'query':
-        params['queryid'] = queryid
-        params['userid'] = userid
+    if mode == "db" or mode == "query":
+        params["dbid"] = dbid
+    if mode == "query":
+        params["queryid"] = queryid
+        params["userid"] = userid
 
     rows = request.db_session.execute(query, params).fetchall()
     return [dict(row) for row in rows]
@@ -687,15 +685,12 @@ def convert_decimal_to_float(data):
     elif isinstance(data, list):
         return [convert_decimal_to_float(v) for v in data]
     elif isinstance(data, dict):
-        return {
-            k: convert_decimal_to_float(v)
-            for k, v in data.items()
-        }
+        return {k: convert_decimal_to_float(v) for k, v in data.items()}
     else:
         return data
 
 
-@blueprint.instance_route(r'/statements/chart', json=True)
+@blueprint.instance_route(r"/statements/chart", json=True)
 def json_chart_data_instance(request):
     start, end = parse_start_end(request)
 
@@ -705,18 +700,19 @@ def json_chart_data_instance(request):
 
 
 @blueprint.instance_route(
-    r'/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)', json=True
+    r"/statements/chart/([0-9]*)/([-]?[0-9]*)/([0-9]*)", json=True
 )
 def json_chart_data_query(request, dbid, queryid, userid):
     start, end = parse_start_end(request)
 
-    data = getstatdata_sample(request, "query", start, end, dbid=dbid,
-                              queryid=queryid, userid=userid)
+    data = getstatdata_sample(
+        request, "query", start, end, dbid=dbid, queryid=queryid, userid=userid
+    )
     data = convert_decimal_to_float(data)
     return jsonify(dict(data=data))
 
 
-@blueprint.instance_route(r'/statements/chart/(.*)', json=True)
+@blueprint.instance_route(r"/statements/chart/(.*)", json=True)
 def json_chart_data_db(request, dbid):
     start, end = parse_start_end(request)
 
@@ -725,12 +721,12 @@ def json_chart_data_db(request, dbid):
     return jsonify(dict(data=data))
 
 
-@blueprint.instance_route(r'/statements')
+@blueprint.instance_route(r"/statements")
 def statements(request):
-    request.instance.check_active_plugin('statements')
+    request.instance.check_active_plugin("statements")
     request.instance.fetch_status()
     return render_template(
-        'index.html',
+        "index.html",
         nav=True,
         instance=request.instance,
         plugin=__name__,
@@ -743,9 +739,9 @@ def add_statement(session, instance, data):
     try:
         cur = session.connection().connection.cursor()
         cur.execute("SET search_path TO statements")
-        if not data.get('data'):
+        if not data.get("data"):
             logger.info("No statement data from %s.", agent_id)
-        for statement in data.get('data'):
+        for statement in data.get("data"):
             query = """
                 INSERT INTO statements_src_tmp
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
@@ -756,43 +752,37 @@ def add_statement(session, instance, data):
                 (
                     instance.agent_address,
                     instance.agent_port,
-                    data['snapshot_datetime'],
-                    statement['userid'],
-                    statement['rolname'],
-                    statement['dbid'],
-                    statement['datname'],
-                    statement['queryid'],
-                    statement['query'],
-                    statement['calls'],
-                    statement['total_exec_time']
-                    if 'total_exec_time' in statement
-                    else statement['total_time'],
-                    statement['rows'],
-                    statement['shared_blks_hit'],
-                    statement['shared_blks_read'],
-                    statement['shared_blks_dirtied'],
-                    statement['shared_blks_written'],
-                    statement['local_blks_hit'],
-                    statement['local_blks_read'],
-                    statement['local_blks_dirtied'],
-                    statement['local_blks_written'],
-                    statement['temp_blks_read'],
-                    statement['temp_blks_written'],
-                    statement['blk_read_time'],
-                    statement['blk_write_time'],
-                    statement['total_plan_time']
-                    if 'total_plan_time' in statement
+                    data["snapshot_datetime"],
+                    statement["userid"],
+                    statement["rolname"],
+                    statement["dbid"],
+                    statement["datname"],
+                    statement["queryid"],
+                    statement["query"],
+                    statement["calls"],
+                    statement["total_exec_time"]
+                    if "total_exec_time" in statement
+                    else statement["total_time"],
+                    statement["rows"],
+                    statement["shared_blks_hit"],
+                    statement["shared_blks_read"],
+                    statement["shared_blks_dirtied"],
+                    statement["shared_blks_written"],
+                    statement["local_blks_hit"],
+                    statement["local_blks_read"],
+                    statement["local_blks_dirtied"],
+                    statement["local_blks_written"],
+                    statement["temp_blks_read"],
+                    statement["temp_blks_written"],
+                    statement["blk_read_time"],
+                    statement["blk_write_time"],
+                    statement["total_plan_time"]
+                    if "total_plan_time" in statement
                     else None,
-                    statement['wal_records']
-                    if 'wal_records' in statement
-                    else None,
-                    statement['wal_fpi']
-                    if 'wal_fpi' in statement
-                    else None,
-                    statement['wal_bytes']
-                    if 'wal_bytes' in statement
-                    else None,
-                )
+                    statement["wal_records"] if "wal_records" in statement else None,
+                    statement["wal_fpi"] if "wal_fpi" in statement else None,
+                    statement["wal_bytes"] if "wal_bytes" in statement else None,
+                ),
             )
         query = """SELECT process_statements(%s, %s)"""
         cur.execute(query, (instance.agent_address, instance.agent_port))
@@ -801,7 +791,7 @@ def add_statement(session, instance, data):
         raise TemboardUIError(400, str(e))
 
 
-@workers.schedule(id='statements_pull_data', redo_interval=60)  # 1m
+@workers.schedule(id="statements_pull_data", redo_interval=60)  # 1m
 @workers.register(pool_size=1)
 def pull_data_worker(app):
     engine = worker_engine(app.config.repository)
@@ -813,7 +803,7 @@ def pull_data_worker(app):
     for instance in instances:
         plugin_names = [plugin.plugin_name for plugin in instance.plugins]
 
-        if 'statements' not in plugin_names:
+        if "statements" not in plugin_names:
             logger.debug("Skipping instance %s. Plugin disabled.", instance)
             continue
 
@@ -823,7 +813,8 @@ def pull_data_worker(app):
         except Exception:
             logger.exception(
                 "Failed to pull data from %s:%s",
-                instance.agent_address, instance.agent_port,
+                instance.agent_address,
+                instance.agent_port,
             )
     else:
         logger.info("No instances to pull data from.")
@@ -842,7 +833,8 @@ def statements_pull1(app, host, port):
     except Exception:
         logger.exception(
             "Failed to pull data from %s:%s",
-            instance.agent_address, instance.agent_port,
+            instance.agent_address,
+            instance.agent_port,
         )
 
 
@@ -850,18 +842,17 @@ def pull_data_for_instance(app, session, instance):
     agent_id = f"{instance.agent_address}:{instance.agent_port}"
     logger.info("Pulling statements from %s.", agent_id)
     client = TemboardAgentClient.factory(
-        app.config,
-        instance.agent_address, instance.agent_port,
+        app.config, instance.agent_address, instance.agent_port
     )
     try:
-        response = client.get('/statements')
+        response = client.get("/statements")
         response.raise_for_status()
         add_statement(session, instance, response.json())
         logger.info("Successfully pulled statements data for %s.", agent_id)
     except Exception as e:
-        error = 'Error while fetching statements from instance: '
-        if hasattr(e, 'read'):
-            error += json.loads(e.read())['error']
+        error = "Error while fetching statements from instance: "
+        if hasattr(e, "read"):
+            error += json.loads(e.read())["error"]
         else:
             error += str(e)
 
@@ -880,31 +871,18 @@ def pull_data_for_instance(app, session, instance):
             VALUES (%s, %s)
             ON CONFLICT DO NOTHING;
         """
-        cur.execute(
-            query,
-            (
-                instance.agent_address,
-                instance.agent_port,
-            )
-        )
+        cur.execute(query, (instance.agent_address, instance.agent_port))
 
         query = """
             UPDATE metas
             SET error = %s
             WHERE agent_address = %s AND agent_port = %s;
         """
-        cur.execute(
-            query,
-            (
-                error,
-                instance.agent_address,
-                instance.agent_port,
-            )
-        )
+        cur.execute(query, (error, instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
 
 
-@workers.schedule(id='statements_purge', redo_interval=24 * 60 * 60)  # 24h
+@workers.schedule(id="statements_purge", redo_interval=24 * 60 * 60)  # 24h
 @workers.register(pool_size=1)
 def statements_purge_worker(app):
     """Background worker in charge of purging statements data.
@@ -929,5 +907,5 @@ def statements_purge_worker(app):
         session.connection().connection.commit()
         logger.info("Old statements purged successfully.")
     except Exception:
-        logger.exception('Could not purge statements data:')
+        logger.exception("Could not purge statements data:")
         raise

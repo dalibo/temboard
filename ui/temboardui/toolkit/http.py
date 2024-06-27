@@ -6,9 +6,8 @@ from datetime import datetime, timezone
 from time import time
 from urllib.error import HTTPError
 
-from .utils import ensure_bytes
 from .errors import TemboardError
-
+from .utils import ensure_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -24,16 +23,16 @@ class TemboardHTTPError(TemboardError):
         if not self._message:
             try:
                 json = self.response.json()
-                self._message = json['error']
+                self._message = json["error"]
             except Exception:
                 self._message = self.response.reason
         return self._message
 
     def __str__(self):
-        return f'{self.response.status}: {self.message}'
+        return f"{self.response.status}: {self.message}"
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self}>'
+        return f"<{self.__class__.__name__} {self}>"
 
 
 class TemboardClient:
@@ -42,14 +41,13 @@ class TemboardClient:
     log_headers = False
 
     @classmethod
-    def factory(cls, config, host, port, scheme='https'):
+    def factory(cls, config, host, port, scheme="https"):
         return cls(
-            host, port, scheme=scheme,
-            ca_cert_file=config.temboard.ssl_ca_cert_file,
+            host, port, scheme=scheme, ca_cert_file=config.temboard.ssl_ca_cert_file
         )
 
-    def __init__(self, host, port, ca_cert_file=None, scheme='https'):
-        """ If ca_cert_file is None, HTTPS connection is unverified. """
+    def __init__(self, host, port, ca_cert_file=None, scheme="https"):
+        """If ca_cert_file is None, HTTPS connection is unverified."""
         self.scheme = scheme
         self.host = host
         self.port = port
@@ -58,53 +56,50 @@ class TemboardClient:
         self._cookies = set()
 
     def __repr__(self):
-        return '<{} {}://{}:{} {}>'.format(
+        return "<{} {}://{}:{} {}>".format(
             self.__class__.__name__,
-            self.scheme, self.host, self.port,
-            'verified' if self.ca_cert_file else 'unverified',
+            self.scheme,
+            self.host,
+            self.port,
+            "verified" if self.ca_cert_file else "unverified",
         )
 
     @property
     def ssl_context(self):
         if self._ssl_context is None:
-            self._ssl_context = ssl.create_default_context(
-                cafile=self.ca_cert_file,
-            )
+            self._ssl_context = ssl.create_default_context(cafile=self.ca_cert_file)
             if self.ca_cert_file:
                 self._ssl_context.verify_mode = ssl.CERT_REQUIRED
             else:
-
                 self._ssl_context.check_hostname = False
                 self._ssl_context.verify_mode = ssl.CERT_NONE
         return self._ssl_context
 
     def request(self, method, path, headers=None, body=None):
-        hostport = f'{self.host}:{self.port}'
-        fullurl = f'{self.scheme}://{hostport}{path}'
+        hostport = f"{self.host}:{self.port}"
+        fullurl = f"{self.scheme}://{hostport}{path}"
 
         logger.debug("Requesting %s %s.", method, fullurl)
 
         headers = headers or {}
         if self._cookies:
-            headers.setdefault('Cookie', "\n".join(self._cookies))
+            headers.setdefault("Cookie", "\n".join(self._cookies))
 
         if body:
-            headers['Content-Type'] = 'application/json'
+            headers["Content-Type"] = "application/json"
 
-        if hasattr(body, 'pop'):  # list or dict
+        if hasattr(body, "pop"):  # list or dict
             body = json.dumps(body)
 
         if body is not None:
             body = ensure_bytes(body)
 
-        if 'https' == self.scheme:
+        if "https" == self.scheme:
             conn = http.client.HTTPSConnection(
-                self.host, self.port, context=self.ssl_context, timeout=30,
+                self.host, self.port, context=self.ssl_context, timeout=30
             )
         else:
-            conn = http.client.HTTPConnection(
-                self.host, self.port, timeout=30,
-            )
+            conn = http.client.HTTPConnection(self.host, self.port, timeout=30)
         conn.response_class = TemboardResponse
 
         if self.log_headers:
@@ -121,35 +116,36 @@ class TemboardClient:
             for name, value in sorted(response.headers.items()):
                 logger.debug("<<< %s: %s", name, value)
 
-        if response.headers['set-cookie']:
-            cookie = response.headers['set-cookie']
+        if response.headers["set-cookie"]:
+            cookie = response.headers["set-cookie"]
             logger.debug("Registering cookie %.16s... in session.", cookie)
             self._cookies.add(cookie)
 
-        logger.debug(
-            "Response from %s in %.3fs: %s.", hostport, duration, response)
+        logger.debug("Response from %s in %.3fs: %s.", hostport, duration, response)
 
         return response
 
     def get(self, path, headers=None):
-        return self.request('GET', path, headers)
+        return self.request("GET", path, headers)
 
     def post(self, path, body, headers=None):
-        return self.request('POST', path, headers, body)
+        return self.request("POST", path, headers, body)
 
 
 class TemboardResponse(http.client.HTTPResponse):
     # Extensions to HTTPResponse, inspired by httpx
 
     def __str__(self):
-        return f'{self.status} {self.reason}'
+        return f"{self.status} {self.reason}"
 
     def __repr__(self):
-        return '<{} {} {} -> {} {} {}>'.format(
+        return "<{} {} {} -> {} {} {}>".format(
             self.__class__.__name__,
-            self._method, self.path,
-            self.status, self.reason,
-            'closed' if self.isclosed() else 'opened',
+            self._method,
+            self.path,
+            self.status,
+            self.reason,
+            "closed" if self.isclosed() else "opened",
         )
 
     def raise_for_status(self):
@@ -159,7 +155,7 @@ class TemboardResponse(http.client.HTTPResponse):
             raise HTTPError(self.status, self.reason)
 
     def json(self):
-        return json.loads(self.read().decode('utf-8'))
+        return json.loads(self.read().decode("utf-8"))
 
 
 def format_date(date=None):

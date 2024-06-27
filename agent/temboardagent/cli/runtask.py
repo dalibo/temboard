@@ -13,18 +13,17 @@ from ..toolkit.app import SubCommand
 from ..toolkit.taskmanager import RunTaskMixin
 from .app import app
 
-
 logger = logging.getLogger(__name__)
 
 
 @app.command
 class RunTask(RunTaskMixin, SubCommand):
-    """ Run a task foreground. """
+    """Run a task foreground."""
 
     def main(self, args):
         workers = self.iter_workers()
 
-        if '?' == args.worker_name:
+        if "?" == args.worker_name:
             self.print_workers(workers)
         else:
             worker, worker_args = self.compute_worker_args(workers, args)

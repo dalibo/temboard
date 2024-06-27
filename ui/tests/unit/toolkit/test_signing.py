@@ -4,24 +4,20 @@ from textwrap import dedent
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def headers():
     return {
-            'host': '0.0.0.0:2345',
-            'x-temboard-date': '20220511t095800z',
-            'x-temboard-request-id': '2f3f3b60-a2a0-476c-a37a-5d63b5b10586',
-            'x-temboard-user': 'alice',
-        }
+        "host": "0.0.0.0:2345",
+        "x-temboard-date": "20220511t095800z",
+        "x-temboard-request-id": "2f3f3b60-a2a0-476c-a37a-5d63b5b10586",
+        "x-temboard-user": "alice",
+    }
 
 
 def test_canonicalize_request_get(headers):
     from temboardui.toolkit.signing import canonicalize_request
 
-    data = canonicalize_request(
-        method='get',
-        path='/chemin/toto+titi',
-        headers=headers,
-    )
+    data = canonicalize_request(method="get", path="/chemin/toto+titi", headers=headers)
 
     wanted = dedent("""\
     GET /chemin/toto%2Btiti
@@ -30,26 +26,23 @@ def test_canonicalize_request_get(headers):
     x-temboard-date: 20220511t095800z
     x-temboard-request-id: 2f3f3b60-a2a0-476c-a37a-5d63b5b10586
     x-temboard-user: alice
-    """).encode('ascii')
+    """).encode("ascii")
 
     assert wanted == data
 
 
 def test_canonicalize_request_get_missing_header():
-    from temboardui.toolkit.signing import canonicalize_request, TemboardError
+    from temboardui.toolkit.signing import TemboardError, canonicalize_request
 
     with pytest.raises(TemboardError) as ei:
-        canonicalize_request(
-            method='get', path='/chemin',
-            headers={},
-        )
+        canonicalize_request(method="get", path="/chemin", headers={})
 
     message = str(ei.value)
 
-    assert 'host' in message
-    assert 'x-temboard-date' in message
-    assert 'x-temboard-user' in message
-    assert 'x-temboard-request-id' in message
+    assert "host" in message
+    assert "x-temboard-date" in message
+    assert "x-temboard-user" in message
+    assert "x-temboard-request-id" in message
 
 
 def test_canonicalize_request_post(headers):
@@ -57,18 +50,19 @@ def test_canonicalize_request_post(headers):
 
     body = dedent("""\
     pouet
-    """).encode('ascii')
+    """).encode("ascii")
 
     data = canonicalize_request(
-        method='post', path='/chemin',
-        headers=dict({
-            'Content-Type': 'text/plain',
-            'Content-Length': str(len(body)),
-        }, **headers),
+        method="post",
+        path="/chemin",
+        headers=dict(
+            {"Content-Type": "text/plain", "Content-Length": str(len(body))}, **headers
+        ),
         body=body,
     )
 
-    wanted = dedent("""\
+    wanted = (
+        dedent("""\
     POST /chemin
 
     content-length: 6
@@ -79,7 +73,10 @@ def test_canonicalize_request_post(headers):
     x-temboard-user: alice
 
     0e1b065625e33422c79539985c7c7c769fdff5417971b1259cc2b20ab18b7ddc
-    """).encode('ascii').splitlines()
+    """)
+        .encode("ascii")
+        .splitlines()
+    )
 
     assert wanted == data.splitlines()
 
@@ -157,8 +154,7 @@ vDqvhmKaNFwJpkWuSW3p+j5fjWVsf39arIodLU4XxNr32LaqKncld24bRYhg35CG
 
 
 def test_signing():
-    from temboardui.toolkit.signing import (
-        load_private_key, sign_v1, PADDING, HASH)
+    from temboardui.toolkit.signing import HASH, PADDING, load_private_key, sign_v1
 
     key = load_private_key(RSA_PRIVATE_KEY)
 
@@ -174,37 +170,34 @@ def test_signing():
     public_key = key.public_key()
     public_key.verify(signature_bin, payload, PADDING, HASH)
 
-    corrupted_signature_bin = signature_bin + b'x'
+    corrupted_signature_bin = signature_bin + b"x"
     with pytest.raises(Exception):
-        public_key.verify(
-            corrupted_signature_bin, payload, PADDING, HASH,
-        )
+        public_key.verify(corrupted_signature_bin, payload, PADDING, HASH)
 
 
 def test_verifying():
-    from temboardui.toolkit.signing import (
-        load_public_key, InvalidSignature, verify_v1)
+    from temboardui.toolkit.signing import InvalidSignature, load_public_key, verify_v1
 
     payload = b"payload"
     signature = (
-        b'hTeEP+iUWllMWISqbXErKglCqy9vLpKzCnIeHfm7CbvDu+oNmND1l4NcLhap4HSqMg1Z'
-        b'Jwdtf7MACWz7p1Y3zpRajjjlRtaj+MojKBUGkz0MR4ciKkiRlmR7eW4wVOSXfr3vFPK1'
-        b'uI0sySj5uDyuLzViGzTHyS7M1fVawkecMvzjt43f736H6QbRJLwMO1+1uVgXxcAwyH+q'
-        b'G5rLIG0YDUKpA4wKsNDJ/f8ZjtlamJJjtreOslh9PlOWDxRIGzCSitBrHS+9bKwr5G52'
-        b'sSycAx+f9+sGYCoKhIhZuPK9bDmpjyv/5eHZ0v43FufOQw1WV5dWENlo4NgQb3wbTyWB'
-        b'i8YZEMZ1rMGcTzEeCo32CaZmF6zULJzcM4KYMEN1X48ED6SlTJOHABGEkzelDNl66hgR'
-        b'ftSi8enovIgHgtIu/E8OCIAz2yQ9yeCsHBpPcis0GFGjKiotQjhMlm9KkTl+pOfPhpzY'
-        b'f3T1jGVQ1DkNGXJc10d+tKv+Vl26H3Z56B8gnjAzE4p4aLyxg8PQLKz/ugm4vQ9z3GSB'
-        b'wIpIc581pKP/dQ3Fmcn8+Kx7UaRTEh5n+OMcdDlkyzvP/1pUevHlaQE874BlQbPKV7Sl'
-        b'us4kTb/8bytFjX6m4gx7t08Su+OIj9ibuLa7Vs9jjFCQBzv4s0nJabORpY6p4hZ7qcq3'
-        b'N4Y='
+        b"hTeEP+iUWllMWISqbXErKglCqy9vLpKzCnIeHfm7CbvDu+oNmND1l4NcLhap4HSqMg1Z"
+        b"Jwdtf7MACWz7p1Y3zpRajjjlRtaj+MojKBUGkz0MR4ciKkiRlmR7eW4wVOSXfr3vFPK1"
+        b"uI0sySj5uDyuLzViGzTHyS7M1fVawkecMvzjt43f736H6QbRJLwMO1+1uVgXxcAwyH+q"
+        b"G5rLIG0YDUKpA4wKsNDJ/f8ZjtlamJJjtreOslh9PlOWDxRIGzCSitBrHS+9bKwr5G52"
+        b"sSycAx+f9+sGYCoKhIhZuPK9bDmpjyv/5eHZ0v43FufOQw1WV5dWENlo4NgQb3wbTyWB"
+        b"i8YZEMZ1rMGcTzEeCo32CaZmF6zULJzcM4KYMEN1X48ED6SlTJOHABGEkzelDNl66hgR"
+        b"ftSi8enovIgHgtIu/E8OCIAz2yQ9yeCsHBpPcis0GFGjKiotQjhMlm9KkTl+pOfPhpzY"
+        b"f3T1jGVQ1DkNGXJc10d+tKv+Vl26H3Z56B8gnjAzE4p4aLyxg8PQLKz/ugm4vQ9z3GSB"
+        b"wIpIc581pKP/dQ3Fmcn8+Kx7UaRTEh5n+OMcdDlkyzvP/1pUevHlaQE874BlQbPKV7Sl"
+        b"us4kTb/8bytFjX6m4gx7t08Su+OIj9ibuLa7Vs9jjFCQBzv4s0nJabORpY6p4hZ7qcq3"
+        b"N4Y="
     )
 
     key = load_public_key(RSA_PUBLIC_KEY)
     with pytest.raises(InvalidSignature):
-        verify_v1(key, b'x' + signature, payload)
+        verify_v1(key, b"x" + signature, payload)
 
     with pytest.raises(InvalidSignature):
-        verify_v1(key, signature, payload + b'x')
+        verify_v1(key, signature, payload + b"x")
 
     verify_v1(key, signature, payload)

@@ -12,41 +12,41 @@ def test_dashboard(browser, registered_agent, ui_url):
     assert browser.select("span#os_version").text
 
     cpu, percent = browser.select("#total-cpu").text.split()
-    assert '%' == percent
+    assert "%" == percent
     assert 0 <= int(cpu) <= 100
 
     browser.hover("#cpu-info")
-    sleep(.1)
+    sleep(0.1)
     tooltip = browser.select("#cpu-info").get_attribute("aria-describedby")
     cpuinfo = browser.select(f"#{tooltip}").text
-    assert 'GHz' in cpuinfo
+    assert "GHz" in cpuinfo
 
     # Vanish tooltip
     browser.hover("body")
-    sleep(.1)
+    sleep(0.1)
     browser.absent(f"#{tooltip}")
 
     memory, percent = browser.select("#total-memory").text.split()
-    assert '%' == percent
+    assert "%" == percent
     assert int(memory) > 1
 
     memory, unit = browser.select("#memory").text.split()
-    assert unit.endswith('B')
+    assert unit.endswith("B")
     assert float(memory) > 1
 
     assert browser.select("#pg_start_time").text
     assert 2 == int(browser.select("#nb_db").text)
     db_size, unit = browser.select("b#size").text.split()
-    assert 'B' in unit
+    assert "B" in unit
     assert int(db_size) > 1
 
     hitratio, percent = browser.select("#total-hit").text.split()
-    assert '%' == percent
+    assert "%" == percent
     assert int(hitratio) > 0
 
-    current, maximum = browser.select("#total-sessions").text.split(' / ')
+    current, maximum = browser.select("#total-sessions").text.split(" / ")
     assert int(current) > 0
-    assert '100' == maximum
+    assert "100" == maximum
 
     assert browser.select("canvas#chart-loadaverage")
     loadavg = browser.select("#loadaverage").text

@@ -1,3 +1,3 @@
 from .service import HTTPDService
 
-__all__ = ['HTTPDService']
+__all__ = ["HTTPDService"]

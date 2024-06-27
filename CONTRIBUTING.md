@@ -120,7 +120,7 @@ programming language. The [EditorConfig]( http://editorconfig.org/#download)
 site links to plugins for various editors. See `.editorconfig` for a
 description of the conventions. Please stick to these conventions.
 
-Python syntax must conform to flake8. CI checks new code with flake8.
+Python syntax must conform to ruff. CI checks new code with ruff.
 
 Javascript and CSS syntax should conform to prettier. It is recommended to
 configure your editor to automatically format on save. CI checks new code with

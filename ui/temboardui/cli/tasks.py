@@ -1,24 +1,23 @@
 import logging
+
 try:
     from inspect import signature
 except ImportError:
     from inspect import getargspec
 from textwrap import dedent
 
-
-from .app import app
 from ..model import check_schema
 from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
 from ..toolkit.errors import UserError
-
+from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+from .app import app
 
 logger = logging.getLogger(__name__)
 
 
 @app.command
 class Tasks(SubCommand):
-    """ Manage background tasks. """
+    """Manage background tasks."""
 
     def main(self, args):
         raise UserError("Missing sub-command. See --help for details.")
@@ -26,17 +25,17 @@ class Tasks(SubCommand):
 
 @Tasks.command
 class Flush(FlushTasksMixin, SubCommand):
-    """ Flush all tasks. """
+    """Flush all tasks."""
 
 
 @Tasks.command
 class Run(RunTaskMixin, SubCommand):
-    """ Run a task foreground. """
+    """Run a task foreground."""
 
     def main(self, args):
         workers = self.iter_workers()
 
-        if '?' == args.worker_name:
+        if "?" == args.worker_name:
             self.print_workers(workers)
         else:
             worker, worker_args = self.compute_worker_args(workers, args)
@@ -47,7 +46,7 @@ class Run(RunTaskMixin, SubCommand):
 
 @Tasks.command
 class Schedule(RunTaskMixin, SubCommand):
-    """ Schedule a background task. """
+    """Schedule a background task."""
 
     def define_arguments(self, parser):
         parser.description = dedent("""\
@@ -57,16 +56,18 @@ class Schedule(RunTaskMixin, SubCommand):
         """)
 
         parser.add_argument(
-            'worker_name',
-            metavar='WORKER',
+            "worker_name",
+            metavar="WORKER",
             help=(
                 "Global name of the worker function name to execute."
-                " Use ? to list available workers."),
+                " Use ? to list available workers."
+            ),
         )
 
         parser.add_argument(
-            'worker_args', nargs='*',
-            metavar='ARG',
+            "worker_args",
+            nargs="*",
+            metavar="ARG",
             default=[],
             help="Worker arguments as Python literals.",
         )
@@ -74,7 +75,7 @@ class Schedule(RunTaskMixin, SubCommand):
     def main(self, args):
         workers = self.iter_workers()
 
-        if '?' == args.worker_name:
+        if "?" == args.worker_name:
             self.print_workers(workers)
         else:
             worker, worker_args = self.compute_worker_args(workers, args)
@@ -82,13 +83,12 @@ class Schedule(RunTaskMixin, SubCommand):
             if not self.app.scheduler.can_schedule():
                 raise UserError("temBoard is not running.")
 
-            out = worker.defer(
-                self.app,
-                **build_kwargs_from_args(worker, worker_args)
-            )
+            out = worker.defer(self.app, **build_kwargs_from_args(worker, worker_args))
             logger.info(
                 "Worker %s scheduled with task ID %s.",
-                args.worker_name, out.content['id'])
+                args.worker_name,
+                out.content["id"],
+            )
 
         return 0
 

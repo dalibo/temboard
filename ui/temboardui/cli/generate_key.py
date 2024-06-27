@@ -1,5 +1,5 @@
-import os.path
 import logging
+import os.path
 from subprocess import check_call
 
 from cryptography.hazmat.primitives import serialization
@@ -9,7 +9,6 @@ from ..toolkit.errors import UserError
 from ..toolkit.signing import load_private_key
 from .app import app
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -17,12 +16,13 @@ logger = logging.getLogger(__name__)
 class GenerateKey(SubCommand):
     """Generate signing key."""
 
-    name = 'generate-key'
+    name = "generate-key"
 
     def define_arguments(self, parser):
         parser.add_argument(
             "--force",
-            action='store_true', default=False,
+            action="store_true",
+            default=False,
             help="Force overwriting existing files.",
         )
 
@@ -31,9 +31,9 @@ class GenerateKey(SubCommand):
         if os.path.exists(priv) and not args.force:
             raise UserError("%s exists. Use --force to overwrite." % priv)
         logger.info("Generating RSA key with openssl at %s.", priv)
-        check_call(['openssl', 'genrsa', '-out', priv, '4096'])
+        check_call(["openssl", "genrsa", "-out", priv, "4096"])
 
-        with open(priv, 'rb') as fo:
+        with open(priv, "rb") as fo:
             privkey = load_private_key(fo.read())
 
         pub = self.app.config.temboard.signing_public_key
@@ -42,7 +42,7 @@ class GenerateKey(SubCommand):
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        with open(pub, 'wb') as fo:
+        with open(pub, "wb") as fo:
             fo.write(pem)
 
         return 0
