@@ -15,7 +15,7 @@ components:
 |----------------|---------------------------------|
 | Linux          | Debian 9 up to 11, RHEL 7 and 8 |
 | Python         | 3.6+                            |
-| Postgres       | 10 to 14                        |
+| Postgres       | 10 to 16                        |
 | Temboard Agent | 7.11 and 8.2                    |
 
 For older systems, you may use [temBoard v7](/en/v7).
