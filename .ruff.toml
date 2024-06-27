@@ -2,9 +2,15 @@
 target-version = "py37"
 
 [lint]
+extend-select = [
+    "I",  # Sort imports
+]
 ignore = [
     "E721",  # Do not compare types, use `isinstance()`
 ]
+
+[lint.isort]
+split-on-trailing-comma = false
 
 [format]
 skip-magic-trailing-comma = true
