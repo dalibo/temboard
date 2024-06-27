@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref } from "vue";
+import { ref } from "vue";
 
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
@@ -24,6 +24,12 @@ function open(name) {
   groupName.value = name;
   waiting.value = true;
 
+  // First reset form
+  groupName.value = "";
+  groupDescription.value = "";
+  groups.value = [];
+  groupInGroups.value = [];
+
   const url = name ? ["/json/settings/group", props.kind, name].join("/") : "/json/settings/all/group/role";
   $.ajax({
     url: url,
@@ -32,24 +38,18 @@ function open(name) {
     contentType: "application/json",
     dataType: "json",
     success: function (data) {
-      // First reset form
-      groupName.value = "";
-      groupDescription.value = "";
-      groups.value = data.groups;
-      groupInGroups.value = [];
-
       // Then load new data
-      nextTick(() => {
-        if (name) {
-          groupName.value = data.name;
-          groupDescription.value = data.description;
-          if (props.kind == "instance") {
-            groups.value = data.user_groups;
-            groupInGroups.value = data.in_groups;
-          }
+      if (name) {
+        groupName.value = data.name;
+        groupDescription.value = data.description;
+        if (props.kind == "instance") {
+          groups.value = data.user_groups;
+          groupInGroups.value = data.in_groups;
         }
-        waiting.value = false;
-      });
+      } else {
+        groups.value = data.groups;
+      }
+      waiting.value = false;
     },
     error: function (xhr) {
       error.value.fromXHR(xhr);
