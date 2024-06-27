@@ -397,10 +397,10 @@ does not required reloading server-side.
 ## Editing Documentation
 
 The documentation is written in Markdown and built with `mkdocs`.
-Editing documentation requires Python 3.7.
+Editing documentation requires Python 3.8.
 
 ``` console
-$ dev/venv-py3.7/bin/mkdocs serve
+$ dev/venv-py3.8/bin/mkdocs serve
 INFO     -  Building documentation...
 INFO     -  Cleaning site directory
 INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
