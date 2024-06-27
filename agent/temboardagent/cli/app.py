@@ -1,7 +1,7 @@
-import logging
-import os
 import datetime
 import getpass
+import logging
+import os
 from argparse import _VersionAction
 from socket import getfqdn
 from textwrap import dedent
@@ -13,21 +13,20 @@ except ImportError:
 
 from ..core import workers
 from ..discover import Discover, inspect_versions
+from ..notification import NotificationMgmt
+from ..postgres import Postgres
 from ..queries import QUERIES
 from ..status import Status
-from ..toolkit.configuration import OptionSpec
-from ..toolkit.errors import UserError
-from ..web import HTTPDService
-from ..postgres import Postgres
-from ..toolkit import taskmanager, validators as v
+from ..toolkit import taskmanager
+from ..toolkit import validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
-from ..toolkit.configuration import MergedConfiguration
+from ..toolkit.configuration import MergedConfiguration, OptionSpec
+from ..toolkit.errors import UserError
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.signing import load_public_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
-from ..notification import NotificationMgmt
 from ..version import __version__
-
+from ..web import HTTPDService
 
 logger = logging.getLogger("temboardagent.scripts.agent")
 

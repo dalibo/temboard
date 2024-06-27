@@ -1,5 +1,5 @@
-import os.path
 import logging
+import os.path
 from urllib.parse import urlparse
 
 from ..toolkit.app import SubCommand
@@ -7,7 +7,6 @@ from ..toolkit.errors import UserError
 from ..toolkit.http import TemboardClient
 from ..toolkit.signing import load_public_key
 from .app import app
-
 
 logger = logging.getLogger(__name__)
 

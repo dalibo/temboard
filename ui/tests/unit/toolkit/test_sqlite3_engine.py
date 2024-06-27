@@ -1,8 +1,8 @@
+import json
 from datetime import datetime
 from tempfile import NamedTemporaryFile
-import json
-import pytest
 
+import pytest
 from temboardui.toolkit.errors import StorageEngineError
 
 DBNAME = ":memory:"

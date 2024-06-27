@@ -3,13 +3,12 @@ import time
 
 from bottle import Bottle, default_app, request
 
-from temboardagent.tools import validate_parameters
-from temboardagent.command import oneline_cmd_to_array, exec_script
+from temboardagent.command import exec_script, oneline_cmd_to_array
+from temboardagent.notification import Notification, NotificationMgmt
 from temboardagent.toolkit.configuration import OptionSpec
-from temboardagent.notification import NotificationMgmt, Notification
+from temboardagent.tools import validate_parameters
 
 from .types import T_CONTROL
-
 
 bottle = Bottle()
 logger = logging.getLogger(__name__)

@@ -3,14 +3,10 @@ import time
 
 from bottle import Bottle, default_app
 
-from ...toolkit import taskmanager
+from ...toolkit import logfmt, taskmanager
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.utils import utcnow
-
-from . import db
-from . import metrics
-from ...toolkit import logfmt
-
+from . import db, metrics
 
 bottle = Bottle()
 logger = logging.getLogger(__name__)

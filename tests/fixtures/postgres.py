@@ -11,7 +11,6 @@ from sh import chown, locale
 
 from .utils import copy_files, rmtree
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -2,9 +2,9 @@ import logging
 
 from temboardui.web.tornado import HTTPError, csvify
 
-from . import blueprint, render_template
-from ..chartdata import get_unavailability_csv, get_metric_data_csv
+from ..chartdata import get_metric_data_csv, get_unavailability_csv
 from ..tools import get_request_ids, parse_start_end
+from . import blueprint, render_template
 
 logger = logging.getLogger(__name__)
 

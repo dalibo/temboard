@@ -36,6 +36,7 @@ def test_fix_argv(mocker):
 
 def test_read_memory():
     import ctypes
+
     from temboardui.toolkit.proctitle import read_byte
 
     data = ctypes.create_string_buffer(b"abcdef")
@@ -46,6 +47,7 @@ def test_read_memory():
 
 def test_walk_bytes_backwards():
     import ctypes
+
     from temboardui.toolkit.proctitle import reverse_walk_memory
 
     data = ctypes.create_string_buffer(b"abcdef")
@@ -58,6 +60,7 @@ def test_walk_bytes_backwards():
 
 def test_find_nulstrings():
     import ctypes
+
     from temboardui.toolkit.proctitle import reverse_find_nulstring
 
     data = b"\x00string0\x00string1\x00"

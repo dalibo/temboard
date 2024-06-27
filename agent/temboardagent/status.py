@@ -1,9 +1,8 @@
 import logging
 
+from . import discover
 from .postgres import extract_conninfo_fields
 from .queries import QUERIES
-from . import discover
-
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,6 @@ import logging
 import os
 from textwrap import dedent
 
-
 logger = logging.getLogger(__name__)
 
 

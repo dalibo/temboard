@@ -1,9 +1,9 @@
 from contextlib import suppress
 
 import pytest
-from tenacity import Retrying, retry_unless_exception_type, stop_after_delay, wait_fixed
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.common.by import By
+from tenacity import Retrying, retry_unless_exception_type, stop_after_delay, wait_fixed
 
 
 def test_all_databases(browser, browse_maintenance):

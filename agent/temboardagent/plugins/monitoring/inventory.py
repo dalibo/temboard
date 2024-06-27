@@ -5,11 +5,11 @@ The inventory contains support functions to discover the features of the host
 Currently, only Linux is supported.
 """
 
-import os
 import logging
+import os
 import pwd
 
-from ...inventory import SysInfo, PgInfo
+from ...inventory import PgInfo, SysInfo
 
 
 def host_info(discover):

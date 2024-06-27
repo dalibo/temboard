@@ -1,7 +1,6 @@
-import logging
 import functools
+import logging
 from textwrap import dedent
-
 
 logger = logging.getLogger(__name__.replace(".db", ""))
 

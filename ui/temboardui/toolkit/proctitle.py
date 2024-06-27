@@ -29,9 +29,8 @@
 
 import ctypes
 import logging
-import sys
 import os
-
+import sys
 
 logger = logging.getLogger(__name__)
 

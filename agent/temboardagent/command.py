@@ -1,6 +1,6 @@
-from subprocess import Popen, PIPE, CalledProcessError, check_call
-from shlex import split as shlex_split
 import errno
+from shlex import split as shlex_split
+from subprocess import PIPE, CalledProcessError, Popen, check_call
 
 
 def exec_command(command_args, **kwargs):

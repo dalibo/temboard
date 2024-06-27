@@ -12,10 +12,10 @@ import re
 from contextlib import closing
 from time import sleep
 
-from psycopg2 import connect
-from psycopg2 import Error as Psycopg2Error
-from psycopg2.pool import ThreadedConnectionPool
 import psycopg2.extensions
+from psycopg2 import Error as Psycopg2Error
+from psycopg2 import connect
+from psycopg2.pool import ThreadedConnectionPool
 
 from .tools import noop_manager
 

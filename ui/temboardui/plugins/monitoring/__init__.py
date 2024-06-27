@@ -19,10 +19,10 @@
 #   metric_*_6h_current.
 #
 
-from datetime import datetime, timedelta
 import logging
 import os
 import shutil
+from datetime import datetime, timedelta
 
 try:
     from itertools import zip_longest
@@ -30,34 +30,34 @@ except ImportError:
     from itertools import izip_longest as zip_longest
 from textwrap import dedent
 
-import tornado.web
 import tornado.escape
-
-from sqlalchemy.exc import ProgrammingError, IntegrityError, DataError
+import tornado.web
+from psycopg2.extensions import AsIs
+from sqlalchemy.exc import DataError, IntegrityError, ProgrammingError
 from sqlalchemy.sql import text
 
-from psycopg2.extensions import AsIs
-
-from ...core import refresh_discover
-from ...model import Session
-from ...toolkit import taskmanager, validators as v
+from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import (
     get_instance,
     get_roles_by_instance,
     send_mail,
     send_sms,
 )
-from temboardui.agentclient import TemboardAgentClient
-from temboardui.model.orm import Instances
 from temboardui.model import worker_engine
+from temboardui.model.orm import Instances
 
-from .model.orm import Check, CollectorStatus, Host, Instance
-from ...toolkit.errors import UserError
+from ...core import refresh_discover
+from ...model import Session
+from ...toolkit import taskmanager
+from ...toolkit import validators as v
 from ...toolkit.configuration import OptionSpec
-from .model.db import insert_availability
+from ...toolkit.errors import UserError
 from .alerting import check_specs
 from .handlers import blueprint
+from .model.db import insert_availability
+from .model.orm import Check, CollectorStatus, Host, Instance
 from .tools import (
+    Stopwatch,
     check_preprocessed_data,
     get_host_id,
     get_instance_checks,
@@ -67,7 +67,6 @@ from .tools import (
     populate_host_checks,
     preprocess_data,
     update_collector_status,
-    Stopwatch,
 )
 
 logger = logging.getLogger(__name__)

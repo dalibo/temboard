@@ -2,10 +2,9 @@
 Mapping of the database for use with SQLAlchemy.
 """
 
+from sqlalchemy.schema import Column, ForeignKey, MetaData, Table, UniqueConstraint
 from sqlalchemy.sql import text
-
-from sqlalchemy.schema import MetaData, Table, Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import BigInteger, Boolean, DateTime, Integer, REAL, UnicodeText
+from sqlalchemy.types import REAL, BigInteger, Boolean, DateTime, Integer, UnicodeText
 
 metadata = MetaData()
 

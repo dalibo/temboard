@@ -14,19 +14,19 @@
 import logging
 import os
 import signal
-import sys
 import subprocess
+import sys
 from datetime import datetime
 
 import jinja2
 
 import temboardui
+
 from ..model import Session, orm
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from ..toolkit.services import Service
 from .app import app
-
 
 logger = logging.getLogger(__package__ + ".prometheus")
 

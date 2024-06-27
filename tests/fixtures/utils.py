@@ -12,7 +12,6 @@ from tenacity import (
     wait_fixed,
 )
 
-
 logger = logging.getLogger(__name__)
 # Unique identifier for screenshots and log files.
 session_tag = datetime.now().strftime("%H:%M")

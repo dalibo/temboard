@@ -79,8 +79,8 @@ def test_easy_handshake_ok(ioloop_mock, mocker):
 
 def test_easy_handshake_ssl_errors(ioloop_mock, mocker):
     mocker.patch("temboardui.autossl.EasySSLIOStream._add_io_state")
+    from temboardui.autossl import EasySSLIOStream, SSLErrorHTTPRequest, ssl
     from tornado.concurrent import Future
-    from temboardui.autossl import EasySSLIOStream, ssl, SSLErrorHTTPRequest
 
     socket = Mock(name="socket", spec=ssl.SSLSocket)
     stream = EasySSLIOStream(socket)
@@ -228,8 +228,8 @@ def test_handle_stream_http_request(mocker):
     IOStream = mocker.patch("temboardui.autossl.IOStream")
     mocker.patch("socket.socket")
 
-    from tornado.concurrent import Future
     from temboardui.autossl import AutoHTTPSServer, SSLErrorHTTPRequest
+    from tornado.concurrent import Future
 
     server = AutoHTTPSServer(request_callback=Mock("request_callback"))
 
@@ -275,8 +275,8 @@ def test_handle_stream_http_request_fails(mocker):
 def test_handle_http_connection_301(mocker):
     HTTPRequest = mocker.patch("temboardui.autossl.HTTPRequest")
 
-    from tornado.concurrent import Future
     from temboardui.autossl import AutoHTTPSServer
+    from tornado.concurrent import Future
 
     conn = Mock(name="conn")
     conn.stream.socket.getsockname.return_value = "127.0.0.1", 8888
@@ -300,8 +300,8 @@ def test_handle_http_connection_301(mocker):
 def test_handle_http_connection_500(mocker):
     HTTPRequest = mocker.patch("temboardui.autossl.HTTPRequest")
 
-    from tornado.concurrent import Future
     from temboardui.autossl import AutoHTTPSServer
+    from tornado.concurrent import Future
 
     conn = Mock(name="conn")
     conn.stream.socket.getsockname.return_value = "127.0.0.1", 8888

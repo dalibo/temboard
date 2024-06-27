@@ -14,9 +14,9 @@ import httpx
 import pytest
 from selenium.common import exceptions as selenium_exc
 from selenium.webdriver import Remote
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.remote_connection import FirefoxRemoteConnection
 from selenium.webdriver.support import expected_conditions
@@ -24,14 +24,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sh import (
     ErrorReturnCode,
     TimeoutException,
-    env as env_cmd,
     hostname,
     # Use bare sudo instead of contrib to ensure non interactive sudo.
     sudo,
 )
+from sh import env as env_cmd
 
 from .utils import copy_files, retry_http, retry_slow, session_tag
-
 
 logger = logging.getLogger(__name__)
 

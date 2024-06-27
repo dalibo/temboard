@@ -27,16 +27,15 @@ import ssl
 
 from tornado import gen
 from tornado.escape import native_str
-from tornado.httpserver import HTTPServer, HTTPRequest
-from tornado.httpclient import HTTPResponse
-from tornado.httputil import HTTPHeaders, parse_request_start_line, ResponseStartLine
 from tornado.http1connection import HTTP1Connection
+from tornado.httpclient import HTTPResponse
+from tornado.httpserver import HTTPRequest, HTTPServer
+from tornado.httputil import HTTPHeaders, ResponseStartLine, parse_request_start_line
 from tornado.ioloop import IOLoop
 from tornado.iostream import IOStream, SSLIOStream, StreamClosedError
 from tornado.log import app_log, gen_log
 from tornado.netutil import ssl_options_to_context
 from tornado.util import errno_from_exception
-
 
 logger = logging.getLogger(__name__)
 

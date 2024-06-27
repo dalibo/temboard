@@ -1,5 +1,4 @@
 import pytest
-
 from temboardui.toolkit.app import BaseApplication
 
 
@@ -187,7 +186,9 @@ def test_application_specs():
 
 
 def test_app_pickle():
-    from pickle import dumps as pickle, loads as unpickle
+    from pickle import dumps as pickle
+    from pickle import loads as unpickle
+
     from temboardui.toolkit.app import BaseApplication
 
     empty_generator = (x for x in [])

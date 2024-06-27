@@ -1,5 +1,5 @@
-import os.path
 import logging
+import os.path
 from subprocess import check_call
 
 from cryptography.hazmat.primitives import serialization
@@ -8,7 +8,6 @@ from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from ..toolkit.signing import load_private_key
 from .app import app
-
 
 logger = logging.getLogger(__name__)
 

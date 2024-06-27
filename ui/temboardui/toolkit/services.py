@@ -28,7 +28,6 @@ from time import sleep
 
 from .perf import PerfCounters
 
-
 logger = logging.getLogger(__name__)
 
 

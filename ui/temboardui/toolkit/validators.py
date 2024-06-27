@@ -18,7 +18,6 @@ from urllib.parse import urlparse
 from .log import HANDLERS as LOG_METHODS
 from .utils import strtobool
 
-
 _address_re = re.compile(
     r"(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)"
     r"(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d"

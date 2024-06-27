@@ -1,11 +1,10 @@
 import logging
-import platform
 import os
+import platform
 import re
 
-from .tools import which, to_bytes
 from .command import exec_command
-
+from .tools import to_bytes, which
 
 logger = logging.getLogger(__name__)
 

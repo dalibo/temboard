@@ -1,11 +1,11 @@
-from datetime import datetime
 import json
 import logging
 import sqlite3
+from datetime import datetime
 from textwrap import dedent
 
-from ..taskmanager import Task
 from ..errors import StorageEngineError
+from ..taskmanager import Task
 
 logger = logging.getLogger(__name__)
 

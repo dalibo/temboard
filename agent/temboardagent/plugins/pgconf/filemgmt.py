@@ -1,6 +1,6 @@
+import datetime
 import os.path
 from os import listdir
-import datetime
 
 from bottle import HTTPError
 

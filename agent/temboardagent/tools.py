@@ -2,12 +2,11 @@ import errno
 import logging
 import os
 import re
-from datetime import datetime
-from time import strftime, gmtime
 from contextlib import contextmanager
+from datetime import datetime
+from time import gmtime, strftime
 
 from bottle import HTTPError
-
 
 logger = logging.getLogger(__name__)
 

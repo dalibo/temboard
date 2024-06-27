@@ -9,6 +9,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.schema import Column
 from sqlalchemy.sql import case, column, extract, func
 from sqlalchemy.types import TIMESTAMP, BigInteger, UnicodeText
+
 from temboardui.model import tables
 
 from ..toolkit.utils import utcnow

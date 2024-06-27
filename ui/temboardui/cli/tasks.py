@@ -6,13 +6,11 @@ except ImportError:
     from inspect import getargspec
 from textwrap import dedent
 
-
-from .app import app
 from ..model import check_schema
 from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
 from ..toolkit.errors import UserError
-
+from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+from .app import app
 
 logger = logging.getLogger(__name__)
 

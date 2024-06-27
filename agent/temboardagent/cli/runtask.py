@@ -13,7 +13,6 @@ from ..toolkit.app import SubCommand
 from ..toolkit.taskmanager import RunTaskMixin
 from .app import app
 
-
 logger = logging.getLogger(__name__)
 
 

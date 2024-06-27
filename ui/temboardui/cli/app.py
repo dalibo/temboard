@@ -5,29 +5,30 @@ from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
 from textwrap import dedent
 
-from flask import current_app as flask_app
-
 import tornado.ioloop
 import tornado.web
-from tornado.wsgi import WSGIContainer
+from flask import current_app as flask_app
 from tornado import autoreload
 from tornado.httpserver import HTTPServer
+from tornado.wsgi import WSGIContainer
 
 from ..autossl import AutoHTTPSServer
 from ..core import workers
-from ..model import configure as configure_db_session, QUERIES
-from ..toolkit import taskmanager, validators as v
+from ..model import QUERIES
+from ..model import configure as configure_db_session
+from ..toolkit import taskmanager
+from ..toolkit import validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
-from ..toolkit.configuration import OptionSpec, MergedConfiguration
+from ..toolkit.configuration import MergedConfiguration, OptionSpec
 from ..toolkit.errors import UserError
 from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.services import Service
 from ..toolkit.signing import load_private_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__, format_version, inspect_versions
-from ..web.tornado import Error404Handler, app as tornado_app, TemplateRenderer
 from ..web.flask import finalize_app as finalize_flask_app
-
+from ..web.tornado import Error404Handler, TemplateRenderer
+from ..web.tornado import app as tornado_app
 
 logger = logging.getLogger("temboardui")
 

@@ -1,11 +1,11 @@
 import logging
 
-from flask import current_app as app, g, redirect, jsonify, render_template
+from flask import current_app as app
+from flask import g, jsonify, redirect, render_template
 
-from .flask import anonymous_allowed, instance_routes
 from ..application import get_instances_by_role_name
 from ..plugins.monitoring.alerting import get_highest_state
-
+from .flask import anonymous_allowed, instance_routes
 
 logger = logging.getLogger(__name__)
 

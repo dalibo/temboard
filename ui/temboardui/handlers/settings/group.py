@@ -1,19 +1,17 @@
 import logging
 
-from temboardui.web.tornado import HTTPError, admin_required, app, render_template
-
 from temboardui.application import (
-    get_group_list,
-    get_group,
-    check_group_name,
-    check_group_description,
-    delete_role_group_from_instance_group,
-    update_group,
     add_group,
     add_role_group_in_instance_group,
+    check_group_description,
+    check_group_name,
     delete_group,
+    delete_role_group_from_instance_group,
+    get_group,
+    get_group_list,
+    update_group,
 )
-
+from temboardui.web.tornado import HTTPError, admin_required, app, render_template
 
 logger = logging.getLogger(__name__)
 PREFIX = r"/json/settings"

@@ -1,15 +1,14 @@
 import logging
-from secrets import choice
 import string
 import sys
+from secrets import choice
 from textwrap import dedent
 
-from .app import app
-from ..toolkit.app import SubCommand
-from ..toolkit.errors import UserError
 from ..model import Session
 from ..model.orm import ApiKeys
-
+from ..toolkit.app import SubCommand
+from ..toolkit.errors import UserError
+from .app import app
 
 logger = logging.getLogger(__name__)
 

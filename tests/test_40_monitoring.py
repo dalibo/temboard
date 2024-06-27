@@ -4,11 +4,9 @@
 import logging
 
 import pytest
+from fixtures.utils import retry_slow
 from selenium.common.exceptions import TimeoutException
 from sh import temboard
-
-from fixtures.utils import retry_slow
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 import sys
 from platform import python_version
 
-
 __version__ = "9.0.dev0"
 
 
@@ -23,11 +22,12 @@ def format_version():
 
 
 def inspect_versions():
-    from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
-    from psycopg2 import __version__ as psycopg2_version
-    from tornado import version as tornado_version
-    from sqlalchemy import __version__ as sqlalchemy_version
     import cryptography
+    from psycopg2 import __version__ as psycopg2_version
+    from sqlalchemy import __version__ as sqlalchemy_version
+    from tornado import version as tornado_version
+
+    from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
 
     distinfos = read_distinfo()
 

@@ -1,14 +1,13 @@
 import logging
 import ssl
 from socket import error as SocketError
-from wsgiref.simple_server import make_server, ServerHandler, WSGIRequestHandler
+from wsgiref.simple_server import ServerHandler, WSGIRequestHandler, make_server
 
 from bottle import debug, default_app
 
 from .. import __version__
 from ..errors import UserError
 from ..toolkit.services import Service
-
 
 logger = logging.getLogger(__name__)
 

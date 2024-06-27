@@ -14,8 +14,8 @@ from temboardui.application import (
     hash_password,
     update_role,
 )
-from temboardui.web.tornado import HTTPError, admin_required, app, render_template
 from temboardui.errors import TemboardUIError
+from temboardui.web.tornado import HTTPError, admin_required, app, render_template
 
 
 @app.route(r"/settings/users")

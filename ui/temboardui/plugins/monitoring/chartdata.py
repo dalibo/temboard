@@ -1,11 +1,10 @@
-from io import StringIO
 import datetime
+from io import StringIO
 from textwrap import dedent
 
 from psycopg2.extensions import AsIs
 
 from .pivot import pivot_timeserie
-
 
 METRICS = dict(
     blocks=dict(

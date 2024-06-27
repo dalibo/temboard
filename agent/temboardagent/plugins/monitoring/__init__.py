@@ -1,21 +1,20 @@
-from datetime import datetime
-import time
-import logging
 import json
+import logging
+import time
+from datetime import datetime
 
-from bottle import Bottle, default_app, request, HTTPError, response
+from bottle import Bottle, HTTPError, default_app, request, response
 
+from ... import __version__ as __VERSION__
 from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
-from ... import __version__ as __VERSION__
-
 from . import db
 from .inventory import host_info, instance_info
-from .probes import load_probes, run_probes
-from .output import remove_passwords
 from .openmetrics import format_open_metrics_lines, generate_samples
+from .output import remove_passwords
+from .probes import load_probes, run_probes
 
 logger = logging.getLogger(__name__)
 bottle = Bottle()

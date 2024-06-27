@@ -4,7 +4,6 @@ from resource import getpagesize
 
 from .process import Process, memory_total_size
 
-
 columns = [
     "pid",
     "database",

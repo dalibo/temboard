@@ -2,23 +2,23 @@ import functools
 import json
 import logging
 import os
-from io import StringIO
 from csv import writer as CSVWriter
+from io import StringIO
 
 from tornado import web as tornadoweb
 from tornado.concurrent import run_on_executor
 from tornado.escape import json_decode, json_encode, url_escape
 from tornado.gen import coroutine
-from tornado.web import Application as TornadoApplication, HTTPError, RequestHandler
 from tornado.template import Loader as TemplateLoader
+from tornado.web import Application as TornadoApplication
+from tornado.web import HTTPError, RequestHandler
 
+from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie, get_roles_by_instance
 from ..errors import TemboardUIError
 from ..model import Session as DBSession
-from ..agentclient import TemboardAgentClient
 from ..toolkit.perf import PerfCounters
 from ..toolkit.utils import JSONEncoder, utcnow
-
 
 logger = logging.getLogger(__name__)
 

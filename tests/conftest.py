@@ -17,15 +17,12 @@ from pathlib import Path
 
 import pytest
 import sh
-from sh import hostname, temboard, temboard_agent
-
-from fixtures.postgres import POSTGRESQL_AVAILABLE_VERSIONS
-from fixtures.utils import rmtree
 
 # Import fixtures
 from fixtures import *  # noqa: F401, F403
-from fixtures.utils import session_tag, copy_files
-
+from fixtures.postgres import POSTGRESQL_AVAILABLE_VERSIONS
+from fixtures.utils import copy_files, rmtree, session_tag
+from sh import hostname, temboard, temboard_agent
 
 logger = logging.getLogger(__name__)
 

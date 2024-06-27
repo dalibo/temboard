@@ -1,10 +1,10 @@
 import logging
 from os import path
+
 import tornado.web
 from tornado.escape import url_escape, url_unescape
 
 from temboardui.web.tornado import Blueprint, HTTPError, Redirect, TemplateRenderer
-
 
 logger = logging.getLogger(__name__)
 blueprint = Blueprint()

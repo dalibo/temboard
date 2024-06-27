@@ -1,11 +1,11 @@
 import json
-import time
 import os
 import re
+import time
 
-from . import db
-from ...notification import NotificationMgmt
 from ...inventory import SysInfo
+from ...notification import NotificationMgmt
+from . import db
 
 
 def get_metrics(app, pool=None):

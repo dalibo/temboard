@@ -1,9 +1,8 @@
 import re
 
-from bottle import Bottle, default_app, HTTPError, request
+from bottle import Bottle, HTTPError, default_app, request
 
 from . import functions as pgconf_functions
-
 
 bottle = Bottle()
 

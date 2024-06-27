@@ -15,15 +15,14 @@ import socket
 import sys
 import time
 from datetime import datetime
-from platform import machine, python_version
 from multiprocessing import cpu_count
+from platform import machine, python_version
 
 from .core import workers
 from .queries import QUERIES
 from .toolkit.errors import UserError
 from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
 from .version import __version__
-
 
 logger = logging.getLogger(__name__)
 
@@ -229,8 +228,8 @@ def collect_versions(data):
 
 def inspect_versions():
     from bottle import __version__ as bottle_version
-    from psycopg2 import __version__ as psycopg2_version
     from cryptography import __version__ as cryptography_version
+    from psycopg2 import __version__ as psycopg2_version
 
     distinfos = read_distinfo()
 

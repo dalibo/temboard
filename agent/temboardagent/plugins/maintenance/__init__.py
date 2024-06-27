@@ -7,7 +7,6 @@ from temboardagent.tools import validate_parameters
 
 from . import functions
 
-
 bottle = Bottle()
 workers = taskmanager.WorkerSet()
 

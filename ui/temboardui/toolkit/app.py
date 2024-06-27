@@ -1,26 +1,23 @@
 import bdb
-import pkg_resources
 import configparser
-from glob import glob
 import logging
 import os
 import pdb
-from codecs import open
-from textwrap import dedent
 import sys
-from argparse import (
-    ArgumentParser,
-    Action as ArgAction,
-    SUPPRESS as SUPPRESS_ARG,
-    RawDescriptionHelpFormatter,
-)
+from argparse import SUPPRESS as SUPPRESS_ARG
+from argparse import Action as ArgAction
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from codecs import open
+from glob import glob
+from textwrap import dedent
 
-from .configuration import MergedConfiguration, OptionSpec
-from .log import setup_logging, LastnameFilter
-from .errors import UserError
+import pkg_resources
+
 from . import validators as v
+from .configuration import MergedConfiguration, OptionSpec
+from .errors import UserError
+from .log import LastnameFilter, setup_logging
 from .utils import strtobool
-
 
 logger = logging.getLogger(__name__)
 

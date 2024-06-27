@@ -49,7 +49,9 @@ def test_dotdict():
 
 
 def test_pickle_dotdict():
-    from pickle import dumps as pickle, loads as unpickle
+    from pickle import dumps as pickle
+    from pickle import loads as unpickle
+
     from temboardui.toolkit.utils import DotDict
 
     orig = DotDict(dict(a=1, b=dict(c=2)))

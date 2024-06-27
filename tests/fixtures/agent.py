@@ -12,14 +12,12 @@ import pytest
 from sh import (
     ErrorReturnCode,
     TimeoutException,
-    env as env_cmd,
     # Use bare sudo instead of contrib to ensure non interactive sudo.
     sudo,
 )
-
+from sh import env as env_cmd
 
 from .utils import copy_files, retry_http
-
 
 logger = logging.getLogger(__name__)
 

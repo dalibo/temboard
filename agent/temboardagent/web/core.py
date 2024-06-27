@@ -1,10 +1,9 @@
 import logging
 
-from bottle import default_app, get, post, request, response, HTTPError, HTTPResponse
+from bottle import HTTPError, HTTPResponse, default_app, get, post, request, response
 
 from ..notification import NotificationMgmt
-from ..toolkit.signing import canonicalize_request, verify_v1, InvalidSignature
-
+from ..toolkit.signing import InvalidSignature, canonicalize_request, verify_v1
 
 logger = logging.getLogger(__name__)
 

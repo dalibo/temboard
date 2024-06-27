@@ -3,12 +3,11 @@ import re
 from collections import namedtuple
 from textwrap import dedent
 
-from bottle import request, HTTPError
+from bottle import HTTPError, request
 
 from ...errors import NotificationError
-from ...notification import NotificationMgmt, Notification
+from ...notification import Notification, NotificationMgmt
 from ...postgres import pg_escape
-
 
 logger = logging.getLogger(__package__)
 

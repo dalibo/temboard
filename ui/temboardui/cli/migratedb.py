@@ -9,7 +9,6 @@ from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from .app import app
 
-
 logger = logging.getLogger(__name__)
 
 

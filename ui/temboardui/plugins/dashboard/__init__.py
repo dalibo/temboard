@@ -7,7 +7,6 @@ from tornado.escape import json_encode
 from ...agentclient import TemboardAgentClient
 from ...web.tornado import Blueprint, TemplateRenderer
 
-
 blueprint = Blueprint()
 blueprint.generic_proxy(r"/dashboard")
 logger = logging.getLogger(__name__)

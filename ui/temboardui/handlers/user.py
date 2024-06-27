@@ -5,7 +5,6 @@ from ..application import gen_cookie, get_role_by_auth, hash_password
 from ..errors import TemboardUIError
 from ..web.tornado import Redirect, Response, anonymous_allowed, app, render_template
 
-
 logger = logging.getLogger(__name__)
 
 

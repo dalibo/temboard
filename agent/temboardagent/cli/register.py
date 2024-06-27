@@ -1,10 +1,10 @@
-import os
 import logging
+import os
 import socket
 import sys
 from getpass import getpass
-from textwrap import dedent
 from sys import stdout
+from textwrap import dedent
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 
@@ -13,7 +13,6 @@ from ..toolkit.app import SubCommand
 from ..toolkit.http import TemboardClient
 from ..tools import validate_parameters
 from .app import app
-
 
 try:
     input = raw_input

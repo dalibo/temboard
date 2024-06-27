@@ -3,11 +3,10 @@ import sys
 from urllib.parse import urlparse
 
 from ..agentclient import TemboardAgentClient
+from ..toolkit import validators as v
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
-from ..toolkit import validators as v
 from .app import app
-
 
 logger = logging.getLogger(__name__)
 

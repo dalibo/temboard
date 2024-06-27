@@ -1,9 +1,9 @@
 # Flask WSGI app is served by Tornado's fallback handler.
 
+import json
 import logging
 import os
 from ipaddress import ip_address, ip_network
-import json
 
 from flask import (
     Blueprint,
@@ -11,12 +11,12 @@ from flask import (
     abort,
     current_app,
     g,
+    jsonify,
     make_response,
     request,
-    jsonify,
 )
-from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
+from werkzeug.exceptions import HTTPException
 
 from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie
@@ -24,7 +24,6 @@ from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
 from .vitejs import ViteJSExtension
-
 
 logger = logging.getLogger(__name__)
 

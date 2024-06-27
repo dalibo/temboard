@@ -1,5 +1,7 @@
-from setuptools import setup, find_packages, __version__ as setuptoolsv
 import os
+
+from setuptools import __version__ as setuptoolsv
+from setuptools import find_packages, setup
 
 # Load version number
 __version__ = None

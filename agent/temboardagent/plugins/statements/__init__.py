@@ -1,10 +1,9 @@
 import logging
 
-from bottle import Bottle, default_app, HTTPError
+from bottle import Bottle, HTTPError, default_app
 
-from ...tools import now
 from ...toolkit.configuration import OptionSpec
-
+from ...tools import now
 
 bottle = Bottle()
 logger = logging.getLogger(__name__)

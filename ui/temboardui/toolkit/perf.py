@@ -6,7 +6,6 @@ import signal
 
 from . import logfmt
 
-
 logger = logging.getLogger(__name__)
 SC_CLK_TCK = os.sysconf("SC_CLK_TCK")
 

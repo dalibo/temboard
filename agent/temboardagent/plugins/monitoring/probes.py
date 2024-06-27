@@ -1,8 +1,8 @@
-import logging
-import re
-import os
-import time
 import json
+import logging
+import os
+import re
+import time
 from contextlib import closing
 
 import psycopg2
@@ -12,9 +12,7 @@ from psycopg2.extras import PhysicalReplicationConnection
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
 from ...toolkit.utils import utcnow
-
 from . import db
-
 
 logger = logging.getLogger(__package__)
 

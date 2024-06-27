@@ -1,18 +1,17 @@
+import json
 import logging
 import os.path
-import json
 import sys
 
-from .app import app
 from ..agentclient import TemboardAgentClient
 from ..application import add_instance, check_agent_address, get_instance
+from ..handlers.settings.instance import add_instance_in_groups, enable_instance_plugins
 from ..model import Session
+from ..toolkit import validators as v
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
-from ..toolkit import validators as v
 from ..toolkit.utils import JSONEncoder
-from ..handlers.settings.instance import add_instance_in_groups, enable_instance_plugins
-
+from .app import app
 
 logger = logging.getLogger(__name__)
 

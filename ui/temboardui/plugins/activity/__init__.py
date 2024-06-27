@@ -2,7 +2,6 @@ from os import path
 
 from ...web.tornado import Blueprint, TemplateRenderer
 
-
 blueprint = Blueprint()
 blueprint.generic_proxy(r"/activity/kill", methods=["POST"])
 plugin_path = path.dirname(path.realpath(__file__))

@@ -9,11 +9,10 @@
 
 import logging.config
 
-from .app import app
 from ..toolkit.app import SubCommand
-from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
 from ..toolkit.errors import UserError
-
+from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+from .app import app
 
 logger = logging.getLogger(__name__)
 

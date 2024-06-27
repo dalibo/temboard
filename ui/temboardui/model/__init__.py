@@ -2,12 +2,12 @@ import logging
 import sys
 from time import sleep
 
+from sqlalchemy import __version__ as sa_version
+from sqlalchemy import create_engine
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy import __version__ as sa_version, create_engine
 
-from .migrator import Migrator
 from ..toolkit.queries import QueryFiler
-
+from .migrator import Migrator
 
 Session = sessionmaker(expire_on_commit=False)
 logger = logging.getLogger(__name__)

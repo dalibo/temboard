@@ -1,8 +1,8 @@
 from time import sleep
 
 import pytest
-from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.support.select import Select
 
 
 @pytest.fixture

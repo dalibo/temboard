@@ -17,8 +17,8 @@ def test_spec_and_value():
 
 def test_spec_lifetime(mocker):
     from temboardui.toolkit.configuration import (
-        OptionSpec,
         MergedConfiguration,
+        OptionSpec,
         UserError,
     )
 
@@ -82,7 +82,7 @@ def test_argument_for_spec(capsys):
 
 
 def test_remove_specs():
-    from temboardui.toolkit.configuration import OptionSpec, MergedConfiguration
+    from temboardui.toolkit.configuration import MergedConfiguration, OptionSpec
 
     def my_validator(x):
         if x == "__ERROR__":
@@ -115,8 +115,9 @@ def test_load(mocker):
     mocker.patch("temboardui.toolkit.configuration.os.chdir")
 
     from argparse import Namespace
-    from temboardui.toolkit.configuration import OptionSpec, MergedConfiguration
+
     from temboardui.toolkit.app import configparser
+    from temboardui.toolkit.configuration import MergedConfiguration, OptionSpec
 
     s = "temboard"
     specs = [
@@ -153,8 +154,8 @@ def test_load(mocker):
 
 
 def test_load_configparser():
-    from temboardui.toolkit.configuration import iter_configparser_values
     from temboardui.toolkit.app import configparser
+    from temboardui.toolkit.configuration import iter_configparser_values
 
     parser = configparser.RawConfigParser()
     parser.add_section("section0")

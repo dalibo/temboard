@@ -5,11 +5,9 @@ from queue import Queue
 from time import sleep
 
 import pytest
-from sh import ErrorReturnCode, SignalException
-from selenium.webdriver.common.by import By
-
 from fixtures.utils import retry_fast
-
+from selenium.webdriver.common.by import By
+from sh import ErrorReturnCode, SignalException
 
 logger = logging.getLogger(__name__)
 

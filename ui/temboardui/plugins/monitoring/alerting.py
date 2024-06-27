@@ -1,5 +1,6 @@
-from past.utils import old_div
 import operator
+
+from past.utils import old_div
 
 
 def bootstrap_checks(hostinfo):

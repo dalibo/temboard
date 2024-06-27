@@ -1,8 +1,8 @@
 from os import path
+
 import tornado.web
 
 from temboardui.web.tornado import Blueprint, TemplateRenderer
-
 
 PLUGIN_NAME = "maintenance"
 blueprint = Blueprint()

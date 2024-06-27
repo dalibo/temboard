@@ -1,15 +1,14 @@
-from dateutil import parser as parse_datetime
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 
+from dateutil import parser as parse_datetime
 from sqlalchemy.orm.exc import NoResultFound
 
-from .model.orm import Check, CheckState, CollectorStatus, Host, Instance
-from .model import db
-from .alerting import bootstrap_checks, check_specs
 from ...toolkit.errors import UserError
 from ...web.tornado import HTTPError
-
+from .alerting import bootstrap_checks, check_specs
+from .model import db
+from .model.orm import Check, CheckState, CollectorStatus, Host, Instance
 
 logger = logging.getLogger(__package__)
 

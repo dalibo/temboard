@@ -1,29 +1,29 @@
-from binascii import hexlify
-from hashlib import sha512
 import base64
 import json
 import logging
 import re
+from binascii import hexlify
+from email.mime.text import MIMEText
+from hashlib import sha512
+from smtplib import SMTP, SMTP_SSL
+from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
-from urllib.error import HTTPError
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import IntegrityError
-from smtplib import SMTP, SMTP_SSL
-from email.mime.text import MIMEText
 
+from temboardui.errors import TemboardUIError
 from temboardui.model.orm import (
     AccessRoleInstance,
     Groups,
-    Instances,
     InstanceGroups,
+    Instances,
     Plugins,
-    Roles,
     RoleGroups,
+    Roles,
 )
-from temboardui.errors import TemboardUIError
 
 logger = logging.getLogger(__name__)
 
@@ -330,10 +330,8 @@ def get_instance(session, agent_address, agent_port):
 
 
 def delete_instance(session, agent_address, agent_port):
-    from temboardui.plugins.monitoring.model.orm import (
-        Host as MonitoringHost,
-        Instance as MonitoringInstance,
-    )
+    from temboardui.plugins.monitoring.model.orm import Host as MonitoringHost
+    from temboardui.plugins.monitoring.model.orm import Instance as MonitoringInstance
 
     try:
         instance = (

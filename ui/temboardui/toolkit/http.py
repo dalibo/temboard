@@ -6,9 +6,8 @@ from datetime import datetime, timezone
 from time import time
 from urllib.error import HTTPError
 
-from .utils import ensure_bytes
 from .errors import TemboardError
-
+from .utils import ensure_bytes
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,9 @@
-from datetime import datetime
 import logging
 import os
 import sqlite3
-from textwrap import dedent
 import time
+from datetime import datetime
+from textwrap import dedent
 
 from .errors import NotificationError
 

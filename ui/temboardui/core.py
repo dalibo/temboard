@@ -1,11 +1,10 @@
 import logging
 
 from .agentclient import TemboardAgentClient
-from .model import worker_engine, Session
+from .model import Session, worker_engine
 from .model.orm import Instances
 from .toolkit.taskmanager import WorkerSet
 from .toolkit.utils import utcnow
-
 
 logger = logging.getLogger(__name__)
 workers = WorkerSet()

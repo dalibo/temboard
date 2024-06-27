@@ -34,8 +34,8 @@ def test_app_route(mocker):
 
 
 def test_handler(executor, io_loop, mocker):
-    from tornado.gen import coroutine
     from temboardui.web.tornado import CallableHandler
+    from tornado.gen import coroutine
 
     mod = "temboardui.web.tornado"
     grbc = mocker.patch(mod + ".get_role_by_cookie")
@@ -121,8 +121,8 @@ def test_csv():
 
 def test_make_error(mocker):
     rt = mocker.patch("temboardui.web.tornado.render_template")
-    from tornado.httputil import HTTPServerRequest
     from temboardui.web.tornado import make_error
+    from tornado.httputil import HTTPServerRequest
 
     response_kw = dict(
         name="request",

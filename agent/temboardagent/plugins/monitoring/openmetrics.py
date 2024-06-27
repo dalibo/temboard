@@ -12,7 +12,6 @@ from typing import List
 
 from ...tools import fromisoformat
 
-
 logger = logging.getLogger(__name__)
 METADATAS = {}
 

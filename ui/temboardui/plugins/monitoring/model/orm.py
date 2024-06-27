@@ -1,8 +1,8 @@
-from temboardui.plugins.monitoring.model import tables
-
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import backref, relationship
+
+from temboardui.plugins.monitoring.model import tables
 
 
 class ModelMixin:

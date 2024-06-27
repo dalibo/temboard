@@ -1,18 +1,18 @@
-from future import standard_library
-import logging
 import io
+import logging
 from datetime import datetime
 from textwrap import dedent
 
-import tornado.web
 import tornado.escape
+import tornado.web
+from future import standard_library
 
 from temboardui.plugins.monitoring.model.orm import Check, CheckState
 from temboardui.web.tornado import HTTPError, jsonify
 
-from . import blueprint, render_template
+from ..alerting import check_specs, check_state_detail, checks_info
 from ..tools import get_request_ids, parse_start_end
-from ..alerting import checks_info, check_state_detail, check_specs
+from . import blueprint, render_template
 
 standard_library.install_aliases()
 

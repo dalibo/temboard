@@ -1,6 +1,5 @@
-from copy import deepcopy
 import json
-
+from copy import deepcopy
 
 # As returned by db.get_metrics(). Copy-pasted payload from dev env.
 temboard_data = json.loads("""\
@@ -368,8 +367,8 @@ temboard_data = json.loads("""\
 def test_open_metrics_from_data():
     from temboardagent.plugins.monitoring.db import use_current_for_delta_metrics
     from temboardagent.plugins.monitoring.openmetrics import (
-        generate_samples,
         format_open_metrics_lines,
+        generate_samples,
     )
 
     data = use_current_for_delta_metrics(deepcopy(temboard_data))

@@ -1,24 +1,24 @@
 import errno
 import functools
-import sys
-import time
-import uuid
 import logging
 import os.path
 import signal
+import sys
+import time
+import uuid
 from ast import literal_eval
-from select import select, error as SelectError
-from datetime import datetime
 from collections import deque
+from datetime import datetime
 from multiprocessing import AuthenticationError, Process, Queue
-from multiprocessing.connection import Listener, Client
-from textwrap import dedent
+from multiprocessing.connection import Client, Listener
 from queue import Empty
+from select import error as SelectError
+from select import select
+from textwrap import dedent
 
-from .services import Service
 from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
-
+from .services import Service
 
 TM_DEF_LISTENER_ADDR = "/tmp/.temboardsched.sock"
 

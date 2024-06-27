@@ -19,9 +19,9 @@
 
 import sys
 
-from .web.flask import create_app
 from .cli.app import app
 from .model import QUERIES
+from .web.flask import create_app
 
 
 def main(*a, **kw):

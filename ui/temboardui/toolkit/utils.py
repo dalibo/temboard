@@ -1,6 +1,6 @@
 import json
-from datetime import datetime, timezone
 from collections import UserDict
+from datetime import datetime, timezone
 
 _UNDEFINED = object()
 

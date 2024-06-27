@@ -16,7 +16,6 @@ from textwrap import dedent
 import httpx
 import pytz
 
-
 logger = logging.getLogger("importlog")
 LOCALTZ = pytz.timezone("UTC")
 KNOWN_LABELS = [

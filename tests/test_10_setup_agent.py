@@ -1,7 +1,7 @@
 import json
-from sh import temboard_agent
 
 from fixtures.utils import retry_fast
+from sh import temboard_agent
 
 
 def test_version():

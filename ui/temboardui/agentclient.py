@@ -5,7 +5,6 @@ from uuid import uuid4
 from .toolkit.http import TemboardClient, format_date
 from .toolkit.signing import canonicalize_request, sign_v1
 
-
 logger = logging.getLogger(__name__)
 
 

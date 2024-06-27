@@ -1,7 +1,6 @@
 import os.path
 
 import pytest
-
 from temboardui.toolkit import validators as v
 
 

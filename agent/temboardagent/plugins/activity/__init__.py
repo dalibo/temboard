@@ -2,11 +2,10 @@ import logging
 
 from bottle import Bottle, default_app, request
 
-from . import functions as activity_functions
-from ...notification import NotificationMgmt, Notification
-from ...tools import validate_parameters
+from ...notification import Notification, NotificationMgmt
 from ...queries import QUERIES
-
+from ...tools import validate_parameters
+from . import functions as activity_functions
 
 bottle = Bottle()
 logger = logging.getLogger(__name__)

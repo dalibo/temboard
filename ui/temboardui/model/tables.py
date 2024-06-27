@@ -1,14 +1,14 @@
-from sqlalchemy.sql import text
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 from sqlalchemy.schema import (
-    MetaData,
-    Table,
-    Column,
     CheckConstraint,
+    Column,
     FetchedValue,
     ForeignKeyConstraint,
+    MetaData,
+    Table,
 )
-from sqlalchemy.types import Integer, UnicodeText, Boolean
+from sqlalchemy.sql import text
+from sqlalchemy.types import Boolean, Integer, UnicodeText
 
 metadata = MetaData()
 

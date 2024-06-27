@@ -12,13 +12,11 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
-from tornado.ioloop import IOLoop
-from tornado.web import HTTPError
-
-from temboardui.web import Redirect, Response, app, render_template
 from temboardui.application import gen_cookie, hash_password
 from temboardui.model import configure as configure_db_session
-
+from temboardui.web import Redirect, Response, app, render_template
+from tornado.ioloop import IOLoop
+from tornado.web import HTTPError
 
 logger = logging.getLogger(__name__)
 

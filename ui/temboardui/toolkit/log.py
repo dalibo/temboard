@@ -1,7 +1,7 @@
 import logging
+import sys
 from logging.config import dictConfig
 from logging.handlers import SysLogHandler
-import sys
 
 
 class ColoredStreamHandler(logging.StreamHandler):

@@ -5,9 +5,8 @@ import logging
 import os
 from argparse import SUPPRESS as SUPPRESS_ARG
 
-from .utils import DotDict
 from .errors import UserError
-
+from .utils import DotDict
 
 logger = logging.getLogger(__name__)
 

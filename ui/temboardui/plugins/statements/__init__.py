@@ -1,15 +1,15 @@
-from decimal import Decimal
-from past.utils import old_div
 import json
 import logging
+from decimal import Decimal
 from os import path
 
 import tornado.web
-
-from sqlalchemy.orm import sessionmaker, scoped_session
+from past.utils import old_div
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import column, extract, func, select, text
 
-from ...application import get_instance
+from temboardui.agentclient import TemboardAgentClient
+from temboardui.errors import TemboardUIError
 from temboardui.model import worker_engine
 from temboardui.model.orm import (
     Biggest,
@@ -20,13 +20,11 @@ from temboardui.model.orm import (
     total_hit,
     total_read,
 )
-from temboardui.errors import TemboardUIError
-
-from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
 from temboardui.plugins.monitoring.tools import parse_start_end
 from temboardui.toolkit import taskmanager
-from temboardui.agentclient import TemboardAgentClient
+from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
 
+from ...application import get_instance
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
