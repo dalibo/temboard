@@ -13,6 +13,7 @@ DOCKER_MAX_VERSION=27
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
+	git config blame.ignoreRevsFile .git-blame-ignore-revs
 	$(MAKE) -j 2 install-$* dev/bin/prometheus
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
