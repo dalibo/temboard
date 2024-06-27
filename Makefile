@@ -117,6 +117,7 @@ renew-sslcert:  #: Renew self-signed SSL certificates.
 .PHONY: tests
 tests:  #: Execute all tests.
 	ruff check
+	ruff format --check
 	pytest --exitfirst agent/tests/unit/
 	pytest --exitfirst ui/tests/unit/
 	pytest --exitfirst tests/

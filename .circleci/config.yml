@@ -187,6 +187,7 @@ jobs:
           command: |
             cd agent/
             ruff check temboardagent
+            ruff format --check temboardagent
             python setup.py --long-description | rst2html --verbose --halt=warning - >/dev/null
             check-manifest
       - run:
@@ -196,8 +197,10 @@ jobs:
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             ruff check tests/
+            ruff format --check tests/
             cd ui/
             ruff check
+            ruff format --check
             check-manifest
       - &pip-cache-save
         save_cache:
