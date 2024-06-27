@@ -3,19 +3,21 @@ from textwrap import dedent
 
 def test_parse_proc_stat():
     from temboardagent.plugins.activity import parse_proc_stat
+
     contents = dedent("""\
     336567 (bash) S 4324 336567 336567 34828 345175 4194304 13474 104206 0 11 12 6 116 44 20 0 1 0 9732774 20516864 4224 18446744073709551615 94122439303168 94122440068253 140731111635664 0 0 0 65536 3686404 1266761467 0 0 0 17 3 0 0 0 0 0 94122440303280 94122440351044 94122444668928 140731111638810 140731111638816 140731111638816 140731111641070 0
     """)  # noqa
 
     values = parse_proc_stat(contents)
-    assert 12 == values['utime']
-    assert 6 == values['stime']
-    assert 116 == values['cutime']
-    assert 44 == values['cstime']
+    assert 12 == values["utime"]
+    assert 6 == values["stime"]
+    assert 116 == values["cutime"]
+    assert 44 == values["cstime"]
 
 
 def test_parse_proc_human_status():
     from temboardagent.plugins.activity import parse_proc_human
+
     # From man 5 proc
     contents = dedent("""\
     Name:   bash
@@ -76,4 +78,4 @@ def test_parse_proc_human_status():
     """)
 
     data = parse_proc_human(contents.splitlines())
-    assert 13807616 == data['VmRSS']
+    assert 13807616 == data["VmRSS"]

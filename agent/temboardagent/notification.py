@@ -26,22 +26,20 @@ class Notification:
     """
 
     def __init__(self, username, message):
-
         if isinstance(username, bytes):
-            username = username.decode('utf-8')
+            username = username.decode("utf-8")
         if isinstance(message, bytes):
-            message = message.decode('utf-8')
+            message = message.decode("utf-8")
 
         self.time = time.time()
         self.username = username
         self.message = message
 
 
-class NotificationMgmt():
-
+class NotificationMgmt:
     @classmethod
     def bootstrap(self, config):
-        db_path = os.path.join(config.temboard.home, 'core.db')
+        db_path = os.path.join(config.temboard.home, "core.db")
         with sqlite3.connect(db_path) as conn:
             c = conn.cursor()
             c.execute(
@@ -63,14 +61,12 @@ class NotificationMgmt():
     @classmethod
     def push(self, config, notification):
         try:
-
-            db_path = os.path.join(config.temboard.home, 'core.db')
+            db_path = os.path.join(config.temboard.home, "core.db")
             with sqlite3.connect(db_path) as conn:
                 c = conn.cursor()
                 c.execute(
                     "INSERT INTO action_logs VALUES (?, ?, ?)",
-                    (notification.time, notification.username,
-                     notification.message)
+                    (notification.time, notification.username, notification.message),
                 )
                 # Purge action_logs, we want to keep only the last 100 messages
                 c.execute(
@@ -87,29 +83,27 @@ class NotificationMgmt():
 
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise NotificationError('Can not push new notification')
+            raise NotificationError("Can not push new notification")
 
     @classmethod
     def get_last_n(self, config, n):
-
         limit = " LIMIT %s" % n if int(n) > -1 else ""
 
         try:
-
-            db_path = os.path.join(config.temboard.home, 'core.db')
+            db_path = os.path.join(config.temboard.home, "core.db")
             with sqlite3.connect(db_path) as conn:
                 c = conn.cursor()
-                c.execute("SELECT time, username, message FROM action_logs "
-                          "ORDER BY time DESC " + limit)
+                c.execute(
+                    "SELECT time, username, message FROM action_logs "
+                    "ORDER BY time DESC " + limit
+                )
                 for timestamp, username, message in c.fetchall():
                     yield dict(
-                        date=datetime.utcfromtimestamp(
-                            int(timestamp)
-                        ).isoformat(),
+                        date=datetime.utcfromtimestamp(int(timestamp)).isoformat(),
                         username=username,
-                        message=message
+                        message=message,
                     )
 
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise NotificationError('Can not get last notifications')
+            raise NotificationError("Can not get last notifications")

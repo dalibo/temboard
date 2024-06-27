@@ -12,7 +12,7 @@ bottle = Bottle()
 workers = taskmanager.WorkerSet()
 
 
-@bottle.get('/')
+@bottle.get("/")
 def get_instance(pgconn, pgpool):
     instance = next(functions.get_instance(pgconn))
 
@@ -22,29 +22,29 @@ def get_instance(pgconn, pgpool):
     for database in rows:
         database = dict(database)
         # we need to connect with a different database
-        dbname = database['datname']
+        dbname = database["datname"]
         for getconn in pgpool.auto_reconnect():
             with getconn(dbname) as dbconn:
                 database.update(**functions.get_database(dbconn))
         databases.append(database)
 
-    return {'instance': instance, 'databases': databases}
+    return {"instance": instance, "databases": databases}
 
 
-T_VACUUM_MODE = b'(((^|,)(full|freeze|analyze))+$)'
-T_TIMESTAMP_UTC = b'(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)'
+T_VACUUM_MODE = b"(((^|,)(full|freeze|analyze))+$)"
+T_TIMESTAMP_UTC = b"(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)"
 
 
-@bottle.get('/<dbname>')
+@bottle.get("/<dbname>")
 def get_database(pgpool, dbname):
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
             database = functions.get_database_size(conn)
             schemas = functions.get_schemas(conn)
-    return dict(database, **{'schemas': schemas})
+    return dict(database, **{"schemas": schemas})
 
 
-@bottle.get('/<dbname>/schema/<schema>')
+@bottle.get("/<dbname>/schema/<schema>")
 def get_schema(pgpool, dbname, schema):
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
@@ -54,7 +54,7 @@ def get_schema(pgpool, dbname, schema):
     return dict(dict(tables, **indexes), **schema)
 
 
-@bottle.get('/<dbname>/schema/<schema>/table/<table>')
+@bottle.get("/<dbname>/schema/<schema>/table/<table>")
 def get_table(pgpool, dbname, schema, table):
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
@@ -63,12 +63,12 @@ def get_table(pgpool, dbname, schema, table):
     return ret
 
 
-@bottle.post('/<dbname>/vacuum')
+@bottle.post("/<dbname>/vacuum")
 def post_vacuum_database(pgpool, dbname):
     return post_vacuum(pgpool, request.json, dbname)
 
 
-@bottle.post('/<dbname>/schema/<schema>/table/<table>/vacuum')
+@bottle.post("/<dbname>/schema/<schema>/table/<table>/vacuum")
 def post_vacuum_table(pgpool, dbname, schema, table):
     return post_vacuum(pgpool, request.json, dbname, schema, table)
 
@@ -76,43 +76,39 @@ def post_vacuum_table(pgpool, dbname, schema, table):
 def post_vacuum(pgpool, post, dbname, schema=None, table=None):
     app = default_app().temboard
     # Parameters format validation
-    if 'datetime' in post:
-        validate_parameters(post, [
-            ('datetime', T_TIMESTAMP_UTC, False),
-        ])
-    dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
-    if 'mode' in post:
-        validate_parameters(post, [
-            ('mode', T_VACUUM_MODE, False),
-        ])
-    mode = post.get('mode', '')
+    if "datetime" in post:
+        validate_parameters(post, [("datetime", T_TIMESTAMP_UTC, False)])
+    dt = post.get("datetime", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    if "mode" in post:
+        validate_parameters(post, [("mode", T_VACUUM_MODE, False)])
+    mode = post.get("mode", "")
 
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
-            return functions.schedule_vacuum(
-                conn, dbname, mode, dt, app, schema, table)
+            return functions.schedule_vacuum(conn, dbname, mode, dt, app, schema, table)
 
 
-@bottle.get('/<dbname>/vacuum/scheduled')
+@bottle.get("/<dbname>/vacuum/scheduled")
 def scheduled_vacuum_database(dbname):
     app = default_app().temboard
     return functions.list_scheduled_vacuum(app, dbname=dbname)
 
 
-@bottle.get('/<dbname>/schema/<schema>/table/<table>/vacuum/scheduled')
+@bottle.get("/<dbname>/schema/<schema>/table/<table>/vacuum/scheduled")
 def scheduled_vacuum_table(dbname, schema, table):
     app = default_app().temboard
-    return functions.list_scheduled_vacuum(app, dbname=dbname, schema=schema,
-                                           table=table)
+    return functions.list_scheduled_vacuum(
+        app, dbname=dbname, schema=schema, table=table
+    )
 
 
-@bottle.delete('/vacuum/<vacuum_id>')
+@bottle.delete("/vacuum/<vacuum_id>")
 def delete_vacuum(vacuum_id):
     app = default_app().temboard
     return functions.cancel_scheduled_operation(vacuum_id, app)
 
 
-@bottle.get('/vacuum/scheduled')
+@bottle.get("/vacuum/scheduled")
 def scheduled_vacuum():
     return functions.list_scheduled_vacuum(default_app().temboard)
 
@@ -123,12 +119,12 @@ def vacuum_worker(app, dbname, mode, schema=None, table=None):
         return functions.vacuum(conn, dbname, mode, schema, table)
 
 
-@bottle.post('/<dbname>/analyze')
+@bottle.post("/<dbname>/analyze")
 def post_analyze_database(pgpool, dbname):
     return post_analyze(pgpool, request.json, dbname)
 
 
-@bottle.post('/<dbname>/schema/<schema>/table/<table>/analyze')
+@bottle.post("/<dbname>/schema/<schema>/table/<table>/analyze")
 def post_analyze_table(pgpool, dbname, schema, table):
     return post_analyze(pgpool, request.json, dbname, schema, table)
 
@@ -136,37 +132,35 @@ def post_analyze_table(pgpool, dbname, schema, table):
 def post_analyze(pgpool, post, dbname, schema=None, table=None):
     app = default_app().temboard
     # Parameters format validation
-    if 'datetime' in post:
-        validate_parameters(post, [
-            ('datetime', T_TIMESTAMP_UTC, False),
-        ])
-    dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    if "datetime" in post:
+        validate_parameters(post, [("datetime", T_TIMESTAMP_UTC, False)])
+    dt = post.get("datetime", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
-            return functions.schedule_analyze(
-                conn, dbname, dt, app, schema, table)
+            return functions.schedule_analyze(conn, dbname, dt, app, schema, table)
 
 
-@bottle.get('/<dbname>/analyze/scheduled')
+@bottle.get("/<dbname>/analyze/scheduled")
 def scheduled_analyze_database(dbname):
     app = default_app().temboard
     return functions.list_scheduled_analyze(app, dbname=dbname)
 
 
-@bottle.get('/<dbname>/schema/<schema>/table/<table>/analyze/scheduled')
+@bottle.get("/<dbname>/schema/<schema>/table/<table>/analyze/scheduled")
 def scheduled_analyze_table(dbname, schema, table):
     app = default_app().temboard
-    return functions.list_scheduled_analyze(app, dbname=dbname, schema=schema,
-                                            table=table)
+    return functions.list_scheduled_analyze(
+        app, dbname=dbname, schema=schema, table=table
+    )
 
 
-@bottle.delete('/analyze/<analyze_id>')
+@bottle.delete("/analyze/<analyze_id>")
 def delete_analyze(analyze_id):
     app = default_app().temboard
     return functions.cancel_scheduled_operation(analyze_id, app)
 
 
-@bottle.get('/analyze/scheduled')
+@bottle.get("/analyze/scheduled")
 def scheduled_analyze():
     app = default_app().temboard
     return functions.list_scheduled_analyze(app)
@@ -178,17 +172,17 @@ def analyze_worker(app, dbname, schema=None, table=None):
         return functions.analyze(conn, dbname, schema, table)
 
 
-@bottle.post('/<dbname>/reindex')
+@bottle.post("/<dbname>/reindex")
 def post_reindex_database(pgpool, dbname):
     return post_reindex(pgpool, request.json, dbname)
 
 
-@bottle.post('/<dbname>/schema/<schema>/table/<table>/reindex')
+@bottle.post("/<dbname>/schema/<schema>/table/<table>/reindex")
 def post_reindex_table(pgpool, dbname, schema, table):
     return post_reindex(pgpool, request.json, dbname, schema, table)
 
 
-@bottle.post('/<dbname>/schema/<schema>/index/<index>/reindex')
+@bottle.post("/<dbname>/schema/<schema>/index/<index>/reindex")
 def post_reindex_index(pgpool, dbname, schema, index):
     return post_reindex(pgpool, request.json, dbname, schema, index=index)
 
@@ -196,44 +190,44 @@ def post_reindex_index(pgpool, dbname, schema, index):
 def post_reindex(pgpool, post, dbname, schema=None, table=None, index=None):
     app = default_app().temboard
     # Parameters format validation
-    if 'datetime' in post:
-        validate_parameters(post, [
-            ('datetime', T_TIMESTAMP_UTC, False),
-        ])
-    dt = post.get('datetime', datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    if "datetime" in post:
+        validate_parameters(post, [("datetime", T_TIMESTAMP_UTC, False)])
+    dt = post.get("datetime", datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
 
     for getconn in pgpool.auto_reconnect():
         with getconn(dbname) as conn:
             return functions.schedule_reindex(
-                conn, dbname, dt, app, schema, table, index)
+                conn, dbname, dt, app, schema, table, index
+            )
 
 
-@bottle.get('/<dbname>/reindex/scheduled')
+@bottle.get("/<dbname>/reindex/scheduled")
 def scheduled_reindex_database(dbname):
     app = default_app().temboard
     return functions.list_scheduled_reindex(app, dbname=dbname)
 
 
-@bottle.get('/<dbname>/schema/<schema>/table/<table>/reindex/scheduled')
+@bottle.get("/<dbname>/schema/<schema>/table/<table>/reindex/scheduled")
 def scheduled_reindex_table(dbname, schema, table):
     app = default_app().temboard
     return functions.list_scheduled_reindex(
-        app, dbname=dbname, schema=schema, table=table)
+        app, dbname=dbname, schema=schema, table=table
+    )
 
 
-@bottle.get('/<dbname>/schema/<schema>/reindex/scheduled')
+@bottle.get("/<dbname>/schema/<schema>/reindex/scheduled")
 def scheduled_reindex_index(dbname, schema):
     app = default_app().temboard
     return functions.list_scheduled_reindex(app, dbname=dbname, schema=schema)
 
 
-@bottle.delete('/reindex/<reindex_id>')
+@bottle.delete("/reindex/<reindex_id>")
 def delete_reindex(reindex_id):
     app = default_app().temboard
     return functions.cancel_scheduled_operation(reindex_id, app)
 
 
-@bottle.get('/reindex/scheduled')
+@bottle.get("/reindex/scheduled")
 def scheduled_reindex(http_context, app):
     return functions.list_scheduled_reindex(app)
 
@@ -251,5 +245,5 @@ class MaintenancePlugin:
         self.app = app
 
     def load(self):
-        default_app().mount('/maintenance', bottle)
+        default_app().mount("/maintenance", bottle)
         self.app.worker_pool.add(workers)

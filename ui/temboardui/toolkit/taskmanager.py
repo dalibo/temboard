@@ -20,7 +20,7 @@ from .errors import StorageEngineError, UserError
 from .perf import PerfCounters
 
 
-TM_DEF_LISTENER_ADDR = '/tmp/.temboardsched.sock'
+TM_DEF_LISTENER_ADDR = "/tmp/.temboardsched.sock"
 
 # Message types
 MSG_TYPE_TASK_NEW = 0
@@ -51,25 +51,32 @@ def ensure_str(value):
     # requires a str object in both Python 2 and 3.
     if type(value) is not str:
         # From bytes to str.
-        value = value.decode('utf-8')
+        value = value.decode("utf-8")
     return value
 
 
 def make_worker_definition(function, pool_size):
     return {
-        'name': function.__name__,
-        'pool_size': pool_size,
-        'module': function.__module__,
-        'function': function.__name__
+        "name": function.__name__,
+        "pool_size": pool_size,
+        "module": function.__module__,
+        "function": function.__name__,
     }
 
 
 class Task:
-
-    def __init__(self, worker_name=None, options=None, id=None,
-                 status=TASK_STATUS_DEFAULT, start_datetime=None,
-                 redo_interval=None, stop_datetime=None, output=None,
-                 expire=3600):
+    def __init__(
+        self,
+        worker_name=None,
+        options=None,
+        id=None,
+        status=TASK_STATUS_DEFAULT,
+        start_datetime=None,
+        redo_interval=None,
+        stop_datetime=None,
+        output=None,
+        expire=3600,
+    ):
         self.worker_name = worker_name
         self.options = options
         self.status = status
@@ -88,9 +95,8 @@ class Task:
 
 
 class Message:
-
     def __init__(self, type, content):
-        self.type = type,
+        self.type = (type,)
         self.content = content
 
     def __repr__(self):
@@ -98,7 +104,6 @@ class Message:
 
 
 class TaskList:
-
     def __init__(self, engine):
         self.engine = engine
 
@@ -108,7 +113,7 @@ class TaskList:
             st_aborted=TASK_STATUS_ABORTED,
             st_scheduled=TASK_STATUS_SCHEDULED,
             st_default=TASK_STATUS_DEFAULT,
-            now=datetime.utcnow()
+            now=datetime.utcnow(),
         )
 
     def push(self, task):
@@ -149,9 +154,7 @@ class TaskList:
 
     def get_n_todo(self):
         # Return the number of ongoing tasks (QUEUED | DOING)
-        return self.engine.count_by_status(
-            TASK_STATUS_QUEUED | TASK_STATUS_DOING
-        )
+        return self.engine.count_by_status(TASK_STATUS_QUEUED | TASK_STATUS_DOING)
 
     def list(self):
         return self.engine.list()
@@ -165,7 +168,7 @@ class TaskList:
 
 class TaskManager:
     @staticmethod
-    def send_message(address, message, authkey=''):
+    def send_message(address, message, authkey=""):
         conn = Client(ensure_str(address), authkey=authkey)
         conn.send(message)
         res = conn.recv()
@@ -247,8 +250,7 @@ class Scheduler:
         # Need to shutdown ?
         self.shutdown = False
         # Instanciate a new Listener
-        self.listener = Listener(self.address, family='AF_UNIX',
-                                 authkey=self.authkey)
+        self.listener = Listener(self.address, family="AF_UNIX", authkey=self.authkey)
         # TODO
         # self.sync_bootstrap_options()
         self.select_timeout = 1
@@ -257,11 +259,13 @@ class Scheduler:
         # wait for I/O on Listener and event Queue
         try:
             fds, _, _ = select(
-                [self.listener._listener._socket.fileno(),
-                 self.event_queue._reader.fileno()],
+                [
+                    self.listener._listener._socket.fileno(),
+                    self.event_queue._reader.fileno(),
+                ],
                 [],
                 [],
-                self.select_timeout
+                self.select_timeout,
             )
         except SelectError as e:
             errno_, message = e.args
@@ -302,9 +306,13 @@ class Scheduler:
         now = datetime.utcnow()
 
         self.task_list.purge(
-            (TASK_STATUS_DONE | TASK_STATUS_FAILED | TASK_STATUS_ABORTED |
-             TASK_STATUS_CANCELED),
-            now
+            (
+                TASK_STATUS_DONE
+                | TASK_STATUS_FAILED
+                | TASK_STATUS_ABORTED
+                | TASK_STATUS_CANCELED
+            ),
+            now,
         )
 
         if self.shutdown:
@@ -318,10 +326,7 @@ class Scheduler:
             logger.debug("Pushing task %s to the worker queue.", task.id)
 
             try:
-                self.task_list.update(
-                    id=task.id,
-                    status=task.status
-                )
+                self.task_list.update(id=task.id, status=task.status)
             except StorageEngineError as e:
                 logger.error(str(e))
             else:
@@ -330,14 +335,14 @@ class Scheduler:
         to_redo = self.task_list.list_to_do(
             (TASK_STATUS_DONE | TASK_STATUS_FAILED | TASK_STATUS_ABORTED),
             now,
-            redo=True
+            redo=True,
         )
 
         for task in to_redo:
             task.status = TASK_STATUS_SCHEDULED
             task.start_datetime = now
             task.stop_datetime = None
-            task.output = ''
+            task.output = ""
 
             logger.debug("Pushing task %s to the worker queue.", task.id)
 
@@ -359,35 +364,34 @@ class Scheduler:
             # New task
             try:
                 task_id = self.task_list.push(message.content)
-                return Message(MSG_TYPE_RESP, {'id': task_id})
+                return Message(MSG_TYPE_RESP, {"id": task_id})
             except KeyError:
-                return Message(MSG_TYPE_ERROR,
-                               {'error': 'Task id already exists'})
+                return Message(MSG_TYPE_ERROR, {"error": "Task id already exists"})
             except StorageEngineError as e:
                 logger.error(str(e))
-                return Message(MSG_TYPE_ERROR, {'error': str(e)})
+                return Message(MSG_TYPE_ERROR, {"error": str(e)})
 
         elif message.type == MSG_TYPE_TASK_STATUS:
             # task status update
-            status = message.content['status']
+            status = message.content["status"]
             # special case when task's status is TASK_STATUS_CANCELD, we dont'
             # want to change it's state.
             try:
-                t = self.task_list.get(message.content['task_id'])
+                t = self.task_list.get(message.content["task_id"])
                 if t.status & TASK_STATUS_CANCELED:
                     status = t.status
 
                 self.task_list.update(
                     t.id,
                     status=status,
-                    output=message.content.get('output', None),
-                    stop_datetime=message.content.get('stop_datetime', None),
+                    output=message.content.get("output", None),
+                    stop_datetime=message.content.get("stop_datetime", None),
                 )
             except StorageEngineError as e:
                 logger.error(str(e))
-                return Message(MSG_TYPE_ERROR, {'error': str(e)})
+                return Message(MSG_TYPE_ERROR, {"error": str(e)})
             else:
-                return Message(MSG_TYPE_RESP, {'id': t.id})
+                return Message(MSG_TYPE_RESP, {"id": t.id})
 
         elif message.type == MSG_TYPE_TASK_LIST:
             # task list
@@ -395,12 +399,11 @@ class Scheduler:
                 return list(self.task_list.list())
             except StorageEngineError as e:
                 logger.error(str(e))
-                return Message(MSG_TYPE_ERROR, {'error': str(e)})
+                return Message(MSG_TYPE_ERROR, {"error": str(e)})
 
         elif message.type == MSG_TYPE_TASK_ABORT:
             # task abortation
-            t = Task(id=message.content['task_id'],
-                     status=TASK_STATUS_ABORT)
+            t = Task(id=message.content["task_id"], status=TASK_STATUS_ABORT)
             self.task_queue.put(t)
 
         elif message.type == MSG_TYPE_TASK_CANCEL:
@@ -408,7 +411,7 @@ class Scheduler:
             # first, we need to change its status and stop_datetime
             try:
                 self.task_list.update(
-                    message.content['task_id'],
+                    message.content["task_id"],
                     status=TASK_STATUS_CANCELED,
                     stop_datetime=datetime.utcnow(),
                 )
@@ -416,8 +419,7 @@ class Scheduler:
                 logger.error(str(e))
             else:
                 # send the cancelation order to WP
-                t = Task(id=message.content['task_id'],
-                         status=TASK_STATUS_CANCELED)
+                t = Task(id=message.content["task_id"], status=TASK_STATUS_CANCELED)
                 self.task_queue.put(t)
         elif message.type == MSG_TYPE_CONTEXT:
             # context update
@@ -426,7 +428,7 @@ class Scheduler:
                     self.set_context(k, v)
                 return Message(MSG_TYPE_RESP, self.get_context())
             else:
-                return Message(MSG_TYPE_ERROR, 'Unvalid type')
+                return Message(MSG_TYPE_ERROR, "Unvalid type")
 
 
 class SchedulerService(Service):
@@ -444,9 +446,9 @@ class SchedulerService(Service):
         # plugins, so that tasklist is created before plugins.
         if not self.scheduler:
             self.scheduler = Scheduler(
-                address=os.path.join(
-                    self.app.config.temboard.home, '.tm.socket'),
-                authkey=None)
+                address=os.path.join(self.app.config.temboard.home, ".tm.socket"),
+                authkey=None,
+            )
             self.scheduler.task_queue = self.task_queue
             self.scheduler.event_queue = self.event_queue
             self.scheduler.task_list_engine = self.task_list_engine
@@ -485,19 +487,27 @@ class SchedulerService(Service):
                 logger.error(str(e))
 
     def schedule_task(
-            self, worker_name, id=None, options=None, start=None,
-            redo_interval=None, expire=3600):
-        message = Message(MSG_TYPE_TASK_NEW, Task(
-            id=id,
-            worker_name=worker_name,
-            options=options,
-            start_datetime=start or datetime.utcnow(),
-            redo_interval=redo_interval,
-            expire=expire,
-        ))
+        self,
+        worker_name,
+        id=None,
+        options=None,
+        start=None,
+        redo_interval=None,
+        expire=3600,
+    ):
+        message = Message(
+            MSG_TYPE_TASK_NEW,
+            Task(
+                id=id,
+                worker_name=worker_name,
+                options=options,
+                start_datetime=start or datetime.utcnow(),
+                redo_interval=redo_interval,
+                expire=expire,
+            ),
+        )
 
-        conn = Client(
-            ensure_str(self.scheduler.address), self.scheduler.authkey)
+        conn = Client(ensure_str(self.scheduler.address), self.scheduler.authkey)
         conn.send(message)
         res = conn.recv()
         conn.close()
@@ -520,37 +530,38 @@ class WorkerPool:
 
     def _abort_job(self, task_id):
         for workername in self.workers:
-            for job in self.workers[workername]['pool']:
-                if job['id'] == task_id:
-                    logger.debug("Process pid=%s is going to be killed"
-                                 % job['process'])
-                    job['process'].terminate()
+            for job in self.workers[workername]["pool"]:
+                if job["id"] == task_id:
+                    logger.debug(
+                        "Process pid=%s is going to be killed" % job["process"]
+                    )
+                    job["process"].terminate()
                     return True
         return False
 
     def _rm_task_worker_queue(self, task_id):
         for workername in self.workers:
-            for t in self.workers[workername]['queue']:
+            for t in self.workers[workername]["queue"]:
                 if t.id == task_id:
-                    self.workers[workername]['queue'].remove(t)
+                    self.workers[workername]["queue"].remove(t)
                     logger.debug("Task %s removed from queue" % t.id)
                     return True
         return False
 
     def setup(self):
         if self.perf:
-            self.perf['fork'] = 0
+            self.perf["fork"] = 0
 
     def add(self, worker):
-        if worker['name'] in self.workers:
-            raise Exception("Worker %s already registered." % worker['name'])
+        if worker["name"] in self.workers:
+            raise Exception("Worker %s already registered." % worker["name"])
 
-        self.workers[worker['name']] = {
-            'queue': deque(),
-            'pool_size': worker['pool_size'],
-            'module': worker['module'],
-            'function': worker['function'],
-            'pool': []
+        self.workers[worker["name"]] = {
+            "queue": deque(),
+            "pool_size": worker["pool_size"],
+            "module": worker["module"],
+            "function": worker["function"],
+            "pool": [],
         }
 
     def serve1(self):
@@ -565,17 +576,13 @@ class WorkerPool:
             return
 
         if t.status & TASK_STATUS_SCHEDULED:
-            logger.debug("Got task %s for worker '%s' queue"
-                         % (t.id, t.worker_name))
-            self.workers[t.worker_name]['queue'].appendleft(t)
+            logger.debug("Got task %s for worker '%s' queue" % (t.id, t.worker_name))
+            self.workers[t.worker_name]["queue"].appendleft(t)
             # Update task status
             self.event_queue.put(
                 Message(
                     MSG_TYPE_TASK_STATUS,
-                    {
-                        'task_id': t.id,
-                        'status': TASK_STATUS_QUEUED,
-                    }
+                    {"task_id": t.id, "status": TASK_STATUS_QUEUED},
                 )
             )
         if t.status & TASK_STATUS_ABORT:
@@ -605,8 +612,8 @@ class WorkerPool:
             modfun = f"{module}.{fun.__name__}"
             logger.debug("Starting new job for %s", modfun)
             if self.setproctitle:
-                self.setproctitle('task %s' % (modfun))
-            perf = PerfCounters.setup(service='task', task=modfun)
+                self.setproctitle("task %s" % (modfun))
+            perf = PerfCounters.setup(service="task", task=modfun)
             if perf:
                 perf.schedule()
 
@@ -627,32 +634,29 @@ class WorkerPool:
     def start_jobs(self):
         # Execute Tasks
         for name, worker in self.workers.items():
-            while len(self.workers[name]['pool']) < worker['pool_size']:
+            while len(self.workers[name]["pool"]) < worker["pool_size"]:
                 try:
-                    t = worker['queue'].pop()
+                    t = worker["queue"].pop()
                     # Queue used to get worker function return
                     out = Queue()
                     p = Process(
-                            target=self.exec_worker,
-                            args=(worker['module'], worker['function'], out),
-                            kwargs=t.options,
-                        )
+                        target=self.exec_worker,
+                        args=(worker["module"], worker["function"], out),
+                        kwargs=t.options,
+                    )
                     p.start()
 
                     if self.perf:
-                        self.perf['fork'] += 1
+                        self.perf["fork"] += 1
 
-                    self.workers[name]['pool'].append(
-                            {'id': t.id, 'process': p, 'out': out}
+                    self.workers[name]["pool"].append(
+                        {"id": t.id, "process": p, "out": out}
                     )
                     # Update task status
                     self.event_queue.put(
                         Message(
                             MSG_TYPE_TASK_STATUS,
-                            {
-                                'task_id': t.id,
-                                'status': TASK_STATUS_DOING,
-                            }
+                            {"task_id": t.id, "status": TASK_STATUS_DOING},
                         )
                     )
                 except IndexError:
@@ -661,34 +665,33 @@ class WorkerPool:
     def check_jobs(self):
         # Check jobs process state for each worker
         for name, worker in self.workers.items():
-            for job in worker['pool']:
-                if not job['process'].is_alive():
+            for job in worker["pool"]:
+                if not job["process"].is_alive():
                     # Dead process case
-                    logger.debug("Job %s terminated.", job['id'])
+                    logger.debug("Job %s terminated.", job["id"])
                     try:
                         # Fetch the message from job's output queue
-                        message_out = job['out'].get(False)
+                        message_out = job["out"].get(False)
                     except Empty:
                         message_out = None
                     if self.trace:
                         logger.debug("Job output : %s" % message_out)
                     # Close job's output queue
-                    job['out'].close()
+                    job["out"].close()
                     # join the process
-                    job['process'].join()
+                    job["process"].join()
 
                     # Let's build the message we'll have to send to scheduler
                     # for the update of task's status.
                     task_stop_dt = datetime.utcnow()
-                    if job['process'].exitcode == 0:
-                        if message_out and \
-                                message_out.type[0] == MSG_TYPE_RESP:
+                    if job["process"].exitcode == 0:
+                        if message_out and message_out.type[0] == MSG_TYPE_RESP:
                             task_status = TASK_STATUS_DONE
                         else:
                             # when an exception is raised from the worker
                             # function
                             task_status = TASK_STATUS_FAILED
-                    elif job['process'].exitcode < 0:
+                    elif job["process"].exitcode < 0:
                         # process killed
                         task_status = TASK_STATUS_ABORTED
                     else:
@@ -702,30 +705,30 @@ class WorkerPool:
                         Message(
                             MSG_TYPE_TASK_STATUS,
                             {
-                                'task_id': job['id'],
-                                'status': task_status,
-                                'output': task_output,
-                                'stop_datetime': task_stop_dt
-                            }
+                                "task_id": job["id"],
+                                "status": task_status,
+                                "output": task_output,
+                                "stop_datetime": task_stop_dt,
+                            },
                         )
                     )
 
                     # Finally, remove the job from the pool
-                    self.workers[name]['pool'].remove(job)
+                    self.workers[name]["pool"].remove(job)
 
     def abort_jobs(self):
         # abort all running jobs
         for name, worker in self.workers.items():
-            for job in worker['pool']:
-                process = job.get('process')
+            for job in worker["pool"]:
+                process = job.get("process")
                 if process.is_alive():
                     process.terminate()
-                    logger.debug("Job %s has been terminated" % job['id'])
+                    logger.debug("Job %s has been terminated" % job["id"])
                     # Close job's output queue
-                    job['out'].close()
+                    job["out"].close()
                     # join the process
                     process.join()
-                    self.workers[name]['pool'].remove(job)
+                    self.workers[name]["pool"].remove(job)
 
 
 class WorkerSet(list):
@@ -733,14 +736,15 @@ class WorkerSet(list):
         def register(f):
             def defer(app, **kw):
                 logger.debug("Scheduling %s.", f.__name__)
-                return app.scheduler.schedule_task(
-                    f.__name__, options=kw, expire=0)
+                return app.scheduler.schedule_task(f.__name__, options=kw, expire=0)
+
             f.defer = defer
 
             f._tm_worker = make_worker_definition(f, pool_size)
             if f not in self:
                 self.append(f)
             return f
+
         return register
 
     def schedule(self, id=None, redo_interval=None, **options):
@@ -754,11 +758,12 @@ class WorkerSet(list):
                 worker_name=f.__name__,
             )
             return f
+
         return register
 
     def list_tasks(self):
         for function in self:
-            task = getattr(function, '_tm_task', None)
+            task = getattr(function, "_tm_task", None)
             if task:
                 yield task
 
@@ -768,8 +773,7 @@ class WorkerPoolService(Service):
 
     def __init__(self, task_queue, event_queue, **kw):
         super().__init__(**kw)
-        self.worker_pool = WorkerPool(
-            task_queue, event_queue, self.setproctitle)
+        self.worker_pool = WorkerPool(task_queue, event_queue, self.setproctitle)
 
     def setup(self):
         self.worker_pool.perf = self.perf
@@ -786,6 +790,7 @@ class WorkerPoolService(Service):
         @functools.wraps(function)
         def wrapper(*a, **kw):
             return function(self.app, *a, **kw)
+
         wrapper._tm_function = function
         return wrapper
 
@@ -798,13 +803,13 @@ class WorkerPoolService(Service):
             wrapper = self.create_task_function_app_wrapper(function)
 
             # Inject wrapper in module so taskmanager will find it.
-            mod = sys.modules[conf['module']]
-            wrapper_name = '_tm_wrapper_' + function.__name__
+            mod = sys.modules[conf["module"]]
+            wrapper_name = "_tm_wrapper_" + function.__name__
             setattr(mod, wrapper_name, wrapper)
-            conf['function'] = wrapper_name
+            conf["function"] = wrapper_name
 
             # Add to current workers
-            logger.debug("Register worker %s", conf['name'])
+            logger.debug("Register worker %s", conf["name"])
             self.worker_pool.add(conf)
 
     def sigterm_handler(self, *a):
@@ -819,7 +824,8 @@ class FlushTasksMixin:
     def define_arguments(self, parser):
         parser.add_argument(
             "--force",
-            action='store_true', default=False,
+            action="store_true",
+            default=False,
             help="Force overwriting existing files.",
         )
 
@@ -827,7 +833,8 @@ class FlushTasksMixin:
         if self.app.scheduler.can_schedule():
             if args.force:
                 logger.warning(
-                    "Scheduler socket exists. Is temBoard scheduler running?")
+                    "Scheduler socket exists. Is temBoard scheduler running?"
+                )
             else:
                 logger.error("Scheduler socket exists. Use --force to bypass.")
                 raise UserError("You must stop temBoard before flushing tasks")
@@ -861,28 +868,30 @@ class RunTaskMixin:
         """)
 
         parser.add_argument(
-            'worker_name',
-            metavar='WORKER',
+            "worker_name",
+            metavar="WORKER",
             help=(
                 "Global name of the worker function name to execute."
-                " Use ? to list available workers."),
+                " Use ? to list available workers."
+            ),
         )
 
         parser.add_argument(
-            'worker_args', nargs='*',
-            metavar='ARG',
+            "worker_args",
+            nargs="*",
+            metavar="ARG",
             default=[],
             help="Worker arguments as Python literals.",
         )
 
     def iter_workers(self):
         for name, config in self.app.worker_pool.worker_pool.workers.items():
-            mod = sys.modules[config['module']]
-            fn = getattr(mod, config['function'])
+            mod = sys.modules[config["module"]]
+            fn = getattr(mod, config["function"])
             yield fn
 
     def compute_worker_args(self, workers, args):
-        needles = (args.worker_name, args.worker_name + '_worker')
+        needles = (args.worker_name, args.worker_name + "_worker")
         for worker in workers:
             if worker.__name__ in needles:
                 break

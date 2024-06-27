@@ -46,10 +46,10 @@ class BaseApplication:
     REPORT_URL = "https://github.com/dalibo/temboard/issues/new"
 
     DEFAULT_CONFIGFILES = [
-        '%s.conf' % (LastnameFilter.root),
-        f'/etc/{LastnameFilter.root}/{LastnameFilter.root}.conf',
+        "%s.conf" % (LastnameFilter.root),
+        f"/etc/{LastnameFilter.root}/{LastnameFilter.root}.conf",
     ]
-    DEFAULT_PLUGINS_EP = LastnameFilter.root + '.plugins'
+    DEFAULT_PLUGINS_EP = LastnameFilter.root + ".plugins"
     DEFAULT_PLUGINS = []
 
     def __init__(self, specs=None, with_plugins=DEFAULT_PLUGINS_EP, main=None):
@@ -68,7 +68,7 @@ class BaseApplication:
         self.commands = {}
 
     def __repr__(self):
-        return '<%s>' % (self.__class__.__name__)
+        return "<%s>" % (self.__class__.__name__)
 
     def bootstrap(self, args, environ, service=False):
         # bootstrapping the app is a complex process to manage options loading
@@ -89,19 +89,19 @@ class BaseApplication:
             logger.info("No config file found.")
         else:
             logger.info("Using config file %s.", configfile)
-            self.config.temboard['configfile'] = configfile
+            self.config.temboard["configfile"] = configfile
             self.read_file(parser, configfile)
-            self.read_dir(parser, configfile + '.d')
-            self.config_sources.update(dict(
-                parser=parser, pwd=os.path.dirname(configfile),
-            ))
+            self.read_dir(parser, configfile + ".d")
+            self.config_sources.update(
+                dict(parser=parser, pwd=os.path.dirname(configfile))
+            )
 
         # Stage 3: Add core and app specific options and load them.
         config.add_specs(self.config_specs.values())
         config.load(**self.config_sources)
 
         # Save loaded file.
-        self.config['temboard']['configfile'] = configfile
+        self.config["temboard"]["configfile"] = configfile
 
         return self.config
 
@@ -114,25 +114,22 @@ class BaseApplication:
             for spec in new_specs:
                 specs[str(spec)] = spec
 
-        s = 'temboard'
-        add_specs(OptionSpec(
-            s, 'configfile',
-            validator=v.file_,
-        ))
+        s = "temboard"
+        add_specs(OptionSpec(s, "configfile", validator=v.file_))
         if self.with_plugins:
-            add_specs(OptionSpec(
-                s, 'plugins', default=self.DEFAULT_PLUGINS,
-                validator=v.jsonlist,
-            ))
+            add_specs(
+                OptionSpec(
+                    s, "plugins", default=self.DEFAULT_PLUGINS, validator=v.jsonlist
+                )
+            )
 
-        s = 'logging'
+        s = "logging"
         add_specs(
-            OptionSpec(s, 'debug', default=False),
-            OptionSpec(s, 'method', default='stderr', validator=v.logmethod),
-            OptionSpec(s, 'level', default='INFO', validator=v.loglevel),
-            OptionSpec(
-                s, 'facility', default='local0', validator=v.syslogfacility),
-            OptionSpec(s, 'destination', default='/dev/log'),
+            OptionSpec(s, "debug", default=False),
+            OptionSpec(s, "method", default="stderr", validator=v.logmethod),
+            OptionSpec(s, "level", default="INFO", validator=v.loglevel),
+            OptionSpec(s, "facility", default="local0", validator=v.syslogfacility),
+            OptionSpec(s, "destination", default="/dev/log"),
         )
 
         if app_specs:
@@ -143,19 +140,22 @@ class BaseApplication:
     def list_stage1_specs(self):
         # List options specs required for bootstrap from args and environ:
         # configfile.
-        return [self.config_specs[name] for name in [
-            'temboard_configfile',
-            # Allow to enable debug as soon as possible. Other options will
-            # keep defaults.
-            'logging_debug',
-        ]]
+        return [
+            self.config_specs[name]
+            for name in [
+                "temboard_configfile",
+                # Allow to enable debug as soon as possible. Other options will
+                # keep defaults.
+                "logging_debug",
+            ]
+        ]
 
     def create_parser(self, *a, **kw):
-        kw.setdefault('argument_default', SUPPRESS_ARG)
+        kw.setdefault("argument_default", SUPPRESS_ARG)
         _, d = extract_help_description_from_docstring(self.__class__.__doc__)
-        kw.setdefault('description', d)
-        kw.setdefault('prog', self.PROGRAM)
-        kw.setdefault('formatter_class', RawDescriptionHelpFormatter)
+        kw.setdefault("description", d)
+        kw.setdefault("prog", self.PROGRAM)
+        kw.setdefault("formatter_class", RawDescriptionHelpFormatter)
         return ArgumentParser(*a, **kw)
 
     def command(self, cls):
@@ -184,7 +184,8 @@ class BaseApplication:
             h, d = extract_help_description_from_docstring(command.__doc__)
             subparser = subparsers.add_parser(
                 command.name,
-                help=h, description=d,
+                help=h,
+                description=d,
                 formatter_class=parser.formatter_class,
                 argument_default=parser.argument_default,
             )
@@ -223,9 +224,9 @@ class BaseApplication:
         return configfile
 
     def read_file(self, parser, filename):
-        logger.debug('Reading %s.', filename)
+        logger.debug("Reading %s.", filename)
         try:
-            with open(filename, 'r', 'utf-8') as fp:
+            with open(filename, "r", "utf-8") as fp:
                 parser.readfp(fp)
         except OSError as e:
             raise UserError(str(e))
@@ -233,7 +234,7 @@ class BaseApplication:
     def read_dir(self, parser, dirname):
         if not os.path.isdir(dirname):
             return
-        for filename in sorted(glob(dirname + '/*.conf')):
+        for filename in sorted(glob(dirname + "/*.conf")):
             self.read_file(parser, filename)
 
     def fetch_plugin(self, name):
@@ -253,14 +254,10 @@ class BaseApplication:
 
         # Filter legacy plugins
         ng_plugins = filter(
-            lambda name: name not in self.config.plugins,
-            self.config.temboard.plugins
+            lambda name: name not in self.config.plugins, self.config.temboard.plugins
         )
         # Filter already loaded plugins
-        unloaded_names = [
-            n for n in ng_plugins
-            if n not in self.plugins
-        ]
+        unloaded_names = [n for n in ng_plugins if n not in self.plugins]
 
         for name in unloaded_names:
             cls = self.fetch_plugin(name)
@@ -279,19 +276,19 @@ class BaseApplication:
         logger.info("Reloading configuration.")
 
         # Reset file parser and load values.
-        self.config_sources['parser'] = parser = configparser.RawConfigParser()
+        self.config_sources["parser"] = parser = configparser.RawConfigParser()
         configfile = self.config.temboard.configfile
         self.read_file(parser, configfile)
-        self.read_dir(parser, configfile + '.d')
+        self.read_dir(parser, configfile + ".d")
         self.config.load(reload_=True, **self.config_sources)
-        self.config['temboard']['configfile'] = configfile
+        self.config["temboard"]["configfile"] = configfile
 
         self.apply_config()
         logger.debug("Configuration reloaded.")
         return self
 
     def setup_logging(self):
-        if self.config.logging.method != 'stderr' and not self.is_service:
+        if self.config.logging.method != "stderr" and not self.is_service:
             # Enforce stderr method for one shot command, this avoid creating a
             # logfile with bad privileges, and spam syslog or logfile with
             # command logs.
@@ -299,11 +296,9 @@ class BaseApplication:
                 "Disabling log method %s for one shot command.",
                 self.config.logging.method,
             )
-            self.config.logging.method = 'stderr'
+            self.config.logging.method = "stderr"
 
-        setup_logging(
-            systemd='SYSTEMD' in os.environ,
-            **self.config.logging)
+        setup_logging(systemd="SYSTEMD" in os.environ, **self.config.logging)
 
     def __call__(self, argv=sys.argv[1:], environ=os.environ):
         return self.entrypoint(argv, environ)
@@ -317,24 +312,20 @@ class BaseApplication:
             logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
-            logger.info('Terminated.')
+            logger.info("Terminated.")
         except bdb.BdbQuit:
             logger.info("Graceful exit from debugger.")
         except UserError as e:
             retcode = e.retcode
             logger.critical("%s", e)
         except Exception:
-            logger.exception('Unhandled error:')
+            logger.exception("Unhandled error:")
             if self.debug:
                 pdb.post_mortem(sys.exc_info()[2])
             else:
-                logger.error(
-                    "%s version is %s.", LastnameFilter.root, self.VERSION)
+                logger.error("%s version is %s.", LastnameFilter.root, self.VERSION)
                 logger.error("This is a bug!")
-                logger.error(
-                    "Please report traceback to %s! Thanks!",
-                    self.REPORT_URL,
-                )
+                logger.error("Please report traceback to %s! Thanks!", self.REPORT_URL)
         exit(retcode)
 
     def main(self, argv, environ):
@@ -363,12 +354,12 @@ class SubCommand:
 
         names = []
         root = self.parent
-        while hasattr(root, 'parent'):
+        while hasattr(root, "parent"):
             names[0:] = [root.name]
             root = root.parent
 
         if names:
-            names.append("")    # Add final .
+            names.append("")  # Add final .
 
         if not self.name:
             self.name = self.__class__.__name__.lower()
@@ -377,7 +368,7 @@ class SubCommand:
         self.fullname = self.prefix + self.name
 
     def __repr__(self):
-        return '<%s>' % (self.__class__.__name__)
+        return "<%s>" % (self.__class__.__name__)
 
     @classmethod
     def command(cls, subcommand_cls):
@@ -390,7 +381,7 @@ class SubCommand:
     @property
     def commands(self):
         app = self.app
-        prefix = self.fullname + '.'
+        prefix = self.fullname + "."
         my_commands = {}
         for fullname, command in app.commands.items():
             if not fullname.startswith(prefix):
@@ -414,8 +405,7 @@ class SubCommand:
         )
 
         for fullname, command in my_commands.items():
-            subparser = subparsers.add_parser(
-                command.name, help=command.__doc__)
+            subparser = subparsers.add_parser(command.name, help=command.__doc__)
             subparser.set_defaults(command_fullname=fullname)
             command.define_arguments(subparser)
 
@@ -424,31 +414,33 @@ class SubCommand:
 
 
 def detect_debug_mode(environ):
-    debug = environ.get('DEBUG', '0')
+    debug = environ.get("DEBUG", "0")
     try:
         debug = bool(strtobool(debug))
         if debug:
-            environ['TEMBOARD_LOGGING_DEBUG'] = '__debug__'
+            environ["TEMBOARD_LOGGING_DEBUG"] = "__debug__"
     except ValueError:
-        environ['TEMBOARD_LOGGING_DEBUG'] = str(debug)
+        environ["TEMBOARD_LOGGING_DEBUG"] = str(debug)
     return debug
 
 
 def define_core_arguments(parser, appversion=None):
     if appversion:
-        parser.add_argument(
-            '-V', '--version',
-            action='version',
-            version=appversion,
-        )
+        parser.add_argument("-V", "--version", action="version", version=appversion)
     parser.add_argument(
-        '-c', '--config',
-        action='store', dest='temboard_configfile',
-        help="Configuration file", metavar='CONFIGFILE',
+        "-c",
+        "--config",
+        action="store",
+        dest="temboard_configfile",
+        help="Configuration file",
+        metavar="CONFIGFILE",
     )
     parser.add_argument(
-        '--verbose', '--debug',
-        action='store_const', const='temboardui', dest='logging_debug',
+        "--verbose",
+        "--debug",
+        action="store_const",
+        const="temboardui",
+        dest="logging_debug",
         help="Enable verbose messages for temBoard.",
     )
 

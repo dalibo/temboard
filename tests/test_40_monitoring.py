@@ -22,13 +22,13 @@ def test_quick_monitoring(browser, browse_monitoring):
 @pytest.mark.slowmonitoring
 def test_open_metrics(agent, apikey, ui, ensure_monitoring_data):
     res = ui.get(
-        f'/proxy/0.0.0.0/{agent.base_url.port}/monitoring/metrics',
-        headers={'Authorization': f'Bearer {apikey}'},
+        f"/proxy/0.0.0.0/{agent.base_url.port}/monitoring/metrics",
+        headers={"Authorization": f"Bearer {apikey}"},
     )
     res.raise_for_status()
-    body = res.read().decode('utf-8')
+    body = res.read().decode("utf-8")
 
-    assert '# TYPE ' in body
+    assert "# TYPE " in body
 
 
 @pytest.mark.slowmonitoring
@@ -52,8 +52,8 @@ def test_show_hide_chart(browser, browse_monitoring, ensure_monitoring_data):
 def test_metrics(ui_auto_configure, agent, ensure_monitoring_data):
     client = temboard.bake("query-agent", _tty_in=True)
     res = client(f"{agent.base_url}/monitoring/metrics")
-    metrics = res.stdout.decode('utf-8')
-    assert 'node_load1 ' in metrics
+    metrics = res.stdout.decode("utf-8")
+    assert "node_load1 " in metrics
 
 
 @pytest.fixture
@@ -66,10 +66,10 @@ def browse_monitoring(browse_instance, browser):
     browser.select("a[data-from=now-15m]").click()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def ensure_monitoring_data(
-        agent_conf, agent, browse_instance, browser_session, registered_agent,
-        ui_sudo):
+    agent_conf, agent, browse_instance, browser_session, registered_agent, ui_sudo
+):
     """Ensure agent process has two minutes running."""
     browser = browser_session
     browser.select("div.sidebar a.monitoring").click()

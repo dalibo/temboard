@@ -21,19 +21,19 @@ def pivot_timeserie(fd, index, key, value, output):
     sk = sorted(list(keys.items()), key=operator.itemgetter(1))
     # CSV Header
     line = [index] + [x[0] for x in sk]
-    p_index = ''
+    p_index = ""
     fd.seek(0)
     for r in get_csv_data(fd):
         if r[index] != p_index:
             # As data are ordered if we meet a new index value then the current
             # line is complete.
-            output.write(','.join(line)+'\n')
+            output.write(",".join(line) + "\n")
             # And start a new line
-            line = [''] * (len(keys)+1)
+            line = [""] * (len(keys) + 1)
             line[0] = r[index]
         # Append value to the current line
         line[keys[r[key]]] = r[value]
         # Keep a track of the index value
         p_index = r[index]
     # Write the last line
-    output.write(','.join(line)+'\n')
+    output.write(",".join(line) + "\n")

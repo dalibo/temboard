@@ -23,11 +23,7 @@ def format_version():
 
 
 def inspect_versions():
-    from .toolkit.versions import (
-        format_pq_version,
-        read_distinfo,
-        read_libpq_version,
-    )
+    from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
     from psycopg2 import __version__ as psycopg2_version
     from tornado import version as tornado_version
     from sqlalchemy import __version__ as sqlalchemy_version
@@ -37,8 +33,8 @@ def inspect_versions():
 
     return dict(
         cryptography=cryptography.__version__,
-        distname=distinfos['NAME'],
-        distversion=distinfos.get('VERSION', 'n/a'),
+        distname=distinfos["NAME"],
+        distversion=distinfos.get("VERSION", "n/a"),
         libpq=format_pq_version(read_libpq_version()),
         psycopg2=psycopg2_version,
         python=python_version(),

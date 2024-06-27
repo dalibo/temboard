@@ -44,8 +44,7 @@ class Prometheus(SubCommand):
             raise UserError("missing prometheus binary")
 
         prometheus = PrometheusService(
-            app=self.app,
-            setproctitle=self.app.webservice.setproctitle,
+            app=self.app, setproctitle=self.app.webservice.setproctitle
         )
         with prometheus:
             prometheus.run()
@@ -53,10 +52,7 @@ class Prometheus(SubCommand):
 
 class PrometheusService(Service):
     def __init__(self, **kwargs):
-        super().__init__(
-            name="prometheus manager",
-            **kwargs,
-        )
+        super().__init__(name="prometheus manager", **kwargs)
         self.proc = None
 
     @property
@@ -187,9 +183,7 @@ def provision_instance(app, instance):
         temboard_version=temboardui.__version__,
     )
     path = "{}/prometheus/instances.d/instance-{}-{}.scrape.yml".format(
-        app.config.temboard.home,
-        instance.agent_address,
-        instance.agent_port,
+        app.config.temboard.home, instance.agent_address, instance.agent_port
     )
     with open(path, "w") as fo:
         os.chmod(fo.name, 0o600)

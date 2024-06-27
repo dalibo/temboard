@@ -366,35 +366,40 @@ temboard_data = json.loads("""\
 
 
 def test_open_metrics_from_data():
-    from temboardagent.plugins.monitoring.db import (
-        use_current_for_delta_metrics,
-    )
+    from temboardagent.plugins.monitoring.db import use_current_for_delta_metrics
     from temboardagent.plugins.monitoring.openmetrics import (
         generate_samples,
         format_open_metrics_lines,
     )
+
     data = use_current_for_delta_metrics(deepcopy(temboard_data))
     samples = generate_samples(data)
     text = "\n".join(format_open_metrics_lines(samples))
 
-    assert 'pg_static{' in text
+    assert "pg_static{" in text
     assert 'temboard_agent_version="8.0' in text
     assert 'short_version="14.3"' in text
 
-    assert 'node_context_switches_total ' in text
-    assert 'node_cpu_seconds_total ' in text
-    assert 'node_filesystem_free_bytes{device="/dev/mapper/rl-root",mountpoint="/"} 11616284672' in text  # noqa: E501
-    assert 'node_filesystem_size_bytes{device="/dev/mapper/rl-root",mountpoint="/"} 14371782656' in text  # noqa: E501
-    assert 'node_fork_total 1439465\n' in text
-    assert 'node_load1 2.23' in text
-    assert 'node_load15 2.33' in text
-    assert 'node_load5 2.75' in text
-    assert 'node_memory_Buffers_bytes 1217073152\n' in text
-    assert 'node_memory_Cached_bytes 4693979136\n' in text
-    assert 'node_memory_MemFree_bytes 834285568\n' in text
-    assert 'node_memory_MemTotal_bytes 16417996800\n' in text
-    assert 'node_memory_SwapFree_bytes 0\n' in text
-    assert 'node_memory_SwapTotal_bytes 0\n' in text
-    assert 'node_procs_blocked 0\n' in text
-    assert 'node_procs_running 6\n' in text
-    assert 'xnode_procs_total 2500\n' in text
+    assert "node_context_switches_total " in text
+    assert "node_cpu_seconds_total " in text
+    assert (
+        'node_filesystem_free_bytes{device="/dev/mapper/rl-root",mountpoint="/"} 11616284672'
+        in text
+    )  # noqa: E501
+    assert (
+        'node_filesystem_size_bytes{device="/dev/mapper/rl-root",mountpoint="/"} 14371782656'
+        in text
+    )  # noqa: E501
+    assert "node_fork_total 1439465\n" in text
+    assert "node_load1 2.23" in text
+    assert "node_load15 2.33" in text
+    assert "node_load5 2.75" in text
+    assert "node_memory_Buffers_bytes 1217073152\n" in text
+    assert "node_memory_Cached_bytes 4693979136\n" in text
+    assert "node_memory_MemFree_bytes 834285568\n" in text
+    assert "node_memory_MemTotal_bytes 16417996800\n" in text
+    assert "node_memory_SwapFree_bytes 0\n" in text
+    assert "node_memory_SwapTotal_bytes 0\n" in text
+    assert "node_procs_blocked 0\n" in text
+    assert "node_procs_running 6\n" in text
+    assert "xnode_procs_total 2500\n" in text

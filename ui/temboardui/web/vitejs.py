@@ -19,19 +19,18 @@ class ViteJSExtension:
 
     @property
     def PROD(self):
-        return not bool(self.app.config.get('VITEJS'))
+        return not bool(self.app.config.get("VITEJS"))
 
     def init_app(self, app):
         app.vitejs = self
-        app.config['VITEJS'] = uri = os.environ.get('VITEJS', '').rstrip('/')
-        if uri and not uri.startswith('http://localhost:'):
+        app.config["VITEJS"] = uri = os.environ.get("VITEJS", "").rstrip("/")
+        if uri and not uri.startswith("http://localhost:"):
             raise Exception("Refusing to delegate to non-localhost ViteJS.")
-        self.manifest_path = self.app.static_folder + '/manifest.json'
+        self.manifest_path = self.app.static_folder + "/manifest.json"
 
     def read_manifest(self):
-        if self.app.config['VITEJS']:
-            logger.debug(
-                "Using ViteJS dev server at %s.", self.app.config['VITEJS'])
+        if self.app.config["VITEJS"]:
+            logger.debug("Using ViteJS dev server at %s.", self.app.config["VITEJS"])
             logger.debug("Skip reading ViteJS manifest.")
             return
 
@@ -41,22 +40,22 @@ class ViteJSExtension:
 
     def url_for(self, name):
         if self.manifest:
-            return self.app.static_url_path + '/' + self.manifest[name]['file']
+            return self.app.static_url_path + "/" + self.manifest[name]["file"]
         else:
-            return self.app.config['VITEJS'] + '/static/' + name
+            return self.app.config["VITEJS"] + "/static/" + name
 
     def css_links_for(self, name):
         if not self.manifest:
             return
 
-        for css in self.manifest[name].get('css', []):
+        for css in self.manifest[name].get("css", []):
             yield self.tag_for(css)
 
-        for import_ in self.manifest[name].get('imports', []):
+        for import_ in self.manifest[name].get("imports", []):
             yield from self.css_links_for(import_)
 
     def tag_for(self, file_):
-        if file_.endswith('css'):
+        if file_.endswith("css"):
             return dedent("""\
             <link rel="stylesheet" href="%s/%s" />
             """) % (self.app.static_url_path, file_)

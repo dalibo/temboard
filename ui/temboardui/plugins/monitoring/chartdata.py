@@ -27,7 +27,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
-        probename='blocks',
+        probename="blocks",
     ),
     checkpoints=dict(
         sql_nozoom="""
@@ -51,7 +51,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='bgwriter',
+        probename="bgwriter",
     ),
     cpu=dict(
         sql_nozoom="""
@@ -76,7 +76,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, host_id ORDER BY datetime
         """,  # noqa
-        probename='cpu',
+        probename="cpu",
     ),
     cpu_core=dict(
         sql_nozoom="""
@@ -102,7 +102,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND cpu = %(key)s
 ORDER BY datetime
         """,  # noqa
-        probename='cpu',
+        probename="cpu",
     ),
     ctxforks=dict(
         sql_nozoom="""
@@ -123,7 +123,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime ORDER BY datetime
         """,  # noqa,
-        probename='process',
+        probename="process",
     ),
     db_size=dict(
         sql_nozoom="""
@@ -143,12 +143,8 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime, dbname
         """,  # noqa
-        probename='db_size',
-        pivot=dict(
-            index='date',
-            key='dbname',
-            value='size',
-        )
+        probename="db_size",
+        pivot=dict(index="date", key="dbname", value="size"),
     ),
     fs_size=dict(
         sql_nozoom="""
@@ -168,12 +164,8 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='filesystems_size',
-        pivot=dict(
-            index='date',
-            key='mount_point',
-            value='size',
-        ),
+        probename="filesystems_size",
+        pivot=dict(index="date", key="mount_point", value="size"),
     ),
     fs_usage=dict(
         sql_nozoom="""
@@ -193,12 +185,8 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa,
-        probename='filesystems_size',
-        pivot=dict(
-            index='date',
-            key='mount_point',
-            value='usage',
-        ),
+        probename="filesystems_size",
+        pivot=dict(index="date", key="mount_point", value="usage"),
     ),
     fs_usage_mountpoint=dict(
         sql_nozoom="""
@@ -217,7 +205,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND mount_point = %(key)s
 ORDER BY 1,2 ASC
         """,  # noqa,
-        probename='filesystems_size',
+        probename="filesystems_size",
     ),
     hitreadratio=dict(
         sql_nozoom="""
@@ -240,7 +228,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
-        probename='blocks',
+        probename="blocks",
     ),
     hitreadratio_db=dict(
         sql_nozoom="""
@@ -264,7 +252,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='blocks',
+        probename="blocks",
     ),
     instance_size=dict(
         sql_nozoom="""
@@ -283,7 +271,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
-        probename='db_size',
+        probename="db_size",
     ),
     loadavg=dict(
         sql_nozoom="""
@@ -304,7 +292,7 @@ SELECT
 FROM %(tablename)s WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime ASC
         """,  # noqa
-        probename='loadavg',
+        probename="loadavg",
     ),
     load1=dict(
         sql_nozoom="""
@@ -321,7 +309,7 @@ SELECT
 FROM %(tablename)s WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime ASC
         """,  # noqa
-        probename='loadavg',
+        probename="loadavg",
     ),
     locks=dict(
         sql_nozoom="""
@@ -355,7 +343,7 @@ SELECT
 FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC        """,  # noqa
-        probename='locks',
+        probename="locks",
     ),
     memory=dict(
         sql_nozoom="""
@@ -379,7 +367,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
         """,  # noqa
-        probename='memory',
+        probename="memory",
     ),
     memory_usage=dict(
         sql_nozoom="""
@@ -397,7 +385,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
         """,  # noqa
-        probename='memory',
+        probename="memory",
     ),
     rollback_db=dict(
         sql_nozoom="""
@@ -417,7 +405,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 GROUP BY datetime, instance_id ORDER BY datetime
         """,  # noqa
-        probename='xacts',
+        probename="xacts",
     ),
     sessions=dict(
         sql_nozoom="""
@@ -448,7 +436,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa,
-        probename='sessions',
+        probename="sessions",
     ),
     sessions_usage=dict(
         sql_nozoom="""
@@ -467,7 +455,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa,
-        probename='sessions',
+        probename="sessions",
     ),
     swap=dict(
         sql_nozoom="""
@@ -485,7 +473,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
         """,  # noqa
-        probename='memory',
+        probename="memory",
     ),
     swap_usage=dict(
         sql_nozoom="""
@@ -503,7 +491,7 @@ FROM %(tablename)s
 WHERE host_id = %(host_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY datetime
         """,  # noqa
-        probename='memory',
+        probename="memory",
     ),
     tblspc_size=dict(
         sql_nozoom="""
@@ -523,12 +511,8 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa,
-        probename='tblspc_size',
-        pivot=dict(
-            index='date',
-            key='spcname',
-            value='size',
-        ),
+        probename="tblspc_size",
+        pivot=dict(index="date", key="spcname", value="size"),
     ),
     tps=dict(
         sql_nozoom="""
@@ -549,7 +533,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY datetime
         """,  # noqa
-        probename='xacts',
+        probename="xacts",
     ),
     waiting_locks=dict(
         sql_nozoom="""
@@ -582,7 +566,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
-        probename='locks'
+        probename="locks",
     ),
     waiting_sessions_db=dict(
         sql_nozoom="""
@@ -602,7 +586,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='sessions'
+        probename="sessions",
     ),
     wal_files_size=dict(
         sql_nozoom="""
@@ -622,7 +606,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='wal_files',
+        probename="wal_files",
     ),
     wal_files_archive=dict(
         sql_nozoom="""
@@ -640,7 +624,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='wal_files',
+        probename="wal_files",
     ),
     wal_files_count=dict(
         sql_nozoom="""
@@ -660,7 +644,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='wal_files',
+        probename="wal_files",
     ),
     wal_files_rate=dict(
         sql_nozoom="""
@@ -679,7 +663,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         """,  # noqa
-        probename='wal_files',
+        probename="wal_files",
     ),
     wal_files_total=dict(
         sql_nozoom="""
@@ -697,7 +681,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='wal_files',
+        probename="wal_files",
     ),
     w_buffers=dict(
         sql_nozoom="""
@@ -719,7 +703,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1,2 ASC
         """,  # noqa
-        probename='bgwriter',
+        probename="bgwriter",
     ),
     replication_lag=dict(
         sql_nozoom="""
@@ -738,7 +722,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s
 ORDER BY 1
         """,  # noqa
-        probename='replication_lag',
+        probename="replication_lag",
     ),
     replication_connection=dict(
         sql_nozoom="""
@@ -758,7 +742,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND upstream = %(key)s
 ORDER BY 1
         """,  # noqa
-        probename='replication_connection',
+        probename="replication_connection",
     ),
     temp_files_size_delta=dict(
         sql_nozoom="""
@@ -778,7 +762,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 ORDER BY 1
         """,  # noqa
-        probename='temp_files_size_delta',
+        probename="temp_files_size_delta",
     ),
     heap_bloat=dict(
         sql_nozoom="""
@@ -798,7 +782,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 ORDER BY 1
         """,  # noqa
-        probename='heap_bloat',
+        probename="heap_bloat",
     ),
     btree_bloat=dict(
         sql_nozoom="""
@@ -819,7 +803,7 @@ FROM %(tablename)s
 WHERE instance_id = %(instance_id)s AND datetime >= %(start)s AND datetime <= %(end)s AND dbname = %(key)s
 ORDER BY 1
         """,  # noqa
-        probename='btree_bloat',
+        probename="btree_bloat",
     ),
 )
 
@@ -842,15 +826,16 @@ def zoom_level(start, end):
 
 def get_tablename(probename, zoom):
     if zoom == 1:
-        return 'metric_%s_30m_current' % (probename)
+        return "metric_%s_30m_current" % (probename)
     elif zoom == 2:
-        return 'metric_%s_6h_current' % (probename)
+        return "metric_%s_6h_current" % (probename)
     else:
         return
 
 
-def get_metric_data_csv(session, metric_name, start, end, host_id=None,
-                        instance_id=None, key=None):
+def get_metric_data_csv(
+    session, metric_name, start, end, host_id=None, instance_id=None, key=None
+):
     if metric_name not in METRICS:
         raise IndexError("Metric '%s' not found" % metric_name)
 
@@ -864,31 +849,43 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
     # Get the "zoom level", depending on the time interval
     level = zoom_level(start, end)
     # Load query template
-    q_tpl = metric.get('sql_nozoom') if level == 0 else metric.get('sql_zoom')
-    tablename = get_tablename(metric.get('probename'), level)
-    query = cur.mogrify(q_tpl, dict(host_id=host_id, instance_id=instance_id,
-                                    start=start, end=end, key=key,
-                                    tablename=AsIs(tablename)))
+    q_tpl = metric.get("sql_nozoom") if level == 0 else metric.get("sql_zoom")
+    tablename = get_tablename(metric.get("probename"), level)
+    query = cur.mogrify(
+        q_tpl,
+        dict(
+            host_id=host_id,
+            instance_id=instance_id,
+            start=start,
+            end=end,
+            key=key,
+            tablename=AsIs(tablename),
+        ),
+    )
     query = query.strip().decode("utf-8")
     # Retreive data using copy_expert()
-    cur.copy_expert(dedent("""\
+    cur.copy_expert(
+        dedent("""\
     -- get_metric_data_csv
     -- SET search_path TO monitoring;
     COPY(
     %s
     ) TO STDOUT WITH CSV HEADER
-    """) % (query,), data_buffer)
+    """)
+        % (query,),
+        data_buffer,
+    )
     cur.close()
 
-    if metric.get('pivot'):
+    if metric.get("pivot"):
         # Apply pivot rotation
         data_pivot = StringIO()
         pivot_timeserie(
             data_buffer,
-            index=metric.get('pivot').get('index'),
-            key=metric.get('pivot').get('key'),
-            value=metric.get('pivot').get('value'),
-            output=data_pivot
+            index=metric.get("pivot").get("index"),
+            key=metric.get("pivot").get("key"),
+            value=metric.get("pivot").get("value"),
+            output=data_pivot,
         )
 
         data = data_pivot.getvalue()
@@ -901,7 +898,6 @@ def get_metric_data_csv(session, metric_name, start, end, host_id=None,
 
 
 def get_unavailability_csv(session, start, end, host_id, instance_id):
-
     # Tell when the instance was not available
     cur = session.connection().connection.cursor()
     cur.execute("SET search_path TO monitoring")
@@ -911,8 +907,7 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
         AND available = 'f'
         AND datetime >= %(start)s AND datetime <= %(end)s
     """
-    query = cur.mogrify(sql, dict(instance_id=instance_id,
-                                  start=start, end=end))
+    query = cur.mogrify(sql, dict(instance_id=instance_id, start=start, end=end))
     query = query.decode("utf-8")
     data_buffer = StringIO()
     cur.copy_expert("COPY(" + query + ") TO STDOUT", data_buffer)
@@ -923,7 +918,6 @@ def get_unavailability_csv(session, start, end, host_id, instance_id):
 
 
 def get_availability(session, host_id, instance_id):
-
     # Tell whether the instance is currently available or not
     cur = session.connection().connection.cursor()
     cur.execute("SET search_path TO monitoring")
@@ -933,5 +927,5 @@ def get_availability(session, host_id, instance_id):
         ORDER BY datetime desc
         LIMIT 1
     """
-    result = session.execute(sql, {'instance_id': instance_id}).fetchone()
+    result = session.execute(sql, {"instance_id": instance_id}).fetchone()
     return bool(result[0]) if result else False

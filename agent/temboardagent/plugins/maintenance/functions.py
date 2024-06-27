@@ -234,7 +234,8 @@ AND n.nspname !~ '^pg_toast'
 """.format(TABLE_BLOAT_SQL, INDEX_BTREE_BLOAT_SQL)  # noqa
 
 
-INDEXES_SQL = """
+INDEXES_SQL = (
+    """
 SELECT i.tablename AS tablename,
        i.indexname AS name,
        tablespace,
@@ -264,14 +265,17 @@ JOIN pg_am am
 ON am.oid = c.relam
 JOIN (
     WITH qq AS (
-    """ + INDEX_BTREE_BLOAT_SQL + """
+    """
+    + INDEX_BTREE_BLOAT_SQL
+    + """
     ) SELECT * FROM qq
 ) AS ibloat
 ON ibloat.schemaname = i.schemaname AND ibloat.tblname = i.tablename AND ibloat.idxname = i.indexname
 WHERE i.schemaname = '{schema}'
 {table_filter}
 ORDER BY 1,2
-"""  # noqa
+"""
+)  # noqa
 
 
 def get_instance(conn):
@@ -284,13 +288,15 @@ def get_instance(conn):
 
 
 def get_databases(conn):
-    return list(conn.query("""\
+    return list(
+        conn.query("""\
     SELECT datname,
         pg_database_size(datname) AS total_bytes,
         pg_size_pretty(pg_database_size(datname)) AS total_size
     FROM pg_database
     WHERE NOT datistemplate;
-    """))
+    """)
+    )
 
 
 def get_database_size(conn):
@@ -301,7 +307,8 @@ def get_database_size(conn):
 
 
 def get_database(conn):
-    return conn.queryone("""
+    return conn.queryone(
+        """
     SELECT SUM(n_tables) AS n_tables,
         SUM(tables_bytes) as tables_bytes,
         pg_size_pretty(SUM(tables_bytes)) AS tables_size,
@@ -314,7 +321,9 @@ def get_database(conn):
         pg_size_pretty(SUM(indexes_bloat_bytes)::bigint) AS indexes_bloat_size,
         SUM(toast_bytes) AS toast_bytes,
         pg_size_pretty(SUM(toast_bytes)::bigint) AS toast_size
-    FROM (%s) a""" % SCHEMAS_SQL)
+    FROM (%s) a"""
+        % SCHEMAS_SQL
+    )
 
 
 def get_schemas(conn):
@@ -322,7 +331,8 @@ def get_schemas(conn):
 
 
 def get_schema(conn, schema):
-    rows = conn.query("""\
+    rows = conn.query(
+        """\
     SELECT pg_size_pretty(bytes) AS size,  COALESCE(bytes, 0) as total_bytes
     FROM (
         SELECT schemaname, SUM(pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(tablename)))::BIGINT AS bytes
@@ -340,7 +350,8 @@ def get_schema(conn, schema):
 
 def get_tables(conn, schema):
     # taken from https://wiki.postgresql.org/wiki/Disk_Usage
-    query = """
+    query = (
+        """
 SELECT table_name AS name,
        total_bytes,
        index_bytes,
@@ -377,7 +388,9 @@ LEFT JOIN (
 ) AS indexes
 ON indexes.tablename = table_name
 JOIN (
-  """ + TABLE_BLOAT_SQL + """
+  """
+        + TABLE_BLOAT_SQL
+        + """
 ) AS tbloat
 ON tbloat.schemaname = table_schema AND tbloat.tblname = table_name
 LEFT JOIN (
@@ -385,35 +398,40 @@ LEFT JOIN (
          schemaname,
          tblname
   FROM (
-    """ + INDEX_BTREE_BLOAT_SQL + """
+    """
+        + INDEX_BTREE_BLOAT_SQL
+        + """
   ) AS a
   GROUP BY schemaname, tblname
 ) AS ibloat
 ON ibloat.schemaname = table_schema AND ibloat.tblname = table_name
 WHERE table_schema = '{schema}';
-    """ # noqa
-    return {
-        'tables': list(conn.query(query.format(schema=schema)))
-    }
+    """
+    )  # noqa
+    return {"tables": list(conn.query(query.format(schema=schema)))}
 
 
 def get_schema_indexes(conn, schema):
-    return {'indexes': list(conn.query(
-        INDEXES_SQL.format(schema=schema, table_filter='')
-    ))}
+    return {
+        "indexes": list(conn.query(INDEXES_SQL.format(schema=schema, table_filter="")))
+    }
 
 
 def get_table_indexes(conn, schema, table):
-    return {'indexes': list(conn.query(
-        INDEXES_SQL.format(
-            schema=schema,
-            table_filter="AND i.tablename = '%s'" % table
+    return {
+        "indexes": list(
+            conn.query(
+                INDEXES_SQL.format(
+                    schema=schema, table_filter="AND i.tablename = '%s'" % table
+                )
+            )
         )
-    ))}
+    }
 
 
 def get_table(conn, schema, table):
-    query = """
+    query = (
+        """
 SELECT table_name AS name,
        total_bytes,
        index_bytes,
@@ -445,7 +463,9 @@ FROM (
   ) a
 ) a
 JOIN (
-  """ + TABLE_BLOAT_SQL + """
+  """
+        + TABLE_BLOAT_SQL
+        + """
 ) AS tbloat
 ON tbloat.schemaname = table_schema AND tbloat.tblname = table_name
 LEFT JOIN (
@@ -453,7 +473,9 @@ LEFT JOIN (
          schemaname,
          tblname
   FROM (
-    """ + INDEX_BTREE_BLOAT_SQL + """
+    """
+        + INDEX_BTREE_BLOAT_SQL
+        + """
   ) AS a
   GROUP BY schemaname, tblname
 ) AS ibloat
@@ -463,6 +485,7 @@ ON relname = table_name
 WHERE table_schema = '{schema}'
 AND table_name = '{table}';
     """
+    )
     return dict(conn.queryone(query.format(schema=schema, table=table)))
 
 
@@ -486,9 +509,17 @@ def check_index_exists(conn, schema, index):
         raise UserError(f"Index {schema}.{index} not found")
 
 
-def schedule_operation(operation_type, conn, database,
-                       datetimeutc, app, table=None, index=None,
-                       schema=None, **kwargs):
+def schedule_operation(
+    operation_type,
+    conn,
+    database,
+    datetimeutc,
+    app,
+    table=None,
+    index=None,
+    schema=None,
+    **kwargs,
+):
     # Schedule a maintenance operation (vacuum or analyze) statement through
     # background worker
 
@@ -502,32 +533,33 @@ def schedule_operation(operation_type, conn, database,
     # We need to build a uniq id for this task to avoid scheduling twice the
     # same statement.
     m = hashlib.md5()
-    m.update("{database}:{schema}:{table}{index}:{datetime}:{operation_type}"
-             .format(database=database,
-                     schema=schema or '',
-                     table=table or '',
-                     index=index or '',
-                     datetime=datetimeutc,
-                     operation_type=operation_type).encode('utf-8'))
+    m.update(
+        "{database}:{schema}:{table}{index}:{datetime}:{operation_type}".format(
+            database=database,
+            schema=schema or "",
+            table=table or "",
+            index=index or "",
+            datetime=datetimeutc,
+            operation_type=operation_type,
+        ).encode("utf-8")
+    )
     # Task scheduling
     try:
         # Convert string datetime to datetime object
-        dt = datetime.strptime(datetimeutc, '%Y-%m-%dT%H:%M:%SZ')
+        dt = datetime.strptime(datetimeutc, "%Y-%m-%dT%H:%M:%SZ")
 
-        options = {
-            'dbname': database,
-        }
+        options = {"dbname": database}
         if schema:
-            options['schema'] = schema
+            options["schema"] = schema
         if table:
-            options['table'] = table
+            options["table"] = table
         if index:
-            options['index'] = index
-        if 'mode' in kwargs:
-            options['mode'] = kwargs['mode']
+            options["index"] = index
+        if "mode" in kwargs:
+            options["mode"] = kwargs["mode"]
 
         res = app.scheduler.schedule_task(
-            operation_type + '_worker',
+            operation_type + "_worker",
             id=m.hexdigest()[:8],
             options=options,
             # We add one microsecond here to be compliant with scheduler
@@ -546,10 +578,17 @@ def schedule_operation(operation_type, conn, database,
     return res.content
 
 
-def schedule_vacuum(conn, database, mode, datetimeutc, app,
-                    schema=None, table=None):
-    return schedule_operation('vacuum', conn, database, datetimeutc, app,
-                              mode=mode, schema=schema, table=table)
+def schedule_vacuum(conn, database, mode, datetimeutc, app, schema=None, table=None):
+    return schedule_operation(
+        "vacuum",
+        conn,
+        database,
+        datetimeutc,
+        app,
+        mode=mode,
+        schema=schema,
+        table=table,
+    )
 
 
 def vacuum(conn, dbname, mode, schema=None, table=None):
@@ -581,13 +620,22 @@ def vacuum(conn, dbname, mode, schema=None, table=None):
 
 
 def task_status_label(status):
-    labels = ['todo', 'scheduled', 'queued', 'doing', 'done', 'failed',
-              'canceled', 'aborted', 'abort']
+    labels = [
+        "todo",
+        "scheduled",
+        "queued",
+        "doing",
+        "done",
+        "failed",
+        "canceled",
+        "aborted",
+        "abort",
+    ]
     p = status.bit_length() - 1
     try:
         return labels[p]
     except IndexError:
-        return 'unknown'
+        return "unknown"
 
 
 def list_scheduled_operation(app, operation_type, **kwargs):
@@ -596,8 +644,8 @@ def list_scheduled_operation(app, operation_type, **kwargs):
     try:
         # Ask it to the task manager
         tasks = taskmanager.TaskManager.send_message(
-            str(os.path.join(app.config.temboard.home, '.tm.socket')),
-            taskmanager.Message(taskmanager.MSG_TYPE_TASK_LIST, ''),
+            str(os.path.join(app.config.temboard.home, ".tm.socket")),
+            taskmanager.Message(taskmanager.MSG_TYPE_TASK_LIST, ""),
             authkey=None,
         )
     except Exception as e:
@@ -605,45 +653,47 @@ def list_scheduled_operation(app, operation_type, **kwargs):
         raise HTTPError(500, "Unable to get scheduled vacuum list")
 
     for task in tasks:
-
         # We only want tasks for the operation type ('vacuum', 'analyze',
         # 'reindex')
-        if task.worker_name != operation_type + '_worker':
+        if task.worker_name != operation_type + "_worker":
             continue
 
         options = task.options
         # Filter by db/schema/table if provided
-        if (all(k in kwargs for k in ['dbname', 'schema']) and
-            (kwargs.get('dbname') != options.get('dbname') or
-             kwargs.get('schema') != options.get('schema'))):
+        if all(k in kwargs for k in ["dbname", "schema"]) and (
+            kwargs.get("dbname") != options.get("dbname")
+            or kwargs.get("schema") != options.get("schema")
+        ):
             continue
 
-        if ('table' in kwargs and kwargs.get('table') != options.get('table')):
+        if "table" in kwargs and kwargs.get("table") != options.get("table"):
             continue
-        if ('index' in kwargs and kwargs.get('index') != options.get('index')):
+        if "index" in kwargs and kwargs.get("index") != options.get("index"):
             continue
 
-        ret.append(dict(
-            id=task.id,
-            dbname=options.get('dbname'),
-            schema=options.get('schema'),
-            table=options.get('table'),
-            index=options.get('index'),
-            mode=options.get('mode'),
-            datetime=task.start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            status=task_status_label(task.status)
-        ))
+        ret.append(
+            dict(
+                id=task.id,
+                dbname=options.get("dbname"),
+                schema=options.get("schema"),
+                table=options.get("table"),
+                index=options.get("index"),
+                mode=options.get("mode"),
+                datetime=task.start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                status=task_status_label(task.status),
+            )
+        )
     return ret
 
 
 def list_scheduled_vacuum(app, **kwargs):
-    return list_scheduled_operation(app, 'vacuum', **kwargs)
+    return list_scheduled_operation(app, "vacuum", **kwargs)
 
 
-def schedule_analyze(conn, database, datetimeutc, app,
-                     schema=None, table=None):
-    return schedule_operation('analyze', conn, database, datetimeutc, app,
-                              schema=schema, table=table)
+def schedule_analyze(conn, database, datetimeutc, app, schema=None, table=None):
+    return schedule_operation(
+        "analyze", conn, database, datetimeutc, app, schema=schema, table=table
+    )
 
 
 def analyze(conn, dbname, schema=None, table=None):
@@ -672,13 +722,22 @@ def analyze(conn, dbname, schema=None, table=None):
 
 
 def list_scheduled_analyze(app, **kwargs):
-    return list_scheduled_operation(app, 'analyze', **kwargs)
+    return list_scheduled_operation(app, "analyze", **kwargs)
 
 
-def schedule_reindex(conn, database, datetimeutc, app,
-                     schema=None, table=None, index=None):
-    return schedule_operation('reindex', conn, database, datetimeutc, app,
-                              schema=schema, table=table, index=index)
+def schedule_reindex(
+    conn, database, datetimeutc, app, schema=None, table=None, index=None
+):
+    return schedule_operation(
+        "reindex",
+        conn,
+        database,
+        datetimeutc,
+        app,
+        schema=schema,
+        table=table,
+        index=index,
+    )
 
 
 def reindex(conn, dbname, schema, table, index):
@@ -690,13 +749,13 @@ def reindex(conn, dbname, schema, table, index):
     # Build the SQL query
     q = "REINDEX"
     if table:
-        element = f'{schema}.{table}'
+        element = f"{schema}.{table}"
         q += f" TABLE {element}"
     elif index:
-        element = f'{schema}.{index}'
+        element = f"{schema}.{index}"
         q += f" INDEX {element}"
     else:
-        element = f'{dbname}'
+        element = f"{dbname}"
         q += f" DATABASE {element}"
 
     try:
@@ -711,7 +770,7 @@ def reindex(conn, dbname, schema, table, index):
 
 
 def list_scheduled_reindex(app, **kwargs):
-    return list_scheduled_operation(app, 'reindex', **kwargs)
+    return list_scheduled_operation(app, "reindex", **kwargs)
 
 
 def cancel_scheduled_operation(id, app):
@@ -719,20 +778,19 @@ def cancel_scheduled_operation(id, app):
     # is going to be aborted.
 
     # Check the id
-    if id not in [t['id'] for t in
-                  list_scheduled_vacuum(app) +
-                  list_scheduled_analyze(app) +
-                  list_scheduled_reindex(app)]:
+    if id not in [
+        t["id"]
+        for t in list_scheduled_vacuum(app)
+        + list_scheduled_analyze(app)
+        + list_scheduled_reindex(app)
+    ]:
         raise HTTPError(404, "Scheduled operation not found")
 
     try:
         # Ask it to the task manager
         taskmanager.TaskManager.send_message(
-            str(os.path.join(app.config.temboard.home, '.tm.socket')),
-            taskmanager.Message(
-                taskmanager.MSG_TYPE_TASK_CANCEL,
-                dict(task_id=id),
-            ),
+            str(os.path.join(app.config.temboard.home, ".tm.socket")),
+            taskmanager.Message(taskmanager.MSG_TYPE_TASK_CANCEL, dict(task_id=id)),
             authkey=None,
         )
     except Exception as e:

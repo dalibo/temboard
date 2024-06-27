@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @app.command
 class ApiKey(SubCommand):
-    """ Manage API keys. """
+    """Manage API keys."""
 
     def main(self, args):
         raise UserError("Missing sub-command. See --help for details.")
@@ -24,60 +24,55 @@ class ApiKey(SubCommand):
 
 @ApiKey.command
 class Create(SubCommand):
-    """ Create a new API key. """
+    """Create a new API key."""
 
     def define_arguments(self, parser):
-        parser.add_argument(
-            "--comment",
-            help="Define a custom comment.",
-        )
+        parser.add_argument("--comment", help="Define a custom comment.")
 
     def main(self, args):
         session = Session()
-        key = ApiKeys.insert(
-            secret=generate_secret(),
-            comment=args.comment,
-        ).with_session(session).scalar()
+        key = (
+            ApiKeys.insert(secret=generate_secret(), comment=args.comment)
+            .with_session(session)
+            .scalar()
+        )
         session.commit()
 
-        sys.stdout.write(dedent("""\
+        sys.stdout.write(
+            dedent("""\
         Id,Secret,Comment,Expiration
         {key.id},"{key.secret}","{comment}",{edate}
-        """).format(
-            comment=key.comment or '',
-            edate=key.edate.isoformat(),
-            key=key,
-        ))
+        """).format(comment=key.comment or "", edate=key.edate.isoformat(), key=key)
+        )
 
 
 @ApiKey.command
 class List(SubCommand):
-    """ List active keys. """
+    """List active keys."""
 
     def main(self, args):
         session = Session()
 
         sys.stdout.write("Id,Secret,Comment,Creation,Expiration\n")
         for key in ApiKeys.select_active().with_session(session).all():
-            sys.stdout.write(dedent("""\
+            sys.stdout.write(
+                dedent("""\
             {key.id},"{key.secret}","{comment}",{cdate},{edate}
             """).format(
-                comment=key.comment or '',
-                cdate=key.cdate.isoformat(),
-                edate=key.edate.isoformat(),
-                key=key,
-            ))
+                    comment=key.comment or "",
+                    cdate=key.cdate.isoformat(),
+                    edate=key.edate.isoformat(),
+                    key=key,
+                )
+            )
 
 
 @ApiKey.command
 class Delete(SubCommand):
-    """ Delete a key. """
+    """Delete a key."""
 
     def define_arguments(self, parser):
-        parser.add_argument(
-            "id", type=int,
-            help="Target key id.",
-        )
+        parser.add_argument("id", type=int, help="Target key id.")
 
     def main(self, args):
         session = Session()
@@ -92,7 +87,7 @@ class Delete(SubCommand):
 
 @ApiKey.command
 class Purge(SubCommand):
-    """ Purge expired. """
+    """Purge expired."""
 
     def main(self, args):
         session = Session()
@@ -109,8 +104,8 @@ class Purge(SubCommand):
             logger.info("No expired keys to purge.")
 
 
-_SECRET_LETTERS = string.ascii_letters + string.digits + '+/-_'
+_SECRET_LETTERS = string.ascii_letters + string.digits + "+/-_"
 
 
 def generate_secret(length=40):
-    return ''.join(choice(_SECRET_LETTERS) for _ in range(length))
+    return "".join(choice(_SECRET_LETTERS) for _ in range(length))

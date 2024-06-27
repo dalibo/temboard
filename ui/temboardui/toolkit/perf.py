@@ -8,13 +8,13 @@ from . import logfmt
 
 
 logger = logging.getLogger(__name__)
-SC_CLK_TCK = os.sysconf('SC_CLK_TCK')
+SC_CLK_TCK = os.sysconf("SC_CLK_TCK")
 
 
 class PerfCounters(dict):
     @classmethod
     def setup(cls, **defaults):
-        if 'PERF' not in os.environ:
+        if "PERF" not in os.environ:
             return
         return cls(**defaults)
 
@@ -29,12 +29,12 @@ class PerfCounters(dict):
             load1=0,
             load5=0,
             load15=0,
-            **defaults
+            **defaults,
         )
         super().__init__(**defaults)
 
         try:
-            self.delay = int(os.environ['PERF'])
+            self.delay = int(os.environ["PERF"])
         except (KeyError, ValueError):
             self.delay = 60
 
@@ -61,41 +61,41 @@ class PerfCounters(dict):
 
     def snapshot(self):
         # I/O
-        needles = ['rchar', 'wchar']
-        with open('/proc/self/io') as fo:
+        needles = ["rchar", "wchar"]
+        with open("/proc/self/io") as fo:
             for k, v in parse(fo):
                 if k not in needles:
                     continue
-                self['io_%s' % k] = v
+                self["io_%s" % k] = v
                 if not needles:
                     break
 
         # PROCESS
-        with open('/proc/self/stat') as fo:
+        with open("/proc/self/stat") as fo:
             stat = fo.read()
 
         # Fields are documented in proc(5).
         fields = stat.split()
 
         utime = int(fields[13]) / SC_CLK_TCK
-        self['utime'] = utime
+        self["utime"] = utime
 
         stime = int(fields[14]) / SC_CLK_TCK
-        self['stime'] = stime
+        self["stime"] = stime
 
         vsize = int(fields[22])
-        self['vsize'] = vsize
+        self["vsize"] = vsize
 
         # GLOBAL LOAD AVG
-        with open('/proc/loadavg') as fo:
+        with open("/proc/loadavg") as fo:
             loadavg = fo.read()
-        self['load1'], self['load5'], self['load15'], _ = loadavg.split(' ', 3)
+        self["load1"], self["load5"], self["load15"], _ = loadavg.split(" ", 3)
 
 
 def parse(lines):
     for line in lines:
         try:
-            k, v = line.split(': ')
+            k, v = line.split(": ")
         except ValueError:
             continue
         yield k, v.strip()

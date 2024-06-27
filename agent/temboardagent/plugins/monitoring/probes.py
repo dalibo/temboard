@@ -25,12 +25,14 @@ def load_probes(options, home):
     # All probes classes names start with "probe_", search for
     # classes and get an object
     probes = []
-    r = re.compile(r'^probe_(\w+)$')
+    r = re.compile(r"^probe_(\w+)$")
     for c in globals().keys():
         m = r.search(c)
-        if m is not None \
-           and issubclass(globals()[c], Probe) \
-           and (m.group(1) in options['probes'] or '*' in options['probes']):
+        if (
+            m is not None
+            and issubclass(globals()[c], Probe)
+            and (m.group(1) in options["probes"] or "*" in options["probes"])
+        ):
             o = eval(c + "(options)")
             o.set_home(home)
             probes.append(o)
@@ -54,7 +56,7 @@ def run_probes(probes, pool, instances, delta=True):
             p.delta_key = None
             p.delta_columns = None
 
-        if p.level == 'host':
+        if p.level == "host":
             if not p.check():
                 continue
             logger.info("Running host probe %s.", p.get_name())
@@ -65,24 +67,24 @@ def run_probes(probes, pool, instances, delta=True):
                 continue
 
         else:
-            if p.level not in ('instance', 'database'):
+            if p.level not in ("instance", "database"):
                 raise Exception("Unknown probe level: %s", p.level)
 
-            i, = instances  # We are now mono-instance
-            if not i['available']:
+            (i,) = instances  # We are now mono-instance
+            if not i["available"]:
                 continue
 
-            if not p.check(i['version_num']):
+            if not p.check(i["version_num"]):
                 logger.warning(
-                    "Unsupported PostgreSQL version for probe %s.",
-                    p.get_name())
+                    "Unsupported PostgreSQL version for probe %s.", p.get_name()
+                )
                 continue
 
             logger.info("Running %s probe %s.", p.level, p.get_name())
-            if p.level == 'instance':
-                dbnames = [i['database']]
+            if p.level == "instance":
+                dbnames = [i["database"]]
             else:
-                dbnames = [db['dbname'] for db in i['dbnames']]
+                dbnames = [db["dbname"] for db in i["dbnames"]]
 
             for dbname in dbnames:
                 conninfo = dict(i, dbname=dbname)
@@ -94,7 +96,7 @@ def run_probes(probes, pool, instances, delta=True):
                     continue
 
         for record in out:
-            record['datetime'] = now
+            record["datetime"] = now
         output[p.get_name()] = out
 
     logger.info("Finished probes run.")
@@ -103,7 +105,7 @@ def run_probes(probes, pool, instances, delta=True):
 
 def parse_primary_conninfo(pci):
     # Parse primary_conninfo string picked up from recovery.conf file
-    m = re.match(r'.*primary_conninfo\s*=\s*\'(.*)\'[^\']*$', pci)
+    m = re.match(r".*primary_conninfo\s*=\s*\'(.*)\'[^\']*$", pci)
     if not m:
         raise Exception("Unable to parse primary_conninfo.")
 
@@ -114,16 +116,18 @@ def parse_primary_conninfo(pci):
 
     # Keep only compat parameters because we may be bound to an old libpq.
     well_known_params = [
-        p for p in c.split() if (
-            p.startswith('user') or
-            p.startswith('password') or
-            p.startswith('host') or
-            p.startswith('port') or
-            p.startswith('sslmode')
+        p
+        for p in c.split()
+        if (
+            p.startswith("user")
+            or p.startswith("password")
+            or p.startswith("host")
+            or p.startswith("port")
+            or p.startswith("sslmode")
         )
     ]
 
-    c = ' '.join(well_known_params)
+    c = " ".join(well_known_params)
 
     return c
 
@@ -157,8 +161,7 @@ def get_primary_conninfo(conn):
         """
     is_in_recovery = conn.queryscalar(query)
     if not is_in_recovery:
-        raise Exception("Instance not in recovery or recovery file is "
-                        "missing.")
+        raise Exception("Instance not in recovery or recovery file is " "missing.")
 
     if conn.server_version < 120000:
         # Fetch primary_conninfo from recovery.conf file
@@ -179,13 +182,14 @@ def get_primary_conninfo(conn):
     r = list(conn.query(query))
     if len(r) == 0:
         raise Exception("Unable to get primary_conninfo.")
-    pci = r[0]['l']
+    pci = r[0]["l"]
     # Parse and return primary_conninfo
     return parse_primary_conninfo(pci)
 
 
 class Probe:
     """Base class for all plugins."""
+
     # At which level the information is gathered: host, instance or db
     level = None
     # Optionnal name of the probe
@@ -216,7 +220,7 @@ class Probe:
             return self.name
 
         # Compute the name from the class of the plugin
-        m = re.search(r'^probe_(\w+)$', self.__class__.__name__.lower())
+        m = re.search(r"^probe_(\w+)$", self.__class__.__name__.lower())
         if m is not None:
             return m.group(1)
 
@@ -224,22 +228,12 @@ class Probe:
         return None
 
     def get_last_measure(self, key):
-        row = db.get_last_measure(
-            self.home,
-            'monitoring.db',
-            key
-        )
+        row = db.get_last_measure(self.home, "monitoring.db", key)
         if row:
             return dict(time=row[0], data=json.loads(row[1]))
 
     def upsert_last_measure(self, time, key, data):
-        db.upsert_last_measure(
-            self.home,
-            'monitoring.db',
-            time,
-            key,
-            data
-        )
+        db.upsert_last_measure(self.home, "monitoring.db", time, key, data)
 
     def delta(self, key, current_values):
         """
@@ -261,23 +255,18 @@ class Probe:
         # Compute deltas and update last_* variables
         try:
             if last_measure:
-                delta['measure_interval'] = current_time - last_measure['time']
+                delta["measure_interval"] = current_time - last_measure["time"]
 
                 for k in current_values.keys():
-                    delta_value = current_values[k] - \
-                        last_measure['data'][k]
+                    delta_value = current_values[k] - last_measure["data"][k]
                     if delta_value < 0:
-                        raise Exception('Negative delta value.')
+                        raise Exception("Negative delta value.")
                     delta[k] = delta_value
         except Exception as e:
             logger.debug("Failed to compute delta metric: %s", e)
 
         # Update/insert last measure for next delta calculation
-        self.upsert_last_measure(
-            current_time,
-            store_key,
-            current_values
-        )
+        self.upsert_last_measure(current_time, store_key, current_values)
 
         return delta
 
@@ -287,9 +276,10 @@ class Probe:
 
 class HostProbe(Probe):
     """
-        system probe base class
+    system probe base class
     """
-    level = 'host'
+
+    level = "host"
     system = None  # kernel name from os.uname()[0]
     min_version = None
     max_version = None
@@ -300,14 +290,13 @@ class HostProbe(Probe):
             if self.system != os.uname()[0]:
                 return False
 
-        version = [int(x) for x
-                   in re.sub(r'[-_+].*$', '', os.uname()[2]).split('.')]
+        version = [int(x) for x in re.sub(r"[-_+].*$", "", os.uname()[2]).split(".")]
         if self.min_version is not None:
-            if version[0:len(self.min_version)] < self.min_version:
+            if version[0 : len(self.min_version)] < self.min_version:
                 return False
 
         if self.max_version is not None:
-            if version[0:len(self.max_version)] > self.max_version:
+            if version[0 : len(self.max_version)] > self.max_version:
                 return False
 
         return True
@@ -315,8 +304,9 @@ class HostProbe(Probe):
 
 class SqlProbe(Probe):
     """
-        postgres probe base class
+    postgres probe base class
     """
+
     min_version = None
     max_version = None
     sql = None
@@ -351,15 +341,14 @@ class SqlProbe(Probe):
         if sql is None:
             return []
 
-        database = conninfo['dbname']
+        database = conninfo["dbname"]
 
         output = []
         try:
             if self.timeout:
-                conn.execute(
-                    "SET statement_timeout = '%ss';", (self.timeout,))
+                conn.execute("SET statement_timeout = '%ss';", (self.timeout,))
 
-            cluster_name = conninfo['instance'].replace('/', '')
+            cluster_name = conninfo["instance"].replace("/", "")
             sql = f"-- probe {self}\n{sql}"
             for r in conn.query(sql):
                 # Compute delta if the probe needs that
@@ -382,22 +371,25 @@ class SqlProbe(Probe):
                 output.append(r)
         except Exception as e:
             logger.error(
-                "Unable to run probe \"%s\" on \"%s\" on database \"%s\": %s",
-                self.get_name(), conninfo['instance'], database, e,
+                'Unable to run probe "%s" on "%s" on database "%s": %s',
+                self.get_name(),
+                conninfo["instance"],
+                database,
+                e,
                 exc_info=True,
             )
         return output
 
     def run(self, conn, conninfo):
         """Execute the query depending on the level configured."""
-        if self.no_standby and conninfo['standby']:
+        if self.no_standby and conninfo["standby"]:
             return []
 
         return self.run_sql(conn, conninfo, self.sql)
 
 
 class probe_sessions(SqlProbe):
-    level = 'instance'
+    level = "instance"
 
     def check(self, version):
         if not super().check(version):
@@ -453,7 +445,7 @@ group by d.datname"""  # noqa
 
 
 class probe_xacts(SqlProbe):
-    level = 'instance'
+    level = "instance"
     min_version = 70400
     sql = """select
   s.datname as dbname,
@@ -462,12 +454,12 @@ class probe_xacts(SqlProbe):
 from pg_stat_database s
   join pg_database d on (d.oid = s.datid)
 where d.datallowconn"""
-    delta_columns = ['n_commit', 'n_rollback']
-    delta_key = 'dbname'
+    delta_columns = ["n_commit", "n_rollback"]
+    delta_key = "dbname"
 
 
 class probe_locks(SqlProbe):
-    level = 'instance'
+    level = "instance"
     sql = """select
   d.datname as dbname,
   coalesce(sum((mode = 'AccessShareLock' and granted)::integer), 0) as access_share,
@@ -494,7 +486,7 @@ group by d.datname"""  # noqa
 
 
 class probe_blocks(SqlProbe):
-    level = 'instance'
+    level = "instance"
     sql = """select
   s.datname as dbname,
   blks_read,
@@ -503,24 +495,30 @@ class probe_blocks(SqlProbe):
 from pg_stat_database s
   join pg_database d on (d.oid = s.datid)
 where d.datallowconn"""  # noqa
-    delta_columns = ['blks_read', 'blks_hit']
-    delta_key = 'dbname'
+    delta_columns = ["blks_read", "blks_hit"]
+    delta_key = "dbname"
 
 
 class probe_bgwriter(SqlProbe):
-    level = 'instance'
+    level = "instance"
     min_version = 80300
     sql = """select * from pg_stat_bgwriter"""
     delta_columns = [
-        'checkpoints_timed', 'checkpoints_req', 'checkpoint_write_time',
-        'checkpoint_sync_time', 'buffers_checkpoint', 'buffers_clean',
-        'maxwritten_clean', 'buffers_backend', 'buffers_backend_fsync',
-        'buffers_alloc'
+        "checkpoints_timed",
+        "checkpoints_req",
+        "checkpoint_write_time",
+        "checkpoint_sync_time",
+        "buffers_checkpoint",
+        "buffers_clean",
+        "maxwritten_clean",
+        "buffers_backend",
+        "buffers_backend_fsync",
+        "buffers_alloc",
     ]
 
 
 class probe_db_size(SqlProbe):
-    level = 'instance'
+    level = "instance"
     sql = """select
   datname as dbname,
   pg_database_size(oid) as size
@@ -529,7 +527,7 @@ where datallowconn"""
 
 
 class probe_tblspc_size(SqlProbe):
-    level = 'instance'
+    level = "instance"
     sql = """select
   spcname,
   pg_tablespace_size(oid) as size
@@ -537,45 +535,45 @@ from pg_tablespace"""
 
 
 class probe_filesystems_size(HostProbe):
-    system = 'Linux'
+    system = "Linux"
 
     def run(self):
         return SysInfo().file_systems()
 
 
 class probe_cpu(HostProbe):
-    system = 'Linux'
-    hz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+    system = "Linux"
+    hz = os.sysconf(os.sysconf_names["SC_CLK_TCK"])
 
     def run(self):
         to_delta = {}
-        stat = open('/proc/stat')
+        stat = open("/proc/stat")
         for line in stat:
             cols = line.split()
             if len(cols) == 0:
                 continue
-            if cols[0] == 'cpu':
+            if cols[0] == "cpu":
                 # Convert values to int then in milliseconds,
                 to_delta = {
-                    'time_user': ((int(cols[1]) + int(cols[2])) * 1000 /
-                                  self.hz),
-                    'time_system': (int(cols[3]) + int(cols[6]) +
-                                    int(cols[7])) * 1000 / self.hz,
-                    'time_idle': int(cols[4]) * 1000 / self.hz,
-                    'time_iowait': int(cols[5]) * 1000 / self.hz,
-                    'time_steal': int(cols[8]) * 1000 / self.hz
+                    "time_user": ((int(cols[1]) + int(cols[2])) * 1000 / self.hz),
+                    "time_system": (int(cols[3]) + int(cols[6]) + int(cols[7]))
+                    * 1000
+                    / self.hz,
+                    "time_idle": int(cols[4]) * 1000 / self.hz,
+                    "time_iowait": int(cols[5]) * 1000 / self.hz,
+                    "time_steal": int(cols[8]) * 1000 / self.hz,
                 }
         stat.close()
 
         # Compute deltas for values of /proc/stat since boot time
-        metrics = self.delta('global', to_delta)
-        metrics['cpu'] = 'global'
+        metrics = self.delta("global", to_delta)
+        metrics["cpu"] = "global"
 
         return [metrics]
 
 
 class probe_process(HostProbe):
-    system = 'Linux'
+    system = "Linux"
 
     def run(self):
         metrics = {}
@@ -583,75 +581,73 @@ class probe_process(HostProbe):
         # processes are ever incresing counters, compute deltas on
         # them.
         to_delta = {}
-        stat = open('/proc/stat')
+        stat = open("/proc/stat")
         for line in stat:
             cols = line.split()
             if len(cols) == 0:
                 continue
-            if cols[0] == 'ctxt':
-                to_delta['context_switches'] = int(cols[1])
-            if cols[0] == 'processes':
-                to_delta['forks'] = int(cols[1])
-            if cols[0] == 'procs_running':
-                metrics['procs_running'] = int(cols[1])
-            if cols[0] == 'procs_blocked':
-                metrics['procs_blocked'] = int(cols[1])
+            if cols[0] == "ctxt":
+                to_delta["context_switches"] = int(cols[1])
+            if cols[0] == "processes":
+                to_delta["forks"] = int(cols[1])
+            if cols[0] == "procs_running":
+                metrics["procs_running"] = int(cols[1])
+            if cols[0] == "procs_blocked":
+                metrics["procs_blocked"] = int(cols[1])
         stat.close()
 
         # Total number of process is stored in /proc/loadavg
-        load = open('/proc/loadavg')
-        m = re.match(r'.*/(\d+) ', load.readline())
+        load = open("/proc/loadavg")
+        m = re.match(r".*/(\d+) ", load.readline())
         load.close()
         if m:
-            metrics['procs_total'] = m.group(1)
+            metrics["procs_total"] = m.group(1)
         else:
-            metrics['procs_total'] = 0
+            metrics["procs_total"] = 0
 
         # Compute deltas for values of /proc/stat since boot time
-        metrics.update(self.delta('key', to_delta))
+        metrics.update(self.delta("key", to_delta))
         return [metrics]
 
 
 class probe_memory(HostProbe):
-    system = 'Linux'
+    system = "Linux"
 
     def run(self):
         sysinfo = SysInfo()
         meminfo = sysinfo.mem_info()
 
-        return [{
-            'mem_total': meminfo['MemTotal'],
-            'mem_used': meminfo['MemTotal'] - meminfo['MemFree'],
-            'mem_free': meminfo['MemFree'],
-            'mem_buffers': meminfo['Buffers'],
-            'mem_cached': meminfo['Cached'],
-            'swap_total': meminfo['SwapTotal'],
-            'swap_used': meminfo['SwapTotal'] - meminfo['SwapFree']
-        }]
+        return [
+            {
+                "mem_total": meminfo["MemTotal"],
+                "mem_used": meminfo["MemTotal"] - meminfo["MemFree"],
+                "mem_free": meminfo["MemFree"],
+                "mem_buffers": meminfo["Buffers"],
+                "mem_cached": meminfo["Cached"],
+                "swap_total": meminfo["SwapTotal"],
+                "swap_used": meminfo["SwapTotal"] - meminfo["SwapFree"],
+            }
+        ]
 
 
 class probe_loadavg(HostProbe):
-    system = 'Linux'
+    system = "Linux"
 
     def run(self):
-        loadavg = open('/proc/loadavg')
+        loadavg = open("/proc/loadavg")
         cols = loadavg.readline().split()
         loadavg.close()
-        return [{
-            'load1': cols[0],
-            'load5': cols[1],
-            'load15': cols[2]
-        }]
+        return [{"load1": cols[0], "load5": cols[1], "load15": cols[2]}]
 
 
 class probe_wal_files(SqlProbe):
-    level = 'instance'
+    level = "instance"
     min_version = 80200
 
     def run(self, conn, conninfo):
         version = conn.server_version
 
-        if conninfo['standby']:
+        if conninfo["standby"]:
             return []
 
         metric = {}
@@ -673,9 +669,9 @@ class probe_wal_files(SqlProbe):
             """
         rows = self.run_sql(conn, conninfo, sql)
 
-        metric['total'] = rows[0]['total']
-        metric['total_size'] = rows[0]['total_size']
-        metric['current_location'] = rows[0]['current_location']
+        metric["total"] = rows[0]["total"]
+        metric["total_size"] = rows[0]["total_size"]
+        metric["current_location"] = rows[0]["current_location"]
 
         if version < 100000:
             sql = r"""
@@ -691,23 +687,23 @@ class probe_wal_files(SqlProbe):
             """  # noqa W605
         rows = self.run_sql(conn, conninfo, sql)
 
-        metric['archive_ready'] = rows[0]['archive_ready']
+        metric["archive_ready"] = rows[0]["archive_ready"]
 
         # Calcutate the written size by using the delta between the
         # position between to runs. The current xlog location must be
         # converted to an number first
-        m = re.match(r'^([0-9A-F]+)/([0-9A-F]+)$', metric['current_location'])
+        m = re.match(r"^([0-9A-F]+)/([0-9A-F]+)$", metric["current_location"])
         if m:
-            current = int("0xff000000", 0) * \
-                int("0x" + m.group(1), 0) + int("0x" + m.group(2), 0)
+            current = int("0xff000000", 0) * int("0x" + m.group(1), 0) + int(
+                "0x" + m.group(2), 0
+            )
         else:
             logger.error("Unable to convert xlog location to a number")
             return []
 
-        metric.update(self.delta(
-            conninfo['instance'].replace('/', ''),
-            {'written_size': current},
-        ))
+        metric.update(
+            self.delta(conninfo["instance"].replace("/", ""), {"written_size": current})
+        )
         return [metric]
 
 
@@ -720,11 +716,11 @@ class probe_replication_lag(SqlProbe):
     # + get primary node's current wal position with IDENTIFY_SYSTEM
     #   through streaming repl. protocol
     # + return primary wal position and current replay diff.
-    level = 'instance'
+    level = "instance"
     min_version = 90000
 
     def run(self, conn, conninfo):
-        if not conninfo['standby']:
+        if not conninfo["standby"]:
             return []
 
         try:
@@ -733,9 +729,9 @@ class probe_replication_lag(SqlProbe):
 
             # Let's fetch primary current wal position with IDENTIFY_SYSTEM
             # through streaming replication protocol.
-            with closing(psycopg2.connect(
-                dsn, connection_factory=PhysicalReplicationConnection
-            )) as p_conn:
+            with closing(
+                psycopg2.connect(dsn, connection_factory=PhysicalReplicationConnection)
+            ) as p_conn:
                 with p_conn.cursor() as p_cur:
                     p_cur.execute("IDENTIFY_SYSTEM")
                     rows = p_cur.fetchall()
@@ -747,32 +743,38 @@ class probe_replication_lag(SqlProbe):
             # Proceed with LSN diff
             if conn.server_version >= 100000:
                 # Use pg_wal_lsn_diff(pg_lsn, pg_lsn)
-                rows = conn.query("""\
+                rows = conn.query(
+                    """\
                 SELECT pg_wal_lsn_diff(
                     '{xlogpos}'::pg_lsn,
                     pg_last_wal_replay_lsn()
                 ) AS lsn_diff
-                """.format(xlogpos=xlogpos))
+                """.format(xlogpos=xlogpos)
+                )
             elif conn.server_version >= 90500:
                 # Use pg_xlog_lsn_diff(pg_lsn, pg_lsn)
-                rows = conn.query("""\
+                rows = conn.query(
+                    """\
                 SELECT pg_xlog_location_diff(
                     '{xlogpos}'::pg_lsn,
                     pg_last_xlog_replay_location()
                 ) AS lsn_diff
-                """.format(xlogpos=xlogpos))
+                """.format(xlogpos=xlogpos)
+                )
             else:
                 # Use pg_xlog_lsn_diff(TEXT, TEXT)
-                rows = conn.query("""\
+                rows = conn.query(
+                    """\
                 SELECT pg_xlog_location_diff(
                     '{xlogpos}'::TEXT,
                     pg_last_xlog_replay_location()::TEXT
                 ) AS lsn_diff
-                """.format(xlogpos=xlogpos))
+                """.format(xlogpos=xlogpos)
+                )
             r = list(rows)
             if len(r) == 0:
                 return []
-            return [{'lag': int(r[0]['lsn_diff'])}]
+            return [{"lag": int(r[0]["lsn_diff"])}]
 
         except Exception as e:
             logger.exception(str(e))
@@ -781,40 +783,42 @@ class probe_replication_lag(SqlProbe):
 
 class probe_temp_files_size_delta(SqlProbe):
     # Temporary files probe
-    level = 'instance'
+    level = "instance"
     sql = """SELECT
   s.datname AS dbname,
   temp_bytes AS size
 FROM pg_stat_database s
 JOIN pg_database d ON (d.oid = s.datid)
 WHERE d.datallowconn"""  # noqa
-    delta_columns = ['size']
-    delta_key = 'dbname'
+    delta_columns = ["size"]
+    delta_key = "dbname"
 
 
 class probe_replication_connection(SqlProbe):
     # Check if the instance is connected to streaming replication according to
     # primary_conninfo from recovery.conf file.
-    level = 'instance'
+    level = "instance"
     min_version = 96000
 
     def run(self, conn, conninfo):
-        if not conninfo['standby']:
+        if not conninfo["standby"]:
             return []
 
         try:
             # Get primary parameters from primary_conninfo
             dsn = parse_dsn(get_primary_conninfo(conn))
-            p_host = dsn['host']
+            p_host = dsn["host"]
 
             # pg_stat_wal_receiver lookup
-            rows = conn.query("""\
+            rows = conn.query(
+                """\
             SELECT '{p_host}' AS upstream,
             CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS connected
             FROM pg_stat_wal_receiver
             WHERE status='streaming' AND
                     conninfo LIKE '%host={p_host}%'
-            """.format(p_host=p_host))
+            """.format(p_host=p_host)
+            )
             return list(rows)
         except Exception as e:
             logger.exception(str(e))
@@ -824,7 +828,7 @@ class probe_replication_connection(SqlProbe):
 class probe_heap_bloat(SqlProbe):
     # Heap bloat estimation probe
     # Query coming from https://github.com/ioguix/pgsql-bloat-estimation/
-    level = 'database'
+    level = "database"
     sql = """
 SELECT current_database() AS dbname,
   SUM(bloat_size)::FLOAT/SUM(bs*tblpages)::FLOAT*100 AS ratio
@@ -877,7 +881,7 @@ FROM (
 class probe_btree_bloat(SqlProbe):
     # Btree index bloat estimation probe
     timeout = 30
-    level = 'database'
+    level = "database"
     sql = """
 SELECT
   current_database() AS dbname,
@@ -899,4 +903,4 @@ FROM (
 ) AS ibloat
 WHERE schemaname !~ '^pg_temp'
 AND schemaname !~ '^pg_toast';
-"""  % (INDEX_BTREE_BLOAT_SQL) # noqa
+""" % (INDEX_BTREE_BLOAT_SQL)  # noqa

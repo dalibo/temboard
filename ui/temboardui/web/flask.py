@@ -19,10 +19,7 @@ from werkzeug.exceptions import HTTPException
 from tornado.web import decode_signed_value
 
 from ..agentclient import TemboardAgentClient
-from ..application import (
-    get_instance,
-    get_role_by_cookie,
-)
+from ..application import get_instance, get_role_by_cookie
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
@@ -34,21 +31,17 @@ logger = logging.getLogger(__name__)
 # InstanceMiddleware extension controls request context for the following
 # blueprint routes.
 instance_proxy = Blueprint(
-    "instance_proxy",
-    __name__,
-    url_prefix='/proxy/<address>/<port>',
+    "instance_proxy", __name__, url_prefix="/proxy/<address>/<port>"
 )
 
 instance_routes = Blueprint(
-    "instance_routes",
-    __name__,
-    url_prefix='/server/<address>/<port>',
+    "instance_routes", __name__, url_prefix="/server/<address>/<port>"
 )
 
 
 def create_app(temboard_app):
-    app = Flask('temboardui')
-    app.config['DEBUG'] = app.config['TESTING'] = 'DEBUG' in os.environ
+    app = Flask("temboardui")
+    app.config["DEBUG"] = app.config["TESTING"] = "DEBUG" in os.environ
     app.temboard = temboard_app
     SQLAlchemy(app)
     APIKeyMiddleware(app)
@@ -59,12 +52,12 @@ def create_app(temboard_app):
     # unsafe-eval is for jquery. unsafe-inline because we have
     # script tags in templates.
     csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
-    if 'VITEJS' in os.environ:
+    if "VITEJS" in os.environ:
         csp += " localhost:5173 ws:"
 
     @app.after_request
     def add_csp(resp):
-        resp.headers['Content-Security-Policy'] = csp
+        resp.headers["Content-Security-Policy"] = csp
         return resp
 
     ViteJSExtension(app)
@@ -146,40 +139,34 @@ class APIKeyMiddleware:
     def before(self):
         g.apikey = None
 
-        if 'Authorization' not in request.headers:
+        if "Authorization" not in request.headers:
             return
 
         remote_addr = ip_address(request.remote_addr)
         if not any(
-                remote_addr in ip_network(cidr)
-                for cidr in
-                self.app.temboard.config.auth.allowed_ip
+            remote_addr in ip_network(cidr)
+            for cidr in self.app.temboard.config.auth.allowed_ip
         ):
             logger.debug("Authorization ignored for IP %s.", remote_addr)
             return
 
         try:
-            scheme, secret = request.headers['Authorization'].split(None, 1)
+            scheme, secret = request.headers["Authorization"].split(None, 1)
         except TypeError:
             abort(400, "Malformed Authorization header")
 
-        if scheme != 'Bearer':
+        if scheme != "Bearer":
             logger.debug("Ignoring Authorization scheme %s.", scheme)
             return
 
-        key = (
-            ApiKeys.select_secret(secret)
-            .with_session(g.db_session)
-            .scalar()
-        )
+        key = ApiKeys.select_secret(secret).with_session(g.db_session).scalar()
         if not key:
             abort(403, "Unknown API Key.")
 
         if key.expired:
             abort(403, "Expired API key.")
 
-        logger.debug(
-            "Accepted API key from HTTP Header, client IP %s.", remote_addr)
+        logger.debug("Accepted API key from HTTP Header, client IP %s.", remote_addr)
         g.apikey = key
 
 
@@ -196,7 +183,7 @@ class AuthMiddleware:
         app.before_request(self.before)
 
     def before(self):
-        if request.url_rule and request.url_rule.rule.startswith('/static'):
+        if request.url_rule and request.url_rule.rule.startswith("/static"):
             # Skip Auth for static files.
             return
 
@@ -204,17 +191,17 @@ class AuthMiddleware:
         if not func:
             abort(404)
 
-        apikey_allowed = getattr(func, '__apikey_allowed', False)
+        apikey_allowed = getattr(func, "__apikey_allowed", False)
         if apikey_allowed and g.apikey:
             logger.debug("Endpoint authorized by API key.")
             return
 
-        anonymous_allowed = getattr(func, '__anonymous_allowed', False)
+        anonymous_allowed = getattr(func, "__anonymous_allowed", False)
         if not anonymous_allowed and g.current_user is None:
             logger.debug("Refusing anonymous access.")
             abort(403)
 
-        admin_required = getattr(func, '__admin_required', False)
+        admin_required = getattr(func, "__admin_required", False)
         if admin_required and not g.current_user.is_admin:
             logger.debug("Refusing access to non-admin user.")
             abort(403)
@@ -234,19 +221,19 @@ class UserMiddleware:
 
     def before(self):
         g.current_user = None
-        if 'temboard' in request.cookies:
+        if "temboard" in request.cookies:
             g.current_user = self.load_user_from_tornado_secure_cookie()
-        if getattr(g, 'apikey', None):
-            g.current_user = StubRole('temboard')
+        if getattr(g, "apikey", None):
+            g.current_user = StubRole("temboard")
 
     def load_user_from_tornado_secure_cookie(self):
         cookie = decode_signed_value(
             self.app.temboard.config.temboard.cookie_secret,
-            'temboard',
-            request.cookies['temboard'],
+            "temboard",
+            request.cookies["temboard"],
         )
         if cookie:
-            cookie = cookie.decode('utf-8')
+            cookie = cookie.decode("utf-8")
             return get_role_by_cookie(g.db_session, cookie)
 
 
@@ -265,16 +252,12 @@ class InstanceMiddleware:
         app.register_blueprint(instance_proxy)
         app.register_blueprint(instance_routes)
         brf = app.before_request_funcs
-        brf[instance_proxy.name] = [
-            self.load_instance_before_request,
-        ]
-        brf[instance_routes.name] = [
-            self.load_instance_before_request,
-        ]
+        brf[instance_proxy.name] = [self.load_instance_before_request]
+        brf[instance_routes.name] = [self.load_instance_before_request]
 
     def load_instance_before_request(self):
-        address = request.view_args.pop('address')
-        port = request.view_args.pop('port')
+        address = request.view_args.pop("address")
+        port = request.view_args.pop("port")
 
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
@@ -290,16 +273,9 @@ class InstanceMiddleware:
             # agent is unreachable we forge a status response
             logger.error("Failed to fetch status: %s", e)
             data = {
-                "temboard": {
-                    "status": "unreachable",
-                },
-                "postgres": {
-                    "status": "unreachable",
-                    "pending_restart": False,
-                },
-                "system": {
-                    "status": "unreachable",
-                },
+                "temboard": {"status": "unreachable"},
+                "postgres": {"status": "unreachable", "pending_restart": False},
+                "system": {"status": "unreachable"},
             }
         g.instance.status = data
 
@@ -311,7 +287,7 @@ class InstanceMiddleware:
             g.current_user.role_name,
         )
 
-    def request(self, path, method='GET', query=None, body=None):
+    def request(self, path, method="GET", query=None, body=None):
         client = self.client()
 
         pathinfo = path
@@ -319,9 +295,7 @@ class InstanceMiddleware:
             pathinfo += "?" + serialize_querystring(query)
 
         try:
-            response = client.request(
-                method=method, path=pathinfo, body=body
-            )
+            response = client.request(method=method, path=pathinfo, body=body)
             response.raise_for_status()
         except ConnectionError as e:
             abort(500, str(e))
@@ -336,12 +310,9 @@ class InstanceMiddleware:
     def proxy(self):
         # Translate current Flask request to instance agent, translate the
         # response to a Flask response ready for return.
-        agent_response = self.request(
-            path=request.instance_path,
-            method=request.method,
-        )
+        agent_response = self.request(path=request.instance_path, method=request.method)
         response = make_response(agent_response.read())
-        h = 'Content-Type'
+        h = "Content-Type"
         response.headers[h] = agent_response.headers[h]
         return response
 

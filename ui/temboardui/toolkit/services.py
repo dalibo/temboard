@@ -43,7 +43,7 @@ class Service:
     def __init__(self, app, name=None, services=None, setproctitle=None):
         self.app = app
         self.name = name
-        self.logname = name or 'service'
+        self.logname = name or "service"
         # Must be None for children or ServicesManager instance for main
         # service. Used to propagate signals. See reload() method.
         self.services = services
@@ -105,7 +105,7 @@ class Service:
         if self.name and self.setproctitle:
             self.setproctitle(self.name)
         logger.info("Starting %s.", self)
-        self.perf = PerfCounters.setup(service=self.logname.replace(' ', '-'))
+        self.perf = PerfCounters.setup(service=self.logname.replace(" ", "-"))
         if self.perf:
             self.perf.run()
 
@@ -124,8 +124,8 @@ class Service:
             while True:
                 if not self.check_parent_running():
                     logger.warn(
-                        "Parent process %d is dead. Committing suicide.",
-                        self.parentpid)
+                        "Parent process %d is dead. Committing suicide.", self.parentpid
+                    )
                     sys.exit(1)
 
                 if self.sigchld:

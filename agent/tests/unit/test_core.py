@@ -4,4 +4,4 @@ def test_version():
 
     version = parse_version(__version__)
 
-    assert 'Version' == version.__class__.__name__
+    assert "Version" == version.__class__.__name__

@@ -11,60 +11,57 @@ def test_start_ui(agent, ui, browser):
 def test_setproctitle_script():
     from sh import python3
 
-    python3('ui/temboardui/toolkit/proctitle.py')
+    python3("ui/temboardui/toolkit/proctitle.py")
 
 
 def test_setproctitle_inline():
     from sh import python3
 
     python3(
-        c='import temboardui.toolkit.proctitle as pc; pc.test_main()',
-        _env={"PYTHONPATH": "/usr/lib/temboard"}
+        c="import temboardui.toolkit.proctitle as pc; pc.test_main()",
+        _env={"PYTHONPATH": "/usr/lib/temboard"},
     )
 
 
 def test_setproctitle_module():
     from sh import python3
 
-    python3(
-        m='temboardui.toolkit.proctitle',
-        _env={"PYTHONPATH": "/usr/lib/temboard"}
-    )
+    python3(m="temboardui.toolkit.proctitle", _env={"PYTHONPATH": "/usr/lib/temboard"})
 
 
 def test_temboard_version():
-    out = temboard('--version')
+    out = temboard("--version")
 
-    assert 'temBoard ' in out
-    assert 'Python ' in out
-    assert 'Tornado ' in out
-    assert 'psycopg2 ' in out
-    assert 'libpq ' in out
-    assert 'SQLAlchemy ' in out
+    assert "temBoard " in out
+    assert "Python " in out
+    assert "Tornado " in out
+    assert "psycopg2 " in out
+    assert "libpq " in out
+    assert "SQLAlchemy " in out
 
 
 def test_temboard_help():
-    temboard('--help')
+    temboard("--help")
 
 
 def test_routes(ui_auto_configure, ui_sudo):
-    assert '/login' in ui_sudo.temboard.routes()
+    assert "/login" in ui_sudo.temboard.routes()
 
-    assert '/statements' in ui_sudo.temboard.routes('--sort')
+    assert "/statements" in ui_sudo.temboard.routes("--sort")
 
 
 def test_migratedb(ui_auto_configure):
-    temboard('migratedb', 'check')
+    temboard("migratedb", "check")
 
 
 def test_tasks_run(ui_auto_configure):
     out = temboard.tasks.run("?")
 
-    assert '\ncollector\n' in out
+    assert "\ncollector\n" in out
 
 
 def test_signing_key(ui):
-    response = ui.get('/signing.key')
+    response = ui.get("/signing.key")
     response.raise_for_status()
 
 
@@ -73,10 +70,10 @@ def test_apikey_lifecycle(ui_auto_configure, ui_sudo):
     reader = csv.reader(out)
 
     header = next(reader)
-    assert 'Id' in header
-    assert 'Secret' in header
-    assert 'Comment' in header
-    assert 'Expiration' in header
+    assert "Id" in header
+    assert "Secret" in header
+    assert "Comment" in header
+    assert "Expiration" in header
 
     key = next(reader)
 
@@ -97,7 +94,7 @@ def test_apikey_lifecycle(ui_auto_configure, ui_sudo):
 
 
 def test_proctitle(ui):
-    if b'sudo' in ui.proc.cmd[0]:  # CI case
+    if b"sudo" in ui.proc.cmd[0]:  # CI case
         ppid = ui.proc.pid
         with open(f"/proc/{ppid}/task/{ppid}/children") as fo:
             children = fo.read()
@@ -108,7 +105,7 @@ def test_proctitle(ui):
     with open(f"/proc/{pid}/cmdline") as fo:
         cmdline = fo.read()
 
-    assert cmdline.startswith('temboard: web')
+    assert cmdline.startswith("temboard: web")
 
     with open(f"/proc/{pid}/task/{pid}/children") as fo:
         children = fo.read()
@@ -116,25 +113,25 @@ def test_proctitle(ui):
 
     for childpid in children:
         with open(f"/proc/{childpid}/cmdline") as fo:
-            cmdline = fo.read().rstrip('\0')
+            cmdline = fo.read().rstrip("\0")
 
-        if not cmdline:         # Zombie
+        if not cmdline:  # Zombie
             continue
 
-        assert cmdline.startswith('temboard: '), cmdline
-        assert ': worker' in cmdline or ': scheduler' in cmdline
+        assert cmdline.startswith("temboard: "), cmdline
+        assert ": worker" in cmdline or ": scheduler" in cmdline
 
 
 def test_autossl(ui):
-    http_url = ui.base_url.copy_with(scheme='http')
+    http_url = ui.base_url.copy_with(scheme="http")
     response = ui.get(http_url)
 
     assert 301 == response.status_code
-    assert response.headers['location'].startswith('https://')
+    assert response.headers["location"].startswith("https://")
 
 
 def test_login_logout(browser, ui, ui_url):
-    browser.get(ui_url + '/')
+    browser.get(ui_url + "/")
 
     browser.select("#inputUsername").send_keys("admin")
     browser.select("#inputPassword").send_keys("admin")

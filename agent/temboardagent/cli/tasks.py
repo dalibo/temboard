@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @app.command
 class Tasks(SubCommand):
-    """ Manage background tasks. """
+    """Manage background tasks."""
 
     def main(self, args):
         raise UserError("Missing sub-command. See --help for details.")
@@ -28,17 +28,17 @@ class Tasks(SubCommand):
 
 @Tasks.command
 class Flush(FlushTasksMixin, SubCommand):
-    """ Flush all tasks. """
+    """Flush all tasks."""
 
 
 @Tasks.command
 class Run(RunTaskMixin, SubCommand):
-    """ Run a task foreground. """
+    """Run a task foreground."""
 
     def main(self, args):
         workers = self.iter_workers()
 
-        if '?' == args.worker_name:
+        if "?" == args.worker_name:
             self.print_workers(workers)
         else:
             worker, worker_args = self.compute_worker_args(workers, args)

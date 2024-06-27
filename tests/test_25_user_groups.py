@@ -16,7 +16,6 @@ def user_group_dev(browse_settings_user_groups, browser_session):
 
 
 def test_create_user_group(user_group_dev, browser):
-
     assert any(
         "Developers" in group.text
         for group in browser.select_all("#tableGroups tbody tr")
@@ -24,12 +23,9 @@ def test_create_user_group(user_group_dev, browser):
 
 
 def test_update_user_group(user_group_dev, browser):
-
-    tr = [
-        tr
-        for tr in browser.select_all("#tableGroups tbody tr")
-        if "dev" in tr.text
-    ][0]
+    tr = [tr for tr in browser.select_all("#tableGroups tbody tr") if "dev" in tr.text][
+        0
+    ]
 
     tr.find_element(by=By.CSS_SELECTOR, value="[data-action=edit]").click()
     assert browser.select("#inputNewGroupname").get_attribute("value") == "dev"
@@ -45,12 +41,9 @@ def test_update_user_group(user_group_dev, browser):
 
 
 def test_delete_user_group(user_group_dev, browser):
-
-    tr = [
-        tr
-        for tr in browser.select_all("#tableGroups tbody tr")
-        if "dev" in tr.text
-    ][0]
+    tr = [tr for tr in browser.select_all("#tableGroups tbody tr") if "dev" in tr.text][
+        0
+    ]
 
     assert any(
         "Developers" in group.text

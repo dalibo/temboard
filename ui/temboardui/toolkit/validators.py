@@ -20,15 +20,15 @@ from .utils import strtobool
 
 
 _address_re = re.compile(
-    r'(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)'
-    r'(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d'
-    r')){3}$'
+    r"(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d)"
+    r"(\.(?:[3-9]\d?|2(?:5[0-5]|[0-4]?\d)?|1\d{0,2}|\d"
+    r")){3}$"
 )
 
 
 def address(raw):
     if not _address_re.match(raw):
-        raise ValueError('invalid address')
+        raise ValueError("invalid address")
     return raw
 
 
@@ -42,7 +42,7 @@ def boolean(raw):
 def dir_(raw):
     raw = os.path.realpath(raw)
     if not os.path.isdir(raw):
-        raise ValueError('Not a directory')
+        raise ValueError("Not a directory")
     return raw
 
 
@@ -51,7 +51,7 @@ def file_(raw):
         return raw
     raw = os.path.realpath(raw)
     if not os.path.exists(raw):
-        raise ValueError('%s: File not found' % raw)
+        raise ValueError("%s: File not found" % raw)
     return raw
 
 
@@ -66,7 +66,7 @@ def path(raw):
 
 
 def fqdn(raw):
-    if '\n' in raw:
+    if "\n" in raw:
         raise ValueError("New line in FQDN.")
     if not re.match(
         r"(?=^.{1,253}$)"  # check length between 4 and 253
@@ -78,20 +78,20 @@ def fqdn(raw):
     return raw
 
 
-_identifier_re = re.compile(r'^[a-zA-Z0-9]+$')
+_identifier_re = re.compile(r"^[a-zA-Z0-9]+$")
 
 
 def jsonlist(raw):
-    if hasattr(raw, 'lower'):
+    if hasattr(raw, "lower"):
         raw = json.loads(raw)
 
     if not isinstance(raw, list):
-        raise ValueError('not a list')
+        raise ValueError("not a list")
 
     raw = [str(e) for e in raw]
     for entry in raw:
         if not _identifier_re.match(entry):
-            raise ValueError('%s is invalid' % entry)
+            raise ValueError("%s is invalid" % entry)
 
     return raw
 
@@ -100,7 +100,7 @@ def port(raw):
     port = int(raw)
 
     if 0 > port or port > 65635:
-        raise ValueError('Port out of range')
+        raise ValueError("Port out of range")
 
     return port
 
@@ -109,45 +109,45 @@ def loglevel(raw):
     raw = raw.upper()
     levelnames = logging._nameToLevel
     if raw not in levelnames:
-        raise ValueError('unkown log level')
+        raise ValueError("unkown log level")
     return raw
 
 
 def logmethod(raw):
     if raw not in LOG_METHODS:
-        raise ValueError(f'unknown logging method {raw}')
+        raise ValueError(f"unknown logging method {raw}")
     return raw
 
 
 def syslogfacility(raw):
     if raw not in SysLogHandler.facility_names:
-        raise ValueError('unkown syslog facility')
+        raise ValueError("unkown syslog facility")
     return raw
 
 
 def writeabledir(raw):
     raw = dir_(raw)
     if not os.access(raw, os.W_OK):
-        raise ValueError('Not writable')
+        raise ValueError("Not writable")
     return raw
 
 
 def commalist(raw):
-    return list(filter(None, [w.strip() for w in raw.split(',')]))
+    return list(filter(None, [w.strip() for w in raw.split(",")]))
 
 
 def nday(raw):
     nday = int(raw)
 
     if nday < 1:
-        raise ValueError('Number of day not valid')
+        raise ValueError("Number of day not valid")
 
     return nday
 
 
 def url(raw):
     url = urlparse(raw)
-    if not url.scheme.startswith('http'):
+    if not url.scheme.startswith("http"):
         raise ValueError("HTTP URL required")
     if not url.netloc:
         raise ValueError("Missing host and port")

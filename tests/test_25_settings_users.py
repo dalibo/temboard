@@ -1,5 +1,4 @@
 import pytest
-
 from selenium.webdriver.common.by import By
 
 
@@ -11,14 +10,12 @@ def user_rick(admin_session, browser_session):
 
     browser_session.select("#buttonLoadAddUserForm").click()
     browser_session.select("input[placeholder='Username']").send_keys("rick")
-    browser_session.select(
-        "input[placeholder='Email']").send_keys("rick@test.com")
-    browser_session.select(
-        "input[placeholder='Password']").send_keys("!rick0.@9")
-    browser_session.select(
-        "input[placeholder='Confirm password']").send_keys("!rick0.@9")
-    browser_session.select(
-        "input[placeholder='Phone']").send_keys("+33611223344")
+    browser_session.select("input[placeholder='Email']").send_keys("rick@test.com")
+    browser_session.select("input[placeholder='Password']").send_keys("!rick0.@9")
+    browser_session.select("input[placeholder='Confirm password']").send_keys(
+        "!rick0.@9"
+    )
+    browser_session.select("input[placeholder='Phone']").send_keys("+33611223344")
     browser_session.select("option[value='default']").click()
     browser_session.select("label[for='switchActive']").click()
     browser_session.select("label[for='switchAdmin']").click()
@@ -27,9 +24,7 @@ def user_rick(admin_session, browser_session):
 
 def test_create_user(user_rick, browser):
     user_rick_line = [
-        tr
-        for tr in browser.select_all("#tableUsers tr")
-        if "rick" in tr.text
+        tr for tr in browser.select_all("#tableUsers tr") if "rick" in tr.text
     ][0]
     user_rick = user_rick_line.text.split()
     assert "rick" in user_rick
@@ -37,23 +32,19 @@ def test_create_user(user_rick, browser):
     assert "+33611223344" in user_rick
     assert "default" in user_rick
     assert (
-     "No" == user_rick_line
-     .find_element(By.CSS_SELECTOR, "td[data-col='is-active']")
-     .text
+        "No"
+        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-active']").text
     )
     assert (
-        "Yes" == user_rick_line
-        .find_element(By.CSS_SELECTOR, "td[data-col='is-admin']")
-        .text
+        "Yes"
+        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-admin']").text
     )
 
 
 def test_update_user(user_rick, browser):
     # Find button edit for user rick
     filtered_rick_row = [
-        tr
-        for tr in browser.select_all("#tableUsers tr")
-        if "rick" in tr.text
+        tr for tr in browser.select_all("#tableUsers tr") if "rick" in tr.text
     ][0]
     edit_button_rick = filtered_rick_row.find_element(
         By.CSS_SELECTOR, "td button[title='Edit']"
@@ -63,21 +54,16 @@ def test_update_user(user_rick, browser):
     browser.select("input[placeholder='Username']").clear()
     browser.select("input[placeholder='Username']").send_keys("rick0")
     browser.select("input[placeholder='Email']").clear()
-    browser.select(
-        "input[placeholder='Email']").send_keys("rick@test.me")
-    browser.select(
-        "input[placeholder='Password']").send_keys("NEW!rick0.@9")
-    browser.select(
-        "input[placeholder='Confirm password']").send_keys("NEW!rick0.@9")
+    browser.select("input[placeholder='Email']").send_keys("rick@test.me")
+    browser.select("input[placeholder='Password']").send_keys("NEW!rick0.@9")
+    browser.select("input[placeholder='Confirm password']").send_keys("NEW!rick0.@9")
     browser.select("option[value='default']").click()
     browser.select("label[for='switchActive']").click()
     browser.select("label[for='switchAdmin']").click()
     browser.select("button[type=submit]").click()
 
     user_rick_line = [
-        tr
-        for tr in browser.select_all("#tableUsers tr")
-        if "rick0" in tr.text
+        tr for tr in browser.select_all("#tableUsers tr") if "rick0" in tr.text
     ][0]
     user_rick = user_rick_line.text.split()
     assert "rick0" in user_rick
@@ -85,23 +71,19 @@ def test_update_user(user_rick, browser):
     assert "+33611223344" in user_rick
     assert "default" not in user_rick
     assert (
-        "Yes" == user_rick_line
-        .find_element(By.CSS_SELECTOR, "td[data-col='is-active']")
-        .text
+        "Yes"
+        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-active']").text
     )
     assert (
-        "No" == user_rick_line
-        .find_element(By.CSS_SELECTOR, "td[data-col='is-admin']")
-        .text
+        "No"
+        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-admin']").text
     )
 
 
 def test_delete_user(user_rick, browser):
     # Find button delete for user rick
     filtered_rick_row = [
-        tr
-        for tr in browser.select_all("#tableUsers tr")
-        if "rick@" in tr.text
+        tr for tr in browser.select_all("#tableUsers tr") if "rick@" in tr.text
     ][0]
     delete_button_rick = filtered_rick_row.find_element(
         By.CSS_SELECTOR, "td button[title='Delete']"
@@ -112,7 +94,4 @@ def test_delete_user(user_rick, browser):
 
     assert len(browser.select_all("#tableUsers tr")) == 2
 
-    assert "rick" not in [
-        tr.text
-        for tr in browser.select_all("#tableUsers tr")
-    ]
+    assert "rick" not in [tr.text for tr in browser.select_all("#tableUsers tr")]

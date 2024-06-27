@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @app.command
 class MigrateDB(SubCommand):
-    """ Manage temBoard own database. """
+    """Manage temBoard own database."""
 
     def main(self, args):
         raise UserError("Missing sub-command. See --help for details.")

@@ -5,9 +5,7 @@ import pytest
 def browse_settings_instance(browse_instance, browser_session):
     """Go to Settings tab of current instance."""
     browser_session.select("#linkSettings").click()
-    browser_session.select(
-        "ul.list-group a[href='/settings/instances']"
-    ).click()
+    browser_session.select("ul.list-group a[href='/settings/instances']").click()
 
 
 def test_delete_instance(browser, browse_settings_instance, agent_conf):

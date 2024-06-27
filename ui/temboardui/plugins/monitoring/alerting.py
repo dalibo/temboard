@@ -7,7 +7,7 @@ def bootstrap_checks(hostinfo):
 
     # Loadaverage (value)
     # Global to host
-    yield ("load1", hostinfo['n_cpu'] / float(2), hostinfo['n_cpu'])
+    yield ("load1", hostinfo["n_cpu"] / float(2), hostinfo["n_cpu"])
     # CPU (percent)
     # One per CPU
     yield ("cpu_core", 50, 80)
@@ -53,249 +53,252 @@ def bootstrap_checks(hostinfo):
 
 
 class PreProcess:
-
     @staticmethod
     def loadaverage(data):
-        return float(data['loadavg'][0]['load1'])
+        return float(data["loadavg"][0]["load1"])
 
     @staticmethod
     def cpu(data):
         _data = dict()
-        for r in data['cpu']:
+        for r in data["cpu"]:
             total = 0
             idle = 0
-            total += int(r['time_system'])
-            total += int(r['time_steal'])
-            total += int(r['time_iowait'])
-            total += int(r['time_user'])
-            total += int(r['time_idle'])
-            idle = int(r['time_idle'])
-            _data[r['cpu']] = int((total - idle) / float(total) * 100)
+            total += int(r["time_system"])
+            total += int(r["time_steal"])
+            total += int(r["time_iowait"])
+            total += int(r["time_user"])
+            total += int(r["time_idle"])
+            idle = int(r["time_idle"])
+            _data[r["cpu"]] = int((total - idle) / float(total) * 100)
         return _data
 
     @staticmethod
     def memory(data):
         return int(
-            (int(data['memory'][0]['mem_total'])
-             - int(data['memory'][0]['mem_free'])
-             - int(data['memory'][0]['mem_cached']))
-            / float(data['memory'][0]['mem_total']) * 100
+            (
+                int(data["memory"][0]["mem_total"])
+                - int(data["memory"][0]["mem_free"])
+                - int(data["memory"][0]["mem_cached"])
+            )
+            / float(data["memory"][0]["mem_total"])
+            * 100
         )
 
     @staticmethod
     def swap(data):
         return int(
-            int(data['memory'][0]['swap_used'])
-            / float(data['memory'][0]['swap_total']) * 100
+            int(data["memory"][0]["swap_used"])
+            / float(data["memory"][0]["swap_total"])
+            * 100
         )
 
     @staticmethod
     def fs(data):
         _data = dict()
-        for r in data['filesystems_size']:
-            _data[r['mount_point']] = int(int(r['used']) / float(r['total'])
-                                          * 100)
+        for r in data["filesystems_size"]:
+            _data[r["mount_point"]] = int(int(r["used"]) / float(r["total"]) * 100)
         return _data
 
     @staticmethod
     def archive_ready(data):
-        return int(data['wal_files'][0]['archive_ready'])
+        return int(data["wal_files"][0]["archive_ready"])
 
     @staticmethod
     def wal_files(data):
-        return int(data['wal_files'][0]['total'])
+        return int(data["wal_files"][0]["total"])
 
     @staticmethod
     def xacts_rollback(data):
         _data = dict()
-        for r in data['xacts']:
-            _data[r['dbname']] = int(r['n_rollback'])
+        for r in data["xacts"]:
+            _data[r["dbname"]] = int(r["n_rollback"])
         return _data
 
     @staticmethod
     def hitratio(data):
         _data = dict()
-        for r in data['blocks']:
-            hit = int(r['blks_hit'])
-            read = int(r['blks_read'])
-            _data[r['dbname']] = (old_div(100 * hit, (hit + read))) \
-                if read + hit > 0 else 100
+        for r in data["blocks"]:
+            hit = int(r["blks_hit"])
+            read = int(r["blks_read"])
+            _data[r["dbname"]] = (
+                (old_div(100 * hit, (hit + read))) if read + hit > 0 else 100
+            )
         return _data
 
     @staticmethod
     def sessions(data):
         n = 0
-        for r in data['sessions']:
-            n += int(r['idle_in_xact'])
-            n += int(r['idle_in_xact_aborted'])
-            n += int(r['no_priv'])
-            n += int(r['idle'])
-            n += int(r['disabled'])
-            n += int(r['waiting'])
-            n += int(r['active'])
-            n += int(r['fastpath'])
-        return int(n / float(data['max_connections']) * 100)
+        for r in data["sessions"]:
+            n += int(r["idle_in_xact"])
+            n += int(r["idle_in_xact_aborted"])
+            n += int(r["no_priv"])
+            n += int(r["idle"])
+            n += int(r["disabled"])
+            n += int(r["waiting"])
+            n += int(r["active"])
+            n += int(r["fastpath"])
+        return int(n / float(data["max_connections"]) * 100)
 
     @staticmethod
     def waiting(data):
         _data = dict()
-        for r in data['sessions']:
-            _data[r['dbname']] = int(r['waiting'])
+        for r in data["sessions"]:
+            _data[r["dbname"]] = int(r["waiting"])
         return _data
 
     @staticmethod
     def replication_lag(data):
-        if data['replication_lag']:
-            return int(data['replication_lag'][0]['lag'])
+        if data["replication_lag"]:
+            return int(data["replication_lag"][0]["lag"])
         raise Exception("No replication lag info for this instance")
 
     @staticmethod
     def replication_connection(data):
-        if data['replication_connection']:
-            k = data['replication_connection'][0]['upstream']
-            v = int(data['replication_connection'][0]['connected'])
+        if data["replication_connection"]:
+            k = data["replication_connection"][0]["upstream"]
+            v = int(data["replication_connection"][0]["connected"])
             return {k: v}
         raise Exception("No replication connection info for this instance")
 
     @staticmethod
     def temp_files_size_delta(data):
         _data = dict()
-        for r in data['temp_files_size_delta']:
-            _data[r['dbname']] = int(r['size'])
+        for r in data["temp_files_size_delta"]:
+            _data[r["dbname"]] = int(r["size"])
         return _data
 
     @staticmethod
     def heap_bloat(data):
         _data = dict()
-        for r in data['heap_bloat']:
-            _data[r['dbname']] = int(r['ratio'])
+        for r in data["heap_bloat"]:
+            _data[r["dbname"]] = int(r["ratio"])
         return _data
 
     @staticmethod
     def btree_bloat(data):
         _data = dict()
-        for r in data['btree_bloat']:
-            _data[r['dbname']] = int(r['ratio'])
+        for r in data["btree_bloat"]:
+            _data[r["dbname"]] = int(r["ratio"])
         return _data
 
 
 check_specs = dict(
     load1=dict(
-        category='system',
-        description='Loadaverage',
+        category="system",
+        description="Loadaverage",
         preprocess=PreProcess.loadaverage,
-        message='{value} is greater than {threshold}',
+        message="{value} is greater than {threshold}",
         operator=operator.gt,
     ),
     cpu_core=dict(
-        category='system',
-        description='CPU usage',
+        category="system",
+        description="CPU usage",
         preprocess=PreProcess.cpu,
-        message='{value}% is greater than {threshold}%',
+        message="{value}% is greater than {threshold}%",
         operator=operator.gt,
-        value_type='percent',
+        value_type="percent",
     ),
     memory_usage=dict(
-        category='system',
-        description='Memory usage',
+        category="system",
+        description="Memory usage",
         preprocess=PreProcess.memory,
-        message='{value}% is greater than {threshold}%',
+        message="{value}% is greater than {threshold}%",
         operator=operator.gt,
-        value_type='percent'
+        value_type="percent",
     ),
     swap_usage=dict(
-        category='system',
-        description='Swap usage',
+        category="system",
+        description="Swap usage",
         preprocess=PreProcess.swap,
-        message='{value}% is greater than {threshold}%',
+        message="{value}% is greater than {threshold}%",
         operator=operator.gt,
-        value_type='percent',
+        value_type="percent",
     ),
     fs_usage_mountpoint=dict(
-        category='system',
-        description='File systems usage',
+        category="system",
+        description="File systems usage",
         preprocess=PreProcess.fs,
-        message='{key}: {value}% is greater than {threshold}%',
+        message="{key}: {value}% is greater than {threshold}%",
         operator=operator.gt,
-        value_type='percent',
+        value_type="percent",
     ),
     wal_files_archive=dict(
-        category='postgres',
-        description='WAL files ready to be archived',
+        category="postgres",
+        description="WAL files ready to be archived",
         preprocess=PreProcess.archive_ready,
-        message='{value} is greater than {threshold}',
+        message="{value} is greater than {threshold}",
         operator=operator.gt,
     ),
     wal_files_total=dict(
-        category='postgres',
-        description='WAL files',
+        category="postgres",
+        description="WAL files",
         preprocess=PreProcess.wal_files,
-        message='{value} is greater than {threshold}',
+        message="{value} is greater than {threshold}",
         operator=operator.gt,
     ),
     rollback_db=dict(
-        category='postgres',
-        description='Rollbacked transactions',
+        category="postgres",
+        description="Rollbacked transactions",
         preprocess=PreProcess.xacts_rollback,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
     hitreadratio_db=dict(
-        category='postgres',
-        description='Cache Hit Ratio',
+        category="postgres",
+        description="Cache Hit Ratio",
         preprocess=PreProcess.hitratio,
-        message='{key}: {value} is less than {threshold}',
+        message="{key}: {value} is less than {threshold}",
         operator=operator.lt,
-        value_type='percent',
+        value_type="percent",
     ),
     sessions_usage=dict(
-        category='postgres',
-        description='Client sessions',
+        category="postgres",
+        description="Client sessions",
         preprocess=PreProcess.sessions,
-        message='{value} is greater than {threshold}',
+        message="{value} is greater than {threshold}",
         operator=operator.gt,
-        value_type='percent',
+        value_type="percent",
     ),
     waiting_sessions_db=dict(
-        category='postgres',
-        description='Waiting sessions',
+        category="postgres",
+        description="Waiting sessions",
         preprocess=PreProcess.waiting,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
     replication_lag=dict(
-        category='postgres',
-        description='Streaming replication lag',
+        category="postgres",
+        description="Streaming replication lag",
         preprocess=PreProcess.replication_lag,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
     replication_connection=dict(
-        category='postgres',
-        description='Streaming replication connection',
+        category="postgres",
+        description="Streaming replication connection",
         preprocess=PreProcess.replication_connection,
-        message='{key}: not connected',
+        message="{key}: not connected",
         operator=operator.eq,
     ),
     temp_files_size_delta=dict(
-        category='postgres',
-        description='Temporary files size (delta)',
+        category="postgres",
+        description="Temporary files size (delta)",
         preprocess=PreProcess.temp_files_size_delta,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
     heap_bloat=dict(
-        category='postgres',
-        description='Heap bloat ratio estimation',
+        category="postgres",
+        description="Heap bloat ratio estimation",
         preprocess=PreProcess.heap_bloat,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
     btree_bloat=dict(
-        category='postgres',
-        description='BTree index bloat ratio estimation',
+        category="postgres",
+        description="BTree index bloat ratio estimation",
         preprocess=PreProcess.btree_bloat,
-        message='{key}: {value} is greater than {threshold}',
+        message="{key}: {value} is greater than {threshold}",
         operator=operator.gt,
     ),
 )
@@ -305,7 +308,7 @@ def get_highest_state(states):
     """
     Returns the highest state.
     """
-    levels = ['UNDEF', 'OK', 'WARNING', 'CRITICAL']
+    levels = ["UNDEF", "OK", "WARNING", "CRITICAL"]
     return levels[max([levels.index(state) for state in states])]
 
 
@@ -320,13 +323,11 @@ FROM monitoring.checks c JOIN monitoring.check_states cs ON (c.check_id = cs.che
 WHERE host_id = :host_id AND instance_id = :instance_id
 GROUP BY 1,2,3,4,5 ORDER BY 1
     """  # noqa
-    res = session.execute(query,
-                          dict(host_id=host_id, instance_id=instance_id))
+    res = session.execute(query, dict(host_id=host_id, instance_id=instance_id))
     ret = []
     for row in res.fetchall():
         c_row = dict(row)
-        c_row['state'] = get_highest_state([o['state']
-                                            for o in c_row['state_by_key']])
+        c_row["state"] = get_highest_state([o["state"] for o in c_row["state_by_key"]])
         ret.append(c_row)
     return ret
 
@@ -349,9 +350,9 @@ JOIN monitoring.state_changes sc ON (sc.check_id = c.check_id AND sc.key = cs.ke
                                                         AND sc2.state = cs.state))
 WHERE host_id = :host_id AND instance_id = :instance_id AND c.name = :check_name
     """  # noqa
-    res = session.execute(query,
-                          dict(host_id=host_id, instance_id=instance_id,
-                               check_name=check_name))
+    res = session.execute(
+        query, dict(host_id=host_id, instance_id=instance_id, check_name=check_name)
+    )
     row = res.fetchone()
     c_row = dict(row)
-    return c_row['state_detail']
+    return c_row["state_detail"]

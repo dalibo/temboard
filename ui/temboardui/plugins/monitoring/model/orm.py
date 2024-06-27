@@ -59,7 +59,7 @@ class Host(Model):
 
 class Instance(Model):
     __table__ = tables.instances
-    host = relationship('Host', backref='instances')
+    host = relationship("Host", backref="instances")
 
     def __repr__(self):
         return f"instance: {self.host_id}:{self.port}"
@@ -67,17 +67,17 @@ class Instance(Model):
 
 class Check(Model):
     __table__ = tables.checks
-    host = relationship('Host', backref='checks')
-    instance = relationship('Instance', backref='checks')
+    host = relationship("Host", backref="checks")
+    instance = relationship("Instance", backref="checks")
 
 
 class CheckState(Model):
     __table__ = tables.checkstates
-    check = relationship('Check', backref='states')
+    check = relationship("Check", backref="states")
 
 
 class CollectorStatus(Model):
     __table__ = tables.collector_status
-    instance = relationship('Instance',
-                            backref=backref('collector_statuts',
-                                            cascade='all, delete-orphan'))
+    instance = relationship(
+        "Instance", backref=backref("collector_statuts", cascade="all, delete-orphan")
+    )

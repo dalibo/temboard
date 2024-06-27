@@ -20,12 +20,15 @@ class Serve(SubCommand):
         # Purge all legacy data queues
         home = self.app.config.temboard.home
         if os.path.exists(home):
-            [os.remove(os.path.join(home, f))
-             for f in os.listdir(home) if f.endswith('.q')]
+            [
+                os.remove(os.path.join(home, f))
+                for f in os.listdir(home)
+                if f.endswith(".q")
+            ]
 
-        if 'monitoring' in self.app.config.temboard.plugins:
+        if "monitoring" in self.app.config.temboard.plugins:
             logger.info("Resetting monitoring data.")
-            db.bootstrap(self.app.config.temboard.home, 'monitoring.db')
+            db.bootstrap(self.app.config.temboard.home, "monitoring.db")
 
         self.app.config.load_signing_key()
         self.app.discover.refresh()

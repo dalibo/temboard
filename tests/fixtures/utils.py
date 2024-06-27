@@ -5,14 +5,17 @@ from shutil import copy as cp
 import httpx
 from selenium.common.exceptions import NoSuchElementException
 from tenacity import (
-    Retrying, retry_if_exception_type, stop_after_delay,
-    wait_chain, wait_fixed,
+    Retrying,
+    retry_if_exception_type,
+    stop_after_delay,
+    wait_chain,
+    wait_fixed,
 )
 
 
 logger = logging.getLogger(__name__)
 # Unique identifier for screenshots and log files.
-session_tag = datetime.now().strftime('%H:%M')
+session_tag = datetime.now().strftime("%H:%M")
 
 
 def copy_files(candidates, targetdir):
@@ -24,7 +27,7 @@ def copy_files(candidates, targetdir):
 
         logger.info("Saving file %s.", path)
         parent = path.parent.name
-        if 'agent' in parent or 'ui' in parent or 'temboard' in parent:
+        if "agent" in parent or "ui" in parent or "temboard" in parent:
             # Avoid conflict for serve.log, auto-configure.log, etc.
             dest = targetdir / f"{parent}-{path.name}"
         else:
@@ -36,7 +39,7 @@ def retry_fast(exc_type=AssertionError):
     return Retrying(
         retry=retry_if_exception_type(exc_type),
         stop=stop_after_delay(10),
-        wait=wait_fixed(.1),
+        wait=wait_fixed(0.1),
     )
 
 
@@ -49,10 +52,7 @@ def retry_slow(exc_type=NoSuchElementException):
     return Retrying(
         retry=retry_if_exception_type(exc_type),
         stop=stop_after_delay(130),
-        wait=wait_chain(
-            *[wait_fixed(5)] * 11,
-            wait_fixed(2),
-        ),
+        wait=wait_chain(*[wait_fixed(5)] * 11, wait_fixed(2)),
     )
 
 

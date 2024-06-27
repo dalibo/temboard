@@ -67,8 +67,8 @@ class TaskListSQLite3Engine:
                         str(task.output) if task.output else None,
                         json.dumps(task.options),
                         task.redo_interval or 0,
-                        task.expire or 0
-                    )
+                        task.expire or 0,
+                    ),
                 )
         except sqlite3.IntegrityError:
             raise KeyError("Task with id=%s already exists" % task.id)
@@ -103,8 +103,8 @@ class TaskListSQLite3Engine:
                         json.dumps(task.options),
                         task.redo_interval or 0,
                         task.expire or 0,
-                        task.id
-                    )
+                        task.id,
+                    ),
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))
@@ -114,10 +114,7 @@ class TaskListSQLite3Engine:
         try:
             with self.conn:
                 c = self.conn.cursor()
-                c.execute(
-                    "DELETE FROM tasks WHERE id = ?",
-                    (id,)
-                )
+                c.execute("DELETE FROM tasks WHERE id = ?", (id,))
         except sqlite3.Error as e:
             logger.exception(str(e))
             raise StorageEngineError("Could not delete task with id=%s" % id)
@@ -134,7 +131,7 @@ class TaskListSQLite3Engine:
                         FROM tasks
                         WHERE id = ?
                     """),
-                    (id,)
+                    (id,),
                 )
                 r = c.fetchone()
                 if not r:
@@ -156,7 +153,7 @@ class TaskListSQLite3Engine:
                     output=r[5],
                     options=options,
                     redo_interval=r[7],
-                    expire=r[8]
+                    expire=r[8],
                 )
 
         except sqlite3.Error as e:
@@ -177,7 +174,6 @@ class TaskListSQLite3Engine:
                     """)
                 )
                 for r in c.fetchall():
-
                     try:
                         options = json.loads(r[6])
                     except ValueError as e:
@@ -195,7 +191,7 @@ class TaskListSQLite3Engine:
                         output=r[5],
                         options=options,
                         redo_interval=r[7],
-                        expire=r[8]
+                        expire=r[8],
                     )
 
         except sqlite3.Error as e:
@@ -207,27 +203,20 @@ class TaskListSQLite3Engine:
             with self.conn:
                 c = self.conn.cursor()
                 c.execute("SELECT 1 FROM tasks WHERE id = ?", (id,))
-                return (c.fetchone() is not None)
+                return c.fetchone() is not None
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise StorageEngineError(
-                "Could not check that task with id=%s exists" % id
-            )
+            raise StorageEngineError("Could not check that task with id=%s exists" % id)
 
     def count_by_status(self, status):
         try:
             with self.conn:
                 c = self.conn.cursor()
-                c.execute(
-                    "SELECT COUNT(id) FROM tasks WHERE status & ?",
-                    (status,)
-                )
+                c.execute("SELECT COUNT(id) FROM tasks WHERE status & ?", (status,))
                 return c.fetchone()[0]
         except sqlite3.Error as e:
             logger.exception(str(e))
-            raise StorageEngineError(
-                "Could not count tasks with status & %s" % status
-            )
+            raise StorageEngineError("Could not count tasks with status & %s" % status)
 
     def recover(self, st_doing, st_aborted, st_scheduled, st_default, now):
         try:
@@ -239,13 +228,16 @@ class TaskListSQLite3Engine:
                         UPDATE tasks SET status = ?, stop_datetime = ?
                         WHERE status & ?
                     """),
-                    (st_aborted, datetime_to_epoch(now), st_doing)
+                    (st_aborted, datetime_to_epoch(now), st_doing),
                 )
                 # Reset scheduled task and recurrent tasks to default
-                c.execute(dedent("""
+                c.execute(
+                    dedent("""
                 UPDATE tasks SET status = ?
                 WHERE status & ? OR redo_interval > 0
-                """), (st_default, st_scheduled))
+                """),
+                    (st_default, st_scheduled),
+                )
         except sqlite3.Error as e:
             logger.exception(str(e))
             raise StorageEngineError("Could not recover tasks.")
@@ -273,9 +265,8 @@ class TaskListSQLite3Engine:
         try:
             with self.conn:
                 c = self.conn.cursor()
-                c.execute(query, (datetime_to_epoch(now), status,))
+                c.execute(query, (datetime_to_epoch(now), status))
                 for r in c.fetchall():
-
                     try:
                         options = json.loads(r[6])
                     except ValueError as e:
@@ -293,7 +284,7 @@ class TaskListSQLite3Engine:
                         output=r[5],
                         options=options,
                         redo_interval=r[7],
-                        expire=r[8]
+                        expire=r[8],
                     )
 
         except sqlite3.Error as e:
@@ -322,7 +313,7 @@ class TaskListSQLite3Engine:
                         AND (stop_datetime + expire) < ?
                         AND status & ?
                     """),
-                    (datetime_to_epoch(now), status)
+                    (datetime_to_epoch(now), status),
                 )
         except sqlite3.Error as e:
             logger.exception(str(e))

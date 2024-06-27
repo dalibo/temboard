@@ -3,12 +3,7 @@ from os import path
 import tornado.web
 from tornado.escape import url_escape, url_unescape
 
-from temboardui.web.tornado import (
-    Blueprint,
-    HTTPError,
-    Redirect,
-    TemplateRenderer,
-)
+from temboardui.web.tornado import Blueprint, HTTPError, Redirect, TemplateRenderer
 
 
 logger = logging.getLogger(__name__)
@@ -24,28 +19,31 @@ class PGConfPlugin:
 
     def load(self):
         self.app.tornado_app.add_rules(blueprint.rules)
-        self.app.tornado_app.add_rules([
-            (
-                r"/js/pgconf/(.*)",
-                tornado.web.StaticFileHandler,
-                {'path': plugin_path + "/static/js"}
-            ),
-            (
-                r"/css/pgconf/(.*)",
-                tornado.web.StaticFileHandler,
-                {'path': plugin_path + "/static/css"}
-            ),
-        ])
+        self.app.tornado_app.add_rules(
+            [
+                (
+                    r"/js/pgconf/(.*)",
+                    tornado.web.StaticFileHandler,
+                    {"path": plugin_path + "/static/js"},
+                ),
+                (
+                    r"/css/pgconf/(.*)",
+                    tornado.web.StaticFileHandler,
+                    {"path": plugin_path + "/static/css"},
+                ),
+            ]
+        )
 
 
-@blueprint.instance_route("/pgconf/configuration(?:/category/(.+))?",
-                          methods=["GET", "POST"])
+@blueprint.instance_route(
+    "/pgconf/configuration(?:/category/(.+))?", methods=["GET", "POST"]
+)
 def configuration_handler(request, category=None):
-    request.instance.check_active_plugin('pgconf')
+    request.instance.check_active_plugin("pgconf")
     template_vars = {}
     # Deduplicate HTTP prefix of plugin on agent.
     prefix = "/pgconf/configuration"
-    query_filter = request.handler.get_argument('filter', None, strip=True)
+    query_filter = request.handler.get_argument("filter", None, strip=True)
 
     status = request.instance.get(prefix + "/status")
     categories = request.instance.get(prefix + "/categories")
@@ -53,11 +51,11 @@ def configuration_handler(request, category=None):
     if category:
         category = url_unescape(category)
     else:
-        category = categories['categories'][0]
+        category = categories["categories"][0]
     logger.debug("category=%s", category)
 
     if query_filter:
-        query = {'filter': query_filter}
+        query = {"filter": query_filter}
         configuration_url = prefix
     else:
         query = {}
@@ -65,31 +63,33 @@ def configuration_handler(request, category=None):
     configuration = request.instance.get(configuration_url, query=query)
 
     if "POST" == request.method:
-        settings = {'settings': [
-            {'name': name, 'setting': value[0]}
-            for name, value in request.arguments.items()
-            # 'filter' is not a setting, just ignore it.
-            if name != 'filter'
-        ]}
+        settings = {
+            "settings": [
+                {"name": name, "setting": value[0]}
+                for name, value in request.arguments.items()
+                # 'filter' is not a setting, just ignore it.
+                if name != "filter"
+            ]
+        }
         try:
             request.instance.post(prefix, body=settings)
             # Redirect to GET page, same URI.
             return Redirect(request.uri)
         except HTTPError as e:
             # Rerender HTML page with errors.
-            template_vars['error_code'] = e
-            template_vars['error_message'] = e.log_message
+            template_vars["error_code"] = e
+            template_vars["error_message"] = e.log_message
     request.instance.fetch_status()
     return render_template(
-        'configuration.html',
+        "configuration.html",
         nav=True,
         role=request.current_user,
         instance=request.instance,
-        plugin='pgconf',
+        plugin="pgconf",
         current_cat=category,
         configuration_categories=categories,
         configuration_status=status,
         data=configuration,
         query_filter=query_filter,
-        **template_vars
+        **template_vars,
     )

@@ -17,7 +17,8 @@ class Routes(SubCommand):
     def define_arguments(self, parser):
         parser.add_argument(
             "--sort",
-            action='store_true', default=False,
+            action="store_true",
+            default=False,
             help="Sort routes alphabetically",
         )
 
@@ -40,19 +41,19 @@ class Routes(SubCommand):
 def iter_flask_routes():
     for rule in current_app.url_map.iter_rules():
         for method in rule.methods:
-            if method in ('OPTIONS', 'HEAD'):
+            if method in ("OPTIONS", "HEAD"):
                 continue
             yield method, rule.rule
 
 
 def iter_tornado_routes(rules):
     for rule in rules:
-        if 'fallback' in rule.target_kwargs:
+        if "fallback" in rule.target_kwargs:
             # Skip fallback to Flask routes.
             continue
 
         # Fallback for static handlers
-        methods = rule.target_kwargs.get('methods', ['GET'])
+        methods = rule.target_kwargs.get("methods", ["GET"])
         path = rule.matcher.regex.pattern
         for method in methods:
             yield method, path

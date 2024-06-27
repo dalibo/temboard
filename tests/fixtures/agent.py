@@ -10,7 +10,8 @@ from textwrap import dedent
 import httpx
 import pytest
 from sh import (
-    ErrorReturnCode, TimeoutException,
+    ErrorReturnCode,
+    TimeoutException,
     env as env_cmd,
     # Use bare sudo instead of contrib to ensure non interactive sudo.
     sudo,
@@ -23,24 +24,21 @@ from .utils import copy_files, retry_http
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='session')
-def agent_auto_configure(
-        agent_env, agent_sharedir, postgres, pguser, ui_url, workdir):
+@pytest.fixture(scope="session")
+def agent_auto_configure(agent_env, agent_sharedir, postgres, pguser, ui_url, workdir):
     """
     Configure temBoard agent for the postgres instance.
     """
 
-    auto_configure = agent_sharedir / 'auto_configure.sh'
-    etcdir = Path(agent_env['TEMBOARD_CONFIGFILE']).parent
+    auto_configure = agent_sharedir / "auto_configure.sh"
+    etcdir = Path(agent_env["TEMBOARD_CONFIGFILE"]).parent
     logger.info("Calling %s.", auto_configure)
-    if 'CI' in os.environ:
-        logfile = workdir / 'var/log/temboard-agent-auto-configure.log'
-        logdir = workdir / 'var/log/temboard-agent'
-        env = dict(
-            agent_env,
-        )
+    if "CI" in os.environ:
+        logfile = workdir / "var/log/temboard-agent-auto-configure.log"
+        logdir = workdir / "var/log/temboard-agent"
+        env = dict(agent_env)
     else:
-        logfile = workdir / 'var/log/agent/auto-configure.log'
+        logfile = workdir / "var/log/agent/auto-configure.log"
         logfile.parent.mkdir()
         logdir = logfile.parent
         env = dict(
@@ -49,40 +47,37 @@ def agent_auto_configure(
             LOGDIR=str(logfile.parent),
             LOGFILE=str(logfile),
             SYSUSER=pguser,
-            VARDIR=str(workdir / 'var/agent'),
+            VARDIR=str(workdir / "var/agent"),
         )
 
     try:
-        subprocess.run(
-            [auto_configure, ui_url],
-            env=env,
-        ).check_returncode()
+        subprocess.run([auto_configure, ui_url], env=env).check_returncode()
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
 
-    extra_etc = etcdir / 'temboard-agent.conf.d/tests-extra.conf'
-    extra_etc.write_text(dedent(f"""\
+    extra_etc = etcdir / "temboard-agent.conf.d/tests-extra.conf"
+    extra_etc.write_text(
+        dedent(f"""\
     [logging]
     method = file
     destination = {logdir}/serve.log
     level = DEBUG
-    """))
+    """)
+    )
 
     yield
 
     logger.info("Purging agent installation.")
-    purge = agent_sharedir / 'purge.sh'
+    purge = agent_sharedir / "purge.sh"
     try:
-        subprocess.run(
-            [purge, 'temboard-tests'], env=env,
-        ).check_returncode()
+        subprocess.run([purge, "temboard-tests"], env=env).check_returncode()
     except Exception:
         sys.stderr.write(logfile.read_text())
         raise
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
     """
     Run configured temBoard agent.
@@ -96,20 +91,20 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
         "temboard-agent",
         # This --config is redudnant, its only to pad place in cmdline for
         # setproctitle.
-        "--config", agent_env['TEMBOARD_CONFIGFILE'],
+        "--config",
+        agent_env["TEMBOARD_CONFIGFILE"],
         _bg=True,
     )
     assert proc.is_alive()
 
     client = httpx.Client(
-        base_url=f"https://localhost:{agent_env['TEMBOARD_PORT']}",
-        verify=False,
+        base_url=f"https://localhost:{agent_env['TEMBOARD_PORT']}", verify=False
     )
     client.proc = proc
     logger.info("Waiting for agent to come up.")
     for attempt in retry_http():
         with attempt:
-            client.get('/')
+            client.get("/")
 
     yield client
 
@@ -124,53 +119,53 @@ def agent(agent_auto_configure, agent_env, pguser, sudo_pguser, ui, workdir):
     except ErrorReturnCode as e:
         logger.info("temBoard agent exited with code %s.", e.exit_code)
 
-    if 'CI' not in os.environ:
+    if "CI" not in os.environ:
         return
 
     candidates = [
-        workdir / 'var/log/agent/auto-configure.log',
-        workdir / 'var/log/agent/serve.log',
-        workdir / 'var/log/temboard-agent-auto-configure.log',
-        workdir / 'var/log/temboard-agent/serve.log',
+        workdir / "var/log/agent/auto-configure.log",
+        workdir / "var/log/agent/serve.log",
+        workdir / "var/log/temboard-agent-auto-configure.log",
+        workdir / "var/log/temboard-agent/serve.log",
     ]
     copy_files(candidates, Path("tests/logs"))
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def agent_conf(agent_auto_configure, agent_env) -> ConfigParser:
     """
     Read configure temBoard agent configuration as a ConfigParser object.
     """
 
     config = ConfigParser()
-    config.read(agent_env['TEMBOARD_CONFIGFILE'])
+    config.read(agent_env["TEMBOARD_CONFIGFILE"])
     return config
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def agent_env(env, fqdn, workdir):
     """
     Generate environment for temBoard agent processes.
     """
 
-    dirname = 'temboard-agent' if 'CI' in os.environ else 'agent'
+    dirname = "temboard-agent" if "CI" in os.environ else "agent"
     return dict(
         env,
-        PGDATABASE='postgres',
-        PGHOST=str(workdir / 'run/postgresql'),
-        PGPASSWORD='S3cret_postgres',
-        PGPORT='55432',
-        PGUSER='postgres',
+        PGDATABASE="postgres",
+        PGHOST=str(workdir / "run/postgresql"),
+        PGPASSWORD="S3cret_postgres",
+        PGPORT="55432",
+        PGUSER="postgres",
         TEMBOARD_CONFIGFILE=str(
-            workdir / 'etc' / dirname / 'temboard-tests/temboard-agent.conf'
+            workdir / "etc" / dirname / "temboard-tests/temboard-agent.conf"
         ),
         TEMBOARD_HOSTNAME=fqdn,
-        TEMBOARD_LOGGING_LEVEL='DEBUG',
-        TEMBOARD_PORT='52345',
+        TEMBOARD_LOGGING_LEVEL="DEBUG",
+        TEMBOARD_PORT="52345",
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def agent_sharedir():
     """
     Search for agent share/ directory.
@@ -178,11 +173,11 @@ def agent_sharedir():
 
     candidates = [
         # rpm/deb
-        '/usr/share/temboard-agent',
+        "/usr/share/temboard-agent",
         # pip install
-        '/usr/local/share/temboard-agent',
+        "/usr/local/share/temboard-agent",
         # development
-        'agent/share/',
+        "agent/share/",
     ]
 
     for candidate in candidates:
@@ -191,7 +186,7 @@ def agent_sharedir():
             return Path(candidate)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def sudo_pguser(pguser, agent_env):
     """Return amoffat/sh command to eventually run commands as another user."""
     if pguser == getuser():
@@ -199,7 +194,9 @@ def sudo_pguser(pguser, agent_env):
         cmd = env_cmd
     else:
         cmd = sudo.bake(
-            non_interactive=True, set_home=True, preserve_env=True,
+            non_interactive=True,
+            set_home=True,
+            preserve_env=True,
             user=pguser,
             _in=None,
         )

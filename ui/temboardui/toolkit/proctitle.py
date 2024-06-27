@@ -51,7 +51,7 @@ class ProcTitleManager:
             # process. sys.argv does not contains the full argv.
             argv = get_argv_from_pythonapi()
             # Find process stack from /proc/self/maps.
-            with open('/proc/self/maps') as fo:
+            with open("/proc/self/maps") as fo:
                 start, length = find_stack_segment_from_maps(fo)
             argv, self.address = find_argv_in_stack(start, length, argv)
             self.size = carray_size(argv)
@@ -66,11 +66,11 @@ class ProcTitleManager:
 
         # cf. https://dali.bo/tYIql
         title = self.prefix + title
-        title = title.encode('utf-8')
+        title = title.encode("utf-8")
         # Truncate title to fit in argv memory segment.
-        title = title[:self.size - 1]
+        title = title[: self.size - 1]
         # Pad title with NULL bytes to fill the argv segment.
-        title = title.ljust(self.size, b'\0')
+        title = title.ljust(self.size, b"\0")
         # Overwrite argv segment with proc title
         src = ctypes.create_string_buffer(title)
         ctypes.memmove(self.address, src, self.size)
@@ -111,7 +111,7 @@ def find_argv_in_stack(start, length, argv, environ=os.environ):
     strings = reverse_find_nulstring(stackend, length)
     for address, string in strings:
         # Check if string is an entry from environ list.
-        name, _, _ = string.partition('=')
+        name, _, _ = string.partition("=")
         if name in environ:
             found_environ = True
             continue
@@ -124,7 +124,7 @@ def find_argv_in_stack(start, length, argv, environ=os.environ):
             if not remaining_argv:
                 # Ok we found all args!
                 return argv, address
-        elif remaining_argv[-1] == '__COMMAND_STRING__':
+        elif remaining_argv[-1] == "__COMMAND_STRING__":
             logger.debug("Actual command string: %r.", string)
             remaining_argv.pop()
             command_index = len(remaining_argv)
@@ -137,11 +137,11 @@ def find_stack_segment_from_maps(lines):
     # See proc(3) for a description of /proc/self/maps format.
     # [stack] is a pseudo path to initial stack segment.
     for line in lines:
-        if not line.endswith('[stack]\n'):
+        if not line.endswith("[stack]\n"):
             continue
         segment = line.split()
         address_range = segment[0]
-        start, end = address_range.split('-')
+        start, end = address_range.split("-")
         start = int(start, base=16)
         end = int(end, base=16)
         return start, end - start
@@ -152,13 +152,13 @@ def find_stack_segment_from_maps(lines):
 def compute_main_module_name(mod):
     # Fix __main__ module to find its importable name.
 
-    if mod.__name__ == '__main__':
-        dir_, file_ = mod.__file__.rsplit('/', 1)
-        name = file_.replace('.py', '')
+    if mod.__name__ == "__main__":
+        dir_, file_ = mod.__file__.rsplit("/", 1)
+        name = file_.replace(".py", "")
     else:
         name = mod.__name__
 
-    return mod.__package__ + '.' + name if mod.__package__ else name
+    return mod.__package__ + "." + name if mod.__package__ else name
 
 
 def fix_argv(argv):
@@ -177,23 +177,23 @@ def fix_argv(argv):
         if 0 == i:
             # Python interpreter. Skip it.
             continue
-        elif not arg.startswith('-'):
+        elif not arg.startswith("-"):
             # Python argument. Next argv items are scripts arguments. Stop now.
             break
-        elif '-' == arg:
+        elif "-" == arg:
             break
-        elif '-c' == arg:
+        elif "-c" == arg:
             if command_string:
                 # Found the second -c, replace it with a placeholder.
-                argv[i] = '__COMMAND_STRING__'
+                argv[i] = "__COMMAND_STRING__"
                 break
             else:
                 # Next -c will be a placeholder for actual python online passed
                 # as argument to Python
                 command_string = True
-        elif '-m' == arg and modname is None:
+        elif "-m" == arg and modname is None:
             # Restore main module name.
-            modname = compute_main_module_name(sys.modules['__main__'])
+            modname = compute_main_module_name(sys.modules["__main__"])
             # In PY3, -m module is replaced with -m -m.
             argv[i + 1] = modname
             break
@@ -203,13 +203,13 @@ def fix_argv(argv):
 
 def reverse_find_nulstring(address, limit=8192):
     # Search backward null-terminated strings.
-    string = ''
+    string = ""
     null = 0
     for addr, b in reverse_walk_memory(address, limit):
         if null == b:
             if string:
                 yield addr + 1, string
-            string = ''
+            string = ""
         else:
             string = chr(b) + string
 
@@ -236,25 +236,25 @@ def test_main():  # pragma: nocover
     # RET before failing.
 
     logging.basicConfig(level=logging.DEBUG)
-    setproctitle = ProcTitleManager(prefix='temboard-process: ')
+    setproctitle = ProcTitleManager(prefix="temboard-process: ")
     setproctitle.setup()
-    setproctitle('test process')
-    with open('/proc/self/cmdline') as fo:
+    setproctitle("test process")
+    with open("/proc/self/cmdline") as fo:
         cmdline = fo.read()
-    logger.debug('/proc/self/cmdline is %r', cmdline)
-    wanted = 'temboard-process: test process'
+    logger.debug("/proc/self/cmdline is %r", cmdline)
+    wanted = "temboard-process: test process"
     if wanted in cmdline:
         logger.info("PASS")
         return 0
 
-    if os.environ.get('WAIT'):
+    if os.environ.get("WAIT"):
         logger.debug("Process title should be %r", wanted)
-        print("Hit RET to terminate.", file=sys.stderr, end='')
+        print("Hit RET to terminate.", file=sys.stderr, end="")
         input()
 
     logger.error("FAIL")
     return 1
 
 
-if '__main__' == __name__:  # pragma: nocover
+if "__main__" == __name__:  # pragma: nocover
     os._exit(test_main())

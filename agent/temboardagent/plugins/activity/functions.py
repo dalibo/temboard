@@ -6,20 +6,20 @@ from .process import Process, memory_total_size
 
 
 columns = [
-    'pid',
-    'database',
-    'client',
-    'duration',
-    'wait',
-    'user',
-    'application_name',
-    'state',
-    'query',
-    'iow',
-    'read_s',
-    'write_s',
-    'cpu',
-    'memory'
+    "pid",
+    "database",
+    "client",
+    "duration",
+    "wait",
+    "user",
+    "application_name",
+    "state",
+    "query",
+    "iow",
+    "read_s",
+    "write_s",
+    "cpu",
+    "memory",
 ]
 logger = logging.getLogger(__name__)
 
@@ -100,17 +100,20 @@ ORDER BY
     backend_list = []
     for row in conn.query(query):
         try:
-            backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'client': row['client'],
-                'duration': row['duration'],
-                'wait': row['wait'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'state': row['state'],
-                'query': row['query'],
-                'process': Process(row['pid'], mem_total, page_size)})
+            backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "client": row["client"],
+                    "duration": row["duration"],
+                    "wait": row["wait"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "process": Process(row["pid"], mem_total, page_size),
+                }
+            )
         except Exception as e:
             logger.debug("Failed to process activity row: %s", e)
 
@@ -118,31 +121,30 @@ ORDER BY
     final_backend_list = []
     for row in backend_list:
         try:
-            (read_s, write_s) = row['process'].io_usage()
-            if row['duration'] < 0:
-                row['duration'] = 0
-            final_backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'client': row['client'],
-                'duration': row['duration'],
-                'wait': row['wait'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'state': row['state'],
-                'query': row['query'],
-                'iow': row['process'].iow,
-                'read_s': read_s,
-                'write_s': write_s,
-                'cpu': row['process'].cpu_usage(),
-                'memory': row['process'].mem_usage()
-            })
+            (read_s, write_s) = row["process"].io_usage()
+            if row["duration"] < 0:
+                row["duration"] = 0
+            final_backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "client": row["client"],
+                    "duration": row["duration"],
+                    "wait": row["wait"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "iow": row["process"].iow,
+                    "read_s": read_s,
+                    "write_s": write_s,
+                    "cpu": row["process"].cpu_usage(),
+                    "memory": row["process"].mem_usage(),
+                }
+            )
         except Exception as e:
             logger.debug("Failed to process activity row: %s", e)
-    return {
-        'rows': final_backend_list,
-        'columns': columns
-    }
+    return {"rows": final_backend_list, "columns": columns}
 
 
 def get_activity_waiting(conn, limit):
@@ -178,18 +180,21 @@ ORDER BY
     backend_list = []
     for row in conn.query(query):
         try:
-            backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'mode': row['mode'],
-                'type': row['type'],
-                'relation': row['relation'],
-                'duration': row['duration'],
-                'state': row['state'],
-                'query': row['query'],
-                'process': Process(row['pid'], mem_total, page_size)})
+            backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "mode": row["mode"],
+                    "type": row["type"],
+                    "relation": row["relation"],
+                    "duration": row["duration"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "process": Process(row["pid"], mem_total, page_size),
+                }
+            )
         except Exception:
             pass
 
@@ -197,32 +202,31 @@ ORDER BY
     final_backend_list = []
     for row in backend_list:
         try:
-            (read_s, write_s) = row['process'].io_usage()
-            if row['duration'] < 0:
-                row['duration'] = 0
-            final_backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'mode': row['mode'],
-                'type': row['type'],
-                'relation': row['relation'],
-                'duration': row['duration'],
-                'state': row['state'],
-                'query': row['query'],
-                'iow': row['process'].iow,
-                'read_s': read_s,
-                'write_s': write_s,
-                'cpu': row['process'].cpu_usage(),
-                'memory': row['process'].mem_usage()
-            })
+            (read_s, write_s) = row["process"].io_usage()
+            if row["duration"] < 0:
+                row["duration"] = 0
+            final_backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "mode": row["mode"],
+                    "type": row["type"],
+                    "relation": row["relation"],
+                    "duration": row["duration"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "iow": row["process"].iow,
+                    "read_s": read_s,
+                    "write_s": write_s,
+                    "cpu": row["process"].cpu_usage(),
+                    "memory": row["process"].mem_usage(),
+                }
+            )
         except Exception:
             pass
-    return {
-        'rows': final_backend_list,
-        'columns': columns
-    }
+    return {"rows": final_backend_list, "columns": columns}
 
 
 def get_activity_blocking(conn, limit):
@@ -295,18 +299,21 @@ ORDER BY duration DESC
     backend_list = []
     for row in conn.query(query):
         try:
-            backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'mode': row['mode'],
-                'type': row['type'],
-                'relation': row['relation'],
-                'duration': row['duration'],
-                'state': row['state'],
-                'query': row['query'],
-                'process': Process(row['pid'], mem_total, page_size)})
+            backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "mode": row["mode"],
+                    "type": row["type"],
+                    "relation": row["relation"],
+                    "duration": row["duration"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "process": Process(row["pid"], mem_total, page_size),
+                }
+            )
         except Exception:
             pass
 
@@ -314,29 +321,28 @@ ORDER BY duration DESC
     final_backend_list = []
     for row in backend_list:
         try:
-            (read_s, write_s) = row['process'].io_usage()
-            if row['duration'] < 0:
-                row['duration'] = 0
-            final_backend_list.append({
-                'pid': row['pid'],
-                'database': row['database'],
-                'user': row['user'],
-                'application_name': row['application_name'],
-                'mode': row['mode'],
-                'type': row['type'],
-                'relation': row['relation'],
-                'duration': row['duration'],
-                'state': row['state'],
-                'query': row['query'],
-                'iow': row['process'].iow,
-                'read_s': read_s,
-                'write_s': write_s,
-                'cpu': row['process'].cpu_usage(),
-                'memory': row['process'].mem_usage()
-            })
+            (read_s, write_s) = row["process"].io_usage()
+            if row["duration"] < 0:
+                row["duration"] = 0
+            final_backend_list.append(
+                {
+                    "pid": row["pid"],
+                    "database": row["database"],
+                    "user": row["user"],
+                    "application_name": row["application_name"],
+                    "mode": row["mode"],
+                    "type": row["type"],
+                    "relation": row["relation"],
+                    "duration": row["duration"],
+                    "state": row["state"],
+                    "query": row["query"],
+                    "iow": row["process"].iow,
+                    "read_s": read_s,
+                    "write_s": write_s,
+                    "cpu": row["process"].cpu_usage(),
+                    "memory": row["process"].mem_usage(),
+                }
+            )
         except Exception:
             pass
-    return {
-        'rows': final_backend_list,
-        'columns': columns
-    }
+    return {"rows": final_backend_list, "columns": columns}

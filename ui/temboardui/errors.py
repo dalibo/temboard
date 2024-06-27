@@ -1,5 +1,5 @@
 class CLIError(Exception):
-    """ CLI errors """
+    """CLI errors"""
 
     def __init__(self, message):
         Exception.__init__(self, message)

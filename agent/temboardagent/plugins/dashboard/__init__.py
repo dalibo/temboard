@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 
 
-@bottle.get('/')
+@bottle.get("/")
 def dashboard():
     return metrics.get_metrics_queue(default_app().temboard.config)
 
 
-@bottle.get('/config')
+@bottle.get("/config")
 def dashboard_config():
     app = default_app().temboard
     return dict(
@@ -31,7 +31,7 @@ def dashboard_config():
     )
 
 
-@bottle.get('/history')
+@bottle.get("/history")
 def dashboard_history():
     return metrics.get_history_metrics_queue(default_app().temboard.config)
 
@@ -43,15 +43,15 @@ def dashboard_collector_worker(app, pool=None):
     data = metrics.get_metrics(app, pool)
 
     # We don't want to store notifications in the history.
-    data.pop('notifications', None)
+    data.pop("notifications", None)
     logger.debug(logfmt.format(**data))
 
     db.add_metric(
         app.config.temboard.home,
-        'dashboard.db',
+        "dashboard.db",
         time.time(),
         data,
-        app.config.dashboard.history_length
+        app.config.dashboard.history_length,
     )
 
 
@@ -88,10 +88,10 @@ def dashboard_collector_batch_worker(app):
 
 class DashboardPlugin:
     PG_MIN_VERSION = (90400, 9.4)
-    s = 'dashboard'
+    s = "dashboard"
     option_specs = [
-        OptionSpec(s, 'scheduler_interval', default=2, validator=int),
-        OptionSpec(s, 'history_length', default=150, validator=int),
+        OptionSpec(s, "scheduler_interval", default=2, validator=int),
+        OptionSpec(s, "history_length", default=150, validator=int),
     ]
     del s
 
@@ -100,13 +100,12 @@ class DashboardPlugin:
         self.app.config.add_specs(self.option_specs)
 
     def bootstrap(self):
-        db.bootstrap(self.app.config.temboard.home, 'dashboard.db')
+        db.bootstrap(self.app.config.temboard.home, "dashboard.db")
 
     def load(self):
-        default_app().mount('/dashboard', bottle)
+        default_app().mount("/dashboard", bottle)
         self.app.worker_pool.add(workers)
-        workers.schedule(
-            id='dashboard_collector_batch',
-            redo_interval=BATCH_DURATION,
-        )(dashboard_collector_batch_worker)
+        workers.schedule(id="dashboard_collector_batch", redo_interval=BATCH_DURATION)(
+            dashboard_collector_batch_worker
+        )
         self.app.scheduler.add(workers)

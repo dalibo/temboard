@@ -12,7 +12,7 @@ from ..toolkit.queries import QueryFiler
 Session = sessionmaker(expire_on_commit=False)
 logger = logging.getLogger(__name__)
 # named queries, loaded with QUERIES.load() by temboardui.__main__.
-QUERIES = QueryFiler(__path__[0] + '/queries')
+QUERIES = QueryFiler(__path__[0] + "/queries")
 
 
 def format_dsn(dsn):
@@ -25,7 +25,7 @@ def format_dsn(dsn):
 
 
 def configure(dsn, **kwargs):
-    if hasattr(dsn, 'items'):
+    if hasattr(dsn, "items"):
         dsn = format_dsn(dsn)
 
     try:
@@ -49,7 +49,7 @@ def check_connectivity(engine):
             conn = engine.pool._invoke_creator()
             with conn.cursor() as cur:
                 cur.execute("SELECT version();")
-                pgversion, = cur.fetchone()
+                (pgversion,) = cur.fetchone()
                 logger.debug("Using PostgreSQL %s.", pgversion)
             conn.close()
             break
@@ -60,8 +60,8 @@ def check_connectivity(engine):
             logger.info("Retrying in %ss.", i)
             sleep(i)
 
-    server, pgversion, _ = pgversion.split(' ', 2)
-    if '.' not in pgversion and sa_version < '1.2':
+    server, pgversion, _ = pgversion.split(" ", 2)
+    if "." not in pgversion and sa_version < "1.2":
         msg = "SQLAlchemy 1.1 does not support version %s."
         raise Exception(msg % pgversion)
 
@@ -74,7 +74,7 @@ def worker_engine(dbconf):
 
 
 def check_schema():
-    engine = Session.kw['bind']
+    engine = Session.kw["bind"]
     check_connectivity(engine)
     migrator = Migrator()
     migrator.inspect_available_versions()
