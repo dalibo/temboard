@@ -452,9 +452,7 @@ class SchedulerService(syncio.Service):
 
     # interface for services.run
     def setup(self):
-        if os.path.exists(self.scheduler.address):
-            os.unlink(self.scheduler.address)
-
+        self.teardown()
         self.scheduler.setup()
         if self.perf:
             self.perf.run()
@@ -473,6 +471,10 @@ class SchedulerService(syncio.Service):
             self.scheduler.event_queue = self.event_queue
             self.scheduler.task_list_engine = self.task_list_engine
             self.scheduler.setup_task_list()
+
+    def teardown(self):
+        if os.path.exists(self.address):
+            os.unlink(self.address)
 
     def add(self, workerset):
         for task in workerset.list_tasks():
