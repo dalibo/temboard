@@ -4,8 +4,6 @@
 
 {% block head %}
 {% for link in vitejs.css_links_for('settings.users.js') %}{% raw link %}{% end %}
-<!-- DataTables CSS -->
-<link href="/js/datatables/datatables.min.css" rel="stylesheet">
 {% end %}
 
 {% block content %}
@@ -79,14 +77,5 @@
   </div>
 </div>
 
-<script src="/js/datatables/datatables.min.js"></script>
 <script type="module" src="{{ vitejs.url_for('settings.users.js') }}"></script>
-
-<script>
-  $(document).ready(function () {
-    $('#tableUsers').DataTable({
-      stateSave: true
-    });
-  });
-</script>
 {% end %}
