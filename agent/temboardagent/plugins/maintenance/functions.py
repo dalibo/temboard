@@ -1,6 +1,5 @@
 import hashlib
 import logging
-import os
 from datetime import datetime, timedelta
 
 from bottle import HTTPError
@@ -644,7 +643,7 @@ def list_scheduled_operation(app, operation_type, **kwargs):
     try:
         # Ask it to the task manager
         tasks = taskmanager.TaskManager.send_message(
-            str(os.path.join(app.config.temboard.home, ".tm.socket")),
+            app.scheduler.address,
             taskmanager.Message(taskmanager.MSG_TYPE_TASK_LIST, ""),
             authkey=None,
         )
@@ -789,7 +788,7 @@ def cancel_scheduled_operation(id, app):
     try:
         # Ask it to the task manager
         taskmanager.TaskManager.send_message(
-            str(os.path.join(app.config.temboard.home, ".tm.socket")),
+            app.scheduler.address,
             taskmanager.Message(taskmanager.MSG_TYPE_TASK_CANCEL, dict(task_id=id)),
             authkey=None,
         )

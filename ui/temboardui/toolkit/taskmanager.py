@@ -446,6 +446,10 @@ class SchedulerService(syncio.Service):
         # For services.run
         self.perf = PerfCounters.setup(service=self.name)
 
+    @property
+    def address(self):
+        return os.path.join(self.app.config.temboard.home, ".tm.socket")
+
     # interface for services.run
     def setup(self):
         if os.path.exists(self.scheduler.address):
@@ -464,10 +468,7 @@ class SchedulerService(syncio.Service):
         # Setup scheduler as soon as configuration is loaded, before
         # plugins, so that tasklist is created before plugins.
         if not self.scheduler:
-            self.scheduler = Scheduler(
-                address=os.path.join(self.app.config.temboard.home, ".tm.socket"),
-                authkey=None,
-            )
+            self.scheduler = Scheduler(address=self.address, authkey=None)
             self.scheduler.task_queue = self.task_queue
             self.scheduler.event_queue = self.event_queue
             self.scheduler.task_list_engine = self.task_list_engine
