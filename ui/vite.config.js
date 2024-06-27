@@ -35,6 +35,7 @@ export default defineConfig({
       input: {
         "alerting.check": "/alerting.check.js",
         "alerting.checks": "/alerting.checks.js",
+        "instance.about": "/instance.about.js",
         "maintenance.database": "/maintenance.database.js",
         "maintenance.schema": "/maintenance.schema.js",
         "maintenance.table": "/maintenance.table.js",

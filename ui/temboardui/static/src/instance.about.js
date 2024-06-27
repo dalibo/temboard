@@ -1,10 +1,9 @@
-import Vue from "vue";
+import { createApp } from "vue";
 
 import InstanceAbout from "./views/InstanceAbout.vue";
 
-new Vue({
-  el: "#app",
+createApp({
   components: {
     InstanceAbout: InstanceAbout,
   },
-});
+}).mount("#app");
