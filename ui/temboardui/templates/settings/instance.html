@@ -4,8 +4,6 @@
 
 {% block head %}
 {% for link in vitejs.css_links_for('settings.instance.js') %}{% raw link %}{% end %}
-<!-- Multiselect -->
-<link href="/css/bootstrap-multiselect.css" rel="stylesheet">
 {% end %}
 
 {% block content %}
@@ -109,6 +107,5 @@
   </div>
 </div>
 
-<script src="/js/bootstrap-multiselect.js"></script>
 <script type="module" src="{{ vitejs.url_for('settings.instance.js') }}"></script>
 {% end %}

@@ -63,13 +63,6 @@ const plugins = computed(() => {
 
 onUpdated(() => {
   $('[data-toggle="tooltip"]', root.value.$el).tooltip();
-  if ("register" === state.wizard_step && plugins && !$("#selectGroups").data("multiselect")) {
-    nextTick(formCmp.value.setup_multiselects);
-  }
-  if ("register" === state.wizard_step && $("#selectGroups").data("multiselect")) {
-    $("#selectGroups").multiselect(waiting.value ? "disable" : "enable");
-    $("#selectPlugins").multiselect(waiting.value ? "disable" : "enable");
-  }
 });
 
 function discover() {
@@ -150,9 +143,6 @@ function register(data) {
 
 function reset() {
   Object.assign(state, initialState);
-  if (formCmp.value) {
-    formCmp.value.teardown_multiselects();
-  }
 }
 </script>
 
