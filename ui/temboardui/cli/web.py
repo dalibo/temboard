@@ -1,4 +1,5 @@
 from ..model import check_schema
+from ..toolkit import services
 from ..toolkit.app import SubCommand
 from .app import app
 
@@ -12,7 +13,9 @@ class web(SubCommand):
 
     """
 
+    is_service = True
+
     def main(self, args):
         check_schema()
         self.app.config.load_signing_key()
-        self.app.webservice.run()
+        services.run(self.app.webservice)

@@ -1,12 +1,12 @@
 from ..model import check_schema
+from ..toolkit import services
 from ..toolkit.app import SubCommand
-from ..toolkit.services import ServicesManager
 from .app import app
 
 
 @app.command
 class Serve(SubCommand):
-    """Combined web server and worker processes."""
+    """Combined web server and background workers."""
 
     is_service = True
 
@@ -14,10 +14,4 @@ class Serve(SubCommand):
         check_schema()
         self.app.config.load_signing_key()
 
-        # Enable background services with web as main process.
-        self.app.webservice.services = services = ServicesManager()
-        services.add(self.app.worker_pool)
-        services.add(self.app.scheduler)
-
-        with self.app.webservice.services:
-            self.app.webservice.run()
+        services.run(self.app.webservice, self.app.scheduler, self.app.worker_pool)

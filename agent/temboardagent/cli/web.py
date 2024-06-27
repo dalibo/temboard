@@ -1,3 +1,4 @@
+from ..toolkit import services
 from ..toolkit.app import SubCommand
 from .app import app
 
@@ -12,6 +13,4 @@ class Web(SubCommand):
     """
 
     def main(self, args):
-        self.app.httpd.run()
-
-        return 0
+        return services.run(self.app.httpd)

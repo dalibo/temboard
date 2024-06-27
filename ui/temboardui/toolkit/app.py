@@ -309,7 +309,7 @@ class BaseApplication:
             logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
-            logger.info("Terminated.")
+            logger.info("Interrupted.")
         except bdb.BdbQuit:
             logger.info("Graceful exit from debugger.")
         except UserError as e:

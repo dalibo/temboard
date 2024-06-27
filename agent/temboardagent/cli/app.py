@@ -17,12 +17,11 @@ from ..notification import NotificationMgmt
 from ..postgres import Postgres
 from ..queries import QUERIES
 from ..status import Status
-from ..toolkit import taskmanager
+from ..toolkit import proctitle, taskmanager
 from ..toolkit import validators as v
 from ..toolkit.app import BaseApplication, define_core_arguments
 from ..toolkit.configuration import MergedConfiguration, OptionSpec
 from ..toolkit.errors import UserError
-from ..toolkit.proctitle import ProcTitleManager
 from ..toolkit.signing import load_public_key
 from ..toolkit.tasklist.sqlite3_engine import TaskListSQLite3Engine
 from ..version import __version__
@@ -70,31 +69,21 @@ class TemboardAgentApplication(BaseApplication):
         command_name = getattr(args, "command_fullname", "serve")
         command = self.commands[command_name]
 
-        setproctitle = ProcTitleManager(prefix="temboard-agent: ")
+        self.httpd = HTTPDService(self)
 
         task_queue = taskmanager.Queue()
         event_queue = taskmanager.Queue()
 
         self.worker_pool = taskmanager.WorkerPoolService(
-            app=self,
-            setproctitle=setproctitle,
-            name="worker pool",
-            task_queue=task_queue,
-            event_queue=event_queue,
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.services.append(self.worker_pool)
         self.worker_pool.add(workers)
 
         self.scheduler = taskmanager.SchedulerService(
-            app=self,
-            setproctitle=setproctitle,
-            name="scheduler",
-            task_queue=task_queue,
-            event_queue=event_queue,
+            app=self, task_queue=task_queue, event_queue=event_queue
         )
         self.services.append(self.scheduler)
-
-        self.httpd = HTTPDService(self, setproctitle=setproctitle, name="web")
 
         self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()
@@ -114,14 +103,14 @@ class TemboardAgentApplication(BaseApplication):
         if self.debug and hupper and command.is_service:
             self.setup_autoreload()
 
-        setproctitle.setup()
-
         if "." not in self.config.temboard.hostname:
             logger.warning("Hostname %s is not a FQDN.", self.config.temboard.hostname)
 
+        procprefix = "%s: " % self.PROGRAM
         cluster_name = self.discover.data["postgres"].get("cluster_name")
         if cluster_name:
-            setproctitle.prefix += cluster_name + ": "
+            procprefix += cluster_name + ": "
+        proctitle.init(procprefix)
 
         QUERIES.load(self.discover.data["postgres"].get("version_num"))
 

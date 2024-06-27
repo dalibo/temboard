@@ -142,9 +142,9 @@ def test_find_argv_in_stack_command_string(mocker):
 
 def test_set_proc_title(mocker):
     memmove = mocker.patch("temboardui.toolkit.proctitle.ctypes.memmove", autospec=True)
-    from temboardui.toolkit.proctitle import ProcTitleManager
+    from temboardui.toolkit.proctitle import ProcTitleSetter
 
-    setproctitle = ProcTitleManager(prefix="prefix: ")
+    setproctitle = ProcTitleSetter(prefix="prefix: ")
     title = setproctitle("not initialized")
     assert title is None
 
