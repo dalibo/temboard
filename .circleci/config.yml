@@ -14,8 +14,6 @@ workflows:
         filters: &enable-for-tags
           tags:
             only: '/v.+/'
-    - doc:
-        name: stage0-doc
     - lint-python:
         name: stage0-lint-python
     - lint-js:
@@ -141,30 +139,6 @@ jobs:
         - agent/dist/*.whl
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
-
-  doc:
-    docker: [{image: "python:3.7"}]
-    working_directory: *working_directory
-    steps:
-    - checkout
-    - run:
-        name: Install mkdocs and extensions
-        command: |
-          pip install --upgrade --requirement docs/requirements.txt
-    - run:
-        name: Build documentation with mkdocs
-        command: |
-          mkdocs build --strict
-    - run:
-        name: Extract release notes
-        command: |
-          mkdir -p build
-          make -s release-notes > build/RELEASE-NOTES.md
-    - store_artifacts:
-        path: build/RELEASE-NOTES.md
-    - store_artifacts:
-        path: README.html
-        destination: build/README.html
 
   lint-python:
     docker: [image: python:3.9]
