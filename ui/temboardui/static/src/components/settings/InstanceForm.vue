@@ -34,39 +34,7 @@ watch(
 
 onUpdated(() => {
   $('[data-toggle="tooltip"]', root.value.$el).tooltip();
-  if ($("#selectGroups").data("multiselect")) {
-    $("#selectGroups").multiselect(props.waiting ? "disable" : "enable");
-    $("#selectPlugins").multiselect(props.waiting ? "disable" : "enable");
-  }
 });
-
-function setup_multiselects() {
-  // jQuery multiselect plugin must be called once Vue template is rendered.
-  const options = {
-    templates: {
-      button: `
-            <button type="button"
-                    class="multiselect dropdown-toggle border-secondary"
-                    data-toggle="dropdown">
-              <span class="multiselect-selected-text"></span> <b class="caret"></b>
-            </button>
-            `,
-      li: `
-            <li class="dropdown-item">
-              <label class="w-100"></label>
-            </li>
-            `,
-    },
-    numberDisplayed: 1,
-  };
-  $("#selectGroups").multiselect(options);
-  $("#selectPlugins").multiselect(options);
-}
-
-function teardown_multiselects() {
-  $("#selectGroups").multiselect("destroy");
-  $("#selectPlugins").multiselect("destroy");
-}
 
 function submit() {
   // data generates payload for both POST /json/settings/instances and POST
@@ -82,7 +50,6 @@ function submit() {
 }
 
 const emit = defineEmits(["submit"]);
-defineExpose({ setup_multiselects, teardown_multiselects });
 </script>
 
 <template>

@@ -59,10 +59,6 @@ const groups = computed(() => {
 
 onUpdated(() => {
   $('[data-toggle="tooltip"]', root.value.$el).tooltip();
-  if ($("#selectGroups").data("multiselect")) {
-    $("#selectGroups").multiselect(waiting.value ? "disable" : "enable");
-    $("#selectPlugins").multiselect(waiting.value ? "disable" : "enable");
-  }
 });
 
 function discover_agent() {
@@ -117,7 +113,6 @@ function open(address, port) {
   fetch_current_data().done(() => {
     // Discover may fail if agent is down.
     discover_agent().complete(() => {
-      nextTick(formCmp.value.setup_multiselects);
       waiting.value = false;
     });
   });
@@ -171,7 +166,6 @@ function update(data) {
 
 function reset() {
   Object.assign(form, initialForm);
-  formCmp.value.teardown_multiselects();
 }
 
 defineExpose({ open });

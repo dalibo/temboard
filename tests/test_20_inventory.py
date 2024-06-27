@@ -51,8 +51,10 @@ def test_edit_instance(registered_agent, browser, ui_url):
     browser.select("#inputNotify").click()
     comment = browser.select("#inputComment").get_attribute("value")
     assert "Registered by tests." == comment
-    group = browser.select("#divGroups .multiselect-selected-text").text
-    assert group == "default"
+    default_selected = browser.select(
+        "#selectGroups option[value='default']"
+    ).get_attribute("selected")
+    assert default_selected == "true"
     browser.select("#buttonSubmit").click()
 
 
