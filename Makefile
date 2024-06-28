@@ -163,7 +163,7 @@ release:  #: Tag and push a new git release.
 release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
 
-dist:  #: Build sources and wheels.
+dist:  ui/build/bin/prometheus  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel --universal

@@ -126,10 +126,31 @@ generate_configuration() {
 
 	[monitoring]
 	# purge_after = 730
+	prometheus = $(find_prometheus)
 
 	[statements]
 	# purge_after = 7
 	EOF
+}
+
+find_prometheus() {
+	local bin
+	bin=/usr/lib/temboard/prometheus
+	if [ -x "$bin" ] ; then
+		echo "$bin"
+		return
+	fi
+	if bin="$(type -p prometheus)" ; then
+		echo "$bin"
+		return
+	fi
+	# .../temboard/workdir/etc/ui/...
+	bin="$ETCDIR/../../../ui/build/prometheus"
+	if [ -x "$bin" ] ; then
+		echo "$bin"
+		return
+	fi
+	return 1
 }
 
 pwgen() {

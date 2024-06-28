@@ -2,6 +2,8 @@
 %global confdir %{_sysconfdir}/%{pkgname}
 
 %global __python /usr/bin/python3
+# Workaround for embedding official Prometheus binary.
+%global _missing_build_ids_terminate_build 0
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 
@@ -14,7 +16,7 @@ Group:         Applications/Databases
 License:       PostgreSQL
 URL:           https://labs.dalibo.com/temboard/
 Source0:       %{pkgname}-%{version}.tar.gz
-BuildArch:     noarch
+Source1:       prometheus
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: python3-rpm-macros
 BuildRequires: python3-setuptools
@@ -47,6 +49,10 @@ This packages holds the web user interface.
 
 %install
 %{__python} setup.py install --root=%{buildroot}
+# Install prometheus binaries in /usr/lib/temboard
+%{__install} -m 755 -d %{buildroot}/usr/lib/temboard
+%{__install} -m 755 %{SOURCE1} %{buildroot}/usr/lib/temboard/prometheus
+
 # config file
 %{__install} -d -m 755 %{buildroot}/%{_sysconfdir}
 %{__install} -d -m 750 %{buildroot}/%{confdir}
@@ -56,6 +62,7 @@ This packages holds the web user interface.
 /usr/share/temboard/*
 /usr/bin/temboard
 %{_unitdir}/temboard.service
+/usr/lib/temboard/*
 
 %post
 /usr/share/temboard/postinst.sh "$@"
@@ -72,6 +79,7 @@ if ! [ -v SMOKETEST ] ; then
 fi
 temboard --version
 test -f /usr/lib/python*/site-packages/temboardui/static/dist/.vite/manifest.json
+test -x /usr/lib/temboard/prometheus
 
 %changelog
 * Fri Oct 14 2022 Dalibo Labs <contact@dalibo.com> - 8.0-1

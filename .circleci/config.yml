@@ -124,6 +124,10 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
+    - restore_cache:
+        keys:
+          - temboard-{{ .Branch }}
+          - temboard-master
     - run:
         name: Build Agent & UI
         command: |
@@ -139,6 +143,10 @@ jobs:
         - agent/dist/*.whl
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
+        - ui/build/bin/prometheus
+    - save_cache:
+        key: temboard-{{ .Branch }}
+        paths: ["dev/downloads/"]
 
   lint-python:
     docker: [image: python:3.9]
@@ -265,8 +273,8 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - agent/dist/*.noarch.rpm
-        - ui/dist/*.noarch.rpm
+        - agent/dist/temboard-agent-*.noarch.rpm
+        - ui/dist/temboard-*.rpm
 
   deb:
     parameters:
