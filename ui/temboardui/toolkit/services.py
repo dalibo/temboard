@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 def run(main, *backgrounds):
-    """Execute a main service object function in this process.
+    """Run a main service object function in this process.
 
     Handle signals for INT, TERM, HUP, CHLD and ALRM.
     Handle background services.
@@ -77,6 +77,25 @@ def run(main, *backgrounds):
     return 0
 
 
+def execute(service):
+    """Execute an external command in this process.
+
+    Replace current Python program by a service.command.
+    Does not return. service.command continues process life.
+    """
+
+    if hasattr(service, "setup"):
+        service.setup()
+
+    # Close all files except stdin, stdout, stderr.
+    for fd in range(3, os.sysconf("SC_OPEN_MAX")):
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+    os.execvp(service.command[0], service.command)
+
+
 class LoopStopper:
     def __init__(self, loop):
         self.loop = loop
@@ -106,9 +125,20 @@ class BackgroundManager:
     def add(self, service):
         self.services[str(service)] = service
 
+    def __bool__(self):
+        return bool(self.services)
+
     def __enter__(self):
         if not self.services:
             return
+
+        self._read_pids()
+
+        if self.pids:
+            logger.debug("Cleaning previous background services.")
+            self.kill()
+            if self.wait():
+                raise Exception("Background services are still alive.")
         self.start()
 
     def __exit__(self, *a):
@@ -128,11 +158,40 @@ class BackgroundManager:
         pid = os.fork()
         if pid:  # Parent process
             logger.debug("Background service started. service=%s pid=%d", service, pid)
-            self.pids[str(service)] = pid
+            self._save_pid(service, pid)
             return pid
 
         # Child process
-        os._exit(run(service))
+        if hasattr(service, "command"):
+            execute(service)
+        else:
+            os._exit(run(service))
+
+    def _read_pids(self):
+        for name, service in self.services.items():
+            if not hasattr(service, "pidfile"):
+                continue
+            if not os.path.exists(service.pidfile):
+                continue
+            with open(service.pidfile) as fo:
+                self.pids[name] = int(fo.read().strip())
+                logger.debug(
+                    "Read pid from pidfile. service=%s pid=%d", name, self.pids[name]
+                )
+
+    def _save_pid(self, service, pid):
+        self.pids[str(service)] = pid
+        if hasattr(service, "pidfile"):
+            with open(service.pidfile, "w") as fo:
+                fo.write(str(pid))
+
+    def _drop_pid(self, name):
+        del self.pids[name]
+        s = self.services[name]
+        if not hasattr(s, "pidfile"):
+            return
+        if os.path.exists(s.pidfile):
+            os.unlink(s.pidfile)
 
     def stop(self):
         self.stopping = True
@@ -156,9 +215,9 @@ class BackgroundManager:
                 try:
                     pid, status = os.waitpid(-1, os.WNOHANG)
                 except ChildProcessError:
-                    break
+                    pass
                 if pid:
-                    del self.pids[name]
+                    self._drop_pid(name)
 
             time.sleep(step)
             timeout -= step
@@ -191,11 +250,9 @@ class BackgroundManager:
                 pass
 
             logger.warning(
-                "Background service dead. Restarting. service=%s pid=%s",
-                name,
-                self.pids[name],
+                "Background service dead. Restarting. service=%s pid=%s", name, pid
             )
-            del self.pids[name]
+            self._drop_pid(name)
 
         self.start()
 
