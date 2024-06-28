@@ -68,10 +68,7 @@ def run(main, *backgrounds):
             bg.add(service)
         sgm.register(bg)
 
-    if getattr(main, "perf", None):
-        sgm.register(main.perf)
-
-    main.setup()
+    main.setup(sgm, bg)
     with sgm, bg:
         logger.debug("Entering %s loop.", main)
         loop.start()

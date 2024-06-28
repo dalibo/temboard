@@ -22,7 +22,7 @@ class HTTPDService(syncio.Service):
         return self.name
 
     # for services.run
-    def setup(self):
+    def setup(self, *_, **__):
         ServerHandler.server_software = "temBoard-agent/%s" % __version__
 
         try:

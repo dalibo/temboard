@@ -270,7 +270,6 @@ class TornadoService:
         self.app = app
         # Ref to services.BackgroundManager
         self.background = None
-        # For services.run()
         self.perf = perf.PerfCounters.setup(service=self.name)
 
     def __str__(self):
@@ -280,8 +279,10 @@ class TornadoService:
     def create_loop(self):
         return tornado.ioloop.IOLoop.instance()
 
-    def setup(self):
+    def setup(self, sgm, bg):
+        self.background = bg
         if self.perf:
+            sgm.register(self.perf)
             self.perf.run()
 
         flask_app.vitejs.read_manifest()
@@ -347,9 +348,10 @@ class TornadoService:
             autoreload.watch(path)
 
     def _autoreload_hook(self):
-        if self.background:
-            logger.debug("Stopping background service before reloading.")
-            self.background.stop()
+        if not self.background:
+            return
+        logger.debug("Stopping background service before reloading.")
+        self.background.stop()
 
     def _iter_template_files(self):
         rootpkg = __import__(__name__)
