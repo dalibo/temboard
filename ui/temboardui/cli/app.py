@@ -317,19 +317,20 @@ class TornadoService:
             logger.error("FATAL: " + str(e) + ". Quit")
             sys.exit(3)
 
+        # Automatically reload modified modules (from Tornado's
+        # Application.__init__). This code must be done here *after*
+        # daemonize, because it instanciates ioloop for current PID.
+        if self.app.tornado_app.settings.get("autoreload"):
+            self._setup_autoreload()
+            logger.info("Enabling Tornado's autoreload.")
+            autoreload.start()
+
         logger.info(
             "Serving temboardui on http%s://%s:%d",
             "s" if self.app.config.temboard.ssl_cert_file else "",
             self.app.config.temboard.address,
             self.app.config.temboard.port,
         )
-
-        # Automatically reload modified modules (from Tornado's
-        # Application.__init__). This code must be done here *after*
-        # daemonize, because it instanciates ioloop for current PID.
-        if self.app.tornado_app.settings.get("autoreload"):
-            self._setup_autoreload()
-            autoreload.start()
 
     def _setup_autoreload(self):
         autoreload.add_reload_hook(self._autoreload_hook)
