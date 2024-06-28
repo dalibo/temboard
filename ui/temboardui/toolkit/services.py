@@ -61,17 +61,13 @@ def run(main, *backgrounds):
     sgm.register(LoopStopper(loop))
     sgm.register(main)
 
-    # for tornado autoreload. See TornadoService._autoreload_hook.
-    main.background = bg = BackgroundManager(loop)
+    bg = BackgroundManager(loop)
     if backgrounds:
         for service in backgrounds:
             bg.add(service)
         sgm.register(bg)
 
-    if getattr(main, "perf", None):
-        sgm.register(main.perf)
-
-    main.setup()
+    main.setup(sgm, bg)
     with sgm, bg:
         logger.debug("Entering %s loop.", main)
         loop.start()
