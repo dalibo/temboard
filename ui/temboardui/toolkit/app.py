@@ -89,9 +89,10 @@ class BaseApplication:
             self.config.temboard["configfile"] = configfile
             self.read_file(parser, configfile)
             self.read_dir(parser, configfile + ".d")
-            self.config_sources.update(
-                dict(parser=parser, pwd=os.path.dirname(configfile))
-            )
+            pwd = os.path.dirname(configfile)
+            if pwd.endswith(".config"):
+                pwd = os.path.dirname(pwd)
+            self.config_sources.update(dict(parser=parser, pwd=pwd))
 
         # Stage 3: Add core and app specific options and load them.
         config.add_specs(self.config_specs.values())
@@ -214,6 +215,7 @@ class BaseApplication:
         if configfile is None:
             for configfile in self.DEFAULT_CONFIGFILES:
                 configfile = os.path.abspath(configfile)
+                logger.debug("trying %s.", configfile)
                 if os.path.exists(configfile):
                     break
             else:

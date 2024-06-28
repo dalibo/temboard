@@ -35,7 +35,11 @@ class TemboardApplication(BaseApplication):
     PROGRAM = "temboard"
     VERSION = __version__
 
-    DEFAULT_CONFIGFILES = ["/etc/temboard/temboard.conf", "temboard.conf"]
+    DEFAULT_CONFIGFILES = [
+        "/etc/temboard/temboard.conf",
+        "temboard.conf",
+        ".config/temboard.conf",
+    ]
     DEFAULT_PLUGINS = [
         "activity",
         "dashboard",
