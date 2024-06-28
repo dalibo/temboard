@@ -215,8 +215,6 @@ class SignalMultiplexer:
         self.handlers = {}
         if hasattr(loop, "asyncio_loop"):
             loop = loop.asyncio_loop
-        if not hasattr(loop, "add_signal_handler"):
-            loop = Tornado45LoopCompat(loop)
         self.loop = loop
 
     def register(self, handler):
@@ -243,17 +241,3 @@ class SignalMultiplexer:
     def _handle(self, sig, stack_frame=None):
         for handler in self.handlers.get(sig, []):
             handler(sig, stack_frame)
-
-
-class Tornado45LoopCompat:
-    def __init__(self, loop):
-        self.loop = loop
-
-    def add_signal_handler(self, sig, handler, *_):
-        signal.signal(sig, handler)
-
-    def remove_signal_handler(self, sig, *_):
-        signal.signal(sig, signal.SIG_DFL)
-
-    def __getattr__(self, name):
-        return getattr(self.loop, name)
