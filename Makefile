@@ -69,7 +69,7 @@ ui/build/bin/prometheus ui/build/bin/promtool: dev/downloads/prometheus-$(PROMET
 clean:  #: Trash venv and containers.
 	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
-	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -rf dev/venv-py* .venv-py* dev/build/
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
@@ -127,10 +127,6 @@ tests:  #: Execute all tests.
 
 clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
-
-prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
-dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
-	$^ > $@
 
 VERSION=$(shell cd ui; python3 setup.py --version)
 BRANCH?=master
