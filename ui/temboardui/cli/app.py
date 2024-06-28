@@ -1,5 +1,6 @@
 import logging.config
 import os
+import shutil
 import sys
 from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
@@ -132,7 +133,7 @@ class TemboardApplication(BaseApplication):
         self.tornado_app.engine = configure_db_session(self.config.repository)
 
     def log_versions(self):
-        versions = inspect_versions()
+        versions = inspect_versions(prometheusbin=self.config.monitoring.prometheus)
         logger.debug("Running on %s %s.", versions["distname"], versions["distversion"])
         logger.debug(
             "Using Python %s (%s) and Tornado %s .",
@@ -146,6 +147,7 @@ class TemboardApplication(BaseApplication):
             versions["psycopg2"],
             versions["sqlalchemy"],
         )
+        logger.debug("Using Prometheus %s.", versions["prometheus"])
 
 
 class TemboardUIConfiguration(MergedConfiguration):
@@ -438,6 +440,8 @@ def list_options_specs():
 
     s = "monitoring"
     yield OptionSpec(s, "purge_after", default=730, validator=v.nday)
+    prometheus = shutil.which("prometheus")
+    yield OptionSpec(s, "prometheus", default=prometheus, validator=v.file_)
 
     s = "statements"
     yield OptionSpec(s, "purge_after", default=7, validator=v.nday)

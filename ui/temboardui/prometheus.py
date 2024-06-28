@@ -6,7 +6,9 @@
 import glob
 import logging
 import os
+import re
 import signal
+import subprocess
 import time
 from datetime import datetime, timedelta
 
@@ -126,6 +128,32 @@ class Manager(syncio.Service):
         self.configuration_expiry = datetime.utcnow() + timedelta(minutes=5)
         if hasattr(self, "background"):
             self.background.kill(signal.SIGHUP)
+
+
+def find(binpath=None):
+    candidates = [
+        binpath,
+        # Package path.
+        "/usr/lib/temboard/prometheus",
+        # Development path for CI.
+        "ui/build/bin/prometheus",
+    ]
+    for binpath in candidates:
+        if not binpath:
+            continue
+        if os.path.exists(binpath):
+            return binpath
+
+
+def version(binpath):
+    if not binpath:
+        return "n/a"
+    out = subprocess.run([binpath, "--version"], stdout=subprocess.PIPE, check=True)
+    m = re.search(r"version (\d+\.\d+\.\d+)", out.stdout.decode())
+    if not m:
+        logger.warning("Failed to parse Prometheus version from %s", out.stdout)
+        return "n/a"
+    return m.group(1)
 
 
 class Provisionner:

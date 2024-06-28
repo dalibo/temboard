@@ -33,7 +33,6 @@
 
 import logging
 import os
-import pathlib
 import signal
 import time
 
