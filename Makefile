@@ -14,7 +14,7 @@ develop: develop-3.6  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile .git-blame-ignore-revs
-	if [ -d ~/.config/lnav/formats ] ; then ln -fsv $$PWD/dev/lnav/formats/ ~/.config/lnav/formats/temboard ; fi
+	if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $$PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
 	$(MAKE) -j 2 install-$* dev/bin/prometheus
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
