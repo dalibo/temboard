@@ -56,7 +56,7 @@ install-%: venv-%
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
 # LTS
-PROMETHEUS_VERSION=2.45.1
+PROMETHEUS_VERSION=2.53.0
 dev/downloads/prometheus-%.linux-amd64.tar.gz:
 	mkdir -p $(dir $@)
 	curl --fail --silent -L "https://github.com/prometheus/prometheus/releases/download/v$*/$(notdir $@)" --output $@
