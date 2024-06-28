@@ -445,7 +445,7 @@ def list_options_specs():
 
     s = "monitoring"
     yield OptionSpec(s, "purge_after", default=730, validator=v.nday)
-    prometheus = shutil.which("prometheus")
+    prometheus = shutil.which("prometheus") or OptionSpec.REQUIRED
     yield OptionSpec(s, "prometheus", default=prometheus, validator=v.file_)
 
     s = "statements"
