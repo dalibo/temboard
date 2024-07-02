@@ -1,9 +1,12 @@
-import DataTable from "datatables.net-bs4";
+import DataTablesLib from "datatables.net-bs5";
+import DataTable from "datatables.net-vue3";
 import { createApp } from "vue";
 
 import DeleteGroupDialog from "./components/settings/DeleteGroupDialog.vue";
 import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 import UpdateGroupDialog from "./components/settings/UpdateGroupDialog.vue";
+
+DataTable.use(DataTablesLib);
 
 createApp({
   components: {
@@ -13,7 +16,7 @@ createApp({
   },
   created() {
     this.$nextTick(() => {
-      new DataTable("#tableGroups", { stateSave: true });
+      new DataTablesLib("#tableGroups", { stateSave: true });
     });
   },
 }).mount("#vue-app");

@@ -1,8 +1,11 @@
-import DataTable from "datatables.net-bs4";
+import DataTablesLib from "datatables.net-bs5";
+import DataTable from "datatables.net-vue3";
 import { createApp } from "vue";
 
 import DeleteUserDialog from "./components/settings/DeleteUserDialog.vue";
 import UpdateUserDialog from "./components/settings/UpdateUserDialog.vue";
+
+DataTable.use(DataTablesLib);
 
 createApp({
   components: {
@@ -11,7 +14,7 @@ createApp({
   },
   created() {
     this.$nextTick(() => {
-      new DataTable("#tableUsers", { stateSave: true });
+      new DataTablesLib("#tableUsers", { stateSave: true });
     });
   },
 }).mount("#app");

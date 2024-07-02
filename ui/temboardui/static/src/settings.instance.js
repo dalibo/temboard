@@ -1,11 +1,14 @@
-import DataTable from "datatables.net-bs4";
-import "datatables.net-buttons-bs4";
+import DataTablesLib from "datatables.net-bs5";
+import "datatables.net-buttons-bs5";
+import DataTable from "datatables.net-vue3";
 import { createApp } from "vue";
 
 import DeleteInstanceDialog from "./components/settings/DeleteInstanceDialog.vue";
 import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 import NewInstanceWizard from "./components/settings/NewInstanceWizard.vue";
 import UpdateInstanceDialog from "./components/settings/UpdateInstanceDialog.vue";
+
+DataTable.use(DataTablesLib);
 
 createApp({
   components: {
@@ -16,7 +19,7 @@ createApp({
   },
   created() {
     this.$nextTick(() => {
-      const table = new DataTable("#tableInstances", {
+      const table = new DataTablesLib("#tableInstances", {
         lengthChange: false,
         pageLength: 50,
         buttons: [

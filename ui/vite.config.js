@@ -27,7 +27,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           "highlight.js": ["highlight.js"],
-          datatables: ["datatables.net-bs4", "datatables.net-buttons-bs4"],
+          datatables: ["datatables.net-bs5", "datatables.net-buttons-bs5", "datatables.net-vue3"],
           "bootstrap-vue-next": ["bootstrap-vue-next"],
           vue: ["vue"],
         },
