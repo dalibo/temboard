@@ -35,6 +35,7 @@
           <th>Agent</th>
           <th>Notify</th>
           <th class="no-sort"></th>
+          <th class="no-sort"></th>
         </tr>
       </thead>
       <tbody>
@@ -90,6 +91,8 @@
               title="Edit"
               v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
             ><i class="fa fa-edit"></i></button>
+          </td>
+          <td class="text-center">
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm buttonDelete"
