@@ -2,6 +2,7 @@
 import { UseTimeAgo } from "@vueuse/components";
 import { useFullscreen } from "@vueuse/core";
 import { filesize } from "filesize";
+import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
 
 // FIXME import chart.js and moment
@@ -212,16 +213,19 @@ function updateTps(data) {
   const commitData = datasets[0].data;
   const rollbackData = datasets[1].data;
 
-  if (data.length > 1) {
-    // Initial call. Bootstrap first datum.
-    lastDatum = data[0];
-    data.shift();
+  if (data.length <= 1) {
+    return;
   }
+
+  // Initial call. Bootstrap first datum.
+  lastDatum = data[0];
+  data.shift();
 
   let duration;
   for (let i = 0; i < data.length; i++) {
     const datum = data[i];
     const databases = datum.databases;
+
     duration = datum.timestamp - lastDatum.timestamp;
     if (duration === 0) {
       continue;
@@ -279,7 +283,7 @@ function updateAlerts() {
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
   })
-    .success(function (data) {
+    .done(function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
       $(divAlertsEl.value).find("[data-toggle-popover]").popover("dispose");
@@ -298,7 +302,7 @@ function updateAlerts() {
           });
       }, 1);
     })
-    .error(function (error) {
+    .fail(function (error) {
       // FIXME handle error
       console.error(error);
     });
@@ -306,10 +310,10 @@ function updateAlerts() {
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/checks.json",
   })
-    .success(function (data) {
+    .done(function (data) {
       states.value = data;
     })
-    .error(function (error) {
+    .fail(function (error) {
       // FIXME handle error
       console.error(error);
     });

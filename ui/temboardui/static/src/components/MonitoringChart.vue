@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import moment from "moment";
 import { onMounted, ref, watch } from "vue";
 

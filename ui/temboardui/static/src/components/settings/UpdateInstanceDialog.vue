@@ -6,6 +6,7 @@
  * render a preview of the managed instance. Disables plugins not loaded in
  * agent.
  */
+import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
 
 import Error from "../Error.vue";
@@ -112,7 +113,7 @@ function open(address, port) {
 
   fetch_current_data().done(() => {
     // Discover may fail if agent is down.
-    discover_agent().complete(() => {
+    discover_agent().always(() => {
       waiting.value = false;
     });
   });

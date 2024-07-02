@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import { onUpdated, ref, watch } from "vue";
 
 import InstanceDetails from "./InstanceDetails.vue";

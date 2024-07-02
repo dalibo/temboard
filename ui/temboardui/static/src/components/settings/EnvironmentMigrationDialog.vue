@@ -1,5 +1,7 @@
 <script setup>
 /* A dialog to warn about an upcoming migration in temboard 9.0. */
+import $ from "jquery";
+
 import ModalDialog from "../ModalDialog.vue";
 
 const props = defineProps({

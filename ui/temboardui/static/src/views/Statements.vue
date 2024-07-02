@@ -17,6 +17,7 @@ import {
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
+import $ from "jquery";
 import _ from "lodash";
 import moment from "moment";
 import { computed, ref, watch } from "vue";

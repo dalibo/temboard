@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import _ from "lodash";
 import { computed, ref } from "vue";
 
