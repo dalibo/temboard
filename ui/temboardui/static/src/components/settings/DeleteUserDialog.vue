@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import { ref } from "vue";
 
 import Error from "../Error.vue";

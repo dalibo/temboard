@@ -1,6 +1,7 @@
 <script setup>
 import Dygraph from "dygraphs";
 import "dygraphs/dist/dygraph.css";
+import $ from "jquery";
 import _ from "lodash";
 import { computed, onMounted, ref, watch } from "vue";
 

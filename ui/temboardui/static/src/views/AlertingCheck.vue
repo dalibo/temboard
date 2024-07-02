@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import { computed, provide, ref } from "vue";
 
 import AlertingChart from "../components/AlertingChart.vue";
@@ -18,13 +19,13 @@ const sortedKeys = computed(() => {
 
 $.ajax({
   url: apiUrl + "/states/" + checkInitialData.name + ".json",
-})
-  .success(function (data) {
+  success: function (data) {
     keys.value = data;
-  })
-  .error(function (error) {
+  },
+  error: function (error) {
     console.error(error);
-  });
+  },
+});
 
 function setFromTo(from, to) {
   dateRangePickerEl.value.setFromTo(from, to);

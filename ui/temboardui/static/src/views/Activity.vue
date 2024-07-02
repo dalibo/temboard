@@ -4,6 +4,7 @@ import { BTable } from "bootstrap-vue-next";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
+import $ from "jquery";
 import * as _ from "lodash";
 import { computed, ref, watch } from "vue";
 

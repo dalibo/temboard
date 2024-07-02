@@ -1,6 +1,7 @@
 <script setup>
 // Global: clearError, showError
 import { useFullscreen } from "@vueuse/core";
+import $ from "jquery";
 import _ from "lodash";
 import moment from "moment";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
@@ -80,7 +81,7 @@ function changeSort(value, e) {
 function fetchInstances() {
   clearError();
   $.ajax("/home/instances")
-    .success((data) => {
+    .done((data) => {
       instances.value = data;
       nextTick(() => {
         $('[data-toggle="popover"]').popover();

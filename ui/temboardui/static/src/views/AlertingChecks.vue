@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import * as _ from "lodash";
 import { ref } from "vue";
 
@@ -17,13 +18,13 @@ function sorted(items, key) {
 function refresh() {
   $.ajax({
     url: apiUrl + "/checks.json",
-  })
-    .success(function (data) {
+    success: function (data) {
       checks.value = data;
-    })
-    .error(function (error) {
+    },
+    error: function (error) {
       console.error(error);
-    });
+    },
+  });
 }
 
 // refresh every 1 min

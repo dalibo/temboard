@@ -1,5 +1,6 @@
 <script setup>
 // A confirm dialog
+import $ from "jquery";
 import { ref } from "vue";
 
 import Error from "../Error.vue";

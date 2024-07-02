@@ -1,5 +1,6 @@
 <script setup>
 /* A simple boostrap Dialog */
+import $ from "jquery";
 import { onMounted, ref } from "vue";
 
 defineProps(["id", "title"]);

@@ -5,6 +5,7 @@
  * render a preview of the managed instance. Disables plugins not loaded in
  * agent.
  */
+import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
 
 import Error from "../Error.vue";

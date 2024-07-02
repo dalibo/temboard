@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import _ from "lodash";
 import { computed, provide, ref } from "vue";
 
@@ -67,9 +68,6 @@ function getData() {
           );
         }
       });
-      window.setTimeout(() => {
-        $('[data-toggle="popover"]').popover();
-      }, 1);
     },
     error: showError,
     complete: function () {

@@ -1,4 +1,5 @@
 <script setup>
+import $ from "jquery";
 import _ from "lodash";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";

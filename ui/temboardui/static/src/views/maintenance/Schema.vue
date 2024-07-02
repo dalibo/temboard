@@ -3,6 +3,7 @@ import { UseTimeAgo } from "@vueuse/components";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
+import $ from "jquery";
 import _ from "lodash";
 import { computed, provide, ref } from "vue";
 

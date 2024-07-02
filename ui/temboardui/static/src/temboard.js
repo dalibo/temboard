@@ -1,4 +1,6 @@
+import { Tooltip } from "bootstrap";
 import "font-awesome/css/font-awesome.css";
+import $ from "jquery";
 import { createApp } from "vue";
 
 import ErrorRow from "./components/ErrorRow.vue";
