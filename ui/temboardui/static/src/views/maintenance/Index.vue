@@ -67,7 +67,7 @@ fetchData();
 <template>
   <div>
     <h3 class="row">
-      <div class="col text-right" v-cloak v-if="!loading">
+      <div class="col text-end" v-cloak v-if="!loading">
         Size: <strong>{{ total_size }}</strong>
       </div>
     </h3>
@@ -104,7 +104,7 @@ fetchData();
         <tr>
           <th></th>
           <th></th>
-          <th class="text-center border-left">
+          <th class="text-center border-start">
             Tables
             <div class="d-inline-block">
               <div class="progress border rounded-0" style="height: 7px; width: 10px">
@@ -112,7 +112,7 @@ fetchData();
               </div>
             </div>
           </th>
-          <th class="text-center border-left">
+          <th class="text-center border-start">
             Indexes
             <div class="d-inline-block">
               <div class="progress border rounded-0" style="height: 7px; width: 10px">
@@ -120,7 +120,7 @@ fetchData();
               </div>
             </div>
           </th>
-          <th class="text-center border-left">
+          <th class="text-center border-start">
             Toast
             <div class="d-inline-block">
               <div class="progress border rounded-0" style="height: 7px; width: 10px">
@@ -138,11 +138,11 @@ fetchData();
                 {{ database.datname }}
               </a>
             </td>
-            <td :class="['database-size', 'text-right', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+            <td :class="['database-size', 'text-end', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
               {{ database.total_size }}
             </td>
             <template v-if="database.n_tables > 0">
-              <td class="temboard-tables text-right border-left">
+              <td class="temboard-tables text-end border-start">
                 <span class="badge badge-secondary">
                   {{ database.n_tables }}
                 </span>
@@ -168,10 +168,10 @@ fetchData();
                 </small>
               </td>
             </template>
-            <td class="temboard-tables text-center text-muted border-left small" v-else>
+            <td class="temboard-tables text-center text-muted border-start small" v-else>
               <em> No table </em>
             </td>
-            <td class="indexes text-right border-left" v-if="database.n_indexes > 0">
+            <td class="indexes text-end border-start" v-if="database.n_indexes > 0">
               <span class="badge badge-secondary">
                 {{ database.n_indexes }}
               </span>
@@ -196,10 +196,10 @@ fetchData();
                 </template>
               </small>
             </td>
-            <td class="indexes text-center text-muted border-left small" v-else>
+            <td class="indexes text-center text-muted border-start small" v-else>
               <em> No index </em>
             </td>
-            <td class="temboard-toast text-right border-left">
+            <td class="temboard-toast text-end border-start">
               <span v-if="database.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
                 {{ database.toast_size }}
               </span>

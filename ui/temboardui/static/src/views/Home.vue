@@ -210,7 +210,7 @@ watch(groupsFilter.value, (newVal) => {
         }}</span>
       </div>
       <div class="col">
-        <p class="text-secondary text-right mt-2 mb-0 mr-4">
+        <p class="text-secondary text-end mt-2 mb-0 mr-4">
           <i v-if="loading" class="fa fa-spinner fa-spin loader"></i>
           <span :title="refreshDate ? 'last refresh at ' + refreshDate.format('HH:mm:ss') : ''"
             >Refreshed every 1m</span

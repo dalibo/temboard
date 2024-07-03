@@ -304,7 +304,7 @@ function notify() {
           {{ intervals[refreshInterval] }}
         </span>
       </button>
-      <div class="dropdown-menu dropdown-menu-right" style="min-width: 50px">
+      <div class="dropdown-menu dropdown-menu-end" style="min-width: 50px">
         <a class="dropdown-item refresh-off" href v-on:click.prevent="refreshInterval = null">Off</a>
         <div class="dropdown-divider"></div>
         <a

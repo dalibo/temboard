@@ -175,7 +175,7 @@ fetchData();
       <div class="col">
         Schema: <strong>{{ schemaName }}</strong>
       </div>
-      <div class="col text-right" v-cloak v-if="!loading && schema.size">
+      <div class="col text-end" v-cloak v-if="!loading && schema.size">
         Size: <strong>{{ schema.size }}</strong>
       </div>
     </h3>
@@ -212,7 +212,7 @@ fetchData();
           <tr>
             <th></th>
             <th></th>
-            <th class="text-center border-left">
+            <th class="text-center border-start">
               <div class="d-inline-block">
                 <div class="progress border rounded-0" style="height: 7px; width: 10px">
                   <div class="progress-bar bg-cat1" role="progressbar" style="width: 100%"></div>
@@ -220,7 +220,7 @@ fetchData();
               </div>
               Heap
             </th>
-            <th class="text-center border-left">
+            <th class="text-center border-start">
               <div class="d-inline-block">
                 <div class="progress border rounded-0" style="height: 7px; width: 10px">
                   <div class="progress-bar bg-cat2" role="progressbar" style="width: 100%"></div>
@@ -228,7 +228,7 @@ fetchData();
               </div>
               Indexes
             </th>
-            <th class="text-center border-left">
+            <th class="text-center border-start">
               <div class="d-inline-block">
                 <div class="progress border rounded-0" style="height: 7px; width: 10px">
                   <div class="progress-bar bg-cat3" role="progressbar" style="width: 100%"></div>
@@ -255,13 +255,13 @@ fetchData();
               <td
                 :class="[
                   'temboard-table-total-size',
-                  'text-right',
+                  'text-end',
                   sortCriteria == 'total_bytes' ? 'font-weight-bold' : '',
                 ]"
               >
                 {{ table.total_size }}
               </td>
-              <td class="heap text-right border-left">
+              <td class="heap text-end border-start">
                 <span
                   v-if="table.table_bytes"
                   :class="['table-size', sortCriteria == 'table_bytes' ? 'font-weight-bold' : '']"
@@ -281,7 +281,7 @@ fetchData();
                 </small>
               </td>
               <template v-if="table.n_indexes">
-                <td class="indexes text-right border-left">
+                <td class="indexes text-end border-start">
                   <span class="badge badge-secondary">
                     {{ table.n_indexes }}
                   </span>
@@ -308,10 +308,10 @@ fetchData();
                   </small>
                 </td>
               </template>
-              <td class="indexes text-center text-muted border-left small" v-else>
+              <td class="indexes text-center text-muted border-start small" v-else>
                 <em> No index </em>
               </td>
-              <td class="temboard-toast text-right border-left">
+              <td class="temboard-toast text-end border-start">
                 <span
                   v-if="table.toast_bytes"
                   :class="['toast-size', sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']"
@@ -396,7 +396,7 @@ fetchData();
                 {{ index.tablespace }}
               </span>
             </td>
-            <td class="index-size text-right align-middle">
+            <td class="index-size text-end align-middle">
               <span :class="[indexSortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
                 {{ index.total_size }}
               </span>
@@ -407,7 +407,7 @@ fetchData();
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>
               </small>
             </td>
-            <td class="index-scans align-middle text-right">
+            <td class="index-scans align-middle text-end">
               <span class="badge badge-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
             </td>
             <td class="query" width="80%">

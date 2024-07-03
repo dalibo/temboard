@@ -518,7 +518,7 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of modified rows since last analyze is high, you should
             consider lauching an ANALYZE
             <br />
-            <span class="pl-4 text-muted margin-left">
+            <span class="pl-4 text-muted margin-start">
               Out of date analyzes can result in stats not being accurate, which eventually leads to slow queries.
             </span>
           </p>
@@ -526,19 +526,19 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of dead tuples is high, you should consider running a
             VACUUM.
             <br />
-            <span class="pl-4 text-muted margin-left"> Dead tuples waste space and slow down queries. </span>
+            <span class="pl-4 text-muted margin-start"> Dead tuples waste space and slow down queries. </span>
           </p>
           <p class="text-danger" v-if="table.bloat_bytes / table.table_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a Full
             VACUUUM.
             <br />
-            <span class="pl-4 text-muted margin-left"> Table bloat wastes space and slows down queries. </span>
+            <span class="pl-4 text-muted margin-start"> Table bloat wastes space and slows down queries. </span>
           </p>
           <p class="text-danger" v-if="table.index_bloat_bytes / table.index_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a Full
             VACUUUM or REINDEX.
             <br />
-            <span class="pl-4 text-muted margin-left"> Index bloat wastes space and slows down queries. </span>
+            <span class="pl-4 text-muted margin-start"> Index bloat wastes space and slows down queries. </span>
           </p>
         </div>
       </div>
@@ -581,7 +581,7 @@ fetchData();
                 {{ index.tablespace }}
               </span>
             </td>
-            <td class="index-size text-right align-middle">
+            <td class="index-size text-end align-middle">
               <span :class="[indexSortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
                 {{ index.total_size }}
               </span>
@@ -596,7 +596,7 @@ fetchData();
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>
               </small>
             </td>
-            <td class="index-scans align-middle text-right">
+            <td class="index-scans align-middle text-end">
               <span class="badge badge-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
             </td>
             <td class="query" width="80%">

@@ -46,7 +46,7 @@ defineExpose({
         Read more details and send us feedback on GitHub issue
         <a href="https://github.com/dalibo/temboard/issues/1283">#1283</a>.
       </p>
-      <p class="text-left"><em>temBoard development team.</em></p>
+      <p class="text-start"><em>temBoard development team.</em></p>
     </div>
   </ModalDialog>
 </template>

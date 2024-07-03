@@ -148,14 +148,14 @@ function highlight(src) {
 const fields = computed(() => {
   let fields = [
     { label: "", key: "check" },
-    { label: "PID", key: "pid", class: "text-right" },
+    { label: "PID", key: "pid", class: "text-end" },
     { label: "Database", key: "database" },
     { label: "User", key: "user", orderable: false },
     { label: "Application", key: "application_name" },
-    { label: "CPU", key: "cpu", class: "text-right" },
-    { label: "mem", key: "memory", class: "text-right" },
-    { label: "Read/s", key: "read_s", class: "text-right", formatter: human2bytes },
-    { label: "Write/s", key: "write_s", class: "text-right", formatter: human2bytes },
+    { label: "CPU", key: "cpu", class: "text-end" },
+    { label: "mem", key: "memory", class: "text-end" },
+    { label: "Read/s", key: "read_s", class: "text-end", formatter: human2bytes },
+    { label: "Write/s", key: "write_s", class: "text-end", formatter: human2bytes },
     { label: "IOW", key: "iow", sortable: true, class: "text-center" },
   ];
 
@@ -163,7 +163,7 @@ const fields = computed(() => {
     fields = fields.concat([{ label: "W", key: "wait", class: "text-center" }]);
   } else {
     fields = fields.concat([
-      { label: "Lock Rel.", data: "relation", class: "text-right" },
+      { label: "Lock Rel.", data: "relation", class: "text-end" },
       { label: "Lock Mode", key: "mode" },
       { label: "Lock Type", key: "type" },
     ]);
@@ -174,7 +174,7 @@ const fields = computed(() => {
     {
       label: "Time",
       key: "duration",
-      class: "text-right",
+      class: "text-end",
       formatter: formatDurationSeconds,
       sortable: true,
     },
