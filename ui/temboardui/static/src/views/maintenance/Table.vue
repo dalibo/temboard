@@ -518,7 +518,7 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of modified rows since last analyze is high, you should
             consider lauching an ANALYZE
             <br />
-            <span class="pl-4 text-muted margin-start">
+            <span class="ps-4 text-muted margin-start">
               Out of date analyzes can result in stats not being accurate, which eventually leads to slow queries.
             </span>
           </p>
@@ -526,19 +526,19 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of dead tuples is high, you should consider running a
             VACUUM.
             <br />
-            <span class="pl-4 text-muted margin-start"> Dead tuples waste space and slow down queries. </span>
+            <span class="ps-4 text-muted margin-start"> Dead tuples waste space and slow down queries. </span>
           </p>
           <p class="text-danger" v-if="table.bloat_bytes / table.table_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a Full
             VACUUUM.
             <br />
-            <span class="pl-4 text-muted margin-start"> Table bloat wastes space and slows down queries. </span>
+            <span class="ps-4 text-muted margin-start"> Table bloat wastes space and slows down queries. </span>
           </p>
           <p class="text-danger" v-if="table.index_bloat_bytes / table.index_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a Full
             VACUUUM or REINDEX.
             <br />
-            <span class="pl-4 text-muted margin-start"> Index bloat wastes space and slows down queries. </span>
+            <span class="ps-4 text-muted margin-start"> Index bloat wastes space and slows down queries. </span>
           </p>
         </div>
       </div>
@@ -546,7 +546,7 @@ fetchData();
         <h4>
           Indexes <span class="text-muted small">({{ table.indexes.length }})</span>
         </h4>
-        <div class="ml-auto">
+        <div class="ms-auto">
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"

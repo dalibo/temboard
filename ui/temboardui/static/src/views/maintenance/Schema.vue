@@ -187,7 +187,7 @@ fetchData();
         <h4>
           Tables <span class="text-muted small">({{ schema.tables.length }})</span>
         </h4>
-        <div class="ml-auto">
+        <div class="ms-auto">
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
@@ -336,7 +336,7 @@ fetchData();
         <h4>
           Indexes <span class="text-muted small">({{ schema.indexes.length }})</span>
         </h4>
-        <div class="ml-auto">
+        <div class="ms-auto">
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"

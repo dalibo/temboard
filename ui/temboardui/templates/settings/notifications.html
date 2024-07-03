@@ -19,17 +19,17 @@
         </p>
         <p>Below you can test if notifications are correctly configured.</p>
         <form class="form-inline" id="sendEmailForm">
-          <input type="email" class="form-control mr-2 mb-2" id="inputTestEmail" placeholder="Enter email address" value="{{role.role_email or ''}}">
+          <input type="email" class="form-control me-2 mb-2" id="inputTestEmail" placeholder="Enter email address" value="{{role.role_email or ''}}">
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not email_configured else '' }}>Test email notification</button>
           {% if not email_configured %}
-          <p class="form-help mb-2 ml-2 text-danger">SMTP is not configured yet</p>
+          <p class="form-help mb-2 ms-2 text-danger">SMTP is not configured yet</p>
           {% end %}
         </form>
         <form class="form-inline" id="sendSmsForm">
-          <input type="text" class="form-control mr-2 mb-2" id="inputTestPhone" placeholder="Enter phone number" value="{{role.role_phone or ''}}">
+          <input type="text" class="form-control me-2 mb-2" id="inputTestPhone" placeholder="Enter phone number" value="{{role.role_phone or ''}}">
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not sms_configured else '' }}>Test SMS notification</button>
           {% if not sms_configured %}
-          <p class="form-help mb-2 ml-2 text-danger">Twilio is not configured yet</p>
+          <p class="form-help mb-2 ms-2 text-danger">Twilio is not configured yet</p>
           {% end %}
         </form>
       </div>

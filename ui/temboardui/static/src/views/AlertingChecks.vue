@@ -54,7 +54,7 @@ refresh();
                 </a>
               </div>
               <hr class="mt-1 mb-1" />
-              <ul class="list-unstyled small ml-2 mb-0" style="max-height: 100px; overflow-y: auto">
+              <ul class="list-unstyled small ms-2 mb-0" style="max-height: 100px; overflow-y: auto">
                 <li v-for="key in sorted(check.state_by_key, 'key')">
                   <span v-bind:class="'badge badge-' + key.state.toLowerCase()">
                     {{ key.state }}

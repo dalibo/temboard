@@ -247,7 +247,7 @@ function isSelected(value, setting) {
     </div>
   </div>
   <div class="row form-group">
-    <div class="col-3 mr-auto">
+    <div class="col-3 me-auto">
       <label class="sr-only" for="selectServer">Search</label>
       <div class="input-group">
         <input

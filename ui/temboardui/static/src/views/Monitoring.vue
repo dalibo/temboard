@@ -407,7 +407,7 @@ function onFromToUpdate(from_, to_) {
         {{ metrics[graph].title }}
         <a
           :href="'#/?graphs=[&quot;' + graph + '&quot;]&start=' + from + '&end=' + to"
-          class="small ml-2"
+          class="small ms-2"
           target="_blank"
           title="Link to this graph."
           ><i class="fa fa-external-link"></i

@@ -301,7 +301,7 @@ function reset() {
           </div>
         </div>
         <form id="state-filter" class="form-inline justify-content-end d-flex">
-          <div class="form-group pr-1">
+          <div class="form-group pe-1">
             <label><strong>States:</strong></label>
           </div>
 
@@ -350,7 +350,7 @@ function reset() {
             <div class="position-relative clipboard-parent">
               <UseClipboard v-slot="{ copy, copied }" :legacy="true">
                 <span
-                  class="copy invisible position-absolute top-0 right-0 pr-1 pl-1 bg-secondary text-white rounded"
+                  class="copy invisible position-absolute top-0 right-0 pe-1 ps-1 bg-secondary text-white rounded"
                   title="Copy to clipboard"
                   @click="copy(data.item.query)"
                 >

@@ -173,8 +173,8 @@ watch(groupsFilter.value, (newVal) => {
     <div class="row">
       <div class="col mb-2">
         <form class="form-inline" onsubmit="event.preventDefault();">
-          <input type="text" class="form-control mr-sm-2" placeholder="Search instances" v-model="search" />
-          <div class="dropdown mr-sm-2">
+          <input type="text" class="form-control me-sm-2" placeholder="Search instances" v-model="search" />
+          <div class="dropdown me-sm-2">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
               Sort by: <strong v-cloak>{{ sort }}</strong>
               <span class="caret"></span>
@@ -210,7 +210,7 @@ watch(groupsFilter.value, (newVal) => {
         }}</span>
       </div>
       <div class="col">
-        <p class="text-secondary text-end mt-2 mb-0 mr-4">
+        <p class="text-secondary text-end mt-2 mb-0 me-4">
           <i v-if="loading" class="fa fa-spinner fa-spin loader"></i>
           <span :title="refreshDate ? 'last refresh at ' + refreshDate.format('HH:mm:ss') : ''"
             >Refreshed every 1m</span

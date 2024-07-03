@@ -79,7 +79,7 @@ fetchData();
         <h4>
           Databases <span class="text-muted small">({{ databases.length }})</span>
         </h4>
-        <div class="ml-auto">
+        <div class="ms-auto">
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
