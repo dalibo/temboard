@@ -210,7 +210,7 @@ function isSelected(value, setting) {
         <template v-else>
           <div class="modal-header">
             <h4 class="modal-title" id="resetModalLabel">Reset parameter:</h4>
-            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
