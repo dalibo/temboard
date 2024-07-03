@@ -114,9 +114,9 @@ function truncateState(value) {
 
 function stateClass(value) {
   if (value == "active") {
-    return "text-success font-weight-bold";
+    return "text-success fw-bold";
   } else if (value.indexOf("idle in transaction") != -1) {
-    return "text-danger font-weight-bold";
+    return "text-danger fw-bold";
   }
 }
 
@@ -334,7 +334,7 @@ function reset() {
           sort-desc
         >
           <template v-slot:cell()="data">
-            <span v-html="data.value" :class="{ 'text-danger font-weight-bold': data.value == 'Y' }"></span>
+            <span v-html="data.value" :class="{ 'text-danger fw-bold': data.value == 'Y' }"></span>
           </template>
           <template v-slot:cell(check)="row">
             <input
