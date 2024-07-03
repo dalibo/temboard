@@ -78,7 +78,7 @@ function getData() {
         $("pre code.sql").each(function (_, block) {
           hljs.highlightBlock(block);
         });
-        $('[data-toggle="popover"]').popover();
+        $('[data-bs-toggle="popover"]').popover();
       }, 1);
     },
     error: showError,
@@ -464,8 +464,8 @@ fetchData();
               id="buttonAnalyze"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#analyzeModal"
+              data-bs-toggle="modal"
+              data-bs-target="#analyzeModal"
             >
               ANALYZE
             </button>
@@ -479,8 +479,8 @@ fetchData();
               id="buttonVacuum"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#vacuumModal"
+              data-bs-toggle="modal"
+              data-bs-target="#vacuumModal"
             >
               VACUUM
             </button>
@@ -494,8 +494,8 @@ fetchData();
               id="buttonReindex"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#reindexModal"
+              data-bs-toggle="modal"
+              data-bs-target="#reindexModal"
               v-on:click="
                 reindexType = 'table';
                 reindexElementName = table.name;
@@ -550,7 +550,7 @@ fetchData();
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
@@ -605,8 +605,8 @@ fetchData();
             <td class="reindex align-middle" width="5%">
               <button
                 class="buttonReindex btn btn-outline-secondary btn-sm py-0"
-                data-toggle="modal"
-                data-target="#reindexModal"
+                data-bs-toggle="modal"
+                data-bs-target="#reindexModal"
                 v-on:click="
                   reindexType = 'index';
                   reindexElementName = index.name;

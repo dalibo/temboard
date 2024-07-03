@@ -118,7 +118,7 @@ function createOrUpdateChart() {
         console.error("Something went wrong");
       });
   });
-  $('[data-toggle="tooltip"]').tooltip();
+  $('[data-bs-toggle="tooltip"]').tooltip();
 }
 
 function drawThreshold(data, canvas) {
@@ -166,7 +166,7 @@ function drawAlerts(data) {
   chart.setAnnotations(annotations);
   window.setTimeout(function () {
     $(".dygraph-annotation").each(function () {
-      $(this).attr("data-content", $(this).attr("title"));
+      $(this).attr("data-bs-content", $(this).attr("title"));
       $(this).attr("title", "");
     });
     $(".dygraph-annotation").popover({

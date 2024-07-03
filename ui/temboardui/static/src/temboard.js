@@ -1,4 +1,4 @@
-import { Tooltip } from "bootstrap";
+import { Popover, Tooltip } from "bootstrap";
 import "font-awesome/css/font-awesome.css";
 import $ from "jquery";
 import { createApp } from "vue";
@@ -56,6 +56,8 @@ $(() => {
   });
 
   // Popover and tooltip initialization
-  $('[data-toggle="popover"]').popover({ sanitize: false });
-  $('[data-toggle="tooltip"]').tooltip({ sanitize: false });
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
 });

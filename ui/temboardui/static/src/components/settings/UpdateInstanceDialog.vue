@@ -59,7 +59,7 @@ const groups = computed(() => {
 });
 
 onUpdated(() => {
-  $('[data-toggle="tooltip"]', root.value.$el).tooltip();
+  $('[data-bs-toggle="tooltip"]', root.value.$el).tooltip();
 });
 
 function discover_agent() {

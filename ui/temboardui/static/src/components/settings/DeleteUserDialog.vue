@@ -48,7 +48,7 @@ defineExpose({ open });
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       <button id="buttonDelete" class="btn btn-danger ml-auto" type="button" @click="delete_" :disabled="waiting">
         Yes, delete this user
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>

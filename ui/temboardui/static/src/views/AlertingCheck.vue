@@ -65,7 +65,7 @@ function onFromToUpdate(from_, to_) {
           <template v-if="check.valueType == 'percent'">%</template>
         </li>
         <li class="list-inline-item">
-          <a data-toggle="modal" data-target="#updateModal" href> Edit </a>
+          <a data-bs-toggle="modal" data-bs-target="#updateModal" href> Edit </a>
         </li>
       </ul>
 
@@ -82,7 +82,7 @@ function onFromToUpdate(from_, to_) {
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="updateModalLabel">Edit alert</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
@@ -115,7 +115,7 @@ function onFromToUpdate(from_, to_) {
             <div class="modal-footer">
               <i class="fa fa-spinner fa-spin loader d-none"></i>
               <button type="submit" id="submitFormUpdateCheck" class="btn btn-success ml-auto">Save</button>
-              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ function onFromToUpdate(from_, to_) {
         <div class="text-center">
           <i
             v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"
-            data-toggle="tooltip"
+            data-bs-toggle="tooltip"
             v-bind:title="'Current status: ' + key.state.toLowerCase()"
           ></i
           >&nbsp;

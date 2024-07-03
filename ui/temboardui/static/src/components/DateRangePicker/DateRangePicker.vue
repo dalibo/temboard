@@ -295,7 +295,7 @@ function notify() {
         id="buttonAutoRefresh"
         type="button"
         class="btn btn-secondary dropdown-toggle"
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
         :disabled="!isRefreshable"

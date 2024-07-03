@@ -293,8 +293,8 @@ fetchData();
               id="buttonAnalyze"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#analyzeModal"
+              data-bs-toggle="modal"
+              data-bs-target="#analyzeModal"
             >
               ANALYZE
             </button>
@@ -308,8 +308,8 @@ fetchData();
               id="buttonVacuum"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#vacuumModal"
+              data-bs-toggle="modal"
+              data-bs-target="#vacuumModal"
             >
               VACUUM
             </button>
@@ -323,8 +323,8 @@ fetchData();
               id="buttonReindex"
               type="button"
               class="btn btn-outline-secondary"
-              data-toggle="modal"
-              data-target="#reindexModal"
+              data-bs-toggle="modal"
+              data-bs-target="#reindexModal"
               v-on:click="reindexElementName = database.name"
             >
               REINDEX
@@ -347,7 +347,7 @@ fetchData();
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >

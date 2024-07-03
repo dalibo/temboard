@@ -35,7 +35,7 @@ watch(
 );
 
 onUpdated(() => {
-  $('[data-toggle="tooltip"]', root.value.$el).tooltip();
+  $('[data-bs-toggle="tooltip"]', root.value.$el).tooltip();
 });
 
 function submit() {
@@ -136,7 +136,7 @@ const emit = defineEmits(["submit"]);
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       <button :id="'buttonSubmit' + type" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
         {{ submit_text }}
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>

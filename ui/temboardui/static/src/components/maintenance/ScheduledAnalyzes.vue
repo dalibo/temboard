@@ -10,7 +10,7 @@ const emit = defineEmits(["cancel"]);
 <template>
   <div v-if="scheduledAnalyzes.length">
     <a
-      data-toggle="collapse"
+      data-bs-toggle="collapse"
       href="#collapseScheduledAnalyzes"
       aria-expanded="false"
       aria-controls="collapseScheduledAnalyzes"

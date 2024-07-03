@@ -60,7 +60,8 @@ onMounted(() => {
   refreshCards();
   window.setInterval(refreshCards, refreshInterval.value);
   nextTick(() => {
-    $("[data-toggle=tooltip]", root.value.$el).tooltip();
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
   });
 });
 
@@ -84,7 +85,8 @@ function fetchInstances() {
     .done((data) => {
       instances.value = data;
       nextTick(() => {
-        $('[data-toggle="popover"]').popover();
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
       });
     })
     .fail((xhr) => {
@@ -173,7 +175,7 @@ watch(groupsFilter.value, (newVal) => {
         <form class="form-inline" onsubmit="event.preventDefault();">
           <input type="text" class="form-control mr-sm-2" placeholder="Search instances" v-model="search" />
           <div class="dropdown mr-sm-2">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
               Sort by: <strong v-cloak>{{ sort }}</strong>
               <span class="caret"></span>
             </button>
@@ -189,7 +191,7 @@ watch(groupsFilter.value, (newVal) => {
             </div>
           </div>
           <div class="dropdown" v-if="groups.length > 1">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
               Groups ({{ groupsFilter.length || "all" }})
               <span class="caret"></span>
             </button>
@@ -203,7 +205,7 @@ watch(groupsFilter.value, (newVal) => {
         </form>
       </div>
       <div class="col text-center" v-if="groups.length === 1">
-        <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-toggle="tooltip">{{
+        <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-bs-toggle="tooltip">{{
           groups[0]
         }}</span>
       </div>

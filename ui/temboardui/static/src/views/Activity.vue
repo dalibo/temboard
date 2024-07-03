@@ -184,8 +184,8 @@ const fields = computed(() => {
       class: "query",
       sortable: true,
       tdAttr: {
-        "data-toggle": "popover",
-        "data-trigger": "hover",
+        "data-bs-toggle": "popover",
+        "data-bs-trigger": "hover",
       },
     },
   ]);
@@ -253,14 +253,14 @@ function reset() {
     </ul>
     <div class="row d-flex justify-content-between">
       <div class="col-auto">
-        <span class="d-inline-block" data-toggle="tooltip" title="Terminate the backends selected below">
+        <span class="d-inline-block" data-bs-toggle="tooltip" title="Terminate the backends selected below">
           <button
             id="killButton"
             type="button"
             class="btn btn-danger"
             :class="{ disabled: !freezed }"
-            data-toggle="modal"
-            data-target="#terminateModal"
+            data-bs-toggle="modal"
+            data-bs-target="#terminateModal"
           >
             Terminate
           </button>
@@ -282,7 +282,7 @@ function reset() {
       <div class="col-auto">
         <a
           class="btn collapse-toggle dropdown-toggle collapsed"
-          data-toggle="collapse"
+          data-bs-toggle="collapse"
           href="#filters"
           role="button"
           aria-expanded="false"
@@ -387,7 +387,7 @@ function reset() {
         <button id="submitKill" type="button" class="btn btn-danger" :disabled="terminateLoading" @click="terminate">
           Yes, terminate
         </button>
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </ModalDialog>
   </div>

@@ -52,7 +52,7 @@
                 class="fa fa-warning text-warning"
                 style="cursor: pointer;"
                 title="Group in multiple user groups. Click for details."
-                data-toggle="modal"
+                data-bs-toggle="modal"
                 v-on:click="$refs.environment_migration_dialog.show()">
               </i>
             {% end %}
@@ -62,8 +62,8 @@
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm"
-              data-toggle="tooltip"
-              data-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
               data-action="edit"
               title="Edit"
               @click.prevent="$refs.updateModal.open('{{ group_item.group_name }}')"
@@ -74,8 +74,8 @@
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm"
-              data-toggle="tooltip"
-              data-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
               data-action="delete"
               title="Delete"
               @click.prevent="$refs.deleteModal.open('{{ group_item.group_name }}')"

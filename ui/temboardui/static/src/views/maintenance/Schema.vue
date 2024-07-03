@@ -82,7 +82,7 @@ function getSchemaData() {
         $("pre code.sql").each((_, block) => {
           hljs.highlightBlock(block);
         });
-        $('[data-toggle="popover"]').popover();
+        $('[data-bs-toggle="popover"]').popover();
       }, 1);
     },
     error: showError,
@@ -191,7 +191,7 @@ fetchData();
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
@@ -356,7 +356,7 @@ fetchData();
           <button
             class="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
@@ -416,8 +416,8 @@ fetchData();
             <td class="reindex align-middle" width="5%">
               <button
                 class="buttonReindex btn btn-outline-secondary btn-sm py-0"
-                data-toggle="modal"
-                data-target="#reindexModal"
+                data-bs-toggle="modal"
+                data-bs-target="#reindexModal"
                 v-on:click="reindexElementName = index.name"
               >
                 Reindex
