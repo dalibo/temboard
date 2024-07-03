@@ -1,4 +1,5 @@
 <script setup>
+import { Popover } from "bootstrap";
 import $ from "jquery";
 import moment from "moment";
 import { inject, onMounted, ref, watch } from "vue";
@@ -118,7 +119,6 @@ function createOrUpdateChart() {
         console.error("Something went wrong");
       });
   });
-  $('[data-bs-toggle="tooltip"]').tooltip();
 }
 
 function drawThreshold(data, canvas) {
@@ -169,11 +169,15 @@ function drawAlerts(data) {
       $(this).attr("data-bs-content", $(this).attr("title"));
       $(this).attr("title", "");
     });
-    $(".dygraph-annotation").popover({
-      trigger: "hover",
-      placement: "top",
-      html: true,
-    });
+    const popoverTriggerList = document.querySelectorAll(".dygraph-annotation");
+    [...popoverTriggerList].map(
+      (el) =>
+        new Popover(el, {
+          trigger: "hover",
+          placement: "top",
+          html: true,
+        }),
+    );
   }, 1);
 }
 

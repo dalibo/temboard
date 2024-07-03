@@ -1,5 +1,5 @@
 <script setup>
-import { Modal } from "bootstrap";
+import { Modal, Popover } from "bootstrap";
 import $ from "jquery";
 import { onMounted, ref } from "vue";
 
@@ -18,6 +18,7 @@ const settings = ref(null);
 const modalLoading = ref(false);
 
 const error = ref(null);
+const contentEl = ref(null);
 
 const resetParamName = ref("");
 const resetParamValue = ref("");
@@ -86,7 +87,8 @@ function getStatus() {
     dataType: "json",
     success: function (data) {
       configurationStatus.value = data;
-      $('[data-bs-toggle="popover"]').popover();
+      const popoverTriggerList = contentEl.value.querySelectorAll('[data-bs-toggle="popover"]');
+      [...popoverTriggerList].map((el) => new Popover(el));
     },
     error: function (xhr) {
       showError(xhr);
@@ -95,6 +97,9 @@ function getStatus() {
 }
 
 function submitForm() {
+  const popoverTriggerList = contentEl.value.querySelectorAll('[data-bs-toggle="popover"]');
+  const popoverList = [...popoverTriggerList].map((el) => new Popover(el));
+  popoverList.forEach((p) => p.dispose());
   const formData = { settings: [] };
   clearError();
   let names = [];
@@ -151,7 +156,6 @@ function cancel(settingName, settingBootVal) {
   resetParamName.value = settingName;
   resetParamValue.value = settingBootVal;
   resetModal.show();
-  $("[data-bs-toggle=popover]").popover("hide");
 }
 
 function modalApiCall() {
@@ -295,7 +299,7 @@ function isSelected(value, setting) {
       </div>
     </div>
   </div>
-  <div class="row">
+  <div class="row" ref="contentEl">
     <div class="col-12">
       <div v-for="settingGroup in configuration" class="card">
         <div class="card-header">{{ settingGroup["category"] }}</div>

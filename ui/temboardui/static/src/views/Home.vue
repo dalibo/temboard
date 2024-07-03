@@ -1,6 +1,7 @@
 <script setup>
 // Global: clearError, showError
 import { useFullscreen } from "@vueuse/core";
+import { Popover, Tooltip } from "bootstrap";
 import $ from "jquery";
 import _ from "lodash";
 import moment from "moment";

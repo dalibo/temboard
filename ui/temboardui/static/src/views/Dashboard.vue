@@ -1,6 +1,7 @@
 <script setup>
 import { UseTimeAgo } from "@vueuse/components";
 import { useFullscreen } from "@vueuse/core";
+import { Popover } from "bootstrap";
 import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
@@ -255,20 +256,24 @@ function updateAlerts() {
     success: function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
-      $(divAlertsEl.value).find("[data-bs-toggle-popover]").popover("dispose");
+      const popoverTriggerList = divAlertsEl.value.querySelectorAll("[data-bs-toggle-popover]");
+      const popoverList = [...popoverTriggerList].map((el) => new Popover(el));
+      popoverList.forEach((p) => p.dispose());
       alerts.value = data;
       window.setTimeout(function () {
-        $(divAlertsEl.value)
-          .find("[data-bs-toggle-popover]")
-          .popover({
-            placement: "top",
-            container: "body",
-            boundary: "window",
-            content: function () {
-              return $(this).find(".popover-content")[0].outerHTML.replace("d-none", "");
-            },
-            html: true,
-          });
+        const popoverTriggerList = divAlertsEl.value.querySelectorAll("[data-bs-toggle-popover]");
+        const popoverList = [...popoverTriggerList].map(
+          (el) =>
+            new Popover(el, {
+              placement: "top",
+              container: "body",
+              boundary: "window",
+              content: function (el) {
+                return $(el).find(".popover-content")[0].outerHTML.replace("d-none", "");
+              },
+              html: true,
+            }),
+        );
       }, 1);
     },
     error: function (xhr) {
