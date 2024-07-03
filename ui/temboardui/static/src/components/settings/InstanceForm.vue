@@ -137,7 +137,7 @@ const emit = defineEmits(["submit"]);
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button :id="'buttonSubmit' + type" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
+      <button :id="'buttonSubmit' + type" class="btn btn-success ms-auto" type="submit" :disabled="waiting">
         {{ submit_text }}
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>

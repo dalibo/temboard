@@ -109,7 +109,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           </p>
           <p class="mb-0 small">
             <template v-for="group in instance.groups">
-              <span class="badge border text-muted mr-1" :title="'Instance in group ' + group">
+              <span class="badge border text-muted me-1" :title="'Instance in group ' + group">
                 {{ group }}
               </span>
             </template>

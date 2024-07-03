@@ -50,7 +50,7 @@ defineExpose({ clear, fromXHR, setHTML });
       </button>
     </h4>
 
-    <div class="pr-3">
+    <div class="pe-3">
       <p v-html="error"></p>
     </div>
   </div>

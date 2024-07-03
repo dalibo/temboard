@@ -274,7 +274,7 @@ function notify() {
           </div>
         </form>
       </div>
-      <div class="col-8 pl-4">
+      <div class="col-8 ps-4">
         <h3>Quick ranges</h3>
         <div class="row">
           <ul class="list-unstyled col" v-for="section in ranges">

@@ -37,9 +37,9 @@ function popoverContent(instance) {
     data-bs-container="body"
     data-bs-html="true"
   >
-    <span class="badge badge-critical mr-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
-    <span class="badge badge-critical mr-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-warning mr-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-ok mr-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
+    <span class="badge badge-critical me-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
+    <span class="badge badge-critical me-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
+    <span class="badge badge-warning me-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
+    <span class="badge badge-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
   </div>
 </template>

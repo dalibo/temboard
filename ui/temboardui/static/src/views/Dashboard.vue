@@ -581,7 +581,7 @@ onMounted(() => {
           <div class="card h-100">
             <div class="text-center small p-0">
               <span class="chart-title"> Loadaverage </span>
-              <div class="position-absolute top-0 right-0 pr-1">
+              <div class="position-absolute top-0 right-0 pe-1">
                 <span id="loadaverage" class="badge badge-primary">{{ loadAverage }}</span>
               </div>
             </div>
@@ -596,7 +596,7 @@ onMounted(() => {
           <div class="card h-100">
             <div class="text-center small p-0">
               <span class="chart-title"> TPS </span>
-              <div class="position-absolute top-0 right-0 pr-1">
+              <div class="position-absolute top-0 right-0 pe-1">
                 Commit: <span id="tps_commit" class="badge badge-success">{{ tpsCommit }}</span> Rollback:
                 <span id="tps_rollback" class="badge badge-danger">{{ tpsRollback }}</span>
               </div>
@@ -614,7 +614,7 @@ onMounted(() => {
       <div class="col-8">
         <div class="text-center small">
           Current status
-          <div class="position-absolute top-0 right-0 pr-2">
+          <div class="position-absolute top-0 right-0 pe-2">
             <a href="alerting" class="small text-muted">More&hellip;</a>
           </div>
         </div>

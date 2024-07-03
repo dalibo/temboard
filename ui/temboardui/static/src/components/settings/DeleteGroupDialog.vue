@@ -67,7 +67,7 @@ defineExpose({ open });
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       <button
         id="buttonDeleteGroup"
-        class="btn btn-danger ml-auto"
+        class="btn btn-danger ms-auto"
         type="button"
         @click="delete_"
         v-bind:disabled="waiting"

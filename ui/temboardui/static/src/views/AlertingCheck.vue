@@ -114,7 +114,7 @@ function onFromToUpdate(from_, to_) {
             </div>
             <div class="modal-footer">
               <i class="fa fa-spinner fa-spin loader d-none"></i>
-              <button type="submit" id="submitFormUpdateCheck" class="btn btn-success ml-auto">Save</button>
+              <button type="submit" id="submitFormUpdateCheck" class="btn btn-success ms-auto">Save</button>
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
           </div>

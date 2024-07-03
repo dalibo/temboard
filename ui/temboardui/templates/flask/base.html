@@ -24,16 +24,16 @@
       <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand sticky-top">
         <div class="collapse navbar-collapse">
           {% if instance %}
-          <a class="navbar-brand ml-3 mr-0" href id="menu-collapse">
+          <a class="navbar-brand ms-3 me-0" href id="menu-collapse">
             <i class="fa fa-bars"></i>
           </a>
           {% endif %}
-          <a class="navbar-brand mr-auto" href="/home">
+          <a class="navbar-brand me-auto" href="/home">
             <img id="logo" src="/images/temboard-150x32-w.png" />
           </a>
           {% if instance %}
           {% set d = instance.discover or {} %}
-          <div class="navbar-text text-white mr-auto">
+          <div class="navbar-text text-white me-auto">
             <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
           </div>
           {% endif %}
@@ -156,7 +156,7 @@
               </ul>
             </div>
           </div>
-          <div class="main ml-auto p-3 position-relative">
+          <div class="main ms-auto p-3 position-relative">
           {% if instance.status %}
           {% set s = instance.status %}
           {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
