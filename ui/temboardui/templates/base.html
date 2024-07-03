@@ -40,7 +40,7 @@
         <ul class="navbar-nav">
           {% try %}
           {% if role.is_admin %}
-          <li class="{{'active' if globals().get('request') and 'settings' in request.uri else ''}} nav-item">
+          <li class="nav-item">
             <a id="linkSettings"
                href="/settings/instances"
                data-bs-toggle="tooltip"
