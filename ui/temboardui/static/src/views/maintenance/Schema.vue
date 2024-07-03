@@ -82,7 +82,6 @@ function getSchemaData() {
         $("pre code.sql").each((_, block) => {
           hljs.highlightBlock(block);
         });
-        $('[data-bs-toggle="popover"]').popover();
       }, 1);
     },
     error: showError,

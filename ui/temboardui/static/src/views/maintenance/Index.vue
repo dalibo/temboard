@@ -50,9 +50,6 @@ function fetchData() {
           );
         }
       });
-      window.setTimeout(() => {
-        $('[data-bs-toggle="popover"]').popover();
-      }, 1);
     },
     error: showError,
     complete: function () {
