@@ -44,8 +44,8 @@
             <td>{{role_item.role_name}}</td>
             <td>{{role_item.role_email or ''}}</td>
             <td>{{role_item.role_phone or ''}}</td>
-            <td class="text-center" data-col="is-active">{% if role_item.is_active is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
-            <td class="text-center" data-col="is-admin">{% if role_item.is_admin is True %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% end %}</td>
+            <td class="text-center" data-col="is-active">{% if role_item.is_active is True %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% end %}</td>
+            <td class="text-center" data-col="is-admin">{% if role_item.is_admin is True %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% end %}</td>
             <td>{% for group in role_item.groups %} <span class="badge border text-muted">{{group.group_name}}</span>{% end %}</td>
             <td class="text-center">
               <button

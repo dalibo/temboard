@@ -230,7 +230,7 @@ function reset() {
           <div
             id="waiting-count"
             class="badge"
-            :class="waitingCount > 0 ? 'badge-warning' : 'badge-light'"
+            :class="waitingCount > 0 ? 'bg-warning' : 'bg-light'"
             style="min-width: 2em"
           >
             {{ waitingCount || "&nbsp;" }}
@@ -243,7 +243,7 @@ function reset() {
           <div
             id="blocking-count"
             class="badge"
-            :class="blockingCount > 0 ? 'badge-warning' : 'badge-light'"
+            :class="blockingCount > 0 ? 'bg-warning' : 'bg-light'"
             style="min-width: 2em"
           >
             {{ blockingCount || "&nbsp;" }}
@@ -370,7 +370,7 @@ function reset() {
     <ModalDialog id="terminateModal" title="Terminate Backend" v-on:closed="reset">
       <div class="modal-body">
         Please confirm you want to terminated the following backend PIDs:
-        <span class="badge badge-primary" v-for="pid in selectedPids">{{ pid }}</span>
+        <span class="badge text-bg-primary" v-for="pid in selectedPids">{{ pid }}</span>
       </div>
 
       <div class="modal-body">

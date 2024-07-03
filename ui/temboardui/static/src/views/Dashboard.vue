@@ -582,7 +582,7 @@ onMounted(() => {
             <div class="text-center small p-0">
               <span class="chart-title"> Loadaverage </span>
               <div class="position-absolute top-0 right-0 pe-1">
-                <span id="loadaverage" class="badge badge-primary">{{ loadAverage }}</span>
+                <span id="loadaverage" class="badge text-bg-primary">{{ loadAverage }}</span>
               </div>
             </div>
             <div class="card-body p-2">
@@ -597,8 +597,8 @@ onMounted(() => {
             <div class="text-center small p-0">
               <span class="chart-title"> TPS </span>
               <div class="position-absolute top-0 right-0 pe-1">
-                Commit: <span id="tps_commit" class="badge badge-success">{{ tpsCommit }}</span> Rollback:
-                <span id="tps_rollback" class="badge badge-danger">{{ tpsRollback }}</span>
+                Commit: <span id="tps_commit" class="badge text-bg-success">{{ tpsCommit }}</span> Rollback:
+                <span id="tps_rollback" class="badge text-bg-danger">{{ tpsRollback }}</span>
               </div>
             </div>
             <div class="card-body p-2">
@@ -634,7 +634,7 @@ onMounted(() => {
                     {{ state.description }}
                   </div>
                   <div class="text-center">
-                    <span class="badge" v-bind:class="'badge-' + state.state.toLowerCase()">{{ state.state }}</span>
+                    <span class="badge" v-bind:class="'text-bg-' + state.state.toLowerCase()">{{ state.state }}</span>
                   </div>
                 </a>
               </div>
@@ -679,7 +679,7 @@ onMounted(() => {
                     v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
                   >
                     {{ moment(alert.datetime).format() }}<br />
-                    <span v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{ alert.state }}</span>
+                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">{{ alert.state }}</span>
                     <br />
                     <span class="fw-bold">
                       {{ alert.value }}
