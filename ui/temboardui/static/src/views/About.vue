@@ -17,7 +17,7 @@ function getMetadata() {
         </div>
         <div class="row">
           <div class="col-12 text-center">
-            <h1 style="font-size: 3rem; color: #d65a16" class="font-weight-bold">temBoard {{ temboard_version }}</h1>
+            <h1 style="font-size: 3rem; color: #d65a16" class="fw-bold">temBoard {{ temboard_version }}</h1>
             <div class="btn-group mx-auto justify-content-center">
               <a href="https://labs.dalibo.com/temboard" class="badge badge-light mx-1" target="_blank">
                 <i class="fa fa-globe"></i> Official website

@@ -481,7 +481,7 @@ onMounted(() => {
                   <i id="cpu-info" class="fa fa-info-circle text-muted" data-bs-toggle="tooltip" :title="cpuTooltip">
                   </i>
                 </div>
-                <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>
+                <div id="total-cpu" class="fw-bold" v-html="totalCpu"></div>
                 <div class="card-body p-2 chart-small">
                   <canvas ref="cpuChartEl"></canvas>
                 </div>
@@ -489,9 +489,9 @@ onMounted(() => {
               <div class="col-6 small text-center">
                 <div class="chart-title">Memory</div>
                 <div>
-                  <span id="total-memory" class="font-weight-bold" v-html="totalMemory"></span>
+                  <span id="total-memory" class="fw-bold" v-html="totalMemory"></span>
                   of
-                  <span id="memory" class="font-weight-bold">{{ memory }}</span>
+                  <span id="memory" class="fw-bold">{{ memory }}</span>
                 </div>
                 <div class="card-body p-2 chart-small">
                   <canvas ref="memoryChartEl"></canvas>
@@ -538,14 +538,14 @@ onMounted(() => {
             <div class="row mt-2">
               <div class="col-6 small text-center">
                 <div class="chart-title">Cache Hit Ratio</div>
-                <div id="total-hit" class="font-weight-bold">{{ totalHit }}</div>
+                <div id="total-hit" class="fw-bold">{{ totalHit }}</div>
                 <div class="card-body p-2 chart-small">
                   <canvas ref="hitRatioChartEl"></canvas>
                 </div>
               </div>
               <div class="col-6 small text-center">
                 <div class="chart-title">Sessions</div>
-                <div id="total-sessions" class="font-weight-bold">{{ totalSessions }}</div>
+                <div id="total-sessions" class="fw-bold">{{ totalSessions }}</div>
                 <div class="card-body p-2 chart-small">
                   <canvas ref="sessionsChartEl"></canvas>
                 </div>
@@ -627,7 +627,7 @@ onMounted(() => {
               >
                 <a v-bind:href="'alerting/' + state.name" v-bind:class="{ 'text-muted': !state.enabled }">
                   <div
-                    class="text-nowrap font-weight-bold"
+                    class="text-nowrap fw-bold"
                     style="overflow: hidden; text-overflow: ellipsis"
                     v-bind:title="state.description"
                   >
@@ -681,7 +681,7 @@ onMounted(() => {
                     {{ moment(alert.datetime).format() }}<br />
                     <span v-bind:class="'badge badge-' + alert.state.toLowerCase()">{{ alert.state }}</span>
                     <br />
-                    <span class="font-weight-bold">
+                    <span class="fw-bold">
                       {{ alert.value }}
                     </span>
                     <br />

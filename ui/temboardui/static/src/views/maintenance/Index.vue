@@ -133,12 +133,12 @@ fetchData();
       <tbody>
         <template v-for="(database, loop_index) in databasesSorted">
           <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0 }">
-            <td class="database font-weight-bold">
+            <td class="database fw-bold">
               <a :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${database.datname}`">
                 {{ database.datname }}
               </a>
             </td>
-            <td :class="['database-size', 'text-end', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+            <td :class="['database-size', 'text-end', sortCriteria == 'total_bytes' ? 'fw-bold' : '']">
               {{ database.total_size }}
             </td>
             <template v-if="database.n_tables > 0">
@@ -147,10 +147,7 @@ fetchData();
                   {{ database.n_tables }}
                 </span>
                 <span class="d-inline-block" style="min-width: 80px">
-                  <span
-                    v-if="database.tables_bytes"
-                    :class="[sortCriteria == 'tables_bytes' ? 'font-weight-bold' : '']"
-                  >
+                  <span v-if="database.tables_bytes" :class="[sortCriteria == 'tables_bytes' ? 'fw-bold' : '']">
                     {{ database.tables_size }}
                   </span>
                 </span>
@@ -159,7 +156,7 @@ fetchData();
                   :class="[
                     'table-bloat',
                     'd-inline-block',
-                    sortCriteria == 'tables_bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-muted',
                   ]"
                 >
                   <template v-if="database.tables_bloat_bytes && database.tables_bytes">
@@ -176,10 +173,7 @@ fetchData();
                 {{ database.n_indexes }}
               </span>
               <span class="d-inline-block" style="min-width: 80px">
-                <span
-                  v-if="database.indexes_bytes"
-                  :class="[sortCriteria == 'indexes_bytes' ? 'font-weight-bold' : '']"
-                >
+                <span v-if="database.indexes_bytes" :class="[sortCriteria == 'indexes_bytes' ? 'fw-bold' : '']">
                   {{ database.indexes_size }}
                 </span>
               </span>
@@ -188,7 +182,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  sortCriteria == 'indexes_bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-muted',
                 ]"
               >
                 <template v-if="database.indexes_bloat_bytes && database.indexes_bytes">
@@ -200,7 +194,7 @@ fetchData();
               <em> No index </em>
             </td>
             <td class="temboard-toast text-end border-start">
-              <span v-if="database.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
+              <span v-if="database.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'fw-bold' : '']">
                 {{ database.toast_size }}
               </span>
             </td>

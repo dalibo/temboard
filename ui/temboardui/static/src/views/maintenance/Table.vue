@@ -582,7 +582,7 @@ fetchData();
               </span>
             </td>
             <td class="index-size text-end align-middle">
-              <span :class="[indexSortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+              <span :class="[indexSortCriteria == 'total_bytes' ? 'fw-bold' : '']">
                 {{ index.total_size }}
               </span>
               <small
@@ -590,7 +590,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  indexSortCriteria == 'bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                  indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted',
                 ]"
               >
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>

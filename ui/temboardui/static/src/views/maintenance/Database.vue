@@ -397,14 +397,14 @@ fetchData();
       <tbody>
         <template v-for="(schema, loop_index) in schemasSorted">
           <tr v-bind:class="{ 'bg-light2': loop_index % 2 == 0 }">
-            <td class="schema font-weight-bold">
+            <td class="schema fw-bold">
               <a
                 :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${schema.name}`"
               >
                 {{ schema.name }}
               </a>
             </td>
-            <td :class="['schema-size', 'text-end', sortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+            <td :class="['schema-size', 'text-end', sortCriteria == 'total_bytes' ? 'fw-bold' : '']">
               {{ schema.total_size }}
             </td>
             <template v-if="schema.n_tables > 0">
@@ -413,7 +413,7 @@ fetchData();
                   {{ schema.n_tables }}
                 </span>
                 <span class="d-inline-block" style="min-width: 80px">
-                  <span v-if="schema.tables_bytes" :class="[sortCriteria == 'tables_bytes' ? 'font-weight-bold' : '']">
+                  <span v-if="schema.tables_bytes" :class="[sortCriteria == 'tables_bytes' ? 'fw-bold' : '']">
                     {{ schema.tables_size }}
                   </span>
                 </span>
@@ -422,7 +422,7 @@ fetchData();
                   :class="[
                     'table-bloat',
                     'd-inline-block',
-                    sortCriteria == 'tables_bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-muted',
                   ]"
                 >
                   <template v-if="schema.tables_bloat_bytes && schema.tables_bytes">
@@ -439,7 +439,7 @@ fetchData();
                 {{ schema.n_indexes }}
               </span>
               <span class="d-inline-block" style="min-width: 80px">
-                <span v-if="schema.indexes_bytes" :class="[sortCriteria == 'indexes_bytes' ? 'font-weight-bold' : '']">
+                <span v-if="schema.indexes_bytes" :class="[sortCriteria == 'indexes_bytes' ? 'fw-bold' : '']">
                   {{ schema.indexes_size }}
                 </span>
               </span>
@@ -448,7 +448,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  sortCriteria == 'indexes_bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-muted',
                 ]"
               >
                 <template v-if="schema.indexes_bloat_bytes && schema.indexes_bytes">
@@ -460,7 +460,7 @@ fetchData();
               <em> No index </em>
             </td>
             <td class="temboard-toast text-end border-start">
-              <span v-if="schema.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']">
+              <span v-if="schema.toast_bytes" :class="[sortCriteria == 'toast_bytes' ? 'fw-bold' : '']">
                 {{ schema.toast_size }}
               </span>
             </td>

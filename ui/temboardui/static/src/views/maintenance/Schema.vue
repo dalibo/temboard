@@ -252,30 +252,17 @@ fetchData();
                   {{ table.tablespace }}
                 </span>
               </td>
-              <td
-                :class="[
-                  'temboard-table-total-size',
-                  'text-end',
-                  sortCriteria == 'total_bytes' ? 'font-weight-bold' : '',
-                ]"
-              >
+              <td :class="['temboard-table-total-size', 'text-end', sortCriteria == 'total_bytes' ? 'fw-bold' : '']">
                 {{ table.total_size }}
               </td>
               <td class="heap text-end border-start">
-                <span
-                  v-if="table.table_bytes"
-                  :class="['table-size', sortCriteria == 'table_bytes' ? 'font-weight-bold' : '']"
-                >
+                <span v-if="table.table_bytes" :class="['table-size', sortCriteria == 'table_bytes' ? 'fw-bold' : '']">
                   {{ table.table_size }}
                 </span>
                 <template v-else> - </template>
                 <small
                   style="min-width: 70px"
-                  :class="[
-                    'table-bloat',
-                    'd-inline-block',
-                    sortCriteria == 'bloat_ratio' ? 'font-weight-bold' : 'text-muted',
-                  ]"
+                  :class="['table-bloat', 'd-inline-block', sortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted']"
                 >
                   <template v-if="table.bloat_bytes"> Bloat: {{ table.bloat_ratio.toFixed(1) }}% </template>
                 </small>
@@ -288,7 +275,7 @@ fetchData();
                   <span class="d-inline-block" style="min-width: 80px">
                     <span
                       v-if="table.index_bytes"
-                      :class="['index-size', sortCriteria == 'index_bytes' ? 'font-weight-bold' : '']"
+                      :class="['index-size', sortCriteria == 'index_bytes' ? 'fw-bold' : '']"
                     >
                       {{ table.index_size }}
                     </span>
@@ -299,7 +286,7 @@ fetchData();
                     :class="[
                       'index-bloat',
                       'd-inline-block',
-                      sortCriteria == 'index_bloat_ratio' ? 'font-weight-bold' : 'text-muted',
+                      sortCriteria == 'index_bloat_ratio' ? 'fw-bold' : 'text-muted',
                     ]"
                   >
                     <template v-if="table.index_bloat_bytes">
@@ -312,10 +299,7 @@ fetchData();
                 <em> No index </em>
               </td>
               <td class="temboard-toast text-end border-start">
-                <span
-                  v-if="table.toast_bytes"
-                  :class="['toast-size', sortCriteria == 'toast_bytes' ? 'font-weight-bold' : '']"
-                >
+                <span v-if="table.toast_bytes" :class="['toast-size', sortCriteria == 'toast_bytes' ? 'fw-bold' : '']">
                   {{ table.toast_size }}
                 </span>
                 <template v-else> - </template>
@@ -397,12 +381,12 @@ fetchData();
               </span>
             </td>
             <td class="index-size text-end align-middle">
-              <span :class="[indexSortCriteria == 'total_bytes' ? 'font-weight-bold' : '']">
+              <span :class="[indexSortCriteria == 'total_bytes' ? 'fw-bold' : '']">
                 {{ index.total_size }}
               </span>
               <small
                 style="min-width: 70px"
-                :class="['d-inline-block', indexSortCriteria == 'bloat_ratio' ? 'font-weight-bold' : 'text-muted']"
+                :class="['d-inline-block', indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted']"
               >
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>
               </small>
