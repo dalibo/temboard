@@ -413,9 +413,7 @@ function onFromToUpdate(from_, to_) {
           ><i class="fa fa-external-link"></i
         ></a>
         <span class="copy"></span>
-        <button type="button" class="btn-close" aria-label="Close" v-on:click="removeGraph(graph)">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" aria-label="Close" v-on:click="removeGraph(graph)"></button>
       </div>
       <div class="card-body">
         <div :id="'nodata' + graph" class="nodata-chart text-center d-none alert alert-secondary p-1">

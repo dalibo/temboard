@@ -45,9 +45,7 @@ defineExpose({ clear, fromXHR, setHTML });
   <div class="alert alert-danger" role="alert" v-if="error" v-cloak>
     <h4 class="modal-title" id="ErrorLabel">
       <template v-if="showTitle">Error {{ code }}</template>
-      <button type="button" class="btn-close" aria-label="Close" @click.prevent="clear">
-        <span aria-hidden="true">&times;</span>
-      </button>
+      <button type="button" class="btn-close" aria-label="Close" @click.prevent="clear"></button>
     </h4>
 
     <div class="pe-3">
