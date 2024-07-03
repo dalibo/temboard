@@ -34,7 +34,7 @@ def test_search(browse_pgconf, browser):
     # version.
     browser.mincount(".main .card", 2)
 
-    badges = browser.select_all(".main .card td.badge-setting")
+    badges = browser.select_all(".main .card tr td:nth-child(1)")
     for badge in badges:
         assert "archive" in badge.text
 
