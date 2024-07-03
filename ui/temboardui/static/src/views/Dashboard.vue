@@ -659,7 +659,7 @@ onMounted(() => {
                 data-bs-trigger="hover"
               >
                 <div class="p-1">
-                  <div class="float-right text-muted text-right">{{ moment(alert.datetime).fromNow() }}<br /></div>
+                  <div class="float-end text-muted text-end">{{ moment(alert.datetime).fromNow() }}<br /></div>
                   <div>
                     <a v-bind:href="'alerting/' + alert.name">
                       <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">

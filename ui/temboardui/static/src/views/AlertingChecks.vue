@@ -35,7 +35,7 @@ refresh();
 </script>
 <template>
   <div>
-    <div class="text-right text-muted small">Auto refresh every 1 min</div>
+    <div class="text-end text-muted small">Auto refresh every 1 min</div>
     <div id="checks-container" class="row" v-cloak>
       <template v-for="check in checks">
         <div class="col-3" v-if="check.state != 'UNDEF'">

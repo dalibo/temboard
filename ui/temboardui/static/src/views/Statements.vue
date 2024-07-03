@@ -153,62 +153,62 @@ function getFields() {
     {
       key: "calls",
       label: "Calls",
-      class: "text-right",
+      class: "text-end",
       sortable: true,
     },
     {
       key: "total_exec_time",
       label: "Total",
       formatter: formatDuration,
-      class: "text-right border-left",
+      class: "text-end border-start",
       sortable: true,
     },
     {
       key: "mean_time",
       label: "AVG",
       formatter: formatDuration,
-      class: "text-right",
+      class: "text-end",
       sortable: true,
     },
     {
       key: "shared_blks_read",
       label: "Read",
-      class: "text-right border-left",
+      class: "text-end border-start",
       formatter: formatSize,
       sortable: true,
     },
     {
       key: "shared_blks_hit",
       label: "Hit",
-      class: "text-right",
+      class: "text-end",
       formatter: formatSize,
       sortable: true,
     },
     {
       key: "shared_blks_dirtied",
       label: "Dirt.",
-      class: "text-right",
+      class: "text-end",
       formatter: formatSize,
       sortable: true,
     },
     {
       key: "shared_blks_written",
       label: "Writ.",
-      class: "text-right",
+      class: "text-end",
       formatter: formatSize,
       sortable: true,
     },
     {
       key: "temp_blks_read",
       label: "Read",
-      class: "text-right border-left",
+      class: "text-end border-start",
       formatter: formatSize,
       sortable: true,
     },
     {
       key: "temp_blks_written",
       label: "Writ.",
-      class: "text-right",
+      class: "text-end",
       formatter: formatSize,
       sortable: true,
     },
@@ -466,9 +466,9 @@ function onFromToUpdate(from_, to_) {
       <template v-slot:thead-top="data">
         <BTr>
           <BTh :colspan="dbid ? 3 : 2"></BTh>
-          <BTh class="text-center border-left" colspan="2">Time</BTh>
-          <BTh class="text-center border-left" colspan="4">Shared Blocks</BTh>
-          <BTh class="text-center border-left" colspan="2">Temp Blocks</BTh>
+          <BTh class="text-center border-start" colspan="2">Time</BTh>
+          <BTh class="text-center border-start" colspan="4">Shared Blocks</BTh>
+          <BTh class="text-center border-start" colspan="2">Temp Blocks</BTh>
         </BTr>
       </template>
       <template v-slot:cell(query)="row">
