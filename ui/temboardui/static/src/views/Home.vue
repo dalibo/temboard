@@ -172,8 +172,10 @@ watch(groupsFilter.value, (newVal) => {
     </div>
     <div class="row">
       <div class="col mb-2">
-        <form class="form-inline" onsubmit="event.preventDefault();">
-          <input type="text" class="form-control me-sm-2" placeholder="Search instances" v-model="search" />
+        <form class="row row-cols-lg-auto" onsubmit="event.preventDefault();">
+          <div class="col-12">
+            <input type="text" class="form-control me-sm-2" placeholder="Search instances" v-model="search" />
+          </div>
           <div class="dropdown me-sm-2">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
               Sort by: <strong v-cloak>{{ sort }}</strong>

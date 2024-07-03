@@ -300,7 +300,7 @@ function reset() {
             <input type="text" placeholder="Search" class="form-control" v-model="filter" />
           </div>
         </div>
-        <form id="state-filter" class="form-inline justify-content-end d-flex">
+        <form id="state-filter" class="justify-content-end d-flex">
           <div class="form-group pe-1">
             <label><strong>States:</strong></label>
           </div>
