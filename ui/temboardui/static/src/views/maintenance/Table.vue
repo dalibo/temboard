@@ -597,7 +597,7 @@ fetchData();
               </small>
             </td>
             <td class="index-scans align-middle text-end">
-              <span class="badge badge-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
+              <span class="badge text-bg-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
             </td>
             <td class="query" width="80%">
               <pre><code class="sql">{{ index.def }}</code></pre>

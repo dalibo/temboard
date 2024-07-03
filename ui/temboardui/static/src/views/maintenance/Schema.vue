@@ -269,7 +269,7 @@ fetchData();
               </td>
               <template v-if="table.n_indexes">
                 <td class="indexes text-end border-start">
-                  <span class="badge badge-secondary">
+                  <span class="badge text-bg-secondary">
                     {{ table.n_indexes }}
                   </span>
                   <span class="d-inline-block" style="min-width: 80px">
@@ -392,7 +392,7 @@ fetchData();
               </small>
             </td>
             <td class="index-scans align-middle text-end">
-              <span class="badge badge-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
+              <span class="badge text-bg-secondary" v-if="index.scans"> {{ index.scans }} scans </span>
             </td>
             <td class="query" width="80%">
               <pre><code class="sql">{{ index.def }}</code></pre>

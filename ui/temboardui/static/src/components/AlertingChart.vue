@@ -148,7 +148,7 @@ function drawThreshold(data, canvas) {
 function drawAlerts(data) {
   const annotations = data.map(function (alert) {
     const x = getClosestX(alert.datetime);
-    let text = ['<span class="badge badge-', alert.state.toLowerCase(), '">', alert.state, "</span><br>"];
+    let text = ['<span class="badge text-bg-', alert.state.toLowerCase(), '">', alert.state, "</span><br>"];
     if (alert.state == "WARNING" || alert.state == "CRITICAL") {
       text = text.concat([alert.value, " > ", alert[alert.state.toLowerCase()], "<br>"]);
     }

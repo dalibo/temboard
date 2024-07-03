@@ -18,10 +18,10 @@ if (props.discover) {
       <div class="text-center mt-4 w-100">
         <h1>
           {{ instance_name }}
-          <span class="align-top badge badge-secondary">{{ groups[0] }}</span>
+          <span class="align-top badge text-bg-secondary">{{ groups[0] }}</span>
         </h1>
         <h3 v-if="groups.length > 1">
-          <span v-for="group in groups" class="badge badge-secondary">{{ group }}</span>
+          <span v-for="group in groups" class="badge text-bg-secondary">{{ group }}</span>
         </h3>
         <h2 class="text-secondary pb-4 mb-4">{{ pg_version_summary }} serving {{ pg_data }}.</h2>
       </div>
@@ -30,7 +30,7 @@ if (props.discover) {
           <tr>
             <th colspan="2">
               <h3 class="m-1">
-                PostgreSQL <span class="align-middle badge badge-secondary">{{ postgres["cluster_name"] }}</span>
+                PostgreSQL <span class="align-middle badge text-bg-secondary">{{ postgres["cluster_name"] }}</span>
               </h3>
             </th>
           </tr>
@@ -104,7 +104,7 @@ if (props.discover) {
             <td>
               <ul class="list-inline plugins">
                 <li v-for="plugin in temboard['plugins']" :class="'list-inline-item ' + plugin" style="font-size: 135%">
-                  <span class="badge badge-light">{{ plugin }}</span>
+                  <span class="badge text-bg-light">{{ plugin }}</span>
                 </li>
               </ul>
             </td>
@@ -134,7 +134,7 @@ if (props.discover) {
       <div class="text-center mt-4 w-100">
         <h1>
           {{ instance_name }}
-          <span class="align-top badge badge-secondary">{{ groups[0] }}</span>
+          <span class="align-top badge text-bg-secondary">{{ groups[0] }}</span>
         </h1>
       </div>
       <div class="alert alert-warning mx-auto" role="alert">

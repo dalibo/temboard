@@ -47,7 +47,7 @@ refresh();
             <div class="card-body p-2">
               <div>
                 <a v-bind:href="'alerting/' + check.name" v-bind:class="{ 'text-muted': !check.enabled }">
-                  <span v-bind:class="'badge badge-' + check.state.toLowerCase()">
+                  <span v-bind:class="'badge text-bg-' + check.state.toLowerCase()">
                     {{ check.state }}
                   </span>
                   {{ check.description }}
@@ -56,7 +56,7 @@ refresh();
               <hr class="mt-1 mb-1" />
               <ul class="list-unstyled small ms-2 mb-0" style="max-height: 100px; overflow-y: auto">
                 <li v-for="key in sorted(check.state_by_key, 'key')">
-                  <span v-bind:class="'badge badge-' + key.state.toLowerCase()">
+                  <span v-bind:class="'badge text-bg-' + key.state.toLowerCase()">
                     {{ key.state }}
                   </span>
                   {{ key.key }}

@@ -124,7 +124,7 @@ defineExpose({ fetchLoad1, fetchTPS });
       <div class="row" v-if="hasMonitoring && index < 18">
         <div class="col-md-6 mt-2 small text-center text-nowrap">
           <span class="text-muted" v-if="tps_last">TPS: </span>
-          <span class="badge badge-secondary" v-if="tps_last">
+          <span class="badge text-bg-secondary" v-if="tps_last">
             {{ tps_last }}
           </span>
           <Sparkline
@@ -144,7 +144,7 @@ defineExpose({ fetchLoad1, fetchTPS });
         </div>
         <div class="col-md-6 mt-2 small text-center text-nowrap">
           <span class="text-muted" v-if="load1_last">Loadavg: </span>
-          <span class="badge badge-secondary" v-if="load1_last">
+          <span class="badge text-bg-secondary" v-if="load1_last">
             {{ load1_last }}
           </span>
           <div

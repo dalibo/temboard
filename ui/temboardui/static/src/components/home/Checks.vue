@@ -21,7 +21,7 @@ function popoverContent(instance) {
     return levels.indexOf(check.state);
   });
   const checksList = ordered.map((check) => {
-    return `<span class="badge badge-${check.state.toLowerCase()}">${check.description}</span>`;
+    return `<span class="badge text-bg-${check.state.toLowerCase()}">${check.description}</span>`;
   });
   return checksList.join("<br>");
 }
@@ -37,9 +37,11 @@ function popoverContent(instance) {
     data-bs-container="body"
     data-bs-html="true"
   >
-    <span class="badge badge-critical me-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
-    <span class="badge badge-critical me-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge badge-warning me-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
-    <span class="badge badge-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK">OK</span>
+    <span class="badge text-bg-critical me-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
+    <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
+    <span class="badge text-bg-warning me-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
+    <span class="badge text-bg-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK"
+      >OK</span
+    >
   </div>
 </template>

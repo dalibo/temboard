@@ -23,7 +23,7 @@ def test_alerts(browser, browse_alerting):
         "wal_files_total",
     ]
 
-    wanted = {"badge-ok", "badge-warning", "badge-critical"}
+    wanted = {"text-bg-ok", "text-bg-warning", "text-bg-critical"}
 
     for check in checks:
         el = browser.refresh_until(f"#status-{check} .badge")

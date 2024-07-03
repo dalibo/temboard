@@ -409,7 +409,7 @@ fetchData();
             </td>
             <template v-if="schema.n_tables > 0">
               <td class="temboard-tables text-end border-start">
-                <span class="badge badge-secondary">
+                <span class="badge text-bg-secondary">
                   {{ schema.n_tables }}
                 </span>
                 <span class="d-inline-block" style="min-width: 80px">
@@ -435,7 +435,7 @@ fetchData();
               <em> No table </em>
             </td>
             <td class="indexes text-end border-start" v-if="schema.n_indexes > 0">
-              <span class="badge badge-secondary">
+              <span class="badge text-bg-secondary">
                 {{ schema.n_indexes }}
               </span>
               <span class="d-inline-block" style="min-width: 80px">
