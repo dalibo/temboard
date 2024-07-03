@@ -18,19 +18,27 @@
         Notifications are sent to users with a valid email or phone number and for instances for which notifications are activated.
         </p>
         <p>Below you can test if notifications are correctly configured.</p>
-        <form class="form-inline" id="sendEmailForm">
+        <form class="row row-cols-lg-auto" id="sendEmailForm">
+          <div class="col-12">
           <input type="email" class="form-control me-2 mb-2" id="inputTestEmail" placeholder="Enter email address" value="{{role.role_email or ''}}">
+          </div>
+          <div class="col-12">
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not email_configured else '' }}>Test email notification</button>
           {% if not email_configured %}
           <p class="form-help mb-2 ms-2 text-danger">SMTP is not configured yet</p>
           {% end %}
+          </div>
         </form>
-        <form class="form-inline" id="sendSmsForm">
+        <form class="row row-cols-lg-auto" id="sendSmsForm">
+          <div class="col-12">
           <input type="text" class="form-control me-2 mb-2" id="inputTestPhone" placeholder="Enter phone number" value="{{role.role_phone or ''}}">
+          </div>
+          <div class="col-12">
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not sms_configured else '' }}>Test SMS notification</button>
           {% if not sms_configured %}
           <p class="form-help mb-2 ms-2 text-danger">Twilio is not configured yet</p>
           {% end %}
+          </div>
         </form>
       </div>
     </div>
