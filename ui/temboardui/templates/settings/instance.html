@@ -21,7 +21,7 @@
       <div class="row">
         <div class="col-md-12 text-right">
           <p>
-            <button id="buttonNewInstance" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalNewInstance">
+            <button id="buttonNewInstance" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalNewInstance">
               New instance
             </button>
         </p>
@@ -53,7 +53,7 @@
                   class="fa fa-warning text-warning"
                   style="cursor: pointer;"
                   title="Instance in multiple groups. Click for details."
-                  data-toggle="modal"
+                  data-bs-toggle="modal"
                   v-on:click="$refs.environment_migration_dialog.show()">
                 </i>
               {% end %}
@@ -86,8 +86,8 @@
           <td class="text-center">
             <button type="button"
               class="btn btn-outline-secondary btn-sm buttonEdit"
-              data-toggle="tooltip"
-              data-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
               title="Edit"
               v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
             ><i class="fa fa-edit"></i></button>
@@ -96,8 +96,8 @@
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm buttonDelete"
-              data-toggle="tooltip"
-              data-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
               title="Delete"
               v-on:click.prevent="$refs.delete_modal.open('{{ instance.agent_address }}', {{ instance.agent_port }})"
             ><i class="fa fa-trash-o"></i></button>

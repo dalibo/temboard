@@ -268,7 +268,7 @@ table.table-activity {
   &.table-sm th {
     padding-right: 10px !important;
     &.sorting_disabled {
-      padding-right: $table-cell-padding-sm !important;
+      padding-right: $table-cell-padding-x-sm !important;
     }
   }
 }

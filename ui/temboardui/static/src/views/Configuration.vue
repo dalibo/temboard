@@ -82,7 +82,7 @@ function getStatus() {
     dataType: "json",
     success: function (data) {
       configurationStatus.value = data;
-      $('[data-toggle="popover"]').popover();
+      $('[data-bs-toggle="popover"]').popover();
     },
     error: function (xhr) {
       showError(xhr);
@@ -147,7 +147,7 @@ function cancel(settingName, settingBootVal) {
   resetParamName.value = settingName;
   resetParamValue.value = settingBootVal;
   $("#resetModal").modal("show");
-  $("[data-toggle=popover]").popover("hide");
+  $("[data-bs-toggle=popover]").popover("hide");
 }
 
 function modalApiCall() {
@@ -204,13 +204,13 @@ function isSelected(value, setting) {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </template>
         <template v-else>
           <div class="modal-header">
             <h4 class="modal-title" id="resetModalLabel">Reset parameter:</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -221,7 +221,7 @@ function isSelected(value, setting) {
           </div>
           <div class="modal-footer" id="resetModalFooter">
             <button type="button" class="btn btn-success" id="resetYesButton" @click="modalApiCall()">Yes</button>
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </template>
       </div>
@@ -335,11 +335,11 @@ function isSelected(value, setting) {
                   </select>
                   <input
                     v-else
-                    data-toggle="popover"
-                    data-trigger="hover"
-                    data-placement="top"
-                    data-html="true"
-                    :data-content="generatePopoverContent(settingRow)"
+                    data-bs-toggle="popover"
+                    data-bs-trigger="hover"
+                    data-bs-placement="top"
+                    data-bs-html="true"
+                    :data-bs-content="generatePopoverContent(settingRow)"
                     type="text"
                     class="form-control form-control-sm"
                     :name="settingRow['name']"
@@ -352,12 +352,12 @@ function isSelected(value, setting) {
                     type="button"
                     class="btn btn-link"
                     :id="'buttonResetDefault_' + settingRow['name']"
-                    data-toggle="popover"
-                    data-trigger="hover"
-                    data-placement="right"
+                    data-bs-toggle="popover"
+                    data-bs-trigger="hover"
+                    data-bs-placement="right"
                     :title="settingRow['name']"
-                    data-html="true"
-                    :data-content="'Reset to: ' + settingRow['boot_val']"
+                    data-bs-html="true"
+                    :data-bs-content="'Reset to: ' + settingRow['boot_val']"
                     @click="cancel(settingRow['name'], settingRow['boot_val'])"
                   >
                     <span class="fa fa-undo" aria-hidden="true"></span>

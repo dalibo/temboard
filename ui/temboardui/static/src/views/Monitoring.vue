@@ -322,7 +322,7 @@ function onFromToUpdate(from_, to_) {
       <div class="col-12 d-flex justify-content-between">
         <a
           class="btn btn-outline-secondary collapse-toggle dropdown-toggle collapsed"
-          data-toggle="collapse"
+          data-bs-toggle="collapse"
           href="#metrics"
           role="button"
           aria-expanded="false"
@@ -397,7 +397,7 @@ function onFromToUpdate(from_, to_) {
             </ul>
           </div>
           <div class="col-4 d-flex align-items-end justify-content-end">
-            <button class="btn btn-outline-secondary" data-toggle="collapse" data-target="#metrics">Close</button>
+            <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#metrics">Close</button>
           </div>
         </div>
       </div>

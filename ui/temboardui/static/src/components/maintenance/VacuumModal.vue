@@ -43,7 +43,7 @@ const emit = defineEmits(["apply"]);
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="vacuumModalLabel">VACUUM</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -121,13 +121,13 @@ const emit = defineEmits(["apply"]);
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button
             id="buttonVacuumApply"
             type="button"
             class="btn btn-primary"
             v-on:click="emit('apply')"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
           >
             Apply
           </button>

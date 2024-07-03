@@ -28,7 +28,7 @@ createApp({
             attr: {
               title: "Download inventory as CSV",
               id: "buttonDownload",
-              "data-toggle": "tooltip",
+              "data-bs-toggle": "tooltip",
             },
             className: "btn btn-sm btn-secondary mx-1",
             text: `<i class="fa fa-download"></i>`,

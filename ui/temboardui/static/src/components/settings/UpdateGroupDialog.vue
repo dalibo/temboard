@@ -147,7 +147,7 @@ defineExpose({ open });
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button id="buttonSubmit" class="btn btn-success ml-auto" type="submit" v-bind:disabled="waiting">
           {{ isNew ? "Create" : "Update" }}
           <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>

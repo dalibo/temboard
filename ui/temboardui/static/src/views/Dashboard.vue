@@ -255,11 +255,11 @@ function updateAlerts() {
     success: function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
-      $(divAlertsEl.value).find("[data-toggle-popover]").popover("dispose");
+      $(divAlertsEl.value).find("[data-bs-toggle-popover]").popover("dispose");
       alerts.value = data;
       window.setTimeout(function () {
         $(divAlertsEl.value)
-          .find("[data-toggle-popover]")
+          .find("[data-bs-toggle-popover]")
           .popover({
             placement: "top",
             container: "body",
@@ -478,7 +478,8 @@ onMounted(() => {
               <div class="col-6 small text-center">
                 <div class="chart-title">
                   CPU &times; {{ discover.system.cpu_count }}
-                  <i id="cpu-info" class="fa fa-info-circle text-muted" data-toggle="tooltip" :title="cpuTooltip"> </i>
+                  <i id="cpu-info" class="fa fa-info-circle text-muted" data-bs-toggle="tooltip" :title="cpuTooltip">
+                  </i>
                 </div>
                 <div id="total-cpu" class="font-weight-bold" v-html="totalCpu"></div>
                 <div class="card-body p-2 chart-small">
@@ -654,8 +655,8 @@ onMounted(() => {
             <template v-for="alert in alerts">
               <div
                 class="bg-light mb-1"
-                :data-toggle-popover="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
-                data-trigger="hover"
+                :data-bs-toggle-popover="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
+                data-bs-trigger="hover"
               >
                 <div class="p-1">
                   <div class="float-right text-muted text-right">{{ moment(alert.datetime).fromNow() }}<br /></div>

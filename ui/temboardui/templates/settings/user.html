@@ -19,7 +19,7 @@
       <div class="row">
         <div class="col-md-12 text-right">
           <p>
-            <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalUpdateUser" v-on:click.prevent="$refs.update_modal.open()">
+            <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdateUser" v-on:click.prevent="$refs.update_modal.open()">
               New user
             </button>
           </p>
@@ -51,10 +51,10 @@
               <button
                 type="button"
                 class="btn btn-outline-secondary btn-sm"
-                data-placement="bottom"
+                data-bs-placement="bottom"
                 title="Edit"
-                data-toggle="modal"
-                data-target="#modalUpdateUser"
+                data-bs-toggle="modal"
+                data-bs-target="#modalUpdateUser"
                 v-on:click.prevent="$refs.update_modal.open('{{ role_item.role_name }}')">
                 <i class="fa fa-edit"></i></button>
             </td>
@@ -62,10 +62,10 @@
               <button
                 type="button"
                 class="btn btn-outline-secondary btn-sm"
-                data-toggle="modal"
-                data-placement="bottom"
+                data-bs-toggle="modal"
+                data-bs-placement="bottom"
                 title="Delete"
-                data-target="#modalDeleteUser"
+                data-bs-target="#modalDeleteUser"
                 v-on:click.prevent="$refs.delete_modal.open('{{ role_item.role_name }}')">
                 <i class="fa fa-trash-o"></i></button>
             </td>

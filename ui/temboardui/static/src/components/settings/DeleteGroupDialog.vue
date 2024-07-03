@@ -64,7 +64,7 @@ defineExpose({ open });
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       <button
         id="buttonDeleteGroup"
         class="btn btn-danger ml-auto"

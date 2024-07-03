@@ -11,7 +11,7 @@ const emit = defineEmits(["cancel"]);
 <template>
   <div v-if="scheduledReindexes.length">
     <a
-      data-toggle="collapse"
+      data-bs-toggle="collapse"
       href="#collapseScheduledReindexes"
       aria-expanded="false"
       aria-controls="collapseScheduledReindexes"

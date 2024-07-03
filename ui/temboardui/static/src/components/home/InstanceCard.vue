@@ -101,7 +101,7 @@ defineExpose({ fetchLoad1, fetchTPS });
                   instance.pg_version_summary + ' listening on ' + [instance.hostname, instance.pg_port].join(':')
                 "
                 class="instance-link"
-                data-toggle="tooltip"
+                data-bs-toggle="tooltip"
               >
                 {{ instance.hostname }}:{{ instance.pg_port }}
               </a>
@@ -135,10 +135,10 @@ defineExpose({ fetchLoad1, fetchTPS });
             @chart-rendered="setLastTPS"
             ref="tps_chart"
             class="sparkline-container"
-            data-toggle="tooltip"
-            data-title="Transations / sec (last hour)"
-            data-container="body"
-            data-placement="bottom"
+            data-bs-toggle="tooltip"
+            data-bs-title="Transations / sec (last hour)"
+            data-bs-container="body"
+            data-bs-placement="bottom"
           >
           </Sparkline>
         </div>
@@ -147,7 +147,12 @@ defineExpose({ fetchLoad1, fetchTPS });
           <span class="badge badge-secondary" v-if="load1_last">
             {{ load1_last }}
           </span>
-          <div ref="chart" data-toggle="tooltip" data-title="Load average (last hour)" data-placement="bottom"></div>
+          <div
+            ref="chart"
+            data-bs-toggle="tooltip"
+            data-bs-title="Load average (last hour)"
+            data-bs-placement="bottom"
+          ></div>
           <Sparkline
             :data="load1_data"
             :start="start"
@@ -156,9 +161,9 @@ defineExpose({ fetchLoad1, fetchTPS });
             @chart-rendered="setLastLoad1"
             ref="load1_chart"
             class="sparkline-container"
-            data-toggle="tooltip"
-            data-title="Load average (last hour)"
-            data-placement="bottom"
+            data-bs-toggle="tooltip"
+            data-bs-title="Load average (last hour)"
+            data-bs-placement="bottom"
           >
           </Sparkline>
         </div>

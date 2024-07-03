@@ -30,12 +30,12 @@ function popoverContent(instance) {
 <template>
   <div
     class="d-inline-block"
-    data-toggle="popover"
-    :data-content="popoverContent(props.instance)"
-    data-trigger="hover"
-    data-placement="bottom"
-    data-container="body"
-    data-html="true"
+    data-bs-toggle="popover"
+    :data-bs-content="popoverContent(props.instance)"
+    data-bs-trigger="hover"
+    data-bs-placement="bottom"
+    data-bs-container="body"
+    data-bs-html="true"
   >
     <span class="badge badge-critical mr-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
     <span class="badge badge-critical mr-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
