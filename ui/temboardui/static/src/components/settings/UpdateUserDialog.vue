@@ -156,15 +156,25 @@ defineExpose({ open });
                 </option>
               </select> </label
             ><br />
-            <div class="custom-control custom-switch">
-              <br />
-              <input type="checkbox" class="custom-control-input" id="switchActive" v-model="userModel.is_active" />
-              <label class="custom-control-label" for="switchActive">Active</label><br />
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                id="switchActive"
+                v-model="userModel.is_active"
+              />
+              <label class="form-check-label" for="switchActive">Active</label><br />
             </div>
-            <div class="custom-control custom-switch">
-              <br />
-              <input type="checkbox" class="custom-control-input" id="switchAdmin" v-model="userModel.is_admin" />
-              <label class="custom-control-label" for="switchAdmin">Administrator</label><br />
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                id="switchAdmin"
+                v-model="userModel.is_admin"
+              />
+              <label class="form-check-label" for="switchAdmin">Administrator</label><br />
             </div>
           </div>
         </div>
