@@ -1,4 +1,5 @@
 <script setup>
+import { Modal } from "bootstrap";
 import $ from "jquery";
 import { onMounted, ref } from "vue";
 
@@ -21,8 +22,11 @@ const error = ref(null);
 const resetParamName = ref("");
 const resetParamValue = ref("");
 
+let resetModal;
+
 onMounted(() => {
   getCategories();
+  resetModal = new Modal(document.getElementById("resetModal"));
 });
 
 function getCategories() {
@@ -146,7 +150,7 @@ function cancel(settingName, settingBootVal) {
   error.value.clear();
   resetParamName.value = settingName;
   resetParamValue.value = settingBootVal;
-  $("#resetModal").modal("show");
+  resetModal.show();
   $("[data-bs-toggle=popover]").popover("hide");
 }
 
@@ -164,7 +168,7 @@ function modalApiCall() {
     dataType: "json",
     success: function (data) {
       getConfiguration();
-      $("#resetModal").modal("hide");
+      resetModal.hide();
       modalLoading.value = false;
     },
     error: function (xhr) {

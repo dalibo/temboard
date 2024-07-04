@@ -6,6 +6,7 @@
  * render a preview of the managed instance. Disables plugins not loaded in
  * agent.
  */
+import { Modal, Tooltip } from "bootstrap";
 import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
 
@@ -59,7 +60,8 @@ const groups = computed(() => {
 });
 
 onUpdated(() => {
-  $('[data-bs-toggle="tooltip"]', root.value.$el).tooltip();
+  const tooltipTriggerList = root.value.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map((el) => new Tooltip(el));
 });
 
 function discover_agent() {
@@ -109,7 +111,7 @@ function open(address, port) {
   agent_address = address;
   agent_port = port;
 
-  $(root.value.$el).modal("show");
+  new Modal(root.value.$el).show();
 
   fetch_current_data().done(() => {
     // Discover may fail if agent is down.

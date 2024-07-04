@@ -35,7 +35,8 @@ watch(
 );
 
 onUpdated(() => {
-  $('[data-bs-toggle="tooltip"]', root.value.$el).tooltip();
+  const tooltipTriggerList = root.value.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map((el) => new Tooltip(el));
 });
 
 function submit() {

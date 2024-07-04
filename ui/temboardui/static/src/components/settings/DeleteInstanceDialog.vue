@@ -1,5 +1,6 @@
 <script setup>
 // A confirm dialog
+import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
 
@@ -20,7 +21,7 @@ function open(address, port) {
   agent_address = address;
   agent_port = port;
 
-  $(root.value.$el).modal("show");
+  new Modal(root.value.$el).show();
 
   $.ajax({
     url: ["/json/settings/instance", agent_address, agent_port].join("/"),
