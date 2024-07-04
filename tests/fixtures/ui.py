@@ -259,10 +259,10 @@ def registered_agent(admin_session, agent, agent_conf, browser_session, pg_versi
     port = agent_conf.get("temboard", "port")
     browser.select("input#inputAgentPort").send_keys(port)
     browser.select("#buttonDiscover").click()
-    browser.select("#selectGroups option").click()
-    browser.select("textarea#inputComment").send_keys("Registered by tests.")
+    browser.select("#selectGroupsNew option").click()
+    browser.select("textarea#inputCommentNew").send_keys("Registered by tests.")
 
-    browser.select("#buttonSubmit").click()
+    browser.select("#buttonSubmitNew").click()
     td = browser.select("td.agent span.hostport")
     assert f"0.0.0.0:{port}" in td.text
 

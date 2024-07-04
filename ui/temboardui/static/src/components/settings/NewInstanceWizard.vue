@@ -199,6 +199,7 @@ function reset() {
       <InstanceForm
         ref="formCmp"
         submit_text="Register"
+        type="New"
         :pg_host="state.pg_host"
         :pg_port="state.pg_port"
         :pg_data="state.pg_data"
