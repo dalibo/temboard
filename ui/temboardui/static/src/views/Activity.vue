@@ -267,12 +267,12 @@ function reset() {
         </span>
       </div>
       <div class="col-auto align-self-center">
-        <span id="autoRefreshResume" class="d-text-muted" :class="{ 'd-none': !freezed }">
+        <span id="autoRefreshResume" class="d-text-body-secondary" :class="{ 'd-none': !freezed }">
           <a class="btn btn-secondary" role="button" href @click.prevent="resume"
             ><i class="fa fa-play"></i> resume auto refresh</a
           >
         </span>
-        <span class="text-muted" :class="{ 'd-none': freezed }">
+        <span class="text-body-secondary" :class="{ 'd-none': freezed }">
           <img src="/images/ring-alt.svg" width="24" class="fa-fw" :class="{ 'd-none': !loading }" />
           Auto refresh
           <span :class="{ 'd-none': paused }">2s</span>
@@ -364,7 +364,7 @@ function reset() {
             <span :title="data.value" v-html="truncateState(data.value)"></span>
           </template>
         </BTable>
-        <p class="text-center text-muted">Showing 300 longest queries.</p>
+        <p class="text-center text-body-secondary">Showing 300 longest queries.</p>
       </div>
     </div>
     <ModalDialog id="terminateModal" title="Terminate Backend" v-on:closed="reset">

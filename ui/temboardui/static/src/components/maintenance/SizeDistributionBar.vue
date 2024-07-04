@@ -27,7 +27,7 @@ function toWidthPercent(value, total) {
 function popoverContent(cat) {
   let ret = `${props[cat + "label"]}: ${props[cat]}`;
   if (props[cat + "bis"]) {
-    ret += `<br><small class="d-inline-block text-muted">Bloat: ${props[cat + "bis"]}</small>`;
+    ret += `<br><small class="d-inline-block text-body-secondary">Bloat: ${props[cat + "bis"]}</small>`;
   }
   return ret;
 }

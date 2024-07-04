@@ -20,7 +20,7 @@ const emit = defineEmits(["cancel"]);
       {{ scheduledReindexes.length }} scheduled reindexes
     </a>
     <ul class="list list-unstyled collapse border rounded p-1" id="collapseScheduledReindexes">
-      <li v-for="scheduledReindex in scheduledReindexes" class="pb-1 text-muted">
+      <li v-for="scheduledReindex in scheduledReindexes" class="pb-1 text-body-secondary">
         <pre class="mb-0 text-truncate">
         <code class="bg-light small">REINDEX
         <span v-if="!scheduledReindex.table &&

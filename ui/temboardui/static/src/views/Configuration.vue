@@ -301,7 +301,7 @@ function isSelected(value, setting) {
               <tr v-for="settingRow in settingGroup['rows']">
                 <td class="badge-setting">
                   <span class="title-setting">{{ settingRow["name"] }}</span>
-                  <p class="text-muted mb-0 small">{{ settingRow["desc"] }}</p>
+                  <p class="text-body-secondary mb-0 small">{{ settingRow["desc"] }}</p>
                 </td>
                 <td class="input-setting">
                   <div v-if="settingRow['vartype'] == 'bool'" class="text-center">

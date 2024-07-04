@@ -228,7 +228,7 @@ function formatSize(bytes) {
   bytes *= 8192;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   if (bytes == 0) {
-    return '<span class="text-muted">0</span>';
+    return '<span class="text-body-secondary">0</span>';
   }
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
@@ -377,7 +377,7 @@ function onFromToUpdate(from_, to_) {
               <span v-else>All Databases</span>
             </li>
             <li class="breadcrumb-item" v-if="dbid">
-              <em class="text-muted small">Database:</em>
+              <em class="text-body-secondary small">Database:</em>
               <a
                 href
                 v-on:click.prevent="
@@ -391,7 +391,7 @@ function onFromToUpdate(from_, to_) {
               <strong v-else>{{ datname }}</strong>
             </li>
             <li class="breadcrumb-item" v-if="queryid && userid">
-              <em class="text-muted small">Query:</em>
+              <em class="text-body-secondary small">Query:</em>
               <strong>{{ queryid }}</strong>
             </li>
           </ol>
@@ -502,10 +502,10 @@ function onFromToUpdate(from_, to_) {
         <div class="text-center">
           There are no records to show.
           <br />
-          <span class="text-muted" v-if="!metas || metas.coalesce_seq < 2"
+          <span class="text-body-secondary" v-if="!metas || metas.coalesce_seq < 2"
             >No snapshot has been done yet, please wait.</span
           >
-          <span class="text-muted" v-else-if="metas.error">There are errors</span>
+          <span class="text-body-secondary" v-else-if="metas.error">There are errors</span>
         </div>
       </template>
     </BTable>

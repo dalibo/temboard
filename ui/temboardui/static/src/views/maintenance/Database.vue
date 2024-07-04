@@ -341,7 +341,7 @@ fetchData();
 
       <div class="d-flex">
         <h4>
-          Schemas <span class="text-muted small">({{ database.schemas.length }})</span>
+          Schemas <span class="text-body-secondary small">({{ database.schemas.length }})</span>
         </h4>
         <div class="ms-auto">
           <button
@@ -422,7 +422,7 @@ fetchData();
                   :class="[
                     'table-bloat',
                     'd-inline-block',
-                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-muted',
+                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                   ]"
                 >
                   <template v-if="schema.tables_bloat_bytes && schema.tables_bytes">
@@ -431,7 +431,7 @@ fetchData();
                 </small>
               </td>
             </template>
-            <td class="temboard-tables text-center text-muted border-start small" v-else>
+            <td class="temboard-tables text-center text-body-secondary border-start small" v-else>
               <em> No table </em>
             </td>
             <td class="indexes text-end border-start" v-if="schema.n_indexes > 0">
@@ -448,7 +448,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-muted',
+                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                 ]"
               >
                 <template v-if="schema.indexes_bloat_bytes && schema.indexes_bytes">
@@ -456,7 +456,7 @@ fetchData();
                 </template>
               </small>
             </td>
-            <td class="indexes text-center text-muted border-start small" v-else>
+            <td class="indexes text-center text-body-secondary border-start small" v-else>
               <em> No index </em>
             </td>
             <td class="temboard-toast text-end border-start">

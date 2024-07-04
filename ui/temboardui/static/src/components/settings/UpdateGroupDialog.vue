@@ -126,7 +126,7 @@ defineExpose({ open });
                   {{ group.name }}
                 </option>
               </select>
-              <p class="form-text text-muted">
+              <p class="form-text text-body-secondary">
                 Please select the user groups allowed to view instances from this instance group.
               </p>
             </div>

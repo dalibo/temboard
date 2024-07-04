@@ -46,7 +46,7 @@
           <td>{{group_item.group_name}}</td>
           <td>{{group_item.group_description}}</td>
           {% if group_kind == 'instance' %}
-          <td>{% for ari in group_item.ari %} <span class="badge border text-muted">{{ari.role_group_name}}</span>{% end %}
+          <td>{% for ari in group_item.ari %} <span class="badge border text-body-secondary">{{ari.role_group_name}}</span>{% end %}
             {% if len(group_item.ari) > 1 %}
               <i
                 class="fa fa-warning text-warning"

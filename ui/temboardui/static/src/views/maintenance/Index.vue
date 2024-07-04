@@ -77,7 +77,7 @@ fetchData();
     <div v-cloak v-if="!loading">
       <div class="d-flex">
         <h4>
-          Databases <span class="text-muted small">({{ databases.length }})</span>
+          Databases <span class="text-body-secondary small">({{ databases.length }})</span>
         </h4>
         <div class="ms-auto">
           <button
@@ -156,7 +156,7 @@ fetchData();
                   :class="[
                     'table-bloat',
                     'd-inline-block',
-                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-muted',
+                    sortCriteria == 'tables_bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                   ]"
                 >
                   <template v-if="database.tables_bloat_bytes && database.tables_bytes">
@@ -165,7 +165,7 @@ fetchData();
                 </small>
               </td>
             </template>
-            <td class="temboard-tables text-center text-muted border-start small" v-else>
+            <td class="temboard-tables text-center text-body-secondary border-start small" v-else>
               <em> No table </em>
             </td>
             <td class="indexes text-end border-start" v-if="database.n_indexes > 0">
@@ -182,7 +182,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-muted',
+                  sortCriteria == 'indexes_bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                 ]"
               >
                 <template v-if="database.indexes_bloat_bytes && database.indexes_bytes">
@@ -190,7 +190,7 @@ fetchData();
                 </template>
               </small>
             </td>
-            <td class="indexes text-center text-muted border-start small" v-else>
+            <td class="indexes text-center text-body-secondary border-start small" v-else>
               <em> No index </em>
             </td>
             <td class="temboard-toast text-end border-start">

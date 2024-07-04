@@ -367,8 +367,8 @@ fetchData();
             <dd>
               {{ table.total_size }}
               <br />
-              <span class="text-muted">~ {{ table.row_estimate }} rows</span>
-              <small class="text-muted">(~ {{ table.n_dead_tup }} dead)</small>
+              <span class="text-body-secondary">~ {{ table.row_estimate }} rows</span>
+              <small class="text-body-secondary">(~ {{ table.n_dead_tup }} dead)</small>
             </dd>
           </dl>
         </div>
@@ -381,7 +381,7 @@ fetchData();
             <dd>
               {{ table.table_size }}
               <br />
-              <em class="text-muted">
+              <em class="text-body-secondary">
                 Bloat:
                 {{ parseInt((table.bloat_bytes / table.table_bytes) * 100) }}%
                 <span class="small"> ({{ table.bloat_size }}) </span>
@@ -398,7 +398,7 @@ fetchData();
             <dd>
               {{ table.index_size }}
               <br />
-              <em class="text-muted">
+              <em class="text-body-secondary">
                 Bloat:
                 {{ parseInt((table.index_bloat_bytes / table.index_bytes) * 100) }}%
                 <span class="small"> ({{ table.index_bloat_size }}) </span>
@@ -436,7 +436,7 @@ fetchData();
             <span v-else>N/A</span>
             <span v-if="getLatestAnalyze.auto">(auto)</span>
           </em>
-          <span class="text-muted small" v-if="table.n_mod_since_analyze">
+          <span class="text-body-secondary small" v-if="table.n_mod_since_analyze">
             (~ {{ table.n_mod_since_analyze }} rows modified since then)
           </span>
           <br />
@@ -518,7 +518,7 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of modified rows since last analyze is high, you should
             consider lauching an ANALYZE
             <br />
-            <span class="ps-4 text-muted margin-start">
+            <span class="ps-4 text-body-secondary margin-start">
               Out of date analyzes can result in stats not being accurate, which eventually leads to slow queries.
             </span>
           </p>
@@ -526,25 +526,29 @@ fetchData();
             <i class="fa fa-exclamation-triangle"></i>The number of dead tuples is high, you should consider running a
             VACUUM.
             <br />
-            <span class="ps-4 text-muted margin-start"> Dead tuples waste space and slow down queries. </span>
+            <span class="ps-4 text-body-secondary margin-start"> Dead tuples waste space and slow down queries. </span>
           </p>
           <p class="text-danger" v-if="table.bloat_bytes / table.table_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a Full
             VACUUUM.
             <br />
-            <span class="ps-4 text-muted margin-start"> Table bloat wastes space and slows down queries. </span>
+            <span class="ps-4 text-body-secondary margin-start">
+              Table bloat wastes space and slows down queries.
+            </span>
           </p>
           <p class="text-danger" v-if="table.index_bloat_bytes / table.index_bytes > 0.5">
             <i class="fa fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a Full
             VACUUUM or REINDEX.
             <br />
-            <span class="ps-4 text-muted margin-start"> Index bloat wastes space and slows down queries. </span>
+            <span class="ps-4 text-body-secondary margin-start">
+              Index bloat wastes space and slows down queries.
+            </span>
           </p>
         </div>
       </div>
       <div class="d-flex">
         <h4>
-          Indexes <span class="text-muted small">({{ table.indexes.length }})</span>
+          Indexes <span class="text-body-secondary small">({{ table.indexes.length }})</span>
         </h4>
         <div class="ms-auto">
           <button
@@ -577,7 +581,7 @@ fetchData();
               <strong>{{ index.name }}</strong>
               <small> ({{ index.type }}) </small>
               <span v-if="index.tablespace">
-                <em class="text-muted small">in </em>
+                <em class="text-body-secondary small">in </em>
                 {{ index.tablespace }}
               </span>
             </td>
@@ -590,7 +594,7 @@ fetchData();
                 :class="[
                   'index-bloat',
                   'd-inline-block',
-                  indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted',
+                  indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                 ]"
               >
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>
@@ -619,7 +623,7 @@ fetchData();
                   <li v-if="scheduledReindex.index == index.name">
                     <template v-if="scheduledReindex.status == 'todo'">
                       <em v-if="scheduledReindex.status == 'todo'">
-                        <span class="text-muted" :title="scheduledReindex.datetime.toString()"
+                        <span class="text-body-secondary" :title="scheduledReindex.datetime.toString()"
                           ><i class="fa fa-clock-o"></i>&nbsp;
                           <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">{{
                             timeAgo
@@ -635,16 +639,16 @@ fetchData();
                       </button>
                     </template>
                     <template v-else-if="scheduledReindex.status == 'doing'">
-                      <em class="text-muted">
+                      <em class="text-body-secondary">
                         <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
                         in progress
                       </em>
                     </template>
                     <template v-else-if="scheduledReindex.status == 'canceled'">
-                      <em class="text-muted">canceled</em>
+                      <em class="text-body-secondary">canceled</em>
                     </template>
                     <template v-else>
-                      <em class="text-muted">{{ scheduledReindex.status }}</em>
+                      <em class="text-body-secondary">{{ scheduledReindex.status }}</em>
                     </template>
                   </li>
                 </template>

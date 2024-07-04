@@ -339,7 +339,7 @@ function onFromToUpdate(from_, to_) {
       <div class="card card-body bg-light mb-2">
         <div class="row mb-2">
           <div class="col-4">
-            <span class="text-muted text-uppercase">System</span>
+            <span class="text-body-secondary text-uppercase">System</span>
             <ul class="list-unstyled mb-0">
               <li v-for="(metric, key) in metrics">
                 <div class="form-check" v-if="metric.category == 'system'">
@@ -358,7 +358,7 @@ function onFromToUpdate(from_, to_) {
             </ul>
           </div>
           <div class="col-8">
-            <span class="text-muted text-uppercase">Postgres</span>
+            <span class="text-body-secondary text-uppercase">Postgres</span>
             <div class="columns-2">
               <ul class="list-unstyled mb-0">
                 <li v-for="(metric, key) in metrics">
