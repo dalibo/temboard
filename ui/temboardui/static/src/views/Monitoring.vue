@@ -1,5 +1,5 @@
 <script setup>
-import $ from "jquery";
+import { Collapse } from "bootstrap";
 import _ from "lodash";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -314,6 +314,11 @@ function onFromToUpdate(from_, to_) {
   from.value = from_;
   to.value = to_;
 }
+
+function showMetricsSelector() {
+  new Collapse("#metrics").show();
+  window.scrollTo({ top: 0 });
+}
 </script>
 
 <template>
@@ -441,16 +446,7 @@ function onFromToUpdate(from_, to_) {
       </div>
     </div>
     <div class="text-center w-100">
-      <a
-        href="#"
-        v-on:click="
-          $('#metrics').collapse('show');
-          window.scrollTo({ top: 0 });
-        "
-        class="btn btn-outline-secondary"
-      >
-        + More metrics
-      </a>
+      <a href="#" @click="showMetricsSelector" class="btn btn-outline-secondary"> + More metrics </a>
     </div>
   </div>
 </template>
