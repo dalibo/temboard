@@ -103,7 +103,7 @@ defineExpose({ open });
           </div>
         </div>
         <div class="row">
-          <div class="form-group col-sm-6">
+          <div class="mb-3 col-sm-6">
             <label for="inputNewGroupname" class="form-label">Group name</label>
             <input
               type="text"
@@ -114,7 +114,7 @@ defineExpose({ open });
             />
           </div>
           <template v-if="kind == 'instance'">
-            <div class="form-group col-sm-6">
+            <div class="mb-3 col-sm-6">
               <label for="selectGroups" class="form-label">User groups</label><br />
               <select id="selectGroups" multiple="multiple">
                 <option
@@ -133,7 +133,7 @@ defineExpose({ open });
           </template>
         </div>
         <div class="row">
-          <div class="form-group col-sm-12">
+          <div class="mb-3 col-sm-12">
             <label for="inputDescription" class="form-label">Description</label>
             <textarea
               class="form-control"

@@ -12,11 +12,11 @@
       <div class="card-body">
         {% try %}{% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% end %}{% except %}{% end %}
         <form role="form" action="/login" method="post">
-          <div class="form-group">
+          <div class="mb-3">
             <label for="inputUsername" class="form-label">Username</label>
             <input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
           </div>
-          <div class="form-group">
+          <div class="mb-3">
             <label for="inputPassword" class="form-label">Password</label>
             <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
           </div>
