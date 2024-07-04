@@ -255,30 +255,26 @@ function isSelected(value, setting) {
           placeholder="Find in settings"
           v-model="queryFilter"
         />
-        <span class="input-group-append">
-          <a
-            v-if="queryFilter"
-            class="btn btn-outline-secondary"
-            id="buttonResetSearch"
-            @click="
-              queryFilter = '';
-              getConfiguration();
-            "
-          >
-            <i class="fa fa-fw fa-times"></i>
-          </a>
-          <button type="submit" class="btn btn-outline-secondary" id="buttonSearchSettings" @click="getConfiguration()">
-            <i class="fa fa-fw fa-search"></i>
-          </button>
-        </span>
+        <button
+          v-if="queryFilter"
+          class="input-group-text"
+          id="buttonResetSearch"
+          @click="
+            queryFilter = '';
+            getConfiguration();
+          "
+        >
+          <i class="fa fa-fw fa-times"></i>
+        </button>
+        <button type="submit" class="input-group-text" id="buttonSearchSettings" @click="getConfiguration()">
+          <i class="fa fa-fw fa-search"></i>
+        </button>
       </div>
     </div>
     <div class="col-7">
       <label class="sr-only" for="selectConfCat">Category</label>
       <div class="input-group">
-        <div class="input-group-prepend">
-          <div class="input-group-text">Category</div>
-        </div>
+        <div class="input-group-text">Category</div>
         <select
           class="form-control"
           id="selectConfCat"
