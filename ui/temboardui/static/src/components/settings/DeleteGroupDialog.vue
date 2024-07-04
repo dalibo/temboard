@@ -1,4 +1,5 @@
 <script setup>
+import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
 
@@ -13,7 +14,7 @@ const waiting = ref(false);
 const groupName = ref("");
 
 function open(name) {
-  $(root.value.$el).modal("show");
+  new Modal(root.value.$el).show();
   groupName.value = name;
   waiting.value = true;
   $.ajax({

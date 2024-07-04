@@ -1,12 +1,13 @@
 <script setup>
 import { UseClipboard } from "@vueuse/components";
+import { Modal } from "bootstrap";
 import { BTable } from "bootstrap-vue-next";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
 import $ from "jquery";
 import * as _ from "lodash";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import ModalDialog from "../components/ModalDialog.vue";
 import { formatDuration } from "../utils/duration";
@@ -33,6 +34,12 @@ const states = [
   "disabled",
 ];
 const selectedStates = ref(JSON.parse(localStorage.getItem("temboardActivityStateFilters")) || states);
+
+let terminateModal;
+
+onMounted(() => {
+  terminateModal = new Modal($("#terminateModal"));
+});
 
 function load() {
   const lastLoad = new Date();
@@ -75,7 +82,7 @@ function terminate() {
     dataType: "json",
     data: JSON.stringify({ pids: selectedPids.value }),
     success: function () {
-      $("#terminateModal").modal("hide");
+      terminateModal.hide();
       terminateLoading.value = false;
       selectedPids.value = [];
       paused.value = false;

@@ -1,4 +1,5 @@
 <script setup>
+import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
 
@@ -21,7 +22,7 @@ function open(name) {
   error.value.clear();
   initialName = name;
   isNew.value = !name;
-  $(root.value.$el).modal("show");
+  new Modal(root.value.$el).show();
   groupName.value = name;
   waiting.value = true;
 
