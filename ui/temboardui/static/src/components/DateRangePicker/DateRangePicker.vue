@@ -251,10 +251,8 @@ function notify() {
             <label for="inputFrom" class="form-label">From:</label>
             <div class="input-group">
               <input type="text" id="inputFrom" v-model="inputFrom" class="form-control" />
-              <div class="input-group-append" data-role="from-picker">
-                <div class="input-group-text">
-                  <i class="fa fa-calendar"></i>
-                </div>
+              <div class="input-group-text" data-role="from-picker">
+                <i class="fa fa-calendar"></i>
               </div>
             </div>
           </div>
@@ -262,10 +260,8 @@ function notify() {
             <label for="inputTo" class="form-label">To:</label>
             <div class="input-group">
               <input type="text" id="inputTo" v-model="inputTo" class="form-control" />
-              <div class="input-group-append" data-role="to-picker">
-                <div class="input-group-text">
-                  <i class="fa fa-calendar"></i>
-                </div>
+              <div class="input-group-text" data-role="to-picker">
+                <i class="fa fa-calendar"></i>
               </div>
             </div>
           </div>
