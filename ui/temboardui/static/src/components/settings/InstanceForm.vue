@@ -6,6 +6,7 @@ import InstanceDetails from "./InstanceDetails.vue";
 const props = defineProps([
   "submit_text", // Submit button label.
   "waiting", // Whether parent is interacting with server.
+  "type", // Either 'New' or 'Update'
 
   // Discover readonly data.
   "pg_host",
@@ -41,8 +42,8 @@ function submit() {
   // /json/settings/instances/X.X.X.X/PPPP.
   const data = {
     // Define parameters.
-    groups: $("#selectGroups").val(),
-    plugins: $("#selectPlugins").val(),
+    groups: $("#selectGroups" + props.type).val(),
+    plugins: $("#selectPlugins" + props.type).val(),
     notify: props.notify,
     comment: commentModel.value,
   };
@@ -75,8 +76,8 @@ const emit = defineEmits(["submit"]);
 
       <div class="row">
         <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
-          <label for="selectGroups">Groups</label>
-          <select id="selectGroups" :disabled="waiting" multiple required>
+          <label :for="'selectGroups' + type">Groups</label>
+          <select :id="'selectGroups' + type" :disabled="waiting" multiple required>
             <option
               v-for="group of groups"
               :key="group.name"
@@ -89,8 +90,8 @@ const emit = defineEmits(["submit"]);
           <div id="tooltip-container"></div>
         </div>
         <div id="divPlugins" class="form-group col-sm-6" v-if="plugins.length > 0">
-          <label for="selectPlugins" class="control-label">Plugins</label>
-          <select id="selectPlugins" :disabled="waiting" multiple="multiple">
+          <label :for="'selectPlugins' + type" class="control-label">Plugins</label>
+          <select :id="'selectPlugins' + type" :disabled="waiting" multiple="multiple">
             <option
               v-for="plugin of plugins"
               :key="plugin.name"
@@ -108,22 +109,34 @@ const emit = defineEmits(["submit"]);
       <div class="row">
         <div class="col-sm-12">
           <div class="form-check">
-            <input id="inputNotify" class="form-check-input" type="checkbox" :value="notify" :disabled="waiting" />
-            <label for="inputNotify" class="control-label">Notify users of any status alert.</label>
+            <input
+              :id="'inputNotify' + type"
+              class="form-check-input"
+              type="checkbox"
+              :value="notify"
+              :disabled="waiting"
+            />
+            <label :for="'inputNotify' + type" class="control-label">Notify users of any status alert.</label>
           </div>
         </div>
       </div>
       <div class="row">
         <div class="form-group col-sm-12">
-          <label for="inputComment" class="control-label">Comment</label>
-          <textarea id="inputComment" class="form-control" rows="3" v-model="commentModel" :disabled="waiting">
+          <label :for="'inputComment' + type" class="control-label">Comment</label>
+          <textarea
+            :id="'inputComment' + type"
+            class="form-control"
+            rows="3"
+            v-model="commentModel"
+            :disabled="waiting"
+          >
           </textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-      <button id="buttonSubmit" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
+      <button :id="'buttonSubmit' + type" class="btn btn-success ml-auto" type="submit" :disabled="waiting">
         {{ submit_text }}
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>

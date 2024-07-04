@@ -176,6 +176,7 @@ defineExpose({ open });
     <InstanceForm
       ref="formCmp"
       submit_text="Update"
+      type="Update"
       :pg_host="form.pg_host"
       :pg_port="form.pg_port"
       :pg_data="form.pg_data"

@@ -48,14 +48,14 @@ def test_about_instance(registered_agent, agent_conf, browser, ui_url):
 def test_edit_instance(registered_agent, browser, ui_url):
     browser.get(ui_url + "/settings/instances")
     browser.select("td button.buttonEdit").click()
-    browser.select("#inputNotify").click()
-    comment = browser.select("#inputComment").get_attribute("value")
+    browser.select("#inputNotifyUpdate").click()
+    comment = browser.select("#inputCommentUpdate").get_attribute("value")
     assert "Registered by tests." == comment
     default_selected = browser.select(
-        "#selectGroups option[value='default']"
+        "#selectGroupsUpdate option[value='default']"
     ).get_attribute("selected")
     assert default_selected == "true"
-    browser.select("#buttonSubmit").click()
+    browser.select("#buttonSubmitUpdate").click()
 
 
 def test_download_inventory(registered_agent, browser):
