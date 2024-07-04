@@ -77,7 +77,7 @@ const emit = defineEmits(["submit"]);
 
       <div class="row">
         <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
-          <label :for="'selectGroups' + type">Groups</label>
+          <label :for="'selectGroups' + type" class="form-label">Groups</label>
           <select :id="'selectGroups' + type" :disabled="waiting" multiple required>
             <option
               v-for="group of groups"
@@ -91,7 +91,7 @@ const emit = defineEmits(["submit"]);
           <div id="tooltip-container"></div>
         </div>
         <div id="divPlugins" class="form-group col-sm-6" v-if="plugins.length > 0">
-          <label :for="'selectPlugins' + type" class="control-label">Plugins</label>
+          <label :for="'selectPlugins' + type" class="form-label">Plugins</label>
           <select :id="'selectPlugins' + type" :disabled="waiting" multiple="multiple">
             <option
               v-for="plugin of plugins"
@@ -117,13 +117,13 @@ const emit = defineEmits(["submit"]);
               :value="notify"
               :disabled="waiting"
             />
-            <label :for="'inputNotify' + type" class="control-label">Notify users of any status alert.</label>
+            <label :for="'inputNotify' + type" class="form-label">Notify users of any status alert.</label>
           </div>
         </div>
       </div>
       <div class="row">
         <div class="form-group col-sm-12">
-          <label :for="'inputComment' + type" class="control-label">Comment</label>
+          <label :for="'inputComment' + type" class="form-label">Comment</label>
           <textarea
             :id="'inputComment' + type"
             class="form-control"

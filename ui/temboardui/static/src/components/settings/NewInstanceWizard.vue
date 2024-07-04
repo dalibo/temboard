@@ -162,7 +162,7 @@ function reset() {
 
           <div class="row">
             <div class="form-group col-sm-6">
-              <label for="inputAgentAddress" class="control-label">Agent address</label>
+              <label for="inputAgentAddress" class="form-label">Agent address</label>
               <input
                 :disabled="waiting"
                 id="inputAgentAddress"
@@ -173,7 +173,7 @@ function reset() {
               />
             </div>
             <div class="form-group col-sm-6">
-              <label for="inputAgentPort" class="control-label">Agent port</label>
+              <label for="inputAgentPort" class="form-label">Agent port</label>
               <input
                 :disabled="waiting"
                 id="inputAgentPort"
