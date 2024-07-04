@@ -48,7 +48,7 @@ const emit = defineEmits(["apply"]);
         </div>
         <div class="modal-body">
           <form id="reindexForm">
-            <fieldset class="form-group">
+            <fieldset class="mb-3">
               <div class="row">
                 <legend class="col-form-label col-sm-2 pt-0">When</legend>
                 <div class="col-sm-10">

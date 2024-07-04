@@ -296,12 +296,12 @@ function reset() {
     <div class="row">
       <div class="col-12 collapse" id="filters">
         <div class="justify-content-end d-flex">
-          <div class="form-group mb-1">
+          <div class="mb-1">
             <input type="text" placeholder="Search" class="form-control" v-model="filter" />
           </div>
         </div>
         <form id="state-filter" class="justify-content-end d-flex">
-          <div class="form-group pe-1">
+          <div class="pe-1">
             <label><strong>States:</strong></label>
           </div>
 

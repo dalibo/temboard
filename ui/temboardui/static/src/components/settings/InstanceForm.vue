@@ -76,7 +76,7 @@ const emit = defineEmits(["submit"]);
       </div>
 
       <div class="row">
-        <div id="divGroups" class="form-group col-sm-6" v-if="groups.length > 0">
+        <div id="divGroups" class="mb-3 col-sm-6" v-if="groups.length > 0">
           <label :for="'selectGroups' + type" class="form-label">Groups</label>
           <select :id="'selectGroups' + type" :disabled="waiting" multiple required>
             <option
@@ -90,7 +90,7 @@ const emit = defineEmits(["submit"]);
           </select>
           <div id="tooltip-container"></div>
         </div>
-        <div id="divPlugins" class="form-group col-sm-6" v-if="plugins.length > 0">
+        <div id="divPlugins" class="mb-3 col-sm-6" v-if="plugins.length > 0">
           <label :for="'selectPlugins' + type" class="form-label">Plugins</label>
           <select :id="'selectPlugins' + type" :disabled="waiting" multiple="multiple">
             <option
@@ -122,7 +122,7 @@ const emit = defineEmits(["submit"]);
         </div>
       </div>
       <div class="row">
-        <div class="form-group col-sm-12">
+        <div class="mb-3 col-sm-12">
           <label :for="'inputComment' + type" class="form-label">Comment</label>
           <textarea
             :id="'inputComment' + type"

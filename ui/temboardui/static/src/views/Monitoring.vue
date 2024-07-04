@@ -318,7 +318,7 @@ function onFromToUpdate(from_, to_) {
 
 <template>
   <div id="charts-container">
-    <div class="row form-group mb-2">
+    <div class="row mb-3 mb-2">
       <div class="col-12 d-flex justify-content-between">
         <a
           class="btn btn-outline-secondary collapse-toggle dropdown-toggle collapsed"

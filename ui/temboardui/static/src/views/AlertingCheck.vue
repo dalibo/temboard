@@ -41,7 +41,7 @@ function onFromToUpdate(from_, to_) {
 
 <template>
   <div id="check-container" v-cloak>
-    <div class="row form-group mb-2">
+    <div class="row mb-3 mb-2">
       <div class="col-12 d-flex justify-content-between">
         <ol class="breadcrumb py-1 mb-0 align-items-center">
           <li class="breadcrumb-item"><a href="../alerting">Status</a></li>
@@ -87,24 +87,24 @@ function onFromToUpdate(from_, to_) {
             <div class="modal-body">
               <div id="modalInfo"></div>
               <form id="updateForm">
-                <div class="form-group">
+                <div class="mb-3">
                   <label for="descriptionInput" class="form-label">Name</label>
                   <input type="text" class="form-control" id="descriptionInput" :value="check.description" />
                 </div>
                 <hr />
 
-                <div class="form-group form-check">
+                <div class="mb-3 form-check">
                   <input type="checkbox" class="form-check-input" id="enabledInput" :checked="check.enabled" />
                   <label class="form-check-label" for="enabledInput">Enabled</label>
                   <small class="form-text text-muted">
                     If disabled, no check will be made. Thus no alert will be raised.
                   </small>
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                   <label for="warningThresholdInput" class="form-label">Warning threshold</label>
                   <input type="text" class="form-control" id="warningThresholdInput" :value="check.warning" />
                 </div>
-                <div class="form-group">
+                <div class="mb-3">
                   <label for="criticalThresholdInput" class="form-label">Critical threshold</label>
                   <input type="text" class="form-control" id="criticalThresholdInput" :value="check.critical" />
                 </div>

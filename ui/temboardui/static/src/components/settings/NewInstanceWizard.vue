@@ -161,7 +161,7 @@ function reset() {
           <Error ref="error" :showTitle="false"></Error>
 
           <div class="row">
-            <div class="form-group col-sm-6">
+            <div class="mb-3 col-sm-6">
               <label for="inputAgentAddress" class="form-label">Agent address</label>
               <input
                 :disabled="waiting"
@@ -172,7 +172,7 @@ function reset() {
                 placeholder="ex: db.entreprise.lan"
               />
             </div>
-            <div class="form-group col-sm-6">
+            <div class="mb-3 col-sm-6">
               <label for="inputAgentPort" class="form-label">Agent port</label>
               <input
                 :disabled="waiting"
