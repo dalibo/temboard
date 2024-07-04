@@ -6,6 +6,9 @@ $cat2: #fa9e78;
 $navbar-inverse-bg: $primary;
 $link-color: lighten(saturate($primary, 15%), 15%);
 
+@import "../node_modules/bootstrap/scss/functions";
+@import "../node_modules/bootstrap/scss/variables";
+
 $input-border-focus: $link-color;
 $grid-gutter-width: 20px;
 $spacer: $grid-gutter-width;
@@ -21,15 +24,12 @@ $grid-breakpoints: (
   xxl: 1500px,
 ) !default;
 
-$red: #dc3545 !default;
-$danger: $red !default;
-
-$theme-colors: (
+$custom-colors: (
   "ok": $success,
   "critical": $danger,
   "undef": $undef,
   "cat1": $cat1,
   "cat2": $cat2,
-  "primary": $primary,
-) !default;
+);
+$theme-colors: map-merge($theme-colors, $custom-colors);
 $popover-font-size: 1rem !default;
