@@ -24,7 +24,7 @@ defineExpose({
 
 <template>
   <ModalDialog id="modalMigrationGroups" :title="title">
-    <div class="modal-body text-justify">
+    <div class="modal-body">
       <template v-if="objectClass === 'group'">
         <p><b>This group belongs to more than one user group.</b></p>
         <p>
