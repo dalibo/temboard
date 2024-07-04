@@ -88,7 +88,7 @@ function onFromToUpdate(from_, to_) {
               <div id="modalInfo"></div>
               <form id="updateForm">
                 <div class="form-group">
-                  <label for="descriptionInput">Name</label>
+                  <label for="descriptionInput" class="form-label">Name</label>
                   <input type="text" class="form-control" id="descriptionInput" :value="check.description" />
                 </div>
                 <hr />
@@ -101,11 +101,11 @@ function onFromToUpdate(from_, to_) {
                   </small>
                 </div>
                 <div class="form-group">
-                  <label for="warningThresholdInput">Warning threshold</label>
+                  <label for="warningThresholdInput" class="form-label">Warning threshold</label>
                   <input type="text" class="form-control" id="warningThresholdInput" :value="check.warning" />
                 </div>
                 <div class="form-group">
-                  <label for="criticalThresholdInput">Critical threshold</label>
+                  <label for="criticalThresholdInput" class="form-label">Critical threshold</label>
                   <input type="text" class="form-control" id="criticalThresholdInput" :value="check.critical" />
                 </div>
               </form>

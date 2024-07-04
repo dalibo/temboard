@@ -13,11 +13,11 @@
         {% try %}{% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% end %}{% except %}{% end %}
         <form role="form" action="/login" method="post">
           <div class="form-group">
-            <label for="inputUsername" class="control-label">Username</label>
+            <label for="inputUsername" class="form-label">Username</label>
             <input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
           </div>
           <div class="form-group">
-            <label for="inputPassword" class="control-label">Password</label>
+            <label for="inputPassword" class="form-label">Password</label>
             <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
           </div>
           <div class="text-center">

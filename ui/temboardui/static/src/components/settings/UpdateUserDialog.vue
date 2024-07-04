@@ -113,12 +113,12 @@ defineExpose({ open });
         </div>
         <div class="row">
           <div class="form-group col-sm-6">
-            <label class="control-label"
+            <label class="form-label"
               >Username<input type="text" class="form-control" placeholder="Username" v-model="userModel.new_username"
             /></label>
           </div>
           <div class="form-group col-sm-6">
-            <label class="control-label"
+            <label class="form-label"
               >Email<input type="email" class="form-control" placeholder="Email" v-model="userModel.email"
             /></label>
             <span class="form-text text-muted small"
@@ -129,7 +129,7 @@ defineExpose({ open });
 
         <div class="row">
           <div class="form-group col-sm-6">
-            <label class="control-label"
+            <label class="form-label"
               >Password&#42;
               <input type="password" class="form-control" placeholder="Password" v-model="userModel.password" />
               <input
@@ -143,7 +143,7 @@ defineExpose({ open });
           </div>
 
           <div class="form-group col-sm-6" v-if="groups.length > 0">
-            <label class="control-label">
+            <label class="form-label">
               Groups<br />
               <select id="selectGroups" multiple="multiple">
                 <option
@@ -171,7 +171,7 @@ defineExpose({ open });
 
         <div class="row">
           <div class="form-group col-sm-6">
-            <label class="control-label"
+            <label class="form-label"
               >Phone
               <input type="text" class="form-control" placeholder="Phone" v-model="userModel.phone" />
             </label>

@@ -248,7 +248,7 @@ function notify() {
         <h3>Custom range</h3>
         <form>
           <div class="form-group">
-            <label for="inputFrom">From:</label>
+            <label for="inputFrom" class="form-label">From:</label>
             <div class="input-group">
               <input type="text" id="inputFrom" v-model="inputFrom" class="form-control" />
               <div class="input-group-append" data-role="from-picker">
@@ -259,7 +259,7 @@ function notify() {
             </div>
           </div>
           <div class="form-group">
-            <label for="inputTo">To:</label>
+            <label for="inputTo" class="form-label">To:</label>
             <div class="input-group">
               <input type="text" id="inputTo" v-model="inputTo" class="form-control" />
               <div class="input-group-append" data-role="to-picker">
