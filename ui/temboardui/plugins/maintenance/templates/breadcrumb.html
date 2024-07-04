@@ -13,7 +13,7 @@
     {% set active = 'active' if 'schema' not in globals() else '' %}
     {% if 'database' in globals() %}
     <li class="breadcrumb-item {{ active }}">
-      <em class="text-muted small">Database:</em>
+      <em class="text-body-secondary small">Database:</em>
       {% if not active %}
       <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance/{{ database }}">
       {% end %}
@@ -26,7 +26,7 @@
     {% set active = 'active' if 'table' not in globals() else '' %}
     {% if 'schema' in globals() %}
     <li class="breadcrumb-item {{ active }}">
-      <em class="text-muted small">Schema:</em>
+      <em class="text-body-secondary small">Schema:</em>
       {% if not active %}
       <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance/{{ database }}/schema/{{ schema }}">
       {% end %}
@@ -38,7 +38,7 @@
     {% end %}
     {% if 'table' in globals() %}
     <li class="breadcrumb-item active">
-      <em class="text-muted small">Table:</em>
+      <em class="text-body-secondary small">Table:</em>
       {{ table }}
     </li>
     {% end %}

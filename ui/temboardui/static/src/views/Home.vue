@@ -241,7 +241,7 @@ watch(groupsFilter.value, (newVal) => {
       </div>
     </div>
     <div v-if="!loading && instances.length == 0" class="row justify-content-center" v-cloak>
-      <div class="col col-12 col-sm-10 col-md-6 col-lg-4 text-muted text-center">
+      <div class="col col-12 col-sm-10 col-md-6 col-lg-4 text-body-secondary text-center">
         <h4 class="m-4">No instance</h4>
         <template v-if="isAdmin">
           <p>No instance is available yet.</p>

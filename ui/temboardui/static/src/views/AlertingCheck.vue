@@ -52,7 +52,7 @@ function onFromToUpdate(from_, to_) {
     </div>
 
     <div>
-      <ul class="list-inline small text-muted mb-0">
+      <ul class="list-inline small text-body-secondary mb-0">
         <li class="list-inline-item">Enabled: <i :class="['fa', check['enabled'] ? 'fa-check' : 'fa-times']"></i></li>
         <li class="list-inline-item">
           <span class="text-warning"> &horbar; </span>
@@ -96,7 +96,7 @@ function onFromToUpdate(from_, to_) {
                 <div class="mb-3 form-check">
                   <input type="checkbox" class="form-check-input" id="enabledInput" :checked="check.enabled" />
                   <label class="form-check-label" for="enabledInput">Enabled</label>
-                  <small class="form-text text-muted">
+                  <small class="form-text text-body-secondary">
                     If disabled, no check will be made. Thus no alert will be raised.
                   </small>
                 </div>

@@ -185,7 +185,7 @@ fetchData();
     <div v-cloak v-if="!loading">
       <div class="d-flex">
         <h4>
-          Tables <span class="text-muted small">({{ schema.tables.length }})</span>
+          Tables <span class="text-body-secondary small">({{ schema.tables.length }})</span>
         </h4>
         <div class="ms-auto">
           <button
@@ -248,7 +248,7 @@ fetchData();
                   <strong>{{ table.name }}</strong>
                 </a>
                 <span v-if="table.tablespace">
-                  <em class="tablespace text-muted small">in </em>
+                  <em class="tablespace text-body-secondary small">in </em>
                   {{ table.tablespace }}
                 </span>
               </td>
@@ -262,7 +262,11 @@ fetchData();
                 <template v-else> - </template>
                 <small
                   style="min-width: 70px"
-                  :class="['table-bloat', 'd-inline-block', sortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted']"
+                  :class="[
+                    'table-bloat',
+                    'd-inline-block',
+                    sortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
+                  ]"
                 >
                   <template v-if="table.bloat_bytes"> Bloat: {{ table.bloat_ratio.toFixed(1) }}% </template>
                 </small>
@@ -286,7 +290,7 @@ fetchData();
                     :class="[
                       'index-bloat',
                       'd-inline-block',
-                      sortCriteria == 'index_bloat_ratio' ? 'fw-bold' : 'text-muted',
+                      sortCriteria == 'index_bloat_ratio' ? 'fw-bold' : 'text-body-secondary',
                     ]"
                   >
                     <template v-if="table.index_bloat_bytes">
@@ -295,7 +299,7 @@ fetchData();
                   </small>
                 </td>
               </template>
-              <td class="indexes text-center text-muted border-start small" v-else>
+              <td class="indexes text-center text-body-secondary border-start small" v-else>
                 <em> No index </em>
               </td>
               <td class="temboard-toast text-end border-start">
@@ -334,7 +338,7 @@ fetchData();
       </table>
       <div class="d-flex">
         <h4>
-          Indexes <span class="text-muted small">({{ schema.indexes.length }})</span>
+          Indexes <span class="text-body-secondary small">({{ schema.indexes.length }})</span>
         </h4>
         <div class="ms-auto">
           <button
@@ -369,14 +373,14 @@ fetchData();
               <strong>{{ index.name }}</strong>
               <small> ({{ index.type }}) </small>
               <br />
-              <em class="text-muted small">on </em>
+              <em class="text-body-secondary small">on </em>
               <a
                 :href="`/server/${instance.agentAddress}/${instance.agentPort}/maintenance/${dbName}/schema/${schemaName}/table/${index.tablename}`"
               >
                 {{ index.tablename }}
               </a>
               <span v-if="index.tablespace">
-                <em class="text-muted small">in </em>
+                <em class="text-body-secondary small">in </em>
                 {{ index.tablespace }}
               </span>
             </td>
@@ -386,7 +390,7 @@ fetchData();
               </span>
               <small
                 style="min-width: 70px"
-                :class="['d-inline-block', indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-muted']"
+                :class="['d-inline-block', indexSortCriteria == 'bloat_ratio' ? 'fw-bold' : 'text-body-secondary']"
               >
                 <template v-if="index.bloat_bytes"> Bloat: {{ index.bloat_ratio.toFixed(1) }}% </template>
               </small>
@@ -411,7 +415,7 @@ fetchData();
                   <li v-if="scheduledReindex.index == index.name">
                     <template v-if="scheduledReindex.status == 'todo'">
                       <em v-if="scheduledReindex.status == 'todo'">
-                        <span class="text-muted" :title="scheduledReindex.datetime.toString()">
+                        <span class="text-body-secondary" :title="scheduledReindex.datetime.toString()">
                           <i class="fa fa-clock-o"></i>
                           <span :title="scheduledReindex.datetime.toString()">
                             <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">
@@ -429,16 +433,16 @@ fetchData();
                       </button>
                     </template>
                     <template v-else-if="scheduledReindex.status == 'doing'">
-                      <em class="text-muted">
+                      <em class="text-body-secondary">
                         <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
                         in progress
                       </em>
                     </template>
                     <template v-else-if="scheduledReindex.status == 'canceled'">
-                      <em class="text-muted">canceled</em>
+                      <em class="text-body-secondary">canceled</em>
                     </template>
                     <template v-else>
-                      <em class="text-muted">{{ scheduledReindex.status }}</em>
+                      <em class="text-body-secondary">{{ scheduledReindex.status }}</em>
                     </template>
                   </li>
                 </template>

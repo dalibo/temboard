@@ -19,7 +19,7 @@ const emit = defineEmits(["cancel"]);
       {{ scheduledVacuums.length }} scheduled vacuums
     </a>
     <ul class="list list-unstyled collapse border rounded p-1" id="collapseScheduledVacuums">
-      <li v-for="scheduledVacuum in scheduledVacuums" class="pb-1 text-muted">
+      <li v-for="scheduledVacuum in scheduledVacuums" class="pb-1 text-body-secondary">
         <pre class="mb-0 text-truncate">
         <code class="bg-light small">VACUUM
         <span v-if="scheduledVacuum.mode"> ({{ scheduledVacuum.mode.toUpperCase() }})</span>

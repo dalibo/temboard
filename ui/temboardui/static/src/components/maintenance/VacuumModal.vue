@@ -53,12 +53,12 @@ const emit = defineEmits(["apply"]);
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="vacuumModeAnalyze" name="mode" value="analyze" />
                   <label class="form-check-label" for="vacuumModeAnalyze"> ANALYZE </label>
-                  <small class="form-text text-muted"> Updates statistics after the vacuum. </small>
+                  <small class="form-text text-body-secondary"> Updates statistics after the vacuum. </small>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="vacuumModeFull" name="mode" value="full" />
                   <label class="form-check-label" for="vacuumModeFull"> FULL </label>
-                  <small class="form-text text-muted">
+                  <small class="form-text text-body-secondary">
                     Can reclaim more space but takes more time and exclusively locks the table.
                     <span class="text-danger">Use with caution!</span>
                   </small>
@@ -66,7 +66,7 @@ const emit = defineEmits(["apply"]);
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="vacuumModeFreeze" name="mode" value="freeze" />
                   <label class="form-check-label" for="vacuumModeFreeze"> FREEZE </label>
-                  <small class="form-text text-muted">
+                  <small class="form-text text-body-secondary">
                     Selects aggressive "freezing" of tuples. Equivalent to performing VACUUM with the
                     <em><code>vacuum_freeze_min_age</code></em> parameter set to zero.
                   </small>

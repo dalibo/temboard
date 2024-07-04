@@ -109,11 +109,11 @@ defineExpose({ fetchLoad1, fetchTPS });
           </p>
           <p class="mb-0 small">
             <template v-for="group in instance.groups">
-              <span class="badge border text-muted me-1" :title="'Instance in group ' + group">
+              <span class="badge border text-body-secondary me-1" :title="'Instance in group ' + group">
                 {{ group }}
               </span>
             </template>
-            <span class="pg_version" :class="{ 'text-muted': !instance.pg_version_summary }">{{
+            <span class="pg_version" :class="{ 'text-body-secondary': !instance.pg_version_summary }">{{
               instance.pg_version_summary || "Unknown version"
             }}</span>
           </p>
@@ -123,7 +123,7 @@ defineExpose({ fetchLoad1, fetchTPS });
       <!-- Limit graph to top 3 rows. -->
       <div class="row" v-if="hasMonitoring && index < 18">
         <div class="col-md-6 mt-2 small text-center text-nowrap">
-          <span class="text-muted" v-if="tps_last">TPS: </span>
+          <span class="text-body-secondary" v-if="tps_last">TPS: </span>
           <span class="badge text-bg-secondary" v-if="tps_last">
             {{ tps_last }}
           </span>
@@ -143,7 +143,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           </Sparkline>
         </div>
         <div class="col-md-6 mt-2 small text-center text-nowrap">
-          <span class="text-muted" v-if="load1_last">Loadavg: </span>
+          <span class="text-body-secondary" v-if="load1_last">Loadavg: </span>
           <span class="badge text-bg-secondary" v-if="load1_last">
             {{ load1_last }}
           </span>

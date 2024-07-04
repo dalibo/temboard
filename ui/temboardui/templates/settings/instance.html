@@ -47,7 +47,7 @@
                 <i class="fa fa-database"></i>
                 {{instance.hostname}}:{{instance.pg_port}}
               </a>
-              {% for group in instance.groups %} <span class="badge border text-muted align-middle">{{group.group_name}}</span>{% end %}
+              {% for group in instance.groups %} <span class="badge border text-body-secondary align-middle">{{group.group_name}}</span>{% end %}
               {% if len(instance.groups) > 1 %}
                 <i
                   class="fa fa-warning text-warning"
@@ -59,7 +59,7 @@
               {% end %}
             </p>
             {% set comment = instance.comment if instance.comment is not None else '' %}
-            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="{{comment}}">
+            <div class="overflow-ellipsis small text-body-secondary" style="max-width: 150px;" title="{{comment}}">
               {{comment}}
             </div>
           </td>
@@ -67,13 +67,13 @@
             <span title="{{instance.pg_version}}">
             {{instance.pg_version_summary or 'Unknown'}}
             </span>
-            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="Data directory">
+            <div class="overflow-ellipsis small text-body-secondary" style="max-width: 150px;" title="Data directory">
               {{instance.pg_data or 'Unknown'}}
             </div>
           </td>
           <td class="agent">
             <span class="hostport">{{instance.agent_address}}:{{instance.agent_port}}</span>
-            <div class="overflow-ellipsis small text-muted" style="max-width: 150px;" title="Agent version">
+            <div class="overflow-ellipsis small text-body-secondary" style="max-width: 150px;" title="Agent version">
               {% set discover = instance.discover or {} %}
               temBoard Agent {{discover.get('temboard', {}).get('agent_version', 'unknown')}}
             </div>

@@ -19,7 +19,7 @@ const emit = defineEmits(["cancel"]);
       {{ scheduledAnalyzes.length }} scheduled analyzes
     </a>
     <ul class="list list-unstyled collapse border rounded p-1" id="collapseScheduledAnalyzes">
-      <li v-for="scheduledAnalyze in scheduledAnalyzes" class="pb-1 text-muted">
+      <li v-for="scheduledAnalyze in scheduledAnalyzes" class="pb-1 text-body-secondary">
         <pre class="mb-0 text-truncate">
         <code class="bg-light small">ANALYZE<span v-if="scheduledAnalyze.table"> <a
                   :href="`/server/${instance.agentAddress}/${

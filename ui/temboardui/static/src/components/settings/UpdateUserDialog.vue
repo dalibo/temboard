@@ -121,7 +121,7 @@ defineExpose({ open });
             <label class="form-label"
               >Email<input type="email" class="form-control" placeholder="Email" v-model="userModel.email"
             /></label>
-            <span class="form-text text-muted small"
+            <span class="form-text text-body-secondary small"
               >Leave blank to prevent user from receiving notifications by email.</span
             >
           </div>
@@ -139,7 +139,9 @@ defineExpose({ open });
                 v-model="userModel.password2"
               />
             </label>
-            <p class="form-text text-muted"><small>&#42;: leave this field blank to keep it unchanged.</small></p>
+            <p class="form-text text-body-secondary">
+              <small>&#42;: leave this field blank to keep it unchanged.</small>
+            </p>
           </div>
 
           <div class="mb-3 col-sm-6" v-if="groups.length > 0">
@@ -185,7 +187,7 @@ defineExpose({ open });
               >Phone
               <input type="text" class="form-control" placeholder="Phone" v-model="userModel.phone" />
             </label>
-            <span class="form-text text-muted small"
+            <span class="form-text text-body-secondary small"
               >Leave blank to prevent user from receiving notifications by SMS.</span
             >
           </div>
