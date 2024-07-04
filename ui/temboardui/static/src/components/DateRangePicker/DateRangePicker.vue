@@ -240,7 +240,7 @@ function notify() {
       <span v-cloak>{{ rangeString }}</span>
     </button>
     <div
-      class="row position-absolute bg-light border rounded card-body picker-dropdown-panel m-1 w-100 shadow"
+      class="row position-absolute bg-light border rounded card-body picker-dropdown-panel m-1 w-100 shadow p-3"
       v-show="isPickerOpen"
       v-cloak
     >
