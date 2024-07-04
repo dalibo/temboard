@@ -21,7 +21,7 @@
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
     {% if nav %}
     <!-- Navigation -->
-    <div class="navbar bg-primary navbar-dark navbar-static-top navbar-expand sticky-top">
+    <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top" data-bs-theme="dark">
       <div class="collapse navbar-collapse">
         {% if 'instance' in globals() %}
         <a class="navbar-brand ms-3 me-0" href id="menu-collapse">
