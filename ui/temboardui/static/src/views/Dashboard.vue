@@ -540,7 +540,7 @@ onMounted(() => {
                 </strong>
               </span>
             </div>
-            <div class="row mt-2">
+            <div class="row mt-2 position-relative">
               <div class="col-6 small text-center">
                 <div class="chart-title">Cache Hit Ratio</div>
                 <div id="total-hit" class="fw-bold">{{ totalHit }}</div>
@@ -616,7 +616,7 @@ onMounted(() => {
       </div>
     </div>
     <div class="row" v-if="props.discover && props.instance.plugins.includes('monitoring')">
-      <div class="col-8">
+      <div class="col-8 position-relative">
         <div class="text-center small">
           Current status
           <div class="position-absolute top-0 right-0 pe-2">
