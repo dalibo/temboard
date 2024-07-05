@@ -3,8 +3,6 @@
 {% block title %}temBoard / {{instance}} / Configuration{% end %}
 
 {% block head %}
-<!-- Toggle -->
-<link href="/css/bootstrap-toggle.min.css" rel="stylesheet">
 <link href="/css/pgconf/temboard.pgconf.css" rel="stylesheet">
 {% end %}
 
@@ -160,7 +158,7 @@
             <td class="input-setting">
               {% if setting_row['vartype'] == 'bool' %}
               <div class="text-center">
-                <input type="checkbox" data-toggle="toggle" data-size="mini" data-onstyle="success" data-offstyle="danger" id="select{{setting_row['name']}}" {% if setting_row['setting'] == 'on' %}checked{% end %}/>
+                <input type="checkbox" id="select{{setting_row['name']}}" {% if setting_row['setting'] == 'on' %}checked{% end %} onchange="updateHiddenInput('{{setting_row['name']}}')" />
                 <input id="hidden{{setting_row['name']}}" type="hidden" name="{{setting_row['name']}}" value="{% if setting_row['setting'] == 'on' %}on{%else%}off{% end %}" />
               </div>
               {% elif setting_row['vartype'] == 'enum' %}
@@ -190,22 +188,14 @@
   </div>
 </div>
 <script src="/js/pgconf/temboard.pgconf.js"></script>
-<script src="/js/bootstrap-toggle.min.js"></script>
 <script>
+
+function updateHiddenInput(settingName) {
+    var isChecked = $('#select' + settingName).is(':checked');
+    $('#hidden' + settingName).val(isChecked ? 'on' : 'off');
+}
+
 $(document).ready(function() {
-
-  $('input[type=checkbox]').each(function() {
-    $(this).change(function(){
-      var hidden_id = $(this).attr('id').replace('select', 'hidden');
-      var hidden_val = 'off';
-      if ($(this).prop('checked'))
-      {
-        hidden_val = 'on';
-      }
-      $('#'+hidden_id).val(hidden_val);
-    });
-  });
-
 {% if configuration_status['restart_pending'] is True %}
   {% for change in configuration_status['restart_changes'] %}
     $('#buttonCancelChange_{{change['name']}}').click(function () {
