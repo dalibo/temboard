@@ -1,7 +1,6 @@
 from time import sleep
 
 import pytest
-from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.support.select import Select
 
 
@@ -59,14 +58,14 @@ def test_boolean(browse_pgconf, browser, psql):
 
     browser.absent(f"#buttonResetDefault_{param}")
 
-    browser.select(".toggle-on").click()
+    browser.select(".input-setting input[type=checkbox").click()
     sleep(0.1)
     input_ = browser.select(f"input[name={param}]")
     assert "off" == input_.get_attribute("value")
-
-    # Ensure On is not available.
-    with pytest.raises(ElementNotInteractableException):
-        browser.select(".toggle-on").click()
+    # Ensure checkbox is unchecked
+    assert not browser.select(".input-setting input[type='checkbox']").get_attribute(
+        "checked"
+    )
 
     browser.select(".main form[role=form] button[type=submit]").click()
 
