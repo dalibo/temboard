@@ -3,234 +3,26 @@
 {% block title %}temBoard / {{instance}} / Configuration{% end %}
 
 {% block head %}
-<link href="/css/pgconf/temboard.pgconf.css" rel="stylesheet">
-<script src="/js/jquery-2.1.4.min.js"></script>
-<script src="/js/bootstrap.min.js"></script>
+{% for link in vitejs.css_links_for('pgconf.js') %}{% raw link %}{% end %}
 {% end %}
 
 {% block content %}
-<!-- Reset Modal -->
-<div class="modal fade" id="resetModal" tabindex="-1" role="dialog" aria-labelledby="resetModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="resetModalLabel">Reset parameter:</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body" id="resetModalBody">
-        <p><b><span id="resetParamName"></span></b> to <b><span id="resetParamValue"></span></b> ?</p>
-      </div>
-      <div class="modal-footer" id="resetModalFooter">
-        <button type="button" class="btn btn-success" id="resetYesButton">Yes</button>
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
+<div id="app">
+  <configuration
+    current_cat="{{ current_cat }}"
+    error_message="{{ error_message }}"
+    error_code="{{ error_code }}"
+    query_filter="{{ query_filter if query_filter else '' }}"
+    address="{{ instance.agent_address }}"
+    port="{{ instance.agent_port }}"
+  />
 </div>
-
-{% set file_type = 'postgres' %}
-
-<div class="limiter">
-
-{% try %}
-{% if ret_post and len(ret_post['settings']) > 0%}
-<div class="row">
-  <div class="col-12">
-    <div id="ok-configuration" class="alert alert-success alert-dismissible" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h2><i class="fa fa-check-circle fa-fw"></i> OK </h2>
-      <p>The following changes have been applied:</p>
-      <table class="table table-sm">
-      <tr>
-        <th width="30%">Name</th>
-        <th width="30%">Prev. value</th>
-        <th width="40%">New value</th>
-      </tr>
-      {% for setting in ret_post['settings'] %}
-      <tr>
-        <td>{{ setting['name'] }}</td>
-        <td>{% if setting['previous_setting'] %}{{setting['previous_setting']}}{% end %}</td>
-        <td><b>{{ setting['setting'] }}</b></td>
-      </tr>
-      {% end %}
-      </table>
-    </div>
-  </div>
-</div>
-{% end %}
-{% except %}
-{% end %}
-
-{% try %}
-{% if error_code > 0%}
-<div class="row">
-  <div class="col-12">
-    <div id="error-configuration" class="alert alert-danger" role="alert">
-      <h2><i class="fa fa-ban fa-fw"></i> Error <small></small></h2>
-      <p>{{error_code}}: {{error_message}}</p>
-    </div>
-  </div>
-</div>
-{% end %}
-{% except %}
-{% end %}
-
-{% if configuration_status['restart_pending'] is True %}
-<div class="row">
-  <div class="col-12">
-    <div id="alert-configuration" class="alert alert-warning alert-dismissible" role="alert">
-        <p> The options below will be applied after restart :</p>
-      <ul>
-      {% for change in configuration_status['restart_changes'] %}
-      <li>
-        {{change['name']}}
-        <button type="button" id="buttonCancelChange_{{change['name']}}" class="btn btn-link btn-sm">
-          <span class="fa fa-times" aria-hidden="true"></span> Cancel change
-        </button>
-      </li>
-      {% end %}
-      </ul>
-    </div>
-  </div>
-</div>
-{% end %}
-<div class="row form-group">
-  <div class="col-3 mr-auto">
-    <form method="get" action="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration" class="form" role="search">
-      <label class="sr-only" for="selectServer">Search</label>
-      <div class="input-group">
-        <input class="form-control" id="inputSearchSettings" name="filter" placeholder="Find in settings" value="{{query_filter if query_filter is not None else ''}}"/>
-        <span class="input-group-append">
-          {% if query_filter %}
-          <a class="btn btn-outline-secondary" id="buttonResetSearch"
-             href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration">
-            <i class="fa fa-fw fa-times"></i>
-          </a>
-          {% end %}
-          <button type="submit" class="btn btn-outline-secondary" id="buttonSearchSettings">
-            <i class="fa fa-fw fa-search"></i>
-          </button>
-        </span>
-      </div>
-    </form>
-  </div>
-  <div class="col-7">
-    <label class="sr-only" for="selectConfCat">Category</label>
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <div class="input-group-text">
-          Category
-        </div>
-      </div>
-      <select class="form-control" id="selectConfCat" {{'disabled' if query_filter else ''}}>
-        {% if not query_filter %}
-        {% for cat in configuration_categories['categories'] %}
-        <option value="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration/category/{{url_escape(cat)}}"{% if url_escape(current_cat) == url_escape(cat) %} selected="selected" {% end %}>{{cat}}</option>
-        {% end %}
-        {% end %}
-      </select>
-    </div>
-    <script>
-    $('#selectConfCat').on('change', function(event) {
-      event.preventDefault();
-      window.location.replace($('#selectConfCat').find(':selected').attr('value'));
-    });
-    </script>
-  </div>
-</div>
-{% if len(data) == 0 %}
-<div class="row">
-  <div class="col-12"><p>No results found...</p></div>
-</div>
-{% end %}
-<div class="row">
-  <div class="col-12">
-  {% for setting_group in data %}
-    <div class="card">
-      <div class="card-header">{{setting_group['category']}}</div>
-      <div class="card-body">
-        <form role="form" method="post">
-        <table class="table table-sm">
-        {% for setting_row in setting_group['rows'] %}
-          <tr>
-            <td class="badge-setting">
-              <span class="title-setting">{{setting_row['name']}}</span>
-              <p class="text-muted mb-0 small">{{setting_row['desc']}}</p>
-            </td>
-            <td class="input-setting">
-              {% if setting_row['vartype'] == 'bool' %}
-              <div class="text-center">
-                <input type="checkbox" id="select{{setting_row['name']}}" {% if setting_row['setting'] == 'on' %}checked{% end %} name="{{setting_row['name']}}" />
-                <input type="hidden" value="off" name="{{setting_row['name']}}" />
-              </div>
-              {% elif setting_row['vartype'] == 'enum' %}
-              <select class="form-control form-control-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in setting_row['enumvals'][1:-1].split(',') %}<option value="{{v}}" {% if (v.startswith('"') and v.endswith('"') and setting_row['setting'] == v[1:-1]) or setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
-              {% else %}
-              <input data-toggle="popover" data-trigger="hover" data-placement="top" data-html="true" data-content="<table><tr><td>Type:</td><td><b>{{setting_row['vartype']}}</b></td></tr>{% if setting_row['unit'] %}<tr><td>Unit:</td><td><b>{{setting_row['unit']}}</b></td></tr>{% end %}{% if setting_row['vartype'] in ['integer', 'real'] %}<tr><td>Minimum:</td><td><b>{{setting_row['min_val']}}</b></td></tr><tr><td>Maximum:</td><td><b>{{setting_row['max_val']}}{% end %}</b></td></tr></table>" type="text" class="form-control form-control-sm" name="{{setting_row['name']}}" id="input{{setting_row['name']}}" placeholder="{{setting_row['name']}}" value="{%if setting_row['setting'] is not None%}{{setting_row['setting_raw']}}{%end%}">
-              {% end %}
-              {% if setting_row['setting'] != setting_row['boot_val'] %}
-              <button type="button" class="btn btn-link" id="buttonResetDefault_{{setting_row['name']}}" data-toggle="popover" data-trigger="hover" data-placement="right" title="{{setting_row['name']}}" data-html="true" data-content="Reset to: '{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}'">
-                <span class="fa fa-undo" aria-hidden="true"></span>
-                Reset to default
-              </button>
-              {% end %}
-            </td>
-          </tr>
-        {% end %}
-        </table>
-        <div class="row">
-          <div class="col-12 text-center">
-            <button type="submit" class="btn btn-sm btn-success">Save and reload configuration</button>
-          </div>
-        </div>
-        </form>
-      </div>
-    </div>
-  {% end %}
-  </div>
-</div>
-<script src="/js/pgconf/temboard.pgconf.js"></script>
-<script>
-
-$(document).ready(function() {
-{% if configuration_status['restart_pending'] is True %}
-  {% for change in configuration_status['restart_changes'] %}
-    $('#buttonCancelChange_{{change['name']}}').click(function () {
-      $('#resetModal').modal('show');
-      $('[data-toggle=popover]').popover('hide');
-      $('#resetParamName').html('{{change['name']}}');
-      $('#resetParamValue').html('{%if change['setting']%}{{change['setting_raw']}}{%end%}');
-      $('#resetYesButton').on(
-        'click',
-        function(event) {
-          event.preventDefault();
-          modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', 'resetModal', {"settings":[{"name": "{{change['name']}}", "setting": "{% if change['setting'] %}{{change['setting_raw']}}{% end %}", "force": "true"}]});
-        }
-      );
-    });
-  {% end %}
-{% end %}
-{% for setting_group in data %}
-  {% for setting_row in setting_group['rows'] %}
-    {% if setting_row['setting'] != setting_row['boot_val'] %}
-    $('#buttonResetDefault_{{setting_row['name']}}').click(function () {
-      $('#resetModal').modal('show');
-      $('[data-toggle=popover]').popover('hide');
-      $('#resetParamName').html('{{setting_row['name']}}');
-      $('#resetParamValue').html('{%if setting_row['boot_val']%}{{setting_row['boot_val']}}{%end%}');
-      {% set setting_value = setting_row['boot_val'] %}
-      $('#resetYesButton').on(
-        'click',
-        function(event) {
-        event.preventDefault();
-        modal_api_call('{{instance.agent_address}}', '{{instance.agent_port}}', '/pgconf/configuration', 'post', 'resetModal', {"settings":[{"name": "{{setting_row['name']}}", "setting": "{%if setting_value %}{{setting_value}}{%end%}"}]});
-  }
-);
-  });
-    {% end %}
-  {% end %}
-{% end %}
-});
+<script type="module" src="{{ vitejs.url_for('pgconf.js') }}"></script>
+<script type="text/javascript">
+var data = {
+  configuration_categories: {% raw json_encode(configuration_categories) %},
+  configuration_status: {% raw json_encode(configuration_status) %},
+  configuration: {% raw json_encode(data) %},
+};
 </script>
-</div> <!-- end limiter -->
 {% end %}

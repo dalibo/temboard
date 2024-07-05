@@ -40,7 +40,8 @@ class PGConfPlugin:
 )
 def configuration_handler(request, category=None):
     request.instance.check_active_plugin("pgconf")
-    template_vars = {}
+    error_message = ""
+    error_code = 0
     # Deduplicate HTTP prefix of plugin on agent.
     prefix = "/pgconf/configuration"
     query_filter = request.handler.get_argument("filter", None, strip=True)
@@ -77,8 +78,8 @@ def configuration_handler(request, category=None):
             return Redirect(request.uri)
         except HTTPError as e:
             # Rerender HTML page with errors.
-            template_vars["error_code"] = e
-            template_vars["error_message"] = e.log_message
+            error_code = e
+            error_message = e.log_message
     request.instance.fetch_status()
     return render_template(
         "configuration.html",
@@ -91,5 +92,6 @@ def configuration_handler(request, category=None):
         configuration_status=status,
         data=configuration,
         query_filter=query_filter,
-        **template_vars,
+        error_code=error_code,
+        error_message=error_message,
     )
