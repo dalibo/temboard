@@ -450,10 +450,12 @@ class Blueprint:
         def generic_instance_proxy(request, path):
             if request.blueprint and request.blueprint.plugin_name:
                 request.instance.check_active_plugin(request.blueprint.plugin_name)
+            path = url_escape(path, plus=False)
+            # append raw query to path instead of rebuilding it in request_agent
+            if request.query:
+                path += "?" + request.query
             body = request.instance.request_agent(
-                path=url_escape(path, plus=False),
-                method=request.method,
-                body=request.json,
+                path=path, method=request.method, body=request.json
             )
             return jsonify(body)
 
