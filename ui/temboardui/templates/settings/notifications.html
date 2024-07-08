@@ -36,18 +36,5 @@
     </div>
   </div>
 </div>
-<script src="/js/jquery-2.1.4.min.js"></script>
-<script src="/js/temboard.settings.notifications.js"></script>
-<script>
-$('#sendEmailForm').submit(function(e) {
-  e.preventDefault();
-  sendEmail();
-});
-
-$('#sendSmsForm').submit(function(e) {
-  e.preventDefault();
-  sendSms();
-});
-
-</script>
+<script type="module" src="{{ vitejs.url_for('settings.notifications.js') }}"></script>
 {% end %}
