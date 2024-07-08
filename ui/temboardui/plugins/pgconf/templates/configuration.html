@@ -160,8 +160,8 @@
             <td class="input-setting">
               {% if setting_row['vartype'] == 'bool' %}
               <div class="text-center">
-                <input type="checkbox" id="select{{setting_row['name']}}" {% if setting_row['setting'] == 'on' %}checked{% end %} onchange="updateHiddenInput('{{setting_row['name']}}')" />
-                <input id="hidden{{setting_row['name']}}" type="hidden" name="{{setting_row['name']}}" value="{% if setting_row['setting'] == 'on' %}on{%else%}off{% end %}" />
+                <input type="checkbox" id="select{{setting_row['name']}}" {% if setting_row['setting'] == 'on' %}checked{% end %} name="{{setting_row['name']}}" />
+                <input type="hidden" value="off" name="{{setting_row['name']}}" />
               </div>
               {% elif setting_row['vartype'] == 'enum' %}
               <select class="form-control form-control-sm" name="{{setting_row['name']}}" id="select{{setting_row['name']}}">{% for v in setting_row['enumvals'][1:-1].split(',') %}<option value="{{v}}" {% if (v.startswith('"') and v.endswith('"') and setting_row['setting'] == v[1:-1]) or setting_row['setting'] == v %} selected="selected"{% end %}>{{v}}</option>{% end %}</select>
@@ -191,11 +191,6 @@
 </div>
 <script src="/js/pgconf/temboard.pgconf.js"></script>
 <script>
-
-function updateHiddenInput(settingName) {
-    var isChecked = $('#select' + settingName).is(':checked');
-    $('#hidden' + settingName).val(isChecked ? 'on' : 'off');
-}
 
 $(document).ready(function() {
 {% if configuration_status['restart_pending'] is True %}

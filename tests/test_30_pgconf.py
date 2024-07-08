@@ -1,5 +1,3 @@
-from time import sleep
-
 import pytest
 from selenium.webdriver.support.select import Select
 
@@ -59,9 +57,6 @@ def test_boolean(browse_pgconf, browser, psql):
     browser.absent(f"#buttonResetDefault_{param}")
 
     browser.select(".input-setting input[type=checkbox").click()
-    sleep(0.1)
-    input_ = browser.select(f"input[name={param}]")
-    assert "off" == input_.get_attribute("value")
     # Ensure checkbox is unchecked
     assert not browser.select(".input-setting input[type='checkbox']").get_attribute(
         "checked"
