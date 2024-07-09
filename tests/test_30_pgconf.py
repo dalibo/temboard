@@ -30,10 +30,9 @@ def test_search(browse_pgconf, browser):
     browser.select("#inputSearchSettings").send_keys("archive")
     browser.select("#buttonSearchSettings").click()
 
-    cards = browser.select_all(".main .card")
-    # Ensure several categeries matches. Number varies accross PostgreSQL
+    # Ensure several categories matches. Number varies accross PostgreSQL
     # version.
-    assert len(cards) > 1
+    browser.mincount(".main .card", 2)
 
     badges = browser.select_all(".main .card td.badge-setting")
     for badge in badges:
@@ -48,8 +47,9 @@ def test_boolean(browse_pgconf, browser, psql):
     browser.select("#inputSearchSettings").send_keys(param)
     browser.select("#buttonSearchSettings").click()
 
-    input_ = browser.select(f"input[name={param}]")
-    assert "on" == input_.get_attribute("value")
+    assert browser.select(".input-setting input[type='checkbox']").get_attribute(
+        "checked"
+    )
 
     out = psql("-Abt", c=f"SHOW {param};")
     assert "on" == out.strip()
@@ -62,7 +62,7 @@ def test_boolean(browse_pgconf, browser, psql):
         "checked"
     )
 
-    browser.select(".main form[role=form] button[type=submit]").click()
+    browser.select(".main form button[type=submit]").click()
 
     # Ensure Reset button appears
     browser.select(f"#buttonResetDefault_{param}")
@@ -88,7 +88,7 @@ def test_integer(browse_pgconf, browser, psql):
     input_.send_keys(browser.Keys.BACKSPACE)
     input_.send_keys("100")
 
-    browser.select(".main form[role=form] button[type=submit]").click()
+    browser.select(".main form button[type=submit]").click()
 
     # Ensure Reset button appears
     browser.select(f"#buttonResetDefault_{param}")
@@ -116,7 +116,7 @@ def test_bytes(browse_pgconf, browser, psql):
     input_.send_keys(browser.Keys.BACKSPACE)
     input_.send_keys("128MB")
 
-    browser.select(".main form[role=form] button[type=submit]").click()
+    browser.select(".main form button[type=submit]").click()
 
     # Ensure Reset button appears
     browser.select(f"#buttonResetDefault_{param}")
@@ -142,7 +142,7 @@ def test_enum(browse_pgconf, browser, psql):
 
     enum_selector.select_by_value("verbose")
 
-    browser.select(".main form[role=form] button[type=submit]").click()
+    browser.select(".main form button[type=submit]").click()
 
     out = psql("-Abt", c=f"SHOW {param};")
     assert "verbose" == out.strip()

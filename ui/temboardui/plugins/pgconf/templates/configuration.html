@@ -9,20 +9,9 @@
 {% block content %}
 <div id="app">
   <configuration
-    current_cat="{{ current_cat }}"
-    error_message="{{ error_message }}"
-    error_code="{{ error_code }}"
-    query_filter="{{ query_filter if query_filter else '' }}"
     address="{{ instance.agent_address }}"
     port="{{ instance.agent_port }}"
   />
 </div>
 <script type="module" src="{{ vitejs.url_for('pgconf.js') }}"></script>
-<script type="text/javascript">
-var data = {
-  configuration_categories: {% raw json_encode(configuration_categories) %},
-  configuration_status: {% raw json_encode(configuration_status) %},
-  configuration: {% raw json_encode(data) %},
-};
-</script>
 {% end %}

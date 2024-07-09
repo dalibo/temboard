@@ -2,13 +2,15 @@ import logging
 from os import path
 
 import tornado.web
-from tornado.escape import url_escape, url_unescape
 
-from temboardui.web.tornado import Blueprint, HTTPError, Redirect, TemplateRenderer
+from temboardui.web.tornado import Blueprint, TemplateRenderer
 
 logger = logging.getLogger(__name__)
 blueprint = Blueprint()
-blueprint.generic_proxy("/pgconf/configuration", methods=["POST"])
+blueprint.generic_proxy("/pgconf/configuration", methods=["POST", "GET"])
+blueprint.generic_proxy("/pgconf/configuration/categories", methods=["GET"])
+blueprint.generic_proxy("/pgconf/configuration/status", methods=["GET"])
+blueprint.generic_proxy("/pgconf/configuration/category/.*", methods=["GET"])
 plugin_path = path.dirname(path.realpath(__file__))
 render_template = TemplateRenderer(plugin_path + "/templates")
 
@@ -35,63 +37,15 @@ class PGConfPlugin:
         )
 
 
-@blueprint.instance_route(
-    "/pgconf/configuration(?:/category/(.+))?", methods=["GET", "POST"]
-)
-def configuration_handler(request, category=None):
+@blueprint.instance_route("/pgconf/configuration", methods=["GET"])
+def configuration_handler(request):
     request.instance.check_active_plugin("pgconf")
-    error_message = ""
-    error_code = 0
-    # Deduplicate HTTP prefix of plugin on agent.
-    prefix = "/pgconf/configuration"
-    query_filter = request.handler.get_argument("filter", None, strip=True)
-
-    status = request.instance.get(prefix + "/status")
-    categories = request.instance.get(prefix + "/categories")
-
-    if category:
-        category = url_unescape(category)
-    else:
-        category = categories["categories"][0]
-    logger.debug("category=%s", category)
-
-    if query_filter:
-        query = {"filter": query_filter}
-        configuration_url = prefix
-    else:
-        query = {}
-        configuration_url = prefix + "/category/" + url_escape(category)
-    configuration = request.instance.get(configuration_url, query=query)
-
-    if "POST" == request.method:
-        settings = {
-            "settings": [
-                {"name": name, "setting": value[0]}
-                for name, value in request.arguments.items()
-                # 'filter' is not a setting, just ignore it.
-                if name != "filter"
-            ]
-        }
-        try:
-            request.instance.post(prefix, body=settings)
-            # Redirect to GET page, same URI.
-            return Redirect(request.uri)
-        except HTTPError as e:
-            # Rerender HTML page with errors.
-            error_code = e
-            error_message = e.log_message
     request.instance.fetch_status()
+
     return render_template(
         "configuration.html",
         nav=True,
         role=request.current_user,
         instance=request.instance,
         plugin="pgconf",
-        current_cat=category,
-        configuration_categories=categories,
-        configuration_status=status,
-        data=configuration,
-        query_filter=query_filter,
-        error_code=error_code,
-        error_message=error_message,
     )

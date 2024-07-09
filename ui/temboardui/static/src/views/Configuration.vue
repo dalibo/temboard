@@ -4,12 +4,15 @@ import { onMounted, ref } from "vue";
 
 import Error from "../components/Error.vue";
 
-const props = defineProps(["current_cat", "error_message", "error_code", "query_filter", "address", "port"]);
+const props = defineProps(["address", "port"]);
 
-const data = window.data;
-const configurationCategories = data["configuration_categories"];
-const configurationStatus = data["configuration_status"];
-const configuration = data["configuration"];
+const configurationCategories = ref([]);
+const configurationStatus = ref([]);
+const configuration = ref([]);
+
+const currentCat = ref("");
+const queryFilter = ref("");
+const settings = ref(null);
 
 const modalLoading = ref(false);
 
@@ -19,56 +22,132 @@ const resetParamName = ref("");
 const resetParamValue = ref("");
 
 onMounted(() => {
-  if (props.error_code != 0) {
-    showError(props.error_message);
-  }
+  getCategories();
 });
 
-function generatePopoverContent(row) {
-  let content = `<table><tr><td>Type:</td><td><b>${row["vartype"]}</b></td></tr>`;
-  if (row["unit"]) {
-    content += `<tr><td>Unit:</td><td><b>${row["unit"]}</b></td></tr>`;
+function getCategories() {
+  $.ajax({
+    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration/categories",
+    type: "GET",
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    success: function (data) {
+      configurationCategories.value = data;
+      getConfiguration();
+    },
+    error: function (xhr) {
+      showError(xhr);
+    },
+  });
+}
+
+function getConfiguration(closeError = true) {
+  if (closeError) {
+    clearError();
   }
-  if (["integer", "real"].includes(row["vartype"])) {
-    content +=
-      `<tr><td>Minimum:</td><td><b>${row["min_val"]}</b></td></tr>` +
-      `<tr><td>Maximum:</td><td><b>${row["max_val"]}</b></td></tr>`;
+  let url = "";
+  let query = {};
+  if (currentCat.value == "" && queryFilter.value == "") {
+    currentCat.value = configurationCategories.value["categories"][0];
   }
-  content += `</table>`;
-  return content;
+  if (queryFilter.value == "") {
+    url = "/category/" + quotePlus(currentCat.value);
+  } else {
+    query = { filter: queryFilter.value };
+  }
+  $.ajax({
+    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration" + url,
+    type: "GET",
+    data: query,
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    success: function (data) {
+      configuration.value = data;
+      getStatus();
+    },
+    error: function (xhr) {
+      showError(xhr);
+    },
+  });
 }
 
-function parsedEnumVals(enumString) {
-  let trimmed = enumString.replace(/^\{|\}$/g, "");
-  return trimmed.split(",");
+function getStatus() {
+  $.ajax({
+    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration/status",
+    type: "GET",
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    success: function (data) {
+      configurationStatus.value = data;
+      $('[data-toggle="popover"]').popover();
+    },
+    error: function (xhr) {
+      showError(xhr);
+    },
+  });
 }
 
-function isSelected(value, setting) {
-  // Check if the value matches the setting,
-  // considering the case where value might be quoted
-  return value === setting || `'${value}'` === setting;
-}
-
-function updateHiddenInput(settingName) {
-  const isChecked = $("#select" + settingName).is(":checked");
-  $("#hidden" + settingName).val(isChecked ? "on" : "off");
-}
-
-function cancel(settingName, settingBootVal) {
-  error.value.clear();
-  resetParamName.value = settingName;
-  resetParamValue.value = settingBootVal;
-  $("#resetModal").modal("show");
-  $("[data-toggle=popover]").popover("hide");
+function submitForm() {
+  const formData = { settings: [] };
+  clearError();
+  let names = [];
+  for (let i = 0; i < settings.value.length; i++) {
+    const formElements = settings.value[i].elements;
+    for (let j = 0; j < formElements.length; j++) {
+      const element = formElements[j];
+      if (element.name && !names.includes(element.name)) {
+        names.push(element.name);
+        let value = element.value;
+        if (element.type === "checkbox") {
+          value = element.checked ? "on" : "off";
+        }
+        formData.settings.push({ name: element.name, setting: value });
+      }
+    }
+  }
+  $.ajax({
+    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration",
+    type: "POST",
+    data: JSON.stringify(formData),
+    async: true,
+    contentType: "application/json",
+    dataType: "json",
+    success: function (data) {},
+    error: function (xhr) {
+      showError(xhr);
+    },
+    complete: function () {
+      getConfiguration(false);
+      window.scrollTo(0, 0);
+    },
+  });
 }
 
 function quotePlus(str) {
   return encodeURIComponent(str).replace(/%20/g, "+");
 }
 
-function showCat(event) {
-  event.preventDefault();
-  window.location.replace(event.target.value);
+function generatePopoverContent(row) {
+  let content = `<b>${row["vartype"]}</b><br>`;
+  if (row["unit"]) {
+    content += `Unit:<b>${row["unit"]}</b><br>`;
+  }
+  if (["integer", "real"].includes(row["vartype"])) {
+    content += `Minimum: <b>${row["min_val"]}</b><br>` + `Maximum:<b>${row["max_val"]}</b>`;
+  }
+  return content;
+}
+
+function cancel(settingName, settingBootVal) {
+  clearError();
+  error.value.clear();
+  resetParamName.value = settingName;
+  resetParamValue.value = settingBootVal;
+  $("#resetModal").modal("show");
+  $("[data-toggle=popover]").popover("hide");
 }
 
 function modalApiCall() {
@@ -84,14 +163,26 @@ function modalApiCall() {
     contentType: "application/json",
     dataType: "json",
     success: function (data) {
-      var url = window.location.href;
-      window.location.replace(url);
+      getConfiguration();
+      $("#resetModal").modal("hide");
+      modalLoading.value = false;
     },
     error: function (xhr) {
       modalLoading.value = false;
       error.value.fromXHR(xhr);
     },
   });
+}
+
+function parsedEnumVals(enumString) {
+  let trimmed = enumString.replace(/^\{|\}$/g, "");
+  return trimmed.split(",");
+}
+
+function isSelected(value, setting) {
+  // Check if the value matches the setting,
+  // considering the case where value might be quoted
+  return value === setting || `'${value}'` === setting;
 }
 </script>
 <template>
@@ -157,36 +248,32 @@ function modalApiCall() {
   </div>
   <div class="row form-group">
     <div class="col-3 mr-auto">
-      <form
-        method="get"
-        :action="'/server/' + address + '/' + port + '/pgconf/configuration'"
-        class="form"
-        role="search"
-      >
-        <label class="sr-only" for="selectServer">Search</label>
-        <div class="input-group">
-          <input
-            class="form-control"
-            id="inputSearchSettings"
-            name="filter"
-            placeholder="Find in settings"
-            :value="query_filter"
-          />
-          <span class="input-group-append">
-            <a
-              v-if="query_filter"
-              class="btn btn-outline-secondary"
-              id="buttonResetSearch"
-              :href="'/server/' + address + '/' + port + '/pgconf/configuration'"
-            >
-              <i class="fa fa-fw fa-times"></i>
-            </a>
-            <button type="submit" class="btn btn-outline-secondary" id="buttonSearchSettings">
-              <i class="fa fa-fw fa-search"></i>
-            </button>
-          </span>
-        </div>
-      </form>
+      <label class="sr-only" for="selectServer">Search</label>
+      <div class="input-group">
+        <input
+          class="form-control"
+          id="inputSearchSettings"
+          name="filter"
+          placeholder="Find in settings"
+          v-model="queryFilter"
+        />
+        <span class="input-group-append">
+          <a
+            v-if="queryFilter"
+            class="btn btn-outline-secondary"
+            id="buttonResetSearch"
+            @click="
+              queryFilter = '';
+              getConfiguration();
+            "
+          >
+            <i class="fa fa-fw fa-times"></i>
+          </a>
+          <button type="submit" class="btn btn-outline-secondary" id="buttonSearchSettings" @click="getConfiguration()">
+            <i class="fa fa-fw fa-search"></i>
+          </button>
+        </span>
+      </div>
     </div>
     <div class="col-7">
       <label class="sr-only" for="selectConfCat">Category</label>
@@ -194,13 +281,15 @@ function modalApiCall() {
         <div class="input-group-prepend">
           <div class="input-group-text">Category</div>
         </div>
-        <select class="form-control" id="selectConfCat" :disabled="query_filter != ''" @change="showCat($event)">
-          <template v-if="!query_filter">
-            <option
-              v-for="cat in configurationCategories['categories']"
-              :value="'/server/' + address + '/' + port + '/pgconf/configuration/category/' + quotePlus(cat)"
-              :selected="cat === current_cat"
-            >
+        <select
+          class="form-control"
+          id="selectConfCat"
+          :disabled="queryFilter != ''"
+          @change="getConfiguration()"
+          v-model="currentCat"
+        >
+          <template v-if="!queryFilter">
+            <option v-for="cat in configurationCategories['categories']" :value="cat" :selected="cat === currentCat">
               {{ cat }}
             </option>
           </template>
@@ -213,7 +302,7 @@ function modalApiCall() {
       <div v-for="settingGroup in configuration" class="card">
         <div class="card-header">{{ settingGroup["category"] }}</div>
         <div class="card-body">
-          <form role="form" method="post">
+          <form ref="settings" @submit.prevent="submitForm">
             <table class="table table-sm">
               <tr v-for="settingRow in settingGroup['rows']">
                 <td class="badge-setting">
@@ -226,13 +315,7 @@ function modalApiCall() {
                       type="checkbox"
                       :id="'select' + settingRow['name']"
                       :checked="settingRow['setting'] == 'on'"
-                      @change="updateHiddenInput(settingRow['name'])"
-                    />
-                    <input
-                      :id="'hidden' + settingRow['name']"
-                      type="hidden"
                       :name="settingRow['name']"
-                      :value="settingRow['setting']"
                     />
                   </div>
                   <select
