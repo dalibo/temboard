@@ -88,21 +88,6 @@ function terminate() {
   });
 }
 
-var entityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-  "/": "&#x2F;",
-};
-
-function escapeHtml(string) {
-  return String(string).replace(/[&<>"'\/]/g, function (s) {
-    return entityMap[s];
-  });
-}
-
 String.prototype.trunc =
   String.prototype.trunc ||
   function (n) {

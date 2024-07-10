@@ -9,7 +9,6 @@ import { computed, onMounted, ref } from "vue";
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
 const discover = ref(props.discover);
-const errors = ref("");
 const memory = ref(props.initialData.memory);
 const databases = props.initialData.databases;
 // total_size is formated by agent. Use total_size_bytes when dropping agent v8.
@@ -37,6 +36,7 @@ const tpsChartEl = ref(null);
 const loadAverageChartEl = ref(null);
 const divAlertsEl = ref(null);
 const rootEl = ref(null);
+const error = ref(null);
 
 const { toggle } = useFullscreen(rootEl);
 
@@ -61,13 +61,13 @@ const cpuTooltip = computed(() => {
  * updateDashboard() callback.
  */
 function refreshDashboard() {
+  window.clearError();
   $.ajax({
     url: "/proxy/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/dashboard",
     type: "GET",
     async: true,
     contentType: "application/json",
     success: function (data) {
-      errors.value = "";
       status.value = data.status;
       updateDashboard(data);
       updateTps([data]);
@@ -78,14 +78,7 @@ function refreshDashboard() {
         // force a reload of the page, should lead to the server login page
         location.href = location.href;
       }
-      let code = xhr.status;
-      let error = "Internal error.";
-      if (code > 0) {
-        error = escapeHtml(JSON.parse(xhr.responseText).error);
-      } else {
-        code = "";
-      }
-      errors.value = html_error(code, error);
+      window.showError(chr);
     },
   });
 }
@@ -247,30 +240,6 @@ function updateTps(data) {
   $("#postgres-stopped-msg").toggleClass("d-none", !!data[data.length - 1].databases);
 }
 
-function html_error(code, error) {
-  return `
-  <div class="alert alert-danger" role="alert">
-    <h4 class="modal-title" id="ErrorModalLabel">Error ${code}</h4>
-    <p>${error}</p>
-  </div>
-  `;
-}
-
-const entityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-  "/": "&#x2F;",
-};
-
-function escapeHtml(string) {
-  return String(string).replace(/[&<>"'\/]/g, function (s) {
-    return entityMap[s];
-  });
-}
-
 function getBorderColor(state) {
   if (state != "OK" && state != "UNDEF") {
     return "border border-2 border-" + state.toLowerCase();
@@ -282,10 +251,10 @@ function getBorderColor(state) {
  * Update status and alerts
  */
 function updateAlerts() {
+  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
-  })
-    .done(function (data) {
+    success: function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
       $(divAlertsEl.value).find("[data-toggle-popover]").popover("dispose");
@@ -303,22 +272,22 @@ function updateAlerts() {
             html: true,
           });
       }, 1);
-    })
-    .fail(function (error) {
-      // FIXME handle error
-      console.error(error);
-    });
+    },
+    error: function (xhr) {
+      window.showError(xhr);
+    },
+  });
 
+  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/checks.json",
-  })
-    .done(function (data) {
+    success: function (data) {
       states.value = data;
-    })
-    .fail(function (error) {
-      // FIXME handle error
-      console.error(error);
-    });
+    },
+    error: function (xhr) {
+      window.showError(xhr);
+    },
+  });
 }
 
 onMounted(() => {
@@ -490,9 +459,6 @@ onMounted(() => {
           {{ props.instance.hostname }}:{{ props.instance.pgPort }}
         </strong>
       </div>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-xl-6 col-10" v-html="errors"></div>
     </div>
     <!-- charts row -->
     <div class="row mb-3">
