@@ -534,7 +534,7 @@ onMounted(() => {
         <div class="row">
           <div class="col-xl-12 col mb-xl-2">
             <div class="small text-muted text-center">
-              Postgres
+              {{ discover.postgres.version_summary }}
               <template v-if="status">
                 <span
                   v-if="status.postgres.primary && status.postgres.is_standby"
