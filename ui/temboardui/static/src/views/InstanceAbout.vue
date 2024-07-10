@@ -43,17 +43,18 @@ if (props.discover) {
             </td>
           </tr>
           <template v-for="setting in settings">
-            <tr v-if="postgres[setting]">
+            <tr v-if="postgres[setting] !== null && postgres[setting] !== undefined">
               <td>
                 <tt>{{ setting }}</tt>
               </td>
-              <td>{{ postgres[setting] }}</td>
-            </tr>
-            <tr v-if="postgres[setting] === false || postgres[setting] === true">
               <td>
-                <tt>{{ setting }}</tt>
+                <template v-if="postgres[setting] === false || postgres[setting] === true">
+                  <i class="fa" :class="{ 'fa-check': postgres[setting], 'fa-times': !postgres[setting] }"></i>
+                </template>
+                <template v-else>
+                  {{ postgres[setting] }}
+                </template>
               </td>
-              <td><i class="fa" :class="{ 'fa-check': postgres[setting], 'fa-times': !postgres[setting] }"></i></td>
             </tr>
           </template>
         </tbody>
