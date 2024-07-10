@@ -9,7 +9,7 @@ import { computed, onMounted, ref } from "vue";
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
 const discover = ref(props.discover);
-const memory = ref(props.initialData.memory);
+const memory = ref(props.initialData.memory.total);
 const databases = props.initialData.databases;
 // total_size is formated by agent. Use total_size_bytes when dropping agent v8.
 const totalSize = ref(databases ? databases.total_size : null);
