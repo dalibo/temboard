@@ -291,6 +291,11 @@ function updateAlerts() {
 }
 
 onMounted(() => {
+  if (discover.value === null) {
+    window.showError("UI does not know this agent. Retry in 1 minute or check the logs.");
+    return;
+  }
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
