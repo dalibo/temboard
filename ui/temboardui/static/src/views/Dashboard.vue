@@ -17,6 +17,7 @@ const totalSize = ref(databases ? databases.total_size : null);
 // Using databases.databases for v8 compat. Use databases.nb later.
 const nbDb = ref(databases ? databases.databases : null);
 const loadAverage = ref(props.initialData.loadaverage);
+const status = ref(null);
 const totalMemory = ref(0);
 const totalHit = ref("&nbsp;");
 const totalCpu = ref("&nbsp;");
@@ -67,6 +68,7 @@ function refreshDashboard() {
     contentType: "application/json",
     success: function (data) {
       errors.value = "";
+      status.value = data.status;
       updateDashboard(data);
       updateTps([data]);
       updateLoadaverage([data]);
@@ -531,7 +533,18 @@ onMounted(() => {
         <!-- Postgres -->
         <div class="row">
           <div class="col-xl-12 col mb-xl-2">
-            <div class="small text-muted text-center">Postgres</div>
+            <div class="small text-muted text-center">
+              Postgres
+              <template v-if="status">
+                <span
+                  v-if="status.postgres.primary && status.postgres.is_standby"
+                  class="badge badge-secondary"
+                  :title="status.postgres.primary_conninfo"
+                  >secondary</span
+                >
+                <span v-else class="badge badge-primary">primary</span>
+              </template>
+            </div>
             <div class="small text-center">
               <b>
                 <span id="nb_db" v-if="nbDb">
