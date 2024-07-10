@@ -461,7 +461,7 @@ onMounted(() => {
       </div>
     </div>
     <!-- charts row -->
-    <div class="row mb-3">
+    <div class="row mb-3" v-if="props.discover">
       <div class="col-xl-4 col-12 mb-3 mb-xl-0">
         <!-- System -->
         <div class="row">
@@ -606,7 +606,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="row" v-if="props.instance.plugins.includes('monitoring')">
+    <div class="row" v-if="props.discover && props.instance.plugins.includes('monitoring')">
       <div class="col-8">
         <div class="text-center small">
           Current status
