@@ -799,6 +799,10 @@ def pull_data_worker(app):
     worker_session = Session()
     instances = worker_session.query(Instances)
 
+    if not instances:
+        logger.info("No instances to pull data from.")
+        return
+
     for instance in instances:
         plugin_names = [plugin.plugin_name for plugin in instance.plugins]
 
@@ -815,8 +819,6 @@ def pull_data_worker(app):
                 instance.agent_address,
                 instance.agent_port,
             )
-    else:
-        logger.info("No instances to pull data from.")
 
 
 @workers.register(pool_size=1)
@@ -847,7 +849,7 @@ def pull_data_for_instance(app, session, instance):
         response = client.get("/statements")
         response.raise_for_status()
         add_statement(session, instance, response.json())
-        logger.info("Successfully pulled statements data for %s.", agent_id)
+        logger.debug("Successfully pulled statements data for %s.", agent_id)
     except Exception as e:
         error = "Error while fetching statements from instance: "
         if hasattr(e, "read"):
@@ -856,7 +858,9 @@ def pull_data_for_instance(app, session, instance):
             error += str(e)
 
         if isinstance(e, (OSError, ConnectionError, client.Error)):
-            logger.error("Agent %s is not available: %s", agent_id, error)
+            logger.error(
+                "Failed to query agent: %s. Is it running? agent=%s", error, agent_id
+            )
         else:
             logger.exception("Failed to pull statements data: %s", error)
 
@@ -889,7 +893,7 @@ def statements_purge_worker(app):
     purge_after sets the number of days of data to keep, from now. Default is
     7 days if not set.
     """
-    logger.info("Purging old statements data")
+    logger.info("Purging old data.")
 
     engine = worker_engine(app.config.repository)
     session_factory = sessionmaker(bind=engine)
@@ -904,7 +908,7 @@ def statements_purge_worker(app):
         cur.execute("SET search_path TO statements")
         cur.execute("""SELECT statements_purge(%s)""", (purge_after,))
         session.connection().connection.commit()
-        logger.info("Old statements purged successfully.")
+        logger.debug("Old statements purged successfully.")
     except Exception:
         logger.exception("Could not purge statements data:")
         raise
