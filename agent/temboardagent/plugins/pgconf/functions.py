@@ -308,8 +308,8 @@ def post_settings(app, conn, current, update):
                                 setting["setting"] = None
                             checked = True
                         raise Exception()
-        except HTTPError as e:
-            raise HTTPError(e.code, e.message["error"])
+        except HTTPError:
+            raise
         except Exception:
             pass
         if not checked:
