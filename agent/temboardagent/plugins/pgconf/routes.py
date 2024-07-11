@@ -2,6 +2,7 @@ import re
 
 from bottle import HTTPError, default_app, request
 
+from ...queries import QUERIES
 from ...web.app import CustomBottle
 from . import functions as pgconf_functions
 
@@ -13,6 +14,12 @@ def post_reload(pgconn):
     """Reload Postgres configuration."""
     default_app().push_audit_notification("PostgreSQL configuration reload.")
     pgconn.execute("SELECT pg_reload_conf();")
+
+
+@bottle.get("/settings")
+def get_settings(pgconn):
+    """Return all settings metadata."""
+    return list(pgconn.query(QUERIES["pgconf-settings"]))
 
 
 @bottle.get("/configuration")
