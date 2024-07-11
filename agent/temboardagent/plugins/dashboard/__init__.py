@@ -35,7 +35,7 @@ def dashboard_history():
 
 @workers.register(pool_size=1)
 def dashboard_collector_worker(app, pool=None):
-    logger.info("Running dashboard collector.")
+    logger.info("Collecting metrics.")
 
     data = metrics.get_metrics(app, pool)
 
