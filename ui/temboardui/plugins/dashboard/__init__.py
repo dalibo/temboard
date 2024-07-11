@@ -44,10 +44,6 @@ def dashboard(request):
         config = {"history_length": 150, "scheduler_interval": 2}
 
     history = request.instance.get("/dashboard/history")
-    if history:
-        last_data = history[-1]
-    else:
-        last_data = request.instance.get("/dashboard/live")
 
     request.instance.fetch_status()
     return render_template(
@@ -57,6 +53,6 @@ def dashboard(request):
         instance=request.instance,
         plugin="dashboard",
         config=json_encode(config),
-        dashboard=last_data,
+        dashboard=history[-1] if history else {},
         history=json_encode(history or ""),
     )
