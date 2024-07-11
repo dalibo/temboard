@@ -11,6 +11,7 @@ Ensure you use consistent title format.
 - ui: Remove support for 7.x agents.
 - ui: Accept editing an offline instance.
 - ui: Search for .config/temboard.conf.
+- agent: Recover admin shutdown, backend terminated, etc.
 - Remove python 2.7 support.
 - Remove daemonization. Use nohup or systemd.
 - Dropped pluging hotplug.

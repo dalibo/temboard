@@ -313,7 +313,9 @@ class ReconnectManager:
 
     def __exit__(self, exc_type, e, exc_tb):
         if isinstance(e, Psycopg2Error):
-            if e.pgcode is None:
+            # Class 57 is Operator Intervention like shutdown, terminate backend, etc.
+            # Cf. https://www.postgresql.org/docs/current/errcodes-appendix.html#ERRCODES-TABLE
+            if e.pgcode is None or e.pgcode.startswith("57"):
                 logger.debug("Retrying lost connection: %s", e)
                 self.pool.closeall()
                 self.conn = None
