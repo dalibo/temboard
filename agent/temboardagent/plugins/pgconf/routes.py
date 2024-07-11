@@ -1,5 +1,6 @@
 import re
 
+import psycopg2.sql
 from bottle import HTTPError, default_app, request
 
 from ...queries import QUERIES
@@ -20,6 +21,33 @@ def post_reload(pgconn):
 def get_settings(pgconn):
     """Return all settings metadata."""
     return list(pgconn.query(QUERIES["pgconf-settings"]))
+
+
+@bottle.post("/settings")
+def post_settings(pgconn):
+    """Applies a JSON mapping of setting -> value."""
+    new = request.json
+    if not hasattr(new, "items"):
+        raise HTTPError(406, "Requires a mapping of settings and values.")
+    if not new:
+        raise HTTPError(406, "No settings.")
+
+    for name, setting in new.items():
+        if setting is None:
+            raise HTTPError(406, "Setting value is required.")
+        if len(setting) > 1024:
+            raise HTTPError(406, "Setting value is too long.")
+
+        default_app().push_audit_notification(f"Setting {name} to {setting}.")
+        sql = psycopg2.sql.SQL("""ALTER SYSTEM SET {} TO %(setting)s;""")
+        try:
+            pgconn.execute(
+                sql.format(psycopg2.sql.Identifier(name)), {"setting": setting}
+            )
+        except psycopg2.DatabaseError as e:
+            return HTTPError(406, e.pgerror)
+
+    post_reload(pgconn)
 
 
 @bottle.get("/configuration")
