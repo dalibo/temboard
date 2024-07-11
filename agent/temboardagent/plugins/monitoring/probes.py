@@ -43,7 +43,7 @@ def run_probes(probes, pool, instances, delta=True):
     """Execute the probes."""
 
     now = utcnow()
-    logger.info("Running probes at %s.", now.isoformat())
+    logger.debug("Running probes at %s.", now.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
     output = {}
@@ -57,7 +57,7 @@ def run_probes(probes, pool, instances, delta=True):
         if p.level == "host":
             if not p.check():
                 continue
-            logger.info("Running host probe %s.", p.get_name())
+            logger.debug("Running host probe %s.", p.get_name())
             try:
                 out = p.run()
             except Exception as e:
@@ -78,7 +78,7 @@ def run_probes(probes, pool, instances, delta=True):
                 )
                 continue
 
-            logger.info("Running %s probe %s.", p.level, p.get_name())
+            logger.debug("Running %s probe %s.", p.level, p.get_name())
             if p.level == "instance":
                 dbnames = [i["database"]]
             else:
@@ -97,7 +97,7 @@ def run_probes(probes, pool, instances, delta=True):
             record["datetime"] = now
         output[p.get_name()] = out
 
-    logger.info("Finished probes run.")
+    logger.debug("Finished probes run.")
     return output
 
 

@@ -112,12 +112,13 @@ def aggregate_data_worker(app):
     # Worker in charge of aggregate data
     stopwatch = Stopwatch()
     engine = worker_engine(app.config.repository)
+    logger.info("Aggregating data.")
     with engine.connect() as conn:
         conn.execute("SET search_path TO monitoring")
         res = conn.execute("SELECT * FROM metric_tables_config()")
         (tables_config,) = res.fetchone()
         for config in tables_config.values():
-            logger.info("Aggregating data for metric %s.", config["name"])
+            logger.debug("Aggregating data for metric %s.", config["name"])
             try:
                 with conn.begin(), stopwatch:
                     res = conn.execute(
@@ -138,7 +139,7 @@ def aggregate_data_worker(app):
                 # search_path is lost on exception. Define it again.
                 conn.execute("SET search_path TO monitoring")
 
-    logger.info("Monitoring data aggregation done.")
+    logger.debug("Monitoring data aggregation done.")
     logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
@@ -154,12 +155,13 @@ def history_tables_worker(app):
     #
     stopwatch = Stopwatch()
     engine = worker_engine(app.config.repository)
+    logger.info("Archiving metrics.")
     with engine.connect() as conn:
         conn.execute("SET search_path TO monitoring")
         res = conn.execute("SELECT * FROM metric_tables_config()")
         (tables_config,) = res.fetchone()
         for config in tables_config.values():
-            logger.info("Archiving data for metric %s.", config["name"])
+            logger.debug("Archiving data for metric %s.", config["name"])
             try:
                 with conn.begin(), stopwatch:
                     res = conn.execute(
@@ -180,7 +182,7 @@ def history_tables_worker(app):
                 # search_path is lost on exception. Define it again.
                 conn.execute("SET search_path TO monitoring")
 
-    logger.info("Monitoring data archiving done.")
+    logger.debug("Monitoring data archiving done.")
     logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
@@ -205,7 +207,7 @@ def purge_data_worker(app):
     """
 
     logger.setLevel(app.config.logging.level)
-    logger.info("Starting monitoring data purge worker.")
+    logger.info("Purging old data.")
 
     if not app.config.monitoring.purge_after:
         logger.info("No purge policy, end.")
@@ -269,11 +271,11 @@ def purge_data_worker(app):
                 continue
 
             if res_delete.rowcount > 0:
-                logger.info(
-                    "Table %s purged, %s rows deleted", tablename, res_delete.rowcount
+                logger.debug(
+                    "Table %s purged, %s rows deleted.", tablename, res_delete.rowcount
                 )
 
-    logger.info("End of monitoring data purge worker.")
+    logger.debug("End of monitoring data purge worker.")
 
 
 @workers.register(pool_size=1)
@@ -394,7 +396,7 @@ def schedule_collector(app):
     """Worker function in charge of scheduling collector (pull mode)."""
 
     logger.setLevel(app.config.logging.level)
-    logger.info("Starting collector scheduler.")
+    logger.debug("Scheduling collect batches.")
 
     engine = worker_engine(app.config.repository)
     with engine.connect() as conn:
@@ -411,7 +413,7 @@ def schedule_collector(app):
 
             collector_batch.defer(app, batch=batch)
 
-    logger.info("End of collector scheduler.")
+    logger.debug("End of collector scheduler.")
 
 
 @workers.register(pool_size=20)
@@ -432,7 +434,7 @@ def collector_batch(app, batch):
 @workers.register(pool_size=20)
 def collector(app, address, port, engine=None):
     agent_id = f"{address}:{port}"
-    logger.info("Starting monitoring collector for %s.", agent_id)
+    logger.info("Collecting metrics. agent=%s", agent_id)
 
     client = TemboardAgentClient.factory(app.config, address, port)
     # Start new ORM DB session
@@ -451,7 +453,7 @@ def collector(app, address, port, engine=None):
         # Find host_id and instance_id by hostname and PG port
         host_id = get_host_id(worker_session, instance.hostname)
         instance_id = get_instance_id(worker_session, host_id, instance.pg_port)
-        logger.info(
+        logger.debug(
             "Found host #%s and instance #%s %s.", host_id, instance_id, instance
         )
     except Exception:
@@ -479,12 +481,18 @@ def collector(app, address, port, engine=None):
     # Finally, let's call /monitoring/history agent API for getting metrics
     # history.
     try:
-        logger.info("Querying monitoring history from %s.", instance)
+        logger.debug(
+            "Querying monitoring history. instance=%s agent=%s", instance, agent_id
+        )
         response = client.get(history_url)
         response.raise_for_status()
     except (OSError, ConnectionError, client.Error) as e:
-        logger.error("Failed to query history for %s: %s", instance, e)
-        logger.error("Agent or host may be down or misconfigured.")
+        logger.error(
+            "Failed to query agent: %s. Is it running? instance=%s agent=%s",
+            e,
+            instance,
+            agent_id,
+        )
         # Update collector status only if instance_id is known
         if instance_id:
             update_collector_status(
@@ -511,10 +519,10 @@ def collector(app, address, port, engine=None):
         logger.debug("Agent did not send discover ETag.")
 
     if not rows:
-        logger.info("Instance %s returned no monitoring data.", instance)
+        logger.debug("Instance %s returned no monitoring data.", instance)
 
     for row in rows:
-        logger.info("Got points for %s at %s.", instance, row["datetime"])
+        logger.debug("Got points for %s at %s.", instance, row["datetime"])
         hostinfo = row["hostinfo"]
         data = row["data"]
         instance_d = row["instances"][0]
@@ -522,17 +530,21 @@ def collector(app, address, port, engine=None):
         try:
             # Try to insert collected data
 
-            logger.info("Update the inventory for %s.", instance)
+            logger.debug("Update the inventory for %s. agent=%s", instance, agent_id)
             host = merge_agent_info(worker_session, hostinfo, instance_d)
             instance_id = get_instance_id(
                 worker_session, host.host_id, instance.pg_port
             )
-            logger.info("Insert instance availability for %s.", instance)
+            logger.debug(
+                "Insert instance availability for %s. agent=%s", instance, agent_id
+            )
             insert_availability(
                 worker_session, row["datetime"], instance_id, instance_d["available"]
             )
             worker_session.commit()
-            logger.info("Insert collected metrics for %s.", instance)
+            logger.debug(
+                "Insert collected metrics for %s. agent=%s", instance, agent_id
+            )
             insert_metrics(
                 worker_session,
                 host.host_id,
@@ -567,7 +579,7 @@ def collector(app, address, port, engine=None):
             logger.exception(str(e))
             worker_session.rollback()
             if instance_id:
-                logger.info("Set collector status to FAIL for %s.", host)
+                logger.debug("Set collector status to FAIL for %s.", host)
                 update_collector_status(
                     worker_session,
                     instance_id,
@@ -576,7 +588,7 @@ def collector(app, address, port, engine=None):
                     last_insert=last_insert,
                 )
                 worker_session.commit()
-            logger.info("Continue with the next row.")
+            logger.debug("Continue with the next row.")
             continue
 
         logger.debug("Update collector status for agent %s.", agent_id)
@@ -589,14 +601,14 @@ def collector(app, address, port, engine=None):
             last_insert=datetime.strptime(row["datetime"], "%Y-%m-%d %H:%M:%S +0000"),
         )
         worker_session.commit()
-        logger.info("Populate checks for %s.", host)
+        logger.debug("Populate checks for %s.", host)
         # ALERTING PART
         populate_host_checks(
             worker_session, host.host_id, instance_id, dict(n_cpu=hostinfo["cpu_count"])
         )
         worker_session.commit()
 
-        logger.info(
+        logger.debug(
             "Apply alerting checks against preprocessed data for agent %s.", agent_id
         )
 
@@ -626,4 +638,4 @@ def collector(app, address, port, engine=None):
         worker_session.commit()
 
     worker_session.close()
-    logger.info("End of collector for agent %s.", agent_id)
+    logger.debug("Collect done. agent=%s", agent_id)
