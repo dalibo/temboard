@@ -50,6 +50,19 @@ def post_settings(pgconn):
     post_reload(pgconn)
 
 
+@bottle.delete("/settings/<name>")
+def delete_settings(pgconn, name):
+    """Reset settings to default."""
+    default_app().push_audit_notification(f"Reseting {name} to default.")
+    sql = psycopg2.sql.SQL("""ALTER SYSTEM RESET {};""")
+    try:
+        pgconn.execute(sql.format(psycopg2.sql.Identifier(name)))
+    except psycopg2.DatabaseError as e:
+        return HTTPError(406, e.pgerror)
+
+    post_reload(pgconn)
+
+
 @bottle.get("/configuration")
 def get_configuration(pgconn):
     return get_configuration_category(pgconn, None)
