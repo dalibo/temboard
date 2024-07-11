@@ -24,19 +24,9 @@ function modal_api_call(api_host, api_port, api_url, api_method, modal_id, json_
       window.location.replace(url);
     },
     error: function (xhr) {
-      if (xhr.status == 401) {
-        $("#" + modal_id + "Body").html(
-          '<div class="alert alert-danger" role="alert">Session expired. <a class="btn btn-danger" id="ConfirmOK" href="/server/' +
-            api_host +
-            "/" +
-            api_port +
-            '/login">Back to login page</a></div>',
-        );
-      } else {
-        $("#" + modal_id + "Body").html(
-          '<div class="alert alert-danger" role="alert">ERROR: ' + render_xhr_error(xhr) + "</div>",
-        );
-      }
+      $("#" + modal_id + "Body").html(
+        '<div class="alert alert-danger" role="alert">ERROR: ' + render_xhr_error(xhr) + "</div>",
+      );
     },
   });
 }
