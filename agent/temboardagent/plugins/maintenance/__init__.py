@@ -1,13 +1,14 @@
 from datetime import datetime
 
-from bottle import Bottle, default_app, request
+from bottle import default_app, request
 
 from temboardagent.toolkit import taskmanager
 from temboardagent.tools import validate_parameters
 
+from ...web.app import CustomBottle
 from . import functions
 
-bottle = Bottle()
+bottle = CustomBottle()
 workers = taskmanager.WorkerSet()
 
 

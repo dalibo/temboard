@@ -1,14 +1,15 @@
 import logging
 import time
 
-from bottle import Bottle, default_app
+from bottle import default_app
 
 from ...toolkit import logfmt, taskmanager
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.utils import utcnow
+from ...web.app import CustomBottle
 from . import db, metrics
 
-bottle = Bottle()
+bottle = CustomBottle()
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 

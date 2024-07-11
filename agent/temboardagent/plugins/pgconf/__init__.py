@@ -1,10 +1,11 @@
 import re
 
-from bottle import Bottle, HTTPError, default_app, request
+from bottle import HTTPError, default_app, request
 
+from ...web.app import CustomBottle
 from . import functions as pgconf_functions
 
-bottle = Bottle()
+bottle = CustomBottle()
 
 
 @bottle.get("/configuration")
