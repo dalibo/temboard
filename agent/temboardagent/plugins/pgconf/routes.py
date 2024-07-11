@@ -8,6 +8,13 @@ from . import functions as pgconf_functions
 bottle = CustomBottle()
 
 
+@bottle.post("/reload")
+def post_reload(pgconn):
+    """Reload Postgres configuration."""
+    default_app().push_audit_notification("PostgreSQL configuration reload.")
+    pgconn.execute("SELECT pg_reload_conf();")
+
+
 @bottle.get("/configuration")
 def get_configuration(pgconn):
     return get_configuration_category(pgconn, None)
