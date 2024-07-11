@@ -24,9 +24,9 @@ def get_settings(pgconn):
 
 
 @bottle.post("/settings")
-def post_settings(pgconn):
+def post_settings(pgconn, new=None):
     """Applies a JSON mapping of setting -> value."""
-    new = request.json
+    new = new or request.json
     if not hasattr(new, "items"):
         raise HTTPError(406, "Requires a mapping of settings and values.")
     if not new:
@@ -63,6 +63,9 @@ def delete_settings(pgconn, name):
     post_reload(pgconn)
 
 
+# DEPRECATED: Remove these routes once UI uses only the above.
+
+
 @bottle.get("/configuration")
 def get_configuration(pgconn):
     return get_configuration_category(pgconn, None)
@@ -90,10 +93,26 @@ def get_configuration_categories(pgconn):
 def post_configuration(pgconn):
     if "settings" not in request.json:
         raise HTTPError(406, "Parameter 'settings' not sent.")
-    current = get_configuration_category(pgconn, None)
-    return pgconf_functions.post_settings(
-        default_app().temboard, pgconn, current, request.json["settings"]
-    )
+    reset = {
+        i["name"]
+        for i in request.json["settings"]
+        if i["setting"] is None or i["setting"] == ""
+    }
+    for name in reset:
+        out = delete_settings(pgconn, name)
+        if out:
+            return out
+
+    # Transpose to new payload format.
+    new = {
+        i["name"]: i["setting"]
+        for i in request.json["settings"]
+        if i["setting"] not in reset
+    }
+    out = post_settings(pgconn, new)
+    if out is None:
+        out = {"settings": []}
+    return out
 
 
 @bottle.get("/configuration/status")
