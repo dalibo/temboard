@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import inspect
 import json
@@ -14,6 +15,7 @@ from bottle import (
     response,
 )
 
+from .. import notification
 from ..toolkit.http import format_date
 from ..toolkit.signing import InvalidSignature, canonicalize_request, verify_v1
 from ..toolkit.utils import JSONEncoder, utcnow
@@ -51,6 +53,12 @@ class CustomBottle(Bottle):
         for plugin in self.plugins:
             app.install(plugin)
         return super().mount(prefix, app, **options)
+
+    def push_audit_notification(self, message):
+        n = notification.Notification(request.username, message)
+        # push() already logs SQLite traceback.
+        with contextlib.suppress(notification.NotificationError):
+            notification.NotificationMgmt.push(self.temboard.config, n)
 
 
 def before_request_log():
