@@ -1,13 +1,14 @@
 import logging
 
-from bottle import Bottle, default_app, request
+from bottle import default_app, request
 
 from ...notification import Notification, NotificationMgmt
 from ...queries import QUERIES
 from ...tools import validate_parameters
+from ...web.app import CustomBottle
 from . import functions as activity_functions
 
-bottle = Bottle()
+bottle = CustomBottle()
 logger = logging.getLogger(__name__)
 
 

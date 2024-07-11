@@ -3,13 +3,14 @@ import logging
 import time
 from datetime import datetime
 
-from bottle import Bottle, HTTPError, default_app, request, response
+from bottle import HTTPError, default_app, request, response
 
 from ... import __version__ as __VERSION__
 from ...toolkit import taskmanager
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.validators import commalist
 from ...tools import now, validate_parameters
+from ...web.app import CustomBottle
 from . import db
 from .inventory import host_info, instance_info
 from .openmetrics import format_open_metrics_lines, generate_samples
@@ -17,7 +18,7 @@ from .output import remove_passwords
 from .probes import load_probes, run_probes
 
 logger = logging.getLogger(__name__)
-bottle = Bottle()
+bottle = CustomBottle()
 workers = taskmanager.WorkerSet()
 
 T_TIMESTAMP_UTC = b"(^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$)"

@@ -16,6 +16,7 @@ Ensure you use consistent title format.
 - Dropped pluging hotplug.
 - Drop rhel7 and buster support, minimum versions are now 6.0.2 for tornado
 and 1.3.2 for sqlalchemy.
+- Fix error handling in agent plugins.
 
 
 ## 8.2.1
