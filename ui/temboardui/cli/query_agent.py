@@ -23,6 +23,12 @@ class QueryAgent(SubCommand):
 
     def define_arguments(self, parser):
         parser.add_argument(
+            "--delete", action="store_const", const="DELETE", dest="method"
+        )
+
+        parser.add_argument("--post", action="store_const", const="POST", dest="method")
+
+        parser.add_argument(
             "--username",
             metavar="USERNAME",
             default="temboard",
@@ -54,7 +60,7 @@ class QueryAgent(SubCommand):
         if args.body:
             headers["Content-Type"] = "application/json"
 
-        method = "POST" if args.body else "GET"
+        method = "POST" if args.body else getattr(args, "method", "GET")
         pathinfo = url.path
         if url.query:
             pathinfo = f"{pathinfo}?{url.query}"
