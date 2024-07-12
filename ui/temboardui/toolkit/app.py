@@ -308,7 +308,7 @@ class BaseApplication:
         retcode = 1
         try:
             setup_logging(debug=self.debug)
-            logger.debug("Starting %s %s.", self.PROGRAM, self.VERSION)
+            logger.info("Starting %s %s.", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
             logger.info("Interrupted.")

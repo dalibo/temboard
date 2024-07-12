@@ -618,4 +618,4 @@ json.dumps.__kwdefaults__["cls"] = JSONEncoder
 
 app = WebApplication()
 # Hijack tornado.web access_log to log request in temboardui namespace.
-tornadoweb.access_log = logging.getLogger("temboardui.access")
+tornadoweb.access_log = logging.getLogger(__package__)

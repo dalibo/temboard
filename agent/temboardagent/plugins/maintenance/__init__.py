@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from bottle import default_app, request
@@ -10,6 +11,7 @@ from . import functions
 
 bottle = CustomBottle()
 workers = taskmanager.WorkerSet()
+logger = logging.getLogger(__name__)
 
 
 @bottle.get("/")
@@ -234,6 +236,13 @@ def scheduled_reindex(http_context, app):
 
 @workers.register(pool_size=10)
 def reindex_worker(app, dbname, schema=None, table=None, index=None):
+    logger.info(
+        "Reindexing. database=%s schema=%s table=%s index=%s",
+        dbname,
+        schema,
+        table,
+        index,
+    )
     with app.postgres.connect(database=dbname) as conn:
         return functions.reindex(conn, dbname, schema, table, index)
 

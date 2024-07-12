@@ -52,25 +52,9 @@ class CustomBottle(Bottle):
             app.install(plugin)
         return super().mount(prefix, app, **options)
 
-    def wsgi(self, environ, start_response):
-        # We don't use after_request hook because it doesn't handle errors
-        # correctly, for example we were seeing 200 status request in log
-        # but error 500 on web page.
-        result = super().wsgi(environ, start_response)
-        after_request_log()
-        return result
-
 
 def before_request_log():
     logger.debug("New web request: %s %s", request.method, request.path)
-
-
-def after_request_log():
-    if response.status_code > 500:
-        logmethod = logger.error
-    else:
-        logmethod = logger.info
-    logmethod("%s %s %s", request.method, request.path, response.status)
 
 
 class PostgresPlugin:

@@ -759,9 +759,9 @@ def reindex(conn, dbname, schema, table, index):
 
     try:
         # Try to execute the statement
-        logger.info(f"Running SQL on DB {dbname}: {q}")
+        logger.debug(f"Running SQL on DB {dbname}: {q}")
         conn.execute(q)
-        logger.info("reindex done.")
+        logger.debug("reindex done.")
     except Exception as e:
         logger.exception(str(e))
         logger.error("Unable to execute SQL: %s" % q)

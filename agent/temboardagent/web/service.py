@@ -9,7 +9,7 @@ from .. import __version__
 from ..errors import UserError
 from ..toolkit import syncio
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__package__)
 
 
 class HTTPDService(syncio.Service):
@@ -83,3 +83,19 @@ class CustomWSGIRequestHandler(WSGIRequestHandler):
         env["RAW_PATH_INFO"] = path
 
         return env
+
+    def log_request(self, code="-", size="-"):
+        if code > "50":
+            logmethod = logger.error
+        else:
+            logmethod = logger.info
+        logmethod(
+            # Same format as Tornado access.
+            "%s %s %s (%s) %s %s",
+            code,
+            self.command,  # Method
+            self.path,
+            self.address_string(),
+            "-",  # Not timed.
+            size,
+        )

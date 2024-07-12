@@ -101,12 +101,12 @@ def monitoring_collector_worker(app):
     """
     Run probes and push collected metrics in a queue.
     """
-    logger.info("Starting monitoring collector.")
+    logger.info("Collecting metrics.")
     config = app.config
-    logger.info("Gathering host information.")
+    logger.debug("Gathering host information.")
     discover = app.discover.ensure_latest()
     system_info = host_info(discover)
-    logger.info("Load the probes to run.")
+    logger.debug("Load the probes to run.")
     probes = load_probes(config.monitoring, config.temboard.home)
 
     with app.postgres.dbpool() as pool:
@@ -121,10 +121,10 @@ def monitoring_collector_worker(app):
         data=data,
         version=__VERSION__,
     )
-    logger.info("Add data to metrics table.")
+    logger.debug("Add data to metrics table.")
     db.add_metric(config.temboard.home, "monitoring.db", time.time(), output)
 
-    logger.info("Collect done.")
+    logger.debug("Collect done.")
 
     try:
         logger.debug("temboard_agent_version=%s", __VERSION__)
