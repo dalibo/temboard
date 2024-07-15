@@ -9,17 +9,17 @@ import { computed, onMounted, ref } from "vue";
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
 const discover = ref(props.discover);
-const errors = ref("");
-const memory = ref(props.initialData.memory);
+const memory = ref(props.initialData.memory.total);
 const databases = props.initialData.databases;
 // total_size is formated by agent. Use total_size_bytes when dropping agent v8.
 const totalSize = ref(databases ? databases.total_size : null);
 // Using databases.databases for v8 compat. Use databases.nb later.
 const nbDb = ref(databases ? databases.databases : null);
 const loadAverage = ref(props.initialData.loadaverage);
+const status = ref(null);
 const totalMemory = ref(0);
-const totalHit = ref("&nbsp;");
-const totalCpu = ref("&nbsp;");
+const totalHit = ref(" ");
+const totalCpu = ref(" ");
 const totalSessions = ref(0);
 const tpsCommit = ref(0);
 const tpsRollback = ref(0);
@@ -36,6 +36,7 @@ const tpsChartEl = ref(null);
 const loadAverageChartEl = ref(null);
 const divAlertsEl = ref(null);
 const rootEl = ref(null);
+const error = ref(null);
 
 const { toggle } = useFullscreen(rootEl);
 
@@ -60,13 +61,14 @@ const cpuTooltip = computed(() => {
  * updateDashboard() callback.
  */
 function refreshDashboard() {
+  window.clearError();
   $.ajax({
     url: "/proxy/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/dashboard",
     type: "GET",
     async: true,
     contentType: "application/json",
     success: function (data) {
-      errors.value = "";
+      status.value = data.status;
       updateDashboard(data);
       updateTps([data]);
       updateLoadaverage([data]);
@@ -76,14 +78,7 @@ function refreshDashboard() {
         // force a reload of the page, should lead to the server login page
         location.href = location.href;
       }
-      let code = xhr.status;
-      let error = "Internal error.";
-      if (code > 0) {
-        error = escapeHtml(JSON.parse(xhr.responseText).error);
-      } else {
-        code = "";
-      }
-      errors.value = html_error(code, error);
+      window.showError(chr);
     },
   });
 }
@@ -245,30 +240,6 @@ function updateTps(data) {
   $("#postgres-stopped-msg").toggleClass("d-none", !!data[data.length - 1].databases);
 }
 
-function html_error(code, error) {
-  return `
-  <div class="alert alert-danger" role="alert">
-    <h4 class="modal-title" id="ErrorModalLabel">Error ${code}</h4>
-    <p>${error}</p>
-  </div>
-  `;
-}
-
-const entityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-  "/": "&#x2F;",
-};
-
-function escapeHtml(string) {
-  return String(string).replace(/[&<>"'\/]/g, function (s) {
-    return entityMap[s];
-  });
-}
-
 function getBorderColor(state) {
   if (state != "OK" && state != "UNDEF") {
     return "border border-2 border-" + state.toLowerCase();
@@ -280,10 +251,10 @@ function getBorderColor(state) {
  * Update status and alerts
  */
 function updateAlerts() {
+  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
-  })
-    .done(function (data) {
+    success: function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
       $(divAlertsEl.value).find("[data-toggle-popover]").popover("dispose");
@@ -301,25 +272,30 @@ function updateAlerts() {
             html: true,
           });
       }, 1);
-    })
-    .fail(function (error) {
-      // FIXME handle error
-      console.error(error);
-    });
+    },
+    error: function (xhr) {
+      window.showError(xhr);
+    },
+  });
 
+  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/checks.json",
-  })
-    .done(function (data) {
+    success: function (data) {
       states.value = data;
-    })
-    .fail(function (error) {
-      // FIXME handle error
-      console.error(error);
-    });
+    },
+    error: function (xhr) {
+      window.showError(xhr);
+    },
+  });
 }
 
 onMounted(() => {
+  if (discover.value === null) {
+    window.showError("UI does not know this agent. Retry in 1 minute or check the logs.");
+    return;
+  }
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -489,11 +465,8 @@ onMounted(() => {
         </strong>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col-xl-6 col-10" v-html="errors"></div>
-    </div>
     <!-- charts row -->
-    <div class="row mb-3">
+    <div class="row mb-3" v-if="props.discover">
       <div class="col-xl-4 col-12 mb-3 mb-xl-0">
         <!-- System -->
         <div class="row">
@@ -531,7 +504,18 @@ onMounted(() => {
         <!-- Postgres -->
         <div class="row">
           <div class="col-xl-12 col mb-xl-2">
-            <div class="small text-muted text-center">Postgres</div>
+            <div class="small text-muted text-center">
+              {{ discover.postgres.version_summary }}
+              <template v-if="status">
+                <span
+                  v-if="status.postgres.primary && status.postgres.is_standby"
+                  class="badge badge-secondary"
+                  :title="status.postgres.primary_conninfo"
+                  >secondary</span
+                >
+                <span v-else class="badge badge-primary">primary</span>
+              </template>
+            </div>
             <div class="small text-center">
               <b>
                 <span id="nb_db" v-if="nbDb">
@@ -627,7 +611,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="row" v-if="props.instance.plugins.includes('monitoring')">
+    <div class="row" v-if="props.discover && props.instance.plugins.includes('monitoring')">
       <div class="col-8">
         <div class="text-center small">
           Current status

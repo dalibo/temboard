@@ -15,8 +15,10 @@ workers = taskmanager.WorkerSet()
 
 
 @bottle.get("/")
-def dashboard():
-    return metrics.get_metrics_queue(default_app().temboard.config)
+def dashboard(pgconn):
+    out = metrics.get_metrics_queue(default_app().temboard.config)
+    out["status"] = default_app().temboard.status.get(conn=pgconn)
+    return out
 
 
 @bottle.get("/config")
