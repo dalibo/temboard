@@ -50,6 +50,7 @@ export default defineConfig({
         monitoring: "/monitoring.js",
         notifications: "/notifications.js",
         statements: "/statements.js",
+        configuration: "/pgconf.js",
         temboard: "/temboard.js",
       },
     },

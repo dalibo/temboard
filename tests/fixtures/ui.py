@@ -59,6 +59,11 @@ class Browser:
             f"Element {selector} is still present.",
         )
 
+    def mincount(self, selector, n, timeout=3):
+        return WebDriverWait(self.webdriver, timeout).until(
+            lambda driver: len(driver.find_elements(By.CSS_SELECTOR, selector)) >= n
+        )
+
     def get_full_page_screenshot_as_png(self):
         return self.select("body").screenshot_as_png
 
