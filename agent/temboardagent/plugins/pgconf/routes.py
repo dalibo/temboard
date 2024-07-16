@@ -107,7 +107,7 @@ def post_configuration(pgconn):
     new = {
         i["name"]: i["setting"]
         for i in request.json["settings"]
-        if i["setting"] not in reset
+        if i["name"] not in reset
     }
     out = post_settings(pgconn, new)
     if out is None:
