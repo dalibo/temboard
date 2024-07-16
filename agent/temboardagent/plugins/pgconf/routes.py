@@ -93,11 +93,7 @@ def get_configuration_categories(pgconn):
 def post_configuration(pgconn):
     if "settings" not in request.json:
         raise HTTPError(406, "Parameter 'settings' not sent.")
-    reset = {
-        i["name"]
-        for i in request.json["settings"]
-        if i["setting"] is None or i["setting"] == ""
-    }
+    reset = {i["name"] for i in request.json["settings"] if not i["setting"]}
     for name in reset:
         out = delete_settings(pgconn, name)
         if out:
