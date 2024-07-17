@@ -60,7 +60,7 @@ defineExpose({ open });
       <p class="text-center">
         <strong>Please confirm the deletion of the following group:</strong>
       </p>
-      <div class="alert alert-light mx-auto pa-6">
+      <div class="alert text-body-secondary mx-auto pa-6">
         <h2 class="text-center">{{ groupName }}</h2>
       </div>
     </div>

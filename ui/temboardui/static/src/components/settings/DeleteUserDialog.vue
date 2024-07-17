@@ -42,7 +42,7 @@ defineExpose({ open });
       <p class="text-center">
         <strong>Please confirm the deletion of the following user: </strong>
       </p>
-      <div class="alert alert-light mx-auto pa-6">
+      <div class="alert text-body-secondary mx-auto pa-6">
         <h2 class="text-center">{{ user }}</h2>
       </div>
     </div>
