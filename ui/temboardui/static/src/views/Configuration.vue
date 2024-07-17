@@ -302,71 +302,73 @@ function isSelected(value, setting) {
         <div class="card-body">
           <form ref="settings" @submit.prevent="submitForm">
             <table class="table table-sm">
-              <tr v-for="settingRow in settingGroup['rows']">
-                <td class="badge-setting">
-                  <span class="title-setting">{{ settingRow["name"] }}</span>
-                  <p class="text-body-secondary mb-0 small">{{ settingRow["desc"] }}</p>
-                </td>
-                <td class="input-setting">
-                  <div v-if="settingRow['vartype'] == 'bool'">
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        :id="'select' + settingRow['name']"
-                        :checked="settingRow['setting'] == 'on'"
-                        :name="settingRow['name']"
-                      />
+              <tbody>
+                <tr v-for="settingRow in settingGroup['rows']">
+                  <td class="badge-setting">
+                    <span class="title-setting">{{ settingRow["name"] }}</span>
+                    <p class="text-body-secondary mb-0 small">{{ settingRow["desc"] }}</p>
+                  </td>
+                  <td class="input-setting">
+                    <div v-if="settingRow['vartype'] == 'bool'">
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          :id="'select' + settingRow['name']"
+                          :checked="settingRow['setting'] == 'on'"
+                          :name="settingRow['name']"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <select
-                    v-else-if="settingRow['vartype'] === 'enum'"
-                    class="form-control form-control-sm"
-                    :name="settingRow['name']"
-                    :id="'select' + settingRow['name']"
-                  >
-                    <option
-                      v-for="v in parsedEnumVals(settingRow['enumvals'])"
-                      :key="v"
-                      :value="v"
-                      :selected="isSelected(v, settingRow['setting'])"
+                    <select
+                      v-else-if="settingRow['vartype'] === 'enum'"
+                      class="form-control form-control-sm"
+                      :name="settingRow['name']"
+                      :id="'select' + settingRow['name']"
                     >
-                      {{ v }}
-                    </option>
-                  </select>
-                  <input
-                    v-else
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover"
-                    data-bs-placement="top"
-                    data-bs-html="true"
-                    :data-bs-content="generatePopoverContent(settingRow)"
-                    type="text"
-                    class="form-control form-control-sm"
-                    :name="settingRow['name']"
-                    :id="'input' + settingRow['name']"
-                    :placeholder="settingRow['name']"
-                    :value="settingRow['setting'] !== null ? settingRow['setting_raw'] : ''"
-                  />
-                  <button
-                    v-if="settingRow['setting'] != settingRow['boot_val']"
-                    type="button"
-                    class="btn btn-link"
-                    :id="'buttonResetDefault_' + settingRow['name']"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover"
-                    data-bs-placement="right"
-                    :title="settingRow['name']"
-                    data-bs-html="true"
-                    :data-bs-content="'Reset to: ' + settingRow['boot_val']"
-                    @click="cancel(settingRow['name'], settingRow['boot_val'])"
-                  >
-                    <span class="fa fa-undo" aria-hidden="true"></span>
-                    Reset to default
-                  </button>
-                </td>
-              </tr>
+                      <option
+                        v-for="v in parsedEnumVals(settingRow['enumvals'])"
+                        :key="v"
+                        :value="v"
+                        :selected="isSelected(v, settingRow['setting'])"
+                      >
+                        {{ v }}
+                      </option>
+                    </select>
+                    <input
+                      v-else
+                      data-bs-toggle="popover"
+                      data-bs-trigger="hover"
+                      data-bs-placement="top"
+                      data-bs-html="true"
+                      :data-bs-content="generatePopoverContent(settingRow)"
+                      type="text"
+                      class="form-control form-control-sm"
+                      :name="settingRow['name']"
+                      :id="'input' + settingRow['name']"
+                      :placeholder="settingRow['name']"
+                      :value="settingRow['setting'] !== null ? settingRow['setting_raw'] : ''"
+                    />
+                    <button
+                      v-if="settingRow['setting'] != settingRow['boot_val']"
+                      type="button"
+                      class="btn btn-link"
+                      :id="'buttonResetDefault_' + settingRow['name']"
+                      data-bs-toggle="popover"
+                      data-bs-trigger="hover"
+                      data-bs-placement="right"
+                      :title="settingRow['name']"
+                      data-bs-html="true"
+                      :data-bs-content="'Reset to: ' + settingRow['boot_val']"
+                      @click="cancel(settingRow['name'], settingRow['boot_val'])"
+                    >
+                      <span class="fa fa-undo" aria-hidden="true"></span>
+                      Reset to default
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
             </table>
             <div class="row">
               <div class="col-12 text-center">
