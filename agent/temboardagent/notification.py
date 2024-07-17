@@ -60,9 +60,7 @@ class NotificationMgmt:
 
     @classmethod
     def push(self, config, notification):
-        logger.info(
-            "Push to audit log: %s user=%s", notification.message, notification.username
-        )
+        logger.info("%s user=%s", notification.message, notification.username)
         try:
             db_path = os.path.join(config.temboard.home, "core.db")
             with sqlite3.connect(db_path) as conn:

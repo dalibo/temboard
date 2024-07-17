@@ -12,5 +12,7 @@ class Web(SubCommand):
 
     """
 
+    is_service = True
+
     def main(self, args):
         return services.run(self.app.httpd)

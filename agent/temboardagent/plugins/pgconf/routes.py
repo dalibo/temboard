@@ -26,7 +26,7 @@ def get_settings(pgconn):
 @bottle.post("/settings")
 def post_settings(pgconn, new=None):
     """Applies a JSON mapping of setting -> value."""
-    new = new or request.json
+    new = request.json if new is None else new
     if not hasattr(new, "items"):
         raise HTTPError(406, "Requires a mapping of settings and values.")
     if not new:
@@ -93,11 +93,7 @@ def get_configuration_categories(pgconn):
 def post_configuration(pgconn):
     if "settings" not in request.json:
         raise HTTPError(406, "Parameter 'settings' not sent.")
-    reset = {
-        i["name"]
-        for i in request.json["settings"]
-        if i["setting"] is None or i["setting"] == ""
-    }
+    reset = {i["name"] for i in request.json["settings"] if not i["setting"]}
     for name in reset:
         out = delete_settings(pgconn, name)
         if out:
@@ -107,9 +103,11 @@ def post_configuration(pgconn):
     new = {
         i["name"]: i["setting"]
         for i in request.json["settings"]
-        if i["setting"] not in reset
+        if i["name"] not in reset
     }
-    out = post_settings(pgconn, new)
+    if new:
+        out = post_settings(pgconn, new)
+
     if out is None:
         out = {"settings": []}
     return out
