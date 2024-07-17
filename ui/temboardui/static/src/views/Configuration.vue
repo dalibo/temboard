@@ -284,7 +284,7 @@ function isSelected(value, setting) {
       <div class="input-group">
         <div class="input-group-text">Category</div>
         <select
-          class="form-control"
+          class="form-select"
           id="selectConfCat"
           :disabled="queryFilter != ''"
           @change="getConfiguration()"
