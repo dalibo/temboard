@@ -13,7 +13,7 @@
   "dependencies": {
     "@vueuse/components": "^10.11.0",
     "@vueuse/core": "^10.9.0",
-    "bootstrap": "^4.6.2",
+    "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^0.16.6",
     "datatables.net-bs5": "^2.0.8",
     "datatables.net-buttons-bs5": "^3.0.2",
@@ -31,7 +31,6 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/bootstrap": "^4.6.6",
     "@vitejs/plugin-vue": "^5.0.5",
     "autoprefixer": "^10.4.19",
     "husky": "^8.0.3",
