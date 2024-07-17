@@ -3,7 +3,7 @@ defineProps(["pg_host", "pg_port", "pg_data", "pg_version_summary", "cpu", "mem_
 </script>
 
 <template>
-  <div class="alert alert-light mx-auto pa-6">
+  <div class="alert text-body-secondary mx-auto pa-6">
     <h2 class="text-center"><span v-html="pg_host" />:<span v-html="pg_port" /></h2>
     <p class="text-center">
       <span v-if="cpu && mem_gb"><span v-html="cpu" /> CPU - <span v-html="mem_gb" /> GB memory<br /></span>
