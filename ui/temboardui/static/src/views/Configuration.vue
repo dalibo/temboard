@@ -308,13 +308,17 @@ function isSelected(value, setting) {
                   <p class="text-body-secondary mb-0 small">{{ settingRow["desc"] }}</p>
                 </td>
                 <td class="input-setting">
-                  <div v-if="settingRow['vartype'] == 'bool'" class="text-center">
-                    <input
-                      type="checkbox"
-                      :id="'select' + settingRow['name']"
-                      :checked="settingRow['setting'] == 'on'"
-                      :name="settingRow['name']"
-                    />
+                  <div v-if="settingRow['vartype'] == 'bool'">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        :id="'select' + settingRow['name']"
+                        :checked="settingRow['setting'] == 'on'"
+                        :name="settingRow['name']"
+                      />
+                    </div>
                   </div>
                   <select
                     v-else-if="settingRow['vartype'] === 'enum'"
