@@ -100,7 +100,7 @@ html {
   }
 
   .main {
-    width: calc(100% - #{$sidebar-width});
+    width: calc(100% - #{$sidebar-width} - $grid-gutter-width / 2);
     max-width: none;
 
     .sidebar-collapsed & {
