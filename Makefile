@@ -15,7 +15,7 @@ develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile .git-blame-ignore-revs
 	if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $$PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
-	$(MAKE) -j 2 install-$* dev/bin/prometheus
+	$(MAKE) -j 2 install-$* ui/build/bin/prometheus ui/build/bin/promtool
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
@@ -56,20 +56,21 @@ install-%: venv-%
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
 # LTS
-PROMETHEUS_VERSION=2.45.1
+PROMETHEUS_VERSION=2.53.0
 dev/downloads/prometheus-%.linux-amd64.tar.gz:
 	mkdir -p $(dir $@)
 	curl --fail --silent -L "https://github.com/prometheus/prometheus/releases/download/v$*/$(notdir $@)" --output $@
 
-dev/bin/prometheus dev/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+ui/build/bin/prometheus ui/build/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+	mkdir -p $(dir $@)
 	tar --extract --file "$<" --directory "$(dir $@)" --strip-component=1 --touch "prometheus-$(PROMETHEUS_VERSION).linux-amd64/$(notdir $@)"
 	"$@" --version  # Smoketest
 
 clean:  #: Trash venv and containers.
 	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
-	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
-	rm -vf dev/bin/prometheus dev/bin/promtool
+	rm -rf dev/venv-py* .venv-py* dev/build/
+	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
@@ -127,10 +128,6 @@ tests:  #: Execute all tests.
 clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
-prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
-dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
-	$^ > $@
-
 VERSION=$(shell cd ui; python3 setup.py --version)
 BRANCH?=master
 # When stable branch v8 is created, use this:
@@ -162,7 +159,7 @@ release:  #: Tag and push a new git release.
 release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
 
-dist:  #: Build sources and wheels.
+dist:  ui/build/bin/prometheus  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel --universal

@@ -16,7 +16,7 @@ def home(request):
 
 @app.route("/about")
 def about(request):
-    versions_info = inspect_versions()
+    versions_info = inspect_versions(prometheusbin=request.config.monitoring.prometheus)
     instances = request.db_session.scalar(Instances.count())
     roles = request.db_session.scalar(Roles.count())
     infos = {
@@ -29,6 +29,7 @@ def about(request):
         "Tornado": versions_info["tornado"],
         "libpq": versions_info["libpq"],
         "psycopg2": versions_info["psycopg2"],
+        "Prometheus": "%(prometheus)s (%(prometheusbin)s)" % versions_info,
         "SQLAlchemy": versions_info["sqlalchemy"],
         "Instances": instances,
         "Users": roles,

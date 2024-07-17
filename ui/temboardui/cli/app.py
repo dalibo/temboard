@@ -1,5 +1,6 @@
 import logging.config
 import os
+import shutil
 import sys
 from argparse import _VersionAction
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +13,7 @@ from tornado import autoreload
 from tornado.httpserver import HTTPServer
 from tornado.wsgi import WSGIContainer
 
+from .. import prometheus
 from ..autossl import AutoHTTPSServer
 from ..core import workers
 from ..model import QUERIES
@@ -106,6 +108,10 @@ class TemboardApplication(BaseApplication):
 
         self.webservice = TornadoService(self)
 
+        self.prometheus = prometheus.Manager(app=self)
+        # Not appending prometheus to services, because prometheus does not
+        # need apply_config.
+
         # TaskList engine setup must be done before we load the plugins
         self.scheduler.task_list_engine = TaskListSQLite3Engine(
             os.path.join(self.config.temboard["home"], "server_tasks.db")
@@ -132,7 +138,7 @@ class TemboardApplication(BaseApplication):
         self.tornado_app.engine = configure_db_session(self.config.repository)
 
     def log_versions(self):
-        versions = inspect_versions()
+        versions = inspect_versions(prometheusbin=self.config.monitoring.prometheus)
         logger.debug("Running on %s %s.", versions["distname"], versions["distversion"])
         logger.debug(
             "Using Python %s (%s) and Tornado %s .",
@@ -146,6 +152,7 @@ class TemboardApplication(BaseApplication):
             versions["psycopg2"],
             versions["sqlalchemy"],
         )
+        logger.debug("Using Prometheus %s.", versions["prometheus"])
 
 
 class TemboardUIConfiguration(MergedConfiguration):
@@ -270,7 +277,6 @@ class TornadoService:
         self.app = app
         # Ref to services.BackgroundManager
         self.background = None
-        # For services.run()
         self.perf = perf.PerfCounters.setup(service=self.name)
 
     def __str__(self):
@@ -280,8 +286,10 @@ class TornadoService:
     def create_loop(self):
         return tornado.ioloop.IOLoop.instance()
 
-    def setup(self):
+    def setup(self, sgm, bg):
+        self.background = bg
         if self.perf:
+            sgm.register(self.perf)
             self.perf.run()
 
         flask_app.vitejs.read_manifest()
@@ -347,9 +355,10 @@ class TornadoService:
             autoreload.watch(path)
 
     def _autoreload_hook(self):
-        if self.background:
-            logger.debug("Stopping background service before reloading.")
-            self.background.stop()
+        if not self.background:
+            return
+        logger.debug("Stopping background service before reloading.")
+        self.background.stop()
 
     def _iter_template_files(self):
         rootpkg = __import__(__name__)
@@ -436,6 +445,8 @@ def list_options_specs():
 
     s = "monitoring"
     yield OptionSpec(s, "purge_after", default=730, validator=v.nday)
+    prometheus = shutil.which("prometheus") or OptionSpec.REQUIRED
+    yield OptionSpec(s, "prometheus", default=prometheus, validator=v.file_)
 
     s = "statements"
     yield OptionSpec(s, "purge_after", default=7, validator=v.nday)

@@ -61,6 +61,7 @@ mv "$DESTDIR/usr/local/lib"/*/dist-packages  "$DESTDIR/usr/lib/temboard"
 mv "$DESTDIR/usr/local/lib/systemd"  "$DESTDIR/usr/lib"
 # Move binaries out of FHS.
 mv "$DESTDIR/usr/local/bin" "$DESTDIR/usr/lib/temboard/"
+cp build/bin/prometheus "$DESTDIR/usr/lib/temboard/"
 rm -rf "${DESTDIR:?}/usr/local"
 
 # Create FHS wrapper.
@@ -101,6 +102,7 @@ apt-get install --yes --no-install-recommends "./$deb"
 	cd /
 	temboard --version
 	test -f /usr/lib/temboard/temboardui/static/dist/.vite/manifest.json
+	test -x /usr/lib/temboard/prometheus
 	test -x /usr/share/temboard/auto_configure.sh
 	test -f /usr/lib/systemd/system/temboard.service
 )

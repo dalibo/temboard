@@ -214,7 +214,6 @@ services:
     volumes:
     - ./dev/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     - ./dev/prometheus/import:/import
-    - ./dev/prometheus/targets:/targets
     ports:
     - 9090:9090
     command:

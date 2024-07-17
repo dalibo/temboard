@@ -10,4 +10,8 @@ test -f "dist/temboard-$VERSION.tar.gz"
 cp --preserve --force packaging/rpm/temboard.spec /tmp/temboard.spec
 sed -i "/^Version:/s/GENERATED/$VERSION/" /tmp/temboard.spec
 export BUILDDIR="$PWD/dist/" SMOKETEST=1
-exec rpmbuild.sh /tmp/temboard.spec "dist/temboard-$VERSION.tar.gz"
+# Globally disable debug package generation.
+cat >>/etc/rpm/macros.temboard <<EOF
+%debug_package %{nil}
+EOF
+exec rpmbuild.sh /tmp/temboard.spec "dist/temboard-$VERSION.tar.gz" build/bin/prometheus

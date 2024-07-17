@@ -7,15 +7,3 @@ providers:
   allowUiUpdates: true
   options:
     path: /usr/share/temboard/perf.json
-- name: "Postgres from temBoard agent"
-  type: file
-  folder: ''
-  allowUiUpdates: true
-  options:
-    path: /usr/share/temboard/postgres.json
-- name: "temBoard Prometheus"
-  type: file
-  folder: ''
-  allowUiUpdates: true
-  options:
-    path: /usr/share/temboard/temboard-prometheus.json

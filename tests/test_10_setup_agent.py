@@ -68,8 +68,7 @@ def test_proctitle(agent):
                     cmdline = fo.read()
 
                 assert cmdline.startswith("temboard-agent: temboard-tests: ")
-
-                assert ": worker" in cmdline or ": scheduler" in cmdline
+                assert ": web" not in cmdline
 
 
 def test_discover_http(agent, agent_env, pg_version):

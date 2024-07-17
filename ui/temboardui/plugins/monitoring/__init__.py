@@ -21,7 +21,6 @@
 
 import logging
 import os
-import shutil
 from datetime import datetime, timedelta
 
 try:
@@ -49,7 +48,6 @@ from temboardui.model.orm import Instances
 from ...core import refresh_discover
 from ...model import Session
 from ...toolkit import taskmanager
-from ...toolkit import validators as v
 from ...toolkit.configuration import OptionSpec
 from ...toolkit.errors import UserError
 from .alerting import check_specs
@@ -75,11 +73,7 @@ workers = taskmanager.WorkerSet()
 
 class MonitoringPlugin:
     s = "monitoring"
-    prometheus = shutil.which("prometheus")
-    options_specs = [
-        OptionSpec(s, "collect_max_duration", default=30, validator=int),
-        OptionSpec(s, "prometheus", default=prometheus, validator=v.file_),
-    ]
+    options_specs = [OptionSpec(s, "collect_max_duration", default=30, validator=int)]
 
     def __init__(self, app):
         self.app = app
