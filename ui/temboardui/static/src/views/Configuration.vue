@@ -308,7 +308,7 @@ function isSelected(value, setting) {
             <table class="table table-sm">
               <tbody>
                 <tr v-for="settingRow in settingGroup['rows']">
-                  <td class="badge-setting">
+                  <td>
                     <span class="title-setting">{{ settingRow["name"] }}</span>
                     <p class="text-body-secondary mb-0 small">{{ settingRow["desc"] }}</p>
                   </td>
