@@ -47,9 +47,7 @@ def test_boolean(browse_pgconf, browser, psql):
     browser.select("#inputSearchSettings").send_keys(param)
     browser.select("#buttonSearchSettings").click()
 
-    assert browser.select(".input-setting input[type='checkbox']").get_attribute(
-        "checked"
-    )
+    assert browser.select(".input-setting .form-switch label").text == "on"
 
     out = psql("-Abt", c=f"SHOW {param};")
     assert "on" == out.strip()
@@ -58,9 +56,7 @@ def test_boolean(browse_pgconf, browser, psql):
 
     browser.select(".input-setting input[type=checkbox").click()
     # Ensure checkbox is unchecked
-    assert not browser.select(".input-setting input[type='checkbox']").get_attribute(
-        "checked"
-    )
+    assert browser.select(".input-setting .form-switch label").text == "off"
 
     browser.select(".main form button[type=submit]").click()
 

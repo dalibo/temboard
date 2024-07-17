@@ -4,6 +4,7 @@ import $ from "jquery";
 import { onMounted, ref } from "vue";
 
 import Error from "../components/Error.vue";
+import SettingSwitch from "../components/configuration/SettingSwitch.vue";
 
 const props = defineProps(["address", "port"]);
 
@@ -314,16 +315,11 @@ function isSelected(value, setting) {
                   </td>
                   <td class="input-setting">
                     <div v-if="settingRow['vartype'] == 'bool'">
-                      <div class="form-check form-switch">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          role="switch"
-                          :id="'select' + settingRow['name']"
-                          :checked="settingRow['setting'] == 'on'"
-                          :name="settingRow['name']"
-                        />
-                      </div>
+                      <SettingSwitch
+                        :name="settingRow['name']"
+                        :id="'select' + settingRow['name']"
+                        :setting="settingRow['setting']"
+                      ></SettingSwitch>
                     </div>
                     <select
                       v-else-if="settingRow['vartype'] === 'enum'"
