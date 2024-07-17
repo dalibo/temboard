@@ -51,7 +51,7 @@ venv-%:
 
 install-%: venv-%
 	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.4.10 # Synchronise this line with .circleci/config.yml
-	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary
+	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary hupper
 	dev/venv-py$*/bin/temboard --version  # smoke test
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
