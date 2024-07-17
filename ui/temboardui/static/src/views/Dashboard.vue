@@ -660,7 +660,7 @@ onMounted(() => {
               <div class="progress-bar progress-bar-striped" style="width: 100%">Please wait ...</div>
             </div>
           </div>
-          <div class="text-body-secondary" v-if="alerts.length == 0">No alerts</div>
+          <div class="text-body-secondary text-center" v-if="alerts.length == 0">No alerts</div>
           <div v-cloak class="mb-0" ref="divAlertsEl">
             <template v-for="alert in alerts">
               <div
