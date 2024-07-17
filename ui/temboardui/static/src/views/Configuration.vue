@@ -27,7 +27,7 @@ onMounted(() => {
 
 function getCategories() {
   $.ajax({
-    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration/categories",
+    url: `/proxy/${props.address}/${props.port}/pgconf/configuration/categories`,
     type: "GET",
     async: true,
     contentType: "application/json",
@@ -46,18 +46,18 @@ function getConfiguration(closeError = true) {
   if (closeError) {
     clearError();
   }
-  let url = "";
+  let url = `/proxy/${props.address}/${props.port}/pgconf/configuration`;
   let query = {};
   if (currentCat.value == "" && queryFilter.value == "") {
     currentCat.value = configurationCategories.value["categories"][0];
   }
   if (queryFilter.value == "") {
-    url = "/category/" + quotePlus(currentCat.value);
+    url += `/category/${quotePlus(currentCat.value)}`;
   } else {
     query = { filter: queryFilter.value };
   }
   $.ajax({
-    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration" + url,
+    url: url,
     type: "GET",
     data: query,
     async: true,
@@ -75,7 +75,7 @@ function getConfiguration(closeError = true) {
 
 function getStatus() {
   $.ajax({
-    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration/status",
+    url: `/proxy/${props.address}/${props.port}/pgconf/configuration/status`,
     type: "GET",
     async: true,
     contentType: "application/json",
@@ -109,7 +109,7 @@ function submitForm() {
     }
   }
   $.ajax({
-    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration",
+    url: `/proxy/${props.address}/${props.port}/pgconf/configuration`,
     type: "POST",
     data: JSON.stringify(formData),
     async: true,
@@ -156,7 +156,7 @@ function modalApiCall() {
     settings: [{ name: resetParamName.value, setting: resetParamValue.value }],
   };
   $.ajax({
-    url: "/proxy/" + props.address + "/" + props.port + "/pgconf/configuration",
+    url: `/proxy/${props.address}/${props.port}/pgconf/configuration`,
     type: "POST",
     data: JSON.stringify(jsonParams),
     async: true,
