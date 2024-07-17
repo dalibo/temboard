@@ -131,7 +131,7 @@ function quotePlus(str) {
 }
 
 function generatePopoverContent(row) {
-  let content = `<b>${row["vartype"]}</b><br>`;
+  let content = `Type: <b>${row["vartype"]}</b><br>`;
   if (row["unit"]) {
     content += `Unit:<b>${row["unit"]}</b><br>`;
   }
