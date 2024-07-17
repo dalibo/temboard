@@ -175,7 +175,7 @@ function modalApiCall() {
 }
 
 function parsedEnumVals(enumString) {
-  let trimmed = enumString.replace(/^\{|\}$/g, "");
+  const trimmed = enumString.replace(/^\{|\}$/g, "");
   return trimmed.split(",");
 }
 
