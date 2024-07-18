@@ -1,6 +1,6 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / Login{% end %}
+{% block title %}{{ super() }}/ Login{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +10,7 @@
         <img src="/images/temboard-150x32-w.png" />
       </div>
       <div class="card-body">
-        {% try %}{% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% end %}{% except %}{% end %}
+        {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
         <form role="form" action="/login" method="post">
           <div class="mb-3">
             <label for="inputUsername" class="form-label">Username</label>
@@ -28,4 +28,4 @@
     </div>
   </div>
 </div>
-{% end %}
+{% endblock %}
