@@ -44,6 +44,7 @@ def create_app(temboard_app):
     app.temboard = temboard_app
     app.static_folder = "static/dist"
     app.static_url_path = "/static"
+    app.template_folder = "templates/flask"
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
