@@ -13,6 +13,7 @@ from flask import (
     g,
     jsonify,
     make_response,
+    redirect,
     request,
 )
 from tornado.web import decode_signed_value
@@ -200,7 +201,7 @@ class AuthMiddleware:
         anonymous_allowed = getattr(func, "__anonymous_allowed", False)
         if not anonymous_allowed and g.current_user is None:
             logger.debug("Refusing anonymous access.")
-            abort(403)
+            return redirect("/login")
 
         admin_required = getattr(func, "__admin_required", False)
         if admin_required and not g.current_user.is_admin:
