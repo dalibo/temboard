@@ -1,13 +1,14 @@
 <script setup>
 import $ from "jquery";
 import { reactive, ref } from "vue";
+import Multiselect from "vue-multiselect";
 
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
 
 const error = ref(null);
 const waiting = ref(false);
-const groups = ref([]);
+const availableGroups = ref([]);
 let currentUsername = null;
 const isNew = ref(false);
 
@@ -46,7 +47,7 @@ function open(username) {
       error.value.fromXHR(xhr);
     })
     .done((data) => {
-      groups.value = data;
+      availableGroups.value = data.map((group) => group.name);
       waiting.value = false;
     });
 
@@ -74,7 +75,6 @@ function open(username) {
 
 function submit() {
   const data = { ...userModel };
-  Object.assign(data, { groups: $("#selectGroups").val() });
   waiting.value = true;
   let url_request = "/json/settings/user";
   if (!isNew.value) {
@@ -142,20 +142,19 @@ defineExpose({ open });
             </p>
           </div>
 
-          <div class="mb-3 col-sm-6" v-if="groups.length > 0">
-            <label class="form-label">
-              Groups<br />
-              <select id="selectGroups" multiple="multiple">
-                <option
-                  v-for="group of groups"
-                  :value="group.name"
-                  :selected="userModel.groups.includes(group.name)"
-                  :key="group.key"
-                >
-                  {{ group.name }}
-                </option>
-              </select> </label
-            ><br />
+          <div class="mb-3 col-sm-6">
+            <div class="mb-3">
+              <label class="form-label"> Groups </label>
+              <multiselect
+                id="groups"
+                v-model="userModel.groups"
+                :options="availableGroups"
+                :multiple="true"
+                :hide-selected="true"
+                :searchable="false"
+                select-label=""
+              ></multiselect>
+            </div>
             <div class="form-check form-switch">
               <input
                 type="checkbox"
