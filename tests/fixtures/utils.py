@@ -4,6 +4,7 @@ from shutil import copy as cp
 
 import httpx
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 from tenacity import (
     Retrying,
     retry_if_exception_type,
@@ -66,3 +67,45 @@ def rmtree(root):
             path.unlink()
 
     root.rmdir()
+
+
+class MultiSelect:
+    # Helper for manipulating vue-multiselect components.
+    def __init__(self, browser, id):
+        self.browser = browser
+        self.id = id
+
+    @property
+    def element(self):
+        return self.browser.select(f".multiselect[aria-owns='listbox-{self.id}']")
+
+    @property
+    def trigger(self):
+        return self.element.find_element(By.CSS_SELECTOR, ".multiselect__select")
+
+    @property
+    def options(self):
+        return self.element.find_elements(By.CSS_SELECTOR, ".multiselect__content")
+
+    @property
+    def selected(self):
+        return self.element.find_elements(By.CSS_SELECTOR, ".multiselect__tag")
+
+    def select(self, label):
+        for option in self.options:
+            if option.find_element(By.XPATH, f"//span[contains(text(), {label!r})]"):
+                option.click()
+                return self
+        raise NoSuchElementException(f"Option {label} not found")
+
+    def unselect(self, label):
+        for tag in self.selected:
+            if tag.find_element(By.XPATH, f"//span[contains(text(), {label!r})]"):
+                close_btn = tag.find_element(By.CSS_SELECTOR, "i")
+                close_btn.click()
+                return self
+        raise NoSuchElementException(f"Selected option {label} not found")
+
+    def toggle(self):
+        self.trigger.click()
+        return self

@@ -1,6 +1,7 @@
 <script setup>
 import $ from "jquery";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
+import Multiselect from "vue-multiselect";
 
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
@@ -21,6 +22,9 @@ const userModel = reactive({
   is_active: false,
   is_admin: false,
 });
+
+const availableGroups = computed(() => groups.value.map((group) => group.name));
+const selectedGroups = ref([]);
 
 function open(username) {
   // Reset dialog state.
@@ -67,7 +71,7 @@ function open(username) {
         userModel.phone = data.role_phone;
         userModel.is_active = data.is_active;
         userModel.is_admin = data.is_admin;
-        userModel.groups = groups.value.filter((group) => group.selected).map((group) => group);
+        selectedGroups.value = groups.value.filter((group) => group.selected).map((group) => group.name);
       }
 
       waiting.value = false;
@@ -76,7 +80,7 @@ function open(username) {
 
 function submit() {
   const data = { ...userModel };
-  Object.assign(data, { groups: $("#selectGroups").val() });
+  Object.assign(data, { groups: selectedGroups.value });
   waiting.value = true;
   let url_request = "/json/settings/user";
   if (!isNew.value) {
@@ -146,18 +150,17 @@ defineExpose({ open });
 
           <div class="mb-3 col-sm-6" v-if="groups.length > 0">
             <label class="form-label">
-              Groups<br />
-              <select id="selectGroups" multiple="multiple">
-                <option
-                  v-for="group of groups"
-                  :value="group.name"
-                  :selected="userModel.groups.includes(group)"
-                  :key="group.key"
-                >
-                  {{ group.name }}
-                </option>
-              </select> </label
-            ><br />
+              Groups
+              <multiselect
+                id="groups"
+                v-model="selectedGroups"
+                :options="availableGroups"
+                :multiple="true"
+                :hide-selected="true"
+                :searchable="false"
+                select-label=""
+              ></multiselect>
+            </label>
             <div class="form-check form-switch">
               <input
                 type="checkbox"
