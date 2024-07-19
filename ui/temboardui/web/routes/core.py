@@ -1,11 +1,12 @@
 import logging
 
 from flask import current_app as app
-from flask import g, jsonify, redirect, render_template
+from flask import g, jsonify, redirect
 
-from ..application import get_instances_by_role_name
-from ..plugins.monitoring.alerting import get_highest_state
-from .flask import anonymous_allowed, instance_routes
+from temboardui.application import get_instances_by_role_name
+from temboardui.plugins.monitoring.alerting import get_highest_state
+
+from ..flask import anonymous_allowed
 
 logger = logging.getLogger(__name__)
 
@@ -120,20 +121,3 @@ def home_instances():
         instance["checks"] = checks
 
     return jsonify(instances)
-
-
-@instance_routes.route("/about")
-def instance_about():
-    app.instance.fetch_status()
-    return render_template(
-        "instance-about.html",
-        instance=g.instance,
-        instance_name=g.instance.__str__(),
-        pg_data=g.instance.pg_data,
-        pg_version_summary=g.instance.pg_version_summary,
-        discover=g.instance.discover,
-        groups=[group.group_name for group in g.instance.groups],
-        nav=True,
-        role=g.current_user,
-        vitejs=app.vitejs,
-    )

@@ -29,7 +29,8 @@ def main(*a, **kw):
     flask.app_context().push()
 
     # Import main routes
-    __import__(__package__ + ".web.routes")
+    __import__(__package__ + ".web.routes.core")
+    __import__(__package__ + ".web.routes.instance")
 
     # Load sub commands.
     __import__(__package__ + ".cli.apikey")
