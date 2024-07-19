@@ -1,4 +1,5 @@
 import pytest
+from fixtures.utils import MultiSelect
 from selenium.webdriver.common.by import By
 
 
@@ -16,7 +17,8 @@ def user_rick(admin_session, browser_session):
         "!rick0.@9"
     )
     browser_session.select("input[placeholder='Phone']").send_keys("+33611223344")
-    browser_session.select("option[value='default']").click()
+    multiselect = MultiSelect(browser_session, "groups")
+    multiselect.select("default")
     browser_session.select("label[for='switchActive']").click()
     browser_session.select("label[for='switchAdmin']").click()
     browser_session.select("button[type=submit]").click()
@@ -57,7 +59,9 @@ def test_update_user(user_rick, browser):
     browser.select("input[placeholder='Email']").send_keys("rick@test.me")
     browser.select("input[placeholder='Password']").send_keys("NEW!rick0.@9")
     browser.select("input[placeholder='Confirm password']").send_keys("NEW!rick0.@9")
-    browser.select("option[value='default']").click()
+
+    multiselect = MultiSelect(browser, "groups")
+    multiselect.unselect("default")
     browser.select("label[for='switchActive']").click()
     browser.select("label[for='switchAdmin']").click()
     browser.select("button[type=submit]").click()
