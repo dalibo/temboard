@@ -17,7 +17,7 @@ def index():
     return redirect("/home")
 
 
-@app.route("/home/instances")
+@app.route("/json/instances")
 def home_instances():
     role = g.current_user
 
