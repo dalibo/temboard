@@ -260,7 +260,8 @@ class InstanceMiddleware:
     def load_instance_before_request(self):
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")
-
+        if not check_user_allowed(address, port):
+            abort(403)
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
             abort(404)
@@ -317,6 +318,15 @@ class InstanceMiddleware:
         h = "Content-Type"
         response.headers[h] = agent_response.headers[h]
         return response
+
+
+def check_user_allowed(address, port):
+    # Check if current user has access to the given instance.
+    allowed_roles = get_roles_by_instance(g.db_session, address, port)
+    roles = [role.role_name for role in allowed_roles if role]
+    if g.current_user.role_name not in roles:
+        return False
+    return True
 
 
 def anonymous_allowed(func):
