@@ -195,7 +195,7 @@ class BackgroundManager:
                 pass
 
             logger.warning(
-                "Background service dead. Restarting service=%s pid=%s",
+                "Background service dead. Restarting. service=%s pid=%s",
                 name,
                 self.pids[name],
             )

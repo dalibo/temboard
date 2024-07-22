@@ -20,6 +20,9 @@
             "systemd": {
                 "pattern": "^(?<component>[.\\w]+): (?<body>.+)$",
                 "module-format": true
+            },
+            "prometheus": {
+                "pattern": "^ts=(?<timestamp>[^ ]+) caller=.+ level=(?<level>[a-z]{4,}) (?<body>.+)$"
             }
         },
         "value": {

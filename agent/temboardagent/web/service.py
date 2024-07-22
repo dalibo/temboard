@@ -69,6 +69,12 @@ class HTTPDService(syncio.Service):
             raise UserError(f"Failed to setup SSL: {e}.")
         self.server.timeout = 1
 
+        logger.info(
+            "Serving at https://%s:%s.",
+            self.app.config.temboard.address,
+            self.app.config.temboard.port,
+        )
+
     # for syncio.Loop
     def accept(self):
         self.server.handle_request()
