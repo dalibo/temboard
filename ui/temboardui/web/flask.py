@@ -13,13 +13,14 @@ from flask import (
     g,
     jsonify,
     make_response,
+    render_template,
     request,
 )
 from tornado.web import decode_signed_value
 from werkzeug.exceptions import HTTPException
 
 from ..agentclient import TemboardAgentClient
-from ..application import get_instance, get_role_by_cookie
+from ..application import get_instance, get_role_by_cookie, get_roles_by_instance
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
@@ -49,7 +50,7 @@ def create_app(temboard_app):
     APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthMiddleware(app)
-    app.errorhandler(Exception)(json_error_handler)
+    app.errorhandler(Exception)(error_handler)
 
     # unsafe-eval is for jquery. unsafe-inline because we have
     # script tags in templates.
@@ -81,19 +82,47 @@ def finalize_app():
     return app
 
 
-def json_error_handler(e):
-    if isinstance(e, HTTPException):
-        status_code = e.code
-        if e.code < 500:
-            logger.warning("User error: %s", e)
-        else:
-            logger.error("Fatal error: %s", e)
-    else:
-        status_code = 500
+def error_handler(e):
+    status_code = e.code if isinstance(e, HTTPException) else None
+
+    if status_code is None:
         logger.exception("Unhandled error:")
-    response = jsonify(error=str(e) or repr(e))
-    response.status_code = status_code
-    return response
+        status_code = 500
+    elif status_code < 500:
+        logger.warning("User error: %s", e)
+    else:
+        logger.error("Fatal error: %s", e)
+
+    if request.path.endswith(".csv"):
+        return "", status_code
+    elif is_json(request.path):
+        response = jsonify(error=str(e) or repr(e))
+        response.status_code = status_code
+        return response
+
+    template_vars = {}
+    if hasattr(g, "instance"):
+        template_vars["instance"] = g.instance
+    if status_code in (401, 403, 404):
+        template = f"{status_code}.html"
+    else:
+        template = "error.html"
+
+    return render_template(
+        template,
+        nav=True,
+        role=g.current_user,
+        vitejs=current_app.vitejs,
+        message=str(e),
+        code=status_code,
+        **template_vars,
+    )
+
+
+def is_json(path):
+    if path.startswith("/json") or path.startswith("/proxy") or path.endswith(".json"):
+        return True
+    return False
 
 
 class SQLAlchemy:
@@ -201,7 +230,7 @@ class AuthMiddleware:
         anonymous_allowed = getattr(func, "__anonymous_allowed", False)
         if not anonymous_allowed and g.current_user is None:
             logger.debug("Refusing anonymous access.")
-            abort(403)
+            abort(401)
 
         admin_required = getattr(func, "__admin_required", False)
         if admin_required and not g.current_user.is_admin:

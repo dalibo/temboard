@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ super() }}/ Authentication required{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+    <div class="alert alert-danger alert-restricted" role="alert">
+      <h4><i class="fa fa-ban fa-fw"></i> Error <small></small></h4>
+      <p>Authentication required</p>
+      <p>Go to <a class="btn btn-sm btn-danger" href="/login">login page</a> to authenticate.</p>
+    </div>
+  </div>
+  <div class="col-md-4"></div>
+</div>
+{% endblock %}
