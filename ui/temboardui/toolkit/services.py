@@ -118,6 +118,7 @@ class LoopStopper:
 
 class BackgroundManager:
     def __init__(self, loop):
+        self.loop = loop
         self.services = {}
         self.pids = {}
         self.stopping = False  # Whether to restart on SIGCHLD
@@ -162,6 +163,11 @@ class BackgroundManager:
             return pid
 
         # Child process
+        if hasattr(self.loop, "asyncio_loop"):
+            # Cleanup parent signals handling.
+            # See https://bugs.python.org/issue22087 and https://bugs.python.org/issue21998 for details about asyncio and fork.
+            signal.set_wakeup_fd(-1)
+
         if hasattr(service, "command"):
             execute(service)
         else:

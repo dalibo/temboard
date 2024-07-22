@@ -74,8 +74,6 @@ class SignalManager(dict):
     # Context manager for synchronous signal handling.
 
     def __enter__(self):
-        # forking from asyncio loop requires reset of wakeup_fd.
-        signal.set_wakeup_fd(-1)
         for sig, handler in self.items():
             signal.signal(sig, handler)
         self._registered = self.keys()
