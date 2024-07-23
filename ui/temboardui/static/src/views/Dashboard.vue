@@ -208,13 +208,11 @@ function updateTps(data) {
   const commitData = datasets[0].data;
   const rollbackData = datasets[1].data;
 
-  if (data.length <= 1) {
-    return;
+  if (data.length > 1) {
+    // Initial call. Bootstrap first datum.
+    lastDatum = data[0];
+    data.shift();
   }
-
-  // Initial call. Bootstrap first datum.
-  lastDatum = data[0];
-  data.shift();
 
   let duration;
   for (let i = 0; i < data.length; i++) {
