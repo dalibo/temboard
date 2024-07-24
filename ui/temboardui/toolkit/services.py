@@ -197,7 +197,10 @@ class BackgroundManager:
         self.stopping = True
         for name, pid in self.pids.items():
             logger.debug("Terminating background service. service=%s pid=%d", name, pid)
-            os.kill(pid, signal.SIGTERM)
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
         time.sleep(0.125)
         if self.wait():
             self.kill()
