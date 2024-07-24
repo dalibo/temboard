@@ -16,6 +16,7 @@ from bottle import (
 )
 
 from .. import notification
+from ..toolkit.errors import TemboardError
 from ..toolkit.http import format_date
 from ..toolkit.signing import InvalidSignature, canonicalize_request, verify_v1
 from ..toolkit.utils import JSONEncoder, utcnow
@@ -154,12 +155,17 @@ class SignaturePlugin:
     def authenticate(self):
         app = default_app().temboard
 
-        date = request.headers["x-temboard-date"]
+        date = request.headers.get("x-temboard-date")
+        if not date:
+            raise HTTPError(400, "Missing X-TemBoard-Date header.")
+
         oldest_date = format_date(utcnow() - timedelta(hours=2))
         if date < oldest_date:
             raise HTTPError(400, "Request older than 2 hours.")
 
-        signature = request.headers["x-temboard-signature"]
+        signature = request.headers.get("x-temboard-signature")
+        if not signature:
+            raise HTTPError(400, "Missing X-TemBoard-Signature header.")
         version, _, signature = signature.partition(":")
         if "v1" != version:
             raise HTTPError(400, "Unsupported signature format")
@@ -170,9 +176,12 @@ class SignaturePlugin:
         path = request.environ["RAW_PATH_INFO"]
         if request.environ["QUERY_STRING"]:
             path = path + "?" + request.environ["QUERY_STRING"]
-        canonical_request = canonicalize_request(
-            request.method, path, request.headers, request.body.read()
-        )
+        try:
+            canonical_request = canonicalize_request(
+                request.method, path, request.headers, request.body.read()
+            )
+        except TemboardError as e:
+            raise HTTPError(400, str(e))
 
         try:
             verify_v1(app.config.signing_key, signature, canonical_request)
