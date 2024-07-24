@@ -224,11 +224,16 @@ class BackgroundManager:
 
         return bool(self.pids)
 
-    def kill(self):
+    def kill(self, sig=signal.SIGKILL):
         for name, pid in self.pids.items():
-            logger.warning("Killing background service. service=%s pid=%s", name, pid)
+            logger.warning(
+                "Signaling background service. service=%s pid=%s signal=%s",
+                name,
+                pid,
+                sig,
+            )
             try:
-                os.kill(pid, signal.SIGKILL)
+                os.kill(pid, sig)
             except ProcessLookupError:
                 pass
 
