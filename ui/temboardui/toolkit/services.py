@@ -142,9 +142,11 @@ class BackgroundManager:
                 raise Exception("Background services are still alive.")
         self.start()
 
-    def __exit__(self, *a):
+    def __exit__(self, etype, evalue, etb):
         if not self.services:
             return
+        if etype:
+            logger.warning("Exiting on error. err=%s", evalue)
         self.stop()
 
     def start(self):
