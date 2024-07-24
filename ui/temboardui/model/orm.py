@@ -5,8 +5,13 @@ from sqlalchemy import text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.query import Query
-from sqlalchemy.schema import Column
-from sqlalchemy.types import TIMESTAMP, BigInteger, Integer, UnicodeText
+from sqlalchemy.schema import (
+    Column,
+    ForeignKey,
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+)
+from sqlalchemy.types import TIMESTAMP, BigInteger, Boolean, Integer, UnicodeText
 
 from temboardui.model import tables
 
@@ -85,7 +90,21 @@ class InstanceGroups(Model):
 
 
 class RoleGroups(Model):
-    __table__ = tables.role_groups
+    __tablename__ = "role_groups"
+    __table_args__ = (
+        PrimaryKeyConstraint("role_name", "group_name", "group_kind"),
+        ForeignKeyConstraint(
+            ["group_name", "group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    role_name = Column(UnicodeText, ForeignKey("application.roles.role_name"))
+    group_name = Column(UnicodeText)
+    group_kind = Column(UnicodeText)
 
 
 class AccessRoleInstance(Model):
@@ -93,7 +112,16 @@ class AccessRoleInstance(Model):
 
 
 class Roles(Model):
-    __table__ = tables.roles
+    __tablename__ = "roles"
+    __table_args__ = {"schema": "application"}
+
+    role_name = Column(UnicodeText, primary_key=True)
+    role_password = Column(UnicodeText)
+    role_email = Column(UnicodeText)
+    role_phone = Column(UnicodeText)
+    is_active = Column(Boolean)
+    is_admin = Column(Boolean)
+
     groups = relationship(
         RoleGroups,
         order_by=RoleGroups.group_name,

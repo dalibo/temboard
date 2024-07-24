@@ -12,18 +12,6 @@ from sqlalchemy.types import Boolean, Integer, UnicodeText
 
 metadata = MetaData()
 
-roles = Table(
-    "roles",
-    metadata,
-    Column("role_name", UnicodeText, primary_key=True),
-    Column("role_password", UnicodeText, nullable=False),
-    Column("role_email", UnicodeText, nullable=False),
-    Column("role_phone", UnicodeText),
-    Column("is_active", Boolean, nullable=False, server_default=text("True")),
-    Column("is_admin", Boolean, nullable=False, server_default=text("False")),
-    schema="application",
-)
-
 groups = Table(
     "groups",
     metadata,
@@ -75,28 +63,6 @@ instance_groups = Table(
     ForeignKeyConstraint(
         ["agent_address", "agent_port"],
         ["application.instances.agent_address", "application.instances.agent_port"],
-        ondelete="CASCADE",
-        onupdate="CASCADE",
-    ),
-    ForeignKeyConstraint(
-        ["group_name", "group_kind"],
-        ["application.groups.group_name", "application.groups.group_kind"],
-        ondelete="CASCADE",
-        onupdate="CASCADE",
-    ),
-    schema="application",
-)
-
-role_groups = Table(
-    "role_groups",
-    metadata,
-    Column("role_name", UnicodeText, nullable=False, primary_key=True),
-    Column("group_name", UnicodeText, nullable=False, primary_key=True),
-    Column("group_kind", UnicodeText, nullable=False, server_default=text("role")),
-    CheckConstraint("group_kind = 'role'"),
-    ForeignKeyConstraint(
-        ["role_name"],
-        ["application.roles.role_name"],
         ondelete="CASCADE",
         onupdate="CASCADE",
     ),
