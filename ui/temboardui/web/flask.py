@@ -289,7 +289,11 @@ class InstanceMiddleware:
     def load_instance_before_request(self):
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")
-        if not check_user_allowed(address, port):
+
+        func = self.app.view_functions.get(request.endpoint)
+        apikey_allowed = getattr(func, "__apikey_allowed", False)
+
+        if not (apikey_allowed and g.apikey) and not check_user_allowed(address, port):
             abort(403)
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
