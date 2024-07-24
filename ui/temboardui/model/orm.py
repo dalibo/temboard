@@ -2,18 +2,18 @@ import string
 from secrets import choice
 
 from sqlalchemy import text
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.query import Query
 from sqlalchemy.schema import (
     Column,
+    FetchedValue,
     ForeignKey,
     ForeignKeyConstraint,
     PrimaryKeyConstraint,
 )
 from sqlalchemy.types import TIMESTAMP, BigInteger, Boolean, Integer, UnicodeText
-
-from temboardui.model import tables
 
 from ..toolkit.utils import utcnow
 from . import QUERIES
@@ -82,11 +82,46 @@ class ApiKeys(Model):
 
 
 class Plugins(Model):
-    __table__ = tables.plugins
+    __tablename__ = "plugins"
+    __table_args__ = (
+        PrimaryKeyConstraint("agent_address", "agent_port", "plugin_name"),
+        ForeignKeyConstraint(
+            ["agent_address", "agent_port"],
+            ["application.instances.agent_address", "application.instances.agent_port"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(UnicodeText)
+    agent_port = Column(Integer)
+    plugin_name = Column(UnicodeText)
 
 
 class InstanceGroups(Model):
-    __table__ = tables.instance_groups
+    __tablename__ = "instance_groups"
+    __table_args__ = (
+        PrimaryKeyConstraint("agent_address", "agent_port", "group_name", "group_kind"),
+        ForeignKeyConstraint(
+            ["agent_address", "agent_port"],
+            ["application.instances.agent_address", "application.instances.agent_port"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["group_name", "group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(UnicodeText)
+    agent_port = Column(Integer)
+    group_name = Column(UnicodeText)
+    group_kind = Column(UnicodeText, server_default=FetchedValue())
 
 
 class RoleGroups(Model):
@@ -108,7 +143,33 @@ class RoleGroups(Model):
 
 
 class AccessRoleInstance(Model):
-    __table__ = tables.access_role_instance
+    __tablename__ = "access_role_instance"
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            "role_group_name",
+            "role_group_kind",
+            "instance_group_name",
+            "instance_group_kind",
+        ),
+        ForeignKeyConstraint(
+            ["role_group_name", "role_group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        ForeignKeyConstraint(
+            ["instance_group_name", "instance_group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    role_group_name = Column(UnicodeText)
+    role_group_kind = Column(UnicodeText)
+    instance_group_name = Column(UnicodeText)
+    instance_group_kind = Column(UnicodeText)
 
 
 class Roles(Model):
@@ -141,7 +202,22 @@ class StubRole:
 
 
 class Instances(Model):
-    __table__ = tables.instances
+    __tablename__ = "instances"
+    __table_args__ = (
+        PrimaryKeyConstraint("agent_address", "agent_port"),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(UnicodeText)
+    agent_port = Column(Integer)
+    hostname = Column(UnicodeText)
+    pg_port = Column(Integer)
+    notify = Column(Boolean, server_default=FetchedValue())
+    comment = Column(UnicodeText)
+    discover = Column(postgresql.JSONB)
+    discover_date = Column(TIMESTAMP, server_default=FetchedValue())
+    discover_etag = Column(UnicodeText)
+
     groups = relationship(
         InstanceGroups,
         order_by="InstanceGroups.group_name",
@@ -251,7 +327,16 @@ class Instances(Model):
 
 
 class Groups(Model):
-    __table__ = tables.groups
+    __tablename__ = "groups"
+    __table_args__ = (
+        PrimaryKeyConstraint("group_name", "group_kind"),
+        {"schema": "application"},
+    )
+
+    group_name = Column(UnicodeText)
+    group_kind = Column(UnicodeText)
+    group_description = Column(UnicodeText)
+
     ari = relationship(
         AccessRoleInstance,
         order_by=AccessRoleInstance.role_group_name,
