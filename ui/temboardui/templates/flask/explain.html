@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard / PEV2{% endblock %}
+
+{% block head %}
+{% for link in vitejs.css_links_for('explain.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
+
+{% block content %}
+<div id="app">
+  <explain></explain>
+</div>
+<script type="module" src="{{ vitejs.url_for('explain.js') }}"></script>
+{% endblock %}
