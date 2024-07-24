@@ -49,6 +49,7 @@ function open(username) {
   userModel.is_active = true;
   userModel.is_admin = false;
   groups.value = [];
+  selectedGroups.value = [];
 
   $.ajax({
     url: url,
