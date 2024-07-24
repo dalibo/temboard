@@ -3,13 +3,11 @@ import string
 from secrets import choice
 
 from past.builtins import basestring
-from past.utils import old_div
 from sqlalchemy import Boolean, DateTime, Integer, String, event, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.query import Query
 from sqlalchemy.schema import Column
-from sqlalchemy.sql import case, column, extract, func
 from sqlalchemy.types import TIMESTAMP, BigInteger, UnicodeText
 
 from temboardui.model import tables
@@ -72,44 +70,6 @@ validators = {
     DateTime: validate_datetime,
     Boolean: validate_boolean,
 }
-
-
-def diff(var):
-    return (func.max(column(var)) - func.min(column(var))).label(var)
-
-
-def to_epoch(column):
-    return extract("epoch", column).label(column.name)
-
-
-def total_measure_interval(column):
-    return extract(
-        "epoch",
-        case([(func.min(column) == "0 second", "1 second")], else_=func.min(column)),
-    )
-
-
-# We use 8192 as default value for block size
-# Ideally we should get this value from agent
-block_size = 8192
-
-
-def total_read(c):
-    return (
-        old_div(
-            func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read),
-            total_measure_interval(c.mesure_interval),
-        )
-    ).label("total_blks_read")
-
-
-def total_hit(c):
-    return (
-        old_div(
-            func.sum(c.shared_blks_hit + c.local_blks_hit),
-            total_measure_interval(c.mesure_interval),
-        )
-    ).label("total_blks_hit")
 
 
 @event.listens_for(Model, "attribute_instrument")
@@ -347,27 +307,3 @@ class Groups(Model):
             AccessRoleInstance.instance_group_kind,
         ],
     )
-
-
-class Biggest:
-    def __init__(self, order_by):
-        self.order_by = order_by
-
-    def __call__(self, var, minval=0, label=None):
-        label = label or var
-        return func.greatest(
-            column(var) - func.lag(column(var)).over(order_by=self.order_by), minval
-        ).label(label)
-
-
-class Biggestsum:
-    def __init__(self, order_by):
-        self.order_by = order_by
-
-    def __call__(self, var, minval=0, label=None):
-        label = label or var
-        return func.greatest(
-            func.sum(column(var))
-            - func.lag(func.sum(column(var))).over(order_by=self.order_by),
-            minval,
-        ).label(label)
