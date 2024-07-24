@@ -19,3 +19,10 @@ def instance_about():
         discover=g.instance.discover,
         environment=g.instance.environment.name,
     )
+
+
+@app.route("/explain")
+def explain():
+    return render_template(
+        "explain.html", nav=True, role=g.current_user, vitejs=app.vitejs
+    )
