@@ -37,12 +37,7 @@ from sqlalchemy.exc import DataError, IntegrityError, ProgrammingError
 from sqlalchemy.sql import text
 
 from temboardui.agentclient import TemboardAgentClient
-from temboardui.application import (
-    get_instance,
-    get_roles_by_instance,
-    send_mail,
-    send_sms,
-)
+from temboardui.application import get_instance, send_mail, send_sms
 from temboardui.model import worker_engine
 from temboardui.model.orm import Instances
 
@@ -360,11 +355,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         link=link,
     )
 
-    roles = get_roles_by_instance(
-        worker_session, instance.agent_address, instance.agent_port
-    )
-
-    emails = [role.role_email for role in roles if role.role_email]
+    emails = worker_session.execute(instance.select_notify_emails()).fetchall()
     if len(emails):
         send_mail(
             smtp_host,

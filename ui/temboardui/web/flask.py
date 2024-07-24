@@ -20,7 +20,7 @@ from tornado.web import decode_signed_value
 from werkzeug.exceptions import HTTPException
 
 from ..agentclient import TemboardAgentClient
-from ..application import get_instance, get_role_by_cookie, get_roles_by_instance
+from ..application import get_instance, get_role_by_cookie
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
@@ -291,9 +291,14 @@ class InstanceMiddleware:
         port = request.view_args.pop("port")
 
         func = self.app.view_functions.get(request.endpoint)
-        apikey_allowed = getattr(func, "__apikey_allowed", False)
-
-        if not (apikey_allowed and g.apikey) and not check_user_allowed(address, port):
+        apikey_allowed = g.apikey and getattr(func, "__apikey_allowed", False)
+        user_allowed = (
+            g.current_user
+            and g.db_session.execute(
+                request.instance.has_dba(g.current_user.role_name)
+            ).scalar()
+        )
+        if not apikey_allowed and not user_allowed:
             abort(403)
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
@@ -351,15 +356,6 @@ class InstanceMiddleware:
         h = "Content-Type"
         response.headers[h] = agent_response.headers[h]
         return response
-
-
-def check_user_allowed(address, port):
-    # Check if current user has access to the given instance.
-    allowed_roles = get_roles_by_instance(g.db_session, address, port)
-    roles = [role.role_name for role in allowed_roles if role]
-    if g.current_user.role_name not in roles:
-        return False
-    return True
 
 
 def anonymous_allowed(func):

@@ -4,9 +4,10 @@ import os.path
 import sys
 
 from ..agentclient import TemboardAgentClient
-from ..application import add_instance, check_agent_address, get_instance
-from ..handlers.settings.instance import add_instance_in_groups, enable_instance_plugins
+from ..application import check_agent_address, get_instance
+from ..handlers.settings.instance import enable_instance_plugins
 from ..model import Session
+from ..model.orm import Environment, Instances
 from ..toolkit import validators as v
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
@@ -45,11 +46,11 @@ class RegisterInstance(SubCommand):
         )
 
         parser.add_argument(
-            "-g",
-            "--groups",
-            dest="groups",
+            "-e",
+            "--environment",
+            dest="environment",
             default="",
-            help="Instance groups list, comma separated.",
+            help="Instance environment name.",
         )
 
         parser.add_argument(
@@ -79,9 +80,8 @@ class RegisterInstance(SubCommand):
         super().define_arguments(parser)
 
     def main(self, args):
-        groups = v.commalist(args.groups)
-        if not groups:
-            raise UserError("Missing instance groups. Use --groups to define.")
+        if not args.environment:
+            raise UserError("Missing environment. Use --environment to define.")
         plugins = v.commalist(args.plugins)
         for plugin in plugins:
             if plugin not in self.app.config.temboard.plugins:
@@ -152,13 +152,6 @@ class RegisterInstance(SubCommand):
             discover["system"]["hostname"],
             discover["postgres"]["port"],
         )
-        data = {}
-        data["new_agent_address"] = args.agent_address
-        data["new_agent_port"] = args.agent_port
-        data["comment"] = args.comment
-        data["notify"] = args.notify
-        data["discover"] = discover
-        data["discover_etag"] = discover_etag
 
         if plugins:
             for plugin in plugins:
@@ -171,10 +164,18 @@ class RegisterInstance(SubCommand):
             )
         logger.debug("Enabling plugins %s.", ", ".join(plugins))
 
-        instance = add_instance(session, **data)
+        environment = session.execute(Environment.get(args.environment)).fetchone()
+        instance = Instances.factory(
+            agent_address=args.agent_address,
+            agent_port=args.agent_port,
+            comment=args.comment,
+            notify=args.notify,
+            discover=discover,
+            discover_etag=discover_etag,
+            environment=environment,
+        )
         session.add(instance)
         session.flush()  # Get an Instance.id
-        add_instance_in_groups(session, instance, groups)
         enable_instance_plugins(
             session, instance, plugins, self.app.config.temboard.plugins
         )
