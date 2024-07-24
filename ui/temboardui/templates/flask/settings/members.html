@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard / Settings / Environments / {{ environment }} / Members{% endblock %}
+{% block head %}
+{% for link in vitejs.css_links_for('settings.members.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
+
+{% block sidebar %}
+{% include "settings/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<div id="members-app">
+  <MembersPage environment="{{ environment }}"></MembersPage>
+</div>
+<script type="module" src="{{ vitejs.url_for('settings.members.js') }}"></script>
+{% endblock %}

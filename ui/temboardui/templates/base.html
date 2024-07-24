@@ -31,10 +31,8 @@
       {% set d = instance.discover or {} %}
       <span class="navbar-text p-0 fs-5 text-white text-truncate">
         /
-        {% if instance.groups %}
-        <span>{{instance.groups[0].group_name}}</span>
+        <span>{{instance.environment.name}}</span>
         /
-        {% end %}
         <strong>{{ instance.hostname }}:{{ instance.pg_port }}</strong>
       </span>
       {% end %}

@@ -5,7 +5,6 @@ import $ from "jquery";
 import { createApp } from "vue";
 
 import DeleteDialog from "./components/DeleteDialog.vue";
-import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 import InstanceDetails from "./components/settings/InstanceDetails.vue";
 import NewInstanceWizard from "./components/settings/NewInstanceWizard.vue";
 import UpdateInstanceDialog from "./components/settings/UpdateInstanceDialog.vue";
@@ -14,7 +13,6 @@ DataTable.use(DataTablesLib);
 
 createApp({
   components: {
-    "environment-migration-dialog": EnvironmentMigrationDialog,
     "new-instance-wizard": NewInstanceWizard,
     "update-instance-dialog": UpdateInstanceDialog,
     deletedialog: DeleteDialog,

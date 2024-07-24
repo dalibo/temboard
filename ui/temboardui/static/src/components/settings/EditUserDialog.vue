@@ -1,7 +1,6 @@
 <script setup>
 import $ from "jquery";
 import { computed, reactive, ref } from "vue";
-import Multiselect from "vue-multiselect";
 
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
@@ -11,7 +10,6 @@ const error = ref(null);
 const waiting = ref(true); // Disable controls by default.
 const failed = ref(false);
 const disabled = computed(() => waiting.value || failed.value);
-const availableGroups = ref([]);
 const editedName = ref("");
 let url = "/json/users";
 let initialModel = {
@@ -20,7 +18,6 @@ let initialModel = {
   phone: "",
   password: "",
   password2: "",
-  groups: [],
   is_active: true,
   is_admin: false,
 };
@@ -35,24 +32,11 @@ function edit(username) {
 defineExpose({ edit });
 
 function fetch() {
-  waiting.value = true;
-  $.ajax({
-    url: "/json/groups/role",
-    error: (xhr) => {
-      error.value.fromXHR(xhr);
-    },
-    success: (data) => {
-      availableGroups.value = data.map((group) => group.name);
-    },
-  }).always(() => {
-    waiting.value = false;
-  });
-
   if (!editedName.value) {
+    waiting.value = false;
     return;
   }
 
-  waiting.value = true;
   $.ajax({
     url,
     error: (xhr) => {
@@ -65,7 +49,6 @@ function fetch() {
       model.phone = data.phone;
       model.is_active = data.active;
       model.is_admin = data.admin;
-      model.groups = data.groups;
     },
   }).always(() => {
     waiting.value = false;
@@ -82,15 +65,15 @@ function submit() {
     async: true,
     contentType: "application/json",
     dataType: "json",
-    data: JSON.stringify(data),
-  })
-    .fail((xhr) => {
+    data: JSON.stringify(model),
+    error: (xhr) => {
       waiting.value = false;
       error.value.fromXHR(xhr);
-    })
-    .done(() => {
+    },
+    success: () => {
       window.location.reload();
-    });
+    },
+  });
 }
 
 function reset() {
@@ -128,6 +111,28 @@ function reset() {
                 v-model="model.name"
                 :disabled="disabled"
             /></label>
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                id="switchActive"
+                v-model="model.is_active"
+                :disabled="disabled"
+              />
+              <label class="form-check-label" for="switchActive">Active</label><br />
+            </div>
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                id="switchAdmin"
+                v-model="model.is_admin"
+                :disabled="disabled"
+              />
+              <label class="form-check-label" for="switchAdmin">Administrator</label><br />
+            </div>
           </div>
           <div class="mb-3 col-sm-6">
             <label class="form-label"
@@ -151,46 +156,6 @@ function reset() {
             <p v-if="editedName" class="form-text text-body-secondary">
               <small>&#42;: leave this field blank to keep it unchanged.</small>
             </p>
-          </div>
-
-          <div class="mb-3 col-sm-6">
-            <div class="mb-3">
-              <label class="form-label">Groups</label>
-              <multiselect
-                id="groups"
-                v-model="model.groups"
-                :options="availableGroups"
-                :multiple="true"
-                :hide-selected="true"
-                :searchable="false"
-                select-label=""
-              ></multiselect>
-            </div>
-          </div>
-
-          <div class="mb-3 col-sm-6">
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                id="switchActive"
-                v-model="model.is_active"
-                :disabled="disabled"
-              />
-              <label class="form-check-label" for="switchActive">Active</label><br />
-            </div>
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                id="switchAdmin"
-                v-model="model.is_admin"
-                :disabled="disabled"
-              />
-              <label class="form-check-label" for="switchAdmin">Administrator</label><br />
-            </div>
           </div>
 
           <div class="mb-3 col-sm-6">

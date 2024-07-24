@@ -15,8 +15,6 @@ from temboardui.plugins.monitoring.tools import parse_start_end
 from temboardui.toolkit import taskmanager
 from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
 
-from ...application import get_instance
-
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 
@@ -818,7 +816,7 @@ def statements_pull1(app, host, port):
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
-    instance = get_instance(worker_session, host, port)
+    instance = Instance.get(host, port).with_session(worker_session).first()
 
     try:
         pull_data_for_instance(app, worker_session, instance)

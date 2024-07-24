@@ -1,5 +1,4 @@
 import pytest
-from fixtures.utils import MultiSelect
 from selenium.webdriver.common.by import By
 
 
@@ -17,8 +16,6 @@ def user_rick(admin_session, browser_session):
     b.select("input[placeholder='Password']").send_keys("!rick0.@9")
     b.select("input[placeholder='Confirm password']").send_keys("!rick0.@9")
     b.select("input[placeholder='+33...']").send_keys("+33611223344")
-    multiselect = MultiSelect(b, "groups")
-    multiselect.select("default")
     b.select("label[for='switchActive']").click()
     b.select("label[for='switchAdmin']").click()
     b.select("#modalEditUser button[type=submit]").click()
@@ -33,7 +30,6 @@ def test_create_user(user_rick, browser):
     assert "rick" in user_rick
     assert "rick@test.com" in user_rick
     assert "+33611223344" in user_rick
-    assert "default" in user_rick
     assert "Inactive" in user_rick
     assert "Admin" in user_rick
 
@@ -53,9 +49,6 @@ def test_update_user(user_rick, browser):
     browser.select("input[placeholder='Email']").send_keys("rick@test.me")
     browser.select("input[placeholder='Password']").send_keys("NEW!rick0.@9")
     browser.select("input[placeholder='Confirm password']").send_keys("NEW!rick0.@9")
-
-    multiselect = MultiSelect(browser, "groups")
-    multiselect.unselect("default")
     browser.select("label[for='switchActive']").click()
     browser.select("label[for='switchAdmin']").click()
     browser.select("button[type=submit]").click()
@@ -68,7 +61,6 @@ def test_update_user(user_rick, browser):
     assert "rick0" in user_rick
     assert "rick@test.me" in user_rick
     assert "+33611223344" in user_rick
-    assert "default" not in user_rick
     assert "Active" in user_rick
     assert "User" in user_rick
 

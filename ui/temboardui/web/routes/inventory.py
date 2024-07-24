@@ -15,80 +15,82 @@ from ..flask import admin_required, transaction, validating
 logger = logging.getLogger(__name__)
 
 
-@current_app.route("/json/groups/instance", methods=["POST"])
+@current_app.route("/json/environments")
 @admin_required
-@transaction
-def post_instance_group():
-    group = orm.Groups(group_kind="instance")
-    return put_instance_group(group=group)
-
-
-@current_app.route("/json/groups/instance/<name>", methods=["DELETE"])
-@admin_required
-@transaction
-def delete_instance_group(name):
-    """Delete a group of instances."""
-    result = g.db_session.execute(orm.Groups.delete("instance", name))
-    if result.rowcount == 0:
-        flask.abort(404, "No such group.")
-    return flask.jsonify()
-
-
-@current_app.route("/json/groups/instance")
-@admin_required
-def get_instance_groups():
-    """List instance groups."""
+def get_environments():
     return flask.jsonify(
-        [g.asdict() for g in orm.Groups.all("instance").with_session(g.db_session)]
+        [e.asdict() for e in orm.Environment.all().with_session(g.db_session)]
     )
 
 
-@current_app.route("/json/groups/instance/<name>")
-@admin_required
-def get_instance_group(name):
-    group = orm.Groups.get("instance", name).with_session(g.db_session).one_or_none()
-    if group is None:
-        flask.abort(404, "No such group.")
-    return flask.jsonify(group.asdict())
-
-
-@current_app.route("/json/groups/instance/<name>", methods=["PUT"])
+@current_app.route("/json/environments", methods=["POST"])
 @admin_required
 @transaction
-def put_instance_group(name=None, group=None):
-    if group is None:
-        group = (
-            orm.Groups.get("instance", name).with_session(g.db_session).one_or_none()
-        )
-    if group is None:
-        flask.abort(404, "No such group.")
+def post_environments():
+    return put_environment(environment=orm.Environment(dba_group=orm.Group()))
+
+
+@current_app.route("/json/environments/<name>")
+@admin_required
+def get_environment(name):
+    environment = orm.Environment.get(name).with_session(g.db_session).first()
+    if environment is None:
+        flask.abort(404, "No such environment.")
+    return flask.jsonify(environment.asdict())
+
+
+@current_app.route("/json/environments/<name>/members")
+@admin_required
+def get_environment_members(name):
+    return flask.jsonify(
+        [
+            {k: getattr(r, k) for k in r.keys()}
+            for r in g.db_session.execute(orm.Environment.select_memberships(name))
+        ]
+    )
+
+
+@current_app.route("/json/environments/<name>", methods=["PUT"])
+@admin_required
+@transaction
+def put_environment(name=None, environment=None):
+    if environment is None:
+        environment = orm.Environment.get(name).with_session(g.db_session).first()
+    if environment is None:
+        flask.abort(404, "No such environment.")
 
     with validating():
-        group.group_name = validators.slug(flask.request.json["name"])
-    group.group_description = flask.request.json["description"]
-    g.db_session.add(group)  # When called from post_instance_group
+        environment.name = validators.slug(flask.request.json["name"])
+    environment.description = flask.request.json["description"]
+    environment.dba_group.name = f"{environment.name}/dba"
+    # Used as profile name in /settings/environment/<>/members
+    environment.dba_group.description = "DBA"
+    g.db_session.add(environment)  # When called from post_environment
     g.db_session.flush()
 
-    # Synchronize access role instance
-    current_role_groups = {ari.role_group_name for ari in group.ari}
-    new_role_groups = set(flask.request.json["role_groups"])
-    for role_group in current_role_groups - new_role_groups:
-        g.db_session.execute(
-            orm.AccessRoleInstance.delete(role_group, group.group_name)
-        )
-    for role_group in new_role_groups - current_role_groups:
-        g.db_session.execute(
-            orm.AccessRoleInstance.insert(role_group, group.group_name)
-        )
+    return flask.jsonify(environment.asdict())
 
-    return flask.jsonify(group.asdict())
+
+@current_app.route("/json/environments/<name>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_environment(name):
+    # Delete DBA group, cascding to environment.
+    result = g.db_session.execute(orm.Group.delete(f"{name}/dba"))
+    if result.rowcount == 0:
+        flask.abort(404, "No such environment.")
+    return flask.jsonify()
 
 
 @current_app.route("/json/instances", methods=["POST"])
 @transaction
 def post_instance():
     j = flask.request.json
-
+    environment = (
+        orm.Environment.get(j["environment"]).with_session(g.db_session).first()
+    )
+    if environment is None:
+        flask.abort(400, "Unknown environment")
     try:
         instance = (
             orm.Instance.insert(
@@ -96,6 +98,7 @@ def post_instance():
                 agent_port=j["agent_port"],
                 discover=j["discover"],
                 discover_etag=j["discover_etag"],
+                environment=j["environment"],
                 # put_instance will handle other attributes.
             )
             .with_session(g.db_session)
@@ -104,6 +107,9 @@ def post_instance():
     except sqlalchemy.exc.IntegrityError as e:
         logger.warning("Failed to insert instance: %s", e)
         flask.abort(400, "Instance already registered.")
+
+    # insert does not populate environment nor plugins.
+    instance.environment = environment
 
     g.db_session.flush()
     return put_instance(instance=instance)
@@ -136,30 +142,18 @@ def put_instance(address=None, port=None, instance=None):
         instance.discover_etag = j["discover_etag"]
         instance.discover_date = utcnow()
         instance.hostname = j["discover"]["system"]["fqdn"]
-        instance.pg_port = j["discover"]["postgresql"]["port"]
+        instance.pg_port = j["discover"]["postgres"]["port"]
     except KeyError:
         logger.debug("Missing discover. Keeping old informations.")
     instance.notify = j["notify"]
     instance.comment = j["comment"] or ""
+    if j["environment"] != instance.environment.name:
+        instance.environment = (
+            orm.Environment.get(j["environment"]).with_session(g.db_session).first()
+        )
+    if instance.environment is None:
+        flask.abort(400, "Unknown environment.")
     g.db_session.add(instance)
-    g.db_session.flush()
-
-    current_groups = {g.group_name for g in instance.groups}
-    new_groups = set(j["groups"])
-    for i, group in reversed(list(enumerate(instance.groups))):
-        if group.group_name not in new_groups:
-            del instance.groups[i]
-    for group in new_groups - current_groups:
-        try:
-            group = (
-                orm.Groups.get(kind="instance", name=group)
-                .with_session(g.db_session)
-                .one()
-            )
-        except sqlalchemy.orm.exc.NoResultFound:
-            flask.abort(400, f"Unknown group {group}.")
-
-        g.db_session.execute(instance.add_group(group))
     g.db_session.flush()
 
     current_plugins = {p.plugin_name for p in instance.plugins}
@@ -172,7 +166,6 @@ def put_instance(address=None, port=None, instance=None):
             flask.abort(400, f"Unknown plugin {plugin}.")
         g.db_session.execute(instance.enable_plugin(plugin))
 
-    g.db_session.flush()
     return flask.jsonify(instance.asdict())
 
 

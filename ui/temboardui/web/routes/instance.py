@@ -17,5 +17,5 @@ def instance_about():
         pg_data=g.instance.pg_data,
         pg_version_summary=g.instance.pg_version_summary,
         discover=g.instance.discover,
-        groups=[group.group_name for group in g.instance.groups],
+        environment=g.instance.environment.name,
     )

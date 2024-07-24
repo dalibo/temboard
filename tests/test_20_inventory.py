@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from fixtures.utils import MultiSelect
+from selenium.webdriver.support.ui import Select
 from sh import ErrorReturnCode, temboard
 
 
@@ -52,8 +52,7 @@ def test_edit_instance(registered_agent, browser, ui_url):
     browser.select("#inputNotifyUpdate").click()
     comment = browser.select("#inputCommentUpdate").get_attribute("value")
     assert "Registered by tests." == comment
-    multiselect = MultiSelect(browser, "selectGroupsUpdate")
-    assert multiselect.selected[0].text == "default"
+    Select(browser.select("#selectEnvironmentUpdate")).select_by_visible_text("default")
     browser.select("#buttonSubmitUpdate").click()
 
 

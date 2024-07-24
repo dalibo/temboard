@@ -108,11 +108,11 @@ defineExpose({ fetchLoad1, fetchTPS });
             </strong>
           </p>
           <p class="mb-0 small">
-            <template v-for="group in instance.groups">
-              <span class="badge border text-body-secondary me-1" :title="'Instance in group ' + group">
-                {{ group }}
-              </span>
-            </template>
+            <span
+              class="badge border text-body-secondary me-1"
+              :title="'Instance in environment ' + instance.environment"
+              >{{ instance.environment }}</span
+            >
             <span class="pg_version" :class="{ 'text-body-secondary': !instance.pg_version_summary }">{{
               instance.pg_version_summary || "Unknown version"
             }}</span>

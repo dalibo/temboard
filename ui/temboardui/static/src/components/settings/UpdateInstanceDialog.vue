@@ -28,8 +28,8 @@ const initialModel = {
   comment: "",
   notify: true,
   cpu: null,
-  server_groups: [],
-  current_groups: [],
+  environments: [],
+  environment: null,
   mem_gb: null,
   pg_data: null,
   pg_host: null,
@@ -56,15 +56,6 @@ const plugins = computed(() => {
   });
 });
 
-const groups = computed(() => {
-  return Array.from(model.server_groups, (group) => {
-    return {
-      name: group.name,
-      selected: model.current_groups.indexOf(group.name) !== -1,
-    };
-  });
-});
-
 onUpdated(() => {
   const tooltipTriggerList = root.value.querySelectorAll('[data-bs-toggle="tooltip"]');
   [...tooltipTriggerList].map((el) => new Tooltip(el));
@@ -85,17 +76,17 @@ function fetch() {
         model.pg_host = data.hostname;
         model.pg_port = data.pg_port;
         model.current_plugins = data.plugins;
-        model.current_groups = data.groups;
+        model.environment = data.environment;
       },
     }),
     $.ajax({
-      url: "/json/groups/instance",
+      url: "/json/environments",
       error: (xhr) => {
         error.value.fromXHR(xhr);
         failed.value = true;
       },
       success: (data) => {
-        model.server_groups = data;
+        model.environments = data;
       },
     }),
     $.ajax({
@@ -193,7 +184,8 @@ function reset() {
       :cpu="model.cpu"
       :mem_gb="model.mem_gb"
       :signature_status="model.signature_status"
-      :groups="groups"
+      :environments="model.environments"
+      :environment="model.environment"
       :plugins="plugins"
       :notify="model.notify"
       :comment="model.comment"

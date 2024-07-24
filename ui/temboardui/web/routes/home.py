@@ -1,7 +1,6 @@
 from flask import current_app as app
 from flask import g, render_template, request
 
-from ...application import get_instance_groups_by_role
 from ...model import orm
 from ...version import inspect_versions
 
@@ -9,11 +8,10 @@ from ...version import inspect_versions
 @app.route("/home")
 def home():
     role = g.current_user
-
-    groups = get_instance_groups_by_role(g.db_session, role.role_name)
-    groups = [group for group in groups]
-
-    return render_template("home.html", groups=groups)
+    environments = [
+        e.name for e in role.select_environments().with_session(g.db_session).all()
+    ]
+    return render_template("home.html", environments=environments)
 
 
 @app.route("/about")

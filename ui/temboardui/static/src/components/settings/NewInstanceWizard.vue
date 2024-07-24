@@ -25,6 +25,7 @@ const initialState = {
   agent_port: null,
   comment: "",
   notify: true,
+  environment: null,
 
   // Instance information from API.
   cpu: null,
@@ -35,21 +36,11 @@ const initialState = {
   pg_host: null,
   pg_port: null,
   pg_version_summary: null,
-  server_groups: [],
+  server_environments: [],
   server_plugins: [],
   signature_status: null,
 };
 const state = reactive({ ...initialState });
-
-const groups = computed(() => {
-  return Array.from(state.server_groups, (group) => {
-    return {
-      name: group.name,
-      disabled: false,
-      selected: false,
-    };
-  });
-});
 
 const plugins = computed(() => {
   return Array.from(state.server_plugins, (name) => {
@@ -101,12 +92,12 @@ function discover() {
       },
     }),
     $.ajax({
-      url: "/json/groups/instance",
+      url: "/json/environments",
       error: (xhr) => {
         error.value.fromXHR(xhr);
       },
       success: (data) => {
-        state.server_groups = data;
+        state.server_environments = data;
       },
     }),
     $.ajax({
@@ -217,7 +208,8 @@ function reset() {
         :cpu="state.cpu"
         :mem_gb="state.mem_gb"
         :signature_status="state.signature_status"
-        :groups="groups"
+        :environment="state.environment"
+        :environments="state.server_environments"
         :plugins="plugins"
         :notify="state.notify"
         :comment="state.comment"

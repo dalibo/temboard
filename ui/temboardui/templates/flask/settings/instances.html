@@ -12,8 +12,6 @@
 
 {% block content %}
 <div id="vue-app" class="row" v-cloak>
-
-  <environment-migration-dialog ref="environment_migration_dialog" object-class="instance" title="Instance in multiple groups"></environment-migration-dialog>
   <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
   <DeleteDialog ref="delete_modal" id="modalDeleteInstance" title="Delete instance" v-slot="{resource}">
@@ -41,16 +39,7 @@
                 <i class="fa fa-database"></i>
                 {{instance.hostname}}:{{instance.pg_port}}
               </a>
-              {% for group in instance.groups %} <span class="badge border text-body-secondary align-middle">{{group.group_name}}</span>{% endfor %}
-              {% if instance.groups|count > 1 %}
-                <i
-                  class="fa fa-warning text-warning"
-                  style="cursor: pointer;"
-                  title="Instance in multiple groups. Click for details."
-                  data-bs-toggle="modal"
-                  v-on:click="$refs.environment_migration_dialog.show()">
-                </i>
-              {% endif %}
+              <span class="badge border text-body-secondary align-middle">{{instance.environment.name}}</span>
             </div>
             {% set comment = instance.comment|default('') %}
             <div class="overflow-ellipsis small text-body-secondary" style="max-width: 150px;" title="{{comment}}">

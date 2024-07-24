@@ -7,23 +7,6 @@ DROP SCHEMA "public";
 \echo ---------------------------------
 \echo
 
--- Create a second group for stable instance.
-INSERT INTO application.groups
-VALUES
-('stable', 'Stable instance group', 'instance'),
-('stable', 'Stable role group', 'role');
-INSERT INTO application.access_role_instance
-VALUES
-('stable', 'role', 'stable', 'instance');
-
--- Create a third group for mass agents
-INSERT INTO application.groups
-VALUES
-('mass', 'Mass agent instance group', 'instance'),
-('mass', 'Mass agent role group', 'role');
-INSERT INTO application.access_role_instance
-VALUES
-('mass', 'role', 'mass', 'instance');
 
 INSERT INTO application.roles (role_name, role_password, role_email, is_active, is_admin)
 VALUES
@@ -32,29 +15,32 @@ VALUES
 -- bob // bob
 ('bob', 'f9Yol14q9N89EyYSCUR9izXfXugNiXN/HiKsa8CFnIzq/MADFgL7UnjMnxBVypSP6vzPbusotyEAF5H6tP2Mlw==', 'bob@temboard.local', true, false);
 
-INSERT INTO application.role_groups (role_name, group_name, group_kind)
+INSERT INTO application.groups (name, description)
 VALUES
-('alice', 'default', 'role'),
-('alice', 'stable', 'role'),
-('bob', 'default', 'role'),
-('admin', 'stable', 'role'),
-('admin', 'mass', 'role');
+('mass/dba', 'DBA'),
+('stable/dba', 'DBA');
+
+INSERT INTO application.environments (name, description, dba_group_id)
+VALUES
+('stable', 'Agent of previous major version of temBoard', (SELECT id FROM application.groups WHERE name = 'stable/dba')),
+('mass', 'Big herd of instances.', (SELECT id FROM application.groups WHERE name = 'mass/dba'));
+
+INSERT INTO application.memberships (role_name, group_id)
+VALUES
+('alice', (SELECT id FROM application.groups WHERE name = 'default/dba')),
+('alice', (SELECT id FROM application.groups WHERE name = 'stable/dba')),
+('bob', (SELECT id FROM application.groups WHERE name = 'default/dba')),
+('admin', (SELECT id FROM application.groups WHERE name = 'stable/dba')),
+('admin', (SELECT id FROM application.groups WHERE name = 'mass/dba'));
 
 -- Pre-register agents
 
 INSERT INTO application.instances
-(agent_address, agent_port, hostname, pg_port, comment, notify)
+(agent_address, agent_port, hostname, pg_port, comment, notify, environment_id)
 VALUES
-('0.0.0.0', 2347, 'postgres-stable.dev', 5432, '', FALSE),
-('0.0.0.0', 2345, 'postgres0.dev', 5432, '', FALSE),
-('0.0.0.0', 2346, 'postgres1.dev', 5432, '', FALSE);
-
-INSERT INTO application.instance_groups
-(agent_address, agent_port, group_name, group_kind)
-VALUES
-('0.0.0.0', 2345, 'default', 'instance'),
-('0.0.0.0', 2346, 'default', 'instance'),
-('0.0.0.0', 2347, 'stable', 'instance');
+('0.0.0.0', 2347, 'postgres-stable.dev', 5432, '', FALSE, (SELECT id FROM application.environments WHERE name = 'stable')),
+('0.0.0.0', 2345, 'postgres0.dev', 5432, '', FALSE, (SELECT id FROM application.environments WHERE name = 'default')),
+('0.0.0.0', 2346, 'postgres1.dev', 5432, '', FALSE, (SELECT id FROM application.environments WHERE name = 'default'));
 
 INSERT INTO application.plugins
 (agent_address, agent_port, plugin_name)
