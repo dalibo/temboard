@@ -15,7 +15,7 @@ develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile .git-blame-ignore-revs
 	if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $$PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
-	$(MAKE) -j 2 install-$* dev/bin/prometheus
+	$(MAKE) -j 2 install-$* ui/build/bin/prometheus ui/build/bin/promtool
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
@@ -56,12 +56,13 @@ install-%: venv-%
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
 # LTS
-PROMETHEUS_VERSION=2.45.1
+PROMETHEUS_VERSION=2.53.0
 dev/downloads/prometheus-%.linux-amd64.tar.gz:
 	mkdir -p $(dir $@)
 	curl --fail --silent -L "https://github.com/prometheus/prometheus/releases/download/v$*/$(notdir $@)" --output $@
 
-dev/bin/prometheus dev/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+ui/build/bin/prometheus ui/build/bin/promtool: dev/downloads/prometheus-$(PROMETHEUS_VERSION).linux-amd64.tar.gz
+	mkdir -p $(dir $@)
 	tar --extract --file "$<" --directory "$(dir $@)" --strip-component=1 --touch "prometheus-$(PROMETHEUS_VERSION).linux-amd64/$(notdir $@)"
 	"$@" --version  # Smoketest
 
@@ -69,7 +70,7 @@ clean:  #: Trash venv and containers.
 	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
-	rm -vf dev/bin/prometheus dev/bin/promtool
+	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static

@@ -443,7 +443,6 @@ class SchedulerService(syncio.Service):
         self.event_queue = event_queue
         self.scheduler = None
         self.task_list_engine = None
-        # For services.run
         self.perf = PerfCounters.setup(service=self.name)
 
     @property
@@ -451,10 +450,11 @@ class SchedulerService(syncio.Service):
         return os.path.join(self.app.config.temboard.home, ".tm.socket")
 
     # interface for services.run
-    def setup(self):
+    def setup(self, sgm, *_, **__):
         self.teardown()
         self.scheduler.setup()
         if self.perf:
+            sgm.register(self.perf)
             self.perf.run()
 
     # interface for syncio.Loop
@@ -535,7 +535,6 @@ class WorkerPool:
         self.task_queue = task_queue
         self.event_queue = event_queue
         self.workers = {}
-        # For service.run()
         self.perf = None
 
     def _abort_job(self, task_id):
@@ -789,13 +788,15 @@ class WorkerPoolService(syncio.Service):
     def __init__(self, app, task_queue, event_queue):
         super().__init__(app)
         self.worker_pool = WorkerPool(task_queue, event_queue)
-        # For service.run
         self.perf = PerfCounters.setup(service=self.name)
 
     # interface for services.run
-    def setup(self):
+    def setup(self, sgm, *_, **__):
         self.worker_pool.perf = self.perf
         self.worker_pool.setup()
+        if self.perf:
+            sgm.register(self.perf)
+            self.perf.run()
 
     def teardown(self):
         logger.info("Aborting jobs.")
