@@ -10,22 +10,20 @@
         <img src="/images/temboard-150x32-w.png" />
       </div>
       <div class="card-body">
-        {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
-        <form role="form" action="/login" method="post">
-          <div class="mb-3">
-            <label for="inputUsername" class="form-label">Username</label>
-            <input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
-          </div>
-          <div class="mb-3">
-            <label for="inputPassword" class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-primary">Login</button>
-          </div>
-        </form>
+        <div class="mb-3">
+          <label for="inputUsername" class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" id="inputUsername" placeholder="Username" autofocus>
+        </div>
+        <div class="mb-3">
+          <label for="inputPassword" class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Password">
+        </div>
+        <div class="text-center">
+          <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
+<script type="module" src="{{ vitejs.url_for('login.js') }}"></script>
 {% endblock %}

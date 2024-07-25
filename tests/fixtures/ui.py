@@ -154,7 +154,7 @@ def admin_session(browser_session, ui, ui_url):
     browser.get(ui_url + "/login")
     browser.select("#inputUsername").send_keys("admin")
     browser.select("#inputPassword").send_keys("admin")
-    browser.select("button[type=submit]").click()
+    browser.select(".card-body button").click()
 
     return browser
 
