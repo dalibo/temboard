@@ -340,6 +340,16 @@ class Instances(Model):
             discover_date=self.discover_date,
         )
 
+    def select_email_and_phone_for_notify(self):
+        return (
+            text(QUERIES["instance-select-email-and-phone-for-notify"])
+            .bindparams(agent_address=self.agent_address, agent_port=self.agent_port)
+            .columns(
+                emails=types.ARRAY(types.UnicodeText),
+                phones=types.ARRAY(types.UnicodeText),
+            )
+        )
+
     def has_dba(self, role_name):
         # DEPRECATED: Use ACL once implemented.
         return (
