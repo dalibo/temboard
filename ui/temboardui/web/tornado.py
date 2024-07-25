@@ -14,7 +14,7 @@ from tornado.web import Application as TornadoApplication
 from tornado.web import HTTPError, RequestHandler
 
 from ..agentclient import TemboardAgentClient
-from ..application import get_instance, get_role_by_cookie, get_roles_by_instance
+from ..application import get_instance, get_role_by_cookie
 from ..errors import TemboardUIError
 from ..model import Session as DBSession
 from ..toolkit.perf import PerfCounters
@@ -383,19 +383,20 @@ def add_json_middleware(func):
 def add_user_instance_middleware(func):
     # Ensures user is allowed to access to the instance
     @functools.wraps(func)
-    def user_instance_middleware(request, address, port, *args):
+    def user_instance_middleware(request, *args):
         user = request.current_user
 
         if user is None:
             # Not logged in
             raise HTTPError(401, "Restricted area.")
 
-        allowed_roles = get_roles_by_instance(request.handler.db_session, address, port)
-        roles = [role.role_name for role in allowed_roles if role]
-        if user.role_name not in roles:
+        user_allowed = request.db_session.execute(
+            request.instance.has_dba(user.role_name)
+        ).scalar()
+        if not user_allowed:
             raise HTTPError(403, "Restricted area.")
 
-        return func(request, address, port, *args)
+        return func(request, *args)
 
     return user_instance_middleware
 
@@ -478,13 +479,13 @@ class Blueprint:
             logger_name = func.__module__ + "." + func.__name__
 
             if with_instance:
-                func = InstanceHelper.add_middleware(func)
-
                 if url.startswith("/server/") or url.startswith("/proxy/"):
                     # Limit user/instance access control to /server/ and
                     # /proxy/.
                     # Admin area access control has already been performed
                     func = add_user_instance_middleware(func)
+
+                func = InstanceHelper.add_middleware(func)
             func = UserHelper.add_middleware(func)
 
             if json:

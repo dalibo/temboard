@@ -340,6 +340,18 @@ class Instances(Model):
             discover_date=self.discover_date,
         )
 
+    def has_dba(self, role_name):
+        # DEPRECATED: Use ACL once implemented.
+        return (
+            text(QUERIES["instance-has-dba"])
+            .bindparams(
+                agent_address=self.agent_address,
+                agent_port=self.agent_port,
+                role_name=role_name,
+            )
+            .columns(has_dba=types.Boolean)
+        )
+
 
 class Groups(Model):
     __tablename__ = "groups"
