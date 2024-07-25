@@ -3,7 +3,7 @@ from time import sleep
 
 from flask import current_app as app
 from flask import g, jsonify, make_response, redirect, render_template, request
-from tornado.web import create_signed_value, decode_signed_value
+from tornado.web import create_signed_value
 
 from temboardui.application import gen_cookie, get_role_by_auth, hash_password
 from temboardui.errors import TemboardUIError
@@ -21,38 +21,12 @@ def logout():
     return response
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login")
 @anonymous_allowed
 def login():
-    if request.method == "GET":
-        if g.current_user is None:
-            return render_template("login.html", nav=False, vitejs=app.vitejs)
-        else:
-            return redirect("/home")
-    else:
-        # Ensure request take at least one second to mitigate dictionnaries
-        # attacks.
-        sleep(1)
-        try:
-            rolename = request.form.get("username")
-            password = request.form.get("password")
-            referer = decode_signed_value(
-                app.temboard.config.temboard.cookie_secret,
-                "referer_uri",
-                request.cookies["referer_uri"],
-            )
-            if referer:
-                referer = referer.decode("utf-8")
-            response = make_response(redirect(referer or "/home"))
-            login_common(g.db_session, rolename, password, response)
-        except TemboardUIError as e:
-            logger.error("Login failed: %s", e)
-            response = render_template(
-                "login.html", nav=False, error="Wrong username/password."
-            )
-            response.status_code = 401
-
-        return response
+    if g.current_user:
+        return redirect("/home")
+    return render_template("login.html", nav=False, vitejs=app.vitejs)
 
 
 @app.route(r"/json/login", methods=["POST"])
@@ -62,21 +36,18 @@ def json_login():
     password = request.json["password"]
 
     response = make_response(jsonify({"message": "OK"}))
+    passhash = hash_password(username, password).decode("utf-8")
+
     try:
-        login_common(g.db_session, username, password, response)
+        role = get_role_by_auth(g.db_session, username, passhash)
     except TemboardUIError as e:
         logger.error("Login failed: %s", e)
         response = make_response(jsonify({"error": "Wrong username/password."}))
         response.status_code = 401
         # Mitigate dictionnaries attacks.
         sleep(1)
-    return response
+        return response
 
-
-def login_common(db_session, rolename, password, response):
-    # Common logic between json and HTML login.
-    passhash = hash_password(rolename, password).decode("utf-8")
-    role = get_role_by_auth(db_session, rolename, passhash)
     logger.info("Role '%s' authentificated.", role.role_name)
     secret_cookie = create_signed_value(
         app.temboard.config.temboard.cookie_secret,
@@ -84,3 +55,4 @@ def login_common(db_session, rolename, password, response):
         gen_cookie(role.role_name, passhash),
     )
     response.set_cookie("temboard", secret_cookie.decode(), secure=True)
+    return response

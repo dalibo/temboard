@@ -135,7 +135,7 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("#inputUsername").send_keys("admin")
     browser.select("#inputPassword").send_keys("admin")
-    browser.select("button[type=submit]").click()
+    browser.select(".card-body button").click()
 
     # Assert link to instances exists.
     browser.select("a[href='/settings/instances']")
