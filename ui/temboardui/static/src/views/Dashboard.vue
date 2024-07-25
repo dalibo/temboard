@@ -50,6 +50,7 @@ let tpsChart;
 let loadAverageChart;
 
 let timeRange;
+let popoverList = [];
 
 const cpuTooltip = computed(() => {
   const count = discover.value.system.cpu_count;
@@ -256,13 +257,11 @@ function updateAlerts() {
     success: function (data) {
       // remove any previous popover to avoid conflicts with
       // recycled div elements
-      const popoverTriggerList = divAlertsEl.value.querySelectorAll("[data-bs-toggle-popover]");
-      const popoverList = [...popoverTriggerList].map((el) => new Popover(el));
       popoverList.forEach((p) => p.dispose());
       alerts.value = data;
       window.setTimeout(function () {
         const popoverTriggerList = divAlertsEl.value.querySelectorAll("[data-bs-toggle-popover]");
-        const popoverList = [...popoverTriggerList].map(
+        popoverList = [...popoverTriggerList].map(
           (el) =>
             new Popover(el, {
               placement: "top",
