@@ -1,18 +1,10 @@
-import datetime
 import string
 from secrets import choice
 
-from past.builtins import basestring
-from past.utils import old_div
-from sqlalchemy import Boolean, DateTime, Integer, String, event, text
+from sqlalchemy import Column, schema, text, types
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.query import Query
-from sqlalchemy.schema import Column
-from sqlalchemy.sql import case, column, extract, func
-from sqlalchemy.types import TIMESTAMP, BigInteger, UnicodeText
-
-from temboardui.model import tables
+from sqlalchemy.orm import Query, relationship
 
 from ..toolkit.utils import utcnow
 from . import QUERIES
@@ -20,124 +12,15 @@ from . import QUERIES
 Model = declarative_base()
 
 
-def validate_int(value):
-    if value is None:
-        return
-    if isinstance(value, str):
-        value = int(value)
-    if isinstance(value, basestring):
-        value = int(value)
-    assert isinstance(value, int)
-    return value
-
-
-def validate_string(value):
-    assert isinstance(value, basestring)
-    return value
-
-
-def validate_datetime(value):
-    assert isinstance(value, datetime.datetime)
-    return value
-
-
-def validate_boolean(value):
-    if isinstance(value, int):
-        if value == 1:
-            value = True
-        if value == 0:
-            value = False
-    if isinstance(value, basestring):
-        if (
-            str(value).lower() == "yes"
-            or str(value).lower() == "true"
-            or str(value).lower() == "t"
-            or value == "1"
-        ):
-            value = True
-        if (
-            str(value).lower() == "no"
-            or str(value).lower() == "false"
-            or str(value).lower() == "f"
-            or value == "0"
-        ):
-            value = False
-    assert isinstance(value, bool)
-    return value
-
-
-validators = {
-    Integer: validate_int,
-    String: validate_string,
-    DateTime: validate_datetime,
-    Boolean: validate_boolean,
-}
-
-
-def diff(var):
-    return (func.max(column(var)) - func.min(column(var))).label(var)
-
-
-def to_epoch(column):
-    return extract("epoch", column).label(column.name)
-
-
-def total_measure_interval(column):
-    return extract(
-        "epoch",
-        case([(func.min(column) == "0 second", "1 second")], else_=func.min(column)),
-    )
-
-
-# We use 8192 as default value for block size
-# Ideally we should get this value from agent
-block_size = 8192
-
-
-def total_read(c):
-    return (
-        old_div(
-            func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read),
-            total_measure_interval(c.mesure_interval),
-        )
-    ).label("total_blks_read")
-
-
-def total_hit(c):
-    return (
-        old_div(
-            func.sum(c.shared_blks_hit + c.local_blks_hit),
-            total_measure_interval(c.mesure_interval),
-        )
-    ).label("total_blks_hit")
-
-
-@event.listens_for(Model, "attribute_instrument")
-def configure_listener(class_, key, inst):
-    if not hasattr(inst.property, "columns"):
-        return
-
-    @event.listens_for(inst, "set", retval=True)
-    def set_(instance, value, oldvalue, initiator):
-        validator = validators.get(inst.property.columns[0].type.__class__)
-        if validator:
-            try:
-                return validator(value)
-            except AssertionError:
-                raise Exception("%s: wrong type." % (inst.property))
-        else:
-            return value
-
-
 class ApiKeys(Model):
     __tablename__ = "apikeys"
     __table_args__ = {"schema": "application"}
 
-    id = Column(BigInteger, primary_key=True)
-    secret = Column(UnicodeText)
-    comment = Column(UnicodeText)
-    cdate = Column(TIMESTAMP(timezone=True))
-    edate = Column(TIMESTAMP(timezone=True))
+    id = Column(types.BigInteger, primary_key=True)
+    secret = Column(types.UnicodeText)
+    comment = Column(types.UnicodeText)
+    cdate = Column(types.TIMESTAMP(timezone=True))
+    edate = Column(types.TIMESTAMP(timezone=True))
 
     _SECRET_LETTERS = string.ascii_letters + string.digits + "+/-_"
 
@@ -190,23 +73,111 @@ class ApiKeys(Model):
 
 
 class Plugins(Model):
-    __table__ = tables.plugins
+    __tablename__ = "plugins"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint("agent_address", "agent_port", "plugin_name"),
+        schema.ForeignKeyConstraint(
+            ["agent_address", "agent_port"],
+            ["application.instances.agent_address", "application.instances.agent_port"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(types.UnicodeText)
+    agent_port = Column(types.Integer)
+    plugin_name = Column(types.UnicodeText)
 
 
 class InstanceGroups(Model):
-    __table__ = tables.instance_groups
+    __tablename__ = "instance_groups"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint(
+            "agent_address", "agent_port", "group_name", "group_kind"
+        ),
+        schema.ForeignKeyConstraint(
+            ["agent_address", "agent_port"],
+            ["application.instances.agent_address", "application.instances.agent_port"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        schema.ForeignKeyConstraint(
+            ["group_name", "group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(types.UnicodeText)
+    agent_port = Column(types.Integer)
+    group_name = Column(types.UnicodeText)
+    group_kind = Column(types.UnicodeText, server_default=schema.FetchedValue())
 
 
 class RoleGroups(Model):
-    __table__ = tables.role_groups
+    __tablename__ = "role_groups"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint("role_name", "group_name", "group_kind"),
+        schema.ForeignKeyConstraint(
+            ["group_name", "group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    role_name = Column(
+        types.UnicodeText, schema.ForeignKey("application.roles.role_name")
+    )
+    group_name = Column(types.UnicodeText)
+    group_kind = Column(types.UnicodeText)
 
 
 class AccessRoleInstance(Model):
-    __table__ = tables.access_role_instance
+    __tablename__ = "access_role_instance"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint(
+            "role_group_name",
+            "role_group_kind",
+            "instance_group_name",
+            "instance_group_kind",
+        ),
+        schema.ForeignKeyConstraint(
+            ["role_group_name", "role_group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        schema.ForeignKeyConstraint(
+            ["instance_group_name", "instance_group_kind"],
+            ["application.groups.group_name", "application.groups.group_kind"],
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        {"schema": "application"},
+    )
+
+    role_group_name = Column(types.UnicodeText)
+    role_group_kind = Column(types.UnicodeText)
+    instance_group_name = Column(types.UnicodeText)
+    instance_group_kind = Column(types.UnicodeText)
 
 
 class Roles(Model):
-    __table__ = tables.roles
+    __tablename__ = "roles"
+    __table_args__ = {"schema": "application"}
+
+    role_name = Column(types.UnicodeText, primary_key=True)
+    role_password = Column(types.UnicodeText)
+    role_email = Column(types.UnicodeText)
+    role_phone = Column(types.UnicodeText)
+    is_active = Column(types.Boolean)
+    is_admin = Column(types.Boolean)
+
     groups = relationship(
         RoleGroups,
         order_by=RoleGroups.group_name,
@@ -216,7 +187,7 @@ class Roles(Model):
 
     @classmethod
     def count(cls):
-        return text(QUERIES["users-count"]).columns(count=Integer)
+        return text(QUERIES["users-count"]).columns(count=types.Integer)
 
 
 class StubRole:
@@ -226,7 +197,22 @@ class StubRole:
 
 
 class Instances(Model):
-    __table__ = tables.instances
+    __tablename__ = "instances"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint("agent_address", "agent_port"),
+        {"schema": "application"},
+    )
+
+    agent_address = Column(types.UnicodeText)
+    agent_port = Column(types.Integer)
+    hostname = Column(types.UnicodeText)
+    pg_port = Column(types.Integer)
+    notify = Column(types.Boolean, server_default=schema.FetchedValue())
+    comment = Column(types.UnicodeText)
+    discover = Column(postgresql.JSONB)
+    discover_date = Column(types.TIMESTAMP, server_default=schema.FetchedValue())
+    discover_etag = Column(types.UnicodeText)
+
     groups = relationship(
         InstanceGroups,
         order_by="InstanceGroups.group_name",
@@ -278,7 +264,7 @@ class Instances(Model):
 
     @classmethod
     def count(cls):
-        return text(QUERIES["instances-count"]).columns(count=Integer)
+        return text(QUERIES["instances-count"]).columns(count=types.Integer)
 
     @classmethod
     def all(cls):
@@ -336,7 +322,16 @@ class Instances(Model):
 
 
 class Groups(Model):
-    __table__ = tables.groups
+    __tablename__ = "groups"
+    __table_args__ = (
+        schema.PrimaryKeyConstraint("group_name", "group_kind"),
+        {"schema": "application"},
+    )
+
+    group_name = Column(types.UnicodeText)
+    group_kind = Column(types.UnicodeText)
+    group_description = Column(types.UnicodeText)
+
     ari = relationship(
         AccessRoleInstance,
         order_by=AccessRoleInstance.role_group_name,
@@ -347,27 +342,3 @@ class Groups(Model):
             AccessRoleInstance.instance_group_kind,
         ],
     )
-
-
-class Biggest:
-    def __init__(self, order_by):
-        self.order_by = order_by
-
-    def __call__(self, var, minval=0, label=None):
-        label = label or var
-        return func.greatest(
-            column(var) - func.lag(column(var)).over(order_by=self.order_by), minval
-        ).label(label)
-
-
-class Biggestsum:
-    def __init__(self, order_by):
-        self.order_by = order_by
-
-    def __call__(self, var, minval=0, label=None):
-        label = label or var
-        return func.greatest(
-            func.sum(column(var))
-            - func.lag(func.sum(column(var))).over(order_by=self.order_by),
-            minval,
-        ).label(label)
