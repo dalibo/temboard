@@ -2,6 +2,7 @@
 import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
+import Multiselect from "vue-multiselect";
 
 import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
@@ -45,11 +46,11 @@ function open(name) {
         groupName.value = data.name;
         groupDescription.value = data.description;
         if (props.kind == "instance") {
-          groups.value = data.user_groups;
+          groups.value = data.user_groups.map((group) => group.name);
           groupInGroups.value = data.in_groups;
         }
       } else {
-        groups.value = data.groups;
+        groups.value = data.groups.map((group) => group.name);
       }
       waiting.value = false;
     },
@@ -66,7 +67,7 @@ function submit() {
   };
 
   if (props.kind == "instance") {
-    Object.assign(data, { user_groups: $("#selectGroups").val() });
+    Object.assign(data, { user_groups: groupInGroups.value });
   }
 
   waiting.value = true;
@@ -116,17 +117,16 @@ defineExpose({ open });
           </div>
           <template v-if="kind == 'instance'">
             <div class="mb-3 col-sm-6">
-              <label for="selectGroups" class="form-label">User groups</label><br />
-              <select id="selectGroups" multiple="multiple">
-                <option
-                  v-for="group of groups"
-                  :value="group.name"
-                  :selected="groupInGroups.includes(group.name)"
-                  :key="group.key"
-                >
-                  {{ group.name }}
-                </option>
-              </select>
+              <label class="form-label">User groups</label><br />
+              <multiselect
+                id="userGroups"
+                v-model="groupInGroups"
+                :options="groups"
+                :multiple="true"
+                :hide-selected="true"
+                :searchable="false"
+                select-label=""
+              ></multiselect>
               <p class="form-text text-body-secondary">
                 Please select the user groups allowed to view instances from this instance group.
               </p>

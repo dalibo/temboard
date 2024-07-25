@@ -1,4 +1,5 @@
 import pytest
+from fixtures.utils import MultiSelect
 from selenium.webdriver.common.by import By
 
 
@@ -12,7 +13,8 @@ def instance_group_prod(browse_settings_instance_groups, browser_session):
     browser_session.select("#buttonLoadAddGroupForm").click()
     browser_session.select("#inputNewGroupname").send_keys("prod")
     browser_session.select("#inputDescription").send_keys("Production")
-    browser_session.select("#selectGroups option").click()
+    multiselect = MultiSelect(browser_session, "userGroups")
+    multiselect.toggle().select("default")
     browser_session.select("button[type=submit]").click()
 
 
