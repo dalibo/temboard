@@ -62,6 +62,7 @@ def create_app(temboard_app):
     app.static_url_path = "/static"
     app.template_folder = "templates/flask"
     app.jinja_env.undefined = jinja2.StrictUndefined
+    app.jinja_env.trim_blocks = True
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
@@ -397,4 +398,10 @@ def anonymous_allowed(func):
 def apikey_allowed(func):
     # Decorator allowing a route by apikey auth
     func.__apikey_allowed = True
+    return func
+
+
+def admin_required(func):
+    # Similar to flask_security.roles_required, but limited to admin role.
+    func.__admin_required = True
     return func

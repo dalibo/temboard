@@ -32,6 +32,7 @@ def main(*a, **kw):
     __import__(__package__ + ".web.routes.core")
     __import__(__package__ + ".web.routes.auth")
     __import__(__package__ + ".web.routes.instance")
+    __import__(__package__ + ".web.routes.settings")
 
     # Load sub commands.
     __import__(__package__ + ".cli.apikey")

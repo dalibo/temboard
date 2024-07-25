@@ -13,7 +13,6 @@ from temboardui.application import (
     delete_instance_from_group,
     get_group_list,
     get_groups_by_instance,
-    get_instance_list,
     purge_instance_plugins,
 )
 from temboardui.web.tornado import (
@@ -22,7 +21,6 @@ from temboardui.web.tornado import (
     Response,
     admin_required,
     app,
-    render_template,
 )
 
 from ...model import QUERIES
@@ -205,17 +203,6 @@ def discover(request, address, port):
         data = response.json()
 
     return data
-
-
-@app.route(r"/settings/instances")
-@admin_required
-def instances(request):
-    return render_template(
-        "settings/instance.html",
-        nav=True,
-        role=request.current_user,
-        instance_list=get_instance_list(request.db_session),
-    )
 
 
 @app.route(r"/settings/instances.csv")

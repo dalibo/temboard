@@ -460,15 +460,6 @@ def add_instance_plugin(session, agent_address, agent_port, plugin_name):
             raise
 
 
-def get_instance_list(session):
-    return (
-        session.query(Instances)
-        .options(joinedload(Instances.groups), joinedload(Instances.plugins))
-        .order_by(Instances.hostname)
-        .all()
-    )
-
-
 def delete_instance_from_group(session, agent_address, agent_port, group_name):
     try:
         instance_group = (

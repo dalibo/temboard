@@ -1,10 +1,10 @@
-{% extends ../base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / Settings / Instances{% end %}
+{% block title %}{{ super() }} / Settings / Instances{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('settings.instance.js') %}{% raw link %}{% end %}
-{% end %}
+{% for link in vitejs.css_links_for('settings.instance.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
 
 {% block content %}
 <div id="vue-app">
@@ -15,7 +15,7 @@
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
-      {% include menu.html %}
+      {% include "settings/nav.html" %}
     </div>
     <div class="col-md-9 col-xl-10">
       <div class="row">
@@ -42,13 +42,13 @@
       {% for instance in instance_list %}
         <tr>
           <td>
-            <p>
+            <div>
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
                 <i class="fa fa-database"></i>
                 {{instance.hostname}}:{{instance.pg_port}}
               </a>
-              {% for group in instance.groups %} <span class="badge border text-body-secondary align-middle">{{group.group_name}}</span>{% end %}
-              {% if len(instance.groups) > 1 %}
+              {% for group in instance.groups %} <span class="badge border text-body-secondary align-middle">{{group.group_name}}</span>{% endfor %}
+              {% if instance.groups|count > 1 %}
                 <i
                   class="fa fa-warning text-warning"
                   style="cursor: pointer;"
@@ -56,11 +56,11 @@
                   data-bs-toggle="modal"
                   v-on:click="$refs.environment_migration_dialog.show()">
                 </i>
-              {% end %}
-            </p>
-            {% set comment = instance.comment if instance.comment is not None else '' %}
+              {% endif %}
+            </div>
+            {% set comment = instance.comment|default('') %}
             <div class="overflow-ellipsis small text-body-secondary" style="max-width: 150px;" title="{{comment}}">
-              {{comment}}
+              {{-comment-}}
             </div>
           </td>
           <td>
@@ -81,7 +81,7 @@
           <td class="text-center">
             {% if instance.notify %}
             <i class="fa fa-check"></i>
-            {% end %}
+            {% endif %}
           </td>
           <td class="text-center">
             <button type="button"
@@ -103,7 +103,7 @@
             ><i class="fa fa-trash-o"></i></button>
           </td>
         </tr>
-      {% end %}
+      {% endfor %}
       </tbody>
       </table>
     </div>
@@ -111,4 +111,4 @@
 </div>
 
 <script type="module" src="{{ vitejs.url_for('settings.instance.js') }}"></script>
-{% end %}
+{% endblock %}
