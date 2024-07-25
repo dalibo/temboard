@@ -4,15 +4,10 @@ from io import StringIO
 
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import (
-    add_instance,
-    add_instance_in_group,
     add_instance_plugin,
     check_agent_address,
     check_agent_port,
     delete_instance,
-    delete_instance_from_group,
-    get_group_list,
-    get_groups_by_instance,
     get_instance_list,
     purge_instance_plugins,
 )
@@ -26,16 +21,10 @@ from temboardui.web.tornado import (
 )
 
 from ...model import QUERIES
+from ...model.orm import Environment, Instances
 from ...toolkit.utils import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def add_instance_in_groups(db_session, instance, groups):
-    for group_name in groups or []:
-        add_instance_in_group(
-            db_session, instance.agent_address, instance.agent_port, group_name
-        )
 
 
 def create_instance_helper(request, data):
@@ -43,12 +32,21 @@ def create_instance_helper(request, data):
     app = request.handler.application.temboard_app
 
     validate_instance_data(data)
-    groups = data.pop("groups")
-    plugins = data.pop("plugins") or []
-    data.pop("agent_key", None)  # Drop agent_key agent v8
-    instance = add_instance(db_session, **data)
-    add_instance_in_groups(db_session, instance, groups)
-    enable_instance_plugins(db_session, instance, plugins, app.config.temboard.plugins)
+    environment = db_session.execute(Environment.get(data["environment"])).fetchone()
+    instance = Instances.factory(
+        agent_address=data["new_agent_address"],
+        agent_port=data["new_agent_port"],
+        discover=data["discover"],
+        discover_etag=data["discover_etag"],
+        notify=data["notify"],
+        comment=data["comment"],
+        environment=environment,
+    )
+    db_session.add(instance)
+    db_session.flush()
+    enable_instance_plugins(
+        db_session, instance, data.get("plugins", []), app.config.temboard.plugins
+    )
 
     if not app.scheduler.can_schedule():
         logger.warning("Can't schedule fast collect.")

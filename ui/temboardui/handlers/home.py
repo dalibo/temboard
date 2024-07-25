@@ -1,4 +1,3 @@
-from ..application import get_instance_groups_by_role
 from ..model.orm import Instances, Roles
 from ..version import inspect_versions
 from ..web.tornado import app, render_template
@@ -7,11 +6,8 @@ from ..web.tornado import app, render_template
 @app.route("/home")
 def home(request):
     role = request.current_user
-
-    groups = get_instance_groups_by_role(request.db_session, role.role_name)
-    groups = [group for group in groups]
-
-    return render_template("home.html", nav=True, role=role, groups=groups)
+    environments = request.db_session.query(Roles.select_environments()).all()
+    return render_template("home.html", nav=True, role=role, environments=environments)
 
 
 @app.route("/about")

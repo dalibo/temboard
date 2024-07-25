@@ -1,7 +1,7 @@
 import string
 from secrets import choice
 
-from sqlalchemy import Column, schema, text, types
+from sqlalchemy import Column, Table, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, relationship
@@ -167,6 +167,17 @@ class AccessRoleInstance(Model):
     instance_group_kind = Column(types.UnicodeText)
 
 
+memberships = Table(
+    "memberships",
+    Model.metadata,
+    Column(
+        "role_name", schema.ForeignKey("application.roles.role_name"), primary_key=True
+    ),
+    Column("group_id", schema.ForeignKey("application.groups.id"), primary_key=True),
+    schema="application",
+)
+
+
 class Roles(Model):
     __tablename__ = "roles"
     __table_args__ = {"schema": "application"}
@@ -178,16 +189,25 @@ class Roles(Model):
     is_active = Column(types.Boolean)
     is_admin = Column(types.Boolean)
 
-    groups = relationship(
-        RoleGroups,
-        order_by=RoleGroups.group_name,
-        backref="roles",
-        cascade="save-update, merge, delete, delete-orphan",
-    )
+    groups = relationship("Group", secondary=memberships, back_populates="members")
 
     @classmethod
     def count(cls):
         return text(QUERIES["users-count"]).columns(count=types.Integer)
+
+    def select_environments(self):
+        return Query(Environment).from_statement(
+            text(QUERIES["roles-select-environments"])
+            .bindparams(role_name=self.role_name)
+            .columns(Environment.id, Environment.name)
+        )
+
+    def select_instances(self):
+        return Query(Instances).from_statement(
+            text(QUERIES["roles-select-instances"])
+            .bindparams(role_name=self.role_name)
+            .columns(Instances.__mapper__.c.values())
+        )
 
 
 class StubRole:
@@ -196,38 +216,67 @@ class StubRole:
         self.role_name = role_name
 
 
+class Group(Model):
+    __tablename__ = "groups"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    name = Column(types.UnicodeText)
+    description = Column(types.UnicodeText)
+    cdate = Column(types.TIMESTAMP(timezone=True))
+
+    members = relationship("Roles", secondary=memberships)
+    environment = relationship("Environment", back_populates="dba_group", uselist=False)
+
+
+class Environment(Model):
+    __tablename__ = "environments"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    name = Column(types.UnicodeText)
+    description = Column(types.UnicodeText)
+    color = Column(types.UnicodeText)
+    cdate = Column(types.TIMESTAMP(timezone=True))
+    dba_group_id = Column(types.BigInteger, schema.ForeignKey("application.groups.id"))
+
+    instances = relationship(
+        "Instances",
+        back_populates="environment",
+        cascade="save-update, merge, delete, delete-orphan",
+    )
+    dba_group = relationship("Group", back_populates="environment", uselist=False)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get(cls, name):
+        return Query(cls).from_statement(
+            text(QUERIES["environments-get"])
+            .bindparams(name=name)
+            .columns(cls.__mapper__.c.values())
+        )
+
+
 class Instances(Model):
     __tablename__ = "instances"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint("agent_address", "agent_port"),
-        {"schema": "application"},
-    )
+    __table_args__ = {"schema": "application"}
 
-    agent_address = Column(types.UnicodeText)
-    agent_port = Column(types.Integer)
+    agent_address = Column(types.UnicodeText, primary_key=True)
+    agent_port = Column(types.Integer, primary_key=True)
     hostname = Column(types.UnicodeText)
     pg_port = Column(types.Integer)
-    notify = Column(types.Boolean, server_default=schema.FetchedValue())
+    notify = Column(types.Boolean)
     comment = Column(types.UnicodeText)
     discover = Column(postgresql.JSONB)
-    discover_date = Column(types.TIMESTAMP, server_default=schema.FetchedValue())
+    discover_date = Column(postgresql.TIMESTAMP)
     discover_etag = Column(types.UnicodeText)
-
-    groups = relationship(
-        InstanceGroups,
-        order_by="InstanceGroups.group_name",
-        backref="instances",
-        cascade="save-update, merge, delete, delete-orphan",
-        lazy="joined",
+    environment_id = Column(
+        types.Integer, schema.ForeignKey("application.environments.id")
     )
 
-    plugins = relationship(
-        Plugins,
-        order_by="Plugins.plugin_name",
-        backref="instances",
-        cascade="save-update, merge, delete, delete-orphan",
-        lazy="joined",
-    )
+    environment = relationship("Environment", back_populates="instances")
 
     def __str__(self):
         return f"{self.hostname}:{self.pg_port}"
@@ -241,6 +290,7 @@ class Instances(Model):
         discover_etag=None,
         notify=False,
         comment=None,
+        environment=None,
     ):
         return cls(
             agent_address=str(agent_address),
@@ -251,6 +301,7 @@ class Instances(Model):
             hostname=discover["system"]["fqdn"],
             notify=bool(notify),
             comment=comment or "",
+            environment=environment,
         )
 
     @classmethod
@@ -340,25 +391,10 @@ class Instances(Model):
             discover_date=self.discover_date,
         )
 
-
-class Groups(Model):
-    __tablename__ = "groups"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint("group_name", "group_kind"),
-        {"schema": "application"},
-    )
-
-    group_name = Column(types.UnicodeText)
-    group_kind = Column(types.UnicodeText)
-    group_description = Column(types.UnicodeText)
-
-    ari = relationship(
-        AccessRoleInstance,
-        order_by=AccessRoleInstance.role_group_name,
-        backref="groups",
-        cascade="save-update, merge, delete, delete-orphan",
-        foreign_keys=[
-            AccessRoleInstance.instance_group_name,
-            AccessRoleInstance.instance_group_kind,
-        ],
-    )
+    def has_dba(self, role_name):
+        # DEPRECATED: Use ACL once implemented.
+        return (
+            text(QUERIES["instance-is-dba"])
+            .bindparams(instance_id=self.id, role_name=role_name)
+            .columns(has_dba=types.Boolean)
+        )

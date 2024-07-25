@@ -1,59 +1,34 @@
 import logging
 
-from temboardui.application import (
-    add_group,
-    add_role_group_in_instance_group,
-    check_group_description,
-    check_group_name,
-    delete_group,
-    delete_role_group_from_instance_group,
-    get_group,
-    get_group_list,
-    update_group,
-)
+from temboardui.application import check_group_description, check_group_name
 from temboardui.web.tornado import HTTPError, admin_required, app, render_template
+
+from ...model import orm
 
 logger = logging.getLogger(__name__)
 PREFIX = r"/json/settings"
 
 
-@app.route(PREFIX + r"/all/group/(role|instance)$")
+@app.route("/json/groups")
 @admin_required
-def all_group(request, kind):
-    groups = get_group_list(request.db_session, kind)
+def get_groups(request):
+    groups = request.db_session.execute(orm.Group.all())
     return {
         "groups": [
-            {
-                "name": group.group_name,
-                "kind": group.group_kind,
-                "description": group.group_description,
-            }
-            for group in groups
+            {"name": group.name, "description": group.description} for group in groups
         ],
         "loaded_plugins": request.config.temboard.plugins,
     }
 
 
-@app.route(
-    PREFIX + r"/group/(role|instance)(?:/([0-9a-z\-_\.]{3,16}))?$",
-    methods=["GET", "POST"],
-)
+@app.route("/json/group/([0-9a-z\-_\.]{3,16})$", methods=["GET", "POST"])
 @admin_required
-def group(request, kind, name):
+def group(request, name):
     if "GET" == request.method:
         if not name:
             raise HTTPError(404)
-        group = get_group(request.db_session, name, kind)
-        data = dict(
-            name=group.group_name, kind=kind, description=group.group_description
-        )
-        if kind == "instance":
-            data["user_groups"] = [
-                dict(name=g.group_name, description=g.group_description)
-                for g in get_group_list(request.db_session)
-            ]
-            data["in_groups"] = [a.role_group_name for a in group.ari]
-        return data
+        group = request.db_session.execute(orm.Group.get(name)).fetchone()
+        return group.asdict()
     else:  # POST
         data = request.json
         if not data.get("new_group_name"):
