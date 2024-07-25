@@ -24,6 +24,8 @@ const start = ref(moment().subtract(1, "hours"));
 const end = ref(moment());
 const refreshDate = ref(null);
 const refreshInterval = ref(3 * 1000);
+let popoverList = [];
+let tooltipList = [];
 
 const { toggle } = useFullscreen(root);
 
@@ -84,10 +86,14 @@ function fetchInstances() {
   clearError();
   $.ajax("/json/instances/home")
     .done((data) => {
+      popoverList.forEach((p) => p.dispose());
+      tooltipList.forEach((t) => t.dispose());
       instances.value = data;
       nextTick(() => {
-        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-        [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
+        const popoverTriggerList = root.value.querySelectorAll('[data-bs-toggle="popover"]');
+        popoverList = [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipList = [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
       });
     })
     .fail((xhr) => {
