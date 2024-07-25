@@ -263,6 +263,26 @@ class Instances(Model):
         )
 
     @classmethod
+    def select_for_home(cls, role_name):
+        return (
+            text(QUERIES["instances-select-for-home"])
+            .bindparams(role_name=role_name)
+            .columns(
+                agent_address=types.UnicodeText,
+                agent_port=types.Integer,
+                hostname=types.UnicodeText,
+                pg_port=types.Integer,
+                pg_data=types.UnicodeText,
+                pg_version=types.UnicodeText,
+                pg_version_summary=types.UnicodeText,
+                groups=types.ARRAY(types.UnicodeText),
+                plugins=types.ARRAY(types.UnicodeText),
+                available=types.Boolean,
+                checks=postgresql.JSONB,
+            )
+        )
+
+    @classmethod
     def count(cls):
         return text(QUERIES["instances-count"]).columns(count=types.Integer)
 

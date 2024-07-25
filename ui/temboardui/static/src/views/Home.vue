@@ -82,7 +82,7 @@ function changeSort(value, e) {
 
 function fetchInstances() {
   clearError();
-  $.ajax("/json/instances")
+  $.ajax("/json/instances/home")
     .done((data) => {
       instances.value = data;
       nextTick(() => {

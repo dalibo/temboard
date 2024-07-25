@@ -561,20 +561,6 @@ def delete_role_group_from_instance_group(
         )
 
 
-def get_instances_by_role_name(session, role_name):
-    return (
-        session.query(Instances)
-        .filter(
-            Instances.agent_address == InstanceGroups.agent_address,
-            Instances.agent_port == InstanceGroups.agent_port,
-            InstanceGroups.group_name == AccessRoleInstance.instance_group_name,
-            AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == str(role_name),
-        )
-        .order_by(InstanceGroups.group_name, Instances.agent_address)
-    )
-
-
 def get_role_by_auth(session, role_name, role_password):
     try:
         role = (
