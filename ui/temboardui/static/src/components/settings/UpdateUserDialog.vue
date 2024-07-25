@@ -150,8 +150,8 @@ defineExpose({ open });
           </div>
 
           <div class="mb-3 col-sm-6" v-if="groups.length > 0">
-            <label class="form-label">
-              Groups
+            <div class="mb-3">
+              <label class="form-label"> Groups </label>
               <multiselect
                 id="groups"
                 v-model="selectedGroups"
@@ -161,7 +161,7 @@ defineExpose({ open });
                 :searchable="false"
                 select-label=""
               ></multiselect>
-            </label>
+            </div>
             <div class="form-check form-switch">
               <input
                 type="checkbox"
