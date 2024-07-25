@@ -5,6 +5,7 @@ import logging
 import os
 from ipaddress import ip_address, ip_network
 
+import jinja2
 from flask import (
     Blueprint,
     Flask,
@@ -46,6 +47,7 @@ def create_app(temboard_app):
     app.static_folder = "static/dist"
     app.static_url_path = "/static"
     app.template_folder = "templates/flask"
+    app.jinja_env.undefined = jinja2.StrictUndefined
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
