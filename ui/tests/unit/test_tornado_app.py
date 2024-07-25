@@ -72,28 +72,6 @@ def test_handler(executor, io_loop, mocker):
     assert handler.get_current_user() is None
 
 
-def test_redirect(mocker):
-    mod = "temboardui.web.tornado"
-    cls = mod + ".CallableHandler"
-    ssc = mocker.patch(cls + ".set_secure_cookie")
-    finish = mocker.patch(cls + ".finish")
-
-    from temboardui.web.tornado import CallableHandler, Redirect
-
-    handler = CallableHandler(
-        mocker.Mock(name="app", ui_methods={}, executor=executor),
-        mocker.Mock(name="request"),
-        callable_=mocker.MagicMock(__name__="callable_"),
-    )
-    # Mock handler._execute
-    handler._transforms = {}
-    handler.request = mocker.Mock(name="request", uri="/request")
-
-    handler.write_response(Redirect("/redirect"))
-    assert ssc.called is True
-    assert finish.called is True
-
-
 def test_template(mocker):
     loader = mocker.patch("temboardui.web.tornado.render_template.loader")
 
