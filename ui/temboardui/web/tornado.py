@@ -167,10 +167,6 @@ class CallableHandler(RequestHandler):
     delete = get
 
     def write_response(self, response):
-        # Should be in a middleware.
-        if response.status_code in (301, 302, 401):
-            response.secure_cookies["referer_uri"] = self.request.uri
-
         self.set_status(response.status_code)
         for k, v in list(response.headers.items()):
             if not isinstance(v, list):
@@ -178,9 +174,6 @@ class CallableHandler(RequestHandler):
             self.clear_header(k)
             for v1 in v:
                 self.add_header(k, v1)
-
-        for k, v in list(response.secure_cookies.items()):
-            self.set_secure_cookie(k, v, expires_days=30)
 
         self.finish(response.body)
 
