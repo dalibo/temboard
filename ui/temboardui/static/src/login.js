@@ -1,6 +1,7 @@
 import $ from "jquery";
 
-function login() {
+function login(e) {
+  e.preventDefault();
   $.ajax({
     url: "/json/login",
     type: "post",
