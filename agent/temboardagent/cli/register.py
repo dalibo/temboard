@@ -14,11 +14,6 @@ from ..toolkit.http import TemboardClient
 from ..tools import validate_parameters
 from .app import app
 
-try:
-    input = raw_input
-except NameError:
-    pass
-
 logger = logging.getLogger(__name__)
 T_USERNAME = b"(^[a-z0-9]{3,16}$)"
 T_PASSWORD = b"(^.{5,32}$)"
@@ -88,6 +83,7 @@ class Register(SubCommand):
             response = agentclient.get("/discover")
             response.raise_for_status()
             discover = response.json()
+            discover_etag = response.headers.get("ETag")
             logger.info(
                 "temBoard agent for %s instance serving %s on port %s.",
                 discover["postgres"]["version_summary"],
@@ -151,13 +147,14 @@ class Register(SubCommand):
 
             # POSTing new instance
             logger.info("Registering instance/agent in %s ...", ui_url_raw)
-            path = ui_url.path + "/json/register/instance"
+            path = ui_url.path + "/json/instances"
             response = uiclient.post(
                 path,
                 {
                     "agent_address": args.host,
                     "agent_port": str(app.config.temboard["port"]),
                     "discover": discover,
+                    "discover_etag": discover_etag,
                     # Loosely reuse agent plugin as UI plugins.
                     "plugins": discover["temboard"]["plugins"],
                     "groups": groups,

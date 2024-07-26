@@ -34,41 +34,6 @@ def add_instance_in_groups(db_session, instance, groups):
         )
 
 
-def create_instance_helper(request, data):
-    db_session = request.db_session
-    app = request.handler.application.temboard_app
-
-    validate_instance_data(data)
-    groups = data.pop("groups")
-    plugins = data.pop("plugins") or []
-    data.pop("agent_key", None)  # Drop agent_key agent v8
-    instance = add_instance(db_session, **data)
-    add_instance_in_groups(db_session, instance, groups)
-    enable_instance_plugins(db_session, instance, plugins, app.config.temboard.plugins)
-
-    if not app.scheduler.can_schedule():
-        logger.warning("Can't schedule fast collect.")
-        return instance
-
-    if "monitoring" in plugins:
-        from ...plugins.monitoring import collector as monitoring_collector
-
-        logger.info("Schedule monitoring collect for agent now.")
-        monitoring_collector.defer(
-            app, address=data["new_agent_address"], port=data["new_agent_port"]
-        )
-
-    if "statements" in plugins:
-        from ...plugins.statements import statements_pull1
-
-        logger.info("Schedule statements collect for agent now.")
-        statements_pull1.defer(
-            app, host=data["new_agent_address"], port=data["new_agent_port"]
-        )
-
-    return instance
-
-
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
     for plugin_name in plugins or []:
         # 'administration' plugin case: the plugin is not currently
@@ -194,19 +159,3 @@ def instances_csv(request):
         # BOM declares UTF8 for Excell.
         body=codecs.BOM_UTF8 + csv.encode("utf-8"),
     )
-
-
-@app.route(r"/json/register/instance", methods=["POST"])
-@admin_required
-def register(request):
-    data = request.json
-    agent_address = data.pop("agent_address", None)
-    if not agent_address:
-        # Try to find agent's IP
-        x_real_ip = request.headers.get("X-Real-IP")
-        agent_address = x_real_ip or request.remote_ip
-
-    data["new_agent_address"] = agent_address
-    data["new_agent_port"] = data.pop("agent_port", None)
-    create_instance_helper(request, data)
-    return {"message": "OK"}
