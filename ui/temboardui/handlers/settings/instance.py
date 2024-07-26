@@ -3,7 +3,6 @@ import logging
 from io import StringIO
 
 from temboardui.application import (
-    add_instance,
     add_instance_in_group,
     add_instance_plugin,
     check_agent_address,
@@ -96,13 +95,6 @@ def validate_instance_data(data):
         raise HTTPError(400, "Groups field is missing.")
     if data["groups"] is not None and not isinstance(data["groups"], list):
         raise HTTPError(400, "Invalid group list.")
-
-
-@app.route(r"/json/settings/instance", methods=["POST"])
-@admin_required
-def create_instance_handler(request):
-    instance = create_instance_helper(request, request.json)
-    return {"instance": instance.asdict()}
 
 
 @app.route(

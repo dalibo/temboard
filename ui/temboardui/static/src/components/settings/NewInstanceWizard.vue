@@ -130,14 +130,14 @@ function discover() {
 function register(data) {
   waiting.value = true;
   $.ajax({
-    url: "/json/settings/instance",
+    url: "/json/instances",
     method: "POST",
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify({
       ...data,
-      new_agent_address: state.agent_address,
-      new_agent_port: state.agent_port,
+      agent_address: state.agent_address,
+      agent_port: state.agent_port,
       discover: state.discover_data,
       discover_etag: state.discover_etag,
     }),
