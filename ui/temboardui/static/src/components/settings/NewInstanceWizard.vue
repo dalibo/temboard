@@ -1,9 +1,8 @@
 <script setup>
 /* A Bootstrap dialog with two steps: discover and register.
  *
- * Supports temBoard 7.X agent with key. Discover before registration to
- * render a preview of the managed instance. Disables plugins not loaded in
- * agent.
+ * Discover before registration to render a preview of the managed instance.
+ * Disables plugins not loaded in agent.
  */
 import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
@@ -102,21 +101,21 @@ function discover() {
       },
     }),
     $.ajax({
+      url: "/json/groups/instance",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        state.server_groups = data;
+      },
+    }),
+    $.ajax({
       url: "/json/plugins",
       error: (xhr) => {
         error.value.fromXHR(xhr);
       },
       success: (data) => {
         state.server_plugins = data;
-      },
-    }),
-    $.ajax({
-      url: "/json/settings/all/group/instance",
-      error: (xhr) => {
-        error.value.fromXHR(xhr);
-      },
-      success: (data) => {
-        state.server_groups = data.groups;
       },
     }),
   )

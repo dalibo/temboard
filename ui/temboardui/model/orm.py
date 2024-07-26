@@ -384,3 +384,18 @@ class Groups(Model):
             AccessRoleInstance.instance_group_kind,
         ],
     )
+
+    def asdict(self):
+        return dict(
+            name=self.group_name,
+            kind=self.group_kind,
+            description=self.group_description,
+        )
+
+    @classmethod
+    def all(cls, kind):
+        return Query(cls).from_statement(
+            text(QUERIES["groups-all"])
+            .bindparams(kind=kind)
+            .columns(*cls.__mapper__.c.values())
+        )

@@ -1,10 +1,6 @@
 <script setup>
 /**
  * A Bootstrap dialog editing instance properties.
- *
- * Supports temBoard 7.X agent with key. Discover before registration to
- * render a preview of the managed instance. Disables plugins not loaded in
- * agent.
  */
 import { Modal, Tooltip } from "bootstrap";
 import $ from "jquery";
@@ -64,7 +60,62 @@ onUpdated(() => {
   [...tooltipTriggerList].map((el) => new Tooltip(el));
 });
 
-function discover_agent() {
+function open(address, port) {
+  // Reset dialog state.
+  error.value.clear();
+  waiting.value = true;
+
+  // Configure for target instance data.
+  agent_address = address;
+  agent_port = port;
+
+  new Modal(root.value.$el).show();
+
+  fetch();
+}
+
+function fetch() {
+  return $.when(
+    $.ajax({
+      url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        form.notify = data.notify;
+        form.comment = data.comment;
+        // Will be overriden by discover, if agent is up.
+        form.pg_host = data.hostname;
+        form.pg_port = data.pg_port;
+        form.current_plugins = data.plugins;
+        form.current_groups = data.groups;
+      },
+    }),
+    $.ajax({
+      url: "/json/groups/instance",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        form.server_groups = data;
+      },
+    }),
+    $.ajax({
+      url: "/json/plugins",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        form.server_plugins = data;
+      },
+    }),
+    discover(),
+  ).always(() => {
+    waiting.value = false;
+  });
+}
+
+function discover() {
   return $.ajax({
     url: `/json/instances/${agent_address}/${agent_port}/discover`,
     type: "get",
@@ -72,7 +123,6 @@ function discover_agent() {
     dataType: "json",
   })
     .fail((xhr) => {
-      waiting.value = false;
       error.value.fromXHR(xhr);
     })
     .done((data, _, xhr) => {
@@ -84,7 +134,6 @@ function discover_agent() {
               <strong>this</strong> UI signing key in agent configuration. See
               installation documentation.</p>
             `);
-        waiting.value = false;
         return;
       }
 
@@ -100,57 +149,6 @@ function discover_agent() {
       form.pg_port = data.postgres.port;
       form.signature_status = data.signature_status;
     });
-}
-
-function open(address, port) {
-  // Reset dialog state.
-  error.value.clear();
-  waiting.value = true;
-
-  // Configure for target instance data.
-  agent_address = address;
-  agent_port = port;
-
-  new Modal(root.value.$el).show();
-
-  fetch_current_data().done(() => {
-    // Discover may fail if agent is down.
-    discover_agent().always(() => {
-      waiting.value = false;
-    });
-  });
-}
-
-function fetch_current_data() {
-  return $.when(
-    $.ajax({
-      url: ["/json/settings/instance", agent_address, agent_port].join("/"),
-      error: (xhr) => {
-        error.value.fromXHR(xhr);
-      },
-      success: (data) => {
-        form.notify = data.notify;
-        form.comment = data.comment;
-        // Will be overriden by discover, if agent is up.
-        form.pg_host = data.hostname;
-        form.pg_port = data.pg_port;
-        form.server_groups = data.server_groups;
-        form.current_plugins = data.plugins;
-        form.current_groups = data.groups;
-      },
-    }),
-    $.ajax({
-      url: "/json/plugins",
-      error: (xhr) => {
-        error.value.fromXHR(xhr);
-      },
-      success: (data) => {
-        form.server_plugins = data;
-      },
-    }),
-  ).always(() => {
-    waiting.value = false;
-  });
 }
 
 function update(data) {

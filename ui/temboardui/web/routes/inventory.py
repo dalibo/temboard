@@ -4,9 +4,19 @@ import flask
 from flask import current_app, g
 
 from ... import agentclient
+from ...model import orm
 from ..flask import admin_required
 
 logger = logging.getLogger(__name__)
+
+
+@current_app.route("/json/groups/instance")
+@admin_required
+def get_instance_groups():
+    """List instance groups."""
+    return flask.jsonify(
+        [g.asdict() for g in orm.Groups.all("instance").with_session(g.db_session)]
+    )
 
 
 # Special proxy for unregistered instance.
