@@ -306,25 +306,6 @@ Instances
 """
 
 
-def add_instance(session, new_agent_address, new_agent_port, **kw):
-    try:
-        instance = Instances.factory(
-            agent_address=str(new_agent_address), agent_port=int(new_agent_port), **kw
-        )
-        session.add(instance)
-        session.flush()
-        return instance
-    except IntegrityError as e:
-        if "instances_pkey" in str(e):
-            raise TemboardUIError(
-                400,
-                "Instance entry ('%s:%s') already exists."
-                % (new_agent_address, new_agent_port),
-            )
-        else:
-            raise
-
-
 def get_instance(session, agent_address, agent_port):
     return Instances.get(agent_address, agent_port).with_session(session).first()
 

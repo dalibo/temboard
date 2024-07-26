@@ -259,27 +259,6 @@ class Instances(Model):
         return f"{self.hostname}:{self.pg_port}"
 
     @classmethod
-    def factory(
-        cls,
-        agent_address,
-        agent_port,
-        discover,
-        discover_etag=None,
-        notify=False,
-        comment=None,
-    ):
-        return cls(
-            agent_address=str(agent_address),
-            agent_port=int(agent_port),
-            discover=discover,
-            discover_etag=discover_etag,
-            pg_port=int(discover["postgres"]["port"]),
-            hostname=discover["system"]["fqdn"],
-            notify=bool(notify),
-            comment=comment or "",
-        )
-
-    @classmethod
     def insert(
         cls,
         agent_address,
