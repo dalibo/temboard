@@ -1,11 +1,7 @@
-from os import path
+from flask import current_app, g, jsonify
+from flask import render_template as flask_render_template
 
-from ...web.tornado import Blueprint, TemplateRenderer
-
-blueprint = Blueprint()
-blueprint.generic_proxy(r"/activity/kill", methods=["POST"])
-plugin_path = path.dirname(path.realpath(__file__))
-render_template = TemplateRenderer(plugin_path + "/templates")
+from ...web.flask import instance_proxy, instance_routes
 
 
 class ActivityPlugin:
@@ -13,27 +9,30 @@ class ActivityPlugin:
         self.app = app
 
     def load(self):
-        self.app.tornado_app.add_rules(blueprint.rules)
+        instance_proxy.generic_proxy("/activity/kill", method="POST")
 
 
-@blueprint.instance_route(r"/activity")
-def activity(request):
-    request.instance.check_active_plugin("activity")
-    request.instance.fetch_status()
-    return render_template(
+@instance_routes.route("/activity")
+def activity():
+    current_app.instance.check_active_plugin("activity")
+    current_app.instance.fetch_status()
+    return flask_render_template(
         "activity.html",
         nav=True,
-        instance=request.instance,
+        instance=g.instance,
         plugin="activity",
-        role=request.current_user,
+        role=g.current_user,
+        vitejs=current_app.vitejs,
     )
 
 
-@blueprint.instance_proxy(r"/activity")
-def activity_proxy(request):
-    request.instance.check_active_plugin("activity")
-    return dict(
-        blocking=request.instance.get("/activity/blocking"),
-        running=request.instance.get("/activity"),
-        waiting=request.instance.get("/activity/waiting"),
+@instance_proxy.route("/activity")
+def activity_proxy():
+    # DEPRECATED: move to new agent endpoints for activity.
+    return jsonify(
+        dict(
+            blocking=current_app.instance.request("/activity/blocking").json(),
+            running=current_app.instance.request("/activity").json(),
+            waiting=current_app.instance.request("/activity/waiting").json(),
+        )
     )
