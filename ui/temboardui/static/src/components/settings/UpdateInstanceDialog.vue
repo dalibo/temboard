@@ -66,7 +66,7 @@ onUpdated(() => {
 
 function discover_agent() {
   return $.ajax({
-    url: ["/json/discover/instance", agent_address, agent_port].join("/"),
+    url: `/json/instances/${agent_address}/${agent_port}/discover`,
     type: "get",
     contentType: "application/json",
     dataType: "json",

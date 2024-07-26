@@ -2,7 +2,6 @@ import codecs
 import logging
 from io import StringIO
 
-from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import (
     add_instance,
     add_instance_in_group,
@@ -179,30 +178,6 @@ def json_delete_instance(request):
         raise HTTPError(400, "Agent port field is missing.")
     delete_instance(request.db_session, **data)
     return {"delete": True}
-
-
-@app.route(r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
-@admin_required
-def discover(request, address, port):
-    client = TemboardAgentClient.factory(
-        request.config, address, port, username=request.current_user.role_name
-    )
-    try:
-        response = client.get("/discover")
-        response.raise_for_status()
-    except OSError as e:
-        logger.error("Failed to discover agent at %s:%s: %s", address, port, e)
-        raise HTTPError(
-            400,
-            (
-                "Can't connect to agent. "
-                "Please check address and port or that agent is running."
-            ),
-        )
-    else:
-        data = response.json()
-
-    return data
 
 
 @app.route(r"/settings/instances.csv")

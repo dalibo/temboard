@@ -69,7 +69,7 @@ onUpdated(() => {
 function discover() {
   waiting.value = true;
   $.ajax({
-    url: ["/json/discover/instance", state.agent_address, state.agent_port].join("/"),
+    url: `/json/instances/${state.agent_address}/${state.agent_port}/discover`,
     type: "get",
     contentType: "application/json",
     dataType: "json",
