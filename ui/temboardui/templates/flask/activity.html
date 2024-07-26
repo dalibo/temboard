@@ -1,11 +1,9 @@
-{% autoescape None %}
-{% extends ../../../templates/base.html %}
-
-{% block title %}temBoard / {{instance}} / Activity{% end %}
+{% extends "base.html" %}
+{% block title %}temBoard / {{instance}} / Activity{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('activity.js') %}{% raw link %}{% end %}
-{% end %}
+{% for link in vitejs.css_links_for('activity.js') %}{{ link | safe }}{% endfor %}
+{% endblock %}
 
 {% block content %}
 <div id="app">
@@ -18,4 +16,4 @@ var agent_address = "{{instance.agent_address}}";
 var agent_port = "{{instance.agent_port}}";
 </script>
 
-{% end %}
+{% endblock %}

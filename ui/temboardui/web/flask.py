@@ -29,9 +29,23 @@ from .vitejs import ViteJSExtension
 
 logger = logging.getLogger(__name__)
 
+
+class InstanceProxyBlueprint(Blueprint):
+    # Pass-through implementation for /proxy/address/port/…
+    def generic_proxy(self, url, method="GET"):
+        @self.route(url, methods=[method])
+        def generic_instance_proxy():
+            response = current_app.instance.request(
+                url,
+                method=method,
+                body=request.get_json() if method == "POST" else None,
+            )
+            return jsonify(response.json())
+
+
 # InstanceMiddleware extension controls request context for the following
 # blueprint routes.
-instance_proxy = Blueprint(
+instance_proxy = InstanceProxyBlueprint(
     "instance_proxy", __name__, url_prefix="/proxy/<address>/<port>"
 )
 
@@ -365,6 +379,13 @@ class InstanceMiddleware:
         h = "Content-Type"
         response.headers[h] = agent_response.headers[h]
         return response
+
+    def check_active_plugin(self, name):
+        """
+        Ensure that the plugin is active for given instance
+        """
+        if name not in [p.plugin_name for p in g.instance.plugins]:
+            raise abort(408, "Plugin %s not activated." % name)
 
 
 def anonymous_allowed(func):
