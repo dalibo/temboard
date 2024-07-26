@@ -29,8 +29,7 @@ def all_group(request, kind):
                 "description": group.group_description,
             }
             for group in groups
-        ],
-        "loaded_plugins": request.config.temboard.plugins,
+        ]
     }
 
 

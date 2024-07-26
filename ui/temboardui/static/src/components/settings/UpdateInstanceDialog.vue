@@ -122,24 +122,35 @@ function open(address, port) {
 }
 
 function fetch_current_data() {
-  return $.ajax({
-    url: ["/json/settings/instance", agent_address, agent_port].join("/"),
-  })
-    .fail((xhr) => {
-      waiting.value = false;
-      error.value.fromXHR(xhr);
-    })
-    .done((data) => {
-      form.notify = data.notify;
-      form.comment = data.comment;
-      // Will be overriden by discover, if agent is up.
-      form.pg_host = data.hostname;
-      form.pg_port = data.pg_port;
-      form.server_groups = data.server_groups;
-      form.server_plugins = data.server_plugins;
-      form.current_plugins = data.plugins;
-      form.current_groups = data.groups;
-    });
+  return $.when(
+    $.ajax({
+      url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        form.notify = data.notify;
+        form.comment = data.comment;
+        // Will be overriden by discover, if agent is up.
+        form.pg_host = data.hostname;
+        form.pg_port = data.pg_port;
+        form.server_groups = data.server_groups;
+        form.current_plugins = data.plugins;
+        form.current_groups = data.groups;
+      },
+    }),
+    $.ajax({
+      url: "/json/plugins",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        form.server_plugins = data;
+      },
+    }),
+  ).always(() => {
+    waiting.value = false;
+  });
 }
 
 function update(data) {

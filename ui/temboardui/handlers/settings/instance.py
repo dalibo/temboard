@@ -121,8 +121,7 @@ def json_instance(request):
                 "server_groups": [
                     {"name": group.group_name, "description": group.group_description}
                     for group in groups
-                ],
-                "server_plugins": request.config.temboard.plugins,
+                ]
             }
         )
         return data
