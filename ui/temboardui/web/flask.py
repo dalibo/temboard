@@ -1,5 +1,6 @@
 # Flask WSGI app is served by Tornado's fallback handler.
 
+import functools
 import json
 import logging
 import os
@@ -164,16 +165,10 @@ class SQLAlchemy:
         g.db_session = Session()
 
     def teardown(self, error):
-        if error:
-            # Expunge objects before rollback to implement
-            # expire_on_rollback=False. This allow templates to reuse
-            # request.instance object and joined object without triggering lazy
-            # load.
-            g.db_session.expunge_all()
-            g.db_session.rollback()
-        else:
-            g.db_session.commit()
-
+        # Expunge objects to implement expire_on_rollback=False.
+        # This allow templates to reuse request.instance object and joined object
+        # without triggering lazy load.
+        g.db_session.expunge_all()
         g.db_session.close()
         del g.db_session
 
@@ -405,3 +400,20 @@ def admin_required(func):
     # Similar to flask_security.roles_required, but limited to admin role.
     func.__admin_required = True
     return func
+
+
+def transaction(func):
+    # Flask is not reliable for catching exception in extension.
+    # Instead, use an explicit decorator to deduplicate transaction handling.
+    # Use this in routes modifying database.
+    @functools.wraps(func)
+    def autocommit_wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            g.db_session.rollback()
+            raise
+        finally:
+            g.db_session.commit()
+
+    return autocommit_wrapper
