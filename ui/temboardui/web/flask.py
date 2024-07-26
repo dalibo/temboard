@@ -87,18 +87,24 @@ def finalize_app():
 def error_handler(e):
     status_code = e.code if isinstance(e, HTTPException) else None
 
+    error = str(e) or repr(e)
+    if hasattr(e, "description"):  # From Flask HTTPException.
+        error = e.description
+
     if status_code is None:
         logger.exception("Unhandled error:")
         status_code = 500
+        if current_app.temboard.debug:
+            error = "Internal temBoard error. Retry later or contact administrator."
     elif status_code < 500:
-        logger.warning("User error: %s", e)
+        logger.warning("User error: %s", error)
     else:
-        logger.error("Fatal error: %s", e)
+        logger.error("Fatal error: %s", error)
 
     if request.path.endswith(".csv"):
         return "", status_code
     elif is_json(request.path):
-        response = jsonify(error=str(e) or repr(e))
+        response = jsonify(error=error)
         response.status_code = status_code
         return response
 
@@ -115,7 +121,7 @@ def error_handler(e):
         nav=True,
         role=g.current_user,
         vitejs=current_app.vitejs,
-        message=str(e),
+        message=error,
         code=status_code,
         **template_vars,
     )
