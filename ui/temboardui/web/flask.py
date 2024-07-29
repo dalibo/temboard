@@ -1,11 +1,13 @@
 # Flask WSGI app is served by Tornado's fallback handler.
 
+import functools
 import json
 import logging
 import os
 from ipaddress import ip_address, ip_network
 
 import jinja2
+import werkzeug.exceptions
 from flask import (
     Blueprint,
     Flask,
@@ -62,11 +64,15 @@ def create_app(temboard_app):
     app.static_url_path = "/static"
     app.template_folder = "templates/flask"
     app.jinja_env.undefined = jinja2.StrictUndefined
+    app.jinja_env.trim_blocks = True
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthMiddleware(app)
-    app.errorhandler(Exception)(error_handler)
+    # DEPRECATED: Seems required for old Flask only.
+    for code in werkzeug.exceptions.default_exceptions.keys():
+        app.register_error_handler(code, error_handler)
+    app.register_error_handler(Exception, error_handler)
 
     # unsafe-eval is for jquery. unsafe-inline because we have
     # script tags in templates.
@@ -142,9 +148,9 @@ def error_handler(e):
 
 
 def is_json(path):
-    if path.startswith("/json") or path.startswith("/proxy") or path.endswith(".json"):
-        return True
-    return False
+    return (
+        path.startswith("/json") or path.startswith("/proxy") or path.endswith(".json")
+    )
 
 
 class SQLAlchemy:
@@ -163,16 +169,10 @@ class SQLAlchemy:
         g.db_session = Session()
 
     def teardown(self, error):
-        if error:
-            # Expunge objects before rollback to implement
-            # expire_on_rollback=False. This allow templates to reuse
-            # request.instance object and joined object without triggering lazy
-            # load.
-            g.db_session.expunge_all()
-            g.db_session.rollback()
-        else:
-            g.db_session.commit()
-
+        # Expunge objects to implement expire_on_rollback=False.
+        # This allow templates to reuse request.instance object and joined object
+        # without triggering lazy load.
+        g.db_session.expunge_all()
         g.db_session.close()
         del g.db_session
 
@@ -398,3 +398,26 @@ def apikey_allowed(func):
     # Decorator allowing a route by apikey auth
     func.__apikey_allowed = True
     return func
+
+
+def admin_required(func):
+    # Similar to flask_security.roles_required, but limited to admin role.
+    func.__admin_required = True
+    return func
+
+
+def transaction(func):
+    # Flask is not reliable for catching exception in extension.
+    # Instead, use an explicit decorator to deduplicate transaction handling.
+    # Use this in routes modifying database.
+    @functools.wraps(func)
+    def autocommit_wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            g.db_session.rollback()
+            raise
+        finally:
+            g.db_session.commit()
+
+    return autocommit_wrapper

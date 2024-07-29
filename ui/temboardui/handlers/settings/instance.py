@@ -2,9 +2,7 @@ import codecs
 import logging
 from io import StringIO
 
-from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import (
-    add_instance,
     add_instance_in_group,
     add_instance_plugin,
     check_agent_address,
@@ -13,7 +11,6 @@ from temboardui.application import (
     delete_instance_from_group,
     get_group_list,
     get_groups_by_instance,
-    get_instance_list,
     purge_instance_plugins,
 )
 from temboardui.web.tornado import (
@@ -22,7 +19,6 @@ from temboardui.web.tornado import (
     Response,
     admin_required,
     app,
-    render_template,
 )
 
 from ...model import QUERIES
@@ -36,41 +32,6 @@ def add_instance_in_groups(db_session, instance, groups):
         add_instance_in_group(
             db_session, instance.agent_address, instance.agent_port, group_name
         )
-
-
-def create_instance_helper(request, data):
-    db_session = request.db_session
-    app = request.handler.application.temboard_app
-
-    validate_instance_data(data)
-    groups = data.pop("groups")
-    plugins = data.pop("plugins") or []
-    data.pop("agent_key", None)  # Drop agent_key agent v8
-    instance = add_instance(db_session, **data)
-    add_instance_in_groups(db_session, instance, groups)
-    enable_instance_plugins(db_session, instance, plugins, app.config.temboard.plugins)
-
-    if not app.scheduler.can_schedule():
-        logger.warning("Can't schedule fast collect.")
-        return instance
-
-    if "monitoring" in plugins:
-        from ...plugins.monitoring import collector as monitoring_collector
-
-        logger.info("Schedule monitoring collect for agent now.")
-        monitoring_collector.defer(
-            app, address=data["new_agent_address"], port=data["new_agent_port"]
-        )
-
-    if "statements" in plugins:
-        from ...plugins.statements import statements_pull1
-
-        logger.info("Schedule statements collect for agent now.")
-        statements_pull1.defer(
-            app, host=data["new_agent_address"], port=data["new_agent_port"]
-        )
-
-    return instance
 
 
 def enable_instance_plugins(db_session, instance, plugins, loaded_plugins):
@@ -101,13 +62,6 @@ def validate_instance_data(data):
         raise HTTPError(400, "Invalid group list.")
 
 
-@app.route(r"/json/settings/instance", methods=["POST"])
-@admin_required
-def create_instance_handler(request):
-    instance = create_instance_helper(request, request.json)
-    return {"instance": instance.asdict()}
-
-
 @app.route(
     r"/json/settings/instance" + InstanceHelper.INSTANCE_PARAMS,
     methods=["GET", "POST"],
@@ -124,8 +78,7 @@ def json_instance(request):
                 "server_groups": [
                     {"name": group.group_name, "description": group.group_description}
                     for group in groups
-                ],
-                "server_plugins": request.config.temboard.plugins,
+                ]
             }
         )
         return data
@@ -183,41 +136,6 @@ def json_delete_instance(request):
     return {"delete": True}
 
 
-@app.route(r"/json/discover/instance" + InstanceHelper.INSTANCE_PARAMS)
-@admin_required
-def discover(request, address, port):
-    client = TemboardAgentClient.factory(
-        request.config, address, port, username=request.current_user.role_name
-    )
-    try:
-        response = client.get("/discover")
-        response.raise_for_status()
-    except OSError as e:
-        logger.error("Failed to discover agent at %s:%s: %s", address, port, e)
-        raise HTTPError(
-            400,
-            (
-                "Can't connect to agent. "
-                "Please check address and port or that agent is running."
-            ),
-        )
-    else:
-        data = response.json()
-
-    return data
-
-
-@app.route(r"/settings/instances")
-@admin_required
-def instances(request):
-    return render_template(
-        "settings/instance.html",
-        nav=True,
-        role=request.current_user,
-        instance_list=get_instance_list(request.db_session),
-    )
-
-
 @app.route(r"/settings/instances.csv")
 @admin_required
 def instances_csv(request):
@@ -241,19 +159,3 @@ def instances_csv(request):
         # BOM declares UTF8 for Excell.
         body=codecs.BOM_UTF8 + csv.encode("utf-8"),
     )
-
-
-@app.route(r"/json/register/instance", methods=["POST"])
-@admin_required
-def register(request):
-    data = request.json
-    agent_address = data.pop("agent_address", None)
-    if not agent_address:
-        # Try to find agent's IP
-        x_real_ip = request.headers.get("X-Real-IP")
-        agent_address = x_real_ip or request.remote_ip
-
-    data["new_agent_address"] = agent_address
-    data["new_agent_port"] = data.pop("agent_port", None)
-    create_instance_helper(request, data)
-    return {"message": "OK"}

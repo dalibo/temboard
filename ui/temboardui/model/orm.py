@@ -1,6 +1,7 @@
 import string
 from secrets import choice
 
+import sqlalchemy
 from sqlalchemy import Column, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
@@ -89,6 +90,18 @@ class Plugins(Model):
     agent_port = Column(types.Integer)
     plugin_name = Column(types.UnicodeText)
 
+    @classmethod
+    def insert(cls, instance, name):
+        return Query(cls).from_statement(
+            text(QUERIES["instance-enable-plugin"])
+            .bindparams(
+                agent_address=instance.agent_address,
+                agent_port=instance.agent_port,
+                name=name,
+            )
+            .columns(*cls.__mapper__.c.values())
+        )
+
 
 class InstanceGroups(Model):
     __tablename__ = "instance_groups"
@@ -115,6 +128,19 @@ class InstanceGroups(Model):
     agent_port = Column(types.Integer)
     group_name = Column(types.UnicodeText)
     group_kind = Column(types.UnicodeText, server_default=schema.FetchedValue())
+
+    @classmethod
+    def insert(cls, instance, group):
+        return Query(cls).from_statement(
+            text(QUERIES["instance-groups-insert"])
+            .bindparams(
+                agent_address=instance.agent_address,
+                agent_port=instance.agent_port,
+                group_name=group.group_name,
+                group_kind=group.group_kind,
+            )
+            .columns(*cls.__mapper__.c.values())
+        )
 
 
 class RoleGroups(Model):
@@ -233,24 +259,31 @@ class Instances(Model):
         return f"{self.hostname}:{self.pg_port}"
 
     @classmethod
-    def factory(
+    def insert(
         cls,
         agent_address,
         agent_port,
         discover,
-        discover_etag=None,
+        discover_etag,
         notify=False,
         comment=None,
     ):
-        return cls(
-            agent_address=str(agent_address),
-            agent_port=int(agent_port),
-            discover=discover,
-            discover_etag=discover_etag,
-            pg_port=int(discover["postgres"]["port"]),
-            hostname=discover["system"]["fqdn"],
-            notify=bool(notify),
-            comment=comment or "",
+        return Query(cls).from_statement(
+            text(QUERIES["instances-insert"])
+            .bindparams(
+                sqlalchemy.bindparam(
+                    "discover", value=discover, type_=postgresql.JSONB
+                ),
+                agent_address=str(agent_address),
+                agent_port=int(agent_port),
+                discover_etag=discover_etag,
+                discover_date=utcnow(),
+                pg_port=int(discover["postgres"]["port"]),
+                hostname=discover["system"]["fqdn"],
+                notify=bool(notify),
+                comment=comment or "",
+            )
+            .columns(*cls.__mapper__.c.values())
         )
 
     @classmethod
@@ -362,6 +395,12 @@ class Instances(Model):
             .columns(has_dba=types.Boolean)
         )
 
+    def add_group(self, group):
+        return InstanceGroups.insert(self, group)
+
+    def enable_plugin(self, plugin):
+        return Plugins.insert(self, plugin)
+
 
 class Groups(Model):
     __tablename__ = "groups"
@@ -384,3 +423,26 @@ class Groups(Model):
             AccessRoleInstance.instance_group_kind,
         ],
     )
+
+    def asdict(self):
+        return dict(
+            name=self.group_name,
+            kind=self.group_kind,
+            description=self.group_description,
+        )
+
+    @classmethod
+    def get(cls, kind, name):
+        return Query(cls).from_statement(
+            text(QUERIES["groups-get"])
+            .bindparams(kind=kind, name=name)
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @classmethod
+    def all(cls, kind):
+        return Query(cls).from_statement(
+            text(QUERIES["groups-all"])
+            .bindparams(kind=kind)
+            .columns(*cls.__mapper__.c.values())
+        )

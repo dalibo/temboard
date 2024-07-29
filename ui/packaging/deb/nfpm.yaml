@@ -7,7 +7,7 @@ version_schema: none
 release: ${RELEASE}
 depends:
   - "${PYTHON_PKG}"
-  - "python3-psycopg2 (>2.8)"
+  - "python3-psycopg2 (>>2.8)"
 maintainer: ${DEBFULLNAME} <${DEBEMAIL}>
 description: PostgreSQL Remote Control UI
 homepage: https://labs.dalibo.com/temboard/

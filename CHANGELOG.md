@@ -8,6 +8,13 @@ Ensure you use consistent title format.
 
 **UNRELEASED**
 
+**Breaking changes**
+
+- temBoard agent v8 can't register to v8. Use `temboard register` or upgrade agent to v9.
+  temBoard UI v9 can still manage agent v8.
+
+**Other changes**
+
 - ui: Remove support for 7.x agents.
 - ui: Accept editing an offline instance.
 - ui: Search for .config/temboard.conf.

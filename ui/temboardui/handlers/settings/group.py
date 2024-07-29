@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 PREFIX = r"/json/settings"
 
 
-@app.route(PREFIX + r"/all/group/(role|instance)$")
+@app.route(PREFIX + r"/all/group/role$")
 @admin_required
-def all_group(request, kind):
-    groups = get_group_list(request.db_session, kind)
+def all_group(request):
+    groups = get_group_list(request.db_session, "role")
     return {
         "groups": [
             {
@@ -29,8 +29,7 @@ def all_group(request, kind):
                 "description": group.group_description,
             }
             for group in groups
-        ],
-        "loaded_plugins": request.config.temboard.plugins,
+        ]
     }
 
 

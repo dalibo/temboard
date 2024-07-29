@@ -1,9 +1,8 @@
 <script setup>
 /* A Bootstrap dialog with two steps: discover and register.
  *
- * Supports temBoard 7.X agent with key. Discover before registration to
- * render a preview of the managed instance. Disables plugins not loaded in
- * agent.
+ * Discover before registration to render a preview of the managed instance.
+ * Disables plugins not loaded in agent.
  */
 import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
@@ -68,67 +67,77 @@ onUpdated(() => {
 
 function discover() {
   waiting.value = true;
-  $.ajax({
-    url: ["/json/discover/instance", state.agent_address, state.agent_port].join("/"),
-    type: "get",
-    contentType: "application/json",
-    dataType: "json",
-  })
-    .fail((xhr) => {
+  $.when(
+    $.ajax({
+      url: `/json/instances/${state.agent_address}/${state.agent_port}/discover`,
+      type: "get",
+      contentType: "application/json",
+      dataType: "json",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data, _, xhr) => {
+        if ("invalid" == data.signature_status) {
+          error.value.setHTML(`
+                <p><strong>Signature missmatch !</strong></p>
+
+                <p>Agent is not configured for this UI. You must accept
+                <strong>this</strong> UI signing key in agent configuration. See
+                installation documentation.</p>
+              `);
+          return;
+        }
+
+        state.discover_data = data;
+        state.discover_etag = xhr.getResponseHeader("ETag");
+        state.cpu = data.system.cpu_count;
+        var mem_gb = data.system.memory / 1024 / 1024 / 1024;
+        state.mem_gb = mem_gb.toFixed(2);
+        state.pg_version_summary = data.postgres.version_summary;
+        state.pg_data = data.postgres.data_directory;
+        state.pg_host = data.system.fqdn;
+        state.pg_port = data.postgres.port;
+        state.signature_status = data.signature_status;
+      },
+    }),
+    $.ajax({
+      url: "/json/groups/instance",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        state.server_groups = data;
+      },
+    }),
+    $.ajax({
+      url: "/json/plugins",
+      error: (xhr) => {
+        error.value.fromXHR(xhr);
+      },
+      success: (data) => {
+        state.server_plugins = data;
+      },
+    }),
+  )
+    .always(() => {
       waiting.value = false;
-      error.value.fromXHR(xhr);
     })
-    .done((data, _, xhr) => {
-      if ("invalid" == data.signature_status) {
-        error.value.setHTML(`
-              <p><strong>Signature missmatch !</strong></p>
-
-              <p>Agent is not configured for this UI. You must accept
-              <strong>this</strong> UI signing key in agent configuration. See
-              installation documentation.</p>
-            `);
-        waiting.value = false;
-        return;
-      }
-
-      state.discover_data = data;
-      state.discover_etag = xhr.getResponseHeader("ETag");
-      state.cpu = data.system.cpu_count;
-      var mem_gb = data.system.memory / 1024 / 1024 / 1024;
-      state.mem_gb = mem_gb.toFixed(2);
-      state.pg_version_summary = data.postgres.version_summary;
-      state.pg_data = data.postgres.data_directory;
-      state.pg_host = data.system.fqdn;
-      state.pg_port = data.postgres.port;
-      state.signature_status = data.signature_status;
-
-      $.ajax({
-        url: "/json/settings/all/group/instance",
-      })
-        .fail((xhr) => {
-          waiting.value = false;
-          error.value.fromXHR(xhr);
-        })
-        .done((data) => {
-          state.server_groups = data.groups;
-          state.server_plugins = data.loaded_plugins;
-          waiting.value = false;
-          state.wizard_step = "register";
-        });
+    .done(() => {
+      state.wizard_step = "register";
     });
 }
 
 function register(data) {
   waiting.value = true;
   $.ajax({
-    url: "/json/settings/instance",
+    url: "/json/instances",
     method: "POST",
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify({
       ...data,
-      new_agent_address: state.agent_address,
-      new_agent_port: state.agent_port,
+      agent_address: state.agent_address,
+      agent_port: state.agent_port,
       discover: state.discover_data,
       discover_etag: state.discover_etag,
     }),

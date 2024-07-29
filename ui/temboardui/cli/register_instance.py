@@ -4,9 +4,7 @@ import os.path
 import sys
 
 from ..agentclient import TemboardAgentClient
-from ..application import add_instance, check_agent_address, get_instance
-from ..handlers.settings.instance import add_instance_in_groups, enable_instance_plugins
-from ..model import Session
+from ..model import Session, orm
 from ..toolkit import validators as v
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
@@ -79,6 +77,8 @@ class RegisterInstance(SubCommand):
         super().define_arguments(parser)
 
     def main(self, args):
+        agent = f"{args.agent_address}:{args.agent_port}"
+
         groups = v.commalist(args.groups)
         if not groups:
             raise UserError("Missing instance groups. Use --groups to define.")
@@ -87,16 +87,16 @@ class RegisterInstance(SubCommand):
             if plugin not in self.app.config.temboard.plugins:
                 raise UserError("Plugin %s is not loaded." % plugin)
 
-        try:
-            check_agent_address(args.agent_address)
-        except Exception as e:
-            raise UserError(str(e))
-
-        agent = f"{args.agent_address}:{args.agent_port}"
-
         session = Session()
         logger.debug("Check for existing instance.")
-        instance = get_instance(session, args.agent_address, args.agent_port)
+        instance = (
+            orm.Instances.get(
+                agent_address=args.agent_address, agent_port=args.agent_port
+            )
+            .with_session(session)
+            .one_or_none()
+        )
+
         if instance:
             if not args.skip_existing:
                 raise UserError(
@@ -152,14 +152,6 @@ class RegisterInstance(SubCommand):
             discover["system"]["hostname"],
             discover["postgres"]["port"],
         )
-        data = {}
-        data["new_agent_address"] = args.agent_address
-        data["new_agent_port"] = args.agent_port
-        data["comment"] = args.comment
-        data["notify"] = args.notify
-        data["discover"] = discover
-        data["discover_etag"] = discover_etag
-
         if plugins:
             for plugin in plugins:
                 if plugin not in discover["temboard"]["plugins"]:
@@ -171,13 +163,27 @@ class RegisterInstance(SubCommand):
             )
         logger.debug("Enabling plugins %s.", ", ".join(plugins))
 
-        instance = add_instance(session, **data)
-        session.add(instance)
-        session.flush()  # Get an Instance.id
-        add_instance_in_groups(session, instance, groups)
-        enable_instance_plugins(
-            session, instance, plugins, self.app.config.temboard.plugins
+        instance = (
+            orm.Instances.insert(
+                agent_address=args.agent_address,
+                agent_port=args.agent_port,
+                discover=discover,
+                discover_etag=discover_etag,
+                notify=args.notify,
+                comment=args.comment,
+            )
+            .with_session(session)
+            .one()
         )
+
+        for group in groups:
+            session.execute(
+                instance.add_group(orm.Groups(group_kind="instance", group_name=group))
+            )
+
+        for plugin in plugins:
+            session.execute(instance.enable_plugin(plugin))
+
         session.commit()
         logger.info("Instance successfully registered.")
 
@@ -188,9 +194,7 @@ class RegisterInstance(SubCommand):
 
                 logger.info("Schedule monitoring collect for agent now.")
                 collector.defer(
-                    self.app,
-                    address=data["new_agent_address"],
-                    port=data["new_agent_port"],
+                    self.app, address=instance.agent_address, port=instance.agent_port
                 )
 
             if "statements" in plugins:
@@ -198,9 +202,7 @@ class RegisterInstance(SubCommand):
 
                 logger.info("Schedule statements collect for agent now.")
                 statements_pull1.defer(
-                    self.app,
-                    host=data["new_agent_address"],
-                    port=data["new_agent_port"],
+                    self.app, host=instance.agent_address, port=instance.agent_port
                 )
         else:
             logger.info(
