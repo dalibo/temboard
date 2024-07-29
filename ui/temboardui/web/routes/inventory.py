@@ -82,7 +82,7 @@ def discover(address, port):
     except OSError as e:
         logger.warning("Failed to discover agent at %s:%s: %s", address, port, e)
         flask.abort(
-            400,
+            401,
             "Can't connect to agent. "
             "Please check address and port or that agent is running.",
         )
