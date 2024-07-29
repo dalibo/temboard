@@ -11,6 +11,7 @@ System %(distname)s %(distversion)s
 Python %(python)s (%(pythonbin)s)
 cryptography %(cryptography)s
 Tornado %(tornado)s
+Flask %(flask)s
 libpq %(libpq)s
 psycopg2 %(psycopg2)s
 SQLAlchemy %(sqlalchemy)s
@@ -23,9 +24,10 @@ def format_version():
 
 def inspect_versions():
     import cryptography
-    from psycopg2 import __version__ as psycopg2_version
-    from sqlalchemy import __version__ as sqlalchemy_version
-    from tornado import version as tornado_version
+    import flask
+    import psycopg2
+    import sqlalchemy
+    import tornado
 
     from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
 
@@ -35,12 +37,13 @@ def inspect_versions():
         cryptography=cryptography.__version__,
         distname=distinfos["NAME"],
         distversion=distinfos.get("VERSION", "n/a"),
+        flask=flask.__version__,
         libpq=format_pq_version(read_libpq_version()),
-        psycopg2=psycopg2_version,
+        psycopg2=psycopg2.__version__,
         python=python_version(),
         pythonbin=sys.executable,
-        sqlalchemy=sqlalchemy_version,
+        sqlalchemy=sqlalchemy.__version__,
         temboard=__version__,
         temboardbin=sys.argv[0],
-        tornado=tornado_version,
+        tornado=tornado.version,
     )

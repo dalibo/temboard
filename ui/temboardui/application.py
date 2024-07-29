@@ -501,18 +501,6 @@ def get_groups_by_instance(session, agent_address, agent_port):
     )
 
 
-def get_roles_by_instance(session, agent_address, agent_port):
-    return session.query(Roles).filter(
-        AccessRoleInstance.role_group_name == RoleGroups.group_name,
-        AccessRoleInstance.instance_group_name == InstanceGroups.group_name,
-        Instances.agent_address == agent_address,
-        Instances.agent_port == agent_port,
-        RoleGroups.role_name == Roles.role_name,
-        InstanceGroups.agent_address == agent_address,
-        InstanceGroups.agent_port == agent_port,
-    )
-
-
 def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
     try:
         ari = AccessRoleInstance(

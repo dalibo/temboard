@@ -5,6 +5,7 @@ import logging
 import os
 from ipaddress import ip_address, ip_network
 
+import jinja2
 from flask import (
     Blueprint,
     Flask,
@@ -20,7 +21,7 @@ from tornado.web import decode_signed_value
 from werkzeug.exceptions import HTTPException
 
 from ..agentclient import TemboardAgentClient
-from ..application import get_instance, get_role_by_cookie, get_roles_by_instance
+from ..application import get_instance, get_role_by_cookie
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
 from .tornado import serialize_querystring
@@ -46,6 +47,7 @@ def create_app(temboard_app):
     app.static_folder = "static/dist"
     app.static_url_path = "/static"
     app.template_folder = "templates/flask"
+    app.jinja_env.undefined = jinja2.StrictUndefined
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
@@ -85,18 +87,24 @@ def finalize_app():
 def error_handler(e):
     status_code = e.code if isinstance(e, HTTPException) else None
 
+    error = str(e) or repr(e)
+    if hasattr(e, "description"):  # From Flask HTTPException.
+        error = e.description
+
     if status_code is None:
         logger.exception("Unhandled error:")
         status_code = 500
+        if current_app.temboard.debug:
+            error = "Internal temBoard error. Retry later or contact administrator."
     elif status_code < 500:
-        logger.warning("User error: %s", e)
+        logger.warning("User error: %s", error)
     else:
-        logger.error("Fatal error: %s", e)
+        logger.error("Fatal error: %s", error)
 
     if request.path.endswith(".csv"):
         return "", status_code
     elif is_json(request.path):
-        response = jsonify(error=str(e) or repr(e))
+        response = jsonify(error=error)
         response.status_code = status_code
         return response
 
@@ -113,7 +121,7 @@ def error_handler(e):
         nav=True,
         role=g.current_user,
         vitejs=current_app.vitejs,
-        message=str(e),
+        message=error,
         code=status_code,
         **template_vars,
     )
@@ -290,14 +298,20 @@ class InstanceMiddleware:
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")
 
-        func = self.app.view_functions.get(request.endpoint)
-        apikey_allowed = getattr(func, "__apikey_allowed", False)
-
-        if not (apikey_allowed and g.apikey) and not check_user_allowed(address, port):
-            abort(403)
         g.instance = get_instance(g.db_session, address, port)
         if not g.instance:
             abort(404)
+
+        func = self.app.view_functions.get(request.endpoint)
+        apikey_allowed = g.apikey and getattr(func, "__apikey_allowed", False)
+        user_allowed = (
+            g.current_user
+            and g.db_session.execute(
+                g.instance.has_dba(g.current_user.role_name)
+            ).scalar()
+        )
+        if not apikey_allowed and not user_allowed:
+            abort(403)
         g.instance.status = None
         prefix = current_app.blueprints[request.blueprint].url_prefix
         request.instance_path = request.url_rule.rule.replace(prefix, "")
@@ -351,15 +365,6 @@ class InstanceMiddleware:
         h = "Content-Type"
         response.headers[h] = agent_response.headers[h]
         return response
-
-
-def check_user_allowed(address, port):
-    # Check if current user has access to the given instance.
-    allowed_roles = get_roles_by_instance(g.db_session, address, port)
-    roles = [role.role_name for role in allowed_roles if role]
-    if g.current_user.role_name not in roles:
-        return False
-    return True
 
 
 def anonymous_allowed(func):

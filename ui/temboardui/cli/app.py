@@ -135,10 +135,11 @@ class TemboardApplication(BaseApplication):
         versions = inspect_versions()
         logger.debug("Running on %s %s.", versions["distname"], versions["distversion"])
         logger.debug(
-            "Using Python %s (%s) and Tornado %s .",
+            "Using Python %s (%s), Tornado %s and Flask %s .",
             versions["python"],
             versions["pythonbin"],
             versions["tornado"],
+            versions["flask"],
         )
         logger.debug(
             "Using libpq %s, Psycopg2 %s and SQLAlchemy %s .",

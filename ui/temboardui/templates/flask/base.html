@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
 
-    <title>{% block title %}temBoard {% if instance %}/ {{ instance }} {% endif %}{% endblock %}</title>
+    <title>{% block title %}temBoard {% if instance is defined %}/ {{ instance }} {% endif %}{% endblock %}</title>
     {% if vitejs.PROD %}
     {% for link in vitejs.css_links_for('temboard.js') %}{{ link|safe }}{% endfor %}
     {% else %}
@@ -23,7 +23,7 @@
       <!-- Navigation -->
       <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top" data-bs-theme="dark">
         <div class="collapse navbar-collapse">
-          {% if instance %}
+          {% if instance is defined %}
           <a class="navbar-brand ms-3 me-0" href id="menu-collapse">
             <i class="fa fa-bars"></i>
           </a>
@@ -31,7 +31,7 @@
           <a class="navbar-brand me-auto" href="/home">
             <img id="logo" src="/images/temboard-150x32-w.png" />
           </a>
-          {% if instance %}
+          {% if instance is defined %}
           {% set d = instance.discover or {} %}
           <div class="navbar-text text-white me-auto">
             <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
@@ -66,7 +66,7 @@
       </div>
       {% endif %}
 
-      {% if instance %}
+      {% if instance is defined %}
       <div class="container-fluid">
         <div class="row">
           <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
@@ -76,6 +76,9 @@
                 {% for plugin in instance.plugins %}
                 {% set _ = plugin_names.append(plugin.plugin_name) %}
                 {% endfor %}
+                {% if plugin is undefined %}
+                {% set plugin = 'builtin' %}
+                {% endif %}
                 {% if 'dashboard' in plugin_names %}
                 <li class="nav-item">
                   <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
@@ -157,7 +160,7 @@
             </div>
           </div>
           <div class="main ms-auto p-3 position-relative">
-          {% if instance.status %}
+          {% if instance.status is defined %}
           {% set s = instance.status %}
           {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
             <div class="alert alert-warning" role="alert" >

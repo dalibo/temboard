@@ -37,12 +37,7 @@ from sqlalchemy.exc import DataError, IntegrityError, ProgrammingError
 from sqlalchemy.sql import text
 
 from temboardui.agentclient import TemboardAgentClient
-from temboardui.application import (
-    get_instance,
-    get_roles_by_instance,
-    send_mail,
-    send_sms,
-)
+from temboardui.application import get_instance, send_mail, send_sms
 from temboardui.model import worker_engine
 from temboardui.model.orm import Instances
 
@@ -360,27 +355,24 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
         link=link,
     )
 
-    roles = get_roles_by_instance(
-        worker_session, instance.agent_address, instance.agent_port
-    )
-
-    emails = [role.role_email for role in roles if role.role_email]
-    if len(emails):
+    notify = worker_session.execute(
+        instance.select_email_and_phone_for_notify()
+    ).fetchone()
+    if len(notify.emails):
         send_mail(
             smtp_host,
             smtp_port,
             subject,
             body,
-            emails,
+            notify.emails,
             smtp_tls,
             smtp_login,
             smtp_password,
             smtp_from_addr,
         )
 
-    phones = [role.role_phone for role in roles if role.role_phone]
-    if len(phones):
-        send_sms(app.config.notifications, body, phones)
+    if len(notify.phones):
+        send_sms(app.config.notifications, body, notify.phones)
 
 
 # From itertools documentation
