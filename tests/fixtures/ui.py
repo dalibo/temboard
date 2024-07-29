@@ -30,6 +30,8 @@ from sh import (
 )
 from sh import env as env_cmd
 
+from fixtures.utils import MultiSelect
+
 from .utils import copy_files, retry_http, retry_slow, session_tag
 
 logger = logging.getLogger(__name__)
@@ -264,7 +266,8 @@ def registered_agent(admin_session, agent, agent_conf, browser_session, pg_versi
     port = agent_conf.get("temboard", "port")
     browser.select("input#inputAgentPort").send_keys(port)
     browser.select("#buttonDiscover").click()
-    browser.select("#selectGroupsNew option").click()
+    multiselect = MultiSelect(browser_session, "selectGroupsNew")
+    multiselect.select("default")
     browser.select("textarea#inputCommentNew").send_keys("Registered by tests.")
 
     browser.select("#buttonSubmitNew").click()

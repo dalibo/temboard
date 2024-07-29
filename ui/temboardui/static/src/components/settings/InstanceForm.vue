@@ -1,6 +1,7 @@
 <script setup>
 import $ from "jquery";
-import { onUpdated, ref, watch } from "vue";
+import { computed, onUpdated, ref, watch, watchEffect } from "vue";
+import Multiselect from "vue-multiselect";
 
 import InstanceDetails from "./InstanceDetails.vue";
 
@@ -27,12 +28,19 @@ const props = defineProps([
 
 const root = ref(null);
 const commentModel = ref(null);
+const selectedGroups = ref([]);
+const availableGroups = computed(() => props.groups.map((group) => group.name));
+
 watch(
   () => props.comment,
   (newValue) => {
     commentModel.value = newValue;
   },
 );
+
+watchEffect(() => {
+  selectedGroups.value = props.groups.filter((group) => group.selected).map((group) => group.name);
+});
 
 onUpdated(() => {
   const tooltipTriggerList = root.value.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -45,7 +53,7 @@ function submit() {
     .toArray()
     .map((i) => i.value);
   const data = {
-    groups: $("#selectGroups" + props.type).val(),
+    groups: selectedGroups.value,
     plugins: plugins,
     notify: $("#inputNotify" + props.type).is(":checked"),
     comment: commentModel.value,
@@ -78,18 +86,17 @@ const emit = defineEmits(["submit"]);
       </div>
 
       <div class="row">
-        <div id="divGroups" class="mb-3 col-sm-6" v-if="groups.length > 0">
-          <label :for="'selectGroups' + type" class="form-label">Groups</label>
-          <select :id="'selectGroups' + type" :disabled="waiting" multiple required>
-            <option
-              v-for="group of groups"
-              :key="group.name"
-              :selected="group.selected ? 'selected' : null"
-              :value="group.name"
-            >
-              {{ group.name }}
-            </option>
-          </select>
+        <div id="divGroups" class="mb-3 col-sm-6">
+          <label class="form-label">Groups</label>
+          <multiselect
+            :id="'selectGroups' + type"
+            v-model="selectedGroups"
+            :options="availableGroups"
+            :multiple="true"
+            :hide-selected="true"
+            :searchable="false"
+            select-label=""
+          ></multiselect>
           <div id="tooltip-container"></div>
         </div>
         <div id="divPlugins" class="mb-3 col-sm-6" v-if="plugins.length > 0">
