@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from fixtures.utils import MultiSelect
 from sh import ErrorReturnCode, temboard
 
 
@@ -51,10 +52,9 @@ def test_edit_instance(registered_agent, browser, ui_url):
     browser.select("#inputNotifyUpdate").click()
     comment = browser.select("#inputCommentUpdate").get_attribute("value")
     assert "Registered by tests." == comment
-    default_selected = browser.select(
-        "#selectGroupsUpdate option[value='default']"
-    ).get_attribute("selected")
-    assert default_selected == "true"
+    multiselect = MultiSelect(browser, "selectGroupsUpdate")
+    multiselect.toggle().unselect("default")
+    multiselect.toggle().select("default")
     browser.select("#buttonSubmitUpdate").click()
 
 
