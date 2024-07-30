@@ -37,10 +37,20 @@ logger = logging.getLogger(__name__)
 class InstanceProxyBlueprint(Blueprint):
     # Pass-through implementation for /proxy/address/port/…
     def generic_proxy(self, url, method="GET"):
-        @self.route(url, methods=[method])
-        def generic_instance_proxy():
+        # Register an unique endpoint name for each proxy.
+        # Without this, every generic proxy routes would share the same
+        # endpoint, leading to :
+        # View function mapping is overwriting an existing endpoint
+        endpoint = f"generic_instance_proxy_{url.replace('/', '_')}_{method}"
+
+        @self.route(url, methods=[method], endpoint=endpoint)
+        def generic_instance_proxy(**_):
+            # Skip the first three segments proxy/adress/port
+            *_, path = request.path.split("/", 4)
+            path = f"/{path}"
+
             response = current_app.instance.request(
-                url,
+                path,
                 method=method,
                 body=request.get_json() if method == "POST" else None,
             )
