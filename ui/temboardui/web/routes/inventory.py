@@ -4,6 +4,8 @@ import flask
 import sqlalchemy
 from flask import current_app, g
 
+from temboardui.toolkit.utils import utcnow
+
 from ... import agentclient
 from ...model import orm
 from ..flask import admin_required, transaction
@@ -110,6 +112,16 @@ def put_instance(address=None, port=None, instance=None):
 
     g.db_session.flush()
     return flask.jsonify(instance.asdict())
+
+
+@current_app.route("/json/instances/<address>/<port>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_instance(address, port):
+    out = g.db_session.execute(orm.Instances.delete(address, port))
+    if out.rowcount == 0:
+        flask.abort(404, "Instance not found.")
+    return flask.jsonify()
 
 
 # Special proxy for unregistered instance.

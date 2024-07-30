@@ -287,6 +287,12 @@ class Instances(Model):
         )
 
     @classmethod
+    def delete(cls, agent_address, agent_port):
+        return text(
+            """DELETE FROM application.instances WHERE agent_address = :address AND agent_port = :port;"""
+        ).bindparams(address=str(agent_address), port=int(agent_port))
+
+    @classmethod
     def get(cls, agent_address, agent_port):
         return (
             Query(cls)

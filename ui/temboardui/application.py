@@ -309,63 +309,6 @@ def get_instance(session, agent_address, agent_port):
     return Instances.get(agent_address, agent_port).with_session(session).first()
 
 
-def delete_instance(session, agent_address, agent_port):
-    from temboardui.plugins.monitoring.model.orm import Host as MonitoringHost
-    from temboardui.plugins.monitoring.model.orm import Instance as MonitoringInstance
-
-    try:
-        instance = (
-            session.query(Instances)
-            .filter(
-                Instances.agent_address == str(agent_address),
-                Instances.agent_port == agent_port,
-            )
-            .one()
-        )
-        session.delete(instance)
-    except NoResultFound:
-        raise TemboardUIError(
-            400, "Instance entry ('%s:%s') not found." % (agent_address, agent_port)
-        )
-
-    # Also delete any monitoring data
-    # First all instance data
-    try:
-        monitoring_instance = (
-            session.query(MonitoringInstance)
-            .join(MonitoringHost)
-            .filter(
-                MonitoringHost.hostname == instance.hostname,
-                MonitoringInstance.port == instance.pg_port,
-            )
-            .one()
-        )
-        session.delete(monitoring_instance)
-    except NoResultFound:
-        pass
-
-    # Then delete host data if there's no instance left referenced for this
-    # host
-    count = (
-        session.query(MonitoringInstance.instance_id)
-        .join(MonitoringHost)
-        .filter(MonitoringHost.hostname == instance.hostname)
-        .count()
-    )
-    if count == 0:
-        # Using bulk delete query here to prevent errors on not null constraint
-        # on checks::host_id column (ON CASCADE DELETE not working)
-        # when using session.delete(host)
-        try:
-            session.query(MonitoringHost).filter(
-                MonitoringHost.hostname == instance.hostname
-            ).delete()
-        except NoResultFound:
-            pass
-        except Exception as e:
-            raise TemboardUIError(400, str(e))
-
-
 def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
     try:
         ari = AccessRoleInstance(
