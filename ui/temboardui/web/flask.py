@@ -26,6 +26,7 @@ from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie
 from ..model import Session
 from ..model.orm import ApiKeys, StubRole
+from ..toolkit.utils import utcnow
 from .tornado import serialize_querystring
 from .vitejs import ViteJSExtension
 
@@ -58,6 +59,7 @@ instance_routes = Blueprint(
 
 def create_app(temboard_app):
     app = Flask("temboardui")
+    app.start_time = utcnow()
     app.config["DEBUG"] = app.config["TESTING"] = "DEBUG" in os.environ
     app.temboard = temboard_app
     app.static_folder = "static/dist"

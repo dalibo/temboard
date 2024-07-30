@@ -1,24 +1,28 @@
-from ..application import get_instance_groups_by_role
-from ..model.orm import Instances, Roles
-from ..version import inspect_versions
-from ..web.tornado import app, render_template
+from flask import current_app as app
+from flask import g, render_template, request
+
+from ...application import get_instance_groups_by_role
+from ...model.orm import Instances, Roles
+from ...version import inspect_versions
 
 
 @app.route("/home")
-def home(request):
-    role = request.current_user
+def home():
+    role = g.current_user
 
-    groups = get_instance_groups_by_role(request.db_session, role.role_name)
+    groups = get_instance_groups_by_role(g.db_session, role.role_name)
     groups = [group for group in groups]
 
-    return render_template("home.html", nav=True, role=role, groups=groups)
+    return render_template(
+        "home.html", nav=True, role=role, groups=groups, vitejs=app.vitejs
+    )
 
 
 @app.route("/about")
-def about(request):
+def about():
     versions_info = inspect_versions()
-    instances = request.db_session.scalar(Instances.count())
-    roles = request.db_session.scalar(Roles.count())
+    instances = g.db_session.scalar(Instances.count())
+    roles = g.db_session.scalar(Roles.count())
     infos = {
         "Browser": request.headers.get("User-Agent", "Unknown"),
         "Version": "%(temboard)s (%(temboardbin)s)" % versions_info,
@@ -32,15 +36,16 @@ def about(request):
         "SQLAlchemy": versions_info["sqlalchemy"],
         "Instances": instances,
         "Users": roles,
-        "SMTP": request.config.notifications.smtp_host is not None,
-        "Twilio": request.config.notifications.twilio_account_sid is not None,
+        "SMTP": app.temboard.config.notifications.smtp_host is not None,
+        "Twilio": app.temboard.config.notifications.twilio_account_sid is not None,
     }
     temboard_version = versions_info["temboard"]
 
     return render_template(
         "about.html",
         nav=True,
-        role=request.current_user,
+        role=g.current_user,
         infos=infos,
         temboard_version=temboard_version,
+        vitejs=app.vitejs,
     )

@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 @app.route("/logout")
 def logout():
-    # Redirect to /home so that /login referer is /home, not logout.
-    response = make_response(redirect("/home"))
+    response = make_response(redirect("/"))
     response.delete_cookie("temboard")
     return response
 

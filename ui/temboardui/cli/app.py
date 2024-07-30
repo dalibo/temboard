@@ -178,7 +178,6 @@ def bootstrap_tornado_app(tornado_app, config):
 
     base_path = os.path.dirname(os.path.dirname(__file__))
     # Load handlers
-    __import__("temboardui.handlers.home")
     __import__("temboardui.handlers.notification")
     __import__("temboardui.handlers.settings.group")
     __import__("temboardui.handlers.settings.instance")

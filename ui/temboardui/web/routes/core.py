@@ -8,7 +8,9 @@ from ..flask import admin_required, anonymous_allowed
 @app.route("/")
 @anonymous_allowed
 def index():
-    return redirect("/home")
+    if g.current_user:
+        return redirect("/home")
+    return redirect("/login")
 
 
 @app.route("/json/instances/home")
