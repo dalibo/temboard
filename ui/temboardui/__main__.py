@@ -28,7 +28,7 @@ def main(*a, **kw):
     flask = create_app(app)
     flask.app_context().push()
 
-    # Import main routes
+    # Import main routes now current_app is up.
     __import__(__package__ + ".web.routes.core")
     __import__(__package__ + ".web.routes.auth")
     __import__(__package__ + ".web.routes.inventory")

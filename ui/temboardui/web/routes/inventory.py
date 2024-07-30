@@ -1,13 +1,14 @@
+import codecs
 import logging
+from io import StringIO
 
 import flask
 import sqlalchemy
 from flask import current_app, g
 
-from temboardui.toolkit.utils import utcnow
-
 from ... import agentclient
-from ...model import orm
+from ...model import QUERIES, orm
+from ...toolkit.utils import utcnow
 from ..flask import admin_required, transaction
 
 logger = logging.getLogger(__name__)
@@ -142,3 +143,28 @@ def discover(address, port):
             "Please check address and port or that agent is running.",
         )
     return flask.jsonify(response.json())
+
+
+@current_app.route("/instances.csv")
+@admin_required
+def get_instances_csv():
+    search = flask.request.args.get("filter")
+    pattern = "%%%s%%" % search if search else "%"
+    bind = g.db_session.get_bind()
+    conn = bind.raw_connection().connection
+    sql = QUERIES["copy-instances-as-csv"]
+    with conn.cursor() as cur, StringIO() as fo:
+        sql = cur.mogrify(sql, (pattern,))
+        cur.copy_expert(sql, fo)
+        csv = fo.getvalue()
+
+    filename = "postgresql-instances-inventory.csv"
+    return flask.make_response(
+        # BOM declares UTF8 for Excel.
+        codecs.BOM_UTF8 + csv.encode("utf-8"),
+        200,
+        {
+            "Content-Type": "text/csv",
+            "Content-Disposition": "attachment;filename=" + filename,
+        },
+    )

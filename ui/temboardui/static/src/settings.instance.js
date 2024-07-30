@@ -39,7 +39,7 @@ createApp({
                */
               const filter = $(".dt-search input", table.table().container()).val();
               const url = new URLSearchParams({ filter });
-              window.location.replace("/settings/instances.csv?" + url.toString());
+              window.location.replace("/instances.csv?" + url.toString());
             },
           },
         ],

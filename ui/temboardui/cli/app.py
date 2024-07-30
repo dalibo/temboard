@@ -181,7 +181,6 @@ def bootstrap_tornado_app(tornado_app, config):
     __import__("temboardui.handlers.home")
     __import__("temboardui.handlers.notification")
     __import__("temboardui.handlers.settings.group")
-    __import__("temboardui.handlers.settings.instance")
     __import__("temboardui.handlers.settings.user")
     __import__("temboardui.handlers.settings.notifications")
     __import__("temboardui.handlers.settings.metadata")
