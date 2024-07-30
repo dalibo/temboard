@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{ super() }}/ Dashboard{% endblock %}
+
+{% block content %}
+<div id="app">
+  <dashboard
+    :config="{{ config }}"
+    :instance="{
+      'hostname': '{{ instance.hostname }}',
+      'agentAddress': '{{ instance.agent_address }}',
+      'agentPort': '{{ instance.agent_port }}',
+      'pgPort': '{{ instance.pg_port }}',
+      'plugins': {{ instance.plugins | map(attribute='plugin_name') | list }}
+    }"
+    :discover="{{ instance.discover }}"
+    :jdata-history="{{ history }}"
+    :initial-data="{{ dashboard }}"
+  />
+</div>
+
+<script src="/js/moment.min.js"></script>
+<script src="/js/Chart.min.js"></script>
+<script type="module" src="{{ vitejs.url_for('dashboard.js') }}"></script>
+{% endblock %}
