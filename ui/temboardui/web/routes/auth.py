@@ -1,6 +1,7 @@
 import logging
 from time import sleep
 
+import flask
 from flask import current_app as app
 from flask import g, jsonify, make_response, redirect, render_template, request
 from tornado.web import create_signed_value
@@ -8,7 +9,8 @@ from tornado.web import create_signed_value
 from temboardui.application import gen_cookie, get_role_by_auth, hash_password
 from temboardui.errors import TemboardUIError
 
-from ..flask import anonymous_allowed
+from ...model import orm
+from ..flask import admin_required, anonymous_allowed
 
 logger = logging.getLogger(__name__)
 
@@ -55,3 +57,15 @@ def json_login():
     )
     response.set_cookie("temboard", secret_cookie.decode(), secure=True)
     return response
+
+
+@app.route("/settings/groups/role")
+@admin_required
+def get_groups_html():
+    return flask.render_template(
+        "settings/groups.html",
+        nav=True,
+        role=g.current_user,
+        vitejs=app.vitejs,
+        groups=orm.Groups.all("role").with_session(g.db_session).all(),
+    )

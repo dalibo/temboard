@@ -11,7 +11,7 @@ from temboardui.application import (
     get_group_list,
     update_group,
 )
-from temboardui.web.tornado import HTTPError, admin_required, app, render_template
+from temboardui.web.tornado import HTTPError, admin_required, app
 
 logger = logging.getLogger(__name__)
 PREFIX = r"/json/settings"
@@ -83,15 +83,3 @@ def delete_group_handler(request, kind):
         raise HTTPError(400)
     delete_group(request.db_session, name, kind)
     return {"delete": True}
-
-
-@app.route(r"/settings/groups/(role|instance)")
-@admin_required
-def groups(request, kind):
-    return render_template(
-        "settings/group.html",
-        nav=True,
-        role=request.current_user,
-        group_kind=kind,
-        group_list=get_group_list(request.db_session, kind),
-    )
