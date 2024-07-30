@@ -20,7 +20,6 @@ from temboardui.model.orm import (
     Groups,
     InstanceGroups,
     Instances,
-    Plugins,
     RoleGroups,
     Roles,
 )
@@ -367,112 +366,6 @@ def delete_instance(session, agent_address, agent_port):
             raise TemboardUIError(400, str(e))
 
 
-def add_instance_in_group(session, agent_address, agent_port, group_name):
-    try:
-        # Create instance group if not exists
-        group = Groups(group_name=str(group_name), group_kind="instance")
-        session.merge(group)
-        session.flush()
-
-        instance_group = InstanceGroups(
-            agent_address=str(agent_address),
-            agent_port=agent_port,
-            group_name=str(group_name),
-        )
-        session.add(instance_group)
-        session.flush()
-    except IntegrityError as e:
-        if str(e).find("instance_groups_group_name_fkey") > 0:
-            raise TemboardUIError(
-                400, "Group '%s' ('instance') does not exist." % (group_name)
-            )
-        elif str(e).find("instance_groups_agent_address_fkey") > 0:
-            raise TemboardUIError(
-                400,
-                "Instance entry ('%s:%s') does not exist."
-                % (agent_address, agent_port),
-            )
-        elif str(e).find("instance_groups_pkey") > 0:
-            raise TemboardUIError(
-                400,
-                "Instance entry ('%s:%s)' already in group '%s'."
-                % (agent_address, agent_port, group_name),
-            )
-        else:
-            raise TemboardUIError(400, str(e))
-
-
-def purge_instance_plugins(session, agent_address, agent_port):
-    try:
-        plugins = (
-            session.query(Plugins)
-            .filter(
-                Plugins.agent_address == str(agent_address),
-                Plugins.agent_port == agent_port,
-            )
-            .all()
-        )
-        for plugin in plugins:
-            session.delete(plugin)
-    except Exception as e:
-        raise TemboardUIError(400, str(e))
-
-
-def add_instance_plugin(session, agent_address, agent_port, plugin_name):
-    try:
-        plugin = Plugins(
-            agent_address=str(agent_address),
-            agent_port=agent_port,
-            plugin_name=str(plugin_name),
-        )
-        session.add(plugin)
-        session.flush()
-    except IntegrityError as e:
-        if str(e).find("plugins_pkey") > 0:
-            raise TemboardUIError(
-                400,
-                "Plugin '%s' was already activated for this instance." % (plugin_name),
-            )
-        elif str(e).find("plugins_agent_address_fkey") > 0:
-            raise TemboardUIError(
-                400, "Instance '%s:%s' does not exist." % (agent_address, agent_port)
-            )
-        else:
-            raise
-
-
-def delete_instance_from_group(session, agent_address, agent_port, group_name):
-    try:
-        instance_group = (
-            session.query(InstanceGroups)
-            .filter(
-                InstanceGroups.agent_address == str(agent_address),
-                InstanceGroups.agent_port == agent_port,
-                InstanceGroups.group_name == str(group_name),
-            )
-            .one()
-        )
-        session.delete(instance_group)
-    except NoResultFound:
-        raise TemboardUIError(
-            400,
-            "Instance entry ('%s:%s)' not found in group '%s'."
-            % (agent_address, agent_port, group_name),
-        )
-
-
-def get_groups_by_instance(session, agent_address, agent_port):
-    return (
-        session.query(InstanceGroups)
-        .filter(
-            InstanceGroups.agent_address == str(agent_address),
-            InstanceGroups.agent_port == agent_port,
-        )
-        .order_by(InstanceGroups.group_name)
-        .all()
-    )
-
-
 def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
     try:
         ari = AccessRoleInstance(
@@ -648,20 +541,6 @@ def check_group_description(group_description):
         raise TemboardUIError(
             400, "Invalid group description, must be a 256 char (max) length " "string."
         )
-
-
-def check_agent_address(value):
-    p_check = r"^([0-9a-zA-Z\-\._:]+)$"
-    r_check = re.compile(p_check)
-    if not r_check.match(value):
-        raise TemboardUIError(400, "Invalid agent address.")
-
-
-def check_agent_port(value):
-    p_check = r"^([0-9]{1,5})$"
-    r_check = re.compile(p_check)
-    if not r_check.match(value):
-        raise TemboardUIError(400, "Invalid agent port.")
 
 
 def send_mail(
