@@ -24,7 +24,7 @@ function open(address, port) {
   new Modal(root.value.$el).show();
 
   $.ajax({
-    url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+    url: `/json/instances/${agent_address}/${agent_port}`,
   })
     .fail((xhr) => {
       waiting.value = false;

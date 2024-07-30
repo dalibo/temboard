@@ -69,6 +69,16 @@ def post_instance():
     return flask.jsonify(instance.asdict())
 
 
+@current_app.route("/json/instances/<address>/<port>")
+@admin_required
+def get_instance(address, port):
+    try:
+        instance = orm.Instances.get(address, port).with_session(g.db_session).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        flask.abort(404, "Instance not found.")
+    return flask.jsonify(instance.asdict())
+
+
 # Special proxy for unregistered instance.
 @current_app.route("/json/instances/<address>/<port>/discover")
 @admin_required

@@ -77,7 +77,7 @@ function open(address, port) {
 function fetch() {
   return $.when(
     $.ajax({
-      url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+      url: `/json/instances/${agent_address}/${agent_port}`,
       error: (xhr) => {
         error.value.fromXHR(xhr);
       },

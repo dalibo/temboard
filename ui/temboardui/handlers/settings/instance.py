@@ -64,64 +64,51 @@ def validate_instance_data(data):
 
 @app.route(
     r"/json/settings/instance" + InstanceHelper.INSTANCE_PARAMS,
-    methods=["GET", "POST"],
+    methods=["POST"],
     with_instance=True,
 )
 @admin_required
 def json_instance(request):
     instance = request.instance.instance
-    if "GET" == request.method:
-        groups = get_group_list(request.db_session, "instance")
-        data = instance.asdict()
-        data.update(
-            {
-                "server_groups": [
-                    {"name": group.group_name, "description": group.group_description}
-                    for group in groups
-                ]
-            }
-        )
-        return data
-    else:  # POST (update)
-        data = request.json
-        validate_instance_data(data)
+    data = request.json
+    validate_instance_data(data)
 
-        if "discover" in data:
-            instance.discover = data["discover"]
-            instance.discover_etag = data["discover_etag"]
-            instance.discover_date = utcnow()
-            instance.hostname = data["discover"]["system"]["fqdn"]
-            instance.pg_port = data["discover"]["postgres"]["port"]
-        else:
-            logger.debug("No discover for instance %s.", instance)
-        instance.comment = data["comment"]
-        instance.notify = data["notify"]
-        request.db_session.flush()
+    if "discover" in data:
+        instance.discover = data["discover"]
+        instance.discover_etag = data["discover_etag"]
+        instance.discover_date = utcnow()
+        instance.hostname = data["discover"]["system"]["fqdn"]
+        instance.pg_port = data["discover"]["postgres"]["port"]
+    else:
+        logger.debug("No discover for instance %s.", instance)
+    instance.comment = data["comment"]
+    instance.notify = data["notify"]
+    request.db_session.flush()
 
-        # Update groups.
-        groups = data.pop("groups")
-        instance_groups = get_groups_by_instance(
-            request.db_session, instance.agent_address, instance.agent_port
+    # Update groups.
+    groups = data.pop("groups")
+    instance_groups = get_groups_by_instance(
+        request.db_session, instance.agent_address, instance.agent_port
+    )
+    for instance_group in instance_groups:
+        delete_instance_from_group(
+            request.db_session,
+            instance.agent_address,
+            instance.agent_port,
+            instance_group.group_name,
         )
-        for instance_group in instance_groups:
-            delete_instance_from_group(
-                request.db_session,
-                instance.agent_address,
-                instance.agent_port,
-                instance_group.group_name,
-            )
-        add_instance_in_groups(request.db_session, instance, groups)
+    add_instance_in_groups(request.db_session, instance, groups)
 
-        # Update plugins
-        plugins = data.pop("plugins") or []
-        purge_instance_plugins(
-            request.db_session, instance.agent_address, instance.agent_port
-        )
-        enable_instance_plugins(
-            request.db_session, instance, plugins, request.config.temboard.plugins
-        )
+    # Update plugins
+    plugins = data.pop("plugins") or []
+    purge_instance_plugins(
+        request.db_session, instance.agent_address, instance.agent_port
+    )
+    enable_instance_plugins(
+        request.db_session, instance, plugins, request.config.temboard.plugins
+    )
 
-        return {"instance": instance.asdict()}
+    return {"instance": instance.asdict()}
 
 
 @app.route(r"/json/settings/delete/instance$", methods=["POST"])
