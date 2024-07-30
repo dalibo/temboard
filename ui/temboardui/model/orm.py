@@ -5,7 +5,7 @@ import sqlalchemy
 from sqlalchemy import Column, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Query, relationship
+from sqlalchemy.orm import Query, joinedload, relationship
 
 from ..toolkit.utils import utcnow
 from . import QUERIES
@@ -287,12 +287,19 @@ class Instances(Model):
         )
 
     @classmethod
+    def delete(cls, agent_address, agent_port):
+        return text(
+            """DELETE FROM application.instances WHERE agent_address = :address AND agent_port = :port;"""
+        ).bindparams(address=str(agent_address), port=int(agent_port))
+
+    @classmethod
     def get(cls, agent_address, agent_port):
         return (
             Query(cls)
             .prefix_with("-- Instances.get\n")
             .filter(cls.agent_address == str(agent_address))
             .filter(cls.agent_port == int(agent_port))
+            .options(joinedload("groups"), joinedload("plugins"))
         )
 
     @classmethod

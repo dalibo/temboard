@@ -77,7 +77,7 @@ function open(address, port) {
 function fetch() {
   return $.when(
     $.ajax({
-      url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+      url: `/json/instances/${agent_address}/${agent_port}`,
       error: (xhr) => {
         error.value.fromXHR(xhr);
       },
@@ -155,14 +155,12 @@ function update(data) {
   waiting.value = true;
 
   $.ajax({
-    url: ["/json/settings/instance", agent_address, agent_port].join("/"),
-    method: "POST",
+    url: `/json/instances/${agent_address}/${agent_port}`,
+    method: "PUT",
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify({
       ...data,
-      new_agent_address: agent_address,
-      new_agent_port: agent_port,
       discover: discover_data,
       discover_etag,
     }),

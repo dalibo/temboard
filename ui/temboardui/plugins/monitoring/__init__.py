@@ -42,7 +42,7 @@ from temboardui.model import worker_engine
 from temboardui.model.orm import Instances
 
 from ...core import refresh_discover
-from ...model import Session
+from ...model import QUERIES, Session
 from ...toolkit import taskmanager
 from ...toolkit import validators as v
 from ...toolkit.configuration import OptionSpec
@@ -201,14 +201,29 @@ def purge_data_worker(app):
     there is no purge policy.
     """
 
-    logger.setLevel(app.config.logging.level)
-    logger.info("Purging old data.")
+    engine = worker_engine(app.config.repository)
+    with engine.begin() as conn:
+        logger.debug("Purging instances.")
+        result = conn.execute(QUERIES["monitoring-purge-instances"])
+        for deleted in result:
+            logger.debug(
+                "Instance purged. instance=%s:%s", deleted.hostname, deleted.port
+            )
+        if result.rowcount:
+            logger.info("Purged deleted instances. count=%s", result.rowcount)
+
+        logger.debug("Purging hosts.")
+        result = conn.execute(QUERIES["monitoring-purge-hosts"])
+        for deleted in result:
+            logger.debug("Host purged. host=%ss", deleted.hostname)
+        if result.rowcount:
+            logger.info("Purged orphaned hosts. count=%s", result.rowcount)
 
     if not app.config.monitoring.purge_after:
         logger.info("No purge policy, end.")
         return
 
-    engine = worker_engine(app.config.repository)
+    logger.debug("Purging old data.")
 
     with engine.connect() as conn:
         # Get tablename list to purge from metric_tables_config()
@@ -266,9 +281,7 @@ def purge_data_worker(app):
                 continue
 
             if res_delete.rowcount > 0:
-                logger.debug(
-                    "Table %s purged, %s rows deleted.", tablename, res_delete.rowcount
-                )
+                logger.info("%s purged. count=%s", tablename, res_delete.rowcount)
 
     logger.debug("End of monitoring data purge worker.")
 

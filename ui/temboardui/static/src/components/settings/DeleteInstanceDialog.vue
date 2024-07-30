@@ -24,7 +24,7 @@ function open(address, port) {
   new Modal(root.value.$el).show();
 
   $.ajax({
-    url: ["/json/settings/instance", agent_address, agent_port].join("/"),
+    url: `/json/instances/${agent_address}/${agent_port}`,
   })
     .fail((xhr) => {
       waiting.value = false;
@@ -40,8 +40,8 @@ function open(address, port) {
 function delete_() {
   waiting.value = true;
   $.ajax({
-    url: "/json/settings/delete/instance",
-    type: "POST",
+    url: `/json/instances/${agent_address}/${agent_port}`,
+    type: "DELETE",
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify({ agent_address, agent_port }),

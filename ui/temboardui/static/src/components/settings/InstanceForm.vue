@@ -40,13 +40,10 @@ onUpdated(() => {
 });
 
 function submit() {
-  // data generates payload for both POST /json/settings/instances and POST
-  // /json/settings/instances/X.X.X.X/PPPP.
   const data = {
-    // Define parameters.
     groups: $("#selectGroups" + props.type).val(),
     plugins: $("#selectPlugins" + props.type).val(),
-    notify: props.notify,
+    notify: $("#inputNotify" + props.type).is(":checked"),
     comment: commentModel.value,
   };
   emit("submit", data);
@@ -115,7 +112,7 @@ const emit = defineEmits(["submit"]);
               :id="'inputNotify' + type"
               class="form-check-input"
               type="checkbox"
-              :value="notify"
+              :checked="notify"
               :disabled="waiting"
             />
             <label :for="'inputNotify' + type" class="form-label">Notify users of any status alert.</label>
