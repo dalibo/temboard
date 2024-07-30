@@ -29,7 +29,9 @@ const props = defineProps([
 const root = ref(null);
 const commentModel = ref(null);
 const selectedGroups = defineModel("selectedGroups");
+const selectedPlugins = defineModel("selectedPlugins");
 const availableGroups = computed(() => props.groups.map((group) => group.name));
+const availablePlugins = computed(() => props.plugins.map((plugin) => plugin.name));
 
 watch(
   () => props.comment,
@@ -40,6 +42,7 @@ watch(
 
 watchEffect(() => {
   selectedGroups.value = props.groups.filter((group) => group.selected).map((group) => group.name);
+  selectedPlugins.value = props.plugins.filter((plugin) => plugin.selected).map((plugin) => plugin.name);
 });
 
 onUpdated(() => {
@@ -53,7 +56,7 @@ function submit() {
   const data = {
     // Define parameters.
     groups: selectedGroups.value,
-    plugins: $("#selectPlugins" + props.type).val(),
+    plugins: selectedPlugins.value,
     notify: props.notify,
     comment: commentModel.value,
   };
@@ -98,21 +101,17 @@ const emit = defineEmits(["submit"]);
           ></multiselect>
           <div id="tooltip-container"></div>
         </div>
-        <div id="divPlugins" class="mb-3 col-sm-6" v-if="plugins.length > 0">
-          <label :for="'selectPlugins' + type" class="form-label">Plugins</label>
-          <select :id="'selectPlugins' + type" :disabled="waiting" multiple="multiple">
-            <option
-              v-for="plugin of plugins"
-              :key="plugin.name"
-              :value="plugin.name"
-              :selected="plugin.selected"
-              :disabled="plugin.disabled ? 'disabled' : null"
-              :class="{ disabled: plugin.disabled }"
-              :title="plugin.disabled ? 'Plugin disabled by agent.' : null"
-            >
-              {{ plugin.name }}
-            </option>
-          </select>
+        <div id="divPlugins" class="mb-3 col-sm-6">
+          <label class="form-label">Plugins</label>
+          <multiselect
+            :id="'selectPlugins' + type"
+            v-model="selectedPlugins"
+            :options="availablePlugins"
+            :multiple="true"
+            :hide-selected="true"
+            :searchable="false"
+            select-label=""
+          ></multiselect>
         </div>
       </div>
       <div class="row">
