@@ -453,3 +453,9 @@ class Groups(Model):
             .bindparams(kind=kind)
             .columns(*cls.__mapper__.c.values())
         )
+
+    @classmethod
+    def delete(cls, kind, name):
+        return text(
+            """DELETE FROM application.groups WHERE group_kind = :kind AND group_name = :name;"""
+        ).bindparams(kind=kind, name=name)

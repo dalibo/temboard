@@ -207,21 +207,6 @@ def update_group(
         )
 
 
-def delete_group(session, group_name, group_kind):
-    try:
-        group = (
-            session.query(Groups)
-            .filter(
-                Groups.group_name == str(group_name),
-                Groups.group_kind == str(group_kind),
-            )
-            .one()
-        )
-        session.delete(group)
-    except NoResultFound:
-        raise TemboardUIError(400, "Group '%s' not found." % (group_name))
-
-
 def get_group_list(session, group_kind="role"):
     if group_kind == "role":
         return (

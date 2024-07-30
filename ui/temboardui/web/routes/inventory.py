@@ -26,6 +26,17 @@ def get_instance_groups_html():
     )
 
 
+@current_app.route("/json/groups/instance/<name>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_instance_group(name):
+    """Delete a group of instances."""
+    result = g.db_session.execute(orm.Groups.delete("instance", name))
+    if result.rowcount == 0:
+        flask.abort(404, "No such group.")
+    return flask.jsonify()
+
+
 @current_app.route("/json/groups/instance")
 @admin_required
 def get_instance_groups():

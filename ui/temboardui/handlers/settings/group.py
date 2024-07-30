@@ -5,7 +5,6 @@ from temboardui.application import (
     add_role_group_in_instance_group,
     check_group_description,
     check_group_name,
-    delete_group,
     delete_role_group_from_instance_group,
     get_group,
     get_group_list,
@@ -73,13 +72,3 @@ def group(request, kind, name):
                 )
 
         return {"ok": True}
-
-
-@app.route(PREFIX + r"/delete/group/(role|instance)", methods=["POST"])
-@admin_required
-def delete_group_handler(request, kind):
-    name = request.json.get("group_name")
-    if not name:
-        raise HTTPError(400)
-    delete_group(request.db_session, name, kind)
-    return {"delete": True}

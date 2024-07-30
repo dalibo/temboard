@@ -10,7 +10,7 @@ from temboardui.application import gen_cookie, get_role_by_auth, hash_password
 from temboardui.errors import TemboardUIError
 
 from ...model import orm
-from ..flask import admin_required, anonymous_allowed
+from ..flask import admin_required, anonymous_allowed, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -69,3 +69,14 @@ def get_groups_html():
         vitejs=app.vitejs,
         groups=orm.Groups.all("role").with_session(g.db_session).all(),
     )
+
+
+@app.route("/json/groups/role/<name>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_group(name):
+    """Delete a group of roles."""
+    result = g.db_session.execute(orm.Groups.delete("role", name))
+    if result.rowcount == 0:
+        flask.abort(404, "No such group.")
+    return flask.jsonify()
