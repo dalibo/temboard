@@ -23,19 +23,8 @@ const userModel = reactive({
 });
 
 function open(username) {
-  // Reset dialog state.
-  if (error.value) {
-    error.value.clear();
-  }
+  error.value.clear();
   waiting.value = true;
-
-  // Configure for target user data.
-  currentUsername = username;
-  isNew.value = !username;
-
-  const url = username ? "/json/settings/user/" + username : "/json/settings/all/group/role";
-
-  // First reset the form
   userModel.new_username = "";
   userModel.email = "";
   userModel.phone = "";
@@ -44,32 +33,41 @@ function open(username) {
   userModel.groups = [];
   userModel.is_active = true;
   userModel.is_admin = false;
-  groups.value = [];
+
+  // Configure for target user data.
+  currentUsername = username;
+  isNew.value = !username;
 
   $.ajax({
-    url: url,
+    url: "/json/groups/role",
   })
     .fail((xhr) => {
       waiting.value = false;
       error.value.fromXHR(xhr);
     })
     .done((data) => {
-      groups.value = data.groups.map((group) => ({
-        name: group.name,
-        description: group.description,
-        disabled: false,
-        selected: username ? data.in_groups.includes(group.name) : false,
-      }));
+      groups.value = data;
+      waiting.value = false;
+    });
 
-      if (username) {
-        userModel.new_username = data.role_name;
-        userModel.email = data.role_email;
-        userModel.phone = data.role_phone;
-        userModel.is_active = data.is_active;
-        userModel.is_admin = data.is_admin;
-        userModel.groups = groups.value.filter((group) => group.selected).map((group) => group);
-      }
+  if (!username) {
+    return;
+  }
 
+  $.ajax({
+    url: `/json/settings/user/${username}`,
+  })
+    .fail((xhr) => {
+      waiting.value = false;
+      error.value.fromXHR(xhr);
+    })
+    .done((data) => {
+      userModel.new_username = data.role_name;
+      userModel.email = data.role_email;
+      userModel.phone = data.role_phone;
+      userModel.is_active = data.is_active;
+      userModel.is_admin = data.is_admin;
+      userModel.groups = data.in_groups;
       waiting.value = false;
     });
 }
@@ -151,7 +149,7 @@ defineExpose({ open });
                 <option
                   v-for="group of groups"
                   :value="group.name"
-                  :selected="userModel.groups.includes(group)"
+                  :selected="userModel.groups.includes(group.name)"
                   :key="group.key"
                 >
                   {{ group.name }}

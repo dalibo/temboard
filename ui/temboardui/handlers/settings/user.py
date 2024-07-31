@@ -7,7 +7,6 @@ from temboardui.application import (
     check_role_phone,
     delete_role,
     delete_role_from_group,
-    get_group_list,
     get_groups_by_role,
     get_role,
     get_role_list,
@@ -54,7 +53,6 @@ def json_user(request, username):
         if username is None:
             raise HTTPError(500, "Username is missing")
         role = get_role(request.db_session, username)
-        groups = get_group_list(request.db_session)
 
         return {
             "role_name": role.role_name,
@@ -63,10 +61,6 @@ def json_user(request, username):
             "is_active": role.is_active,
             "is_admin": role.is_admin,
             "in_groups": [group.group_name for group in role.groups],
-            "groups": [
-                {"name": group.group_name, "description": group.group_description}
-                for group in groups
-            ],
         }
     elif "POST" == request.method:  # update
         data = request.json

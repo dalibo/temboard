@@ -17,22 +17,6 @@ logger = logging.getLogger(__name__)
 PREFIX = r"/json/settings"
 
 
-@app.route(PREFIX + r"/all/group/role$")
-@admin_required
-def all_group(request):
-    groups = get_group_list(request.db_session, "role")
-    return {
-        "groups": [
-            {
-                "name": group.group_name,
-                "kind": group.group_kind,
-                "description": group.group_description,
-            }
-            for group in groups
-        ]
-    }
-
-
 @app.route(
     PREFIX + r"/group/(role|instance)(?:/([0-9a-z\-_\.]{3,16}))?$",
     methods=["GET", "POST"],
