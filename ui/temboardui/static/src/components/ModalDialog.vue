@@ -7,7 +7,7 @@ defineProps(["id", "title"]);
 const emit = defineEmits(["closed"]);
 const root = ref(null);
 onMounted(() => {
-  $(root.value).on("hidden.bs.modal", () => {
+  root.value.addEventListener("hidden.bs.modal", () => {
     emit("closed");
   });
 });
