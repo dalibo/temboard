@@ -192,6 +192,25 @@ class AccessRoleInstance(Model):
     instance_group_name = Column(types.UnicodeText)
     instance_group_kind = Column(types.UnicodeText)
 
+    @classmethod
+    def insert(cls, role, instance):
+        return (
+            sqlalchemy.insert(cls.__table__)
+            .returning(*cls.__mapper__.c.values())
+            .values(
+                role_group_kind="role",
+                role_group_name=role,
+                instance_group_kind="instance",
+                instance_group_name=instance,
+            )
+        )
+
+    @classmethod
+    def delete(cls, role, instance):
+        return sqlalchemy.delete(cls.__table__).where(
+            cls.role_group_name == role, cls.instance_group_name == instance
+        )
+
 
 class Roles(Model):
     __tablename__ = "roles"
@@ -432,11 +451,16 @@ class Groups(Model):
     )
 
     def asdict(self):
-        return dict(
+        d = dict(
             name=self.group_name,
             kind=self.group_kind,
             description=self.group_description,
         )
+        if self.group_kind == "instance":
+            d["role_groups"] = [ari.role_group_name for ari in self.ari]
+        else:
+            d["instance_groups"] = [ari.instance_group_name for ari in self.ari]
+        return d
 
     @classmethod
     def get(cls, kind, name):
@@ -451,6 +475,14 @@ class Groups(Model):
         return Query(cls).from_statement(
             text(QUERIES["groups-all"])
             .bindparams(kind=kind)
+            .columns(*cls.__mapper__.c.values())
+        )
+
+    @classmethod
+    def insert(cls, kind, name, description):
+        return Query(cls).from_statement(
+            text(QUERIES["groups-insert"])
+            .bindparams(kind=kind, name=name, description=description)
             .columns(*cls.__mapper__.c.values())
         )
 

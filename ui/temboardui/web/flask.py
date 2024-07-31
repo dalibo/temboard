@@ -1,5 +1,6 @@
 # Flask WSGI app is served by Tornado's fallback handler.
 
+import contextlib
 import functools
 import json
 import logging
@@ -423,3 +424,12 @@ def transaction(func):
             g.db_session.commit()
 
     return autocommit_wrapper
+
+
+@contextlib.contextmanager
+def validating():
+    # Translate ValueError to HTTP 408
+    try:
+        yield
+    except ValueError as e:
+        raise abort(408, str(e))

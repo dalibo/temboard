@@ -8,8 +8,9 @@ from flask import current_app, g
 
 from ... import agentclient
 from ...model import QUERIES, orm
+from ...toolkit import validators
 from ...toolkit.utils import utcnow
-from ..flask import admin_required, transaction
+from ..flask import admin_required, transaction, validating
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,14 @@ def get_instance_groups_html():
         vitejs=current_app.vitejs,
         groups=orm.Groups.all("instance").with_session(g.db_session).all(),
     )
+
+
+@current_app.route("/json/groups/instance", methods=["POST"])
+@admin_required
+@transaction
+def post_instance_group():
+    group = orm.Groups(group_kind="instance")
+    return put_instance_group(group=group)
 
 
 @current_app.route("/json/groups/instance/<name>", methods=["DELETE"])
@@ -44,6 +53,47 @@ def get_instance_groups():
     return flask.jsonify(
         [g.asdict() for g in orm.Groups.all("instance").with_session(g.db_session)]
     )
+
+
+@current_app.route("/json/groups/instance/<name>")
+@admin_required
+def get_instance_group(name):
+    group = orm.Groups.get("instance", name).with_session(g.db_session).one_or_none()
+    if group is None:
+        flask.abort(404, "No such group.")
+    return flask.jsonify(group.asdict())
+
+
+@current_app.route("/json/groups/instance/<name>", methods=["PUT"])
+@admin_required
+@transaction
+def put_instance_group(name=None, group=None):
+    if group is None:
+        group = (
+            orm.Groups.get("instance", name).with_session(g.db_session).one_or_none()
+        )
+    if group is None:
+        flask.abort(404, "No such group.")
+
+    with validating():
+        group.group_name = validators.slug(flask.request.json["name"])
+    group.group_description = flask.request.json["description"]
+    g.db_session.add(group)  # When called from post_instance_group
+    g.db_session.flush()
+
+    # Synchronize access role instance
+    current_role_groups = {ari.role_group_name for ari in group.ari}
+    new_role_groups = set(flask.request.json["role_groups"])
+    for role_group in current_role_groups - new_role_groups:
+        g.db_session.execute(
+            orm.AccessRoleInstance.delete(role_group, group.group_name)
+        )
+    for role_group in new_role_groups - current_role_groups:
+        g.db_session.execute(
+            orm.AccessRoleInstance.insert(role_group, group.group_name)
+        )
+
+    return flask.jsonify(group.asdict())
 
 
 @current_app.route("/json/instances", methods=["POST"])

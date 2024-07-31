@@ -10,7 +10,7 @@
 <div id="vue-app">
   <environment-migration-dialog ref="environment_migration_dialog" object-class="group" title="Instance group in multiple user groups"></environment-migration-dialog>
   <delete-group-dialog kind="instance" ref="deleteModal"></delete-group-dialog>
-  <update-group-dialog kind="instance" ref="updateModal"></update-group-dialog>
+  <edit-group-dialog kind="instance" ref="editModal"></edit-group-dialog>
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
@@ -21,7 +21,7 @@
         <div class="col-md-12 text-end">
           <p>
             <button id="buttonLoadAddGroupForm" class="btn btn-success btn-sm"
-              @click.prevent="$refs.updateModal.open()"
+              @click.prevent="$refs.editModal.open()"
             >
               New group
             </button>
@@ -61,7 +61,7 @@
               data-bs-placement="bottom"
               data-action="edit"
               title="Edit"
-              @click.prevent="$refs.updateModal.open('{{ group.group_name }}')"
+              @click.prevent="$refs.editModal.open('{{ group.group_name }}')"
             ><i class="fa fa-edit"></i>
             </button>
             <button
