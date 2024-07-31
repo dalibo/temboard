@@ -19,7 +19,7 @@ createApp({
       new DataTablesLib("#tableGroups", {
         stateSave: true,
         autoWidth: false,
-        columns: [{ width: "32rem" }, { width: "auto" }, { width: "6rem" }],
+        columns: [{ width: "32rem" }, { width: "auto" }, { width: "auto" }, { width: "6rem" }],
       });
     });
   },

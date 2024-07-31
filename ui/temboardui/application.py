@@ -17,7 +17,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from temboardui.errors import TemboardUIError
 from temboardui.model.orm import (
     AccessRoleInstance,
-    Groups,
     InstanceGroups,
     Instances,
     RoleGroups,
@@ -130,116 +129,6 @@ def get_role_list(session):
     )
 
 
-"""
-Groups
-"""
-
-
-def add_group(session, group_name, group_description, group_kind):
-    try:
-        group = Groups(
-            group_name=str(group_name),
-            group_description=str(group_description),
-            group_kind=str(group_kind),
-        )
-        session.add(group)
-        session.flush()
-        return group
-    except IntegrityError as e:
-        if str(e).find("groups_group_kind_check") > 0:
-            raise TemboardUIError(400, "Group kind '%s' does not exist." % (group_kind))
-        elif str(e).find("groups_pkey") > 0:
-            raise TemboardUIError(
-                400, "Group '%s' ('%s') already exists." % (group_name, group_kind)
-            )
-        else:
-            raise
-
-
-def get_group(session, group_name, group_kind):
-    try:
-        if group_kind == "role":
-            return (
-                session.query(Groups)
-                .filter_by(group_name=str(group_name), group_kind=str(group_kind))
-                .one()
-            )
-        else:
-            return (
-                session.query(Groups)
-                .options(joinedload(Groups.ari))
-                .filter(
-                    Groups.group_name == str(group_name),
-                    Groups.group_kind == str(group_kind),
-                )
-                .one()
-            )
-    except AttributeError:
-        raise TemboardUIError(400, f"Group '{group_name}' ({group_kind}) not found.")
-
-
-def update_group(
-    session, group_name, group_kind, new_group_name=None, group_description=None
-):
-    try:
-        group = (
-            session.query(Groups)
-            .filter_by(group_name=str(group_name), group_kind=str(group_kind))
-            .first()
-        )
-        if new_group_name is not None:
-            group.group_name = str(new_group_name)
-        if group_description is not None:
-            group.group_description = str(group_description)
-        session.merge(group)
-        session.flush()
-        return group
-    except IntegrityError as e:
-        if str(e).find("groups_pkey") > 0:
-            raise TemboardUIError(
-                400, "Group name '%s' already in use." % (new_group_name)
-            )
-        else:
-            raise
-    except AttributeError:
-        raise TemboardUIError(
-            400, "Group '%s' ('%s') not found." % (group_name, group_kind)
-        )
-
-
-def delete_group(session, group_name, group_kind):
-    try:
-        group = (
-            session.query(Groups)
-            .filter(
-                Groups.group_name == str(group_name),
-                Groups.group_kind == str(group_kind),
-            )
-            .one()
-        )
-        session.delete(group)
-    except NoResultFound:
-        raise TemboardUIError(400, "Group '%s' not found." % (group_name))
-
-
-def get_group_list(session, group_kind="role"):
-    if group_kind == "role":
-        return (
-            session.query(Groups)
-            .filter(Groups.group_kind == str(group_kind))
-            .order_by(Groups.group_name)
-            .all()
-        )
-    else:
-        return (
-            session.query(Groups)
-            .options(joinedload(Groups.ari))
-            .filter(Groups.group_kind == str(group_kind))
-            .order_by(Groups.group_name)
-            .all()
-        )
-
-
 def add_role_in_group(session, role_name, group_name):
     try:
         role_group = RoleGroups(role_name=str(role_name), group_name=str(group_name))
@@ -307,54 +196,6 @@ Instances
 
 def get_instance(session, agent_address, agent_port):
     return Instances.get(agent_address, agent_port).with_session(session).first()
-
-
-def add_role_group_in_instance_group(session, role_group_name, instance_group_name):
-    try:
-        ari = AccessRoleInstance(
-            role_group_name=str(role_group_name),
-            instance_group_name=str(instance_group_name),
-        )
-        session.add(ari)
-        session.flush()
-    except IntegrityError as e:
-        if str(e).find("access_role_instance_pkey") > 0:
-            raise TemboardUIError(
-                400,
-                "Group '%s' ('role') has already access to '%s'."
-                % (role_group_name, instance_group_name),
-            )
-        elif str(e).find("access_role_instance_instance_group_name_fkey") > 0:
-            raise TemboardUIError(
-                400, "Instance group '%s' does not exist." % (instance_group_name)
-            )
-        elif str(e).find("access_role_instance_role_group_name_fkey") > 0:
-            raise TemboardUIError(
-                400, "Role group '%s' does not exist." % (role_group_name)
-            )
-        else:
-            raise
-
-
-def delete_role_group_from_instance_group(
-    session, role_group_name, instance_group_name
-):
-    try:
-        ari = (
-            session.query(AccessRoleInstance)
-            .filter(
-                AccessRoleInstance.role_group_name == str(role_group_name),
-                AccessRoleInstance.instance_group_name == str(instance_group_name),
-            )
-            .one()
-        )
-        session.delete(ari)
-    except NoResultFound:
-        raise TemboardUIError(
-            400,
-            "Role group '%s' not found in instance group '%s'."
-            % (role_group_name, instance_group_name),
-        )
 
 
 def get_role_by_auth(session, role_name, role_password):
@@ -467,23 +308,6 @@ def check_role_phone(role_phone):
     r_role_phone = re.compile(p_role_phone)
     if not r_role_phone.match(role_phone):
         raise TemboardUIError(400, "Phone must look like +14155552671")
-
-
-def check_group_name(group_name):
-    p_group_name = r"^([a-z0-9_\-.]{3,16})$"
-    r_group_name = re.compile(p_group_name)
-    if not r_group_name.match(group_name):
-        raise TemboardUIError(
-            400,
-            "Invalid group name, must satisfy this regexp pattern: %s" % (p_group_name),
-        )
-
-
-def check_group_description(group_description):
-    if len(group_description) > 255:
-        raise TemboardUIError(
-            400, "Invalid group description, must be a 256 char (max) length " "string."
-        )
 
 
 def send_mail(

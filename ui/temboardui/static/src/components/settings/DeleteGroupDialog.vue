@@ -14,32 +14,15 @@ const waiting = ref(false);
 const groupName = ref("");
 
 function open(name) {
-  new Modal(root.value.$el).show();
   groupName.value = name;
-  waiting.value = true;
-  $.ajax({
-    url: ["/json/settings/group", props.kind, name].join("/"),
-    type: "get",
-    async: true,
-    contentType: "application/json",
-    dataType: "json",
-    success: function () {
-      waiting.value = false;
-    },
-    error: function (xhr) {
-      error.value.fromXHR(xhr);
-    },
-  });
+  new Modal(root.value.$el).show();
 }
 
 function delete_() {
   waiting.value = true;
   $.ajax({
-    url: "/json/settings/delete/group/" + props.kind,
-    type: "post",
-    contentType: "application/json",
-    dataType: "json",
-    data: JSON.stringify({ group_name: groupName.value }),
+    url: `/json/groups/${props.kind}/${groupName.value}`,
+    type: "DELETE",
     success: function () {
       window.location.reload();
     },

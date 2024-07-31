@@ -3,99 +3,102 @@ import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
 
-import Error from "../Error.vue";
-import ModalDialog from "../ModalDialog.vue";
+import Error from "./Error.vue";
+import ModalDialog from "./ModalDialog.vue";
 
 const props = defineProps(["kind"]);
 
 const root = ref(null);
 const error = ref(null);
 const waiting = ref(false);
-const groupName = ref("");
-const groupDescription = ref("");
-const groups = ref([]);
-const groupInGroups = ref([]);
-const isNew = ref(false);
-let initialName = undefined;
+const initName = ref("");
+const name = ref("");
+const description = ref("");
+const roleGroups = ref([]);
+const allRoleGroups = ref([]);
 
-function open(name) {
-  error.value.clear();
-  initialName = name;
-  isNew.value = !name;
+function open(openName) {
+  reset();
+  initName.value = openName;
+  name.value = openName;
   new Modal(root.value.$el).show();
-  groupName.value = name;
+
+  if (props.kind == "instance") {
+    waiting.value = true;
+    $.ajax({
+      url: "/json/groups/role",
+      contentType: "application/json",
+      error: ajaxError,
+      success: function (data) {
+        allRoleGroups.value = data;
+        waiting.value = false;
+      },
+    });
+  }
+
+  if (!initName.value) {
+    return;
+  }
+
   waiting.value = true;
-
-  // First reset form
-  groupName.value = "";
-  groupDescription.value = "";
-  groups.value = [];
-  groupInGroups.value = [];
-
-  const url = name ? ["/json/settings/group", props.kind, name].join("/") : "/json/settings/all/group/role";
   $.ajax({
-    url: url,
-    type: "get",
-    async: true,
+    url: `/json/groups/${props.kind}/${initName.value}`,
     contentType: "application/json",
-    dataType: "json",
+    error: ajaxError,
     success: function (data) {
-      // Then load new data
-      if (name) {
-        groupName.value = data.name;
-        groupDescription.value = data.description;
-        if (props.kind == "instance") {
-          groups.value = data.user_groups;
-          groupInGroups.value = data.in_groups;
-        }
-      } else {
-        groups.value = data.groups;
+      description.value = data.description;
+      if (props.kind == "instance") {
+        roleGroups.value = data.role_groups;
       }
       waiting.value = false;
-    },
-    error: function (xhr) {
-      error.value.fromXHR(xhr);
     },
   });
 }
 
 function submit() {
+  console.log(roleGroups.value);
   const data = {
-    new_group_name: groupName.value,
-    description: groupDescription.value,
+    name: name.value,
+    description: description.value,
+    role_groups: $("#selectGroups").val(),
   };
 
-  if (props.kind == "instance") {
-    Object.assign(data, { user_groups: $("#selectGroups").val() });
+  let url = `/json/groups/${props.kind}`;
+  if (initName.value) {
+    url += `/${initName.value}`;
   }
-
   waiting.value = true;
-  const parts = ["/json/settings/group", props.kind];
-  if (!isNew.value) {
-    parts.push(initialName);
-  }
   $.ajax({
-    url: parts.join("/"),
-    type: "post",
+    url: url,
+    type: initName.value ? "PUT" : "POST",
     data: JSON.stringify(data),
-    async: true,
     contentType: "application/json",
-    dataType: "json",
+    error: ajaxError,
     success: function () {
       window.location.reload();
     },
-    error: function (xhr) {
-      waiting.value = false;
-      error.value.fromXHR(xhr);
-    },
   });
+}
+
+function ajaxError(xhr) {
+  error.value.fromXHR(xhr);
+  waiting.value = false;
+}
+
+function reset() {
+  error.value.clear();
+  name.value = "";
+  description.value = "";
+  roleGroups.value = [];
+  initName.value = false;
+  waiting.value = false;
 }
 
 defineExpose({ open });
 </script>
 
 <template>
-  <ModalDialog id="modalUpdateGroup" :title="`${isNew ? 'Create' : 'Update'} ${kind} group`" ref="root">
+  <ModalDialog id="modalEditGroup" :title="`${initName ? 'Update' : 'Create'} ${kind} group`" ref="root">
     <form @submit.prevent="submit">
       <div class="modal-body p-3">
         <div class="row">
@@ -111,7 +114,7 @@ defineExpose({ open });
               class="form-control"
               id="inputNewGroupname"
               placeholder="New group name"
-              v-model="groupName"
+              v-model="name"
             />
           </div>
           <template v-if="kind == 'instance'">
@@ -119,9 +122,9 @@ defineExpose({ open });
               <label for="selectGroups" class="form-label">User groups</label><br />
               <select id="selectGroups" multiple="multiple">
                 <option
-                  v-for="group of groups"
+                  v-for="group of allRoleGroups"
                   :value="group.name"
-                  :selected="groupInGroups.includes(group.name)"
+                  :selected="roleGroups.includes(group.name)"
                   :key="group.key"
                 >
                   {{ group.name }}
@@ -141,8 +144,8 @@ defineExpose({ open });
               rows="3"
               placeholder="Description"
               id="inputDescription"
-              v-model="groupDescription"
-              >{{ groupDescription }}</textarea
+              v-model="description"
+              >{{ description }}</textarea
             >
           </div>
         </div>
@@ -150,7 +153,7 @@ defineExpose({ open });
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button id="buttonSubmit" class="btn btn-success ms-auto" type="submit" v-bind:disabled="waiting">
-          {{ isNew ? "Create" : "Update" }}
+          {{ initName ? "Update" : "Create" }}
           <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
         </button>
       </div>

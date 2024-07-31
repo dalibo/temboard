@@ -151,3 +151,11 @@ def url(raw):
     if not url.netloc:
         raise ValueError("Missing host and port")
     return raw
+
+
+def slug(raw):
+    if not re.match(r"^[a-z0-9_\-.]{3,16}$", raw):
+        raise ValueError(
+            "identifier must be 3-16 characters long, lowercase or numbers, and may contain point, hyphen or underscore"
+        )
+    return raw

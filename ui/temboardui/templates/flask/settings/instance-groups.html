@@ -1,29 +1,29 @@
-{% extends ../base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / Settings / {{ group_kind.title() }}s / Groups{% end %}
+{% block title %}temBoard / Settings / Instances / Groups{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('settings.group.js') %}{% raw link %}{% end %}
-{% end %}
+{% for link in vitejs.css_links_for('settings.group.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
 
 {% block content %}
 <div id="vue-app">
   <environment-migration-dialog ref="environment_migration_dialog" object-class="group" title="Instance group in multiple user groups"></environment-migration-dialog>
-  <delete-group-dialog kind="{{ group_kind }}" ref="deleteModal"></delete-group-dialog>
-  <update-group-dialog kind="{{ group_kind }}" ref="updateModal"></update-group-dialog>
+  <delete-group-dialog kind="instance" ref="deleteModal"></delete-group-dialog>
+  <edit-group-dialog kind="instance" ref="editModal"></edit-group-dialog>
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
-      {% include menu.html %}
+      {% include "settings/nav.html" %}
     </div>
     <div class="col-md-9 col-xl-10">
       <div class="row">
         <div class="col-md-12 text-end">
           <p>
             <button id="buttonLoadAddGroupForm" class="btn btn-success btn-sm"
-              @click.prevent="$refs.updateModal.open()"
+              @click.prevent="$refs.editModal.open()"
             >
-              New {%if group_kind == 'role'%}user{%else%}instance{%end%} group
+              New group
             </button>
           </p>
         </div>
@@ -33,21 +33,17 @@
         <tr>
           <th>Name</th>
           <th>Description</th>
-          {% if group_kind == 'instance' %}
           <th>User groups</th>
-          {% end %}
-          <th class="no-sort"></th>
-          <th class="no-sort"></th>
+          <th data-dt-order="disable"></th>
         </tr>
       </thead>
       <tbody>
-      {% for group_item in group_list %}
+      {% for group in groups %}
         <tr>
-          <td>{{group_item.group_name}}</td>
-          <td>{{group_item.group_description}}</td>
-          {% if group_kind == 'instance' %}
-          <td>{% for ari in group_item.ari %} <span class="badge border text-body-secondary">{{ari.role_group_name}}</span>{% end %}
-            {% if len(group_item.ari) > 1 %}
+          <td>{{group.group_name}}</td>
+          <td>{{group.group_description}}</td>
+          <td>{% for ari in group.ari %} <span class="badge border text-body-secondary">{{ari.role_group_name}}</span>{% endfor %}
+            {% if group.ari|length > 1 %}
               <i
                 class="fa fa-warning text-warning"
                 style="cursor: pointer;"
@@ -55,22 +51,19 @@
                 data-bs-toggle="modal"
                 v-on:click="$refs.environment_migration_dialog.show()">
               </i>
-            {% end %}
+            {% endif %}
           </td>
-          {% end %}
           <td class="text-center">
             <button
               type="button"
-              class="btn btn-outline-secondary btn-sm"
+              class="btn btn-outline-secondary btn-sm m-1"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
               data-action="edit"
               title="Edit"
-              @click.prevent="$refs.updateModal.open('{{ group_item.group_name }}')"
+              @click.prevent="$refs.editModal.open('{{ group.group_name }}')"
             ><i class="fa fa-edit"></i>
             </button>
-          </td>
-          <td class="text-center">
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm"
@@ -78,18 +71,15 @@
               data-bs-placement="bottom"
               data-action="delete"
               title="Delete"
-              @click.prevent="$refs.deleteModal.open('{{ group_item.group_name }}')"
+              @click.prevent="$refs.deleteModal.open('{{ group.group_name }}')"
             ><i class="fa fa-trash-o"></i></button>
           </td>
         </tr>
-      {% end %}
+      {% endfor %}
       </tbody>
       </table>
     </div>
   </div>
 </div>
-<script type="application/javascript">
-  var group_kind = "{{ group_kind }}";
-</script>
-<script type="module" src="{{ vitejs.url_for('settings.group.js') }}"></script>
-{% end %}
+<script type="module" src="{{ vitejs.url_for('settings.instance-groups.js') }}"></script>
+{% endblock %}
