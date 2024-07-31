@@ -40,9 +40,13 @@ onUpdated(() => {
 });
 
 function submit() {
+  const plugins = $(root.value)
+    .find("input:checkbox[name=plugins]:checked")
+    .toArray()
+    .map((i) => i.value);
   const data = {
     groups: $("#selectGroups" + props.type).val(),
-    plugins: $("#selectPlugins" + props.type).val(),
+    plugins: plugins,
     notify: $("#inputNotify" + props.type).is(":checked"),
     comment: commentModel.value,
   };
@@ -90,19 +94,20 @@ const emit = defineEmits(["submit"]);
         </div>
         <div id="divPlugins" class="mb-3 col-sm-6" v-if="plugins.length > 0">
           <label :for="'selectPlugins' + type" class="form-label">Plugins</label>
-          <select :id="'selectPlugins' + type" :disabled="waiting" multiple="multiple">
-            <option
-              v-for="plugin of plugins"
-              :key="plugin.name"
+          <div class="form-check" v-for="plugin of plugins">
+            <input
+              class="form-check-input"
+              type="checkbox"
               :value="plugin.name"
-              :selected="plugin.selected"
+              :id="`pluginCheckbox_${plugin.name}`"
+              :checked="plugin.selected"
               :disabled="plugin.disabled ? 'disabled' : null"
               :class="{ disabled: plugin.disabled }"
               :title="plugin.disabled ? 'Plugin disabled by agent.' : null"
-            >
-              {{ plugin.name }}
-            </option>
-          </select>
+              name="plugins"
+            />
+            <label class="form-check-label" :for="`pluginCheckbox_${plugin.name}`"> {{ plugin.name }} </label>
+          </div>
         </div>
       </div>
       <div class="row">
