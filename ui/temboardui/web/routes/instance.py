@@ -23,3 +23,10 @@ def instance_about():
         role=g.current_user,
         vitejs=app.vitejs,
     )
+
+
+@app.route("/explain")
+def explain():
+    return render_template(
+        "explain.html", nav=True, role=g.current_user, vitejs=app.vitejs
+    )

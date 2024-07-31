@@ -38,6 +38,17 @@
         </div>
         {% end %}
         <ul class="navbar-nav">
+          <li class="nav-item">
+            <a
+              href="/explain"
+              data-toggle="tooltip"
+              class="nav-link"
+              role="button"
+              title="Visualize Query Plan with PEV2">
+              <i class="fa fa-sitemap"></i>
+              Explain
+            </a>
+          </li>
           {% if role.is_admin %}
           <li class="nav-item">
             <a id="linkSettings"

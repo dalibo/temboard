@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard / PEV2{% endblock %}
+
+{% block head %}
+{% for link in vitejs.css_links_for('explain.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
+
+{% block content %}
+<div id="app">
+  <div class="row">
+    <div class="col-sm-7 mx-auto mb-4">
+      <h4>Graphical vizualization of a PostgreSQL execution plan</h4>
+      <a href="https://github.com/dalibo/pev2"><img src="/images/logo_pev2.svg" style="width: 35px;" alt="Logo PEV2" style=""></a> With <a href="https://github.com/dalibo/pev2"><b>PEV2</b></a>.
+    </div>
+  </div>
+  <explain></explain>
+</div>
+<script type="module" src="{{ vitejs.url_for('explain.js') }}"></script>
+{% endblock %}
