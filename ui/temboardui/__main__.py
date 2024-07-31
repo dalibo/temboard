@@ -32,6 +32,7 @@ def main(*a, **kw):
     __import__(__package__ + ".web.routes.core")
     __import__(__package__ + ".web.routes.auth")
     __import__(__package__ + ".web.routes.inventory")
+    __import__(__package__ + ".web.routes.home")
     __import__(__package__ + ".web.routes.instance")
     __import__(__package__ + ".web.routes.settings")
 

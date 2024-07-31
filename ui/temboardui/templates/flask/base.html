@@ -37,6 +37,7 @@
             <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
           </div>
           {% endif %}
+          {% if role %}
           <ul class="navbar-nav">
             {% if role.is_admin %}
             <li class="nav-item">
@@ -62,6 +63,7 @@
               </div>
             </li>
           </ul>
+          {% endif %}
         </div>
       </div>
       {% endif %}

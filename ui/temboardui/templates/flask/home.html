@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard{% endblock %}
+
+{% block head %}
+  {% for link in vitejs.css_links_for('home.js') %}
+    {{ link | safe}}
+  {% endfor %}
+{% endblock %}
+
+{% block content %}
+<div id="app">
+  <home
+    :is-admin="{{ 'true' if role.is_admin else 'false' }}"
+    :groups='{{ groups | map(attribute=0) | list | tojson }}'>
+  </home>
+</div>
+<script type="module" src="{{ vitejs.url_for('home.js') }}"></script>
+{% endblock %}
