@@ -162,7 +162,7 @@
             </div>
           </div>
           <div class="main ms-auto p-3 position-relative">
-          {% if instance.status is defined %}
+          {% if instance.status is defined and instance.status %}
           {% set s = instance.status %}
           {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
             <div class="alert alert-warning" role="alert" >
