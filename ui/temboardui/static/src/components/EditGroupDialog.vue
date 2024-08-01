@@ -56,7 +56,6 @@ function open(openName) {
 }
 
 function submit() {
-  console.log(roleGroups.value);
   const data = {
     name: name.value,
     description: description.value,
