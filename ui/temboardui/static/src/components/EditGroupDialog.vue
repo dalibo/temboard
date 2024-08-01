@@ -2,6 +2,7 @@
 import { Modal } from "bootstrap";
 import $ from "jquery";
 import { ref } from "vue";
+import Multiselect from "vue-multiselect";
 
 import Error from "./Error.vue";
 import ModalDialog from "./ModalDialog.vue";
@@ -14,8 +15,8 @@ const waiting = ref(false);
 const initName = ref("");
 const name = ref("");
 const description = ref("");
-const roleGroups = ref([]);
-const allRoleGroups = ref([]);
+const selectedGroups = ref([]);
+const availableGroups = ref([]);
 
 function open(openName) {
   reset();
@@ -30,7 +31,7 @@ function open(openName) {
       contentType: "application/json",
       error: ajaxError,
       success: function (data) {
-        allRoleGroups.value = data;
+        availableGroups.value = data.map((r) => r.name);
         waiting.value = false;
       },
     });
@@ -48,7 +49,7 @@ function open(openName) {
     success: function (data) {
       description.value = data.description;
       if (props.kind == "instance") {
-        roleGroups.value = data.role_groups;
+        selectedGroups.value = data.role_groups;
       }
       waiting.value = false;
     },
@@ -59,7 +60,7 @@ function submit() {
   const data = {
     name: name.value,
     description: description.value,
-    role_groups: $("#selectGroups").val(),
+    role_groups: selectedGroups.value,
   };
 
   let url = `/json/groups/${props.kind}`;
@@ -88,7 +89,7 @@ function reset() {
   error.value.clear();
   name.value = "";
   description.value = "";
-  roleGroups.value = [];
+  selectedGroups.value = [];
   initName.value = false;
   waiting.value = false;
 }
@@ -118,17 +119,16 @@ defineExpose({ open });
           </div>
           <template v-if="kind == 'instance'">
             <div class="mb-3 col-sm-6">
-              <label for="selectGroups" class="form-label">User groups</label><br />
-              <select id="selectGroups" multiple="multiple">
-                <option
-                  v-for="group of allRoleGroups"
-                  :value="group.name"
-                  :selected="roleGroups.includes(group.name)"
-                  :key="group.key"
-                >
-                  {{ group.name }}
-                </option>
-              </select>
+              <label class="form-label">User groups</label><br />
+              <multiselect
+                id="selectGroups"
+                v-model="selectedGroups"
+                :options="availableGroups"
+                :multiple="true"
+                :hide-selected="true"
+                :searchable="false"
+                select-label=""
+              ></multiselect>
               <p class="form-text text-body-secondary">
                 Please select the user groups allowed to view instances from this instance group.
               </p>
