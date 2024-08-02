@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-$("#sendEmailForm").submit(function (e) {
+$("#sendEmailForm").on("submit", function (e) {
   e.preventDefault();
   sendEmail();
 });
 
-$("#sendSmsForm").submit(function (e) {
+$("#sendSmsForm").on("submit", function (e) {
   e.preventDefault();
   sendSms();
 });
@@ -15,6 +15,7 @@ function sendEmail() {
   $.ajax({
     url: "/json/test_email",
     type: "post",
+    contentType: "application/json",
     data: JSON.stringify({
       email: $("#inputTestEmail").val(),
     }),
@@ -35,6 +36,7 @@ function sendSms() {
   $.ajax({
     url: "/json/test_sms",
     type: "post",
+    contentType: "application/json",
     data: JSON.stringify({
       phone: $("#inputTestPhone").val(),
     }),
