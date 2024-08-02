@@ -1,11 +1,11 @@
-{% extends ../base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / Settings / Notifications{% end %}
+{% block title %}{{ super() }}Settings / Notifications{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-md-3 col-xl-2">
-    {% include menu.html %}
+    {% include "settings/nav.html" %}
   </div>
   <div class="col-md-8 col-xl-10">
     <div class="row">
@@ -26,7 +26,7 @@
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not email_configured else '' }}>Test email notification</button>
           {% if not email_configured %}
           <p class="form-help mb-2 ms-2 text-danger">SMTP is not configured yet</p>
-          {% end %}
+          {% endif %}
           </div>
         </form>
         <form class="row row-cols-lg-auto" id="sendSmsForm">
@@ -37,7 +37,7 @@
           <button type="submit" class="btn btn-primary mb-2" {{ 'disabled' if not sms_configured else '' }}>Test SMS notification</button>
           {% if not sms_configured %}
           <p class="form-help mb-2 ms-2 text-danger">Twilio is not configured yet</p>
-          {% end %}
+          {% endif %}
           </div>
         </form>
       </div>
@@ -45,4 +45,4 @@
   </div>
 </div>
 <script type="module" src="{{ vitejs.url_for('settings.notifications.js') }}"></script>
-{% end %}
+{% endblock %}

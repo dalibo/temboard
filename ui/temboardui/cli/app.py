@@ -180,7 +180,6 @@ def bootstrap_tornado_app(tornado_app, config):
     # Load handlers
     __import__("temboardui.handlers.notification")
     __import__("temboardui.handlers.settings.user")
-    __import__("temboardui.handlers.settings.notifications")
     __import__("temboardui.handlers.settings.metadata")
 
     tornado_app.configure(
