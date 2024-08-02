@@ -1,10 +1,10 @@
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Maintenance{% end %}
+{% block title %}{{ super() }}/ Maintenance{% endblock %}
 
 {% block content %}
 
-{% include breadcrumb.html %}
+{% include "maintenance/breadcrumb.html" %}
 <div id="app">
   <maintenanceindex
     api-url="/proxy/{{ instance.agent_address }}/{{ instance.agent_port }}/maintenance"
@@ -16,4 +16,4 @@
 </div>
 
 <script type="module" src="{{ vitejs.url_for('maintenance.js') }}"></script>
-{% end %}
+{% endblock %}

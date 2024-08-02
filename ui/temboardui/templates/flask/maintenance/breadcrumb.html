@@ -1,46 +1,46 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    {% set active = 'active' if 'database' not in globals() else '' %}
+    {% set active = 'active' if database is not defined else '' %}
     <li class="breadcrumb-item {{ active }}">
       {% if not active %}
       <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance">
-      {% end %}
+      {% endif %}
         All Databases
       {% if not active %}
       </a>
-      {% end %}
+      {% endif %}
     </li>
-    {% set active = 'active' if 'schema' not in globals() else '' %}
-    {% if 'database' in globals() %}
+    {% set active = 'active' if schema is not defined else '' %}
+    {% if database is defined %}
     <li class="breadcrumb-item {{ active }}">
       <em class="text-body-secondary small">Database:</em>
       {% if not active %}
       <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance/{{ database }}">
-      {% end %}
+      {% endif %}
         {{ database }}
       {% if not active %}
       </a>
-      {% end %}
+      {% endif %}
     </li>
-    {% end %}
-    {% set active = 'active' if 'table' not in globals() else '' %}
-    {% if 'schema' in globals() %}
+    {% endif %}
+    {% set active = 'active' if table is not defined else '' %}
+    {% if schema is defined %}
     <li class="breadcrumb-item {{ active }}">
       <em class="text-body-secondary small">Schema:</em>
       {% if not active %}
       <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance/{{ database }}/schema/{{ schema }}">
-      {% end %}
+      {% endif %}
         {{ schema }}
       {% if not active %}
       </a>
-      {% end %}
+      {% endif %}
     </li>
-    {% end %}
-    {% if 'table' in globals() %}
+    {% endif %}
+    {% if table is defined %}
     <li class="breadcrumb-item active">
       <em class="text-body-secondary small">Table:</em>
       {{ table }}
     </li>
-    {% end %}
+    {% endif %}
   </ol>
 </nav>
