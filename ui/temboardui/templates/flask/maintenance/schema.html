@@ -1,15 +1,14 @@
-{% autoescape None %}
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Maintenance / {{database}} / {{schema}}{% end %}
+{% block title %}{{ super() }}/ Maintenance / {{database}} / {{schema}}{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('maintenance.schema.js') %}{% raw link %}{% end %}
-{% end %}
+{% for link in vitejs.css_links_for('maintenance.schema.js') %}{{ link | safe }}{% endfor %}
+{% endblock %}
 
 {% block content %}
 
-{% include breadcrumb.html %}
+{% include "maintenance/breadcrumb.html" %}
 
 <div id="app">
   <maintenanceschema
@@ -26,4 +25,4 @@
 </div>
 
 <script type="module" src="{{ vitejs.url_for('maintenance.schema.js') }}"></script>
-{% end %}
+{% endblock %}

@@ -1,11 +1,10 @@
-{% autoescape None %}
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Maintenance / {{database}}{% end %}
+{% block title %}{{ super() }}/ Maintenance / {{database}}{% endblock %}
 
 {% block content %}
 
-{% include breadcrumb.html %}
+{% include "maintenance/breadcrumb.html" %}
 
 
 <div id="app">
@@ -21,4 +20,4 @@
 </div>
 
 <script type="module" src="{{ vitejs.url_for('maintenance.database.js') }}"></script>
-{% end %}
+{% endblock %}
