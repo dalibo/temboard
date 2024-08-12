@@ -17,6 +17,18 @@ def get_instances():
     )
 
 
+@app.route("/settings/groups/instance")
+@admin_required
+def get_instance_groups_html():
+    return render_template(
+        "settings/instance-groups.html",
+        nav=True,
+        role=g.current_user,
+        vitejs=app.vitejs,
+        groups=orm.Groups.all("instance").with_session(g.db_session).all(),
+    )
+
+
 @app.route("/settings/users")
 @admin_required
 def get_users():
