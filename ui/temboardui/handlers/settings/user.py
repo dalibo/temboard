@@ -12,7 +12,7 @@ from temboardui.application import (
     update_role,
 )
 from temboardui.errors import TemboardUIError
-from temboardui.web.tornado import HTTPError, admin_required, app
+from temboardui.web.tornado import admin_required, app
 
 
 @app.route(r"/json/settings/user", methods=["POST"])
@@ -35,50 +35,36 @@ def create_user(request):
     return {"message": "OK"}
 
 
-@app.route(r"/json/settings/user/([0-9a-z\-_\.]{3,16})$", methods=["GET", "POST"])
+@app.route(r"/json/settings/user/([0-9a-z\-_\.]{3,16})$", methods=["POST"])
 @admin_required
 def json_user(request, username):
-    if "GET" == request.method:
-        if username is None:
-            raise HTTPError(500, "Username is missing")
-        role = get_role(request.db_session, username)
+    data = request.json
+    role = get_role(request.db_session, username)
+    validate_user_data(data, role)
 
-        return {
-            "role_name": role.role_name,
-            "role_email": role.role_email,
-            "role_phone": role.role_phone,
-            "is_active": role.is_active,
-            "is_admin": role.is_admin,
-            "in_groups": [group.group_name for group in role.groups],
-        }
-    elif "POST" == request.method:  # update
-        data = request.json
-        role = get_role(request.db_session, username)
-        validate_user_data(data, role)
+    h_passwd = handle_password(data)
 
-        h_passwd = handle_password(data)
+    # First step is to remove user from the groups he belongs to.
+    role_groups = get_groups_by_role(request.db_session, role.role_name)
+    if role_groups:
+        for role_group in role_groups:
+            delete_role_from_group(
+                request.db_session, role.role_name, role_group.group_name
+            )
+    role = update_role(
+        request.db_session,
+        role.role_name,
+        data["new_username"],
+        h_passwd,
+        data["email"],
+        data["is_active"],
+        data["is_admin"],
+        data["phone"],
+    )
 
-        # First step is to remove user from the groups he belongs to.
-        role_groups = get_groups_by_role(request.db_session, role.role_name)
-        if role_groups:
-            for role_group in role_groups:
-                delete_role_from_group(
-                    request.db_session, role.role_name, role_group.group_name
-                )
-        role = update_role(
-            request.db_session,
-            role.role_name,
-            data["new_username"],
-            h_passwd,
-            data["email"],
-            data["is_active"],
-            data["is_admin"],
-            data["phone"],
-        )
+    add_user_to_groups(request, data, role)
 
-        add_user_to_groups(request, data, role)
-
-        return {"message": "OK"}
+    return {"message": "OK"}
 
 
 def validate_user_data(data, role=None):

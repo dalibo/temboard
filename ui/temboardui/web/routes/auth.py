@@ -132,6 +132,15 @@ def delete_group(name):
     return flask.jsonify()
 
 
+@app.route("/json/users/<name>")
+@admin_required
+def get_user(name):
+    user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+    if user is None:
+        flask.abort(404, "No such user.")
+    return flask.jsonify(user.asdict())
+
+
 @app.route("/json/users/<name>", methods=["DELETE"])
 @admin_required
 @transaction

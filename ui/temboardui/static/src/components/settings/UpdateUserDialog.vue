@@ -56,19 +56,19 @@ function open(username) {
   }
 
   $.ajax({
-    url: `/json/settings/user/${username}`,
+    url: `/json/users/${username}`,
   })
     .fail((xhr) => {
       waiting.value = false;
       error.value.fromXHR(xhr);
     })
     .done((data) => {
-      userModel.new_username = data.role_name;
-      userModel.email = data.role_email;
-      userModel.phone = data.role_phone;
-      userModel.is_active = data.is_active;
-      userModel.is_admin = data.is_admin;
-      userModel.groups = data.in_groups;
+      userModel.new_username = data.name;
+      userModel.email = data.email;
+      userModel.phone = data.phone;
+      userModel.is_active = data.active;
+      userModel.is_admin = data.admin;
+      userModel.groups = data.groups;
       waiting.value = false;
     });
 }

@@ -259,6 +259,28 @@ class Roles(Model):
             """DELETE FROM application.roles WHERE role_name = :name;"""
         ).bindparams(name=name)
 
+    @classmethod
+    def get(cls, name):
+        return (
+            Query(cls)
+            .from_statement(
+                text(QUERIES["roles-get"])
+                .bindparams(name=name)
+                .columns(*cls.__mapper__.c.values(), *RoleGroups.__mapper__.c.values())
+            )
+            .options(orm.contains_eager(cls.groups))
+        )
+
+    def asdict(self):
+        return dict(
+            name=self.role_name,
+            email=self.role_email,
+            phone=self.role_phone,
+            active=self.is_active,
+            admin=self.is_admin,
+            groups=[g.group_name for g in self.groups],
+        )
+
 
 class StubRole:
     # Fake object for roles not in database.
