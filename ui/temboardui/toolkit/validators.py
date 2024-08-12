@@ -45,12 +45,27 @@ def dir_(raw):
     return raw
 
 
+_email_re = re.compile(r"^([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)$")
+
+
+def email(raw):
+    if not _email_re.match(raw):
+        raise ValueError("invalid email")
+    return raw
+
+
 def file_(raw):
     if not raw:
         return raw
     raw = os.path.realpath(raw)
     if not os.path.exists(raw):
         raise ValueError("%s: File not found" % raw)
+    return raw
+
+
+def password(raw):
+    if len(raw) < 8:
+        raise ValueError("Password must be at least 8 characters long")
     return raw
 
 
@@ -61,6 +76,12 @@ def path(raw):
     parent = os.path.dirname(raw)
     if not os.path.isdir(parent):
         raise ValueError("Missing parent directory of: %s" % raw)
+    return raw
+
+
+def phone(raw):
+    if not re.match(r"\+[0-9]+", raw):
+        raise ValueError("invalid phone number")
     return raw
 
 

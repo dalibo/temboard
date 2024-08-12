@@ -5,11 +5,7 @@ from temboardui.application import (
     check_role_name,
     check_role_password,
     check_role_phone,
-    delete_role_from_group,
-    get_groups_by_role,
-    get_role,
     hash_password,
-    update_role,
 )
 from temboardui.errors import TemboardUIError
 from temboardui.web.tornado import admin_required, app
@@ -32,38 +28,6 @@ def create_user(request):
         data["is_admin"],
     )
     add_user_to_groups(request, data, role)
-    return {"message": "OK"}
-
-
-@app.route(r"/json/settings/user/([0-9a-z\-_\.]{3,16})$", methods=["POST"])
-@admin_required
-def json_user(request, username):
-    data = request.json
-    role = get_role(request.db_session, username)
-    validate_user_data(data, role)
-
-    h_passwd = handle_password(data)
-
-    # First step is to remove user from the groups he belongs to.
-    role_groups = get_groups_by_role(request.db_session, role.role_name)
-    if role_groups:
-        for role_group in role_groups:
-            delete_role_from_group(
-                request.db_session, role.role_name, role_group.group_name
-            )
-    role = update_role(
-        request.db_session,
-        role.role_name,
-        data["new_username"],
-        h_passwd,
-        data["email"],
-        data["is_active"],
-        data["is_admin"],
-        data["phone"],
-    )
-
-    add_user_to_groups(request, data, role)
-
     return {"message": "OK"}
 
 

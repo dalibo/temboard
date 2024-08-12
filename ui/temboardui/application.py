@@ -60,46 +60,6 @@ def add_role(
             raise TemboardUIError(400, "Role '%s' already exists." % (role_name))
 
 
-def update_role(
-    session,
-    role_name,
-    new_role_name=None,
-    role_password=None,
-    role_email=None,
-    is_active=None,
-    is_admin=None,
-    role_phone=None,
-):
-    try:
-        role = session.query(Roles).filter_by(role_name=str(role_name)).first()
-        if new_role_name is not None:
-            role.role_name = str(new_role_name)
-        if role_password is not None:
-            role.role_password = str(role_password)
-        if role_email is not None:
-            role.role_email = str(role_email)
-        if role_phone is not None:
-            role.role_phone = str(role_phone) if role_phone else None
-        if is_active is not None:
-            role.is_active = is_active
-        if is_admin is not None:
-            role.is_admin = is_admin
-        session.merge(role)
-        session.flush()
-        return role
-    except IntegrityError as e:
-        if str(e).find("roles_role_email_key") > 0:
-            raise TemboardUIError(
-                400, "Email address '%s' already in use." % (role_email)
-            )
-        elif str(e).find("roles_pkey") > 0:
-            raise TemboardUIError(400, "Role '%s' already exists." % (new_role_name))
-        else:
-            raise
-    except AttributeError:
-        raise TemboardUIError(400, "Role '%s' not found." % (role_name))
-
-
 def get_role(session, role_name):
     try:
         return (
@@ -130,32 +90,6 @@ def add_role_in_group(session, role_name, group_name):
             )
         else:
             raise TemboardUIError(400, str(e))
-
-
-def delete_role_from_group(session, role_name, group_name):
-    try:
-        role_group = (
-            session.query(RoleGroups)
-            .filter(
-                RoleGroups.group_name == str(group_name),
-                RoleGroups.role_name == str(role_name),
-            )
-            .one()
-        )
-        session.delete(role_group)
-    except NoResultFound:
-        raise TemboardUIError(
-            400, "Role '%s' not found in group '%s'." % (role_name, group_name)
-        )
-
-
-def get_groups_by_role(session, role_name):
-    return (
-        session.query(RoleGroups)
-        .filter(RoleGroups.role_name == str(role_name))
-        .order_by(RoleGroups.group_name)
-        .all()
-    )
 
 
 def get_instance_groups_by_role(session, role_name):

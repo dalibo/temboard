@@ -16,7 +16,7 @@ def user_rick(admin_session, browser_session):
     browser_session.select("input[placeholder='Confirm password']").send_keys(
         "!rick0.@9"
     )
-    browser_session.select("input[placeholder='Phone']").send_keys("+33611223344")
+    browser_session.select("input[placeholder='+33...']").send_keys("+33611223344")
     multiselect = MultiSelect(browser_session, "groups")
     multiselect.select("default")
     browser_session.select("label[for='switchActive']").click()

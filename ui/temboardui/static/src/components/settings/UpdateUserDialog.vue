@@ -13,7 +13,7 @@ let currentUsername = null;
 const isNew = ref(false);
 
 const userModel = reactive({
-  new_username: "",
+  name: "",
   email: "",
   phone: "",
   password: "",
@@ -26,7 +26,7 @@ const userModel = reactive({
 function open(username) {
   error.value.clear();
   waiting.value = true;
-  userModel.new_username = "";
+  userModel.name = "";
   userModel.email = "";
   userModel.phone = "";
   userModel.password = "";
@@ -63,7 +63,7 @@ function open(username) {
       error.value.fromXHR(xhr);
     })
     .done((data) => {
-      userModel.new_username = data.name;
+      userModel.name = data.name;
       userModel.email = data.email;
       userModel.phone = data.phone;
       userModel.is_active = data.active;
@@ -74,15 +74,17 @@ function open(username) {
 }
 
 function submit() {
-  const data = { ...userModel };
+  const data = { new_username: userModel.name, ...userModel };
   waiting.value = true;
-  let url_request = "/json/settings/user";
-  if (!isNew.value) {
-    url_request = url_request + "/" + currentUsername;
+  let endpoint;
+  if (isNew.value) {
+    endpoint = "/json/settings/user";
+  } else {
+    endpoint = `/json/users/${currentUsername}`;
   }
   $.ajax({
-    url: url_request,
-    method: "POST",
+    url: endpoint,
+    method: isNew.value ? "POST" : "PUT",
     async: true,
     contentType: "application/json",
     dataType: "json",
@@ -112,7 +114,7 @@ defineExpose({ open });
         <div class="row">
           <div class="mb-3 col-sm-6">
             <label class="form-label"
-              >Username<input type="text" class="form-control" placeholder="Username" v-model="userModel.new_username"
+              >Username<input type="text" class="form-control" placeholder="Username" v-model="userModel.name"
             /></label>
           </div>
           <div class="mb-3 col-sm-6">
@@ -182,7 +184,7 @@ defineExpose({ open });
           <div class="mb-3 col-sm-6">
             <label class="form-label"
               >Phone
-              <input type="text" class="form-control" placeholder="Phone" v-model="userModel.phone" />
+              <input type="text" class="form-control" placeholder="+33..." v-model="userModel.phone" />
             </label>
             <span class="form-text text-body-secondary small"
               >Leave blank to prevent user from receiving notifications by SMS.</span
