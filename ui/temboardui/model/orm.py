@@ -2,7 +2,7 @@ import string
 from secrets import choice
 
 import sqlalchemy
-from sqlalchemy import Column, schema, text, types
+from sqlalchemy import Column, orm, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, joinedload, relationship
@@ -233,6 +233,25 @@ class Roles(Model):
     @classmethod
     def count(cls):
         return text(QUERIES["users-count"]).columns(count=types.Integer)
+
+    @classmethod
+    def all(cls):
+        return (
+            Query(cls)
+            .from_statement(
+                text(QUERIES["roles-all"]).columns(
+                    cls.role_name,
+                    cls.role_email,
+                    cls.role_phone,
+                    cls.is_active,
+                    cls.is_admin,
+                    RoleGroups.role_name,
+                    RoleGroups.group_name,
+                    RoleGroups.group_kind,
+                )
+            )
+            .options(orm.contains_eager(cls.groups))
+        )
 
 
 class StubRole:

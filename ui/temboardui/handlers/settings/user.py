@@ -9,21 +9,11 @@ from temboardui.application import (
     delete_role_from_group,
     get_groups_by_role,
     get_role,
-    get_role_list,
     hash_password,
     update_role,
 )
 from temboardui.errors import TemboardUIError
-from temboardui.web.tornado import HTTPError, admin_required, app, render_template
-
-
-@app.route(r"/settings/users")
-@admin_required
-def users(request):
-    role_list = get_role_list(request.db_session)
-    return render_template(
-        "settings/user.html", nav=True, role=request.current_user, role_list=role_list
-    )
+from temboardui.web.tornado import HTTPError, admin_required, app
 
 
 @app.route(r"/json/settings/user", methods=["POST"])

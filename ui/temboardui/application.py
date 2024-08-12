@@ -120,15 +120,6 @@ def delete_role(session, role_name):
         raise TemboardUIError(400, "Role '%s' not found." % (role_name))
 
 
-def get_role_list(session):
-    return (
-        session.query(Roles)
-        .options(joinedload(Roles.groups))
-        .order_by(Roles.role_name)
-        .all()
-    )
-
-
 def add_role_in_group(session, role_name, group_name):
     try:
         role_group = RoleGroups(role_name=str(role_name), group_name=str(group_name))
