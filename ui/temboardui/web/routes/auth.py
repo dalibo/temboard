@@ -132,6 +132,28 @@ def delete_group(name):
     return flask.jsonify()
 
 
+@app.route("/json/users", methods=["POST"])
+@admin_required
+@transaction
+def post_user():
+    with validating():
+        validators.slug(request.json["name"])
+        pw = validators.password(request.json["password"])
+    if request.json["name"] in {"temboard"}:
+        raise flask.abort(400, "Reserved user name.")
+
+    role = (
+        orm.Roles.insert(
+            name=request.json["name"],
+            password=hash_password(request.json["name"], pw).decode("utf-8"),
+        )
+        .with_session(g.db_session)
+        .one()
+    )
+
+    return put_user(user=role)
+
+
 @app.route("/json/users/<name>")
 @admin_required
 def get_user(name):
@@ -144,9 +166,10 @@ def get_user(name):
 @app.route("/json/users/<name>", methods=["PUT"])
 @admin_required
 @transaction
-def put_user(name):
+def put_user(name=None, user=None):
     j = request.json
-    user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+    if user is None:
+        user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
     if user is None:
         flask.abort(404, "No such user.")
 

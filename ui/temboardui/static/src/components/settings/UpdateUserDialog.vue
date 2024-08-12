@@ -76,11 +76,9 @@ function open(username) {
 function submit() {
   const data = { new_username: userModel.name, ...userModel };
   waiting.value = true;
-  let endpoint;
-  if (isNew.value) {
-    endpoint = "/json/settings/user";
-  } else {
-    endpoint = `/json/users/${currentUsername}`;
+  let endpoint = "/json/users";
+  if (!isNew.value) {
+    endpoint = `${endpoint}/${currentUsername}`;
   }
   $.ajax({
     url: endpoint,

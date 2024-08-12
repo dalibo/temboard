@@ -254,6 +254,12 @@ class Roles(Model):
         )
 
     @classmethod
+    def insert(cls, name, password):
+        return Query(cls).from_statement(
+            text(QUERIES["roles-insert"]).bindparams(name=name, password=password)
+        )
+
+    @classmethod
     def delete(cls, name):
         return text(
             """DELETE FROM application.roles WHERE role_name = :name;"""

@@ -10,8 +10,6 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.errors import TemboardUIError
@@ -28,68 +26,6 @@ logger = logging.getLogger(__name__)
 """
 Roles
 """
-
-
-def add_role(
-    session,
-    role_name,
-    role_password,
-    role_email,
-    role_phone,
-    is_active=True,
-    is_admin=False,
-):
-    try:
-        role = Roles(
-            role_name=str(role_name),
-            role_password=str(role_password),
-            role_email=str(role_email),
-            role_phone=str(role_phone),
-            is_active=is_active,
-            is_admin=is_admin,
-        )
-        session.add(role)
-        session.flush()
-        return role
-    except IntegrityError as e:
-        if str(e).find("roles_role_email_key") > 0:
-            raise TemboardUIError(
-                400, "Email address '%s' already in use." % (role_email)
-            )
-        elif str(e).find("roles_pkey") > 0:
-            raise TemboardUIError(400, "Role '%s' already exists." % (role_name))
-
-
-def get_role(session, role_name):
-    try:
-        return (
-            session.query(Roles)
-            .options(joinedload(Roles.groups))
-            .filter_by(role_name=str(role_name))
-            .first()
-        )
-    except AttributeError:
-        raise TemboardUIError(400, "Role '%s' not found." % (role_name))
-
-
-def add_role_in_group(session, role_name, group_name):
-    try:
-        role_group = RoleGroups(role_name=str(role_name), group_name=str(group_name))
-        session.add(role_group)
-        session.flush()
-    except IntegrityError as e:
-        if str(e).find("role_groups_group_name_fkey") > 0:
-            raise TemboardUIError(
-                400, "Group '%s' ('role') does not exist." % (group_name)
-            )
-        elif str(e).find("role_groups_role_name_fkey") > 0:
-            raise TemboardUIError(400, "Role '%s' does not exist." % (role_name))
-        elif str(e).find("role_groups_pkey") > 0:
-            raise TemboardUIError(
-                400, "Role '%s' already in group '%s'." % (role_name, group_name)
-            )
-        else:
-            raise TemboardUIError(400, str(e))
 
 
 def get_instance_groups_by_role(session, role_name):
@@ -188,43 +124,6 @@ def get_role_by_cookie(session, content):
         return role
     else:
         raise Exception("Cookie content is not valid.")
-
-
-_reserved_role_name = ["temboard"]
-
-
-def check_role_name(role_name):
-    p_role_name = r"^([a-z0-9_\-.]{3,16})$"
-    r_role_name = re.compile(p_role_name)
-    if not r_role_name.match(role_name):
-        raise TemboardUIError(
-            400,
-            "Invalid username, must satisfy this regexp pattern: %s" % (p_role_name),
-        )
-
-    if role_name in _reserved_role_name:
-        raise TemboardUIError(400, "Reserved role name")
-
-
-def check_role_email(role_email):
-    p_role_email = r"^([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)$"
-    r_role_email = re.compile(p_role_email)
-    if not r_role_email.match(role_email):
-        raise TemboardUIError(400, "Invalid email address.")
-
-
-def check_role_password(role_password):
-    p_role_password = r"^(.{8,})$"
-    r_role_password = re.compile(p_role_password)
-    if not r_role_password.match(role_password):
-        raise TemboardUIError(400, "Invalid password, it must contain at least 8 char.")
-
-
-def check_role_phone(role_phone):
-    p_role_phone = r"^[+][0-9]+$"
-    r_role_phone = re.compile(p_role_phone)
-    if not r_role_phone.match(role_phone):
-        raise TemboardUIError(400, "Phone must look like +14155552671")
 
 
 def send_mail(
