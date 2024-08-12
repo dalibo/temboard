@@ -5,7 +5,6 @@ from temboardui.application import (
     check_role_name,
     check_role_password,
     check_role_phone,
-    delete_role,
     delete_role_from_group,
     get_groups_by_role,
     get_role,
@@ -80,16 +79,6 @@ def json_user(request, username):
         add_user_to_groups(request, data, role)
 
         return {"message": "OK"}
-
-
-@app.route(r"/json/settings/delete/user", methods=["POST"])
-@admin_required
-def delete_user(request):
-    data = request.json
-    if not data.get("username"):
-        raise HTTPError(400, "Username field is missing.")
-    delete_role(request.db_session, data["username"])
-    return {"delete": True}
 
 
 def validate_user_data(data, role=None):

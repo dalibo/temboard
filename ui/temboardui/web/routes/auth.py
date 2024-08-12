@@ -130,3 +130,13 @@ def delete_group(name):
     if result.rowcount == 0:
         flask.abort(404, "No such group.")
     return flask.jsonify()
+
+
+@app.route("/json/users/<name>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_user(name):
+    result = g.db_session.execute(orm.Roles.delete(name))
+    if result.rowcount == 0:
+        flask.abort(404, "No such user.")
+    return flask.jsonify()

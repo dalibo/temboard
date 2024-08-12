@@ -253,6 +253,12 @@ class Roles(Model):
             .options(orm.contains_eager(cls.groups))
         )
 
+    @classmethod
+    def delete(cls, name):
+        return text(
+            """DELETE FROM application.roles WHERE role_name = :name;"""
+        ).bindparams(name=name)
+
 
 class StubRole:
     # Fake object for roles not in database.
