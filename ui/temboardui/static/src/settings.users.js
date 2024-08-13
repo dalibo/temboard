@@ -14,7 +14,18 @@ createApp({
   },
   created() {
     this.$nextTick(() => {
-      new DataTablesLib("#tableUsers", { stateSave: true });
+      new DataTablesLib("#tableUsers", {
+        stateSave: true,
+        columns: [
+          { width: "auto" }, // Username
+          { width: "auto" }, // Email
+          { width: "12rem" }, // Phone
+          { width: "6rem" }, // Active
+          { width: "6rem" }, // Admin
+          { width: "auto" }, // Groups
+          { width: "6rem" }, // Actions
+        ],
+      });
     });
   },
-}).mount("#app");
+}).mount("#vueapp");

@@ -15,18 +15,6 @@ from ..flask import admin_required, transaction, validating
 logger = logging.getLogger(__name__)
 
 
-@current_app.route("/settings/groups/instance")
-@admin_required
-def get_instance_groups_html():
-    return flask.render_template(
-        "settings/instance-groups.html",
-        nav=True,
-        role=g.current_user,
-        vitejs=current_app.vitejs,
-        groups=orm.Groups.all("instance").with_session(g.db_session).all(),
-    )
-
-
 @current_app.route("/json/groups/instance", methods=["POST"])
 @admin_required
 @transaction

@@ -1,19 +1,19 @@
-{% extends ../base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / Settings / Users{% end %}
+{% block title %}{{ super() }} / Settings / Users{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('settings.users.js') %}{% raw link %}{% end %}
-{% end %}
+{% for link in vitejs.css_links_for('settings.users.js') %}{{ link | safe }}{% endfor %}
+{% endblock %}
 
 {% block content %}
-<div id="app">
+<div id="vueapp">
   <update-user-dialog ref="update_modal"></update-user-dialog>
   <delete-user-dialog ref="delete_modal"></delete-user-dialog>
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
-      {% include menu.html %}
+      {% include "settings/nav.html" %}
     </div>
     <div class="col-md-9 col-xl-10">
       <div class="row">
@@ -31,10 +31,9 @@
             <th>Username</th>
             <th>Email</th>
             <th>Phone</th>
-            <th width="40">Active</th>
-            <th width="40">Admin.</th>
+            <th>Active</th>
+            <th>Admin.</th>
             <th>Groups</th>
-            <th class="no-sort"></th>
             <th class="no-sort"></th>
           </tr>
         </thead>
@@ -44,24 +43,22 @@
             <td>{{role_item.role_name}}</td>
             <td>{{role_item.role_email or ''}}</td>
             <td>{{role_item.role_phone or ''}}</td>
-            <td class="text-center" data-col="is-active">{% if role_item.is_active is True %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% end %}</td>
-            <td class="text-center" data-col="is-admin">{% if role_item.is_admin is True %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% end %}</td>
-            <td>{% for group in role_item.groups %} <span class="badge border text-body-secondary">{{group.group_name}}</span>{% end %}</td>
+            <td class="text-center" data-col="is-active">{% if role_item.is_active %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% endif %}</td>
+            <td class="text-center" data-col="is-admin">{% if role_item.is_admin %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% endif %}</td>
+            <td>{% for group in role_item.groups %} <span class="badge border text-body-secondary">{{group.group_name}}</span>{% endfor %}</td>
             <td class="text-center">
               <button
                 type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn btn-outline-secondary btn-sm m-1"
                 data-bs-placement="bottom"
                 title="Edit"
                 data-bs-toggle="modal"
                 data-bs-target="#modalUpdateUser"
                 v-on:click.prevent="$refs.update_modal.open('{{ role_item.role_name }}')">
                 <i class="fa fa-edit"></i></button>
-            </td>
-            <td class="text-center">
               <button
                 type="button"
-                class="btn btn-outline-secondary btn-sm"
+                class="btn btn-outline-secondary btn-sm m-1"
                 data-bs-toggle="modal"
                 data-bs-placement="bottom"
                 title="Delete"
@@ -70,7 +67,7 @@
                 <i class="fa fa-trash-o"></i></button>
             </td>
           </tr>
-          {% end %}
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -78,4 +75,4 @@
 </div>
 
 <script type="module" src="{{ vitejs.url_for('settings.users.js') }}"></script>
-{% end %}
+{% endblock %}

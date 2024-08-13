@@ -17,11 +17,8 @@ function open(username) {
 function delete_() {
   waiting.value = true;
   $.ajax({
-    url: "/json/settings/delete/user",
-    type: "POST",
-    contentType: "application/json",
-    dataType: "json",
-    data: JSON.stringify({ username: user.value }),
+    url: `/json/users/${user.value}`,
+    type: "DELETE",
   })
     .fail((xhr) => {
       waiting.value = false;

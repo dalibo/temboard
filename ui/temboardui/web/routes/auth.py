@@ -130,3 +130,91 @@ def delete_group(name):
     if result.rowcount == 0:
         flask.abort(404, "No such group.")
     return flask.jsonify()
+
+
+@app.route("/json/users", methods=["POST"])
+@admin_required
+@transaction
+def post_user():
+    with validating():
+        validators.slug(request.json["name"])
+        pw = validators.password(request.json["password"])
+    if request.json["name"] in {"temboard"}:
+        raise flask.abort(400, "Reserved user name.")
+
+    role = (
+        orm.Roles.insert(
+            name=request.json["name"],
+            password=hash_password(request.json["name"], pw).decode("utf-8"),
+        )
+        .with_session(g.db_session)
+        .one()
+    )
+
+    return put_user(user=role)
+
+
+@app.route("/json/users/<name>")
+@admin_required
+def get_user(name):
+    user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+    if user is None:
+        flask.abort(404, "No such user.")
+    return flask.jsonify(user.asdict())
+
+
+@app.route("/json/users/<name>", methods=["PUT"])
+@admin_required
+@transaction
+def put_user(name=None, user=None):
+    j = request.json
+    if user is None:
+        user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+    if user is None:
+        flask.abort(404, "No such user.")
+
+    # Actually, we do not handle Groups but secondary table RoleGroups.
+    current_groups = {rxg.group_name for rxg in user.groups}
+    wanted_groups = set(j["groups"])
+    for rxg in user.groups:
+        if rxg.group_name in wanted_groups:
+            continue
+        g.db_session.delete(rxg)
+    # Drop RoleGroups before renaming role because role name is in primary key and SA does not handle this.
+    g.db_session.flush()
+
+    user.is_admin = j["is_admin"]
+    user.is_active = j["is_active"]
+    if j["name"] in {"temboard"}:
+        raise flask.abort(400, "Reserved user name.")
+
+    with validating():
+        user.role_name = validators.slug(j["name"])
+        user.role_email = validators.email(j["email"])
+        if j["phone"]:
+            user.role_phone = validators.phone(j["phone"])
+        if j.get("password"):
+            validators.password(j["password"])
+            if j["password"] != j.get("password2"):
+                raise ValueError("password mismatch")
+            user.role_password = hash_password(user.role_name, j["password"]).decode(
+                "utf-8"
+            )
+
+    for name in wanted_groups - current_groups:
+        g.db_session.add(
+            orm.RoleGroups(role_name=user.role_name, group_name=name, group_kind="role")
+        )
+    g.db_session.flush()
+
+    return flask.jsonify(user.asdict())
+
+
+@app.route("/json/users/<name>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_user(name):
+    result = g.db_session.execute(orm.Roles.delete(name))
+    if result.rowcount == 0:
+        flask.abort(404, "No such user.")
+    return flask.jsonify()
