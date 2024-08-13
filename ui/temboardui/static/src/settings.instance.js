@@ -44,6 +44,8 @@ createApp({
           },
         ],
         stateSave: true,
+        // server, postgresql, agent, notify, actions.
+        columns: [{ width: "auto" }, { width: "auto" }, { width: "auto" }, { width: "6rem" }, { width: "6rem" }],
       });
 
       table.buttons().container().appendTo($(".dt-search", table.table().container()));
