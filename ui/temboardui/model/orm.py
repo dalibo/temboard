@@ -35,37 +35,27 @@ class ApiKeys(Model):
     @classmethod
     def insert(cls, secret, comment):
         return Query(cls).from_statement(
-            text(QUERIES["apikeys-insert"])
-            .bindparams(secret=secret, comment=comment)
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["apikeys-insert"]).bindparams(secret=secret, comment=comment)
         )
 
     @classmethod
     def select_active(cls):
-        return Query(cls).from_statement(
-            text(QUERIES["apikeys-select-active"]).columns(*cls.__mapper__.c.values())
-        )
+        return Query(cls).from_statement(text(QUERIES["apikeys-select-active"]))
 
     @classmethod
     def delete(cls, id):
         return Query(cls).from_statement(
-            text(QUERIES["apikeys-delete"])
-            .bindparams(id=id)
-            .columns(cls.id, cls.comment)
+            text(QUERIES["apikeys-delete"]).bindparams(id=id)
         )
 
     @classmethod
     def purge(cls):
-        return Query(cls).from_statement(
-            text(QUERIES["apikeys-purge"]).columns(cls.id, cls.comment)
-        )
+        return Query(cls).from_statement(text(QUERIES["apikeys-purge"]))
 
     @classmethod
     def select_secret(cls, secret):
         return Query(cls).from_statement(
-            text(QUERIES["apikeys-select-secret"])
-            .bindparams(secret=secret)
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["apikeys-select-secret"]).bindparams(secret=secret)
         )
 
     @property
@@ -93,13 +83,11 @@ class Plugins(Model):
     @classmethod
     def insert(cls, instance, name):
         return Query(cls).from_statement(
-            text(QUERIES["instance-enable-plugin"])
-            .bindparams(
+            text(QUERIES["instance-enable-plugin"]).bindparams(
                 agent_address=instance.agent_address,
                 agent_port=instance.agent_port,
                 name=name,
             )
-            .columns(*cls.__mapper__.c.values())
         )
 
 
@@ -132,14 +120,12 @@ class InstanceGroups(Model):
     @classmethod
     def insert(cls, instance, group):
         return Query(cls).from_statement(
-            text(QUERIES["instance-groups-insert"])
-            .bindparams(
+            text(QUERIES["instance-groups-insert"]).bindparams(
                 agent_address=instance.agent_address,
                 agent_port=instance.agent_port,
                 group_name=group.group_name,
                 group_kind=group.group_kind,
             )
-            .columns(*cls.__mapper__.c.values())
         )
 
 
@@ -238,18 +224,7 @@ class Roles(Model):
     def all(cls):
         return (
             Query(cls)
-            .from_statement(
-                text(QUERIES["roles-all"]).columns(
-                    cls.role_name,
-                    cls.role_email,
-                    cls.role_phone,
-                    cls.is_active,
-                    cls.is_admin,
-                    RoleGroups.role_name,
-                    RoleGroups.group_name,
-                    RoleGroups.group_kind,
-                )
-            )
+            .from_statement(text(QUERIES["roles-all"]))
             .options(orm.contains_eager(cls.groups))
         )
 
@@ -269,11 +244,7 @@ class Roles(Model):
     def get(cls, name):
         return (
             Query(cls)
-            .from_statement(
-                text(QUERIES["roles-get"])
-                .bindparams(name=name)
-                .columns(*cls.__mapper__.c.values(), *RoleGroups.__mapper__.c.values())
-            )
+            .from_statement(text(QUERIES["roles-get"]).bindparams(name=name))
             .options(orm.contains_eager(cls.groups))
         )
 
@@ -341,8 +312,7 @@ class Instances(Model):
         comment=None,
     ):
         return Query(cls).from_statement(
-            text(QUERIES["instances-insert"])
-            .bindparams(
+            text(QUERIES["instances-insert"]).bindparams(
                 sqlalchemy.bindparam(
                     "discover", value=discover, type_=postgresql.JSONB
                 ),
@@ -355,7 +325,6 @@ class Instances(Model):
                 notify=bool(notify),
                 comment=comment or "",
             )
-            .columns(*cls.__mapper__.c.values())
         )
 
     @classmethod
@@ -400,9 +369,7 @@ class Instances(Model):
 
     @classmethod
     def all(cls):
-        return Query(cls).from_statement(
-            text(QUERIES["instances-all"]).columns(*cls.__mapper__.c.values())
-        )
+        return Query(cls).from_statement(text(QUERIES["instances-all"]))
 
     # Compatibility from new JSONb discover to old column discover.
     @property
@@ -518,25 +485,21 @@ class Groups(Model):
     @classmethod
     def get(cls, kind, name):
         return Query(cls).from_statement(
-            text(QUERIES["groups-get"])
-            .bindparams(kind=kind, name=name)
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["groups-get"]).bindparams(kind=kind, name=name)
         )
 
     @classmethod
     def all(cls, kind):
         return Query(cls).from_statement(
-            text(QUERIES["groups-all"])
-            .bindparams(kind=kind)
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["groups-all"]).bindparams(kind=kind)
         )
 
     @classmethod
     def insert(cls, kind, name, description):
         return Query(cls).from_statement(
-            text(QUERIES["groups-insert"])
-            .bindparams(kind=kind, name=name, description=description)
-            .columns(*cls.__mapper__.c.values())
+            text(QUERIES["groups-insert"]).bindparams(
+                kind=kind, name=name, description=description
+            )
         )
 
     @classmethod
