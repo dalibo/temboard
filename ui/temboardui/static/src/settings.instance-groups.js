@@ -2,8 +2,8 @@ import DataTablesLib from "datatables.net-bs5";
 import DataTable from "datatables.net-vue3";
 import { createApp } from "vue";
 
+import DeleteDialog from "./components/DeleteDialog.vue";
 import EditGroupDialog from "./components/EditGroupDialog.vue";
-import DeleteGroupDialog from "./components/settings/DeleteGroupDialog.vue";
 import EnvironmentMigrationDialog from "./components/settings/EnvironmentMigrationDialog.vue";
 
 DataTable.use(DataTablesLib);
@@ -11,7 +11,7 @@ DataTable.use(DataTablesLib);
 createApp({
   components: {
     "environment-migration-dialog": EnvironmentMigrationDialog,
-    "delete-group-dialog": DeleteGroupDialog,
+    deletedialog: DeleteDialog,
     "edit-group-dialog": EditGroupDialog,
   },
   created() {
