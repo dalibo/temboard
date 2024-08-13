@@ -321,6 +321,11 @@ class InstanceMiddleware:
         brf[instance_proxy.name] = [self.load_instance_before_request]
         brf[instance_routes.name] = [self.load_instance_before_request]
 
+        @app.teardown_request
+        def teardown_instance(*_):
+            if hasattr(g, "instance"):
+                delattr(g, "instance")
+
     def load_instance_before_request(self):
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")
