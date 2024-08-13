@@ -9,7 +9,12 @@
 {% block content %}
 <div id="vueapp">
   <update-user-dialog ref="update_modal"></update-user-dialog>
-  <delete-user-dialog ref="delete_modal"></delete-user-dialog>
+  {% raw %}
+  <DeleteDialog ref="delete_modal" title="Delete user" v-slot="{resource}">
+      <p class="fs-5 text-center">Please confirm the deletion of user <strong>{{resource.name}}</strong>.</p>
+  </DeleteDialog>
+  {% endraw %}
+
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
@@ -63,7 +68,7 @@
                 data-bs-placement="bottom"
                 title="Delete"
                 data-bs-target="#modalDeleteUser"
-                v-on:click.prevent="$refs.delete_modal.open('{{ role_item.role_name }}')">
+                v-on:click.prevent="$refs.delete_modal.open('/json/users/{{ role_item.role_name }}')">
                 <i class="fa fa-trash-o"></i></button>
             </td>
           </tr>
