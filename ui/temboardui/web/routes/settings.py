@@ -7,7 +7,7 @@ from ..flask import admin_required
 
 @app.route("/settings/instances")
 @admin_required
-def get_instances():
+def settings_instances():
     return render_template(
         "settings/instances.html",
         sidebar=True,
@@ -19,7 +19,7 @@ def get_instances():
 
 @app.route("/settings/groups/instance")
 @admin_required
-def get_instance_groups_html():
+def settings_instance_groups():
     return render_template(
         "settings/instance-groups.html",
         sidebar=True,
@@ -31,7 +31,7 @@ def get_instance_groups_html():
 
 @app.route("/settings/users")
 @admin_required
-def get_users():
+def settings_users():
     return render_template(
         "settings/users.html",
         sidebar=True,
