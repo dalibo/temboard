@@ -60,18 +60,6 @@ def json_login():
     return response
 
 
-@app.route("/settings/groups/role")
-@admin_required
-def settings_groups():
-    return flask.render_template(
-        "settings/groups.html",
-        sidebar=True,
-        role=g.current_user,
-        vitejs=app.vitejs,
-        groups=orm.Groups.all("role").with_session(g.db_session).all(),
-    )
-
-
 @app.route("/json/groups/role")
 @admin_required
 def get_groups():

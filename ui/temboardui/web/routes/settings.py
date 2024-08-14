@@ -39,3 +39,15 @@ def settings_users():
         role=g.current_user,
         role_list=orm.Roles.all().with_session(g.db_session).all(),
     )
+
+
+@app.route("/settings/groups/role")
+@admin_required
+def settings_groups():
+    return render_template(
+        "settings/groups.html",
+        sidebar=True,
+        role=g.current_user,
+        vitejs=app.vitejs,
+        groups=orm.Groups.all("role").with_session(g.db_session).all(),
+    )
