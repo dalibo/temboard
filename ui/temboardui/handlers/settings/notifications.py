@@ -7,7 +7,6 @@ from temboardui.web.tornado import HTTPError, admin_required, app, render_templa
 def notifications(request):
     return render_template(
         "settings/notifications.html",
-        nav=True,
         role=request.current_user,
         email_configured=app.config.notifications.smtp_host,
         sms_configured=app.config.notifications.twilio_account_sid,

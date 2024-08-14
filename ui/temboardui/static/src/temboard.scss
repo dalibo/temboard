@@ -100,7 +100,7 @@ html {
     overflow-y: auto;
   }
 
-  .main {
+  .sidebar + .main {
     width: calc(100% - #{$sidebar-width} - $grid-gutter-width / 2);
     max-width: none;
 

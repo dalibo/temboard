@@ -15,7 +15,6 @@ def index(request):
     request.instance.fetch_status()
     return render_template(
         "index.html",
-        nav=True,
         role=request.current_user,
         instance=request.instance,
         plugin="monitoring",

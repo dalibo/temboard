@@ -33,14 +33,8 @@ def test_create_user(user_rick, browser):
     assert "rick@test.com" in user_rick
     assert "+33611223344" in user_rick
     assert "default" in user_rick
-    assert (
-        "No"
-        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-active']").text
-    )
-    assert (
-        "Yes"
-        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-admin']").text
-    )
+    assert "Inactive" in user_rick
+    assert "Admin" in user_rick
 
 
 def test_update_user(user_rick, browser):
@@ -74,14 +68,8 @@ def test_update_user(user_rick, browser):
     assert "rick@test.me" in user_rick
     assert "+33611223344" in user_rick
     assert "default" not in user_rick
-    assert (
-        "Yes"
-        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-active']").text
-    )
-    assert (
-        "No"
-        == user_rick_line.find_element(By.CSS_SELECTOR, "td[data-col='is-admin']").text
-    )
+    assert "Active" in user_rick
+    assert "User" in user_rick
 
 
 def test_delete_user(user_rick, browser):

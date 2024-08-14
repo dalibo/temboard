@@ -151,7 +151,6 @@ def error_handler(e):
 
     return render_template(
         template,
-        nav=True,
         role=g.current_user,
         vitejs=current_app.vitejs,
         message=error,

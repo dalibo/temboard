@@ -6,6 +6,10 @@
 {% for link in vitejs.css_links_for('settings.users.js') %}{{ link | safe }}{% endfor %}
 {% endblock %}
 
+<!-- sidebar -->
+{% block sidebar %} {% include "settings/menu.html" %} {% endblock %}
+
+<!-- content -->
 {% block content %}
 <div id="vueapp">
   <update-user-dialog ref="update_modal"></update-user-dialog>
@@ -16,66 +20,60 @@
   {% endraw %}
 
 
+  <div class="row text-end">
+    <p>
+      <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdateUser" v-on:click.prevent="$refs.update_modal.open()">
+        New user
+      </button>
+    </p>
+  </div>
+
   <div class="row">
-    <div class="col-md-3 col-xl-2">
-      {% include "settings/nav.html" %}
-    </div>
-    <div class="col-md-9 col-xl-10">
-      <div class="row">
-        <div class="col-md-12 text-end">
-          <p>
-            <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdateUser" v-on:click.prevent="$refs.update_modal.open()">
-              New user
-            </button>
-          </p>
-        </div>
-      </div>
-      <table class="table table-striped table-bordered table-hover" id="tableUsers" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Active</th>
-            <th>Admin.</th>
-            <th>Groups</th>
-            <th class="no-sort"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for role_item in role_list %}
-          <tr>
-            <td>{{role_item.role_name}}</td>
-            <td>{{role_item.role_email or ''}}</td>
-            <td>{{role_item.role_phone or ''}}</td>
-            <td class="text-center" data-col="is-active">{% if role_item.is_active %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% endif %}</td>
-            <td class="text-center" data-col="is-admin">{% if role_item.is_admin %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-danger">No</span>{% endif %}</td>
-            <td>{% for group in role_item.groups %} <span class="badge border text-body-secondary">{{group.group_name}}</span>{% endfor %}</td>
-            <td class="text-center">
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm m-1"
-                data-bs-placement="bottom"
-                title="Edit"
-                data-bs-toggle="modal"
-                data-bs-target="#modalUpdateUser"
-                v-on:click.prevent="$refs.update_modal.open('{{ role_item.role_name }}')">
-                <i class="fa fa-edit"></i></button>
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm m-1"
-                data-bs-toggle="modal"
-                data-bs-placement="bottom"
-                title="Delete"
-                data-bs-target="#modalDeleteUser"
-                v-on:click.prevent="$refs.delete_modal.open('/json/users/{{ role_item.role_name }}')">
-                <i class="fa fa-trash-o"></i></button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <table class="table table-striped table-bordered table-hover" id="tableUsers" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Active</th>
+          <th>Admin.</th>
+          <th>Groups</th>
+          <th class="no-sort"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for role_item in role_list %}
+        <tr>
+          <td>{{role_item.role_name}}</td>
+          <td>{{role_item.role_email or ''}}</td>
+          <td>{{role_item.role_phone or ''}}</td>
+          <td class="text-center" data-col="is-active">{% if role_item.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+          <td class="text-center" data-col="is-admin">{% if role_item.is_admin %}<span class="badge text-bg-danger">Admin</span>{% else %}<span class="badge text-bg-success">User</span>{% endif %}</td>
+          <td>{% for group in role_item.groups %} <span class="badge border text-body-secondary">{{group.group_name}}</span>{% endfor %}</td>
+          <td class="text-center">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm m-1"
+              data-bs-placement="bottom"
+              title="Edit"
+              data-bs-toggle="modal"
+              data-bs-target="#modalUpdateUser"
+              v-on:click.prevent="$refs.update_modal.open('{{ role_item.role_name }}')">
+              <i class="fa fa-edit"></i></button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm m-1"
+              data-bs-toggle="modal"
+              data-bs-placement="bottom"
+              title="Delete"
+              data-bs-target="#modalDeleteUser"
+              v-on:click.prevent="$refs.delete_modal.open('/json/users/{{ role_item.role_name }}')">
+              <i class="fa fa-trash-o"></i></button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 

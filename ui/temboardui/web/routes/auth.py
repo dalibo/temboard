@@ -28,7 +28,7 @@ def logout():
 def login():
     if g.current_user:
         return redirect("/home")
-    return render_template("login.html", nav=False, vitejs=app.vitejs)
+    return render_template("login.html", headerbar=False, vitejs=app.vitejs)
 
 
 @app.route(r"/json/login", methods=["POST"])
@@ -58,18 +58,6 @@ def json_login():
     )
     response.set_cookie("temboard", secret_cookie.decode(), secure=True)
     return response
-
-
-@app.route("/settings/groups/role")
-@admin_required
-def get_groups_html():
-    return flask.render_template(
-        "settings/groups.html",
-        nav=True,
-        role=g.current_user,
-        vitejs=app.vitejs,
-        groups=orm.Groups.all("role").with_session(g.db_session).all(),
-    )
 
 
 @app.route("/json/groups/role")
