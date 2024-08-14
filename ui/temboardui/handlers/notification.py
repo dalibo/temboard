@@ -8,7 +8,6 @@ def notifications(request):
     return render_template(
         "notifications.html",
         instance=request.instance,
-        nav=True,
         notifications=notifications,
         plugin="notifications",
         role=request.current_user,

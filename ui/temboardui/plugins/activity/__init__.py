@@ -18,7 +18,6 @@ def activity():
     current_app.instance.fetch_status()
     return flask_render_template(
         "activity.html",
-        nav=True,
         instance=g.instance,
         plugin="activity",
         role=g.current_user,

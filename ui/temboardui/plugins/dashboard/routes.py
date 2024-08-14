@@ -26,7 +26,6 @@ def dashboard():
     dashboard = history[-1] if history else {}
     return render_template(
         "dashboard.html",
-        nav=True,
         role=g.current_user,
         instance=g.instance,
         plugin="dashboard",

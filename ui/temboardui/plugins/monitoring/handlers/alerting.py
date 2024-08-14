@@ -70,7 +70,6 @@ def index(request):
     request.instance.fetch_status()
     return render_template(
         "alerting.checks.html",
-        nav=True,
         role=request.current_user,
         instance=request.instance,
         plugin="alerting",  # we cheat here
@@ -178,7 +177,6 @@ def check(request, name):
     request.instance.fetch_status()
     return render_template(
         "alerting.check.html",
-        nav=True,
         role=request.current_user,
         instance=request.instance,
         plugin="alerting",  # we cheat here

@@ -26,7 +26,6 @@ def metadata(request):
 
     return render_template(
         "settings/metadata.html",
-        nav=True,
         role=request.current_user,
         infos=infos,
         temboard_version=temboard_version,

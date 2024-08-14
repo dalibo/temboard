@@ -718,7 +718,6 @@ def statements(request):
     request.instance.fetch_status()
     return render_template(
         "index.html",
-        nav=True,
         instance=request.instance,
         plugin=__name__,
         role=request.current_user,

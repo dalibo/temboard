@@ -19,8 +19,9 @@
   <body>
     <div>
       <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
-      {% if nav %}
-      <!-- Navigation -->
+
+      <!-- Header bar -->
+      {% if headerbar|default(True) %}
       <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top" data-bs-theme="dark">
         <div class="collapse navbar-collapse">
           {% if instance is defined %}
@@ -66,7 +67,7 @@
           {% endif %}
         </div>
       </div>
-      {% endif %}
+      {% endif %}{# end of header bar #}
 
       {% if instance is defined %}
       <div class="container-fluid">

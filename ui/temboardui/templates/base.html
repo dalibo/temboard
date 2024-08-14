@@ -19,7 +19,6 @@
 <body>
   <div>
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
-    {% if nav %}
     <!-- Navigation -->
     <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top" data-bs-theme="dark">
       <div class="collapse navbar-collapse">
@@ -64,7 +63,6 @@
         </ul>
       </div>
     </div>
-    {% end %}
 
     {% if 'instance' in globals() %}
     <div class="container-fluid">

@@ -44,7 +44,6 @@ def configuration_handler(request):
 
     return render_template(
         "configuration.html",
-        nav=True,
         role=request.current_user,
         instance=request.instance,
         plugin="pgconf",
