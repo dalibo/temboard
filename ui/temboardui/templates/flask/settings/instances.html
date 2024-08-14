@@ -11,7 +11,12 @@
   <environment-migration-dialog ref="environment_migration_dialog" object-class="instance" title="Instance in multiple groups"></environment-migration-dialog>
   <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
-  <delete-instance-dialog ref="delete_modal"></delete-instance-dialog>
+  {% raw %}
+  <DeleteDialog ref="delete_modal" id="modalDeleteInstance" title="Delete instance" v-slot="{resource}">
+    <p class="text-center fs-5">Please confirm the deletion of instance:</p>
+    <InstanceDetails :pg_host="resource.hostname" :pg_port="resource.pg_port"/>
+  </DeleteDialog>
+  {% endraw %}
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
@@ -34,7 +39,6 @@
           <th>PostgreSQL</th>
           <th>Agent</th>
           <th>Notify</th>
-          <th class="no-sort"></th>
           <th class="no-sort"></th>
         </tr>
       </thead>
@@ -85,21 +89,19 @@
           </td>
           <td class="text-center">
             <button type="button"
-              class="btn btn-outline-secondary btn-sm buttonEdit"
+              class="btn btn-outline-secondary btn-sm buttonEdit m-1"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
               title="Edit"
               v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
             ><i class="fa fa-edit"></i></button>
-          </td>
-          <td class="text-center">
             <button
               type="button"
-              class="btn btn-outline-secondary btn-sm buttonDelete"
+              class="btn btn-outline-secondary btn-sm buttonDelete m-1"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
               title="Delete"
-              v-on:click.prevent="$refs.delete_modal.open('{{ instance.agent_address }}', {{ instance.agent_port }})"
+              v-on:click.prevent="$refs.delete_modal.open('/json/instances/{{instance.agent_address}}/{{instance.agent_port}}')"
             ><i class="fa fa-trash-o"></i></button>
           </td>
         </tr>

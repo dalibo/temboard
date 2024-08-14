@@ -50,7 +50,7 @@ def test_delete_user_group(user_group_dev, browser):
         for group in browser.select_all("#tableGroups tbody tr")
     )
     tr.find_element(by=By.CSS_SELECTOR, value="[data-action=delete]").click()
-    browser.select("#buttonDeleteGroup").click()
+    browser.select("#buttonDelete").click()
     assert not any(
         "Developers" in group.text
         for group in browser.select_all("#tableGroups tbody tr")

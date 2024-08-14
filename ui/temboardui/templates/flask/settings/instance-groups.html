@@ -9,8 +9,12 @@
 {% block content %}
 <div id="vue-app">
   <environment-migration-dialog ref="environment_migration_dialog" object-class="group" title="Instance group in multiple user groups"></environment-migration-dialog>
-  <delete-group-dialog kind="instance" ref="deleteModal"></delete-group-dialog>
   <edit-group-dialog kind="instance" ref="editModal"></edit-group-dialog>
+  {% raw %}
+  <DeleteDialog ref="deleteModal" title="Delete group" v-slot="{resource}">
+      <p class="fs-5 text-center">Please confirm the deletion of group <strong>{{resource.name}}</strong>.</p>
+  </DeleteDialog>
+  {% endraw %}
 
   <div class="row">
     <div class="col-md-3 col-xl-2">
@@ -71,7 +75,7 @@
               data-bs-placement="bottom"
               data-action="delete"
               title="Delete"
-              @click.prevent="$refs.deleteModal.open('{{ group.group_name }}')"
+              @click.prevent="$refs.deleteModal.open('/json/groups/instance/{{ group.group_name }}')"
             ><i class="fa fa-trash-o"></i></button>
           </td>
         </tr>

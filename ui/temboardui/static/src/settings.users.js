@@ -2,7 +2,7 @@ import DataTablesLib from "datatables.net-bs5";
 import DataTable from "datatables.net-vue3";
 import { createApp } from "vue";
 
-import DeleteUserDialog from "./components/settings/DeleteUserDialog.vue";
+import DeleteDialog from "./components/DeleteDialog.vue";
 import UpdateUserDialog from "./components/settings/UpdateUserDialog.vue";
 
 DataTable.use(DataTablesLib);
@@ -10,7 +10,7 @@ DataTable.use(DataTablesLib);
 createApp({
   components: {
     "update-user-dialog": UpdateUserDialog,
-    "delete-user-dialog": DeleteUserDialog,
+    deletedialog: DeleteDialog,
   },
   created() {
     this.$nextTick(() => {
