@@ -15,6 +15,7 @@ defineProps(["id", "title"]);
 
 const root = ref(null);
 const error = ref(null);
+const failed = ref(false);
 const waiting = ref(false);
 const resource = ref(null);
 let deleteUrl = null;
@@ -30,12 +31,13 @@ function open(url) {
     url: url,
     success: (data) => {
       resource.value = data;
-      waiting.value = false;
     },
     error: (xhr) => {
       error.value.fromXHR(xhr);
-      waiting.value = false;
+      failed.value = true;
     },
+  }).always(() => {
+    waiting.value = false;
   });
 }
 
@@ -44,14 +46,14 @@ function submit() {
   $.ajax({
     url: deleteUrl,
     type: "DELETE",
-    fail: (xhr) => {
+    error: (xhr) => {
       error.value.fromXHR(xhr);
-      waiting.value = false;
     },
     success: () => {
       window.location.reload();
-      waiting.value = false;
     },
+  }).always(() => {
+    waiting.value = false;
   });
 }
 
@@ -69,7 +71,13 @@ defineExpose({ open });
 
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button id="buttonDelete" class="btn btn-danger ms-auto" type="button" @click="submit" :disabled="waiting">
+      <button
+        id="buttonDelete"
+        class="btn btn-danger ms-auto"
+        type="button"
+        @click="submit"
+        :disabled="waiting || failed"
+      >
         Yes, delete
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>
