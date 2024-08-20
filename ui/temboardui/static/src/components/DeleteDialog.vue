@@ -11,7 +11,7 @@ import { ref } from "vue";
 import Error from "./Error.vue";
 import ModalDialog from "./ModalDialog.vue";
 
-defineProps(["id", "title"]);
+const props = defineProps(["id", "title", "noreload"]);
 
 const root = ref(null);
 const error = ref(null);
@@ -19,12 +19,14 @@ const failed = ref(false);
 const waiting = ref(false);
 const resource = ref(null);
 let deleteUrl = null;
+let modal = null;
 
 function open(url) {
   deleteUrl = url;
   error.value.clear();
 
-  new Modal(root.value.$el).show();
+  modal = new Modal(root.value.$el);
+  modal.show();
 
   waiting.value = true;
   $.ajax({
@@ -41,6 +43,8 @@ function open(url) {
   });
 }
 
+const emit = defineEmits(["done"]);
+
 function submit() {
   waiting.value = true;
   $.ajax({
@@ -50,10 +54,12 @@ function submit() {
       error.value.fromXHR(xhr);
     },
     success: () => {
-      window.location.reload();
+      if (!props.noreload) {
+        window.location.reload();
+      }
+      emit("done");
+      modal.hide();
     },
-  }).always(() => {
-    waiting.value = false;
   });
 }
 
