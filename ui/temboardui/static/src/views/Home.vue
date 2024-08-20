@@ -177,41 +177,37 @@ watch(groupsFilter.value, (newVal) => {
         <i class="fa fa-expand"></i>
       </button>
     </div>
-    <div class="row">
-      <div class="col mb-2">
-        <form class="row row-cols-lg-auto" onsubmit="event.preventDefault();">
-          <div class="col-12">
-            <input type="text" class="form-control me-sm-2" placeholder="Search instances" v-model="search" />
+    <div class="row pb-3">
+      <div class="col d-flex">
+        <input type="text" class="form-control me-sm-2 w-auto" placeholder="Search instances" v-model="search" />
+        <div class="dropdown me-sm-2">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            Sort by: <strong v-cloak>{{ sort }}</strong>
+            <span class="caret"></span>
+          </button>
+          <div class="dropdown-menu" role="menu">
+            <a class="dropdown-item" href v-on:click="changeSort('hostname', $event)">
+              <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'hostname' }]"></i>
+              Hostname
+            </a>
+            <a class="dropdown-item" href v-on:click="changeSort('status', $event)">
+              <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'status' }]"></i>
+              Status
+            </a>
           </div>
-          <div class="dropdown me-sm-2">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
-              Sort by: <strong v-cloak>{{ sort }}</strong>
-              <span class="caret"></span>
-            </button>
-            <div class="dropdown-menu" role="menu">
-              <a class="dropdown-item" href v-on:click="changeSort('hostname', $event)">
-                <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'hostname' }]"></i>
-                Hostname
-              </a>
-              <a class="dropdown-item" href v-on:click="changeSort('status', $event)">
-                <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'status' }]"></i>
-                Status
-              </a>
-            </div>
+        </div>
+        <div class="dropdown" v-if="groups.length > 1">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            Groups ({{ groupsFilter.length || "all" }})
+            <span class="caret"></span>
+          </button>
+          <div class="dropdown-menu" role="menu">
+            <a class="dropdown-item" href="#" v-for="group in groups" v-on:click="toggleGroupFilter(group, $event)">
+              <i v-bind:class="['fa fa-fw', { 'fa-check': groupsFilter.indexOf(group) != -1 }]"></i>
+              {{ group }}
+            </a>
           </div>
-          <div class="dropdown" v-if="groups.length > 1">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
-              Groups ({{ groupsFilter.length || "all" }})
-              <span class="caret"></span>
-            </button>
-            <div class="dropdown-menu" role="menu">
-              <a class="dropdown-item" href="#" v-for="group in groups" v-on:click="toggleGroupFilter(group, $event)">
-                <i v-bind:class="['fa fa-fw', { 'fa-check': groupsFilter.indexOf(group) != -1 }]"></i>
-                {{ group }}
-              </a>
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
       <div class="col text-center" v-if="groups.length === 1">
         <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-bs-toggle="tooltip">{{
@@ -228,7 +224,7 @@ watch(groupsFilter.value, (newVal) => {
       </div>
     </div>
 
-    <div class="row instance-list">
+    <div class="row">
       <div
         v-for="(instance, instanceIndex) in filteredInstances"
         :key="instance.hostname + instance.pg_port"
