@@ -14,6 +14,14 @@ html {
   margin-bottom: 10px;
 }
 
+a.navbar-brand {
+  background-image: url("/static/images/heron-w.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: 0 50%;
+  padding-left: 2.3rem !important;
+}
+
 .bg-light2 {
   background-color: $table-accent-bg;
 }

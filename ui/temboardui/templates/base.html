@@ -21,54 +21,55 @@
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
     <!-- Navigation -->
     <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top p-0" data-bs-theme="dark">
-      <div class="collapse navbar-collapse">
-        {% if 'instance' in globals() %}
-        <a class="navbar-brand ps-0 ms-3 me-0" href id="menu-collapse">
-          <i class="fa fa-bars"></i>
-        </a>
+      {% if 'instance' in globals() %}
+      <a class="navbar-text fs-6 ms-3 text-white" href id="menu-collapse">
+        <i class="fa fa-bars"></i>
+      </a>
+      {% end %}
+      <a class="navbar-brand p-0 ms-3 fw-bolder" style="letter-spacing: -1px;" href="/home">temBoard</a>
+      {% if 'instance' in globals() %}
+      {% set d = instance.discover or {} %}
+      <span class="navbar-text p-0 fs-5 text-white text-truncate">
+        /
+        {% if instance.groups %}
+        <span>{{instance.groups[0].group_name}}</span>
+        /
         {% end %}
-        <a class="navbar-brand p-0 me-auto" href="/home">
-          <img id="logo" src="/images/temboard-150x32-w.png" />
-        </a>
-        {% if 'instance' in globals() %}
-        {% set d = instance.discover or {} %}
-        <div class="navbar-text text-white me-auto">
-          <b style="font-size: 150%;">{{ instance.hostname }}:{{ instance.pg_port }}</b>
-        </div>
+        <strong>{{ instance.hostname }}:{{ instance.pg_port }}</strong>
+      </span>
+      {% end %}
+      <ul class="navbar-nav ms-auto">
+        {% if role.is_admin %}
+        <li class="nav-item">
+          <a id="linkSettings"
+             href="/settings/instances"
+             data-bs-toggle="tooltip"
+             data-bs-placement="bottom"
+             class="nav-link"
+             title="Manage instances and users">
+            <i class="fa fa-wrench"></i>
+            Settings
+          </a>
+        </li>
         {% end %}
-        <ul class="navbar-nav">
-          {% if role.is_admin %}
-          <li class="nav-item">
-            <a id="linkSettings"
-               href="/settings/instances"
-               data-bs-toggle="tooltip"
-               data-bs-placement="bottom"
-               class="nav-link"
-               title="Manage instances and users">
-              <i class="fa fa-wrench"></i>
-              Settings
-            </a>
-          </li>
-          {% end %}
-          <li class="dropdown nav-item">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-              <i class="fa fa-user"></i>
-              {{role.role_name}}
-              <span class="caret"></span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end">
-              <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
-            </div>
-          </li>
-        </ul>
-      </div>
+        <li class="dropdown nav-item text-nowrap">
+          <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-user"></i>
+            {{role.role_name}}
+            <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+          </div>
+        </li>
+      </ul>
     </div>
 
     {% if 'instance' in globals() %}
     <div class="container-fluid">
       <div class="row">
         <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
-          <div class="sidebar-sticky pt-3 d-flex flex-column">
+          <div class="sidebar-sticky d-flex flex-column">
             <ul class="nav nav-pills flex-column">
               {% set plugin_names = [plugin.plugin_name for plugin in instance.plugins] %}
               {% set plugin = globals().get('plugin', None) %}
