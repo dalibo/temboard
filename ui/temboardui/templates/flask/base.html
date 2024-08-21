@@ -7,10 +7,14 @@
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
 
     <title>{% block title %}temBoard {% if instance is defined %}/ {{ instance }} {% endif %}{% endblock %}</title>
-    {% if vitejs.PROD %} {% for link in vitejs.css_links_for('temboard.js') %}{{ link|safe }}{% endfor %} {% else %}
+    {% if vitejs.PROD %}
+    {% for link in vitejs.css_links_for('temboard.js') %}{{ link|safe }}{% endfor %}
+    {% else %}
     <!-- Require starting vitejs dev server with npm run dev. -->
     <script type="module" src="{{ vitejs.url_for('@vite/client') }}"></script>
-    {% endif %} {% block head %}{# Put link and meta in head block to inject here #}{% endblock %}
+    {% endif %}
+
+    {% block head %}{# Put link and meta in head block to inject here #}{% endblock %}
   </head>
 
   <body>
@@ -28,11 +32,12 @@
         <a class="navbar-brand me-auto" href="/home">
           <img id="logo" src="/images/temboard-150x32-w.png" />
         </a>
-        {% if instance is defined %} {% set d = instance.discover or {} %}
+        {% if instance is defined %}
         <div class="navbar-text text-white me-auto">
           <b style="font-size: 150%">{{ instance.hostname }}:{{ instance.pg_port }}</b>
         </div>
-        {% endif %} {% if role %}
+        {% endif %}
+        {% if role %}
         <ul class="navbar-nav">
           {% if role.is_admin %}
           <li class="nav-item">
@@ -80,9 +85,14 @@
           <div class="sidebar-sticky pt-3 d-flex flex-column">
             {% if instance is defined %}
             <ul class="nav nav-pills flex-column">
-              {% set plugin_names = [] %} {% for plugin in instance.plugins %} {% set _ =
-              plugin_names.append(plugin.plugin_name) %} {% endfor %} {% if plugin is undefined %} {% set plugin =
-              'builtin' %} {% endif %} {% if 'dashboard' in plugin_names %}
+              {% set plugin_names = [] %}
+              {% for plugin in instance.plugins %}
+              {% set _ = plugin_names.append(plugin.plugin_name) %}
+              {% endfor %}
+              {% if plugin is undefined %}
+              {% set plugin = 'builtin' %}
+              {% endif %}
+              {% if 'dashboard' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
@@ -92,7 +102,8 @@
                   <span>Dashboard</span>
                 </a>
               </li>
-              {% endif %} {% if 'activity' in plugin_names %}
+              {% endif %}
+              {% if 'activity' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"
@@ -102,7 +113,8 @@
                   <span>Activity</span>
                 </a>
               </li>
-              {% endif %} {% if 'monitoring' in plugin_names %}
+              {% endif %}
+              {% if 'monitoring' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
@@ -112,7 +124,8 @@
                   <span>Monitoring</span>
                 </a>
               </li>
-              {% endif %} {% if 'monitoring' in plugin_names %}
+              {% endif %}
+              {% if 'monitoring' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
@@ -122,7 +135,8 @@
                   <span>Status</span>
                 </a>
               </li>
-              {% endif %} {% if 'pgconf' in plugin_names %}
+              {% endif %}
+              {% if 'pgconf' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
@@ -132,7 +146,8 @@
                   <span>Configuration</span>
                 </a>
               </li>
-              {% endif %} {% if 'maintenance' in plugin_names %}
+              {% endif %}
+              {% if 'maintenance' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
@@ -142,7 +157,8 @@
                   <span>Maintenance</span>
                 </a>
               </li>
-              {% endif %} {% if 'statements' in plugin_names %}
+              {% endif %}
+              {% if 'statements' in plugin_names %}
               <li class="nav-item">
                 <a
                   href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
@@ -176,8 +192,9 @@
 
         <!-- Contents -->
         <div class="main ms-auto p-3 position-relative">
-          {% if instance is defined and instance.status is defined %} {% set s = instance.status %} {% if
-          "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
+          {% if instance is defined and instance.status is defined %}
+          {%   set s = instance.status %}
+          {%   if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
           <div class="alert alert-warning" role="alert">
             <h2>
               <i class="fa fa-warning fa-fw"></i>WARNING
@@ -185,7 +202,8 @@
             </h2>
             <p>Some changes are pending and PostgreSQL should be restarted.</p>
           </div>
-          {% endif %} {% endif %}
+          {%   endif %}
+          {% endif %}
           <div id="errorApp"></div>
           {% block content %} {% endblock %}
         </div>

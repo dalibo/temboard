@@ -6,8 +6,9 @@
 {% for link in vitejs.css_links_for('settings.group.js') %}{{ link|safe }}{% endfor %}
 {% endblock %}
 
-<!-- sidebar -->
-{% block sidebar %} {% include "settings/menu.html" %} {% endblock %}
+{% block sidebar %}
+{% include "settings/menu.html" %}
+{% endblock %}
 
 {% block content %}
 <div id="vue-app">
