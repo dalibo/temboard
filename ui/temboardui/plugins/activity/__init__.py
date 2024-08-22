@@ -1,4 +1,4 @@
-from flask import current_app, g, jsonify
+from flask import current_app, jsonify
 from flask import render_template as flask_render_template
 
 from ...web.flask import instance_proxy, instance_routes
@@ -16,13 +16,7 @@ class ActivityPlugin:
 def activity():
     current_app.instance.check_active_plugin("activity")
     current_app.instance.fetch_status()
-    return flask_render_template(
-        "activity.html",
-        instance=g.instance,
-        plugin="activity",
-        role=g.current_user,
-        vitejs=current_app.vitejs,
-    )
+    return flask_render_template("activity.html", plugin="activity")
 
 
 @instance_proxy.route("/activity")

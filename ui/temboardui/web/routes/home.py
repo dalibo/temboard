@@ -13,9 +13,7 @@ def home():
     groups = get_instance_groups_by_role(g.db_session, role.role_name)
     groups = [group for group in groups]
 
-    return render_template(
-        "home.html", sidebar=False, role=role, groups=groups, vitejs=app.vitejs
-    )
+    return render_template("home.html", groups=groups)
 
 
 @app.route("/about")
@@ -41,10 +39,4 @@ def about():
     }
     temboard_version = versions_info["temboard"]
 
-    return render_template(
-        "about.html",
-        role=g.current_user,
-        infos=infos,
-        temboard_version=temboard_version,
-        vitejs=app.vitejs,
-    )
+    return render_template("about.html", infos=infos, temboard_version=temboard_version)

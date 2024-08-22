@@ -11,8 +11,6 @@ def settings_instances():
     return render_template(
         "settings/instances.html",
         sidebar=True,
-        vitejs=app.vitejs,
-        role=g.current_user,
         instance_list=orm.Instances.all().with_session(g.db_session).all(),
     )
 
@@ -23,8 +21,6 @@ def settings_instance_groups():
     return render_template(
         "settings/instance-groups.html",
         sidebar=True,
-        vitejs=app.vitejs,
-        role=g.current_user,
         groups=orm.Groups.all("instance").with_session(g.db_session).all(),
     )
 
@@ -35,8 +31,6 @@ def settings_users():
     return render_template(
         "settings/users.html",
         sidebar=True,
-        vitejs=app.vitejs,
-        role=g.current_user,
         role_list=orm.Roles.all().with_session(g.db_session).all(),
     )
 
@@ -47,7 +41,5 @@ def settings_groups():
     return render_template(
         "settings/groups.html",
         sidebar=True,
-        role=g.current_user,
-        vitejs=app.vitejs,
         groups=orm.Groups.all("role").with_session(g.db_session).all(),
     )

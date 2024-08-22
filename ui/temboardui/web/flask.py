@@ -149,14 +149,7 @@ def error_handler(e):
     else:
         template = "error.html"
 
-    return render_template(
-        template,
-        role=g.current_user,
-        vitejs=current_app.vitejs,
-        message=error,
-        code=status_code,
-        **template_vars,
-    )
+    return render_template(template, message=error, code=status_code, **template_vars)
 
 
 def is_json(path):
@@ -247,6 +240,10 @@ class AuthMiddleware:
         app.user = self
         app.before_request(self.before)
 
+        @app.context_processor
+        def inject_user():
+            return dict(role=g.current_user)
+
     def before(self):
         if request.url_rule and request.url_rule.rule.startswith("/static"):
             # Skip Auth for static files.
@@ -324,6 +321,12 @@ class InstanceMiddleware:
         def teardown_instance(*_):
             if hasattr(g, "instance"):
                 delattr(g, "instance")
+
+        @app.context_processor
+        def context_processor():
+            if not hasattr(g, "instance"):
+                return {}
+            return dict(instance=g.instance)
 
     def load_instance_before_request(self):
         address = request.view_args.pop("address")
