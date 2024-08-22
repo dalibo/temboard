@@ -168,7 +168,12 @@
         {% end %}
         {% end %}
         <div class="main ms-auto p-3 position-relative">
-          <div id="errorApp"></div>
+          <div id="errorApp" class="row justify-content-center">
+            <div class="col col-xl-6 col-10" v-cloak>
+              <Error ref="error"></Error>
+            </div>
+          </div>
+
           {% block content %} {% end %}
         </div>
       </div>
