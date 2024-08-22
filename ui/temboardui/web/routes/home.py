@@ -13,7 +13,7 @@ def home():
     groups = get_instance_groups_by_role(g.db_session, role.role_name)
     groups = [group for group in groups]
 
-    return render_template("home.html", sidebar=False, groups=groups)
+    return render_template("home.html", groups=groups)
 
 
 @app.route("/about")
