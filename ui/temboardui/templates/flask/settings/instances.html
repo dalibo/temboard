@@ -15,12 +15,10 @@
   <environment-migration-dialog ref="environment_migration_dialog" object-class="instance" title="Instance in multiple groups"></environment-migration-dialog>
   <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>
   <update-instance-dialog ref="update_modal"></update-instance-dialog>
-  {% raw %}
   <DeleteDialog ref="delete_modal" id="modalDeleteInstance" title="Delete instance" v-slot="{resource}">
     <p class="text-center fs-5">Please confirm the deletion of instance:</p>
     <InstanceDetails :pg_host="resource.hostname" :pg_port="resource.pg_port"/>
   </DeleteDialog>
-  {% endraw %}
 
   <div class="row">
     <div class="col-md-12 text-end">
