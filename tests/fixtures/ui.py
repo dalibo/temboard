@@ -285,9 +285,6 @@ def registered_agent(admin_session, agent, agent_conf, browser_session, pg_versi
     # Wait for one agent edit button to come up.
     browser.select("table tbody tr td button.btn-outline-secondary")
 
-    # We should restart UI here to triggers monitoring and statements
-    # background tasks, saving one round of 60s of waiting.
-
     return browser
 
 
