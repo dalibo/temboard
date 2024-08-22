@@ -37,7 +37,8 @@
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
     "postcss": "^8.4.38",
-    "prettier": "^3.3.2",
+    "prettier": "3.3.3",
+    "prettier-plugin-jinja-template": "1.4.1",
     "sass": "^1.77.6",
     "vite": "^5.3.1"
   },

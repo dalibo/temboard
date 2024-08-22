@@ -6,10 +6,10 @@
 {% for link in vitejs.css_links_for('settings.users.js') %}{{ link | safe }}{% endfor %}
 {% endblock %}
 
-<!-- sidebar -->
-{% block sidebar %} {% include "settings/menu.html" %} {% endblock %}
+{% block sidebar %}
+{% include "settings/menu.html" %}
+{% endblock %}
 
-<!-- content -->
 {% block content %}
 <div id="vueapp">
   <update-user-dialog ref="update_modal"></update-user-dialog>

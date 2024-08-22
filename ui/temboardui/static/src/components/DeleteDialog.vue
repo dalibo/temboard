@@ -11,46 +11,54 @@ import { ref } from "vue";
 import Error from "./Error.vue";
 import ModalDialog from "./ModalDialog.vue";
 
-defineProps(["id", "title"]);
+const props = defineProps(["id", "title", "noreload"]);
 
 const root = ref(null);
 const error = ref(null);
+const failed = ref(false);
 const waiting = ref(false);
 const resource = ref(null);
 let deleteUrl = null;
+let modal = null;
 
 function open(url) {
   deleteUrl = url;
   error.value.clear();
 
-  new Modal(root.value.$el).show();
+  modal = new Modal(root.value.$el);
+  modal.show();
 
   waiting.value = true;
   $.ajax({
     url: url,
     success: (data) => {
       resource.value = data;
-      waiting.value = false;
     },
     error: (xhr) => {
       error.value.fromXHR(xhr);
-      waiting.value = false;
+      failed.value = true;
     },
+  }).always(() => {
+    waiting.value = false;
   });
 }
+
+const emit = defineEmits(["done"]);
 
 function submit() {
   waiting.value = true;
   $.ajax({
     url: deleteUrl,
     type: "DELETE",
-    fail: (xhr) => {
+    error: (xhr) => {
       error.value.fromXHR(xhr);
-      waiting.value = false;
     },
     success: () => {
-      window.location.reload();
-      waiting.value = false;
+      if (!props.noreload) {
+        window.location.reload();
+      }
+      emit("done");
+      modal.hide();
     },
   });
 }
@@ -69,7 +77,13 @@ defineExpose({ open });
 
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button id="buttonDelete" class="btn btn-danger ms-auto" type="button" @click="submit" :disabled="waiting">
+      <button
+        id="buttonDelete"
+        class="btn btn-danger ms-auto"
+        type="button"
+        @click="submit"
+        :disabled="waiting || failed"
+      >
         Yes, delete
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>
