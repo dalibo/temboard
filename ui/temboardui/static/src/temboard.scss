@@ -142,15 +142,6 @@ html {
   height: 190px;
 }
 
-table.dashboard-information {
-  th {
-    font-weight: normal;
-  }
-  td {
-    font-weight: bold;
-  }
-}
-
 .popover-title {
   font-size: 12px;
   font-weight: bold;
@@ -233,34 +224,6 @@ table.dashboard-information {
 
 #panelLogin {
   margin-top: 20px;
-}
-
-.dataTables_wrapper div.dt-buttons {
-  float: none;
-  display: inline-block;
-}
-
-table.dataTable thead {
-  .sorting,
-  .sorting_asc,
-  .sorting_desc {
-    &::before,
-    &::after {
-      float: right;
-      font-family: fontawesome;
-      right: 0 !important;
-      content: "";
-    }
-  }
-  .sorting_asc::before {
-    content: "\f0de";
-  }
-  .sorting_desc::after {
-    content: "\f0dd";
-  }
-  .sorting::after {
-    content: "\f0dc";
-  }
 }
 
 table.table-activity {
