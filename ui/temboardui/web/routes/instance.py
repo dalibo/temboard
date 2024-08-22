@@ -13,7 +13,6 @@ def instance_about():
     app.instance.fetch_status()
     return render_template(
         "instance-about.html",
-        instance=g.instance,
         instance_name=g.instance.__str__(),
         pg_data=g.instance.pg_data,
         pg_version_summary=g.instance.pg_version_summary,

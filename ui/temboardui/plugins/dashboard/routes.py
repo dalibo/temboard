@@ -27,7 +27,6 @@ def dashboard():
     return render_template(
         "dashboard.html",
         role=g.current_user,
-        instance=g.instance,
         plugin="dashboard",
         config=config,
         dashboard=dashboard,

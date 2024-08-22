@@ -324,6 +324,12 @@ class InstanceMiddleware:
             if hasattr(g, "instance"):
                 delattr(g, "instance")
 
+        @app.context_processor
+        def context_processor():
+            if not hasattr(g, "instance"):
+                return {}
+            return dict(instance=g.instance)
+
     def load_instance_before_request(self):
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")

@@ -11,7 +11,6 @@ def maintenance():
     current_app.instance.fetch_status()
     return render_template(
         "maintenance/index.html",
-        instance=g.instance,
         plugin=PLUGIN_NAME,
         role=g.current_user,
     )
@@ -23,7 +22,6 @@ def table(database, schema, table):
     current_app.instance.fetch_status()
     return render_template(
         "maintenance/table.html",
-        instance=g.instance,
         plugin=PLUGIN_NAME,
         role=g.current_user,
         database=database,
@@ -38,7 +36,6 @@ def schema(database, schema):
     current_app.instance.fetch_status()
     return render_template(
         "maintenance/schema.html",
-        instance=g.instance,
         plugin=PLUGIN_NAME,
         role=g.current_user,
         database=database,
@@ -52,7 +49,6 @@ def database(database):
     current_app.instance.fetch_status()
     return render_template(
         "maintenance/database.html",
-        instance=g.instance,
         plugin=PLUGIN_NAME,
         role=g.current_user,
         database=database,
