@@ -149,13 +149,7 @@ def error_handler(e):
     else:
         template = "error.html"
 
-    return render_template(
-        template,
-        role=g.current_user,
-        message=error,
-        code=status_code,
-        **template_vars,
-    )
+    return render_template(template, message=error, code=status_code, **template_vars)
 
 
 def is_json(path):
@@ -245,6 +239,10 @@ class AuthMiddleware:
     def init_app(self, app):
         app.user = self
         app.before_request(self.before)
+
+        @app.context_processor
+        def inject_user():
+            return dict(role=g.current_user)
 
     def before(self):
         if request.url_rule and request.url_rule.rule.startswith("/static"):

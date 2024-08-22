@@ -1,6 +1,6 @@
 import logging
 
-from flask import current_app, g, render_template
+from flask import current_app, render_template
 
 from ...agentclient import TemboardAgentClient
 from ...web.flask import instance_routes
@@ -26,7 +26,6 @@ def dashboard():
     dashboard = history[-1] if history else {}
     return render_template(
         "dashboard.html",
-        role=g.current_user,
         plugin="dashboard",
         config=config,
         dashboard=dashboard,

@@ -18,5 +18,4 @@ def instance_about():
         pg_version_summary=g.instance.pg_version_summary,
         discover=g.instance.discover,
         groups=[group.group_name for group in g.instance.groups],
-        role=g.current_user,
     )
