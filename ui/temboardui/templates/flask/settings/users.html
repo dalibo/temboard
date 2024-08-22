@@ -12,21 +12,12 @@
 
 {% block content %}
 <div id="vueapp">
-  <update-user-dialog ref="update_modal"></update-user-dialog>
+  <EditUserDialog ref="userModal"></EditUserDialog>
   {% raw %}
   <DeleteDialog ref="delete_modal" title="Delete user" v-slot="{resource}">
       <p class="fs-5 text-center">Please confirm the deletion of user <strong>{{resource.name}}</strong>.</p>
   </DeleteDialog>
   {% endraw %}
-
-
-  <div class="row text-end">
-    <p>
-      <button id="buttonLoadAddUserForm" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdateUser" v-on:click.prevent="$refs.update_modal.open()">
-        New user
-      </button>
-    </p>
-  </div>
 
   <div class="row">
     <table class="table table-striped table-bordered table-hover" id="tableUsers" cellspacing="0">
@@ -38,7 +29,7 @@
           <th>Active</th>
           <th>Admin.</th>
           <th>Groups</th>
-          <th class="no-sort"></th>
+          <th><!-- actions --></th>
         </tr>
       </thead>
       <tbody>
@@ -56,9 +47,7 @@
               class="btn btn-outline-secondary btn-sm m-1"
               data-bs-placement="bottom"
               title="Edit"
-              data-bs-toggle="modal"
-              data-bs-target="#modalUpdateUser"
-              v-on:click.prevent="$refs.update_modal.open('{{ role_item.role_name }}')">
+              v-on:click.prevent="$refs.userModal.edit('{{ role_item.role_name }}')">
               <i class="fa fa-edit"></i></button>
             <button
               type="button"

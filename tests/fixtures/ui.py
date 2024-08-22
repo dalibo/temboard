@@ -61,6 +61,11 @@ class Browser:
             f"Element {selector} is still present.",
         )
 
+    def clickable(self, selector, timeout=3):
+        return WebDriverWait(self.webdriver, timeout).until(
+            expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, selector))
+        )
+
     def mincount(self, selector, n, timeout=3):
         return WebDriverWait(self.webdriver, timeout).until(
             lambda driver: len(driver.find_elements(By.CSS_SELECTOR, selector)) >= n

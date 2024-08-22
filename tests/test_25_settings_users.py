@@ -9,7 +9,9 @@ def user_rick(admin_session, browser_session):
     browser_session.select("#linkSettings").click()
     browser_session.select("a[href='/settings/users']").click()
 
-    browser_session.select("#buttonLoadAddUserForm").click()
+    browser_session.select("#buttonNewUser").click()
+    # Wait form to be interactive
+    browser_session.clickable("#modalEditUser button[type=submit]")
     browser_session.select("input[placeholder='Username']").send_keys("rick")
     browser_session.select("input[placeholder='Email']").send_keys("rick@test.com")
     browser_session.select("input[placeholder='Password']").send_keys("!rick0.@9")
@@ -21,7 +23,7 @@ def user_rick(admin_session, browser_session):
     multiselect.select("default")
     browser_session.select("label[for='switchActive']").click()
     browser_session.select("label[for='switchAdmin']").click()
-    browser_session.select("button[type=submit]").click()
+    browser_session.select("#modalEditUser button[type=submit]").click()
 
 
 def test_create_user(user_rick, browser):
@@ -46,6 +48,7 @@ def test_update_user(user_rick, browser):
         By.CSS_SELECTOR, "td button[title='Edit']"
     )
     edit_button_rick.click()
+    browser.clickable("#modalEditUser button[type=submit]")
 
     browser.select("input[placeholder='Username']").clear()
     browser.select("input[placeholder='Username']").send_keys("rick0")

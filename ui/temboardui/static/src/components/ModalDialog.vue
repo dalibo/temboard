@@ -5,7 +5,7 @@ import $ from "jquery";
 import { onMounted, ref } from "vue";
 
 defineProps(["id", "title"]);
-const emit = defineEmits(["closed"]);
+const emit = defineEmits(["opened", "closed"]);
 const root = ref(null);
 let modal = null;
 
