@@ -40,7 +40,7 @@ export default defineConfig({
         "maintenance.table": "/maintenance.table.js",
         "settings.about": "/settings.about.js",
         "settings.group": "/settings.group.js",
-        "settings.instance": "/settings.instance.js",
+        "settings.instances": "/settings.instances.js",
         "settings.instance-groups": "/settings.instance-groups.js",
         "settings.notifications": "/settings.notifications.js",
         "settings.user": "/settings.users.js",

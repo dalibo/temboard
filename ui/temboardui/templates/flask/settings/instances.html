@@ -3,7 +3,7 @@
 {% block title %}{{ super() }} / Settings / Instances{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('settings.instance.js') %}{{ link|safe }}{% endfor %}
+{% for link in vitejs.css_links_for('settings.instances.js') %}{{ link|safe }}{% endfor %}
 {% endblock %}
 
 {% block sidebar %}
@@ -109,5 +109,5 @@
     </table>
   </div>
 
-<script type="module" src="{{ vitejs.url_for('settings.instance.js') }}"></script>
+<script type="module" src="{{ vitejs.url_for('settings.instances.js') }}"></script>
 {% endblock %}
