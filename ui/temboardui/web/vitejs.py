@@ -26,6 +26,7 @@ class ViteJSExtension:
         if uri and not uri.startswith("http://localhost:"):
             raise Exception("Refusing to delegate to non-localhost ViteJS.")
         self.manifest_path = self.app.static_folder + "/.vite/manifest.json"
+        app.context_processor(self.context_processor)
 
     def read_manifest(self):
         if self.app.config["VITEJS"]:
@@ -60,3 +61,6 @@ class ViteJSExtension:
             """) % (self.app.static_url_path, file_)
         else:
             raise Exception("Unhandled assets file type for %s" % file_)
+
+    def context_processor(self):
+        return dict(vitejs=self)

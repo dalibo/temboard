@@ -14,7 +14,6 @@ def maintenance():
         instance=g.instance,
         plugin=PLUGIN_NAME,
         role=g.current_user,
-        vitejs=current_app.vitejs,
     )
 
 
@@ -30,7 +29,6 @@ def table(database, schema, table):
         database=database,
         schema=schema,
         table=table,
-        vitejs=current_app.vitejs,
     )
 
 
@@ -45,7 +43,6 @@ def schema(database, schema):
         role=g.current_user,
         database=database,
         schema=schema,
-        vitejs=current_app.vitejs,
     )
 
 
@@ -59,5 +56,4 @@ def database(database):
         plugin=PLUGIN_NAME,
         role=g.current_user,
         database=database,
-        vitejs=current_app.vitejs,
     )

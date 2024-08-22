@@ -14,7 +14,7 @@ def home():
     groups = [group for group in groups]
 
     return render_template(
-        "home.html", sidebar=False, role=role, groups=groups, vitejs=app.vitejs
+        "home.html", sidebar=False, role=role, groups=groups,
     )
 
 
@@ -46,5 +46,4 @@ def about():
         role=g.current_user,
         infos=infos,
         temboard_version=temboard_version,
-        vitejs=app.vitejs,
     )

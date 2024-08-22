@@ -32,5 +32,4 @@ def dashboard():
         config=config,
         dashboard=dashboard,
         history=history or "",
-        vitejs=current_app.vitejs,
     )

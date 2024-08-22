@@ -20,5 +20,4 @@ def instance_about():
         discover=g.instance.discover,
         groups=[group.group_name for group in g.instance.groups],
         role=g.current_user,
-        vitejs=app.vitejs,
     )

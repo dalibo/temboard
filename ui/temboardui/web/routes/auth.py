@@ -28,7 +28,7 @@ def logout():
 def login():
     if g.current_user:
         return redirect("/home")
-    return render_template("login.html", headerbar=False, vitejs=app.vitejs)
+    return render_template("login.html", headerbar=False)
 
 
 @app.route(r"/json/login", methods=["POST"])

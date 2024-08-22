@@ -21,7 +21,6 @@ def activity():
         instance=g.instance,
         plugin="activity",
         role=g.current_user,
-        vitejs=current_app.vitejs,
     )
 
 
