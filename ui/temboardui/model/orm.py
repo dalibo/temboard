@@ -12,6 +12,9 @@ from . import QUERIES
 
 Model = declarative_base()
 
+# For bridging ORM with raw SQL code, see
+# https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
+
 
 class ApiKeys(Model):
     __tablename__ = "apikeys"
@@ -28,9 +31,6 @@ class ApiKeys(Model):
     @classmethod
     def generate_secret(cls, length=40):
         return "".join(choice(cls._SECRET_LETTERS) for _ in range(length))
-
-    # See
-    # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
 
     @classmethod
     def insert(cls, secret, comment):
