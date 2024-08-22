@@ -8,6 +8,7 @@ import InstanceDetails from "./InstanceDetails.vue";
 const props = defineProps([
   "submit_text", // Submit button label.
   "waiting", // Whether parent is interacting with server.
+  "disabled",
   "type", // Either 'New' or 'Update'
 
   // Discover readonly data.
@@ -108,7 +109,7 @@ const emit = defineEmits(["submit"]);
               :value="plugin.name"
               :id="`pluginCheckbox_${plugin.name}`"
               :checked="plugin.selected"
-              :disabled="plugin.disabled ? 'disabled' : null"
+              :disabled="disabled || plugin.disabled"
               :class="{ disabled: plugin.disabled }"
               :title="plugin.disabled ? 'Plugin disabled by agent.' : null"
               name="plugins"
@@ -125,7 +126,7 @@ const emit = defineEmits(["submit"]);
               class="form-check-input"
               type="checkbox"
               :checked="notify"
-              :disabled="waiting"
+              :disabled="disabled"
             />
             <label :for="'inputNotify' + type" class="form-label">Notify users of any status alert.</label>
           </div>
@@ -139,7 +140,7 @@ const emit = defineEmits(["submit"]);
             class="form-control"
             rows="3"
             v-model="commentModel"
-            :disabled="waiting"
+            :disabled="disabled"
           >
           </textarea>
         </div>
@@ -147,7 +148,7 @@ const emit = defineEmits(["submit"]);
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button :id="'buttonSubmit' + type" class="btn btn-success ms-auto" type="submit" :disabled="waiting">
+      <button :id="'buttonSubmit' + type" class="btn btn-success ms-auto" type="submit" :disabled="disabled">
         {{ submit_text }}
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>

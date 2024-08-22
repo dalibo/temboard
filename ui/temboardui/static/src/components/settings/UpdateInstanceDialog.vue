@@ -2,7 +2,7 @@
 /**
  * A Bootstrap dialog editing instance properties.
  */
-import { Modal, Tooltip } from "bootstrap";
+import { Tooltip } from "bootstrap";
 import $ from "jquery";
 import { computed, nextTick, onUpdated, reactive, ref } from "vue";
 
@@ -10,11 +10,26 @@ import Error from "../Error.vue";
 import ModalDialog from "../ModalDialog.vue";
 import InstanceForm from "./InstanceForm.vue";
 
+function open(address, port) {
+  reset();
+
+  // Configure for target instance data.
+  agent_address = address;
+  agent_port = port;
+
+  root.value.show();
+
+  fetch();
+}
+
+defineExpose({ open });
+
 const root = ref(null);
 const error = ref(null);
-const formCmp = ref(null);
-const waiting = ref(false);
-const initialForm = {
+const waiting = ref(true);
+const failing = ref(false);
+const disabled = computed(() => waiting.value || failing.value);
+const initialModel = {
   comment: "",
   notify: true,
   cpu: null,
@@ -30,27 +45,27 @@ const initialForm = {
   agent_plugins: [],
   signature_status: null,
 };
-const form = reactive({ ...initialForm });
+const model = reactive({ ...initialModel });
 let agent_address = null;
 let agent_port = null;
 let discover_data;
 let discover_etag;
 
 const plugins = computed(() => {
-  return Array.from(form.server_plugins, (name) => {
+  return Array.from(model.server_plugins, (name) => {
     return {
       name,
-      disabled: form.agent_plugins.length > 0 && form.agent_plugins.indexOf(name) === -1,
-      selected: form.current_plugins.indexOf(name) !== -1,
+      disabled: model.agent_plugins.length > 0 && model.agent_plugins.indexOf(name) === -1,
+      selected: model.current_plugins.indexOf(name) !== -1,
     };
   });
 });
 
 const groups = computed(() => {
-  return Array.from(form.server_groups, (group) => {
+  return Array.from(model.server_groups, (group) => {
     return {
       name: group.name,
-      selected: form.current_groups.indexOf(group.name) !== -1,
+      selected: model.current_groups.indexOf(group.name) !== -1,
     };
   });
 });
@@ -60,35 +75,22 @@ onUpdated(() => {
   [...tooltipTriggerList].map((el) => new Tooltip(el));
 });
 
-function open(address, port) {
-  // Reset dialog state.
-  error.value.clear();
-  waiting.value = true;
-
-  // Configure for target instance data.
-  agent_address = address;
-  agent_port = port;
-
-  new Modal(root.value.$el).show();
-
-  fetch();
-}
-
 function fetch() {
   return $.when(
     $.ajax({
       url: `/json/instances/${agent_address}/${agent_port}`,
       error: (xhr) => {
         error.value.fromXHR(xhr);
+        failing.value = true;
       },
       success: (data) => {
-        form.notify = data.notify;
-        form.comment = data.comment;
+        model.notify = data.notify;
+        model.comment = data.comment;
         // Will be overriden by discover, if agent is up.
-        form.pg_host = data.hostname;
-        form.pg_port = data.pg_port;
-        form.current_plugins = data.plugins;
-        form.current_groups = data.groups;
+        model.pg_host = data.hostname;
+        model.pg_port = data.pg_port;
+        model.current_plugins = data.plugins;
+        model.current_groups = data.groups;
       },
     }),
     $.ajax({
@@ -97,7 +99,7 @@ function fetch() {
         error.value.fromXHR(xhr);
       },
       success: (data) => {
-        form.server_groups = data;
+        model.server_groups = data;
       },
     }),
     $.ajax({
@@ -106,7 +108,7 @@ function fetch() {
         error.value.fromXHR(xhr);
       },
       success: (data) => {
-        form.server_plugins = data;
+        model.server_plugins = data;
       },
     }),
     discover(),
@@ -139,15 +141,15 @@ function discover() {
 
       discover_data = data;
       discover_etag = xhr.getResponseHeader("ETag");
-      form.agent_plugins = data.temboard.plugins;
-      form.cpu = data.system.cpu_count;
+      model.agent_plugins = data.temboard.plugins;
+      model.cpu = data.system.cpu_count;
       const mem_gb = data.system.memory / 1024 / 1024 / 1024;
-      form.mem_gb = mem_gb.toFixed(2);
-      form.pg_version_summary = data.postgres.version_summary;
-      form.pg_data = data.postgres.data_directory;
-      form.pg_host = data.system.fqdn;
-      form.pg_port = data.postgres.port;
-      form.signature_status = data.signature_status;
+      model.mem_gb = mem_gb.toFixed(2);
+      model.pg_version_summary = data.postgres.version_summary;
+      model.pg_data = data.postgres.data_directory;
+      model.pg_host = data.system.fqdn;
+      model.pg_port = data.postgres.port;
+      model.signature_status = data.signature_status;
     });
 }
 
@@ -175,30 +177,30 @@ function update(data) {
 }
 
 function reset() {
-  Object.assign(form, initialForm);
+  Object.assign(model, initialModel);
+  error.value.clear();
+  waiting.value = true;
 }
-
-defineExpose({ open });
 </script>
 
 <template>
-  <ModalDialog id="modalUpdateInstance" title="Update Instance" v-on:closed="reset" ref="root">
+  <ModalDialog ref="root" title="Update Instance" v-on:closed="reset">
     <InstanceForm
-      ref="formCmp"
       submit_text="Update"
       type="Update"
-      :pg_host="form.pg_host"
-      :pg_port="form.pg_port"
-      :pg_data="form.pg_data"
-      :pg_version_summary="form.pg_version_summary"
-      :cpu="form.cpu"
-      :mem_gb="form.mem_gb"
-      :signature_status="form.signature_status"
+      :pg_host="model.pg_host"
+      :pg_port="model.pg_port"
+      :pg_data="model.pg_data"
+      :pg_version_summary="model.pg_version_summary"
+      :cpu="model.cpu"
+      :mem_gb="model.mem_gb"
+      :signature_status="model.signature_status"
       :groups="groups"
       :plugins="plugins"
-      :notify="form.notify"
-      :comment="form.comment"
+      :notify="model.notify"
+      :comment="model.comment"
       :waiting="waiting"
+      :disabled="disabled"
       v-on:submit="update"
     >
       <Error ref="error"></Error>
