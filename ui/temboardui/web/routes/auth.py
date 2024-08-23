@@ -178,7 +178,10 @@ def put_user(name=None, user=None):
 
     with validating():
         user.role_name = validators.slug(j["name"])
-        user.role_email = validators.email(j["email"])
+        if j["email"]:
+            user.role_email = validators.email(j["email"])
+        elif user.role_email:
+            user.role_email = None  # Remove email
         if j["phone"]:
             user.role_phone = validators.phone(j["phone"])
         if j.get("password"):
