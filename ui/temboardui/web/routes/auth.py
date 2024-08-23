@@ -126,7 +126,7 @@ def delete_group(name):
 def post_user():
     if "password" not in request.json:
         raise flask.abort(400, "Password required.")
-    role = orm.Role()
+    role = orm.Role(groups=[])
     g.db_session.add(role)
     return put_user(user=role)
 

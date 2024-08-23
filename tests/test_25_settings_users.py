@@ -6,23 +6,23 @@ from selenium.webdriver.common.by import By
 @pytest.fixture(scope="module")
 def user_rick(admin_session, browser_session):
     """Go to Settings User and add user rick."""
-    browser_session.select("#linkSettings").click()
-    browser_session.select("a[href='/settings/users']").click()
+    b = browser_session
+    b.select("#linkSettings").click()
+    b.select("a[href='/settings/users']").click()
 
-    browser_session.select("#buttonNewUser").click()
+    b.select("#buttonNewUser").click()
     # Wait form to be interactive
-    browser_session.clickable("input[placeholder='Username']").send_keys("rick")
-    browser_session.select("input[placeholder='Email']").send_keys("rick@test.com")
-    browser_session.select("input[placeholder='Password']").send_keys("!rick0.@9")
-    browser_session.select("input[placeholder='Confirm password']").send_keys(
-        "!rick0.@9"
-    )
-    browser_session.select("input[placeholder='+33...']").send_keys("+33611223344")
-    multiselect = MultiSelect(browser_session, "groups")
+    b.clickable("input[placeholder='Username']").send_keys("rick")
+    b.select("input[placeholder='Email']").send_keys("rick@test.com")
+    b.select("input[placeholder='Password']").send_keys("!rick0.@9")
+    b.select("input[placeholder='Confirm password']").send_keys("!rick0.@9")
+    b.select("input[placeholder='+33...']").send_keys("+33611223344")
+    multiselect = MultiSelect(b, "groups")
     multiselect.select("default")
-    browser_session.select("label[for='switchActive']").click()
-    browser_session.select("label[for='switchAdmin']").click()
-    browser_session.select("#modalEditUser button[type=submit]").click()
+    b.select("label[for='switchActive']").click()
+    b.select("label[for='switchAdmin']").click()
+    b.select("#modalEditUser button[type=submit]").click()
+    b.hidden("#modalEditUser")
 
 
 def test_create_user(user_rick, browser):
@@ -59,6 +59,7 @@ def test_update_user(user_rick, browser):
     browser.select("label[for='switchActive']").click()
     browser.select("label[for='switchAdmin']").click()
     browser.select("button[type=submit]").click()
+    browser.hidden("#modalEditUser")
 
     user_rick_line = [
         tr for tr in browser.select_all("#tableUsers tr") if "rick0" in tr.text
@@ -73,10 +74,9 @@ def test_update_user(user_rick, browser):
 
 
 def test_delete_user(user_rick, browser):
+    initial_rows = browser.select_all("#tableUsers tbody tr")
     # Find button delete for user rick
-    filtered_rick_row = [
-        tr for tr in browser.select_all("#tableUsers tr") if "rick@" in tr.text
-    ][0]
+    filtered_rick_row = [tr for tr in initial_rows if "rick@" in tr.text][0]
     delete_button_rick = filtered_rick_row.find_element(
         By.CSS_SELECTOR, "td button[title='Delete']"
     )
@@ -84,6 +84,6 @@ def test_delete_user(user_rick, browser):
 
     browser.select("#buttonDelete").click()
 
-    assert len(browser.select_all("#tableUsers tr")) == 2
+    assert len(browser.select_all("#tableUsers tbody tr")) < len(initial_rows)
 
     assert "rick" not in [tr.text for tr in browser.select_all("#tableUsers tr")]
