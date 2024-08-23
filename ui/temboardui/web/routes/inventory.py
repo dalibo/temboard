@@ -213,7 +213,7 @@ def get_instances_csv():
     pattern = "%%%s%%" % search if search else "%"
     bind = g.db_session.get_bind()
     conn = bind.raw_connection().connection
-    sql = QUERIES["copy-instances-as-csv"]
+    sql = QUERIES["instances-copy-as-csv"]
     with conn.cursor() as cur, StringIO() as fo:
         sql = cur.mogrify(sql, (pattern,))
         cur.copy_expert(sql, fo)
