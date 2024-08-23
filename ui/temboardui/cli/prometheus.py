@@ -100,7 +100,7 @@ class PrometheusService(Service):
 
     def setup_instances(self):
         session = Session()
-        for (instance,) in session.execute(orm.Instances.all()):
+        for (instance,) in session.execute(orm.Instance.all()):
             if not instance.discover:
                 logger.debug("Skipping unreachable instance %s.", instance)
                 continue

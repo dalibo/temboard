@@ -11,7 +11,7 @@ def settings_instances():
     return render_template(
         "settings/instances.html",
         sidebar=True,
-        instance_list=orm.Instances.all().with_session(g.db_session).all(),
+        instance_list=orm.Instance.all().with_session(g.db_session).all(),
     )
 
 

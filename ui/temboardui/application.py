@@ -15,8 +15,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from temboardui.errors import TemboardUIError
 from temboardui.model.orm import (
     AccessRoleInstance,
+    Instance,
     InstanceGroups,
-    Instances,
     Role,
     RoleGroups,
 )
@@ -48,7 +48,7 @@ Instances
 
 
 def get_instance(session, agent_address, agent_port):
-    return Instances.get(agent_address, agent_port).with_session(session).first()
+    return Instance.get(agent_address, agent_port).with_session(session).first()
 
 
 def get_role_by_auth(session, role_name, role_password):

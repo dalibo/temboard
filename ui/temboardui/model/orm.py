@@ -289,7 +289,7 @@ class StubRole:
         self.role_name = role_name
 
 
-class Instances(Model):
+class Instance(Model):
     __tablename__ = "instances"
     __table_args__ = (
         schema.PrimaryKeyConstraint("agent_address", "agent_port"),

@@ -91,7 +91,7 @@ def post_instance():
 
     try:
         instance = (
-            orm.Instances.insert(
+            orm.Instance.insert(
                 agent_address=j["agent_address"],
                 agent_port=j["agent_port"],
                 discover=j["discover"],
@@ -113,7 +113,7 @@ def post_instance():
 @admin_required
 def get_instance(address, port):
     try:
-        instance = orm.Instances.get(address, port).with_session(g.db_session).one()
+        instance = orm.Instance.get(address, port).with_session(g.db_session).one()
     except sqlalchemy.orm.exc.NoResultFound:
         flask.abort(404, "Instance not found.")
     return flask.jsonify(instance.asdict())
@@ -125,7 +125,7 @@ def get_instance(address, port):
 def put_instance(address=None, port=None, instance=None):
     if not instance:
         try:
-            instance = orm.Instances.get(address, port).with_session(g.db_session).one()
+            instance = orm.Instance.get(address, port).with_session(g.db_session).one()
         except sqlalchemy.orm.exc.NoResultFound:
             flask.abort(404, "Instance not found.")
 
@@ -180,7 +180,7 @@ def put_instance(address=None, port=None, instance=None):
 @admin_required
 @transaction
 def delete_instance(address, port):
-    out = g.db_session.execute(orm.Instances.delete(address, port))
+    out = g.db_session.execute(orm.Instance.delete(address, port))
     if out.rowcount == 0:
         flask.abort(404, "Instance not found.")
     return flask.jsonify()

@@ -2,7 +2,7 @@ import logging
 
 from .agentclient import TemboardAgentClient
 from .model import Session, worker_engine
-from .model.orm import Instances
+from .model.orm import Instance
 from .toolkit.taskmanager import WorkerSet
 from .toolkit.utils import utcnow
 
@@ -13,7 +13,7 @@ workers = WorkerSet()
 @workers.register(pool_size=1)
 def refresh_discover(app, address, port):
     session = Session(bind=worker_engine(app.config.repository))
-    instance = Instances.get(address, port).with_session(session).one()
+    instance = Instance.get(address, port).with_session(session).one()
     client = TemboardAgentClient.factory(app.config, address, port)
     try:
         logger.info("Discovering %s.", instance)
