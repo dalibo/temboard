@@ -224,7 +224,7 @@ class Role(Model):
 
     @classmethod
     def count(cls):
-        return text(QUERIES["users-count"]).columns(count=types.Integer)
+        return text(QUERIES["roles-count"]).columns(count=types.Integer)
 
     @classmethod
     def all(cls):
