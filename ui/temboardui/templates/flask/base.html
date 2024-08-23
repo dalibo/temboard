@@ -20,60 +20,62 @@
   <body>
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
 
-    <!-- Header bar, hidden only on login page. -->
+    {# Header bar, hidden only on login page. #}
     {% if headerbar|default(True) %}
-    <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top" data-bs-theme="dark">
-      <div class="collapse navbar-collapse">
-        {% if sidebar|default(instance is defined) %}
-        <a class="navbar-brand ms-3 me-0" href id="menu-collapse">
-          <i class="fa fa-bars"></i>
-        </a>
+    <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top p-0" data-bs-theme="dark">
+      {% if sidebar|default(instance is defined) %}
+      <a class="navbar-text fs-6 ms-3 text-white" href id="menu-collapse">
+        <i class="fa fa-bars"></i>
+      </a>
+      {% endif %}
+      <a class="navbar-brand p-0 ms-3 fw-bolder" href="/home" style="letter-spacing: -1px;">temBoard</a>
+      {% if instance is defined %}
+      {% set d = instance.discover or {} %}
+      <span class="navbar-text p-0 fs-5 text-white text-truncate">
+        /
+        {% if instance.groups %}
+        <span>{{instance.groups[0].group_name}}</span>
+        /
         {% endif %}
-        <a class="navbar-brand me-auto" href="/home">
-          <img id="logo" src="/images/temboard-150x32-w.png" />
-        </a>
-        {% if instance is defined %}
-        <div class="navbar-text text-white me-auto">
-          <b style="font-size: 150%">{{ instance.hostname }}:{{ instance.pg_port }}</b>
-        </div>
+        <strong>{{ instance.hostname }}:{{ instance.pg_port }}</strong>
+      </span>
+      {% endif %}
+      {% if role %}
+      <ul class="navbar-nav ms-auto">
+        {% if role.is_admin %}
+        <li class="nav-item text-nowrap">
+          <a
+            id="linkSettings"
+            href="/settings/instances"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            class="nav-link"
+            title="Manage instances and users"
+          >
+            <i class="fa fa-wrench"></i>
+            Settings
+          </a>
+        </li>
         {% endif %}
-        {% if role %}
-        <ul class="navbar-nav">
-          {% if role.is_admin %}
-          <li class="nav-item">
-            <a
-              id="linkSettings"
-              href="/settings/instances"
-              data-bs-toggle="tooltip"
-              data-bs-placement="bottom"
-              class="nav-link"
-              title="Manage instances and users"
-            >
-              <i class="fa fa-wrench"></i>
-              Settings
-            </a>
-          </li>
-          {% endif %}
-          <li class="dropdown nav-item">
-            <a
-              href="#"
-              class="nav-link dropdown-toggle"
-              data-bs-toggle="dropdown"
-              role="button"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              <i class="fa fa-user"></i>
-              {{role.role_name}}
-              <span class="caret"></span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end">
-              <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
-            </div>
-          </li>
-        </ul>
-        {% endif %}
-      </div>
+        <li class="dropdown nav-item text-nowrap">
+          <a
+            href="#"
+            class="nav-link dropdown-toggle"
+            data-bs-toggle="dropdown"
+            role="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            <i class="fa fa-user"></i>
+            {{role.role_name}}
+            <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+          </div>
+        </li>
+      </ul>
+      {% endif %}
     </div>
     {% endif %}{# end of header bar #}
 
@@ -82,7 +84,7 @@
         <!-- side bar -->
         {% if sidebar|default(instance is defined) %}
         <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
-          <div class="sidebar-sticky pt-3 d-flex flex-column">
+          <div class="sidebar-sticky d-flex flex-column">
             {% if instance is defined %}
             <ul class="nav nav-pills flex-column">
               {% set plugin_names = [] %}
@@ -204,7 +206,13 @@
           </div>
           {%   endif %}
           {% endif %}
-          <div id="errorApp"></div>
+
+          <div id="errorApp" class="row justify-content-center">
+            <div class="col col-xl-6 col-10" v-cloak>
+              <Error ref="error"></Error>
+            </div>
+          </div>
+
           {% block content %} {% endblock %}
         </div>
       </div>

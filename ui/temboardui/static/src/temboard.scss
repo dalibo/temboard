@@ -9,18 +9,17 @@ html {
   font-size: 14px;
 }
 
-.navbar {
-  padding: 0;
-}
-
-.navbar-brand {
-  padding: 0;
-  padding-right: 15px;
-}
-
 .nav-tabs {
   /* always leave space under tabs */
   margin-bottom: 10px;
+}
+
+a.navbar-brand {
+  background-image: url("/static/images/heron-w.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: 0 50%;
+  padding-left: 2.3rem !important;
 }
 
 .bg-light2 {
@@ -142,15 +141,6 @@ html {
   height: 190px;
 }
 
-table.dashboard-information {
-  th {
-    font-weight: normal;
-  }
-  td {
-    font-weight: bold;
-  }
-}
-
 .popover-title {
   font-size: 12px;
   font-weight: bold;
@@ -229,38 +219,6 @@ table.dashboard-information {
   padding: 10px 0px 10px 10px;
   font-size: 24px;
   color: #fff;
-}
-
-#panelLogin {
-  margin-top: 20px;
-}
-
-.dataTables_wrapper div.dt-buttons {
-  float: none;
-  display: inline-block;
-}
-
-table.dataTable thead {
-  .sorting,
-  .sorting_asc,
-  .sorting_desc {
-    &::before,
-    &::after {
-      float: right;
-      font-family: fontawesome;
-      right: 0 !important;
-      content: "";
-    }
-  }
-  .sorting_asc::before {
-    content: "\f0de";
-  }
-  .sorting_desc::after {
-    content: "\f0dd";
-  }
-  .sorting::after {
-    content: "\f0dc";
-  }
 }
 
 table.table-activity {

@@ -3,14 +3,13 @@ import "font-awesome/css/font-awesome.css";
 import $ from "jquery";
 import { createApp } from "vue";
 
-import ErrorRow from "./components/ErrorRow.vue";
+import Error from "./components/Error.vue";
 import "./temboard.scss";
 
 window.errorApp = createApp({
   components: {
-    error: ErrorRow,
+    error: Error,
   },
-  template: '<error ref="error"></error>',
 }).mount("#errorApp");
 
 // Error shortcuts
