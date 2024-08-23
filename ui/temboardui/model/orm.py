@@ -16,7 +16,7 @@ Model = declarative_base()
 # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
 
 
-class ApiKeys(Model):
+class ApiKey(Model):
     __tablename__ = "apikeys"
     __table_args__ = {"schema": "application"}
 
