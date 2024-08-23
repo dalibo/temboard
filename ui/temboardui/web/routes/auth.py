@@ -124,21 +124,10 @@ def delete_group(name):
 @admin_required
 @transaction
 def post_user():
-    with validating():
-        validators.slug(request.json["name"])
-        pw = validators.password(request.json["password"])
-    if request.json["name"] in {"temboard"}:
-        raise flask.abort(400, "Reserved user name.")
-
-    role = (
-        orm.Role.insert(
-            name=request.json["name"],
-            password=hash_password(request.json["name"], pw).decode("utf-8"),
-        )
-        .with_session(g.db_session)
-        .one()
-    )
-
+    if "password" not in request.json:
+        raise flask.abort(400, "Password required.")
+    role = orm.Role()
+    g.db_session.add(role)
     return put_user(user=role)
 
 
@@ -161,15 +150,17 @@ def put_user(name=None, user=None):
     if user is None:
         flask.abort(404, "No such user.")
 
-    # Actually, we do not handle Groups but secondary table RoleGroups.
     current_groups = {rxg.group_name for rxg in user.groups}
     wanted_groups = set(j["groups"])
-    for rxg in user.groups:
-        if rxg.group_name in wanted_groups:
-            continue
-        g.db_session.delete(rxg)
     # Drop RoleGroups before renaming role because role name is in primary key and SA does not handle this.
-    g.db_session.flush()
+    if user.groups:
+        # Actually, we do not handle Groups but secondary table RoleGroups.
+        for rxg in user.groups:
+            if rxg.group_name in wanted_groups:
+                continue
+            g.db_session.delete(rxg)
+
+        g.db_session.flush()
 
     user.is_admin = j["is_admin"]
     user.is_active = j["is_active"]
