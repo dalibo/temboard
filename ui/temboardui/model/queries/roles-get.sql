@@ -1,6 +1,5 @@
 SELECT
   r.role_name,
-  role_password,
   role_email,
   role_phone,
   is_active,

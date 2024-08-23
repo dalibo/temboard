@@ -224,7 +224,18 @@ class Roles(Model):
     def all(cls):
         return (
             Query(cls)
-            .from_statement(text(QUERIES["roles-all"]))
+            .from_statement(
+                text(QUERIES["roles-all"]).columns(
+                    Roles.role_name,
+                    Roles.role_email,
+                    Roles.role_phone,
+                    Roles.is_active,
+                    Roles.is_admin,
+                    RoleGroups.role_name,
+                    RoleGroups.group_name,
+                    RoleGroups.group_kind,
+                )
+            )
             .options(orm.contains_eager(cls.groups))
         )
 
@@ -244,7 +255,20 @@ class Roles(Model):
     def get(cls, name):
         return (
             Query(cls)
-            .from_statement(text(QUERIES["roles-get"]).bindparams(name=name))
+            .from_statement(
+                text(QUERIES["roles-get"])
+                .bindparams(name=name)
+                .columns(
+                    Roles.role_name,
+                    Roles.role_email,
+                    Roles.role_phone,
+                    Roles.is_active,
+                    Roles.is_admin,
+                    RoleGroups.role_name,
+                    RoleGroups.group_name,
+                    RoleGroups.group_kind,
+                )
+            )
             .options(orm.contains_eager(cls.groups))
         )
 
