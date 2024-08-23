@@ -70,8 +70,6 @@ class Plugin(Model):
         schema.ForeignKeyConstraint(
             ["agent_address", "agent_port"],
             ["application.instances.agent_address", "application.instances.agent_port"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
         ),
         {"schema": "application"},
     )
@@ -79,6 +77,8 @@ class Plugin(Model):
     agent_address = Column(types.UnicodeText)
     agent_port = Column(types.Integer)
     plugin_name = Column(types.UnicodeText)
+
+    instance = relationship("Instance", back_populates="plugins")
 
     @classmethod
     def insert(cls, instance, name):
@@ -88,6 +88,12 @@ class Plugin(Model):
                 agent_port=instance.agent_port,
                 name=name,
             )
+        )
+
+    @classmethod
+    def delete(cls, instance, name):
+        return text(QUERIES["instance-disable-plugin"]).bindparams(
+            address=instance.agent_address, port=instance.agent_port, name=name
         )
 
 
@@ -314,13 +320,7 @@ class Instance(Model):
         lazy="joined",
     )
 
-    plugins = relationship(
-        Plugin,
-        order_by="Plugin.plugin_name",
-        backref="instances",
-        cascade="save-update, merge, delete, delete-orphan",
-        lazy="joined",
-    )
+    plugins = relationship(Plugin, back_populates="instance", lazy="joined")
 
     def __str__(self):
         return f"{self.hostname}:{self.pg_port}"
@@ -470,6 +470,9 @@ class Instance(Model):
 
     def enable_plugin(self, plugin):
         return Plugin.insert(self, plugin)
+
+    def disable_plugin(self, plugin):
+        return Plugin.delete(self, plugin)
 
 
 class Groups(Model):

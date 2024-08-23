@@ -164,9 +164,9 @@ def put_instance(address=None, port=None, instance=None):
 
     current_plugins = {p.plugin_name for p in instance.plugins}
     new_plugins = set(j["plugins"])
-    for i, plugin in reversed(list(enumerate(instance.plugins))):
-        if plugin.plugin_name not in new_plugins:
-            del instance.plugins[i]
+    for plugin in current_plugins:
+        if plugin not in new_plugins:
+            g.db_session.execute(instance.disable_plugin(plugin))
     for plugin in new_plugins - current_plugins:
         if plugin not in current_app.temboard.plugins:
             flask.abort(400, f"Unknown plugin {plugin}.")
