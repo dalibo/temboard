@@ -11,8 +11,7 @@ def user_rick(admin_session, browser_session):
 
     browser_session.select("#buttonNewUser").click()
     # Wait form to be interactive
-    browser_session.clickable("#modalEditUser button[type=submit]")
-    browser_session.select("input[placeholder='Username']").send_keys("rick")
+    browser_session.clickable("input[placeholder='Username']").send_keys("rick")
     browser_session.select("input[placeholder='Email']").send_keys("rick@test.com")
     browser_session.select("input[placeholder='Password']").send_keys("!rick0.@9")
     browser_session.select("input[placeholder='Confirm password']").send_keys(
@@ -48,9 +47,7 @@ def test_update_user(user_rick, browser):
         By.CSS_SELECTOR, "td button[title='Edit']"
     )
     edit_button_rick.click()
-    browser.clickable("#modalEditUser button[type=submit]")
-
-    browser.select("input[placeholder='Username']").clear()
+    browser.clickable("input[placeholder='Username']").clear()
     browser.select("input[placeholder='Username']").send_keys("rick0")
     browser.select("input[placeholder='Email']").clear()
     browser.select("input[placeholder='Email']").send_keys("rick@test.me")

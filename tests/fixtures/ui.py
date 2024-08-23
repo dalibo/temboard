@@ -62,9 +62,11 @@ class Browser:
         )
 
     def clickable(self, selector, timeout=3):
-        return WebDriverWait(self.webdriver, timeout).until(
+        """Wait for an element to be interactive and return it."""
+        WebDriverWait(self.webdriver, timeout).until(
             expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, selector))
         )
+        return self.select(selector)
 
     def mincount(self, selector, n, timeout=3):
         return WebDriverWait(self.webdriver, timeout).until(
