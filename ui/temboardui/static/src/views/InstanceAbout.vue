@@ -18,7 +18,6 @@ if (props.discover) {
       <div class="text-center mt-4 w-100">
         <h1>
           {{ instance_name }}
-          <span class="align-top badge text-bg-secondary">{{ environment }}</span>
         </h1>
         <h2 class="text-secondary pb-4 mb-4">{{ pg_version_summary }} serving {{ pg_data }}.</h2>
       </div>
@@ -96,6 +95,10 @@ if (props.discover) {
           </tr>
         </thead>
         <tbody class="temboard">
+          <tr>
+            <td>Environment</td>
+            <td>{{ environment }}</td>
+          </tr>
           <tr v-if="'plugins' in temboard">
             <td>Plugins</td>
             <td>
