@@ -10,7 +10,7 @@ from sqlalchemy.sql import case, column, extract, func, select, text
 
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.model import worker_engine
-from temboardui.model.orm import Instances
+from temboardui.model.orm import Instance
 from temboardui.plugins.monitoring.tools import parse_start_end
 from temboardui.toolkit import taskmanager
 from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
@@ -788,7 +788,7 @@ def pull_data_worker(app):
     session_factory = sessionmaker(bind=engine)
     Session = scoped_session(session_factory)
     worker_session = Session()
-    instances = worker_session.query(Instances)
+    instances = worker_session.query(Instance)
 
     if not instances:
         logger.info("No instances to pull data from.")

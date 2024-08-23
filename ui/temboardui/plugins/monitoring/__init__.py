@@ -38,8 +38,8 @@ from sqlalchemy.sql import text
 
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import get_instance, send_mail, send_sms
+from temboardui.model import orm as coreorm
 from temboardui.model import worker_engine
-from temboardui.model.orm import Instances
 
 from ...core import refresh_discover
 from ...model import QUERIES, Session
@@ -316,8 +316,8 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
     port = check.instance.port
     hostname = check.instance.host.hostname
     instance = (
-        worker_session.query(Instances)
-        .filter(Instances.pg_port == port, Instances.hostname == hostname)
+        worker_session.query(coreorm.Instance)
+        .filter(coreorm.Instance.pg_port == port, coreorm.Instance.hostname == hostname)
         .one()
     )
 

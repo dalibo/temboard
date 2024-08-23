@@ -26,7 +26,7 @@ from werkzeug.exceptions import HTTPException
 from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie
 from ..model import Session
-from ..model.orm import ApiKeys, StubRole
+from ..model.orm import ApiKey, StubRole
 from ..toolkit.utils import utcnow
 from .tornado import serialize_querystring
 from .vitejs import ViteJSExtension
@@ -217,7 +217,7 @@ class APIKeyMiddleware:
             logger.debug("Ignoring Authorization scheme %s.", scheme)
             return
 
-        key = ApiKeys.select_secret(secret).with_session(g.db_session).scalar()
+        key = ApiKey.select_secret(secret).with_session(g.db_session).scalar()
         if not key:
             abort(403, "Unknown API Key.")
 

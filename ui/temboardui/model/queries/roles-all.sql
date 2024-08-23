@@ -9,4 +9,4 @@ SELECT
   rxg.group_kind
 FROM application.roles AS r
 LEFT OUTER JOIN application.role_groups AS rxg ON rxg.role_name = r.role_name
-ORDER BY 1, 8;
+ORDER BY 1, 7;

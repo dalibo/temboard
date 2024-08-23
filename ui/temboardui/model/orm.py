@@ -12,8 +12,11 @@ from . import QUERIES
 
 Model = declarative_base()
 
+# For bridging ORM with raw SQL code, see
+# https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
 
-class ApiKeys(Model):
+
+class ApiKey(Model):
     __tablename__ = "apikeys"
     __table_args__ = {"schema": "application"}
 
@@ -28,9 +31,6 @@ class ApiKeys(Model):
     @classmethod
     def generate_secret(cls, length=40):
         return "".join(choice(cls._SECRET_LETTERS) for _ in range(length))
-
-    # See
-    # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
 
     @classmethod
     def insert(cls, secret, comment):
@@ -63,15 +63,13 @@ class ApiKeys(Model):
         return self.edate < utcnow()
 
 
-class Plugins(Model):
+class Plugin(Model):
     __tablename__ = "plugins"
     __table_args__ = (
         schema.PrimaryKeyConstraint("agent_address", "agent_port", "plugin_name"),
         schema.ForeignKeyConstraint(
             ["agent_address", "agent_port"],
             ["application.instances.agent_address", "application.instances.agent_port"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
         ),
         {"schema": "application"},
     )
@@ -79,6 +77,8 @@ class Plugins(Model):
     agent_address = Column(types.UnicodeText)
     agent_port = Column(types.Integer)
     plugin_name = Column(types.UnicodeText)
+
+    instance = relationship("Instance", back_populates="plugins")
 
     @classmethod
     def insert(cls, instance, name):
@@ -88,6 +88,12 @@ class Plugins(Model):
                 agent_port=instance.agent_port,
                 name=name,
             )
+        )
+
+    @classmethod
+    def delete(cls, instance, name):
+        return text(QUERIES["instance-disable-plugin"]).bindparams(
+            address=instance.agent_address, port=instance.agent_port, name=name
         )
 
 
@@ -198,7 +204,7 @@ class AccessRoleInstance(Model):
         )
 
 
-class Roles(Model):
+class Role(Model):
     __tablename__ = "roles"
     __table_args__ = {"schema": "application"}
 
@@ -218,20 +224,25 @@ class Roles(Model):
 
     @classmethod
     def count(cls):
-        return text(QUERIES["users-count"]).columns(count=types.Integer)
+        return text(QUERIES["roles-count"]).columns(count=types.Integer)
 
     @classmethod
     def all(cls):
         return (
             Query(cls)
-            .from_statement(text(QUERIES["roles-all"]))
+            .from_statement(
+                text(QUERIES["roles-all"]).columns(
+                    Role.role_name,
+                    Role.role_email,
+                    Role.role_phone,
+                    Role.is_active,
+                    Role.is_admin,
+                    RoleGroups.role_name,
+                    RoleGroups.group_name,
+                    RoleGroups.group_kind,
+                )
+            )
             .options(orm.contains_eager(cls.groups))
-        )
-
-    @classmethod
-    def insert(cls, name, password):
-        return Query(cls).from_statement(
-            text(QUERIES["roles-insert"]).bindparams(name=name, password=password)
         )
 
     @classmethod
@@ -244,7 +255,20 @@ class Roles(Model):
     def get(cls, name):
         return (
             Query(cls)
-            .from_statement(text(QUERIES["roles-get"]).bindparams(name=name))
+            .from_statement(
+                text(QUERIES["roles-get"])
+                .bindparams(name=name)
+                .columns(
+                    Role.role_name,
+                    Role.role_email,
+                    Role.role_phone,
+                    Role.is_active,
+                    Role.is_admin,
+                    RoleGroups.role_name,
+                    RoleGroups.group_name,
+                    RoleGroups.group_kind,
+                )
+            )
             .options(orm.contains_eager(cls.groups))
         )
 
@@ -265,7 +289,7 @@ class StubRole:
         self.role_name = role_name
 
 
-class Instances(Model):
+class Instance(Model):
     __tablename__ = "instances"
     __table_args__ = (
         schema.PrimaryKeyConstraint("agent_address", "agent_port"),
@@ -290,13 +314,7 @@ class Instances(Model):
         lazy="joined",
     )
 
-    plugins = relationship(
-        Plugins,
-        order_by="Plugins.plugin_name",
-        backref="instances",
-        cascade="save-update, merge, delete, delete-orphan",
-        lazy="joined",
-    )
+    plugins = relationship(Plugin, back_populates="instance", lazy="joined")
 
     def __str__(self):
         return f"{self.hostname}:{self.pg_port}"
@@ -445,7 +463,10 @@ class Instances(Model):
         return InstanceGroups.insert(self, group)
 
     def enable_plugin(self, plugin):
-        return Plugins.insert(self, plugin)
+        return Plugin.insert(self, plugin)
+
+    def disable_plugin(self, plugin):
+        return Plugin.delete(self, plugin)
 
 
 class Groups(Model):

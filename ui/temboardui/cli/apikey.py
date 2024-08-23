@@ -2,8 +2,7 @@ import logging
 import sys
 from textwrap import dedent
 
-from ..model import Session
-from ..model.orm import ApiKeys
+from ..model import Session, orm
 from ..toolkit.app import SubCommand
 from ..toolkit.errors import UserError
 from .app import app
@@ -29,7 +28,7 @@ class Create(SubCommand):
     def main(self, args):
         session = Session()
         key = (
-            ApiKeys.insert(secret=ApiKeys.generate_secret(), comment=args.comment)
+            orm.ApiKey.insert(secret=orm.ApiKey.generate_secret(), comment=args.comment)
             .with_session(session)
             .scalar()
         )
@@ -51,7 +50,7 @@ class List(SubCommand):
         session = Session()
 
         sys.stdout.write("Id,Secret,Comment,Creation,Expiration\n")
-        for key in ApiKeys.select_active().with_session(session).all():
+        for key in orm.ApiKey.select_active().with_session(session).all():
             sys.stdout.write(
                 dedent("""\
             {key.id},"{key.secret}","{comment}",{cdate},{edate}
@@ -73,7 +72,7 @@ class Delete(SubCommand):
 
     def main(self, args):
         session = Session()
-        key = ApiKeys.delete(args.id).with_session(session).scalar()
+        key = orm.ApiKey.delete(args.id).with_session(session).scalar()
         session.commit()
 
         if key:
@@ -88,7 +87,7 @@ class Purge(SubCommand):
 
     def main(self, args):
         session = Session()
-        res = ApiKeys.purge().with_session(session).all()
+        res = orm.ApiKey.purge().with_session(session).all()
         count = 0
         for key in res:
             logger.info("Deleted API key #%s (%s).", key.id, key.comment)

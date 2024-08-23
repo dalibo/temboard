@@ -90,7 +90,7 @@ class RegisterInstance(SubCommand):
         session = Session()
         logger.debug("Check for existing instance.")
         instance = (
-            orm.Instances.get(
+            orm.Instance.get(
                 agent_address=args.agent_address, agent_port=args.agent_port
             )
             .with_session(session)
@@ -164,7 +164,7 @@ class RegisterInstance(SubCommand):
         logger.debug("Enabling plugins %s.", ", ".join(plugins))
 
         instance = (
-            orm.Instances.insert(
+            orm.Instance.insert(
                 agent_address=args.agent_address,
                 agent_port=args.agent_port,
                 discover=discover,
