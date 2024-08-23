@@ -2,7 +2,7 @@ from flask import current_app as app
 from flask import g, render_template, request
 
 from ...application import get_instance_groups_by_role
-from ...model.orm import Instances, Roles
+from ...model.orm import Instances, Role
 from ...version import inspect_versions
 
 
@@ -20,7 +20,7 @@ def home():
 def about():
     versions_info = inspect_versions()
     instances = g.db_session.scalar(Instances.count())
-    roles = g.db_session.scalar(Roles.count())
+    roles = g.db_session.scalar(Role.count())
     infos = {
         "Browser": request.headers.get("User-Agent", "Unknown"),
         "Version": "%(temboard)s (%(temboardbin)s)" % versions_info,

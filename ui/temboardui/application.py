@@ -17,8 +17,8 @@ from temboardui.model.orm import (
     AccessRoleInstance,
     InstanceGroups,
     Instances,
+    Role,
     RoleGroups,
-    Roles,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ def get_instance(session, agent_address, agent_port):
 def get_role_by_auth(session, role_name, role_password):
     try:
         role = (
-            session.query(Roles)
-            .filter(Roles.role_name == str(role_name), Roles.is_active.is_(True))
+            session.query(Role)
+            .filter(Role.role_name == str(role_name), Role.is_active.is_(True))
             .one()
         )
         if role.role_password != str(role_password):
@@ -113,8 +113,8 @@ def get_role_by_cookie(session, content):
             raise Exception("Cookie's content is corrupted.")
         try:
             role = (
-                session.query(Roles)
-                .filter(Roles.role_name == str(c_role_name), Roles.is_active.is_(True))
+                session.query(Role)
+                .filter(Role.role_name == str(c_role_name), Role.is_active.is_(True))
                 .one()
             )
         except (NoResultFound, Exception):

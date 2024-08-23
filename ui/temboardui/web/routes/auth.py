@@ -131,7 +131,7 @@ def post_user():
         raise flask.abort(400, "Reserved user name.")
 
     role = (
-        orm.Roles.insert(
+        orm.Role.insert(
             name=request.json["name"],
             password=hash_password(request.json["name"], pw).decode("utf-8"),
         )
@@ -145,7 +145,7 @@ def post_user():
 @app.route("/json/users/<name>")
 @admin_required
 def get_user(name):
-    user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+    user = orm.Role.get(name).with_session(g.db_session).one_or_none()
     if user is None:
         flask.abort(404, "No such user.")
     return flask.jsonify(user.asdict())
@@ -157,7 +157,7 @@ def get_user(name):
 def put_user(name=None, user=None):
     j = request.json
     if user is None:
-        user = orm.Roles.get(name).with_session(g.db_session).one_or_none()
+        user = orm.Role.get(name).with_session(g.db_session).one_or_none()
     if user is None:
         flask.abort(404, "No such user.")
 
@@ -205,7 +205,7 @@ def put_user(name=None, user=None):
 @admin_required
 @transaction
 def delete_user(name):
-    result = g.db_session.execute(orm.Roles.delete(name))
+    result = g.db_session.execute(orm.Role.delete(name))
     if result.rowcount == 0:
         flask.abort(404, "No such user.")
     return flask.jsonify()

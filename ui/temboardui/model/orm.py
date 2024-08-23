@@ -198,7 +198,7 @@ class AccessRoleInstance(Model):
         )
 
 
-class Roles(Model):
+class Role(Model):
     __tablename__ = "roles"
     __table_args__ = {"schema": "application"}
 
@@ -226,11 +226,11 @@ class Roles(Model):
             Query(cls)
             .from_statement(
                 text(QUERIES["roles-all"]).columns(
-                    Roles.role_name,
-                    Roles.role_email,
-                    Roles.role_phone,
-                    Roles.is_active,
-                    Roles.is_admin,
+                    Role.role_name,
+                    Role.role_email,
+                    Role.role_phone,
+                    Role.is_active,
+                    Role.is_admin,
                     RoleGroups.role_name,
                     RoleGroups.group_name,
                     RoleGroups.group_kind,
@@ -259,11 +259,11 @@ class Roles(Model):
                 text(QUERIES["roles-get"])
                 .bindparams(name=name)
                 .columns(
-                    Roles.role_name,
-                    Roles.role_email,
-                    Roles.role_phone,
-                    Roles.is_active,
-                    Roles.is_admin,
+                    Role.role_name,
+                    Role.role_email,
+                    Role.role_phone,
+                    Role.is_active,
+                    Role.is_admin,
                     RoleGroups.role_name,
                     RoleGroups.group_name,
                     RoleGroups.group_kind,
