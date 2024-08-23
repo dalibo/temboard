@@ -4,9 +4,8 @@
 // Fetch resource, present a confirmation dialog and delete the resource if the user confirms.
 // Use GET or DELETE verb on same resource URL.
 // Reload the page after successful deletion.
-import { Modal } from "bootstrap";
 import $ from "jquery";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import Error from "./Error.vue";
 import ModalDialog from "./ModalDialog.vue";
@@ -16,17 +15,15 @@ const props = defineProps(["id", "title", "noreload"]);
 const root = ref(null);
 const error = ref(null);
 const failed = ref(false);
-const waiting = ref(false);
+const waiting = ref(true);
+const disabled = computed(() => waiting.value || failed.value);
 const resource = ref(null);
 let deleteUrl = null;
-let modal = null;
 
 function open(url) {
   deleteUrl = url;
   error.value.clear();
-
-  modal = new Modal(root.value.$el);
-  modal.show();
+  root.value.show();
 
   waiting.value = true;
   $.ajax({
@@ -58,7 +55,7 @@ function submit() {
         window.location.reload();
       }
       emit("done");
-      modal.hide();
+      root.value.hide();
     },
   });
 }
@@ -77,13 +74,7 @@ defineExpose({ open });
 
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button
-        id="buttonDelete"
-        class="btn btn-danger ms-auto"
-        type="button"
-        @click="submit"
-        :disabled="waiting || failed"
-      >
+      <button id="buttonDelete" class="btn btn-danger ms-auto" type="button" @click="submit" :disabled="disabled">
         Yes, delete
         <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
       </button>

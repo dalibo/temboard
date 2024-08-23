@@ -1,12 +1,29 @@
 <script setup>
 /* A simple boostrap Dialog */
+import { Modal } from "bootstrap";
 import $ from "jquery";
 import { onMounted, ref } from "vue";
 
 defineProps(["id", "title"]);
 const emit = defineEmits(["closed"]);
 const root = ref(null);
+let modal = null;
+
+function show() {
+  modal.show();
+}
+
+function hide() {
+  modal.hide();
+}
+
+defineExpose({ hide, show });
+
 onMounted(() => {
+  modal = new Modal(root.value);
+  root.value.addEventListener("shown.bs.modal", () => {
+    emit("opened");
+  });
   root.value.addEventListener("hidden.bs.modal", () => {
     emit("closed");
   });
