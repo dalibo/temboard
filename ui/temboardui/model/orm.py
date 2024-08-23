@@ -63,7 +63,7 @@ class ApiKey(Model):
         return self.edate < utcnow()
 
 
-class Plugins(Model):
+class Plugin(Model):
     __tablename__ = "plugins"
     __table_args__ = (
         schema.PrimaryKeyConstraint("agent_address", "agent_port", "plugin_name"),
@@ -315,8 +315,8 @@ class Instances(Model):
     )
 
     plugins = relationship(
-        Plugins,
-        order_by="Plugins.plugin_name",
+        Plugin,
+        order_by="Plugin.plugin_name",
         backref="instances",
         cascade="save-update, merge, delete, delete-orphan",
         lazy="joined",
@@ -469,7 +469,7 @@ class Instances(Model):
         return InstanceGroups.insert(self, group)
 
     def enable_plugin(self, plugin):
-        return Plugins.insert(self, plugin)
+        return Plugin.insert(self, plugin)
 
 
 class Groups(Model):
