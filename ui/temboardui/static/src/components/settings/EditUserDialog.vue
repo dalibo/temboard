@@ -14,7 +14,7 @@ const disabled = computed(() => waiting.value || failed.value);
 const availableGroups = ref([]);
 const editedName = ref("");
 let url = "/json/users";
-const model = reactive({
+let initialModel = {
   name: "",
   email: "",
   phone: "",
@@ -23,7 +23,8 @@ const model = reactive({
   groups: [],
   is_active: true,
   is_admin: false,
-});
+};
+const model = reactive({ ...initialModel });
 
 function edit(username) {
   editedName.value = username;
@@ -98,14 +99,7 @@ function reset() {
   error.value.clear();
   waiting.value = true;
   failed.value = false;
-  model.name = "";
-  model.email = "";
-  model.phone = "";
-  model.password = "";
-  model.password2 = "";
-  model.groups = [];
-  model.is_active = true;
-  model.is_admin = false;
+  Object.assign(model, initialModel);
 }
 </script>
 
