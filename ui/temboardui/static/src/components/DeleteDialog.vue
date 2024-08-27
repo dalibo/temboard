@@ -70,7 +70,7 @@ function reset() {
 </script>
 
 <template>
-  <ModalDialog :id="id" :title="title" ref="root" @opened="fetch" @closed="reset">
+  <ModalDialog :id="id" :title="title" ref="root" @opening="fetch" @closed="reset">
     <div class="modal-body">
       <Error ref="error" :showTitle="false"></Error>
       <slot v-if="resource" :resource="resource"

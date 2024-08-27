@@ -108,7 +108,7 @@ function reset() {
     ref="root"
     id="modalEditUser"
     :title="`${editedName ? 'Update' : 'Create'} User`"
-    @opened="fetch"
+    @opening="fetch"
     @closed="reset"
   >
     <form v-on:submit.prevent="submit">

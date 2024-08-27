@@ -16,10 +16,7 @@ function open(address, port) {
   // Configure for target instance data.
   agent_address = address;
   agent_port = port;
-
   root.value.show();
-
-  fetch();
 }
 
 defineExpose({ open });
