@@ -53,6 +53,7 @@ class InstanceProxyBlueprint(Blueprint):
                 path,
                 method=method,
                 body=request.get_json() if method == "POST" else None,
+                query=request.args.to_dict(),
             )
             return jsonify(response.json())
 

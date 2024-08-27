@@ -1,10 +1,12 @@
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Configuration{% end %}
+{% block title %}{{super()}} / Configuration{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('pgconf.js') %}{% raw link %}{% end %}
-{% end %}
+  {% for link in vitejs.css_links_for('home.js') %}
+    {{ link | safe}}
+  {% endfor %}
+{% endblock %}
 
 {% block content %}
 <div id="app">
@@ -14,4 +16,4 @@
   />
 </div>
 <script type="module" src="{{ vitejs.url_for('pgconf.js') }}"></script>
-{% end %}
+{% endblock %}
