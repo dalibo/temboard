@@ -11,8 +11,6 @@ import ModalDialog from "../ModalDialog.vue";
 import InstanceForm from "./InstanceForm.vue";
 
 function open(address, port) {
-  reset();
-
   // Configure for target instance data.
   agent_address = address;
   agent_port = port;
@@ -24,8 +22,8 @@ defineExpose({ open });
 const root = ref(null);
 const error = ref(null);
 const waiting = ref(true);
-const failing = ref(false);
-const disabled = computed(() => waiting.value || failing.value);
+const failed = ref(false);
+const disabled = computed(() => waiting.value || failed.value);
 const initialModel = {
   comment: "",
   notify: true,
@@ -78,7 +76,7 @@ function fetch() {
       url: `/json/instances/${agent_address}/${agent_port}`,
       error: (xhr) => {
         error.value.fromXHR(xhr);
-        failing.value = true;
+        failed.value = true;
       },
       success: (data) => {
         model.notify = data.notify;
@@ -94,6 +92,7 @@ function fetch() {
       url: "/json/groups/instance",
       error: (xhr) => {
         error.value.fromXHR(xhr);
+        failed.value = true;
       },
       success: (data) => {
         model.server_groups = data;
@@ -103,6 +102,7 @@ function fetch() {
       url: "/json/plugins",
       error: (xhr) => {
         error.value.fromXHR(xhr);
+        failed.value = true;
       },
       success: (data) => {
         model.server_plugins = data;
@@ -177,11 +177,12 @@ function reset() {
   Object.assign(model, initialModel);
   error.value.clear();
   waiting.value = true;
+  failed.value = false;
 }
 </script>
 
 <template>
-  <ModalDialog ref="root" title="Update Instance" v-on:closed="reset">
+  <ModalDialog ref="root" title="Update Instance" @opening="fetch" @closed="reset">
     <InstanceForm
       submit_text="Update"
       type="Update"
