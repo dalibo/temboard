@@ -9,7 +9,7 @@ def browse_settings_instance(browse_instance, browser_session):
 
 def test_delete_instance(browser, browse_settings_instance, agent_conf):
     browser.select("td button.buttonDelete").click()
-    browser.select("#modalDeleteInstance button#buttonDelete").click()
+    browser.clickable("#modalDeleteInstance button#buttonDelete").click()
     port = agent_conf.get("temboard", "port")
     # Check the instance has been deleted
     assert all(

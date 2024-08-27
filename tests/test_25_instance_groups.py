@@ -10,7 +10,7 @@ def browse_settings_instance_groups(browser_session, ui_url, admin_session):
 
 @pytest.fixture(scope="module")
 def instance_group_prod(browse_settings_instance_groups, browser_session):
-    browser_session.select("#buttonLoadAddGroupForm").click()
+    browser_session.clickable("#buttonLoadAddGroupForm").click()
     browser_session.select("#inputNewGroupname").send_keys("prod")
     browser_session.select("#inputDescription").send_keys("Production")
     multiselect = MultiSelect(browser_session, "selectGroups")
@@ -53,7 +53,7 @@ def test_delete_instance_group(instance_group_prod, browser):
         for group in browser.select_all("#tableGroups tbody tr")
     )
     tr.find_element(by=By.CSS_SELECTOR, value="[data-action=delete]").click()
-    browser.select("#buttonDelete").click()
+    browser.clickable("#buttonDelete").click()
     assert not any(
         "Production" in group.text
         for group in browser.select_all("#tableGroups tbody tr")

@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div id="vueapp">
+<div id="vueapp" v-cloak>
   <EditUserDialog ref="userModal"></EditUserDialog>
   {% raw %}
   <DeleteDialog ref="delete_modal" title="Delete user" v-slot="{resource}">

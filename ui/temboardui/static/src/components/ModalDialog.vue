@@ -5,7 +5,7 @@ import $ from "jquery";
 import { onMounted, ref } from "vue";
 
 defineProps(["id", "title"]);
-const emit = defineEmits(["opened", "closed"]);
+const emit = defineEmits(["opening", "closed"]);
 const root = ref(null);
 let modal = null;
 
@@ -21,8 +21,8 @@ defineExpose({ hide, show });
 
 onMounted(() => {
   modal = new Modal(root.value);
-  root.value.addEventListener("shown.bs.modal", () => {
-    emit("opened");
+  root.value.addEventListener("show.bs.modal", () => {
+    emit("opening");
   });
   root.value.addEventListener("hidden.bs.modal", () => {
     emit("closed");

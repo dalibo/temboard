@@ -82,7 +82,7 @@ def test_delete_user(user_rick, browser):
     )
     delete_button_rick.click()
 
-    browser.select("#buttonDelete").click()
+    browser.clickable("#buttonDelete").click()
 
     assert len(browser.select_all("#tableUsers tbody tr")) < len(initial_rows)
 

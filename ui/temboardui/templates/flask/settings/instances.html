@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div id="vue-app" class="row">
+<div id="vue-app" class="row" v-cloak>
 
   <environment-migration-dialog ref="environment_migration_dialog" object-class="instance" title="Instance in multiple groups"></environment-migration-dialog>
   <new-instance-wizard ref="new_instance_wizard"></new-instance-wizard>

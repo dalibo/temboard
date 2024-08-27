@@ -11,6 +11,13 @@ import Error from "./Error.vue";
 import ModalDialog from "./ModalDialog.vue";
 
 const props = defineProps(["id", "title", "noreload"]);
+const emit = defineEmits(["done"]);
+
+function open(url) {
+  deleteUrl = url;
+  root.value.show();
+}
+defineExpose({ open });
 
 const root = ref(null);
 const error = ref(null);
@@ -20,14 +27,10 @@ const disabled = computed(() => waiting.value || failed.value);
 const resource = ref(null);
 let deleteUrl = null;
 
-function open(url) {
-  deleteUrl = url;
-  error.value.clear();
-  root.value.show();
-
+function fetch() {
   waiting.value = true;
   $.ajax({
-    url: url,
+    url: deleteUrl,
     success: (data) => {
       resource.value = data;
     },
@@ -39,8 +42,6 @@ function open(url) {
     waiting.value = false;
   });
 }
-
-const emit = defineEmits(["done"]);
 
 function submit() {
   waiting.value = true;
@@ -60,11 +61,16 @@ function submit() {
   });
 }
 
-defineExpose({ open });
+function reset() {
+  error.value.clear();
+  waiting.value = true;
+  failed.value = false;
+  deleteUrl = null;
+}
 </script>
 
 <template>
-  <ModalDialog :id="id" :title="title" ref="root">
+  <ModalDialog :id="id" :title="title" ref="root" @opening="fetch" @closed="reset">
     <div class="modal-body">
       <Error ref="error" :showTitle="false"></Error>
       <slot v-if="resource" :resource="resource"
