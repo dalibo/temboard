@@ -175,8 +175,8 @@ def url(raw):
 
 
 def slug(raw):
-    if not re.match(r"^[a-z0-9_\-.]{3,16}$", raw):
+    if not re.match(r"^[a-z0-9_\-.]{3,24}$", raw):
         raise ValueError(
-            "identifier must be 3-16 characters long, lowercase or numbers, and may contain point, hyphen or underscore"
+            "identifier must be 3-24 characters long, lowercase or numbers, and may contain point, hyphen or underscore"
         )
     return raw
