@@ -13,34 +13,9 @@ from urllib.request import Request, urlopen
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.errors import TemboardUIError
-from temboardui.model.orm import (
-    AccessRoleInstance,
-    Instance,
-    InstanceGroups,
-    Role,
-    RoleGroups,
-)
+from temboardui.model.orm import Instance, Role
 
 logger = logging.getLogger(__name__)
-
-"""
-Roles
-"""
-
-
-def get_instance_groups_by_role(session, role_name):
-    return (
-        session.query(InstanceGroups.group_name)
-        .filter(
-            InstanceGroups.group_name == AccessRoleInstance.instance_group_name,
-            AccessRoleInstance.role_group_name == RoleGroups.group_name,
-            RoleGroups.role_name == str(role_name),
-        )
-        .group_by(InstanceGroups.group_name)
-        .order_by(InstanceGroups.group_name)
-        .all()
-    )
-
 
 """
 Instances
@@ -49,6 +24,11 @@ Instances
 
 def get_instance(session, agent_address, agent_port):
     return Instance.get(agent_address, agent_port).with_session(session).first()
+
+
+"""
+Roles
+"""
 
 
 def get_role_by_auth(session, role_name, role_password):

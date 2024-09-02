@@ -1,7 +1,9 @@
-SELECT COUNT(DISTINCT rxg.role_name) = 1 AS has_dba
-  FROM application.instance_groups AS ixg
-  JOIN application.access_role_instance AS ari
-    ON ari.instance_group_name = ixg.group_name AND ari.instance_group_kind = ixg.group_kind
-  JOIN application.role_groups AS rxg
-    ON rxg.group_name = ari.role_group_name AND rxg.group_kind = ari.role_group_kind
- WHERE ixg.agent_address = :agent_address AND ixg.agent_port = :agent_port AND rxg.role_name = :role_name;
+SELECT EXISTS (
+	SELECT COUNT(1)
+	  FROM application.instances AS i
+	  JOIN application.environments AS e ON e.id = i.environment_id
+	  JOIN application.groups AS g ON g.id = e.dba_group_id
+	  JOIN application.memberships AS ms ON ms.group_id = g.id
+	 WHERE i.agent_address = :agent_address AND i.agent_port = :agent_port
+	   AND ms.role_name = :role_name
+) AS has_dba;

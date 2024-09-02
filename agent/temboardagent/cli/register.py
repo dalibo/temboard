@@ -44,10 +44,10 @@ class Register(SubCommand):
             help="Agent listening TCP port. Default: %(default)s",
         )
         parser.add_argument(
-            "-g",
-            "--groups",
-            dest="groups",
-            help="Instance groups list, comma separated. Default: %(default)s",
+            "-e",
+            "--environment",
+            dest="environment",
+            help="Name of temBoard environment to put the instance into.",
             default=None,
         )
         parser.add_argument(
@@ -96,12 +96,6 @@ class Register(SubCommand):
             raise UserError("Connection failure.")
         except TemboardClient.Error as e:
             raise UserError(str(e))
-
-        groups = args.groups
-        if groups:
-            groups = args.groups.split(",")
-        else:
-            logger.warning("Instance without groups are hidden in UI!")
 
         try:
             logger.info("Verifying signing key.")
@@ -157,7 +151,7 @@ class Register(SubCommand):
                     "discover_etag": discover_etag,
                     # Loosely reuse agent plugin as UI plugins.
                     "plugins": discover["temboard"]["plugins"],
-                    "groups": groups,
+                    "environment": args.environment,
                 },
             )
             response.raise_for_status()

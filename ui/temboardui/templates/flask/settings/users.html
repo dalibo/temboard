@@ -28,7 +28,7 @@
           <th>Phone</th>
           <th>Active</th>
           <th>Admin.</th>
-          <th>Groups</th>
+          <th>Environments</th>
           <th><!-- actions --></th>
         </tr>
       </thead>
@@ -40,7 +40,13 @@
           <td>{{role_item.role_phone or ''}}</td>
           <td class="text-center" data-col="is-active">{% if role_item.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
           <td class="text-center" data-col="is-admin">{% if role_item.is_admin %}<span class="badge text-bg-danger">Admin</span>{% else %}<span class="badge text-bg-success">User</span>{% endif %}</td>
-          <td>{% for group in role_item.groups %} <span class="badge border text-body-secondary">{{group.group_name}}</span>{% endfor %}</td>
+          <td>
+          {% for group in role_item.groups %}
+          {% if group.environment %}
+          <a href="/settings/environments/{{ group.environment.name }}/members"><span class="badge border text-body-secondary m-1">{{group.environment.name}}</span></a>
+          {% endif %}
+          {% endfor %}
+          </td>
           <td class="text-center">
             <button
               type="button"

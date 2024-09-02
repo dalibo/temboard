@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard / Settings / Environments{% endblock %}
+
+{% block head %}
+{% for link in vitejs.css_links_for('settings.environments.js') %}{{ link|safe }}{% endfor %}
+{% endblock %}
+
+{% block sidebar %}
+{% include "settings/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<div id="vue-app" v-cloak>
+  <EnvironmentDialog ref="editModal"></EnvironmentDialog>
+  <DeleteDialog ref="deleteModal" title="Delete environment" v-slot="{resource}">
+    {% raw %}
+    <p class="fs-5 text-center">Please confirm the deletion of environment <strong>{{resource.name}}</strong>.</p>
+    {% endraw %}
+  </DeleteDialog>
+
+  <table id="tableEnvironments" class="table table-striped table-bordered table-hover" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th data-dt-order="disable"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for environment in environments %}
+      <tr>
+        <td>{{environment.name}}</td>
+        <td>{{environment.description or ''}}</td>
+        <td class="text-center">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm m-1"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-testid="edit"
+            title="Edit"
+            @click.prevent="$refs.editModal.edit('{{ environment.name }}')"
+          >
+            <i class="fa fa-edit"></i>
+          </button>
+          <a
+            type="button"
+            class="btn btn-outline-secondary btn-sm m-1"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-testid="members"
+            title="Edit members"
+            href="/settings/environments/{{ environment.name }}/members"
+          >
+            <i class="fa fa-users"></i>
+          </a>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-testid="delete"
+            title="Delete"
+            @click.prevent="$refs.deleteModal.open('/json/environments/{{ environment.name }}')"
+          >
+            <i class="fa fa-trash-o"></i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script type="module" src="{{ vitejs.url_for('settings.environments.js') }}"></script>
+{% endblock %}

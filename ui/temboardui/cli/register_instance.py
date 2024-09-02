@@ -43,11 +43,11 @@ class RegisterInstance(SubCommand):
         )
 
         parser.add_argument(
-            "-g",
-            "--groups",
-            dest="groups",
+            "-e",
+            "--environment",
+            dest="environment",
             default="",
-            help="Instance groups list, comma separated.",
+            help="Instance environment name.",
         )
 
         parser.add_argument(
@@ -79,9 +79,9 @@ class RegisterInstance(SubCommand):
     def main(self, args):
         agent = f"{args.agent_address}:{args.agent_port}"
 
-        groups = v.commalist(args.groups)
-        if not groups:
-            raise UserError("Missing instance groups. Use --groups to define.")
+        if not args.environment:
+            raise UserError("Missing environment. Use --environment to define.")
+
         plugins = v.commalist(args.plugins)
         for plugin in plugins:
             if plugin not in self.app.config.temboard.plugins:
@@ -163,6 +163,7 @@ class RegisterInstance(SubCommand):
             )
         logger.debug("Enabling plugins %s.", ", ".join(plugins))
 
+        environment = session.execute(orm.Environment.get(args.environment)).fetchone()
         instance = (
             orm.Instance.insert(
                 agent_address=args.agent_address,
@@ -171,15 +172,11 @@ class RegisterInstance(SubCommand):
                 discover_etag=discover_etag,
                 notify=args.notify,
                 comment=args.comment,
+                environment=environment,
             )
             .with_session(session)
             .one()
         )
-
-        for group in groups:
-            session.execute(
-                instance.add_group(orm.Groups(group_kind="instance", group_name=group))
-            )
 
         for plugin in plugins:
             session.execute(instance.enable_plugin(plugin))

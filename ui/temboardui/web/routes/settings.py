@@ -15,14 +15,20 @@ def settings_instances():
     )
 
 
-@app.route("/settings/groups/instance")
+@app.route("/settings/environments")
 @admin_required
-def settings_instance_groups():
+def settings_environments():
     return render_template(
-        "settings/instance-groups.html",
+        "settings/environments.html",
         sidebar=True,
-        groups=orm.Groups.all("instance").with_session(g.db_session).all(),
+        environments=orm.Environment.all().with_session(g.db_session).all(),
     )
+
+
+@app.route("/settings/environments/<name>/members")
+@admin_required
+def settings_environment_members(name):
+    return render_template("settings/members.html", sidebar=True, environment=name)
 
 
 @app.route("/settings/users")
@@ -32,14 +38,4 @@ def settings_users():
         "settings/users.html",
         sidebar=True,
         role_list=orm.Role.all().with_session(g.db_session).all(),
-    )
-
-
-@app.route("/settings/groups/role")
-@admin_required
-def settings_groups():
-    return render_template(
-        "settings/groups.html",
-        sidebar=True,
-        groups=orm.Groups.all("role").with_session(g.db_session).all(),
     )

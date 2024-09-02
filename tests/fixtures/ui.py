@@ -20,7 +20,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.remote_connection import FirefoxRemoteConnection
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from sh import (
     ErrorReturnCode,
     TimeoutException,
@@ -29,8 +29,6 @@ from sh import (
     sudo,
 )
 from sh import env as env_cmd
-
-from fixtures.utils import MultiSelect
 
 from .utils import copy_files, retry_http, retry_slow, session_tag
 
@@ -273,8 +271,9 @@ def registered_agent(admin_session, agent, agent_conf, browser_session, pg_versi
     port = agent_conf.get("temboard", "port")
     browser.select("input#inputAgentPort").send_keys(port)
     browser.select("#buttonDiscover").click()
-    multiselect = MultiSelect(browser_session, "selectGroupsNew")
-    multiselect.select("default")
+    Select(browser_session.select("#selectEnvironmentNew")).select_by_visible_text(
+        "default"
+    )
     browser.select("textarea#inputCommentNew").send_keys("Registered by tests.")
 
     browser.select("#buttonSubmitNew").click()

@@ -22,7 +22,7 @@ WITH availability AS (
 	WHERE check_states.state = 'WARNING' OR check_states.state = 'CRITICAL'
 	WINDOW states AS (PARTITION BY checks.check_id ORDER BY check_states.state DESC)
 )
-SELECT
+SELECT DISTINCT
   i.agent_address,
   i.agent_port,
   i.hostname,
@@ -32,22 +32,19 @@ SELECT
   i.discover->'postgres'->'version' AS pg_version,
   i.discover->'postgres'->'version_summary' AS pg_version_summary,
   ia.available AS available,
+  e.name AS environment,
   COALESCE(jsonb_agg(DISTINCT jsonb_build_object('name', alerts.name, 'description', alerts.description, 'state', alerts.state))
 	  FILTER (WHERE alerts.name IS NOT NULL), '[]'::jsonb) AS checks,
-  array_agg(DISTINCT ixg.group_name) AS groups,
   -- Used by InstanceCard.vue in hasMonitoring
   array_agg(DISTINCT plugins.plugin_name) AS plugins
 FROM application.instances AS i
-JOIN application.instance_groups AS ixg
-  ON ixg.agent_address = i.agent_address AND ixg.agent_port = i.agent_port
 JOIN application.plugins
   ON plugins.agent_address = i.agent_address AND plugins.agent_port = i.agent_port
-JOIN application.access_role_instance AS ari
-  ON ari.instance_group_name = ixg.group_name AND ari.instance_group_kind = ixg.group_kind
-JOIN application.role_groups AS rxg
-  ON rxg.group_name = ari.role_group_name AND rxg.group_kind = ari.role_group_kind
+JOIN application.environments AS e ON e.id = i.environment_id
+JOIN application.groups AS g ON g.id = e.dba_group_id
+JOIN application.memberships AS ms ON ms.group_id = g.id
 LEFT OUTER JOIN availability AS ia ON ia.hostname = i.hostname AND ia.pg_port = i.pg_port
 LEFT OUTER JOIN alerts ON alerts.hostname = i.hostname AND alerts.pg_port = i.pg_port
 WHERE
-  rxg.role_name = :role_name
-GROUP BY 1, 2, 3, 4, 5, 6, 7, 8
+  ms.role_name = :role_name
+GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9

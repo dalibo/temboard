@@ -19,7 +19,7 @@ const loading = ref(false);
 const instances = ref([]);
 const search = ref(route.query.q);
 const sort = ref(route.query.sort || "status");
-const groupsFilter = ref(route.query.groups ? route.query.groups.split(",") : []);
+const environmentsFilter = ref(route.query.environments ? route.query.environments.split(",") : []);
 const start = ref(moment().subtract(1, "hours"));
 const end = ref(moment());
 const refreshDate = ref(null);
@@ -29,7 +29,7 @@ let tooltipList = [];
 
 const { toggle } = useFullscreen(root);
 
-const props = defineProps(["isAdmin", "groups"]);
+const props = defineProps(["isAdmin", "environments"]);
 
 const filteredInstances = computed(() => {
   const searchRegex = new RegExp(search.value, "i");
@@ -39,7 +39,8 @@ const filteredInstances = computed(() => {
       searchRegex.test(instance.agent_address) ||
       searchRegex.test(instance.pg_data) ||
       searchRegex.test(instance.pg_port) ||
-      searchRegex.test(instance.pg_version)
+      searchRegex.test(instance.pg_version) ||
+      searchRegex.text(instance.environment)
     );
   });
   let sorted;
@@ -50,12 +51,10 @@ const filteredInstances = computed(() => {
   }
 
   return sorted.filter((instance) => {
-    if (!groupsFilter.value.length) {
+    if (!environmentsFilter.value.length) {
       return true;
     }
-    return instance.groups.every((group) => {
-      return groupsFilter.value.indexOf(group) != -1;
-    });
+    return environmentsFilter.value.indexOf(instance.environment) != -1;
   });
 });
 
@@ -68,13 +67,13 @@ onMounted(() => {
   });
 });
 
-function toggleGroupFilter(group, e) {
+function toggleEnvironmentFilter(environment, e) {
   e.preventDefault();
-  var index = groupsFilter.value.indexOf(group);
+  var index = environmentsFilter.value.indexOf(environment);
   if (index != -1) {
-    groupsFilter.value.splice(index, 1);
+    environmentsFilter.value.splice(index, 1);
   } else {
-    groupsFilter.value.push(group);
+    environmentsFilter.value.push(environment);
   }
 }
 function changeSort(value, e) {
@@ -163,9 +162,9 @@ watch(sort, (newVal) => {
     query: _.assign({}, route.query, { sort: newVal }),
   });
 });
-watch(groupsFilter.value, (newVal) => {
+watch(environmentsFilter.value, (newVal) => {
   router.replace({
-    query: _.assign({}, route.query, { groups: newVal.join(",") }),
+    query: _.assign({}, route.query, { environments: newVal.join(",") }),
   });
 });
 </script>
@@ -196,23 +195,31 @@ watch(groupsFilter.value, (newVal) => {
             </a>
           </div>
         </div>
-        <div class="dropdown" v-if="groups.length > 1">
+        <div class="dropdown" v-if="environments.length > 1">
           <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
-            Groups ({{ groupsFilter.length || "all" }})
+            Environments ({{ environmentsFilter.length || "all" }})
             <span class="caret"></span>
           </button>
           <div class="dropdown-menu" role="menu">
-            <a class="dropdown-item" href="#" v-for="group in groups" v-on:click="toggleGroupFilter(group, $event)">
-              <i v-bind:class="['fa fa-fw', { 'fa-check': groupsFilter.indexOf(group) != -1 }]"></i>
-              {{ group }}
+            <a
+              class="dropdown-item"
+              href="#"
+              v-for="environment in environments"
+              v-on:click="toggleEnvironmentFilter(environment, $event)"
+            >
+              <i v-bind:class="['fa fa-fw', { 'fa-check': environmentsFilter.indexOf(environment) != -1 }]"></i>
+              {{ environment }}
             </a>
           </div>
         </div>
       </div>
-      <div class="col text-center" v-if="groups.length === 1">
-        <span class="lead" v-bind:title="'Showing instances of group ' + groups[0]" data-bs-toggle="tooltip">{{
-          groups[0]
-        }}</span>
+      <div class="col text-center" v-if="environments.length === 1">
+        <span
+          class="lead"
+          v-bind:title="'Showing instances of environment ' + environments[0]"
+          data-bs-toggle="tooltip"
+          >{{ environments[0] }}</span
+        >
       </div>
       <div class="col">
         <p class="text-secondary text-end mt-2 mb-0 me-4">

@@ -60,64 +60,10 @@ def json_login():
     return response
 
 
-@app.route("/json/groups/role")
+@app.route("/json/users")
 @admin_required
-def get_groups():
-    return flask.jsonify(
-        [g.asdict() for g in orm.Groups.all("role").with_session(g.db_session)]
-    )
-
-
-@app.route("/json/groups/role", methods=["POST"])
-@admin_required
-@transaction
-def post_group():
-    with validating():
-        validators.slug(request.json["name"])
-
-    group = (
-        orm.Groups.insert("role", request.json["name"], request.json["description"])
-        .with_session(g.db_session)
-        .one()
-    )
-    return flask.jsonify(group.asdict())
-
-
-@app.route("/json/groups/role/<name>")
-@admin_required
-def get_group(name):
-    group = orm.Groups.get("role", name).with_session(g.db_session).one_or_none()
-    if group is None:
-        flask.abort(404, "No such group.")
-    return flask.jsonify(group.asdict())
-
-
-@app.route("/json/groups/role/<name>", methods=["PUT"])
-@admin_required
-@transaction
-def put_group(name, group=None):
-    if group is None:
-        group = orm.Groups.get("role", name).with_session(g.db_session).one_or_none()
-    if group is None:
-        flask.abort(404, "No such group.")
-
-    with validating():
-        validators.slug(request.json["name"])
-
-    group.group_name = request.json["name"]
-    group.group_description = request.json["description"]
-    return flask.jsonify(group.asdict())
-
-
-@app.route("/json/groups/role/<name>", methods=["DELETE"])
-@admin_required
-@transaction
-def delete_group(name):
-    """Delete a group of roles."""
-    result = g.db_session.execute(orm.Groups.delete("role", name))
-    if result.rowcount == 0:
-        flask.abort(404, "No such group.")
-    return flask.jsonify()
+def get_users():
+    return jsonify([u.asdict() for u in orm.Role.all().with_session(g.db_session)])
 
 
 @app.route("/json/users", methods=["POST"])
@@ -144,24 +90,12 @@ def get_user(name):
 @admin_required
 @transaction
 def put_user(name=None, user=None):
-    j = request.json
     if user is None:
         user = orm.Role.get(name).with_session(g.db_session).one_or_none()
     if user is None:
         flask.abort(404, "No such user.")
 
-    current_groups = {rxg.group_name for rxg in user.groups}
-    wanted_groups = set(j["groups"])
-    # Drop RoleGroups before renaming role because role name is in primary key and SA does not handle this.
-    if user.groups:
-        # Actually, we do not handle Groups but secondary table RoleGroups.
-        for rxg in user.groups:
-            if rxg.group_name in wanted_groups:
-                continue
-            g.db_session.delete(rxg)
-
-        g.db_session.flush()
-
+    j = request.json
     user.is_admin = j["is_admin"]
     user.is_active = j["is_active"]
     if j["name"] in {"temboard"}:
@@ -182,11 +116,6 @@ def put_user(name=None, user=None):
             user.role_password = hash_password(user.role_name, j["password"]).decode(
                 "utf-8"
             )
-
-    for name in wanted_groups - current_groups:
-        g.db_session.add(
-            orm.RoleGroups(role_name=user.role_name, group_name=name, group_kind="role")
-        )
     g.db_session.flush()
 
     return flask.jsonify(user.asdict())
@@ -199,4 +128,40 @@ def delete_user(name):
     result = g.db_session.execute(orm.Role.delete(name))
     if result.rowcount == 0:
         flask.abort(404, "No such user.")
+    return flask.jsonify()
+
+
+@app.route("/json/groups/<path:groupname>/members/<username>")
+@admin_required
+def get_group_membership(groupname, username):
+    row = g.db_session.execute(orm.Group.select_membership(groupname, username)).first()
+    if not row:
+        flask.abort(404, "No such membership.")
+
+    return flask.jsonify({k: getattr(row, k) for k in row.keys()})
+
+
+@app.route("/json/groups/<path:groupname>/members", methods=["POST"])
+@admin_required
+@transaction
+def post_group_membership(groupname):
+    gr = orm.Group.get(groupname).with_session(g.db_session).one_or_none()
+    if not gr:
+        flask.abort(404, "No such group.")
+
+    g.db_session.execute(gr.insert_member(request.json["username"]))
+    return flask.jsonify(
+        username=request.json["username"], groupname=gr.name, profile=gr.description
+    )
+
+
+@app.route("/json/groups/<path:groupname>/members/<username>", methods=["DELETE"])
+@admin_required
+@transaction
+def delete_group_membership(groupname, username):
+    """Remove a user from a group."""
+    result = g.db_session.execute(orm.Group.delete_member(groupname, username))
+    if not result.rowcount:
+        flask.abort(404, "No such membership.")
+
     return flask.jsonify()

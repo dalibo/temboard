@@ -4,9 +4,12 @@ SELECT
   role_phone,
   is_active,
   is_admin,
-  rxg.role_name AS group_role_name,  -- DEPRECATED: drop when using proper secondary table in SA.
-  rxg.group_name,
-  rxg.group_kind
+  g.id AS g_id,
+  g.name AS g_name,
+  e.id AS e_id,
+  e.name AS e_name
 FROM application.roles AS r
-LEFT OUTER JOIN application.role_groups AS rxg ON rxg.role_name = r.role_name
-ORDER BY 1, 7;
+LEFT OUTER JOIN application.memberships AS ms ON ms.role_name = r.role_name
+LEFT OUTER JOIN application.groups AS g ON ms.group_id = g.id
+LEFT OUTER JOIN application.environments AS e ON e.dba_group_id = g.id
+ORDER BY 1, 9;

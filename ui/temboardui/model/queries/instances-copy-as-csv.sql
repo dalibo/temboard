@@ -5,25 +5,23 @@ COPY (
 			i.pg_port AS "Port",
 			i.discover->'postgres'->'data_directory'#>>'{}' AS "PGDATA",
 			i.discover->'postgres'->'version_summary'#>>'{}' AS "Version",
-			string_agg(DISTINCT group_name, ',') AS "Groups",
+			e.name AS "Environment",
 			i.agent_address AS "Agent Address",
 			i.agent_port AS "Agent Port",
 			string_agg(DISTINCT plugin_name, ',') AS "Plugins",
 			i.comment AS "Comment"
 		FROM application.instances AS i
-		LEFT OUTER JOIN application.instance_groups AS groups
-				ON groups.agent_port = i.agent_port
-				AND groups.agent_address = i.agent_address
+		JOIN application.environments AS e ON e.id = i.environment_id
 		LEFT OUTER JOIN application.plugins
 				ON plugins.agent_address = i.agent_address
 				AND plugins.agent_port = i.agent_port
-		GROUP BY 1, 2, 3, 4, 6, 7
-		ORDER BY 1, 2
+		GROUP BY 1, 2, 3, 4, 5, 6, 7
+		ORDER BY 5, 1, 2
 	)
   SELECT * FROM inventory
 	WHERE concat_ws(
 		' ',
-		"Hostname", "Port", "PGDATA", "Version", "Groups",
+		"Hostname", "Port", "PGDATA", "Version", "Environment",
 		"Agent Address", "Agent Port"
 	) LIKE %s
 ) TO STDOUT WITH (

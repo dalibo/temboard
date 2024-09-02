@@ -10,6 +10,7 @@ const props = defineProps([
   "waiting", // Whether parent is interacting with server.
   "disabled",
   "type", // Either 'New' or 'Update'
+  "environments",
 
   // Discover readonly data.
   "pg_host",
@@ -20,27 +21,24 @@ const props = defineProps([
   "mem_gb",
   "signature_status",
 
-  // Agent configuration
+  // Instance configuration
   "comment",
   "notify",
-  "groups",
+  "environment",
   "plugins",
 ]);
 
 const root = ref(null);
-const commentModel = ref(null);
-const selectedGroups = ref([]);
-const availableGroups = computed(() => props.groups.map((group) => group.name));
-
-watch(
-  () => props.comment,
-  (newValue) => {
-    commentModel.value = newValue;
-  },
-);
+const instance = ref({
+  environment: props.environment,
+  comment: props.comment,
+  notify: props.notify,
+});
 
 watchEffect(() => {
-  selectedGroups.value = props.groups.filter((group) => group.selected).map((group) => group.name);
+  instance.value.environment = props.environment;
+  instance.value.comment = props.comment;
+  instance.value.notify = props.notify;
 });
 
 onUpdated(() => {
@@ -54,10 +52,8 @@ function submit() {
     .toArray()
     .map((i) => i.value);
   const data = {
-    groups: selectedGroups.value,
+    ...instance.value,
     plugins: plugins,
-    notify: $("#inputNotify" + props.type).is(":checked"),
-    comment: commentModel.value,
   };
   emit("submit", data);
 }
@@ -87,20 +83,36 @@ const emit = defineEmits(["submit"]);
       </div>
 
       <div class="row">
-        <div id="divGroups" class="mb-3 col-sm-6">
-          <label class="form-label">Groups</label>
-          <multiselect
-            :id="'selectGroups' + type"
-            v-model="selectedGroups"
-            :options="availableGroups"
-            :multiple="true"
-            :hide-selected="true"
-            :searchable="false"
-            select-label=""
-          ></multiselect>
-          <div id="tooltip-container"></div>
+        <div class="col-sm-6">
+          <div class="row">
+            <div class="col">
+              <label class="form-label">Environment</label>
+              <select :id="'selectEnvironment' + type" v-model="instance.environment" class="form-select">
+                <template v-for="e in props.environments">
+                  <option :value="e.name" :title="e.description">
+                    {{ e.name }}
+                  </option>
+                </template>
+              </select>
+              <div id="tooltip-container"></div>
+            </div>
+          </div>
+          <div class="row pt-3">
+            <div class="col-sm-12">
+              <div class="form-check">
+                <input
+                  :id="'inputNotify' + type"
+                  class="form-check-input"
+                  type="checkbox"
+                  v-model="instance.notify"
+                  :disabled="waiting"
+                />
+                <label :for="'inputNotify' + type" class="form-label">Notify users of any status alert.</label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="divPlugins" class="mb-3 col-sm-6" v-if="plugins.length > 0">
+        <div id="divPlugins" class="col-sm-6" v-if="plugins.length > 0">
           <label :for="'selectPlugins' + type" class="form-label">Plugins</label>
           <div class="form-check" v-for="plugin of plugins">
             <input
@@ -119,28 +131,14 @@ const emit = defineEmits(["submit"]);
         </div>
       </div>
       <div class="row">
-        <div class="col-sm-12">
-          <div class="form-check">
-            <input
-              :id="'inputNotify' + type"
-              class="form-check-input"
-              type="checkbox"
-              :checked="notify"
-              :disabled="disabled"
-            />
-            <label :for="'inputNotify' + type" class="form-label">Notify users of any status alert.</label>
-          </div>
-        </div>
-      </div>
-      <div class="row">
         <div class="mb-3 col-sm-12">
           <label :for="'inputComment' + type" class="form-label">Comment</label>
           <textarea
             :id="'inputComment' + type"
             class="form-control"
             rows="3"
-            v-model="commentModel"
-            :disabled="disabled"
+            v-model="instance.comment"
+            :disabled="waiting"
           >
           </textarea>
         </div>

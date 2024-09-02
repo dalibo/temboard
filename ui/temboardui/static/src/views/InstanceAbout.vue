@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps(["instance_name", "pg_version_summary", "pg_data", "groups", "discover"]);
+const props = defineProps(["instance_name", "pg_version_summary", "pg_data", "environment", "discover"]);
 const settings = ["listen_address", "max_connections", "data_checksums"];
 const components = ["psycopg2", "libpq", "bottle", "cyptography"];
 let postgres = { cluster_name: "", version: "" };
@@ -18,11 +18,7 @@ if (props.discover) {
       <div class="text-center mt-4 w-100">
         <h1>
           {{ instance_name }}
-          <span class="align-top badge text-bg-secondary">{{ groups[0] }}</span>
         </h1>
-        <h3 v-if="groups.length > 1">
-          <span v-for="group in groups" class="badge text-bg-secondary">{{ group }}</span>
-        </h3>
         <h2 class="text-secondary pb-4 mb-4">{{ pg_version_summary }} serving {{ pg_data }}.</h2>
       </div>
       <table class="table table-sm w-100 mx-auto" style="max-width: 1000px">
@@ -99,6 +95,10 @@ if (props.discover) {
           </tr>
         </thead>
         <tbody class="temboard">
+          <tr>
+            <td>Environment</td>
+            <td>{{ environment }}</td>
+          </tr>
           <tr v-if="'plugins' in temboard">
             <td>Plugins</td>
             <td>
@@ -134,7 +134,7 @@ if (props.discover) {
       <div class="text-center mt-4 w-100">
         <h1>
           {{ instance_name }}
-          <span class="align-top badge text-bg-secondary">{{ groups[0] }}</span>
+          <span class="align-top badge text-bg-secondary">{{ environment }}</span>
         </h1>
       </div>
       <div class="alert alert-warning mx-auto" role="alert">

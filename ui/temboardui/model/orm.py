@@ -2,10 +2,10 @@ import string
 from secrets import choice
 
 import sqlalchemy
-from sqlalchemy import Column, orm, schema, text, types
+from sqlalchemy import Column, Table, orm, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Query, joinedload, relationship
+from sqlalchemy.orm import Query, relationship
 
 from ..toolkit.utils import utcnow
 from . import QUERIES
@@ -97,111 +97,14 @@ class Plugin(Model):
         )
 
 
-class InstanceGroups(Model):
-    __tablename__ = "instance_groups"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint(
-            "agent_address", "agent_port", "group_name", "group_kind"
-        ),
-        schema.ForeignKeyConstraint(
-            ["agent_address", "agent_port"],
-            ["application.instances.agent_address", "application.instances.agent_port"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        schema.ForeignKeyConstraint(
-            ["group_name", "group_kind"],
-            ["application.groups.group_name", "application.groups.group_kind"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        {"schema": "application"},
-    )
-
-    agent_address = Column(types.UnicodeText)
-    agent_port = Column(types.Integer)
-    group_name = Column(types.UnicodeText)
-    group_kind = Column(types.UnicodeText, server_default=schema.FetchedValue())
-
-    @classmethod
-    def insert(cls, instance, group):
-        return Query(cls).from_statement(
-            text(QUERIES["instance-groups-insert"]).bindparams(
-                agent_address=instance.agent_address,
-                agent_port=instance.agent_port,
-                group_name=group.group_name,
-                group_kind=group.group_kind,
-            )
-        )
-
-
-class RoleGroups(Model):
-    __tablename__ = "role_groups"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint("role_name", "group_name", "group_kind"),
-        schema.ForeignKeyConstraint(
-            ["group_name", "group_kind"],
-            ["application.groups.group_name", "application.groups.group_kind"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        {"schema": "application"},
-    )
-
-    role_name = Column(
-        types.UnicodeText, schema.ForeignKey("application.roles.role_name")
-    )
-    group_name = Column(types.UnicodeText)
-    group_kind = Column(types.UnicodeText)
-
-
-class AccessRoleInstance(Model):
-    __tablename__ = "access_role_instance"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint(
-            "role_group_name",
-            "role_group_kind",
-            "instance_group_name",
-            "instance_group_kind",
-        ),
-        schema.ForeignKeyConstraint(
-            ["role_group_name", "role_group_kind"],
-            ["application.groups.group_name", "application.groups.group_kind"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        schema.ForeignKeyConstraint(
-            ["instance_group_name", "instance_group_kind"],
-            ["application.groups.group_name", "application.groups.group_kind"],
-            ondelete="CASCADE",
-            onupdate="CASCADE",
-        ),
-        {"schema": "application"},
-    )
-
-    role_group_name = Column(types.UnicodeText)
-    role_group_kind = Column(types.UnicodeText)
-    instance_group_name = Column(types.UnicodeText)
-    instance_group_kind = Column(types.UnicodeText)
-
-    @classmethod
-    def insert(cls, role, instance):
-        return (
-            sqlalchemy.insert(cls.__table__)
-            .returning(*cls.__mapper__.c.values())
-            .values(
-                role_group_kind="role",
-                role_group_name=role,
-                instance_group_kind="instance",
-                instance_group_name=instance,
-            )
-        )
-
-    @classmethod
-    def delete(cls, role, instance):
-        return sqlalchemy.delete(cls.__table__).where(
-            cls.role_group_name == role, cls.instance_group_name == instance
-        )
+memberships = Table(
+    "memberships",
+    Model.metadata,
+    Column("id", primary_key=True),
+    Column("role_name", schema.ForeignKey("application.roles.role_name")),
+    Column("group_id", schema.ForeignKey("application.groups.id")),
+    schema="application",
+)
 
 
 class Role(Model):
@@ -216,10 +119,7 @@ class Role(Model):
     is_admin = Column(types.Boolean)
 
     groups = relationship(
-        RoleGroups,
-        order_by=RoleGroups.group_name,
-        backref="roles",
-        cascade="save-update, merge, delete, delete-orphan",
+        "Group", secondary=memberships, back_populates="members", lazy="raise"
     )
 
     @classmethod
@@ -237,12 +137,13 @@ class Role(Model):
                     Role.role_phone,
                     Role.is_active,
                     Role.is_admin,
-                    RoleGroups.role_name,
-                    RoleGroups.group_name,
-                    RoleGroups.group_kind,
+                    Group.id,
+                    Group.name,
+                    Environment.id,
+                    Environment.name,
                 )
             )
-            .options(orm.contains_eager(cls.groups))
+            .options(orm.contains_eager(cls.groups).contains_eager(Group.environment))
         )
 
     @classmethod
@@ -264,12 +165,13 @@ class Role(Model):
                     Role.role_phone,
                     Role.is_active,
                     Role.is_admin,
-                    RoleGroups.role_name,
-                    RoleGroups.group_name,
-                    RoleGroups.group_kind,
+                    Group.id,
+                    Group.name,
+                    Environment.id,
+                    Environment.name,
                 )
             )
-            .options(orm.contains_eager(cls.groups))
+            .options(orm.contains_eager(cls.groups).contains_eager(Group.environment))
         )
 
     def asdict(self):
@@ -279,7 +181,22 @@ class Role(Model):
             phone=self.role_phone,
             active=self.is_active,
             admin=self.is_admin,
-            groups=[g.group_name for g in self.groups],
+            groups=[g.name for g in self.groups],
+            environments=[g.environment.name for g in self.groups],
+        )
+
+    def select_environments(self):
+        return Query(Environment).from_statement(
+            text(QUERIES["roles-select-environments"])
+            .bindparams(role_name=self.role_name)
+            .columns(Environment.id, Environment.name)
+        )
+
+    def select_instances(self):
+        return Query(Instance).from_statement(
+            text(QUERIES["roles-select-instances"])
+            .bindparams(role_name=self.role_name)
+            .columns(Instance.__mapper__.c.values())
         )
 
 
@@ -287,6 +204,128 @@ class StubRole:
     # Fake object for roles not in database.
     def __init__(self, role_name):
         self.role_name = role_name
+
+
+class Group(Model):
+    __tablename__ = "groups"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    name = Column(types.UnicodeText)
+    description = Column(types.UnicodeText)
+
+    members = relationship(
+        "Role", secondary=memberships, back_populates="groups", lazy="raise"
+    )
+    environment = relationship(
+        "Environment", back_populates="dba_group", uselist=False, lazy="raise"
+    )
+
+    @classmethod
+    def get(cls, name):
+        return Query(cls).from_statement(
+            text(QUERIES["group-get"]).bindparams(name=name)
+        )
+
+    @classmethod
+    def delete(cls, name):
+        return text(
+            """DELETE FROM application.groups WHERE name = :name;"""
+        ).bindparams(name=name)
+
+    @classmethod
+    def select_membership(self, name, username):
+        return (
+            text(QUERIES["group-select-membership"])
+            .bindparams(group=name, role=username)
+            .columns(
+                username=types.UnicodeText,
+                groupname=types.UnicodeText,
+                description=types.UnicodeText,
+            )
+        )
+
+    def insert_member(self, username):
+        return text(QUERIES["group-insert-member"]).bindparams(
+            group=self.name, role=username
+        )
+
+    @classmethod
+    def delete_member(self, name, username):
+        return text(QUERIES["group-delete-membership"]).bindparams(
+            group=name, role=username
+        )
+
+
+class Environment(Model):
+    __tablename__ = "environments"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    name = Column(types.UnicodeText)
+    description = Column(types.UnicodeText)
+    color = Column(types.UnicodeText)
+    dba_group_id = Column(types.BigInteger, schema.ForeignKey("application.groups.id"))
+
+    instances = relationship(
+        "Instance",
+        back_populates="environment",
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy="raise",
+    )
+    dba_group = relationship(
+        "Group", back_populates="environment", uselist=False, lazy="raise"
+    )
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get(cls, name):
+        return (
+            Query(cls)
+            .from_statement(
+                text(QUERIES["environments-get"])
+                .bindparams(name=name)
+                # Declare columns for disambiguation of id, name and description.
+                .columns(*cls.__table__.c.values(), *Group.__table__.c.values())
+            )
+            .options(orm.contains_eager(cls.dba_group))
+        )
+
+    @classmethod
+    def all(cls):
+        return (
+            Query(cls)
+            .from_statement(text(QUERIES["environments-all"]))
+            .options(orm.contains_eager(cls.dba_group))
+        )
+
+    @classmethod
+    def delete(cls, name):
+        return text(
+            """DELETE FROM application.environments WHERE name = :name;"""
+        ).bindparams(name=name)
+
+    @classmethod
+    def select_memberships(self, name):
+        return (
+            text(QUERIES["environment-memberships"])
+            .bindparams(name=name)
+            .columns(
+                username=types.UnicodeText,
+                groupname=types.UnicodeText,
+                description=types.UnicodeText,
+            )
+        )
+
+    def asdict(self):
+        return dict(
+            name=self.name,
+            description=self.description,
+            color=self.color,
+            dba_group=self.dba_group.name,
+        )
 
 
 class Instance(Model):
@@ -305,15 +344,11 @@ class Instance(Model):
     discover = Column(postgresql.JSONB)
     discover_date = Column(types.TIMESTAMP, server_default=schema.FetchedValue())
     discover_etag = Column(types.UnicodeText)
-
-    groups = relationship(
-        InstanceGroups,
-        order_by="InstanceGroups.group_name",
-        backref="instances",
-        cascade="save-update, merge, delete, delete-orphan",
-        lazy="joined",
+    environment_id = Column(
+        types.Integer, schema.ForeignKey("application.environments.id")
     )
 
+    environment = relationship("Environment", back_populates="instances", lazy="raise")
     plugins = relationship(Plugin, back_populates="instance", lazy="joined")
 
     def __str__(self):
@@ -326,23 +361,29 @@ class Instance(Model):
         agent_port,
         discover,
         discover_etag,
+        environment,
         notify=False,
         comment=None,
     ):
-        return Query(cls).from_statement(
-            text(QUERIES["instances-insert"]).bindparams(
-                sqlalchemy.bindparam(
-                    "discover", value=discover, type_=postgresql.JSONB
-                ),
-                agent_address=str(agent_address),
-                agent_port=int(agent_port),
-                discover_etag=discover_etag,
-                discover_date=utcnow(),
-                pg_port=int(discover["postgres"]["port"]),
-                hostname=discover["system"]["fqdn"],
-                notify=bool(notify),
-                comment=comment or "",
+        return (
+            Query(cls)
+            .from_statement(
+                text(QUERIES["instances-insert"]).bindparams(
+                    sqlalchemy.bindparam(
+                        "discover", value=discover, type_=postgresql.JSONB
+                    ),
+                    agent_address=str(agent_address),
+                    agent_port=int(agent_port),
+                    discover_etag=discover_etag,
+                    discover_date=utcnow(),
+                    pg_port=int(discover["postgres"]["port"]),
+                    hostname=discover["system"]["fqdn"],
+                    environment=environment,
+                    notify=bool(notify),
+                    comment=comment or "",
+                )
             )
+            .options(orm.contains_eager(cls.plugins))
         )
 
     @classmethod
@@ -355,10 +396,23 @@ class Instance(Model):
     def get(cls, agent_address, agent_port):
         return (
             Query(cls)
-            .prefix_with("-- Instances.get\n")
-            .filter(cls.agent_address == str(agent_address))
-            .filter(cls.agent_port == int(agent_port))
-            .options(joinedload("groups"), joinedload("plugins"))
+            .from_statement(
+                text(QUERIES["instance-get"])
+                .bindparams(address=str(agent_address), port=int(agent_port))
+                .columns(
+                    *cls.__mapper__.c.values(),
+                    *Plugin.__mapper__.c.values(),
+                    *Environment.__mapper__.c.values(),
+                    *Group.__mapper__.c.values(),
+                )
+            )
+            .options(
+                orm.contains_eager(cls.plugins),
+                # chain contains_eager to reflect chained joins.
+                orm.contains_eager(cls.environment).contains_eager(
+                    Environment.dba_group
+                ),
+            )
         )
 
     @classmethod
@@ -387,7 +441,11 @@ class Instance(Model):
 
     @classmethod
     def all(cls):
-        return Query(cls).from_statement(text(QUERIES["instances-all"]))
+        return (
+            Query(cls)
+            .from_statement(text(QUERIES["instances-all"]))
+            .options(orm.contains_eager(cls.environment))
+        )
 
     # Compatibility from new JSONb discover to old column discover.
     @property
@@ -428,7 +486,7 @@ class Instance(Model):
             pg_port=self.pg_port,
             agent_address=self.agent_address,
             agent_port=self.agent_port,
-            groups=[group.group_name for group in self.groups],
+            environment=self.environment.name,
             plugins=[plugin.plugin_name for plugin in self.plugins],
             comment=self.comment,
             notify=self.notify,
@@ -459,72 +517,8 @@ class Instance(Model):
             .columns(has_dba=types.Boolean)
         )
 
-    def add_group(self, group):
-        return InstanceGroups.insert(self, group)
-
     def enable_plugin(self, plugin):
         return Plugin.insert(self, plugin)
 
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
-
-
-class Groups(Model):
-    __tablename__ = "groups"
-    __table_args__ = (
-        schema.PrimaryKeyConstraint("group_name", "group_kind"),
-        {"schema": "application"},
-    )
-
-    group_name = Column(types.UnicodeText)
-    group_kind = Column(types.UnicodeText)
-    group_description = Column(types.UnicodeText)
-
-    ari = relationship(
-        AccessRoleInstance,
-        order_by=AccessRoleInstance.role_group_name,
-        backref="groups",
-        cascade="save-update, merge, delete, delete-orphan",
-        foreign_keys=[
-            AccessRoleInstance.instance_group_name,
-            AccessRoleInstance.instance_group_kind,
-        ],
-    )
-
-    def asdict(self):
-        d = dict(
-            name=self.group_name,
-            kind=self.group_kind,
-            description=self.group_description,
-        )
-        if self.group_kind == "instance":
-            d["role_groups"] = [ari.role_group_name for ari in self.ari]
-        else:
-            d["instance_groups"] = [ari.instance_group_name for ari in self.ari]
-        return d
-
-    @classmethod
-    def get(cls, kind, name):
-        return Query(cls).from_statement(
-            text(QUERIES["groups-get"]).bindparams(kind=kind, name=name)
-        )
-
-    @classmethod
-    def all(cls, kind):
-        return Query(cls).from_statement(
-            text(QUERIES["groups-all"]).bindparams(kind=kind)
-        )
-
-    @classmethod
-    def insert(cls, kind, name, description):
-        return Query(cls).from_statement(
-            text(QUERIES["groups-insert"]).bindparams(
-                kind=kind, name=name, description=description
-            )
-        )
-
-    @classmethod
-    def delete(cls, kind, name):
-        return text(
-            """DELETE FROM application.groups WHERE group_kind = :kind AND group_name = :name;"""
-        ).bindparams(kind=kind, name=name)
