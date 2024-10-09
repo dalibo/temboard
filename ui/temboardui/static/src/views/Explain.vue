@@ -3,8 +3,6 @@ import { Plan } from "pev2";
 import "pev2/dist/style.css";
 import { ref, watch } from "vue";
 
-const pev2 = Plan;
-
 const plan = ref("");
 const query = ref("");
 
@@ -17,6 +15,7 @@ function submit() {
 
 <template>
   <div class="row">
+    <h1>Plan vizualiser</h1>
     <div class="col-sm-7 mx-auto" v-if="!showPlan">
       <form action="/home" @submit.prevent="submit">
         <div class="mb-3">
@@ -55,7 +54,14 @@ function submit() {
     </div>
   </div>
 
-  <div id="app" v-if="showPlan">
-    <pev2 :plan-source="plan" :plan-query="query" style="height: 700px"></pev2>
+  <div id="pev2" v-if="showPlan">
+    <Plan :plan-source="plan" :plan-query="query" style="height: 100%"></Plan>
   </div>
 </template>
+
+<style scoped>
+#pev2 {
+  height: 700px;
+  max-height: calc(100vh - 42px - 92px);
+}
+</style>
