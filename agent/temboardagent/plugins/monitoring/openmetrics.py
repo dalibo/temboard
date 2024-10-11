@@ -506,6 +506,8 @@ def generate_bgwriter_samples(data, hostinfo):
         "maxwritten_clean",
     )
     for stat in bgwriter_stats:
+        if stat not in data[0]:
+            continue
         yield Sample("pg_stat_bgwriter_" + stat, value=data[0][stat])
 
 

@@ -1,6 +1,6 @@
 WITH backends AS (
     SELECT SUM(writes) AS buffers_backend,
-    	   SUM(fsyncs) AS buffers_backend_fsync
+           SUM(fsyncs) AS buffers_backend_fsync
       FROM pg_stat_io
      WHERE backend_type = 'client backend'
 )
