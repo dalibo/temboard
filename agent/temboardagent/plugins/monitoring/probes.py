@@ -497,6 +497,13 @@ where d.datallowconn"""  # noqa
     delta_key = "dbname"
 
 
+class probe_checkpointer(SqlProbe):
+    level = "instance"
+    min_version = 170000
+    sql = """select * from pg_stat_checkpointer"""
+    delta_columns = ["num_timed", "num_requested", "buffers_written"]
+
+
 class probe_bgwriter(SqlProbe):
     level = "instance"
     min_version = 80300

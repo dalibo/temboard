@@ -514,6 +514,63 @@ METADATAS.update(
         m.name: m
         for m in [
             MetricMetadata(
+                "pg_stat_checkpointer_buffers_written",
+                help_="Number of buffers written during checkpoints",
+                type_=MetricMetadata.COUNTER,
+            ),
+            MetricMetadata(
+                "pg_stat_checkpointer_sync_time",
+                help_=(
+                    "Total amount of time that has been spent in the portion of "
+                    "checkpoint processing where files are synchronized to disk, "
+                    "in milliseconds"
+                ),
+                type_=MetricMetadata.COUNTER,
+            ),
+            MetricMetadata(
+                "pg_stat_checkpointer_write_time",
+                help_=(
+                    "Total amount of time that has been spent in the portion of "
+                    "checkpoint processing where files are written to disk, in "
+                    "milliseconds"
+                ),
+                type_=MetricMetadata.COUNTER,
+            ),
+            MetricMetadata(
+                "pg_stat_checkpointer_num_requested",
+                help_="Number of requested checkpoints that have been performed",
+                type_=MetricMetadata.COUNTER,
+            ),
+            MetricMetadata(
+                "pg_stat_checkpointer_num_timed",
+                help_="Number of scheduled checkpoints that have been performed",
+                type_=MetricMetadata.COUNTER,
+            ),
+            MetricMetadata(
+                "pg_stat_checkpointer_stats_reset",
+                help_="Time at which these statistics were last reset",
+                type_=MetricMetadata.COUNTER,
+            ),
+        ]
+    }
+)
+
+
+def generate_checkpointer_samples(data, hostinfo):
+    yield Sample(
+        "pg_stat_checkpointer_stats_reset", value=fromisoformat(data[0]["stats_reset"])
+    )
+
+    stats = ("buffers_written", "sync_time", "write_time", "num_timed", "num_requested")
+    for stat in stats:
+        yield Sample("pg_stat_checkpointer_" + stat, value=data[0][stat])
+
+
+METADATAS.update(
+    {
+        m.name: m
+        for m in [
+            MetricMetadata(
                 "xpg_database_size_bytes",
                 help_="Database total size",
                 type_=MetricMetadata.GAUGE,
