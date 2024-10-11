@@ -496,7 +496,8 @@ function onFromToUpdate(from_, to_) {
         </BCard>
       </template>
       <template v-slot:cell()="data">
-        <span v-html="data.value"></span>
+        <span v-if="typeof data.value === 'number'">{{ data.value.toFixed(data.value % 1 ? 3 : 0) }}</span>
+        <span v-else v-html="data.value"></span>
       </template>
       <template v-slot:empty="scope">
         <div class="text-center">
