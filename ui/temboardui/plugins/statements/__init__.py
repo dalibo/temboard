@@ -764,8 +764,14 @@ def add_statement(session, instance, data):
                 statement["local_blks_written"],
                 statement["temp_blks_read"],
                 statement["temp_blks_written"],
-                statement["blk_read_time"],
-                statement["blk_write_time"],
+                # DEPRECATED: Column renamed in Postgres 17.
+                statement["shared_blk_read_time"]
+                if "shared_blk_read_time" in statement
+                else statement["blk_read_time"],
+                statement["shared_blk_write_time"]
+                # DEPRECATED: Column renamed in Postgres 17.
+                if "shared_blk_write_time" in statement
+                else statement["blk_write_time"],
                 statement["total_plan_time"]
                 if "total_plan_time" in statement
                 else None,
