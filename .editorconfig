@@ -17,9 +17,6 @@ max_line_length = 88
 [*.{css,html,js,json,scss,yml,yaml,sql,vue}]
 indent_size = 2
 
-[*.sql]
-indent_style = tab
-
 [{*.sh,Makefile}]
 indent_size = 8
 indent_style = tab
