@@ -6,7 +6,7 @@ version: '3.8'
 services:
   # The Postgres server to store temBoard data.
   repository:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     ports: ["5432:5432"]
     environment:
       POSTGRES_USER: postgres
@@ -28,7 +28,7 @@ services:
 
   # First instance.
   postgres0:
-    image: &postgres_image postgres:16rc1-alpine
+    image: &postgres_image postgres:17-alpine
     volumes:
     - data0:/var/lib/postgresql/data
     - run0:/var/run/postgresql

@@ -53,7 +53,7 @@ workflows:
           parameters:
             dist: [rockylinux9]
             # Odd version of Postgres for RHEL
-            pgversion: ["15"]
+            pgversion: ["17"]
     - e2e:
         <<: *e2e
         matrix:
@@ -311,7 +311,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>
