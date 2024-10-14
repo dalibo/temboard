@@ -1,15 +1,15 @@
 site_name: temBoard
 site_description: PostgreSQL Remote Control
 site_author: www.dalibo.com
-site_dir: ../dev/build/docs
-docs_dir: .
-copyright: Copyright 2015-2022 <a href="http://www.dalibo.com">dalibo</a>
+site_dir: dev/build/docs
+docs_dir: docs/
+copyright: Copyright 2015-2024 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://github.com/dalibo/temboard/
 
 theme:
   name: material
-  custom_dir: overrides
-  favicon: assets/temboard-logo-64.png
+  custom_dir: docs/overrides
+  favicon: docs/assets/temboard-logo-64.png
   icon:
     repo: fontawesome/brands/github
   logo: assets/temboard-logo-blanc-256.png
