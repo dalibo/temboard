@@ -42,7 +42,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bookworm, bullseye, jammy]
+            codename: [bookworm, bullseye, noble, jammy]
         requires: [stage0-dist]
     - e2e: &e2e
         name: stage2-e2e-pg<< matrix.pgversion >>-<< matrix.dist >>
@@ -82,6 +82,7 @@ workflows:
         - stage1-pkg-rockylinux8
         - stage1-pkg-bookworm
         - stage1-pkg-bullseye
+        - stage1-pkg-noble
         - stage1-pkg-jammy
         filters:
           <<: *enable-for-tags
@@ -273,7 +274,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bookworm, bullseye, jammy]
+        enum: [bookworm, bullseye, noble, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
