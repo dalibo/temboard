@@ -12,7 +12,6 @@ depends:
 - python3-pkg-resources
 - python3-psycopg2 (>= 2.7)
 - python3-setuptools
-- python3-distutils
 - ssl-cert
 maintainer: ${DEBFULLNAME} <${DEBEMAIL}>
 description: PostgreSQL Remote Control Agent

@@ -21,6 +21,7 @@ Ensure you use consistent title format.
 - ui: Accept editing an offline instance.
 - ui: Search for .config/temboard.conf.
 - agent: Recover admin shutdown, backend terminated, etc.
+- Packages for Ubuntu 24.04 Noble.
 - Remove python 2.7 support.
 - Remove daemonization. Use nohup or systemd.
 - Dropped pluging hotplug.

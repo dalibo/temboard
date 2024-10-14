@@ -19,3 +19,7 @@ services:
   jammy:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:jammy
+
+  noble:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:noble
