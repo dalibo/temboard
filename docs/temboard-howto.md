@@ -19,62 +19,51 @@ session when the password has been changed. Go back to the login page and fill
 the form with the new password.
 
 
-# User and user group creation
-
-User access controls to instances managed by `temboard` are based on `group` belonging. Each `instance` can belong to *N* `instance group`, each `user` can belong to *N* `user group`. Each `user group` is granted or not to access an `instance group`.
-You must be logged in with a user having administration privileges to manage `users`.
-
-## User group creation
-
-Go to `Manage`-> `User groups`, then `+ Add a new user group`. Please fill the form and `Save`.
-
-![Add user group](sc/add-user-group.png)
-
-### User group attributes
-
-  * `Groupe name`: Groupe name, must be unique;
-  * `Description`: Group description.
-
-## User creation
-
-To add a new `user`, go to `Manage` -> `Users`, then `+ Add a new user`.
-
-![Add user](sc/add-user.png)
-
-### User attributes
-
-  * `Username`: User name used for login, must be unique;
-  * `Password`: User password;
-  * `Email`: User email address;
-  * `Groups`: `user groups` list the user belongs to;
-  * `Active`: Is the user active or not, if not he won't be able to login;
-  * `Administrator`: Does the user get administration rights to create other users, instances etc..
-
 # Managing instances
 
 You must be logged in with a user having administration privileges.
 
-## Create a new instance group
-
-To create a new `instance group`, go to `Manage` -> `Instance groups`, then `+ Add a new instance group`.
-
-![Add instance group](sc/add-instance-group.png)
-
-### Instance group attributes
-
-  * `Group name`: Groupe name, must be unique;
-  * `Description`: Groupe description;
-  * `User Groups`: List of `user group` allowed to access `instances` from this `instance group`.
-
 ## Add a new instance
 
-Go to `Manage` -> `Instances`, then `+ Add a new instance`.
+For each instance you want to manage, [install and configure one agent](agent_install.md).
+To register the instance graphically,
+go to `Manage` -> `Instances`, then `Add a new instance`.
+
+![Discover instance](sc/discover-instance.png)
+
+You must fill temBoard agent address and port.
+Don't confuse with PostgreSQL server address and port.
+temBoard will contact the agent and present you informations to identifiy the monitored instance.
 
 ![Add instance](sc/add-instance.png)
 
-### Instance attributes
+You can now configure Environment and features enabled for this instance.
+Each instance must be in one Environment.
+Environment determines which users will have access to the instance.
 
-  * `Agent address`: IPv4 address that the agent is listening on;
-  * `Agent port`: Port number that the agent is listening on;
-  * `Groups`: Instance groups this instance belongs to.
-  * `Active plugins`: `plugins` enabled for this instance. Selected `plugins` must be loaded by the `agent` too.
+![Instance list](sc/instance-list.png)
+
+
+# Manage users
+
+Once you have an Environment and an instance registered,
+share management access to someone by creating a user.
+
+## Add a new user
+
+Go to `Settings` -> `Users`, then `New user`.
+You must define the password.
+Only administrators can change password.
+
+![Add user](sc/add-user.png)
+
+Once user is created, allow him to access to the instance by adding him to the Environment.
+Go to `Settings` -> `Environments`,
+then click the :fontawesome-solid-users: icon on the corresponding row.
+Click `Add member` in this page and search for *alice*.
+Click on username to allow him to the Environment.
+
+![Add member](sc/add-member.png)
+
+Once a user has access to an environment,
+he can manage instances in this environment.
