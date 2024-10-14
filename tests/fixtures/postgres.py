@@ -18,7 +18,19 @@ class PostgreSQLVersions(dict):
     # A mapping from major version -> bindir.
 
     # List of agent supported PostgreSQL versions.
-    SUPPORTED_VERSIONS = ["16", "15", "14", "13", "12", "11", "10", "9.6", "9.5", "9.4"]
+    SUPPORTED_VERSIONS = [
+        "17",
+        "16",
+        "15",
+        "14",
+        "13",
+        "12",
+        "11",
+        "10",
+        "9.6",
+        "9.5",
+        "9.4",
+    ]
 
     def search_installed_versions(self):
         patterns = [

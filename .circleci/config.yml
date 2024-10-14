@@ -53,7 +53,7 @@ workflows:
           parameters:
             dist: [rockylinux9]
             # Odd version of Postgres for RHEL
-            pgversion: ["15"]
+            pgversion: ["17"]
     - e2e:
         <<: *e2e
         matrix:
@@ -311,7 +311,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>
@@ -325,10 +325,10 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: *PGPASSWORD
       command: [
-      -c, log_statement=all,
-      -c, log_connections=on,
-      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
-      -c, cluster_name=repository,
+        -c, log_statement=all,
+        -c, log_connections=on,
+        -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+        -c, cluster_name=repository,
       ]
     - image: selenium/standalone-firefox@sha256:b6d8279268b3183d0d33e667e82fec1824298902f77718764076de763673124f
       environment:

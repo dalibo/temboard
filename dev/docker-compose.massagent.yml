@@ -14,7 +14,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:${PGVERSION-16}-alpine
+    image: postgres:${PGVERSION-17}-alpine
     environment:
       POSTGRES_PASSWORD: confinment
     command: [

@@ -11,6 +11,7 @@ from psycopg2.extras import PhysicalReplicationConnection
 
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
+from ...queries import QUERIES
 from ...toolkit.utils import utcnow
 from . import db
 
@@ -497,10 +498,23 @@ where d.datallowconn"""  # noqa
     delta_key = "dbname"
 
 
+class probe_checkpointer(SqlProbe):
+    level = "instance"
+    min_version = 170000
+    sql = """select * from pg_stat_checkpointer"""
+    delta_columns = ["num_timed", "num_requested", "buffers_written"]
+
+
 class probe_bgwriter(SqlProbe):
     level = "instance"
     min_version = 80300
-    sql = """select * from pg_stat_bgwriter"""
+
+    def check(self, version):
+        if version < 170000:
+            self.sql = """select * from pg_stat_bgwriter"""
+        else:
+            self.sql = QUERIES["monitoring-bgwriter"]
+
     delta_columns = [
         "checkpoints_timed",
         "checkpoints_req",

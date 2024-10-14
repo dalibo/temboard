@@ -15,6 +15,7 @@ Ensure you use consistent title format.
 
 **Other changes**
 
+- Postgres 17 support.
 - ui: Fix deletion of host metrics when removing an instance of multi-instances host.
 - ui: Remove support for 7.x agents.
 - ui: Accept editing an offline instance.
