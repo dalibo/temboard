@@ -297,7 +297,10 @@ class UserMiddleware:
         )
         if cookie:
             cookie = cookie.decode("utf-8")
-            return get_role_by_cookie(g.db_session, cookie)
+            try:
+                return get_role_by_cookie(g.db_session, cookie)
+            except Exception as e:
+                logger.error("Failed to load user from cookie: %s", e)
 
 
 class InstanceMiddleware:
