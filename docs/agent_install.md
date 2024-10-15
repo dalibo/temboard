@@ -167,11 +167,16 @@ Now you can register the agent in the UI using
 agent host and port and the path to the temBoard UI.:
 
 ``` console
-# sudo -u postgres temboard-agent -c /etc/temboard-agent/14/main/temboard-agent.conf register --groups default
+# sudo -u postgres temboard-agent -c /etc/temboard-agent/14/main/temboard-agent.conf register --environment default
 ```
 
 `temboard-agent register` will ask you credentials to the temBoard UI with
 admin privileges.
+
+!!! Note
+
+    the `--environment` (or `-e`) option replaces the `--groups` option that was used
+    in version 8
 
 
 !!! Note
