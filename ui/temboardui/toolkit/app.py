@@ -226,7 +226,7 @@ class BaseApplication:
         logger.debug("Reading %s.", filename)
         try:
             with open(filename, "r", "utf-8") as fp:
-                parser.readfp(fp)
+                parser.read_file(fp)
         except OSError as e:
             raise UserError(str(e))
 
