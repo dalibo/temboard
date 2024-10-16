@@ -5,7 +5,8 @@ hide:
 
 <h1>Quickstart</h1>
 
-We provide a `docker-compose.yml` file to quickly try temBoard with a few PostgreSQL instances.
+We provide a `docker-compose.yml` file to give temBoard a try.
+
 You'll need docker compose 1.10+ and docker engine 1.10+.
 
 ``` console
@@ -15,14 +16,15 @@ docker compose up
 
 `docker compose` will launch:
 
-- a PostgreSQL instance for temboard owns data
+- a PostgreSQL instance for temBoard own data
 - the temBoard UI
-- four PostgreSQL instances exposed on ports 5432, 5433, 5434 and 5435.
-- a temBoard agent for each instance exposed on port 2345, 2346, 2347, 2348.
+- 4 PostgreSQL instances (with different versions), exposed on ports 5432, 5433, 5434 and 5435,
+- a temBoard agent for each instance.
 
 temBoard UI is available on <https://0.0.0.0:8888/> with `admin` / `admin`
-credentials. You can access PostgreSQL instance with user and password
-`postgres`. For example with pgbench:
+credentials.
+
+You can access the PostgreSQL instances. For example to run some pgbench tasks:
 
 ``` console
 $ export PGHOST=0.0.0.0 PGPORT=5432 PGUSER=postgres PGPASSWORD=postgres
@@ -43,4 +45,4 @@ $ pgbench -c 8 -T 60 pgbench
     - temBoard agent is designed to run on same host as PostgreSQL which is incompatible with Docker service-minded architecture.
     - temBoard agent image requires *access to docker socket* to restart PostgreSQL, which you do not want in production.
 
-To deploy temBoard in a production environment, follow [installation documentation](server_install.md).
+    **To deploy temBoard in a production environment, follow [installation documentation](server_install.md).**
