@@ -1,17 +1,17 @@
 version: '3'
 
 volumes:
-  data15:
-  run15:
+  data16:
+  run16:
+
+  data14:
+  run14:
 
   data13:
   run13:
 
-  data11:
-  run11:
-
-  data96:
-  run96:
+  data12:
+  run12:
 
 
 services:
@@ -29,7 +29,7 @@ services:
       - "8888:8888"
 
   repository:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -41,45 +41,76 @@ services:
       -c, cluster_name=repository,
     ]
 
-  instance15:
-    image: postgres:15-alpine
+  instance16:
+    image: postgres:16-alpine
     command: [
       postgres,
       -c, shared_preload_libraries=pg_stat_statements,
       -c, log_connections=on,
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
-      -c, cluster_name=instance15,
+      -c, cluster_name=instance16,
     ]
     ports:
       - 5432:5432
     volumes:
-    - data15:/var/lib/postgresql/data
-    - run15:/var/run/postgresql
+    - data16:/var/lib/postgresql/data
+    - run16:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
 
-  agent15:
+  agent16:
     image: dalibo/temboard-agent:8
     volumes:
-    - data15:/var/lib/postgresql/data
-    - run15:/var/run/postgresql/
+    - data16:/var/lib/postgresql/data
+    - run16:/var/run/postgresql/
     - /var/run/docker.sock:/var/run/docker.sock
     links:
-    - instance15:instance15.acme.tld
+    - instance16:instance16.acme.tld
     - ui
     environment: &agent-env
-      TEMBOARD_HOSTNAME: instance15.acme.tld
+      TEMBOARD_HOSTNAME: instance16.acme.tld
       TEMBOARD_UI_URL: https://ui:8888/
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_LOGGING_LEVEL: DEBUG
       PGPASSWORD: postgres
 
+  instance14:
+    image: postgres:14-alpine
+    ports:
+      - 5433:5432
+    volumes:
+      - data14:/var/lib/postgresql/data
+      - run14:/var/run/postgresql
+    environment:
+      POSTGRES_PASSWORD: postgres
+    command: [
+      postgres,
+      -c, shared_preload_libraries=pg_stat_statements,
+      -c, log_connections=on,
+      -c, log_statement=all,
+      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
+      -c, cluster_name=instance14,
+    ]
+
+  agent14:
+    image: dalibo/temboard-agent:8
+    volumes:
+      - data14:/var/lib/postgresql/data
+      - run14:/var/run/postgresql/
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - instance14:instance14.acme.tld
+      - ui
+    environment:
+      <<: *agent-env
+      TEMBOARD_HOSTNAME: instance14.acme.tld
+
   instance13:
     image: postgres:13-alpine
     ports:
-      - 5433:5432
+      - 5434:5432
     volumes:
       - data13:/var/lib/postgresql/data
       - run13:/var/run/postgresql
@@ -107,44 +138,13 @@ services:
       <<: *agent-env
       TEMBOARD_HOSTNAME: instance13.acme.tld
 
-  instance11:
-    image: postgres:11-alpine
-    ports:
-      - 5434:5432
-    volumes:
-      - data11:/var/lib/postgresql/data
-      - run11:/var/run/postgresql
-    environment:
-      POSTGRES_PASSWORD: postgres
-    command: [
-      postgres,
-      -c, shared_preload_libraries=pg_stat_statements,
-      -c, log_connections=on,
-      -c, log_statement=all,
-      -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
-      -c, cluster_name=instance11,
-    ]
-
-  agent11:
-    image: dalibo/temboard-agent:8
-    volumes:
-      - data11:/var/lib/postgresql/data
-      - run11:/var/run/postgresql/
-      - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - instance11:instance11.acme.tld
-      - ui
-    environment:
-      <<: *agent-env
-      TEMBOARD_HOSTNAME: instance11.acme.tld
-
-  instance96:
-    image: postgres:9.6-alpine
+  instance12:
+    image: postgres:12-alpine
     ports:
       - 5435:5432
     volumes:
-      - data96:/var/lib/postgresql/data
-      - run96:/var/run/postgresql
+      - data12:/var/lib/postgresql/data
+      - run12:/var/run/postgresql
     environment:
       POSTGRES_PASSWORD: postgres
     command: [
@@ -153,18 +153,18 @@ services:
       -c, log_connections=on,
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
-      -c, cluster_name=instance96,
+      -c, cluster_name=instance12,
     ]
 
-  agent96:
+  agent12:
     image: dalibo/temboard-agent:8
     volumes:
-      - data96:/var/lib/postgresql/data
-      - run96:/var/run/postgresql/
+      - data12:/var/lib/postgresql/data
+      - run12:/var/run/postgresql/
       - /var/run/docker.sock:/var/run/docker.sock
     links:
-      - instance96:instance96.acme.tld
+      - instance12:instance12.acme.tld
       - ui
     environment:
       <<: *agent-env
-      TEMBOARD_HOSTNAME: instance96.acme.tld
+      TEMBOARD_HOSTNAME: instance12.acme.tld
