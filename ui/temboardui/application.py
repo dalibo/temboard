@@ -130,7 +130,7 @@ def send_mail(
             logger.debug("Authenticating to SMTP server as %s.", login)
             smtp.login(login, password)
 
-        smtp.sendmail(from_addr, emails, msg.as_string())
+        smtp.sendmail(from_addr or "temboard@undefined", emails, msg.as_string())
         smtp.quit()
     except Exception as e:
         raise TemboardUIError(
