@@ -514,6 +514,7 @@ class probe_bgwriter(SqlProbe):
             self.sql = """select * from pg_stat_bgwriter"""
         else:
             self.sql = QUERIES["monitoring-bgwriter"]
+        return True
 
     delta_columns = [
         "checkpoints_timed",
