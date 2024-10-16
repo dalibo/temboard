@@ -451,6 +451,7 @@ def collector(app, address, port, engine=None):
     host_id = instance_id = None
     # Agent monitoring API endpoint
     history_url = "/monitoring/history?limit=100"
+    start = None
     try:
         # Trying to find host_id, instance_id and the datetime of the latest
         # inserted record.
@@ -478,10 +479,8 @@ def collector(app, address, port, engine=None):
         )
 
         if collector_status and collector_status.last_insert:
-            start = (collector_status.last_insert + timedelta(seconds=1)).strftime(
-                "%Y-%m-%dT%H:%M:%SZ"
-            )
-            history_url += "&start=%s" % start
+            start = collector_status.last_insert + timedelta(seconds=1)
+            history_url += "&start=%s" % start.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Finally, let's call /monitoring/history agent API for getting metrics
     # history.
@@ -524,6 +523,20 @@ def collector(app, address, port, engine=None):
         logger.debug("Agent did not send discover ETag.")
 
     if not rows:
+        # If the agent has no data for 5 minutes, consider it failing.
+        if start and start < datetime.utcnow() - timedelta(minutes=5):
+            logger.error(
+                "No monitoring data returned by agent. instance=%s agent=%s",
+                instance,
+                agent_id,
+            )
+            if instance_id:
+                update_collector_status(
+                    worker_session, instance_id, "FAIL", last_pull=datetime.utcnow()
+                )
+                worker_session.commit()
+            worker_session.close()
+            return
         logger.debug("Instance %s returned no monitoring data.", instance)
 
     for row in rows:
