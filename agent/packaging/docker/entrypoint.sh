@@ -82,7 +82,7 @@ register() {
 	temboard-agent register \
 		--host "${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE}" \
 		--port "${TEMBOARD_REGISTER_PORT-2345}" \
-		--groups "${TEMBOARD_GROUPS-default}"
+		--environment "${TEMBOARD_ENVIRONMENT-default}"
 }
 
 wait-for-it "${PGHOST}:${PGPORT}"
