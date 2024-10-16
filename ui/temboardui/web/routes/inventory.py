@@ -163,7 +163,8 @@ def put_instance(address=None, port=None, instance=None):
             g.db_session.execute(instance.disable_plugin(plugin))
     for plugin in new_plugins - current_plugins:
         if plugin not in current_app.temboard.plugins:
-            flask.abort(400, f"Unknown plugin {plugin}.")
+            logger.debug("Plugin not enabled on UI: %s", plugin)
+            continue
         g.db_session.execute(instance.enable_plugin(plugin))
 
     return flask.jsonify(instance.asdict())

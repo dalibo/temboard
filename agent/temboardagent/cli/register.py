@@ -149,6 +149,8 @@ class Register(SubCommand):
                     "agent_port": str(app.config.temboard["port"]),
                     "discover": discover,
                     "discover_etag": discover_etag,
+                    "notify": True,
+                    "comment": "",
                     # Loosely reuse agent plugin as UI plugins.
                     "plugins": discover["temboard"]["plugins"],
                     "environment": args.environment,
