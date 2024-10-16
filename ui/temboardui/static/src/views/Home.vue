@@ -40,7 +40,7 @@ const filteredInstances = computed(() => {
       searchRegex.test(instance.pg_data) ||
       searchRegex.test(instance.pg_port) ||
       searchRegex.test(instance.pg_version) ||
-      searchRegex.text(instance.environment)
+      searchRegex.test(instance.environment)
     );
   });
   let sorted;
