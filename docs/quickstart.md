@@ -9,7 +9,7 @@ We provide a `docker-compose.yml` file to quickly try temBoard with a few Postgr
 You'll need docker compose 1.10+ and docker engine 1.10+.
 
 ``` console
-wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker compose.yml
+wget https://raw.githubusercontent.com/dalibo/temboard/master/docker/docker-compose.yml
 docker compose up
 ```
 
