@@ -13,7 +13,8 @@ SELECT cp.num_timed AS checkpoints_timed,
 	   bg.maxwritten_clean,
 	   backends.buffers_backend,
 	   backends.buffers_backend_fsync,
-	   bg.buffers_alloc
+	   bg.buffers_alloc,
+	   bg.stats_reset
   FROM pg_stat_bgwriter AS bg,
        pg_stat_checkpointer AS cp,
        backends;
