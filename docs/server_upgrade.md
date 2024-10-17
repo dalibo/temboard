@@ -21,29 +21,41 @@ Temboard 9 introduces a major change: The concepts of `user groups` and
 * An environment can have several instances
 * An instance belongs to only one environment
 
-To upgrade a Temboard 8 server, you can use the `temboard migratedb upgrade` command
+To upgrade a Temboard 8 server, you must use the `temboard migratedb upgrade` command.
+
+Stop temBoard service:
+
+``` bash
+sudo systemctl stop temboard
+```
+
+Update the package:
 
 === "RHEL"
 
     ``` bash
-    sudo systemctl stop temboard
     sudo yum install temboard
-    sudo -u temboard temboard migratedb upgrade
-    sudo systemctl start temboard
     ```
 
-=== "Debian / Ubuntu"
+=== "Debian"
 
     ``` bash
-    sudo ystemctl stop temboard
     sudo apt update
     sudo apt install temboard
-    sudo -u temboard temboard migratedb upgrade
-    sudo systemctl start temboard
     ```
 
-Then go the `/settings` page and check that your existing groups were correctly
-transformed into environments.
+Upgrade the database schema:
+
+``` bash
+sudo -u temboard temboard migratedb upgrade
+```
+
+Start temBoard service:
+
+``` bash
+sudo systemctl start temboard
+```
+
 
 ## From 8.1 to 8.2.1
 
@@ -151,7 +163,9 @@ sudo systemctl start temboard
 ```
 
 
-## Upgrade `7.X` to `7.9`
+## Older versions
+
+### Upgrade `7.X` to `7.9`
 
 **Stop service**
 
@@ -186,8 +200,6 @@ sudo systemctl start temboard
     Upon restart, temBoard UI will fetch missing monitoring supervision.
     This may take some time and ressources depending on the time of interruption and the number of monitoring instances.
 
-
-## Older versions
 
 ### Upgrade `6.X` to `7.0`
 
