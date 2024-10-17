@@ -52,8 +52,21 @@ def post_settings(pgconn, new=None):
 
 @bottle.delete("/settings/<name>")
 def delete_settings(pgconn, name):
-    """Reset settings to default."""
-    default_app().push_audit_notification(f"Reseting {name} to default.")
+    """Restore settings to default."""
+    default_app().push_audit_notification(f"Restoring {name} to default.")
+    sql = psycopg2.sql.SQL("""ALTER SYSTEM SET {} TO DEFAULT;""")
+    try:
+        pgconn.execute(sql.format(psycopg2.sql.Identifier(name)))
+    except psycopg2.DatabaseError as e:
+        return HTTPError(406, e.pgerror)
+
+    post_reload(pgconn)
+
+
+@bottle.post("/settings/<name>/reset")
+def post_settings_reset(pgconn, name):
+    """Reset settings to current value."""
+    default_app().push_audit_notification(f"Reseting {name} to current.")
     sql = psycopg2.sql.SQL("""ALTER SYSTEM RESET {};""")
     try:
         pgconn.execute(sql.format(psycopg2.sql.Identifier(name)))
@@ -95,7 +108,7 @@ def post_configuration(pgconn):
         raise HTTPError(406, "Parameter 'settings' not sent.")
     reset = {i["name"] for i in request.json["settings"] if not i["setting"]}
     for name in reset:
-        out = delete_settings(pgconn, name)
+        out = post_settings_reset(pgconn, name)
         if out:
             return out
 
