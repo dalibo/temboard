@@ -19,7 +19,7 @@ In order to run temBoard agent, you need:
     Running an agent on a remote host is not yet supported.
 
 
-## Installation
+## Install
 
 === "RHEL"
 
@@ -100,14 +100,7 @@ In order to run temBoard agent, you need:
     documentation to match this system prefix.
 
 
-## Setup one instance
-
-To finish the installation, you will need to follow the next steps for
-each Postgres instance on the host:
-
--   *configure* the agent;
--   *start* the agent;
--   finally *register* it in the UI.
+## Configure
 
 The quickest way to setup temBoard agent is to use the
 `auto_configure.sh` script, installed in `/usr/share/temboard-agent`.
@@ -149,6 +142,8 @@ Or push the signing using a configuration management service.
 # temboard-agent --config /etc/temboard-agent/14/main/temboard-agent.conf fetch-key
 ```
 
+## Start
+
 Now start the agent using the command suggested by `auto_configure.sh`.
 On most systems now, it\'s a systemd service:
 
@@ -162,9 +157,19 @@ Check that it has started successfully:
 # systemctl status temboard-agent@14-main
 ```
 
-Now you can register the agent in the UI using
-`temboard-agent register`. It needs the configuration file path, the
-agent host and port and the path to the temBoard UI.:
+!!! Note
+
+    temBoard agent OOM score is configured to 15, so that OOM killer will likely kill temBoard agent before Postgres.
+    A good practice is to disable memory overcommit on PostgreSQL host by setting sysctl `vm.overcommit_memory = 2`.
+
+## Register
+
+
+### Register from the monitored instance
+
+Now you can register the agent in the UI using `temboard-agent register`.
+It needs the configuration file path, the agent host and port and the path to the
+temBoard UI.:
 
 ``` console
 # sudo -u postgres temboard-agent -c /etc/temboard-agent/14/main/temboard-agent.conf register --environment default
@@ -175,14 +180,23 @@ admin privileges.
 
 !!! Note
 
-    the `--environment` (or `-e`) option replaces the `--groups` option that was used
-    in version 8
+    the `--environment` (or `-e`) option replaces the `--groups` (or `g`) option that
+    was used in version 8.
 
+### Register from the UI
 
-!!! Note
+Alternatively it is possible to register an instance on the temBoard server.
 
-    temBoard agent OOM score is configured to 15, so that OOM killer will likely kill temBoard agent before Postgres.
-    A good practice is to disable memory overcommit on PostgreSQL host by setting sysctl `vm.overcommit_memory = 2`.
+This can be done either by running the following command line **on the temboard server**:
+
+``` console
+# sudo -u temboard temboard register-instance foo.acme.tld -e default --if-not-exists
+```
+
+( Replace `foo.acme.tld` by the named of the monitored instance )
+
+Or connect to the web interface, go to the `Settings > Instances` page and click on
+the `Add new instance` button.
 
 
 ## It's up!
@@ -192,13 +206,13 @@ and monitoring data being graphed.
 
 You can repeat the above setup for each instance on the same host.
 
-## Cleaning agent installation
+## Clean the agent installation
 
 If you need to clean a single agent installation either to uninstall it
 or to run `auto_configure.sh` again, use `purge.sh` with cluster name.
 
 ``` console
-# /usr/share/temboard-agent/share/purge.sh 12/main
+# /usr/share/temboard-agent/purge.sh 12/main
 Stopping and disabling systemd service.
 Removed /etc/systemd/system/multi-user.target.wants/temboard-agent@12-main.service.
 Cleaning files and directories...
@@ -211,5 +225,7 @@ removed directory '/var/lib/temboard-agent/12/main/'
 temBoard agent 12-main stopped and cleaned.
 #
 ```
+
+( Replace `12/main` with the version and name of the PostgreSQL monitored instance. )
 
 [Dalibo Labs YUM Repository]: https://yum.dalibo.org/labs/
