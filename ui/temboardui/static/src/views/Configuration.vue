@@ -243,7 +243,7 @@ function isSelected(value, setting) {
             {{ change["name"] }}
             <button
               type="button"
-              @click="cancel(change['name'], change['boot_val'])"
+              @click="cancel(change['name'], change['reset_val'])"
               class="btn-cancel btn btn-link btn-sm"
             >
               <span class="fa fa-times" aria-hidden="true"></span> Cancel change
