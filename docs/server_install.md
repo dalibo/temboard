@@ -91,7 +91,7 @@ Keep them for later use by auto-configuration script.
 
 === "Debian"
 
-    [Dalibo Labs APT repository](https://apt.dalibo.org/labs/) servces DEB packages fro temBoard.
+    [Dalibo Labs APT repository](https://apt.dalibo.org/labs/) serves DEB packages fro temBoard.
     Start by enabling Dalibo Labs APT repository.
 
     ``` console
@@ -173,7 +173,7 @@ log in as `admin:admin` and change the password.
     a firewall rule, until the quickstart admin is secured.
 
 
-# Onstances
+# Instances
 
 Once the UI is up and running,
 you can proceed to agent installation and setup on each host you want to manage.
