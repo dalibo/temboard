@@ -269,7 +269,9 @@ Released 14 november 2022.
   before (no limit).
 
 
-## 7.11
+## Older releases
+
+### 7.11
 
 Released on 2022-05-23
 
@@ -287,7 +289,7 @@ Released on 2022-05-23
 - docker: Properly stop container on failure.
 
 
-## 7.10
+### 7.10
 
 Released on 2022-02-22
 
@@ -324,7 +326,7 @@ Released on 2022-02-22
 - Build RHEL8 package with RockyLinux 8.
 
 
-## 7.9
+### 7.9
 
 Released on 2022-01-03
 
@@ -340,34 +342,34 @@ Released on 2022-01-03
 - agent: Fix sysv init script shipped on systemd by debian package.
 
 
-## 7.6
+### 7.6
 
 Released on 2021-02-10
 
 - Fix wrong column name in SQL for chartdata for rollback transactions
     (monitoring) [@pgiraud]
 
-## 7.5
+### 7.5
 
 Released on 2021-01-12
 
 - Return valid JSON if no result is returned by postgres (monitoring)
     [@pgiraud]
 
-## 7.4
+### 7.4
 
 Released on 2020-12-15
 
 - Take userid into account for statdata query [@pgiraud]
 - Fix daterange picker behavior [@pgiraud]
 
-## 7.3
+### 7.3
 
 Released on 2020-10-15
 
 - Commit after alert processing [@bersace]
 
-## 7.2
+### 7.2
 
 Released on 2020-09-29
 
@@ -376,7 +378,7 @@ Released on 2020-09-29
 - Extension btree_gist is not required anymore [@pgiraud]
 - Various packaging fixes [@dlax]
 
-## 7.1
+### 7.1
 
 Released on 2020-09-29
 
@@ -384,7 +386,7 @@ Released on 2020-09-29
 
 - Fixed bug in wheel generation [@pgiraud].
 
-## 7.0
+### 7.0
 
 Released on 2020-09-28
 
@@ -410,8 +412,6 @@ Released on 2020-09-28
 - Agent scripts now use the Python interpreter of their installation, not the
   first found in env, by [@bersace].
 
-
-## Older releases
 
 ### 6.2
 
