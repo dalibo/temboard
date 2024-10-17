@@ -14,13 +14,14 @@ import os
 import socket
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from multiprocessing import cpu_count
 from platform import machine, python_version
 
 from .core import workers
 from .queries import QUERIES
 from .toolkit.errors import UserError
+from .toolkit.utils import JSONEncoder
 from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
 from .version import __version__
 
@@ -120,7 +121,9 @@ class Discover:
             d["postgres"] = old_postgres
 
         # Build JSON to compute ETag.
-        json_text = json.dumps(self.data, indent="  ", sort_keys=True) + "\n"
+        json_text = (
+            json.dumps(self.data, indent="  ", sort_keys=True, cls=JSONEncoder) + "\n"
+        )
         self.json = json_text.encode("utf-8")
         self.etag = compute_etag(self.json)
 
@@ -163,7 +166,6 @@ def collect_memory(data):
 def collect_postgres(data, conn):
     row = conn.queryone(QUERIES["discover"])
     data["postgres"].update(row)
-    data["postgres"]["start_time"] = row["start_time"].strftime("%Y-%m-%dT%H:%M:%S%Z")
 
     for row in conn.query(QUERIES["discover-settings"]):
         t = row["vartype"]
@@ -211,7 +213,7 @@ def collect_system(data):
         uptime_seconds = float(f.readline().split()[0])
         s["start_time"] = datetime.utcfromtimestamp(
             int(time.time() - uptime_seconds)
-        ).strftime("%Y-%m-%dT%H:%M:%S%Z")
+        ).replace(tzinfo=timezone.utc)
 
 
 def collect_versions(data):

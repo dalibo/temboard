@@ -22,9 +22,7 @@ class Status:
             collect_postgres(self.data, conn, discover_data)
         self.data["temboard"]["status"] = "running"
         self.data["temboard"]["pid"] = self.app.pid
-        self.data["temboard"]["start_time"] = self.app.start_datetime.strftime(
-            "%Y-%m-%dT%H:%M:%S%Z"
-        )
+        self.data["temboard"]["start_time"] = self.app.start_datetime
         self.data["system"]["status"] = "running"
         self.data["system"]["start_time"] = discover_data["system"]["start_time"]
         # Collect CPU and memory info in case of hotplug.
