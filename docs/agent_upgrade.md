@@ -19,7 +19,7 @@ Here's the compatibility matrix:
 
 |                      | temBoard Server v8              | temBoard Server v9          |
 |----------------------|---------------------------------|-----------------------------|
-| temBoard Agent v8    | Use `temboard register`         | Compatible                  |
+| temBoard Agent v8    | Compatible                      | Use `temboard register`     |
 | temBoard Agent v9    | Not Supported                   | Compatible                  |
 
 In other words:
@@ -44,6 +44,7 @@ classic commands:
     sudo apt update
     sudo apt install temboard-agent
     ```
+
 
 ## From 8.1 to 8.2.1
 
