@@ -319,8 +319,7 @@ function updateCheck() {
         },
       ],
     }),
-  })
-    .success(function () {
+    success: function () {
       $("#submitFormUpdateCheck").attr("disabled", true);
       $("#modalInfo").html(
         '<div class="alert alert-success" role="alert">SUCCESS: Will be taken into account shortly (next check)</div>',
@@ -329,15 +328,16 @@ function updateCheck() {
       window.setTimeout(function () {
         window.location.reload();
       }, 3000);
-    })
-    .error(function (xhr) {
+    },
+    error: function (xhr) {
       hideWaiter();
       $("#modalInfo").html(
         '<div class="alert alert-danger" role="alert">ERROR: ' +
           escapeHtml(JSON.parse(xhr.responseText).error) +
           "</div>",
       );
-    });
+    },
+  });
 }
 
 const entityMap = {

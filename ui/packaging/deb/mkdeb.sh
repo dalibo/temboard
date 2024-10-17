@@ -95,7 +95,7 @@ python_pkg="${python_pkg/-minimal}"
 deb="$(ls "temboard_${debianv}-${release}_"*.deb)"
 dpkg-deb -I "$deb"
 dpkg-deb -c "$deb"
-apt-get update --yes --quiet
+retry apt-get update --yes --quiet
 apt-get install --yes --no-install-recommends "./$deb"
 (
 	cd /
