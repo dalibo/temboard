@@ -263,6 +263,7 @@ function isSelected(value, setting) {
           name="filter"
           placeholder="Find in settings"
           v-model="queryFilter"
+          @keyup.enter="getConfiguration()"
         />
         <button
           v-if="queryFilter"
