@@ -4,31 +4,40 @@
 CI release job extracts changes from this file and attaches them as GitHub release notes.
 Ensure you use consistent title format.
 -->
+
 ## 9.0.0
 
 **UNRELEASED**
 
 **Breaking changes**
 
-- temBoard agent v8 can't register to v8. Use `temboard register` or upgrade agent to v9.
+- Replace instance groups and user groups by *Environment*.
+  An instance must be in one and single environment.
+- temBoard agent v8 can't register to temBoard UI v9.
+  Use `temboard register` to register a new temBoard v8 agent on a temBoard v9 UI.
+  Or upgrade agent to v9.
   temBoard UI v9 can still manage agent v8.
+- Drop support for 7.x agents.
+- Drop python 2.7 support.
+- Drop rhel7 and buster support, minimum versions are now 6.0.2 for tornado
+and 1.3.2 for sqlalchemy.
+- Drop plugin hotplug. Just restart temBoard UI or agent.
+- Drop daemonization. Use nohup or systemd.
 
 **Other changes**
 
 - Postgres 17 support.
-- ui: Fix deletion of host metrics when removing an instance of multi-instances host.
-- ui: Remove support for 7.x agents.
-- ui: Accept editing an offline instance.
-- ui: Search for .config/temboard.conf.
-- ui: Integrate pev2.
-- agent: Recover admin shutdown, backend terminated, etc.
+- Visualize Plan with PEV2.
 - Packages for Ubuntu 24.04 Noble.
-- Remove python 2.7 support.
-- Remove daemonization. Use nohup or systemd.
-- Dropped pluging hotplug.
-- Drop rhel7 and buster support, minimum versions are now 6.0.2 for tornado
-and 1.3.2 for sqlalchemy.
+- Fix deletion of host metrics when removing an instance of multi-instances host.
+- agent: Recover admin shutdown, backend terminated, etc.
 - Fix error handling in agent plugins.
+- A lot of modernization : moved to Vue3, Bootstrap 5, Flask and ruff.
+- A lot of UI tweaks & fixes.
+- Accept editing instance even when agent is down.
+- Improved postgresql.conf handling and error management.
+- `temboard query-agent` command now accepts `--delete` and `--post` to set HTTP verb.
+- Improve home dashboard performance.
 
 
 ## 8.2.1
