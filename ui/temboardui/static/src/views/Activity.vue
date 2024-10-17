@@ -234,12 +234,7 @@ function reset() {
       <li class="nav-item">
         <a href="#" :class="{ active: mode == 'waiting' }" class="nav-link waiting" @click.prevent="mode = 'waiting'">
           Waiting
-          <div
-            id="waiting-count"
-            class="badge"
-            :class="waitingCount > 0 ? 'bg-warning' : 'bg-light'"
-            style="min-width: 2em"
-          >
+          <div id="waiting-count" class="badge" :class="waitingCount > 0 ? 'bg-warning' : null" style="min-width: 2em">
             {{ waitingCount || "&nbsp;" }}
           </div>
         </a>
@@ -250,7 +245,7 @@ function reset() {
           <div
             id="blocking-count"
             class="badge"
-            :class="blockingCount > 0 ? 'bg-warning' : 'bg-light'"
+            :class="blockingCount > 0 ? 'bg-warning' : null"
             style="min-width: 2em"
           >
             {{ blockingCount || "&nbsp;" }}
