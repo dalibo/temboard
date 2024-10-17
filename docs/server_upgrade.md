@@ -12,6 +12,39 @@ and restart the service manually.
 
 -->
 
+## From 8.2 to 9.0
+
+Temboard 9 introduces a major change: The concepts of `user groups` and
+`instance groups` are replace by a single concept of `environments`
+
+* An environment can have several members (users)
+* An environment can have several instances
+* An instance belongs to only one environment
+
+To upgrade a Temboard 8 server, you can use the `temboard migratedb upgrade` command
+
+=== "RHEL"
+
+    ``` bash
+    sudo systemctl stop temboard
+    sudo yum install temboard
+    sudo -u temboard temboard migratedb upgrade
+    sudo systemctl start temboard
+    ```
+
+=== "Debian / Ubuntu"
+
+    ``` bash
+    sudo ystemctl stop temboard
+    sudo apt update
+    sudo apt install temboard
+    sudo -u temboard temboard migratedb upgrade
+    sudo systemctl start temboard
+    ```
+
+Then go the `/settings` page and check that your existing groups were correctly
+transformed into environments.
+
 ## From 8.1 to 8.2.1
 
 === "RHEL"

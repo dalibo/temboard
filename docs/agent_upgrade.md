@@ -9,6 +9,42 @@ and restart the service manually.
 
 -->
 
+## From 8.2 to 9.0
+
+You need to upgrade the temBoard Server **BEFORE** upgrading the temBoard Agents.
+
+See [temBoard Server Upgrade](server_upgrade.md)
+
+Here's the compatibility matrix:
+
+|                      | temBoard Server v8              | temBoard Server v9          |
+|----------------------|---------------------------------|-----------------------------|
+| temBoard Agent v8    | Use `temboard register`         | Compatible                  |
+| temBoard Agent v9    | Not Supported                   | Compatible                  |
+
+In other words:
+
+* temboard Server v9 can manage temBoard Agents v8 and v9.
+* temboard Server v8 cannot manage temBoard Agents v9
+* temboard Server v8 can manage temBoard Agents v8, however the temBoard Agent v8
+  cannot register anymore to a temBoard v8 Server. Use `temboard register` instead.
+
+Once the temBoard Server has been upgraded to v9, you can upgrade the agents with the
+classic commands:
+
+=== "RHEL"
+
+    ``` bash
+    sudo yum install temboard-agent
+    ```
+
+=== "Debian / Ubuntu"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard-agent
+    ```
+
 ## From 8.1 to 8.2.1
 
 Ensure [temBoard UI is upgraded](server_upgrade.md) first.
