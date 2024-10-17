@@ -84,7 +84,7 @@ mv "$deb" dist/
 dpkg-deb --info "dist/$deb"
 dpkg-deb --show --showformat '$''{Depends}\n' "dist/$deb"
 dpkg-deb --contents "dist/$deb"
-apt-get update --quiet
+retry apt-get update --quiet
 apt-get install --yes "./dist/$deb"
 (
 	cd /
