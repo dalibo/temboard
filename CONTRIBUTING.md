@@ -527,8 +527,8 @@ For stable release, you need write access to Dalibo Labs repositories:
 - Download packages with `make download-packages`.
 - Publish Debian and RPM packages with `make publish-packages`.
 
-To release a v7 minor version, please follow [v7
-documentation](https://temboard.readthedocs.io/en/v7/CONTRIBUTING/#releasing-the-server).
+To release a v8 minor version, please follow [v8
+documentation](https://temboard.readthedocs.io/en/v8/CONTRIBUTING/#releasing-the-server).
 
 Don't forget to update [Compatibility Guide](compatibility_guide.md).
 
