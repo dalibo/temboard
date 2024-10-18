@@ -7,8 +7,6 @@ Ensure you use consistent title format.
 
 ## 9.0.0
 
-**UNRELEASED**
-
 **Breaking changes**
 
 - Replace instance groups and user groups by *Environment*.
