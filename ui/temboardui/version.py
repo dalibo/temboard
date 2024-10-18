@@ -1,7 +1,7 @@
 import sys
 from platform import python_version
 
-__version__ = "9.0rc7"
+__version__ = "9.0rc8"
 
 
 # This output is parsed by tests/conftest.py::pytest_report_header.
