@@ -24,12 +24,11 @@ temBoard UI requires:
 - bash, sudo and psql for setup script.
 
 
-# Prepare repository
+# Prepare
 
-Before installing temBoard UI, ensure you have a running PostgreSQL 9.6+
-cluster. The auto-configuration script works well with a local Postgres cluster,
-running as UNIX user `postgres`. If it's not the case, post-inst script will
-fail gracefully and let you handle the configuration later.
+Before installing temBoard UI, ensure you have a running PostgreSQL 12+ instance.
+The auto-configuration script works well with a local Postgres cluster, running as UNIX user `postgres`.
+If it's not the case, post-inst script will fail gracefully and let you handle the configuration later.
 
 !!! note
 
@@ -43,18 +42,17 @@ A simple way to check if auto configuration should work is to run:
 # sudo -u postgres psql
 ```
 
-If this fails, don't worry. You will have to run auto-configuration script with
-proper parameters, once temBoard package is installed.
+If this fails, find the proper PG* env vars to connect to your Postgres instance.
+Keep them for later use by auto-configuration script.
 
 
-# Installation
+# Install
 
 
 === "RHEL"
 
-    temBoard RPM are published on [Dalibo Labs YUM
-    repository](https://yum.dalibo.org/labs/). temBoard supports RHEL / CentOS 7
-    & 8. Start by enabling Dalibo Labs YUM repository.
+    [Dalibo Labs YUM repository](https://yum.dalibo.org/labs/) serves latest stable RPM for temBoard.
+    Start by enabling Dalibo Labs YUM repository.
 
     ``` console
     $ sudo yum install -y epel-release
@@ -93,11 +91,8 @@ proper parameters, once temBoard package is installed.
 
 === "Debian"
 
-    temBoard debs are published on [Dalibo Labs APT
-    repository](https://apt.dalibo.org/labs/). temBoard supports Debian *bookworm*,
-    *bullseye* and *buster*. Start by enabling Dalibo Labs APT
-    repository.
-
+    [Dalibo Labs APT repository](https://apt.dalibo.org/labs/) serves DEB packages fro temBoard.
+    Start by enabling Dalibo Labs APT repository.
 
     ``` console
     # echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
@@ -116,14 +111,15 @@ proper parameters, once temBoard package is installed.
 === "PyPI"
 
     temBoard UI wheel and source tarball are published on
-    [PyPI](https://pypi.org/project/temboard). Installing from PyPI requires
-    Python3.6, pip and wheel. It's better to have a recent version of pip.
+    [PyPI](https://pypi.org/project/temboard).
+    Installing from PyPI requires Python3.6, pip and wheel.
+    It's better to have a recent version of pip.
 
-    Due to the [binary strategy of
-    psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/)
-    project, you have to choose how to install psycopg2: either from source (using
-    `psycopg2` package) or from binary (using `psycopg2-binary` package). You can
-    also use distribution package instead.
+    Due to the [binary strategy of psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/) project,
+    you have to choose how to install psycopg2:
+    either from source (using `psycopg2` package)
+    or from binary (using `psycopg2-binary` package).
+    You can also use distribution package instead.
 
     ``` console
     $ sudo pip install temboard psycopg2-binary
@@ -135,32 +131,28 @@ proper parameters, once temBoard package is installed.
         temBoard installation prefix may differ from one system to another, e.g. `/usr`
         or `/usr/local`. Please adapt the documentation to match this system prefix.
 
-    Now run manually the auto configuration script:
 
-    ``` console
-    $ sudo /usr/local/share/temboard/auto_configure.sh
-    ```
+# Configure
 
+Call the script `/usr/share/temboard/auto_configure.sh`
+with libpq-style envvars (eg. `sudo PGPORT=5433 /usr/share/temboard/auto_configure.sh`)
+required to connect to repository.
 
-# Post installation
-
-If postinst auto-configuration fails, you can still relaunch it with proper
-parameters. Call the script `/usr/share/temboard/auto_configure.sh` with
-libpq-style envvars (eg. `sudo PGPORT=5433 /usr/share/temboard/auto_configure.sh`).
-
-The postinst script creates Postgres role, database and tables, as
-well as self-signed SSL certificate, UNIX user, configuration file and systemd
-unit. A few steps are left to the administrator.
+The postinst script creates
+self-signed SSL certificate, UNIX user, configuration file and systemd unit,
+as well as Postgres role, database and tables for temBoard UI.
+A few steps are left to the administrator.
 
 The configuration file `/etc/temboard/temboard.conf` should suit most people.
 See [Configuration](server_configure.md) and customize if default port
-or directories don't match your local needs, or increase security by changing
-the certificate and the cookie secret key.
+or directories don't match your local needs,
+or increase security by changing the certificate and the cookie secret key.
 
 !!! danger "Default admin user"
 
-    By default, temBoard is set up with a dumb `admin` user with password `admin`. This
-    is totally unsecured. It is **strongly recommended to change default password**! See below.
+    By default, temBoard is set up with a dumb `admin` user with password `admin`.
+    This is totally unsecured.
+    It is **strongly recommended to change default password**! See below.
 
 First, start temboard using `systemctl enable --now temboard`.
 
@@ -172,18 +164,20 @@ $ sudo firewall-cmd --reload
 ```
 
 Adapt to your setup.
-Then point your browser to <https://temboard_server_host:8888>, log in as
-`admin:admin` and change the password.
+Then point your browser to <https://temboard_server_host:8888>,
+log in as `admin:admin` and change the password.
 
 !!! note "Using firewall"
+
     To increase security, you may protect temBoard using
     a firewall rule, until the quickstart admin is secured.
 
-# Install agents
 
-Once the UI is up and running, you can proceed to agent installation and setup
-on each host you want to manage. See the dedicated [agent installation](agent_install.md)
-documentation for this.
+# Instances
 
-Then, when all instances show up in temBoard, go further with the [How
-to](temboard-howto.md).
+Once the UI is up and running,
+you can proceed to agent installation and setup on each host you want to manage.
+See the dedicated [agent installation](agent_install.md) documentation for this.
+
+Then, when all instances show up in temBoard,
+go further with the [Howto](temboard-howto.md).

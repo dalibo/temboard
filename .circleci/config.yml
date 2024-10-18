@@ -66,7 +66,7 @@ workflows:
         matrix:
           parameters:
             dist: [rockylinux8]
-            pgversion: ["13"]
+            pgversion: ["12"]
     - e2e:
         <<: *e2e
         matrix:
@@ -441,9 +441,9 @@ jobs:
               # Point latest to this build
               docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:latest
               docker tag dalibo/temboard:snapshot dalibo/temboard:latest
-              # Point 8 to this build.
-              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:8
-              docker tag dalibo/temboard:snapshot dalibo/temboard:8
+              # Point 9 to this build.
+              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:9
+              docker tag dalibo/temboard:snapshot dalibo/temboard:9
             fi
           fi
 

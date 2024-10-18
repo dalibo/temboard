@@ -1,5 +1,5 @@
-This page document a quick way of installing the agent. For production
-system, you may want to use trusted certificate and other enhancement.
+This page document a quick way of installing the agent.
+For production system, you may want to use trusted certificate and other enhancement.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ In order to run temBoard agent, you need:
 - openssl.
 - Python 3.6+. Check with `python --version`.
 - bash, curl and sudo for setup script.
-- A running temBoard UI.
+- A [running temBoard UI](server_install.md).
 
 !!! note
 
@@ -125,12 +125,6 @@ The script shows you some important information for the next steps:
 - agent TCP port (usually 2345 if this is your first agent on this host).
 - the path to the main agent configuration file like
   `/etc/temboard-agent/14/main/temboard-agent.conf`
-
-!!! Note
-
-    Some parts of the configuration are in
-    `/etc/temboard-agent/14/main/temboard-agent.conf.d/auto.conf` too and
-    override the main configuration file.
 
 Next you need to fetch the signing public key of temBoard UI.
 An agent accepts requests from a single temBoard UI.

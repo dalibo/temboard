@@ -21,6 +21,7 @@ You can use it to monitor, optimize or configure multiple PostgreSQL instances.
 - Track bloat and schedule vacuum on tables and indexes.
 - Track slow queries.
 - Tweak PostgreSQL configuration.
+- Visualize Query Plan.
 
 All of this from a web interface.
 

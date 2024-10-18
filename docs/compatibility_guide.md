@@ -1,4 +1,4 @@
-Temboard is designed to interact with many components: systemd, PostgreSQL,
+temBoard is designed to interact with many components: systemd, PostgreSQL,
 agents, etc.
 
 As we are trying to find the right balance between innovation and backward
@@ -13,8 +13,8 @@ components:
 |                |                                            |
 | -------------- | -------------------------------------------|
 | Linux          | Debian 11 and 12, Ubuntu 22.04 and 24.04, RHEL 8 and 9  |
-| Python         | 3.9+                                       |
-| Postgres       | 13 to 17                                   |
+| Python         | 3.6+                                       |
+| Postgres       | 12 to 17                                   |
 | Temboard Agent | 8.2 and 9.x                                |
 
 Additional notes:
