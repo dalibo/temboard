@@ -371,7 +371,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
     notify = worker_session.execute(
         instance.select_email_and_phone_for_notify()
     ).fetchone()
-    if len(notify.emails):
+    if notify.emails:
         send_mail(
             smtp_host,
             smtp_port,
@@ -384,7 +384,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
             smtp_from_addr,
         )
 
-    if len(notify.phones):
+    if notify.phones:
         send_sms(app.config.notifications, body, notify.phones)
 
 
