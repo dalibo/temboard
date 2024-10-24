@@ -43,7 +43,3 @@ div.injected {
   height: 2.4rem;
   line-height: 2.4rem;
 }
-
-th:empty {
-  display: none;
-}
