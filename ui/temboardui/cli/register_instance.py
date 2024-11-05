@@ -163,7 +163,11 @@ class RegisterInstance(SubCommand):
             )
         logger.debug("Enabling plugins %s.", ", ".join(plugins))
 
-        environment = session.execute(orm.Environment.get(args.environment)).fetchone()
+        environment = (
+            orm.Environment.get(args.environment).with_session(session).one_or_none()
+        )
+        if not environment:
+            raise UserError("Unknown environment %s." % args.environment)
         instance = (
             orm.Instance.insert(
                 agent_address=args.agent_address,
@@ -172,7 +176,7 @@ class RegisterInstance(SubCommand):
                 discover_etag=discover_etag,
                 notify=args.notify,
                 comment=args.comment,
-                environment=environment,
+                environment=environment.name,
             )
             .with_session(session)
             .one()
@@ -203,9 +207,15 @@ class RegisterInstance(SubCommand):
                 )
         else:
             logger.info(
-                "Scheduler is not running." "Start temBoard server to collect metrics."
+                "Scheduler is not running. Start temBoard server to collect metrics."
             )
 
+        # Fetch instance from database to get the full object (environment, plugins).
+        instance = (
+            orm.Instance.get(args.agent_address, args.agent_port)
+            .with_session(session)
+            .one()
+        )
         self.output_instance(instance)
 
         logger.info("Browse instance at %s.", instance.dashboard_url(self.app))
