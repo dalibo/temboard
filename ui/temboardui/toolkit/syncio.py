@@ -7,19 +7,20 @@ logger = logging.getLogger(__name__)
 
 
 class Service:
-    # Mixin for scheduler and worker pool services
+    # Mixin for scheduler, worker pool and agent httpd services
     # Manages sync loop and signals.
     name = None
 
     def __init__(self, app):
         self.app = app
+        self.ppid = None
 
     def __str__(self):
         return self.name
 
     # interface for services.run
     def create_loop(self):
-        return Loop(self)
+        return Loop(self, self.ppid)
 
     # Interface for SignalMultiplexer
     def sighup_handler(self, *a):
@@ -27,10 +28,12 @@ class Service:
 
 
 class Loop:
-    def __init__(self, service):
+    def __init__(self, service, ppid=None):
         self.service = service
         self.signalmngr = SignalManager()
         self.running = False
+        # If not None, enable parent pid check.
+        self.ppid = ppid
 
     def __repr__(self):
         return "<Loop %s>" % self.service
@@ -49,10 +52,9 @@ class Loop:
     # Interface for services.run
     def start(self):
         with self.signalmngr:
-            ppid = os.getppid()
             self.running = True
             while self.running:
-                if self._stop_with_parent(ppid):
+                if self._stop_with_parent():
                     break
 
                 self.service.accept()
@@ -63,10 +65,13 @@ class Loop:
     def close(self):
         self.running = False
 
-    def _stop_with_parent(self, ppid):
-        self.running = os.getppid() == ppid
+    def _stop_with_parent(self):
+        if self.ppid is None:  # Don't check parent.
+            return
+        # If ppid changed (parent exited), stop the loop.
+        self.running = os.getppid() == self.ppid
         if not self.running:
-            logger.info("Parent process exited. Exiting. ppid=%s", ppid)
+            logger.info("Parent process exited. Exiting. ppid=%s", self.ppid)
         return not self.running
 
 

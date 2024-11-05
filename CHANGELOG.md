@@ -8,6 +8,7 @@ Ensure you use consistent title format.
 ## UNRELEASED
 
 - Fix register-instance CLI.
+- Fix running daemonized.
 - Raise proper error on unknown environment.
 - Improve alerting performance.
 
@@ -27,7 +28,7 @@ Ensure you use consistent title format.
 - Drop rhel7 and buster support, minimum versions are now 6.0.2 for tornado
 and 1.3.2 for sqlalchemy.
 - Drop plugin hotplug. Just restart temBoard UI or agent.
-- Drop daemonization. Use nohup or systemd.
+- Drop daemonization. Use systemd.
 
 **Other changes**
 

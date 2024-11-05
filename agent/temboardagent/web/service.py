@@ -15,12 +15,6 @@ logger = logging.getLogger(__package__)
 class HTTPDService(syncio.Service):
     name = "web"
 
-    def __init__(self, app):
-        self.app = app
-
-    def __str__(self):
-        return self.name
-
     # for services.run
     def setup(self, *_, **__):
         ServerHandler.server_software = "temBoard-agent/%s" % __version__
