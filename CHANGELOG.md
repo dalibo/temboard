@@ -5,6 +5,11 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
+## UNREALEASED
+
+- Fix register-instance CLI.
+- Raise proper error on unknown environment.
+
 ## 9.0.0
 
 **Breaking changes**
