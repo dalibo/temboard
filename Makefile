@@ -45,7 +45,10 @@ restart-selenium:  #: Restart selenium development container.
 
 venv-%:
 	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
-	dev/venv-py$*/bin/pip install -U pip   # Upgrade pip to install cryptography
+	# Upgrade pip to install cryptography
+	# DEPRECATED: Once we drop Py 3.6 support, upgrade pip to 25 and
+	# use setuptools 64 for editable.
+	dev/venv-py$*/bin/pip install -U 'pip<24'
 	dev/venv-py$*/bin/python --version  # smoke test
 	dev/venv-py$*/bin/pip --version  # smoke test
 
