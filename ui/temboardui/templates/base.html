@@ -162,10 +162,10 @@
             </ul>
           </div>
         </div>
-        {% if instance.status %}
-        {% set s = instance.status %}
-        {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
-        <div class="main ms-auto px-3 pt-3 position-relative">
+        <div class="main ms-auto p-3 position-relative">
+          {% if instance.status %}
+          {% set s = instance.status %}
+          {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
           <div class="alert alert-warning" role="alert" >
             <h2>
               <i class="fa fa-warning fa-fw"></i>WARNING
@@ -174,10 +174,8 @@
             </h2>
               <p> Some changes are pending and PostgreSQL should be restarted.</p>
           </div>
-        </div>
-        {% end %}
-        {% end %}
-        <div class="main ms-auto p-3 position-relative">
+          {% end %}
+          {% end %}
           <div id="errorApp" class="row justify-content-center">
             <div class="col col-xl-6 col-10" v-cloak>
               <Error ref="error"></Error>
