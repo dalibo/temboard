@@ -53,16 +53,18 @@ class Migrator:
             raise Exception("Unknown revision.")
 
         if self.missing_versions:
-            logger.info("Database version is %s.", self.current_version)
-            logger.info("Target version is %s.", self.target_version)
-            logger.debug(
-                "Database is %s version(s) behind.", len(self.missing_versions)
+            logger.info(
+                "Database is %s version(s) behind. current=%s wanted=%s",
+                len(self.missing_versions),
+                current,
+                self.target_version,
             )
+
             raise UserError(
                 "Database is not up to date." " Please upgrade with temboard migratedb."
             )
         else:
-            logger.info("temBoard database is up-to-date.")
+            logger.info("temBoard database is up-to-date. revision=%s", current)
 
     def inspect_current_version(self, conn):
         with conn.cursor() as cur:
@@ -98,7 +100,6 @@ class Migrator:
                     """)
                     )
                     (self.current_version,) = cur.fetchone()
-                logger.debug("temBoard database revision is %s.", self.current_version)
         conn.commit()
         return self.current_version
 

@@ -490,7 +490,6 @@ class SchedulerService(syncio.Service):
                     task.status = task_from_db.status
 
                     self.scheduler.task_list.rm(task.id)
-                    logger.debug("Overwriting task %s.", task.id)
 
                 self.scheduler.task_list.push(task)
             except StorageEngineError as e:
@@ -834,7 +833,6 @@ class WorkerPoolService(syncio.Service):
             conf["function"] = wrapper_name
 
             # Add to current workers
-            logger.debug("Register worker %s", conf["name"])
             self.worker_pool.add(conf)
 
 

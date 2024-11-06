@@ -83,7 +83,7 @@ class BaseApplication:
         parser = configparser.RawConfigParser()
         configfile = self.find_config_file()
         if configfile is None:
-            logger.info("No config file found.")
+            logger.warning("No config file found.")
         else:
             logger.info("Using config file %s.", configfile)
             self.config.temboard["configfile"] = configfile
@@ -206,7 +206,6 @@ class BaseApplication:
 
         plugins = self.create_plugins()
         if plugins:
-            logger.debug("Reading plugins configuration.")
             self.config.load(**self.config_sources)
         self.load_plugins(plugins)
 
@@ -237,9 +236,7 @@ class BaseApplication:
             self.read_file(parser, filename)
 
     def fetch_plugin(self, name):
-        logger.debug("Looking for plugin %s.", name)
         for ep in pkg_resources.iter_entry_points(self.with_plugins, name):
-            logger.debug("Found plugin %s.", ep)
             try:
                 return ep.load()
             except Exception:
@@ -268,7 +265,6 @@ class BaseApplication:
 
     def load_plugins(self, plugins):
         for name in plugins:
-            logger.debug("Loading plugin %s.", name)
             self.plugins[name].load()
 
     def reload(self):
@@ -308,7 +304,7 @@ class BaseApplication:
         retcode = 1
         try:
             setup_logging(debug=self.debug)
-            logger.info("Starting %s %s.", self.PROGRAM, self.VERSION)
+            logger.info("Starting %s. version=%s", self.PROGRAM, self.VERSION)
             retcode = self.main(argv, environ)
         except KeyboardInterrupt:
             logger.info("Interrupted.")

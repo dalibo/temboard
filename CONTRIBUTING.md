@@ -377,6 +377,10 @@ $ npm run dev
 Now restart temBoard UI configured with ViteJS dev server base URL from
 environment variable `VITEJS`:
 
+!!! warning
+
+    You must execute temBoard at top level directory, not in `ui/` directory.
+
 ``` console
 $ VITEJS=http://localhost:5173 temboard --debug
 ...
