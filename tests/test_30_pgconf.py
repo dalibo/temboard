@@ -1,4 +1,5 @@
 import pytest
+from fixtures.utils import retry_fast
 from selenium.webdriver.support.select import Select
 
 
@@ -126,13 +127,14 @@ def test_enum(browse_pgconf, browser, psql):
     browser.select("#inputSearchSettings").send_keys(param)
     browser.select("#buttonSearchSettings").click()
 
-    out = psql("-Abt", c=f"SHOW {param};")
-    current_value = out.strip()
-    assert "default" == current_value
+    for attempt in retry_fast(AssertionError):
+        with attempt:
+            current = psql("-Abt", c=f"SHOW {param};").strip()
+            assert "default" == current
 
     enum_selector = Select(browser.select(f"select[name={param}]"))
     selected = enum_selector.first_selected_option.get_attribute("value")
-    assert current_value == selected
+    assert current == selected
 
     browser.absent(f"#buttonResetDefault_{param}")
 
@@ -140,7 +142,9 @@ def test_enum(browse_pgconf, browser, psql):
 
     browser.select(".main form button[type=submit]").click()
 
-    out = psql("-Abt", c=f"SHOW {param};")
-    assert "verbose" == out.strip()
+    for attempt in retry_fast(AssertionError):
+        with attempt:
+            current = psql("-Abt", c=f"SHOW {param};").strip()
+            assert "verbose" == current
 
     browser.select(f"#buttonResetDefault_{param}")

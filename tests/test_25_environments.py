@@ -1,4 +1,5 @@
 import pytest
+from fixtures.utils import retry_fast
 from selenium.webdriver.common.by import By
 
 
@@ -33,7 +34,11 @@ def test_update(prod, browser):
 def test_add_member(alice_member, browse_prod_members):
     browser = browse_prod_members
 
-    assert "alice" in browser.select("tbody tr:nth-child(1) td:nth-child(1)").text
+    for attempt in retry_fast(AssertionError):
+        with attempt:
+            assert (
+                "alice" in browser.select("tbody tr:nth-child(1) td:nth-child(1)").text
+            )
 
 
 def test_remove_member(alice_member, browse_prod_members):
