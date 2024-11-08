@@ -173,6 +173,8 @@ class BackgroundManager:
         if hasattr(service, "command"):
             execute(service)
         else:
+            # Enable parent pid check.
+            service.ppid = os.getppid()
             os._exit(run(service))
 
     def _read_pids(self):
@@ -263,7 +265,7 @@ class BackgroundManager:
                 if pid == 0:  # Still alive
                     continue
             except ChildProcessError:
-                pass
+                pid = self.pids.get("name", "<unknown>")
 
             logger.warning(
                 "Background service dead. Restarting. service=%s pid=%s", name, pid
