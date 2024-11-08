@@ -265,7 +265,7 @@ class BackgroundManager:
                 if pid == 0:  # Still alive
                     continue
             except ChildProcessError:
-                pass
+                pid = self.pids.get("name", "<unknown>")
 
             logger.warning(
                 "Background service dead. Restarting. service=%s pid=%s", name, pid
