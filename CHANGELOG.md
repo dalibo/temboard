@@ -7,6 +7,8 @@ Ensure you use consistent title format.
 
 ## UNRELEASED
 
+You need manual steps when upgrading UI.
+
 - Fix register-instance CLI.
 - Fix running daemonized.
 - Raise proper error on unknown environment.
