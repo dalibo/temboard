@@ -13,6 +13,7 @@ You need manual steps when upgrading UI.
 - Fix running daemonized.
 - Raise proper error on unknown environment.
 - Improve alerting performance.
+- Support Tornado 6.4 on RHEL9.
 
 
 ## 9.0.0

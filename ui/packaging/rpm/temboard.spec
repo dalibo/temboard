@@ -24,7 +24,7 @@ Requires:      python3-flask
 Requires:      python3-future
 Requires:      python3-psycopg2 > 2.8
 Requires:      python3-setuptools
-Requires:      python3-tornado
+Requires:      python3-tornado < 6.5
 %if 0%{?rhel} < 8
 Requires:      python36-cryptography
 Requires:      python36-dateutil

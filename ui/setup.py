@@ -1,15 +1,11 @@
 import os
 
-from setuptools import __version__ as setuptoolsv
 from setuptools import find_packages, setup
 
 # Load version number
 __version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
 exec(open(os.path.join(setup_path, "temboardui", "version.py")).read())
-
-if setuptoolsv < "1.0":
-    __version__ = __version__.replace("+", ".")
 
 install_requires = [
     "cryptography",
@@ -22,8 +18,7 @@ install_requires = [
     # the user or package manager to ensure psycopg2 dependency. See
     # documentation.
     "sqlalchemy>=1.3.2,<2",
-    # _verify_cert in SSLIOStream is removed on Tornado 6.4+ on Python 3+.
-    "tornado>=6.0.2,<6.4",
+    "tornado>=6.0.2,<6.5",
     "future",
 ]
 
