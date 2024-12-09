@@ -156,9 +156,13 @@ class EasySSLIOStream(SSLIOStream):
             return self.close(exc_info=True)
         else:
             self._ssl_accepting = False
-            if not self._verify_cert(self.socket.getpeercert()):
-                self.close()
-                return
+            if hasattr(self, "_verify_cert"):
+                # DEPRECATED: Tornado 6.3 / Python 3.8 ?
+                if not self._verify_cert(self.socket.getpeercert()):
+                    self.close()
+                    return
+            else:
+                assert ssl.HAS_SNI  # From Tornado 6.4
             try:
                 self._run_ssl_connect_callback()  # Tornado < 6
             except AttributeError:
