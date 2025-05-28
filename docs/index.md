@@ -36,7 +36,7 @@ follow the [quickstart](quickstart.md) guide for more details.
 
 # Install
 
-temBoard requires Python 3 and supports PostgreSQL 9.6 to 15.
+temBoard requires Python 3 and supports PostgreSQL 13 to 17.
 temBoard is composed of 2 services:
 
 - A lightweight agent to install on every PostgreSQL server to monitor and manage.

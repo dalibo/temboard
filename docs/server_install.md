@@ -26,7 +26,7 @@ temBoard UI requires:
 
 # Prepare
 
-Before installing temBoard UI, ensure you have a running PostgreSQL 12+ instance.
+Before installing temBoard UI, ensure you have a running PostgreSQL 13+ instance.
 The auto-configuration script works well with a local Postgres cluster, running as UNIX user `postgres`.
 If it's not the case, post-inst script will fail gracefully and let you handle the configuration later.
 

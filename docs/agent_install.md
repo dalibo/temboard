@@ -6,7 +6,7 @@ For production system, you may want to use trusted certificate and other enhance
 In order to run temBoard agent, you need:
 
 - Linux as underlying OS.
-- PostgreSQL 9.6+, listening on UNIX socket. Check with
+- PostgreSQL 13+, listening on UNIX socket. Check with
   `sudo -u postgres psql`.
 - openssl.
 - Python 3.6+. Check with `python --version`.
@@ -24,7 +24,7 @@ In order to run temBoard agent, you need:
 === "RHEL"
 
     temBoard RPM are published on [Dalibo Labs YUM repository]. temBoard agent supports
-    RHEL/CentOS 7 and 8. Start by enabling Dalibo Labs YUM repository.
+    RHEL/CentOS 8 and 9. Start by enabling Dalibo Labs YUM repository.
 
     ``` console
     $ sudo yum install -y epel-release
@@ -124,7 +124,7 @@ The script shows you some important information for the next steps:
 
 - agent TCP port (usually 2345 if this is your first agent on this host).
 - the path to the main agent configuration file like
-  `/etc/temboard-agent/14/main/temboard-agent.conf`
+  `/etc/temboard-agent/17/main/temboard-agent.conf`
 
 Next you need to fetch the signing public key of temBoard UI.
 An agent accepts requests from a single temBoard UI.
@@ -133,7 +133,7 @@ Use `temboard-agent fetch-key` to download the signing key from the configured U
 Or push the signing using a configuration management service.
 
 ``` console
-# temboard-agent --config /etc/temboard-agent/14/main/temboard-agent.conf fetch-key
+# temboard-agent --config /etc/temboard-agent/17/main/temboard-agent.conf fetch-key
 ```
 
 ## Start
@@ -142,13 +142,13 @@ Now start the agent using the command suggested by `auto_configure.sh`.
 On most systems now, it\'s a systemd service:
 
 ``` console
-# systemctl enable --now temboard-agent@14-main
+# systemctl enable --now temboard-agent@17-main
 ```
 
 Check that it has started successfully:
 
 ``` console
-# systemctl status temboard-agent@14-main
+# systemctl status temboard-agent@17-main
 ```
 
 !!! Note
@@ -166,7 +166,7 @@ It needs the configuration file path, the agent host and port and the path to th
 temBoard UI.:
 
 ``` console
-# sudo -u postgres temboard-agent -c /etc/temboard-agent/14/main/temboard-agent.conf register --environment default
+# sudo -u postgres temboard-agent -c /etc/temboard-agent/17/main/temboard-agent.conf register --environment default
 ```
 
 `temboard-agent register` will ask you credentials to the temBoard UI with
@@ -206,20 +206,20 @@ If you need to clean a single agent installation either to uninstall it
 or to run `auto_configure.sh` again, use `purge.sh` with cluster name.
 
 ``` console
-# /usr/share/temboard-agent/purge.sh 12/main
+# /usr/share/temboard-agent/purge.sh 17/main
 Stopping and disabling systemd service.
-Removed /etc/systemd/system/multi-user.target.wants/temboard-agent@12-main.service.
+Removed /etc/systemd/system/multi-user.target.wants/temboard-agent@17-main.service.
 Cleaning files and directories...
-removed '/etc/temboard-agent/12/main/temboard-agent.conf'
-removed '/etc/temboard-agent/12/main/temboard-agent.conf.d/auto.conf'
-removed directory '/etc/temboard-agent/12/main/temboard-agent.conf.d'
-removed '/etc/temboard-agent/12/main/users'
-removed directory '/etc/temboard-agent/12/main/'
-removed directory '/var/lib/temboard-agent/12/main/'
-temBoard agent 12-main stopped and cleaned.
+removed '/etc/temboard-agent/17/main/temboard-agent.conf'
+removed '/etc/temboard-agent/17/main/temboard-agent.conf.d/auto.conf'
+removed directory '/etc/temboard-agent/17/main/temboard-agent.conf.d'
+removed '/etc/temboard-agent/17/main/users'
+removed directory '/etc/temboard-agent/17/main/'
+removed directory '/var/lib/temboard-agent/17/main/'
+temBoard agent 17-main stopped and cleaned.
 #
 ```
 
-( Replace `12/main` with the version and name of the PostgreSQL monitored instance. )
+( Replace `17/main` with the version and name of the PostgreSQL monitored instance. )
 
 [Dalibo Labs YUM Repository]: https://yum.dalibo.org/labs/
