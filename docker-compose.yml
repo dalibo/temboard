@@ -1,12 +1,14 @@
-version: '3.8'
-
 # For consistency, each service stanza a configured in order : data (image,
 # volumes, etc.), network and process (user, env, command, etc.).
+#
+# Note: since image postgres:18-alpine the PGDATA directory has change and is
+# now /var/lib/postgresql/{version}/docker
+# https://hub.docker.com/_/postgres#pgdata
 
 services:
   # The Postgres server to store temBoard data.
   repository:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     ports: ["5432:5432"]
     environment:
       POSTGRES_USER: postgres
@@ -28,9 +30,9 @@ services:
 
   # First instance.
   postgres0:
-    image: &postgres_image postgres:17-alpine
+    image: &postgres_image postgres:18-alpine
     volumes:
-    - data0:/var/lib/postgresql/data
+    - data0:/var/lib/postgresql/18/docker
     - run0:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
@@ -64,7 +66,7 @@ services:
       context: agent/
       dockerfile: packaging/docker/Dockerfile.dev
     volumes:
-    - data0:/var/lib/postgresql/data
+    - data0:/var/lib/postgresql/18/docker
     - run0:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
@@ -74,6 +76,7 @@ services:
       # container.
       HISTFILE: /usr/local/src/temboard/dev/agent-bash_history
       PGUSER: postgres
+      PGDATA: /var/lib/postgresql/18/docker
       PSQL_HISTORY: /usr/local/src/temboard/dev/agent-psql_history
       # Send TEMBOARD_UI_URL from .env file
       TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
@@ -93,7 +96,7 @@ services:
   postgres1:
     image: *postgres_image
     volumes:
-    - data1:/var/lib/postgresql/data
+    - data1:/var/lib/postgresql/18/docker
     - run1:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
@@ -123,7 +126,7 @@ services:
     build:
       <<: *build-agent
     volumes:
-    - data1:/var/lib/postgresql/data
+    - data1:/var/lib/postgresql/18/docker
     - run1:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/

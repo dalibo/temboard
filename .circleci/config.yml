@@ -312,7 +312,7 @@ jobs:
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["18", "17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>
