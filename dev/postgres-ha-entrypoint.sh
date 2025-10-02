@@ -95,7 +95,7 @@ _ha_init_secondary() {
 
 _ha_failback() {
     # offline pg_demote.
-    touch "$PGADATA/standby.signal"
+    touch "$PGDATA/standby.signal"
     echo "Waiting for primary to come up."
     _retry env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c "SELECT pg_switch_wal();"
     echo "Rewind pgdata to failback."
