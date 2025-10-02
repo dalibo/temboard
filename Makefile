@@ -9,7 +9,7 @@ apropos:  #: Show dev Makefile help.
 	@echo "See docs/CONTRIBUTING.md for details."
 	@echo
 
-DOCKER_MAX_VERSION=28
+DOCKER_MAX_VERSION=29
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
