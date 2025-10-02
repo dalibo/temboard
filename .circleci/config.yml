@@ -351,7 +351,12 @@ jobs:
         command: tests/install-all.sh
     - run:
         name: Install test dependencies
-        command: pip3 install -r dev/requirements.txt
+        command: |
+          if type -p uv; then
+            uv pip install -r dev/requirements.txt
+          else
+            pip3 install -r dev/requirements.txt
+          fi
     - run:
         name: Run pytest
         command: |
