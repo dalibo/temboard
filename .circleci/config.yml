@@ -49,6 +49,12 @@ workflows:
         - stage1-pkg-<< matrix.dist >>
         matrix:
           parameters:
+            pgversion: ["18"]
+            dist: [rockylinux9]
+    - e2e:
+        <<: *e2e
+        matrix:
+          parameters:
             pgversion: ["17"]
             dist: [bookworm]
     - e2e:
