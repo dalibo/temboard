@@ -1,12 +1,10 @@
 # This compose file requires a few environment variables, see root Makefile for
 # details.
-version: '3.8'
-
 networks:
   # By default, hook containers in network managed by root docker-compose.yml
   default:
-    external:
-      name: "${NETWORK}"
+    name: "${NETWORK}"
+    external: true
 
 volumes:
   data:
@@ -28,11 +26,19 @@ services:
       - type: bind
         source: ../ui/share/sql/pg_stat_statements-create-extension.sql
         target: /docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -U postgres -c \"SELECT 'HAS_STATEMENTS' FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pg_stat_statements';\""]
+      interval: 2s
+      timeout: 2s
+      retries: 5
 
   agent:
     image: dalibo/temboard-agent:dev
     ports:
       - ${TEMBOARD_REGISTER_PORT}:2345
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
