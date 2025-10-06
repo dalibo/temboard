@@ -19,7 +19,6 @@ install_requires = [
     # documentation.
     "sqlalchemy>=1.3.2,<2",
     "tornado>=6.0.2,<6.5",
-    "future",
 ]
 
 SETUP_KWARGS = dict(

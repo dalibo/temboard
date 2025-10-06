@@ -1,7 +1,5 @@
 import operator
 
-from past.utils import old_div
-
 
 def bootstrap_checks(hostinfo):
     # Default checks with thresholds to run against monitoring data
@@ -121,9 +119,8 @@ class PreProcess:
         for r in data["blocks"]:
             hit = int(r["blks_hit"])
             read = int(r["blks_read"])
-            _data[r["dbname"]] = (
-                (old_div(100 * hit, (hit + read))) if read + hit > 0 else 100
-            )
+            _data[r["dbname"]] = ((100 * hit) / (hit + read)) if read + hit > 0 else 100
+
         return _data
 
     @staticmethod

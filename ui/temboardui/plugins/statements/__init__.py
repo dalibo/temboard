@@ -4,7 +4,6 @@ from decimal import Decimal
 from os import path
 
 import tornado.web
-from past.utils import old_div
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import case, column, extract, func, select, text
 
@@ -428,7 +427,7 @@ def get_diffs_forstatdata():
     return [
         diff("calls"),
         diff("total_exec_time").label("total_exec_time"),
-        (old_div(diff("total_exec_time"), diff("calls"))).label("mean_time"),
+        (diff("total_exec_time") / diff("calls")).label("mean_time"),
         diff("shared_blks_read"),
         diff("shared_blks_hit"),
         diff("shared_blks_dirtied"),
@@ -623,17 +622,13 @@ def getstatdata_sample(request, mode, start, end, dbid=None, queryid=None, useri
     greatest = func.greatest
     cols = [
         to_epoch(c.ts),
-        (
-            old_div(func.sum(c.calls), greatest(extract("epoch", c.mesure_interval), 1))
-        ).label("calls"),
-        (old_div(func.sum(c.runtime), greatest(func.sum(c.calls), 1.0))).label(
-            "avg_runtime"
+        (func.sum(c.calls) / greatest(extract("epoch", c.mesure_interval), 1)).label(
+            "calls"
         ),
-        (
-            old_div(
-                func.sum(c.runtime), greatest(extract("epoch", c.mesure_interval), 1)
-            )
-        ).label("load"),
+        (func.sum(c.runtime) / greatest(func.sum(c.calls), 1.0)).label("avg_runtime"),
+        (func.sum(c.runtime) / greatest(extract("epoch", c.mesure_interval), 1)).label(
+            "load"
+        ),
         total_read(c),
         total_hit(c),
     ]
@@ -931,19 +926,15 @@ block_size = 8192
 
 def total_read(c):
     return (
-        old_div(
-            func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read),
-            total_measure_interval(c.mesure_interval),
-        )
+        func.sum(c.shared_blks_read + c.local_blks_read + c.temp_blks_read)
+        / total_measure_interval(c.mesure_interval)
     ).label("total_blks_read")
 
 
 def total_hit(c):
     return (
-        old_div(
-            func.sum(c.shared_blks_hit + c.local_blks_hit),
-            total_measure_interval(c.mesure_interval),
-        )
+        func.sum(c.shared_blks_hit + c.local_blks_hit)
+        / total_measure_interval(c.mesure_interval)
     ).label("total_blks_hit")
 
 
