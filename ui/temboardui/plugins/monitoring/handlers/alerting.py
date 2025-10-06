@@ -5,7 +5,6 @@ from textwrap import dedent
 
 import tornado.escape
 import tornado.web
-from future import standard_library
 
 from temboardui.plugins.monitoring.model.orm import Check, CheckState
 from temboardui.web.tornado import HTTPError, jsonify
@@ -13,8 +12,6 @@ from temboardui.web.tornado import HTTPError, jsonify
 from ..alerting import check_specs, check_state_detail, checks_info
 from ..tools import get_request_ids, parse_start_end
 from . import blueprint, render_template
-
-standard_library.install_aliases()
 
 logger = logging.getLogger(__name__)
 
