@@ -122,7 +122,7 @@ defineExpose({ fetchLoad1, fetchTPS });
       </div>
       <!-- Limit graph to top 3 rows. -->
       <div class="row" v-if="hasMonitoring && index < 18">
-        <div class="col-md-6 mt-2 small text-center text-nowrap">
+        <div class="col-6 mt-2 small text-center text-nowrap">
           <span class="text-body-secondary" v-if="tps_last">TPS: </span>
           <span class="badge text-bg-secondary" v-if="tps_last">
             {{ tps_last }}
@@ -142,7 +142,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           >
           </Sparkline>
         </div>
-        <div class="col-md-6 mt-2 small text-center text-nowrap">
+        <div class="col-6 mt-2 small text-center text-nowrap">
           <span class="text-body-secondary" v-if="load1_last">Loadavg: </span>
           <span class="badge text-bg-secondary" v-if="load1_last">
             {{ load1_last }}
