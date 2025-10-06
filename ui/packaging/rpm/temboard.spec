@@ -21,7 +21,6 @@ BuildRequires: python3-setuptools
 Requires:      mailcap
 Requires:      openssl
 Requires:      python3-flask
-Requires:      python3-future
 Requires:      python3-psycopg2 > 2.8
 Requires:      python3-setuptools
 Requires:      python3-tornado < 6.5
