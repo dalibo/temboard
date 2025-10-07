@@ -406,6 +406,7 @@ def list_options_specs():
         s, "signing_public_key", default="signing-public.pem", validator=v.path
     )
     yield OptionSpec(s, "cookie_secret", validator=cookie_secret)
+    yield OptionSpec(s, "cookie_timeout", default=84600, validator=int)
     home = os.environ.get("HOME", "/var/lib/temboard")
     yield OptionSpec(s, "home", default=home, validator=v.writeabledir)
 
