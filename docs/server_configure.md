@@ -35,6 +35,11 @@ This is the main section grouping core parameters :
   Secret key used to crypt cookie content.
   Default: *empty*;
 
+  - **cookie_timeout**
+  Cookie timeout in second. Default is 1 day (84600). The cookie expiration is
+  updated whenever there is an activity.
+  Default: 84600;
+
   - **plugins**
   Array of plugin name to load.
   Default: `["monitoring", "dashboard", "pgconf", "activity", "maintenance",

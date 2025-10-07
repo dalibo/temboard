@@ -18,6 +18,7 @@ You need manual steps when upgrading UI.
 - Requires Python 3.9.
 - Packages for Debian Trixie.
 - Packages for RHEL 10.
+- Add cookie_timeout to UI configuration.
 
 
 ## 9.0.0

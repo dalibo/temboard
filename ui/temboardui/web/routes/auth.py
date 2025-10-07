@@ -56,7 +56,12 @@ def json_login():
         "temboard",
         gen_cookie(role.role_name, passhash),
     )
-    response.set_cookie("temboard", secret_cookie.decode(), secure=True)
+    response.set_cookie(
+        "temboard",
+        secret_cookie.decode(),
+        secure=True,
+        max_age=app.temboard.config.temboard.cookie_timeout,
+    )
     return response
 
 
