@@ -56,7 +56,6 @@ setup(
         "console_scripts": ["temboard-agent = temboardagent.__main__:main"],
         "temboardagent.plugins": [
             "activity = temboardagent.plugins.activity:ActivityPlugin",
-            "administration = temboardagent.plugins.administration:AdministrationPlugin",  # noqa
             "dashboard = temboardagent.plugins.dashboard:DashboardPlugin",
             "maintenance = temboardagent.plugins.maintenance:MaintenancePlugin",  # noqa
             "monitoring = temboardagent.plugins.monitoring:MonitoringPlugin",
