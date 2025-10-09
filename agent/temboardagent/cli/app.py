@@ -41,7 +41,6 @@ class TemboardAgentApplication(BaseApplication):
     ]
     DEFAULT_PLUGINS = [
         "activity",
-        "administration",
         "dashboard",
         "maintenance",
         "monitoring",
@@ -89,6 +88,11 @@ class TemboardAgentApplication(BaseApplication):
         self.bootstrap(args=args, environ=environ, service=command.is_service)
         self.log_versions()
         config = self.config
+
+        # Administration plugin is deprecated
+        if "administration" in self.config.temboard.plugins:
+            logger.warning("Deprecated: agent plugin administration is ignored")
+            self.config.temboard.plugins.remove("administration")
 
         self.discover = Discover(self)
         self.discover.read()

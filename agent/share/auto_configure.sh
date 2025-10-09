@@ -115,13 +115,8 @@ generate_configuration() {
     port="${TEMBOARD_PORT-$(find_next_free_port)}"
     test -n "$port"
     log "Configuring temboard-agent to run on port ${port}."
-    if ! pg_ctl="$(command -v pg_ctl)"; then
-        pg_ctl="/bin/false"
-        log "Can't find pg_ctl in PATH."
-        log "Please configure it manually to enable restart feature."
-    fi
 
-    plugins=(administration dashboard maintenance monitoring pgconf)
+    plugins=(dashboard maintenance monitoring pgconf)
     if [ -n "$has_statements" ]; then
         plugins+=(statements)
     fi
@@ -200,10 +195,6 @@ generate_configuration() {
 	#
 	# temBoard agent plugin configuration
 	#
-	[administration]
-	# Path to pg_ctl. %s is either start, restart or reload.
-	pg_ctl = ${pg_ctl} %s -D ${PGDATA}
-
 	[dashboard]
 	# Interval, in second, between each run of the process collecting
 	# data used to render the dashboard. Default: 2

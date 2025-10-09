@@ -20,6 +20,7 @@ You need manual steps when upgrading UI.
 - Packages for RHEL 10.
 - Add cookie_timeout to UI configuration.
 - Drop PyPI availability. Use APT/YUM repositories or GitHub releases.
+- Deprecated: agent plugin administration is ignored
 
 
 ## 9.0.0

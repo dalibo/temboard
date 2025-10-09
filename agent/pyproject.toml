@@ -24,7 +24,6 @@ temboard-agent = "temboardagent.__main__:main"
 
 [project.entry-points."temboardagent.plugins"]
 activity = "temboardagent.plugins.activity:ActivityPlugin"
-administration = "temboardagent.plugins.administration:AdministrationPlugin"
 dashboard = "temboardagent.plugins.dashboard:DashboardPlugin"
 maintenance = "temboardagent.plugins.maintenance:MaintenancePlugin"
 monitoring = "temboardagent.plugins.monitoring:MonitoringPlugin"
