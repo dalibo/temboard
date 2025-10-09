@@ -25,7 +25,6 @@ are distributed under sections:
 - `logging`: how and where to log;
 - `dashboard`: parameters of the plugin `dashboard`;
 - `monitoring`: plugin `monitoring`;
-- `administration`: plugin `administration`,
 - `maintenance`: plugin `maintenance`.
 - `statements`: plugin `statements`;
 
@@ -38,7 +37,7 @@ are distributed under sections:
 - `address`: IP v4 address that the agent will listen on. Default:
   `0.0.0.0` (all);
 - `plugins`: Array of plugin (name) to load. Default:
-  `["monitoring", "dashboard", "pgconf", "administration", "activity", "maintenance", "statements"]`;
+  `["monitoring", "dashboard", "pgconf", "activity", "maintenance", "statements"]`;
 - `ssl_cert_file`: Path to SSL certificate file (.pem) for the
   embeded HTTPS process serving the API. Default:
   `/etc/temboard-agent/temboard-agent_CHANGEME.pem`;
@@ -95,12 +94,6 @@ are distributed under sections:
   Default: `*`;
 - `scheduler_interval`: Interval, in second, between each run of the
   process executing the probes. Default: `60`;
-
-
-# `administration`
-
-- `pg_ctl`: External command used to start/stop PostgreSQL. Default:
-  `None`.
 
 
 # `statements`
