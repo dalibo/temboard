@@ -99,55 +99,6 @@ Content-type: application/json
 }
 ```
 
-## Administration plugin API {#administration_api}
-
-> Control PostgreSQL server. Supported actions are `start`, `stop`,
-> `restart` and `reload`.
->
-> status 200
->
-> :   no error
->
-> status 500
->
-> :   internal error
-
-**Example request**:
-
-``` http
-POST /administration/control HTTP/1.1
-Content-Type: application/json
-
-{
-    "action": "restart"
-}
-```
-
-**Example response**:
-
-``` http
-HTTP/1.0 200 OK
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:57:52 GMT
-Content-type: application/json
-
-{
-    "action": "restart",
-    "state": "ok"
-}
-```
-
-**Error responses**:
-
-``` http
-HTTP/1.0 406 Not Acceptable
-Server: temboard-agent/0.0.1 Python/2.7.8
-Date: Wed, 22 Apr 2015 09:58:00 GMT
-Content-type: application/json
-
-{"error": "Parameter 'action' is malformed."}
-```
-
 ## Activity plugin API {#activity_api}
 
 > Get list of PostgreSQL backends.
