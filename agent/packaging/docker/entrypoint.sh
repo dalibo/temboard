@@ -3,8 +3,8 @@
 set -x
 
 # Create postgres user matching postgres container one.
-POSTGRES_UID=$(stat -c "%u" /var/lib/postgresql/data)
-POSTGRES_GID=$(stat -c "%g" /var/lib/postgresql/data)
+POSTGRES_UID=$(stat -c "%u" "$PGDATA")
+POSTGRES_GID=$(stat -c "%g" "$PGDATA")
 if ! getent passwd postgres &>/dev/null ; then
 	groupadd --system --gid "${POSTGRES_GID}" postgres
 	useradd --system \
