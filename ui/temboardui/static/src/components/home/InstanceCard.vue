@@ -114,7 +114,7 @@ defineExpose({ fetchLoad1, fetchTPS });
             :data="tps_data"
             :start="start"
             :end="end"
-            :colors="['#50BD68', '#F15854']"
+            :colors="['rgba(0, 188, 18, 0.4)', 'rgba(188, 0, 0, 1)']"
             @chart-rendered="setLastTPS"
             ref="tps_chart"
             class="sparkline-container"
