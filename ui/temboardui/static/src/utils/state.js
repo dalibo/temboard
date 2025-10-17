@@ -9,4 +9,16 @@ function stateBorderClass(state) {
   return classes;
 }
 
-export { stateBorderClass };
+function stateBgClass(state) {
+  const classes = [];
+  if (state == "UNDEF") {
+    classes.push("text-bg-light");
+  } else if (state == "OK") {
+    classes.push("text-success");
+  } else {
+    classes.push("text-bg-" + state.toLowerCase());
+  }
+  return classes;
+}
+
+export { stateBgClass, stateBorderClass };

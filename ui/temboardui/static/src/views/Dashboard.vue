@@ -6,7 +6,7 @@ import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
 
-import { stateBorderClass } from "../utils/state";
+import { stateBgClass, stateBorderClass } from "../utils/state";
 
 // FIXME import chart.js and moment
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
@@ -638,7 +638,7 @@ onMounted(() => {
                     {{ state.description }}
                   </div>
                   <div class="text-center">
-                    <span class="badge" v-bind:class="'text-bg-' + state.state.toLowerCase()">{{ state.state }}</span>
+                    <span class="badge" v-bind:class="stateBgClass(state.state)">{{ state.state }}</span>
                   </div>
                 </a>
               </div>

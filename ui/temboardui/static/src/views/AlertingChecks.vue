@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as _ from "lodash";
 import { ref } from "vue";
 
-import { stateBorderClass } from "../utils/state";
+import { stateBgClass, stateBorderClass } from "../utils/state";
 
 const checks = ref([]);
 
@@ -43,18 +43,14 @@ refresh();
             <div class="card-body p-2">
               <div>
                 <a v-bind:href="'alerting/' + check.name" v-bind:class="{ 'text-body-secondary': !check.enabled }">
-                  <span v-bind:class="'badge text-bg-' + check.state.toLowerCase()">
-                    {{ check.state }}
-                  </span>
+                  <span class="badge" v-bind:class="stateBgClass(check.state)">{{ check.state }}</span>
                   {{ check.description }}
                 </a>
               </div>
               <hr class="mt-1 mb-1" />
               <ul class="list-unstyled small ms-2 mb-0" style="max-height: 100px; overflow-y: auto">
                 <li v-for="key in sorted(check.state_by_key, 'key')">
-                  <span v-bind:class="'badge text-bg-' + key.state.toLowerCase()">
-                    {{ key.state }}
-                  </span>
+                  <span class="badge" v-bind:class="stateBgClass(key.state)">{{ key.state }}</span>
                   {{ key.key }}
                 </li>
               </ul>
