@@ -406,8 +406,8 @@ onMounted(() => {
       datasets: [
         {
           label: "Commit",
-          backgroundColor: "rgba(0,188,18,0.2)",
-          borderColor: "rgba(0,188,18,1)",
+          backgroundColor: "rgba(0,188,18,0.1)",
+          borderColor: "rgba(0,188,18,0.4)",
         },
         {
           label: "Rollback",
@@ -601,8 +601,14 @@ onMounted(() => {
             <div class="text-center small p-0">
               <span class="chart-title"> TPS </span>
               <div class="position-absolute top-0 right-0 pe-1">
-                Commit: <span id="tps_commit" class="badge text-bg-success">{{ tpsCommit }}</span> Rollback:
-                <span id="tps_rollback" class="badge text-bg-danger">{{ tpsRollback }}</span>
+                Commit:
+                <span id="tps_commit" class="badge" style="background-color: rgba(0, 188, 18, 0.4); color: inherit">{{
+                  tpsCommit
+                }}</span>
+                Rollback:
+                <span id="tps_rollback" class="badge" style="background-color: rgba(188, 0, 0, 1)">{{
+                  tpsRollback
+                }}</span>
               </div>
             </div>
             <div class="card-body p-2">
