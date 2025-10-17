@@ -15,6 +15,17 @@ watch(() => "" + props.from + props.to, createOrUpdateChart);
 
 onMounted(createOrUpdateChart);
 
+// Don't use orange first so that it is not confused with the warning level line
+const cudColors = {
+  SkyBlue: "#56b4e9",
+  Green: "#009e73",
+  Yellow: "#f0e442",
+  Blue: "#0072b2",
+  Vermilion: "#d55e00",
+  Purple: "#cc79a7",
+  Orange: "#e69f00",
+};
+
 function createOrUpdateChart() {
   const startDate = props.from;
   const endDate = props.to;
@@ -27,6 +38,7 @@ function createOrUpdateChart() {
     legend: "always",
     labelsDiv: "legend" + props.key_,
     gridLineColor: "rgba(128, 128, 128, 0.3)",
+    colors: Object.values(cudColors),
     dateWindow: [new Date(startDate).getTime(), new Date(endDate).getTime()],
     xValueParser: function (x) {
       const m = moment(x);

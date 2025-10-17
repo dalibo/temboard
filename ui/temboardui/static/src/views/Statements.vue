@@ -300,12 +300,16 @@ function createOrUpdateCharts(data) {
   const chart1Data = _.map(data.data, function (datum) {
     return [moment.unix(datum.ts).toDate(), datum.calls];
   });
+
+  const cudColors = ["#e69f00", "#56b4e9", "#009e73"];
+
   new Dygraph(
     document.getElementById("chart1"),
     chart1Data,
     Object.assign({}, defaultOptions, {
       labels: ["time", "Queries per sec"],
       labelsDiv: "legend-chart1",
+      colors: cudColors,
     }),
   );
 
@@ -318,6 +322,7 @@ function createOrUpdateCharts(data) {
     Object.assign({}, defaultOptions, {
       labels: ["time", "Total", "Avg"],
       labelsDiv: "legend-chart2",
+      colors: cudColors,
       axes: {
         y: {
           valueFormatter: formatDuration,
@@ -336,6 +341,7 @@ function createOrUpdateCharts(data) {
     Object.assign({}, defaultOptions, {
       labels: ["time", "Hit /s", "Read /s"],
       labelsDiv: "legend-chart3",
+      colors: cudColors,
       axes: {
         y: {
           valueFormatter: formatSize,

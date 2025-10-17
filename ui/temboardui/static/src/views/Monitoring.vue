@@ -14,14 +14,14 @@ const from = ref(null);
 const to = ref(null);
 const dateRangePickerEl = ref(null);
 
-const colors = {
-  blue: "#5DA5DA",
-  blue2: "#226191",
-  green: "#60BD68",
-  red: "#F15854",
-  gray: "#4D4D4D",
-  light_gray: "#AAAAAA",
-  orange: "#FAA43A",
+const cudColors = {
+  Orange: "#e69f00",
+  SkyBlue: "#56b4e9",
+  Green: "#009e73",
+  Yellow: "#f0e442",
+  Blue: "#0072b2",
+  Vermilion: "#d55e00",
+  Purple: "#cc79a7",
 };
 
 const metrics = ref({
@@ -29,7 +29,7 @@ const metrics = ref({
     title: "Loadaverage",
     api: "loadavg",
     options: {
-      colors: [colors.blue, colors.orange, colors.green],
+      colors: [cudColors.SkyBlue, cudColors.Orange, cudColors.Green],
       ylabel: "Loadaverage",
     },
     category: "system",
@@ -38,7 +38,7 @@ const metrics = ref({
     title: "CPU Usage",
     api: "cpu",
     options: {
-      colors: [colors.blue, colors.green, colors.red, colors.gray],
+      colors: [cudColors.SkyBlue, cudColors.Green, cudColors.Vermilion, cudColors.Purple],
       ylabel: "%",
       stackedGraph: true,
     },
@@ -48,7 +48,7 @@ const metrics = ref({
     title: "Context switches and forks per second",
     api: "ctxforks",
     options: {
-      colors: [colors.blue, colors.green],
+      colors: [cudColors.SkyBlue, cudColors.Green],
     },
     category: "system",
   },
@@ -56,7 +56,7 @@ const metrics = ref({
     title: "Memory usage",
     api: "memory",
     options: {
-      colors: [colors.light_gray, colors.green, colors.blue, colors.orange],
+      colors: [cudColors.Yellow, cudColors.Green, cudColors.SkyBlue, cudColors.Orange],
       ylabel: "Memory",
       labelsKMB: false,
       labelsKMG2: true,
@@ -68,7 +68,7 @@ const metrics = ref({
     title: "Swap usage",
     api: "swap",
     options: {
-      colors: [colors.red],
+      colors: [cudColors.Vermilion],
       ylabel: "Swap",
       labelsKMB: false,
       labelsKMG2: true,
@@ -80,6 +80,7 @@ const metrics = ref({
     title: "Filesystems size",
     api: "fs_size",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Size",
       labelsKMB: false,
       labelsKMG2: true,
@@ -90,6 +91,7 @@ const metrics = ref({
     title: "Filesystems usage",
     api: "fs_usage",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "%",
     },
     category: "system",
@@ -99,7 +101,7 @@ const metrics = ref({
     title: "Transactions per second",
     api: "tps",
     options: {
-      colors: [colors.green, colors.red],
+      colors: [cudColors.Green, cudColors.Vermilion],
       ylabel: "Transactions",
       stackedGraph: true,
     },
@@ -109,7 +111,7 @@ const metrics = ref({
     title: "Instance size",
     api: "instance_size",
     options: {
-      colors: [colors.blue],
+      colors: [cudColors.SkyBlue],
       ylabel: "Size",
       stackedGraph: true,
       labelsKMB: false,
@@ -121,6 +123,7 @@ const metrics = ref({
     title: "Tablespaces size",
     api: "tblspc_size",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Size",
       stackedGraph: true,
       labelsKMB: false,
@@ -132,6 +135,7 @@ const metrics = ref({
     title: "Sessions",
     api: "sessions",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Sessions",
       stackedGraph: true,
     },
@@ -141,7 +145,7 @@ const metrics = ref({
     title: "Blocks Hit vs Read per second",
     api: "blocks",
     options: {
-      colors: [colors.red, colors.green],
+      colors: [cudColors.Vermilion, cudColors.Green],
       ylabel: "Blocks",
     },
     category: "postgres",
@@ -150,7 +154,7 @@ const metrics = ref({
     title: "Blocks Hit vs Read ratio",
     api: "hitreadratio",
     options: {
-      colors: [colors.blue],
+      colors: [cudColors.SkyBlue],
       ylabel: "%",
     },
     category: "postgres",
@@ -159,6 +163,7 @@ const metrics = ref({
     title: "Checkpoints",
     api: "checkpoints",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Checkpoints",
       y2label: "Duration",
       series: {
@@ -176,7 +181,7 @@ const metrics = ref({
     title: "WAL Files size",
     api: "wal_files_size",
     options: {
-      colors: [colors.blue, colors.blue2],
+      colors: [cudColors.SkyBlue, cudColors.Blue],
       labelsKMB: false,
       labelsKMG2: true,
       ylabel: "Size",
@@ -187,7 +192,7 @@ const metrics = ref({
     title: "WAL Files",
     api: "wal_files_count",
     options: {
-      colors: [colors.blue, colors.blue2],
+      colors: [cudColors.SkyBlue, cudColors.Blue],
       ylabel: "WAL files",
     },
     category: "postgres",
@@ -196,7 +201,7 @@ const metrics = ref({
     title: "WAL Files written rate",
     api: "wal_files_rate",
     options: {
-      colors: [colors.blue],
+      colors: [cudColors.SkyBlue],
       ylabel: "Byte per second",
       labelsKMB: false,
       labelsKMG2: true,
@@ -208,6 +213,7 @@ const metrics = ref({
     title: "Written buffers",
     api: "w_buffers",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Written buffers",
       stackedGraph: true,
     },
@@ -217,6 +223,7 @@ const metrics = ref({
     title: "Locks",
     api: "locks",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Locks",
     },
     category: "postgres",
@@ -225,6 +232,7 @@ const metrics = ref({
     title: "Waiting Locks",
     api: "waiting_locks",
     options: {
+      colors: Object.values(cudColors),
       ylabel: "Waiting Locks",
     },
     category: "postgres",
