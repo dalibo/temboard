@@ -43,7 +43,7 @@ if (props.discover) {
           <template v-for="setting in settings">
             <tr v-if="postgres[setting] !== null && postgres[setting] !== undefined">
               <td>
-                <tt>{{ setting }}</tt>
+                <code>{{ setting }}</code>
               </td>
               <td>
                 <template v-if="postgres[setting] === false || postgres[setting] === true">
@@ -67,25 +67,25 @@ if (props.discover) {
           <tr v-if="'cpu_model' in system">
             <td>CPU</td>
             <td>
-              <tt>{{ system["cpu_count"] }} x {{ system["cpu_model"] }}</tt>
+              <code>{{ system["cpu_count"] }} x {{ system["cpu_model"] }}</code>
             </td>
           </tr>
           <tr v-if="'memory' in system">
             <td>Memory</td>
             <td>
-              <tt>{{ (system["memory"] / 1024 / 1024 / 1024).toFixed(2) }} GiB</tt>
+              <code>{{ (system["memory"] / 1024 / 1024 / 1024).toFixed(2) }} GiB</code>
             </td>
           </tr>
           <tr v-if="'swap' in system">
             <td>Swap</td>
             <td>
-              <tt>{{ (system["swap"] / 1024 / 1024 / 1024).toFixed(2) }} GiB</tt>
+              <code>{{ (system["swap"] / 1024 / 1024 / 1024).toFixed(2) }} GiB</code>
             </td>
           </tr>
           <tr>
             <td>Kernel</td>
             <td>
-              <tt>{{ system["os"] ? system["os"] : "Linux" }} {{ system["os_version"] }}</tt>
+              <code>{{ system["os"] ? system["os"] : "Linux" }} {{ system["os_version"] }}</code>
             </td>
           </tr>
         </tbody>
@@ -114,20 +114,20 @@ if (props.discover) {
           <tr v-if="'configfile' in temboard">
             <td>Configuration file</td>
             <td>
-              <tt>{{ temboard["configfile"] }}</tt>
+              <code>{{ temboard["configfile"] }}</code>
             </td>
           </tr>
           <tr v-if="'python_version' in temboard">
             <td>Python {{ temboard["python_version"] }}</td>
             <td>
-              <tt>{{ temboard["pythonbin"] }}</tt>
+              <code>{{ temboard["pythonbin"] }}</code>
             </td>
           </tr>
           <template v-for="component in components">
             <tr v-if="component + '_version' in temboard">
               <td>{{ component }}</td>
               <td>
-                <tt>{{ temboard[component + "_version"] }}</tt>
+                <code>{{ temboard[component + "_version"] }}</code>
               </td>
             </tr>
           </template>
