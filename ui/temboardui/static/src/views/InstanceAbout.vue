@@ -1,7 +1,9 @@
 <script setup>
+import { ref } from "vue";
+
 const props = defineProps(["instance_name", "pg_version_summary", "pg_data", "environment", "discover"]);
 const settings = ["listen_address", "max_connections", "data_checksums"];
-const components = ["psycopg2", "libpq", "bottle", "cyptography"];
+const components = ref(["psycopg2", "libpq", "bottle", "cryptography"]);
 let postgres = { cluster_name: "", version: "" };
 let system = { distributiion: "" };
 let temboard = {};
@@ -121,12 +123,14 @@ if (props.discover) {
               <tt>{{ temboard["pythonbin"] }}</tt>
             </td>
           </tr>
-          <tr v-for="component in components" v-if="component + '_version' in temboard">
-            <td>{{ component }}</td>
-            <td>
-              <tt>{{ temboard[component + "_version"] }}</tt>
-            </td>
-          </tr>
+          <template v-for="component in components">
+            <tr v-if="component + '_version' in temboard">
+              <td>{{ component }}</td>
+              <td>
+                <tt>{{ temboard[component + "_version"] }}</tt>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </template>
