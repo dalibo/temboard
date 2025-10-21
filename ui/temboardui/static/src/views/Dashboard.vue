@@ -6,7 +6,7 @@ import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
 
-import { stateBgClass, stateBorderClass } from "../utils/state";
+import { stateBgClass, stateBorderClass, stateIcon } from "../utils/state";
 
 // FIXME import chart.js and moment
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
@@ -644,7 +644,10 @@ onMounted(() => {
                     {{ state.description }}
                   </div>
                   <div class="text-center">
-                    <span class="badge" v-bind:class="stateBgClass(state.state)">{{ state.state }}</span>
+                    <span class="badge" v-bind:class="stateBgClass(state.state)">
+                      <i class="fa fa-fw" :class="[stateIcon(state.state)]"></i>
+                      {{ state.state }}</span
+                    >
                   </div>
                 </a>
               </div>
@@ -672,9 +675,7 @@ onMounted(() => {
                   <div class="float-end text-body-secondary text-end">{{ moment(alert.datetime).fromNow() }}<br /></div>
                   <div>
                     <a v-bind:href="'alerting/' + alert.name">
-                      <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">
-                        <i class="fa-solid fa-square"></i>
-                      </span>
+                      <i class="fa fa-fw" :class="[stateIcon(alert.state), 'text-' + alert.state.toLowerCase()]"></i>
                       <span>
                         {{ alert.description }}
                       </span>
@@ -689,7 +690,10 @@ onMounted(() => {
                     v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
                   >
                     {{ moment(alert.datetime).format() }}<br />
-                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">{{ alert.state }}</span>
+                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">
+                      <i class="fa fa-fw" :class="[stateIcon(alert.state)]"></i>
+                      {{ alert.state }}
+                    </span>
                     <br />
                     <span class="fw-bold">
                       {{ alert.value }}

@@ -21,4 +21,17 @@ function stateBgClass(state) {
   return classes;
 }
 
-export { stateBgClass, stateBorderClass };
+function stateIcon(state) {
+  if (state == "WARNING") {
+    return "fa-warning";
+  }
+  if (state == "CRITICAL") {
+    return "fa-burst";
+  }
+  if (state == "OK") {
+    return "fa-check";
+  }
+  return "";
+}
+
+export { stateBgClass, stateBorderClass, stateIcon };
