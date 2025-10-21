@@ -169,11 +169,20 @@ function drawAlerts(data) {
       text += `${alert.value} > ${alert[alert.state.toLowerCase()]}<br>`;
     }
     text += alert.datetime;
+    let shortText = "✅";
+    switch (alert.state) {
+      case "WARNING":
+        shortText = "⚠️";
+        break;
+      case "CRITICAL":
+        shortText = "💥";
+        break;
+    }
+    text += alert.datetime;
     return {
       series: chart.getLabels()[1],
       x: x,
-      shortText: "♥",
-      cssClass: "alert-" + alert.state.toLowerCase(),
+      shortText: shortText,
       text,
       tickColor: bgColors[alert.state.toLowerCase()],
       attachAtBottom: true,
