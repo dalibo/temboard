@@ -3,13 +3,9 @@ import $ from "jquery";
 import * as _ from "lodash";
 import { ref } from "vue";
 
-const checks = ref([]);
+import { stateBorderClass } from "../utils/state";
 
-function getBorderClass(state) {
-  if (state != "OK" && state != "UNDEF") {
-    return "border-" + state.toLowerCase();
-  }
-}
+const checks = ref([]);
 
 function sorted(items, key) {
   return _.orderBy(items, key);
@@ -42,7 +38,7 @@ refresh();
           <div
             v-bind:id="'status-' + check.name"
             class="card mb-3 w-100 border"
-            v-bind:class="[getBorderClass(check.state), { 'striped bg-light': !check.enabled }]"
+            v-bind:class="[stateBorderClass(check.state), { 'striped bg-light': !check.enabled }]"
           >
             <div class="card-body p-2">
               <div>

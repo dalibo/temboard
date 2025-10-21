@@ -6,6 +6,8 @@ import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
 
+import { stateBorderClass } from "../utils/state";
+
 // FIXME import chart.js and moment
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
@@ -238,13 +240,6 @@ function updateTps(data) {
   chart.update();
 
   $("#postgres-stopped-msg").toggleClass("d-none", !!data[data.length - 1].databases);
-}
-
-function getBorderColor(state) {
-  if (state != "OK" && state != "UNDEF") {
-    return "border border-2 border-" + state.toLowerCase();
-  }
-  return "border border-light";
 }
 
 /**
@@ -632,7 +627,7 @@ onMounted(() => {
             <div class="col-3 col-xxl-2 p-1 text-center" v-if="state.state != 'UNDEF'">
               <div
                 class="p-1 rounded"
-                v-bind:class="[getBorderColor(state.state), { 'striped bg-light': !state.enabled }]"
+                v-bind:class="[stateBorderClass(state.state), { 'striped bg-light': !state.enabled }]"
               >
                 <a v-bind:href="'alerting/' + state.name" v-bind:class="{ 'text-body-secondary': !state.enabled }">
                   <div
