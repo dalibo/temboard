@@ -68,7 +68,7 @@ defineExpose({ fetchLoad1, fetchTPS });
     :class="[
       'card',
       {
-        'border-danger bg-danger-light': status_value >= 1000000,
+        'border-danger bg-danger-light border-2': status_value >= 1000000,
         'border-warning bg-warning-light': status_value >= 1000,
       },
     ]"
