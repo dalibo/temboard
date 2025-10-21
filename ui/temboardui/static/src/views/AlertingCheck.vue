@@ -4,7 +4,7 @@ import { computed, provide, ref } from "vue";
 
 import AlertingChart from "../components/AlertingChart.vue";
 import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
-import { stateBgClass } from "../utils/state";
+import { stateBgClass, stateIcon } from "../utils/state";
 
 const check = ref(window.checkInitialData);
 const keys = ref([]);
@@ -126,9 +126,10 @@ function onFromToUpdate(from_, to_) {
     <div class="card w-100 mb-2" v-for="key in sortedKeys">
       <div class="p-2">
         <div class="text-center">
-          <span class="badge" v-bind:class="stateBgClass(key.state)" data-bs-toggle="tooltip" title="Current status">{{
-            key.state
-          }}</span>
+          <span class="badge" v-bind:class="stateBgClass(key.state)" data-bs-toggle="tooltip" title="Current status">
+            <i class="fa fa-fw" :class="[stateIcon(key.state)]"></i>
+            {{ key.state }}</span
+          >
           <span v-if="key.key != ''">{{ key.key }}</span>
           <span v-if="key.key == ''">{{ check["name"] }}</span>
         </div>

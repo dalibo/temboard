@@ -2,6 +2,8 @@
 import _ from "lodash";
 import { computed } from "vue";
 
+import { stateIcon } from "../../utils/state";
+
 const props = defineProps(["instance"]);
 const available = computed(() => {
   return props.instance.available;
@@ -21,7 +23,8 @@ function popoverContent(instance) {
     return levels.indexOf(check.state);
   });
   const checksList = ordered.map((check) => {
-    return `<span class="badge text-bg-${check.state.toLowerCase()}">${check.description}</span>`;
+    return `<span class="badge text-bg-${check.state.toLowerCase()}"> <i class="fa fa-fw
+    ${stateIcon(check.state)}"></i> ${check.description}</span>`;
   });
   return checksList.join("<br>");
 }
@@ -37,9 +40,18 @@ function popoverContent(instance) {
     data-bs-container="body"
     data-bs-html="true"
   >
-    <span class="badge text-bg-critical me-1" v-if="!available" title="Unable to connect to Postgres">UNAVAILABLE</span>
-    <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL"> CRITICAL: {{ checks.CRITICAL }}</span>
-    <span class="badge text-bg-warning me-1" v-if="checks.WARNING"> WARNING: {{ checks.WARNING }}</span>
+    <span class="badge text-bg-critical me-1" v-if="!available" title="Unable to connect to Postgres">
+      <i class="fa fa-fw fa-unlink"></i>
+      UNAVAILABLE</span
+    >
+    <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL">
+      <i class="fa fa-fw" :class="stateIcon('CRITICAL')"></i>
+      CRITICAL: {{ checks.CRITICAL }}</span
+    >
+    <span class="badge text-bg-warning me-1" v-if="checks.WARNING">
+      <i class="fa fa-fw" :class="stateIcon('WARNING')"></i>
+      WARNING: {{ checks.WARNING }}</span
+    >
     <span class="badge text-bg-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK"
       >OK</span
     >
