@@ -10,6 +10,8 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from flask import current_app as app
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.errors import TemboardUIError
@@ -104,6 +106,10 @@ def get_role_by_cookie(session, content):
         return role
     else:
         raise Exception("Cookie content is not valid.")
+
+
+def get_reset_token_serializer():
+    return URLSafeTimedSerializer(app.temboard.config.temboard.cookie_secret)
 
 
 def send_mail(
