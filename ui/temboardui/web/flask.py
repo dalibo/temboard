@@ -118,6 +118,7 @@ def create_app(temboard_app):
 def finalize_app():
     # Configure Flask app after configuration is loaded.
     app = current_app
+    app.secret_key = app.temboard.config.temboard.cookie_secret
 
     # This middleware registers instance_proxy blueprint, loads g.instance
     # object and provides helpers in app.instance. instance is loaded only for
