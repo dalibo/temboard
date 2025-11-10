@@ -75,7 +75,7 @@ const emit = defineEmits(["apply"]);
                   </div>
                   <div v-show="analyzeWhen == 'scheduled'">
                     <button type="button" id="analyzeScheduledTime" class="btn btn-outline-secondary">
-                      <i class="fa fa-clock-o"></i>
+                      <i class="fa-regular fa-clock"></i>
                       &nbsp;
                       <span>{{ analyzeScheduledTime.toString() }}</span>
                     </button>

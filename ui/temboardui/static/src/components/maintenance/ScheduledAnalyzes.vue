@@ -15,7 +15,7 @@ const emit = defineEmits(["cancel"]);
       aria-expanded="false"
       aria-controls="collapseScheduledAnalyzes"
     >
-      <i class="fa fa-clock-o"></i>
+      <i class="fa-regular fa-clock"></i>
       {{ scheduledAnalyzes.length }} scheduled analyzes
     </a>
     <ul class="list list-unstyled collapse border rounded p-1" id="collapseScheduledAnalyzes">
@@ -47,7 +47,7 @@ const emit = defineEmits(["cancel"]);
         </template>
         <template v-else-if="scheduledAnalyze.status == 'doing'">
           <em>
-            <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
+            <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa fa-fw" />
             in progress
           </em>
         </template>

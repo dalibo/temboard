@@ -256,7 +256,7 @@ watch(totalPages, (newValue) => {
   <div ref="root">
     <div class="position-absolute" style="z-index: 2; right: 0">
       <button id="fullscreen" class="btn btn-link" @click="toggle">
-        <i class="fa fa-expand"></i>
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </button>
     </div>
     <div class="row mb-2">
@@ -269,11 +269,11 @@ watch(totalPages, (newValue) => {
           </button>
           <div class="dropdown-menu" role="menu">
             <a class="dropdown-item" href v-on:click="changeSort('hostname', $event)">
-              <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'hostname' }]"></i>
+              <i v-bind:class="['fa-solid fa-fw', { 'fa-check': sort == 'hostname' }]"></i>
               Hostname
             </a>
             <a class="dropdown-item" href v-on:click="changeSort('status', $event)">
-              <i v-bind:class="['fa fa-fw', { 'fa-check': sort == 'status' }]"></i>
+              <i v-bind:class="['fa-solid fa-fw', { 'fa-check': sort == 'status' }]"></i>
               Status
             </a>
           </div>
@@ -290,7 +290,7 @@ watch(totalPages, (newValue) => {
               v-for="environment in environments"
               v-on:click="toggleEnvironmentFilter(environment, $event)"
             >
-              <i v-bind:class="['fa fa-fw', { 'fa-check': environmentsFilter.indexOf(environment) != -1 }]"></i>
+              <i v-bind:class="['fa-solid fa-fw', { 'fa-check': environmentsFilter.indexOf(environment) != -1 }]"></i>
               {{ environment }}
             </a>
           </div>
@@ -306,7 +306,7 @@ watch(totalPages, (newValue) => {
       </div>
       <div class="col">
         <p class="text-secondary text-end mt-2 mb-0 me-4">
-          <i v-if="loading" class="fa fa-spinner fa-spin loader"></i>
+          <i v-if="loading" class="fa-solid fa-spinner fa-spin loader"></i>
           <span :title="refreshDate ? 'last refresh at ' + refreshDate.format('HH:mm:ss') : ''"
             >Refreshed every 1m</span
           >

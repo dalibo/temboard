@@ -87,7 +87,7 @@ function reset() {
           <div v-if="waiting" class="col-12">
             <p class="text-center">
               Waiting for server.
-              <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
+              <i v-if="waiting" class="fa-solid fa-spinner fa-spin loader"></i>
             </p>
           </div>
           <div v-if="filtered.length == 0" class="row text-secondary mx-auto p-4">No member matches filter.</div>
@@ -101,7 +101,7 @@ function reset() {
               >
                 {{ user.name }}
               </button>
-              <i v-if="user.member" class="fa fa-check text-success"></i>
+              <i v-if="user.member" class="fa-solid fa-check text-success"></i>
             </li>
           </ul>
         </div>

@@ -47,7 +47,7 @@ if (props.discover) {
               </td>
               <td>
                 <template v-if="postgres[setting] === false || postgres[setting] === true">
-                  <i class="fa" :class="{ 'fa-check': postgres[setting], 'fa-times': !postgres[setting] }"></i>
+                  <i class="fa-solid" :class="{ 'fa-check': postgres[setting], 'fa-times': !postgres[setting] }"></i>
                 </template>
                 <template v-else>
                   {{ postgres[setting] }}
@@ -142,7 +142,7 @@ if (props.discover) {
         </h1>
       </div>
       <div class="alert alert-warning mx-auto" role="alert">
-        <h2><i class="fa fa-warning fa-fw"></i>WARNING</h2>
+        <h2><i class="fa-solid fa-warning fa-fw"></i>WARNING</h2>
         <p>Agent never reported details. If this takes more than a few minutes, please investigate in logs.</p>
       </div>
     </template>

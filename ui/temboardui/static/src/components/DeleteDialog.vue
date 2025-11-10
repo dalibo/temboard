@@ -82,7 +82,7 @@ function reset() {
       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       <button id="buttonDelete" class="btn btn-danger ms-auto" type="button" @click="submit" :disabled="disabled">
         Yes, delete
-        <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
+        <i v-if="waiting" class="fa-solid fa-spinner fa-spin loader"></i>
       </button>
     </div>
   </ModalDialog>

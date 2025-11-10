@@ -333,7 +333,7 @@ function showMetricsSelector() {
           aria-expanded="false"
           aria-controls="metrics"
         >
-          <i class="fa fa-area-chart"></i>
+          <i class="fa-solid fa-area-chart"></i>
           Metrics
         </a>
         <DateRangePicker @fromto-updated="onFromToUpdate" ref="dateRangePickerEl"></DateRangePicker>
@@ -415,8 +415,9 @@ function showMetricsSelector() {
           class="small ms-2"
           target="_blank"
           title="Link to this graph."
-          ><i class="fa fa-external-link"></i
-        ></a>
+        >
+          <i class="fa-solid fa-link"></i>
+        </a>
         <span class="copy"></span>
         <button type="button" class="btn-close float-end" aria-label="Close" v-on:click="removeGraph(graph)"></button>
       </div>
