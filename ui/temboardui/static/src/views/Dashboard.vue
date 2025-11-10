@@ -457,7 +457,7 @@ onMounted(() => {
   <div ref="rootEl">
     <div class="position-absolute" style="z-index: 2">
       <button id="fullscreen" class="btn btn-link" @click="toggle">
-        <i class="fa fa-expand"></i>
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </button>
     </div>
     <div class="row d-fullscreen">
@@ -484,7 +484,7 @@ onMounted(() => {
                   CPU &times; {{ discover.system.cpu_count }}
                   <i
                     id="cpu-info"
-                    class="fa fa-info-circle text-body-secondary"
+                    class="fa-solid fa-info-circle text-body-secondary"
                     data-bs-toggle="tooltip"
                     :title="cpuTooltip"
                   >
@@ -574,7 +574,7 @@ onMounted(() => {
                 class="alert alert-warning border border-warning d-none"
               >
                 <div class="text-center">
-                  <i class="fa fa-exclamation-triangle fa-2x"></i>
+                  <i class="fa-solid fa-exclamation-triangle fa-2x"></i>
                   <br />
                   PostgreSQL instance
                   <br />
@@ -672,7 +672,7 @@ onMounted(() => {
                   <div>
                     <a v-bind:href="'alerting/' + alert.name">
                       <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">
-                        <i class="fa fa-square"></i>
+                        <i class="fa-solid fa-square"></i>
                       </span>
                       <span>
                         {{ alert.description }}

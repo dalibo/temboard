@@ -78,7 +78,7 @@ defineExpose({ fetchLoad1, fetchTPS });
         <div class="col-md-12">
           <p class="mb-0 overflow-ellipsis">
             <strong>
-              <i class="fa fa-database"></i>
+              <i class="fa-solid fa-database"></i>
               <a
                 :href="dashboard_url"
                 :title="

@@ -74,7 +74,7 @@ function fetch() {
   </div>
   <div class="row" v-if="waiting">
     <div class="col text-center">
-      <i class="fa fa-spinner fa-spin loader"></i>
+      <i class="fa-solid fa-spinner fa-spin loader"></i>
       <span>Loading...</span>
     </div>
   </div>
@@ -106,7 +106,7 @@ function fetch() {
           title="Delete"
           @click.prevent="$refs.deleteModal.open(`/json/groups/${rowData.groupname}/members/${rowData.username}`)"
         >
-          <i class="fa fa-trash-o"></i>
+          <i class="fa-regular fa-trash"></i>
         </button>
       </template>
     </DataTable>

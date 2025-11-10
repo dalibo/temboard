@@ -332,7 +332,7 @@ fetchData();
       Table: <strong>{{ tableName }}</strong>
     </h3>
     <div class="text-center" v-if="loading">
-      <img src="/images/ring-alt.svg" class="fa-fw fa-2x" />
+      <img src="/images/ring-alt.svg" class="fa fa-fw fa-2x" />
     </div>
     <div v-cloak v-if="!loading">
       <div class="row mb-2">
@@ -375,7 +375,7 @@ fetchData();
           <dl>
             <dt>
               Heap
-              <span class="bg-cat1 legend fa-fw d-inline-block">&nbsp;</span>
+              <span class="bg-cat1 legend fa fa-fw d-inline-block">&nbsp;</span>
             </dt>
             <dd>
               {{ table.table_size }}
@@ -392,7 +392,7 @@ fetchData();
           <dl>
             <dt>
               Indexes
-              <span class="bg-cat2 legend fa-fw d-inline-block">&nbsp;</span>
+              <span class="bg-cat2 legend fa fa-fw d-inline-block">&nbsp;</span>
             </dt>
             <dd>
               {{ table.index_size }}
@@ -408,7 +408,7 @@ fetchData();
         <div class="col">
           <dl>
             <dt>
-              <span class="bg-secondary legend fa-fw d-inline-block">&nbsp;</span>
+              <span class="bg-secondary legend fa fa-fw d-inline-block">&nbsp;</span>
               Toast
             </dt>
             <dd>
@@ -514,30 +514,30 @@ fetchData();
       <div class="row">
         <div class="col">
           <p class="text-danger" v-if="table.n_mod_since_analyze / table.n_live_tup > 0.5">
-            <i class="fa fa-exclamation-triangle"></i>The number of modified rows since last analyze is high, you should
-            consider lauching an ANALYZE
+            <i class="fa-solid fa-exclamation-triangle"></i>The number of modified rows since last analyze is high, you
+            should consider lauching an ANALYZE
             <br />
             <span class="ps-4 text-body-secondary margin-start">
               Out of date analyzes can result in stats not being accurate, which eventually leads to slow queries.
             </span>
           </p>
           <p class="text-danger" v-if="table.n_dead_tup / table.n_live_tup > 0.1">
-            <i class="fa fa-exclamation-triangle"></i>The number of dead tuples is high, you should consider running a
-            VACUUM.
+            <i class="fa-solid fa-exclamation-triangle"></i>The number of dead tuples is high, you should consider
+            running a VACUUM.
             <br />
             <span class="ps-4 text-body-secondary margin-start"> Dead tuples waste space and slow down queries. </span>
           </p>
           <p class="text-danger" v-if="table.bloat_bytes / table.table_bytes > 0.5">
-            <i class="fa fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a Full
-            VACUUUM.
+            <i class="fa-solid fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a
+            Full VACUUUM.
             <br />
             <span class="ps-4 text-body-secondary margin-start">
               Table bloat wastes space and slows down queries.
             </span>
           </p>
           <p class="text-danger" v-if="table.index_bloat_bytes / table.index_bytes > 0.5">
-            <i class="fa fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a Full
-            VACUUUM or REINDEX.
+            <i class="fa-solid fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a
+            Full VACUUUM or REINDEX.
             <br />
             <span class="ps-4 text-body-secondary margin-start">
               Index bloat wastes space and slows down queries.
@@ -567,7 +567,7 @@ fetchData();
               href="#"
               v-on:click="indexSortCriteria = key"
             >
-              <i :class="['fa fa-fw', { 'fa-check': indexSortCriteria == key }]"></i>
+              <i :class="['fa-solid fa-fw', { 'fa-check': indexSortCriteria == key }]"></i>
               {{ criteria[0] }}
             </a>
           </div>
@@ -623,7 +623,7 @@ fetchData();
                     <template v-if="scheduledReindex.status == 'todo'">
                       <em v-if="scheduledReindex.status == 'todo'">
                         <span class="text-body-secondary" :title="scheduledReindex.datetime.toString()"
-                          ><i class="fa fa-clock-o"></i>&nbsp;
+                          ><i class="fa-regular fa-clock"></i>&nbsp;
                           <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">{{
                             timeAgo
                           }}</UseTimeAgo></span
@@ -639,7 +639,7 @@ fetchData();
                     </template>
                     <template v-else-if="scheduledReindex.status == 'doing'">
                       <em class="text-body-secondary">
-                        <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa-fw" />
+                        <img id="loadingIndicator" src="/images/ring-alt.svg" class="fa fa-fw" />
                         in progress
                       </em>
                     </template>

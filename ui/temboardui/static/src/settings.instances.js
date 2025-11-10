@@ -42,7 +42,7 @@ createApp({
                     "data-bs-toggle": "tooltip",
                   },
                   className: "btn btn-sm btn-secondary",
-                  text: `<i class="fa fa-download"></i>`,
+                  text: `<i class="fa-solid fa-download"></i>`,
                   action: function () {
                     /**
                      * Use temBoard UI API instead of datatable export. UI export includes

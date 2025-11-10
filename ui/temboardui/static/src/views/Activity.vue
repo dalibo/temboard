@@ -271,11 +271,11 @@ function reset() {
       <div class="col-auto align-self-center">
         <span id="autoRefreshResume" class="d-text-body-secondary" :class="{ 'd-none': !freezed }">
           <a class="btn btn-secondary" role="button" href @click.prevent="resume"
-            ><i class="fa fa-play"></i> resume auto refresh</a
+            ><i class="fa-solid fa-play"></i> resume auto refresh</a
           >
         </span>
         <span class="text-body-secondary" :class="{ 'd-none': freezed }">
-          <img src="/images/ring-alt.svg" width="24" class="fa-fw" :class="{ 'd-none': !loading }" />
+          <img src="/images/ring-alt.svg" width="24" class="fa fa-fw" :class="{ 'd-none': !loading }" />
           Auto refresh
           <span :class="{ 'd-none': paused }">2s</span>
           <span :class="{ 'd-none': !paused }">paused</span>

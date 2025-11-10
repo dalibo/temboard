@@ -246,7 +246,7 @@ function isSelected(value, setting) {
               @click="cancel(change['name'], change['reset_val'])"
               class="btn-cancel btn btn-link btn-sm"
             >
-              <span class="fa fa-times" aria-hidden="true"></span> Cancel change
+              <span class="fa-solid fa-times" aria-hidden="true"></span> Cancel change
             </button>
           </li>
         </ul>
@@ -274,10 +274,10 @@ function isSelected(value, setting) {
             getConfiguration();
           "
         >
-          <i class="fa fa-fw fa-times"></i>
+          <i class="fa-solid fa-fw fa-times"></i>
         </button>
         <button type="submit" class="input-group-text" id="buttonSearchSettings" @click="getConfiguration()">
-          <i class="fa fa-fw fa-search"></i>
+          <i class="fa-solid fa-fw fa-magnifying-glass"></i>
         </button>
       </div>
     </div>
@@ -364,7 +364,7 @@ function isSelected(value, setting) {
                       :data-bs-content="'Reset to: ' + settingRow['boot_val']"
                       @click="cancel(settingRow['name'], settingRow['boot_val'])"
                     >
-                      <span class="fa fa-undo" aria-hidden="true"></span>
+                      <span class="fa-solid fa-undo" aria-hidden="true"></span>
                       Reset to default
                     </button>
                   </td>
