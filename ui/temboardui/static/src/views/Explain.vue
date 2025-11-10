@@ -20,7 +20,7 @@ function submit() {
   <div class="row">
     <div class="col-12 d-flex justify-content-around align-items-center">
       <h1>Plan vizualiser</h1>
-      <a href="" @click.prevent="showModal.show()"> <i class="fa fa-fw fa-info"></i><span>Help</span></a>
+      <a href="" @click.prevent="showModal.show()"> <i class="fa-solid fa-fw fa-info"></i><span>Help</span></a>
     </div>
 
     <ModalDialog ref="showModal" title="Plan Vizualizer Help">

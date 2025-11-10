@@ -179,7 +179,7 @@ fetchData();
       </div>
     </h3>
     <div class="text-center" v-if="loading">
-      <img src="/images/ring-alt.svg" class="fa-fw fa-2x" />
+      <img src="/images/ring-alt.svg" class="fa fa-fw fa-2x" />
     </div>
     <div v-cloak v-if="!loading">
       <div class="d-flex">
@@ -199,7 +199,7 @@ fetchData();
           <div class="dropdown-menu">
             <h6 class="dropdown-header">Sort by:</h6>
             <a v-for="(criteria, key) in sortCriterias" class="dropdown-item" href="#" v-on:click="sortCriteria = key">
-              <i :class="['fa fa-fw', { 'fa-check': sortCriteria == key }]"></i>
+              <i :class="['fa-solid fa-fw', { 'fa-check': sortCriteria == key }]"></i>
               {{ criteria[0] }}
             </a>
           </div>
@@ -357,7 +357,7 @@ fetchData();
               href="#"
               v-on:click="indexSortCriteria = key"
             >
-              <i :class="['fa fa-fw', { 'fa-check': indexSortCriteria == key }]"></i>
+              <i :class="['fa-solid fa-fw', { 'fa-check': indexSortCriteria == key }]"></i>
               {{ criteria[0] }}
             </a>
           </div>
@@ -415,7 +415,7 @@ fetchData();
                     <template v-if="scheduledReindex.status == 'todo'">
                       <em v-if="scheduledReindex.status == 'todo'">
                         <span class="text-body-secondary" :title="scheduledReindex.datetime.toString()">
-                          <i class="fa fa-clock-o"></i>
+                          <i class="fa-regular fa-clock"></i>
                           <span :title="scheduledReindex.datetime.toString()">
                             <UseTimeAgo v-slot="{ timeAgo }" :time="scheduledReindex.datetime">
                               {{ timeAgo }}

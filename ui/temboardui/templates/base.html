@@ -23,7 +23,7 @@
     <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top p-0" data-bs-theme="dark">
       {% if 'instance' in globals() %}
       <a class="navbar-text fs-6 ms-3 text-white" href id="menu-collapse">
-        <i class="fa fa-bars"></i>
+        <i class="fa-solid fa-bars"></i>
       </a>
       {% end %}
       <a class="navbar-brand p-0 ms-3 fw-bolder" style="letter-spacing: -1px;" href="/home">temBoard</a>
@@ -44,7 +44,7 @@
             class="nav-link"
             role="button"
             title="Visualize Query Plan with PEV2">
-            <i class="fa fa-sitemap"></i>
+            <i class="fa-solid fa-sitemap"></i>
             Explain
           </a>
         </li>
@@ -56,19 +56,19 @@
              data-bs-placement="bottom"
              class="nav-link"
              title="Manage instances and users">
-            <i class="fa fa-wrench"></i>
+            <i class="fa-solid fa-wrench"></i>
             Settings
           </a>
         </li>
         {% end %}
         <li class="dropdown nav-item text-nowrap">
           <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-            <i class="fa fa-user"></i>
+            <i class="fa-solid fa-user"></i>
             {{role.role_name}}
             <span class="caret"></span>
           </a>
           <div class="dropdown-menu dropdown-menu-end">
-            <a class="dropdown-item" href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+            <a class="dropdown-item" href="/logout"><i class="fa-solid fa-sign-out"></i> Logout</a>
           </div>
         </li>
       </ul>
@@ -86,7 +86,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
                    class="{{'active' if plugin == 'dashboard' else ''}} dashboard nav-link">
-                  <i class="fa fa-dashboard fa-fw"></i>
+                  <i class="fa-solid fa-dashboard fa-fw"></i>
                   <span>Dashboard</span>
                 </a>
               </li>
@@ -95,7 +95,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"
                    class="{{'active' if plugin == 'activity' else ''}} activity nav-link">
-                  <i class="fa fa-bars fa-fw"></i>
+                  <i class="fa-solid fa-bars fa-fw"></i>
                   <span>Activity</span>
                 </a>
               </li>
@@ -104,7 +104,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
                    class="{{'active' if plugin == 'monitoring' else ''}} monitoring nav-link">
-                  <i class="fa fa-bar-chart-o fa-fw"></i>
+                  <i class="fa-solid fa-chart-column fa-fw"></i>
                   <span>Monitoring</span>
                 </a>
               </li>
@@ -113,7 +113,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
                    class="{{'active' if plugin == 'alerting' else ''}} alerting nav-link">
-                  <i class="fa fa-heart fa-fw"></i>
+                  <i class="fa-solid fa-heart fa-fw"></i>
                   <span>Status</span>
                 </a>
               </li>
@@ -122,7 +122,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
                    class="{{'active' if plugin == 'pgconf' else ''}} pgconf nav-link">
-                  <i class="fa fa-cog fa-fw"></i>
+                  <i class="fa-solid fa-cog fa-fw"></i>
                   <span>Configuration</span>
                 </a>
               </li>
@@ -131,7 +131,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
                    class="{{'active' if plugin == 'maintenance' else ''}} maintenance nav-link">
-                  <i class="fa fa-wrench fa-fw"></i>
+                  <i class="fa-solid fa-wrench fa-fw"></i>
                   <span>Maintenance</span>
                 </a>
               </li>
@@ -140,7 +140,7 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
                    class="{{'active' if plugin == 'statements' else ''}} statements nav-link">
-                  <i class="fa fa-tasks fa-fw"></i>
+                  <i class="fa-solid fa-tasks fa-fw"></i>
                   <span>Statements</span>
                 </a>
               </li>
@@ -148,14 +148,14 @@
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
                    class="{{'active' if plugin == 'notifications' else ''}} nav-link">
-                  <i class="fa fa-envelope fa-fw"></i>
+                  <i class="fa-solid fa-envelope fa-fw"></i>
                   <span>Notifications</span>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/about"
                    class="nav-link">
-                  <i class="fa fa-info fa-fw"></i>
+                  <i class="fa-solid fa-info fa-fw"></i>
                   <span>About</span>
                 </a>
               </li>
@@ -168,7 +168,7 @@
           {% if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
           <div class="alert alert-warning" role="alert" >
             <h2>
-              <i class="fa fa-warning fa-fw"></i>WARNING
+              <i class="fa-solid fa-warning fa-fw"></i>WARNING
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
               </button>
             </h2>

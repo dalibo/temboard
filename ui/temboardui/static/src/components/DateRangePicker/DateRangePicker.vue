@@ -236,7 +236,7 @@ function notify() {
 <template>
   <div v-cloak ref="rootEl">
     <button id="buttonPicker" class="btn btn-secondary" v-on:click="showHidePicker">
-      <i class="fa fa-clock-o"></i>&nbsp;
+      <i class="fa-regular fa-clock"></i>&nbsp;
       <span v-cloak>{{ rangeString }}</span>
     </button>
     <div
@@ -252,7 +252,7 @@ function notify() {
             <div class="input-group">
               <input type="text" id="inputFrom" v-model="inputFrom" class="form-control" />
               <div class="input-group-text" data-role="from-picker">
-                <i class="fa fa-calendar"></i>
+                <i class="fa-regular fa-calendar"></i>
               </div>
             </div>
           </div>
@@ -261,7 +261,7 @@ function notify() {
             <div class="input-group">
               <input type="text" id="inputTo" v-model="inputTo" class="form-control" />
               <div class="input-group-text" data-role="to-picker">
-                <i class="fa fa-calendar"></i>
+                <i class="fa-regular fa-calendar"></i>
               </div>
             </div>
           </div>
@@ -285,7 +285,7 @@ function notify() {
     </div>
     <div class="btn-group">
       <button id="buttonRefresh" class="btn btn-secondary" v-on:click="refresh()" :disabled="!isRefreshable">
-        <i class="fa fa-refresh"></i>
+        <i class="fa-solid fa-rotate"></i>
       </button>
       <button
         id="buttonAutoRefresh"

@@ -53,7 +53,9 @@ function onFromToUpdate(from_, to_) {
 
     <div>
       <ul class="list-inline small text-body-secondary mb-0">
-        <li class="list-inline-item">Enabled: <i :class="['fa', check['enabled'] ? 'fa-check' : 'fa-times']"></i></li>
+        <li class="list-inline-item">
+          Enabled: <i :class="['fa-solid', check['enabled'] ? 'fa-check' : 'fa-times']"></i>
+        </li>
         <li class="list-inline-item">
           <span class="text-warning"> &horbar; </span>
           Warning: {{ check.warning }}
@@ -111,7 +113,7 @@ function onFromToUpdate(from_, to_) {
               </form>
             </div>
             <div class="modal-footer">
-              <i class="fa fa-spinner fa-spin loader d-none"></i>
+              <i class="fa-solid fa-spinner fa-spin loader d-none"></i>
               <button type="submit" id="submitFormUpdateCheck" class="btn btn-success ms-auto">Save</button>
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
@@ -124,7 +126,7 @@ function onFromToUpdate(from_, to_) {
       <div class="p-2">
         <div class="text-center">
           <i
-            v-bind:class="'fa fa-heart text-' + key.state.toLowerCase()"
+            v-bind:class="'fa-solid fa-heart text-' + key.state.toLowerCase()"
             data-bs-toggle="tooltip"
             v-bind:title="'Current status: ' + key.state.toLowerCase()"
           ></i
