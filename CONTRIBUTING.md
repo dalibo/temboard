@@ -467,7 +467,7 @@ build packages. Use `build-<codename>` target like this:
 make -C ui/packaging/deb build-bullseye
 ```
 
-`codename` is one of `bookworm` or `bullseye` for Debian
+`codename` is one of `trixie`, `bookworm` or `bullseye` for Debian
 and `noble` or `jammy` for Ubuntu.
 `agent/packaging/deb/Makefile` provides the same targets.
 
