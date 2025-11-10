@@ -7,7 +7,8 @@ from .web.app import create_app
 
 
 def main():
-    default_app.pop()  # Remove default app.
+    if len(default_app) > 1:  # DEPRECATED: bottle 0.12
+        default_app.pop()  # Remove default app.
     default_app.push(create_app(app))
 
     # Import core HTTP routes
