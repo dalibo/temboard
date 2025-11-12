@@ -1,0 +1,29 @@
+services:
+  rhel9: &rhel
+    image: dalibo/buildpack-pkg:rockylinux9
+    volumes:
+      - ../..:/workspace
+    working_dir: /workspace
+    entrypoint: ["/usr/local/sbin/tini", "--"]
+    command: /workspace/packaging/nfpm/mkrpm.sh
+
+  rhel8:
+    <<: *rhel
+    image: dalibo/buildpack-pkg:rockylinux8
+
+  bookworm: &mkdeb
+    <<: *rhel
+    image: dalibo/buildpack-pkg:bookworm
+    command: /workspace/packaging/nfpm/mkdeb.sh
+
+  bullseye:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:bullseye
+
+  jammy:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:jammy
+
+  noble:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:noble

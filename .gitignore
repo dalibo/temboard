@@ -51,3 +51,7 @@ docker-compose.override.yml
 temboard.conf.d/
 *.log
 dev/prometheus/import/*.txt
+
+# Vendoring
+agent/temboardagent/_vendor/
+ui/temboardui/_vendor/

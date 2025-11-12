@@ -217,6 +217,7 @@ jobs:
         command: |
           set -x
           pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt --only-binary=psycopg2-binary psycopg2-binary
+          pip<< parameters.pyversion >> install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
     - run:
         name: Install Agent.
         command: |
@@ -238,6 +239,9 @@ jobs:
         type: enum
         enum: [rockylinux9, rockylinux8]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
+    environment:
+      DEBFULLNAME: CircleCI
+      DEBEMAIL: none@example.com
     working_directory: *working_directory
     steps:
     - checkout
@@ -253,8 +257,7 @@ jobs:
     - run:
         name: Build UI RPM snapshot
         command: |
-          ui/packaging/rpm/build.sh
-          mv -v ui/dist/rhel*/temboard/*.rpm ui/dist/
+          ui/packaging/nfpm/mkrpm.sh
     - store_artifacts:
         path: /workspace/ui/dist/
     - persist_to_workspace:
@@ -271,31 +274,28 @@ jobs:
         enum: [bookworm, bullseye, noble, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
+    environment:
+      DEBFULLNAME: CircleCI
+      DEBEMAIL: none@example.com
     steps:
     - checkout
     - attach_workspace:
         at: *working_directory
     - run:
         name: Build UI Debian Snapshot
-        command: ui/packaging/deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
+        command: ui/packaging/nfpm/mkdeb.sh
     - store_artifacts:
         path: /workspace/ui/dist/
     - run:
         name: Build Agent Debian Snapshot
         command: agent/packaging/deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
     - store_artifacts:
         path: /workspace/agent/dist/
     - persist_to_workspace:
         root: .
         paths:
         - 'agent/dist/*_all.deb'
-        - 'ui/dist/*_amd64.deb'
+        - 'ui/dist/*_all.deb'
 
   e2e:
     parameters:
@@ -339,7 +339,6 @@ jobs:
         name: Shellcheck
         command: |
           shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
-          shellcheck ui/packaging/deb/mkdeb.sh
     - run:
         name: Install temBoard UI & agent
         command: tests/install-all.sh

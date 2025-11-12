@@ -1,6 +1,8 @@
 include LICENSE
 include packaging/temboard.service
 include temboardui/model/queries/*.sql
+include vendor.*
+
 graft temboardui/model/versions
 graft temboardui/static
 graft temboardui/templates
@@ -29,8 +31,7 @@ exclude .prettier*
 exclude .husky/*
 exclude .npmrc
 prune docs
-prune packaging/deb
+prune packaging/nfpm
 prune packaging/docker
-prune packaging/rpm
 prune temboardui/static/src
 prune tests
